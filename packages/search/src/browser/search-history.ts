@@ -1,20 +1,24 @@
-import { IWorkspaceService } from '@ali/ide-workspace';
 import { IContentSearchClientService } from '../common';
+import { RecentStorage, isArray } from '@ali/ide-core-browser';
+
+export const SEARCH_WORD_SCOPE = 'SEARCH_WORD';
 
 export class SearchHistory {
   public searchHistoryList: string[] = [];
 
   private searchServiceClient: IContentSearchClientService;
-  private workspaceService: IWorkspaceService;
-  private currentIndex: number = -1;
+
+  recentStorage: RecentStorage;
 
   constructor(
     searchServiceClient: IContentSearchClientService,
-    workspaceService: IWorkspaceService,
+    recentStorage: RecentStorage,
   ) {
     this.searchServiceClient = searchServiceClient;
-    this.workspaceService = workspaceService;
+    this.recentStorage = recentStorage;
   }
+
+  private currentIndex: number = -1;
 
   setRecentSearchWord() {
     if (this.currentIndex === -1) {
@@ -64,7 +68,7 @@ export class SearchHistory {
     if (this.searchHistoryList.length > 0) {
       return;
     }
-    const list = await this.workspaceService.getMostRecentlySearchWord();
+    const list = await this.getMostRecentlySearchWord();
     this.searchHistoryList = this.searchHistoryList.concat(list || []);
   }
 
@@ -75,7 +79,31 @@ export class SearchHistory {
       return;
     }
     this.searchHistoryList.push(word);
-    this.workspaceService.setMostRecentlySearchWord(word);
+    await this.setMostRecentlySearchWord(word);
+  }
+
+  private async getMostRecentlySearchWord() {
+    const recentStorage = await this.recentStorage.getScopeStorage();
+    const list: string[] = await recentStorage.get<string[]>(SEARCH_WORD_SCOPE) || [];
+    return list;
+  }
+
+  private async setMostRecentlySearchWord(word) {
+    const recentStorage = await this.recentStorage.getScopeStorage();
+    let list: string[] = [];
+    const oldList = await this.getMostRecentlySearchWord() || [];
+
+    if (isArray(word)) {
+      list = list.concat(word);
+    } else {
+      list.push(word);
+    }
+
+    list = oldList.concat(list);
+    list = Array.from(new Set(list));
+    // 仅存储10个
+    list = list.slice(list.length - 10, list.length);
+    recentStorage.set(SEARCH_WORD_SCOPE, list);
   }
 
   private setSearchValue(value: string) {

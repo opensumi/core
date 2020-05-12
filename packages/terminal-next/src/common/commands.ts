@@ -1,7 +1,7 @@
 import { localize } from '@ali/ide-core-common';
 
 export namespace TERMINAL_COMMANDS {
-  const CATEGORY = 'terminal';
+  const CATEGORY = 'Terminal';
 
   export const SPLIT = {
     id: 'terminal.split',
@@ -86,5 +86,15 @@ export namespace TERMINAL_COMMANDS {
   export const SELECT_SH = {
     id: 'terminal.selectTypeSh',
     label: 'sh',
+  };
+
+  export const SELECT_CMD = {
+    id: 'terminal.selectTypeCMD',
+    label: 'cmd',
+  };
+
+  export const SELECT_POWERSHELL = {
+    id: 'terminal.selectTypePowerShell',
+    label: 'powershell',
   };
 }

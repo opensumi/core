@@ -191,6 +191,18 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       },
     });
 
+    registry.registerCommand(TERMINAL_COMMANDS.SELECT_POWERSHELL, {
+      execute: async () => {
+        this.preference.set('terminal.type', 'powershell');
+      },
+    });
+
+    registry.registerCommand(TERMINAL_COMMANDS.SELECT_CMD, {
+      execute: async () => {
+        this.preference.set('terminal.type', 'cmd');
+      },
+    });
+
     registry.registerCommand(TERMINAL_COMMANDS.MORE_SETTINGS, {
       execute: async () => {
         this.commands.executeCommand(COMMON_COMMANDS.LOCATE_PREFERENCES.id, 'terminal');

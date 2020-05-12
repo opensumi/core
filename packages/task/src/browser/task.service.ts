@@ -157,34 +157,20 @@ export class TaskService extends Disposable implements ITaskService {
   }
 
   public async tasks(filter): Promise<Task[]> {
-    const taskSets = await this.getGroupedTasks();
-    if (!filter || !filter.type) {
-      return taskSets.reduce<Task[]>((pre, acc) => {
-        pre = [...pre, ...acc.tasks];
-        return pre;
-      }, []);
-    }
+    const workspaceTasks = await this.getWorkspaceGroupedTasks();
     const result: Task[] = [];
-    taskSets.forEach((set) => {
-      for (const task of set.tasks) {
-        if (ContributedTask.is(task) && task.defines.type === filter.type) {
+    for (const taskMap of workspaceTasks.values()) {
+      for (const task of taskMap) {
+        if (filter && filter.type && task.getDefinition()?.type === filter.type) {
           result.push(task);
-        } else if (CustomTask.is(task)) {
-          if (task.type === filter.type) {
-            result.push(task);
-          } else {
-            const customizes = task.customizes();
-            if (customizes && customizes.type === filter.type) {
-              result.push(task);
-            }
-          }
         }
+        continue;
       }
-    });
+    }
     return result;
   }
 
-  private async getWorkspaceGroupedTasks(folder: Uri): Promise<Map<string, Task[]>> {
+  private async getWorkspaceGroupedTasks(folder: Uri = this.workspaceFolders[0]): Promise<Map<string, Task[]>> {
     const contributedTaskSet = await this.getGroupedTasks();
     const workspaceTasks = await this.getWorkspaceTasks(contributedTaskSet);
     const result: Array<CustomTask | ContributedTask | Task> = [];

@@ -170,22 +170,6 @@ describe('WorkspaceService should be work while workspace was a single directory
     done();
   });
 
-  it('getMostRecentlyOpenedFile/setMostRecentlyOpenedFile method should be work', async (done) => {
-    const openedFile = workspaceUri.resolve('test.js').toString();
-    await workspaceService.setMostRecentlyOpenedFile(openedFile);
-    const recent = await workspaceService.getMostRecentlyOpenedFiles();
-    expect(recent).toStrictEqual([openedFile]);
-    done();
-  });
-
-  it('getMostRecentlySearchWord/setMostRecentlySearchWord method should be work', async (done) => {
-    const searchWork = 'test';
-    await workspaceService.setMostRecentlySearchWord(searchWork);
-    const recent = await workspaceService.getMostRecentlySearchWord();
-    expect(recent).toStrictEqual([searchWork]);
-    done();
-  });
-
   it('open method should be work', async (done) => {
     const newWorkspaceUri = workspaceUri.parent.resolve('new_folder');
     mockFileSystem.getFileStat.mockResolvedValue({

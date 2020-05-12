@@ -23,7 +23,7 @@ import {
   AppConfig,
   IClientApp,
 } from '@ali/ide-core-browser';
-import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE, isArray } from '@ali/ide-core-common';
+import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-common';
 import { FileStat } from '@ali/ide-file-service';
 import { FileChangeEvent } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
@@ -64,7 +64,6 @@ export class WorkspaceService implements IWorkspaceService {
   @Autowired(StorageProvider)
   private storageProvider: StorageProvider;
 
-  private recentStorage: IStorage;
   private recentGlobalStorage: IStorage;
 
   @Autowired(CorePreferences)
@@ -342,62 +341,21 @@ export class WorkspaceService implements IWorkspaceService {
     await this.recentGlobalStorage.set('RECENT_COMMANDS', recentCommands);
   }
 
-  private async getScopeRecentStorage() {
-    this.recentStorage = this.recentStorage || await this.storageProvider(STORAGE_NAMESPACE.RECENT_DATA);
-    return this.recentStorage;
-  }
-
   private async getGlobalRecentStorage() {
     this.recentGlobalStorage = this.recentGlobalStorage || await this.storageProvider(STORAGE_NAMESPACE.GLOBAL_RECENT_DATA);
     return this.recentGlobalStorage;
   }
-
+  // TODO RecentStorage相关逻辑迁移到各自的实现内
   async setMostRecentlyOpenedFile(uriString: string) {
-    await this.getScopeRecentStorage();
-
-    let fileList: string[] = [];
-    const oldFileList = await this.getMostRecentlyOpenedFiles();
-
-    fileList.push(uriString);
-    if (oldFileList) {
-      oldFileList.forEach((element: string) => {
-        if (element !== uriString) {
-          fileList.push(element);
-        }
-      });
-    }
-    // 仅存储50个最近文件
-    fileList = fileList.slice(0, 50);
-    this.recentStorage.set('OPENED_FILE', fileList);
   }
-
   async getMostRecentlyOpenedFiles() {
-    await this.getScopeRecentStorage();
-    const fileList: string[] = await this.recentStorage.get<string[]>('OPENED_FILE') || [];
-    return fileList;
+    return [''];
   }
-
   async getMostRecentlySearchWord() {
-    await this.getScopeRecentStorage();
-    const list: string[] = await this.recentStorage.get<string[]>('SEARCH_WORD') || [];
-    return list;
+    return [''];
   }
-
   async setMostRecentlySearchWord(word) {
-    let list: string[] = [];
-    const oldList = await this.getMostRecentlySearchWord() || [];
 
-    if (isArray(word)) {
-      list = list.concat(word);
-    } else {
-      list.push(word);
-    }
-
-    list = oldList.concat(list);
-    list = Array.from(new Set(list));
-    // 仅存储10个
-    list = list.slice(list.length - 10, list.length);
-    this.recentStorage.set('SEARCH_WORD', list);
   }
 
   /**

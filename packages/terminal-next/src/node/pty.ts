@@ -15,7 +15,7 @@ const defaultWindowsType = 'powershell.exe';
 
 export class PtyService {
   create(rows: number, cols: number, options: TerminalOptions): IPty {
-    const bin = options.shellPath || process.env[os.platform() === 'win32' ? defaultWindowsType : 'SHELL'] || '/bin/sh';
+    const bin = options.shellPath || (os.platform() === 'win32' ? defaultWindowsType : (process.env['SHELL'] || '/bin/sh'));
     const locale = osLocale.sync();
     let ptyEnv: { [key: string]: string };
 
@@ -33,13 +33,12 @@ export class PtyService {
           options.env,
         )) as { [key: string]: string };
     }
-    // console.log(`execute ${bin} ${typeof options.shellArgs === 'string' ? options.shellArgs : options.shellArgs!.join(' ')}in ${options.cwd}`);
     const ptyProcess = pty.spawn(bin, options.shellArgs || [], {
       name: 'xterm-color',
       cols: cols || 100,
       rows: rows || 30,
       cwd: options.cwd ? options.cwd!.toString() : '',
-      env: { ... process.env }  as { [key: string]: string },
+      env: ptyEnv,
     });
     (ptyProcess as any).bin = bin;
     return ptyProcess as IPty;

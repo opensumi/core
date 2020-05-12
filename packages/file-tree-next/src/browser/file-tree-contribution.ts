@@ -310,16 +310,20 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       execute: async (uri) => {
         if (uri) {
           this.fileTreeModelService.newFilePrompt(uri);
-        } else if (this.fileTreeModelService.selectedFiles && this.fileTreeModelService.selectedFiles.length > 0) {
-          this.fileTreeModelService.newFilePrompt(this.fileTreeModelService.selectedFiles[0].uri);
         } else {
-          let rootUri: URI;
-          if (!this.fileTreeService.isMutiWorkspace) {
-            rootUri = new URI(this.workspaceService.workspace?.uri);
+          if (this.fileTreeService.isCompactMode && this.fileTreeModelService.activeUri) {
+            this.fileTreeModelService.newFilePrompt(this.fileTreeModelService.activeUri);
+          } else if (this.fileTreeModelService.selectedFiles && this.fileTreeModelService.selectedFiles.length > 0) {
+            this.fileTreeModelService.newFilePrompt(this.fileTreeModelService.selectedFiles[0].uri);
           } else {
-            rootUri = new URI((await this.workspaceService.roots)[0].uri);
+            let rootUri: URI;
+            if (!this.fileTreeService.isMutiWorkspace) {
+              rootUri = new URI(this.workspaceService.workspace?.uri);
+            } else {
+              rootUri = new URI((await this.workspaceService.roots)[0].uri);
+            }
+            this.fileTreeModelService.newFilePrompt(rootUri);
           }
-          this.fileTreeModelService.newFilePrompt(rootUri);
         }
       },
     });
@@ -327,16 +331,20 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       execute: async (uri) => {
         if (uri) {
           this.fileTreeModelService.newDirectoryPrompt(uri);
-        } else if (this.fileTreeModelService.selectedFiles && this.fileTreeModelService.selectedFiles.length > 0) {
-          this.fileTreeModelService.newDirectoryPrompt(this.fileTreeModelService.selectedFiles[0].uri);
-        } else {
-          let rootUri: URI;
-          if (!this.fileTreeService.isMutiWorkspace) {
-            rootUri = new URI(this.workspaceService.workspace?.uri);
+        }  else {
+          if (this.fileTreeService.isCompactMode && this.fileTreeModelService.activeUri) {
+            this.fileTreeModelService.newDirectoryPrompt(this.fileTreeModelService.activeUri);
+          } else if (this.fileTreeModelService.selectedFiles && this.fileTreeModelService.selectedFiles.length > 0) {
+            this.fileTreeModelService.newDirectoryPrompt(this.fileTreeModelService.selectedFiles[0].uri);
           } else {
-            rootUri = new URI((await this.workspaceService.roots)[0].uri);
+            let rootUri: URI;
+            if (!this.fileTreeService.isMutiWorkspace) {
+              rootUri = new URI(this.workspaceService.workspace?.uri);
+            } else {
+              rootUri = new URI((await this.workspaceService.roots)[0].uri);
+            }
+            this.fileTreeModelService.newDirectoryPrompt(rootUri);
           }
-          this.fileTreeModelService.newDirectoryPrompt(rootUri);
         }
       },
     });

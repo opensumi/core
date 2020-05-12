@@ -1,7 +1,7 @@
 import { Injector } from '@ali/common-di';
 import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceSchema } from './preferences';
 
-import { isOSX, isLinux, localize, getAvailableLanguages, isElectronRenderer } from '@ali/ide-core-common';
+import { isOSX, isLinux, localize, getAvailableLanguages, isElectronRenderer, isWindows } from '@ali/ide-core-common';
 
 const DEFAULT_WINDOWS_FONT_FAMILY = 'Consolas, \'Courier New\', monospace';
 const DEFAULT_MAC_FONT_FAMILY = 'Menlo, Monaco, \'Courier New\', monospace';
@@ -273,6 +273,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: 10000,
       description: '%editor.configuration.maxTokenizationLineLength%',
     },
+    'editor.largeFile': {
+      type: 'number',
+      default: 2 * 1024 * 1024,
+      description: '%editor.configuration.largeFileSize%',
+    },
     'editor.quickSuggestionsDelay': {
       type: 'integer',
       default: 100,
@@ -345,7 +350,12 @@ export const corePreferenceSchema: PreferenceSchema = {
     // 终端
     'terminal.type': {
       type: 'string',
-      enum: [
+      // FIXME: 此处应该是node层的platform，考虑到目前只有electron会有windows机器，暂时这样
+      enum: (isElectronRenderer() && isWindows) ? [
+        'powershell',
+        'cmd',
+        'default',
+      ] : [
         'bash',
         'zsh',
         'sh',

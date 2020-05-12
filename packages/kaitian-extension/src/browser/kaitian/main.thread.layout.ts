@@ -1,11 +1,10 @@
-import { Injectable, Injector, Autowired } from '@ali/common-di';
-import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
+import { Injectable, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IMainThreadLayout, IExtHostLayout } from '../../common/kaitian/layout';
 import { IMainLayoutService, TabBarRegistrationEvent } from '@ali/ide-main-layout';
 import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
 import { ExtHostKaitianAPIIdentifier } from '../../common/kaitian';
-import { IEventBus, Disposable } from '@ali/ide-core-browser';
+import { IEventBus, Disposable, ILogger } from '@ali/ide-core-browser';
 
 @Injectable({ multiple: true })
 export class MainThreaLayout extends Disposable implements IMainThreadLayout {
@@ -19,7 +18,10 @@ export class MainThreaLayout extends Disposable implements IMainThreadLayout {
   @Autowired(IEventBus)
   eventBus: IEventBus;
 
-  constructor(private rpcProtocol: IRPCProtocol, private injector: Injector) {
+  @Autowired(ILogger)
+  logger: ILogger;
+
+  constructor(rpcProtocol: IRPCProtocol) {
     super();
     this.proxy = rpcProtocol.getProxy(ExtHostKaitianAPIIdentifier.ExtHostLayout);
   }
@@ -34,6 +36,17 @@ export class MainThreaLayout extends Disposable implements IMainThreadLayout {
 
   $deactivate(id: string): void {
     this.getHandler(id).deactivate();
+  }
+
+  async $setVisible(id: string, visible: boolean) {
+    if (visible) {
+      this.getHandler(id).show();
+    } else {
+      if (this.getHandler(id).isActivated()) {
+        this.getHandler(id).deactivate();
+      }
+      this.getHandler(id).hide();
+    }
   }
 
   async $connectTabbar(id: string) {
@@ -67,7 +80,7 @@ export class MainThreaLayout extends Disposable implements IMainThreadLayout {
   protected getHandler(id: string) {
     const handler = this.layoutService.getTabbarHandler(id);
     if (!handler) {
-      console.warn(`MainThreaLayout:没有找到${id}对应的handler`);
+      this.logger.warn(`MainThreaLayout:没有找到${id}对应的handler`);
     }
     return handler!;
   }

@@ -250,6 +250,8 @@ declare module 'kaitian' {
 
     onInActivate: Event<void>;
 
+    setVisible(visible: boolean): void;
+
   }
 
   interface IExtensionInfo {

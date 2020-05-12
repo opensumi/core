@@ -92,6 +92,8 @@ export class FileTreeModelService {
   private _focusedFile: File | Directory | undefined;
   // 选中态的节点，会可能有多个
   private _selectedFiles: (File | Directory)[] = [];
+  // 当前焦点的文件路径URI
+  private _activeUri: URI;
 
   private clickTimes: number;
   private clickTimer: any;
@@ -160,6 +162,11 @@ export class FileTreeModelService {
   get selectedFiles() {
     return this._selectedFiles;
   }
+  // 获取当前激活的文件URI，仅在压缩目录模式下可用
+  get activeUri() {
+    return this._activeUri;
+  }
+
   get pasteStore() {
     return this._pasteStore;
   }
@@ -405,6 +412,11 @@ export class FileTreeModelService {
     ev.preventDefault();
 
     const { x, y } = ev.nativeEvent;
+
+    if (this.fileTreeService.isCompactMode && activeUri) {
+      this._activeUri = activeUri;
+    }
+
     if (file) {
       this.activeFileFocusedDecoration(file, true);
     } else {
@@ -529,6 +541,9 @@ export class FileTreeModelService {
 
     this._isMutiSelected = false;
     this.clickTimes++;
+    if (this.fileTreeService.isCompactMode && activeUri) {
+      this._activeUri = activeUri;
+    }
     // 单选操作默认先更新选中状态
     if (type === TreeNodeType.CompositeTreeNode || type === TreeNodeType.TreeNode && !activeUri) {
       this.activeFileDecoration(item);
@@ -703,7 +718,7 @@ export class FileTreeModelService {
     const names = coalesce(name.split(/[\\/]/));
     if (parent) {
       // 不允许覆盖已存在的文件
-      const child = parent.children?.find((child) => child.name.indexOf(name) === 0);
+      const child = parent.children?.find((child) => child.name === name);
       if (child) {
         return {
           message: formatLocalize('validate.tree.fileNameExistsError', name),
@@ -783,9 +798,37 @@ export class FileTreeModelService {
           promptHandle.addValidateMessage(this.validateMessage);
           return false;
         }
-        const addNode = await this.fileTreeService.addNode(parent, newName, promptHandle.type);
-        if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
-          // 文件夹首次创建需要将焦点设到新建的文件夹上
+        if (this.fileTreeService.isCompactMode && newName.indexOf(Path.separator) > 0) {
+          // 压缩模式下，检查是否有同名父目录存在，有则不需要生成临时目录，刷新对应父节点并定位节点
+          const parentPath = new Path(parent.path).join(Path.splitPath(newName)[0]).toString();
+          const parentNode = this.fileTreeService.getNodeByPathOrUri(parentPath) as Directory;
+          if (parentNode) {
+            if (!parentNode.expanded && !parentNode.children) {
+              await parentNode.setExpanded(false, true);
+              this.location(parent.uri.resolve(newName));
+            } else {
+              await this.fileTreeService.refresh(parentNode as Directory);
+              Event.once(this.fileTreeService.onNodeRefreshed)(async () => {
+                this.location(parent.uri.resolve(newName));
+              });
+            }
+          } else {
+            if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
+              const addNode = await this.fileTreeService.addNode(parent, newName, promptHandle.type);
+              // 文件夹首次创建需要将焦点设到新建的文件夹上
+              Event.once(this.treeModel.onChange)(async () => {
+                this.location(addNode.uri);
+              });
+            } else if (promptHandle.type === TreeNodeType.TreeNode) {
+              const namePieces = Path.splitPath(newName);
+              const addNode = await this.fileTreeService.addNode(parent, namePieces.slice(0, namePieces.length - 1).join(Path.separator), promptHandle.type);
+              Event.once(this.treeModel.onChange)(async () => {
+                this.location(addNode.uri.resolve(namePieces.slice(-1)[0]));
+              });
+            }
+          }
+        } else {
+          const addNode = await this.fileTreeService.addNode(parent, newName, promptHandle.type);
           Event.once(this.treeModel.onChange)(async () => {
             this.location(addNode.uri);
           });
@@ -794,6 +837,7 @@ export class FileTreeModelService {
       this.fileTreeContextKey.filesExplorerInputFocused.set(false);
       return true;
     };
+
     const blurCommit = async (newName) => {
       if (isCommit) {
         return false;
@@ -878,8 +922,6 @@ export class FileTreeModelService {
     if (uri.isEqual((this.treeModel.root as Directory).uri)) {
       // 可能为空白区域点击, 即选中的对象为根目录
       targetNode = await this.fileTreeService.getNodeByPathOrUri(uri)!;
-    } else if (this.focusedFile) {
-      targetNode = this.focusedFile;
     } else if (this.selectedFiles.length > 0) {
       targetNode = this.selectedFiles[this.selectedFiles.length - 1];
     } else {

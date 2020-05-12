@@ -344,6 +344,7 @@ export const localizationBundle = {
     'preference.editor.formatOnSaveTimeoutError': 'Aborted format on save after ${0}ms',
     'preference.editor.maxTokenizationLineLength': 'Max Tokenization Line Length',
     'preference.editor.quickSuggestionsDelay': 'Quick suggestions show delay (in ms) Defaults to 10 (ms)',
+    'preference.editor.largeFile': 'Large File Size',
     'keymaps.tab.name': 'Keyboard Shortcuts',
 
     'preference.editor.previewMode': 'Preview Mode',
@@ -362,10 +363,14 @@ export const localizationBundle = {
     'editor.configuration.forceReadOnly': 'If Enable readOnly',
     'editor.configuration.tabSize': 'The number of spaces a tab is equal to. This setting is overridden based on the file contents when Detect Indentation is on.',
     'editor.configuration.detectIndentation': 'Controls whether Tab Size and Insert Spaces will be automatically detected when a file is opened based on the file contents.',
+    'editor.configuration.largeFileSize': 'Custom size of the large file',
     'editor.autoSave.enum.off': 'OFF',
     'editor.autoSave.enum.editorFocusChange': 'When editor focus changed',
     'editor.autoSave.enum.afterDelay': 'Save after delay',
     'editor.autoSave.enum.windowLostFocus': 'When window lost focus',
+
+    'editor.largeFile.prevent': 'The file is too large, continuing to open it may cause it to jam or crash.',
+    'editor.largeFile.prevent.stillOpen': 'Still open it.',
 
     'validate.tree.emptyFileNameError': 'Please provide a file or folder name',
     'validate.tree.fileNameStartsWithSlashError': 'File or folder name cannot start with /',

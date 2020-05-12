@@ -8,6 +8,7 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { ITerminalController, ITerminalClient, ITerminalClientFactory, IWidget, ITerminalInfo, ITerminalBrowserHistory, ITerminalTheme, ITerminalGroupViewService, TerminalOptions, ITerminalErrorService, ITerminalInternalService } from '../common';
 import { TerminalGroupViewService } from './terminal.view';
 import { TerminalContextKey } from './terminal.context-key';
+import { ResizeEvent, getSlotLocation, AppConfig } from '@ali/ide-core-browser';
 
 @Injectable()
 export class TerminalController extends WithEventBus implements ITerminalController {
@@ -43,6 +44,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   @Autowired(TerminalContextKey)
   protected readonly terminalContextKey: TerminalContextKey;
+
+  @Autowired(AppConfig)
+  config: AppConfig;
 
   @observable
   themeBackground: string;
@@ -202,6 +206,15 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         client.updateTheme();
         this.themeBackground = this.terminalTheme.terminalTheme.background || '';
       });
+    }));
+
+    this.addDispose(this.eventBus.on(ResizeEvent, (e: ResizeEvent) => {
+      if (
+        (this._tabbarHandler && this._tabbarHandler?.isActivated) &&
+        e.payload.slotLocation === getSlotLocation('@ali/ide-terminal-next', this.config.layoutConfig)
+      ) {
+        this.terminalView.resize();
+      }
     }));
 
     if (this._tabbarHandler) {
