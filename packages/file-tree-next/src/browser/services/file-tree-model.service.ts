@@ -16,6 +16,7 @@ import * as styles from '../file-tree-node.module.less';
 import { FileStat } from '@ali/ide-file-service';
 import { ISerializableState, TreeStateWatcher } from '@ali/ide-components/lib/recycle-tree/tree/model/treeState';
 import { WorkbenchEditorService } from '@ali/ide-editor';
+import { IIconService } from '@ali/ide-theme';
 
 export interface IParseStore {
   files: (File | Directory)[];
@@ -78,6 +79,9 @@ export class FileTreeModelService {
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
+  @Autowired(IIconService)
+  private readonly iconService: IIconService;
+
   private _treeModel: TreeModel;
   private _dndService: DragAndDropService;
 
@@ -127,6 +131,10 @@ export class FileTreeModelService {
 
   constructor() {
     this._whenReady = this.initTreeModel();
+  }
+
+  get hasFolderIcons() {
+    return this.iconService.currentTheme.hasFolderIcons;
   }
 
   get onDidFocusedFileChange() {

@@ -22,6 +22,8 @@ export interface IFileTreeNodeProps {
   onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType, activeUri?: URI) => void;
   onContextMenu: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType, activeUri?: URI) => void;
   template?: React.JSXElementConstructor<any>;
+  // 是否为纯净模式，纯净模式下文件图标会与父目录小箭头对齐
+  hasFolderIcons?: boolean;
 }
 
 export type FileTreeNodeRenderedProps = IFileTreeNodeProps & INodeRendererProps;
@@ -39,6 +41,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   decorations,
   defaultLeftPadding = 8,
   template: Template,
+  hasFolderIcons,
 }: FileTreeNodeRenderedProps) => {
   const [activeIndex, setActiveIndex] = React.useState<number>();
 
@@ -131,13 +134,13 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   if (isPrompt) {
     if (isNewPrompt) {
       isDirectory = (item as NewPromptHandle).type === TreeNodeType.CompositeTreeNode;
-      paddingLeft = `${defaultLeftPadding + ((item as NewPromptHandle).parent.depth + 1 || 0) * (leftPadding || 0) + (isDirectory ? 0 : 20)}px`;
+      paddingLeft = `${defaultLeftPadding + ((item as NewPromptHandle).parent.depth + 1 || 0) * (leftPadding || 0) + (isDirectory ? 0 : hasFolderIcons ? 20 : 0 )}px`;
     } else {
       isDirectory = (item as RenamePromptHandle).target.type === TreeNodeType.CompositeTreeNode;
-      paddingLeft = `${defaultLeftPadding + ((item as RenamePromptHandle).target.depth || 0) * (leftPadding || 0) + (isDirectory ? 0 : 20)}px`;
+      paddingLeft = `${defaultLeftPadding + ((item as RenamePromptHandle).target.depth || 0) * (leftPadding || 0) + (isDirectory ? 0 : hasFolderIcons ? 20 : 0 )}px`;
     }
   } else {
-    paddingLeft = `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + (isDirectory ? 0 : 20)}px`;
+    paddingLeft = `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + (isDirectory ? 0 : hasFolderIcons ? 20 : 0 )}px`;
   }
   const fileTreeNodeStyle = {
     color: decoration ? decoration.color : '',
@@ -200,6 +203,9 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
       isDirectory = node.filestat.isDirectory;
     }
     const iconClass = labelService.getIcon(nodeUri, {isDirectory, isOpenedDirectory: isDirectory && (node as Directory).expanded});
+    if (isDirectory && !hasFolderIcons) {
+      return null;
+    }
     return <div className={cls(styles.file_icon, iconClass, {expanded: isDirectory && (node as Directory).expanded})} style={{ height: FILE_TREE_NODE_HEIGHT, lineHeight: `${FILE_TREE_NODE_HEIGHT}px`}}>
     </div>;
   };
