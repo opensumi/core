@@ -110,6 +110,7 @@ export class FoldedCodeWidgetGroup extends Disposable {
   }
 
   dispose() {
+    (this.editor as any)._modelData.viewModel.setHiddenAreas([]);
     this.widgets.forEach((widget) => {
       widget.hide();
       widget.dispose();
