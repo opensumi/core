@@ -75,6 +75,8 @@ export class OutLineService extends WithEventBus {
   constructor() {
     super();
     this.editorService.onActiveResourceChange((e) => {
+      // 避免内存泄漏
+      this.statusMap.clear();
       if (e && e.uri && e.uri.scheme === 'file') {
         this.notifyUpdate(e.uri);
       } else {

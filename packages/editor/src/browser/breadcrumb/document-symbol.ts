@@ -125,10 +125,10 @@ export interface IDummyRoot {
 }
 
 function normalizeDocumentSymbols(documentSymbols: DocumentSymbol[], parent: INormalizedDocumentSymbol | IDummyRoot, uri: URI): INormalizedDocumentSymbol[] {
-  documentSymbols.forEach((documentSymbol) => {
+  documentSymbols.forEach((documentSymbol, index) => {
     const symbol = documentSymbol as INormalizedDocumentSymbol;
     symbol.parent = parent;
-    symbol.id = getSymbolId(uri, symbol);
+    symbol.id = getSymbolId(uri, symbol, index);
     if (documentSymbol.children && documentSymbol.children.length > 0) {
       normalizeDocumentSymbols(documentSymbol.children, documentSymbol as INormalizedDocumentSymbol, uri);
     }
@@ -136,7 +136,7 @@ function normalizeDocumentSymbols(documentSymbols: DocumentSymbol[], parent: INo
   return documentSymbols as INormalizedDocumentSymbol[];
 }
 
-function getSymbolId(uri: URI, symbol: INormalizedDocumentSymbol) {
+function getSymbolId(uri: URI, symbol: INormalizedDocumentSymbol, index: number) {
   const symbolNameList: string[] = [symbol.name];
   while (symbol.parent) {
     const parent = symbol.parent as INormalizedDocumentSymbol;
@@ -147,5 +147,5 @@ function getSymbolId(uri: URI, symbol: INormalizedDocumentSymbol) {
     symbolNameList.unshift(parent.name);
     symbol = parent;
   }
-  return uri.toString() + '__' + symbolNameList.join('-') + '__' + symbol.kind;
+  return `${uri.toString()}__${symbolNameList.join('-')}__${index}`;
 }
