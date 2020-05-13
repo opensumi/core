@@ -43,6 +43,12 @@ export class DragAndDropService {
     return this.model.treeModel.root;
   }
 
+  setDraggableTreeNodeAsData(data: DataTransfer, nodes: (File | Directory)[]) {
+    if (nodes.length > 0) {
+      data.setData('uri', nodes[0].uri.toString());
+    }
+  }
+
   handleDragStart = (ev: React.DragEvent, node: File | Directory) => {
     ev.stopPropagation();
 
@@ -56,6 +62,8 @@ export class DragAndDropService {
     if (!isDragWithSelectedNode) {
       draggedNodes = [node];
     }
+
+    this.setDraggableTreeNodeAsData(ev.dataTransfer, draggedNodes);
 
     this.beingDraggedNodes = draggedNodes;
 
