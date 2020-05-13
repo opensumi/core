@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { TaskProvider, Task, TaskExecution, TaskStartEvent, TaskEndEvent, TaskProcessStartEvent, TaskProcessEndEvent, TaskFilter } from 'vscode';
+import { TaskProvider, Task, TaskExecution, TaskFilter } from 'vscode';
 import { IDisposable } from '@ali/ide-core-node';
 import { Event, CancellationToken, asPromise, CancellationTokenSource, Emitter, DisposableStore, Uri } from '@ali/ide-core-common';
 import { IExtensionHostService, IExtensionProps } from '../../../../common';
@@ -309,7 +309,7 @@ class TaskExecutionImpl implements vscode.TaskExecution {
   }
 
   public terminate(): void {
-    // this._tasks.terminateTask(this);
+    this._tasks.terminateTask(this);
   }
 
   public fireDidStartProcess(value: TaskProcessStartedDTO): void {
@@ -506,6 +506,10 @@ export class ExtHostTasks implements IExtHostTasks {
 
   get taskExecutions(): ReadonlyArray<vscode.TaskExecution> {
     return [...this._taskExecutions.values()];
+  }
+
+  terminateTask(execution: vscode.TaskExecution) {
+    return this.proxy.$terminateTask((execution as TaskExecutionImpl)._id);
   }
 
   registerTaskProvider(type: string, provider: TaskProvider, extension: IExtensionProps): IDisposable {

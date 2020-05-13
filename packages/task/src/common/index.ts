@@ -61,6 +61,12 @@ export interface ITaskSummary {
   exitCode?: number;
 }
 
+export interface IActivateTaskExecutorData {
+  executor: ITaskExecutor;
+  task: Task;
+  promise: Promise<ITaskSummary>;
+}
+
 export const enum TaskExecuteKind {
   Started = 1,
   Active = 2,
@@ -98,7 +104,8 @@ export interface ExecutorOptions {}
 export const ITaskExecutor = Symbol('ITaskExecutor');
 
 export interface ITaskExecutor {
-  execute: (task: Task) => Promise<{ exitCode?: number }>;
+  execute(task: Task): Promise<{ exitCode?: number }>;
+  terminate(): Promise<{ success: boolean }>;
   processReady: Deferred<void>;
 }
 
@@ -134,6 +141,8 @@ export interface ITaskService {
   tasks(filter?: TaskFileter): Promise<Task[]>;
 
   getTask(workspaceFolder: Uri, identifier: string | TaskIdentifier, compareId?: boolean): Promise<Task | undefined>;
+
+  terminateTask(key: string): Promise<void>;
 
   onDidStateChange: Event<TaskEvent>;
 }

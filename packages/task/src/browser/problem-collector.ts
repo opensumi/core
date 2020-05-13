@@ -28,7 +28,6 @@ export class ProblemCollector {
   constructor(
     public problemMatchers: ProblemMatcher[],
   ) {
-    console.log(problemMatchers.length);
     for (const matcher of problemMatchers) {
       if (isWatchModeWatcher(matcher)) {
         this.lineMatchers.push(new WatchModeLineMatcher(matcher));

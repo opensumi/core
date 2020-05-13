@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { ITaskDefinitionRegistry } from '@ali/ide-core-common';
-import { IJSONSchema, IJSONSchemaMap, localize } from '@ali/ide-core-browser';
+import { IJSONSchema, IJSONSchemaMap, localize, Logger } from '@ali/ide-core-browser';
 import { VSCodeContributePoint, Contributes } from '../../../common';
 
 export const taskDefinitionSchema: IJSONSchema = {
@@ -42,8 +42,12 @@ export class TaskDefinitionContributionPoint extends VSCodeContributePoint<ITask
   @Autowired(ITaskDefinitionRegistry)
   taskDefinitionRegistry: ITaskDefinitionRegistry;
 
+  @Autowired(Logger)
+  logger: Logger;
+
   contribute() {
     for (const definition of this.json) {
+      this.logger.verbose(`${this.extension.id} register taskDefinition ${JSON.stringify(definition)}`);
       this.addDispose(this.taskDefinitionRegistry.register(definition.type, {
         ...definition,
         taskType: definition.type,

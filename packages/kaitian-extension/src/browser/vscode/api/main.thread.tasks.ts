@@ -453,7 +453,7 @@ export class MainthreadTasks extends Disposable implements IMainThreadTasks {
               if (task) {
                 tasks.push(task);
               } else {
-                console.error(`Task System: can not convert task: ${JSON.stringify(dto.definition, undefined, 0)}. Task will be dropped`);
+                this.logger.error(`Task System: can not convert task: ${JSON.stringify(dto.definition, undefined, 0)}. Task will be dropped`);
               }
             }
             return {
@@ -539,5 +539,9 @@ export class MainthreadTasks extends Disposable implements IMainThreadTasks {
         reject(new Error('Task could not be created from DTO'));
       }
     });
+  }
+
+  async $terminateTask(executionId: string): Promise<void> {
+    await this.taskService.terminateTask(executionId);
   }
 }

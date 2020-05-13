@@ -205,7 +205,6 @@ export abstract class AbstractLineMatcher {
   private getSeverity(data: ProblemData): DiagnosticSeverity {
     // eslint-disable-next-line no-null/no-null
     let result: Severity | null = null;
-    console.log(data);
     if (data.severity) {
       const value = data.severity;
       if (value) {

@@ -1,5 +1,4 @@
 import { IDisposable } from '@ali/ide-core-node';
-import { Event } from '@ali/ide-core-common';
 import * as vscode from 'vscode';
 import { IExtensionProps } from '../index';
 import { UriComponents } from '@ali/ide-editor/lib/common';
@@ -26,6 +25,7 @@ export interface IMainThreadTasks {
 
   $executeTask(dto: TaskDTO | TaskHandleDTO): Promise<TaskExecutionDTO>;
 
+  $terminateTask(id: string): void;
 }
 
 export interface IExtHostTasks {
@@ -46,6 +46,8 @@ export interface IExtHostTasks {
   executeTask(task: vscode.Task, extension: IExtensionProps): Promise<vscode.TaskExecution>;
 
   fetchTasks(filter?: vscode.TaskFilter): Promise<vscode.Task[]>;
+
+  terminateTask(execution: vscode.TaskExecution): void;
 
   $onDidStartTask(taskExecution: TaskExecutionDTO, terminalId: number): void;
 
