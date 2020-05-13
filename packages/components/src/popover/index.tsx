@@ -127,7 +127,7 @@ export const Popover: React.FC<{
       onMouseLeave={onMouseLeave}
     >
       <div
-        className={clx(popoverClass || '', 'kt-popover-content', position)}
+        className={clx(popoverClass || '', 'kt-popover-content', `kt-popover-${position}`)}
         ref={contentEl}
         id={id}
         >
