@@ -1,0 +1,36 @@
+@import 'iconfont/iconfont.css';
+.kt-icon {
+  display: inline-block;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  color: var(--kt-icon-foreground);
+  line-height: 1;
+}
+.kt-icon:global(.mask-mode) {
+  background-color: var(--foreground);
+}
+.kt-icon-loading {
+  animation: ktIconloadingCircle 1s infinite linear;
+}
+.kt-icon-small {
+  font-size: 14px;
+}
+.kt-icon-large {
+  font-size: 16px;
+}
+.kt-icon-clickable:hover {
+  color: var(--kt-icon-hoverForeground);
+}
+.kt-icon-clickable:active {
+  color: var(--kt-icon-clickForeground);
+}
+.kt-icon-disabled {
+  color: var(--kt-icon-disableForeground);
+  pointer-events: none;
+  cursor: not-allowed;
+}
+@keyframes ktIconloadingCircle {
+  100% {
+    transform: rotate(360deg);
+  }
+}

@@ -684,7 +684,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       try {
         const rawExtension = this.extensionMap.get(extension.path);
         if (this.appConfig.useExperimentalShadowDom) {
-          const { moduleExports, proxiedHead } = await this.loadBrowserScriptByMockLoader(browserScriptURI.toString());
+          const { moduleExports, proxiedHead } = await this.loadBrowserScriptByMockLoader(browserScriptURI.toString(), extension.id);
           this.registerBrowserComponent(this.normalizeDeprecatedViewsConfig(moduleExports, extension, proxiedHead), rawExtension!);
         } else {
           const browserExported = await this.loadBrowser(browserScriptURI.toString());
@@ -712,9 +712,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     return ExtensionServiceImpl.tabBarLocation.includes(location) ? 'replace' : 'add';
   }
 
-  private async getExtensionModuleExports(url: string): Promise<{ moduleExports: any; proxiedHead?: HTMLHeadElement }> {
+  private async getExtensionModuleExports(url: string, extensionId: string): Promise<{ moduleExports: any; proxiedHead?: HTMLHeadElement }> {
     if (this.appConfig.useExperimentalShadowDom) {
-      return await this.loadBrowserScriptByMockLoader2<IKaitianBrowserContributions>(url);
+      return await this.loadBrowserScriptByMockLoader2<IKaitianBrowserContributions>(url, extensionId);
     }
     const moduleExports = await this.loadBrowser(url);
     return { moduleExports };
@@ -741,7 +741,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       const browserModuleUri = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(packageJSON.kaitianContributes.browserMain).toString()));
       if (packageJSON.kaitianContributes.browserViews) {
         const { browserViews } = packageJSON.kaitianContributes;
-        const { moduleExports, proxiedHead } = await this.getExtensionModuleExports(browserModuleUri.toString());
+        const { moduleExports, proxiedHead } = await this.getExtensionModuleExports(browserModuleUri.toString(), extension.id);
         const viewsConfig = Object.keys(browserViews).reduce((config, location) => {
           config[location] = {
             type: this.getRegisterViewKind(location as KtViewLocation),
@@ -854,9 +854,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   }
 
-  private async loadBrowserScriptByMockLoader(browerPath: string): Promise<{ moduleExports: any, proxiedHead: HTMLHeadElement }> {
+  private async loadBrowserScriptByMockLoader(browerPath: string, extensionId: string): Promise<{ moduleExports: any, proxiedHead: HTMLHeadElement }> {
     const pendingFetch = await fetch(decodeURIComponent(browerPath));
-    const { _module, _exports, _require } = getMockAmdLoader(this.injector);
+    const { _module, _exports, _require } = getMockAmdLoader(this.injector, extensionId);
     const _stylesCollection = [];
     const proxiedHead = document.createElement('head');
     const proxiedDocument = createProxiedDocument(proxiedHead);
@@ -871,9 +871,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     };
   }
 
-  private async loadBrowserScriptByMockLoader2<T>(browerPath: string): Promise<{ moduleExports: T, proxiedHead: HTMLHeadElement }> {
+  private async loadBrowserScriptByMockLoader2<T>(browerPath: string, extensionId: string): Promise<{ moduleExports: T, proxiedHead: HTMLHeadElement }> {
     const pendingFetch = await fetch(decodeURIComponent(browerPath));
-    const { _module, _exports, _require } = getMockAmdLoader<T>(this.injector);
+    const { _module, _exports, _require } = getMockAmdLoader<T>(this.injector, extensionId);
     const _stylesCollection = [];
     const proxiedHead = document.createElement('head');
     const proxiedDocument = createProxiedDocument(proxiedHead);
