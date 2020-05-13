@@ -92,3 +92,6 @@ export const TerminalSupportType = {
   'terminal.cursorBlink': 'cursorBlink',
   'terminal.scrollback': 'scrollback',
 };
+
+export const defaultTerminalFontFamily = 'courier-new, courier, monospace';
+export const defaultTerminalFontSize = 14;
