@@ -208,7 +208,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   protected _children: ITreeNodeOrCompositeTreeNode[] | null = null;
   // 节点的分支数量
   protected _branchSize: number;
-  protected flattenedBranch: Uint32Array | null;
+  protected _flattenedBranch: Uint32Array | null;
   private isExpanded: boolean;
   private hardReloadPromise: Promise<void> | null;
   private hardReloadPResolver: (() => void) | null;
@@ -328,6 +328,16 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    */
   get branchSize() {
     return this._branchSize;
+  }
+
+  /**
+   * 获取当前节点的分支数，一般为顶层节点，如Root上获取
+   *
+   * @readonly
+   * @memberof CompositeTreeNode
+   */
+  get flattenedBranch() {
+    return this._flattenedBranch;
   }
 
   /**
@@ -501,7 +511,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     this._branchSize += branchSizeIncrease;
     let master: CompositeTreeNode = this;
     // 如果该节点无叶子节点，则继续往上查找合适的插入位置
-    while (!master.flattenedBranch) {
+    while (!master._flattenedBranch) {
       if (master.parent) {
         master = master.parent as CompositeTreeNode;
         master._branchSize += branchSizeIncrease;
@@ -513,21 +523,21 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     let relativeInsertionIndex = this._children!.indexOf(item);
     const leadingSibling = this._children![relativeInsertionIndex - 1];
     if (leadingSibling) {
-      const siblingIdx = master.flattenedBranch.indexOf(leadingSibling.id);
+      const siblingIdx = master._flattenedBranch.indexOf(leadingSibling.id);
       relativeInsertionIndex = siblingIdx + ((leadingSibling instanceof CompositeTreeNode && leadingSibling.expanded) ? leadingSibling._branchSize : 0);
     } else {
-      relativeInsertionIndex = master.flattenedBranch.indexOf(this.id);
+      relativeInsertionIndex = master._flattenedBranch.indexOf(this.id);
     }
     // +1为了容纳自身节点位置，在插入节点下方插入新增节点
     const absInsertionIndex = relativeInsertionIndex + 1;
 
     const branch = new Uint32Array(branchSizeIncrease);
     branch[0] = item.id;
-    if (item instanceof CompositeTreeNode && item.expanded && item.flattenedBranch) {
-      branch.set(item.flattenedBranch, 1);
-      item.setFlattenedBranch(null);
+    if (item instanceof CompositeTreeNode && item.expanded && item._flattenedBranch) {
+      branch.set(item._flattenedBranch, 1);
+      item.set_FlattenedBranch(null);
     }
-    master.setFlattenedBranch(spliceTypedArray(master.flattenedBranch, absInsertionIndex, 0, branch));
+    master.set_FlattenedBranch(spliceTypedArray(master._flattenedBranch, absInsertionIndex, 0, branch));
   }
 
   /**
@@ -548,23 +558,23 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     this._branchSize -= branchSizeDecrease;
     // 逐级往上查找节点的父节点，并沿途裁剪分支数
     let master: CompositeTreeNode = this;
-    while (!master.flattenedBranch) {
+    while (!master._flattenedBranch) {
       if (master.parent) {
         master = master.parent as CompositeTreeNode;
         master._branchSize -= branchSizeDecrease;
       }
     }
-    const removalBeginIdx = master.flattenedBranch.indexOf(item.id);
+    const removalBeginIdx = master._flattenedBranch.indexOf(item.id);
     if (removalBeginIdx === -1) {
       return;
     }
 
     if (item instanceof CompositeTreeNode && item.expanded) {
-      item.setFlattenedBranch(master.flattenedBranch.slice(removalBeginIdx + 1, removalBeginIdx + branchSizeDecrease));
+      item.set_FlattenedBranch(master._flattenedBranch.slice(removalBeginIdx + 1, removalBeginIdx + branchSizeDecrease));
     }
 
-    master.setFlattenedBranch(spliceTypedArray(
-      master.flattenedBranch,
+    master.set_FlattenedBranch(spliceTypedArray(
+      master._flattenedBranch,
       removalBeginIdx,
       branchSizeDecrease));
 
@@ -616,8 +626,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   /**
    * 设置扁平化的分支信息
    */
-  protected setFlattenedBranch(leaves: Uint32Array | null, withoutNotify?: boolean) {
-    this.flattenedBranch = leaves;
+  protected set_FlattenedBranch(leaves: Uint32Array | null, withoutNotify?: boolean) {
+    this._flattenedBranch = leaves;
     // Root节点才通知更新
     if (CompositeTreeNode.isRoot(this) && !withoutNotify) {
       this.watcher.notifyDidUpdateBranch();
@@ -634,11 +644,11 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       this._branchSize += branch._branchSize;
     }
     // 当当前节点为折叠状态，更新分支信息
-    if (this !== branch && this.flattenedBranch) {
-      const injectionStartIdx = this.flattenedBranch.indexOf(branch.id) + 1;
-      this.setFlattenedBranch(spliceTypedArray(this.flattenedBranch, injectionStartIdx, 0, branch.flattenedBranch), withoutNotify);
+    if (this !== branch && this._flattenedBranch) {
+      const injectionStartIdx = this._flattenedBranch.indexOf(branch.id) + 1;
+      this.set_FlattenedBranch(spliceTypedArray(this._flattenedBranch, injectionStartIdx, 0, branch._flattenedBranch), withoutNotify);
       // 取消展开分支对于分支的所有权，即最终只会有顶部Root拥有所有分支信息
-      branch.setFlattenedBranch(null, withoutNotify);
+      branch.set_FlattenedBranch(null, withoutNotify);
     } else if (this.parent) {
       (this.parent as CompositeTreeNode).expandBranch(branch, withoutNotify);
     }
@@ -654,11 +664,11 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       // `this`的分支大小没有改变，仍然具有相同数量的叶子，但是从父级参照系（即根节点）来看，其分支缩小了
       this._branchSize -= branch._branchSize;
     }
-    if (this !== branch && this.flattenedBranch) {
-      const removalStartIdx = this.flattenedBranch.indexOf(branch.id) + 1;
+    if (this !== branch && this._flattenedBranch) {
+      const removalStartIdx = this._flattenedBranch.indexOf(branch.id) + 1;
       // 返回分支对于分支信息所有权，即将折叠的节点信息再次存储于折叠了的节点中
-      branch.setFlattenedBranch(this.flattenedBranch.slice(removalStartIdx, removalStartIdx + branch._branchSize), withoutNotify);
-      this.setFlattenedBranch(spliceTypedArray(this.flattenedBranch, removalStartIdx, branch.flattenedBranch ? branch.flattenedBranch.length : 0), withoutNotify);
+      branch.set_FlattenedBranch(this._flattenedBranch.slice(removalStartIdx, removalStartIdx + branch._branchSize), withoutNotify);
+      this.set_FlattenedBranch(spliceTypedArray(this._flattenedBranch, removalStartIdx, branch._flattenedBranch ? branch._flattenedBranch.length : 0), withoutNotify);
     } else if (this.parent) {
       (this.parent as CompositeTreeNode).shrinkBranch(branch, withoutNotify);
     }
@@ -698,7 +708,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       flatTree[i] = this._children[i].id;
     }
     this._branchSize = flatTree.length;
-    this.setFlattenedBranch(flatTree, quiet);
+    this.set_FlattenedBranch(flatTree, quiet);
     // 清理上一次监听函数
     if ( typeof this.watchTerminator === 'function') {
       this.watchTerminator(this.path);
@@ -778,7 +788,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     if (item === this) {
       return true;
     }
-    return !!this.flattenedBranch && this.flattenedBranch.indexOf(item.id) > -1;
+    return !!this._flattenedBranch && this._flattenedBranch.indexOf(item.id) > -1;
   }
 
   private transformToRelativePath(path: string): string[] {
@@ -890,8 +900,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * @memberof CompositeTreeNode
    */
   public getIndexAtTreeNodeId(id: number) {
-    if (this.flattenedBranch) {
-      return this.flattenedBranch.indexOf(id);
+    if (this._flattenedBranch) {
+      return this._flattenedBranch.indexOf(id);
     }
     return -1;
   }
@@ -903,8 +913,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * @memberof CompositeTreeNode
    */
   public getIndexAtTreeNode(node: ITreeNodeOrCompositeTreeNode) {
-    if (this.flattenedBranch) {
-      return this.flattenedBranch.indexOf(node.id);
+    if (this._flattenedBranch) {
+      return this._flattenedBranch.indexOf(node.id);
     }
     return -1;
   }
@@ -916,7 +926,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * @memberof CompositeTreeNode
    */
   public getTreeNodeAtIndex(index: number) {
-    const id = this.flattenedBranch![index];
+    const id = this._flattenedBranch![index];
     return TreeNode.getTreeNodeById(id);
   }
 

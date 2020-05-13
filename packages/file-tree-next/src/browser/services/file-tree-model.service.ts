@@ -1,9 +1,9 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle, PromptValidateMessage, PROMPT_VALIDATE_TYPE, TreeNodeEvent } from '@ali/ide-components';
+import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle, PromptValidateMessage, PROMPT_VALIDATE_TYPE, TreeNodeEvent, IRecycleTreeError } from '@ali/ide-components';
 import { FileTreeService } from '../file-tree.service';
 import { FileTreeModel } from '../file-tree-model';
 import { File, Directory } from '../file-tree-nodes';
-import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, formatLocalize, isValidBasename, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IStorage, Event, ThrottledDelayer, Emitter } from '@ali/ide-core-browser';
+import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, formatLocalize, isValidBasename, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IStorage, Event, ThrottledDelayer, Emitter, ILogger } from '@ali/ide-core-browser';
 import { FileContextKey } from '../file-contextkey';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
@@ -74,6 +74,9 @@ export class FileTreeModelService {
 
   @Autowired(WorkbenchEditorService)
   private readonly editorService: WorkbenchEditorService;
+
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
 
   private _treeModel: TreeModel;
   private _dndService: DragAndDropService;
@@ -489,6 +492,13 @@ export class FileTreeModelService {
 
   handleTreeHandler(handle: IFileTreeHandle) {
     this._fileTreeHandle = handle;
+    this.disposableCollection.push(handle.onError((event: IRecycleTreeError) => {
+      // 出错时，暴露当前错误状态，用于排查问题
+      this.logger.error(event.type, event.message);
+      this.logger.error(`Current render state \n branchSize: ${this.treeModel.root.branchSize} \n flattenBranch size: ${this.treeModel.root.flattenedBranch?.length}`);
+      // 当渲染出错时，尝试刷新Tree
+      this.fileTreeService.refresh();
+    }));
   }
 
   handleTreeBlur = () => {
