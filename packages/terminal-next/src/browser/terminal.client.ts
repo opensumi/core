@@ -10,7 +10,7 @@ import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
 import { PreferenceService } from '@ali/ide-core-browser';
 import { FilePathAddon, AttachAddon } from './terminal.addon';
 import { TerminalKeyBoardInputService } from './terminal.input';
-import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, TerminalSupportType, ITerminalGroupViewService, ITerminalInternalService, ITerminalConnection, IWidget } from '../common';
+import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, TerminalSupportType, ITerminalGroupViewService, ITerminalInternalService, ITerminalConnection, IWidget, defaultTerminalFontFamily, defaultTerminalFontSize } from '../common';
 
 import * as styles from './component/terminal.module.less';
 
@@ -135,6 +135,20 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     return this._attached;
   }
 
+  private _handleTerminalOption(name: string, value: any) {
+    switch (name) {
+      case 'fontFamily':
+        this._term.setOption(name, value || defaultTerminalFontFamily);
+        break;
+      case 'fontSize':
+        this._term.setOption(name, value || defaultTerminalFontSize);
+        break;
+      default:
+        this._term.setOption(name, value);
+        break;
+    }
+  }
+
   private _customTermOptions(): ITerminalOptions {
     const options = {};
     const support = TerminalSupportType;
@@ -150,7 +164,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       if (support[preferenceName]) {
         const option = this._term.getOption(support[preferenceName]);
         if (option !== newValue) {
-          this._term.setOption(support[preferenceName], newValue);
+          this._handleTerminalOption(support[preferenceName], newValue);
         }
       }
     }));
