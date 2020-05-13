@@ -60,9 +60,9 @@ export class DocumentSymbolStore extends WithEventBus {
       }
       if (result) {
         normalizeDocumentSymbols(result, { children: result } as INormalizedDocumentSymbol, uri);
-        this.documentSymbols.set(uri.toString(), result as INormalizedDocumentSymbol[]);
-        this.eventBus.fire(new DocumentSymbolChangedEvent(uri));
       }
+      this.documentSymbols.set(uri.toString(), result as INormalizedDocumentSymbol[]);
+      this.eventBus.fire(new DocumentSymbolChangedEvent(uri));
     } finally {
       modelRef.dispose();
     }
