@@ -5,6 +5,7 @@ import { IExtensionMetaData, CONTRIBUTE_NAME_KEY } from '../../../common';
 import { KtViewContributionPoint, KtViewsSchema } from './browser-views';
 import { KtMenubarsContributionPoint } from './menubar';
 import { KtSubmenusContributionPoint } from './submenu';
+import { KtToolbarContributionPoint } from './toolbar';
 
 const CONTRIBUTES_SYMBOL = Symbol();
 
@@ -32,6 +33,7 @@ export class KaitianContributesRunner extends Disposable {
     KtViewContributionPoint,
     KtMenubarsContributionPoint,
     KtSubmenusContributionPoint,
+    KtToolbarContributionPoint,
   ];
 
   @Autowired(INJECTOR_TOKEN)

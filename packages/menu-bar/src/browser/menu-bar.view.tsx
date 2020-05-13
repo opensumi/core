@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as clx from 'classnames';
 import { observer } from 'mobx-react-lite';
-import { useInjectable } from '@ali/ide-core-browser';
+import { useInjectable, SlotRenderer } from '@ali/ide-core-browser';
 import { MenuActionList } from '@ali/ide-core-browser/lib/components/actions';
 import { IMenubarItem } from '@ali/ide-core-browser/lib/menu/next';
 import { ClickOutside } from '@ali/ide-core-browser/lib/components/click-outside';
@@ -100,3 +100,10 @@ export const MenuBar = observer(() => {
 });
 
 MenuBar.displayName = 'MenuBar';
+
+export const MenuBarActionWrapper = () => {
+  return <div className={styles.menubarWrapper}>
+    <MenuBar />
+    <SlotRenderer slot='action' flex={1} overflow={'initial'} />
+  </div>;
+};

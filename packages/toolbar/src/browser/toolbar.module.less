@@ -8,26 +8,35 @@
   margin:0 5px;
 }
 
+#space1 {
+  display: block;
+}
+
 .tool-bar {
-  height: 27px;
+  min-height:0;
   display: flex;
-  justify-content: space-between;
+  flex-wrap: nowrap;
   align-items: center;
-  background: var(--tab-activeBackground);
+  background: var(--kt-menubar-background);
   > div {
-    height: 27px;
+    height: 100%;
     display: flex;
-    justify-content: left;
     align-items: center;
+    padding: 5px 0;
   }
-  .left {
+  .left :global(.kt-toolbar-location-visible) {
     justify-content: left;
+    height: 100%;
   }
-  .right{
-    justify-content: right;
+  .right :global(.kt-toolbar-location-visible){ 
+    justify-content: flex-end;
+    height: 100%;
+    overflow: hidden
   }
-  .center{
+  .center :global(.kt-toolbar-location-visible) {
     justify-content: center;
+    height: 100%;
+    padding:0 30px;
   }
 
   :global(.iconfont) {

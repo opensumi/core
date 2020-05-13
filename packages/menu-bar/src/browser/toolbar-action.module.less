@@ -1,12 +1,20 @@
+/*
+@deprecated
+*/
 .toolbarActions {
-  display: flex;
-  justify-content: flex-end;
   padding: 0 10px;
-  align-items: center;
   height: 27px;
   flex: 1;
   border-bottom: 1px solid var(--kt-menubar-border);
   background-color: var(--kt-menubar-background);
+
+  :global(.kt-toolbar-location-visible) {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 10px;
+    align-items: center;
+    height: 27px;
+  }
 
   .actionGroup {
     display: flex;

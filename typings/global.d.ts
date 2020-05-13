@@ -26,7 +26,8 @@ declare global {
       readonly contentRect: DOMRectReadOnly;
   }
 
-  interface ResizeObserver {
+  class ResizeObserver {
+      constructor(callback: ResizeObserverCallback);
       observe(target: Element): void;
       unobserve(target: Element): void;
       disconnect(): void;

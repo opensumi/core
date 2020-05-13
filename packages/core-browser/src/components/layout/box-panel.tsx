@@ -10,6 +10,7 @@ export const BoxPanel: React.FC<{
   className?: string;
   direction?: Layout.direction;
   flex?: number;
+  zIndex?: number
 }> = (({ className, children = [], direction = 'left-to-right', ...restProps }) => {
     // convert children to list
   const arrayChildren = React.Children.toArray(children);

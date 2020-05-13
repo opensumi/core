@@ -1,19 +1,25 @@
-import { Injectable } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import { IDisposable, Disposable } from '@ali/ide-core-common/lib/disposable';
-import { Event, Emitter } from '@ali/ide-core-common/lib/event';
+import { IToolbarRegistry, createToolbarActionBtn } from '../../toolbar';
+import { createToolbarActionSelect } from '../../toolbar/components/select';
 
 interface IDescriptor {
   title: string;
   description?: string;
 }
 
+/**
+ * @deprecated
+ */
 interface IToolbarAction extends IDescriptor {
   type: 'action';
   click: (args: any) => void;
-  iconClass?: string;
-  iconPath?: string;
+  iconClass: string;
 }
 
+/**
+ * @deprecated
+ */
 interface IToolbarSelect extends IDescriptor {
   type: 'enum';
   select: (value: string) => void;
@@ -21,52 +27,102 @@ interface IToolbarSelect extends IDescriptor {
   defaultValue?: string;
 }
 
+/**
+ * @deprecated
+ */
 export type IToolbarActionGroup = Array<IToolbarAction | IToolbarSelect>;
 
+/**
+ * @deprecated
+ */
 export const IToolbarActionService = Symbol('IToolBarActionsService');
 
+/**
+ * @deprecated 使用 IToolbarRegistry 执行相关能力
+ */
 export interface IToolbarActionService {
   registryActionGroup(id: string, groups: IToolbarActionGroup): IDisposable;
   unRegistryActionGroup(id: string): void;
-  getActionGroups(): Map<string, IToolbarActionGroup>;
-  getActionGroup(id: string): IToolbarActionGroup | undefined;
-  onDidRegistryToolbarActionGroup: Event<{ id: string; group: IToolbarActionGroup }>;
-  onDidUnRegistryToolbarActionGroup: Event<string>;
 }
 
+/**
+ * @deprecated 使用 IToolbarRegistry 执行相关能力
+ */
 @Injectable()
 export class ToolbarActionService extends Disposable implements IToolbarActionService {
-  private groups: Map<string, IToolbarActionGroup> = new Map();
 
-  private _onDidRegistryToolbarActionGroup = new Emitter<{ id: string; group: IToolbarActionGroup }>();
-  public onDidRegistryToolbarActionGroup = this._onDidRegistryToolbarActionGroup.event;
+  private groups = new Map<string, IDisposable>();
 
-  private _onDidUnRegistryToolbarActionGroup = new Emitter<string>();
-  public onDidUnRegistryToolbarActionGroup = this._onDidUnRegistryToolbarActionGroup.event;
+  @Autowired(IToolbarRegistry)
+  registry: IToolbarRegistry;
 
-  public getActionGroups() {
-    return this.groups;
-  }
-
-  public getActionGroup(id: string) {
-    return this.groups.get(id);
+  constructor() {
+    super();
   }
 
   public registryActionGroup(id: string, group: IToolbarActionGroup): IDisposable {
-    this.groups.set(id, group);
-    this._onDidRegistryToolbarActionGroup.fire({ id, group });
-    return {
+    const disposer = new Disposable();
+
+    disposer.addDispose(this.registry.registerToolbarActionGroup({
+      id,
+      preferredLocation: 'menu-right',
+    }));
+
+    disposer.addDispose({
       dispose: () => {
         this.groups.delete(id);
-        this._onDidUnRegistryToolbarActionGroup.fire(id);
       },
-    };
+    });
+
+    group.forEach((item, i) => {
+      const actionId = id + '-action-' + i;
+      if (item.type === 'action') {
+        disposer.addDispose(this.registry.registerToolbarAction({
+          id: actionId,
+          component: createToolbarActionBtn({
+            iconClass: item.iconClass!,
+            title: item.title,
+            id: actionId,
+            delegate: (delegate) => {
+              if (delegate) {
+                delegate.onClick(item.click);
+              }
+            },
+          }),
+          preferredPosition: {
+            group: id,
+          },
+        }));
+      } else if (item.type === 'enum') {
+        disposer.addDispose(this.registry.registerToolbarAction({
+          id: actionId,
+          component: createToolbarActionSelect({
+            defaultValue: item.defaultValue || item.title,
+            options: item.enum.map((e) => {
+              return {
+                label: e,
+                value: e,
+              };
+            }),
+            onSelect: (value) => {
+              return item.select(value);
+            },
+          }),
+          preferredPosition: {
+            group: id,
+          },
+        }));
+      }
+    });
+
+    this.groups.set(id, disposer);
+
+    return disposer;
   }
 
   public unRegistryActionGroup(id: string) {
     if (this.groups.has(id)) {
-      this._onDidUnRegistryToolbarActionGroup.fire(id);
-      this.groups.delete(id);
+      this.groups.get(id)!.dispose;
     }
   }
 }
