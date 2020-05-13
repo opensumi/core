@@ -79,6 +79,9 @@ export abstract class ExtensionService {
   abstract async postUninstallExtension(path: string): Promise<void>;
   abstract getExtensions(): IExtension[];
   abstract async activateExtensionByExtPath(extensionPath: string): Promise<void>;
+  abstract registerShadowRootBody(id: string, body: HTMLElement): void;
+  abstract getShadowRootBody(id: string): HTMLElement;
+
   onDidExtensionActivated: Event<IExtensionProps>;
   eagerExtensionsActivated: Deferred<void>;
 }

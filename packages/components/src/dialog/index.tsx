@@ -15,6 +15,8 @@ export interface IconDesc {
   className: string;
 }
 
+declare type getContainerFunc = () => HTMLElement;
+
 export interface IDialogProps extends IOverlayProps {
   messageType?: MessageType;
   type?: ModalType;
@@ -26,6 +28,7 @@ export interface IDialogProps extends IOverlayProps {
   onCancel?: () => void;
   okText?: string;
   cancelText?: string;
+  getContainer?: string | HTMLElement | getContainerFunc | false | null;
 }
 
 const DefaultButtons = ({ onCancel, onOk, cancelText, okText }) => (
@@ -50,6 +53,7 @@ export const Dialog: React.FC<IDialogProps> = ({
   onCancel,
   okText,
   cancelText,
+  getContainer,
 }) => {
   const { getIcon } = React.useContext(IconContext);
   return (
@@ -58,6 +62,7 @@ export const Dialog: React.FC<IDialogProps> = ({
       onClose={onClose}
       title={type === 'basic' ? title : null}
       closable={type === 'basic'}
+      getContainer={getContainer}
       footer={type === 'basic' ? buttons || <DefaultButtons onCancel={onCancel} onOk={onOk} okText={okText} cancelText={cancelText} /> : undefined}
       afterClose={afterClose}>
       <>

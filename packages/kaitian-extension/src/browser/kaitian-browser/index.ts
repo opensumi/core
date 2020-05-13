@@ -1,4 +1,4 @@
-
+import * as React from 'react';
 import * as Components from '@ali/ide-core-browser/lib/components';
 
 import { URI, localize, getIcon } from '@ali/ide-core-browser';
@@ -13,6 +13,7 @@ import { EditorComponentRenderMode } from '@ali/ide-editor/lib/browser';
 
 import { Injector } from '@ali/common-di';
 import { IThemeService, getColorRegistry } from '@ali/ide-theme';
+import { ExtensionService } from '../../common';
 
 /**
  * Browser 尽量只export视图相关的少量API
@@ -22,9 +23,26 @@ import { IThemeService, getColorRegistry } from '@ali/ide-theme';
  */
 export function createBrowserApi(injector: Injector, extensionId?: string) {
 
+  const extensionService: ExtensionService = injector.get(ExtensionService);
+  let components = Components;
+
+  if (extensionId) {
+    components = new Proxy(Components, {
+      get(target, prop) {
+        if (prop === 'Dialog' || 'Overlay') {
+          const shadowBody = document.createElement('body');
+          extensionService.registerShadowRootBody(extensionId, shadowBody);
+          return (props) => (React.createElement(Components[prop], { ...props, getContainer: () => {
+            return shadowBody;
+          }}));
+        }
+        return target[prop];
+      },
+    });
+  }
   return {
     // Components
-    ...Components,
+    ...components,
     Scroll,
     ResizeHandleHorizontal,
     ResizeHandleVertical,
