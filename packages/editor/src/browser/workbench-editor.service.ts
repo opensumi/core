@@ -1219,6 +1219,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   gainFocus() {
     this.workbenchEditorService.setCurrentGroup(this);
+    if (this.currentResource) {
+      this.commands.tryExecuteCommand(FILE_COMMANDS.LOCATION.id, this.currentResource.uri);
+    }
   }
 
   focus() {
