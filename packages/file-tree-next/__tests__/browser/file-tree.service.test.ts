@@ -12,7 +12,7 @@ import { IMainLayoutService } from '@ali/ide-main-layout';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IWindowDialogService, IDialogService, IMessageService } from '@ali/ide-overlay';
 import { IFileTreeAPI } from '../../src/common';
-import { IThemeService } from '@ali/ide-theme';
+import { IThemeService, IIconService } from '@ali/ide-theme';
 import { File, Directory } from '../../src/browser/file-tree-nodes';
 import { TreeNodeType } from '@ali/ide-components';
 
@@ -99,6 +99,12 @@ describe('FileTree Service should be work alone', () => {
       {
         token: IThemeService,
         useValue: {},
+      },
+      {
+        token: IIconService,
+        useValue: {
+          hasFolderIcon: true,
+        },
       },
       {
         token: ILoggerManagerClient,
