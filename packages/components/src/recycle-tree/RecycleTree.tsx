@@ -73,6 +73,7 @@ export interface IRecycleTreeError {
 
 export enum RenderErrorType {
   RENDER_ITEM,
+  GET_RENDED_KEY,
 }
 
 export interface IRecycleTreeHandle {
@@ -545,6 +546,20 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       : root.branchSize;
   }
 
+  private getItemKey = (index: number) => {
+    const node = this.getItemAtIndex(index);
+    if (node && node.item) {
+      if (!node.item.id) {
+        // FIXME: 不清楚啥时候能复现无Item情况
+        this.onErrorEmitter.fire({type: RenderErrorType.GET_RENDED_KEY, message: `Can\'t get item at index ${index}`});
+        return index;
+      }
+      return node.item.id;
+    } else {
+      return index;
+    }
+  }
+
   // 过滤Root节点展示
   private filterItems = (filter: string) => {
     const { root } = this.props.model;
@@ -678,6 +693,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         itemData={[]}
         itemSize={itemHeight}
         itemCount={this.adjustedRowCount}
+        getItemKey={this.getItemKey}
         overscanCount={10}
         ref={this.listRef}
         onScroll={this.handleListScroll}
