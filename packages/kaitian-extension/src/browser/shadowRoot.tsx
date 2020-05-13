@@ -25,9 +25,9 @@ const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, ex
         shadowRootElement.appendChild(cloneNode(proxiedHead));
       }
       const shadowBody = extensionService.getShadowRootBody(extensionId);
-      shadowBody.style.height = '0%';
-      shadowRootElement.appendChild(shadowBody);
-      extensionService.registerShadowRootBody(extensionId, shadowBody);
+      if (shadowBody) {
+        shadowRootElement.appendChild(shadowBody);
+      }
       if (!shadowRoot) {
         setShadowRoot(shadowRootElement);
       }
