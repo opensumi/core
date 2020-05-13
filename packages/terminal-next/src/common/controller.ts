@@ -16,6 +16,7 @@ export const ITerminalController = Symbol('ITerminalController');
 export interface ITerminalController extends Disposable {
   focused: boolean;
   clients: Map<string, ITerminalClient>;
+  themeBackground: string;
   firstInitialize(): void;
   recovery(history: ITerminalBrowserHistory): Promise<void>;
   reconnect(): Promise<void>;
