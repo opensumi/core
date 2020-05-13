@@ -58,6 +58,7 @@ export class TabbarBrowserContributionRunner extends AbstractKaitianBrowserContr
           containerId,
           component,
           initialProps,
+          fromExtension: true,
         },
         position,
       );
