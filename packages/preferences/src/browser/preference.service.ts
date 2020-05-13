@@ -273,6 +273,7 @@ export const defaultSettingSections: {
         {id: 'editor.maxTokenizationLineLength', localized: 'preference.editor.maxTokenizationLineLength'},
         {id: 'editor.quickSuggestionsDelay', localized: 'preference.editor.quickSuggestionsDelay'},
         {id: 'editor.largeFile', localized: 'preference.editor.largeFile' },
+        {id: 'editor.formatOnPaste', localized: 'preference.editor.formatOnPaste' },
       ],
     },
   ],
