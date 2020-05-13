@@ -182,6 +182,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   private _onDidExtensionActivated: Emitter<IExtensionProps> = new Emitter<IExtensionProps>();
   public onDidExtensionActivated: Event<IExtensionProps> = this._onDidExtensionActivated.event;
+  private shadowRootBodyMap: Map<string, HTMLBodyElement> = new Map();
 
   @OnEvent(ExtensionActivateEvent)
   onActivateExtension(e) {
@@ -239,6 +240,16 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     if (extension) {
       return extension.activate();
     }
+  }
+
+  public registerShadowRootBody(id: string, body: HTMLBodyElement): void {
+    if (!this.shadowRootBodyMap.has(id)) {
+      this.shadowRootBodyMap.set(id, body);
+    }
+  }
+
+  public getShadowRootBody(id: string): HTMLBodyElement {
+    return this.shadowRootBodyMap.get(id)!;
   }
 
   public async postChangedExtension(upgrade: boolean, path: string, oldExtensionPath?: string) {

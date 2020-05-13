@@ -6,6 +6,8 @@ import 'antd/lib/modal/style/index.css';
 
 import './styles.less';
 
+declare type getContainerFunc = () => HTMLElement;
+
 export interface IOverlayProps {
   className?: string;
   width?: number;
@@ -16,9 +18,10 @@ export interface IOverlayProps {
   closable?: ModalProps['closable'];
   title?: ModalProps['title'];
   footer?: JSX.Element[] | JSX.Element;
+  getContainer?: string | HTMLElement | getContainerFunc | false | null;
 }
 
-export const Overlay: React.FC<IOverlayProps> = (({ maskClosable = false, closable = true, className, onClose, children, footer, title, ...restProps }) => {
+export const Overlay: React.FC<IOverlayProps> = (({ maskClosable = false, closable = true, className, onClose, children, footer, title, getContainer, ...restProps }) => {
   return (
     <Modal
       footer={footer ? footer : null}
@@ -26,6 +29,7 @@ export const Overlay: React.FC<IOverlayProps> = (({ maskClosable = false, closab
       closable={closable}
       onCancel={onClose}
       title={title}
+      getContainer={getContainer}
       className={clsx('kt-overlay', className)}
       {...restProps}
     >
