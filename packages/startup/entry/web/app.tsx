@@ -37,6 +37,10 @@ renderApp({
     'editor.quickSuggestionsMaxCount': 50,
     // 'editor.forceReadOnly': true,
   },
+  defaultPanels: {
+    'bottom': '@ali/ide-terminal-next',
+    'right': '',
+  },
   // iconStyleSheets: [
   //   {
   //     iconMap: {

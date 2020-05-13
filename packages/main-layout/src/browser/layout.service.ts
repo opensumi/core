@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { ContextKeyChangeEvent, Event, WithEventBus, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent } from '@ali/ide-core-browser';
+import { ContextKeyChangeEvent, Event, WithEventBus, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent, AppConfig, ComponentRegistry, Logger } from '@ali/ide-core-browser';
 import { MainLayoutContribution, IMainLayoutService } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
@@ -23,8 +23,17 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   @Autowired()
   private layoutState: LayoutState;
 
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
+
   @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
+
+  @Autowired(ComponentRegistry)
+  private componentRegistry: ComponentRegistry;
+
+  @Autowired(Logger)
+  private logger: Logger;
 
   private handleMap: Map<string, TabBarHandler> = new Map();
 
@@ -102,7 +111,21 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     for (const service of this.services.values()) {
       const {currentId, size} = this.state[service.location] || {};
       service.prevSize = size;
-      service.currentContainerId = currentId !== undefined ? (service.containersMap.has(currentId) ? currentId : '') : service.visibleContainers[0].options!.containerId;
+      let defaultContainer = service.visibleContainers[0] && service.visibleContainers[0].options!.containerId;
+      const defaultPanels = this.appConfig.defaultPanels;
+      if (defaultPanels && defaultPanels[service.location] !== undefined) {
+        if (defaultPanels[service.location]) {
+          const componentInfo = this.componentRegistry.getComponentRegistryInfo(defaultPanels[service.location]);
+          if (componentInfo) {
+            defaultContainer = componentInfo.options!.containerId;
+          } else {
+            this.logger.warn(`[defaultPanels] 没有找到${defaultPanels[service.location]}对应的视图!`);
+          }
+        } else {
+          defaultContainer = '';
+        }
+      }
+      service.currentContainerId = currentId !== undefined ? (service.containersMap.has(currentId) ? currentId : defaultContainer) : defaultContainer;
     }
   }
 
