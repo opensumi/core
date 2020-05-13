@@ -306,6 +306,13 @@ function createTreeNodesFromSymbolTreeDeep(parent: TreeSymbol, depth: number, tr
       }
       statusMap.set(symbol.id, status);
     }
+    if (status.expanded === undefined && symbol.children && symbol.children.length > 0) {
+      // 叶子节点下新增了新的子节点
+      status.expanded = true;
+    } else if (!symbol.children || symbol.children.length === 0) {
+      // 节点下子节点全部被删除
+      delete status.expanded;
+    }
     const treeSymbol: TreeSymbol = {
       ...symbol,
       depth: depth + 1,
