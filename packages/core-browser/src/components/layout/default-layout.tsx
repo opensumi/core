@@ -20,7 +20,7 @@ export function DefaultLayout() {
 
 export function ToolbarActionBasedLayout() {
   return <BoxPanel direction='top-to-bottom'>
-    <BoxPanel direction='left-to-right'>
+    <BoxPanel direction='left-to-right' z-index={2}>
       <SlotRenderer slot='top'/>
       <SlotRenderer slot='action' flex={1} overflow={'initial'} />
     </BoxPanel>
