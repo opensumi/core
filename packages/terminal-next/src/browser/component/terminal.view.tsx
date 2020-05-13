@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable, getIcon } from '@ali/ide-core-browser';
 import ResizeView, { ResizeDirection } from './resize.view';
-import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService, ITerminalTheme, IWidget, ITerminalErrorService } from '../../common';
+import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService, IWidget, ITerminalErrorService } from '../../common';
 import TerminalWidget from './terminal.widget';
 
 import 'xterm/css/xterm.css';
@@ -12,9 +12,7 @@ export default observer(() => {
   const controller = useInjectable<ITerminalController>(ITerminalController);
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
   const search = useInjectable<ITerminalSearchService>(ITerminalSearchService);
-  const theme = useInjectable<ITerminalTheme>(ITerminalTheme);
   const errorService = useInjectable<ITerminalErrorService>(ITerminalErrorService);
-  const { terminalTheme } = theme;
   const { errors } = errorService;
   const { groups, currentGroupIndex, currentGroupId } = view;
 
@@ -50,7 +48,7 @@ export default observer(() => {
       onFocus={ () => controller.focus() }
       onBlur={ () => controller.blur() }
       className={ styles.terminalWrapper }
-      style={ { backgroundColor: terminalTheme.background } }
+      style={ { backgroundColor: controller.themeBackground } }
       data-group-current={ currentGroupId }
     >
       {
