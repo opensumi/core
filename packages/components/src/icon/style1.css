@@ -6,7 +6,7 @@
   color: var(--kt-icon-foreground);
   line-height: 1;
 }
-.kt-icon:global(.mask-mode) {
+.kt-icon.mask-mode {
   background-color: var(--foreground);
 }
 .kt-icon-loading {
