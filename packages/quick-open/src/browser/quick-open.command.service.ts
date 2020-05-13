@@ -1,7 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { localize, IContextKeyService, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { CommandRegistry, Command, CommandService, Deferred } from '@ali/ide-core-common';
-import { QuickOpenModel, QuickOpenItem, QuickOpenMode, QuickOpenGroupItemOptions, QuickOpenGroupItem } from './quick-open.model';
+import { QuickOpenModel, QuickOpenItem, QuickOpenMode, QuickOpenGroupItemOptions, QuickOpenGroupItem, QuickOpenItemOptions } from './quick-open.model';
 import { KeybindingRegistry, Keybinding } from '@ali/ide-core-browser';
 import { QuickOpenHandler } from './prefix-quick-open.service';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -9,7 +9,12 @@ import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { AbstractMenuService, MenuId, MenuItemNode } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable()
-export class QuickCommandModel implements QuickOpenModel {
+export class QuickCommandHandler implements QuickOpenHandler {
+  prefix = '>';
+  description = localize('quickopen.command.description');
+
+  @Autowired(CommandService)
+  commandService: CommandService;
 
   @Autowired(INJECTOR_TOKEN)
   protected injector: Injector;
@@ -31,11 +36,20 @@ export class QuickCommandModel implements QuickOpenModel {
 
   private initDeferred = new Deferred<void>();
 
+  private items: QuickOpenItem<QuickOpenItemOptions>[];
+
   constructor() {
-    this.init();
+    // 提前加载工作空间里最近命令的数据
+    this.initRecentlyUsedCommands();
   }
 
+  // 每次打开命令面板后会触发一次
   async init() {
+    await this.initDeferred.promise;
+    this.items = this.getItems();
+  }
+
+  private async initRecentlyUsedCommands() {
     const recentCommandIds = await this.workspaceService.getMostRecentlyUsedCommands();
     const recentCommands: Command[] = recentCommandIds.map((commandId) => {
       return this.commandRegistry.getCommand(commandId);
@@ -44,12 +58,34 @@ export class QuickCommandModel implements QuickOpenModel {
     this.initDeferred.resolve();
   }
 
-  async onType(lookFor: string, acceptor: (items: QuickOpenItem[]) => void) {
-    await this.initDeferred.promise;
-    acceptor(this.getItems(lookFor));
+  getModel(): QuickOpenModel {
+    return {
+      onType: (lookFor: string, acceptor: (items: QuickOpenItem[]) => void) => {
+        acceptor(this.items);
+      },
+    };
   }
 
-  getItems(lookFor: string) {
+  getOptions() {
+    return {
+      placeholder: localize('quickopen.command.placeholder'),
+      fuzzyMatchLabel: {
+        enableSeparateSubstringMatching: true,
+      },
+      fuzzyMatchDetail: {
+        enableSeparateSubstringMatching: true,
+      },
+      // 关闭模糊排序，否则会按照 label 长度排序
+      // 按照 CommandRegistry 默认排序
+      fuzzySort: false,
+    };
+  }
+
+  onClose() {
+    this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
+  }
+
+  private getItems() {
     const items: QuickOpenItem[] = [];
     const { recent, other } = this.getCommands();
 
@@ -67,6 +103,7 @@ export class QuickCommandModel implements QuickOpenModel {
         showBorder: recent.length <= 0 ? false : index === 0 ? true : false,
       }])),
     );
+
     return items;
   }
 
@@ -121,40 +158,6 @@ export class QuickCommandModel implements QuickOpenModel {
     return commands.filter((command) => command.label
       && this.commandRegistry.isVisible(command.id)
       && this.commandRegistry.isEnabled(command.id));
-  }
-}
-
-@Injectable()
-export class QuickCommandHandler implements QuickOpenHandler {
-  prefix = '>';
-  description = localize('quickopen.command.description');
-
-  @Autowired()
-  private quickCommandModel: QuickCommandModel;
-
-  @Autowired(CommandService)
-  commandService: CommandService;
-
-  getModel(): QuickOpenModel {
-    return this.quickCommandModel;
-  }
-  getOptions() {
-    return {
-      placeholder: localize('quickopen.command.placeholder'),
-      fuzzyMatchLabel: {
-        enableSeparateSubstringMatching: true,
-      },
-      fuzzyMatchDetail: {
-        enableSeparateSubstringMatching: true,
-      },
-      // 关闭模糊排序，否则会按照 label 长度排序
-      // 按照 CommandRegistry 默认排序
-      fuzzySort: false,
-    };
-  }
-
-  onClose() {
-    this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
   }
 }
 
