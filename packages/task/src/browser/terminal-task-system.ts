@@ -21,7 +21,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
   @Autowired(ITerminalExternalService)
   protected readonly terminalService: ITerminalExternalService;
 
-  private terminalWidget: ITerminalClient;
+  private terminalClient: ITerminalClient;
 
   private exitDefer: Deferred<{ exitCode?: number }> = new Deferred();
 
@@ -33,15 +33,15 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
   constructor(private terminalOptions: TerminalOptions, private collector: ProblemCollector) {
     super();
-    this.terminalWidget = this.terminalController.createClientWithWidget({ ...terminalOptions, closeWhenExited: false });
+    this.terminalClient = this.terminalController.createClientWithWidget({ ...terminalOptions, closeWhenExited: false });
     this.terminalController.showTerminalPanel();
 
-    this.addDispose(this.terminalWidget.onReceivePtyMessage((e) => {
+    this.addDispose(this.terminalClient.onReceivePtyMessage((e) => {
       this.collector.processLine(removeAnsiEscapeCodes(e.message));
     }));
 
     this.addDispose(this.terminalService.onExit((e) => {
-      if (e.sessionId === this.terminalWidget.id) {
+      if (e.sessionId === this.terminalClient.id) {
         this.onTaskExit(e.code);
         this.exitDefer.resolve({ exitCode: e.code });
       }
@@ -50,11 +50,11 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
   terminate(): Promise<{ success: boolean }> {
     return new Promise((resolve, reject) => {
-      if (this.terminalWidget) {
-        this.terminalWidget.dispose();
+      if (this.terminalClient) {
+        this.terminalClient.dispose();
         this.terminalService.onExit((e) => {
-          if (e.sessionId === this.terminalWidget.id) {
-            this.terminalView.removeWidget(this.terminalWidget.id);
+          if (e.sessionId === this.terminalClient.id) {
+            this.terminalView.removeWidget(this.terminalClient.id);
             resolve({ success: true });
           }
         });
@@ -65,7 +65,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
   }
 
   private onTaskExit(code?: number) {
-    const { term, id } = this.terminalWidget;
+    const { term, id } = this.terminalClient;
     term.setOption('disableStdin', true);
     term.writeln(formatLocalize('terminal.integrated.exitedWithCode', code));
     term.writeln(`\r\n\x1b[1m${formatLocalize('reuseTerminal')}\x1b[0m`);
@@ -76,20 +76,20 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
   }
 
   async execute(task: Task): Promise<{ exitCode?: number }> {
-    await this.terminalWidget.attach();
-    await this.terminalWidget.attached.promise;
+    await this.terminalClient.attach();
+    await this.terminalClient.attached.promise;
     this.processReady.resolve();
 
-    this.terminalWidget.term.writeln(`\x1b[1m> Executing task: ${task._label} <\x1b[0m\n`);
+    this.terminalClient.term.writeln(`\x1b[1m> Executing task: ${task._label} <\x1b[0m\n`);
     const { shellPath, shellArgs } = this.terminalOptions;
-    this.terminalWidget.term.writeln(`\x1b[1m> Command: ${shellPath} ${typeof shellArgs === 'string' ? shellArgs : shellArgs?.join(' ')} <\x1b[0m\n`);
-    this.terminalView.selectWidget(this.terminalWidget.id);
-    this.terminalWidget.term.write('\n\x1b[G');
+    this.terminalClient.term.writeln(`\x1b[1m> Command: ${shellPath} ${typeof shellArgs === 'string' ? shellArgs : shellArgs?.join(' ')} <\x1b[0m\n`);
+    this.terminalView.selectWidget(this.terminalClient.id);
+    this.terminalClient.term.write('\n\x1b[G');
     return this.exitDefer.promise;
   }
 
   get processId(): number {
-    return this.terminalWidget.pid;
+    return this.terminalClient.pid;
   }
 }
 
