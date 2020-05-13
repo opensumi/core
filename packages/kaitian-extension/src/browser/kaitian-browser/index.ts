@@ -30,10 +30,14 @@ export function createBrowserApi(injector: Injector, extensionId?: string) {
     components = new Proxy(Components, {
       get(target, prop) {
         if (prop === 'Dialog' || 'Overlay') {
-          const shadowBody = document.createElement('body');
-          extensionService.registerShadowRootBody(extensionId, shadowBody);
+          let existing = extensionService.getShadowRootBody(extensionId);
+          if (!existing) {
+            existing = document.createElement('body');
+            existing.style.height = '0%';
+            extensionService.registerShadowRootBody(extensionId, existing);
+          }
           return (props) => (React.createElement(Components[prop], { ...props, getContainer: () => {
-            return shadowBody;
+            return existing;
           }}));
         }
         return target[prop];

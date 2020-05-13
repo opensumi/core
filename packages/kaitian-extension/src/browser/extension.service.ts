@@ -248,8 +248,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
   }
 
-  public getShadowRootBody(id: string): HTMLBodyElement {
-    return this.shadowRootBodyMap.get(id)!;
+  public getShadowRootBody(id: string): HTMLBodyElement | undefined {
+    return this.shadowRootBodyMap.get(id);
   }
 
   public async postChangedExtension(upgrade: boolean, path: string, oldExtensionPath?: string) {

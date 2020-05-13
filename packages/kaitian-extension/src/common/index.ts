@@ -80,7 +80,7 @@ export abstract class ExtensionService {
   abstract getExtensions(): IExtension[];
   abstract async activateExtensionByExtPath(extensionPath: string): Promise<void>;
   abstract registerShadowRootBody(id: string, body: HTMLElement): void;
-  abstract getShadowRootBody(id: string): HTMLElement;
+  abstract getShadowRootBody(id: string): HTMLElement | undefined;
 
   onDidExtensionActivated: Event<IExtensionProps>;
   eagerExtensionsActivated: Deferred<void>;
