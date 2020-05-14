@@ -147,7 +147,7 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
   protected doOpen(options?: QuickOpenOptions): void {
     this.quickOpenService.open({
       onType: (lookFor, acceptor) => this.onType(lookFor, acceptor),
-    });
+    }, options);
   }
 
   protected onType(lookFor: string, acceptor: (items: QuickOpenItem[], actionProvider?: QuickOpenActionProvider) => void): void {
