@@ -221,9 +221,17 @@ export class KTNodeProcess {
             reject(error);
           });
           this._process.stdout.on('data', (data) => {
+            data = data.toString();
+            if (data.length > 500) {
+              data = data.substr(500) + '...';
+            }
             process.stdout.write('[node]' + data );
           });
           this._process.stderr.on('data', (data) => {
+            data = data.toString();
+            if (data.length > 500) {
+              data = data.substr(500) + '...';
+            }
             process.stdout.write('[node]' + data );
           });
         } catch (e) {
