@@ -153,6 +153,7 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel; viewState: ViewState }>
           parent: undefined,
           expanded: !isFolding,
           depth: 0,
+          tooltip: model.resource,
         };
 
         nodes.push(item);
@@ -168,6 +169,7 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel; viewState: ViewState }>
               parent,
               selected: id === selectTag,
               marker,
+              tooltip: marker.message,
             };
           });
           nodes = nodes.concat(item.children); // TODO 需要优化掉
