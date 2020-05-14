@@ -134,7 +134,8 @@ export class FileTreeModelService {
   }
 
   get hasFolderIcons() {
-    return this.iconService.currentTheme.hasFolderIcons;
+    // 图标主题命中fallback时为默认有文件夹图标的主题，否则则获取对应主题设置
+    return !this.iconService.currentTheme || (this.iconService.currentTheme && this.iconService.currentTheme.hasFolderIcons);
   }
 
   get onDidFocusedFileChange() {
