@@ -24,6 +24,8 @@ export interface IFileTreeNodeProps {
   template?: React.JSXElementConstructor<any>;
   // 是否为纯净模式，纯净模式下文件图标会与父目录小箭头对齐
   hasFolderIcons?: boolean;
+  // 是否处于编辑态
+  isEditing?: boolean;
 }
 
 export type FileTreeNodeRenderedProps = IFileTreeNodeProps & INodeRendererProps;
@@ -42,6 +44,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   defaultLeftPadding = 8,
   template: Template,
   hasFolderIcons,
+  isEditing,
 }: FileTreeNodeRenderedProps) => {
   const [activeIndex, setActiveIndex] = React.useState<number>();
 
@@ -147,6 +150,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     height: FILE_TREE_NODE_HEIGHT,
     lineHeight: `${FILE_TREE_NODE_HEIGHT}px`,
     paddingLeft,
+    opacity: isEditing && !isPrompt ? '.6' : '1',
   } as React.CSSProperties;
 
   const renderFolderToggle = (node: Directory | PromptHandle, clickHandler: any) => {
