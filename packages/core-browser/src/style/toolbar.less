@@ -2,6 +2,9 @@
 .kt-toolbar-location {
   position: relative;
   background-color: var(--kt-menubar-background);
+  .kt-toolbar-location-no-actions{
+    display:none;
+  }
   > div {
     width: 100%;
     height: 100%;
@@ -34,11 +37,13 @@
         .kt-toolbar-action-btn-icon {
             padding: 0px 5px;
             border-radius: 3px;
-            background: #43484D; /* TODO: */
+            color: var(--kt-defaultButton-foreground);
+            background: var(--kt-defaultButton-background); 
         }
         &:hover {
           .kt-toolbar-action-btn-icon {
-            background: #5F656B; /* TODO: */
+            background: var(--kt-defaultButton-hoverBackground); 
+            color: var(--kt-defaultButton-hoverForeground);
           }
         }
       }

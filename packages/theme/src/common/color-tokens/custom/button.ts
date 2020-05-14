@@ -306,3 +306,58 @@ export const ktDangerGhostButtonClickBorder = registerColor(
     'Danger Ghost Button Click Border color.',
   ),
 );
+
+/* default button */
+export const ktDefaultButtonForeground = registerColor(
+  'kt.defaultButton.foreground',
+  { dark: '#D7DBDE', light: '#4D4D4D', hc: null },
+  localize(
+    'ktDefaultButtonForeground',
+    'Danger Ghost Button Foreground color.',
+  ),
+);
+export const ktDefaultButtonBackground = registerColor(
+  'kt.defaultButton.background',
+  { dark: '#43484D', light: '#FFFFFF', hc: null },
+  localize(
+    'ktDefaultButtonBackground',
+    'Danger Ghost Button Background color.',
+  ),
+);
+export const ktDefaultButtonBorder = registerColor(
+  'kt.defaultButton.border',
+  { dark: '#00000000', light: '#E0E0E0', hc: null },
+  localize('ktDefaultButtonBorder', 'Danger Ghost Button Border color.'),
+);
+export const ktDefaultButtonHoverForeground = registerColor(
+  'kt.defaultButton.hoverForeground',
+  { dark: '#5F656B', light: '#FFFFFF', hc: null },
+  localize(
+    'ktDefaultButtonHoverForeground',
+    'Danger Ghost Button Hover Foreground color.',
+  ),
+);
+export const ktDefaultButtonHoverBorder = registerColor(
+  'kt.defaultButton.hoverBorder',
+  { dark: '#00000000', light: '#3895EB', hc: null },
+  localize(
+    'ktDefaultButtonHoverBorder',
+    'Danger Ghost Button Hover Border color.',
+  ),
+);
+export const ktDefaultButtonClickForeground = registerColor(
+  'kt.defaultButton.clickForeground',
+  { dark: '#35393D', light: '#FFFFFF', hc: null },
+  localize(
+    'ktDefaultButtonClickForeground',
+    'Danger Ghost Button Click Foreground color.',
+  ),
+);
+export const ktDefaultButtonClickBorder = registerColor(
+  'kt.defaultButton.clickBorder',
+  { dark: '#00000000', light: '#167CDB', hc: null },
+  localize(
+    'ktDangerGhostButtonClickBorder',
+    'Danger Ghost Button Click Border color.',
+  ),
+);

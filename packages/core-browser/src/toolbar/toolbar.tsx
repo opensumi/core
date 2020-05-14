@@ -138,6 +138,12 @@ function renderToolbarLocation(container: HTMLDivElement, location: string, pref
     }
   }
 
+  if (visibleActionsOrSplits.length === 0) {
+    locationContainer.classList.add('kt-toolbar-location-no-actions');
+  } else {
+    locationContainer.classList.remove('kt-toolbar-location-no-actions');
+  }
+
   if (!preference.noDropDown) {
     // 根据元素宽度计算哪些在外面，哪些在 dropdown
     for (let i = 0; i < visibleActionsOrSplits.length; i ++) {
