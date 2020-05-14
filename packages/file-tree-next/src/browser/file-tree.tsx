@@ -159,6 +159,7 @@ export const FileTree = observer(({
             onContextMenu={handlerContextMenu}
             defaultLeftPadding={baseIndent}
             leftPadding={indent}
+            isEditing = {fileTreeModelService.isEditing}
             hasFolderIcons={fileTreeModelService.hasFolderIcons}
           />}
         </RecycleTree>;
