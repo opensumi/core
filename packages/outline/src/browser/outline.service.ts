@@ -75,6 +75,8 @@ export class OutLineService extends WithEventBus {
   constructor() {
     super();
     this.editorService.onActiveResourceChange((e) => {
+      // 避免内存泄漏
+      this.statusMap.clear();
       if (e && e.uri && e.uri.scheme === 'file') {
         this.notifyUpdate(e.uri);
       } else {
@@ -305,6 +307,13 @@ function createTreeNodesFromSymbolTreeDeep(parent: TreeSymbol, depth: number, tr
         status.expanded = true;
       }
       statusMap.set(symbol.id, status);
+    }
+    if (status.expanded === undefined && symbol.children && symbol.children.length > 0) {
+      // 叶子节点下新增了新的子节点
+      status.expanded = true;
+    } else if (!symbol.children || symbol.children.length === 0) {
+      // 节点下子节点全部被删除
+      delete status.expanded;
     }
     const treeSymbol: TreeSymbol = {
       ...symbol,
