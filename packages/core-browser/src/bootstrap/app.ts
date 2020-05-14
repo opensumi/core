@@ -148,6 +148,8 @@ export class ClientApp implements IClientApp {
       storageDirName: opts.storageDirName,
       extensionStorageDirName: opts.extensionStorageDirName,
       noExtHost: opts.noExtHost,
+      defaultPanels: opts.defaultPanels,
+      panelSizes: opts.panelSizes,
     };
     // 旧方案兼容, 把electron.metadata.extensionCandidate提前注入appConfig的对应配置中
     if (isElectronEnv() && electronEnv.metadata.extensionCandidate) {

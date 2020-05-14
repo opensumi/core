@@ -31,6 +31,7 @@ export interface AppConfig {
   layoutConfig: LayoutConfig;
   layoutComponent?: React.FC;
   panelSizes?: {[slotLocation: string]: number};
+  defaultPanels?: {[slotLocation: string]: string};
   /**
    * 用于挂载webview的iframe地址
    */
