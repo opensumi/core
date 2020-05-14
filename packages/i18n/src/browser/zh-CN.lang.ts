@@ -292,11 +292,6 @@ export const localizationBundle = {
     'preference.terminal.scrollback': '终端可滚动内容行数',
     'preference.terminal.scrollbackDesc': '改变终端可滚动内容行数',
 
-    'emptyFileNameError': '需提供可用的文件或文件夹名称',
-    'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
-    'fileNameExistsError': '文件或文件夹 **{0}** 已存在. 请使用另外的名称.',
-    'invalidFileNameError': '名称 **{0}** 不可用. 请使用另外的名称.',
-
     'settings.group.general': '常规',
     'settings.group.shortcut': '快捷键',
     'settings.group.editor': '编辑器',
@@ -433,6 +428,7 @@ export const localizationBundle = {
 
     'validate.tree.emptyFileNameError': '需提供可用的文件或文件夹名称',
     'validate.tree.fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
+    'validate.tree.fileNameFollowOrStartWithSpaceWarning': '在文件或文件夹名称中检查到前导或尾随空格',
     'validate.tree.fileNameExistsError': '文件或文件夹 **{0}** 已存在. 请使用另外的名称.',
     'validate.tree.invalidFileNameError': '名称 **{0}** 不可用. 请使用另外的名称.',
 

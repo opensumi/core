@@ -375,6 +375,7 @@ export const localizationBundle = {
 
     'validate.tree.emptyFileNameError': 'Please provide a file or folder name',
     'validate.tree.fileNameStartsWithSlashError': 'File or folder name cannot start with /',
+    'validate.tree.fileNameFollowOrStartWithSpaceWarning': 'Leading or trailing spaces detected in file or folder name',
     'validate.tree.fileNameExistsError': 'File or folder **{0}** already exists. Please use a different name.',
     'validate.tree.invalidFileNameError': 'The name **{0}** is not available. Please use a different name.',
 
