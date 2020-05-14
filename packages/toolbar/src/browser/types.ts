@@ -44,13 +44,13 @@ export interface IToolBarAction extends IToolBarElement {
 
 }
 
-export interface IToolBarComponent extends IToolBarElement {
+export interface IToolBarComponent<InitialPropsType = any> extends IToolBarElement {
 
   type: 'component';
 
-  component: React.FunctionComponent<{ initialProps?: object }> | React.ComponentClass<{ initialProps?: object }>;
+  component: React.FunctionComponent<InitialPropsType> | React.ComponentClass<InitialPropsType>;
 
-  initialProps?: object;
+  initialProps?: InitialPropsType;
 }
 
 export enum ToolBarPosition {

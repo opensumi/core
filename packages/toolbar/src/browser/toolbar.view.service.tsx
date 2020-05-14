@@ -55,7 +55,7 @@ export class ToolBarViewService implements IToolBarViewService {
     } else {
       handle.addDispose(this.registry.registerToolbarAction({
         component: () => {
-          return <element.component initialProps={element.initialProps} />;
+          return <element.component {...element.initialProps} />;
         },
         id,
         preferredPosition: {

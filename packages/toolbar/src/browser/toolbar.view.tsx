@@ -52,7 +52,7 @@ export const ToolBar = observer<Pick<React.HTMLProps<HTMLElement>, 'className'>>
   return <div className={clx(styles['tool-bar'], className)} ref={toolbarRef as any}>
     <ToolbarLocation className={styles.left} location='toolbar-left' preferences={{noDropDown: true}} />
     <div id={styles.space1}></div>
-    <ToolbarLocation className={styles.center} location='toolbar-center' preferences={{noDropDown: true, defaultButtonStyle: {showTitle: true, btnTitleStyle: 'vertical', btnStyle: 'button'}}} />
+    <ToolbarLocation className={styles.center} location='toolbar-center' preferences={{noDropDown: true}} />
     <ToolbarLocation className={styles.right} location='toolbar-right'/>
   </div>;
 });
