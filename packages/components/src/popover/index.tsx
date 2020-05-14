@@ -1,7 +1,7 @@
 import * as React from 'react';
 import clx from 'classnames';
 
-import * as styles from './styles.module.less';
+import './styles.less';
 import { Button } from '../button';
 
 // 目前支持支持 hover，后面按需拓展
@@ -122,16 +122,16 @@ export const Popover: React.FC<{
   return(
     <div
       {...Object.assign({}, restProps)}
-      className={clx(styles.popover, insertClass)}
+      className={clx('kt-popover', insertClass)}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
       <div
-        className={clx(popoverClass || '', styles.content, position)}
+        className={clx(popoverClass || '', 'kt-popover-content', `kt-popover-${position}`)}
         ref={contentEl}
         id={id}
         >
-        {title && <p className={clx(styles.title, titleClassName)}>
+        {title && <p className={clx('kt-popover-title', titleClassName)}>
           {title}
           {action && <Button size='small' type='link' onClick={onClickAction || noop}>{action}</Button>}
         </p>}

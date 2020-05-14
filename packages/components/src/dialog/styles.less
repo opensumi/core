@@ -1,40 +1,37 @@
-.wrapper :global(.ant-modal-body) {
-  background: var(--kt-modal-background);
-  border-color: var(--notifications-border);
+.wrapper {
+  .ant-modal-body {
+    background: var(--kt-modal-background);
+    border-color: var(--notifications-border);
+  }
+
+  .ant-modal-footer {
+    align-items: center;
+    justify-content: flex-end;
+    display: flex;
+  }
 
   .kticon-info-circle {
     color: var(--kt-modalInfoIcon-foreground);
   }
+
+  .ant-modal-close-x {
+    margin: 50% 50% 0 0;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    color: var(--kt-notificationsCloseIcon-foreground);
+  }
 }
 
-.wrapper :global(.ant-modal-footer) {
-  align-items: center;
-  justify-content: flex-end;
-  display: flex;
-}
-
-.wrapper {
-  padding: 24px 24px;
-  color: var(--kt-modal-foreground);
-}
-
-.wrapper :global(.ant-modal-close-x) {
-  margin: 50% 50% 0 0;
-  width: 20px;
-  height: 20px;
-  line-height: 20px;
-  color: var(--kt-notificationsCloseIcon-foreground);
-}
-
-.content {
+.kt-dialog-content {
   display: flex;
 
-  .content_area {
+  .kt-dialog-content_area {
     display: flex;
     flex-direction: column;
     flex: 1;
 
-    .content_title {
+    .kt-dialog-content_title {
       line-height: 22px;
       font-size: 14px;
       margin: 0px 0px 8px 0px;
@@ -46,7 +43,7 @@
   border-top: 1px solid var(--notifications-border);
 }
 
-.icon {
+.kt-dialog-icon {
   margin-right: 12px;
 
   &:before {
@@ -54,7 +51,7 @@
   }
 }
 
-.closex {
+.kt-dialog-closex {
   background-color: transparent;
   border: none;
   outline: none;
@@ -64,7 +61,7 @@
   cursor: pointer;
 }
 
-.buttonWrap {
+.kt-dialog-buttonWrap {
   display: flex;
   flex-wrap: wrap;
   margin-top: 14px;
@@ -75,7 +72,7 @@
   }
 }
 
-.message {
+.kt-dialog-message {
   color: var(--kt-modal-foreground);
   line-height: 22px;
   font-size: 14px;

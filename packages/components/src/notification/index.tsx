@@ -5,7 +5,7 @@ import antdNotification, { ArgsProps } from 'antd/lib/notification';
 import 'antd/lib/notification/style/index.css';
 
 import { Button } from '../button';
-import * as styles from './notification.module.less';
+import './notification.less';
 import { MessageType } from '../common';
 
 const DURATION: { [type: number]: number } = {
@@ -31,17 +31,17 @@ export function open<T = string>(
   return new Promise((resolve) => {
     const args: ArgsProps = {
       key,
-      className: clx(styles.wrapper, {
-        [styles.info]: type === MessageType.Info,
-        [styles.error]: type === MessageType.Error,
-        [styles.warning]: type === MessageType.Warning,
+      className: clx('kt-notification-wrapper', {
+        ['kt-notification-info']: type === MessageType.Info,
+        ['kt-notification-error']: type === MessageType.Error,
+        ['kt-notification-warn']: type === MessageType.Warning,
       }),
       duration: DURATION[type] / 1000,
       onClose: () => resolve(undefined),
       btn: buttons
         ? buttons.map((button, index) => (
           <Button
-            className={clx(styles.button)}
+            className={clx('kt-notification-button')}
             size='small'
             ghost={index === 0}
             onClick={() => {

@@ -5,7 +5,6 @@ import { ToolbarActionBasedLayout } from '@ali/ide-core-browser/lib/components';
 export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();
   opts.workspaceDir = opts.workspaceDir || process.env.WORKSPACE_DIR;
-  console.log(opts.workspaceDir);
   opts.coreExtensionDir = opts.coreExtensionDir || process.env.CORE_EXTENSION_DIR;
 
   opts.extensionDir = opts.extensionDir || process.env.EXTENSION_DIR;
