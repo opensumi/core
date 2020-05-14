@@ -721,6 +721,15 @@ export class FileTreeModelService {
       };
     }
 
+    // 当文件名称前后有空格时，提示用户
+    if (name[0] === ' ' || name[name.length - 1] === ' ') {
+      return {
+        message: localize('validate.tree.fileNameFollowOrStartWithSpaceWarning'),
+        type: PROMPT_VALIDATE_TYPE.WARNING,
+        value: name,
+      };
+    }
+
     let parent: Directory;
 
     if ((promptHandle as RenamePromptHandle).target) {
@@ -860,7 +869,7 @@ export class FileTreeModelService {
       if (isCommit) {
         return false;
       }
-      if (!!this.validateMessage) {
+      if (!!this.validateMessage && this.validateMessage.type === PROMPT_VALIDATE_TYPE.ERROR ) {
         this.validateMessage = undefined;
         return true;
       }
@@ -879,11 +888,11 @@ export class FileTreeModelService {
     };
     const enterCommit = async (newName) => {
       isCommit = true;
-      if (this.validateMessage && this.validateMessage.message) {
+      if (!!this.validateMessage && this.validateMessage.type === PROMPT_VALIDATE_TYPE.ERROR) {
         this.validateMessage = undefined;
         promptHandle.removeValidateMessage();
       }
-      if (newName.trim() === '' || !!this.validateMessage) {
+      if (newName.trim() === '' || (!!this.validateMessage && this.validateMessage.type === PROMPT_VALIDATE_TYPE.ERROR)) {
         this.validateMessage = undefined;
         return true;
       }
