@@ -2,7 +2,6 @@ import clx from 'classnames';
 import * as React from 'react';
 
 import antdNotification, { ArgsProps } from 'antd/lib/notification';
-import 'antd/lib/notification/style/index.css';
 
 import { Button } from '../button';
 import './notification.less';

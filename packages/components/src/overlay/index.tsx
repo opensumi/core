@@ -2,8 +2,6 @@ import * as React from 'react';
 import * as clsx from 'classnames';
 import Modal, { ModalProps } from 'antd/lib/modal';
 
-import 'antd/lib/modal/style/index.css';
-
 import './styles.less';
 
 declare type getContainerFunc = () => HTMLElement;
