@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "tsc --build ../../configs/ts/references/tsconfig.components.json",
-    "prepublish": "webpack --config ./webpack.config.js --progress --color",
+    "build:dist": "webpack --config ./webpack.config.js --progress --color",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
