@@ -81,6 +81,8 @@ export abstract class ExtensionService {
   abstract async activateExtensionByExtPath(extensionPath: string): Promise<void>;
   abstract registerShadowRootBody(id: string, body: HTMLElement): void;
   abstract getShadowRootBody(id: string): HTMLElement | undefined;
+  abstract registerPortalShadowRoot(extensionId: string): void;
+  abstract getPortalShadowRoot(extensionId: string): ShadowRoot | undefined;
 
   onDidExtensionActivated: Event<IExtensionProps>;
   eagerExtensionsActivated: Deferred<void>;

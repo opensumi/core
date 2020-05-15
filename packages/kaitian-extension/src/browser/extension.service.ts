@@ -72,6 +72,7 @@ import {
   RPCProtocol,
   ProxyIdentifier,
 } from '@ali/ide-connection';
+import * as retargetEvents from 'react-shadow-dom-retarget-events';
 
 import { VSCodeCommands } from './vscode/commands';
 import { UriComponents } from '../common/vscode/ext-types';
@@ -183,6 +184,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private _onDidExtensionActivated: Emitter<IExtensionProps> = new Emitter<IExtensionProps>();
   public onDidExtensionActivated: Event<IExtensionProps> = this._onDidExtensionActivated.event;
   private shadowRootBodyMap: Map<string, HTMLBodyElement> = new Map();
+  private portalShadowRootMap: Map<string, ShadowRoot> = new Map();
 
   @OnEvent(ExtensionActivateEvent)
   onActivateExtension(e) {
@@ -240,6 +242,23 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     if (extension) {
       return extension.activate();
     }
+  }
+
+  public registerPortalShadowRoot(extensionId: string): void {
+    if (!this.portalShadowRootMap.has(extensionId)) {
+      const portal = document.createElement('div');
+      portal.setAttribute('id', `portal-shadow-root-${extensionId}`);
+      document.body.appendChild(portal);
+      const portalRoot = portal.attachShadow({ mode: 'open' });
+      // const body = document.createElement('body');
+      // portalRoot.appendChild(body);
+      retargetEvents(portalRoot);
+      this.portalShadowRootMap.set(extensionId, portalRoot);
+    }
+  }
+
+  public getPortalShadowRoot(extensionId: string): ShadowRoot | undefined {
+    return this.portalShadowRootMap.get(extensionId);
   }
 
   public registerShadowRootBody(id: string, body: HTMLBodyElement): void {
@@ -695,7 +714,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       try {
         const rawExtension = this.extensionMap.get(extension.path);
         if (this.appConfig.useExperimentalShadowDom) {
-          const { moduleExports, proxiedHead } = await this.loadBrowserScriptByMockLoader(browserScriptURI.toString(), extension.id);
+          this.registerPortalShadowRoot(extension.id);
+          const { moduleExports, proxiedHead } = await this.loadBrowserScriptByMockLoader(browserScriptURI.toString(), extension.id, extension.extendConfig.browser.componentId);
           this.registerBrowserComponent(this.normalizeDeprecatedViewsConfig(moduleExports, extension, proxiedHead), rawExtension!);
         } else {
           const browserExported = await this.loadBrowser(browserScriptURI.toString());
@@ -723,9 +743,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     return ExtensionServiceImpl.tabBarLocation.includes(location) ? 'replace' : 'add';
   }
 
-  private async getExtensionModuleExports(url: string, extensionId: string): Promise<{ moduleExports: any; proxiedHead?: HTMLHeadElement }> {
+  private async getExtensionModuleExports(url: string, extensionId: string, viewsProxies: string[]): Promise<{ moduleExports: any; proxiedHead?: HTMLHeadElement }> {
     if (this.appConfig.useExperimentalShadowDom) {
-      return await this.loadBrowserScriptByMockLoader2<IKaitianBrowserContributions>(url, extensionId);
+      return await this.loadBrowserScriptByMockLoader2<IKaitianBrowserContributions>(url, extensionId, viewsProxies);
     }
     const moduleExports = await this.loadBrowser(url);
     return { moduleExports };
@@ -752,7 +772,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       const browserModuleUri = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(packageJSON.kaitianContributes.browserMain).toString()));
       if (packageJSON.kaitianContributes.browserViews) {
         const { browserViews } = packageJSON.kaitianContributes;
-        const { moduleExports, proxiedHead } = await this.getExtensionModuleExports(browserModuleUri.toString(), extension.id);
+        const { moduleExports, proxiedHead } = await this.getExtensionModuleExports(browserModuleUri.toString(), extension.id, packageJSON.kaitianContributes.viewsProxies);
         const viewsConfig = Object.keys(browserViews).reduce((config, location) => {
           config[location] = {
             type: this.getRegisterViewKind(location as KtViewLocation),
@@ -865,9 +885,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   }
 
-  private async loadBrowserScriptByMockLoader(browerPath: string, extensionId: string): Promise<{ moduleExports: any, proxiedHead: HTMLHeadElement }> {
+  private async loadBrowserScriptByMockLoader(browerPath: string, extensionId: string, componentIds: string[]): Promise<{ moduleExports: any, proxiedHead: HTMLHeadElement }> {
     const pendingFetch = await fetch(decodeURIComponent(browerPath));
-    const { _module, _exports, _require } = getMockAmdLoader(this.injector, extensionId);
+    const { _module, _exports, _require } = getMockAmdLoader(this.injector, extensionId, componentIds);
     const _stylesCollection = [];
     const proxiedHead = document.createElement('head');
     const proxiedDocument = createProxiedDocument(proxiedHead);
@@ -882,9 +902,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     };
   }
 
-  private async loadBrowserScriptByMockLoader2<T>(browerPath: string, extensionId: string): Promise<{ moduleExports: T, proxiedHead: HTMLHeadElement }> {
+  private async loadBrowserScriptByMockLoader2<T>(browerPath: string, extensionId: string, componentIds: string[]): Promise<{ moduleExports: T, proxiedHead: HTMLHeadElement }> {
     const pendingFetch = await fetch(decodeURIComponent(browerPath));
-    const { _module, _exports, _require } = getMockAmdLoader<T>(this.injector, extensionId);
+    const { _module, _exports, _require } = getMockAmdLoader<T>(this.injector, extensionId, componentIds);
     const _stylesCollection = [];
     const proxiedHead = document.createElement('head');
     const proxiedDocument = createProxiedDocument(proxiedHead);
