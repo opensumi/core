@@ -72,6 +72,7 @@ import {
   RPCProtocol,
   ProxyIdentifier,
 } from '@ali/ide-connection';
+import * as retargetEvents from 'react-shadow-dom-retarget-events';
 
 import { VSCodeCommands } from './vscode/commands';
 import { UriComponents } from '../common/vscode/ext-types';
@@ -248,9 +249,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       const portal = document.createElement('div');
       portal.setAttribute('id', `portal-shadow-root-${extensionId}`);
       document.body.appendChild(portal);
-      const body = document.createElement('body');
       const portalRoot = portal.attachShadow({ mode: 'open' });
-      portalRoot.appendChild(body);
+      // const body = document.createElement('body');
+      // portalRoot.appendChild(body);
+      retargetEvents(portalRoot);
       this.portalShadowRootMap.set(extensionId, portalRoot);
     }
   }
