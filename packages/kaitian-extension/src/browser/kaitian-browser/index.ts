@@ -14,6 +14,7 @@ import { EditorComponentRenderMode } from '@ali/ide-editor/lib/browser';
 import { Injector } from '@ali/common-di';
 import { IThemeService, getColorRegistry } from '@ali/ide-theme';
 import { ExtensionService } from '../../common';
+import ReactDOM = require('react-dom');
 
 /**
  * Browser 尽量只export视图相关的少量API
@@ -21,24 +22,21 @@ import { ExtensionService } from '../../common';
  * 1. browser只暴露getter，任何注册、调用等会产生副作用的行为全部放入逻辑层
  * @param injector
  */
-export function createBrowserApi(injector: Injector, extensionId?: string) {
+export function createBrowserApi(injector: Injector, extensionId?: string, componentIds?: string[]) {
 
   const extensionService: ExtensionService = injector.get(ExtensionService);
   let components = Components;
 
-  if (extensionId) {
+  if (extensionId && componentIds) {
     components = new Proxy(Components, {
       get(target, prop) {
-        if (typeof prop === 'string' && ['Dialog', 'Overlay'].includes(prop)) {
-          let existing = extensionService.getShadowRootBody(extensionId);
-          if (!existing) {
-            existing = document.createElement('body');
-            existing.style.height = '0%';
-            extensionService.registerShadowRootBody(extensionId, existing);
-          }
-          return (props) => (React.createElement(Components[prop], { ...props, getContainer: () => {
-            return existing;
-          }}));
+        if (prop === 'Dialog' || prop === 'Overlay') {
+          const portalRoot = extensionService.getPortalShadowRoot(extensionId);
+          const OriginalComponent = Components[prop];
+          const proxiedComponent = (props) => React.createElement(OriginalComponent, { ...props, getContainer: () => {
+            return portalRoot;
+          } });
+          return proxiedComponent;
         }
         return target[prop];
       },
