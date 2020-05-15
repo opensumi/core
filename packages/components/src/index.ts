@@ -1,3 +1,5 @@
+import './style/index.less';
+
 export * from './button';
 export * from './badge';
 export * from './input';
