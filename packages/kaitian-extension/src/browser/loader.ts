@@ -17,7 +17,7 @@ export function getAMDRequire() {
   }
 }
 
-export function getMockAmdLoader<T>(injector, extensionId: string) {
+export function getMockAmdLoader<T>(injector, extensionId: string, componentIds: string[]) {
   const _exports: { default?: any } | T = {};
   const _module = { exports: _exports };
   const _require = (request: string) => {
@@ -26,7 +26,7 @@ export function getMockAmdLoader<T>(injector, extensionId: string) {
     } else if (request === 'ReactDOM') {
       return ReactDOM;
     } else if (request === 'kaitian-browser') {
-      return createBrowserApi(injector, extensionId);
+      return createBrowserApi(injector, extensionId, componentIds);
     }
   };
   return { _module, _exports, _require };

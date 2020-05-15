@@ -140,7 +140,7 @@ export function Select<T = string>({
     setOpen(false);
   }, [select]);
   useEffect(() => {
-    setSelect(value);
+    setSelect(select);
   }, [value]);
 
   function toggleOpen() {

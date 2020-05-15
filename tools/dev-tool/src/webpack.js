@@ -95,6 +95,7 @@ exports.createWebpackConfig = function (dir, entry) {
             {
               loader: 'css-loader',
               options: {
+                importLoaders: 1,
                 sourceMap: true,
                 modules: true,
                 localIdentName: '[local]___[hash:base64:5]'
@@ -112,7 +113,12 @@ exports.createWebpackConfig = function (dir, entry) {
           test: /^((?!\.module).)*less$/,
           use: [
             'style-loader',
-            'css-loader',
+            {
+              loader: 'css-loader',
+              options: {
+                importLoaders: 1,
+              }
+            },
             {
               loader: 'less-loader',
               options: {

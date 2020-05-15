@@ -966,7 +966,13 @@ export class FileTreeModelService {
       // 可能为空白区域点击, 即选中的对象为根目录
       targetNode = await this.fileTreeService.getNodeByPathOrUri(uri)!;
     } else if (this.selectedFiles.length > 0) {
-      targetNode = this.selectedFiles[this.selectedFiles.length - 1];
+      const selectedNode = this.selectedFiles[this.selectedFiles.length - 1];
+      if (!this.treeModel.root.isItemVisibleAtSurface(selectedNode)) {
+        const targetNodePath = await this.fileTreeService.getFileTreeNodePathByUri(uri);
+        targetNode = await this.treeModel.root.forceLoadTreeNodeAtPath(targetNodePath!) as File;
+      } else {
+        targetNode = selectedNode;
+      }
     } else {
       targetNode = await this.fileTreeService.getNodeByPathOrUri(uri)!;
     }

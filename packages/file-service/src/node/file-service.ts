@@ -699,6 +699,9 @@ export function getSafeFileservice(injector: Injector) {
     'access',
     'getFsPath',
     'getFileType',
+    'getFileStat',
+    'move',
+    'copy',
   ], appConfig.blockPatterns || [])
   safeFsInstanceMap.set(injector, fileService);
   return fileService;
@@ -720,15 +723,24 @@ function fileServiceInterceptor(fileService: IFileService, blackList: string[], 
         if (blockPatterns.length > 0) {
           const uri = typeof args[0] === 'string' ? args[0] : args[0].uri;
           if (typeof uri === 'string') {
+            let resolvedURI = uri;
+            if(uri.startsWith('file://')){
+              /**
+               * match('file:///test/folder/**', 'file:///test/foo/../test/token')
+               *
+               * 防止被绕过
+               */
+              resolvedURI = `file://${paths.resolve(uri.slice(7))}`
+            }
             for (const blockPattern of blockPatterns) {
-              if (match(blockPattern, uri)) {
+              if (match(blockPattern, resolvedURI)) {
                 throw new Error('illegal accessing ' + uri + ' with rule ' + blockPattern);
               }
             }
           }
         }
         return originFunc.apply(fileService, args);
-        // copy和move第二个参数也为uri
+        // copy和move第二个参数也为uri，只禁止来源
       };
     }
   }

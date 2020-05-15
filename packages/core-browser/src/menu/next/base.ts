@@ -121,7 +121,7 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
     const existedItem = this._menubarItems.get(menuId);
     if (existedItem) {
       this.logger.warn(`this menuId ${menuId} already existed`);
-      return Disposable.None;
+      return Disposable.NULL;
     }
 
     this._menubarItems.set(menuId, menubarItem);

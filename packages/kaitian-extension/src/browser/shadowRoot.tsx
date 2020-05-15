@@ -23,10 +23,10 @@ const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, ex
       if (proxiedHead) {
         // 如果是一个插件注册了多个视图，节点需要被 clone 才能生效，否则第一个视图 appendChild 之后节点就没了
         shadowRootElement.appendChild(cloneNode(proxiedHead));
-      }
-      const shadowBody = extensionService.getShadowRootBody(extensionId);
-      if (shadowBody) {
-        shadowRootElement.appendChild(shadowBody);
+        const portalRoot = extensionService.getPortalShadowRoot(extensionId);
+        if (portalRoot) {
+          portalRoot.appendChild(proxiedHead);
+        }
       }
       if (!shadowRoot) {
         setShadowRoot(shadowRootElement);
