@@ -9,19 +9,21 @@ import {
   IRange,
   URI,
   Emitter,
-  ContributionProvider,
   AppConfig,
+  localize,
+  IDisposable,
 } from '@ali/ide-core-browser';
 import { IEditor, EditorType } from '@ali/ide-editor';
-import { IEditorDecorationCollectionService, IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { IEditorDecorationCollectionService, IEditorDocumentModelService, WorkbenchEditorService } from '@ali/ide-editor/lib/browser';
 import {
   ICommentsService,
   CommentGutterType,
-  CommentsContribution,
   ICommentsThreadOptions,
   ICommentsThread,
   ICommentsTreeNode,
   ICommentsFeatureRegistry,
+  CommentPanelId,
+  ICommentRangeProvider,
 } from '../common';
 import { CommentsThread } from './comments-thread';
 import { observable, computed, action } from 'mobx';
@@ -29,6 +31,8 @@ import * as flattenDeep from 'lodash.flattendeep';
 import * as groupBy from 'lodash.groupby';
 import { dirname } from '@ali/ide-core-common/lib/path';
 import { IIconService, IconType } from '@ali/ide-theme';
+import { CommentsPanel } from './comments-panel.view';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 
 @Injectable()
 export class CommentsService extends Disposable implements ICommentsService {
@@ -42,9 +46,6 @@ export class CommentsService extends Disposable implements ICommentsService {
   @Autowired(IEditorDecorationCollectionService)
   private readonly editorDecorationCollectionService: IEditorDecorationCollectionService;
 
-  @Autowired(CommentsContribution)
-  private readonly contributions: ContributionProvider<CommentsContribution>;
-
   @Autowired(IIconService)
   private readonly iconService: IIconService;
 
@@ -54,6 +55,12 @@ export class CommentsService extends Disposable implements ICommentsService {
   @Autowired(IEditorDocumentModelService)
   private readonly documentService: IEditorDocumentModelService;
 
+  @Autowired(IMainLayoutService)
+  private readonly layoutService: IMainLayoutService;
+
+  @Autowired(WorkbenchEditorService)
+  private readonly workbenchEditorService: WorkbenchEditorService;
+
   private decorationChangeEmitter = new Emitter<URI>();
 
   @observable
@@ -62,6 +69,10 @@ export class CommentsService extends Disposable implements ICommentsService {
   private threadsChangeEmitter = new Emitter<ICommentsThread>();
 
   private threadsCreatedEmitter = new Emitter<ICommentsThread>();
+
+  private rangeProviderMap = new Map<string, ICommentRangeProvider>();
+
+  private rangeOwner = new Map<string, IRange[]>();
 
   @observable
   private forceUpdateCount = 0;
@@ -97,7 +108,7 @@ export class CommentsService extends Disposable implements ICommentsService {
       type === CommentGutterType.Empty
         ? 'comment-diff-added'
         : 'comment-thread'
-    }`;
+      }`;
   }
 
   public init() {
@@ -110,9 +121,9 @@ export class CommentsService extends Disposable implements ICommentsService {
       lineNumbersMinChars: 3,
       lineDecorationsWidth: '1.5ch',
     } : {
-      lineNumbersMinChars: 5,
-      lineDecorationsWidth: '3ch',
-    };
+        lineNumbersMinChars: 5,
+        lineDecorationsWidth: '3ch',
+      };
     editor.monacoEditor.updateOptions(editorOptions);
     // 绑定点击事件
     disposer.addDispose(this.bindClickGutterEvent(editor));
@@ -124,7 +135,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     const dispose = editor.monacoEditor.onMouseDown((event) => {
       if (
         event.target.type ===
-          monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
+        monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
         event.target.element &&
         event.target.element.className.indexOf('comments-glyph') > -1
       ) {
@@ -180,7 +191,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     return this.commentsThreads
       .filter((thread) => thread.uri.isEqual(uri))
       // 默认按照 rang 顺序 升序排列
-      .sort((a, b) => a.range.startLineNumber -  b.range.startLineNumber);
+      .sort((a, b) => a.range.startLineNumber - b.range.startLineNumber);
   }
 
   @action
@@ -220,7 +231,7 @@ export class CommentsService extends Disposable implements ICommentsService {
         if (thread.comments.length === 0) {
           return;
         }
-        const [ firstComment, ...otherComments ] = thread.comments;
+        const [firstComment, ...otherComments] = thread.comments;
         const firstCommentNode: ICommentsTreeNode = {
           id: firstComment.id,
           name: firstComment.author.name,
@@ -272,10 +283,18 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   private async getContributionRanges(uri: URI): Promise<IRange[]> {
     const model = this.documentService.getModelReference(uri);
-    const res = await Promise.all(this.contributions.getContributions().map((contribution) => {
-      // 如果执行了 provideEditorDecoration, document model 肯定存在
-      return contribution.provideCommentingRanges(model?.instance!);
-    }));
+    const rangePromise: Promise<IRange[] | undefined>[] = [];
+    for (const rangeProvider of this.rangeProviderMap) {
+      const [id, provider] = rangeProvider;
+      rangePromise.push((async () => {
+        const ranges = await provider.getCommentingRanges(model?.instance!);
+        if (ranges && ranges.length) {
+          this.rangeOwner.set(id, ranges);
+        }
+        return ranges;
+      })());
+    }
+    const res = await Promise.all(rangePromise);
     // 消除 document 引用
     model?.dispose();
     // 拍平，去掉 undefined
@@ -329,9 +348,58 @@ export class CommentsService extends Disposable implements ICommentsService {
               }),
             );
           }
+
           return decorations;
         },
       }),
     );
+  }
+
+  public registerCommentPanel() {
+    // 面板只注册一次
+    if (this.layoutService.getTabbarHandler(CommentPanelId)) {
+      return;
+    }
+    this.layoutService.collectTabbarComponent([{
+      id: CommentPanelId,
+      component: CommentsPanel,
+    }], {
+      badge: this.panelBadge,
+      containerId: CommentPanelId,
+      title: localize('comments').toUpperCase(),
+      hidden: false,
+      activateKeyBinding: 'shift+ctrlcmd+c',
+      ...this.commentsFeatureRegistry.getCommentsPanelOptions(),
+    }, 'bottom');
+  }
+
+  get panelBadge() {
+    const length = this.commentsThreads.length;
+    return length ? length + '' : '';
+  }
+
+  registerCommentRangeProvider(id: string, provider: ICommentRangeProvider): IDisposable {
+    this.rangeProviderMap.set(id, provider);
+    return Disposable.create(() => {
+      this.rangeProviderMap.delete(id);
+    });
+  }
+
+  forceUpdateDecoration(): void {
+    // 默认适应当前 uri 去强刷 decoration
+    const uri = this.workbenchEditorService.currentEditor?.currentUri;
+    uri && this.decorationChangeEmitter.fire(uri);
+  }
+
+  public getProviderIdsByLine(line: number): string[] {
+    const result: string[] = [];
+    for (const rangeOwner of this.rangeOwner) {
+      const [id, ranges] = rangeOwner;
+      if (ranges && ranges.some((range) => range.startLineNumber <= line && line <= range.endLineNumber)) {
+        result.push(id);
+      }
+    }
+
+    return result;
   }
 }

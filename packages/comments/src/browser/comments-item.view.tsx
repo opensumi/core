@@ -5,7 +5,7 @@ import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { observer } from 'mobx-react-lite';
 import { CommentsTextArea } from './comments-textarea.view';
 import { AbstractMenuService, MenuId, IMenu } from '@ali/ide-core-browser/lib/menu/next';
-import { useInjectable, localize, IContextKeyService } from '@ali/ide-core-browser';
+import { useInjectable, localize, IContextKeyService, isUndefined } from '@ali/ide-core-browser';
 import { Button } from '@ali/ide-components';
 import { CommentsThread } from './comments-thread';
 import { CommentsBody } from './comments-body';
@@ -106,7 +106,7 @@ const ReplyItem: React.FC<{
 
   return (
     <div className={styles.reply_item}>
-      {mode === CommentMode.Preview ? (
+      {isUndefined(mode) || mode === CommentMode.Preview ? (
         <div>
           {iconUrl && (
             <img
@@ -135,6 +135,7 @@ const ReplyItem: React.FC<{
                 {
                   thread,
                   comment: reply,
+                  menuId: MenuId.CommentsCommentTitle,
                 },
               ]}
               type='icon'
@@ -162,6 +163,7 @@ const ReplyItem: React.FC<{
                     {
                       thread,
                       comment: reply,
+                      menuId: MenuId.CommentsCommentTitle,
                     },
                   ]}
                   type='icon'
@@ -187,6 +189,7 @@ const ReplyItem: React.FC<{
                 thread,
                 comment: reply,
                 body: textValue,
+                menuId: MenuId.CommentsCommentContext,
               },
             ]}
             type='button'
@@ -276,13 +279,14 @@ export const CommentItem: React.FC<{
               {
                 thread,
                 comment,
+                menuId: MenuId.CommentsCommentTitle,
               },
             ]}
             type='button'
           />
           </div>
         </div>
-        {mode === CommentMode.Preview ? (
+        {isUndefined(mode) || mode === CommentMode.Preview ? (
           <CommentsBody body={body} />
         ) : (
             <div>
@@ -300,8 +304,10 @@ export const CommentItem: React.FC<{
                   thread,
                   comment,
                   body: textValue,
+                  menuId: MenuId.CommentsCommentContext,
                 },
               ]}
+              separator='inline'
               type='button'
               afterClick={() => {
                 // restore textarea value
@@ -329,7 +335,9 @@ export const CommentItem: React.FC<{
                   thread,
                   text: replyText,
                   widget,
+                  menuId: MenuId.CommentsCommentThreadContext,
                 }]}
+                separator='inline'
                 type='button'
                 afterClick={() => {
                   setReplyText('');

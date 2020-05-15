@@ -33,11 +33,25 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   @observable
   public comments: IThreadComment[];
 
+  @observable
+  public label: string | undefined;
+
+  set contextValue(value: string | undefined) {
+    this._contextKeyService.createKey<string>('thread', value);
+  }
+
+  get contextValue() {
+    return this._contextKeyService.getContextValue('thread');
+  }
+
   private widgets = new Map<IEditor, CommentsZoneWidget>();
 
   static getId(uri: URI, range: IRange): string {
     return `${uri}#${range.startLineNumber}`;
   }
+
+  @observable
+  public isCollapsed: boolean;
 
   constructor(
     public uri: URI,
@@ -54,13 +68,22 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     // 设置 resource context key
     const resourceContext = new ResourceContextKey(this._contextKeyService);
     resourceContext.set(uri);
-    options.contextValue && this._contextKeyService.createKey<string>('thread', options.contextValue);
+    this._contextKeyService.createKey<string>('thread', options.contextValue);
     this._contextKeyService.createKey<boolean>('readOnly', !!options.readOnly);
+    this.label = options.label;
+    this.isCollapsed = !!this.options.isCollapsed;
     const threadsLengthContext = this._contextKeyService.createKey<number>('threadsLength', this.commentsService.getThreadsByUri(uri).length);
     const commentsLengthContext = this._contextKeyService.createKey<number>('commentsLength', this.comments.length);
     // 监听 comments 的变化
     autorun(() => {
       commentsLengthContext.set(this.comments.length);
+    });
+    autorun(() => {
+      if (this.isCollapsed) {
+        this.hideAll();
+      } else {
+        this.showAll();
+      }
     });
     // 监听每次 thread 的变化，重新设置 threadsLength
     this.addDispose(this.commentsService.onThreadsChanged((thread) => {
@@ -87,16 +110,15 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     return !!this.options.readOnly;
   }
 
-  get isCollapsed() {
-    return !!this.options.isCollapsed;
-  }
-
   get data() {
     return this.options.data;
   }
 
   @computed
   get threadHeaderTitle() {
+    if (this.label) {
+      return this.label;
+    }
     if (this.comments.length) {
       const commentAuthors = new Set<string>(this.comments.map((comment) => `@${comment.author.name}`));
       return `${localize('comments.participants')}: ` + [...commentAuthors].join(' ');

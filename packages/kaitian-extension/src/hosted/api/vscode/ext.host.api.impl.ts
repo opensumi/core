@@ -63,6 +63,7 @@ import { ExtHostTerminal } from './ext.host.terminal';
 import { ExtHostProgress } from './ext.host.progress';
 import { ExtHostAppConfig } from '../../ext.process-base';
 import { ExtHostTasks, createTaskApiFactory } from './tasks/ext.host.tasks';
+import { ExtHostComments, createCommentsApiFactory } from './ext.host.comments';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -97,6 +98,7 @@ export function createApiFactory(
   const extHostProgress = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostProgress, new ExtHostProgress(rpcProtocol)) as ExtHostProgress;
 
   const extHostTasks = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostTasks, new ExtHostTasks(rpcProtocol, extHostTerminal, extHostWorkspace));
+  const extHostComments = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostComments, new ExtHostComments(rpcProtocol, extHostCommands, extHostDocs)) as ExtHostComments;
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
 
   return (extension: IExtension) => {
@@ -112,7 +114,7 @@ export function createApiFactory(
       env: createEnvApiFactory(rpcProtocol, extensionService, extHostEnv),
       debug: createDebugApiFactory(extHostDebug),
       version: '1.37.0',
-      comment: {},
+      comment: createCommentsApiFactory(extension, extHostComments),
       languageServer: {},
       extensions: createExtensionsApiFactory(rpcProtocol, extensionService, mainThreadExtensionService),
       tasks: createTaskApiFactory(rpcProtocol, extensionService, extHostTasks, extension),

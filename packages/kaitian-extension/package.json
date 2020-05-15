@@ -24,6 +24,7 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
+    "@ali/ide-comments": "1.8.23",
     "@ali/ide-components": "1.8.23",
     "@ali/ide-connection": "1.8.23",
     "@ali/ide-core-browser": "1.8.23",

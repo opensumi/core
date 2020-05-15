@@ -21,6 +21,16 @@ type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 export const toRange = positionToRange;
 
 /**
+ * 点击评论菜单贡献点默认加入当前 menuId 作为标识
+ */
+interface ICommentsMenuContext {
+  /**
+   * 注册在 menu 的 id
+   */
+  menuId: string;
+}
+
+/**
  * 评论树的节点
  */
 export interface ICommentsTreeNode extends Writeable<TreeNode<ICommentsTreeNode>> {
@@ -94,7 +104,7 @@ export const CommentPanelId = 'CommentPanel';
 /**
  * 获取评论里的回复
  */
-export interface ICommentReply {
+export interface ICommentReply extends ICommentsMenuContext {
   /**
    * 当前 thread
    */
@@ -124,7 +134,7 @@ export interface ICommentsZoneWidget {
   toggle(): void;
 }
 
-export interface ICommentThreadTitle {
+export interface ICommentThreadTitle  extends ICommentsMenuContext {
   /**
    * 当前 thread
    */
@@ -140,7 +150,7 @@ export interface ICommentAuthorInformation {
   iconPath?: URI | string;
 }
 
-export interface ICommentsCommentTitle {
+export interface ICommentsCommentTitle extends ICommentsMenuContext {
   /**
    * 当前 thread
    */
@@ -162,7 +172,7 @@ export interface IComment {
   /**
    * 评论类型
    */
-  mode: CommentMode;
+  mode?: CommentMode;
   /**
    * 评论内容
    */
@@ -288,9 +298,21 @@ export interface ICommentsThread extends IDisposable {
    */
   range: IRange;
   /**
+   * 是否折叠，默认为 false
+   */
+  isCollapsed: boolean;
+  /**
    * 附属数据
    */
   data?: any;
+  /**
+   * thread 维度的 contextValue
+   */
+  contextValue?: string;
+  /**
+   * 在 header 组件显示的文案
+   */
+  label?: string;
   /**
    * thread 参数
    */
@@ -334,6 +356,10 @@ export interface ICommentsThread extends IDisposable {
 
 export interface ICommentsThreadOptions {
   comments?: IComment[];
+  /**
+   * 在 header 上定义的文案
+   */
+  label?: string;
   /**
    * 是否是只读模式
    */
@@ -404,6 +430,23 @@ export interface ICommentsService {
    * 强制更新 tree node，再走一次 TreeNodeHandler 逻辑
    */
   forceUpdateTreeNodes(): void;
+  /**
+   * 触发 左侧 decoration 的渲染
+   */
+  forceUpdateDecoration(): void;
+  /**
+   * 注册插件底部面板
+   */
+  registerCommentPanel(): void;
+  /**
+   * 外部注册可评论的行号提供者
+   */
+  registerCommentRangeProvider(id: string, provider: ICommentRangeProvider): IDisposable;
+  /**
+   * 获取当前行的 provider id
+   * @param line
+   */
+  getProviderIdsByLine(line: number): string[];
 }
 
 export const CollapseId = 'comments.panel.action.collapse';
@@ -411,3 +454,7 @@ export const CollapseId = 'comments.panel.action.collapse';
 export const CloseThreadId = 'comments.thread.action.close';
 
 export class CommentPanelCollapse extends BasicEvent<void> {}
+
+export interface ICommentRangeProvider {
+  getCommentingRanges(documentModel: IEditorDocumentModel): MaybePromise<IRange[] | undefined>;
+}

@@ -13,6 +13,7 @@ import {
   IMainThreadTerminal,
   IMainThreadProgress,
   IMainThreadTasks,
+  IMainThreadComments,
 } from '../../../common/vscode'; // '../../common';
 import { MainThreadCommands } from './main.thread.commands';
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
@@ -41,6 +42,7 @@ import { MainThreadTerminal } from './main.thread.terminal';
 import { MainThreadWindow } from './main.thread.window';
 import { MainThreadProgress } from './main.thread.api.progress';
 import { MainthreadTasks } from './main.thread.tasks';
+import { MainthreadComments } from './main.thread.comments';
 
 export async function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -72,6 +74,7 @@ export async function createApiFactory(
   const MainThreadTerminalAPI = injector.get(MainThreadTerminal, [rpcProtocol]);
   const MainThreadProgressAPI = injector.get(MainThreadProgress, [rpcProtocol]);
   const MainthreadTasksAPI = injector.get(MainthreadTasks, [rpcProtocol]);
+  const MainthreadCommentsAPI = injector.get(MainthreadComments, [rpcProtocol, MainThreadCommandsAPI]);
 
   rpcProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   rpcProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
@@ -98,6 +101,7 @@ export async function createApiFactory(
   rpcProtocol.set<IMainThreadTerminal>(MainThreadAPIIdentifier.MainThreadTerminal, MainThreadTerminalAPI);
   rpcProtocol.set<IMainThreadProgress>(MainThreadAPIIdentifier.MainThreadProgress, MainThreadProgressAPI);
   rpcProtocol.set<IMainThreadTasks>(MainThreadAPIIdentifier.MainThreadTasks, MainthreadTasksAPI);
+  rpcProtocol.set<IMainThreadComments>(MainThreadAPIIdentifier.MainThreadComments, MainthreadCommentsAPI);
 
   await MainThreadWebviewAPI.init();
 
