@@ -433,7 +433,11 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       if (forceLoadPath) {
         expandedPaths.unshift(forceLoadPath);
         this.expandBranch(this, true);
+      } else if (CompositeTreeNode.isRoot(this)) {
+        // 通知分支树已更新（展示文本可能无变化，但节点ID等信息已更新）
+        this.watcher.notifyDidUpdateBranch();
       } else {
+        // 这种情况一般为非根节点刷新后需同步到父节点，更新分支树
         this.expandBranch(this);
       }
     } else {
