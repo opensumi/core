@@ -29,7 +29,7 @@ export function createBrowserApi(injector: Injector, extensionId?: string) {
   if (extensionId) {
     components = new Proxy(Components, {
       get(target, prop) {
-        if (prop === 'Dialog' || 'Overlay') {
+        if (typeof prop === 'string' && ['Dialog', 'Overlay'].includes(prop)) {
           let existing = extensionService.getShadowRootBody(extensionId);
           if (!existing) {
             existing = document.createElement('body');
