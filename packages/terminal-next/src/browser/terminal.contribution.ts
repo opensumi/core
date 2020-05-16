@@ -23,6 +23,8 @@ import TerminalTabs from './component/tab.view';
 import { TerminalKeyBoardInputService } from './terminal.input';
 import TerminalView from './component/terminal.view';
 
+const TerminalViewId = 'terminal';
+
 @Domain(ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution)
 export class TerminalBrowserContribution implements ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution {
 
@@ -71,7 +73,7 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       title: localize('terminal.name'),
       priority: 1,
       activateKeyBinding: 'ctrl+`',
-      containerId: 'terminal',
+      containerId: TerminalViewId,
       titleComponent: TerminalTabs,
     });
   }
@@ -214,19 +216,19 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
     registry.registerItem({
       id: TERMINAL_COMMANDS.OPEN_SEARCH.id,
       command: TERMINAL_COMMANDS.OPEN_SEARCH.id,
-      viewId: TERMINAL_COMMANDS.OPEN_SEARCH.category,
+      viewId: TerminalViewId,
       tooltip: localize('terminal.search'),
     });
     registry.registerItem({
       id: TERMINAL_COMMANDS.SPLIT.id,
       command: TERMINAL_COMMANDS.SPLIT.id,
-      viewId: TERMINAL_COMMANDS.SPLIT.category,
+      viewId: TerminalViewId,
       tooltip: localize('terminal.split'),
     });
     registry.registerItem({
       id: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
       command: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
-      viewId: TERMINAL_COMMANDS.CLEAR_CONTENT.category,
+      viewId: TerminalViewId,
       tooltip: localize('terminal.menu.clearGroups'),
     });
   }
