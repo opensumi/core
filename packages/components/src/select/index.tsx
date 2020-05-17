@@ -134,7 +134,7 @@ export function Select<T = string>({
   const selectRef = React.useRef<HTMLDivElement | null>(null);
   const overlayRef = React.useRef<HTMLDivElement | null>(null);
   useEffect(() => {
-    if (onChange && select !== undefined) {
+    if (onChange && select !== undefined && !equals(select, value)) {
       onChange(select);
     }
     setOpen(false);
