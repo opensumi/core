@@ -258,6 +258,9 @@ export class FileTreeService extends Tree {
         if (target) {
           deleteOrAddChanges.splice(deleteOrAddChanges.indexOf(target), 1);
           moveChange.push({ source, target });
+        } else {
+          // 非重命名类型的移动事件时，传递至下层做处理
+          restChange.push(change);
         }
       } else if (change?.type === FileChangeType.ADDED) {
         target = change;
@@ -265,6 +268,9 @@ export class FileTreeService extends Tree {
         if (source) {
           deleteOrAddChanges.splice(deleteOrAddChanges.indexOf(source), 1);
           moveChange.push({ source, target });
+        } else {
+          // 非重命名类型的移动事件时，传递至下层做处理
+          restChange.push(change);
         }
       }
     }
