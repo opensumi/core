@@ -155,7 +155,7 @@ export class FileServiceClient implements IFileServiceClient {
     if (isElectronRenderer() && options && options.moveToTrash) {
       const uri = new URI(uriString);
       if (uri.scheme === 'file') {
-        (this.inject.get(IElectronMainUIService) as IElectronMainUIService).moveToTrash(uri.codeUri.fsPath);
+        return (this.inject.get(IElectronMainUIService) as IElectronMainUIService).moveToTrash(uri.codeUri.fsPath);
       }
     }
     return this.fileService.delete(uriString, options);
