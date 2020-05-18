@@ -25,7 +25,7 @@ export class ToolBarViewService implements IToolBarViewService {
 
   registerToolBarElement(element: IToolBarAction | IToolBarComponent) {
     const handle = new ToolBarElementHandle(element);
-    const location = locationToString[element.position];
+    const location = locationToString[element.position] || element.position;
 
     const id = element.id || 'toolbar-anonymous-element-' + this.anonymousId++;
 

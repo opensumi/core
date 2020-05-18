@@ -21,7 +21,7 @@ export interface IToolBarElement {
 
   id?: string;
 
-  position: ToolBarPosition;
+  position: ToolBarPosition | string;
 
   type: 'component' | 'action';
 
