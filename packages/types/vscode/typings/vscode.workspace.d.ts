@@ -60,6 +60,17 @@ declare module 'vscode' {
     export const onDidChangeWorkspaceFolders: Event<WorkspaceFoldersChangeEvent>;
 
     /**
+		 * ~~Register a task provider.~~
+		 *
+		 * @deprecated Use the corresponding function on the `tasks` namespace instead
+		 *
+		 * @param type The task kind type this provider is registered for.
+		 * @param provider A task provider.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerTaskProvider(type: string, provider: TaskProvider): Disposable;
+
+    /**
      * Returns the [workspace folder](#WorkspaceFolder) that contains a given uri.
      * * returns `undefined` when the given uri doesn't match any workspace folder
      * * returns the *input* when the given uri is a workspace folder itself
@@ -150,7 +161,7 @@ declare module 'vscode' {
      * @魁梧
      */
     export function updateWorkspaceFolders(start: number, deleteCount: number | undefined | null, ...workspaceFoldersToAdd: { uri: Uri, name?: string }[]): boolean;
-  
+
     /**
 		 * Save all dirty files.
 		 *
