@@ -10,7 +10,7 @@ import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
 import { PreferenceService } from '@ali/ide-core-browser';
 import { FilePathAddon, AttachAddon } from './terminal.addon';
 import { TerminalKeyBoardInputService } from './terminal.input';
-import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, TerminalSupportType, ITerminalGroupViewService, ITerminalInternalService, ITerminalConnection, IWidget, defaultTerminalFontFamily, defaultTerminalFontSize } from '../common';
+import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, TerminalSupportType, ITerminalGroupViewService, ITerminalInternalService, ITerminalConnection, IWidget, defaultTerminalFontFamily } from '../common';
 
 import * as styles from './component/terminal.module.less';
 
@@ -142,7 +142,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         break;
       case 'fontSize':
         // TODO: 现在 client 自己这里限制，保证 windows 不会卡死
-        this._term.setOption(name, value > 5 ? value : defaultTerminalFontSize);
+        // FIXME: preference validation 完成后去除, windows下大小为 1 会导致界面卡死
+        this._term.setOption(name, value > 2 ? value : 2);
         break;
       default:
         this._term.setOption(name, value);
@@ -155,8 +156,12 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     const support = TerminalSupportType;
 
     Object.keys(support).forEach((key) => {
-      const value = this.preference.get<any>(key);
+      let value = this.preference.get<any>(key);
       if (value !== undefined && value !== '') {
+        // FIXME: preference validation完成后去除
+        if (support[key] === 'fontSize') {
+            value = value > 2 ? value : 2;
+        }
         options[support[key]] = value;
       }
     });
