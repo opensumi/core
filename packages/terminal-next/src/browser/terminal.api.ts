@@ -21,15 +21,23 @@ export class TerminalApiService implements ITerminalApiService {
   @Autowired(ITerminalInternalService)
   protected readonly service: ITerminalInternalService;
 
+  protected _entries = new Map<string, ITerminalExternalClient>();
+
   get terminals() {
-    return [];
+    return Array.from(this._entries.values()).map((v) => {
+      return {
+        id: v.id,
+        name: v.name,
+        isActive: this.view.currentWidgetId === v.id,
+      };
+    });
   }
 
   createTerminal(options: TerminalOptions): ITerminalExternalClient {
     const self = this;
     const client = this.controller.createClientWithWidget(options);
 
-    return {
+    const external = {
       get id() { return client.id; },
       get processId() { return client.pid; },
       get name() { return client.name; },
@@ -43,8 +51,13 @@ export class TerminalApiService implements ITerminalApiService {
       },
       dispose() {
         self.view.removeWidget(client.widget.id);
+        self._entries.delete(client.id);
       },
     };
+
+    this._entries.set(client.id, external);
+
+    return external;
   }
 
   getProcessId(sessionId: string) {
@@ -80,6 +93,7 @@ export class TerminalApiService implements ITerminalApiService {
       return;
     }
 
-    this.view.removeWidget(client.widget.id);
+    this.view.removeWidget(client.id);
+    this._entries.delete(client.id);
   }
 }
