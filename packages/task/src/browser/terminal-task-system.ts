@@ -81,8 +81,8 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     this.processReady.resolve();
 
     this.terminalClient.term.writeln(`\x1b[1m> Executing task: ${task._label} <\x1b[0m\n`);
-    const { shellPath, shellArgs } = this.terminalOptions;
-    this.terminalClient.term.writeln(`\x1b[1m> Command: ${shellPath} ${typeof shellArgs === 'string' ? shellArgs : shellArgs?.join(' ')} <\x1b[0m\n`);
+    const { shellArgs } = this.terminalOptions;
+    this.terminalClient.term.writeln(`\x1b[1m> Command: ${typeof shellArgs === 'string' ? shellArgs : shellArgs![1]} <\x1b[0m\n`);
     this.terminalView.selectWidget(this.terminalClient.id);
     this.terminalClient.term.write('\n\x1b[G');
     return this.exitDefer.promise;
@@ -105,7 +105,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
   @Autowired(IVariableResolverService)
   variableResolver: IVariableResolverService;
 
-  private currentTask: Task;
+  protected currentTask: Task;
 
   private activeTaskExecutors: Map<string, IActivateTaskExecutorData> = new Map();
 
@@ -125,23 +125,25 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     const subArgs: string[] = [];
     const result: string[] = [];
 
+    if (commandName) {
+      if (typeof commandName === 'string') {
+        subCommand = commandName;
+      } else {
+        // TODO: 暂时先不处理显示上面的问题
+        subCommand = commandName.value;
+      }
+    }
+
+    subArgs.push(subCommand);
+
     if (commandArgs) {
       for (const arg of commandArgs) {
         if (typeof arg === 'string') {
           subArgs.push(arg);
         } else {
-          // 暂时先不处理显示上面的问题
+          // TODO: 暂时先不处理显示上面的问题
           subArgs.push(arg.value);
         }
-      }
-    }
-
-    if (commandName) {
-      if (typeof commandName === 'string') {
-        subCommand = commandName;
-      } else {
-        // 暂时先不处理显示上面的问题
-        subCommand = commandName.value;
       }
     }
 
@@ -153,7 +155,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
       }
     }
 
-    return { shellArgs: ['-c', `${subCommand} ${subArgs.join(' ')}`] };
+    return { shellArgs: ['-c', `${subArgs.join(' ')}`] };
   }
 
   private async executeTask(task: CustomTask | ContributedTask): Promise<ITaskExecuteResult> {
