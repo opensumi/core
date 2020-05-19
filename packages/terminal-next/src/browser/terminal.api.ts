@@ -44,6 +44,9 @@ export class TerminalApiService implements ITerminalApiService {
       dispose() {
         self.view.removeWidget(client.widget.id);
       },
+      ready() {
+        return client.attached.promise;
+      },
     };
   }
 
