@@ -54,9 +54,14 @@ export class FileTreeAPI implements IFileTreeAPI {
       if (file.children?.length === 1 && file.children[0].isDirectory && compact) {
         return await this.resolveChildren(tree, file.children[0].uri, parent, compact);
       } else {
+        // 为文件树节点新增isInSymbolicDirectory属性，用于探测节点是否处于软链接文件中
+        const filestat = {
+          ...file,
+          isInSymbolicDirectory: parent?.filestat.isSymbolicLink || parent?.filestat.isInSymbolicDirectory,
+        };
         return {
-          children: this.toNodes(tree, file, parent),
-          filestat: file,
+          children: this.toNodes(tree, filestat, parent),
+          filestat,
         };
       }
     } else {

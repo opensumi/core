@@ -780,6 +780,19 @@ export class FileTreeModelService {
 
   private proxyPrompt = (promptHandle: RenamePromptHandle | NewPromptHandle) => {
     let isCommit = false;
+    const locationFileWhileFileExist = (pathOrUri: URI | string) => {
+      const treeNode = this.fileTreeService.getNodeByPathOrUri(pathOrUri);
+      const exist = treeNode && this.treeModel.root.isItemVisibleAtSurface(treeNode!);
+      if (exist) {
+        this.location(pathOrUri);
+        return;
+      } else {
+        // 文件树更新后尝试定位文件位置
+        Event.once(this.fileTreeHandle.onDidUpdate)(() => {
+          locationFileWhileFileExist(pathOrUri);
+        });
+      }
+    };
     const commit = async (newName) => {
       this.validateMessage = undefined;
       if (promptHandle instanceof RenamePromptHandle) {
@@ -813,9 +826,7 @@ export class FileTreeModelService {
         // Cause the treeNode move event just changing path and name by default.
         // We should update target uri to new uri by ourself.
         target.uri = to;
-        Event.once(this.treeModel.onChange)(async () => {
-          this.location(to);
-        });
+        locationFileWhileFileExist(target.path);
       } else if (promptHandle instanceof NewPromptHandle) {
         const parent = promptHandle.parent as Directory;
         const newUri = parent.uri.resolve(newName);
@@ -842,34 +853,27 @@ export class FileTreeModelService {
           const parentNode = this.fileTreeService.getNodeByPathOrUri(parentPath) as Directory;
           if (parentNode) {
             if (!parentNode.expanded && !parentNode.children) {
-              await parentNode.setExpanded(false, true);
-              this.location(parent.uri.resolve(newName));
+              await parentNode.setExpanded(true);
+              // 使用uri作为定位是不可靠的，需要检查一下该节点是否处于软链接目录内进行对应转换
+              locationFileWhileFileExist(new Path(parent.path).join(newName).toString());
             } else {
               await this.fileTreeService.refresh(parentNode as Directory);
-              Event.once(this.fileTreeService.onNodeRefreshed)(async () => {
-                this.location(parent.uri.resolve(newName));
-              });
+              locationFileWhileFileExist(new Path(parent.path).join(newName).toString());
             }
           } else {
             if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
               const addNode = await this.fileTreeService.addNode(parent, newName, promptHandle.type);
               // 文件夹首次创建需要将焦点设到新建的文件夹上
-              Event.once(this.treeModel.onChange)(async () => {
-                this.location(addNode.uri);
-              });
+              locationFileWhileFileExist(addNode.path);
             } else if (promptHandle.type === TreeNodeType.TreeNode) {
               const namePieces = Path.splitPath(newName);
               const addNode = await this.fileTreeService.addNode(parent, namePieces.slice(0, namePieces.length - 1).join(Path.separator), promptHandle.type);
-              Event.once(this.treeModel.onChange)(async () => {
-                this.location(addNode.uri.resolve(namePieces.slice(-1)[0]));
-              });
+              locationFileWhileFileExist(new Path(addNode.path).join(namePieces.slice(-1)[0]).toString());
             }
           }
         } else {
           const addNode = await this.fileTreeService.addNode(parent, newName, promptHandle.type);
-          Event.once(this.treeModel.onChange)(async () => {
-            this.location(addNode.uri);
-          });
+          locationFileWhileFileExist(addNode.path);
         }
       }
       this.fileTreeContextKey.filesExplorerInputFocused.set(false);
@@ -1137,12 +1141,17 @@ export class FileTreeModelService {
     this.treeModel.dispatchChange();
   }
 
-  public location = async (uri: URI) => {
+  public location = async (pathOrUri: URI | string) => {
     if (this._loadSnapshotReady) {
       await this._loadSnapshotReady;
     }
     return this.flushLocationDelayer.trigger(async () => {
-      const path = await this.fileTreeService.getFileTreeNodePathByUri(uri);
+      let path;
+      if (typeof pathOrUri === 'string') {
+        path = pathOrUri;
+      } else {
+        path = await this.fileTreeService.getFileTreeNodePathByUri(pathOrUri)!;
+      }
       if (path) {
         if (!this.fileTreeHandle) {
           return;

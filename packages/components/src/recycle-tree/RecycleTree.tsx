@@ -4,7 +4,7 @@ import { TreeModel } from './tree/model/TreeModel';
 import { TreeNode, CompositeTreeNode, spliceTypedArray } from './tree';
 import { RenamePromptHandle, PromptHandle } from './prompt';
 import { NewPromptHandle } from './prompt/NewPromptHandle';
-import { DisposableCollection, Emitter, IDisposable, Event } from '@ali/ide-core-common';
+import { DisposableCollection, Emitter, Event } from '@ali/ide-core-common';
 import { INodeRendererProps, NodeRendererWrap, INodeRenderer } from './TreeNodeRendererWrap';
 import { TreeNodeType, TreeNodeEvent } from './types';
 import { Scrollbars } from 'react-custom-scrollbars';
@@ -93,11 +93,11 @@ export interface IRecycleTreeHandle {
   // 获取当前TreeModel
   getModel(): TreeModel;
   // TreeModel变更事件
-  onDidChangeModel(callback: (IModelChange) => void): IDisposable;
+  onDidChangeModel: Event<IModelChange>;
   // Tree更新事件
-  onDidUpdate(callback: () => void): IDisposable;
+  onDidUpdate: Event<void>;
   // 监听渲染报错
-  onError(callback: (event: IRecycleTreeError) => void): IDisposable;
+  onError: Event<IRecycleTreeError>;
 }
 
 interface IFilterNodeRendererProps {
