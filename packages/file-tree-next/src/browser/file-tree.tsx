@@ -9,9 +9,11 @@ import { Directory, File } from './file-tree-nodes';
 import { EmptyTreeView } from './empty.view';
 import * as cls from 'classnames';
 import * as styles from './file-tree.module.less';
+import throttle = require('lodash.throttle');
 
 export const FILTER_AREA_HEIGHT = 30;
 export const FILE_TREE_FIELD_NAME = 'FILE_TREE_FIELD';
+export const FILE_TREE_FILTER_DELAY = 500;
 
 export const FileTree = observer(({
   viewState,
@@ -73,6 +75,19 @@ export const FileTree = observer(({
       fileTreeModelService.removeFileDecoration();
     };
   }, []);
+
+  React.useEffect(() => {
+    if (!filterMode) {
+      setFilter('');
+    }
+  }, [filterMode]);
+
+  React.useEffect(() => {
+    if (!!filter) {
+      const { expandAllCacheDirectory } = fileTreeModelService;
+      expandAllCacheDirectory();
+    }
+  }, [filter]);
 
   const ensureIsReady = async () => {
     await fileTreeModelService.whenReady;
@@ -168,14 +183,13 @@ export const FileTree = observer(({
       }
     }
   };
+  const throttleSetFilter = throttle((value) => {
+    setFilter(value);
+  }, FILE_TREE_FILTER_DELAY);
 
   const renderFilterView = () => {
-    const { expandAllCacheDirectory } = fileTreeModelService;
-    const handleFilterChange = async (value: string) => {
-      if (!!value) {
-        await expandAllCacheDirectory();
-      }
-      setFilter(value);
+    const handleFilterChange = (value: string) => {
+      throttleSetFilter(value);
     };
     const handleAfterClear = () => {
       locationToCurrentFile();
