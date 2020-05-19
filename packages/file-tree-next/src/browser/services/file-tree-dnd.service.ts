@@ -166,12 +166,15 @@ export class DragAndDropService {
       if (!!containing) {
         const resources = this.beingDraggedNodes;
         if (resources.length > 0) {
-          // 最小化移动文件
-          const errors = await this.fileTreeAPI.mvFiles(resources.map((res) => res.uri), containing.uri);
-          if (errors && errors.length > 0) {
-            errors.forEach((error) => {
-              this.messageService.error(error);
-            });
+          const resourcesCanBeMoved = resources.filter((resource: File | Directory) => resource && resource.parent && !(resource.parent as Directory).uri.isEqual( containing.uri));
+          if (resourcesCanBeMoved.length > 0) {
+            // 最小化移动文件
+            const errors = await this.fileTreeAPI.mvFiles(resourcesCanBeMoved.map((res) => res.uri), containing.uri);
+            if (errors && errors.length > 0) {
+              errors.forEach((error) => {
+                this.messageService.error(error);
+              });
+            }
           }
         }
       }
