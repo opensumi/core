@@ -430,11 +430,12 @@ export class FileTreeService extends Tree {
     const node = this.getNodeByPathOrUri(path);
     if (node && node.parent) {
       this.removeNodeCacheByPath(node.path);
-      // 刷新父节点目录
+      // 压缩模式下，刷新父节点目录即可
       if (this.isCompactMode) {
         this.refresh(node.parent as Directory);
+      } else {
+        this.dispatchWatchEvent(node.parent.path, { type: WatchEvent.Removed, path: node.path });
       }
-      this.dispatchWatchEvent(node.parent.path, { type: WatchEvent.Removed, path: node.path });
     }
   }
 
