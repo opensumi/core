@@ -30,6 +30,7 @@ export class MockWorkspaceService implements IWorkspaceService {
 
   async updateWorkspace(workspaceStat?: FileStat | undefined) {
     await this.updateRoots(workspaceStat);
+    this._onWorkspaceChanged.fire(this._roots);
   }
 
   containsSome(paths: string[]): Promise<boolean> {
@@ -102,7 +103,7 @@ export class MockWorkspaceService implements IWorkspaceService {
     throw new Error('Method not implemented.');
   }
   getWorkspaceRootUri(uri: URI | undefined): URI | undefined {
-    throw new Error('Method not implemented.');
+    return new URI(this._roots[0].uri);
   }
   getWorkspaceName(uri: URI): string {
     return '';
