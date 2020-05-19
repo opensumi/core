@@ -82,7 +82,7 @@ export function createLayoutAPIFactory(
       return await extHostCommands.executeCommand('main-layout.right-panel.toggle', false);
     },
     activatePanel: async (id) => {
-      return await extHostCommands.executeCommand(`workbench.view.${id}`);
+      return await extHostCommands.executeCommand(`workbench.view.extension.${id}`);
     },
     isBottomPanelVisible: async () => {
       return await extHostCommands.executeCommand('main-layout.bottom-panel.is-visible');
