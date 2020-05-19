@@ -50,6 +50,7 @@ export const localizationBundle = {
     'file.filetree.filter.placeholder': 'Enter a keyword or path to filter',
     'file.filetree.openWithPath': 'Open In The Terminal',
     'file.tooltip.symbolicLink': 'Symbolic Link',
+    'file.resource-deleted': '(Deleted)',
 
     'menu-bar.title.file': 'File',
     'menu-bar.title.edit': 'Edit',
