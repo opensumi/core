@@ -77,7 +77,8 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   }
 
   async $createTerminal(options: vscode.TerminalOptions) {
-    const terminal = await this.terminalApi.createTerminal(options);
+    const terminal = this.terminalApi.createTerminal(options);
+    await terminal.ready();
     if (!terminal) {
       return this.logger.error('创建终端失败');
     }

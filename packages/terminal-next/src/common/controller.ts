@@ -9,6 +9,7 @@ export interface ITerminalExternalClient {
   readonly name: string;
   show(): void;
   hide(): void;
+  ready(): Promise<void>;
   dispose(): void;
 }
 
