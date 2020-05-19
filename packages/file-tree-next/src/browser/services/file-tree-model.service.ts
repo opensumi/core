@@ -861,13 +861,15 @@ export class FileTreeModelService {
               locationFileWhileFileExist(new Path(parent.path).join(newName).toString());
             }
           } else {
+            // 不存在同名目录的情况下
             if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
               const addNode = await this.fileTreeService.addNode(parent, newName, promptHandle.type);
               // 文件夹首次创建需要将焦点设到新建的文件夹上
               locationFileWhileFileExist(addNode.path);
             } else if (promptHandle.type === TreeNodeType.TreeNode) {
               const namePieces = Path.splitPath(newName);
-              const addNode = await this.fileTreeService.addNode(parent, namePieces.slice(0, namePieces.length - 1).join(Path.separator), promptHandle.type);
+              const addNode = await this.fileTreeService.addNode(parent, namePieces.slice(0, namePieces.length - 1).join(Path.separator), TreeNodeType.CompositeTreeNode) as Directory;
+              await addNode.setExpanded(true);
               locationFileWhileFileExist(new Path(addNode.path).join(namePieces.slice(-1)[0]).toString());
             }
           }
