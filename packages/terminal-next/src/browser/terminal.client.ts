@@ -141,7 +141,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         this._term.setOption(name, value || defaultTerminalFontFamily);
         break;
       case 'fontSize':
-        this._term.setOption(name, value || defaultTerminalFontSize);
+        // TODO: 现在 client 自己这里限制，保证 windows 不会卡死
+        this._term.setOption(name, value > 5 ? value : defaultTerminalFontSize);
         break;
       default:
         this._term.setOption(name, value);
