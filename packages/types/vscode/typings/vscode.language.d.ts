@@ -291,23 +291,6 @@ declare module 'vscode' {
 		 */
 		export function registerImplementationProvider(selector: DocumentSelector, provider: ImplementationProvider): Disposable;
 
-
-
-		/**
-		 * Register a declaration provider.
-		 *
-		 * Multiple providers can be registered for a language. In that case providers are asked in
-		 * parallel and the results are merged. A failing provider (rejected promise or exception) will
-		 * not cause a failure of the whole operation.
-		 *
-		 * @param selector A selector that defines the documents this provider is applicable to.
-		 * @param provider A declaration provider.
-		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-		 */
-		export function registerDeclarationProvider(selector: DocumentSelector, provider: DeclarationProvider): Disposable;
-
-
-
 		/**
 		 * Register a document symbol provider.
 		 *
@@ -2170,7 +2153,7 @@ declare module 'vscode' {
 		 */
 		dispose(): void;
 	}
-	
+
 
 	/**
 	 * The declaration of a symbol representation as one or many [locations](#Location)
