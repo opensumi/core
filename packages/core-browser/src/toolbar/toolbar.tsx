@@ -8,6 +8,7 @@ import debounce = require('lodash.debounce');
 import { getIcon } from '../style/icon/icon';
 import { DomListener } from '../utils';
 import { ToolbarActionBtnClickEvent } from './components';
+import * as classnames from 'classnames';
 
 // TODO: use preference
 export const DEFAULT_TOOLBAR_ACTION_MARGIN = 5;
@@ -77,7 +78,7 @@ export const ToolbarLocation = (props: IToolbarLocationProps & React.HTMLAttribu
     }
   }, []);
 
-  return <div {...props} className={'kt-toolbar-location ' + props.className} id={'toolbar-location-' + location} ref={container as any} ></div>;
+  return <div {...props} className={classnames('kt-toolbar-location', props.className)} id={'toolbar-location-' + location} ref={container as any} ></div>;
 
 };
 
@@ -99,8 +100,8 @@ function renderToolbarLocation(container: HTMLDivElement, location: string, pref
   }
 
   const locationContainer = document.createElement('div');
-  const locationVisibleContainer = document.createElement('div');
-  locationVisibleContainer.classList.add('kt-toolbar-location-visible');
+  locationContainer.classList.add('kt-toolbar-location-visible');
+  locationContainer.id = 'toolbar-location-visible-' + location;
   const dropDownId = 'toolbar-location-dropdown-' + location;
   let locationDropDownContainer: HTMLDivElement;
   if (document.getElementById(dropDownId)) {
@@ -115,7 +116,6 @@ function renderToolbarLocation(container: HTMLDivElement, location: string, pref
     locationDropDownContainer.id = dropDownId;
   }
   container.append(locationContainer);
-  locationContainer.append(locationVisibleContainer);
   document.body.append(locationDropDownContainer);
 
   const totalWidth = getContentWidth(locationContainer);
@@ -175,16 +175,16 @@ function renderToolbarLocation(container: HTMLDivElement, location: string, pref
     if (isActionSplit(actionOrSplit)) {
       const splitElement = document.createElement('div');
       splitElement.classList.add('kt-toolbar-action-split');
-      locationVisibleContainer.append(splitElement);
+      locationContainer.append(splitElement);
     } else {
-      appendActionToLocationContainer(locationVisibleContainer, actionOrSplit, context, false, preference);
+      appendActionToLocationContainer(locationContainer, actionOrSplit, context, false, preference);
     }
   });
 
   if (dropDownActionsOrSplits.length > 0) {
     const moreElement = document.createElement('div');
     moreElement.classList.add('kt-toolbar-more', ...getIcon('more').split(' '));
-    locationVisibleContainer.append(moreElement);
+    locationContainer.append(moreElement);
     moreElement.addEventListener('mousedown', () => {
       showDropDown(moreElement, location, eventBus);
     });
@@ -205,7 +205,7 @@ function renderToolbarLocation(container: HTMLDivElement, location: string, pref
 }
 
 function showDropDown(ele, location: string, eventBus: IEventBus) {
-  const locationId = 'toolbar-location-' + location;
+  const locationId = 'toolbar-location-visible-' + location;
   const dropDownId = 'toolbar-location-dropdown-' + location;
   const locationElement = document.getElementById(locationId);
   const dropDownElement = document.getElementById(dropDownId);
@@ -312,7 +312,7 @@ class ToolbarActionRenderer {
         if (element.parentElement) {
           element.remove();
         }
-        container.append(element);
+        container.replaceWith(element);
         setTimeout(() => {
           if (!element || element.offsetWidth === 0) {
             return;
@@ -348,6 +348,7 @@ class ToolbarActionRenderer {
       },
       promise: new Promise<HTMLDivElement>((resolve, reject) => {
         const element = document.createElement('div');
+        element.classList.add('kt-toolbar-action-wrapper');
         const C = this.toolbarAction.component;
         ReactDOM.render(<ConfigProvider value={this.context}>
           <C inDropDown={inDropDown} action={this.toolbarAction} preferences={preferences} />

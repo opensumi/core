@@ -1,35 +1,27 @@
 /*
 @deprecated
 */
-.toolbarActions {
-  padding: 0 10px;
-  height: 27px;
-  flex: 1;
-  border-bottom: 1px solid var(--kt-menubar-border);
-  background-color: var(--kt-menubar-background);
-
-  :global(.kt-toolbar-location-visible) {
-    display: flex;
-    justify-content: flex-end;
-    padding: 0 10px;
-    align-items: center;
-    height: 27px;
-  }
-
-  .actionGroup {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0px 5px;
-    border-right: 1px solid rgba(0,0,0,0.25);
-
-    .action {
-      margin: 0px 5px;
-      max-width: 110px !important;
+.toolbarActionsWrapper {
+  display: flex;
+  justify-content: space-between;
+  .toolbarActions {
+    &.toolbarActionsLeft {
+      flex-shrink: 0;
     }
-  }
-  .actionGroup:last-of-type {
-    border-right: none;
+    &.toolbarActionsRight {
+      flex-grow:1;
+    }
+    padding: 0 10px;
+    height: 27px;
+    border-bottom: 1px solid var(--kt-menubar-border);
+    background-color: var(--kt-menubar-background);
+
+    :global(.kt-toolbar-location-visible) {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      height: 100%;
+    }
   }
 
 }
