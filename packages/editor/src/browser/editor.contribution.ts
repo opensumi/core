@@ -250,6 +250,10 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       execute: async () => {
         const editor = this.workbenchEditorService.currentEditor as BrowserCodeEditor;
         if (editor) {
+          const group = this.workbenchEditorService.currentEditorGroup;
+          if (group && group.currentResource) {
+             group.pin(group.currentResource!.uri);
+          }
           await editor.save();
         }
       },
