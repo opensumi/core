@@ -39,8 +39,8 @@ export class TerminalApiService implements ITerminalApiService {
 
     const external = {
       get id() { return client.id; },
-      get processId() { return client.pid; },
       get name() { return client.name; },
+      get processId() { return client.pid; },
       show() {
         const widget = client.widget;
         self.view.selectWidget(widget.id);
@@ -52,9 +52,6 @@ export class TerminalApiService implements ITerminalApiService {
       dispose() {
         self.view.removeWidget(client.widget.id);
         self._entries.delete(client.id);
-      },
-      ready() {
-        return client.attached.promise;
       },
     };
 

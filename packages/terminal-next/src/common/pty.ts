@@ -112,6 +112,11 @@ export interface TerminalOptions {
    * pty 进程退出后是否自动关闭 terminal 控件
    */
   closeWhenExited?: boolean;
+
+  /**
+   * 自定义的参数，由上层集成方自行控制
+   */
+  args?: any;
 }
 
 export interface ITerminalService {

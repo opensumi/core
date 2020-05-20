@@ -13,7 +13,7 @@ export interface ITerminalClient extends Disposable {
   /**
    * 终端客户端对应的后端进程 id
    */
-  pid: number;
+  pid: Promise<number | undefined>;
 
   /**
    * 终端客户端对应的名称，可能是用户自定义，也可能来自后端
@@ -122,7 +122,6 @@ export const ITerminalClientFactory = Symbol('ITerminalClientFactory');
 export type ITerminalClientFactory = (widget: IWidget, options?: TerminalOptions, autofocus?: boolean) => ITerminalClient;
 
 export interface ITerminalConnection {
-  pid: number;
   name: string;
   readonly: boolean;
   sendData(data: string | ArrayBuffer): void;
