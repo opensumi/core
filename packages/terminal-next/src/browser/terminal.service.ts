@@ -95,9 +95,8 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
     return ensureResult;
   }
 
-  private _createCustomWebSocket(sessionId: string, name: string, pid: number): ITerminalConnection {
+  private _createCustomWebSocket(sessionId: string, name: string): ITerminalConnection {
     return {
-      pid,
       name,
       readonly: false,
       onData: (handler: (value: string | ArrayBuffer) => void) => {
@@ -131,7 +130,7 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
       return;
     }
 
-    return this._createCustomWebSocket(sessionId, name, pid);
+    return this._createCustomWebSocket(sessionId, name);
   }
 
   private _sendMessage(sessionId: string, json: any, requestId?: number) {

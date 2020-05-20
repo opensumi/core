@@ -142,9 +142,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         this._clients.set(client.id, client);
 
         /**
-         * 恢复旧的终端需要尝试预先连接后端
+         * 等待预先连接成功
          */
-        await client.attach();
+        await client.attached.promise;
         widget.name = client.name;
 
         /**
@@ -254,12 +254,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     if (!canReconnected) {
       this.terminalView.clear();
       this._reset();
-    } else {
-      clients.map((client) => {
-        if (client) {
-          client.attach();
-        }
-      });
     }
   }
 

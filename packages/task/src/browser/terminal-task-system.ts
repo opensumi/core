@@ -23,6 +23,8 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
   private terminalClient: ITerminalClient;
 
+  private pid: number | undefined;
+
   private exitDefer: Deferred<{ exitCode?: number }> = new Deferred();
 
   private _onDidTaskProcessExit: Emitter<number | undefined> = new Emitter();
@@ -33,23 +35,10 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
   constructor(private terminalOptions: TerminalOptions, private collector: ProblemCollector) {
     super();
-    this.terminalClient = this.terminalController.createClientWithWidget({ ...terminalOptions, closeWhenExited: false });
-    this.terminalController.showTerminalPanel();
-
-    this.addDispose(this.terminalClient.onReceivePtyMessage((e) => {
-      this.collector.processLine(removeAnsiEscapeCodes(e.message));
-    }));
-
-    this.addDispose(this.terminalService.onExit((e) => {
-      if (e.sessionId === this.terminalClient.id) {
-        this.onTaskExit(e.code);
-        this.exitDefer.resolve({ exitCode: e.code });
-      }
-    }));
   }
 
   terminate(): Promise<{ success: boolean }> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       if (this.terminalClient) {
         this.terminalClient.dispose();
         this.terminalService.onExit((e) => {
@@ -75,9 +64,27 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     }));
   }
 
+  private createTerminal() {
+    this.terminalClient = this.terminalController.createClientWithWidget({ ...this.terminalOptions, closeWhenExited: false });
+    this.terminalController.showTerminalPanel();
+
+    this.addDispose(this.terminalClient.onReceivePtyMessage((e) => {
+      this.collector.processLine(removeAnsiEscapeCodes(e.message));
+    }));
+
+    this.addDispose(this.terminalService.onExit((e) => {
+      if (e.sessionId === this.terminalClient.id) {
+        this.onTaskExit(e.code);
+        this.exitDefer.resolve({ exitCode: e.code });
+      }
+    }));
+  }
+
   async execute(task: Task): Promise<{ exitCode?: number }> {
-    await this.terminalClient.attach();
+    this.createTerminal();
     await this.terminalClient.attached.promise;
+    this.pid = await this.terminalClient.pid;
+
     this.processReady.resolve();
 
     this.terminalClient.term.writeln(`\x1b[1m> Executing task: ${task._label} <\x1b[0m\n`);
@@ -88,8 +95,8 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     return this.exitDefer.promise;
   }
 
-  get processId(): number {
-    return this.terminalClient.pid;
+  get processId(): number | undefined {
+    return this.pid;
   }
 }
 

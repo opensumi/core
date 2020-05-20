@@ -7,7 +7,7 @@ export interface ITerminalExternalClient {
   readonly id: string;
   readonly processId: Promise<number | undefined>;
   readonly name: string;
-  show(): void;
+  show(preserveFocus?: boolean): void;
   hide(): void;
   dispose(): void;
 }

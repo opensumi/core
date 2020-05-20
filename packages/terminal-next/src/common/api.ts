@@ -4,9 +4,9 @@ import { ITerminalExternalClient } from './controller';
 
 export const ITerminalApiService = Symbol('ITerminalApiService');
 export interface ITerminalApiService {
-  createTerminal(options: TerminalOptions): ITerminalExternalClient;
+  createTerminal(options: TerminalOptions): Promise<ITerminalExternalClient>;
   sendText(id: string, text: string, addNewLine?: boolean): void;
-  getProcessId(sessionId: string): Promise<number>;
+  getProcessId(sessionId: string): Promise<number | undefined>;
 
   onDidOpenTerminal: Event<ITerminalInfo>;
   onDidCloseTerminal: Event<string>;

@@ -132,7 +132,7 @@ export class DebugSession implements IDisposable {
   }
 
   protected async doRunInTerminal(options: TerminalOptions, command?: string): Promise<DebugProtocol.RunInTerminalResponse['body']> {
-    const terminal = this.terminalService.createTerminal(options);
+    const terminal = await this.terminalService.createTerminal(options);
     terminal.show();
     const processId = await this.terminalService.getProcessId(terminal.id);
     if (command) {

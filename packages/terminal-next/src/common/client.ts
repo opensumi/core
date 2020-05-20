@@ -60,11 +60,6 @@ export interface ITerminalClient extends Disposable {
   onReceivePtyMessage: CoreEvent<{ id: string, message: string }>;
 
   /**
-   * 预先连接后端
-   */
-  attach(): Promise<void>;
-
-  /**
    * 终端客户端获取输入焦点
    */
   focus(): void;

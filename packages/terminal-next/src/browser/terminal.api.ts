@@ -33,7 +33,7 @@ export class TerminalApiService implements ITerminalApiService {
     });
   }
 
-  createTerminal(options: TerminalOptions): ITerminalExternalClient {
+  async createTerminal(options: TerminalOptions): Promise<ITerminalExternalClient> {
     const self = this;
     const client = this.controller.createClientWithWidget(options);
 
@@ -41,10 +41,14 @@ export class TerminalApiService implements ITerminalApiService {
       get id() { return client.id; },
       get name() { return client.name; },
       get processId() { return client.pid; },
-      show() {
+      show(preserveFocus: boolean = true) {
         const widget = client.widget;
         self.view.selectWidget(widget.id);
         self.controller.showTerminalPanel();
+
+        if (preserveFocus) {
+          setTimeout(() => client.focus());
+        }
       },
       hide() {
         self.controller.hideTerminalPanel();
@@ -56,6 +60,8 @@ export class TerminalApiService implements ITerminalApiService {
     };
 
     this._entries.set(client.id, external);
+
+    await client.attached.promise;
 
     return external;
   }
@@ -69,31 +75,32 @@ export class TerminalApiService implements ITerminalApiService {
   }
 
   showTerm(clientId: string, preserveFocus: boolean = true) {
-    const client = this.controller.clients.get(clientId);
+    const client = this._entries.get(clientId);
 
     if (!client) {
       return;
     }
 
-    const widget = client.widget;
-    this.controller.showTerminalPanel();
-    if (preserveFocus) {
-      this.view.selectWidget(widget.id);
-    }
+    client.show(preserveFocus);
   }
 
-  hideTerm(_: string) {
-    this.controller.hideTerminalPanel();
+  hideTerm(clientId: string) {
+    const client = this._entries.get(clientId);
+
+    if (!client) {
+      return;
+    }
+
+    client.hide();
   }
 
   removeTerm(clientId: string) {
-    const client = this.controller.clients.get(clientId);
+    const client = this._entries.get(clientId);
 
     if (!client) {
       return;
     }
 
-    this.view.removeWidget(client.id);
-    this._entries.delete(client.id);
+    client.dispose();
   }
 }
