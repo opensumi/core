@@ -46,7 +46,7 @@ export class TerminalApiService implements ITerminalApiService {
         self.view.selectWidget(widget.id);
         self.controller.showTerminalPanel();
 
-        if (preserveFocus) {
+        if (!preserveFocus) {
           setTimeout(() => client.focus());
         }
       },
