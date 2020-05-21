@@ -172,6 +172,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     const terminalOptions: TerminalOptions = {
       name: this.createTerminalName(task),
       shellArgs,
+      env: task.command.options?.env || {},
       cwd: task.command.options?.cwd ? await this.resolveVariable(task.command.options?.cwd) : await this.resolveVariable('${workspaceFolder}'),
     };
 
