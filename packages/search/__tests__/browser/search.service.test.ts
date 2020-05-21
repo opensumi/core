@@ -142,7 +142,7 @@ describe('search.service.ts', () => {
     ]);
   });
 
-  test('method:search options', () => {
+  test.only('method:search options', () => {
     const service: any = searchService;
     searchService.searchValue = 'value';
     (service.UIState as IUIState) = {
@@ -154,7 +154,7 @@ describe('search.service.ts', () => {
       isMatchCase: false,
       isWholeWord: true,
       isUseRegexp: true,
-      isIncludeIgnored: true,
+      isIncludeIgnored: false,
     };
     service.includeValue = 'includeValue1, includeValue2';
     service.excludeValue = 'excludeValue';
@@ -167,7 +167,7 @@ describe('search.service.ts', () => {
     expect(service.contentSearchServer.catchSearchOptions.matchCase).toBe(false);
     expect(service.contentSearchServer.catchSearchOptions.matchWholeWord).toBe(true);
     expect(service.contentSearchServer.catchSearchOptions.useRegExp).toBe(true);
-    expect(service.contentSearchServer.catchSearchOptions.includeIgnored).toBe(true);
+    expect(service.contentSearchServer.catchSearchOptions.includeIgnored).toBe(false);
     expect(service.contentSearchServer.catchSearchOptions.include).toEqual([
       'includeValue1',
       'includeValue2',
