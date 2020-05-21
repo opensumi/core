@@ -1,0 +1,83 @@
+{
+  "name": "@ali/kaitian-cli-engine",
+  "version": "1.8.20",
+  "description": "Integration engine runtime for kaitian-cli and kaitian extension",
+  "main": "",
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "build": "run-p build:node build:browser build:exthost build:webview build:ext-worker-host",
+    "build1": "npm run build:node && npm run build:browser && npm run build:exthost && npm run build:webview && npm run build:ext-worker-host",
+    "build:browser": "webpack --config ./configs/webpack.config.browser.js --progress",
+    "build:ext-worker-host": "webpack --config ./configs/webpack.config.ext-worker.js --progress",
+    "build:ext-worker-host:watch": "npm run build:ext-worker-host -- --watch",
+    "build:exthost": "webpack --config ./configs/webpack.config.ext.js --progress",
+    "build:node": "tsc -p configs/tsconfig.node.json || echo 0",
+    "build:webview": "webpack --config ./configs/webpack.config.webview.js --progress",
+    "lint": "eslint --cache --ext .js ./",
+    "lint:fix": "tnpm run lint -- --fix",
+    "prepublishOnly": "npm run build",
+    "watch": "run-p watch:node watch:browser watch:exthost watch:webview watch:ext-worker-host",
+    "watch:browser": "npm run build:browser -- --watch",
+    "watch:exthost": "npm run build:exthost -- --watch",
+    "watch:node": "tsc -w -p configs/tsconfig.node.json || echo 0",
+    "watch:webview": "npm run build:webview -- --watch"
+  },
+  "dependencies": {
+    "@ali/common-di": "^5.0.0",
+    "@ali/ide-core-browser": "1.8.20",
+    "@ali/ide-core-common": "1.8.20",
+    "@ali/ide-core-node": "1.8.20",
+    "@ali/ide-express-file-server": "1.8.20",
+    "@ali/ide-i18n": "1.8.20",
+    "@ali/ide-kaitian-extension": "1.8.20",
+    "@ali/ide-startup": "1.8.20",
+    "@koa/cors": "^3.0.0",
+    "chalk": "^4.0.0",
+    "ejs": "^2.7.4",
+    "koa": "^2.7.0",
+    "koa-mount": "^4.0.0",
+    "open": "^7.0.3",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "yargs-parser": "^18.1.2"
+  },
+  "devDependencies": {
+    "@types/ejs": "^3.0.2",
+    "@types/koa-mount": "^4.0.0",
+    "@types/react": "^16.9.17",
+    "@types/react-dom": "^16.9.4",
+    "@types/read-pkg-up": "^6.0.0",
+    "@types/yargs-parser": "^15.0.0",
+    "assets-webpack-plugin": "^3.9.12",
+    "copy-webpack-plugin": "^5.1.1",
+    "css-loader": "^3.4.0",
+    "eslint": "^6.5.1",
+    "file-loader": "^6.0.0",
+    "friendly-errors-webpack-plugin": "^1.7.0",
+    "html-webpack-plugin": "^4.2.0",
+    "less": "^3.10.3",
+    "less-loader": "^5.0.0",
+    "loader-utils": "^1.2.3",
+    "mini-css-extract-plugin": "^0.9.0",
+    "npm-run-all": "^4.1.5",
+    "optimize-css-assets-webpack-plugin": "^5.0.3",
+    "runscript": "^1.4.0",
+    "shell-path": "^2.1.0",
+    "style-loader": "^1.1.2",
+    "terser-webpack-plugin": "^2.3.1",
+    "ts-loader": "^6.2.1",
+    "tsconfig-paths-webpack-plugin": "^3.2.0",
+    "typescript": "^3.6.3",
+    "url-loader": "^2.1.0",
+    "webpack": "^4.41.5",
+    "webpack-cli": "3.3.1"
+  },
+  "engines": {
+    "node": ">=10.15.0"
+  },
+  "publishConfig": {
+    "registry": "http://registry.npm.alibaba-inc.com"
+  }
+}
