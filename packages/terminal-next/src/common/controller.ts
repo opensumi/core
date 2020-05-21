@@ -59,7 +59,7 @@ export interface ITerminalGroupViewService {
   createWidget(group: IWidgetGroup, id?: string): IWidget;
   getWidget(id: string): IWidget;
   selectWidget(widgetId: string): void;
-  removeWidget(id: string, checkEmpty?: boolean): void;
+  removeWidget(id: string): void;
 
   onWidgetCreated: Event<IWidget>;
   onWidgetSelected: Event<IWidget>;

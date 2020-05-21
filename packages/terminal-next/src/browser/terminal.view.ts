@@ -322,7 +322,7 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     }
   }
 
-  removeWidget(id: string, checkEmpty: boolean = true) {
+  removeWidget(id: string) {
     const widget = this.getWidget(id);
     const group = widget.group;
     const groupIndex = this.groups.findIndex((g) => group.id === g.id);
@@ -331,10 +331,7 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     this._widgets.delete(id);
     widget.dispose();
     this._onWidgetDisposed.fire(widget);
-
-    if (checkEmpty) {
-      this._checkIfGroupEmpty(groupIndex);
-    }
+    this._checkIfGroupEmpty(groupIndex);
   }
 
   resize() {

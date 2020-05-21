@@ -17,7 +17,7 @@ import {
   getIcon,
 } from '@ali/ide-core-browser';
 import { Autowired } from '@ali/common-di';
-import { IMainLayoutService } from '@ali/ide-main-layout';
+import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 import { ITerminalController, ITerminalRestore, ITerminalGroupViewService, ITerminalSearchService, ITerminalApiService, TERMINAL_COMMANDS } from '../common';
 import TerminalTabs from './component/tab.view';
 import { TerminalKeyBoardInputService } from './terminal.input';
@@ -25,8 +25,8 @@ import TerminalView from './component/terminal.view';
 
 const TerminalViewId = 'terminal';
 
-@Domain(ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution)
-export class TerminalBrowserContribution implements ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution {
+@Domain(ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution)
+export class TerminalBrowserContribution implements ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution {
 
   @Autowired(ITerminalController)
   protected readonly terminalController: ITerminalController;
@@ -235,7 +235,10 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
 
   onStart() {
     this.terminalInput.listen();
+  }
 
+  // 必须等待这个事件返回，否则 tabHandler 无法保证获取
+  onDidRender() {
     this.store.restore()
       .then(() => {
         this.terminalController.firstInitialize();
