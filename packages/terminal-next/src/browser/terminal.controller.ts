@@ -127,7 +127,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
 
     for (const widgets of groups) {
-      const { group } = this._createOneGroup();
+      const { group, index } = this._createOneGroup();
 
       if (!widgets) {
         continue;
@@ -156,10 +156,16 @@ export class TerminalController extends WithEventBus implements ITerminalControl
          * 不成功的时候则认为这个连接已经失效了，去掉这个 widget
          */
         if (!client.ready) {
-          this.terminalView.removeWidget(widget.id);
+          this.terminalView.removeWidget(widget.id, false);
         } else if (current === client.id) {
           currentWidgetId = widget.id;
         }
+      }
+
+      if (group.length === 0) {
+        try {
+          this.terminalView.removeGroup(index);
+        } catch { /** nothing */ }
       }
     }
 
