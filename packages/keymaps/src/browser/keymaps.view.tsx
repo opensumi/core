@@ -189,7 +189,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
 
           </div>
           {
-            keyBlocks?.map((block, index) => {
+            keyBlocks && !!keyBlocks[0] ? keyBlocks.map((block, index) => {
               const keys = block.split('+');
               return <div className={styles.keybinding_key_block} key={`${block}_${index}`}>
                 {
@@ -198,7 +198,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
                   })
                 }
               </div>;
-            })
+            }) : '—'
           }
         </div>;
 
