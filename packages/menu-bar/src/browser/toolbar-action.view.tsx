@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { ToolbarLocation } from '@ali/ide-core-browser';
 
 import * as styles from './toolbar-action.module.less';
+import * as classnames from 'classnames';
 
 // const ActionGroup = observer(({ group, id }: { group: IToolbarActionGroup; id: string }) => {
 //   return (<div className={styles.actionGroup} key={id}>
@@ -31,5 +32,8 @@ import * as styles from './toolbar-action.module.less';
 // });
 
 export const ToolbarAction = observer(() => {
-  return <ToolbarLocation location='menu-right'  className={styles.toolbarActions}/>;
+  return <div className={styles.toolbarActionsWrapper}>
+      <ToolbarLocation location='menu-left'  className={classnames(styles.toolbarActions, styles.toolbarActionsLeft)}/>
+      <ToolbarLocation location='menu-right'  className={classnames(styles.toolbarActions, styles.toolbarActionsRight)}/>
+    </div>;
 });
