@@ -33,7 +33,7 @@ import * as classnames from 'classnames';
 
 export const ToolbarAction = observer(() => {
   return <div className={styles.toolbarActionsWrapper}>
-      <ToolbarLocation location='menu-left'  className={classnames(styles.toolbarActions, styles.toolbarActionsLeft)}/>
+      <ToolbarLocation location='menu-left'  preferences={{noDropDown: true}} className={classnames(styles.toolbarActions, styles.toolbarActionsLeft)}/>
       <ToolbarLocation location='menu-right'  className={classnames(styles.toolbarActions, styles.toolbarActionsRight)}/>
     </div>;
 });
