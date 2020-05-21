@@ -4,7 +4,7 @@ import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDec
 import { IRange, MonacoService, PreferenceService } from '@ali/ide-core-browser';
 import { MonacoEditorDecorationApplier } from './decoration-applier';
 import { IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, IEditorDocumentModelService } from './doc-model/types';
-import { Emitter } from '@ali/vscode-jsonrpc';
+import { Emitter } from '@ali/ide-core-common';
 import { IEditorFeatureRegistry } from './types';
 import { EditorFeatureRegistryImpl } from './feature';
 import { getConvertedMonacoOptions, isEditorOption } from './preference/converter';
