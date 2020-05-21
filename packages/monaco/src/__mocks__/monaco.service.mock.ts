@@ -32,4 +32,8 @@ export class MockedMonacoService implements MonacoService {
 
   }
 
+  public getOverride(serviceName: ServiceNames) {
+
+  }
+
 }
