@@ -4,7 +4,7 @@
 import * as WebSocket from 'ws';
 import * as httpProxy from 'http-proxy';
 import * as os from 'os';
-import { createProxyServer, createWsServer } from './proxy';
+import { createProxyServer, createWsServer, resetPort } from './proxy';
 import {
   defaultName,
 } from './mock.service';
@@ -29,6 +29,7 @@ describe('Terminal Client', () => {
   let factory: ITerminalClientFactory;
 
   beforeAll(() => {
+    resetPort();
     factory = injector.get(ITerminalClientFactory);
     view = injector.get(ITerminalGroupViewService);
     server = createWsServer();
@@ -73,6 +74,7 @@ describe('Terminal Client', () => {
   });
 
   it('Terminal Send Text', async () => {
+    await client.attached.promise;
     client.clear();
     client.sendText('pwd\r');
     await delay(200);
@@ -106,8 +108,8 @@ describe('Terminal Client', () => {
   });
 
   afterAll(() => {
+    client.dispose();
     server.close();
     proxy.close();
-    client.dispose();
   });
 });

@@ -37,7 +37,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   /** status */
   private _ready: boolean = false;
   private _attached = new Deferred<void>();
-  private _stdoutReady = new Deferred<void>();
   /** end */
 
   private readonly ptyProcessMessageEvent = new Emitter<{ id: string; message: string }>();
@@ -79,16 +78,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     fontSize: 12,
   };
 
-  // 限制 api sendText 发送的时机一定晚于后端的第一条消息
-  private _afterInit() {
-    const { dispose } = this._term.onData((data: string) => {
-      if (data.length > 0) {
-        this._stdoutReady.resolve();
-        dispose();
-      }
-    });
-  }
-
   init(widget: IWidget, options: TerminalOptions = {}, autofocus: boolean = true) {
     this._autofocus = autofocus;
     this._uid = widget.id;
@@ -104,8 +93,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     });
     this._apply(widget);
     this.attach();
-
-    this._afterInit();
   }
 
   @observable
@@ -343,7 +330,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   async sendText(message: string) {
-    await this._stdoutReady.promise;
     return this.service.sendText(this.id, message);
   }
 

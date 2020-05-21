@@ -3,7 +3,7 @@ import { Terminal } from 'xterm';
 import { uuid, URI, Emitter } from '@ali/ide-core-common';
 import { Disposable } from '@ali/ide-core-browser';
 import { ITerminalExternalService, ITerminalConnection } from '../../src/common';
-import { port, localhost, MessageMethod } from './proxy';
+import { getPort, localhost, MessageMethod } from './proxy';
 import { delay } from './utils';
 
 export const defaultName = 'bash';
@@ -108,7 +108,7 @@ export class MockSocketService implements ITerminalExternalService {
   }
 
   async attach(sessionId: string, term: Terminal) {
-    const sock = new WebSocket(localhost(port));
+    const sock = new WebSocket(localhost(getPort()));
     this._socks.set(sessionId, sock);
 
     await delay(1000);
@@ -136,7 +136,9 @@ export class MockSocketService implements ITerminalExternalService {
     this._doMethod(sessionId, MessageMethod.resize, { id: sessionId });
 
     if (socket) {
-      socket.close();
+      try {
+        socket.close();
+      } catch { /** nothing */ }
     }
   }
 

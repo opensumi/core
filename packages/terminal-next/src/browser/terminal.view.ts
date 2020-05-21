@@ -344,14 +344,7 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
   }
 
   empty() {
-    this.groups = this.groups.filter((group) => group.length > 0);
-
-    if (this._widgets.size > 0) {
-      this.selectWidget(this.groups[0].first.id);
-      return false;
-    } else {
-      return true;
-    }
+    return this._widgets.size === 0;
   }
 
   clear() {

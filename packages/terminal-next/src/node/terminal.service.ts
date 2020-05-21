@@ -26,7 +26,6 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
   private appConfig: AppConfig;
 
   public setClient(clientId: string, client: ITerminalServiceClient) {
-    console.log('set pty pty client, id', clientId);
     this.serviceClientMap.set(clientId, client);
 
     /*
