@@ -325,6 +325,7 @@ export class KeymapService implements IKeymapService {
           context: isUserKeybinding ? isUserKeybinding.context : (keybindings && keybindings[0]) ? (keybindings && keybindings[0]).context : '',
           when: isUserKeybinding ? this.getWhen(isUserKeybinding) : this.getWhen((keybindings && keybindings[0])),
           source: isUserKeybinding ? this.getScope(KeybindingScope.USER) : this.getScope(KeybindingScope.DEFAULT),
+          hasCommandLabel: !!command.label,
         };
       } else {
         item = {
@@ -335,6 +336,7 @@ export class KeymapService implements IKeymapService {
           context: (keybindings && keybindings[0]) ? (keybindings && keybindings[0]).context : '',
           source: (keybindings && keybindings[0] && typeof keybindings[0].scope !== 'undefined')
             ? this.getScope(keybindings[0].scope!) : '',
+          hasCommandLabel: !!command.label,
         };
       }
       items.push(item);
@@ -345,7 +347,9 @@ export class KeymapService implements IKeymapService {
     // 获取定义了快捷键的列表
     const keyItems: KeybindingItem[] = sorted.filter((a: KeybindingItem) => !!a.keybinding);
 
-    return [...keyItems];
+    const otherItems: KeybindingItem[] = sorted.filter((a: KeybindingItem) => !a.keybinding && a.hasCommandLabel);
+
+    return [...keyItems, ...otherItems];
   }
 
   // 字典排序
@@ -380,12 +384,12 @@ export class KeymapService implements IKeymapService {
     const items = this.getKeybindingItems();
     const result: KeybindingItem[] = [];
     items.forEach((item) => {
-      const keys: (keyof KeybindingItem)[] = ['command', 'keybinding', 'when', 'context', 'source'];
+      const keys: string[] = ['command', 'keybinding', 'when', 'context', 'source'];
       let matched = false;
       for (const key of keys) {
         const str = item[key];
         if (str) {
-          const fuzzyMatch = fuzzy.match(search, str, this.fuzzyOptions);
+          const fuzzyMatch = fuzzy.match(search, str as string, this.fuzzyOptions);
           if (fuzzyMatch) {
             item[key] = fuzzyMatch.rendered;
             matched = true;

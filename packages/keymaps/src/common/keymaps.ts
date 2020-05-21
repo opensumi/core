@@ -25,6 +25,10 @@ export interface KeybindingItem {
    * 作用域
    */
   source?: string;
+  /**
+   * 判断快捷键是否带有command label
+   */
+  hasCommandLabel?: boolean;
 }
 
 export interface IKeymapService {
