@@ -1,26 +1,9 @@
 import { Injector } from '@ali/common-di';
 import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceSchema } from './preferences';
 
-import { isOSX, isLinux, localize, getAvailableLanguages, isElectronRenderer, isWindows } from '@ali/ide-core-common';
+import { localize, getAvailableLanguages, isElectronRenderer, isWindows } from '@ali/ide-core-common';
 
-const DEFAULT_WINDOWS_FONT_FAMILY = 'Consolas, \'Courier New\', monospace';
-const DEFAULT_MAC_FONT_FAMILY = 'Menlo, Monaco, \'Courier New\', monospace';
-const DEFAULT_LINUX_FONT_FAMILY = '\'Droid Sans Mono\', \'monospace\', monospace, \'Droid Sans Fallback\'';
-
-export const EDITOR_FONT_DEFAULTS = {
-  fontFamily: (
-    isOSX ? DEFAULT_MAC_FONT_FAMILY : (isLinux ? DEFAULT_LINUX_FONT_FAMILY : DEFAULT_WINDOWS_FONT_FAMILY)
-  ),
-  fontWeight: 'normal',
-  fontSize: 12,
-  tabSize: 2,
-  renderWhitespace: false,
-  cursorStyle: 'line',
-  insertSpace: true,
-  wordWrap: 'off',
-  wordWrapColumn: 80,
-  lineHeight: 0,
-  letterSpacing: 0,
+const EXPLORER_DEFAULTS = {
   confirmDelete: true,
   confirmMove: true,
 };
@@ -75,11 +58,7 @@ export const corePreferenceSchema: PreferenceSchema = {
       description: '%preference.workbench.colorCustomizations%',
       default: {},
     },
-    'editor.tokenColorCustomizations': {
-      type: 'object',
-      description: '%preference.editor.tokenColorCustomizations%',
-      default: {},
-    },
+
     // 是否允许打开文件夹
     'application.supportsOpenFolder': {
       type: 'boolean',
@@ -122,184 +101,15 @@ export const corePreferenceSchema: PreferenceSchema = {
       minimum: 0,
       description: 'Controls the number of recently used commands to keep in history for the command palette. Set to 0 to disable command history.',
     },
-    'editor.askIfDiff': {
-      type: 'boolean',
-      default: true,
-      description: '%editor.configuration.askIfDiff%',
-    },
-    'editor.showActionWhenGroupEmpty': {
-      type: 'boolean',
-      default: false,
-      description: '%editor.configuration.showActionWhenGroupEmpty%',
-    },
-    'editor.autoSave': {
-      type: 'string',
-      enum: [
-        'off',
-        'afterDelay',
-        'editorFocusChange',
-        'windowLostFocus',
-      ],
-      default: 'off',
-      description: '%editor.configuration.autoSave%',
-    },
-    'editor.autoSaveDelay': {
-      type: 'number',
-      default: 1000,
-      description: '%editor.configuration.autoSaveDelay%',
-    },
-    'editor.preferredFormatter': {
-      type: 'object',
-      default: {},
-      description: '%editor.configuration.preferredFormatter%',
-    },
-    'editor.previewMode': {
-      type: 'boolean',
-      default: true,
-      description: '%editor.configuration.preview%',
-    },
-    'editor.minimap': {
-      type: 'boolean',
-      default: false,
-      description: '%editor.configuration.minimap%',
-    },
-    'editor.forceReadOnly': {
-      type: 'boolean',
-      default: false,
-      description: '%editor.configuration.forceReadOnly%',
-    },
-    // 会启用languageFeature的最大文件尺寸
-    'editor.languageFeatureEnabledMaxSize': {
-      type: 'number',
-      default: 2 * 1024 * 1024, // 2M
-      description: '%editor.configuration.languageFeatureEnabledMaxSize%',
-    },
-    // 会同步到extHost的最大文件尺寸, 必须大于等于 languageFeatureEnabledMaxSize
-    'editor.docExtHostSyncMaxSize': {
-      type: 'number',
-      default: 2 * 1024 * 1024, // 2M
-      description: '%editor.configuration.docExtHostSyncMaxSize%',
-    },
-    'editor.renderLineHighlight': {
-      type: 'string',
-      enum: [
-        'none',
-        'gutter',
-        'line',
-        'all',
-      ],
-      default: 'all',
-      description: '%editor.configuration.renderLineHighlight%',
-    },
-    'editor.fontFamily': {
-      type: 'string',
-      default: EDITOR_FONT_DEFAULTS.fontFamily,
-      description: '%editor.configuration.fontFamily%',
-    },
-    'editor.fontWeight': {
-      type: 'string',
-      default: EDITOR_FONT_DEFAULTS.fontWeight,
-      description: '%editor.configuration.fontWeight%',
-    },
-    'editor.fontSize': {
-      type: 'number',
-      default: EDITOR_FONT_DEFAULTS.fontSize,
-      description: '%editor.configuration.fontSize%',
-    },
-    'editor.tabSize': {
-      type: 'number',
-      default: EDITOR_FONT_DEFAULTS.tabSize,
-      description: '%editor.configuration.tabSize%',
-    },
-    'editor.formatOnPaste': {
-      type: 'boolean',
-      default: false,
-      description: '%editor.configuration.formatOnPaste%',
-    },
-    'editor.detectIndentation': {
-      type: 'boolean',
-      default: true,
-      description: '%editor.configuration.detectIndentation%',
-    },
-    'editor.renderWhitespace': {
-      type: 'boolean',
-      default: EDITOR_FONT_DEFAULTS.renderWhitespace,
-      description: '%editor.configuration.renderWhitespace%',
-    },
-    'editor.cursorStyle': {
-      type: 'string',
-      enum: [
-        'line',
-        'block',
-        'block-outline',
-        'line-thin',
-        'underline',
-        'underline-thin',
-      ],
-      default: EDITOR_FONT_DEFAULTS.cursorStyle,
-      description: '%editor.configuration.cursorStyle%',
-    },
-    'editor.insertSpaces': {
-      type: 'boolean',
-      default: EDITOR_FONT_DEFAULTS.insertSpace,
-      description: '%editor.configuration.insertSpace%',
-    },
-    'editor.wordWrap': {
-      type: 'string',
-      enum: [
-        'off',
-        'on',
-      ],
-      default: EDITOR_FONT_DEFAULTS.wordWrap,
-      description: '%editor.configuration.wordWrap%',
-    },
-    'editor.wordWrapColumn': {
-      type: 'number',
-      default: EDITOR_FONT_DEFAULTS.wordWrapColumn,
-      description: '%editor.configuration.wordWrapColumn%',
-    },
-    'editor.readonlyFiles': {
-      type: 'array',
-      default: [],
-      description: '%editor.configuration.readonlyFiles%',
-    },
-    'editor.formatOnSave': {
-      type: 'boolean',
-      default: false,
-      description: '%preference.editor.formatOnSave%',
-    },
-    'editor.formatOnSaveTimeout': {
-      type: 'number',
-      default: 750,
-      description: '%editor.configuration.readonlyFiles%',
-    },
-    'editor.maxTokenizationLineLength': {
-      type: 'integer',
-      default: 10000,
-      description: '%editor.configuration.maxTokenizationLineLength%',
-    },
-    'editor.largeFile': {
-      type: 'number',
-      default: 2 * 1024 * 1024,
-      description: '%editor.configuration.largeFileSize%',
-    },
-    'editor.quickSuggestionsDelay': {
-      type: 'integer',
-      default: 100,
-      // description: '%editor.configuration.quickSuggestionsDelay%',
-    },
-    'editor.quickSuggestionsMaxCount': {
-      type: 'integer',
-      default: 0,
-    },
+
     'explorer.confirmMove': {
       type: 'boolean',
-      default: EDITOR_FONT_DEFAULTS.confirmDelete,
+      default: EXPLORER_DEFAULTS.confirmDelete,
       description: '%preference.explorer.confirm.move%',
     },
     'explorer.confirmDelete': {
       type: 'boolean',
-      default: EDITOR_FONT_DEFAULTS.confirmMove,
+      default: EXPLORER_DEFAULTS.confirmMove,
       description: '%preference.explorer.confirm.delete%',
     },
     'explorer.fileTree.baseIndent': {

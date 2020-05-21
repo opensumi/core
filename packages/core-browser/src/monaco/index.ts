@@ -26,6 +26,8 @@ export abstract class MonacoService {
   public abstract registerOverride(serviceName: ServiceNames, service: any): void;
 
   public abstract testTokenize(text: string, languageId: string): void;
+
+  public abstract getOverride(serviceName: ServiceNames): any;
 }
 
 export const MonacoContribution = Symbol('MonacoContribution');

@@ -21,6 +21,8 @@ import { BreadCrumbServiceImpl } from './breadcrumb';
 import { EditorContextMenuBrowserEditorContribution } from './menu/editor.context';
 import { EditorFeatureRegistryImpl } from './feature';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
+import { EditorPreferenceContribution } from './preference/contribution';
+import { SaveParticipantsContribution } from './doc-model/saveParticipants';
 export * from './types';
 export * from './doc-model/types';
 export * from './doc-cache';
@@ -83,12 +85,14 @@ export class EditorModule extends BrowserModule {
       token: IEditorFeatureRegistry,
       useClass: EditorFeatureRegistryImpl,
     },
+    EditorPreferenceContribution,
     DefaultDiffEditorContribution,
     EditorClientAppContribution,
     EditorContribution,
     CompareEditorContribution,
     EditorContextMenuBrowserEditorContribution,
     EditorAutoSaveEditorContribution,
+    SaveParticipantsContribution,
   ];
   contributionProvider = BrowserEditorContribution;
 

@@ -68,6 +68,10 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     this.overrideServices[serviceName] = service;
   }
 
+  public getOverride(serviceName: ServiceNames) {
+    return this.overrideServices[serviceName];
+  }
+
   /**
    * 加载monaco代码，加载过程只会执行一次
    */

@@ -1,5 +1,5 @@
 /* istanbul ignore file */
-import { isNodeIntegrated, isElectronEnv, URI, isDevelopment } from '@ali/ide-core-common';
+import { isElectronEnv, URI, isDevelopment } from '@ali/ide-core-common';
 
 declare const __non_webpack_require__;
 
@@ -115,6 +115,8 @@ function doLoadMonaco(loadMonacoOptions: LoadMonacoOptions): Promise<void> {
         'vs/editor/common/editorContextKeys',
         'vs/platform/actions/common/actions',
         'vs/base/common/mime',
+        'vs/editor/contrib/codeAction/codeAction',
+        'vs/editor/contrib/codeAction/codeActionTrigger',
       ], (standaloneServices: any, codeEditorService: any, codeEditorServiceImpl: any, contextViewService: any,
           quickOpen: any, quickOpenWidget: any, quickOpenModel: any, styler: any, filters: any,
           simpleServices: any, commands: any, editorExtensions: any, descriptors: any,
@@ -126,6 +128,8 @@ function doLoadMonaco(loadMonacoOptions: LoadMonacoOptions): Promise<void> {
           EditorContextKeys: any,
           actions: any,
           mime: any,
+          codeAction: any,
+          codeActionTrigger: any,
         ) => {
           const global = window as any;
           const original = standaloneServices.StaticServices.init;
@@ -158,6 +162,8 @@ function doLoadMonaco(loadMonacoOptions: LoadMonacoOptions): Promise<void> {
           global.monaco.actions = actions;
           global.monaco.contextkey.EditorContextKeys = EditorContextKeys.EditorContextKeys;
           global.monaco.mime = mime;
+          global.monaco.codeAction = codeAction;
+          global.monaco.codeAction.codeActionTrigger = codeActionTrigger;
           // codeActionsProvider需要支持额外属性
           global.monaco.languages.registerCodeActionProvider = (languageId, provider) => {
             return modes.CodeActionProviderRegistry.register(languageId, {

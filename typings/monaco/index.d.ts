@@ -1429,3 +1429,18 @@ declare module monaco.mime {
 
   export function registerTextMime(association: monaco.mime.ITextMimeAssociation, warnOnOverwrite: boolean): void;
 }
+
+declare module monaco.codeAction {
+  export function getCodeActions(model: monaco.editor.ITextModel, rangeOrSelection: any, trigger: any, token: monaco.CancellationToken)
+
+  export namespace codeActionTrigger {
+      export class CodeActionKind {
+        public static readonly Empty: CodeActionKind
+        public static readonly QuickFix: CodeActionKind
+        public static readonly Refactor: CodeActionKind
+        public static readonly Source: CodeActionKind
+        public static readonly SourceOrganizeImports: CodeActionKind
+        public static readonly SourceFixAll: CodeActionKind
+      }
+  }
+}
