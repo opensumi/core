@@ -1,21 +1,19 @@
 /**
  * Terminal Controller Test
  */
-import * as WebSocket from 'ws';
-import * as httpProxy from 'http-proxy';
+// import * as WebSocket from 'ws';
+// import * as httpProxy from 'http-proxy';
 import { createProxyServer, createWsServer, resetPort } from './proxy';
 import { ITerminalController } from '../../src/common';
 import { injector } from './inject';
 
 describe('Terminal Controller', () => {
-  let proxy: httpProxy;
-  let server: WebSocket.Server;
   let controller: ITerminalController;
 
   beforeAll(() => {
     resetPort();
-    server = createWsServer();
-    proxy = createProxyServer();
+    createWsServer();
+    createProxyServer();
     controller = injector.get(ITerminalController);
   });
 
@@ -28,7 +26,7 @@ describe('Terminal Controller', () => {
   });
 
   afterAll(() => {
-    server.close();
-    proxy.close();
+    // server.close();
+    // proxy.close();
   });
 });
