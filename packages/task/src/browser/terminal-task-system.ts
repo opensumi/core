@@ -154,8 +154,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
         result.push(await this.resolveVariable(arg));
       }
     }
-
-    return { shellArgs: ['-c', `${subArgs.join(' ')}`] };
+    return { shellArgs: ['-c', `${result.join(' ')}`] };
   }
 
   private async executeTask(task: CustomTask | ContributedTask): Promise<ITaskExecuteResult> {
