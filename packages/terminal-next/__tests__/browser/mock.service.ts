@@ -6,7 +6,6 @@ import { ITerminalExternalService, ITerminalConnection } from '../../src/common'
 import { port, localhost, MessageMethod } from './proxy';
 import { delay } from './utils';
 
-export const defaultPid = -1;
 export const defaultName = 'bash';
 
 export class MockSocketService implements ITerminalExternalService {
@@ -34,10 +33,6 @@ export class MockSocketService implements ITerminalExternalService {
 
   getOptions() {
     return {};
-  }
-
-  intro() {
-    return { name: defaultName, pid: defaultPid };
   }
 
   private _handleStdoutMessage(sessionId: string, handler: (json: any) => void) {
@@ -70,7 +65,6 @@ export class MockSocketService implements ITerminalExternalService {
           data: message,
         });
       },
-      pid: defaultPid,
       name: defaultName,
       readonly: false,
     };
