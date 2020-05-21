@@ -5,16 +5,18 @@ import { useInjectable, SlotRenderer } from '@ali/ide-core-browser';
 import { MenuActionList } from '@ali/ide-core-browser/lib/components/actions';
 import { IMenubarItem } from '@ali/ide-core-browser/lib/menu/next';
 import { ClickOutside } from '@ali/ide-core-browser/lib/components/click-outside';
+import { Deprecated } from '@ali/ide-components/lib/utils/deprecated';
+
 import Dropdown from 'antd/lib/dropdown';
 import 'antd/lib/dropdown/style/index.css';
 
 import { MenubarStore } from './menu-bar.store';
 import * as styles from './menu-bar.module.less';
 
-const MenubarItem = observer<IMenubarItem & Pick<React.HTMLProps<HTMLElement>, 'className'> & {
+const MenubarItem = observer<IMenubarItem & {
   focusMode: boolean;
   onClick: () => void;
-}>(({ id, label, focusMode, onClick, className }) => {
+}>(({ id, label, focusMode, onClick }) => {
   const menubarStore = useInjectable<MenubarStore>(MenubarStore);
   const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
 
@@ -58,7 +60,7 @@ const MenubarItem = observer<IMenubarItem & Pick<React.HTMLProps<HTMLElement>, '
       overlay={<MenuActionList data={data} afterClick={handleMenuItemClick} />}
       trigger={focusMode ? ['click', 'hover'] : ['click']}>
       <div
-        className={clx(styles.menubar, { [styles['menu-open']]: menuOpen }, className)}
+        className={clx(styles.menubar, { [styles['menu-open']]: menuOpen })}
         onMouseOver={handleMouseOver}
         onClick={handleClick}>{label}</div>
     </Dropdown>
@@ -101,9 +103,15 @@ export const MenuBar = observer(() => {
 
 MenuBar.displayName = 'MenuBar';
 
-export const MenuBarActionWrapper = () => {
-  return <div className={styles.menubarWrapper}>
+type MenuBarMixToolbarActionProps = Pick<React.HTMLProps<HTMLElement>, 'className'>;
+
+export const MenuBarMixToolbarAction: React.FC<MenuBarMixToolbarActionProps> = (props) => {
+  return <div className={clx(styles.menubarWrapper, props.className)}>
     <MenuBar />
     <SlotRenderer slot='action' flex={1} overflow={'initial'} />
   </div>;
 };
+
+MenuBarMixToolbarAction.displayName = 'MenuBarMixToolbarAction';
+
+export const MenuBarActionWrapper = Deprecated(MenuBarMixToolbarAction, 'please use `MenuBarMixToolbarAction`');

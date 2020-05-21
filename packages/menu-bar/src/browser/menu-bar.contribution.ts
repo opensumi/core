@@ -1,7 +1,7 @@
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 
-import { MenuBarActionWrapper } from './menu-bar.view';
+import { MenuBarMixToolbarAction } from './menu-bar.view';
 import { ToolbarAction } from './toolbar-action.view';
 import { ToolBarActionContribution, isElectronEnv, IToolbarRegistry } from '@ali/ide-core-browser';
 
@@ -11,7 +11,7 @@ export class MenuBarContribution implements ComponentContribution, ToolBarAction
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-menu-bar', {
       id: 'ide-menu-bar',
-      component: MenuBarActionWrapper,
+      component: MenuBarMixToolbarAction,
     }, {
       size: 27,
     });
