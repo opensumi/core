@@ -1,16 +1,12 @@
 {
   "name": "@ali/ide-dev-tool",
   "version": "1.2.1",
-  "description": "@ali/ide-dev-tool",
   "private": true,
+  "description": "@ali/ide-dev-tool",
   "repository": {
     "type": "git",
     "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
   },
-  "publishConfig": {
-    "registry": "https://registry.npm.alibaba-inc.com"
-  },
-  "gitHead": "1a1184d79f5c7ec241ba12087ef5ff7ce42be1c9",
   "dependencies": {
     "@types/koa": "^2.0.48",
     "@types/koa-bodyparser": "^4.2.2",
@@ -46,5 +42,9 @@
   "devDependencies": {
     "@ant-design/dark-theme": "^0.2.2",
     "copy-webpack-plugin": "^5.0.3"
-  }
+  },
+  "publishConfig": {
+    "registry": "https://registry.npm.alibaba-inc.com"
+  },
+  "gitHead": "1a1184d79f5c7ec241ba12087ef5ff7ce42be1c9"
 }
