@@ -536,7 +536,10 @@ export class ContentSearchClientService implements IContentSearchClientService {
       result = result.concat(searchOptions.exclude);
     }
 
-    result = result.concat(this.getPreferenceSearchExcludes());
+    // 启用默认排除项
+    if (!this.UIState.isIncludeIgnored) {
+      result = result.concat(this.getPreferenceSearchExcludes());
+    }
 
     return result;
   }
