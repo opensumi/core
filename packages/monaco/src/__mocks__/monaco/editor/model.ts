@@ -42,7 +42,14 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   private eol: monaco.editor.EndOfLineSequence = EndOfLineSequence.LF as any;
   private value: string;
 
-  options: monaco.editor.TextModelResolvedOptions;
+  options: monaco.editor.TextModelResolvedOptions = {
+    tabSize: 2,
+    _textModelResolvedOptionsBrand: void 0,
+    indentSize: 0,
+    insertSpaces: true,
+    defaultEOL: 1,
+    trimAutoWhitespace: false,
+  };
 
   constructor(value, language, uri?: monaco.Uri) {
     super();
