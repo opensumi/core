@@ -3,7 +3,6 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtHostConnectionService, IExtHostDebugService, ExtHostAPIIdentifier, TextEditorCursorStyle, TextEditorSelectionChangeKind, VSCodeExtensionService } from '../../../common/vscode'; // '../../common';
 import { IExtensionHostService} from '../../../common';
 import { createWindowApiFactory, ExtHostWindow } from './ext.host.window.api.impl';
-import { createDocumentModelApiFactory } from './ext.host.doc';
 import { ExtensionDocumentDataManagerImpl } from './doc';
 import * as extTypes from '../../../common/vscode/ext-types';
 import * as fileSystemTypes from '../../../common/vscode/file-system-types';
@@ -75,7 +74,6 @@ export function createApiFactory(
   const extHostDocs = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostDocuments, new ExtensionDocumentDataManagerImpl(rpcProtocol));
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostExtensionService, extensionService);
 
-  createDocumentModelApiFactory(rpcProtocol);
   const extHostCommands = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCommands, new ExtHostCommands(rpcProtocol, builtinCommands)) as ExtHostCommands;
   const extHostEditors = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEditors, new ExtensionHostEditorService(rpcProtocol, extHostDocs)) as ExtensionHostEditorService;
   const extHostEnv = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEnv, new ExtHostEnv(rpcProtocol));
