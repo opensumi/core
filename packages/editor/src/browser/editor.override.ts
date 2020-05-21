@@ -41,7 +41,7 @@ export class MonacoCodeService extends monaco.services.CodeEditorServiceImpl {
         index ++;
       }
     }
-    await editorGroup.open(resourceUri, {index, range: input.options && input.options.selection as IRange, preserveFocus: true});
+    await editorGroup.open(resourceUri, {index, range: input.options && input.options.selection as IRange, focus: true});
     return (editorGroup.codeEditor as BrowserCodeEditor).monacoEditor;
   }
 
