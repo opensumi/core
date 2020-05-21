@@ -20,11 +20,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private _container: HTMLDivElement;
   private _term: Terminal;
   private _uid: string;
-  private _pid: number;
   private _name: string;
   private _options: TerminalOptions;
   private _autofocus: boolean;
   private _widget: IWidget;
+  private _pid: number | undefined;
   /** end */
 
   /** addons */
@@ -93,6 +93,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       ...this._customTermOptions(),
     });
     this._apply(widget);
+    this.attach();
   }
 
   get term() {
@@ -104,7 +105,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   get pid() {
-    return this._pid;
+    return this.service.getProcessId(this.id);
   }
 
   get autofocus() {
@@ -241,7 +242,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     }));
 
     this._name = (this._name || connection.name) || 'shell';
-    this._pid = connection.pid;
     this._attachXterm(connection);
     this._attached.resolve();
     this._ready = true;
@@ -250,9 +250,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   reset() {
     this._ready = false;
     this._attached = new Deferred<void>();
+    this.attach();
   }
 
-  async attach() {
+  private async attach() {
     if (!this._ready) {
       return this._doAttach();
     }
@@ -280,7 +281,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private async _firstOnRender() {
     this._widget.element.appendChild(this._container);
-    await this.attach();
+    await this.attached.promise;
     this._widget.name = this.name;
     this.layout();
   }

@@ -62,7 +62,7 @@ export interface ITerminalExternalService {
    *
    * @param sessionId 会话唯一标识
    */
-  getProcessId(sessionId: string): Promise<number>;
+  getProcessId(sessionId: string): Promise<number | undefined>;
   /**
    * 报错处理的事件
    *

@@ -23,10 +23,10 @@ export class TerminalErrorService implements ITerminalErrorService {
 
     this.service.onExit((event: IPtyExitEvent) => {
       try {
-      const widget = this.view.getWidget(event.sessionId);
-      if (!widget.reuse) {
-        this.view.removeWidget(event.sessionId);
-      }
+        const widget = this.view.getWidget(event.sessionId);
+        if (!widget.reuse) {
+          this.view.removeWidget(event.sessionId);
+        }
       } catch { /** nothing */ }
     });
   }
@@ -35,7 +35,7 @@ export class TerminalErrorService implements ITerminalErrorService {
     const client = this.controller.findClientFromWidgetId(clientId);
     if (client) {
       client.reset();
-      client.attach().then(() => {
+      client.attached.promise.then(() => {
         if (client.ready) {
           this.errors.delete(clientId);
         }

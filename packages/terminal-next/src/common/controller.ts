@@ -5,11 +5,10 @@ import { TerminalOptions } from './pty';
 
 export interface ITerminalExternalClient {
   readonly id: string;
-  readonly processId: number | undefined;
+  readonly processId: Promise<number | undefined>;
   readonly name: string;
-  show(): void;
+  show(preserveFocus?: boolean): void;
   hide(): void;
-  ready(): Promise<void>;
   dispose(): void;
 }
 

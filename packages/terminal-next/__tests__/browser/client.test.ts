@@ -7,7 +7,6 @@ import * as os from 'os';
 import { createProxyServer, createWsServer } from './proxy';
 import {
   defaultName,
-  defaultPid,
 } from './mock.service';
 import { ITerminalClientFactory, ITerminalGroupViewService, ITerminalClient, IWidget } from '../../src/common';
 import { delay } from './utils';
@@ -60,7 +59,6 @@ describe('Terminal Client', () => {
 
   it('Terminal Pid And Name', () => {
     expect(client.name).toEqual(defaultName);
-    expect(client.pid).toEqual(defaultPid);
   });
 
   it('Focus Terminal which is ready', async () => {
@@ -99,7 +97,7 @@ describe('Terminal Client', () => {
   });
 
   it('After Terminal Dispose', async () => {
-    await client.attach();
+    await client.attached.promise;
     await client.sendText('pwd\r');
     client.focus();
     client.selectAll();
