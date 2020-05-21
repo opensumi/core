@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Disposable } from '@ali/ide-core-browser';
-import { ITerminalApiService, ITerminalInfo } from '@ali/ide-terminal-next';
+import { ITerminalApiService, ITerminalController, ITerminalInfo } from '@ali/ide-terminal-next';
 import { IMainThreadTerminal, IExtHostTerminal, ExtHostAPIIdentifier } from '../../../common/vscode';
 
 import { ILogger } from '@ali/ide-core-browser';
@@ -13,6 +13,9 @@ export class MainThreadTerminal implements IMainThreadTerminal {
 
   @Autowired(ITerminalApiService)
   private terminalApi: ITerminalApiService;
+
+  @Autowired(ITerminalController)
+  private controller: ITerminalController;
 
   private disposable = new Disposable();
 
@@ -77,6 +80,7 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   }
 
   async $createTerminal(options: vscode.TerminalOptions) {
+    await this.controller.ready.promise;
     const terminal = await this.terminalApi.createTerminal(options);
     if (!terminal) {
       return this.logger.error('创建终端失败');

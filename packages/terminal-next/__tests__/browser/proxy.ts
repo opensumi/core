@@ -13,8 +13,18 @@ function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
-export const port = getRandomInt(30000, 40000);
-export let proxyPort = port + getRandomInt(100, 200);
+let port = getRandomInt(30000, 40000);
+let proxyPort = port + getRandomInt(100, 200);
+export function resetPort() {
+  port = getRandomInt(30000, 40000);
+  proxyPort = port + getRandomInt(100, 200);
+}
+export function getPort() {
+  return port;
+}
+export function getProxyPort() {
+  return proxyPort;
+}
 export const existPtyProcessId = uuid();
 const cache = new Map<string, pty.IPty>();
 const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';
@@ -127,8 +137,7 @@ export function handleStdinMessage(json: PtyStdIn) {
 }
 
 export function createWsServer() {
-  const server = new WebSocket.Server({ port });
-
+  const server = new WebSocket.Server({ port: getPort() });
   server.addListener('connection', (socket) => {
     socket.addEventListener('message', (req) => {
       const { data } = req;
@@ -148,7 +157,7 @@ export function createWsServer() {
 
 export function createProxyServer() {
   return httpProxy.createServer({
-    target: localhost(port),
+    target: localhost(getPort()),
     ws: true,
-  }).listen(proxyPort++);
+  }).listen(getProxyPort());
 }

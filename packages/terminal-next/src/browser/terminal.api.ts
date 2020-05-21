@@ -63,6 +63,8 @@ export class TerminalApiService implements ITerminalApiService {
 
     await client.attached.promise;
 
+    external.show();
+
     return external;
   }
 

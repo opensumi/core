@@ -1,6 +1,6 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { WithEventBus, Emitter } from '@ali/ide-core-common';
+import { WithEventBus, Emitter, Deferred } from '@ali/ide-core-common';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
 import { IThemeService } from '@ali/ide-theme';
@@ -17,6 +17,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   protected _clients: Map<string, ITerminalClient>;
   protected _onDidOpenTerminal = new Emitter<ITerminalInfo>();
   protected _onDidCloseTerminal = new Emitter<string>();
+  protected _ready = new Deferred<void>();
 
   @Autowired(IMainLayoutService)
   protected readonly layoutService: IMainLayoutService;
@@ -57,6 +58,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   get focused() {
     return this._focus;
+  }
+
+  get ready() {
+    return this._ready;
   }
 
   private _createClient(widget: IWidget, options = {}, autofocus = true) {
@@ -122,7 +127,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
 
     for (const widgets of groups) {
-      const { group, index } = this._createOneGroup();
+      const { group } = this._createOneGroup();
 
       if (!widgets) {
         continue;
@@ -155,10 +160,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         } else if (current === client.id) {
           currentWidgetId = widget.id;
         }
-      }
-
-      if (group.length === 0) {
-        this.terminalView.removeGroup(index);
       }
     }
 
@@ -245,6 +246,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
 
     this.terminalContextKey.isTerminalViewInitialized.set(true);
+    this._ready.resolve();
   }
 
   async reconnect() {
@@ -300,10 +302,13 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   createClientWithWidget(options: TerminalOptions) {
     const widgetId = this.service.generateSessionId();
     const { group } = this._createOneGroup();
-    // @ts-ignore
-    this._clients.set(widgetId, undefined);
+    // 这里是一个有点怪异的操作，主要是避免事件 onWidgetCreated 被触发，手动关联 widget 和 client
+    this._clients.set(widgetId, {} as any);
     const widget = this.terminalView.createWidget(group, widgetId, !options.closeWhenExited);
-    return this.clientFactory(widget, options, false);
+    const client = this.clientFactory(widget, options, false);
+    // 必须重新将 client 添加到缓存中，否则会导致后续的主题更新和 dispose 出现问题
+    this._clients.set(widgetId, client);
+    return client;
   }
 
   clearCurrentGroup() {
