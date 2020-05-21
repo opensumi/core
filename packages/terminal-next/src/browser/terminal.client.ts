@@ -1,3 +1,4 @@
+import { observable } from 'mobx';
 import { Terminal, ITerminalOptions } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { SearchAddon } from 'xterm-addon-search';
@@ -20,11 +21,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private _container: HTMLDivElement;
   private _term: Terminal;
   private _uid: string;
-  private _name: string;
   private _options: TerminalOptions;
   private _autofocus: boolean;
   private _widget: IWidget;
-  private _pid: number | undefined;
   /** end */
 
   /** addons */
@@ -38,6 +37,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   /** status */
   private _ready: boolean = false;
   private _attached = new Deferred<void>();
+  private _stdoutReady = new Deferred<void>();
   /** end */
 
   private readonly ptyProcessMessageEvent = new Emitter<{ id: string; message: string }>();
@@ -79,11 +79,21 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     fontSize: 12,
   };
 
+  // 限制 api sendText 发送的时机一定晚于后端的第一条消息
+  private _afterInit() {
+    const { dispose } = this._term.onData((data: string) => {
+      if (data.length > 0) {
+        this._stdoutReady.resolve();
+        dispose();
+      }
+    });
+  }
+
   init(widget: IWidget, options: TerminalOptions = {}, autofocus: boolean = true) {
     this._autofocus = autofocus;
     this._uid = widget.id;
     this._options = options || {};
-    this._name = this._options.name || '';
+    this.name = this._options.name || '';
     this._container = document.createElement('div');
     this._container.className = styles.terminalInstance;
     this._term = new Terminal({
@@ -94,14 +104,15 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     });
     this._apply(widget);
     this.attach();
+
+    this._afterInit();
   }
+
+  @observable
+  name: string = '';
 
   get term() {
     return this._term;
-  }
-
-  get name() {
-    return this._name;
   }
 
   get pid() {
@@ -241,7 +252,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       this.ptyProcessMessageEvent.fire({ id: this.id, message: e.toString() });
     }));
 
-    this._name = (this._name || connection.name) || 'shell';
+    this.name = (this.name || connection.name) || 'shell';
     this._attachXterm(connection);
     this._attached.resolve();
     this._ready = true;
@@ -322,18 +333,17 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     return this._term.selectAll();
   }
 
-  updateTheme() {
-    this._checkReady();
-    return this._term.setOption('theme', this.theme.terminalTheme);
-  }
-
   findNext(text: string) {
     this._checkReady();
     return this._searchAddon.findNext(text);
   }
 
-  sendText(message: string) {
-    this._checkReady();
+  updateTheme() {
+    return this._term.setOption('theme', this.theme.terminalTheme);
+  }
+
+  async sendText(message: string) {
+    await this._stdoutReady.promise;
     return this.service.sendText(this.id, message);
   }
 
