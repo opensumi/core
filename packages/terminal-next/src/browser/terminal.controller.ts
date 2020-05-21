@@ -127,7 +127,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
 
     for (const widgets of groups) {
-      const { group, index } = this._createOneGroup();
+      const { group } = this._createOneGroup();
 
       if (!widgets) {
         continue;
@@ -160,10 +160,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         } else if (current === client.id) {
           currentWidgetId = widget.id;
         }
-      }
-
-      if (group.length === 0) {
-        this.terminalView.removeGroup(index);
       }
     }
 
