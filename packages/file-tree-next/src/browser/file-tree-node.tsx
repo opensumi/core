@@ -95,13 +95,6 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     }
   };
 
-  const handleDragEnd = (ev: React.DragEvent) => {
-    const { handleDragEnd } = dndService;
-    if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      handleDragEnd(ev, item);
-    }
-  };
-
   const handleDragLeave = (ev: React.DragEvent) => {
     const { handleDragLeave } = dndService;
 
@@ -301,7 +294,6 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
         onClick={handleClick}
         onContextMenu={handleContextMenu}
         onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
         onDragOver={handleDragOver}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}

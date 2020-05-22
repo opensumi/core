@@ -384,6 +384,9 @@ describe('FileTree should be work while on single workspace model', () => {
           setDragImage: jest.fn(),
           setData: jest.fn(),
         },
+        currentTarget: {
+          addEventListener: jest.fn(),
+        },
       };
       dndService.handleDragStart(mockEvent as any, fileNode);
       const fileDecoration = decorations.getDecorations(fileNode);
