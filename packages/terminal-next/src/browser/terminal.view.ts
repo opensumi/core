@@ -331,7 +331,6 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     this._widgets.delete(id);
     widget.dispose();
     this._onWidgetDisposed.fire(widget);
-
     this._checkIfGroupEmpty(groupIndex);
   }
 
