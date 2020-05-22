@@ -1,7 +1,7 @@
 import { ResourceService, IResourceProvider, IResource, ResourceNeedUpdateEvent, IEditorOpenType } from '@ali/ide-editor';
 import { URI, MaybePromise, Domain, WithEventBus, localize, MessageType, LRUMap, Schemas, IEventBus, PreferenceService } from '@ali/ide-core-browser';
 import { Autowired, Injectable } from '@ali/common-di';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { LabelService, getLanguageIdFromMonaco } from '@ali/ide-core-browser/lib/services';
 import { EditorComponentRegistry, BrowserEditorContribution, IEditorDocumentModelService, IEditorDocumentModelContentRegistry } from '@ali/ide-editor/lib/browser';
 import { ImagePreview } from './preview.view';
 import { BinaryEditorComponent } from './external.view';
@@ -224,7 +224,12 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
 
   async getFileType(uri: string): Promise<string | undefined> {
     if (!this.cachedFileType.has(uri)) {
-      this.cachedFileType.set(uri, await this.fileServiceClient.getFileType(uri));
+      if (getLanguageIdFromMonaco(new URI(uri))) {
+        // 对于已知 language 对应扩展名的文件，当 text 处理
+        this.cachedFileType.set(uri, 'text');
+      } else {
+        this.cachedFileType.set(uri, await this.fileServiceClient.getFileType(uri));
+      }
     }
     return this.cachedFileType.get(uri);
   }
