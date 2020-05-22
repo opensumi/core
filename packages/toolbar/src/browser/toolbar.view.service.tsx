@@ -42,7 +42,7 @@ export class ToolBarViewService implements IToolBarViewService {
           }),
         }),
         id,
-        weight: 10 - (element.order || 10),
+        weight: element.weight === undefined ? (10 - (element.order === undefined ? 10 : element.order)) : element.weight,
         preferredPosition: {
           location,
         },
@@ -61,6 +61,7 @@ export class ToolBarViewService implements IToolBarViewService {
         preferredPosition: {
           location,
         },
+        weight: element.weight === undefined ? (10 - (element.order === undefined ? 10 : element.order)) : element.weight,
       }));
     }
 

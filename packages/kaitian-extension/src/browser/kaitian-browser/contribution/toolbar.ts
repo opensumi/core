@@ -41,6 +41,8 @@ export class ToolBarBrowserContributionRunner extends AbstractKaitianBrowserCont
             kaitianExtendService: extendService,
             kaitianExtendSet: extendProtocol,
           },
+          order: view.order,
+          weight: view.weight,
         });
         if (disposable) {
           disposer.addDispose(disposable);

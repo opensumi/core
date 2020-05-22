@@ -43,6 +43,10 @@ export interface IToolBarViewContribution {
    */
   position: ToolBarPosition;
 
+  order?: number;
+
+  weight?: number;
+
 }
 
 export interface ITabBarViewContribution {
