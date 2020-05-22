@@ -1,7 +1,6 @@
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { localize, getDebugLogger, URI, parseWithComments } from '@ali/ide-core-common';
-import { Path } from '@ali/ide-core-common/lib/path';
 import { IIconTheme } from '../common';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 

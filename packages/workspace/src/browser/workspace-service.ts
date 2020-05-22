@@ -564,6 +564,7 @@ export class WorkspaceService implements IWorkspaceService {
   protected openNewWindow(workspacePath: string): void {
     const url = new URL(window.location.href);
     url.hash = workspacePath;
+    // TODO: 改成 command
     this.windowService.openNewWindow(url.toString());
   }
 
