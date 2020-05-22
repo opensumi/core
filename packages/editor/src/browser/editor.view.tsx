@@ -23,6 +23,24 @@ export const EditorView = () => {
   const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
   const rightWidgetInfo = componentRegistry.getComponentRegistryInfo('editor-widget-right');
   const RightWidget: React.Component | React.FunctionComponent<any> | undefined = rightWidgetInfo && rightWidgetInfo.views[0].component;
+  const [ready, setReady] = React.useState<boolean>(workbenchEditorService.gridReady);
+
+  React.useEffect(() => {
+    if (!ready) {
+      if (workbenchEditorService.gridReady) {
+        setReady(true);
+      } else {
+        const disposer = workbenchEditorService.onDidGridReady(() => {
+          setReady(true);
+        });
+        return () => disposer.dispose();
+      }
+    }
+  }, []);
+
+  if (!ready) {
+    return null;
+  }
 
   return (
     <div className={styles.kt_workbench_editor} id='workbench-editor' ref={(ele) => {

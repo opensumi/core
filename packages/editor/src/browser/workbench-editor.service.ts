@@ -1,7 +1,7 @@
 import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult, IEditorGroupState, ResourceDecorationChangeEvent, IUntitledOptions, SaveReason, getSplitActionFromDragDrop } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, computed, action, reaction } from 'mobx';
-import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider } from '@ali/ide-core-common';
+import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider, Emitter } from '@ali/ide-core-common';
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution, ResourceOpenTypeChangedEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
@@ -60,6 +60,10 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   private untitledIndex = 1;
 
   private untitledCloseIndex: number[] = [];
+
+  public gridReady: boolean = false;
+  private _onDidGridReady = new Emitter<void>();
+  public onDidGridReady = this._onDidGridReady.event;
 
   constructor() {
     super();
@@ -303,12 +307,17 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     let state: IEditorGridState = { editorGroup: { uris: [], previewIndex: -1 } };
     state = this.openedResourceState.get<IEditorGridState>('grid', state);
     this.topGrid = new EditorGrid();
-    this.topGrid.deserialize(state, () => {
+    const editorRestorePromises = [];
+    const promise = this.topGrid.deserialize(state, () => {
       return this.createEditorGroup();
-    }).then(() => {
+    }, editorRestorePromises).then(() => {
       if (this.topGrid.children.length === 0 && !this.topGrid.editorGroup) {
         this.topGrid.setEditorGroup(this.createEditorGroup());
       }
+      this.gridReady = true;
+      this._onDidGridReady.fire();
+    });
+    Promise.all(editorRestorePromises).then(() => {
       this._restoring = false;
       for (const contribution of this.contributions.getContributions()) {
         if (contribution.onDidRestoreState) {
@@ -316,6 +325,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
         }
       }
     });
+    return promise;
   }
 
   async closeAll(uri?: URI, force?: boolean) {

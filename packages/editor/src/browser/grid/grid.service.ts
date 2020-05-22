@@ -136,16 +136,16 @@ export class EditorGrid implements IDisposable {
     }
   }
 
-  async deserialize(state: IEditorGridState, editorGroupFactory: () => IGridEditorGroup): Promise<any> {
+  async deserialize(state: IEditorGridState, editorGroupFactory: () => IGridEditorGroup, editorGroupRestoreStatePromises: Promise<any>[]): Promise<any> {
     const promises: Promise<any>[] = [];
     if (state.editorGroup) {
       this.setEditorGroup(editorGroupFactory());
-      promises.push(this.editorGroup!.restoreState(state.editorGroup));
+      editorGroupRestoreStatePromises.push(this.editorGroup!.restoreState(state.editorGroup));
     } else {
       this.splitDirection = state.splitDirection;
       this.children = (state.children || []).map((c) => {
         const grid = new EditorGrid(this);
-        promises.push(grid.deserialize(c, editorGroupFactory));
+        promises.push(grid.deserialize(c, editorGroupFactory, editorGroupRestoreStatePromises));
         return grid;
       });
     }
