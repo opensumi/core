@@ -27,8 +27,14 @@ export interface IToolBarElement {
 
   /**
    * 排序因子，越小越靠前
+   * @ deprecated
    */
   order?: number;
+
+  /**
+   * 排序因子，越大越靠前
+   */
+  weight?: number;
 
 }
 
