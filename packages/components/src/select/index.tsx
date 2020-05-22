@@ -137,7 +137,6 @@ export function Select<T = string>({
     if (onChange && select !== undefined && !equals(select, value)) {
       onChange(select);
     }
-    setOpen(false);
   }, [select]);
   useEffect(() => {
     setSelect(select);
@@ -165,7 +164,10 @@ export function Select<T = string>({
     const disabled = (node as React.ReactElement).props?.disabled || false;
     return <div key={(node as React.ReactElement).props.value} className={classNames({
       ['kt-select-option-select']: select === (node as React.ReactElement).props.value,
-    })} onClick={disabled ? noop : () => setSelect(getValueWithProps((node as React.ReactElement), optionLabelProp))}>{node}</div>;
+    })} onClick={disabled ? noop : () => {
+      setOpen(false);
+      setSelect(getValueWithProps((node as React.ReactElement), optionLabelProp));
+    }}>{node}</div>;
   }
 
   useEffect(() => {
