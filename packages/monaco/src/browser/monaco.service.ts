@@ -1,8 +1,8 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Disposable } from '@ali/ide-core-browser';
+import { Disposable, SuggestEvent } from '@ali/ide-core-browser';
 import { loadMonaco } from './monaco-loader';
 import { MonacoService, ServiceNames } from '../common';
-import { Emitter as EventEmitter, Event } from '@ali/ide-core-common';
+import { Emitter as EventEmitter, Event, IEventBus } from '@ali/ide-core-common';
 import { TextmateService } from './textmate.service';
 
 @Injectable()
@@ -12,6 +12,9 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
 
   @Autowired()
   private textMateService: TextmateService;
+
+  @Autowired(IEventBus)
+  private eventBus: IEventBus;
 
   private loadingPromise!: Promise<any>;
 
@@ -32,6 +35,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   ): Promise<monaco.editor.IStandaloneCodeEditor> {
     const editor =  monaco.editor.create(monacoContainer, options, { ...this.overrideServices, ...overrides});
 
+    this.listenSuggestWidget(editor);
     return editor;
   }
 
@@ -67,6 +71,35 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
 
   public testTokenize(text: string, languageId: string) {
     this.textMateService.testTokenize(text, languageId);
+  }
+
+  private listenSuggestWidget(editor: monaco.editor.IStandaloneCodeEditor) {
+    const suggestWidget = ((editor.getContribution('editor.contrib.suggestController') as monaco.suggestController.SuggestController)._widget as any).getValue();
+    // FIXME 仅通过鼠标选中会走onDidSelect事件，键盘会过acceptSelectedSuggestionOnEnter这个command
+    suggestWidget.onDidSelect((e) => {
+      this.eventBus.fire(new SuggestEvent({
+        eventType: 'onDidSelect',
+        data: e,
+      }));
+    });
+    suggestWidget.onDidHide((e) => {
+      this.eventBus.fire(new SuggestEvent({
+        eventType: 'onDidHide',
+        data: e,
+      }));
+    });
+    suggestWidget.onDidShow((e) => {
+      this.eventBus.fire(new SuggestEvent({
+        eventType: 'onDidShow',
+        data: e,
+      }));
+    });
+    suggestWidget.onDidFocus((e) => {
+      this.eventBus.fire(new SuggestEvent({
+        eventType: 'onDidFocus',
+        data: e,
+      }));
+    });
   }
 
 }

@@ -1,4 +1,4 @@
-import { Event, IJSONSchema, IContextKeyService, IDisposable } from '..';
+import { Event, IJSONSchema, IContextKeyService, IDisposable, BasicEvent } from '..';
 
 export enum ServiceNames {
   CODE_EDITOR_SERVICE = 'codeEditorService',
@@ -86,3 +86,15 @@ export interface IMimeService {
    */
   updateMime(): void;
 }
+
+export type SuggestWidget = any;
+
+export interface SuggestEventPayload {
+  eventType: 'onDidSelect' | 'onDidHide' | 'onDidShow' | 'onDidFocus';
+  data: {
+    index: number;
+    item: monaco.languages.CompletionItem;
+    model: any;
+  } | SuggestWidget;
+}
+export class SuggestEvent extends BasicEvent<SuggestEventPayload> {}
