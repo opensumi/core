@@ -52,10 +52,10 @@ export class ExtensionMetadataService extends Disposable {
 
     // FIXME: 这块目前沿用 vscode 的激活启动方式，考虑是否扩展部分有独立设置
     activationEvents.forEach((event) => {
-      this.activationService.onEvent(event, async () => {
+      activateDisposer.addDispose(this.activationService.onEvent(event, async () => {
         await extension.activate();
         activateDisposer.dispose();
-      });
+      }));
     });
   }
 
