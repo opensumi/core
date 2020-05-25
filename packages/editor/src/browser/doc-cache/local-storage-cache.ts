@@ -2,7 +2,6 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { URI } from '@ali/ide-core-common';
 import { IDocPersistentCacheProvider, IDocStatus, IDocCache, parseCacheValueFrom } from '../../common/doc-cache';
 import { IWorkspaceStorageService } from '@ali/ide-workspace';
-import { WorkspaceStorageService } from '@ali/ide-workspace/lib/browser/workspace-storage-service';
 
 /**
  * 使用 LocalStorage 实现的文档缓存对象
@@ -10,7 +9,7 @@ import { WorkspaceStorageService } from '@ali/ide-workspace/lib/browser/workspac
 @Injectable()
 export class LocalStorageDocCacheImpl implements IDocPersistentCacheProvider  {
   @Autowired(IWorkspaceStorageService)
-  private storageService: WorkspaceStorageService;
+  private storageService: IWorkspaceStorageService;
 
   hasCache(_uri: URI) {
     return true;

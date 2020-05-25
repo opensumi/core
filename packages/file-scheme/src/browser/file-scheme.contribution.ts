@@ -241,6 +241,7 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
   }
 
   registerEditorComponent(editorComponentRegistry: EditorComponentRegistry) {
+    // TODO: override
     editorComponentRegistry.registerEditorComponent({
       component: ImagePreview,
       uid: IMAGE_PREVIEW_COMPONENT_ID,
