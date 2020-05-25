@@ -34,6 +34,7 @@ export interface IMainThreadLanguages {
   $registerSignatureHelpProvider(handle: number, selector: SerializedDocumentFilter[], metadata: ISerializedSignatureHelpProviderMetadata): void;
   $registerRenameProvider(handle: number, selector: SerializedDocumentFilter[], supportsResoveInitialValues: boolean): void;
   $registerSelectionRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void;
+  $registerDeclarationProvider(handle: number, selector: SerializedDocumentFilter[]): void;
 }
 
 export interface IExtHostLanguages {

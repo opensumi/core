@@ -1,19 +1,20 @@
 import { IMainThreadConnectionService, ExtensionConnection, IExtHostConnection, ExtHostAPIIdentifier, ExtensionMessageReader, ExtensionMessageWriter } from '../../../common/vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ILoggerManagerClient, ILogServiceClient, SupportLogNamespace } from '@ali/ide-core-browser';
+import { ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, Deferred } from '@ali/ide-core-browser';
 
 @Injectable({multiple: true})
 export class MainThreadConnection implements IMainThreadConnectionService {
   private proxy: IExtHostConnection;
   private connections = new Map<string, ExtensionConnection>();
+  private connectionsReady = new Map<string, Deferred<void>>();
 
   @Autowired(ILoggerManagerClient)
   protected readonly LoggerManager: ILoggerManagerClient;
   protected readonly logger: ILogServiceClient = this.LoggerManager.getLogger(SupportLogNamespace.ExtensionHost);
 
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
-    this.proxy = rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostConnection);
+    this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostConnection);
   }
 
   dispose() {
@@ -29,6 +30,10 @@ export class MainThreadConnection implements IMainThreadConnectionService {
    * @param message
    */
   async $sendMessage(id: string, message: string): Promise<void> {
+    const ready = this.connectionsReady.get(id);
+    if (ready) {
+      await ready.promise;
+    }
     if (this.connections.has(id)) {
       this.connections.get(id)!.reader.readMessage(message);
     } else {
@@ -69,8 +74,17 @@ export class MainThreadConnection implements IMainThreadConnectionService {
    * @param id
    */
   async doEnsureConnection(id: string): Promise<ExtensionConnection> {
-    const connection = this.connections.get(id) || await this.doCreateConnection(id);
-    this.connections.set(id, connection);
+
+    let connection = this.connections.get(id);
+    if (!connection) {
+      const ready = new Deferred<void>();
+      this.connectionsReady.set(id, ready);
+      connection = await this.doCreateConnection(id);
+      ready.resolve();
+      this.connections.set(id, connection);
+      this.connectionsReady.delete(id);
+    }
+
     return connection;
   }
 

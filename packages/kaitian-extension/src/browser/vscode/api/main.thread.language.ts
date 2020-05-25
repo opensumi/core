@@ -179,6 +179,18 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
+  $registerDeclarationProvider(handle: number, selector: SerializedDocumentFilter[]): void {
+    const languageSelector = fromLanguageSelector(selector);
+    // const definitionProvider = this.createDefinitionProvider(handle, languageSelector);
+    const disposable = new DisposableCollection();
+    for (const language of this.getUniqueLanguages()) {
+      if (this.matchLanguage(languageSelector, language)) {
+        // disposable.push(monaco.languages.registerDeclarationProvider(language, definitionProvider));
+      }
+    }
+    this.disposables.set(handle, disposable);
+  }
+
   protected createDefinitionProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.DefinitionProvider {
     return {
       provideDefinition: async (model, position, token) => {
@@ -638,7 +650,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return {
             links,
             dispose: () => {
-              console.warn('TODO 需要传递handleId实现release');
+              // console.warn('TODO 需要传递handleId实现release');
             },
           };
         });
@@ -715,7 +727,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   $registerWorkspaceSymbolProvider(handle: number): void {
     const disposable = new DisposableCollection();
-    console.log('TODO registerWorkspaceSymbolProvider');
+    // console.log('TODO registerWorkspaceSymbolProvider');
     this.disposables.set(handle, disposable);
   }
 

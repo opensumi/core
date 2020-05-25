@@ -19,6 +19,7 @@ import {
   CodeActionProvider,
   CodeActionProviderMetadata,
   ImplementationProvider,
+  DeclarationProvider,
   Diagnostic,
   DiagnosticCollection,
   DocumentLinkProvider,
@@ -78,6 +79,7 @@ import URI from 'vscode-uri';
 import { Disposable } from '../../../common/vscode/ext-types';
 import { CompletionAdapter } from './language/completion';
 import { DefinitionAdapter } from './language/definition';
+import { DeclarationAdapter } from './language/declaration';
 import { TypeDefinitionAdapter } from './language/type-definition';
 import { FoldingProviderAdapter } from './language/folding';
 import { ColorProviderAdapter } from './language/color';
@@ -158,6 +160,9 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, ex
     registerImplementationProvider(selector: DocumentSelector, provider: ImplementationProvider): Disposable {
       return extHostLanguages.registerImplementationProvider(selector, provider);
     },
+    registerDeclarationProvider(selector: DocumentSelector, provider: DeclarationProvider): Disposable {
+      return extHostLanguages.registerDeclarationProvider(selector, provider);
+    },
     registerCodeActionsProvider(selector: DocumentSelector, provider: CodeActionProvider, metadata?: CodeActionProviderMetadata): Disposable {
       return extHostLanguages.registerCodeActionsProvider(selector, provider, metadata);
     },
@@ -208,7 +213,8 @@ export type Adapter =
   SignatureHelpAdapter |
   SelectionRangeAdapter |
   FormattingAdapter |
-  RenameAdapter;
+  RenameAdapter |
+  DeclarationAdapter;
 
 export class ExtHostLanguages implements IExtHostLanguages {
   private readonly proxy: IMainThreadLanguages;
@@ -471,6 +477,14 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.createDisposable(callId);
   }
   // ### Implementation provider end
+
+  // ### Declaration provider begin
+  registerDeclarationProvider(selector: DocumentSelector, provider: DeclarationProvider): Disposable {
+    const callId = this.addNewAdapter(new DeclarationAdapter(provider, this.documents));
+    this.proxy.$registerDeclarationProvider(callId, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
+  }
+  // ### Declaration provider end
 
   // ### Diagnostics begin
   get onDidChangeDiagnostics() {
