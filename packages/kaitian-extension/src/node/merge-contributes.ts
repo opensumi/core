@@ -40,14 +40,6 @@ export function mergeContributes(
       srcValue = asArray(srcValue);
     }
 
-    if (key === 'viewsContainers') {
-
-    }
-
-    if (key === 'views') {
-
-    }
-
     if (Array.isArray(value) && Array.isArray(srcValue)) {
       return value.concat(srcValue);
     }
