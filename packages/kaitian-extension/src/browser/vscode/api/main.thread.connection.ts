@@ -77,8 +77,8 @@ export class MainThreadConnection implements IMainThreadConnectionService {
 
     let connection = this.connections.get(id);
     if (!connection) {
-      const ready = new Deferred();
-      this.connectionsReady.set(id, new Deferred());
+      const ready = new Deferred<void>();
+      this.connectionsReady.set(id, ready);
       connection = await this.doCreateConnection(id);
       ready.resolve();
       this.connections.set(id, connection);
