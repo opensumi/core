@@ -350,6 +350,8 @@ export class TaskService extends Disposable implements ITaskService {
           });
         }
         resolve({ workspaceFolder: { uri: folderUri, name: folderUri.path, index: 0 }, set: { tasks: taskSet }, configurations: customizedTasks, hasErrors });
+      } else {
+        resolve({ workspaceFolder: { uri: folderUri, name: folderUri.path, index: 0 }, set: { tasks: [] }, configurations: { byIdentifier: {} }, hasErrors: false });
       }
     });
   }
