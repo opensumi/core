@@ -13,6 +13,7 @@ import { ResizeZoneWidget } from '@ali/ide-monaco-enhance';
 import { CommentsThread } from './comments-thread';
 import { IEditor } from '@ali/ide-editor';
 import { CommentsZoneService } from './comments-zone.service';
+import { MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 export interface ICommentProps {
   thread: CommentsThread;
@@ -62,6 +63,7 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
           context={[{
             thread,
             widget,
+            menuId: MenuId.CommentsCommentThreadTitle,
           }]}
           separator='inline'
           type='icon'/>
@@ -81,15 +83,21 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
           <div className={styles.comment_bottom_actions}>
             <InlineActionBar<ICommentReply>
               className={styles.comment_reply_actions}
+              separator='inline'
               type='button'
               context={[
                 {
                   text: replyText,
                   widget,
                   thread,
+                  menuId: MenuId.CommentsCommentThreadContext,
                 },
               ]}
               menus={commentThreadContext}
+              afterClick={() => {
+                setReplyText('');
+                commentIsEmptyContext.set(true);
+              }}
             />
           </div>
         </div>

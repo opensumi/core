@@ -4,7 +4,6 @@ import { ICommentsService, CommentPanelId, CommentsContribution, ICommentsFeatur
 import { IEditor } from '@ali/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { CommentsPanel } from './comments-panel.view';
 import { IMenuRegistry, MenuId, NextMenuContribution } from '@ali/ide-core-browser/lib/menu/next';
 
 @Domain(ClientAppContribution, BrowserEditorContribution, CommandContribution, TabBarToolbarContribution, NextMenuContribution)
@@ -83,7 +82,10 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
   }
 
   private registerCommentsFeature() {
-    this.contributions.getContributions().forEach((contribution) => {
+    this.contributions.getContributions().forEach((contribution, index) => {
+      this.addDispose(this.commentsService.registerCommentRangeProvider(`contribution_${index}`, {
+        getCommentingRanges: (documentModel) => contribution.provideCommentingRanges(documentModel),
+      }));
       if (contribution.registerCommentsFeature) {
         contribution.registerCommentsFeature(this.commentsFeatureRegistry);
       }
@@ -96,10 +98,10 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
    */
   private listenToCreateCommentsPanel() {
     if (this.commentsFeatureRegistry.getCommentsPanelOptions().defaultShow) {
-      this.registerCommentPanel();
+      this.commentsService.registerCommentPanel();
     } else {
       Event.once(this.commentsService.onThreadsCreated)(() => {
-        this.registerCommentPanel();
+        this.commentsService.registerCommentPanel();
       });
     }
 
@@ -107,20 +109,6 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
       const handler = this.layoutService.getTabbarHandler(CommentPanelId);
       handler?.setBadge(this.panelBadge);
     });
-  }
-
-  private registerCommentPanel() {
-    this.layoutService.collectTabbarComponent([{
-      id: CommentPanelId,
-      component: CommentsPanel,
-    }], {
-      badge: this.panelBadge,
-      containerId: CommentPanelId,
-      title: localize('comments').toUpperCase(),
-      hidden: false,
-      activateKeyBinding: 'shift+ctrlcmd+c',
-      ...this.commentsFeatureRegistry.getCommentsPanelOptions(),
-    }, 'bottom');
   }
 
   registerEditorFeature(registry: IEditorFeatureRegistry) {

@@ -3,6 +3,7 @@
 /// <reference path='./vscode/typings/vscode.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.d.ts' />
 /// <reference path='./vscode/typings/vscode.command.d.ts' />
+/// <reference path='./vscode/typings/vscode.comments.d.ts' />
 /// <reference path='./vscode/typings/vscode.message.d.ts' />
 /// <reference path='./vscode/typings/vscode.quickpick.d.ts' />
 /// <reference path='./vscode/typings/vscode.language.d.ts' />
