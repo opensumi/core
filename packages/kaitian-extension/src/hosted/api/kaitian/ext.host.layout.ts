@@ -14,6 +14,14 @@ export class TabbarHandler implements ITabbarHandler {
 
   constructor(public id: string, private proxy: IMainThreadLayout) {}
 
+  setTitle(title: string): void {
+    this.proxy.$setTitle(this.id, title);
+  }
+
+  setIcon(iconPath: string): void {
+    this.proxy.$setIcon(this.id, iconPath);
+  }
+
   setSize(size: number): void {
     this.proxy.$setSize(this.id, size);
   }
