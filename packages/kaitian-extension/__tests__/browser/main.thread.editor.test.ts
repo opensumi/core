@@ -30,7 +30,7 @@ import { LanguageService } from '@ali/ide-editor/lib/browser/language/language.s
 import { useMockStorage } from '../../../core-browser/lib/mocks/storage';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
-import { FileSystemResourceProvider } from '@ali/ide-file-scheme/lib/browser/file-scheme.contribution';
+import { FileSystemResourceProvider } from '@ali/ide-file-scheme/lib/browser/file-resource';
 import { FileSchemeDocumentProvider } from '@ali/ide-file-scheme/lib/browser/file-doc';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
 import { FileResourceResolver } from '@ali/ide-file-service/lib/browser/file-service-contribution';

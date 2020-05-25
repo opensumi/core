@@ -74,7 +74,7 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
 }
 
 @Injectable()
-export class UntitledResourceProvider extends WithEventBus implements IResourceProvider {
+export class UntitledSchemeResourceProvider extends WithEventBus implements IResourceProvider {
   readonly scheme: string = Schemas.untitled;
 
   provideResource(uri: URI) {
