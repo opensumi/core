@@ -5,7 +5,7 @@ import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as Ev
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution, ResourceOpenTypeChangedEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
-import { FILE_COMMANDS, CorePreferences, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, MonacoService, IScopedContextKeyService, IContextKey, RecentFilesManager } from '@ali/ide-core-browser';
+import { FILE_COMMANDS, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, MonacoService, IScopedContextKeyService, IContextKey, RecentFilesManager, PreferenceService } from '@ali/ide-core-browser';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
 import { Schemas } from '@ali/ide-core-common';
 import { isNullOrUndefined } from 'util';
@@ -410,8 +410,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @Autowired(CommandService)
   private commands: CommandService;
 
-  @Autowired(CorePreferences)
-  protected readonly corePreferences: CorePreferences;
+  @Autowired(PreferenceService)
+  protected readonly preferenceService: PreferenceService;
 
   @Autowired(RecentFilesManager)
   private readonly recentFilesManager: RecentFilesManager;
@@ -791,7 +791,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         this.openingPromise.delete(uri.toString());
       });
     }
-    const previewMode = this.corePreferences['editor.previewMode'] && (isNullOrUndefined(options.preview) ? true : options.preview);
+    const previewMode = this.preferenceService.get('editor.previewMode') && (isNullOrUndefined(options.preview) ? true : options.preview);
     if (!previewMode) {
       this.openingPromise.get(uri.toString())!.then(() => {
         this.pinPreviewed(uri);
@@ -811,7 +811,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       return false;
     }
     try {
-      const previewMode = this.corePreferences['editor.previewMode'] && (isNullOrUndefined(options.preview) ? true : options.preview);
+      const previewMode = this.preferenceService.get('editor.previewMode') && (isNullOrUndefined(options.preview) ? true : options.preview);
       if ((options && options.disableNavigate) || (options && options.backend)) {
         // no-op
       } else {
