@@ -128,7 +128,6 @@ export class FileTreeModelService {
   private onDidSelectedFileChangeEmitter: Emitter<URI[]> = new Emitter();
 
   private treeStateWatcher: TreeStateWatcher;
-  private _isEditing: boolean;
 
   constructor() {
     this._whenReady = this.initTreeModel();
@@ -207,15 +206,6 @@ export class FileTreeModelService {
       this._contextMenuResourceContext = new ResourceContextKey(this.fileTreeService.contextMenuContextKeyService);
     }
     return this._contextMenuResourceContext;
-  }
-
-  get isEditing() {
-    return this._isEditing;
-  }
-
-  set isEditing(value: boolean) {
-    this._isEditing = value;
-    this.treeModel.dispatchChange();
   }
 
   async initTreeModel() {
@@ -926,14 +916,12 @@ export class FileTreeModelService {
       this.fileTreeContextKey.filesExplorerInputFocused.set(true);
     };
     const handleDestroy = () => {
-      this.isEditing = false;
       // 在焦点元素销毁时，electron与chrome web上处理焦点的方式略有不同
       // 这里需要明确将FileTree的explorerFocused设置为正确的false
       this.fileTreeContextKey.filesExplorerFocused.set(false);
       this.fileTreeContextKey.filesExplorerInputFocused.set(false);
     };
     const handleCancel = () => {
-      this.isEditing = false;
       if (this.fileTreeService.isCompactMode) {
         if (promptHandle instanceof NewPromptHandle) {
           this.fileTreeService.refresh(promptHandle.parent as Directory);
@@ -951,7 +939,6 @@ export class FileTreeModelService {
       }
     };
     if (!promptHandle.destroyed) {
-      this.isEditing = true;
       promptHandle.onChange(handleChange);
       promptHandle.onCommit(enterCommit);
       promptHandle.onBlur(blurCommit);
@@ -959,8 +946,6 @@ export class FileTreeModelService {
       promptHandle.onChange(handleChange);
       promptHandle.onDestroy(handleDestroy);
       promptHandle.onCancel(handleCancel);
-    } else {
-      this.isEditing = false;
     }
   }
 

@@ -671,6 +671,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         depth={item.depth}
         itemType={type}
         template={template}
+        hasPrompt={!!this.promptHandle && !this.promptHandle.destroyed}
         expanded={CompositeTreeNode.is(item) ? (item as CompositeTreeNode).expanded : void 0}>
         {children as INodeRenderer}
       </NodeRendererWrap>

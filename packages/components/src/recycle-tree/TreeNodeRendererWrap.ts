@@ -33,14 +33,15 @@ export interface INodeRendererWrapProps {
   template?: React.JSXElementConstructor<any>;
   depth: number;
   expanded?: boolean;
+  hasPrompt?: boolean;
   children: INodeRenderer;
 }
 
 export class NodeRendererWrap extends React.Component<INodeRendererWrapProps> {
 
   public render() {
-    const { item, itemType, children, template } = this.props;
-    return React.createElement(children, {item, itemType, template});
+    const { item, itemType, children, template, hasPrompt } = this.props;
+    return React.createElement(children, {item, itemType, template, hasPrompt});
   }
 
   public shouldComponentUpdate(nextProps: INodeRendererWrapProps) {
