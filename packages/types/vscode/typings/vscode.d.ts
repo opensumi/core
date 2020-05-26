@@ -1,20 +1,3 @@
-	/**
- * Thenable is a common denominator between ES6 promises, Q, jquery.Deferred, WinJS.Promise,
- * and others. This API makes no assumption about what promise library is being used which
- * enables reusing existing code without migrating to a specific promise implementation. Still,
- * we recommend the use of native promises which are available in this editor.
- */
-interface Thenable<T> {
-	/**
-	* Attaches callbacks for the resolution and/or rejection of the Promise.
-	* @param onfulfilled The callback to execute when the Promise is resolved.
-	* @param onrejected The callback to execute when the Promise is rejected.
-	* @returns A Promise for the completion of which ever callback is executed.
-	*/
-	then<TResult>(onfulfilled?: (value: T) => TResult | Thenable<TResult>, onrejected?: (reason: any) => TResult | Thenable<TResult>): Thenable<TResult>;
-	then<TResult>(onfulfilled?: (value: T) => TResult | Thenable<TResult>, onrejected?: (reason: any) => void): Thenable<TResult>;
-}
-
 declare module 'vscode' {
 
 	/**
@@ -1478,7 +1461,7 @@ declare module 'vscode' {
 		toJSON(): any;
 	}
 
-		/**
+	/**
 	 * Represents a typed event.
 	 *
 	 * A function that represents an event to which you subscribe by calling it with
@@ -1486,7 +1469,19 @@ declare module 'vscode' {
 	 *
 	 * @sample `item.onDidChange(function(event) { console.log("Event happened: " + event); });`
 	 */
-	export type Event<T> = (listener: (e: T) => any, thisArgs?: any, disposables?: Disposable[]) => Disposable;
+	export interface Event<T> {
+
+		/**
+		 * A function that represents an event to which you subscribe by calling it with
+		 * a listener function as argument.
+		 *
+		 * @param listener The listener function will be called when the event happens.
+		 * @param thisArgs The `this`-argument which will be used when calling the event listener.
+		 * @param disposables An array to which a [disposable](#Disposable) will be added.
+		 * @return A disposable which unsubscribes the event listener.
+		 */
+		(listener: (e: T) => any, thisArgs?: any, disposables?: Disposable[]): Disposable;
+	}
 
 	/**
 	 * An event emitter can be used to create and manage an [event](#Event) for others
@@ -2306,6 +2301,77 @@ declare module 'vscode' {
 		rename(source: Uri, target: Uri, options?: { overwrite: boolean }): Thenable<void>;
 		copy(source: Uri, target: Uri, options?: { overwrite: boolean }): Thenable<void>;
   }
+
+  /**
+	 * Represents the configuration. It is a merged view of
+	 *
+	 * - Default configuration
+	 * - Global configuration
+	 * - Workspace configuration (if available)
+	 * - Workspace folder configuration of the requested resource (if available)
+	 *
+	 * *Global configuration* comes from User Settings and shadows Defaults.
+	 *
+	 * *Workspace configuration* comes from Workspace Settings and shadows Global configuration.
+	 *
+	 * *Workspace Folder configuration* comes from `.vscode` folder under one of the [workspace folders](#workspace.workspaceFolders).
+	 *
+	 * *Note:* Workspace and Workspace Folder configurations contains `launch` and `tasks` settings. Their basename will be
+	 * part of the section identifier. The following snippets shows how to retrieve all configurations
+	 * from `launch.json`:
+	 *
+	 * ```ts
+	 * // launch.json configuration
+	 * const config = workspace.getConfiguration('launch', vscode.window.activeTextEditor.document.uri);
+	 *
+	 * // retrieve values
+	 * const values = config.get('configurations');
+	 * ```
+	 *
+	 * Refer to [Settings](https://code.visualstudio.com/docs/getstarted/settings) for more information.
+	 */
+
+	/**
+	 * An output channel is a container for readonly textual information.
+	 *
+	 * To get an instance of an `OutputChannel` use
+	 * [createOutputChannel](#window.createOutputChannel).
+	 */
+	/**
+	 * Defines a generalized way of reporting progress updates.
+	 */
+	export interface Progress<T> {
+
+		/**
+		 * Report a progress update.
+		 * @param value A progress item, like a message and/or an
+		 * report on how much work finished
+		 */
+		report(value: T): void;
+  }
+
+  /**
+	 * A location in the editor at which progress information can be shown. It depends on the
+	 * location how progress is visually represented.
+	 */
+	export enum ProgressLocation {
+
+		/**
+		 * Show progress for the source control viewlet, as overlay for the icon and as progress bar
+		 * inside the viewlet (when visible). Neither supports cancellation nor discrete progress.
+		 */
+		SourceControl = 1,
+
+		/**
+		 * Show progress in the status bar of the editor. Neither supports cancellation nor discrete progress.
+		 */
+		Window = 10,
+
+		/**
+		 * Show progress as notification with an optional cancel button. Supports to show infinite and discrete progress.
+		 */
+		Notification = 15,
+	}
 
 
 	/**
