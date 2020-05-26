@@ -844,6 +844,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     await this.ensureLoaded();
     let next = this._children;
     let preItem: CompositeTreeNode;
+    let preItemPath: string = '';
     let name;
     while (name = pathFlag.shift()) {
       let item = next!.find((c) => c.name.indexOf(name) === 0);
@@ -885,11 +886,21 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           }
         }
         if (!(item as CompositeTreeNode)._children) {
-          await (item as CompositeTreeNode).setExpanded(true);
+          preItemPath = item.path;
+          await (item as CompositeTreeNode).setExpanded(true, true);
         }
         if (item && pathFlag.length === 0) {
           return item;
         } else {
+          if (!!preItemPath && preItemPath !== item.path) {
+            // 说明此时已发生了路径压缩，如从 a -> a/b/c
+            // 需要根据路径变化移除对应的展开路径, 这里只需考虑短变长场景
+            const prePaths = Path.splitPath(preItemPath);
+            const nextPaths = Path.splitPath(item.path);
+            if (nextPaths.length > prePaths.length) {
+              pathFlag.splice(0, nextPaths.length - prePaths.length);
+            }
+          }
           next = (item as CompositeTreeNode)._children;
           preItem = (item as CompositeTreeNode);
         }
