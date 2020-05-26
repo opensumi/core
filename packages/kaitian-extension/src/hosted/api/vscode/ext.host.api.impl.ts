@@ -39,6 +39,8 @@ import {
   ColorInformation,
   SelectionRange,
   QuickInputButtons,
+  ExtensionKind,
+  TaskPanelKind,
 } from '../../../common/vscode/ext-types';
 import { CancellationTokenSource, Emitter, Event } from '@ali/ide-core-common';
 import { ExtHostPreference } from './ext.host.preference';
@@ -114,7 +116,7 @@ export function createApiFactory(
       env: createEnvApiFactory(rpcProtocol, extensionService, extHostEnv),
       debug: createDebugApiFactory(extHostDebug),
       version: '1.37.0',
-      comment: createCommentsApiFactory(extension, extHostComments),
+      comments: createCommentsApiFactory(extension, extHostComments),
       languageServer: {},
       extensions: createExtensionsApiFactory(rpcProtocol, extensionService, mainThreadExtensionService),
       tasks: createTaskApiFactory(rpcProtocol, extensionService, extHostTasks, extension),
@@ -164,6 +166,8 @@ export function createApiFactory(
       TextEditorCursorStyle,
       TextEditorSelectionChangeKind,
       ColorInformation,
+      ExtensionKind,
+      TaskPanelKind,
     };
   };
 }

@@ -2377,3 +2377,56 @@ export class Task implements vscode.Task2 {
     this._runOptions = value;
   }
 }
+
+export enum ExtensionKind {
+
+  /**
+   * Extension runs where the UI runs.
+   */
+  UI = 1,
+
+  /**
+   * Extension runs where the remote extension host runs.
+   */
+  Workspace = 2,
+}
+
+export enum TaskPanelKind {
+
+  /**
+   * Shares a panel with other tasks. This is the default.
+   */
+  Shared = 1,
+
+  /**
+   * Uses a dedicated panel for this tasks. The panel is not
+   * shared with other tasks.
+   */
+  Dedicated = 2,
+
+  /**
+   * Creates a new panel whenever this task is executed.
+   */
+  New = 3,
+}
+
+/**
+ * Controls the behaviour of the terminal's visibility.
+ */
+export enum TaskRevealKind {
+  /**
+   * Always brings the terminal to front if the task is executed.
+   */
+  Always = 1,
+
+  /**
+   * Only brings the terminal to front if a problem is detected executing the task
+   * (e.g. the task couldn't be started because).
+   */
+  Silent = 2,
+
+  /**
+   * The terminal never comes to front when the task is executed.
+   */
+  Never = 3,
+}

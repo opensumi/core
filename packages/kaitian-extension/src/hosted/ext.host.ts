@@ -232,7 +232,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     const context = await this.loadExtensionContext(extension, modulePath, this.storage, extendProxy);
 
     let activationFailed = false;
-    let activationFailedError = null;
+    let activationFailedError: Error | null = null;
     let extendModule;
     let exportsData;
     let extendExports;
@@ -276,6 +276,8 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         const extendModuleExportsData = await extendModule.activate(context);
         extendExports = extendModuleExportsData;
       } catch (e) {
+        activationFailed = true;
+        activationFailedError = e;
         this.reporterService.point(REPORT_NAME.RUNTIME_ERROR_EXTENSION, extension.name);
         this.logger.log('activateExtension extension.extendConfig error ');
         this.logger.log(e);
@@ -293,6 +295,10 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       extendExports,
       extendModule,
     ));
+    // 如果有异常，则向上抛出
+    if (activationFailedError) {
+      throw activationFailedError;
+    }
   }
 
   private getExtensionViewModuleProxy(extension: IExtension, viewsProxies: string[]) {
