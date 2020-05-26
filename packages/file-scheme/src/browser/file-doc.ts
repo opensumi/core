@@ -16,10 +16,10 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
   private _fileContentMd5OnBrowserFs: Set<string> = new Set();
 
   @Autowired(IFileServiceClient)
-  fileServiceClient: IFileServiceClient;
+  protected readonly fileServiceClient: IFileServiceClient;
 
   @Autowired(FileSchemeDocNodeServicePath)
-  fileDocBackendService: IFileSchemeDocNodeService;
+  protected readonly fileDocBackendService: IFileSchemeDocNodeService;
 
   @Autowired(CorePreferences)
   protected readonly corePreferences: CorePreferences;
@@ -95,7 +95,7 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
 }
 
 @Injectable()
-export class DebugSchemeDocumentProvider extends FileSchemeDocumentProvider {
+export class DebugSchemeDocumentProvider extends FileSchemeDocumentProvider implements IEditorDocumentModelContentProvider {
   handlesScheme(scheme: string) {
     return scheme === 'debug';
   }

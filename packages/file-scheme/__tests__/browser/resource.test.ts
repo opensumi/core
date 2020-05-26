@@ -4,7 +4,7 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { DefaultUriLabelProvider } from '@ali/ide-core-browser/lib/services';
 import { Disposable, URI, localize, CorePreferences, ISchemaRegistry, ISchemaStore} from '@ali/ide-core-browser';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks/file-service-client';
-import { FileSystemResourceProvider } from '@ali/ide-file-scheme/lib/browser/file-scheme.contribution';
+import { FileSystemResourceProvider } from '@ali/ide-file-scheme/lib/browser/file-resource';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
 import { FileSchemeDocNodeServicePath } from '@ali/ide-file-scheme';

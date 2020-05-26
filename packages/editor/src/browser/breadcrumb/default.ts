@@ -3,7 +3,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { IBreadCrumbPart, IBreadCrumbProvider, EditorSelectionChangeEvent } from '../types';
 import { URI, Emitter, CommandService, WithEventBus, MaybeNull, IRange, OnEvent, EDITOR_COMMANDS, IPosition } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common/file-service-client';
-import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { FileStat } from '@ali/ide-file-service/lib/common';
