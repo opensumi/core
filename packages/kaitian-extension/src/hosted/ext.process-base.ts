@@ -23,6 +23,7 @@ export interface IBuiltInCommand {
 
 export interface ExtHostAppConfig extends Partial<AppConfig> {
   builtinCommands?: IBuiltInCommand[];
+  customDebugChildProcess?: any;
 }
 
 export interface ExtProcessConfig {
@@ -30,6 +31,7 @@ export interface ExtProcessConfig {
   logDir?: string;
   logLevel?: LogLevel;
   builtinCommands: IBuiltInCommand[];
+  customDebugChildProcess?: any;
 }
 
 async function initRPCProtocol(extInjector): Promise<any> {

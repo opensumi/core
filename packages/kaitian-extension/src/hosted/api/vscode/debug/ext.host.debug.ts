@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { IExtHostCommands, IExtHostDebugService, IExtensionDescription, IMainThreadDebug, ExtensionWSChannel, IExtHostConnectionService } from '../../../../common/vscode';
+import { IExtHostCommands, IExtHostDebugService, IMainThreadDebug, ExtensionWSChannel, IExtHostConnectionService } from '../../../../common/vscode';
 import { Emitter, Event, uuid, IJSONSchema, IJSONSchemaSnippet } from '@ali/ide-core-common';
 import { Disposable, Uri } from '../../../../common/vscode/ext-types';
 import { IRPCProtocol } from '@ali/ide-connection';
@@ -85,7 +85,7 @@ export class ExtHostDebug implements IExtHostDebugService {
   breakpoints: Breakpoint[];
   activeDebugConsole: vscode.DebugConsole;
 
-  constructor(rpc: IRPCProtocol, private extHostConnectionService: IExtHostConnectionService, private extHostCommand: IExtHostCommands) {
+  constructor(rpc: IRPCProtocol, private extHostConnectionService: IExtHostConnectionService, private extHostCommand: IExtHostCommands, private cp?: any) {
     this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadDebug);
     this.activeDebugConsole = {
       append: (value: string) => this.proxy.$appendToDebugConsole(value),
@@ -127,7 +127,7 @@ export class ExtHostDebug implements IExtHostDebugService {
         type: contribution.type,
         label: contribution.label || contribution.type,
       });
-      console.log(`Debugger contribution has been registered: ${contribution.type}`);
+      // console.log(`Debugger contribution has been registered: ${contribution.type}`);
     });
   }
 
@@ -307,7 +307,7 @@ export class ExtHostDebug implements IExtHostDebugService {
                 return current;
               }
             } catch (e) {
-              console.error(e);
+              // console.error(e);
             }
           }
         }
@@ -321,7 +321,7 @@ export class ExtHostDebug implements IExtHostDebugService {
     contributions.forEach((contribution: IDebuggerContribution) => {
       this.contributionPaths.set(contribution.type, extensionFolder);
       this.debuggersContributions.set(contribution.type, contribution);
-      console.log(`Debugger contribution has been registered: ${contribution.type}`);
+      // console.log(`Debugger contribution has been registered: ${contribution.type}`);
     });
   }
 
@@ -353,7 +353,7 @@ export class ExtHostDebug implements IExtHostDebugService {
         if ('port' in descriptor) {
           return connectDebugAdapter(descriptor);
         } else {
-          return startDebugAdapter(descriptor);
+          return startDebugAdapter(descriptor, this.cp);
         }
       }
     }
@@ -364,7 +364,7 @@ export class ExtHostDebug implements IExtHostDebugService {
       if (!executable) {
         throw new Error('It is not possible to provide debug adapter executable.');
       }
-      return startDebugAdapter(executable);
+      return startDebugAdapter(executable, this.cp);
     }
   }
 
