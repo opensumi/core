@@ -240,7 +240,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts
         extensionId: 'cloud-ide.vim',
         isBuiltin: true,
       };
-      expect(await extCommand.executeCommandWithExtensionInfo(commandShouldAuth, extensionInfo)).toBeTruthy();
+      expect(await extCommand.$executeCommandWithExtensionInfo(commandShouldAuth, extensionInfo)).toBeTruthy();
     });
 
     it('execute requiring authentication command to frontend command when not permitted', () => {
@@ -249,7 +249,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts
         extensionId: 'cloud-ide.vim',
         isBuiltin: false,
       };
-      expect(extCommand.executeCommandWithExtensionInfo(commandShouldAuth, extensionInfo)).rejects.toThrowError(new Error('not permitted'));
+      expect(extCommand.$executeCommandWithExtensionInfo(commandShouldAuth, extensionInfo)).rejects.toThrowError(new Error('not permitted'));
     });
 
     it('execute requiring authentication command to local command when not permitted', async () => {
@@ -264,7 +264,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts
         isPermitted: () => false,
       };
       extCommand.registerCommand(false, commandId, commandHandler);
-      expect(extCommand.executeCommandWithExtensionInfo(commandId, extensionInfo)).rejects.toThrowError(new Error(`Extension vscode.vim has not permit to execute ${commandId}`));
+      expect(extCommand.$executeCommandWithExtensionInfo(commandId, extensionInfo)).rejects.toThrowError(new Error(`Extension vscode.vim has not permit to execute ${commandId}`));
     });
 
     it('execute requiring authentication command to local command when permitted', async () => {
@@ -279,7 +279,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts
         isPermitted: (extension) => extension.isBuiltin,
       };
       extCommand.registerCommand(false, commandId, commandHandler);
-      expect(await extCommand.executeCommandWithExtensionInfo(commandId, extensionInfo)).toBe(123);
+      expect(await extCommand.$executeCommandWithExtensionInfo(commandId, extensionInfo)).toBe(123);
     });
   });
 
