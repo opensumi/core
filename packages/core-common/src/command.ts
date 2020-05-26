@@ -284,10 +284,6 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
       for (const postCommand of this.postCommandInterceptors) {
         result = await postCommand(commandId, result);
       }
-      const command = this.getCommand(commandId);
-      if (command) {
-        this.addRecentCommand(command);
-      }
       return result;
     }
     let argsMessage = '';
