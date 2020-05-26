@@ -1,10 +1,13 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import * as clx from 'classnames';
 import { IconContextProvider, IconContext } from '@ali/ide-components';
 
 import { IExtension, ExtensionService } from '../common';
 import { useInjectable } from '@ali/ide-core-browser';
+import { IThemeService, getThemeTypeSelector, ThemeType } from '@ali/ide-theme';
+import './style.less';
 
 const ShadowContent = ({ root, children }) => ReactDOM.createPortal(children, root);
 
@@ -16,6 +19,8 @@ const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, ex
   const shadowRootRef = useRef<HTMLDivElement | null>(null);
   const [shadowRoot, setShadowRoot] = React.useState<ShadowRoot | null>(null);
   const extensionService = useInjectable<ExtensionService>(ExtensionService);
+  const themeService = useInjectable<IThemeService>(IThemeService);
+  const [themeType, setThemeType] = useState<null | ThemeType>(null);
 
   useEffect(() => {
     if (shadowRootRef.current) {
@@ -32,11 +37,26 @@ const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, ex
         setShadowRoot(shadowRootElement);
       }
     }
+
+    themeService.getCurrentTheme()
+      .then((res) => {
+        setThemeType(res.type);
+      });
+    const disposable = themeService.onThemeChange((e) => {
+      if (e.type && e.type !== themeType) {
+        setThemeType(e.type);
+      }
+    });
+    return () => {
+      disposable.dispose();
+    };
   }, []);
 
   return (
-    <div id={id} style={{ width: '100%', height: '100%' }} ref={shadowRootRef}>
-      {shadowRoot && <ShadowContent root={shadowRoot}>{children}</ShadowContent>}
+    <div id={id} className={clx('shadow-root-host')} ref={shadowRootRef}>
+      {shadowRoot && <ShadowContent root={shadowRoot}>
+        <div className={clx(getThemeTypeSelector(themeType!), 'shadow-context-wrapper')} style={{ width: '100%', height: '100%' }}>{children}</div>
+      </ShadowContent>}
     </div>
   );
 };
