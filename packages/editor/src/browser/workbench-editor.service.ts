@@ -1,6 +1,6 @@
 import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult, IEditorGroupState, ResourceDecorationChangeEvent, IUntitledOptions, SaveReason, getSplitActionFromDragDrop } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { observable, computed, action, reaction } from 'mobx';
+import { observable, action, reaction } from 'mobx';
 import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider, Emitter } from '@ali/ide-core-common';
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution, ResourceOpenTypeChangedEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
@@ -209,7 +209,6 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     return this.editorGroups.find((g) => g.name === name);
   }
 
-  @computed
   get currentResource(): MaybeNull<IResource> {
     if (!this.currentEditorGroup) {
       return null;
@@ -449,11 +448,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private cachedResourcesOpenTypes = new Map<string, IEditorOpenType[]>();
 
-  @observable.ref availableOpenTypes: IEditorOpenType[] = [];
+  availableOpenTypes: IEditorOpenType[] = [];
 
-  @observable.shallow activeComponents = new Map<IEditorComponent, IResource[]>();
+  activeComponents = new Map<IEditorComponent, IResource[]>();
 
-  @observable.shallow activateComponentsProps = new Map<IEditorComponent, any>();
+  activateComponentsProps = new Map<IEditorComponent, any>();
 
   public grid: EditorGrid;
 
@@ -540,7 +539,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
-  @computed
   get currentState() {
     return this._currentState;
   }
@@ -1160,7 +1158,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     return this.currentState && this.currentState.currentResource;
   }
 
-  @computed
   get currentOpenType(): MaybeNull<IEditorOpenType> {
     return this.currentState && this.currentState.currentOpenType;
   }
