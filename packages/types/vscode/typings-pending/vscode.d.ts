@@ -233,30 +233,6 @@ declare module 'vscode' {
 	}
 
 	/**
-	 * A location in the editor at which progress information can be shown. It depends on the
-	 * location how progress is visually represented.
-	 */
-	export enum ProgressLocation {
-
-		/**
-		 * Show progress for the source control viewlet, as overlay for the icon and as progress bar
-		 * inside the viewlet (when visible). Neither supports cancellation nor discrete progress.
-		 */
-		SourceControl = 1,
-
-		/**
-		 * Show progress in the status bar of the editor. Neither supports cancellation nor discrete progress.
-		 */
-		Window = 10,
-
-		/**
-		 * Show progress as notification with an optional cancel button. Supports to show infinite and discrete progress.
-		 */
-		Notification = 15,
-	}
-
-
-	/**
 	 * An event describing a change to the set of [workspace folders](#workspace.workspaceFolders).
 	 */
 	export interface WorkspaceFoldersChangeEvent {
@@ -270,38 +246,6 @@ declare module 'vscode' {
 		 */
 		readonly removed: ReadonlyArray<WorkspaceFolder>;
 	}
-
-
-	/**
-	 * Namespace for dealing with the current workspace. A workspace is the representation
-	 * of the folder that has been opened. There is no workspace when just a file but not a
-	 * folder has been opened.
-	 *
-	 * The workspace offers support for [listening](#workspace.createFileSystemWatcher) to fs
-	 * events and for [finding](#workspace.findFiles) files. Both perform well and run _outside_
-	 * the editor-process so that they should be always used instead of nodejs-equivalents.
-	 */
-	export namespace workspace {
-
-	}
-
-  export namespace language {
-
-		/**
-		 * Register a declaration provider.
-		 *
-		 * Multiple providers can be registered for a language. In that case providers are asked in
-		 * parallel and the results are merged. A failing provider (rejected promise or exception) will
-		 * not cause a failure of the whole operation.
-		 *
-		 * @param selector A selector that defines the documents this provider is applicable to.
-		 * @param provider A declaration provider.
-		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-		 */
-		export function registerDeclarationProvider(selector: DocumentSelector, provider: DeclarationProvider): Disposable;
-
-  }
-
 	/**
 	 * An event describing the change in Configuration
 	 */
