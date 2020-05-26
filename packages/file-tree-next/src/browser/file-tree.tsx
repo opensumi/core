@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ViewState, useInjectable, isOSX, localize, URI } from '@ali/ide-core-browser';
-import { RecycleTree, INodeRendererProps, IRecycleTreeHandle, TreeNodeType, Input, Icon } from '@ali/ide-components';
+import { RecycleTree, IRecycleTreeHandle, TreeNodeType, Input, Icon, INodeRendererWrapProps } from '@ali/ide-components';
 import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
@@ -161,7 +161,7 @@ export const FileTree = observer(({
           model={fileTreeModelService.treeModel}
           filter={filter}
         >
-          {(props: INodeRendererProps) => <FileTreeNode
+          {(props: INodeRendererWrapProps) => <FileTreeNode
             item={props.item}
             itemType={props.itemType}
             template={(props as any).template}
@@ -174,7 +174,7 @@ export const FileTree = observer(({
             onContextMenu={handlerContextMenu}
             defaultLeftPadding={baseIndent}
             leftPadding={indent}
-            isEditing = {fileTreeModelService.isEditing}
+            hasPrompt = {props.hasPrompt}
             hasFolderIcons={fileTreeModelService.hasFolderIcons}
           />}
         </RecycleTree>;
