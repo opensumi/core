@@ -315,7 +315,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     this.promptTargetID = node!.id;
     if (node !== root && (!(node as CompositeTreeNode).expanded || !root.isItemVisibleAtSurface(node as CompositeTreeNode))) {
       // 调用setExpanded即会在之后调用batchUpdate函数
-      await (node as CompositeTreeNode).setExpanded(true);
+      await (node as CompositeTreeNode).setExpanded(true, true);
     } else {
       await this.batchUpdate();
     }
@@ -413,7 +413,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       this.tryEnsureVisibleTimes = 0;
       return;
     }
-    Event.once(this.props.model.onChange)(() => {
+    Event.once(this.props.model.onChange)(async () => {
+      await this.batchUpdatePromise;
       if (root.isItemVisibleAtSurface(node)) {
         this.listRef.current!.scrollToItem(root.getIndexAtTreeNode(node), align);
         this.tryEnsureVisibleTimes = 0;
