@@ -1,62 +1,37 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Domain, CommandService, MutableResource } from '@ali/ide-core-common';
-import { ComponentContribution, ComponentRegistry, ClientAppContribution, getIcon, SlotRendererContribution, SlotRendererRegistry, SlotLocation, ResourceResolverContribution, URI, Emitter } from '@ali/ide-core-browser';
+import { ComponentContribution, ComponentRegistry, ClientAppContribution, getIcon, SlotRendererContribution, SlotRendererRegistry, SlotLocation, ResourceResolverContribution, URI } from '@ali/ide-core-browser';
 import { NextMenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
+import { ResourceService, IResource } from '@ali/ide-editor/lib/common';
+import { EditorComponentRegistry, IEditorDocumentModelContentRegistry, BrowserEditorContribution } from '@ali/ide-editor/lib/browser';
+
 import { SampleView, SampleTopView, SampleBottomView, SampleMainView } from './sample.view';
 import { RightTabRenderer } from './custom-renderer';
-import { IResourceProvider, ResourceService, IResource } from '@ali/ide-editor/lib/common';
-import { EditorComponentRegistry, IEditorComponentResolver, IEditorDocumentModelContentRegistry, IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
-
-export const TestResourceProvider: IResourceProvider = {
-  scheme: 'file',
-  provideResource: (uri: URI) => {
-    return {
-      uri,
-      name: uri.path.toString(),
-      icon: 'iconTest ' + uri.toString(),
-    };
-  },
-};
-
-export const TestResourceResolver: IEditorComponentResolver = (resource: IResource, results) => {
-  results.push({
-    type: 'code',
-  });
-};
-
-const _onDidChangeTestContent = new Emitter<URI>();
-export const TestEditorDocumentProvider: IEditorDocumentModelContentProvider = {
-  handlesScheme: (scheme: string) => {
-    return scheme === 'file';
-  },
-  isReadonly: (uri: URI) => false,
-  provideEditorDocumentModelContent: (uri: URI, encoding) => {
-    return uri.toString() + ' mock content provider';
-  },
-  onDidChangeContent: _onDidChangeTestContent.event,
-
-};
+import { SampleDocContentProvider, SampleResourceProvider } from './sample-doc';
 
 @Injectable()
-@Domain(CommandContribution, NextMenuContribution, ComponentContribution, ClientAppContribution, SlotRendererContribution, ResourceResolverContribution)
-export class SampleContribution implements CommandContribution, NextMenuContribution, ComponentContribution, ClientAppContribution, SlotRendererContribution, ResourceResolverContribution {
+@Domain(CommandContribution, NextMenuContribution, ComponentContribution, ClientAppContribution, SlotRendererContribution, ResourceResolverContribution, BrowserEditorContribution)
+export class SampleContribution implements CommandContribution, NextMenuContribution, ComponentContribution, ClientAppContribution, SlotRendererContribution, ResourceResolverContribution, BrowserEditorContribution {
 
   @Autowired(CommandService)
   private commandService: CommandService;
 
-  @Autowired(ResourceService)
-  private resourceService: ResourceService;
+  registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
+    // 注册 provider 提供 doc / 文档的内容和 meta 信息
+    registry.registerEditorDocumentModelContentProvider(new SampleDocContentProvider());
+  }
 
-  @Autowired(EditorComponentRegistry)
-  private componentRegistry: EditorComponentRegistry;
+  registerEditorComponent(editorComponentRegistry: EditorComponentRegistry) {
+    // 处理 file 协议的 editor component type
+    editorComponentRegistry.registerEditorComponentResolver('file', (resource: IResource, results) => {
+      results.push({
+        type: 'code',
+      });
+    });
+  }
 
-  @Autowired(IEditorDocumentModelContentRegistry)
-  private contentRegistry: IEditorDocumentModelContentRegistry;
-
-  initialize() {
-    this.resourceService.registerResourceProvider(TestResourceProvider);
-    this.componentRegistry.registerEditorComponentResolver('file', TestResourceResolver);
-    this.contentRegistry.registerEditorDocumentModelContentProvider(TestEditorDocumentProvider);
+  registerResource(resourceService: ResourceService) {
+    resourceService.registerResourceProvider(new SampleResourceProvider());
   }
 
   registerCommands(registry: CommandRegistry) {
