@@ -100,7 +100,7 @@ export class FileTreeModelService {
   // 选中态的节点，会可能有多个
   private _selectedFiles: (File | Directory)[] = [];
   // 当前焦点的文件路径URI
-  private _activeUri: URI;
+  private _activeUri: URI | null;
 
   private clickTimes: number;
   private clickTimer: any;
@@ -437,6 +437,8 @@ export class FileTreeModelService {
 
     if (this.fileTreeService.isCompactMode && activeUri) {
       this._activeUri = activeUri;
+    } else if (!activeUri) {
+      this._activeUri = null;
     }
 
     if (file) {
@@ -572,6 +574,8 @@ export class FileTreeModelService {
     this.clickTimes++;
     if (this.fileTreeService.isCompactMode && activeUri) {
       this._activeUri = activeUri;
+    } else if (!activeUri) {
+      this._activeUri = null;
     }
     // 单选操作默认先更新选中状态
     if (type === TreeNodeType.CompositeTreeNode || type === TreeNodeType.TreeNode && !activeUri) {
