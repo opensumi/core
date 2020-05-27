@@ -84,7 +84,8 @@ export class DebugAdapterSessionImpl implements DebugAdapterSession {
         let idx = this.buffer.indexOf(DebugAdapterSessionImpl.CONTENT_LENGTH);
         if (idx > 0) {
           // log unrecognized output
-          const output = this.buffer.slice(0, idx);
+          // const output = this.buffer.slice(0, idx);
+          this.buffer.slice(0, idx);
           // console.log(output.toString('utf-8'));
 
           this.buffer = this.buffer.slice(idx);
@@ -115,7 +116,9 @@ export class DebugAdapterSessionImpl implements DebugAdapterSession {
   }
 
   protected write(message: string): void {
-    this.debugStreamConnection.input.write(`Content-Length: ${Buffer.byteLength(message, 'utf8')}\r\n\r\n${message}`, 'utf8');
+    // 在自定义 bash 模式下，需要使用 \r\n 来保证被写入
+    const finalMessage = message + '\r\n';
+    this.debugStreamConnection.input.write(`Content-Length: ${Buffer.byteLength(finalMessage, 'utf8')}\r\n\r\n${finalMessage}`, 'utf8');
   }
 
   async stop(): Promise<void> {

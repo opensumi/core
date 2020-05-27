@@ -1,13 +1,13 @@
 import * as net from 'net';
 import * as vscode from 'vscode';
 import { DebugStreamConnection, DebugAdapterForkExecutable } from '@ali/ide-debug';
-import { ChildProcess, spawn, fork, SpawnOptions } from 'child_process';
-import URI from 'vscode-uri';
+import { ChildProcess, fork, SpawnOptions, spawn } from 'child_process';
+import { CustomeChildProcessModule, CustomeChildProcess } from '../../../ext.process-base';
 
 /**
  * 启动调试适配器进程
  */
-export function startDebugAdapter(executable: vscode.DebugAdapterExecutable): DebugStreamConnection {
+export function startDebugAdapter(executable: vscode.DebugAdapterExecutable, cp?: CustomeChildProcessModule): DebugStreamConnection {
   const options: any = { stdio: ['pipe', 'pipe', 2] };
 
   if (executable.options) {
@@ -26,7 +26,7 @@ export function startDebugAdapter(executable: vscode.DebugAdapterExecutable): De
     };
   }
 
-  let childProcess: ChildProcess;
+  let childProcess: ChildProcess | CustomeChildProcess;
 
   if ('command' in executable) {
     const { command, args } = executable;
@@ -36,7 +36,9 @@ export function startDebugAdapter(executable: vscode.DebugAdapterExecutable): De
     if (options.cwd) {
       spawnOptions.cwd = options.cwd;
     }
-    childProcess = spawn(command, args, spawnOptions);
+
+    childProcess = cp ? cp.spawn(command, args, options) : spawn(command, args, options);
+
   } else if ('modulePath' in executable) {
     const forkExecutable = executable as DebugAdapterForkExecutable;
     const { modulePath, args } = forkExecutable;

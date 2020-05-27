@@ -1,5 +1,6 @@
 import { Emitter, ReporterProcessMessage, LogLevel } from '@ali/ide-core-common';
 import * as net from 'net';
+import * as Stream from 'stream';
 import {
   createSocketConnection,
   RPCServiceCenter,
@@ -21,8 +22,19 @@ export interface IBuiltInCommand {
   handler: CommandHandler;
 }
 
+export interface CustomeChildProcess {
+  stdin: Stream.Writable;
+  stdout: Stream.Readable;
+  kill: () => void;
+}
+
+export interface CustomeChildProcessModule {
+  spawn(command: string, args: string | string[], options: any): CustomeChildProcess;
+}
+
 export interface ExtHostAppConfig extends Partial<AppConfig> {
   builtinCommands?: IBuiltInCommand[];
+  customDebugChildProcess?: CustomeChildProcessModule;
 }
 
 export interface ExtProcessConfig {
@@ -30,6 +42,7 @@ export interface ExtProcessConfig {
   logDir?: string;
   logLevel?: LogLevel;
   builtinCommands: IBuiltInCommand[];
+  customDebugChildProcess?: CustomeChildProcessModule;
 }
 
 async function initRPCProtocol(extInjector): Promise<any> {
