@@ -5,6 +5,10 @@ export interface ITabbarHandler {
 
   setSize(size: number): void;
 
+  setTitle(title: string): void;
+
+  setIcon(iconPath: string): void;
+
   activate(): void;
 
   deactivate(): void;
@@ -16,6 +20,8 @@ export interface ITabbarHandler {
 export interface IMainThreadLayout {
   $connectTabbar(id: string): Promise<void>;
   $setSize(id: string, size: number): void;
+  $setTitle(id: string, title: string): void;
+  $setIcon(id: string, iconPath: string): void;
   $activate(id: string): void;
   $deactivate(id: string): void;
   $setVisible(id: string, visible: boolean): Promise<void>;

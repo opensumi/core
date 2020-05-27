@@ -242,6 +242,30 @@ declare module 'kaitian' {
 
     setSize(size: number): void;
 
+    /**
+     * 修改 Tabbar 标题
+     * @param title 标题
+     *
+     * @example
+     * ```ts
+     * const tabbar = kaitian.layout.getTabbarHandler('TabbarIconTest');
+     * tabbar.setTitle('New Title');
+     * ```
+     */
+    setTitle(title: string): void;
+
+    /**
+     * 修改 Tarbbar 图标
+     * @param iconPath 图标路径
+     *
+     * @example
+     * ```ts
+     * const tabbar = kaitian.layout.getTabbarHandler('TabbarIconTest');
+     * tabbar.setIcon('http://path/to/icon.svg');
+     * ```
+     */
+    setIcon(iconPath: string): void;
+
     activate(): void;
 
     deactivate(): void;
