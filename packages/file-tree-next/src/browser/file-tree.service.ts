@@ -72,6 +72,8 @@ export class FileTreeService extends Tree {
 
   public isCompactMode: boolean;
 
+  public flushEventQueuePromise: Promise<void>;
+
   @observable
   // 筛选模式开关
   filterMode: boolean = false;
@@ -542,7 +544,7 @@ export class FileTreeService extends Tree {
   private queueChangeEvent(path: string, callback: any) {
     clearTimeout(this.eventFlushTimeout);
     this.eventFlushTimeout = setTimeout(async () => {
-      await this.flushEventQueue();
+      this.flushEventQueuePromise = await this.flushEventQueue();
       callback();
     }, 150) as any;
     if (this.changeEventDispatchQueue.indexOf(path) === -1) {
@@ -560,7 +562,15 @@ export class FileTreeService extends Tree {
       const pathBDepth = Path.pathDepth(pathB);
       return pathADepth - pathBDepth;
     });
-    promise = pSeries(this.changeEventDispatchQueue.map((path) => async () => {
+    const roots = [this.changeEventDispatchQueue[0]];
+    for (const path of this.changeEventDispatchQueue) {
+      if (roots.some((root) => path.indexOf(root) === 0)) {
+        continue;
+      } else {
+        roots.push(path);
+      }
+    }
+    promise = pSeries(roots.map((path) => async () => {
       const watcher = this.root?.watchEvents.get(path);
       if (watcher && typeof watcher.callback === 'function') {
         await watcher.callback({ type: WatchEvent.Changed, path });
