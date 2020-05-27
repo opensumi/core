@@ -101,6 +101,7 @@ export const localizationBundle = {
     'editor.configuration.preferredFormatter': 'Preferred formatter for files',
     'editor.chooseEncoding': 'Reopen with encoding (Unsaved Changes will be lost)',
     'editor.changeEol': 'Select End Of Line Sequence',
+    'editor.failToOpen': 'Failed to open {0}. Error message: {1}',
     'editor.changeLanguageId': 'Select Langugae Mode',
     'editor.configuration.maxTokenizationLineLength': 'Lines above this length will not be tokenized for performance reasons',
     'editor.configuration.quickSuggestionsDelay': 'Quick suggestions show delay (in ms) Defaults to 100 (ms)',

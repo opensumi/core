@@ -8,6 +8,7 @@ import { IFileServiceClient, FileStat } from '@ali/ide-file-service/lib/common';
 import { FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IDialogService } from '@ali/ide-overlay';
+import { FileTreeSet } from './file-tree-set';
 
 enum AskSaveResult {
   REVERT = 1,
@@ -33,6 +34,8 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
 
   cachedFileStat = new LRUMap<string, FileStat | undefined>(200, 100);
 
+  private involvedFiles = new FileTreeSet();
+
   constructor() {
     super();
     this.listen();
@@ -42,8 +45,13 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
     this.fileServiceClient.onFilesChanged((e) => {
       e.forEach((change) => {
         if (change.type === FileChangeType.ADDED || change.type === FileChangeType.DELETED) {
-          this.cachedFileStat.delete(change.uri);
-          this.eventBus.fire(new ResourceNeedUpdateEvent(new URI(change.uri)));
+          // 对于文件夹的删除，做要传递给子文件
+          const effectedPaths = this.involvedFiles.effects(new URI(change.uri).codeUri.fsPath);
+          effectedPaths.forEach((p) => {
+            const effected = URI.file(p);
+            this.cachedFileStat.delete(effected.toString());
+            this.eventBus.fire(new ResourceNeedUpdateEvent(effected));
+          });
         } else {
           // Linux下，可能 update 事件代表了 create
           // 此时如果 cached 是undefined，就更新
@@ -65,6 +73,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
 
   provideResource(uri: URI): MaybePromise<IResource<any>> {
     // 获取文件类型 getFileType: (path: string) => string
+    this.involvedFiles.add(uri.codeUri.fsPath);
     return Promise.all([
       this.getFileStat(uri.toString()),
       this.labelService.getName(uri),
@@ -75,6 +84,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
         icon,
         uri,
         metadata: null,
+        deleted: !stat,
       };
     });
   }
@@ -94,6 +104,10 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
     }
   }
 
+  onDisposeResource(resource) {
+    this.involvedFiles.delete(resource.uri.codeUri.fsPath);
+  }
+
   async shouldCloseResource(resource: IResource, openedResources: IResource[][]): Promise<boolean> {
     let count = 0;
     for (const resources of openedResources) {
@@ -102,6 +116,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
           count ++;
         }
         if (count > 1) {
+
           return true;
         }
       }
@@ -132,8 +147,9 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
     } else if (!result || result === AskSaveResult.CANCEL) {
       documentModelRef.dispose();
       return false;
+    } else {
+      return true;
     }
-    return true;
   }
 }
 

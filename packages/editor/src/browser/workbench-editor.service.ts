@@ -1,15 +1,16 @@
 import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult, IEditorGroupState, ResourceDecorationChangeEvent, IUntitledOptions, SaveReason, getSplitActionFromDragDrop } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { observable, computed, action, reaction } from 'mobx';
-import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider, Emitter } from '@ali/ide-core-common';
+import { observable, action, reaction } from 'mobx';
+import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider, Emitter, formatLocalize } from '@ali/ide-core-common';
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution, ResourceOpenTypeChangedEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
-import { FILE_COMMANDS, CorePreferences, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, MonacoService, IScopedContextKeyService, IContextKey, RecentFilesManager } from '@ali/ide-core-browser';
+import { FILE_COMMANDS, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, MonacoService, IScopedContextKeyService, IContextKey, RecentFilesManager, PreferenceService } from '@ali/ide-core-browser';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
 import { Schemas } from '@ali/ide-core-common';
 import { isNullOrUndefined } from 'util';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
+import { IMessageService } from '@ali/ide-overlay';
 
 @Injectable()
 export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {
@@ -209,7 +210,6 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     return this.editorGroups.find((g) => g.name === name);
   }
 
-  @computed
   get currentResource(): MaybeNull<IResource> {
     if (!this.currentEditorGroup) {
       return null;
@@ -411,11 +411,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @Autowired(CommandService)
   private commands: CommandService;
 
-  @Autowired(CorePreferences)
-  protected readonly corePreferences: CorePreferences;
+  @Autowired(PreferenceService)
+  protected readonly preferenceService: PreferenceService;
 
   @Autowired(RecentFilesManager)
   private readonly recentFilesManager: RecentFilesManager;
+
+  @Autowired(IMessageService)
+  private messageService: IMessageService;
 
   @Autowired(AppConfig)
   config: AppConfig;
@@ -449,11 +452,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private cachedResourcesOpenTypes = new Map<string, IEditorOpenType[]>();
 
-  @observable.ref availableOpenTypes: IEditorOpenType[] = [];
+  availableOpenTypes: IEditorOpenType[] = [];
 
-  @observable.shallow activeComponents = new Map<IEditorComponent, IResource[]>();
+  activeComponents = new Map<IEditorComponent, IResource[]>();
 
-  @observable.shallow activateComponentsProps = new Map<IEditorComponent, any>();
+  activateComponentsProps = new Map<IEditorComponent, any>();
 
   public grid: EditorGrid;
 
@@ -540,7 +543,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
-  @computed
   get currentState() {
     return this._currentState;
   }
@@ -793,7 +795,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         this.openingPromise.delete(uri.toString());
       });
     }
-    const previewMode = this.corePreferences['editor.previewMode'] && (isNullOrUndefined(options.preview) ? true : options.preview);
+    const previewMode = this.preferenceService.get('editor.previewMode') && (isNullOrUndefined(options.preview) ? true : options.preview);
     if (!previewMode) {
       this.openingPromise.get(uri.toString())!.then(() => {
         this.pinPreviewed(uri);
@@ -813,7 +815,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       return false;
     }
     try {
-      const previewMode = this.corePreferences['editor.previewMode'] && (isNullOrUndefined(options.preview) ? true : options.preview);
+      const previewMode = this.preferenceService.get('editor.previewMode') && (isNullOrUndefined(options.preview) ? true : options.preview);
       if ((options && options.disableNavigate) || (options && options.backend)) {
         // no-op
       } else {
@@ -870,6 +872,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
     } catch (e) {
       getDebugLogger().error(e);
+      this.messageService.error(formatLocalize('editor.failToOpen', uri.displayName, e.message), [], true);
       return false;
       // todo 给用户显示error
     }
@@ -1052,10 +1055,27 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   private async shouldClose(resource: IResource): Promise<boolean> {
-    if (!await this.resourceService.shouldCloseResource(resource, this.workbenchEditorService.editorGroups.map((group) => group.resources))) {
+    const openedResources = this.workbenchEditorService.editorGroups.map((group) => group.resources);
+    if (!await this.resourceService.shouldCloseResource(resource, openedResources)) {
       return false;
+    } else {
+      let count = 0;
+      for (const group of openedResources) {
+        for (const res of group) {
+          if (res.uri.isEqual(resource.uri)) {
+            count ++;
+            if (count >= 2) {
+              break;
+            }
+          }
+        }
+      }
+      if (count <= 1) {
+        this.resourceService.disposeResource(resource);
+      }
+      return true;
     }
-    return true;
+
   }
 
   /**
@@ -1160,7 +1180,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     return this.currentState && this.currentState.currentResource;
   }
 
-  @computed
   get currentOpenType(): MaybeNull<IEditorOpenType> {
     return this.currentState && this.currentState.currentOpenType;
   }
@@ -1259,7 +1278,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   getState(): IEditorGroupState {
     // TODO 支持虚拟文档恢复
     const allowRecoverSchemes = ['file'];
-    const uris = this.resources.filter((r) => allowRecoverSchemes.indexOf(r.uri.scheme) !== -1).map((r) => r.uri.toString());
+    const uris = this.resources.filter((r) => allowRecoverSchemes.indexOf(r.uri.scheme) !== -1 && !r.deleted).map((r) => r.uri.toString());
     return {
       uris,
       current: this.currentResource && allowRecoverSchemes.indexOf(this.currentResource.uri.scheme) !== -1 ? this.currentResource.uri.toString() : undefined,

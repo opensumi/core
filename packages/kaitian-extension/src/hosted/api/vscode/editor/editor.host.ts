@@ -48,6 +48,11 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
       change.created.forEach((created) => {
         this._editors.set(created.id, new TextEditorData(created, this, this.documents));
         this._onEditorCreated.fire(created.id);
+        if (!change.actived && created.id === this._activeEditorId ) {
+          if (this.activeEditor) {
+            this._onDidChangeActiveTextEditor.fire(this.activeEditor ? this.activeEditor!.textEditor : undefined);
+          }
+        }
       });
     }
 
@@ -61,9 +66,11 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
       if (change.actived === '-1') {
         this._activeEditorId = undefined;
         this._onDidChangeActiveTextEditor.fire(undefined);
-      } else if (this._editors.has(change.actived)) {
+      } else  {
         this._activeEditorId = change.actived;
-        this._onDidChangeActiveTextEditor.fire(this.activeEditor ? this.activeEditor!.textEditor : undefined);
+        if (this.activeEditor) {
+          this._onDidChangeActiveTextEditor.fire(this.activeEditor ? this.activeEditor!.textEditor : undefined);
+        }
       }
     }
 

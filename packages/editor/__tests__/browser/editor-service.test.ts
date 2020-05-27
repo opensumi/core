@@ -16,7 +16,7 @@ import { TestResourceProvider, TestResourceResolver, TestEditorDocumentProvider,
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { reaction } from 'mobx';
-import { CorePreferences, IContextKeyService } from '@ali/ide-core-browser';
+import { CorePreferences, IContextKeyService, PreferenceService } from '@ali/ide-core-browser';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { EditorFeatureRegistryImpl } from '@ali/ide-editor/lib/browser/feature';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
@@ -83,6 +83,14 @@ injector.overrideProviders({
   token: CorePreferences,
   useValue: {
     'editor.previewMode': true,
+  },
+});
+injector.overrideProviders({
+  token: PreferenceService,
+  useValue: {
+    get() { return true; },
+    onPreferenceChanged() { return new Disposable(); },
+    onPreferencesChanged() { return new Disposable(); },
   },
 });
 

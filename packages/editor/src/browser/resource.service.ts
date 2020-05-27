@@ -108,6 +108,15 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
       this.providers.delete(scheme);
     }
   }
+
+  disposeResource(resource: IResource<any>) {
+    const provider = this.providers.get(resource.uri.scheme);
+    if (!provider || !provider.onDisposeResource) {
+      return;
+    } else {
+      return provider.onDisposeResource(resource);
+    }
+  }
 }
 
 const  DefaultResourceDecoration: IResourceDecoration = {

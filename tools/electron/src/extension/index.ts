@@ -2,5 +2,5 @@ import {extProcessInit} from '@ali/ide-kaitian-extension/lib/hosted/ext.process-
 import LogServiceClass from './mock-log-service';
 
 (async () => {
-  await extProcessInit({LogServiceClass});
+  await extProcessInit({LogServiceClass, builtinCommands: []});
 })();

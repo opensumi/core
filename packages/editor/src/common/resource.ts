@@ -10,6 +10,7 @@ export interface IResourceProvider {
 
   shouldCloseResource?(resource: IResource, openedResources: IResource[][]): MaybePromise<boolean>;
 
+  onDisposeResource?(resource: IResource): void;
 }
 
 export abstract class ResourceService {
@@ -47,6 +48,12 @@ export abstract class ResourceService {
    * @param scheme
    */
   abstract stopProvideScheme(scheme: string): void;
+
+  /**
+   * 销毁一个 resource
+   * @param resource
+   */
+  abstract disposeResource(resource: IResource<any>): void;
 }
 
 /**
@@ -78,6 +85,7 @@ export interface IResourceDecorationChangeEventPayload {
  * 一个资源代表了一个能够在编辑器区域被打开的东西
  */
 export interface IResource<MetaData = any> {
+
   // 资源名称
   name: string;
   // 资源URI
@@ -86,7 +94,8 @@ export interface IResource<MetaData = any> {
   icon: string;
   // 资源的额外信息
   metadata?: MetaData;
-
+  // 资源已被删除
+  deleted?: any;
 }
 
 export type IDiffResource  = IResource<{ original: URI, modified: URI }>;
