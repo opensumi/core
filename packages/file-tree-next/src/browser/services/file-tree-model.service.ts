@@ -644,7 +644,6 @@ export class FileTreeModelService {
   }
 
   async deleteFileByUris(uris: URI[]) {
-    await this.fileTreeService.flushEventQueuePromise;
     if (this.corePreferences['explorer.confirmDelete']) {
       const ok = localize('file.confirm.delete.ok');
       const cancel = localize('file.confirm.delete.cancel');
@@ -657,7 +656,7 @@ export class FileTreeModelService {
     // 移除文件
     uris.forEach(async (uri: URI) => {
       if (await this.deleteFile(uri)) {
-        this.fileTreeService.deleteAffectedNodes([uri]);
+        await this.fileTreeService.deleteAffectedNodes([uri]);
       }
     });
   }
@@ -680,6 +679,7 @@ export class FileTreeModelService {
     }
     const effectNode = this.fileTreeService.getNodeByPathOrUri(targetPath);
     if (effectNode) {
+      await this.fileTreeService.flushEventQueuePromise;
       this.fileTreeService.deleteAffectedNodeByPath(effectNode.path);
     }
     return true;
