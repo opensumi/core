@@ -2,12 +2,12 @@ import * as net from 'net';
 import * as vscode from 'vscode';
 import { DebugStreamConnection, DebugAdapterForkExecutable } from '@ali/ide-debug';
 import { ChildProcess, fork, SpawnOptions, spawn } from 'child_process';
-import { CustomeChildProcessMudule, CustomeChildProcess } from '../../../ext.process-base';
+import { CustomeChildProcessModule, CustomeChildProcess } from '../../../ext.process-base';
 
 /**
  * 启动调试适配器进程
  */
-export function startDebugAdapter(executable: vscode.DebugAdapterExecutable, cp?: CustomeChildProcessMudule): DebugStreamConnection {
+export function startDebugAdapter(executable: vscode.DebugAdapterExecutable, cp?: CustomeChildProcessModule): DebugStreamConnection {
   const options: any = { stdio: ['pipe', 'pipe', 2] };
 
   if (executable.options) {

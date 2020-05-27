@@ -28,13 +28,13 @@ export interface CustomeChildProcess {
   kill: () => void;
 }
 
-export interface CustomeChildProcessMudule {
+export interface CustomeChildProcessModule {
   spawn(command: string, args: string | string[], options: any): CustomeChildProcess;
 }
 
 export interface ExtHostAppConfig extends Partial<AppConfig> {
   builtinCommands?: IBuiltInCommand[];
-  customDebugChildProcess?: CustomeChildProcessMudule;
+  customDebugChildProcess?: CustomeChildProcessModule;
 }
 
 export interface ExtProcessConfig {
@@ -42,7 +42,7 @@ export interface ExtProcessConfig {
   logDir?: string;
   logLevel?: LogLevel;
   builtinCommands: IBuiltInCommand[];
-  customDebugChildProcess?: CustomeChildProcessMudule;
+  customDebugChildProcess?: CustomeChildProcessModule;
 }
 
 async function initRPCProtocol(extInjector): Promise<any> {
