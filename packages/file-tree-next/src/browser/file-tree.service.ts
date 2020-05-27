@@ -61,6 +61,8 @@ export class FileTreeService extends Tree {
 
   private _fileServiceWatchers: Map<string, IFileServiceWatcher> = new Map();
 
+  private _cacheIgnoreFileEvent: Map<string, FileChangeType> = new Map();
+
   // 用于记录文件系统Change事件的定时器
   private eventFlushTimeout: number;
   // 文件系统Change事件队列
@@ -215,97 +217,43 @@ export class FileTreeService extends Tree {
   }
 
   private getAffectedUris(changes: FileChange[]): URI[] {
-    const uris: URI[] = [];
+    const affectUrisSet = new Set<string>();
     for (const change of changes) {
       const isFile = this.isFileContentChanged(change);
       if (!isFile) {
-        uris.push(new URI(change.uri));
+        affectUrisSet.add(new URI(change.uri).parent.toString());
       }
     }
-    return uris;
+    return Array.from(affectUrisSet).map((uri) => new URI(uri));
   }
 
   private isRootAffected(changes: FileChange[]): boolean {
     const root = this.root;
     if (this.isFileStatNode(root)) {
       return changes.some((change) =>
-        change.type < FileChangeType.DELETED && change.uri.toString() === (root as Directory)!.uri.toString(),
+        change.type > FileChangeType.UPDATED && new URI(change.uri).parent.toString() === (root as Directory)!.uri.toString(),
       );
     }
     return false;
   }
 
-  private getDeletedUris(changes: FileChange[]): URI[] {
-    return changes.filter((change) => change.type === FileChangeType.DELETED).map((change) => new URI(change.uri));
-  }
-
-  private getAddedUris(changes: FileChange[]): URI[] {
-    return changes.filter((change) => change.type === FileChangeType.ADDED).map((change) => new URI(change.uri));
-  }
-
-  private getMoveChange(changes: FileChange[]) {
-    changes = changes.slice(0);
-    const moveChange: IMoveChange[] = [];
-    const restChange = changes.filter((change) => change.type === FileChangeType.UPDATED);
-    const deleteOrAddChanges = changes.filter((change) => change.type !== FileChangeType.UPDATED);
-    while (deleteOrAddChanges.length >= 2) {
-      const change = deleteOrAddChanges.shift();
-      let target;
-      let source;
-      if (change?.type === FileChangeType.DELETED) {
-        source = change;
-        target = deleteOrAddChanges.find((change) => change.type === FileChangeType.ADDED && new URI(change.uri).displayName === new URI(source.uri).displayName);
-        if (target) {
-          deleteOrAddChanges.splice(deleteOrAddChanges.indexOf(target), 1);
-          moveChange.push({ source, target });
-        } else {
-          // 非重命名类型的移动事件时，传递至下层做处理
-          restChange.push(change);
-        }
-      } else if (change?.type === FileChangeType.ADDED) {
-        target = change;
-        source = deleteOrAddChanges.find((change) => change.type === FileChangeType.DELETED && new URI(change.uri).displayName === new URI(target.uri).displayName);
-        if (source) {
-          deleteOrAddChanges.splice(deleteOrAddChanges.indexOf(source), 1);
-          moveChange.push({ source, target });
-        } else {
-          // 非重命名类型的移动事件时，传递至下层做处理
-          restChange.push(change);
-        }
-      }
-    }
-    return {
-      moveChange,
-      restChange: restChange.concat(deleteOrAddChanges),
-    };
-  }
-
   private async onFilesChanged(changes: FileChange[]) {
-    let restChange: FileChange[] = await this.moveAffectedNodes(changes);
-    // 移除节点
-    restChange = this.deleteAffectedNodes(this.getDeletedUris(restChange), restChange);
-    // 添加节点, 需要获取节点类型
-    restChange = await this.addAffectedNodes(this.getAddedUris(restChange), restChange);
-    if (restChange.length === 0) {
-      return;
-    }
+    // 过滤掉内置触发的事件
+    changes = changes.filter((change) => {
+      if (!this._cacheIgnoreFileEvent.has(change.uri)) {
+        return true;
+      } else {
+        if (this._cacheIgnoreFileEvent.get(change.uri) === change.type) {
+          this._cacheIgnoreFileEvent.delete(change.uri);
+          return false;
+        }
+        return true;
+      }
+    });
     // 处理除了删除/添加/移动事件外的异常事件
-    if (!await this.refreshAffectedNodes(this.getAffectedUris(restChange)) && this.isRootAffected(restChange)) {
+    if (!await this.refreshAffectedNodes(this.getAffectedUris(changes)) && this.isRootAffected(changes)) {
       await this.refresh();
     }
-  }
-
-  private async moveAffectedNodes(changes: FileChange[]) {
-    const data = this.getMoveChange(changes);
-    const { moveChange, restChange } = data;
-
-    for (const change of moveChange) {
-      const node = this.getNodeByPathOrUri(new URI(change.source.uri).parent.toString());
-      if (node) {
-        await this.moveNode(node, change.source.uri, change.target.uri);
-      }
-    }
-    return restChange;
   }
 
   public async getFileTreeNodePathByUri(uri: URI) {
@@ -345,6 +293,10 @@ export class FileTreeService extends Tree {
   // 软链接目录下，文件节点路径不能通过uri去获取，存在偏差
   public moveNodeByPath(node: File | Directory, oldPath?: string, newPath?: string, refreshParent?: boolean) {
     if (oldPath && newPath && newPath !== oldPath) {
+      if (!this.isMutiWorkspace) {
+        this._cacheIgnoreFileEvent.set((this.root as Directory).uri.parent.resolve(oldPath.slice(1)).toString(), FileChangeType.DELETED);
+        this._cacheIgnoreFileEvent.set((this.root as Directory).uri.parent.resolve(newPath.slice(1)).toString(), FileChangeType.ADDED);
+      }
       this.dispatchWatchEvent(node!.path, { type: WatchEvent.Moved, oldPath, newPath });
       // 压缩模式下，需要尝试更新移动的源节点的父节点及目标节点的目标节点折叠状态
       if (this.isCompactMode) {
@@ -365,7 +317,6 @@ export class FileTreeService extends Tree {
         }
       }
     }
-
   }
 
   public async addNode(node: Directory, newName: string, type: TreeNodeType) {
@@ -383,46 +334,17 @@ export class FileTreeService extends Tree {
       isSymbolicLink: false,
       lastModification: new Date().getTime(),
     };
+    this._cacheIgnoreFileEvent.set(tempFileStat.uri, FileChangeType.ADDED);
     const addNode = await this.fileTreeAPI.toNode(this as ITree, tempFileStat, node as Directory, tempName);
     if (!!addNode) {
       this.cacheNodes([addNode]);
       // 节点创建失败时，不需要添加
       this.dispatchWatchEvent(node.path, { type: WatchEvent.Added, node: addNode, id: node.id });
+    } else {
+      // 新建失败时移除该缓存
+      this._cacheIgnoreFileEvent.delete(tempFileStat.uri);
     }
     return addNode;
-  }
-
-  private async addAffectedNodes(uris: URI[], changes: FileChange[]) {
-    const nodes: any[] = [];
-    for (const uri of uris) {
-      const parent = this.getNodeByPathOrUri(uri.parent);
-      if (!this.isCompactMode) {
-        nodes.push({
-          parent,
-          uri,
-        });
-        for (const node of nodes) {
-          // 一旦更新队列中已包含该文件，临时剔除删除事件传递
-          if (!node.parent || this.changeEventDispatchQueue.indexOf(node.parent.path) >= 0) {
-            continue;
-          }
-          const addNode = await this.fileTreeAPI.resolveNodeByPath(this as ITree, node.uri.toString(), node.parent as Directory);
-          if (!!addNode) {
-            this.cacheNodes([addNode]);
-            // 节点创建失败时，不需要添加
-            this.dispatchWatchEvent(node.parent.path, { type: WatchEvent.Added, node: addNode, id: node.parent.id });
-          }
-        }
-      } else {
-        const node = this.getNodeByPathOrUri(uri);
-        if (node && this.root?.isItemVisibleAtSurface(node)) {
-          continue;
-        } else if (parent && this.isCompactMode) {
-          this.refresh(parent as Directory);
-        }
-      }
-    }
-    return changes.filter((change) => change.type !== FileChangeType.ADDED);
   }
 
   // 用于精准删除节点，软连接目录下的文件删除
@@ -434,6 +356,7 @@ export class FileTreeService extends Tree {
       if (this.isCompactMode) {
         this.refresh(node.parent as Directory);
       } else {
+        this._cacheIgnoreFileEvent.set(node.uri.toString(), FileChangeType.DELETED);
         this.dispatchWatchEvent(node.parent.path, { type: WatchEvent.Removed, path: node.path });
       }
     }
