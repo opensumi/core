@@ -5,14 +5,50 @@ import * as clx from 'classnames';
 import { IconContextProvider, IconContext } from '@ali/ide-components';
 
 import { IExtension, ExtensionService } from '../common';
-import { useInjectable } from '@ali/ide-core-browser';
 import { IThemeService, getThemeTypeSelector, ThemeType } from '@ali/ide-theme';
+import { useInjectable, DisposableCollection } from '@ali/ide-core-browser';
 import './style.less';
 
 const ShadowContent = ({ root, children }) => ReactDOM.createPortal(children, root);
 
 function cloneNode(head) {
   return head.cloneNode(true);
+}
+
+/**
+ * 由于经过 clone 以后，实际 Shadow DOM 中 head 与原始 proxiedHead 不是同一份引用
+ * 插件中可能存在后置动态插入 style 的行为，此时只会获取到 proxiedHead
+ * 所以这里观察原始 proxiedHead 的 DOM childList 变化
+ * 当收到 mutations 时说明 head 标签被修改，将新插入的 style 节点 clone 一份到实际的 head 中
+ * 删除节点同理
+ */
+function useMutationObserver(from: HTMLHeadElement, target: HTMLHeadElement) {
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.type === 'childList') {
+        if (mutation.addedNodes.length > 0) {
+          for (const addedNode of Array.from(mutation.addedNodes)) {
+            target.appendChild(addedNode.cloneNode(true));
+          }
+        }
+        if (mutation.removedNodes.length > 0) {
+          for (const removedNode of Array.from(mutation.removedNodes)) {
+            target.removeChild(removedNode);
+          }
+        }
+      }
+    }
+  });
+  observer.observe(from, {
+    // 表示监听子元素列表变化
+    childList: true,
+    subtree: true,
+  });
+  return {
+    dispose: () => {
+      observer.disconnect();
+    },
+  };
 }
 
 const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, extensionId: string, children: any, proxiedHead: HTMLHeadElement }) => {
@@ -23,11 +59,14 @@ const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, ex
   const [themeType, setThemeType] = useState<null | ThemeType>(null);
 
   useEffect(() => {
+    const disposables = new DisposableCollection();
     if (shadowRootRef.current) {
       const shadowRootElement = shadowRootRef.current.attachShadow({ mode: 'open' });
       if (proxiedHead) {
         // 如果是一个插件注册了多个视图，节点需要被 clone 才能生效，否则第一个视图 appendChild 之后节点就没了
-        shadowRootElement.appendChild(cloneNode(proxiedHead));
+        const newNode = cloneNode(proxiedHead);
+        disposables.push(useMutationObserver(proxiedHead, newNode));
+        shadowRootElement.appendChild(newNode);
         const portalRoot = extensionService.getPortalShadowRoot(extensionId);
         if (portalRoot) {
           portalRoot.appendChild(proxiedHead);
@@ -36,20 +75,15 @@ const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, ex
       if (!shadowRoot) {
         setShadowRoot(shadowRootElement);
       }
-    }
 
-    themeService.getCurrentTheme()
-      .then((res) => {
-        setThemeType(res.type);
-      });
-    const disposable = themeService.onThemeChange((e) => {
-      if (e.type && e.type !== themeType) {
-        setThemeType(e.type);
-      }
-    });
-    return () => {
-      disposable.dispose();
-    };
+      themeService.getCurrentTheme().then((res) => setThemeType(res.type));
+      disposables.push(themeService.onThemeChange((e) => {
+        if (e.type && e.type !== themeType) {
+          setThemeType(e.type);
+        }
+      }));
+      return disposables.dispose;
+    }
   }, []);
 
   return (
