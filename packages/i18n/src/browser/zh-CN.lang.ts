@@ -97,6 +97,7 @@ export const localizationBundle = {
     'editor.closeOtherEditors': '关闭其他',
     'editor.closeToRight': '关闭到右侧',
     'editor.cannotSaveWithoutDirectory': '请选择要保存的路径',
+    'editor.failToOpen': '打开文件 {0} 失败, 请确认文件是否存在。详细错误信息: {1}',
 
     'edit.cut': '剪切',
     'edit.copy': '复制',

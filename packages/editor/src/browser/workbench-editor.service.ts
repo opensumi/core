@@ -1,7 +1,7 @@
 import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult, IEditorGroupState, ResourceDecorationChangeEvent, IUntitledOptions, SaveReason, getSplitActionFromDragDrop } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, action, reaction } from 'mobx';
-import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider, Emitter } from '@ali/ide-core-common';
+import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider, Emitter, formatLocalize } from '@ali/ide-core-common';
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution, ResourceOpenTypeChangedEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
@@ -10,6 +10,7 @@ import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-mode
 import { Schemas } from '@ali/ide-core-common';
 import { isNullOrUndefined } from 'util';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
+import { IMessageService } from '@ali/ide-overlay';
 
 @Injectable()
 export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {
@@ -415,6 +416,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   @Autowired(RecentFilesManager)
   private readonly recentFilesManager: RecentFilesManager;
+
+  @Autowired(IMessageService)
+  private messageService: IMessageService;
 
   @Autowired(AppConfig)
   config: AppConfig;
@@ -868,6 +872,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
     } catch (e) {
       getDebugLogger().error(e);
+      this.messageService.error(formatLocalize('editor.failToOpen', uri.displayName, e.message), [], true);
       return false;
       // todo 给用户显示error
     }
@@ -1050,10 +1055,27 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   private async shouldClose(resource: IResource): Promise<boolean> {
-    if (!await this.resourceService.shouldCloseResource(resource, this.workbenchEditorService.editorGroups.map((group) => group.resources))) {
+    const openedResources = this.workbenchEditorService.editorGroups.map((group) => group.resources);
+    if (!await this.resourceService.shouldCloseResource(resource, openedResources)) {
       return false;
+    } else {
+      let count = 0;
+      for (const group of openedResources) {
+        for (const res of group) {
+          if (res.uri.isEqual(resource.uri)) {
+            count ++;
+            if (count >= 2) {
+              break;
+            }
+          }
+        }
+      }
+      if (count <= 1) {
+        this.resourceService.disposeResource(resource);
+      }
+      return true;
     }
-    return true;
+
   }
 
   /**
@@ -1256,7 +1278,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   getState(): IEditorGroupState {
     // TODO 支持虚拟文档恢复
     const allowRecoverSchemes = ['file'];
-    const uris = this.resources.filter((r) => allowRecoverSchemes.indexOf(r.uri.scheme) !== -1).map((r) => r.uri.toString());
+    const uris = this.resources.filter((r) => allowRecoverSchemes.indexOf(r.uri.scheme) !== -1 && !r.deleted).map((r) => r.uri.toString());
     return {
       uris,
       current: this.currentResource && allowRecoverSchemes.indexOf(this.currentResource.uri.scheme) !== -1 ? this.currentResource.uri.toString() : undefined,
