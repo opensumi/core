@@ -212,7 +212,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     });
 
     if (!extension) {
-      this.logger.error(`extension ${id}'s modulePath not found`);
+      this.logger.error(`extension ${id} not found`);
       return;
     }
 

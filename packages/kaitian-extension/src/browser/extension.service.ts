@@ -293,10 +293,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       }
 
       extension.enable();
-      await extension.contributeIfEnabled();
 
       await this.updateExtensionHostData();
 
+      await extension.contributeIfEnabled();
       const { packageJSON: { activationEvents = [] } } = extension;
       this.fireActivationEventsIfNeed(activationEvents);
     }
