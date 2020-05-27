@@ -64,11 +64,16 @@ export class FileTreeService extends Tree {
   private _cacheIgnoreFileEvent: Map<string, FileChangeType> = new Map();
 
   // 用于记录文件系统Change事件的定时器
-  private eventFlushTimeout: number;
+  private _eventFlushTimeout: number;
   // 文件系统Change事件队列
-  private changeEventDispatchQueue: string[] = [];
+  private _changeEventDispatchQueue: string[] = [];
 
-  private roots: FileStat[] | null;
+  private _roots: FileStat[] | null;
+
+  // 是否进行文件事件监听标志值
+  private _readyToWatch: boolean = false;
+  // 等待监听的路径队列
+  private _watchRootsQueue: URI[] = [];
 
   public isCompactMode: boolean;
 
@@ -89,7 +94,7 @@ export class FileTreeService extends Tree {
   }
 
   async init() {
-    this.roots = await this.workspaceService.roots;
+    this._roots = await this.workspaceService.roots;
 
     this.baseIndent = this.corePreferences['explorer.fileTree.baseIndent'] || 8;
     this.indent = this.corePreferences['explorer.fileTree.indent'] || 8;
@@ -97,13 +102,13 @@ export class FileTreeService extends Tree {
 
     this.toDispose.push(this.workspaceService.onWorkspaceChanged(async () => {
       this.dispose();
-      this.roots = await this.workspaceService.roots;
+      this._roots = await this.workspaceService.roots;
       // TODO: 切换工作区时更新文件树
     }));
 
     this.toDispose.push(Disposable.create(() => {
       this._cacheNodesMap.clear();
-      this.roots = null;
+      this._roots = null;
     }));
 
     this.toDispose.push(this.corePreferences.onPreferenceChanged((change) => {
@@ -122,12 +127,19 @@ export class FileTreeService extends Tree {
     }));
   }
 
+  public startWatchFileEvent() {
+    this._readyToWatch = true;
+    this._watchRootsQueue.forEach(async (uri) => {
+      await this.watchFilesChange(uri);
+    });
+  }
+
   async resolveChildren(parent?: Directory) {
     let children: (File | Directory)[] = [];
     if (!parent) {
       // 加载根目录
-      if (!this.roots) {
-        this.roots = await this.workspaceService.roots;
+      if (!this._roots) {
+        this._roots = await this.workspaceService.roots;
       }
       if (this.isMutiWorkspace) {
         const rootUri = new URI(this.workspaceService.workspace?.uri);
@@ -143,9 +155,9 @@ export class FileTreeService extends Tree {
         this.root = root;
         return [root];
       } else {
-        if (this.roots.length > 0) {
-          children = await (await this.fileTreeAPI.resolveChildren(this as ITree, this.roots[0])).children;
-          this.watchFilesChange(new URI(this.roots[0].uri));
+        if (this._roots.length > 0) {
+          children = await (await this.fileTreeAPI.resolveChildren(this as ITree, this._roots[0])).children;
+          this.watchFilesChange(new URI(this._roots[0].uri));
           this.cacheNodes(children as (File | Directory)[]);
           this.root = children[0] as Directory;
           return children;
@@ -198,6 +210,10 @@ export class FileTreeService extends Tree {
   }
 
   async watchFilesChange(uri: URI) {
+    if (!this._readyToWatch) {
+      this._watchRootsQueue.push(uri);
+      return;
+    }
     const watcher = await this.fileServiceClient.watchFileChanges(uri);
     this.toDispose.push(watcher);
     this.toDispose.push(watcher.onFilesChanged((changes: FileChange[]) => {
@@ -223,7 +239,7 @@ export class FileTreeService extends Tree {
     for (const change of changes) {
       const isFile = this.isFileContentChanged(change);
       if (!isFile) {
-        affectUrisSet.add(new URI(change.uri).parent.toString());
+        affectUrisSet.add(new URI(change.uri).toString());
       }
     }
     return Array.from(affectUrisSet).map((uri) => new URI(uri));
@@ -266,10 +282,10 @@ export class FileTreeService extends Tree {
     if (!this.isMutiWorkspace) {
       rootStr = this.workspaceService.workspace?.uri;
     } else {
-      if (!this.roots) {
-        this.roots = await this.workspaceService.roots;
+      if (!this._roots) {
+        this._roots = await this.workspaceService.roots;
       }
-      rootStr = this.roots.find((root) => {
+      rootStr = this._roots.find((root) => {
         return new URI(root.uri).isEqualOrParent(uri);
       })?.uri;
     }
@@ -374,7 +390,7 @@ export class FileTreeService extends Tree {
     }
     for (const node of nodes) {
       // 一旦更新队列中已包含该文件，临时剔除删除事件传递
-      if (!node?.parent || this.changeEventDispatchQueue.indexOf(node?.parent.path) >= 0) {
+      if (!node?.parent || this._changeEventDispatchQueue.indexOf(node?.parent.path) >= 0) {
         continue;
       }
       this.deleteAffectedNodeByPath(node.path);
@@ -448,8 +464,8 @@ export class FileTreeService extends Tree {
       let rootStr;
       if (!this.isMutiWorkspace) {
         rootStr = this.workspaceService.workspace?.uri;
-      } else if (!!this.roots) {
-        rootStr = this.roots.find((root) => {
+      } else if (!!this._roots) {
+        rootStr = this._roots.find((root) => {
           return new URI(root.uri).isEqualOrParent(pathURI!);
         })?.uri;
       }
@@ -542,28 +558,29 @@ export class FileTreeService extends Tree {
 
   // 队列化Changed事件
   private queueChangeEvent(path: string, callback: any) {
-    clearTimeout(this.eventFlushTimeout);
-    this.eventFlushTimeout = setTimeout(async () => {
-      this.flushEventQueuePromise = await this.flushEventQueue();
+    clearTimeout(this._eventFlushTimeout);
+    this._eventFlushTimeout = setTimeout(async () => {
+      this.flushEventQueuePromise = this.flushEventQueue()!;
+      await this.flushEventQueuePromise;
       callback();
     }, 150) as any;
-    if (this.changeEventDispatchQueue.indexOf(path) === -1) {
-      this.changeEventDispatchQueue.push(path);
+    if (this._changeEventDispatchQueue.indexOf(path) === -1) {
+      this._changeEventDispatchQueue.push(path);
     }
   }
 
   public flushEventQueue = () => {
     let promise: Promise<any>;
-    if (!this.changeEventDispatchQueue || this.changeEventDispatchQueue.length === 0) {
+    if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
       return;
     }
-    this.changeEventDispatchQueue.sort((pathA, pathB) => {
+    this._changeEventDispatchQueue.sort((pathA, pathB) => {
       const pathADepth = Path.pathDepth(pathA);
       const pathBDepth = Path.pathDepth(pathB);
       return pathADepth - pathBDepth;
     });
-    const roots = [this.changeEventDispatchQueue[0]];
-    for (const path of this.changeEventDispatchQueue) {
+    const roots = [this._changeEventDispatchQueue[0]];
+    for (const path of this._changeEventDispatchQueue) {
       if (roots.some((root) => path.indexOf(root) === 0)) {
         continue;
       } else {
@@ -578,7 +595,7 @@ export class FileTreeService extends Tree {
       return null;
     }));
     // 重置更新队列
-    this.changeEventDispatchQueue = [];
+    this._changeEventDispatchQueue = [];
     return promise;
   }
 

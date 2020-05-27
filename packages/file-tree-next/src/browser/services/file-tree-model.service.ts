@@ -254,6 +254,10 @@ export class FileTreeModelService {
     this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
       this.loadingDecoration.removeTarget(target);
     }));
+    await this._loadSnapshotReady;
+    // 先加载快照后再监听文件变化，同时操作会出现Tree更新后节点无法对齐问题
+    // 即找到插入节点位置为 0，导致重复问题
+    this.fileTreeService.startWatchFileEvent();
   }
 
   initDecorations(root) {
