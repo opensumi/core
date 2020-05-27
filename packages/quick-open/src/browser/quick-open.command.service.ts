@@ -208,6 +208,7 @@ export class CommandQuickOpenItem extends QuickOpenGroupItem {
     }
     setTimeout(() => {
       this.commandService.executeCommand(this.command.id);
+      this.commandRegistry.setRecentCommands([ this.command ]);
       // 执行的同时写入Workspace存储文件中
       this.workspaceService.setMostRecentlyUsedCommand(this.command.id);
     }, 50);
