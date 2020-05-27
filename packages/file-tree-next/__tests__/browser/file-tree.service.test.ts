@@ -185,6 +185,7 @@ describe('FileTree Service should be work alone', () => {
       ]);
       return Disposable.create(() => {});
     });
+    fileTreeService.startWatchFileEvent();
     await fileTreeService.watchFilesChange(testUri);
     expect(fileChangeWatcher.onFilesChanged).toBeCalledTimes(1);
     expect(mockFileServiceClient.watchFileChanges).toBeCalled();
@@ -195,6 +196,7 @@ describe('FileTree Service should be work alone', () => {
   it('Re-watch should be work while re-connect', async (done) => {
     const fileTreeContribution = injector.get(FileTreeContribution);
     const testUri = new URI('file://userhome/test.js');
+    fileTreeService.startWatchFileEvent();
     await fileTreeService.watchFilesChange(testUri);
     await fileTreeContribution.onReconnect();
     expect(fileChangeWatcher.onFilesChanged).toBeCalledTimes(2);

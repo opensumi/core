@@ -438,8 +438,7 @@ describe('FileTree should be work while on single workspace model', () => {
       expect(mockEvent.stopPropagation).toBeCalled();
       expect(mockEvent.preventDefault).toBeCalled();
       const directoryDecoration = decorations.getDecorations(directoryNode);
-      // loading first, then dragover all the child
-      expect(directoryDecoration?.classlist).toEqual([styles.mod_loading, styles.mod_dragover]);
+      expect(directoryDecoration?.classlist).toEqual([styles.mod_dragover]);
       done();
     });
 
@@ -451,8 +450,7 @@ describe('FileTree should be work while on single workspace model', () => {
       const mockEvent = {};
       dndService.handleDragEnd(mockEvent as any, directoryNode);
       const directoryDecoration = decorations.getDecorations(directoryNode);
-      // loading decoration is effect by dragover
-      expect(directoryDecoration?.classlist).toEqual([styles.mod_loading]);
+      expect(directoryDecoration?.classlist).toEqual([]);
       done();
     });
 
@@ -473,8 +471,7 @@ describe('FileTree should be work while on single workspace model', () => {
       expect(mockEvent.preventDefault).toBeCalled();
       expect(mockEvent.dataTransfer.dropEffect).toBe('copy');
       const directoryDecoration = decorations.getDecorations(directoryNode);
-      // loading decoration is effect by dragover
-      expect(directoryDecoration?.classlist).toEqual([styles.mod_loading]);
+      expect(directoryDecoration?.classlist).toEqual([]);
       done();
     });
   });
