@@ -403,7 +403,7 @@ export class FileTreeModelService {
   }
 
   toggleDirectory = async (item: Directory) => {
-    await this.fileTreeService.flushEventQueue();
+    await this.fileTreeService.flushEventQueuePromise;
     if (item.expanded) {
       this.fileTreeHandle.collapseNode(item);
     } else {
@@ -601,7 +601,7 @@ export class FileTreeModelService {
 
   // 命令调用
   async collapseAll() {
-    await this.fileTreeService.flushEventQueue();
+    await this.fileTreeService.flushEventQueuePromise;
     if (!this.treeStateWatcher) {
       return;
     }
@@ -629,7 +629,7 @@ export class FileTreeModelService {
   }
 
   public expandAllCacheDirectory = async () => {
-    await this.fileTreeService.flushEventQueue();
+    await this.fileTreeService.flushEventQueuePromise;
     const size = this.treeModel.root.branchSize;
     for (let index = 0; index < size; index++) {
       const file = this.treeModel.root.getTreeNodeAtIndex(index) as Directory;
@@ -640,7 +640,7 @@ export class FileTreeModelService {
   }
 
   async deleteFileByUris(uris: URI[]) {
-    await this.fileTreeService.flushEventQueue();
+    await this.fileTreeService.flushEventQueuePromise;
     if (this.corePreferences['explorer.confirmDelete']) {
       const ok = localize('file.confirm.delete.ok');
       const cancel = localize('file.confirm.delete.cancel');
@@ -954,7 +954,7 @@ export class FileTreeModelService {
   }
 
   private async getPromptTarget(uri: URI) {
-    await this.fileTreeService.flushEventQueue();
+    await this.fileTreeService.flushEventQueuePromise;
     let targetNode: File | Directory;
     // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
     if (uri.isEqual((this.treeModel.root as Directory).uri)) {
@@ -1011,7 +1011,7 @@ export class FileTreeModelService {
   }
 
   async renamePrompt(uri: URI) {
-    await this.fileTreeService.flushEventQueue();
+    await this.fileTreeService.flushEventQueuePromise;
     let targetNode: File | Directory;
     // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
     if (this.focusedFile) {
@@ -1147,7 +1147,7 @@ export class FileTreeModelService {
         if (!this.fileTreeHandle) {
           return;
         }
-        await this.fileTreeService.flushEventQueue();
+        await this.fileTreeService.flushEventQueuePromise;
         let node = this.fileTreeService.getNodeByPathOrUri(path);
         node = await this.fileTreeHandle.ensureVisible(node || path) as File;
         if (node) {

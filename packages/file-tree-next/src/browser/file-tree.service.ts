@@ -72,6 +72,8 @@ export class FileTreeService extends Tree {
 
   public isCompactMode: boolean;
 
+  public flushEventQueuePromise: Promise<void>;
+
   @observable
   // 筛选模式开关
   filterMode: boolean = false;
@@ -542,7 +544,7 @@ export class FileTreeService extends Tree {
   private queueChangeEvent(path: string, callback: any) {
     clearTimeout(this.eventFlushTimeout);
     this.eventFlushTimeout = setTimeout(async () => {
-      await this.flushEventQueue();
+      this.flushEventQueuePromise = await this.flushEventQueue();
       callback();
     }, 150) as any;
     if (this.changeEventDispatchQueue.indexOf(path) === -1) {
