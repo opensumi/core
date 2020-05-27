@@ -11,6 +11,7 @@ import { ExtensionDebugAdapterTracker } from './extension-debug-adapter-tracker'
 import { connectDebugAdapter, startDebugAdapter } from './extension-debug-adapter-starter';
 import { resolveDebugAdapterExecutable } from './extension-debug-adapter-excutable-resolver';
 import { Path } from '@ali/ide-core-common/lib/path';
+import { CustomeChildProcessMudule } from '../../../ext.process-base';
 
 export function createDebugApiFactory(
   extHostDebugService: IExtHostDebugService,
@@ -85,7 +86,7 @@ export class ExtHostDebug implements IExtHostDebugService {
   breakpoints: Breakpoint[];
   activeDebugConsole: vscode.DebugConsole;
 
-  constructor(rpc: IRPCProtocol, private extHostConnectionService: IExtHostConnectionService, private extHostCommand: IExtHostCommands, private cp?: any) {
+  constructor(rpc: IRPCProtocol, private extHostConnectionService: IExtHostConnectionService, private extHostCommand: IExtHostCommands, private cp?: CustomeChildProcessMudule) {
     this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadDebug);
     this.activeDebugConsole = {
       append: (value: string) => this.proxy.$appendToDebugConsole(value),
