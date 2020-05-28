@@ -106,6 +106,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
 
   onDisposeResource(resource) {
     this.involvedFiles.delete(resource.uri.codeUri.fsPath);
+    this.cachedFileStat.delete(resource.uri.toString());
   }
 
   async shouldCloseResource(resource: IResource, openedResources: IResource[][]): Promise<boolean> {
