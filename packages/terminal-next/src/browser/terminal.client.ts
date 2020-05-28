@@ -232,6 +232,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     const connection = await this.service.attach(sessionId, this._term, this._options, type);
 
     if (!connection) {
+      this._attached.resolve();
       return;
     }
 
