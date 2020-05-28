@@ -39,7 +39,7 @@ export class TreeNode implements ITreeNode {
     return TreeNode.idToTreeNode.get(id);
   }
 
-  private static idToTreeNode: Map<number, TreeNode> = new Map();
+  public static idToTreeNode: Map<number, TreeNode> = new Map();
   protected _uid: number;
   protected _depth: number;
   private _parent: ICompositeTreeNode | undefined;

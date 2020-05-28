@@ -14,6 +14,7 @@ export class Directory extends CompositeTreeNode {
     public name: string = '',
     public filestat: FileStat = { children: [], isDirectory: false, uri: '', lastModification: 0 },
     public tooltip: string,
+    id?: number,
   ) {
     super(tree as ITree, parent);
     if (!parent) {
@@ -21,6 +22,8 @@ export class Directory extends CompositeTreeNode {
       this.setExpanded();
     }
     this.fileTreeService = tree;
+    this._uid = id || this._uid;
+    TreeNode.idToTreeNode.set(this._uid, this);
   }
 
   updateName(name: string) {
@@ -55,9 +58,12 @@ export class File extends TreeNode {
     public name: string = '',
     public filestat: FileStat = { children: [], isDirectory: false, uri: '', lastModification: 0 },
     public tooltip: string,
+    id?: number,
   ) {
     super(tree as ITree, parent);
     this.fileTreeService = tree;
+    this._uid = id || this._uid;
+    TreeNode.idToTreeNode.set(this._uid, this);
   }
 
   updateName(name: string) {

@@ -33,6 +33,7 @@ export class FileTreeAPI implements IFileTreeAPI {
   @Autowired(IDialogService)
   private readonly dialogService: IDialogService;
   private cacheFileStat: Map<string, FileStat> = new Map();
+  private cacheNodeID: Map<string, number> = new Map();
 
   private userhomePath: URI;
 
@@ -104,28 +105,34 @@ export class FileTreeAPI implements IFileTreeAPI {
     const uri = new URI(filestat.uri);
     // 这里的name主要用于拼接节点路径，即path属性
     const name = presetName ? presetName : this.labelService.getName(uri);
+    let node: Directory | File;
     if (!this.cacheFileStat.has(filestat.uri)) {
       this.cacheFileStat.set(filestat.uri, filestat);
     }
     if (filestat.isDirectory) {
-      return new Directory(
+      node = new Directory(
         tree as any,
         parent,
         uri,
         name,
         filestat,
         this.getReadableTooltip(uri),
+        this.cacheNodeID.get(uri.toString()),
       );
     } else {
-      return new File(
+      node = new File(
         tree as any,
         parent,
         uri,
         name,
         filestat,
         this.getReadableTooltip(uri),
+        this.cacheNodeID.get(uri.toString()),
       );
     }
+    // 用于固定各个节点的ID，防止文件操作出现定位错误
+    this.cacheNodeID.set(node.uri.toString(), node.id);
+    return node;
   }
 
   async mvFiles(fromFiles: URI[], targetDir: URI) {
