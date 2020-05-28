@@ -243,6 +243,21 @@ export class FileTreeModelService {
           this.location(currentEditor.currentUri);
         }
       }
+      // 文件树刷新后需重新校准装饰器，因为此时的节点已更新
+      if (this.selectedFiles.length > 0) {
+        for (const node of this.selectedFiles) {
+          const target = this.fileTreeService.getNodeByPathOrUri(node.path);
+          if (target && !this.selectedDecoration.hasTarget(target)) {
+            this.selectedDecoration.addTarget(target);
+          }
+        }
+      }
+      if (this.focusedFile) {
+        const target = this.fileTreeService.getNodeByPathOrUri(this.focusedFile.path);
+        if (target && !this.selectedDecoration.hasTarget(target)) {
+          this.selectedDecoration.addTarget(target);
+        }
+      }
     }));
     this.disposableCollection.push(this.labelService.onDidChange(() => {
       // 当labelService注册的对应节点图标变化时，通知视图更新

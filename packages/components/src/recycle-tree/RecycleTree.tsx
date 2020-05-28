@@ -224,6 +224,9 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           this.promptTargetID = -1;
         }
       }
+      if (newFilePromptInsertionIndex === -1 && this.promptHandle && !this.promptHandle.destroyed) {
+        this.promptHandle.destroy();
+      }
       this.newPromptInsertionIndex = newFilePromptInsertionIndex;
       // 清理cache，这里可以确保分支已更新完毕
       this.idxToRendererPropsCache.clear();
@@ -382,7 +385,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   }
 
   private ensureVisible = async (pathOrTreeNode: string | TreeNode | CompositeTreeNode, align: Align = 'center'): Promise<TreeNode | undefined> => {
-    const { root, state } = this.props.model;
+    const { root } = this.props.model;
     const node = typeof pathOrTreeNode === 'string'
       ? await root.forceLoadTreeNodeAtPath(pathOrTreeNode)
       : pathOrTreeNode;
@@ -391,11 +394,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       // 异常
       return;
     }
-    if (await this.scrollIntoView(node as TreeNode, align)) {
-      state.excludeFromStash(node);
-      return node as TreeNode;
-    }
-    state.reverseStash();
     let parent = node.parent;
     while (parent) {
       if (!(parent as CompositeTreeNode).expanded) {
@@ -407,7 +405,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     return node as TreeNode;
   }
 
-  private tryScrollIntoViewWhileStable(node: TreeNode | CompositeTreeNode, align: Align = 'center') {
+  private tryScrollIntoViewWhileStable(node: TreeNode | CompositeTreeNode | PromptHandle, align: Align = 'center') {
     const { root } = this.props.model;
     if (this.tryEnsureVisibleTimes > RecycleTree.TRY_ENSURE_VISIBLE_MAX_TIMES) {
       this.tryEnsureVisibleTimes = 0;
@@ -415,25 +413,16 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
     Event.once(this.props.model.onChange)(async () => {
       await this.batchUpdatePromise;
-      if (root.isItemVisibleAtSurface(node)) {
-        this.listRef.current!.scrollToItem(root.getIndexAtTreeNode(node), align);
+      if (node.constructor === NewPromptHandle && !(node as NewPromptHandle).destroyed) {
+        this.listRef.current!.scrollToItem(this.newPromptInsertionIndex);
+      } else if (root.isItemVisibleAtSurface(node as TreeNode | CompositeTreeNode)) {
+        this.listRef.current!.scrollToItem(root.getIndexAtTreeNode(node as TreeNode | CompositeTreeNode), align);
         this.tryEnsureVisibleTimes = 0;
       } else {
         this.tryEnsureVisibleTimes ++;
         this.tryScrollIntoViewWhileStable(node, align);
       }
     });
-  }
-
-  private async scrollIntoView(node: TreeNode | CompositeTreeNode, align: Align = 'center'): Promise<boolean> {
-    const { root } = this.props.model;
-    const idx = root.getIndexAtTreeNode(node);
-    if (idx > -1) {
-      await this.batchUpdatePromise;
-      this.listRef.current!.scrollToItem(idx, align);
-      return true;
-    }
-    return false;
   }
 
   public componentDidMount() {
