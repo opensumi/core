@@ -1,7 +1,7 @@
 import { BrowserModule } from '@ali/ide-core-browser';
 import { Injectable, Provider } from '@ali/common-di';
 
-import { QuickOpenClientContribution } from './quick-open.contribution';
+import { CoreQuickOpenContribution, QuickOpenFeatureContribution } from './quick-open.contribution';
 import { PrefixQuickOpenServiceImpl, QuickOpenContribution } from './prefix-quick-open.service';
 import { PrefixQuickOpenService, QuickPickService, IQuickInputService } from './quick-open.model';
 import { QuickPickServiceImpl } from './quick-pick.service';
@@ -22,11 +22,12 @@ export class CoreQuickOpenModule extends BrowserModule {
       token: IQuickInputService,
       useClass: QuickInputService,
     },
+    CoreQuickOpenContribution,
   ];
   contributionProvider = QuickOpenContribution;
 }
 
 @Injectable()
 export class QuickOpenModule extends CoreQuickOpenModule {
-  providers = this.providers.concat(QuickOpenClientContribution);
+  providers = this.providers.concat(QuickOpenFeatureContribution);
 }

@@ -1,7 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { QuickOpenMode, QuickOpenItem, QuickOpenGroupItem, QuickOpenItemOptions, QuickPickService, QuickOpenService, QuickPickOptions, QuickPickItem, HideReason } from './quick-open.model';
-import { getIconClass, getOctIcon } from '@ali/ide-core-browser';
-import { getIcon } from '@ali/ide-core-browser';
+import { getIcon, getIconClass, getOctIcon } from '@ali/ide-core-browser';
 
 @Injectable()
 export class QuickPickServiceImpl implements QuickPickService {

@@ -16,39 +16,39 @@ export class MonacoQuickOpenAction implements monaco.quickOpen.IAction {
   constructor(public readonly action: QuickOpenAction) { }
 
   get id(): string {
-      return this.action.id;
+    return this.action.id;
   }
 
   get label(): string {
-      return this.action.label || '';
+    return this.action.label || '';
   }
 
   get tooltip(): string {
-      return this.action.tooltip || '';
+    return this.action.tooltip || '';
   }
 
   get class(): string | undefined {
-      return this.action.class;
+    return this.action.class;
   }
 
   get enabled(): boolean {
-      return this.action.enabled || true;
+    return this.action.enabled || true;
   }
 
   get checked(): boolean {
-      return this.action.checked || false;
+    return this.action.checked || false;
   }
 
   get radio(): boolean {
-      return this.action.radio || false;
+    return this.action.radio || false;
   }
 
   run(entry: QuickOpenEntry | QuickOpenEntryGroup): PromiseLike<any> {
-      return this.action.run(entry.item);
+    return this.action.run(entry.item);
   }
 
   dispose(): void {
-      this.action.dispose();
+    this.action.dispose();
   }
 }
 
@@ -117,16 +117,16 @@ export class MonacoQuickOpenService implements QuickOpenService {
 
   protected attachQuickOpenStyler(): void {
     if (!this._widget) {
-        return;
+      return;
     }
     const themeService = monaco.services.StaticServices.standaloneThemeService.get();
     const detach = monaco.theme.attachQuickOpenStyler(this._widget, themeService);
     const dispose = themeService.onThemeChange(() => {
-        detach.dispose();
-        this.attachQuickOpenStyler();
-        dispose.dispose();
+      detach.dispose();
+      this.attachQuickOpenStyler();
+      dispose.dispose();
     });
-}
+  }
 
   setPlaceHolder(placeHolder: string): void {
     const widget = this.widget;
@@ -146,7 +146,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
     if (this.widget && options.onType) {
       options.onType(lookFor, (model) =>
         this.widget.setInput(model, options.getAutoFocus(lookFor), options.inputAriaLabel));
-      }
+    }
   }
 
   protected onFocusLost(): boolean {
@@ -156,9 +156,9 @@ export class MonacoQuickOpenService implements QuickOpenService {
   showDecoration(type: MessageType): void {
     let decoration = MarkerSeverity.Info;
     if (type === MessageType.Warning) {
-        decoration = MarkerSeverity.Warning;
+      decoration = MarkerSeverity.Warning;
     } else if (type === MessageType.Error) {
-        decoration = MarkerSeverity.Error;
+      decoration = MarkerSeverity.Error;
     }
     this.showInputDecoration(decoration);
   }
@@ -170,23 +170,23 @@ export class MonacoQuickOpenService implements QuickOpenService {
   setPassword(isPassword: boolean): void {
     const widget = this.widget;
     if (widget.inputBox) {
-        widget.inputBox.inputElement.type = isPassword ? 'password' : 'text';
+      widget.inputBox.inputElement.type = isPassword ? 'password' : 'text';
     }
   }
 
   showInputDecoration(decoration: MarkerSeverity): void {
     const widget = this.widget;
     if (widget.inputBox) {
-        const type = decoration === MarkerSeverity.Info ? 1 :
-            decoration === MarkerSeverity.Warning ? 2 : 3;
-        widget.inputBox.showMessage({ type, content: '' });
+      const type = decoration === MarkerSeverity.Info ? 1 :
+        decoration === MarkerSeverity.Warning ? 2 : 3;
+      widget.inputBox.showMessage({ type, content: '' });
     }
   }
 
   clearInputDecoration(): void {
     const widget = this.widget;
     if (widget.inputBox) {
-        widget.inputBox.hideMessage();
+      widget.inputBox.hideMessage();
     }
   }
 
@@ -227,8 +227,8 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
 
   onType(lookFor: string, acceptor: (model: monaco.quickOpen.QuickOpenModel) => void): void {
     this.model.onType(lookFor, (items, actionProvider) => {
-        const result = this.toOpenModel(lookFor, items, actionProvider);
-        acceptor(result);
+      const result = this.toOpenModel(lookFor, items, actionProvider);
+      acceptor(result);
     });
   }
 
@@ -244,16 +244,16 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
     }
 
     for (const item of items) {
-        const entry = this.createEntry(item, lookFor);
-        if (entry) {
-            entries.push(entry);
-        }
+      const entry = this.createEntry(item, lookFor);
+      if (entry) {
+        entries.push(entry);
+      }
     }
     if (this.options.fuzzySort) {
-        entries.sort((a, b) => monaco.quickOpen.compareEntries(a, b, lookFor));
+      entries.sort((a, b) => monaco.quickOpen.compareEntries(a, b, lookFor));
     }
     return new monaco.quickOpen.QuickOpenModel(entries, actionProvider ? new MonacoQuickOpenActionProvider(actionProvider) : undefined);
-}
+  }
 
   protected createEntry(item: QuickOpenItem, lookFor: string): monaco.quickOpen.QuickOpenEntry | undefined {
     if (this.options.skipPrefix) {
@@ -284,9 +284,9 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
     if (this.options.selectIndex) {
       const idx = this.options.selectIndex(lookFor);
       if (idx >= 0) {
-          return {
-              autoFocusIndex: idx,
-          };
+        return {
+          autoFocusIndex: idx,
+        };
       }
     }
     return {
@@ -339,14 +339,14 @@ export class QuickOpenEntry extends monaco.quickOpen.QuickOpenEntry {
     const keybinding = this.item.getKeybinding();
 
     if (!keybinding) {
-        return undefined;
+      return undefined;
     }
 
     let keySequence: KeySequence;
     try {
-        keySequence = this.keybindingRegistry.resolveKeybinding(keybinding);
+      keySequence = this.keybindingRegistry.resolveKeybinding(keybinding);
     } catch (error) {
-        return undefined;
+      return undefined;
     }
     return new MonacoResolvedKeybinding(keySequence, this.keybindingRegistry);
   }
