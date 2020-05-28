@@ -248,8 +248,10 @@ interface BaseActionListProps {
 
 /**
  * 用于 scm/title or view/title or inline actions
+ * 请不要直接使用 TitleActionList 组件，请使用 InlineActionBar/InlineMenubar 等组件
+ * 目前仅给 tree view 使用，其不带 contextkey service change 事件监听
  */
-const TitleActionList: React.FC<{
+export const TitleActionList: React.FC<{
   nav: MenuNode[];
   more?: MenuNode[];
   className?: string;

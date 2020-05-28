@@ -8,7 +8,7 @@ import { observer } from 'mobx-react-lite';
 import { ViewState, getIcon } from '@ali/ide-core-browser';
 import { useInjectable } from '@ali/ide-core-browser';
 import { ICtxMenuRenderer, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
-import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
+import { TitleActionList } from '@ali/ide-core-browser/lib/components/actions';
 import { useDisposable } from '@ali/ide-core-browser/lib/utils/react-hooks';
 
 import { ExtensionViewService } from './extension-view.service';
@@ -138,7 +138,7 @@ export const ExtensionTabbarTreeView = observer(({
     // TreeViewAPI只处理单选操作
     const node = nodes[0];
 
-    const [, menuNodes] = extensionViewService.getMenuNodes(node.contextValue);
+    const menuNodes = extensionViewService.getCtxMenuNodes(node.contextValue);
     const ctxMenuRenderer: ICtxMenuRenderer = injector.get(ICtxMenuRenderer);
 
     ctxMenuRenderer.show({
@@ -267,10 +267,18 @@ export const ExtensionTabbarTreeView = observer(({
 
   const getInlineMenu = (node: TreeNode<any>) => {
     const contextValue = node.contextValue;
-    const menus = extensionViewService.getInlineMenus(contextValue);
+    // 这里每次都是重新获取的，且参考 vscode 不做额外 contextkey service change 事件
+    // 避免由于每个 viewItem 对应了 scopedContextkeyService 导致的 contextkey service 的性能问题
+    const menuNodes = extensionViewService.getInlineMenuNodes(contextValue);
     return [{
       location: ExpandableTreeNode.is(node) ? TreeViewActionTypes.TreeContainer : TreeViewActionTypes.TreeNode_Right,
-      component: <InlineActionBar context={[{treeViewId: viewId, treeItemId: node.id}]} menus={menus} separator='inline' />,
+      component: (
+        <TitleActionList
+          className={styles.inlineMenu}
+          context={[{treeViewId: viewId, treeItemId: node.id}]}
+          nav={menuNodes}
+        />
+      ),
     }];
   };
 
@@ -394,12 +402,14 @@ export const ExtensionTabbarTreeView = observer(({
 
       const actions = getInlineMenu(node);
 
-      return {
+      const result = {
         ...node,
         ...nodeModel,
         description,
         actions,
       };
+      result.icon += ` ${styles.headIcon}`;
+      return result;
     });
   }, [nodes]);
 
