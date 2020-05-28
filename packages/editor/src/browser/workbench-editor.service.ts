@@ -842,6 +842,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           if (!resource) {
             throw new Error('This uri cannot be opened!: ' + uri);
           }
+          if (resource.deleted) {
+            if (options.deletedPolicy === 'fail') {
+              throw new Error('resource deleted ' + uri);
+            } else if (options.deletedPolicy === 'skip') {
+              return false;
+            }
+          }
           if (options && options.label) {
             resource.name = options.label;
           }
@@ -1301,13 +1308,21 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   async restoreState(state: IEditorGroupState) {
     this.previewURI = state.uris[state.previewIndex] ? null : new URI(state.uris[state.previewIndex]);
     for (const uri of state.uris) {
-      await this.doOpen(new URI(uri), { disableNavigate: true, backend: true, preview: false });
+      await this.doOpen(new URI(uri), { disableNavigate: true, backend: true, preview: false, deletedPolicy: 'skip' });
     }
+    let targetUri: URI | undefined;
     if (state.current) {
-      await this.open(new URI(state.current));
+      targetUri = new URI(state.current);
     } else {
       if (state.uris.length > 0) {
-        this.open(new URI(state.uris[state.uris.length - 1]!));
+        targetUri = new URI(state.uris[state.uris.length - 1]!);
+      }
+    }
+    if (targetUri) {
+      if (!await this.open(targetUri, {deletedPolicy: 'skip'})) {
+        if (this.resources[0]) {
+          await this.open(this.resources[0].uri);
+        }
       }
     }
   }
