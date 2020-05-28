@@ -224,6 +224,9 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           this.promptTargetID = -1;
         }
       }
+      if (newFilePromptInsertionIndex === -1 && this.promptHandle && !this.promptHandle.destroyed) {
+        this.promptHandle.destroy();
+      }
       this.newPromptInsertionIndex = newFilePromptInsertionIndex;
       // 清理cache，这里可以确保分支已更新完毕
       this.idxToRendererPropsCache.clear();
