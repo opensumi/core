@@ -382,7 +382,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   }
 
   private ensureVisible = async (pathOrTreeNode: string | TreeNode | CompositeTreeNode, align: Align = 'center'): Promise<TreeNode | undefined> => {
-    const { root, state } = this.props.model;
+    const { root } = this.props.model;
     const node = typeof pathOrTreeNode === 'string'
       ? await root.forceLoadTreeNodeAtPath(pathOrTreeNode)
       : pathOrTreeNode;
@@ -391,11 +391,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       // 异常
       return;
     }
-    if (await this.scrollIntoView(node as TreeNode, align)) {
-      state.excludeFromStash(node);
-      return node as TreeNode;
-    }
-    state.reverseStash();
     let parent = node.parent;
     while (parent) {
       if (!(parent as CompositeTreeNode).expanded) {
@@ -423,17 +418,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         this.tryScrollIntoViewWhileStable(node, align);
       }
     });
-  }
-
-  private async scrollIntoView(node: TreeNode | CompositeTreeNode, align: Align = 'center'): Promise<boolean> {
-    const { root } = this.props.model;
-    const idx = root.getIndexAtTreeNode(node);
-    if (idx > -1) {
-      await this.batchUpdatePromise;
-      this.listRef.current!.scrollToItem(idx, align);
-      return true;
-    }
-    return false;
   }
 
   public componentDidMount() {
