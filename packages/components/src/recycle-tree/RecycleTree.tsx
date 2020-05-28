@@ -405,7 +405,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     return node as TreeNode;
   }
 
-  private tryScrollIntoViewWhileStable(node: TreeNode | CompositeTreeNode, align: Align = 'center') {
+  private tryScrollIntoViewWhileStable(node: TreeNode | CompositeTreeNode | PromptHandle, align: Align = 'center') {
     const { root } = this.props.model;
     if (this.tryEnsureVisibleTimes > RecycleTree.TRY_ENSURE_VISIBLE_MAX_TIMES) {
       this.tryEnsureVisibleTimes = 0;
@@ -413,8 +413,10 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
     Event.once(this.props.model.onChange)(async () => {
       await this.batchUpdatePromise;
-      if (root.isItemVisibleAtSurface(node)) {
-        this.listRef.current!.scrollToItem(root.getIndexAtTreeNode(node), align);
+      if (node.constructor === NewPromptHandle && !(node as NewPromptHandle).destroyed) {
+        this.listRef.current!.scrollToItem(this.newPromptInsertionIndex);
+      } else if (root.isItemVisibleAtSurface(node as TreeNode | CompositeTreeNode)) {
+        this.listRef.current!.scrollToItem(root.getIndexAtTreeNode(node as TreeNode | CompositeTreeNode), align);
         this.tryEnsureVisibleTimes = 0;
       } else {
         this.tryEnsureVisibleTimes ++;
