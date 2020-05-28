@@ -15,24 +15,25 @@ import * as styles from './menu-bar.module.less';
 
 const MenubarItem = observer<IMenubarItem & {
   focusMode: boolean;
-  onClick: () => void;
-}>(({ id, label, focusMode, onClick }) => {
+  afterMenuClick: () => void;
+  afterMenubarClick: () => void;
+}>(({ id, label, focusMode, afterMenubarClick, afterMenuClick }) => {
   const menubarStore = useInjectable<MenubarStore>(MenubarStore);
   const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
 
-  const handleClick = React.useCallback(() => {
+  const handleMenubarItemClick = React.useCallback(() => {
     menubarStore.handleMenubarClick(id);
-    onClick();
     if (focusMode) {
       setMenuOpen(true);
     } else {
       setMenuOpen((r) => !r);
     }
+    afterMenubarClick();
   }, [ id ]);
 
   const handleMenuItemClick = () => {
-    onClick();
     setMenuOpen(false);
+    afterMenuClick();
   };
 
   const handleMouseOver = React.useCallback(() => {
@@ -62,7 +63,7 @@ const MenubarItem = observer<IMenubarItem & {
       <div
         className={clx(styles.menubar, { [styles['menu-open']]: menuOpen })}
         onMouseOver={handleMouseOver}
-        onClick={handleClick}>{label}</div>
+        onClick={handleMenubarItemClick}>{label}</div>
     </Dropdown>
   );
 });
@@ -77,9 +78,7 @@ export const MenuBar = observer(() => {
 
   const handleMouseLeave = React.useCallback(() => {
     // 只有 focus 为 true 的时候, mouse leave 才会将其置为 false
-    if (focusMode) {
-      setFocusMode(false);
-    }
+    setFocusMode(false);
   }, [focusMode]);
 
   return (
@@ -94,7 +93,8 @@ export const MenuBar = observer(() => {
             id={id}
             label={label}
             focusMode={focusMode}
-            onClick={() => setFocusMode((r) => !r)} />
+            afterMenuClick={() => setFocusMode(false)}
+            afterMenubarClick={() => setFocusMode((r) => !r)} />
         ))
       }
     </ClickOutside>
