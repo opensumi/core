@@ -1,8 +1,9 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { URI, Emitter, Event, Schemas, WithEventBus, IEditorDocumentChange, IEditorDocumentModelSaveResult, localize, AppConfig, CommandService } from '@ali/ide-core-browser';
+import { URI, Emitter, Event, Schemas, WithEventBus, IEditorDocumentChange, IEditorDocumentModelSaveResult, localize, AppConfig, CommandService, CorePreferences } from '@ali/ide-core-browser';
+import * as path from '@ali/ide-core-common/lib/path';
+
 import { IResourceProvider, WorkbenchEditorService } from '../common';
 import { IEditorDocumentModelService, IEditorDocumentModelContentProvider } from './doc-model/types';
-import * as path from '@ali/ide-core-common/lib/path';
 
 @Injectable()
 export class UntitledSchemeDocumentProvider implements IEditorDocumentModelContentProvider {
@@ -22,13 +23,22 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
 
   public onDidChangeContent: Event<URI> = this._onDidChangeContent.event;
 
+  @Autowired(CorePreferences)
+  protected readonly corePreferences: CorePreferences;
+
   handlesScheme(scheme: string): boolean {
     return scheme === Schemas.untitled;
+  }
+
+  async provideEncoding() {
+    const encoding = this.corePreferences['files.encoding'];
+    return encoding || 'utf8';
   }
 
   async provideEditorDocumentModelContent(uri: URI, encoding?: string | undefined): Promise<string> {
     return '';
   }
+
   isReadonly(uri: URI): boolean {
     return false;
   }
