@@ -460,7 +460,7 @@ export class DebugSession implements IDisposable {
   get stoppedThreads(): IterableIterator<DebugThread> {
     return this.getThreads((thread) => thread.stopped);
   }
-  protected readonly scheduleUpdateThreads = debounce(100, () => this.updateThreads(undefined));
+  protected readonly scheduleUpdateThreads = debounce(() => this.updateThreads(undefined), 100);
   protected pendingThreads = Promise.resolve();
   updateThreads(stoppedDetails: StoppedDetails | undefined): Promise<void> {
     return this.pendingThreads = this.pendingThreads.then(async () => {
