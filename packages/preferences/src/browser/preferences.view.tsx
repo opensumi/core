@@ -371,7 +371,7 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
           >
             {options}
           </NativeSelect> :
-          <Select onChange={(value) => {
+          <Select maxHeight='300' onChange={(value) => {
             changeValue(key, value);
           }} value={value} className={styles.select_control}>
             {options}

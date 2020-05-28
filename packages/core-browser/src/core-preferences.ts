@@ -1,7 +1,8 @@
 import { Injector } from '@ali/common-di';
-import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceSchema } from './preferences';
-
 import { localize, getAvailableLanguages, isElectronRenderer, isWindows } from '@ali/ide-core-common';
+import { SUPPORTED_ENCODINGS } from '@ali/ide-core-common/lib/const';
+
+import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceSchema } from './preferences';
 
 const EXPLORER_DEFAULTS = {
   confirmDelete: true,
@@ -156,6 +157,12 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'object',
       description: '%preference.files.associations%',
     },
+    'files.encoding': {
+      type: 'string',
+      description: '%preference.files.encoding%',
+      default: 'utf8',
+      enum: Object.keys(SUPPORTED_ENCODINGS),
+    },
     // 设置面板是否用户Scope在前
     'settings.userBeforeWorkspace': {
       type: 'boolean',
@@ -231,6 +238,7 @@ export interface CoreConfiguration {
   'files.watcherExclude': { [key: string]: boolean };
   'files.exclude': { [key: string]: boolean };
   'files.associations': { [key: string]: string };
+  'files.encoding': string;
   'general.language': string;
   'general.theme': string;
 }

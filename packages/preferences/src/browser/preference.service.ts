@@ -293,6 +293,7 @@ export const defaultSettingSections: {
   feature: [
     {
       preferences: [
+        {id: 'files.encoding', localized: 'preference.files.encoding.title'},
         {id: 'files.exclude', localized: 'preference.files.exclude.title'},
         {id: 'files.watcherExclude', localized: 'preference.files.watcherExclude.title'},
         {id: 'files.associations', localized: 'preference.files.associations.title'},
