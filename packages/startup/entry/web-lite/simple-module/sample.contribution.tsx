@@ -4,10 +4,13 @@ import { ComponentContribution, ComponentRegistry, ClientAppContribution, getIco
 import { NextMenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
 import { ResourceService, IResource } from '@ali/ide-editor/lib/common';
 import { EditorComponentRegistry, IEditorDocumentModelContentRegistry, BrowserEditorContribution } from '@ali/ide-editor/lib/browser';
+import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
 
 import { SampleView, SampleTopView, SampleBottomView, SampleMainView } from './sample.view';
 import { RightTabRenderer } from './custom-renderer';
-import { SampleDocContentProvider, SampleResourceProvider } from './sample-doc';
+import { AntcodeResourceProvider, SampleResourceProvider } from './sample-doc';
+import { FileDocContentProvider, AntcodeDocContentProvider } from './sample-file-doc';
+import { toSCMUri } from '../modules/uri';
 
 @Injectable()
 @Domain(CommandContribution, NextMenuContribution, ComponentContribution, ClientAppContribution, SlotRendererContribution, ResourceResolverContribution, BrowserEditorContribution)
@@ -18,7 +21,8 @@ export class SampleContribution implements CommandContribution, NextMenuContribu
 
   registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
     // 注册 provider 提供 doc / 文档的内容和 meta 信息
-    registry.registerEditorDocumentModelContentProvider(new SampleDocContentProvider());
+    registry.registerEditorDocumentModelContentProvider(new FileDocContentProvider());
+    registry.registerEditorDocumentModelContentProvider(new AntcodeDocContentProvider());
   }
 
   registerEditorComponent(editorComponentRegistry: EditorComponentRegistry) {
@@ -28,10 +32,18 @@ export class SampleContribution implements CommandContribution, NextMenuContribu
         type: 'code',
       });
     });
+
+    // 处理 antcode 协议的 editor component type
+    editorComponentRegistry.registerEditorComponentResolver('antcode', (resource: IResource, results) => {
+      results.push({
+        type: 'code',
+      });
+    });
   }
 
   registerResource(resourceService: ResourceService) {
     resourceService.registerResourceProvider(new SampleResourceProvider());
+    resourceService.registerResourceProvider(new AntcodeResourceProvider());
   }
 
   registerCommands(registry: CommandRegistry) {
@@ -109,7 +121,29 @@ export class SampleContribution implements CommandContribution, NextMenuContribu
   }
 
   async onDidStart() {
-    this.commandService.executeCommand('editor.openUri', URI.file('/user/test.js'), { forceOpenType: { type: 'code' } });
-  }
+    this.commandService.executeCommand(
+      EDITOR_COMMANDS.OPEN_RESOURCE.id,
+      toSCMUri({
+        platform: process.env.SCM_PLATFORM!,
+        repo: 'ide-s/TypeScript-Node-Starter',
+        path: '/src/app.ts',
+        ref: 'a9b8074faff79b1e383c50fcb1ad5f33a48f1157',
+      }),
+      { forceOpenType: { type: 'code' } },
+    );
 
+    this.commandService.executeCommand(
+      EDITOR_COMMANDS.OPEN_RESOURCE.id,
+      toSCMUri({
+        platform: process.env.SCM_PLATFORM!,
+        repo: 'ide-s/TypeScript-Node-Starter',
+        path: '/src/models/User.ts',
+        ref: 'a9b8074faff79b1e383c50fcb1ad5f33a48f1157',
+      }),
+      { forceOpenType: { type: 'code' } },
+    );
+
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, URI.file('test1.js'), { forceOpenType: { type: 'code' } });
+    // this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, URI.from(Uri.parse('git://user/test.js')));
+  }
 }

@@ -8,8 +8,7 @@ const webpack = require('webpack');
 const path = require('path');
 const threadLoader = require('thread-loader');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-const darkTheme = require('@ant-design/dark-theme');
-
+const merge = require('webpack-merge');
 
 threadLoader.warmup({}, [
   'ts-loader',
@@ -20,11 +19,11 @@ const utils = require('./utils');
 const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
 const port = process.env.IDE_FRONT_PORT || 8080;
 
-console.log('front port', port)
+console.log('front port', port);
 
-exports.createWebpackConfig = function (dir, entry) {
+exports.createWebpackConfig = function (dir, entry, extraConfig) {
 
-  return {
+  const webpackConfig = merge({
     entry,
     node: {
       net: "empty",
@@ -123,7 +122,6 @@ exports.createWebpackConfig = function (dir, entry) {
               loader: 'less-loader',
               options: {
                 javascriptEnabled: true,
-                modifyVars: darkTheme.default
               }
             }
           ],
@@ -214,7 +212,9 @@ exports.createWebpackConfig = function (dir, entry) {
       open: process.env.KAITIAN_DEV_OPEN_BROWSER ? true : false,
       hot: true,
     }
-  };
+  }, extraConfig);
+
+  return webpackConfig;
 }
 
 
