@@ -26,7 +26,7 @@
     "@ali/ide-core-browser": "1.8.23",
     "@ali/ide-overlay": "1.8.23",
     "@ali/ide-preferences": "1.8.23",
-    "@ali/ide-dev-tool": "1.2.1",
+    "@ali/ide-dev-tool": "^1.2.1",
     "@ali/ide-file-service": "1.8.23",
     "@ali/ide-editor": "1.8.23",
     "@ali/ide-components": "1.8.23",

@@ -125,9 +125,9 @@ export class SampleContribution implements CommandContribution, NextMenuContribu
       EDITOR_COMMANDS.OPEN_RESOURCE.id,
       toSCMUri({
         platform: process.env.SCM_PLATFORM!,
-        repo: 'taian.lta/TypeScript-Node-Starter',
+        repo: 'ide-s/TypeScript-Node-Starter',
         path: '/src/app.ts',
-        ref: '511a03ea248e1ace8532abebc7abdba3c55cb641',
+        ref: 'a9b8074faff79b1e383c50fcb1ad5f33a48f1157',
       }),
       { forceOpenType: { type: 'code' } },
     );
@@ -136,9 +136,9 @@ export class SampleContribution implements CommandContribution, NextMenuContribu
       EDITOR_COMMANDS.OPEN_RESOURCE.id,
       toSCMUri({
         platform: process.env.SCM_PLATFORM!,
-        repo: 'taian.lta/TypeScript-Node-Starter',
+        repo: 'ide-s/TypeScript-Node-Starter',
         path: '/src/models/User.ts',
-        ref: '511a03ea248e1ace8532abebc7abdba3c55cb641',
+        ref: 'a9b8074faff79b1e383c50fcb1ad5f33a48f1157',
       }),
       { forceOpenType: { type: 'code' } },
     );
