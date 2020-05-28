@@ -5,9 +5,9 @@ import {
   DisposableCollection,
   Disposable,
   IDisposable,
-  debounce,
   Mutable,
 } from '@ali/ide-core-browser';
+import debounce = require('lodash.debounce');
 import { DebugSessionConnection, DebugEventTypes, DebugRequestTypes } from './debug-session-connection';
 import { DebugSessionOptions, InternalDebugSessionOptions } from '../common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
