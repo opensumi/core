@@ -243,6 +243,14 @@ export interface IResourceOpenOptions {
    * 对于DiffEditor，是否跳转到第一个diff
    */
   revealFirstDiff?: boolean;
+
+  /**
+   * 对于 deleted 的 resource 的 策略
+   * 'try' : 尝试打开，在最后一个错误处爆出错误信息， 会增加tab （默认行为)
+   * 'fail': 一但发现资源是deleted，直接报错，不增加tab
+   * 'skip': 同 fail， 但不报错并直接跳过
+   */
+  deletedPolicy?: 'try' | 'fail' | 'skip';
 }
 
 export interface Position {
