@@ -1,22 +1,21 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider, IEditor, SaveReason, EOL } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
-import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
-import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService } from '@ali/ide-core-browser';
-import { EditorStatusBarService } from './editor.status-bar.service';
+import {  IClientApp, getIcon, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { EditorView } from './editor.view';
-import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorActionRegistry, IEditorFeatureRegistry } from './types';
-import { IClientApp } from '@ali/ide-core-browser';
 import { isElectronEnv, isWindows, PreferenceScope } from '@ali/ide-core-common';
-import { getIcon } from '@ali/ide-core-browser';
+import * as copy from 'copy-to-clipboard';
+import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { SUPPORTED_ENCODINGS } from '@ali/ide-core-common/lib/const';
+
+import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider, IEditor, SaveReason, EOL } from '../common';
+import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorActionRegistry, IEditorFeatureRegistry } from './types';
+import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
+import { EditorStatusBarService } from './editor.status-bar.service';
+import { EditorView } from './editor.view';
 import { EditorHistoryService } from './history';
 import { NavigationMenuContainer } from './navigation.view';
 import { IEditorDocumentModelService } from './doc-model/types';
-import * as copy from 'copy-to-clipboard';
 import { FormattingSelector } from './format/formatterSelect';
-import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
-import { SUPPORTED_ENCODINGS } from './doc-model/encoding';
 import { EditorTopPaddingContribution } from './view/topPadding';
 
 interface ResourceArgs {

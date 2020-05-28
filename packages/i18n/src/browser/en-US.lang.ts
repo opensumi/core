@@ -278,6 +278,8 @@ export const localizationBundle = {
     'preference.array.additem': 'Add',
     'preference.files.associations.title': 'File Association',
     'preference.files.associations': 'Configure file associations to languages (e.g. "*.extension": "html"). These have precedence over the default associations of the languages installed.',
+    'preference.files.encoding.title': 'File Encoding',
+    'preference.files.encoding': 'The default character set encoding to use when reading and writing files.',
     'preference.explorer.fileTree.indent': 'Configure indent for each fileTree item',
     'preference.explorer.fileTree.indent.title': 'Explorer -> FileTree Indent',
     'preference.explorer.fileTree.baseIndent': 'Configure base indent for whole fileTree',

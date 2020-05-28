@@ -41,6 +41,13 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
   }
 
   async provideEncoding(uri: URI) {
+    if (uri.scheme === FILE_SCHEME) {
+      const encoding = this.corePreferences['files.encoding'];
+      if (!!encoding) {
+        return encoding;
+      }
+    }
+
     return await this.fileServiceClient.getEncoding(uri.toString());
   }
 

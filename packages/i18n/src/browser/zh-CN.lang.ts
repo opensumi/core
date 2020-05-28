@@ -272,6 +272,8 @@ export const localizationBundle = {
     'preference.debug.toolbar.float': '浮层模式',
     'preference.files.associations.title': '文件关联',
     'preference.files.associations': '配置语言的文件关联 (如: "*.extension": "html")。这些关联的优先级高于已安装语言的默认关联。',
+    'preference.files.encoding.title': '文件编码',
+    'preference.files.encoding': '读写文件时使用的默认字符集编码',
     'preference.explorer.fileTree.indent': '配置资源管理器下每个文件树节点的缩进',
     'preference.explorer.fileTree.baseIndent': '配置资源管理器下整个文件树的缩进',
     'preference.explorer.fileTree.indent.title': '资源管理器 -> 文件树缩进',
