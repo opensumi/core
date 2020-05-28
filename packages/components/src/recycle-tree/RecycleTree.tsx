@@ -315,7 +315,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     this.promptTargetID = node!.id;
     if (node !== root && (!(node as CompositeTreeNode).expanded || !root.isItemVisibleAtSurface(node as CompositeTreeNode))) {
       // 调用setExpanded即会在之后调用batchUpdate函数
-      await (node as CompositeTreeNode).setExpanded(true, true);
+      await (node as CompositeTreeNode).setExpanded(true);
     } else {
       await this.batchUpdate();
     }
@@ -391,7 +391,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       // 异常
       return;
     }
-    if (this.scrollIntoView(node as TreeNode, align)) {
+    if (await this.scrollIntoView(node as TreeNode, align)) {
       state.excludeFromStash(node);
       return node as TreeNode;
     }
@@ -425,10 +425,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     });
   }
 
-  private scrollIntoView(node: TreeNode | CompositeTreeNode, align: Align = 'center'): boolean {
+  private async scrollIntoView(node: TreeNode | CompositeTreeNode, align: Align = 'center'): Promise<boolean> {
     const { root } = this.props.model;
     const idx = root.getIndexAtTreeNode(node);
     if (idx > -1) {
+      await this.batchUpdatePromise;
       this.listRef.current!.scrollToItem(idx, align);
       return true;
     }

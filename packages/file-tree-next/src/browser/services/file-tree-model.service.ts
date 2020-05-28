@@ -254,6 +254,10 @@ export class FileTreeModelService {
     this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
       this.loadingDecoration.removeTarget(target);
     }));
+    await this._loadSnapshotReady;
+    // 先加载快照后再监听文件变化，同时操作会出现Tree更新后节点无法对齐问题
+    // 即找到插入节点位置为 0，导致重复问题
+    this.fileTreeService.startWatchFileEvent();
   }
 
   initDecorations(root) {
@@ -640,7 +644,6 @@ export class FileTreeModelService {
   }
 
   async deleteFileByUris(uris: URI[]) {
-    await this.fileTreeService.flushEventQueuePromise;
     if (this.corePreferences['explorer.confirmDelete']) {
       const ok = localize('file.confirm.delete.ok');
       const cancel = localize('file.confirm.delete.cancel');
@@ -653,7 +656,7 @@ export class FileTreeModelService {
     // 移除文件
     uris.forEach(async (uri: URI) => {
       if (await this.deleteFile(uri)) {
-        this.fileTreeService.deleteAffectedNodes([uri]);
+        await this.fileTreeService.deleteAffectedNodes([uri]);
       }
     });
   }
@@ -676,6 +679,7 @@ export class FileTreeModelService {
     }
     const effectNode = this.fileTreeService.getNodeByPathOrUri(targetPath);
     if (effectNode) {
+      await this.fileTreeService.flushEventQueuePromise;
       this.fileTreeService.deleteAffectedNodeByPath(effectNode.path);
     }
     return true;
