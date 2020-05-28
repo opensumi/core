@@ -5,9 +5,9 @@ import {
   DisposableCollection,
   Disposable,
   IDisposable,
-  debounce,
   Mutable,
 } from '@ali/ide-core-browser';
+import debounce = require('lodash.debounce');
 import { DebugSessionConnection, DebugEventTypes, DebugRequestTypes } from './debug-session-connection';
 import { DebugSessionOptions, InternalDebugSessionOptions } from '../common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -460,7 +460,7 @@ export class DebugSession implements IDisposable {
   get stoppedThreads(): IterableIterator<DebugThread> {
     return this.getThreads((thread) => thread.stopped);
   }
-  protected readonly scheduleUpdateThreads = debounce(100, () => this.updateThreads(undefined));
+  protected readonly scheduleUpdateThreads = debounce(() => this.updateThreads(undefined), 100);
   protected pendingThreads = Promise.resolve();
   updateThreads(stoppedDetails: StoppedDetails | undefined): Promise<void> {
     return this.pendingThreads = this.pendingThreads.then(async () => {
