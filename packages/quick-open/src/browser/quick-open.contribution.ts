@@ -11,19 +11,13 @@ import { HelpQuickOpenHandler } from './quick-open.help.service';
 export const quickCommand: Command = {
   id: 'editor.action.quickCommand',
 };
-@Domain(CommandContribution, KeybindingContribution, NextMenuContribution, QuickOpenContribution, ClientAppContribution, MonacoContribution)
-export class QuickOpenClientContribution implements CommandContribution, KeybindingContribution, NextMenuContribution, QuickOpenContribution, ClientAppContribution, MonacoContribution {
+
+// 连接 monaco 内部的 quick-open
+// 作为 contribution provider 的职责
+@Domain(ClientAppContribution, MonacoContribution)
+export class CoreQuickOpenContribution implements ClientAppContribution, MonacoContribution {
   @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
-
-  @Autowired(PrefixQuickOpenService)
-  protected readonly prefixQuickOpenService: PrefixQuickOpenService;
-
-  @Autowired()
-  protected readonly quickCommandHandler: QuickCommandHandler;
-
-  @Autowired()
-  protected readonly helpQuickOpenHandler: HelpQuickOpenHandler;
+  private readonly injector: Injector;
 
   @Autowired()
   private readonly quickOpenHandlerRegistry: QuickOpenHandlerRegistry;
@@ -31,6 +25,7 @@ export class QuickOpenClientContribution implements CommandContribution, Keybind
   @Autowired(QuickOpenContribution)
   private readonly quickOpenContributionProvider: ContributionProvider<QuickOpenContribution>;
 
+  // 串联 monaco 内部的 quick-open 组件
   onMonacoLoaded(monacoService: MonacoService) {
      // 加载依赖 monaco 的其他组件
     const { MonacoQuickOpenService } = require('./quick-open.service');
@@ -41,11 +36,28 @@ export class QuickOpenClientContribution implements CommandContribution, Keybind
      });
   }
 
+  // contribution provider 的职责
   onStart() {
     for (const contribution of this.quickOpenContributionProvider.getContributions()) {
       contribution.registerQuickOpenHandlers(this.quickOpenHandlerRegistry);
     }
   }
+}
+
+// 作为 command platte 等相关功能的贡献点
+@Domain(CommandContribution, KeybindingContribution, NextMenuContribution, QuickOpenContribution)
+export class QuickOpenFeatureContribution implements CommandContribution, KeybindingContribution, NextMenuContribution, QuickOpenContribution {
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
+  @Autowired(PrefixQuickOpenService)
+  private readonly prefixQuickOpenService: PrefixQuickOpenService;
+
+  @Autowired()
+  private readonly quickCommandHandler: QuickCommandHandler;
+
+  @Autowired()
+  private readonly helpQuickOpenHandler: HelpQuickOpenHandler;
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(quickCommand, {
