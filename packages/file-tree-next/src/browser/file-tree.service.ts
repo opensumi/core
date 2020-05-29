@@ -28,6 +28,8 @@ export interface IMoveChange {
 @Injectable()
 export class FileTreeService extends Tree {
 
+  private static DEFAULT_FLUSH_FILE_EVENT_DELAY = 500;
+
   @Autowired(IFileTreeAPI)
   private readonly fileTreeAPI: IFileTreeAPI;
 
@@ -77,7 +79,7 @@ export class FileTreeService extends Tree {
 
   public isCompactMode: boolean;
 
-  public flushEventQueuePromise: Promise<void>;
+  public flushEventQueuePromise: Promise<void> | null;
 
   @observable
   // 筛选模式开关
@@ -561,12 +563,15 @@ export class FileTreeService extends Tree {
 
   // 队列化Changed事件
   private queueChangeEvent(path: string, callback: any) {
-    clearTimeout(this._eventFlushTimeout);
-    this._eventFlushTimeout = setTimeout(async () => {
-      this.flushEventQueuePromise = this.flushEventQueue()!;
-      await this.flushEventQueuePromise;
-      callback();
-    }, 150) as any;
+    if (!this.flushEventQueuePromise) {
+      clearTimeout(this._eventFlushTimeout);
+      this._eventFlushTimeout = setTimeout(async () => {
+        this.flushEventQueuePromise = this.flushEventQueue()!;
+        await this.flushEventQueuePromise;
+        this.flushEventQueuePromise = null;
+        callback();
+      }, FileTreeService.DEFAULT_FLUSH_FILE_EVENT_DELAY) as any;
+    }
     if (this._changeEventDispatchQueue.indexOf(path) === -1) {
       this._changeEventDispatchQueue.push(path);
     }
