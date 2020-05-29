@@ -224,8 +224,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           this.promptTargetID = -1;
         }
       }
-      if (newFilePromptInsertionIndex === -1 && this.promptHandle && !this.promptHandle.destroyed) {
-        this.promptHandle.destroy();
+      if (newFilePromptInsertionIndex === -1) {
+        // 新建节点，异常情况下的特殊处理，需要把promptHandle销毁，仅需要考虑NewPromptHandle情况
+        if (this.promptHandle && this.promptHandle.constructor === NewPromptHandle && !this.promptHandle.destroyed) {
+          this.promptHandle.destroy();
+        }
       }
       this.newPromptInsertionIndex = newFilePromptInsertionIndex;
       // 清理cache，这里可以确保分支已更新完毕
