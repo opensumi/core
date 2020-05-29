@@ -27,29 +27,26 @@ export class ExtensionViewService extends Disposable {
     return menus;
   }
 
-  getInlineMenus(viewItemValue: string) {
+  private getMenuNodes(viewItemValue: string) {
     const viewContextKey = this.contextKeyService.createScoped();
 
     viewContextKey.createKey('view', this.id);
     viewContextKey.createKey('viewItem', viewItemValue);
 
-    // 设置 viewItem
-    const menus = this.registerDispose(this.menuService.createMenu(MenuId.ViewItemContext, viewContextKey));
-    return menus;
-  }
-
-  getMenuNodes(viewItemValue: string) {
-    const viewContextKey = this.contextKeyService.createScoped();
-
-    viewContextKey.createKey('view', this.id);
-    viewContextKey.createKey('viewItem', viewItemValue);
-
-    // 设置 viewItem
+    // viewItem
     const menus = this.menuService.createMenu(MenuId.ViewItemContext, viewContextKey);
     const result = generateCtxMenu({ menus, separator: 'inline'  });
     menus.dispose();
     viewContextKey.dispose();
 
     return result;
+  }
+
+  public getInlineMenuNodes(viewItemValue: string) {
+    return this.getMenuNodes(viewItemValue)[0];
+  }
+
+  public getCtxMenuNodes(viewItemValue: string) {
+    return this.getMenuNodes(viewItemValue)[1];
   }
 }
