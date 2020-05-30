@@ -21,13 +21,10 @@ export interface FileTreeValidateMessage extends PromptValidateMessage {
   value: string;
 }
 
-export const DEFAULT_FLUSH_DELAY = 200;
-
 @Injectable()
 export class FileTreeDialogModel {
 
   static FILE_TREE_SNAPSHOT_KEY = 'FILE_TREE_SNAPSHOT';
-  static DEFAULT_FLUSH_DELAY = 200;
   static DEFAULT_LOCATION_FLUSH_DELAY = 500;
 
   static createContainer(injector: Injector, tree: Tree): Injector {

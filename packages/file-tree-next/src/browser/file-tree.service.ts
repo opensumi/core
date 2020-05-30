@@ -317,7 +317,6 @@ export class FileTreeService extends Tree {
         this._cacheIgnoreFileEvent.set((this.root as Directory).uri.parent.resolve(oldPath.slice(1)).toString(), FileChangeType.DELETED);
         this._cacheIgnoreFileEvent.set((this.root as Directory).uri.parent.resolve(newPath.slice(1)).toString(), FileChangeType.ADDED);
       }
-      await this.flushEventQueuePromise;
       this.dispatchWatchEvent(node!.path, { type: WatchEvent.Moved, oldPath, newPath });
       // 压缩模式下，需要尝试更新移动的源节点的父节点及目标节点的目标节点折叠状态
       if (this.isCompactMode) {
@@ -358,7 +357,6 @@ export class FileTreeService extends Tree {
     this._cacheIgnoreFileEvent.set(tempFileStat.uri, FileChangeType.ADDED);
     const addNode = await this.fileTreeAPI.toNode(this as ITree, tempFileStat, node as Directory, tempName);
     if (!!addNode) {
-      await this.flushEventQueuePromise;
       this.cacheNodes([addNode]);
       // 节点创建失败时，不需要添加
       this.dispatchWatchEvent(node.path, { type: WatchEvent.Added, node: addNode, id: node.id });
@@ -378,7 +376,6 @@ export class FileTreeService extends Tree {
       if (this.isCompactMode) {
         this.refresh(node.parent as Directory);
       } else {
-        await this.flushEventQueuePromise;
         this._cacheIgnoreFileEvent.set(node.uri.toString(), FileChangeType.DELETED);
         this.dispatchWatchEvent(node.parent.path, { type: WatchEvent.Removed, path: node.path });
       }

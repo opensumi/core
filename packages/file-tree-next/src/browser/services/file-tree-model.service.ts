@@ -31,14 +31,12 @@ export interface FileTreeValidateMessage extends PromptValidateMessage {
   value: string;
 }
 
-export const DEFAULT_FLUSH_DELAY = 200;
-
 @Injectable()
 export class FileTreeModelService {
 
   static FILE_TREE_SNAPSHOT_KEY = 'FILE_TREE_SNAPSHOT';
-  static DEFAULT_FLUSH_DELAY = 200;
-  static DEFAULT_LOCATION_FLUSH_DELAY = 500;
+  static DEFAULT_REFRESHED_ACTION_DELAY = 500;
+  static DEFAULT_LOCATION_FLUSH_DELAY = 200;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -123,7 +121,8 @@ export class FileTreeModelService {
 
   private _explorerStorage: IStorage;
 
-  private flushLocationDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_FLUSH_DELAY);
+  private locationDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_LOCATION_FLUSH_DELAY);
+  private refreshedActionDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_REFRESHED_ACTION_DELAY);
   private onDidFocusedFileChangeEmitter: Emitter<URI | void> = new Emitter();
   private onDidSelectedFileChangeEmitter: Emitter<URI[]> = new Emitter();
 
@@ -236,28 +235,15 @@ export class FileTreeModelService {
       });
     }));
     this.disposableCollection.push(this.fileTreeService.onNodeRefreshed((node) => {
-      // 当无选中节点时，选中编辑器中激活的节点
-      if (Directory.isRoot(node)) {
-        const currentEditor = this.editorService.currentEditor;
-        if (currentEditor && currentEditor.currentUri) {
-          this.location(currentEditor.currentUri);
-        }
-      }
-      // 文件树刷新后需重新校准装饰器，因为此时的节点已更新
-      if (this.selectedFiles.length > 0) {
-        for (const node of this.selectedFiles) {
-          const target = this.fileTreeService.getNodeByPathOrUri(node.path);
-          if (target && !this.selectedDecoration.hasTarget(target)) {
-            this.selectedDecoration.addTarget(target);
+      this.refreshedActionDelayer.trigger(async () => {
+        // 当无选中节点时，选中编辑器中激活的节点
+        if (Directory.isRoot(node)) {
+          const currentEditor = this.editorService.currentEditor;
+          if (currentEditor && currentEditor.currentUri) {
+            this.location(currentEditor.currentUri);
           }
         }
-      }
-      if (this.focusedFile) {
-        const target = this.fileTreeService.getNodeByPathOrUri(this.focusedFile.path);
-        if (target && !this.selectedDecoration.hasTarget(target)) {
-          this.selectedDecoration.addTarget(target);
-        }
-      }
+      });
     }));
     this.disposableCollection.push(this.labelService.onDidChange(() => {
       // 当labelService注册的对应节点图标变化时，通知视图更新
@@ -281,6 +267,12 @@ export class FileTreeModelService {
     this._decorations.addDecoration(this.focusedDecoration);
     this._decorations.addDecoration(this.cutDecoration);
     this._decorations.addDecoration(this.loadingDecoration);
+  }
+
+  // 确保文件树操作前没有额外的操作影响
+  private async ensurePerformedEffect() {
+    await this.fileTreeService.flushEventQueuePromise;
+    this.refreshedActionDelayer.cancel();
   }
 
   /**
@@ -422,7 +414,7 @@ export class FileTreeModelService {
   }
 
   toggleDirectory = async (item: Directory) => {
-    await this.fileTreeService.flushEventQueuePromise;
+    await this.ensurePerformedEffect();
     if (item.expanded) {
       this.fileTreeHandle.collapseNode(item);
     } else {
@@ -620,7 +612,7 @@ export class FileTreeModelService {
 
   // 命令调用
   async collapseAll() {
-    await this.fileTreeService.flushEventQueuePromise;
+    await this.ensurePerformedEffect();
     if (!this.treeStateWatcher) {
       return;
     }
@@ -648,7 +640,7 @@ export class FileTreeModelService {
   }
 
   public expandAllCacheDirectory = async () => {
-    await this.fileTreeService.flushEventQueuePromise;
+    await this.ensurePerformedEffect();
     const size = this.treeModel.root.branchSize;
     for (let index = 0; index < size; index++) {
       const file = this.treeModel.root.getTreeNodeAtIndex(index) as Directory;
@@ -694,7 +686,7 @@ export class FileTreeModelService {
     }
     const effectNode = this.fileTreeService.getNodeByPathOrUri(targetPath);
     if (effectNode) {
-      await this.fileTreeService.flushEventQueuePromise;
+      await this.ensurePerformedEffect();
       this.fileTreeService.deleteAffectedNodeByPath(effectNode.path);
     }
     return true;
@@ -973,7 +965,7 @@ export class FileTreeModelService {
   }
 
   private async getPromptTarget(uri: URI) {
-    await this.fileTreeService.flushEventQueuePromise;
+    await this.ensurePerformedEffect();
     let targetNode: File | Directory;
     // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
     if (uri.isEqual((this.treeModel.root as Directory).uri)) {
@@ -1030,7 +1022,7 @@ export class FileTreeModelService {
   }
 
   async renamePrompt(uri: URI) {
-    await this.fileTreeService.flushEventQueuePromise;
+    await this.ensurePerformedEffect();
     let targetNode: File | Directory;
     // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
     if (this.focusedFile) {
@@ -1155,7 +1147,7 @@ export class FileTreeModelService {
     if (this._loadSnapshotReady) {
       await this._loadSnapshotReady;
     }
-    return this.flushLocationDelayer.trigger(async () => {
+    return this.locationDelayer.trigger(async () => {
       let path;
       if (typeof pathOrUri === 'string') {
         path = pathOrUri;
@@ -1166,7 +1158,6 @@ export class FileTreeModelService {
         if (!this.fileTreeHandle) {
           return;
         }
-        await this.fileTreeService.flushEventQueuePromise;
         let node = this.fileTreeService.getNodeByPathOrUri(path);
         node = await this.fileTreeHandle.ensureVisible(node || path) as File;
         if (node) {
@@ -1174,7 +1165,6 @@ export class FileTreeModelService {
         }
       }
     });
-
   }
 
   public locationOnShow = (uri: URI) => {
