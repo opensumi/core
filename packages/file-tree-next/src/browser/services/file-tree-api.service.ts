@@ -2,7 +2,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { FileStat } from '@ali/ide-file-service';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { ITree } from '@ali/ide-components';
 import { Directory, File } from '../file-tree-nodes';
 import { IFileTreeAPI } from '../../common';
@@ -17,9 +16,6 @@ export class FileTreeAPI implements IFileTreeAPI {
 
   @Autowired(IFileServiceClient)
   private fileServiceClient: IFileServiceClient;
-
-  @Autowired()
-  private labelService: LabelService;
 
   @Autowired(IWorkspaceEditService)
   private workspaceEditService: IWorkspaceEditService;
@@ -103,8 +99,9 @@ export class FileTreeAPI implements IFileTreeAPI {
    */
   toNode(tree: ITree, filestat: FileStat, parent?: Directory, presetName?: string): Directory | File {
     const uri = new URI(filestat.uri);
-    // 这里的name主要用于拼接节点路径，即path属性
-    const name = presetName ? presetName : this.labelService.getName(uri);
+    // 这里的name主要用于拼接节点路径，即path属性, 必须遵循路径原则
+    // labelService可根据uri参数提供不同的展示效果
+    const name = presetName ? presetName : uri.displayName;
     let node: Directory | File;
     if (!this.cacheFileStat.has(filestat.uri)) {
       this.cacheFileStat.set(filestat.uri, filestat);
