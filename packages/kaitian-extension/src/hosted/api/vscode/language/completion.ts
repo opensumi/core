@@ -45,16 +45,20 @@ export class CompletionAdapter {
             isIncomplete,
             items: originalItems.map((item) => {
                 const id = itemId++;
+                const resolved = this.convertCompletionItem(item, pos, id, _id);
+                if (!resolved) {
+                  return undefined;
+                }
                 return {
                     pid: _id,
                     id,
                     ...this.convertCompletionItem(item, pos, id, _id),
                 };
-            }),
+            }).filter((item) => !!item),
         };
         this.cache.set(_id, {});
         r.items.forEach((item, i) => {
-            this.cache.get(_id)![item.id] = originalItems[i]; // 这里必须设置原来提供的CompletionItem，因为vscode很多插件存在instanceOf判断
+            this.cache.get(_id)![item!.id] = originalItems[i]; // 这里必须设置原来提供的CompletionItem，因为vscode很多插件存在instanceOf判断
         });
         return r;
     }
@@ -98,6 +102,7 @@ export class CompletionAdapter {
 
     private convertCompletionItem(item: vscode.CompletionItem, position: vscode.Position, id: number, parentId: number): CompletionItem | undefined {
         if (typeof item.label !== 'string' || item.label.length === 0) {
+            // tslint:disable no-console
             console.warn('Invalid Completion Item -> must have at least a label');
             return undefined;
         }
@@ -150,6 +155,7 @@ export class CompletionAdapter {
           result.overwriteAfter = range.end.character - position.character;
 
           if (!range.isSingleLine || range.start.line !== position.line) {
+              // tslint:disable no-console
               console.warn('Invalid Completion Item -> must be single line and on the same line');
               return undefined;
           }
