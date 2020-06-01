@@ -566,6 +566,8 @@ export const localizationBundle = {
     'comments.thread.action.previous': 'Previous Comment',
     'comments.thread.action.reply': 'Reply',
     'comments.panel.placeholder': 'No Comments',
+    'comments.thread.textarea.write': 'Write',
+    'comments.thread.textarea.preview': 'Preview',
 
     'treeview.command.action.collapse': 'Collapse ALL',
 

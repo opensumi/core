@@ -570,6 +570,8 @@ export const localizationBundle = {
     'comments.thread.action.previous': '上一个评论',
     'comments.thread.action.reply': '回复',
     'comments.panel.placeholder': '暂无评论',
+    'comments.thread.textarea.write': '写',
+    'comments.thread.textarea.preview': '预览',
 
     'treeview.command.action.collapse': '全部折叠',
 

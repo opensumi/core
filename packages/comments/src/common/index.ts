@@ -252,14 +252,72 @@ export type PanelTreeNodeHandler = (nodes: ICommentsTreeNode[]) => ICommentsTree
 
 export type FileUploadHandler = (text: string, files: FileList) => MaybePromise<string>;
 
+export interface MentionsData {
+  id: string;
+  display: string;
+  [ key: string ]: any;
+}
+
+export interface MentionsOptions {
+  /**
+   * 最终选择后在输入框里显示的样子
+   * 默认为 @${display}
+   */
+  displayTransform?: (id: string, display: string) => string;
+  /**
+   * 在搜索时返回数据
+   */
+  providerData?: (query: string) => MaybePromise<MentionsData[]>;
+  /**
+   * 渲染每一个搜索选项的函数
+   * 默认为 <div>${display}</div>
+   */
+  renderSuggestion?: (data: MentionsData, search: string, highlightedDisplay: string) => React.ReactNode;
+  /**
+   * 用于预览时的模板
+   * 默认为 '@[__display__](__id__)'
+   */
+  markup?: string;
+}
+
 export const ICommentsFeatureRegistry = Symbol('ICommentsFeatureRegistry');
 export interface ICommentsFeatureRegistry {
+  /**
+   * 注册在评论面板里文件上传的处理函数
+   * @param handler
+   */
   registerFileUploadHandler(handler: FileUploadHandler): void;
+  /**
+   * 注册底部面板的参数，可以覆盖底部面板的默认参数
+   * @param options
+   */
   registerPanelOptions(options: CommentsPanelOptions): void;
+  /**
+   * 注册底部面板评论树的处理函数，可以在渲染前重新再定义一次树的数据结构
+   * @param handler
+   */
   registerPanelTreeNodeHandler(handler: PanelTreeNodeHandler): void;
+  /**
+   * 注册提及相关功能的能力
+   * @param options
+   */
+  registerMentionsOptions(options: MentionsOptions): void;
+  /**
+   * 获取底部面板参数
+   */
   getCommentsPanelOptions(): CommentsPanelOptions;
+  /**
+   * 获取底部面板评论树的处理函数
+   */
   getCommentsPanelTreeNodeHandlers(): PanelTreeNodeHandler[];
+  /**
+   * 获取文件上传处理函数
+   */
   getFileUploadHandler(): FileUploadHandler | undefined;
+  /**
+   * 获取提及相关参数
+   */
+  getMentionsOptions(): MentionsOptions;
 }
 
 export const CommentsContribution = Symbol('CommentsContribution');

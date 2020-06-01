@@ -30,7 +30,7 @@
     "@ali/ide-theme": "1.8.24",
     "lodash.flattendeep": "^4.4.0",
     "lodash.groupby": "^4.6.0",
-    "react-textarea-autosize": "^7.1.2"
+    "react-mentions": "^3.3.1"
   },
   "devDependencies": {
     "@ali/ide-dev-tool": "^1.1.0",
