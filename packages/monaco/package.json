@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-monaco",
-  "version": "1.8.23",
+  "version": "1.8.23-patch.1",
   "files": [
     "lib"
   ],
@@ -19,12 +19,12 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-browser": "1.8.23",
-    "@ali/ide-core-common": "1.8.23",
-    "@ali/ide-core-node": "1.8.23",
-    "@ali/ide-editor": "1.8.23",
-    "@ali/ide-file-service": "1.8.23",
-    "@ali/ide-theme": "1.8.23",
+    "@ali/ide-core-browser": "1.8.23-patch.1",
+    "@ali/ide-core-common": "1.8.23-patch.1",
+    "@ali/ide-core-node": "1.8.23-patch.1",
+    "@ali/ide-editor": "1.8.23-patch.1",
+    "@ali/ide-file-service": "1.8.23-patch.1",
+    "@ali/ide-theme": "1.8.23-patch.1",
     "monaco-editor-core": "^0.17.0"
   },
   "devDependencies": {
