@@ -387,7 +387,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
   }
 
-  private ensureVisible = async (pathOrTreeNode: string | TreeNode | CompositeTreeNode, align: Align = 'center'): Promise<TreeNode | undefined> => {
+  private ensureVisible = async (pathOrTreeNode: string | TreeNode | CompositeTreeNode, align: Align = 'auto'): Promise<TreeNode | undefined> => {
     const { root } = this.props.model;
     const node = typeof pathOrTreeNode === 'string'
       ? await root.forceLoadTreeNodeAtPath(pathOrTreeNode)
@@ -408,7 +408,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     return node as TreeNode;
   }
 
-  private tryScrollIntoViewWhileStable(node: TreeNode | CompositeTreeNode | PromptHandle, align: Align = 'center') {
+  private tryScrollIntoViewWhileStable(node: TreeNode | CompositeTreeNode | PromptHandle, align: Align = 'auto') {
     const { root } = this.props.model;
     if (this.tryEnsureVisibleTimes > RecycleTree.TRY_ENSURE_VISIBLE_MAX_TIMES) {
       this.tryEnsureVisibleTimes = 0;
