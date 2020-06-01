@@ -127,6 +127,8 @@ export class FileTreeModelService {
   private onDidSelectedFileChangeEmitter: Emitter<URI[]> = new Emitter();
 
   private treeStateWatcher: TreeStateWatcher;
+  // 折叠全部功能Promise
+  private collapsedAllPromise: Promise<void> | null;
 
   constructor() {
     this._whenReady = this.initTreeModel();
@@ -272,6 +274,7 @@ export class FileTreeModelService {
   // 确保文件树操作前没有额外的操作影响
   private async ensurePerformedEffect() {
     await this.fileTreeService.flushEventQueuePromise;
+    await this.collapsedAllPromise;
     this.refreshedActionDelayer.cancel();
   }
 
@@ -613,30 +616,7 @@ export class FileTreeModelService {
   // 命令调用
   async collapseAll() {
     await this.ensurePerformedEffect();
-    if (!this.treeStateWatcher) {
-      return;
-    }
-    const snapshot = this.treeStateWatcher.snapshot();
-    if (snapshot && snapshot.expandedDirectories) {
-      // 查找当前状态下所有展开的目录
-      let surfaceDir = snapshot.expandedDirectories.atSurface;
-      if (surfaceDir.length > 0) {
-        // 排序，先从最深的目录开始折叠
-        surfaceDir = surfaceDir.sort((a, b) => {
-          return Path.pathDepth(a) - Path.pathDepth(b);
-        });
-        let path;
-        while (surfaceDir.length > 0) {
-          path = surfaceDir.pop();
-          const item = await this.treeModel.root.forceLoadTreeNodeAtPath(path);
-          if (item) {
-            await (item as Directory).setCollapsed();
-          }
-        }
-      }
-    }
-    snapshot.expandedDirectories.atSurface = [];
-    this.explorerStorage.set(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY, snapshot);
+    this.collapsedAllPromise = this.treeModel.root.collapsedAll();
   }
 
   public expandAllCacheDirectory = async () => {
