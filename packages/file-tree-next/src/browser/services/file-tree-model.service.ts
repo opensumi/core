@@ -1144,6 +1144,10 @@ export class FileTreeModelService {
   }
 
   public location = async (pathOrUri: URI | string) => {
+    // 筛选模式下，禁止使用定位功能
+    if (this.fileTreeService.filterMode) {
+      return;
+    }
     if (this._loadSnapshotReady) {
       await this._loadSnapshotReady;
     }
