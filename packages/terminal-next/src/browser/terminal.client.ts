@@ -242,8 +242,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
     this.name = (this.name || connection.name) || 'shell';
     this._attachXterm(connection);
-    this._attached.resolve();
     this._ready = true;
+    this._attached.resolve();
   }
 
   reset() {
