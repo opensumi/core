@@ -434,7 +434,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         expandedPaths.unshift(forceLoadPath);
         this.expandBranch(this, true);
       } else if (CompositeTreeNode.isRoot(this)) {
-        // 通知分支树已更新（展示文本可能无变化，但节点ID等信息已更新）
+        // 通知分支树已更新
         this.watcher.notifyDidUpdateBranch();
       } else {
         // 这种情况一般为非根节点刷新后需同步到父节点，更新分支树
@@ -453,8 +453,28 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
   }
 
+  public async collapsedAll(expandedPaths: string[] = this.getAllExpandedNodePath()) {
+    // 仅根节点使用
+    if (!CompositeTreeNode.isRoot(this)) {
+      return;
+    }
+    expandedPaths = expandedPaths.sort((a, b) => {
+      return Path.pathDepth(a) - Path.pathDepth(b);
+    });
+    let path;
+    while (expandedPaths.length > 0) {
+      path = expandedPaths.pop();
+      const item = await this.forceLoadTreeNodeAtPath(path);
+      if (item) {
+        await (item as CompositeTreeNode).setCollapsed(true);
+      }
+    }
+    // 通知分支树已更新
+    this.watcher.notifyDidUpdateBranch();
+  }
+
   // 折叠节点
-  public setCollapsed() {
+  public setCollapsed(quiet: boolean = false) {
     // 根节点不可折叠
     if (CompositeTreeNode.isRoot(this)) {
       return;
@@ -465,7 +485,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     if (this._children && this.parent) {
       this._watcher.notifyWillChangeExpansionState(this, false);
       // 从根节点裁剪分支
-      this.shrinkBranch(this);
+      this.shrinkBranch(this, quiet);
     }
     this.isExpanded = false;
 
