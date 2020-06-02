@@ -6,6 +6,7 @@ import {
   EDITOR_COMMANDS,
   Disposable,
   FILE_COMMANDS,
+  PreferenceService,
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { IFileTreeAPI } from '../common';
@@ -44,6 +45,9 @@ export class FileTreeService extends Tree {
 
   @Autowired(CorePreferences)
   private readonly corePreferences: CorePreferences;
+
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
 
   @Autowired(LabelService)
   public readonly labelService: LabelService;
@@ -610,7 +614,7 @@ export class FileTreeService extends Tree {
    */
   public openFile(uri: URI) {
     // 当打开模式为双击同时预览模式生效时，默认单击为预览文件
-    const preview = this.corePreferences['editor.previewMode'];
+    const preview = this.preferenceService.get<boolean>('editor.previewMode');
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true, preview });
   }
 

@@ -14,6 +14,7 @@ import {
   IContextKey,
   memoize,
   OnEvent,
+  PreferenceService,
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { IFileTreeAPI, PasteTypes, IParseStore, FileStatNode, FileTreeExpandedStatusUpdateEvent } from '../common';
@@ -111,6 +112,9 @@ export class FileTreeService extends WithEventBus {
 
   @Autowired(CorePreferences)
   private readonly corePreferences: CorePreferences;
+
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
 
   @Autowired(AbstractContextMenuService)
   private readonly ctxMenuService: AbstractContextMenuService;
@@ -1100,7 +1104,7 @@ export class FileTreeService extends WithEventBus {
    */
   openFile(uri: URI) {
     // 当打开模式为双击同时预览模式生效时，默认单击为预览文件
-    const preview = this.corePreferences['editor.previewMode'];
+    const preview = this.preferenceService.get<boolean>('editor.previewMode');
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true, preview });
   }
 

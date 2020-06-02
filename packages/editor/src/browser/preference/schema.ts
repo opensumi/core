@@ -1,4 +1,4 @@
-import { localize, isOSX, isLinux, PreferenceSchema, PreferenceSchemaProperties } from '@ali/ide-core-browser';
+import { localize, isOSX, isLinux, PreferenceSchema, PreferenceSchemaProperties, PreferenceProxy } from '@ali/ide-core-browser';
 
 export const USUAL_WORD_SEPARATORS = '`~!@#$%^&*()-=+[{]}\\|;:\'",.<>/?';
 
@@ -1196,3 +1196,9 @@ export const editorPreferenceSchema: PreferenceSchema = {
     ...customEditorSchema,
   },
 };
+
+export const EditorPreferences = Symbol('EditorPreference');
+export type EditorPreferences = PreferenceProxy<{
+  'editor.readonlyFiles': string[],
+  'editor.previewMode': boolean,
+}>;

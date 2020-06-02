@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
+import { IEditorDocumentModelContentProvider, EditorPreferences } from '@ali/ide-editor/lib/browser';
 import { FILE_SCHEME, IFileSchemeDocNodeService, FileSchemeDocNodeServicePath, FILE_SAVE_BY_CHANGE_THRESHOLD } from '../common';
 import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, CorePreferences, ISchemaStore, IDisposable, Disposable, ISchemaRegistry, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 import { IFileServiceClient, FileChangeType } from '@ali/ide-file-service';
@@ -23,6 +23,9 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
 
   @Autowired(CorePreferences)
   protected readonly corePreferences: CorePreferences;
+
+  @Autowired(EditorPreferences)
+  protected readonly editorPreferences: EditorPreferences;
 
   constructor() {
     this.fileServiceClient.onFilesChanged((changes) => {
@@ -64,7 +67,7 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
   }
 
   isReadonly(uri: URI): boolean {
-    const readonlyFiles: string[] = this.corePreferences['editor.readonlyFiles'];
+    const readonlyFiles: string[] = this.editorPreferences['editor.readonlyFiles'];
     if (readonlyFiles && readonlyFiles.length) {
       for (const file of readonlyFiles) {
         if (uri.isEqual(URI.file(file)) || uri.matchGlobPattern(file) || uri.toString().endsWith(file.replace('./', ''))) {
