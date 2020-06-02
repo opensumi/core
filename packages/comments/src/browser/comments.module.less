@@ -78,6 +78,10 @@
   padding: 18px;
 }
 
+.comment_shadow_box {
+  padding: 8px 0;
+}
+
 .comment_bottom_actions {
   margin-top: 12px;
 }
@@ -89,30 +93,17 @@
 }
 
 .textarea_container {
-  display: flex;
+  background-color: var(--input-background);
+  padding: 4px 16px;
+  border-radius: 2px;
 }
 
-.textarea {
-  flex: 1;
-  outline: none;
-  resize: none;
-  border-radius: 2px;
-  border: 1px solid var(--kt-input-border);
-  background-color: var(--input-background);
-  padding: 8px;
+.mention {
+  width: 100%;
+}
 
-  &:focus-within {
-    border-color: var(--focusBorder);
-  }
-
-  &:hover {
-    border-color: var(--focusBorder);
-  }
-
-  &:disabled {
-    color: var(--kt-input-disableForeground);
-    background-color: var(--kt-input-disableBackground);
-  }
+.textarea_preview {
+  min-height: 56px;
 }
 
 .comment_reply_actions {

@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { CommentsPanelOptions, ICommentsFeatureRegistry, PanelTreeNodeHandler, FileUploadHandler } from '../common';
+import { CommentsPanelOptions, ICommentsFeatureRegistry, PanelTreeNodeHandler, FileUploadHandler, MentionsOptions } from '../common';
 
 @Injectable()
 export class CommentsFeatureRegistry implements ICommentsFeatureRegistry {
@@ -9,6 +9,8 @@ export class CommentsFeatureRegistry implements ICommentsFeatureRegistry {
   private panelTreeNodeHandlers: PanelTreeNodeHandler[] = [];
 
   private fileUploadHandler: FileUploadHandler;
+
+  private mentionsOptions: MentionsOptions = {};
 
   registerPanelTreeNodeHandler(handler: PanelTreeNodeHandler): void {
     this.panelTreeNodeHandlers.push(handler);
@@ -21,6 +23,14 @@ export class CommentsFeatureRegistry implements ICommentsFeatureRegistry {
     };
   }
 
+  registerFileUploadHandler(handler: FileUploadHandler): void {
+    this.fileUploadHandler = handler;
+  }
+
+  registerMentionsOptions(options: MentionsOptions): void {
+    this.mentionsOptions = options;
+  }
+
   getCommentsPanelOptions(): CommentsPanelOptions {
     return this.options;
   }
@@ -29,11 +39,11 @@ export class CommentsFeatureRegistry implements ICommentsFeatureRegistry {
     return this.panelTreeNodeHandlers;
   }
 
-  registerFileUploadHandler(handler: FileUploadHandler): void {
-    this.fileUploadHandler = handler;
-  }
-
   getFileUploadHandler() {
     return this.fileUploadHandler;
+  }
+
+  getMentionsOptions() {
+    return this.mentionsOptions;
   }
 }

@@ -2,8 +2,15 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import * as marked from 'marked';
 import { markdownCss } from './markdown.style';
+import * as styles from './comments.module.less';
 
 const ShadowContent = ({ root, children }) => ReactDOM.createPortal(children, root);
+
+const renderer = new marked.Renderer();
+
+renderer.link = ( href, title, text ) => {
+  return `<a target="_blank" rel="noopener" href="${href}" title="${title}">${text}</a>`;
+};
 
 export const CommentsBody: React.FC<{
   body: string;
@@ -20,7 +27,7 @@ export const CommentsBody: React.FC<{
     }
   }, []);
   return (
-    <div ref={shadowRootRef}>
+    <div ref={shadowRootRef} className={styles.comment_shadow_box}>
       {shadowRoot && (
         <ShadowContent root={shadowRoot}>
           <style>{markdownCss}</style>
@@ -33,6 +40,7 @@ export const CommentsBody: React.FC<{
               sanitize: true,
               smartLists: true,
               smartypants: false,
+              renderer,
             }),
           }}></div>
         </ShadowContent>
