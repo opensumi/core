@@ -441,13 +441,16 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         this.expandBranch(this);
       }
     } else {
-      // 清理子节点，等待下次展开时更新
-      this.shrinkBranch(this, true);
-      if (!!this.children && this.parent) {
-        for (const child of this.children) {
-          (child as CompositeTreeNode).dispose();
+      // 仅需处理存在子节点的情况，否则将会影响刷新后的节点长度
+      if (!!this.children) {
+        // 清理子节点，等待下次展开时更新
+        this.shrinkBranch(this, true);
+        if (!!this.children && this.parent) {
+          for (const child of this.children) {
+            (child as CompositeTreeNode).dispose();
+          }
+          this._children = null;
         }
-        this._children = null;
       }
       return;
     }
@@ -642,7 +645,11 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       }
     }
     if (this._children) {
+      // 移除后应该折叠，因为下次初始化默认值为折叠，否则将会导致下次插入异常
+      this.isExpanded = false;
       this._children.forEach((child) => (child as CompositeTreeNode).dispose());
+      this._children = null;
+      this._flattenedBranch = null;
     }
     super.dispose();
   }
@@ -776,6 +783,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         }
       }
     } else {
+      // 预存展开目录
+      const expandedPaths = this.getAllExpandedNodePath();
       //  Changed事件，表示节点有较多的变化时，重新更新当前Tree节点
       if (!! this.children) {
         for (const child of this.children) {
@@ -787,7 +796,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         this.isExpanded = false;
         this._children = null;
       } else {
-        await this.forceReloadChildrenQuiet();
+        await this.forceReloadChildrenQuiet(expandedPaths);
       }
     }
     this.watcher.notifyDidProcessWatchEvent(this, event);
