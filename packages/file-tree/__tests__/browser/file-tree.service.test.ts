@@ -8,7 +8,7 @@ import { IFileServiceClient, FileStat } from '@ali/ide-file-service';
 import { File, Directory } from '../../src/browser/file-tree-item';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
-import { CorePreferences, EDITOR_COMMANDS, IContextKeyService } from '@ali/ide-core-browser';
+import { CorePreferences, EDITOR_COMMANDS, IContextKeyService, PreferenceService } from '@ali/ide-core-browser';
 import { IDialogService } from '@ali/ide-overlay';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
@@ -21,6 +21,7 @@ describe('FileTreeService should be work', () => {
   const root = 'file://userhome/';
   let rootUri: URI = new URI(root);
   let rootFile: Directory;
+  const preferences: {[key: string]: any} = {};
   beforeEach(async (done) => {
     injector = createBrowserInjector([]);
 
@@ -29,6 +30,17 @@ describe('FileTreeService should be work', () => {
       {
         token: IWorkspaceService,
         useClass: MockWorkspaceService,
+      },
+      {
+        token: PreferenceService,
+        useValue: {
+          get: (key) => {
+            return preferences[key];
+          },
+          set: (key, value) => {
+            preferences[key] = value;
+          },
+        },
       },
       {
         token: IFileTreeAPI,
@@ -731,15 +743,10 @@ describe('FileTreeService should be work', () => {
       const parentUri = rootUri.resolve('parent');
       const openUri = parentUri.resolve('child.js');
       injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, firstCall);
-      injector.overrideProviders({
-        token: CorePreferences,
-        useValue: {
-          'editor.previewMode': true,
-        },
-      });
+      preferences['editor.previewMode'] = true;
       treeService.openFile(openUri);
       expect(firstCall).toBeCalledWith(openUri, { disableNavigate: true, preview: true });
-      injector.mock(CorePreferences, 'editor.previewMode', false);
+      preferences['editor.previewMode'] = false;
       const thirdCall = jest.fn();
       injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, thirdCall);
       treeService.openFile(openUri);

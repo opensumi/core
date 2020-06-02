@@ -4,10 +4,9 @@ import { ElectronPlainWebview, IframePlainWebview } from './plain-webview';
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
 import { IFrameWebviewPanel } from './iframe-webview';
 import { ITheme } from '@ali/ide-theme';
-import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { getColorRegistry } from '@ali/ide-theme/lib/common/color-registry';
 import { IEditorGroup, WorkbenchEditorService, ResourceNeedUpdateEvent, IResource } from '@ali/ide-editor';
-import { EditorComponentRegistry, EditorComponentRenderMode } from '@ali/ide-editor/lib/browser';
+import { EditorComponentRegistry, EditorComponentRenderMode, EditorPreferences } from '@ali/ide-editor/lib/browser';
 import { EditorWebviewComponentView } from './editor-webview';
 import { ElectronWebviewWebviewPanel } from './electron-webview-webview';
 import { ElectronPlainWebviewWindow } from './webview-window';
@@ -26,8 +25,8 @@ export class WebviewServiceImpl implements IWebviewService {
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
-  @Autowired(CorePreferences)
-  protected readonly corePreferences: CorePreferences;
+  @Autowired(EditorPreferences)
+  protected readonly editorPreferences: EditorPreferences;
 
   constructor() {
 
@@ -75,9 +74,9 @@ export class WebviewServiceImpl implements IWebviewService {
   }
 
   getWebviewThemeData(theme: ITheme): IWebviewThemeData {
-    const editorFontFamily = this.corePreferences['editor.fontFamily'];
-    const editorFontWeight = this.corePreferences['editor.fontFamily'];
-    const editorFontSize = this.corePreferences['editor.fontSize'];
+    const editorFontFamily = this.editorPreferences['editor.fontFamily'];
+    const editorFontWeight = this.editorPreferences['editor.fontFamily'];
+    const editorFontSize = this.editorPreferences['editor.fontSize'];
 
     const exportedColors = getColorRegistry().getColors().reduce((colors, entry) => {
       const color = theme.getColor(entry.id);

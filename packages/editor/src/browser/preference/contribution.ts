@@ -1,7 +1,7 @@
-import { PreferenceContribution, Domain } from '@ali/ide-core-browser';
+import { PreferenceContribution, Domain, ClientAppContribution } from '@ali/ide-core-browser';
 import { editorPreferenceSchema } from './schema';
 
-@Domain(PreferenceContribution)
+@Domain(PreferenceContribution, ClientAppContribution)
 export class EditorPreferenceContribution implements PreferenceContribution {
   schema = editorPreferenceSchema;
 }

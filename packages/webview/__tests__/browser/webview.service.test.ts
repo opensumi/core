@@ -4,7 +4,7 @@ import { WebviewServiceImpl } from '../../src/browser/webview.service';
 import { IThemeService, ITheme } from '@ali/ide-theme';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { Disposable } from '@ali/ide-core-common';
-import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
+import { EditorComponentRegistry, EditorPreferences } from '@ali/ide-editor/lib/browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 
 const injector = createBrowserInjector([]);
@@ -40,6 +40,9 @@ injector.addProviders({
 },
 {
   token: WorkbenchEditorService,
+  useValue: {},
+}, {
+  token: EditorPreferences,
   useValue: {},
 });
 

@@ -18,7 +18,7 @@ import { Directory, File } from '../../src/browser/file-tree-nodes';
 import { TreeNodeType } from '@ali/ide-components';
 import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
-import { IContextKeyService, CorePreferences, EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { IContextKeyService, CorePreferences, EDITOR_COMMANDS, PreferenceService } from '@ali/ide-core-browser';
 import { FileDecorationsService } from '@ali/ide-decoration/lib/browser/decorationsService';
 import { FileTreeContribution } from '../../src/browser/file-tree-contribution';
 import { PasteTypes } from '../../src';
@@ -90,6 +90,14 @@ describe('FileTree should be work while on single workspace model', () => {
 
     // mock used instance
     injector.overrideProviders(
+      {
+        token: PreferenceService,
+        useValue: {
+          get: (key) => {
+            return mockCorePreference[key];
+          },
+        },
+      },
       {
         token: IWorkspaceService,
         useClass: MockWorkspaceService,

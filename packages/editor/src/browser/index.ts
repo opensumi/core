@@ -1,4 +1,4 @@
-import { BrowserModule, Domain, ClientAppContribution, ContributionProvider, MonacoContribution, IContextKeyService } from '@ali/ide-core-browser';
+import { BrowserModule, Domain, ClientAppContribution, ContributionProvider, MonacoContribution, IContextKeyService, PreferenceService, createPreferenceProxy } from '@ali/ide-core-browser';
 import { EditorView } from './editor.view';
 import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILanguageService } from '../common';
 import { EditorCollectionServiceImpl } from './editor-collection.service';
@@ -23,6 +23,8 @@ import { EditorFeatureRegistryImpl } from './feature';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
 import { EditorPreferenceContribution } from './preference/contribution';
 import { SaveParticipantsContribution } from './doc-model/saveParticipants';
+import { EditorPreferences, editorPreferenceSchema } from './preference/schema';
+export * from './preference/schema';
 export * from './types';
 export * from './doc-model/types';
 export * from './doc-cache';
@@ -84,6 +86,13 @@ export class EditorModule extends BrowserModule {
     {
       token: IEditorFeatureRegistry,
       useClass: EditorFeatureRegistryImpl,
+    },
+    {
+      token: EditorPreferences,
+      useFactory: (inject: Injector) => {
+        const preferences: PreferenceService = inject.get(PreferenceService);
+        return createPreferenceProxy(preferences, editorPreferenceSchema);
+      },
     },
     EditorPreferenceContribution,
     DefaultDiffEditorContribution,

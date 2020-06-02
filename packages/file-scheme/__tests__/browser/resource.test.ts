@@ -2,7 +2,7 @@ import { IDialogService } from '@ali/ide-overlay';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { DefaultUriLabelProvider } from '@ali/ide-core-browser/lib/services';
-import { Disposable, URI, localize, CorePreferences, ISchemaRegistry, ISchemaStore} from '@ali/ide-core-browser';
+import { Disposable, URI, localize, ISchemaRegistry, ISchemaStore} from '@ali/ide-core-browser';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks/file-service-client';
 import { FileSystemResourceProvider } from '@ali/ide-file-scheme/lib/browser/file-resource';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
@@ -11,6 +11,7 @@ import { FileSchemeDocNodeServicePath } from '@ali/ide-file-scheme';
 import md5 = require('md5');
 import { FileSchemeDocumentProvider, VscodeSchemeDocumentProvider } from '@ali/ide-file-scheme/lib/browser/file-doc';
 import { FileSchemeModule } from '../../src/browser';
+import { EditorPreferences } from '@ali/ide-editor/lib/browser';
 
 describe('file scheme tests', () => {
 
@@ -33,7 +34,7 @@ describe('file scheme tests', () => {
     token: IEditorDocumentModelService,
     useValue: {},
   }, {
-    token: CorePreferences,
+    token: EditorPreferences,
     useValue: {
       'editor.readonlyFiles': ['.readonly.js'],
     },

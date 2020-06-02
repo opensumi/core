@@ -5,12 +5,13 @@ import { action, observable, computed, runInAction } from 'mobx';
 import { Path } from '@ali/ide-core-common/lib/path';
 import * as compareVersions from 'compare-versions';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, localize, CorePreferences, IClientApp } from '@ali/ide-core-browser';
+import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, localize, IClientApp } from '@ali/ide-core-browser';
 import { IDisposable, dispose, getLanguageId, IReporterService, REPORT_NAME, formatLocalize, IEventBus } from '@ali/ide-core-common';
 import { IMenu, AbstractMenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IMessageService } from '@ali/ide-overlay';
+import { EditorPreferences } from '@ali/ide-editor/lib/browser';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -51,8 +52,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @Autowired(WorkbenchEditorService)
   workbenchEditorService: WorkbenchEditorService;
 
-  @Autowired(CorePreferences)
-  corePreferences: CorePreferences;
+  @Autowired(EditorPreferences)
+  editorPreferences: EditorPreferences;
 
   @Autowired(IMessageService)
   messageService: IMessageService;
@@ -811,7 +812,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
     const query = `extensionId=${options.publisher}.${options.name}&version=${options.version}&name=${options.displayName || options.name}&icon=${options.icon}`;
     // 当打开模式为双击同时预览模式生效时，默认单击为预览
     const editorOptions = {
-      preview: this.corePreferences['editor.previewMode'] && options.preview,
+      preview: this.editorPreferences['editor.previewMode'] && options.preview,
     };
     if (options.remote) {
       this.workbenchEditorService.open(new URI(`extension://remote?${query}`), editorOptions);
