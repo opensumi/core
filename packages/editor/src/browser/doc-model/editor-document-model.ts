@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { CommandService, CorePreferences, Disposable, formatLocalize, IEventBus, ILogger, IRange, IReporterService, isThenable, isUndefinedOrNull, localize, PreferenceService, REPORT_NAME, URI } from '@ali/ide-core-browser';
+import { CommandService, Disposable, formatLocalize, IEventBus, ILogger, IRange, IReporterService, isThenable, isUndefinedOrNull, localize, PreferenceService, REPORT_NAME, URI } from '@ali/ide-core-browser';
 import { IMessageService } from '@ali/ide-overlay';
 import * as md5 from 'md5';
 import { EndOfLineSequence, EOL, IDocCache, IDocPersistentCacheProvider, isDocContentCache, parseRangeFrom, SaveReason, IEditorDocumentModelContentChange } from '../../common';
@@ -52,9 +52,6 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   @Autowired(ILogger)
   logger: ILogger;
-
-  @Autowired(CorePreferences)
-  private corePreferences: CorePreferences;
 
   @Autowired(CommandService)
   private commandService: CommandService;
@@ -421,18 +418,20 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     if (!this._tryAutoSaveAfterDelay) {
       this._tryAutoSaveAfterDelay = debounce(() => {
         this.save(undefined, SaveReason.AfterDelay);
-      }, this.corePreferences['editor.autoSaveDelay'] || 1000);
-      this.addDispose(this.corePreferences.onPreferenceChanged((change) => {
-        this._tryAutoSaveAfterDelay = debounce(() => {
-          this.save(undefined, SaveReason.AfterDelay);
-        }, this.corePreferences['editor.autoSaveDelay'] || 1000);
+      }, this.preferenceService.get('editor.autoSaveDelay') || 1000);
+      this.addDispose(this.preferenceService.onPreferenceChanged((change) => {
+        if (change.preferenceName === 'editor.autoSaveDelay') {
+          this._tryAutoSaveAfterDelay = debounce(() => {
+            this.save(undefined, SaveReason.AfterDelay);
+          }, this.preferenceService.get('editor.autoSaveDelay') || 1000);
+        }
       }));
     }
     return this._tryAutoSaveAfterDelay;
   }
 
   private notifyChangeEvent(changes: IEditorDocumentModelContentChange[] = []) {
-    if (!this.closeAutoSave && this.savable && this.corePreferences['editor.autoSave'] === 'afterDelay') {
+    if (!this.closeAutoSave && this.savable && this.preferenceService.get('editor.autoSave') === 'afterDelay') {
       this.tryAutoSaveAfterDelay();
     }
     // 发出内容变化的事件
@@ -466,11 +465,11 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   protected async formatOnSave(reason: SaveReason) {
-    const formatOnSave = this.corePreferences['editor.formatOnSave'];
+    const formatOnSave = this.preferenceService.get<boolean>('editor.formatOnSave');
 
     // 和 vscode 逻辑保持一致，如果是 AfterDelay 则不执行 formatOnSave
     if (formatOnSave && reason !== SaveReason.AfterDelay) {
-      const formatOnSaveTimeout = this.corePreferences['editor.formatOnSaveTimeout'];
+      const formatOnSaveTimeout = this.preferenceService.get<number>('editor.formatOnSaveTimeout') || 3000;
       const timer = this.reporter.time(REPORT_NAME.FORMAT_ON_SAVE);
       try {
         await Promise.race([
