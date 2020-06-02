@@ -35,7 +35,7 @@ import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { StaticResourceServiceImpl } from '@ali/ide-static-resource/lib/browser/static.service';
 import { AppConfig } from '@ali/ide-core-node';
 import { MainThreadExtensionDocumentData } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.doc';
-import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EmptyDocCacheImpl, EditorDocumentModelCreationEvent, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
+import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EmptyDocCacheImpl, EditorDocumentModelCreationEvent, EditorComponentRegistry, EditorPreferences } from '@ali/ide-editor/lib/browser';
 import { EditorDocumentModelContentRegistryImpl, EditorDocumentModelServiceImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
 import { FileSchemeDocumentProvider } from '@ali/ide-file-scheme/lib/browser/file-doc';
 import { MainThreadPreference } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.preference';
@@ -169,6 +169,10 @@ describe('MainThreadWorkspace API Test Suite', () => {
     {
       token: IFileServiceClient,
       useClass: FileServiceClient,
+    },
+    {
+      token: EditorPreferences,
+      useValue: {},
     },
   ]));
   injectMockPreferences(injector);

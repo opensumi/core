@@ -12,7 +12,7 @@ import { MainThreadEditorService } from '../../src/browser/vscode/api/main.threa
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { WorkbenchEditorService, EditorCollectionService, ResourceService, ILanguageService, IDocPersistentCacheProvider } from '@ali/ide-editor/lib/common';
 import { WorkbenchEditorServiceImpl, EditorGroup } from '@ali/ide-editor/lib/browser/workbench-editor.service';
-import { IEditorDecorationCollectionService, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, IEditorFeatureRegistry, EditorModule, EmptyDocCacheImpl } from '@ali/ide-editor/lib/browser';
+import { IEditorDecorationCollectionService, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, IEditorFeatureRegistry, EditorModule, EmptyDocCacheImpl, EditorPreferences } from '@ali/ide-editor/lib/browser';
 import { EditorDecorationCollectionService } from '@ali/ide-editor/lib/browser/editor.decoration.service';
 import { EditorCollectionServiceImpl } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import { ExtensionService } from '@ali/ide-kaitian-extension/lib/common';
@@ -141,6 +141,10 @@ describe('MainThreadEditor Test Suites', () => {
 
     injector.overrideProviders({
       token: CorePreferences,
+      useValue: {},
+    });
+    injector.overrideProviders({
+      token: EditorPreferences,
       useValue: {
         'editor.previewMode': true,
       },
