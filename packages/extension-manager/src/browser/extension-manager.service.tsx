@@ -206,12 +206,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
         )
         .then((message) => {
           if (message === nowUpdate) {
-            const oldExtensionPath = current.path;
             this.updateExtension(current, latest.version)
-              .then((newPath) => {
-                this.onUpdateExtension(newPath, oldExtensionPath);
-                return this.messageService.info(formatLocalize('marketplace.extension.needreload', latest.displayName || latest.name), [delayReload, nowReload]);
-              })
+              .then(() => this.messageService.info(formatLocalize('marketplace.extension.needreload', latest.displayName || latest.name), [delayReload, nowReload]))
               .then((value) => {
                 if (value === nowReload) {
                   this.clientApp.fireOnReload();
@@ -253,14 +249,23 @@ export class ExtensionManagerService implements IExtensionManagerService {
     if (!reloadRequire) {
       // 2. 更新插件进程信息
       await this.onInstallExtension(extensionId, path);
-      const extensionProp = await this.extensionService.getExtensionProps(path);
-      if (extensionProp) {
-        const extension = await this.transformFromExtensionProp(extensionProp);
-        // 添加到 extensions，下次获取 rawExtension
-        runInAction(() => {
-          this.extensions.push(extension);
-        });
+      const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
+      // 如果有这个插件，直接置为这个插件已安装
+      if (extension) {
+        extension.installed = true;
+        extension.enabled = true;
+        extension.reloadRequire = reloadRequire;
+      } else {
+        const extensionProp = await this.extensionService.getExtensionProps(path);
+        if (extensionProp) {
+          const extension = await this.transformFromExtensionProp(extensionProp);
+          // 添加到 extensions，下次获取 rawExtension
+          runInAction(() => {
+            this.extensions.push(extension);
+          });
+        }
       }
+
     } else {
       runInAction(() => {
         const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
@@ -336,11 +341,12 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @action
   async updateExtension(extension: BaseExtension, version: string): Promise<string> {
     const extensionId = extension.extensionId;
+    const oldExtensionPath = extension.path;
     this.extensionMomentState.set(extensionId, {
       isUpdating: true,
     });
-    const extensionPath =  await this.extensionManagerServer.updateExtension(extension, version);
     const reloadRequire = await this.computeReloadState(extension.path);
+    const extensionPath =  await this.extensionManagerServer.updateExtension(extension, version);
     runInAction(() => {
       const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
       if (extension) {
@@ -353,6 +359,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
         extension.reloadRequire = reloadRequire;
       }
     });
+    await this.onUpdateExtension(extensionPath, oldExtensionPath);
     return extensionPath;
   }
 
@@ -628,13 +635,13 @@ export class ExtensionManagerService implements IExtensionManagerService {
     this.extensionMomentState.set(extension.extensionId, {
       isUnInstalling: true,
     });
+    // 如果删除成功，且不需要重启，在列表页删除
+    const reloadRequire = await this.computeReloadState(extension.path);
     // 调用后台删除插件
     const res =  await this.extensionManagerServer.uninstallExtension(extension);
     if (res) {
       await this.onUninstallExtension(extensionPath);
       await this.removeExtensionConfig(extension.extensionId);
-      // 如果删除成功，且不需要重启，在列表页删除
-      const reloadRequire = await this.computeReloadState(extension.path);
       if (!reloadRequire) {
         runInAction(() => {
           this.extensions = this.extensions.filter((extension) => extension.path !== extensionPath);
