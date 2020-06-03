@@ -36,6 +36,8 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   @observable
   public label: string | undefined;
 
+  public data: any;
+
   set contextValue(value: string | undefined) {
     this._contextKeyService.createKey<string>('thread', value);
   }
@@ -63,7 +65,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
       ...comment,
       id: uuid(),
     })) : [];
-
+    this.data = this.options.data;
     this._contextKeyService = this.registerDispose(this.globalContextKeyService.createScoped());
     // 设置 resource context key
     const resourceContext = new ResourceContextKey(this._contextKeyService);
@@ -108,10 +110,6 @@ export class CommentsThread extends Disposable implements ICommentsThread {
 
   get readOnly() {
     return !!this.options.readOnly;
-  }
-
-  get data() {
-    return this.options.data;
   }
 
   @computed
