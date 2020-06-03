@@ -106,9 +106,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
 
   async function update() {
     if (extension) {
-      const oldExtensionPath = extension.path;
-      const newExtensionPath = await extensionManagerService.updateExtension(extension, latestExtension!.version);
-      await extensionManagerService.onUpdateExtension(newExtensionPath, oldExtensionPath);
+      await extensionManagerService.updateExtension(extension, latestExtension!.version);
       setUpdated(true);
     }
   }
@@ -123,20 +121,20 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
 
   const downloadCount = React.useMemo(() => {
     return currentExtension && currentExtension.downloadCount
-    || latestExtension && latestExtension.downloadCount
-    || 0;
+      || latestExtension && latestExtension.downloadCount
+      || 0;
   }, [currentExtension, latestExtension]);
 
   // 是否弹出要更新提示
   React.useEffect(() => {
     if (canUpdate && latestExtension) {
       messageService
-      .info(formatLocalize('marketplace.extension.findUpdate', latestExtension.displayName || latestExtension.name, latestExtension.version), [delayUpdate, nowUpdate])
-      .then((message) => {
-        if (message === nowUpdate) {
-          update();
-        }
-      });
+        .info(formatLocalize('marketplace.extension.findUpdate', latestExtension.displayName || latestExtension.name, latestExtension.version), [delayUpdate, nowUpdate])
+        .then((message) => {
+          if (message === nowUpdate) {
+            update();
+          }
+        });
     }
   }, [canUpdate, latestExtension]);
 
@@ -144,16 +142,16 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const menu = (
     extension && (<Menu className='kt-menu'>
       <Menu.Item onClick={() => toggleActive(EnableScope.GLOBAL)} disabled={extension.enableScope === EnableScope.WORKSPACE && extension.enable}>
-      {extension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}
+        {extension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}
       </Menu.Item>
       <Menu.Item onClick={() => toggleActive(EnableScope.WORKSPACE)}>
-      {extension.enable ? localize('marketplace.extension.disable.workspace') : localize('marketplace.extension.enable.workspace')}
+        {extension.enable ? localize('marketplace.extension.disable.workspace') : localize('marketplace.extension.enable.workspace')}
       </Menu.Item>
     </Menu>)
   );
   return (
     <div className={styles.wrap}>
-        {extension && (
+      {extension && (
         <div className={styles.header}>
           <div>
             <img className={styles.icon} src={extension.icon}></img>
@@ -166,14 +164,14 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
             </div>
             <div className={styles.subtitle}>
               {downloadCount > 0 ? (
-              <span className={styles.subtitle_item}><i className={clx(commonStyles.icon, getIcon('download'))}></i>{downloadCount}</span>
+                <span className={styles.subtitle_item}><i className={clx(commonStyles.icon, getIcon('download'))}></i>{downloadCount}</span>
               ) : null}
               <span className={styles.subtitle_item}>{extension.publisher}</span>
               <span className={styles.subtitle_item}>V{extension.version}</span>
             </div>
             <div className={styles.description}>{extension.description}</div>
             <div className={styles.actions}>
-            {extension.reloadRequire && <Button className={styles.action} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}
+              {extension.reloadRequire && <Button className={styles.action} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}
               {canUpdate && !updated ? (
                 <Button className={styles.action} onClick={update} loading={isUpdating}>{isUpdating ? localize('marketplace.extension.updating') : localize('marketplace.extension.update')}</Button>
               ) : null}
@@ -182,28 +180,28 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
               ) : null}
               {installed &&
                 <Button menu={menu} type='secondary' more className={styles.action}>{extension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}</Button>}
-              {installed && !extension.isBuiltin  && (
+              {installed && !extension.isBuiltin && (
                 <Button ghost={true} type='danger' className={styles.action} onClick={uninstall} loading={isUnInstalling}>{isUnInstalling ? localize('marketplace.extension.uninstalling') : localize('marketplace.extension.uninstall')}</Button>
               )}
             </div>
           </div>
         </div>)}
-        {currentExtension && (<div className={styles.body}>
-          <Tabs
-            className={styles.tabs}
-            value={tabIndex}
-            onChange={(index: number) => setTabIndex(index)}
-            tabs={tabMap.map((tab) => tab.label)}
-            />
-            <div className={styles.content}>
-            {tabMap[tabIndex].key === 'readme' && (
-              <Markdown content={currentExtension.readme ? currentExtension.readme : `# ${currentExtension.displayName}\n${currentExtension.description}`}/>
-            )}
-            {tabMap[tabIndex].key === 'changelog' && (
-              <Markdown content={currentExtension.changelog ? currentExtension.changelog : 'no changelog'}/>
-            )}
-            </div>
-        </div>)}
+      {currentExtension && (<div className={styles.body}>
+        <Tabs
+          className={styles.tabs}
+          value={tabIndex}
+          onChange={(index: number) => setTabIndex(index)}
+          tabs={tabMap.map((tab) => tab.label)}
+        />
+        <div className={styles.content}>
+          {tabMap[tabIndex].key === 'readme' && (
+            <Markdown content={currentExtension.readme ? currentExtension.readme : `# ${currentExtension.displayName}\n${currentExtension.description}`} />
+          )}
+          {tabMap[tabIndex].key === 'changelog' && (
+            <Markdown content={currentExtension.changelog ? currentExtension.changelog : 'no changelog'} />
+          )}
+        </div>
+      </div>)}
     </div>
   );
 });

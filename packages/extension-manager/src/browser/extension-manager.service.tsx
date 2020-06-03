@@ -206,12 +206,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
         )
         .then((message) => {
           if (message === nowUpdate) {
-            const oldExtensionPath = current.path;
             this.updateExtension(current, latest.version)
-              .then((newPath) => {
-                this.onUpdateExtension(newPath, oldExtensionPath);
-                return this.messageService.info(formatLocalize('marketplace.extension.needreload', latest.displayName || latest.name), [delayReload, nowReload]);
-              })
+              .then(() => this.messageService.info(formatLocalize('marketplace.extension.needreload', latest.displayName || latest.name), [delayReload, nowReload]))
               .then((value) => {
                 if (value === nowReload) {
                   this.clientApp.fireOnReload();
@@ -345,6 +341,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @action
   async updateExtension(extension: BaseExtension, version: string): Promise<string> {
     const extensionId = extension.extensionId;
+    const oldExtensionPath = extension.path;
     this.extensionMomentState.set(extensionId, {
       isUpdating: true,
     });
@@ -362,6 +359,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
         extension.reloadRequire = reloadRequire;
       }
     });
+    await this.onUpdateExtension(extensionPath, oldExtensionPath);
     return extensionPath;
   }
 
