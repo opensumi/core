@@ -126,83 +126,125 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
 
   registerNextMenus(menuRegistry: IMenuRegistry): void {
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
-      command: FILE_COMMANDS.NEW_FILE.id,
+      command: {
+        id: FILE_COMMANDS.NEW_FILE.id,
+        label: localize('file.new'),
+      },
       order: 1,
       group: '0_new',
       when: `!${FilesExplorerFilteredContext.raw}`,
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
-      command: FILE_COMMANDS.NEW_FOLDER.id,
+      command: {
+        id: FILE_COMMANDS.NEW_FOLDER.id,
+        label: localize('file.folder.new'),
+      },
       order: 2,
       group: '0_new',
       when: `!${FilesExplorerFilteredContext.raw}`,
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
-      command: FILE_COMMANDS.OPEN_RESOURCES.id,
+      command: {
+        id: FILE_COMMANDS.OPEN_RESOURCES.id,
+        label: localize('file.open'),
+      },
       order: 1,
       group: '1_open',
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
-      command: FILE_COMMANDS.OPEN_TO_THE_SIDE.id,
+      command: {
+        id: FILE_COMMANDS.OPEN_TO_THE_SIDE.id,
+        label: localize('file.open.side'),
+      },
       order: 2,
       group: '1_open',
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
-      command: FILE_COMMANDS.OPEN_WITH_PATH.id,
+      command: {
+        id: FILE_COMMANDS.OPEN_WITH_PATH.id,
+        label: localize('file.filetree.openWithPath'),
+      },
       when: 'workbench.panel.terminal',
       order: 3,
       group: '1_open',
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
-      command: FILE_COMMANDS.SEARCH_ON_FOLDER.id,
+      command: {
+        id: FILE_COMMANDS.SEARCH_ON_FOLDER.id,
+        label: localize('file.search.folder'),
+      },
       order: 1,
       group: '2_search',
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
-      command: FILE_COMMANDS.DELETE_FILE.id,
+      command: {
+        id: FILE_COMMANDS.DELETE_FILE.id,
+        label: localize('file.delete'),
+      },
       order: 1,
       group: '2_operator',
       when: `!${FilesExplorerFilteredContext.raw}`,
     });
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
-      command: FILE_COMMANDS.RENAME_FILE.id,
+      command: {
+        id: FILE_COMMANDS.RENAME_FILE.id,
+        label: localize('file.rename'),
+      },
       order: 3,
       group: '2_operator',
       when: `!${FilesExplorerFilteredContext.raw}`,
     });
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
-      command: FILE_COMMANDS.COMPARE_SELECTED.id,
+      command: {
+        id: FILE_COMMANDS.COMPARE_SELECTED.id,
+        label: localize('file.compare'),
+      },
       order: 2,
       group: '2_operator',
     });
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
-      command: FILE_COMMANDS.COPY_FILE.id,
+      command: {
+        id: FILE_COMMANDS.COPY_FILE.id,
+        label: localize('file.copy.file'),
+      },
       order: 1,
       group: '3_copy',
     });
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
-      command: FILE_COMMANDS.CUT_FILE.id,
+      command: {
+        id: FILE_COMMANDS.CUT_FILE.id,
+        label: localize('file.cut.file'),
+      },
       order: 2,
       group: '3_copy',
     });
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
-      command: FILE_COMMANDS.PASTE_FILE.id,
+      command: {
+        id: FILE_COMMANDS.PASTE_FILE.id,
+        label: localize('file.paste.file'),
+      },
       order: 3,
       group: '3_copy',
       when: `!${FilesExplorerFilteredContext.raw}`,
     });
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
-      command: FILE_COMMANDS.COPY_PATH.id,
+      command: {
+        id: FILE_COMMANDS.COPY_PATH.id,
+        label: localize('file.copy.path'),
+      },
       group: '4_path',
     });
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
-      command: FILE_COMMANDS.COPY_RELATIVE_PATH.id,
+      command: {
+        id: FILE_COMMANDS.COPY_RELATIVE_PATH.id,
+        label: localize('file.copy.relativepath'),
+      },
       group: '4_path',
     });
   }

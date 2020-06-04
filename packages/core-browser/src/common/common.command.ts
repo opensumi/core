@@ -7,33 +7,28 @@ export namespace FILE_COMMANDS {
   export const NEW_FILE: Command = {
     id: 'file.new',
     category: CATEGORY,
-    label: '%file.new%',
     iconClass: getIcon('new-file'),
   };
 
   export const RENAME_FILE: Command = {
     id: 'file.rename',
     category: CATEGORY,
-    label: '%file.rename%',
   };
 
   export const DELETE_FILE: Command = {
     id: 'file.delete',
     category: CATEGORY,
-    label: '%file.delete%',
   };
 
   export const NEW_FOLDER: Command = {
     id: 'file.folder.new',
     category: CATEGORY,
-    label: '%file.folder.new%',
     iconClass: getIcon('new-folder'),
   };
 
   export const COMPARE_SELECTED: Command = {
     id: 'file.compare',
     category: CATEGORY,
-    label: '%file.compare%',
   };
 
   export const OPEN_FILE: Command = {
@@ -63,13 +58,11 @@ export namespace FILE_COMMANDS {
   export const OPEN_RESOURCES: Command = {
     id: 'filetree.open.file',
     category: CATEGORY,
-    label: '%file.open%',
   };
 
   export const OPEN_TO_THE_SIDE: Command = {
     id: 'filetree.open.side',
     category: CATEGORY,
-    label: '%file.open.side%',
   };
 
   export const COPY_PATH: Command = {
@@ -81,25 +74,21 @@ export namespace FILE_COMMANDS {
   export const COPY_RELATIVE_PATH: Command = {
     id: 'filetree.copy.relativepath',
     category: CATEGORY,
-    label: '%file.copy.relativepath%',
   };
 
   export const COPY_FILE: Command = {
     id: 'filetree.copy.file',
     category: CATEGORY,
-    label: '%file.copy.file%',
   };
 
   export const CUT_FILE: Command = {
     id: 'filetree.cut.file',
     category: CATEGORY,
-    label: '%file.cut.file%',
   };
 
   export const PASTE_FILE: Command = {
     id: 'filetree.paste.file',
     category: CATEGORY,
-    label: '%file.paste.file%',
   };
 
   export const LOCATION: Command = {
@@ -117,7 +106,6 @@ export namespace FILE_COMMANDS {
   export const SEARCH_ON_FOLDER: Command = {
     id: 'filetree.search.folder',
     category: CATEGORY,
-    label: '%file.search.folder%',
   };
 
   export const FOCUS_FILES: Command = {
@@ -141,7 +129,6 @@ export namespace FILE_COMMANDS {
   export const OPEN_WITH_PATH: Command = {
     id: 'filetree.openWithPath',
     category: CATEGORY,
-    label: '%file.filetree.openWithPath%',
   };
 }
 
@@ -200,7 +187,6 @@ export namespace OPEN_EDITORS_COMMANDS {
   export const COPY_PATH: Command = {
     id: 'open.editors.copyPath',
     category: CATEGORY,
-    label: '%open.editors.copyPath%',
   };
 }
 
