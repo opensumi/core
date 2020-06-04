@@ -18,6 +18,7 @@ import {
   EXTENSION_ENABLE,
   IExtensionHostService,
   IExtensionWorkerHost,
+  ChangeExtensionOptions,
 } from '../common';
 import {
   MainThreadAPIIdentifier,
@@ -271,18 +272,26 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     return this.shadowRootBodyMap.get(id);
   }
 
-  public async postChangedExtension(upgrade: boolean, path: string, oldExtensionPath?: string) {
-    const extensionMetadata = await this.extensionNodeService.getExtension(path, getPreferenceLanguageId(), {});
+  public async postChangedExtension(options: ChangeExtensionOptions): Promise<void>;
+  public async postChangedExtension(upgrade: boolean, path: string, oldExtensionPath?: string): Promise<void>;
+  public async postChangedExtension(_upgrade: boolean | ChangeExtensionOptions, path?: string, _oldExtensionPath?: string) {
+    const { upgrade, extensionPath, oldExtensionPath, isBuiltin } = typeof _upgrade === 'boolean' ? {
+      upgrade: _upgrade,
+      extensionPath: path!,
+      oldExtensionPath: _oldExtensionPath,
+      isBuiltin: false,
+    } : _upgrade;
+    const extensionMetadata = await this.extensionNodeService.getExtension(extensionPath, getPreferenceLanguageId(), {});
     if (extensionMetadata) {
       const extension = this.injector.get(Extension, [
         extensionMetadata,
         this,
         await this.checkExtensionEnable(extensionMetadata),
-        this.appConfig.extensionDir ? extensionMetadata.realPath.startsWith(this.appConfig.extensionDir) : false,
+        isBuiltin || (this.appConfig.extensionDir ? extensionMetadata.realPath.startsWith(this.appConfig.extensionDir) : false),
         this._onDidExtensionActivated,
       ]);
 
-      this.extensionMap.set(path, extension);
+      this.extensionMap.set(extensionPath, extension);
 
       if (upgrade) {
         const oldExtension = this.extensionMap.get(oldExtensionPath!);
