@@ -151,31 +151,32 @@ export namespace OPEN_EDITORS_COMMANDS {
   export const SAVE_ALL: Command = {
     id: 'open.editors.save.all',
     category: CATEGORY,
-    label: '%open.editors.save.all%',
     iconClass: getIcon('save-all'),
   };
 
   export const CLOSE_ALL: Command = {
     id: 'open.editors.close.all',
     category: CATEGORY,
-    label: '%open.editors.close.all%',
     iconClass: getIcon('close-all'),
   };
 
-  export const SAVE_BY_GROUP_ID: Command = {
-    id: 'open.editors.save.byID',
-    label: '%open.editors.save.byID%',
+  export const SAVE_BY_GROUP: Command = {
+    id: 'open.editors.save.byGroup',
   };
 
-  export const CLOSE_BY_GROUP_ID: Command = {
-    id: 'open.editors.close.byID',
-    label: '%open.editors.close.byID%',
+  export const CLOSE_BY_GROUP: Command = {
+    id: 'open.editors.close.byGroup',
   };
 
   export const OPEN: Command = {
     id: 'open.editors.open',
     category: CATEGORY,
     label: '%open.editors.open%',
+  };
+
+  export const CLOSE: Command = {
+    id: 'open.editors.close',
+    category: CATEGORY,
   };
 
   export const OPEN_TO_THE_SIDE: Command = {

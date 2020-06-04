@@ -64,6 +64,12 @@ export interface IRecycleTreeProps {
    * @memberof IRecycleTreeProps
    */
   filter?: string;
+  /**
+   * 空白时的占位元素
+   * @type {React.ReactNode}
+   * @memberof IRecycleTreeProps
+   */
+  placeholder?: React.JSXElementConstructor<any>;
 }
 
 export interface IRecycleTreeError {
@@ -284,10 +290,10 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     if (this.props.model !== prevProps.model) {
       this.disposables.dispose();
       const { model } = this.props;
-      this.listRef.current!.scrollTo(model.state.scrollOffset);
+      this.listRef.current?.scrollTo(model.state.scrollOffset);
       this.disposables.push(model.onChange(this.batchUpdate));
       this.disposables.push(model.state.onDidLoadState(() => {
-        this.listRef.current!.scrollTo(model.state.scrollOffset);
+        this.listRef.current?.scrollTo(model.state.scrollOffset);
       }));
       this.onDidModelChangeEmitter.fire({
         preModel: prevProps.model,
@@ -327,7 +333,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
     if (this.newPromptInsertionIndex >= 0) {
       // 说明已在输入框已在可视区域
-      this.listRef.current!.scrollToItem(this.newPromptInsertionIndex);
+      this.listRef.current?.scrollToItem(this.newPromptInsertionIndex);
     } else {
       this.tryScrollIntoViewWhileStable(this.promptHandle as any);
     }
@@ -361,7 +367,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     } else {
       await this.batchUpdate();
     }
-    this.listRef.current!.scrollToItem(root.getIndexAtTreeNodeId(this.promptTargetID));
+    this.listRef.current?.scrollToItem(root.getIndexAtTreeNodeId(this.promptTargetID));
     return this.promptHandle as RenamePromptHandle;
   }
 
@@ -417,9 +423,9 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     Event.once(this.props.model.onChange)(async () => {
       await this.batchUpdatePromise;
       if (node.constructor === NewPromptHandle && !(node as NewPromptHandle).destroyed) {
-        this.listRef.current!.scrollToItem(this.newPromptInsertionIndex);
+        this.listRef.current?.scrollToItem(this.newPromptInsertionIndex);
       } else if (root.isItemVisibleAtSurface(node as TreeNode | CompositeTreeNode)) {
-        this.listRef.current!.scrollToItem(root.getIndexAtTreeNode(node as TreeNode | CompositeTreeNode), align);
+        this.listRef.current?.scrollToItem(root.getIndexAtTreeNode(node as TreeNode | CompositeTreeNode), align);
         this.tryEnsureVisibleTimes = 0;
       } else {
         this.tryEnsureVisibleTimes ++;
@@ -430,10 +436,10 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   public componentDidMount() {
     const { model, onReady } = this.props;
-    this.listRef.current!.scrollTo(model.state.scrollOffset);
+    this.listRef.current?.scrollTo(model.state.scrollOffset);
     this.disposables.push(model.onChange(this.batchUpdate));
     this.disposables.push(model.state.onDidLoadState(() => {
-      this.listRef.current!.scrollTo(model.state.scrollOffset);
+      this.listRef.current?.scrollTo(model.state.scrollOffset);
     }));
     if (typeof onReady === 'function') {
       const api: IRecycleTreeHandle = {
@@ -679,7 +685,12 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       height,
       style,
       className,
+      placeholder,
     } = this.props;
+    if (placeholder && this.adjustedRowCount === 0) {
+      const Placeholder = placeholder;
+      return <Placeholder />;
+    }
     return (
       <FixedSizeList
         width={width}

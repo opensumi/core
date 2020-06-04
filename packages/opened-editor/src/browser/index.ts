@@ -1,12 +1,25 @@
 import { Provider, Injectable } from '@ali/common-di';
 import { BrowserModule } from '@ali/ide-core-browser';
-import { OpenedEditorTreeDataProvider } from './opened-editor.service';
 import { OpenedEditorContribution } from './opened-editor.contribution';
+import { OpenedEditorDecorationService } from './services/opened-editor-decoration.service';
+import { OpenedEditorService } from './services/opened-editor-tree.service';
+import { OpenedEditorModelService } from './services/opened-editor-model.service';
 
 @Injectable()
 export class OpenedEditorModule extends BrowserModule {
   providers: Provider[] = [
-    OpenedEditorTreeDataProvider,
+    {
+      token: OpenedEditorDecorationService,
+      useClass: OpenedEditorDecorationService,
+    },
+    {
+      token: OpenedEditorService,
+      useClass: OpenedEditorService,
+    },
+    {
+      token: OpenedEditorModelService,
+      useClass: OpenedEditorModelService,
+    },
     OpenedEditorContribution,
   ];
 }

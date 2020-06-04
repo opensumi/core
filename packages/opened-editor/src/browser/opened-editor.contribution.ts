@@ -1,13 +1,14 @@
-import { Domain, localize, CommandContribution, CommandRegistry, OPEN_EDITORS_COMMANDS, URI, CommandService, FILE_COMMANDS, EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { Domain, localize, CommandContribution, CommandRegistry, OPEN_EDITORS_COMMANDS, CommandService, FILE_COMMANDS, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { Autowired } from '@ali/common-di';
-import { ExplorerOpenEditorPanel } from './opened-editor-panel.view';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
 import { ToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { ClientAppContribution } from '@ali/ide-core-browser';
-import { ExplorerOpenedEditorService } from './explorer-opened-editor.service';
 import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { ExplorerOpenEditorPanel, OPENED_EDITOR_TREE_FIELD_NAME } from './opened-editor';
+import { OpenedEditorModelService } from './services/opened-editor-model.service';
+import { EditorFile, EditorFileGroup } from './opened-editor-node.define';
 
 export const ExplorerOpenedEditorViewId = 'file-opened-editor';
 
@@ -20,14 +21,13 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorService;
 
-  @Autowired(ExplorerOpenedEditorService)
-  private readonly openEditorService: ExplorerOpenedEditorService;
+  @Autowired(OpenedEditorModelService)
+  private readonly openedEditorModelService: OpenedEditorModelService;
 
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 
   async onStart() {
-    await this.openEditorService.init();
     this.mainLayoutService.collectViewComponent({
       id: ExplorerOpenedEditorViewId,
       name: localize('open.editors.title'),
@@ -36,6 +36,17 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
       collapsed: true,
       component: ExplorerOpenEditorPanel,
     }, ExplorerContainerId);
+    this.attachEvents();
+  }
+
+  private detectBlur = (event) => {
+    if (event.type === 'blur' &&  event.target?.dataset && event.target.dataset['name'] === OPENED_EDITOR_TREE_FIELD_NAME) {
+      this.openedEditorModelService.handleTreeBlur();
+    }
+  }
+
+  private attachEvents() {
+    window.addEventListener('blur', this.detectBlur, true);
   }
 
   registerCommands(commands: CommandRegistry) {
@@ -48,49 +59,68 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
     commands.registerCommand(OPEN_EDITORS_COMMANDS.CLOSE_ALL, {
       execute: () => {
         this.workbenchEditorService.closeAll();
-        this.openEditorService.clearStatus();
       },
     });
 
-    commands.registerCommand(OPEN_EDITORS_COMMANDS.CLOSE_BY_GROUP_ID, {
-      execute: (id) => {
-        this.openEditorService.closeByGroupId(id);
+    commands.registerCommand(OPEN_EDITORS_COMMANDS.CLOSE_BY_GROUP, {
+      execute: (node: EditorFileGroup) => {
+        this.openedEditorModelService.closeAllByGroup(node);
       },
     });
 
-    commands.registerCommand(OPEN_EDITORS_COMMANDS.SAVE_BY_GROUP_ID, {
-      execute: (id) => {
-        this.openEditorService.saveByGroupId(id);
+    commands.registerCommand(OPEN_EDITORS_COMMANDS.SAVE_BY_GROUP, {
+      execute: (node: EditorFileGroup) => {
+        this.openedEditorModelService.saveAllByGroup(node);
+      },
+    });
+
+    commands.registerCommand(OPEN_EDITORS_COMMANDS.CLOSE, {
+      execute: async (node: EditorFile) => {
+        let group;
+        if (node.parent && EditorFileGroup.is(node.parent as EditorFileGroup)) {
+          group = (node.parent as EditorFileGroup).group;
+        }
+        await this.commandService.executeCommand(EDITOR_COMMANDS.CLOSE.id, {group, uri: node.uri});
+        // 提前移除节点
+        (node.parent as EditorFileGroup).unlinkItem(node);
       },
     });
 
     commands.registerCommand(OPEN_EDITORS_COMMANDS.OPEN, {
-      execute: (uri: URI, groupIndex?: number) => {
-        this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { groupIndex });
+      execute: (node: EditorFile) => {
+        let groupIndex = 0;
+        if (node.parent && EditorFileGroup.is(node.parent as EditorFileGroup)) {
+          groupIndex = (node.parent as EditorFileGroup).group.index;
+        }
+        this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, node.uri, { groupIndex });
       },
     });
 
     commands.registerCommand(OPEN_EDITORS_COMMANDS.OPEN_TO_THE_SIDE, {
-      execute: (uri: URI, groupIndex?: number) => {
-        this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { groupIndex, split: 4 /** right */ });
+      execute: (node: EditorFile) => {
+        let groupIndex = 0;
+        if (node.parent && EditorFileGroup.is(node.parent as EditorFileGroup)) {
+          groupIndex = (node.parent as EditorFileGroup).group.index;
+        }
+        this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, node.uri, { groupIndex, split: 4 /** right */ });
       },
     });
 
     commands.registerCommand(OPEN_EDITORS_COMMANDS.COMPARE_SELECTED, {
-      execute: (uri: URI) => {
-        this.commandService.executeCommand(FILE_COMMANDS.COMPARE_SELECTED.id, '', [uri]);
+      execute: (node: EditorFile) => {
+        this.commandService.executeCommand(FILE_COMMANDS.COMPARE_SELECTED.id, '', [node.uri]);
       },
     });
 
     commands.registerCommand(OPEN_EDITORS_COMMANDS.COPY_PATH, {
-      execute: (uri: URI) => {
-        this.commandService.executeCommand(FILE_COMMANDS.COPY_PATH.id, '', [uri]);
+      execute: (node: EditorFile) => {
+        this.commandService.executeCommand(FILE_COMMANDS.COPY_PATH.id, '', [node.uri]);
       },
     });
 
     commands.registerCommand(OPEN_EDITORS_COMMANDS.COPY_RELATIVE_PATH, {
-      execute: (uri: URI) => {
-        this.commandService.executeCommand(FILE_COMMANDS.COPY_RELATIVE_PATH.id, '', [uri]);
+      execute: (node: EditorFile) => {
+        this.commandService.executeCommand(FILE_COMMANDS.COPY_RELATIVE_PATH.id, '', [node.uri]);
       },
     });
   }
@@ -100,11 +130,13 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
       id: OPEN_EDITORS_COMMANDS.SAVE_ALL.id,
       command: OPEN_EDITORS_COMMANDS.SAVE_ALL.id,
       viewId: ExplorerOpenedEditorViewId,
+      label: localize('open.editors.save.all'),
     });
     registry.registerItem({
       id: OPEN_EDITORS_COMMANDS.CLOSE_ALL.id,
       command: OPEN_EDITORS_COMMANDS.CLOSE_ALL.id,
       viewId: ExplorerOpenedEditorViewId,
+      label: localize('open.editors.close.all'),
     });
 
   }
@@ -114,6 +146,7 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
       command: OPEN_EDITORS_COMMANDS.OPEN.id,
       order: 1,
       group: '1_open',
+      label: '%open.editors.open%',
     });
 
     menuRegistry.registerMenuItem(MenuId.OpenEditorsContext, {

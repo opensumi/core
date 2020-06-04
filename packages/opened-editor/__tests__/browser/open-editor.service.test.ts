@@ -1,6 +1,5 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { ExplorerOpenedEditorService } from '@ali/ide-opened-editor/lib/browser/explorer-opened-editor.service';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { WorkbenchEditorService, ResourceDecorationChangeEvent } from '@ali/ide-editor';
@@ -8,19 +7,24 @@ import { MockWorkbenchEditorService } from '@ali/ide-editor/lib/common/mocks/wor
 import { IDecorationsService } from '@ali/ide-decoration';
 import { OpenedEditorModule } from '../../src/browser';
 import { FileDecorationsService } from '@ali/ide-decoration/lib/browser/decorationsService';
-import { OpenedEditorData } from '@ali/ide-opened-editor/lib/browser/opened-editor.service';
 import { URI, IEventBus } from '@ali/ide-core-common';
 import { IThemeService } from '@ali/ide-theme';
 import { MockThemeService } from '@ali/ide-theme/lib/common/mocks/theme.service';
 import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import * as styles from '../src/browser/index.module.less';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { OpenedEditorModelService } from '@ali/ide-opened-editor/lib/browser/services/opened-editor-model.service';
+import { OpenedEditorService } from '@ali/ide-opened-editor/lib/browser/services/opened-editor-tree.service';
+import { TreeNodeType } from '@ali/ide-components';
+import { EditorFile, OpenedEditorData } from '@ali/ide-opened-editor/lib/browser/opened-editor-node.define';
+import * as cls from 'classnames';
+import * as styles from '../src/browser/opened-editor-node.module.less';
 
-describe('ExplorerOpenedEditorService should be work', () => {
-  let openEditorService: ExplorerOpenedEditorService;
+describe('OpenedEditorModelService should be work', () => {
+  let openedEditorModelService: OpenedEditorModelService;
+  let openedEditorService: OpenedEditorService;
   let injector: MockInjector;
-  const testFileUri = new URI('file://test0.js');
+  const testFileUri = URI.file('/userhome/test.js');
 
   const fakeSetBadge = jest.fn();
   const fakeGetTabbarHandler = jest.fn();
@@ -49,10 +53,6 @@ describe('ExplorerOpenedEditorService should be work', () => {
       {
         token: IThemeService,
         useClass: MockThemeService,
-      },
-      {
-        token: ExplorerOpenedEditorService,
-        useClass: ExplorerOpenedEditorService,
       },
       {
         token: IMainLayoutService,
@@ -109,7 +109,7 @@ describe('ExplorerOpenedEditorService should be work', () => {
         index: 1,
         name: 'group 1',
         resources: [{
-          name: 'test',
+          name: testFileUri.displayName,
           uri: testFileUri,
           icon: '',
           metadata: {},
@@ -119,8 +119,10 @@ describe('ExplorerOpenedEditorService should be work', () => {
     injector.get(WorkbenchEditorService);
     injector.mock(WorkbenchEditorService, 'editorGroups', groups);
     injector.mock(WorkbenchEditorService, 'onActiveResourceChange', () => {});
-    openEditorService = injector.get(ExplorerOpenedEditorService);
-    await openEditorService.init();
+    openedEditorModelService = injector.get(OpenedEditorModelService);
+    openedEditorService = injector.get(OpenedEditorService);
+    await openedEditorModelService.whenReady;
+    await openedEditorModelService.treeModel.root.ensureLoaded();
     done();
   });
 
@@ -130,34 +132,42 @@ describe('ExplorerOpenedEditorService should be work', () => {
 
   describe('01 #Init', () => {
     it('should have enough API', async () => {
-      expect(typeof openEditorService.overrideFileDecorationService).toBe('object');
-      expect(typeof openEditorService.overrideFileDecorationService.getDecoration).toBe('function');
-      expect(typeof openEditorService.getTreeDatas).toBe('function');
-      expect(typeof openEditorService.updateDecorations).toBe('function');
-      expect(typeof openEditorService.resetFocused).toBe('function');
-      expect(typeof openEditorService.resetStatus).toBe('function');
-      expect(typeof openEditorService.updateSelected).toBe('function');
-      expect(typeof openEditorService.updateStatus).toBe('function');
-      expect(typeof openEditorService.onSelect).toBe('function');
-      expect(typeof openEditorService.onContextMenu).toBe('function');
-      expect(typeof openEditorService.getStatusKey).toBe('function');
-      expect(typeof openEditorService.closeFile).toBe('function');
-      expect(typeof openEditorService.clearStatus).toBe('function');
-      expect(typeof openEditorService.commandActuator).toBe('function');
-      expect(typeof openEditorService.closeByGroupId).toBe('function');
-      expect(typeof openEditorService.saveByGroupId).toBe('function');
+      expect(openedEditorModelService.commandService).toBeDefined();
+      expect(openedEditorModelService.labelService).toBeDefined();
+      expect(openedEditorModelService.decorationService).toBeDefined();
+      expect(openedEditorModelService.decorations).toBeDefined();
+      expect(openedEditorModelService.treeModel).toBeDefined();
+      expect(Array.isArray(openedEditorModelService.focusedFile)).toBeFalsy();
+      expect(Array.isArray(openedEditorModelService.selectedFiles)).toBeTruthy();
+      expect(typeof openedEditorModelService.onDidRefreshed).toBe('function');
+      expect(typeof openedEditorModelService.initDecorations).toBe('function');
+      expect(typeof openedEditorModelService.clearFileSelectedDecoration).toBe('function');
+      expect(typeof openedEditorModelService.activeFileDecoration).toBe('function');
+      expect(typeof openedEditorModelService.activeFileFocusedDecoration).toBe('function');
+      expect(typeof openedEditorModelService.activeFileSelectedDecoration).toBe('function');
+      expect(typeof openedEditorModelService.enactiveFileDecoration).toBe('function');
+      expect(typeof openedEditorModelService.removeFileDecoration).toBe('function');
+      expect(typeof openedEditorModelService.handleContextMenu).toBe('function');
+      expect(typeof openedEditorModelService.handleTreeHandler).toBe('function');
+      expect(typeof openedEditorModelService.handleTreeBlur).toBe('function');
+      expect(typeof openedEditorModelService.handleItemClick).toBe('function');
+      expect(typeof openedEditorModelService.refresh).toBe('function');
+      expect(typeof openedEditorModelService.flushEventQueue).toBe('function');
+      expect(typeof openedEditorModelService.location).toBe('function');
+      expect(typeof openedEditorModelService.openFile).toBe('function');
+      expect(typeof openedEditorModelService.closeFile).toBe('function');
+      expect(typeof openedEditorModelService.closeAllByGroup).toBe('function');
+      expect(typeof openedEditorModelService.saveAllByGroup).toBe('function');
     });
   });
 
   describe('02 #API should be worked.', () => {
     it('The tree data should no be empty', async (done) => {
-      expect(openEditorService.nodes.length > 0).toBeTruthy();
-      expect(fakeSetBadge).toBeCalledTimes(1);
-      expect(fakeSetBadge).toBeCalledWith('');
+      expect(openedEditorModelService.treeModel.root.branchSize > 0).toBeTruthy();
       done();
     });
 
-    it('Status should be dirty while file change', async () => {
+    it('File should be dirty while file change', async (done) => {
       const eventBus = injector.get(IEventBus);
       eventBus.fire(new ResourceDecorationChangeEvent({
         uri: testFileUri,
@@ -165,39 +175,27 @@ describe('ExplorerOpenedEditorService should be work', () => {
           dirty: true,
         },
       }));
-      // ts-jest 测试无法获取less的样式对象，用status来做额外判断
-      const node = openEditorService.nodes[0];
-      expect(node?.headIconClass).toBe(styles.dirty_icon);
-    });
-
-    it('Select file should be work', async (done) => {
-      const node = openEditorService.nodes[0];
-      openEditorService.onSelect([node]);
-      const status = openEditorService.status.get(openEditorService.getStatusKey(node));
-      expect(status?.selected).toBeTruthy();
-      expect(status?.focused).toBeTruthy();
+      const node = openedEditorService.getEditorNodeByUri(testFileUri);
+      expect(openedEditorModelService.decorations.getDecorations(node as any)?.classlist.join(' ')).toBe(styles.mod_dirty);
       done();
     });
 
-    it('Blur file should be work', async (done) => {
-      const node = openEditorService.nodes[0];
-      openEditorService.onSelect([node]);
-      let status = openEditorService.status.get(openEditorService.getStatusKey(node));
-      expect(status?.selected).toBeTruthy();
-      expect(status?.focused).toBeTruthy();
-      openEditorService.resetFocused();
-      status = openEditorService.status.get(openEditorService.getStatusKey(node));
-      expect(status?.selected).toBeTruthy();
-      expect(status?.focused).toBeFalsy();
+    it('Select file should be work', async (done) => {
+      const openFile = jest.fn();
+      const node = openedEditorService.getEditorNodeByUri(testFileUri);
+      injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, openFile);
+      openedEditorModelService.handleItemClick(node as EditorFile, TreeNodeType.TreeNode);
+      expect(openFile).toBeCalledTimes(1);
+      expect(openedEditorModelService.decorations.getDecorations(node as any)?.classlist.join(' ')).toBe(cls(styles.mod_selected, styles.mod_focused));
       done();
     });
 
     it('Close file should be work', async (done) => {
       const closeFile = jest.fn();
-      const node = openEditorService.nodes[0];
+      const node = openedEditorService.getEditorNodeByUri(testFileUri);
       injector.mockCommand(EDITOR_COMMANDS.CLOSE.id, closeFile);
-      openEditorService.closeFile(node);
-      expect(closeFile).toBeCalledWith(node.uri);
+      openedEditorModelService.closeFile(node as EditorFile);
+      expect(closeFile).toBeCalledTimes(1);
       done();
     });
   });

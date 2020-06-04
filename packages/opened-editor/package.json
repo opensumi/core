@@ -28,6 +28,7 @@
     "@ali/ide-theme": "1.8.24",
     "@ali/ide-decoration": "1.8.24",
     "@ali/ide-workspace": "1.8.24",
+    "@ali/ide-components": "1.8.24",
     "@ali/ide-main-layout": "1.8.24",
     "@ali/ide-core-browser": "1.8.24",
     "@ali/ide-explorer": "1.8.24",

@@ -6,12 +6,14 @@ export interface TreeNodeHighlightRange {
 }
 
 export type themeColorId = string;
+
 export interface IFileDecoration {
   badge: string;
   tooltip: string;
   color: themeColorId;
   weight?: number;
 }
+
 export interface FileDecorationsProvider {
   getDecoration: (uri: any, hasChildren?: boolean) => IFileDecoration;
 }
