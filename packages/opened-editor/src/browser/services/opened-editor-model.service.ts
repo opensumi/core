@@ -87,6 +87,8 @@ export class OpenedEditorModelService {
   // 右键菜单局部ContextKeyService
   private _contextMenuContextKeyService: IContextKeyService;
 
+  private ignoreRefreshAndActiveTimes: number;
+
   constructor() {
     this._whenReady = this.initTreeModel();
   }
@@ -142,10 +144,16 @@ export class OpenedEditorModelService {
     }));
 
     this.disposableCollection.push(this.openedEditorEventService.onDidChange(() => {
+      if (this.ignoreRefreshAndActiveTimes--) {
+        return;
+      }
       this.refresh();
     }));
 
     this.disposableCollection.push(this.openedEditorEventService.onDidActiveChange((payload) => {
+      if (this.ignoreRefreshAndActiveTimes--) {
+        return;
+      }
       if (payload) {
         this.location(payload.resource, payload.group);
       }
@@ -416,6 +424,8 @@ export class OpenedEditorModelService {
   }
 
   public openFile = (node: EditorFile) => {
+    // 手动打开文件时，屏蔽刷新及激活实际，防闪烁
+    this.ignoreRefreshAndActiveTimes = 2;
     let groupIndex = 0;
     if (node.parent && EditorFileGroup.is(node.parent as EditorFileGroup)) {
       groupIndex = (node.parent as EditorFileGroup).group.index;
