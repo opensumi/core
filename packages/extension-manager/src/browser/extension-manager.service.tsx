@@ -345,8 +345,9 @@ export class ExtensionManagerService implements IExtensionManagerService {
     this.extensionMomentState.set(extensionId, {
       isUpdating: true,
     });
-    const reloadRequire = await this.computeReloadState(extension.path);
     const extensionPath =  await this.extensionManagerServer.updateExtension(extension, version);
+    // 可能更新过程中加载了之前的插件，所以等待更新完毕后再去检测
+    const reloadRequire = await this.computeReloadState(extension.path);
     runInAction(() => {
       const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
       if (extension) {
@@ -355,11 +356,14 @@ export class ExtensionManagerService implements IExtensionManagerService {
         if (!reloadRequire) {
           extension.enabled = true;
         }
-        extension.path = extensionPath;
+        extension.realPath = extension.path = extensionPath;
         extension.reloadRequire = reloadRequire;
       }
     });
-    await this.onUpdateExtension(extensionPath, oldExtensionPath);
+    // 如果不需要重启，则激活新插件
+    if (!reloadRequire) {
+      await this.onUpdateExtension(extensionPath, oldExtensionPath);
+    }
     return extensionPath;
   }
 
