@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-search",
-  "version": "1.8.24",
+  "version": "1.8.25",
   "files": [
     "lib"
   ],
@@ -19,21 +19,21 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-connection": "1.8.24",
-    "@ali/ide-core-common": "1.8.24",
-    "@ali/ide-core-node": "1.8.24",
-    "@ali/ide-editor": "1.8.24",
-    "@ali/ide-logs": "1.8.24",
-    "@ali/ide-main-layout": "1.8.24",
-    "@ali/ide-overlay": "1.8.24",
-    "@ali/ide-process": "1.8.24",
-    "@ali/ide-workspace": "1.8.24",
-    "@ali/ide-workspace-edit": "1.8.24",
-    "@ali/ide-components": "1.8.24",
+    "@ali/ide-connection": "1.8.25",
+    "@ali/ide-core-common": "1.8.25",
+    "@ali/ide-core-node": "1.8.25",
+    "@ali/ide-editor": "1.8.25",
+    "@ali/ide-logs": "1.8.25",
+    "@ali/ide-main-layout": "1.8.25",
+    "@ali/ide-overlay": "1.8.25",
+    "@ali/ide-process": "1.8.25",
+    "@ali/ide-workspace": "1.8.25",
+    "@ali/ide-workspace-edit": "1.8.25",
+    "@ali/ide-components": "1.8.25",
     "@ali/vscode-ripgrep": "^1.3.1-release"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "1.8.24",
+    "@ali/ide-core-browser": "1.8.25",
     "@ali/ide-dev-tool": "^1.1.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
