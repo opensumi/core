@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNode } from '@ali/ide-components';
-import { URI, DisposableCollection, Emitter, IContextKeyService, EDITOR_COMMANDS, CommandService } from '@ali/ide-core-browser';
+import { URI, DisposableCollection, Emitter, IContextKeyService, EDITOR_COMMANDS, CommandService, ThrottledDelayer } from '@ali/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { OpenedEditorService } from './opened-editor-tree.service';
@@ -23,6 +23,7 @@ export interface IEditorTreeHandle extends IRecycleTreeHandle {
 @Injectable()
 export class OpenedEditorModelService {
   private static DEFAULT_FLUSH_FILE_EVENT_DELAY = 100;
+  private static DEFAULT_LOCATION_FLUSH_DELAY = 200;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -81,6 +82,7 @@ export class OpenedEditorModelService {
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
   private onDidRefreshedEmitter: Emitter<void> = new Emitter();
+  private locationDelayer = new ThrottledDelayer<void>(OpenedEditorModelService.DEFAULT_LOCATION_FLUSH_DELAY);
 
   // 右键菜单局部ContextKeyService
   private _contextMenuContextKeyService: IContextKeyService;
@@ -400,14 +402,17 @@ export class OpenedEditorModelService {
   }
 
   public location = async (resource: IResource | URI, group?: IEditorGroup) => {
-    let node = this.openedEditorService.getEditorNodeByUri(resource, group);
-    if (!node) {
-      return;
-    }
-    node = await this.editorTreeHandle.ensureVisible(node) as EditorFile;
-    if (node) {
-      this.activeFileDecoration(node);
-    }
+    this.locationDelayer.trigger(async () => {
+      await this.flushEventQueuePromise;
+      let node = this.openedEditorService.getEditorNodeByUri(resource, group);
+      if (!node) {
+        return;
+      }
+      node = await this.editorTreeHandle.ensureVisible(node) as EditorFile;
+      if (node) {
+        this.activeFileDecoration(node);
+      }
+    });
   }
 
   public openFile = (node: EditorFile) => {
