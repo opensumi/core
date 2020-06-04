@@ -315,6 +315,7 @@ describe('editor menu test', () => {
       createKey: jest.fn(() => {
         return {
           set: jest.fn(),
+          get: jest.fn(),
         };
       }),
       parse: (expr) => {
@@ -466,6 +467,7 @@ describe('editor menu test', () => {
             createKey: jest.fn(() => {
               return {
                 set: jest.fn(),
+                get: jest.fn(),
               };
             }),
             dispose: () => null,
