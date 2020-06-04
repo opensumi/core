@@ -1,11 +1,11 @@
-import { IContextKeyService, IContextKey } from '../context-key';
 import { URI } from '@ali/ide-core-common';
+
+import { IContextKeyService, IContextKey } from '../context-key';
 import { getLanguageIdFromMonaco } from '../services/label-service';
 
-export type ILanguageResolver = (uri: URI)  => string | null;
+export type ILanguageResolver = (uri: URI) => string | null;
 
 export class ResourceContextKey {
-
   private resourceScheme: IContextKey<string>;
   private resourceFilename: IContextKey<string>;
   private resourceExtname: IContextKey<string>;
@@ -26,12 +26,17 @@ export class ResourceContextKey {
     if (!uri) {
       this.reset();
     }
-    this.resourceScheme.set(uri.scheme);
-    this.resourceFilename.set(uri.path.name);
-    this.resourceExtname.set(uri.path.ext);
-    this.resourceLangId.set(this.languageResolver(uri)!); // TODO
-    this.resourceKey.set(uri.toString());
-    this.isFileSystemResource.set(uri.scheme === 'file'); // TOOD FileSystemClient.canHandle
+
+    const resource = this.resourceKey.get();
+    // 相同的 URI 则不再重新设置
+    if (!uri.isEqual(new URI(resource))) {
+      this.resourceScheme.set(uri.scheme);
+      this.resourceFilename.set(uri.path.name + uri.path.ext);
+      this.resourceExtname.set(uri.path.ext);
+      this.resourceLangId.set(this.languageResolver(uri)!); // TODO
+      this.resourceKey.set(uri.toString());
+      this.isFileSystemResource.set(uri.scheme === 'file'); // TOOD FileSystemClient.canHandle
+    }
   }
 
   reset() {
