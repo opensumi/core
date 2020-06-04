@@ -51,9 +51,6 @@ export class MainthreadComments implements IMainThreadComments {
           }
           // 创建一个临时的评论
           commentController.createCommentThreadTemplate(thread.uri.codeUri, thread.range);
-          // 销毁掉当前创建的
-          // TODO: 这种方式不是最佳的，最佳的应该直接利用当前创建的这个 thread，给其 data 赋值
-          thread.dispose();
         }
       }
     });
@@ -277,13 +274,21 @@ export class MainThreadCommentThread implements CommentThread {
     public resource: string,
     private _range: IRange,
   ) {
+    // 查找当前位置是否已经有评论
+    // 如果则不创建
+    const thread = this.commentsService.commentsThreads.find((commentThread) => commentThread.id === `${resource}#${_range.startLineNumber}`);
+    // 在 data 字段保存 handle id
+    const threadData = {
+      commentControlHandle: controllerHandle,
+      commentThreadHandle,
+    };
+
+    if (thread) {
+      thread.data = threadData;
+    }
     // 参照 vscode，默认显示 startLineNumber 指定行号的
-    this._thread = this.commentsService.createThread(new URI(resource), positionToRange(_range.startLineNumber), {
-      // 在 data 字段保存 handle id
-      data: {
-        commentControlHandle: controllerHandle,
-        commentThreadHandle,
-      },
+    this._thread = thread || this.commentsService.createThread(new URI(resource), positionToRange(_range.startLineNumber), {
+      data: threadData,
     });
     this._isDisposed = false;
   }

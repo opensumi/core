@@ -1,49 +1,22 @@
 :global {
   .monaco-editor {
     .comments-glyph {
-      margin-left: 15px;
-      width: 4px !important;
+      margin-left: 8px;
+      visibility: hidden;
       cursor: pointer;
-      z-index: 10;
+      z-index: 1;
     }
-
-    .comments-glyph::before {
-      position: absolute;
-      content: '';
-      height: 100%;
-      width: 0;
-      left: -2px;
-      transition: width 80ms linear, left 80ms linear;
-    }
-
-    .comment-thread:before,
-    .margin-view-overlays>div:hover>.comment-diff-added:not(.comment-thread):before {
-      position: absolute;
-      content: '+';
-      height: 100%;
-      width: 8px;
-      left: -6px;
-      color: var(--editorGutter-background);
-      text-align: center;
-    }
-
-    .comment-diff-added,
     .comment-thread {
-      border-left: 3px solid var(--editorGutter-commentRangeForeground);
-
-      &:before {
-        background: var(--editorGutter-commentRangeForeground);
-      }
-    }
-
-    .comment-thread:before {
-      content: '◆';
+      visibility: visible;
     }
   }
 
-  /* 修改monaco-diffEditor的 +/- 号装饰位置 */
-  .monaco-diff-editor .insert-sign, .monaco-diff-editor .delete-sign {
-    background-position: 2px center;
+  .margin-view-overlays {
+    &>div:hover {
+      .comment-diff-added:not(.comment-thread) {
+        visibility: visible;
+      }
+    }
   }
 }
 
@@ -66,7 +39,7 @@
 
 .review_title {
   overflow: hidden;
-  text-overflow:ellipsis;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -206,9 +179,9 @@
 }
 
 .panel_placeholder {
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   color: var(--kt-panel-secondaryForeground);
 }

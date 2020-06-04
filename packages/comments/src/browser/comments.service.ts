@@ -12,8 +12,9 @@ import {
   AppConfig,
   localize,
   IDisposable,
+  getIcon,
 } from '@ali/ide-core-browser';
-import { IEditor, EditorType } from '@ali/ide-editor';
+import { IEditor } from '@ali/ide-editor';
 import { IEditorDecorationCollectionService, IEditorDocumentModelService, WorkbenchEditorService } from '@ali/ide-editor/lib/browser';
 import {
   ICommentsService,
@@ -94,7 +95,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     type: CommentGutterType,
   ): monaco.textModel.ModelDecorationOptions {
     const decorationOptions: monaco.editor.IModelDecorationOptions = {
-      linesDecorationsClassName: this.getLinesDecorationsClassName(type),
+      glyphMarginClassName: this.getLinesDecorationsClassName(type),
       isWholeLine: true,
       // stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
     };
@@ -108,7 +109,7 @@ export class CommentsService extends Disposable implements ICommentsService {
       type === CommentGutterType.Empty
         ? 'comment-diff-added'
         : 'comment-thread'
-      }`;
+      } ` + getIcon('message');
   }
 
   public init() {
@@ -116,18 +117,7 @@ export class CommentsService extends Disposable implements ICommentsService {
   }
 
   public handleOnCreateEditor(editor: IEditor) {
-    const disposer = new Disposable();
-    const editorOptions = editor.getType() === EditorType.CODE ? {
-      lineNumbersMinChars: 3,
-      lineDecorationsWidth: '1.5ch',
-    } : {
-        lineNumbersMinChars: 5,
-        lineDecorationsWidth: '3ch',
-      };
-    editor.monacoEditor.updateOptions(editorOptions);
-    // 绑定点击事件
-    disposer.addDispose(this.bindClickGutterEvent(editor));
-    return disposer;
+    return this.bindClickGutterEvent(editor);
   }
 
   // 绑定点击 gutter 事件
@@ -135,7 +125,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     const dispose = editor.monacoEditor.onMouseDown((event) => {
       if (
         event.target.type ===
-        monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
+        monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN &&
         event.target.element &&
         event.target.element.className.indexOf('comments-glyph') > -1
       ) {
