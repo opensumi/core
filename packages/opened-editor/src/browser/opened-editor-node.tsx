@@ -113,12 +113,12 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
     if (EditorFileGroup.is(item)) {
       actions = [{
         icon: getIcon('save-all'),
-        title: localize('open.editors.save.byGroup'),
+        title: localize('opened.editors.save.byGroup'),
         command: OPEN_EDITORS_COMMANDS.SAVE_BY_GROUP.id,
       },
       {
         icon: getIcon('clear'),
-        title: localize('open.editors.close.byGroup'),
+        title: localize('opened.editors.close.byGroup'),
         command: OPEN_EDITORS_COMMANDS.CLOSE_BY_GROUP.id,
       }];
       return <div className={styles.opened_editor_right_actions}>

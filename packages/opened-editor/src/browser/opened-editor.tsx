@@ -80,7 +80,7 @@ export const ExplorerOpenEditorPanel = observer(({
 
   const renderContent = () => {
     if (!isReady) {
-      return <span className={styles.opened_editor_empty_text}>{localize('open.editors.empty')}</span>;
+      return <span className={styles.opened_editor_empty_text}>{localize('opened.editors.empty')}</span>;
     } else {
       return <RecycleTree
         height={height}
@@ -89,7 +89,7 @@ export const ExplorerOpenEditorPanel = observer(({
         onReady={handleTreeReady}
         model={openedEditorModelService.treeModel}
         placeholder={() => {
-          return <span className={styles.opened_editor_empty_text}>{localize('open.editors.empty')}</span>;
+          return <span className={styles.opened_editor_empty_text}>{localize('opened.editors.empty')}</span>;
         }}
       >
         {(props: INodeRendererWrapProps) => <EditorTreeNode

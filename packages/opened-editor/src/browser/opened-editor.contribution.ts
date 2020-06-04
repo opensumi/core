@@ -30,7 +30,7 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
   async onStart() {
     this.mainLayoutService.collectViewComponent({
       id: ExplorerOpenedEditorViewId,
-      name: localize('open.editors.title'),
+      name: localize('opened.editors.title'),
       weight: 1,
       priority: 10,
       collapsed: true,
@@ -130,42 +130,56 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
       id: OPEN_EDITORS_COMMANDS.SAVE_ALL.id,
       command: OPEN_EDITORS_COMMANDS.SAVE_ALL.id,
       viewId: ExplorerOpenedEditorViewId,
-      label: localize('open.editors.save.all'),
+      label: localize('opened.editors.save.all'),
     });
     registry.registerItem({
       id: OPEN_EDITORS_COMMANDS.CLOSE_ALL.id,
       command: OPEN_EDITORS_COMMANDS.CLOSE_ALL.id,
       viewId: ExplorerOpenedEditorViewId,
-      label: localize('open.editors.close.all'),
+      label: localize('opened.editors.close.all'),
     });
 
   }
 
   registerNextMenus(menuRegistry: IMenuRegistry): void {
     menuRegistry.registerMenuItem(MenuId.OpenEditorsContext, {
-      command: OPEN_EDITORS_COMMANDS.OPEN.id,
+      command: {
+        id: OPEN_EDITORS_COMMANDS.OPEN.id,
+        label: localize('opened.editors.open'),
+      },
       order: 1,
       group: '1_open',
-      label: '%open.editors.open%',
     });
 
     menuRegistry.registerMenuItem(MenuId.OpenEditorsContext, {
-      command: OPEN_EDITORS_COMMANDS.OPEN_TO_THE_SIDE.id,
+      command: {
+        id: OPEN_EDITORS_COMMANDS.OPEN_TO_THE_SIDE.id,
+        label: localize('opened.editors.openToTheSide'),
+      },
       order: 2,
       group: '1_open',
     });
 
     menuRegistry.registerMenuItem(MenuId.OpenEditorsContext, {
-      command: OPEN_EDITORS_COMMANDS.COMPARE_SELECTED.id,
+      command: {
+        id: OPEN_EDITORS_COMMANDS.COMPARE_SELECTED.id,
+        label: localize('opened.editors.compare'),
+      },
       group: '2_operator',
     });
 
     menuRegistry.registerMenuItem(MenuId.OpenEditorsContext, {
-      command: OPEN_EDITORS_COMMANDS.COPY_PATH.id,
+      command: {
+        id: OPEN_EDITORS_COMMANDS.COPY_PATH.id,
+        label: localize('opened.editors.copyPath'),
+      },
       group: '3_path',
     });
     menuRegistry.registerMenuItem(MenuId.OpenEditorsContext, {
-      command: OPEN_EDITORS_COMMANDS.COPY_RELATIVE_PATH.id,
+      command: {
+        id: OPEN_EDITORS_COMMANDS.COPY_RELATIVE_PATH.id,
+        label: localize('opened.editors.copyRelativePath'),
+      },
       group: '3_path',
     });
   }
