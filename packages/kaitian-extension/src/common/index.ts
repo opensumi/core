@@ -57,6 +57,13 @@ export interface IExtensionNodeClientService {
 
 export type ExtensionHostType = 'node' | 'worker';
 
+export interface ChangeExtensionOptions {
+  upgrade: boolean;
+  extensionPath: string;
+  oldExtensionPath?: string;
+  isBuiltin?: boolean;
+}
+
 export abstract class ExtensionService {
   abstract async executeExtensionCommand(command: string, args: any[]): Promise<void>;
   /**
@@ -72,7 +79,9 @@ export abstract class ExtensionService {
   abstract async getAllExtensions(): Promise<IExtensionMetaData[]>;
   abstract getExtensionProps(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionProps | undefined>;
   abstract getAllExtensionJson(): Promise<IExtensionProps[]>;
+  abstract async postChangedExtension(options: ChangeExtensionOptions): Promise<void>;
   abstract async postChangedExtension(upgrade: boolean, extensionPath: string, oldExtensionPath?: string): Promise<void>;
+  abstract async postChangedExtension(upgrade: boolean | ChangeExtensionOptions, extensionPath?: string, oldExtensionPath?: string): Promise<void>;
   abstract async isExtensionRunning(extensionPath: string): Promise<boolean>;
   abstract async postDisableExtension(extensionPath: string): Promise<void>;
   abstract async postEnableExtension(extensionPath: string): Promise<void>;

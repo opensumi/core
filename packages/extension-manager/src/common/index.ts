@@ -62,6 +62,7 @@ export interface BaseExtension {
   version: string;
   path: string;
   publisher: string;
+  isBuiltin?: boolean;
 }
 
 // 插件面板左侧显示

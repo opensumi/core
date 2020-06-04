@@ -228,6 +228,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
    */
   async installExtension(extension: BaseExtension, version?: string): Promise<string> {
     const extensionId = extension.extensionId || `${extension.publisher}.${extension.name}`;
+    const isBuiltin = !!extension.isBuiltin;
     this.extensionMomentState.set(extensionId, {
       isInstalling: true,
     });
@@ -248,13 +249,18 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
     if (!reloadRequire) {
       // 2. 更新插件进程信息
-      await this.onInstallExtension(extensionId, path);
+      await this.extensionService.postChangedExtension({
+        upgrade: false,
+        extensionPath: path,
+        isBuiltin,
+      });
       const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
       // 如果有这个插件，直接置为这个插件已安装
       if (extension) {
         extension.installed = true;
         extension.enabled = true;
         extension.reloadRequire = reloadRequire;
+        extension.isBuiltin = isBuiltin;
       } else {
         const extensionProp = await this.extensionService.getExtensionProps(path);
         if (extensionProp) {
