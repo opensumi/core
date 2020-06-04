@@ -339,6 +339,36 @@ export class FileTreeModelService {
     }
   }
 
+  // 清空其他选中/焦点态节点，更新当前选中节点
+  selectFileDecoration = (target: File | Directory) => {
+    if (target === this.treeModel.root) {
+      // 根节点不能选中
+      return;
+    }
+
+    if (this.preContextMenuFocusedFile) {
+      this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
+      this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
+      this.preContextMenuFocusedFile = null;
+    }
+    if (target) {
+      if (this.selectedFiles.length > 0) {
+        this.selectedFiles.forEach((file) => {
+          this.selectedDecoration.removeTarget(file);
+        });
+      }
+      if (this.focusedFile) {
+        this.focusedDecoration.removeTarget(this.focusedFile);
+      }
+      this.selectedDecoration.addTarget(target);
+      this._selectedFiles = [target];
+      // 选中及焦点文件变化
+      this.onDidSelectedFileChangeEmitter.fire([target.uri]);
+      // 通知视图更新
+      this.treeModel.dispatchChange();
+    }
+  }
+
   // 清空其他焦点态节点，更新当前焦点节点，
   // removePreFocusedDecoration 表示更新焦点节点时如果此前已存在焦点节点，之前的节点装饰器将会被移除
   activeFileFocusedDecoration = (target: File | Directory, removePreFocusedDecoration: boolean = false) => {
@@ -1145,7 +1175,7 @@ export class FileTreeModelService {
         let node = this.fileTreeService.getNodeByPathOrUri(path);
         node = await this.fileTreeHandle.ensureVisible(node || path) as File;
         if (node) {
-          this.activeFileDecoration(node);
+          this.selectFileDecoration(node);
         }
       }
     });

@@ -144,14 +144,14 @@ export class OpenedEditorModelService {
     }));
 
     this.disposableCollection.push(this.openedEditorEventService.onDidChange(() => {
-      if (this.ignoreRefreshAndActiveTimes--) {
+      if (this.ignoreRefreshAndActiveTimes > 0 && this.ignoreRefreshAndActiveTimes--) {
         return;
       }
       this.refresh();
     }));
 
     this.disposableCollection.push(this.openedEditorEventService.onDidActiveChange((payload) => {
-      if (this.ignoreRefreshAndActiveTimes--) {
+      if (this.ignoreRefreshAndActiveTimes > 0 && this.ignoreRefreshAndActiveTimes--) {
         return;
       }
       if (payload) {
@@ -229,6 +229,30 @@ export class OpenedEditorModelService {
       this.selectedDecoration.addTarget(target);
       this.focusedDecoration.addTarget(target);
       this._focusedFile = target;
+      this._selectedFiles = [target];
+
+      // 通知视图更新
+      this.treeModel.dispatchChange();
+    }
+  }
+
+  // 清空其他选中/焦点态节点，更新当前选中节点
+  selectFileDecoration = (target: EditorFileGroup | EditorFile) => {
+    if (this.preContextMenuFocusedFile) {
+      this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
+      this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
+      this.preContextMenuFocusedFile = null;
+    }
+    if (target) {
+      if (this.selectedFiles.length > 0) {
+        this.selectedFiles.forEach((file) => {
+          this.selectedDecoration.removeTarget(file);
+        });
+      }
+      if (this.focusedFile) {
+        this.focusedDecoration.removeTarget(this.focusedFile);
+      }
+      this.selectedDecoration.addTarget(target);
       this._selectedFiles = [target];
 
       // 通知视图更新
@@ -418,7 +442,7 @@ export class OpenedEditorModelService {
       }
       node = await this.editorTreeHandle.ensureVisible(node) as EditorFile;
       if (node) {
-        this.activeFileDecoration(node);
+        this.selectFileDecoration(node);
       }
     });
   }
@@ -430,7 +454,7 @@ export class OpenedEditorModelService {
     if (node.parent && EditorFileGroup.is(node.parent as EditorFileGroup)) {
       groupIndex = (node.parent as EditorFileGroup).group.index;
     }
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, node.uri, { groupIndex, focus: true });
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, node.uri, { groupIndex, preserveFocus: true });
   }
 
   public closeFile = (node: EditorFile) => {
