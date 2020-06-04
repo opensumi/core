@@ -775,7 +775,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     const direction = (action === EditorGroupSplitAction.Left || action === EditorGroupSplitAction.Right) ? SplitDirection.Horizontal : SplitDirection.Vertical;
     const before = (action === EditorGroupSplitAction.Left || action === EditorGroupSplitAction.Top) ? true : false;
     this.grid.split(direction, editorGroup, before);
-    return editorGroup.open(uri, options);
+    return editorGroup.open(uri, {...options, preview: false});
   }
 
   async open(uri: URI, options: IResourceOpenOptions = {}): Promise<IOpenResourceResult> {
