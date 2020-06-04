@@ -415,6 +415,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
             break;
           }
           if (child.path === forceLoadPath) {
+            if ((child as CompositeTreeNode).isExpanded) {
+              // 说明此时节点初始化时已默认展开，不需要进一步处理
+              continue;
+            }
             (child as CompositeTreeNode).isExpanded = true;
             await (child as CompositeTreeNode).forceReloadChildrenQuiet(expandedPaths);
             forceLoadPath = expandedPaths.shift();
@@ -423,6 +427,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
             // 加载路径包含当前判断路径，尝试加载该节点再匹配
             await (child as CompositeTreeNode).hardReloadChildren(true);
             if (child.path === forceLoadPath) {
+              if ((child as CompositeTreeNode).isExpanded) {
+                // 说明此时节点初始化时已默认展开，不需要进一步处理
+                continue;
+              }
               (child as CompositeTreeNode).isExpanded = true;
               await (child as CompositeTreeNode).forceReloadChildrenQuiet(expandedPaths, false);
               forceLoadPath = expandedPaths.shift();
