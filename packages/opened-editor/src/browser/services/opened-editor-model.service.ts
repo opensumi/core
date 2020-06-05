@@ -143,20 +143,11 @@ export class OpenedEditorModelService {
       this.treeModel.dispatchChange();
     }));
 
-    this.disposableCollection.push(this.openedEditorEventService.onDidChange(() => {
+    this.disposableCollection.push(this.editorService.onActiveResourceChange(() => {
       if (this.ignoreRefreshAndActiveTimes > 0 && this.ignoreRefreshAndActiveTimes--) {
         return;
       }
       this.refresh();
-    }));
-
-    this.disposableCollection.push(this.openedEditorEventService.onDidActiveChange((payload) => {
-      if (this.ignoreRefreshAndActiveTimes > 0 && this.ignoreRefreshAndActiveTimes--) {
-        return;
-      }
-      if (payload) {
-        this.location(payload.resource, payload.group);
-      }
     }));
 
     this.disposableCollection.push(this.openedEditorEventService.onDidDecorationChange((payload) => {
@@ -449,7 +440,7 @@ export class OpenedEditorModelService {
 
   public openFile = (node: EditorFile) => {
     // 手动打开文件时，屏蔽刷新及激活实际，防闪烁
-    this.ignoreRefreshAndActiveTimes = 2;
+    this.ignoreRefreshAndActiveTimes = 1;
     let groupIndex = 0;
     if (node.parent && EditorFileGroup.is(node.parent as EditorFileGroup)) {
       groupIndex = (node.parent as EditorFileGroup).group.index;
