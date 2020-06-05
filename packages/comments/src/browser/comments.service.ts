@@ -13,6 +13,7 @@ import {
   localize,
   IDisposable,
   getIcon,
+  positionToRange,
 } from '@ali/ide-core-browser';
 import { IEditor } from '@ali/ide-editor';
 import { IEditorDecorationCollectionService, IEditorDocumentModelService, WorkbenchEditorService } from '@ali/ide-editor/lib/browser';
@@ -34,6 +35,7 @@ import { dirname } from '@ali/ide-core-common/lib/path';
 import { IIconService, IconType } from '@ali/ide-theme';
 import { CommentsPanel } from './comments-panel.view';
 import { IMainLayoutService } from '@ali/ide-main-layout';
+import { LRUCache } from '@ali/ide-core-common/lib/map';
 
 @Injectable()
 export class CommentsService extends Disposable implements ICommentsService {
@@ -75,6 +77,8 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   private rangeOwner = new Map<string, IRange[]>();
 
+  private providerDecorationCache = new LRUCache<string, IRange[]>(10000);
+
   @observable
   private forceUpdateCount = 0;
 
@@ -95,8 +99,8 @@ export class CommentsService extends Disposable implements ICommentsService {
     type: CommentGutterType,
   ): monaco.textModel.ModelDecorationOptions {
     const decorationOptions: monaco.editor.IModelDecorationOptions = {
-      glyphMarginClassName: this.getLinesDecorationsClassName(type),
-      isWholeLine: true,
+      // 评论组件跟随鼠标移动显示
+      beforeContentClassName: this.getLinesDecorationsClassName(type),
       // stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
     };
     return monaco.textModel.ModelDecorationOptions.createDynamic(
@@ -125,7 +129,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     const dispose = editor.monacoEditor.onMouseDown((event) => {
       if (
         event.target.type ===
-        monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN &&
+        monaco.editor.MouseTargetType.CONTENT_TEXT &&
         event.target.element &&
         event.target.element.className.indexOf('comments-glyph') > -1
       ) {
@@ -272,23 +276,39 @@ export class CommentsService extends Disposable implements ICommentsService {
   }
 
   private async getContributionRanges(uri: URI): Promise<IRange[]> {
+    const cache = this.providerDecorationCache.get(uri.toString());
+    // 优先从缓存中拿
+    if (cache) {
+      return cache;
+    }
+
     const model = this.documentService.getModelReference(uri);
     const rangePromise: Promise<IRange[] | undefined>[] = [];
     for (const rangeProvider of this.rangeProviderMap) {
       const [id, provider] = rangeProvider;
       rangePromise.push((async () => {
         const ranges = await provider.getCommentingRanges(model?.instance!);
-        if (ranges && ranges.length) {
-          this.rangeOwner.set(id, ranges);
+        /**
+         * 如果在编辑器内显示，需要使用 beforeContntClassName
+         * 但是他只识别 startLineNumber
+         * 所以将 Range 拆开，拆成一个一个 startLineNumber 和 endLineNumber 相等的 decoration
+         */
+        const commentingRanges = ranges?.reduce<IRange[]>((pre, cur) => {
+          return pre.concat(Array(cur.endLineNumber - cur.startLineNumber + 1).fill(0).map((_, index) => positionToRange(cur.startLineNumber + index)));
+        }, []);
+        if (commentingRanges && commentingRanges.length) {
+          this.rangeOwner.set(id, commentingRanges);
         }
-        return ranges;
+        return commentingRanges;
       })());
     }
     const res = await Promise.all(rangePromise);
     // 消除 document 引用
     model?.dispose();
     // 拍平，去掉 undefined
-    return flattenDeep(res).filter(Boolean);
+    const flattenRange: IRange[] = flattenDeep(res).filter(Boolean);
+    this.providerDecorationCache.set(uri.toString(), flattenRange);
+    return flattenRange;
   }
 
   private registerDecorationProvider() {
