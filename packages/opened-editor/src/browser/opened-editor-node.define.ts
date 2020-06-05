@@ -17,9 +17,12 @@ export class EditorFileRoot extends CompositeTreeNode {
   ) {
     super(tree as ITree, undefined);
     // 根节点默认展开节点
-    this.setExpanded();
     this._uid = id || this._uid;
     TreeNode.idToTreeNode.set(this._uid, this);
+  }
+
+  get expanded() {
+    return true;
   }
 
   get name() {
@@ -54,7 +57,7 @@ export class EditorFileGroup extends CompositeTreeNode {
     this._uid = id || this._uid;
     TreeNode.idToTreeNode.set(this._uid, this);
     // 根节点默认展开节点
-    this.setExpanded();
+    this.setExpanded(false, true);
   }
 
   get name() {
