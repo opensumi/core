@@ -118,7 +118,6 @@ describe('OpenedEditorModelService should be work', () => {
     ];
     injector.get(WorkbenchEditorService);
     injector.mock(WorkbenchEditorService, 'editorGroups', groups);
-    injector.mock(WorkbenchEditorService, 'onActiveResourceChange', () => {});
     openedEditorModelService = injector.get(OpenedEditorModelService);
     openedEditorService = injector.get(OpenedEditorService);
     await openedEditorModelService.whenReady;
