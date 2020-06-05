@@ -58,7 +58,7 @@ export class EditorFileGroup extends CompositeTreeNode {
   }
 
   get name() {
-    return formatLocalize('open.editors.group.title', this.groupIndex + 1);
+    return formatLocalize('opened.editors.group.title', this.groupIndex + 1);
   }
 
   get tooltip() {
