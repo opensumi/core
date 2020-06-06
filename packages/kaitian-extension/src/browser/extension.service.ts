@@ -397,8 +397,14 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
 
     await this.createExtProcess();
+
     const proxy = this.protocol.getProxy<IExtensionHostService>(ExtHostAPIIdentifier.ExtHostExtensionService);
     await proxy.$initExtensions();
+
+    if (this.workerProtocol) {
+      const workerProxy = this.workerProtocol.getProxy(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
+      await workerProxy.$initExtensions();
+    }
 
     if (init) {
       this.ready.resolve();
@@ -591,8 +597,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }, this.logger);
 
     this.workerProtocol = mainThreadWorkerProtocol;
-    const workerProxy = this.workerProtocol.getProxy(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
-    await workerProxy.$initExtensions();
   }
 
   private async initExtProtocol() {
