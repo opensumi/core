@@ -44,14 +44,12 @@ export namespace FILE_COMMANDS {
   export const COLLAPSE_ALL: Command = {
     id: 'filetree.collapse.all',
     category: CATEGORY,
-    label: '%file.collapse%',
     iconClass: getIcon('collapse-all'),
   };
 
   export const REFRESH_ALL: Command = {
     id: 'filetree.refresh.all',
     category: CATEGORY,
-    label: '%file.refresh%',
     iconClass: getIcon('refresh'),
   };
 
@@ -117,7 +115,6 @@ export namespace FILE_COMMANDS {
   export const FILTER_TOGGLE: Command = {
     id: 'filetree.files.filter_toggle',
     category: CATEGORY,
-    label: '%file.filetree.filter%',
     iconClass: getIcon('retrieval'),
   };
 
