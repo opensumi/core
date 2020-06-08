@@ -105,7 +105,7 @@ export class OpenedEditorService extends Tree {
         if (!group) {
           return;
         }
-        const groupName = formatLocalize('open.editors.group.title', group.index + 1);
+        const groupName = formatLocalize('opened.editors.group.title', group.index + 1);
         path = new Path(path).join(groupName).join(resource && (resource as IResource).uri ? (resource as IResource).uri.toString() : (resource as URI).toString()).toString();
       } else {
         path = new Path(path).join(resource && (resource as IResource).uri ? (resource as IResource).uri.toString() : (resource as URI).toString()).toString();
@@ -115,7 +115,7 @@ export class OpenedEditorService extends Tree {
       if (!group) {
         return;
       }
-      const groupName = formatLocalize('open.editors.group.title', group.index + 1);
+      const groupName = formatLocalize('opened.editors.group.title', group.index + 1);
       path = new Path(path).join(groupName).toString();
       return this.cacheEditorNode.get(path);
     }
