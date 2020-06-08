@@ -24,7 +24,7 @@ export const ToolBar = observer<Pick<React.HTMLProps<HTMLElement>, 'className'>>
         }
         const leftWidth = leftLocation.offsetWidth;
         const centerWidth = centerLocation.offsetWidth;
-        const space1Width = Math.max(0, toolbarRef.current.offsetWidth * 0.5 - leftWidth - centerWidth * 0.5);
+        const space1Width = Math.floor(Math.max(0, toolbarRef.current.offsetWidth * 0.5 - leftWidth - centerWidth * 0.5));
         space1.style.width = space1Width + 'px';
         rightLocation.style.width = (toolbarRef.current.offsetWidth - leftWidth - centerWidth - space1Width) + 'px';
       }
