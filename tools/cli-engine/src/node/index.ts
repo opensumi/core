@@ -20,7 +20,13 @@ let serverAppOpts = {
 
 let clientAppOpts = {};
 
-const kaitianDevConfigPath = path.resolve(workspaceDir, 'kaitian-dev.config.js');
+/**
+ * kaitian-dev.config.js 用于在插件开发时自定义一些 ide-framework client 及 server 端的默认配置
+ * 当传入多个 extensionDir 时，优先取第一个插件目录下的 kaitian-dev.config.js
+ */
+const extensions = strToArray(extensionCandidate);
+
+const kaitianDevConfigPath = path.resolve(extensions[0], 'kaitian-dev.config.js');
 // read `kaitian-dev.config.js`
 if (fs.existsSync(kaitianDevConfigPath)) {
   const kaitianDevConfig = require(kaitianDevConfigPath);
