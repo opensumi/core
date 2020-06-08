@@ -696,7 +696,6 @@ export class FileTreeModelService {
     }
     const effectNode = this.fileTreeService.getNodeByPathOrUri(targetPath);
     if (effectNode) {
-      await this.ensurePerformedEffect();
       this.fileTreeService.deleteAffectedNodeByPath(effectNode.path);
     }
     return true;
