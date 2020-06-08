@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNode } from '@ali/ide-components';
-import { URI, DisposableCollection, Emitter, IContextKeyService, EDITOR_COMMANDS, CommandService, ThrottledDelayer } from '@ali/ide-core-browser';
+import { URI, DisposableCollection, Emitter, IContextKeyService, EDITOR_COMMANDS, CommandService, ThrottledDelayer, Deferred } from '@ali/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { OpenedEditorService } from './opened-editor-tree.service';
@@ -64,7 +64,7 @@ export class OpenedEditorModelService {
   private _decorations: DecorationsManager;
   private _openedEditorTreeHandle: IEditorTreeHandle;
 
-  public flushEventQueuePromise: Promise<void> | null;
+  public flushEventQueueDeferred: Deferred<void> | null;
   private _eventFlushTimeout: number;
   private _changeEventDispatchQueue: string[] = [];
 
@@ -91,6 +91,10 @@ export class OpenedEditorModelService {
 
   constructor() {
     this._whenReady = this.initTreeModel();
+  }
+
+  get flushEventQueuePromise() {
+    return this.flushEventQueueDeferred && this.flushEventQueueDeferred.promise;
   }
 
   get contextMenuContextKeyService() {
@@ -380,12 +384,13 @@ export class OpenedEditorModelService {
 
   // 队列化Changed事件
   private queueChangeEvent(path: string, callback: any) {
-    if (!this.flushEventQueuePromise) {
+    if (!this.flushEventQueueDeferred) {
+      this.flushEventQueueDeferred = new Deferred<void>();
       clearTimeout(this._eventFlushTimeout);
       this._eventFlushTimeout = setTimeout(async () => {
-        this.flushEventQueuePromise = this.flushEventQueue()!;
-        await this.flushEventQueuePromise;
-        this.flushEventQueuePromise = null;
+        await this.flushEventQueue()!;
+        this.flushEventQueueDeferred?.resolve();
+        this.flushEventQueueDeferred = null;
         callback();
       }, OpenedEditorModelService.DEFAULT_FLUSH_FILE_EVENT_DELAY) as any;
     }
