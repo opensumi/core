@@ -613,6 +613,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     registry.registerItem({
       id: FILE_COMMANDS.NEW_FILE.id,
       command: FILE_COMMANDS.NEW_FILE.id,
+      label: localize('file.new'),
       viewId: ExplorerResourceViewId,
       when: `view == '${ExplorerResourceViewId}' && !${FilesExplorerFilteredContext.raw}`,
       order: 1,
@@ -620,6 +621,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     registry.registerItem({
       id: FILE_COMMANDS.NEW_FOLDER.id,
       command: FILE_COMMANDS.NEW_FOLDER.id,
+      label: localize('file.folder.new'),
       viewId: ExplorerResourceViewId,
       when: `view == '${ExplorerResourceViewId}' && !${FilesExplorerFilteredContext.raw}`,
       order: 2,
@@ -627,6 +629,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     registry.registerItem({
       id: FILE_COMMANDS.FILTER_TOGGLE.id,
       command: FILE_COMMANDS.FILTER_TOGGLE.id,
+      label: localize('file.filetree.filter'),
       viewId: ExplorerResourceViewId,
       toggledWhen: `${FilesExplorerFilteredContext.raw}`,
       order: 3,
@@ -634,6 +637,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     registry.registerItem({
       id: FILE_COMMANDS.REFRESH_ALL.id,
       command: FILE_COMMANDS.REFRESH_ALL.id,
+      label: localize('file.refresh'),
       viewId: ExplorerResourceViewId,
       when: `view == '${ExplorerResourceViewId}' && !${FilesExplorerFilteredContext.raw}`,
       order: 4,
@@ -641,6 +645,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     registry.registerItem({
       id: FILE_COMMANDS.COLLAPSE_ALL.id,
       command: FILE_COMMANDS.COLLAPSE_ALL.id,
+      label: localize('file.collapse'),
       viewId: ExplorerResourceViewId,
       order: 5,
     });
