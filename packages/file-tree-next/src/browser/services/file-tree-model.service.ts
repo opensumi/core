@@ -1161,6 +1161,8 @@ export class FileTreeModelService {
     if (this._loadSnapshotReady) {
       await this._loadSnapshotReady;
     }
+    // 确保在刷新等动作执行完后进行定位
+    await this.ensurePerformedEffect();
     return this.locationDelayer.trigger(async () => {
       let path;
       if (typeof pathOrUri === 'string') {
