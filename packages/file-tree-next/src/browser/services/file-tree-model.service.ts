@@ -846,6 +846,7 @@ export class FileTreeModelService {
         const newUri = parent.uri.resolve(newName);
         let error;
         promptHandle.addAddonAfter('loading_indicator');
+        await this.ensurePerformedEffect();
         if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
           error = await this.fileTreeAPI.createDirectory(newUri);
         } else {
