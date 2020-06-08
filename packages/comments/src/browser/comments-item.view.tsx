@@ -108,15 +108,15 @@ const ReplyItem: React.FC<{
     <div className={styles.reply_item}>
       {isUndefined(mode) || mode === CommentMode.Preview ? (
         <div>
-          {iconUrl && (
-            <img
-              className={styles.reply_item_icon}
-              src={iconUrl}
-              alt={author.name}
-            />
-          ) }
           { isInlineText ? (
             <>
+            {iconUrl && (
+              <img
+                className={styles.reply_item_icon}
+                src={iconUrl}
+                alt={author.name}
+              />
+            )}
             <span className={styles.comment_item_author_name}>
             {author.name}
             </span>
@@ -145,6 +145,13 @@ const ReplyItem: React.FC<{
             <>
               <div className={styles.comment_item_markdown_header}>
                 <div>
+                  {iconUrl && (
+                    <img
+                      className={styles.reply_item_icon}
+                      src={iconUrl}
+                      alt={author.name}
+                    />
+                  )}
                   <span className={styles.comment_item_author_name}>
                   {author.name}
                   </span>
@@ -193,6 +200,7 @@ const ReplyItem: React.FC<{
               },
             ]}
             type='button'
+            separator='inline'
             afterClick={() => {
               // restore textarea value
               setTextValue(body);
