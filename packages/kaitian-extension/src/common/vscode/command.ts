@@ -1,7 +1,7 @@
 
 import { Disposable, Position } from './ext-types';
 import URI from 'vscode-uri';
-import { IExtensionInfo } from '@ali/ide-core-common';
+import { IExtensionInfo, IDisposable } from '@ali/ide-core-common';
 
 export interface IMainThreadCommands {
   $registerCommand(id: string): void;
@@ -20,7 +20,7 @@ export interface IMainThreadCommands {
   $executeImplementationProvider(arg: {resource: URI, position: Position}): Promise<any | undefined>;
   $executeCodeLensProvider(arg: {resource: URI, itemResolveCount: number}): Promise<any | undefined>;
   $executeDocumentSymbolProvider(arg: {resource: URI}): Promise<any>;
-  registerArgumentProcessor(processor: ArgumentProcessor): void;
+  registerArgumentProcessor(processor: ArgumentProcessor): IDisposable;
 }
 
 export interface CommandHandler<T = any> {

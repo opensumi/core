@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { UriComponents, CommentThread, CommentThreadCollapsibleState, Comment, CommentThreadChanges } from '../../../common/vscode/models';
-import { IRange, Emitter, Event, URI, CancellationToken, IDisposable, positionToRange, isUndefined } from '@ali/ide-core-common';
+import { IRange, Emitter, Event, URI, CancellationToken, IDisposable, positionToRange, isUndefined, Disposable } from '@ali/ide-core-common';
 import { IMainThreadComments, CommentProviderFeatures, IExtHostComments, IMainThreadCommands } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
@@ -9,7 +9,7 @@ import { ICommentsService, ICommentsThread, IThreadComment } from '@ali/ide-comm
 import { MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable({ multiple: true })
-export class MainthreadComments implements IMainThreadComments {
+export class MainthreadComments implements IDisposable, IMainThreadComments {
 
   @Autowired(ICommentsService)
   private commentsService: ICommentsService;
@@ -23,17 +23,19 @@ export class MainthreadComments implements IMainThreadComments {
 
   private _commentControllers = new Map<number, MainThreadCommentController>();
 
+  private disposable = new Disposable();
+
   constructor(
     private rpcProtocol: IRPCProtocol,
     private mainThreadCommands: IMainThreadCommands,
   ) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostComments);
-    this.registerCommentThreadTemplateHander();
-    this.registerArgumentProcessor();
+    this.disposable.addDispose(this.registerCommentThreadTemplateHander());
+    this.disposable.addDispose(this.registerArgumentProcessor());
   }
 
   private registerCommentThreadTemplateHander() {
-    this.commentsService.onThreadsChanged(async (thread) => {
+    return this.commentsService.onThreadsChanged(async (thread) => {
       // 说明是点击左侧 decoration 创建的，需要在插件进程常见对应的临时评论
       // 插件主动创建的默认有 data
       if (isUndefined(thread.data)) {
@@ -57,7 +59,7 @@ export class MainthreadComments implements IMainThreadComments {
   }
 
   private registerArgumentProcessor() {
-    this.mainThreadCommands.registerArgumentProcessor({
+    return this.mainThreadCommands.registerArgumentProcessor({
       processArgument: (arg: any) => {
         if (!arg || !arg.menuId) {
           return arg;
@@ -117,6 +119,7 @@ export class MainthreadComments implements IMainThreadComments {
     const providerId = `ext_comment_controller_${id}`;
     this._providers.set(providerId, handle);
     const provider = this.injector.get(MainThreadCommentController, [this.proxy, handle, providerId, id, label, {}]);
+    this.disposable.addDispose(provider);
     this._commentControllers.set(handle, provider);
     // 注册后触发 decoration
     this.commentsService.forceUpdateDecoration();
@@ -151,6 +154,12 @@ export class MainthreadComments implements IMainThreadComments {
     }
     return provider.deleteCommentThread(commentThreadHandle);
   }
+
+  dispose(): void {
+    this.disposable.dispose();
+    this._commentControllers.clear();
+  }
+
 }
 
 @Injectable({ multiple: true })

@@ -125,9 +125,11 @@ export async function createApiFactory(
     MainThreadDecorationsAPI.dispose();
     MainThreadWindowStateAPI.dispose();
     MainThreadWindowAPI.dispose();
+    MainThreadConnectionAPI.dispose();
     MainThreadDebugAPI.dispose();
     MainThreadTerminalAPI.dispose();
     MainThreadProgressAPI.dispose();
     MainthreadTasksAPI.dispose();
+    MainthreadCommentsAPI.dispose();
   };
 }

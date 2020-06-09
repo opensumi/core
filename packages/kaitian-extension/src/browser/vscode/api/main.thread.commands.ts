@@ -29,6 +29,8 @@ export class MainThreadCommands implements IMainThreadCommands {
   @Autowired(IContextKeyService)
   protected contextKeyService: IContextKeyService;
 
+  private disposable = new Disposable();
+
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
     this.proxy.$registerBuiltInCommands();
@@ -37,7 +39,7 @@ export class MainThreadCommands implements IMainThreadCommands {
   }
 
   private registerUriArgProcessor() {
-    this.registerArgumentProcessor({
+    this.disposable.addDispose(this.registerArgumentProcessor({
       processArgument: (arg: any) => {
         if (arg instanceof URI) {
           return (arg as URI).codeUri;
@@ -55,7 +57,7 @@ export class MainThreadCommands implements IMainThreadCommands {
 
         return arg;
       },
-    });
+    }));
   }
 
   dispose() {
@@ -63,10 +65,17 @@ export class MainThreadCommands implements IMainThreadCommands {
       comamnd.dispose();
     });
     this.commands.clear();
+    this.disposable.dispose();
   }
 
-  registerArgumentProcessor(processor: ArgumentProcessor): void {
+  registerArgumentProcessor(processor: ArgumentProcessor): IDisposable {
     this.argumentProcessors.push(processor);
+    return Disposable.create(() => {
+      const idx = this.argumentProcessors.indexOf(processor);
+      if (idx >= 0) {
+        this.argumentProcessors.splice(idx, 1);
+      }
+    });
   }
 
   $registerCommand(id: string): void {
