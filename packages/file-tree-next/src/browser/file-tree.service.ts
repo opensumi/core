@@ -357,7 +357,11 @@ export class FileTreeService extends Tree {
       if (!this.isCompactMode) {
         tempName = namePaths[0];
       } else {
-        tempName = newName;
+        if (type === TreeNodeType.CompositeTreeNode) {
+          tempName = newName;
+        } else {
+          tempName = namePaths.slice(0, namePaths.length - 1).join(Path.separator);
+        }
       }
     } else {
       tempName = newName;
@@ -365,7 +369,7 @@ export class FileTreeService extends Tree {
     }
     tempFileStat = {
       uri: node.uri.resolve(tempName).toString(),
-      isDirectory: type === TreeNodeType.CompositeTreeNode,
+      isDirectory: type === TreeNodeType.CompositeTreeNode || namePaths.length > 1,
       isSymbolicLink: false,
       lastModification: new Date().getTime(),
     };
