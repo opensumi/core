@@ -682,7 +682,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   private normalizeDeprecatedViewsConfig(moduleExports: { [key: string]: any }, extension: IExtension, proxiedHead?: HTMLHeadElement) {
     if (this.appConfig.useExperimentalShadowDom) {
-      return Object.keys(moduleExports).reduce((pre, cur) => {
+      return Object.keys(moduleExports).filter((key) => moduleExports[key] && Array.isArray(moduleExports[key].component)).reduce((pre, cur) => {
         pre[cur] = {
           view: moduleExports[cur].component.map(({ panel, id, ...other }) => ({
             ...other,
@@ -694,7 +694,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       }, {});
     } else {
       const views = moduleExports.default ? moduleExports.default : moduleExports;
-      return Object.keys(views).reduce((config, location) => {
+      return Object.keys(views).filter((key) => views[key] && Array.isArray(views[key].component)).reduce((config, location) => {
         config[location] = {
           view: views[location].component.map(({ panel, ...other }) => ({
             ...other,
