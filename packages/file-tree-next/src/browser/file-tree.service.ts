@@ -20,6 +20,7 @@ import { Path } from '@ali/ide-core-common/lib/path';
 import { observable, action, runInAction } from 'mobx';
 import pSeries = require('p-series');
 import { FileContextKey } from './file-contextkey';
+import { isWindows } from '@ali/ide-core-common/lib/platform';
 
 export interface IMoveChange {
   source: FileChange;
@@ -350,6 +351,10 @@ export class FileTreeService extends Tree {
     // 处理a/b/c/d这类目录
     if (namePaths.length > 1) {
       let tempUri = node.uri;
+      if (isWindows) {
+        // Windows环境下会多触发一个UPDATED事件
+        this._cacheIgnoreFileEvent.set(tempUri.toString(), FileChangeType.UPDATED);
+      }
       for (const path of namePaths) {
         tempUri = tempUri.resolve(path);
         this._cacheIgnoreFileEvent.set(tempUri.toString(), FileChangeType.ADDED);
@@ -365,6 +370,10 @@ export class FileTreeService extends Tree {
       }
     } else {
       tempName = newName;
+      if (isWindows) {
+        // Windows环境下会多触发一个UPDATED事件
+        this._cacheIgnoreFileEvent.set(node.uri.toString(), FileChangeType.UPDATED);
+      }
       this._cacheIgnoreFileEvent.set(node.uri.resolve(newName).toString(), FileChangeType.ADDED);
     }
     tempFileStat = {
@@ -568,6 +577,10 @@ export class FileTreeService extends Tree {
   async refresh(node: Directory = this.root as Directory) {
     if (!Directory.is(node) && node.parent) {
       node = node.parent as Directory;
+    }
+    if (Directory.isRoot(node)) {
+      // 根目录刷新时情况忽略队列
+      this._cacheIgnoreFileEvent.clear();
     }
     // 这里也可以直接调用node.forceReloadChildrenQuiet，但由于文件树刷新事件可能会较多
     // 队列化刷新动作减少更新成本
