@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IEditorDocumentModelContentProvider, EditorPreferences } from '@ali/ide-editor/lib/browser';
-import { FILE_SCHEME, IFileSchemeDocNodeService, FileSchemeDocNodeServicePath, FILE_SAVE_BY_CHANGE_THRESHOLD } from '../common';
+import { FILE_SCHEME, FILE_SAVE_BY_CHANGE_THRESHOLD, IFileSchemeDocClient } from '../common';
 import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, CorePreferences, ISchemaStore, IDisposable, Disposable, ISchemaRegistry, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 import { IFileServiceClient, FileChangeType } from '@ali/ide-file-service';
 import * as md5 from 'md5';
@@ -18,8 +18,8 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
   @Autowired(IFileServiceClient)
   protected readonly fileServiceClient: IFileServiceClient;
 
-  @Autowired(FileSchemeDocNodeServicePath)
-  protected readonly fileDocBackendService: IFileSchemeDocNodeService;
+  @Autowired(IFileSchemeDocClient)
+  protected readonly fileSchemeDocClient: IFileSchemeDocClient;
 
   @Autowired(CorePreferences)
   protected readonly corePreferences: CorePreferences;
@@ -82,12 +82,12 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
     // TODO
     const baseMd5 = md5(baseContent);
     if (content.length > FILE_SAVE_BY_CHANGE_THRESHOLD) {
-      return this.fileDocBackendService.$saveByChange(uri.toString(), {
+      return this.fileSchemeDocClient.saveByChange(uri.toString(), {
         baseMd5,
         changes,
       }, encoding, ignoreDiff);
     } else {
-      return await this.fileDocBackendService.$saveByContent(uri.toString(), {
+      return await this.fileSchemeDocClient.saveByContent(uri.toString(), {
         baseMd5,
         content,
       }, encoding, ignoreDiff);
@@ -95,7 +95,7 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
   }
 
   async provideEditorDocumentModelContentMd5(uri: URI, encoding?: string): Promise<string | undefined> {
-    return this.fileDocBackendService.$getMd5(uri.toString(), encoding);
+    return this.fileSchemeDocClient.getMd5(uri.toString(), encoding);
   }
 
   onDidDisposeModel(uri: URI) {

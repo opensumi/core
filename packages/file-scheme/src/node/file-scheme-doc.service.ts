@@ -1,13 +1,13 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { IFileSchemeDocNodeService, ISavingContent, IContentChange } from '../common';
 import { IEditorDocumentModelSaveResult, IEditorDocumentEditChange } from '@ali/ide-core-node';
 import { IFileService } from '@ali/ide-file-service';
 import md5 = require('md5');
 import { TextDocumentContentChangeEvent, Range } from 'vscode-languageserver-types';
 
+import { IFileSchemeDocNodeService, ISavingContent, IContentChange } from '../common';
+
 @Injectable()
 export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
-
   @Autowired(IFileService)
   private fileService: IFileService;
 
