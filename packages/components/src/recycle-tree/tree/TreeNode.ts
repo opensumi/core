@@ -452,7 +452,6 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       // 仅需处理存在子节点的情况，否则将会影响刷新后的节点长度
       if (!!this.children) {
         // 清理子节点，等待下次展开时更新
-        this.shrinkBranch(this, true);
         if (!!this.children && this.parent) {
           for (const child of this.children) {
             (child as CompositeTreeNode).dispose();
