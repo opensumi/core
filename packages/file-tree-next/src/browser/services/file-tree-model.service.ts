@@ -649,6 +649,7 @@ export class FileTreeModelService {
     this.collapsedAllPromise = this.treeModel.root.collapsedAll();
   }
 
+  // 展开所有缓存目录
   public expandAllCacheDirectory = async () => {
     await this.ensurePerformedEffect();
     const size = this.treeModel.root.branchSize;

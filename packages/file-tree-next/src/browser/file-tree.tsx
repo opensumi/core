@@ -21,6 +21,7 @@ export const FileTree = observer(({
   const [isReady, setIsReady] = React.useState<boolean>(false);
   const [outerDragOver, setOuterDragOver] = React.useState<boolean>(false);
   const [filter, setFilter ] = React.useState<string>('');
+  const [preFilter, setPreFilter ] = React.useState<string>('');
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   const { width, height } = viewState;
@@ -78,16 +79,23 @@ export const FileTree = observer(({
 
   React.useEffect(() => {
     if (!filterMode) {
-      setFilter('');
+      setPreFilter('');
     }
   }, [filterMode]);
 
   React.useEffect(() => {
-    if (!!filter) {
-      const { expandAllCacheDirectory } = fileTreeModelService;
-      expandAllCacheDirectory();
+    if (!!preFilter) {
+      preFilterTreeNode(preFilter);
+    } else {
+      setFilter('');
     }
-  }, [filter]);
+  }, [preFilter]);
+
+  const preFilterTreeNode = async (filter: string) => {
+    const { expandAllCacheDirectory } = fileTreeModelService;
+    await expandAllCacheDirectory();
+    setFilter(filter);
+  };
 
   const ensureIsReady = async () => {
     await fileTreeModelService.whenReady;
@@ -184,7 +192,7 @@ export const FileTree = observer(({
     }
   };
   const throttleSetFilter = throttle((value) => {
-    setFilter(value);
+    setPreFilter(value);
   }, FILE_TREE_FILTER_DELAY);
 
   const renderFilterView = () => {
