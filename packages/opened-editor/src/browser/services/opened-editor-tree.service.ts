@@ -1,8 +1,8 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@ali/ide-components';
 import { EditorFileGroup, EditorFile, EditorFileRoot, OpenedEditorData } from '../opened-editor-node.define';
-import { WorkbenchEditorService, IEditorGroup, IResource } from '@ali/ide-editor';
-import { URI, formatLocalize } from '@ali/ide-core-node';
+import { WorkbenchEditorService, IEditorGroup, IResource, ResourceService } from '@ali/ide-editor';
+import { URI, formatLocalize, Emitter } from '@ali/ide-core-node';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -19,9 +19,18 @@ export class OpenedEditorService extends Tree {
   @Autowired(LabelService)
   public readonly labelService: LabelService;
 
+  @Autowired(ResourceService)
+  private readonly resourceService: ResourceService;
+
   private cacheEditorNode: Map<string, EditorFileGroup | EditorFile | EditorFileRoot> = new Map();
   // 是否为分组的节点树
   private isGroupTree: boolean = false;
+
+  private onDirtyNodesChangeEmitter: Emitter<EditorFile[]> = new Emitter();
+
+  get onDirtyNodesChange() {
+    return this.onDirtyNodesChangeEmitter.event;
+  }
 
   async resolveChildren(parent?: EditorFileRoot | EditorFileGroup): Promise<(EditorFileGroup | EditorFileRoot | EditorFile)[]> {
     let children: (EditorFileGroup | EditorFileRoot | EditorFile)[] = [];
@@ -82,8 +91,13 @@ export class OpenedEditorService extends Tree {
   }
 
   private cacheNodes(nodes: (EditorFileGroup | EditorFileRoot | EditorFile)[]) {
+    const dirtyNodes: EditorFile[] = [];
     for (const node of nodes) {
       if ((node as EditorFile).uri) {
+        const decoration = this.resourceService.getResourceDecoration((node as EditorFile).uri);
+        if (decoration.dirty) {
+          dirtyNodes.push(node as EditorFile);
+        }
         // EditorFile
         const parent = node.parent;
         this.cacheEditorNode.set(new Path(parent?.path!).join((node as EditorFile).uri.toString()).toString(), node);
@@ -96,6 +110,7 @@ export class OpenedEditorService extends Tree {
       }
 
     }
+    this.onDirtyNodesChangeEmitter.fire(dirtyNodes);
   }
 
   public getEditorNodeByUri(resource?: IResource | URI, group?: IEditorGroup) {
