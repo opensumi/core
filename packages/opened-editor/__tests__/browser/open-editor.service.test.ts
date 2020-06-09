@@ -12,7 +12,7 @@ import { IThemeService } from '@ali/ide-theme';
 import { MockThemeService } from '@ali/ide-theme/lib/common/mocks/theme.service';
 import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { IEditorDocumentModelService, ResourceService } from '@ali/ide-editor/lib/browser';
 import { OpenedEditorModelService } from '@ali/ide-opened-editor/lib/browser/services/opened-editor-model.service';
 import { OpenedEditorService } from '@ali/ide-opened-editor/lib/browser/services/opened-editor-tree.service';
 import { TreeNodeType } from '@ali/ide-components';
@@ -32,6 +32,10 @@ describe('OpenedEditorModelService should be work', () => {
     setBadge: fakeSetBadge,
   });
 
+  const MockResourceService = {
+    getResourceDecoration: () => ({dirty: true}),
+  };
+
   beforeEach(async (done) => {
     injector = createBrowserInjector([
       OpenedEditorModule,
@@ -45,6 +49,10 @@ describe('OpenedEditorModelService should be work', () => {
       {
         token: WorkbenchEditorService,
         useClass: MockWorkbenchEditorService,
+      },
+      {
+        token: ResourceService,
+        useValue: MockResourceService,
       },
       {
         token: IDecorationsService,
