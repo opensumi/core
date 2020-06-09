@@ -1,20 +1,24 @@
 :global {
   .monaco-editor {
     .comments-glyph {
-      margin-left: 8px;
-      visibility: hidden;
-      cursor: pointer;
-      z-index: 1;
+      position: absolute;
+      &::before {
+        visibility: hidden;
+        cursor: pointer;
+        font-weight: normal;
+        color: var(--foreground);
+        background: var(--editor-background);
+      }
     }
-    .comment-thread {
+    .comment-thread::before {
       visibility: visible;
     }
-  }
 
-  .margin-view-overlays {
-    &>div:hover {
+    .view-line:hover {
       .comment-diff-added:not(.comment-thread) {
-        visibility: visible;
+        &::before {
+          visibility: visible;
+        }
       }
     }
   }
