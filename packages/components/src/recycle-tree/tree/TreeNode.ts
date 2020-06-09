@@ -529,6 +529,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * 直接调用此方法将不会触发onWillHandleWatchEvent和onDidHandleWatchEvent事件
    */
   public insertItem(item: ITreeNodeOrCompositeTreeNode) {
+    // 当插入时父节点已不存在界面上时，跳过插入操作
+    if (!this.isItemVisibleAtRootSurface(this)) {
+      return;
+    }
     if (item.parent !== this) {
       item.mv(this, item.name);
       return;
@@ -566,6 +570,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     } else {
       relativeInsertionIndex = master._flattenedBranch.indexOf(this.id);
     }
+    if (relativeInsertionIndex === -1) {
+      return;
+    }
     // +1为了容纳自身节点位置，在插入节点下方插入新增节点
     const absInsertionIndex = relativeInsertionIndex + 1;
 
@@ -589,6 +596,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
     const idx = this._children!.indexOf(item);
     if (idx === -1) {
+      return;
+    }
+    // 当删除时父节点已不存在界面上时，跳过插入操作
+    if (!this.isItemVisibleAtRootSurface(this)) {
       return;
     }
     this._children!.splice(idx, 1);
