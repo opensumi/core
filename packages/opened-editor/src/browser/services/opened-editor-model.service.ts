@@ -86,6 +86,7 @@ export class OpenedEditorModelService {
 
   // 右键菜单局部ContextKeyService
   private _contextMenuContextKeyService: IContextKeyService;
+  private _currentDirtyNodes: EditorFile[];
 
   private ignoreRefreshAndActiveTimes: number;
 
@@ -142,6 +143,10 @@ export class OpenedEditorModelService {
 
     this.initDecorations(root);
 
+    this.disposableCollection.push(this.openedEditorService.onDirtyNodesChange((nodes) => {
+      this._currentDirtyNodes = nodes;
+    }));
+
     this.disposableCollection.push(this.labelService.onDidChange(() => {
       // 当labelService注册的对应节点图标变化时，通知视图更新
       this.treeModel.dispatchChange();
@@ -175,11 +180,10 @@ export class OpenedEditorModelService {
     }));
 
     this.disposableCollection.push(this.onDidRefreshed(() => {
+      this.dirtyDecoration.appliedTargets.clear();
       // 更新dirty节点，节点可能已更新
-      for (const target of this.dirtyDecoration.appliedTargets.keys()) {
-        const cacheTarget = this.openedEditorService.getEditorNodeByUri((target as EditorFile).uri, ((target as EditorFile).parent as EditorFileGroup).group);
-        this.dirtyDecoration.removeTarget(target);
-        this.dirtyDecoration.addTarget(cacheTarget as TreeNode);
+      for (const target of this._currentDirtyNodes) {
+        this.dirtyDecoration.addTarget(target as TreeNode);
       }
       const currentResource = this.editorService.currentResource;
       const currentGroup = this.editorService.currentEditorGroup;
