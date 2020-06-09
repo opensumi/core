@@ -346,11 +346,22 @@ export class FileTreeService extends Tree {
   public async addNode(node: Directory, newName: string, type: TreeNodeType) {
     let tempFileStat: FileStat;
     let tempName: string;
+    const namePaths = Path.splitPath(newName);
     // 处理a/b/c/d这类目录
-    if (newName.indexOf(Path.separator) > 0 && !this.isCompactMode) {
-      tempName = Path.splitPath(newName)[0];
+    if (namePaths.length > 1) {
+      let tempUri = node.uri;
+      for (const path of namePaths) {
+        tempUri = tempUri.resolve(path);
+        this._cacheIgnoreFileEvent.set(tempUri.toString(), FileChangeType.ADDED);
+      }
+      if (!this.isCompactMode) {
+        tempName = namePaths[0];
+      } else {
+        tempName = newName;
+      }
     } else {
       tempName = newName;
+      this._cacheIgnoreFileEvent.set(node.uri.resolve(newName).toString(), FileChangeType.ADDED);
     }
     tempFileStat = {
       uri: node.uri.resolve(tempName).toString(),
@@ -358,7 +369,6 @@ export class FileTreeService extends Tree {
       isSymbolicLink: false,
       lastModification: new Date().getTime(),
     };
-    this._cacheIgnoreFileEvent.set(tempFileStat.uri, FileChangeType.ADDED);
     const addNode = await this.fileTreeAPI.toNode(this as ITree, tempFileStat, node as Directory, tempName);
     if (!!addNode) {
       this.cacheNodes([addNode]);
