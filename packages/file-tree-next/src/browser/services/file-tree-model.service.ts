@@ -697,7 +697,6 @@ export class FileTreeModelService {
     }
     const effectNode = this.fileTreeService.getNodeByPathOrUri(targetPath);
     if (effectNode) {
-      await this.ensurePerformedEffect();
       this.fileTreeService.deleteAffectedNodeByPath(effectNode.path);
     }
     return true;
@@ -797,17 +796,10 @@ export class FileTreeModelService {
   private proxyPrompt = (promptHandle: RenamePromptHandle | NewPromptHandle) => {
     let isCommit = false;
     const locationFileWhileFileExist = (pathOrUri: URI | string) => {
-      const treeNode = this.fileTreeService.getNodeByPathOrUri(pathOrUri);
-      const exist = treeNode && this.treeModel.root.isItemVisibleAtSurface(treeNode!);
-      if (exist) {
+      // 文件树更新后尝试定位文件位置
+      Event.once(this.fileTreeHandle.onDidUpdate)(() => {
         this.location(pathOrUri);
-        return;
-      } else {
-        // 文件树更新后尝试定位文件位置
-        Event.once(this.fileTreeHandle.onDidUpdate)(() => {
-          locationFileWhileFileExist(pathOrUri);
-        });
-      }
+      });
     };
     const commit = async (newName) => {
       this.validateMessage = undefined;
@@ -848,6 +840,7 @@ export class FileTreeModelService {
         const newUri = parent.uri.resolve(newName);
         let error;
         promptHandle.addAddonAfter('loading_indicator');
+        await this.ensurePerformedEffect();
         if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
           error = await this.fileTreeAPI.createDirectory(newUri);
         } else {
@@ -890,8 +883,8 @@ export class FileTreeModelService {
             }
           }
         } else {
-          const addNode = await this.fileTreeService.addNode(parent, newName, promptHandle.type);
-          locationFileWhileFileExist(addNode.path);
+          await this.fileTreeService.addNode(parent, newName, promptHandle.type);
+          locationFileWhileFileExist(parent.uri.resolve(newName));
         }
       }
       this.fileTreeContextKey.filesExplorerInputFocused.set(false);

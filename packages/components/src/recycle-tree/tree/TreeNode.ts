@@ -14,12 +14,15 @@ import { IWatcherCallback, IWatchTerminator, IWatcherInfo } from '../types';
  * @param items 插入的数组
  */
 export function spliceTypedArray(arr: Uint32Array, start: number, deleteCount: number = 0, items?: Uint32Array | null) {
-  const a = new Uint32Array((arr.length - deleteCount) + (items ? items.length : 0));
+  let a = new Uint32Array((arr.length - deleteCount) + (items ? items.length : 0));
   a.set(arr.slice(0, start));
   if (items) {
     a.set(items, start);
   }
   a.set(arr.slice(start + deleteCount, arr.length), (start + (items ? items.length : 0)));
+  // 设置前做一下简单去重保护，Tree组件中每个节点都应该是唯一的
+  const arraySet = new Set(a);
+  a = Uint32Array.from(arraySet);
   return a;
 }
 
@@ -525,6 +528,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * 直接调用此方法将不会触发onWillHandleWatchEvent和onDidHandleWatchEvent事件
    */
   public insertItem(item: ITreeNodeOrCompositeTreeNode) {
+    // 当插入时父节点已不存在界面上时，跳过插入操作
+    if (!this.isItemVisibleAtRootSurface(this)) {
+      return;
+    }
     if (item.parent !== this) {
       item.mv(this, item.name);
       return;
@@ -562,6 +569,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     } else {
       relativeInsertionIndex = master._flattenedBranch.indexOf(this.id);
     }
+    if (relativeInsertionIndex === -1) {
+      return;
+    }
     // +1为了容纳自身节点位置，在插入节点下方插入新增节点
     const absInsertionIndex = relativeInsertionIndex + 1;
 
@@ -585,6 +595,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
     const idx = this._children!.indexOf(item);
     if (idx === -1) {
+      return;
+    }
+    // 当删除时父节点已不存在界面上时，跳过插入操作
+    if (!this.isItemVisibleAtRootSurface(this)) {
       return;
     }
     this._children!.splice(idx, 1);
@@ -681,7 +695,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       // 但节点为展开状态时进行裁剪
       this._branchSize += branch._branchSize;
     }
-    // 当当前节点为折叠状态，更新分支信息
+    // 当前节点为折叠状态，更新分支信息
     if (this !== branch && this._flattenedBranch) {
       const injectionStartIdx = this._flattenedBranch.indexOf(branch.id) + 1;
       this.setFlattenedBranch(spliceTypedArray(this._flattenedBranch, injectionStartIdx, 0, branch._flattenedBranch), withoutNotify);
