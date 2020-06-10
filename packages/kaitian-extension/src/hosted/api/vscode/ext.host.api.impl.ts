@@ -10,38 +10,6 @@ import { ViewColumn } from '../../../common/vscode/enums';
 import { ExtHostCommands, createCommandsApiFactory } from './ext.host.command';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
 import { ExtensionHostEditorService } from './editor/editor.host';
-import {
-  Hover,
-  Uri,
-  IndentAction,
-  CodeLens,
-  Disposable,
-  CompletionItem,
-  SnippetString,
-  MarkdownString,
-  CompletionItemKind,
-  Location,
-  Position,
-  ColorPresentation,
-  Range,
-  Color,
-  FoldingRangeKind,
-  FoldingRange,
-  DocumentHighlightKind,
-  DocumentHighlight,
-  DocumentLink,
-  ProgressLocation,
-  CodeActionKind,
-  Selection,
-  CodeAction,
-  SignatureHelpTriggerKind,
-  SignatureHelp,
-  ColorInformation,
-  SelectionRange,
-  QuickInputButtons,
-  ExtensionKind,
-  TaskPanelKind,
-} from '../../../common/vscode/ext-types';
 import { CancellationTokenSource, Emitter, Event } from '@ali/ide-core-common';
 import { ExtHostPreference } from './ext.host.preference';
 import { createExtensionsApiFactory } from './ext.host.extensions';
@@ -118,57 +86,28 @@ export function createApiFactory(
       debug: createDebugApiFactory(extHostDebug),
       version: '1.37.0',
       comments: createCommentsApiFactory(extension, extHostComments),
-      languageServer: {},
       extensions: createExtensionsApiFactory(rpcProtocol, extensionService, mainThreadExtensionService),
       tasks: createTaskApiFactory(rpcProtocol, extensionService, extHostTasks, extension),
       scm: {
         get inputBox() {
           return extHostSCM.getLastInputBox(extension)!; // Strict null override - Deprecated api
         },
-        createSourceControl(id: string, label: string, rootUri?: Uri) {
+        createSourceControl(id: string, label: string, rootUri?: extTypes.Uri) {
           return extHostSCM.createSourceControl(extension, id, label, rootUri);
         },
       },
       // 类型定义
       ...extTypes,
       ...fileSystemTypes,
-      Hover,
-      CompletionItem,
-      CompletionItemKind,
-      SnippetString,
-      MarkdownString,
-      Location,
-      Position,
-      Uri,
       CancellationTokenSource,
-      IndentAction,
-      CodeLens,
-      Disposable,
       EventEmitter: Emitter,
       Event,
-      ColorPresentation,
       Range,
-      Color,
-      FoldingRange,
-      FoldingRangeKind,
-      DocumentHighlight,
-      DocumentHighlightKind,
-      DocumentLink,
-      ProgressLocation,
-      CodeActionKind,
       ViewColumn,
       OverviewRulerLane,
       Selection,
-      SelectionRange,
-      QuickInputButtons,
-      CodeAction,
-      SignatureHelpTriggerKind,
-      SignatureHelp,
       TextEditorCursorStyle,
       TextEditorSelectionChangeKind,
-      ColorInformation,
-      ExtensionKind,
-      TaskPanelKind,
     };
   };
 }
