@@ -102,10 +102,8 @@ export function createApiFactory(
       CancellationTokenSource,
       EventEmitter: Emitter,
       Event,
-      Range,
       ViewColumn,
       OverviewRulerLane,
-      Selection,
       TextEditorCursorStyle,
       TextEditorSelectionChangeKind,
     };
