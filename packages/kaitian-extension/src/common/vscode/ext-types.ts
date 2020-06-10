@@ -2430,3 +2430,8 @@ export enum TaskRevealKind {
    */
   Never = 3,
 }
+
+export enum UIKind {
+  Desktop = 1,
+  Web = 2,
+}
