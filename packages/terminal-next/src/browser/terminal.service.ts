@@ -27,8 +27,8 @@ export class TerminalInternalService implements ITerminalInternalService {
     return this.service.check ? this.service.check(sessionIds) : Promise.resolve(true);
   }
 
-  attach(sessionId: string, xterm: Terminal, options = {}, type: string) {
-    return this.service.attach(sessionId, xterm, options, type);
+  attach(sessionId: string, xterm: Terminal, rows: number, cols: number, options = {}, type: string) {
+    return this.service.attach(sessionId, xterm, rows, cols, options, type);
   }
 
   sendText(id: string, message: string) {
@@ -108,7 +108,7 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
     };
   }
 
-  async attach(sessionId: string, term: Terminal, options = {}, type?: string) {
+  async attach(sessionId: string, _: Terminal, rows: number, cols: number, options = {}, type?: string) {
     let shellPath;
     if (type) {
       if (isWindows) {
@@ -120,7 +120,7 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
         shellPath = `/bin/${type}`;
       }
     }
-    const { name, pid } = await this.service.create(sessionId, term.rows, term.cols, {
+    const { name, pid } = await this.service.create(sessionId, rows, cols, {
       cwd: this.config.workspaceDir,
       shellPath,
       ...options,

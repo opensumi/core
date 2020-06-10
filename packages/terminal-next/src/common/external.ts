@@ -31,13 +31,13 @@ export interface ITerminalExternalService {
   /**
    *
    * @param sessionId 会话唯一标识
-   * @param term 返回的 Xterm 终端实例
-   * @param restore 是否是恢复一个终端
-   * @param meta 恢复终端所需要的额外字段
-   * @param attachMethod 将 websocket 连接和 xterm 连接起来的函数
+   * @param xterm 返回的 Xterm 终端实例
+   * @param rows 终端初始化使用的列数
+   * @param cols 终端初始化使用的行数
    * @param options 创建一个新终端的进程选项
+   * @param shellType 终端类型
    */
-  attach(sessionId: string, xterm: Terminal, options?: TerminalOptions, shellType?: string): Promise<ITerminalConnection | undefined>;
+  attach(sessionId: string, xterm: Terminal, rows: number, cols: number, options?: TerminalOptions, shellType?: string): Promise<ITerminalConnection | undefined>;
   /**
    *
    * @param id 会话唯一标识
