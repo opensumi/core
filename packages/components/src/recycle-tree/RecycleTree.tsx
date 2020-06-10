@@ -4,7 +4,7 @@ import { TreeModel } from './tree/model/TreeModel';
 import { TreeNode, CompositeTreeNode, spliceTypedArray } from './tree';
 import { RenamePromptHandle, PromptHandle } from './prompt';
 import { NewPromptHandle } from './prompt/NewPromptHandle';
-import { DisposableCollection, Emitter, Event } from '@ali/ide-core-common';
+import { DisposableCollection, Emitter, Event, Disposable } from '@ali/ide-core-common';
 import { INodeRendererProps, NodeRendererWrap, INodeRenderer } from './TreeNodeRendererWrap';
 import { TreeNodeType, TreeNodeEvent } from './types';
 import { Scrollbars } from 'react-custom-scrollbars';
@@ -573,7 +573,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     const idToRenderTemplate: Map<number, any> = new Map();
     const nodes: TreeNode[] = [];
     for (let idx = 0; idx < root.branchSize; idx ++) {
-      nodes.push(root.getTreeNodeAtIndex(idx)!);
+      const node = root.getTreeNodeAtIndex(idx)!;
+      nodes.push(node);
     }
     if (isPathFilter) {
       nodes.forEach((node) => {
@@ -654,6 +655,9 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           this.filterFlattenBranchChildrenCache.delete(target.id);
         }
       }
+    }));
+    this.filterWatcherDisposeCollection.push(Disposable.create(() => {
+      this.filterFlattenBranchChildrenCache.clear();
     }));
   }
 
