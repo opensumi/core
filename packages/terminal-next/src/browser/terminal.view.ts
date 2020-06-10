@@ -159,6 +159,10 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
     this.editable = true;
   }
 
+  unedit() {
+    this.editable = false;
+  }
+
   rename(name: string) {
     this.name = name;
     this.editable = false;

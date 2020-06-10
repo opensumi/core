@@ -29,6 +29,7 @@ export interface IWidgetGroup extends Disposable {
   addWidget(widget: IWidget): void;
   removeWidgetByIndex: (index: number) => IWidget;
   edit(): void;
+  unedit(): void;
   rename(name: string): void;
   dispose: () => void;
 }
