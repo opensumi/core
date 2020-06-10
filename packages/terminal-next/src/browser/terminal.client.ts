@@ -11,7 +11,7 @@ import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
 import { PreferenceService } from '@ali/ide-core-browser';
 import { FilePathAddon, AttachAddon } from './terminal.addon';
 import { TerminalKeyBoardInputService } from './terminal.input';
-import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, TerminalSupportType, ITerminalGroupViewService, ITerminalInternalService, ITerminalConnection, IWidget, defaultTerminalFontFamily } from '../common';
+import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, TerminalSupportType, ITerminalGroupViewService, ITerminalInternalService, IWidget, defaultTerminalFontFamily } from '../common';
 
 import * as styles from './component/terminal.module.less';
 
@@ -37,6 +37,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   /** status */
   private _ready: boolean = false;
   private _attached = new Deferred<void>();
+  private _rendered = new Deferred<void>();
   /** end */
 
   private readonly ptyProcessMessageEvent = new Emitter<{ id: string; message: string }>();
@@ -177,8 +178,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     return options;
   }
 
-  private _prepareAddons(connection: ITerminalConnection) {
-    this._attachAddon = new AttachAddon(connection);
+  private _prepareAddons() {
+    this._attachAddon = new AttachAddon();
     this._searchAddon = new SearchAddon();
     this._fitAddon = new FitAddon();
     this._filelinksAddon = new FilePathAddon(this.workspace, this.fileService, this.editorService, this.keyboard);
@@ -214,8 +215,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     }));
   }
 
-  private _attachXterm(connection: ITerminalConnection) {
-    this._prepareAddons(connection);
+  private _attachXterm() {
+    this._prepareAddons();
     this._loadAddons();
     this._xtermEvents();
 
@@ -229,19 +230,25 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private async _doAttach() {
     const sessionId = this.id;
     const type = this.preference.get<string>('terminal.type');
-    const connection = await this.service.attach(sessionId, this._term, this._options, type);
+    this._attachXterm();
+
+    // 获取初始化的宽高，必须首先获取到外层的 dom 节点，所以这里需要等待
+    await this._rendered.promise;
+
+    const { rows, cols } = this._fitAddon.proposeDimensions();
+    const connection = await this.service.attach(sessionId, this._term, rows, cols, this._options, type);
 
     if (!connection) {
       this._attached.resolve();
       return;
     }
 
+    this._attachAddon.setConnection(connection);
     this.addDispose(connection.onData((e) => {
       this.ptyProcessMessageEvent.fire({ id: this.id, message: e.toString() });
     }));
 
     this.name = (this.name || connection.name) || 'shell';
-    this._attachXterm(connection);
     this._ready = true;
     this._attached.resolve();
   }
@@ -267,12 +274,13 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   layout() {
     this._checkReady();
     if (!this._term.element || this._term.element.clientHeight === 0 || this._term.element.clientWidth === 0) {
-      this._container.innerHTML = '';
-      this._term.open(this._container);
-
-      try {
-        this._fitAddon.fit();
-      } catch { /** nothing */ }
+      setTimeout(() => {
+        this._container.innerHTML = '';
+        this._term.open(this._container);
+        try {
+          this._fitAddon.fit();
+        } catch { /** nothing */ }
+      }, 0);
     } else {
       this._fitAddon.fit();
     }
@@ -280,9 +288,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private async _firstOnRender() {
     this._widget.element.appendChild(this._container);
+    this._term.open(this._container);
+    this._rendered.resolve();
     await this.attached.promise;
     this._widget.name = this.name;
-    this.layout();
   }
 
   @debounce(100)

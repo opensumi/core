@@ -1,6 +1,6 @@
 import { Terminal, ILinkMatcherOptions, ITerminalAddon } from 'xterm';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import { URI, Disposable } from '@ali/ide-core-common';
+import { URI, Disposable, Deferred } from '@ali/ide-core-common';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { TerminalKeyBoardInputService } from './terminal.input';
@@ -99,13 +99,15 @@ export class FilePathAddon extends Disposable implements ITerminalAddon {
 
 export class AttachAddon extends Disposable implements ITerminalAddon {
   private _connection: ITerminalConnection;
+  private _connected: Deferred<void> = new Deferred();
 
-  constructor(connection: ITerminalConnection) {
-    super();
+  public setConnection(connection: ITerminalConnection) {
     this._connection = connection;
+    this._connected.resolve();
   }
 
-  public activate(terminal: Terminal): void {
+  public async activate(terminal: Terminal): Promise<void> {
+    await this._connected.promise;
     this.addDispose(
       this._connection.onData((data: string | ArrayBuffer) => {
         terminal.write(typeof data === 'string' ? data : new Uint8Array(data));
