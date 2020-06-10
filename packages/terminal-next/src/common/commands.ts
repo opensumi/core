@@ -1,7 +1,7 @@
 import { localize } from '@ali/ide-core-common';
 
 export namespace TERMINAL_COMMANDS {
-  const CATEGORY = 'Terminal';
+  const CATEGORY = localize('terminal.name');
 
   export const SPLIT = {
     id: 'terminal.split',
