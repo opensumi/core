@@ -1,9 +1,10 @@
+import { IFileService, FileStat } from '@ali/ide-file-service';
+import md5 = require('md5');
+
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { FileSchemeNodeModule } from '../../src/node';
 import { IFileSchemeDocNodeService } from '../../src/common';
-import { IFileService, FileStat } from '@ali/ide-file-service';
-import md5 = require('md5');
-import { FileSchemeDocNodeServiceImpl } from '../../src/node/file-doc-node';
+import { FileSchemeDocNodeServiceImpl } from '../../src/node/file-scheme-doc.service';
 
 describe('node file doc service test', () => {
 
