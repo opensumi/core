@@ -15,6 +15,17 @@ export default observer(() => {
   const errorService = useInjectable<ITerminalErrorService>(ITerminalErrorService);
   const { errors } = errorService;
   const { groups, currentGroupIndex, currentGroupId } = view;
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  search.onOpen(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+
+      if (inputRef.current.value.length > 0) {
+        inputRef.current.setSelectionRange(0, inputRef.current.value.length);
+      }
+    }
+  });
 
   const renderWidget = (widget: IWidget) => {
     const client = controller.findClientFromWidgetId(widget.id);
@@ -55,6 +66,7 @@ export default observer(() => {
         search.show && <div className={ styles.terminalSearch }>
           <input
             autoFocus
+            ref={ inputRef }
             placeholder='查找'
             value={ search.input }
             onChange={ (event) => searchInput(event) }
