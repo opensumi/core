@@ -25,8 +25,8 @@ export default observer(() => {
               editable={ group.editable }
               name={ group.snapshot || 'init...' }
               selected={ view.currentGroup && view.currentGroup.id === group.id }
-              onInputBlur={ () => group.edit() }
-              onInputEnter={ (id: string, name: string) => group.rename(name) }
+              onInputBlur={ () => group.unedit() }
+              onInputEnter={ (_: string, name: string) => group.rename(name) }
               onClick={ () => view.selectGroup(index) }
               onClose={ () => view.removeGroup(index) }
               onContextMenu={ (event) => menuService.onTabContextMenu(event, index) }
