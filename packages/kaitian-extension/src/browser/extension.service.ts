@@ -224,8 +224,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       },
     });
 
-    await this.initBrowserDependency();
-
     if (!this.appConfig.noExtHost) {
       await this.startProcess(true);
     }
@@ -470,7 +468,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     return workspaceStorage.get<number>(extension.extensionId, globalEnableFlag) === EXTENSION_ENABLE.ENABLE;
   }
 
-  private async initBrowserDependency() {
+  private async initBrowserDependency(extension: IExtension) {
     getAMDDefine()('React', [], () => {
       return React;
     });
@@ -478,7 +476,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       return ReactDOM;
     });
     getAMDDefine()('kaitian-browser', [], () => {
-      return createBrowserApi(this.injector);
+      return createBrowserApi(this.injector, false, extension, this.protocol);
     });
   }
   private async initBaseData() {
@@ -728,7 +726,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         const rawExtension = this.extensionMap.get(extension.path);
         if (this.appConfig.useExperimentalShadowDom) {
           this.registerPortalShadowRoot(extension.id);
-          const { moduleExports, proxiedHead } = await this.loadBrowserScriptByMockLoader(browserScriptURI.toString(), extension.id, extension.extendConfig.browser.componentId);
+          const { moduleExports, proxiedHead } = await this.loadBrowserScriptByMockLoader<IKaitianBrowserContributions>(browserScriptURI.toString(), extension, true /** use export default ... */);
           this.registerBrowserComponent(this.normalizeDeprecatedViewsConfig(moduleExports, extension, proxiedHead), rawExtension!);
         } else {
           const browserExported = await this.loadBrowser(browserScriptURI.toString());
@@ -756,9 +754,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     return ExtensionServiceImpl.tabBarLocation.includes(location) ? 'replace' : 'add';
   }
 
-  private async getExtensionModuleExports(url: string, extensionId: string, viewsProxies: string[]): Promise<{ moduleExports: any; proxiedHead?: HTMLHeadElement }> {
+  private async getExtensionModuleExports(url: string, extension: IExtension): Promise<{ moduleExports: any; proxiedHead?: HTMLHeadElement }> {
     if (this.appConfig.useExperimentalShadowDom) {
-      return await this.loadBrowserScriptByMockLoader2<IKaitianBrowserContributions>(url, extensionId, viewsProxies);
+      return await this.loadBrowserScriptByMockLoader<IKaitianBrowserContributions>(url, extension, false /** use named exports ... */);
     }
     const moduleExports = await this.loadBrowser(url);
     return { moduleExports };
@@ -785,7 +783,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       const browserModuleUri = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(packageJSON.kaitianContributes.browserMain).toString()));
       if (packageJSON.kaitianContributes.browserViews) {
         const { browserViews } = packageJSON.kaitianContributes;
-        const { moduleExports, proxiedHead } = await this.getExtensionModuleExports(browserModuleUri.toString(), extension.id, packageJSON.kaitianContributes.viewsProxies);
+        const { moduleExports, proxiedHead } = await this.getExtensionModuleExports(browserModuleUri.toString(), extension);
         const viewsConfig = Object.keys(browserViews).reduce((config, location) => {
           config[location] = {
             type: this.getRegisterViewKind(location as KtViewLocation),
@@ -898,37 +896,35 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   }
 
-  private async loadBrowserScriptByMockLoader(browerPath: string, extensionId: string, componentIds: string[]): Promise<{ moduleExports: any, proxiedHead: HTMLHeadElement }> {
+  /**
+   * 对于使用 kaitian.js 方式注册的 UI ，使用 default 导出
+   * @example
+   * ```ts
+   * export default {
+   *    left: {...},
+   *    right: {...}
+   * }
+   * ```
+   * 使用 browserViews Contributes 注册的 UI，不使用 default 导出，因为这种入口只导出组件，不包含 UI 相关配置
+   * @example
+   * ```ts
+   * export const Component = {...};
+   * export const ComponentB = {...};
+   * ```
+   */
+  private async loadBrowserScriptByMockLoader<T>(browerPath: string, extension: IExtension, defaultExports: boolean): Promise<{ moduleExports: T, proxiedHead: HTMLHeadElement }> {
     const pendingFetch = await fetch(decodeURIComponent(browerPath));
-    const { _module, _exports, _require } = getMockAmdLoader(this.injector, extensionId, componentIds);
-    const _stylesCollection = [];
+    const { _module, _exports, _require } = getMockAmdLoader<T>(this.injector, extension, this.protocol);
+    const stylesCollection = [];
     const proxiedHead = document.createElement('head');
     const proxiedDocument = createProxiedDocument(proxiedHead);
     const proxiedWindow = createProxiedWindow(proxiedDocument, proxiedHead);
 
     const initFn = new Function('module', 'exports', 'require', 'styles', 'document', 'window', await pendingFetch.text());
 
-    initFn(_module, _exports, _require, _stylesCollection, proxiedDocument, proxiedWindow);
+    initFn(_module, _exports, _require, stylesCollection, proxiedDocument, proxiedWindow);
     return {
-      moduleExports: _module.exports.default,
-      proxiedHead,
-    };
-  }
-
-  private async loadBrowserScriptByMockLoader2<T>(browerPath: string, extensionId: string, componentIds: string[]): Promise<{ moduleExports: T, proxiedHead: HTMLHeadElement }> {
-    const pendingFetch = await fetch(decodeURIComponent(browerPath));
-    const { _module, _exports, _require } = getMockAmdLoader<T>(this.injector, extensionId, componentIds);
-    const _stylesCollection = [];
-    const proxiedHead = document.createElement('head');
-    const proxiedDocument = createProxiedDocument(proxiedHead);
-    const proxiedWindow = createProxiedWindow(proxiedDocument, proxiedHead);
-
-    const initFn = new Function('module', 'exports', 'require', 'styles', 'document', 'window', await pendingFetch.text());
-
-    initFn(_module, _exports, _require, _stylesCollection, proxiedDocument, proxiedWindow);
-    return {
-      // @ts-ignore
-      moduleExports: _module.exports,
+      moduleExports: defaultExports ? _module.exports.default : _module.exports,
       proxiedHead,
     };
   }
@@ -1050,8 +1046,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   public async $activateExtension(extensionPath: string): Promise<void> {
+
     const extension = this.extensionMap.get(extensionPath);
     if (extension) {
+      await this.initBrowserDependency(extension);
       extension.activate();
     }
   }

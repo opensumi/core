@@ -1,20 +1,17 @@
-import * as React from 'react';
-import * as Components from '@ali/ide-core-browser/lib/components';
 
 import { URI, localize, getIcon } from '@ali/ide-core-browser';
-
 import { Scroll } from '@ali/ide-editor/lib/browser/component/scroll/scroll';
 import { ResizeHandleHorizontal, ResizeHandleVertical } from '@ali/ide-core-browser/lib/components';
-
 import { PlainWebview } from '@ali/ide-webview';
-
 import { ToolBarPosition } from '@ali/ide-toolbar';
 import { EditorComponentRenderMode } from '@ali/ide-editor/lib/browser';
-
 import { Injector } from '@ali/common-di';
 import { IThemeService, getColorRegistry } from '@ali/ide-theme';
-import { ExtensionService } from '../../common';
-import ReactDOM = require('react-dom');
+
+import { createBrowserCommandsApiFactory } from './commands';
+import { createBrowserComponents } from './components';
+import { IExtension } from '../../common';
+import { RPCProtocol } from '@ali/ide-connection';
 
 /**
  * Browser 尽量只export视图相关的少量API
@@ -22,29 +19,15 @@ import ReactDOM = require('react-dom');
  * 1. browser只暴露getter，任何注册、调用等会产生副作用的行为全部放入逻辑层
  * @param injector
  */
-export function createBrowserApi(injector: Injector, extensionId?: string, componentIds?: string[]) {
+export function createBrowserApi(injector: Injector, useProxy: boolean, extension: IExtension, rpcProtocol?: RPCProtocol) {
 
-  const extensionService: ExtensionService = injector.get(ExtensionService);
-  let components = Components;
+  const commands = createBrowserCommandsApiFactory(injector, extension, rpcProtocol);
+  const components = createBrowserComponents(injector, useProxy, extension);
 
-  if (extensionId && componentIds) {
-    components = new Proxy(Components, {
-      get(target, prop) {
-        if (prop === 'Dialog' || prop === 'Overlay') {
-          const portalRoot = extensionService.getPortalShadowRoot(extensionId);
-          const OriginalComponent = Components[prop];
-          const proxiedComponent = (props) => React.createElement(OriginalComponent, { ...props, getContainer: () => {
-            return portalRoot;
-          } });
-          return proxiedComponent;
-        }
-        return target[prop];
-      },
-    });
-  }
   return {
     // Components
     ...components,
+    commands,
     Scroll,
     ResizeHandleHorizontal,
     ResizeHandleVertical,

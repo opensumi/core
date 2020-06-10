@@ -26,7 +26,7 @@ export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extH
         isBuiltin: extension.isBuiltin,
       };
 
-      return extHostCommands.executeCommandWithExtensionInfo<T>(id, extensionInfo, ...args);
+      return extHostCommands.$executeCommandWithExtensionInfo<T>(id, extensionInfo, ...args);
     },
     getCommands(filterInternal: boolean = false): Thenable<string[]> {
       return extHostCommands.getCommands(filterInternal);
@@ -226,7 +226,7 @@ export class ExtHostCommands implements IExtHostCommands {
     });
   }
 
-  async executeCommandWithExtensionInfo<T>(id: string, extensionInfo: IExtensionInfo, ...args: any[] ): Promise<T | undefined> {
+  async $executeCommandWithExtensionInfo<T>(id: string, extensionInfo: IExtensionInfo, ...args: any[] ): Promise<T | undefined> {
     if (this.commands.has(id)) {
       const isPermitted = this.isPermittedCommand(id, extensionInfo, ...args);
       if (!isPermitted) {

@@ -3,6 +3,8 @@ import * as ReactDOM from 'react-dom';
 
 import { isElectronEnv } from '@ali/ide-core-common';
 import { createBrowserApi } from './kaitian-browser';
+import { IExtension } from '../common';
+import { RPCProtocol } from '@ali/ide-connection';
 
 export function getAMDRequire() {
   if (isElectronEnv()) {
@@ -17,7 +19,7 @@ export function getAMDRequire() {
   }
 }
 
-export function getMockAmdLoader<T>(injector, extensionId: string, componentIds: string[]) {
+export function getMockAmdLoader<T>(injector, extension: IExtension, rpcProtocol?: RPCProtocol) {
   const _exports: { default?: any } | T = {};
   const _module = { exports: _exports };
   const _require = (request: string) => {
@@ -26,7 +28,8 @@ export function getMockAmdLoader<T>(injector, extensionId: string, componentIds:
     } else if (request === 'ReactDOM') {
       return ReactDOM;
     } else if (request === 'kaitian-browser') {
-      return createBrowserApi(injector, extensionId, componentIds);
+      /** 使用代理过的 ide-components */
+      return createBrowserApi(injector, true, extension, rpcProtocol);
     }
   };
   return { _module, _exports, _require };
