@@ -145,6 +145,9 @@ export class OpenedEditorService extends Tree {
    * @memberof FileTreeAPI
    */
   public async getReadableTooltip(path: URI) {
+    if (path.scheme !== 'file') {
+      return '';
+    }
     const roots = await this.workspaceService.roots;
     for (const root of roots) {
       const rootUri = new URI(root.uri);

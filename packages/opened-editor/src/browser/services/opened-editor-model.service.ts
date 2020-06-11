@@ -149,7 +149,7 @@ export class OpenedEditorModelService {
 
     this.disposableCollection.push(this.labelService.onDidChange(() => {
       // 当labelService注册的对应节点图标变化时，通知视图更新
-      this.treeModel.dispatchChange();
+      this.refresh();
     }));
 
     this.disposableCollection.push(this.editorService.onActiveResourceChange(() => {

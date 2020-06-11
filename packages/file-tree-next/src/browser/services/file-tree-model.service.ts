@@ -249,7 +249,7 @@ export class FileTreeModelService {
     }));
     this.disposableCollection.push(this.labelService.onDidChange(() => {
       // 当labelService注册的对应节点图标变化时，通知视图更新
-      this.treeModel.dispatchChange();
+      this.fileTreeService.refresh();
     }));
     this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
       this.loadingDecoration.addTarget(target);
