@@ -92,7 +92,7 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
     disposer.addDispose(this.cssManager.addClass(inlineClassName, inlineStyles));
     if (options.after) {
       const styles = this.resolveContentCSSStyle(options.after);
-      disposer.addDispose(this.cssManager.addClass(key + '-after:after', styles));
+      disposer.addDispose(this.cssManager.addClass(key + '-after::after', styles));
       afterContentClassName = key + '-after';
       // 最新版chrome 中 document.caretRangeFromRange 的行为有所改变
       // 如果目标位置命中的是两个inline元素之间, 它会认为是前一个元素的内容。
@@ -104,7 +104,7 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
     }
     if (options.before) {
       const styles = this.resolveContentCSSStyle(options.before);
-      disposer.addDispose(this.cssManager.addClass(key + '-before:before', styles));
+      disposer.addDispose(this.cssManager.addClass(key + '-before::before', styles));
       beforeContentClassName = key + '-before';
       disposer.addDispose(this.cssManager.addClass(beforeContentClassName, {display: 'inline-block'} as any));
     }
