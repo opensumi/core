@@ -63,7 +63,7 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
     if (EditorFileGroup.is(node)) {
       return null;
     }
-    const iconClass = labelService.getIcon((node as EditorFile).uri, { isDirectory: false });
+    const iconClass = node.resource.icon || labelService.getIcon((node as EditorFile).uri, { isDirectory: false });
     return <div className={cls(styles.file_icon, iconClass)} style={{ height: OPENED_EDITOR_TREE_NODE_HEIGHT, lineHeight: `${OPENED_EDITOR_TREE_NODE_HEIGHT}px` }}>
     </div>;
   };
