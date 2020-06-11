@@ -224,6 +224,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       },
     });
 
+    await this.initCommonBrowserDependency();
+
     if (!this.appConfig.noExtHost) {
       await this.startProcess(true);
     }
@@ -468,17 +470,21 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     return workspaceStorage.get<number>(extension.extensionId, globalEnableFlag) === EXTENSION_ENABLE.ENABLE;
   }
 
-  private async initBrowserDependency(extension: IExtension) {
+  public async initCommonBrowserDependency() {
     getAMDDefine()('React', [], () => {
       return React;
     });
     getAMDDefine()('ReactDOM', [], () => {
       return ReactDOM;
     });
+  }
+
+  public async initKaitianBrowserAPIDependency(extension: IExtension) {
     getAMDDefine()('kaitian-browser', [], () => {
       return createBrowserApi(this.injector, false, extension, this.protocol);
     });
   }
+
   private async initBaseData() {
     if (this.appConfig.extensionDir) {
       this.extensionScanDir.push(this.appConfig.extensionDir);
@@ -1046,10 +1052,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   public async $activateExtension(extensionPath: string): Promise<void> {
-
     const extension = this.extensionMap.get(extensionPath);
     if (extension) {
-      await this.initBrowserDependency(extension);
       extension.activate();
     }
   }

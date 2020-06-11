@@ -92,6 +92,7 @@ export abstract class ExtensionService {
   abstract getShadowRootBody(id: string): HTMLElement | undefined;
   abstract registerPortalShadowRoot(extensionId: string): void;
   abstract getPortalShadowRoot(extensionId: string): ShadowRoot | undefined;
+  abstract async initKaitianBrowserAPIDependency(extension: IExtension): Promise<void>;
 
   onDidExtensionActivated: Event<IExtensionProps>;
   eagerExtensionsActivated: Deferred<void>;

@@ -114,6 +114,9 @@ export class Extension extends Disposable implements IExtension {
       return this._activating;
     }
 
+    // initKaitianBrowserAPIDependency 时依赖 extension 实例，所以在插件激活前做这一步
+    await this.extensionService.initKaitianBrowserAPIDependency(this);
+
     this._activating = this.extensionService.activeExtension(this).then(() => {
       this._activated = true;
       this.didActivated.fire(this.toJSON());
