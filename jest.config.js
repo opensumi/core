@@ -37,6 +37,8 @@ module.exports = {
     '/packages/quick-open/entry',
     // 终端渲染测试暂时不跟随单元测试
     '/packages/terminal-next/__tests__/browser/render.test.ts',
+    // ci 环境可能无法正常创建 pty 后端，需要 mock 一下 service
+    '/packages/terminal-next/__tests__/browser/client.test.ts',
   ],
   coveragePathIgnorePatterns: [
     '/dist/',
