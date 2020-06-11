@@ -109,7 +109,11 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
   }
 
   async attach(sessionId: string, _: Terminal, rows: number, cols: number, options = {}, type?: string) {
-    let shellPath;
+    let shellPath: string | undefined;
+    // default 的情况交给系统环境来决定使用的终端类型
+    if ( type === 'default') {
+      type = undefined;
+    }
     if (type) {
       if (isWindows) {
         shellPath = {
