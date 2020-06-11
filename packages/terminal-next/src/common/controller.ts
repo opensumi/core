@@ -40,6 +40,7 @@ export interface ITerminalSearchService {
   clear(): void;
   close(): void;
   search(): void;
+  onOpen: Event<void>;
 }
 
 export const ITerminalGroupViewService = Symbol('ITerminalGroupViewService');
