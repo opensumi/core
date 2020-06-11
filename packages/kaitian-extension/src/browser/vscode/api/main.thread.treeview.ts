@@ -3,7 +3,7 @@ import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { TreeViewItem, TreeViewBaseOptions } from '../../../common/vscode';
 import { TreeItemCollapsibleState, ICommand } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { TreeNode, MenuPath, Emitter, DisposableStore, toDisposable } from '@ali/ide-core-browser';
+import { TreeNode, MenuPath, Emitter, DisposableStore, toDisposable, isUndefined } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { ExtensionTabbarTreeView } from '../../components';
 import { IIconService, IconType } from '@ali/ide-theme';
@@ -164,7 +164,7 @@ export class TreeViewDataProviderMain {
    * @param item tree view item from the ext
    */
   async createTreeNode(item: TreeViewItem): Promise<TreeNode> {
-    if (item.collapsibleState !== TreeItemCollapsibleState.None) {
+    if (!isUndefined(item.collapsibleState) && item.collapsibleState !== TreeItemCollapsibleState.None) {
       return await this.createFoldNode(item);
     }
     return await this.createNormalNode(item);
