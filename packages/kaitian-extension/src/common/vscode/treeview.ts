@@ -37,6 +37,8 @@ export class TreeViewItem {
 
   icon?: string;
 
+  description?: string;
+
   iconUrl?: IconUrl;
 
   themeIconId?: 'folder' | 'file';
