@@ -94,10 +94,6 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
                 },
               ]}
               menus={commentThreadContext}
-              afterClick={() => {
-                setReplyText('');
-                commentIsEmptyContext.set(true);
-              }}
             />
           </div>
         </div>
