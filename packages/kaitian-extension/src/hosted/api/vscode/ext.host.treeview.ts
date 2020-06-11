@@ -291,6 +291,7 @@ class ExtHostTreeView<T> implements IDisposable {
           icon,
           iconUrl,
           themeIconId,
+          description: treeItem.description,
           resourceUri: treeItem.resourceUri,
           tooltip: treeItem.tooltip,
           collapsibleState: treeItem.collapsibleState,
