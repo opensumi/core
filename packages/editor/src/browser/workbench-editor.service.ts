@@ -816,11 +816,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
     try {
       const previewMode = this.preferenceService.get('editor.previewMode') && (isNullOrUndefined(options.preview) ? true : options.preview);
-      if ((options && options.disableNavigate) || (options && options.backend)) {
-        // no-op
-      } else {
-        this.commands.tryExecuteCommand(FILE_COMMANDS.LOCATION.id, uri);
-      }
       if (this.currentResource && this.currentResource.uri.isEqual(uri)) {
         // 就是当前打开的resource
         if (options.focus && this.currentEditor) {
@@ -828,8 +823,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }
         if (options.range && this.currentEditor) {
           this.currentEditor.monacoEditor.revealRangeInCenter(options.range);
-          this.currentEditor.monacoEditor.setSelection(options.range)
-;        }
+          this.currentEditor.monacoEditor.setSelection(options.range);
+        }
+        if ((options && options.disableNavigate) || (options && options.backend)) {
+          // no-op
+        } else {
+          this.commands.tryExecuteCommand(FILE_COMMANDS.LOCATION.id, uri);
+        }
         return {
           group: this,
           resource: this.currentResource,
@@ -872,6 +872,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           group: this,
           resource,
         }));
+        if ((options && options.disableNavigate) || (options && options.backend)) {
+          // no-op
+        } else {
+          this.commands.tryExecuteCommand(FILE_COMMANDS.LOCATION.id, uri);
+        }
         return {
           group: this,
           resource,
