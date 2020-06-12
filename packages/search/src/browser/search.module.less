@@ -136,6 +136,12 @@
         background-repeat: no-repeat;
         background-position: center;
         border: 1px solid transparent;
+        cursor: pointer;
+        opacity: .7;
+
+        &:hover {
+          opacity: 1;
+        }
 
         &::before {
           display: inline-block;
@@ -147,6 +153,7 @@
       .select {
         background-color: var(--inputOption-activeBackground);
         border-color: var(--inputOption-activeBorder);
+        opacity: 1;
       }
     }
 
