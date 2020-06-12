@@ -2,7 +2,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadPreference, PreferenceData, PreferenceChangeExt } from '../../../common/vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { ConfigurationTarget } from '../../../common/vscode';
-import { PreferenceService, PreferenceProviderProvider, PreferenceScope, Deferred, DisposableCollection, PreferenceSchemaProvider } from '@ali/ide-core-browser';
+import { PreferenceService, PreferenceProviderProvider, PreferenceScope, DisposableCollection, PreferenceSchemaProvider } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 
@@ -18,6 +18,10 @@ export function getPreferences(preferenceProviderProvider: PreferenceProviderPro
       }
     } else {
       result[scope] = provider.getPreferences();
+      const languagePreferences = provider.getLanguagePreferences();
+      Object.keys(languagePreferences).forEach((language) => {
+        result[scope][`[${language}]`] = languagePreferences[language];
+      });
     }
     return result;
   }, {} as PreferenceData);
@@ -44,6 +48,7 @@ export class MainThreadPreference implements IMainThreadPreference {
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostPreference);
     this.toDispose.push(this.preferenceService.onPreferencesChanged((changes) => {
+      // TODO: 这块目前一直是全量发送？应该增量发送就能用了吧？未来优化 - by 吭头
       const roots = this.workspaceService.tryGetRoots();
       const data = getPreferences(this.preferenceProviderProvider, roots);
       const eventData: PreferenceChangeExt[] = [];

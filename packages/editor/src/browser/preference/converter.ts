@@ -11,7 +11,7 @@ export interface IConvertedMonacoOptions {
  * @param preferenceService
  * @param updatingKey 需要处理的Preference key。如果没有这个值，默认处理全部。
  */
-export function getConvertedMonacoOptions(preferenceService: PreferenceService, updatingKey?: string[]): IConvertedMonacoOptions {
+export function getConvertedMonacoOptions(preferenceService: PreferenceService, resourceUri?: string, language?: string, updatingKey?: string[]): IConvertedMonacoOptions {
   const editorOptions: Partial<monaco.editor.IEditorOptions> = {};
   const diffOptions: Partial<monaco.editor.IEditorOptions> = {};
   const modelOptions: Partial<monaco.editor.ITextModelUpdateOptions> = {};
@@ -20,7 +20,7 @@ export function getConvertedMonacoOptions(preferenceService: PreferenceService, 
   const diffEditorOptionsKeys = updatingKey ? updatingKey.filter((key) => diffEditorOptionsConverters.has(key)) : Array.from(diffEditorOptionsConverters.keys());
 
   editorOptionsKeys.forEach((key) => {
-    const value = preferenceService.get(key);
+    const value = preferenceService.get(key, undefined, resourceUri, language);
     if (value === undefined) {
       return;
     }
@@ -33,7 +33,7 @@ export function getConvertedMonacoOptions(preferenceService: PreferenceService, 
   });
 
   textModelUpdateOptionsKeys.forEach((key) => {
-    const value = preferenceService.get(key);
+    const value = preferenceService.get(key, undefined, resourceUri, language);
     if (value === undefined) {
       return;
     }
@@ -46,7 +46,7 @@ export function getConvertedMonacoOptions(preferenceService: PreferenceService, 
   });
 
   diffEditorOptionsKeys.forEach((key) => {
-    const value = preferenceService.get(key);
+    const value = preferenceService.get(key, undefined, resourceUri, language);
     if (value === undefined) {
       return;
     }

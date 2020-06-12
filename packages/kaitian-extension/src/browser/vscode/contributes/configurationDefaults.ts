@@ -1,6 +1,6 @@
 import { VSCodeContributePoint, Contributes } from '../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { PreferenceSchemaProvider, PreferenceSchema, PreferenceSchemaProperties } from '@ali/ide-core-browser';
+import { PreferenceSchemaProperties, OVERRIDE_PROPERTY_PATTERN, PreferenceProvider, PreferenceScope } from '@ali/ide-core-browser';
 
 export interface ConfigurationSnippets {
   body: {
@@ -13,8 +13,8 @@ export interface ConfigurationSnippets {
 @Contributes('configurationDefaults')
 export class ConfigurationDefaultsContributionPoint extends VSCodeContributePoint<PreferenceSchemaProperties> {
 
-  @Autowired(PreferenceSchemaProvider)
-  preferenceSchemaProvider: PreferenceSchemaProvider;
+  @Autowired(PreferenceProvider, { tag: PreferenceScope.Default })
+  protected readonly defaultPreferenceProvider: PreferenceProvider;
 
   contribute() {
     const contributionDefaults = this.json;
@@ -25,25 +25,17 @@ export class ConfigurationDefaultsContributionPoint extends VSCodeContributePoin
   }
 
   protected updateDefaultOverridesSchema(configurationDefaults: PreferenceSchemaProperties): void {
-    const defaultOverrides: PreferenceSchema = {
-        id: 'defaultOverrides',
-        title: 'Default Configuration Overrides',
-        properties: {},
-    };
     // tslint:disable-next-line:forin
     for (const key in configurationDefaults) {
         const defaultValue = configurationDefaults[key];
-        if (this.preferenceSchemaProvider.testOverrideValue(key, defaultValue)) {
-            defaultOverrides.properties[key] = {
-                type: 'object',
-                default: defaultValue,
-                description: `Configure editor settings to be overridden for ${key} language.`,
-            };
+        if (OVERRIDE_PROPERTY_PATTERN.test(key)) {
+            const language = key.match(OVERRIDE_PROPERTY_PATTERN)![1];
+            Object.keys(defaultValue).forEach((preferenceName) => {
+              this.defaultPreferenceProvider.setPreference(preferenceName, defaultValue[preferenceName], undefined, language);
+            });
         }
     }
-    if (Object.keys(defaultOverrides.properties).length) {
-        this.preferenceSchemaProvider.setSchema(defaultOverrides);
-    }
+
   }
 
 }

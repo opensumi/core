@@ -133,6 +133,7 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   }
 
   registerSchema(registry: ISchemaRegistry) {
+    // TODO: schema 应包含类似 [json] 这种 override
     registry.registerSchema('vscode://schemas/settings/user', this.schemaProvider.getCombinedSchema(), ['settings.json', USER_PREFERENCE_URI.toString()]);
   }
 

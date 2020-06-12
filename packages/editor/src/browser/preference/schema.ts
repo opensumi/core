@@ -58,7 +58,7 @@ export const EDITOR_DEFAULTS = {
   readOnly: false,
   mouseStyle: 'text',
   disableLayerHinting: false,
-  automaticLayout: false,
+  automaticLayout: true, // 开天修改
   wordWrap: 'off',
   wordWrapColumn: 80,
   wordWrapMinified: true,
@@ -108,7 +108,7 @@ export const EDITOR_DEFAULTS = {
     fontLigatures: false,
     renderIndentGuides: true,
     highlightActiveIndentGuide: true,
-    renderLineHighlight: 'line',
+    renderLineHighlight: 'none', // 开天修改
     scrollbar: {
       vertical: 1, // ScrollbarVisibility.Auto,
       horizontal: 1, // ScrollbarVisibility.Auto,
@@ -154,7 +154,7 @@ export const EDITOR_DEFAULTS = {
     suggestOnTriggerCharacters: true,
     acceptSuggestionOnEnter: 'on',
     acceptSuggestionOnCommitCharacter: true,
-    wordBasedSuggestions: true,
+    wordBasedSuggestions: false, // 开天修改
     suggestSelection: 'recentlyUsed',
     suggestFontSize: 0,
     suggestLineHeight: 0,
@@ -996,7 +996,7 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   },
   'diffEditor.ignoreTrimWhitespace': {
     'type': 'boolean',
-    'default': true,
+    'default': false, // 开天修改
     'description': localize('ignoreTrimWhitespace', 'Controls whether the diff editor shows changes in leading or trailing whitespace as diffs.'),
   },
   'editor.largeFileOptimizations': {
@@ -1201,4 +1201,6 @@ export const EditorPreferences = Symbol('EditorPreference');
 export type EditorPreferences = PreferenceProxy<{
   'editor.readonlyFiles': string[],
   'editor.previewMode': boolean,
+  'editor.autoSaveDelay': number;
+  'editor.autoSave': string;
 }>;

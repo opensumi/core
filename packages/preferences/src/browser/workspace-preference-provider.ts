@@ -74,25 +74,30 @@ export class WorkspacePreferenceProvider extends PreferenceProvider {
     });
   }
 
-  get<T>(preferenceName: string, resourceUri: string | undefined = this.ensureResourceUri()): T | undefined {
+  get<T>(preferenceName: string, resourceUri: string | undefined = this.ensureResourceUri(), language?: string): T | undefined {
     const delegate = this.delegate;
-    return delegate ? delegate.get<T>(preferenceName, resourceUri) : undefined;
+    return delegate ? delegate.get<T>(preferenceName, resourceUri, language) : undefined;
   }
 
-  resolve<T>(preferenceName: string, resourceUri: string | undefined = this.ensureResourceUri()): { value?: T, configUri?: URI } {
+  resolve<T>(preferenceName: string, resourceUri: string | undefined = this.ensureResourceUri(), language?: string): { value?: T, configUri?: URI } {
     const delegate = this.delegate;
-    return delegate ? delegate.resolve<T>(preferenceName, resourceUri) : {};
+    return delegate ? delegate.resolve<T>(preferenceName, resourceUri, language) : {};
   }
 
-  getPreferences(resourceUri: string | undefined = this.ensureResourceUri()): { [p: string]: any } {
+  getPreferences(resourceUri: string | undefined = this.ensureResourceUri(), language?: string): { [p: string]: any } {
     const delegate = this.delegate;
-    return delegate ? delegate.getPreferences(resourceUri) : {};
+    return delegate ? delegate.getPreferences(resourceUri, language) : {};
   }
 
-  async setPreference(preferenceName: string, value: any, resourceUri: string | undefined = this.ensureResourceUri()): Promise<boolean> {
+  getLanguagePreferences(resourceUri: string | undefined = this.ensureResourceUri()) {
+    const delegate = this.delegate;
+    return delegate ? delegate.getLanguagePreferences(resourceUri) : {};
+  }
+
+  async setPreference(preferenceName: string, value: any, resourceUri: string | undefined = this.ensureResourceUri(), language?: string): Promise<boolean> {
     const delegate = this.delegate;
     if (delegate) {
-      return delegate.setPreference(preferenceName, value, resourceUri);
+      return delegate.setPreference(preferenceName, value, resourceUri, language);
     }
     return false;
   }
