@@ -27,8 +27,8 @@ import { MainThreadWorkspace } from '@ali/ide-kaitian-extension/lib/browser/vsco
 import { IExtensionStorageService } from '@ali/ide-extension-storage/lib/common';
 import { ExtHostStorage } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.storage';
 import { VariableModule } from '@ali/ide-variable/lib/browser';
-import { ITerminalInternalService, ITerminalController, ITerminalExternalService } from '@ali/ide-terminal-next';
-import { TerminalInternalService, NodePtyTerminalService } from '@ali/ide-terminal-next/lib/browser/terminal.service';
+import { ITerminalInternalService, ITerminalController } from '@ali/ide-terminal-next';
+import { TerminalInternalService } from '@ali/ide-terminal-next/lib/browser/terminal.service';
 import { TerminalController } from '@ali/ide-terminal-next/lib/browser/terminal.controller';
 
 const extension = Object.assign({}, mockExtensions[0], {

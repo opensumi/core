@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser';
-import TabItem, { ItemType } from './tab.item';
-import { TerminalContextMenuService } from '../terminal.menu';
 import { ITerminalGroupViewService } from '../../common';
+import TabItem, { ItemType } from './tab.item';
+import { TerminalContextMenuService } from '../terminal.context-menu';
 
 import * as styles from './tab.module.less';
 

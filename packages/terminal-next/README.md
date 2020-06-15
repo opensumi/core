@@ -2,10 +2,10 @@
 
 ## 实现方式
 
-实现 src/common/term.ts 文件中的 ITerminalExternalService 类型，并在 src/browser/index.ts 中替换默认的 service 类型。
+实现 src/common/term.ts 文件中的 ITerminalService 类型，并在 src/browser/index.ts 中替换默认的 service 类型。
 
 ```ts
-export interface ITerminalExternalService {
+export interface ITerminalService {
   /**
    * 集成方自定义会话唯一标识的函数
    */

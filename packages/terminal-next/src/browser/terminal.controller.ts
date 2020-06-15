@@ -5,7 +5,7 @@ import { IMainLayoutService } from '@ali/ide-main-layout';
 import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
 import { IThemeService } from '@ali/ide-theme';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { ITerminalController, ITerminalClient, ITerminalClientFactory, IWidget, ITerminalInfo, ITerminalBrowserHistory, ITerminalTheme, ITerminalGroupViewService, TerminalOptions, ITerminalErrorService, ITerminalInternalService } from '../common';
+import { ITerminalController, ITerminalClient, ITerminalClientFactory, IWidget, ITerminalInfo, ITerminalBrowserHistory, ITerminalTheme, ITerminalGroupViewService, TerminalOptions, ITerminalErrorService, ITerminalInternalService, TerminalContainerId } from '../common';
 import { TerminalGroupViewService } from './terminal.view';
 import { TerminalContextKey } from './terminal.context-key';
 import { ResizeEvent, getSlotLocation, AppConfig } from '@ali/ide-core-browser';
@@ -174,7 +174,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   firstInitialize() {
-    this._tabbarHandler = this.layoutService.getTabbarHandler('terminal')!;
+    this._tabbarHandler = this.layoutService.getTabbarHandler(TerminalContainerId)!;
     this.themeBackground = this.terminalTheme.terminalTheme.background || '';
     this.terminalContextKey.isTerminalFocused.set(this._focus);
     this.terminalContextKey.isTerminalViewInitialized.set(true);

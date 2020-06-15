@@ -1,32 +1,28 @@
 import {
-  Domain,
-  localize,
-  ComponentContribution,
-  ComponentRegistry,
-  CommandContribution,
-  CommandRegistry,
-  TabBarToolbarContribution,
-  ToolbarRegistry,
-  ClientAppContribution,
   URI,
-  PreferenceService,
-  IPreferenceSettingsService,
-  CommandService,
-  AppConfig,
-  COMMON_COMMANDS,
+  Domain,
   getIcon,
+  AppConfig,
+  CommandService,
+  COMMON_COMMANDS,
+  CommandRegistry,
+  PreferenceService,
+  CommandContribution,
+  IPreferenceSettingsService,
 } from '@ali/ide-core-browser';
 import { Autowired } from '@ali/common-di';
-import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
-import { ITerminalController, ITerminalRestore, ITerminalGroupViewService, ITerminalSearchService, ITerminalApiService, TERMINAL_COMMANDS } from '../common';
-import TerminalTabs from './component/tab.view';
-import { TerminalKeyBoardInputService } from './terminal.input';
-import TerminalView from './component/terminal.view';
+import {
+  ITerminalController,
+  ITerminalRestore,
+  ITerminalGroupViewService,
+  ITerminalSearchService,
+  ITerminalApiService,
+  TERMINAL_COMMANDS,
+} from '../../common';
+import { TerminalKeyBoardInputService } from '../terminal.input';
 
-const TerminalViewId = 'terminal';
-
-@Domain(ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution)
-export class TerminalBrowserContribution implements ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution {
+@Domain(CommandContribution)
+export class TerminalCommandContribution implements CommandContribution {
 
   @Autowired(ITerminalController)
   protected readonly terminalController: ITerminalController;
@@ -36,9 +32,6 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
 
   @Autowired(ITerminalSearchService)
   protected readonly search: ITerminalSearchService;
-
-  @Autowired(IMainLayoutService)
-  protected readonly layoutService: IMainLayoutService;
 
   @Autowired(ITerminalRestore)
   protected readonly store: ITerminalRestore;
@@ -63,19 +56,6 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
 
   onReconnect() {
     this.terminalController.reconnect();
-  }
-
-  registerComponent(registry: ComponentRegistry) {
-    registry.register('@ali/ide-terminal-next', {
-      component: TerminalView,
-      id: 'ide-terminal-next',
-    }, {
-      title: localize('terminal.name'),
-      priority: 1,
-      activateKeyBinding: 'ctrl+`',
-      containerId: TerminalViewId,
-      titleComponent: TerminalTabs,
-    });
   }
 
   registerCommands(registry: CommandRegistry) {
@@ -210,42 +190,5 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
         this.commands.executeCommand(COMMON_COMMANDS.LOCATE_PREFERENCES.id, 'terminal');
       },
     });
-  }
-
-  registerToolbarItems(registry: ToolbarRegistry) {
-    registry.registerItem({
-      id: TERMINAL_COMMANDS.OPEN_SEARCH.id,
-      command: TERMINAL_COMMANDS.OPEN_SEARCH.id,
-      viewId: TerminalViewId,
-      tooltip: localize('terminal.search'),
-    });
-    registry.registerItem({
-      id: TERMINAL_COMMANDS.SPLIT.id,
-      command: TERMINAL_COMMANDS.SPLIT.id,
-      viewId: TerminalViewId,
-      tooltip: localize('terminal.split'),
-    });
-    registry.registerItem({
-      id: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
-      command: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
-      viewId: TerminalViewId,
-      tooltip: localize('terminal.menu.clearGroups'),
-    });
-  }
-
-  onStart() {
-    this.terminalInput.listen();
-  }
-
-  // 必须等待这个事件返回，否则 tabHandler 无法保证获取
-  onDidRender() {
-    this.store.restore()
-      .then(() => {
-        this.terminalController.firstInitialize();
-      });
-  }
-
-  onStop() {
-    this.store.save();
   }
 }
