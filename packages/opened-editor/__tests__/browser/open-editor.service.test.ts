@@ -193,7 +193,7 @@ describe('OpenedEditorModelService should be work', () => {
       injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, openFile);
       openedEditorModelService.handleItemClick(node as EditorFile, TreeNodeType.TreeNode);
       expect(openFile).toBeCalledTimes(1);
-      expect(openedEditorModelService.decorations.getDecorations(node as any)?.classlist.join(' ')).toBe(cls(styles.mod_selected, styles.mod_focused));
+      expect(openedEditorModelService.decorations.getDecorations(node as any)?.classlist.join(' ')).toBe(cls(styles.mod_dirty, styles.mod_selected, styles.mod_focused));
       done();
     });
 
