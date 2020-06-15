@@ -21,7 +21,7 @@ export class MonacoBulkEditService implements monaco.editor.IBulkEditService {
 
   async apply(edit: monaco.languages.WorkspaceEdit): Promise<monaco.editor.IBulkEditResult> {
     try {
-      const {workspaceEdit, totalEdits, totalFiles} = this.convertWorkspaceEdit(edit);
+      const { workspaceEdit, totalEdits, totalFiles } = this.convertWorkspaceEdit(edit);
       await this.workspaceEditService.apply(workspaceEdit);
       return {
         ariaSummary: this.getAriaSummary(totalEdits, totalFiles),
@@ -31,7 +31,7 @@ export class MonacoBulkEditService implements monaco.editor.IBulkEditService {
     }
   }
 
-  private convertWorkspaceEdit(edit: monaco.languages.WorkspaceEdit): {workspaceEdit: IWorkspaceEdit, totalEdits: number, totalFiles: number} {
+  private convertWorkspaceEdit(edit: monaco.languages.WorkspaceEdit): { workspaceEdit: IWorkspaceEdit, totalEdits: number, totalFiles: number } {
     const workspaceEdit: IWorkspaceEdit = { edits: [] };
     let totalEdits = 0;
     let totalFiles = 0;
@@ -42,6 +42,9 @@ export class MonacoBulkEditService implements monaco.editor.IBulkEditService {
           // TODO 类型定义有问题，拿到的是URIComponents并不是monaco.Uri
           resource: URI.from(resourceTextEdit.resource as UriComponents),
           edits: resourceTextEdit.edits as ITextEdit[],
+          options: {
+            dirtyIfInEditor: true,
+          },
         };
         workspaceEdit.edits.push(tmp);
         totalEdits += 1;
@@ -57,6 +60,6 @@ export class MonacoBulkEditService implements monaco.editor.IBulkEditService {
         totalFiles += 1;
       }
     }
-    return {workspaceEdit, totalEdits, totalFiles};
+    return { workspaceEdit, totalEdits, totalFiles };
   }
 }
