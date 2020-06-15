@@ -16,6 +16,7 @@ import { CheckBox, Input, Button, IconContextProvider } from '@ali/ide-component
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
 import { Select, Option, Tabs } from '@ali/ide-components';
 import { toPreferenceReadableName, toNormalCase } from '../common';
+import { NextPreferenceItem } from './preferenceItem.view';
 
 const WorkspaceScope = {
   id: PreferenceScope.Workspace ,
@@ -165,9 +166,9 @@ export const PreferenceSection = ({section, scope}: {section: ISettingSection, s
       section.component ? <section.component scope={scope}/> :
       section.preferences.map((preference, idx) => {
         if (typeof preference === 'string') {
-          return <PreferenceItemView key={`${idx} - ${preference}`} preferenceName={preference} scope={scope} />;
+          return <NextPreferenceItem key={`${idx} - ${preference} - ${scope}`} preferenceName={preference} scope={scope} />;
         } else {
-          return <PreferenceItemView key={`${idx} - ${preference.id}`} preferenceName={preference.id} localizedName={localize(preference.localized)} scope={scope} />;
+          return <NextPreferenceItem key={`${idx} - ${preference.id} - ${scope}`} preferenceName={preference.id} localizedName={localize(preference.localized)} scope={scope} />;
         }
       }) || <div></div>
     }

@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { URI, DisposableCollection } from '@ali/ide-core-browser';
 import { PreferenceScope, PreferenceProvider } from '@ali/ide-core-browser/lib/preferences';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { WorkspaceFilePreferenceProviderFactory, WorkspaceFilePreferenceProvider } from './workspace-file-preference-provider';
+import { WorkspaceFilePreferenceProviderFactory } from './workspace-file-preference-provider';
 
 @Injectable()
 export class WorkspacePreferenceProvider extends PreferenceProvider {
@@ -51,10 +51,10 @@ export class WorkspacePreferenceProvider extends PreferenceProvider {
 
       this._delegate = delegate;
 
-      if (delegate instanceof WorkspaceFilePreferenceProvider) {
+      if (delegate) {
         this.toDisposeOnEnsureDelegateUpToDate.pushAll([
           delegate,
-          delegate.onDidPreferencesChanged((changes) => this.onDidPreferencesChangedEmitter.fire(changes)),
+          delegate.onDidPreferencesChanged((changes) => this.emitPreferencesChangedEvent(changes)),
         ]);
       }
     }
@@ -74,12 +74,12 @@ export class WorkspacePreferenceProvider extends PreferenceProvider {
     });
   }
 
-  get<T>(preferenceName: string, resourceUri: string | undefined = this.ensureResourceUri(), language?: string): T | undefined {
+  doGet<T>(preferenceName: string, resourceUri: string | undefined = this.ensureResourceUri(), language?: string): T | undefined {
     const delegate = this.delegate;
     return delegate ? delegate.get<T>(preferenceName, resourceUri, language) : undefined;
   }
 
-  resolve<T>(preferenceName: string, resourceUri: string | undefined = this.ensureResourceUri(), language?: string): { value?: T, configUri?: URI } {
+  doResolve<T>(preferenceName: string, resourceUri: string | undefined = this.ensureResourceUri(), language?: string): { value?: T, configUri?: URI } {
     const delegate = this.delegate;
     return delegate ? delegate.resolve<T>(preferenceName, resourceUri, language) : {};
   }
@@ -94,7 +94,7 @@ export class WorkspacePreferenceProvider extends PreferenceProvider {
     return delegate ? delegate.getLanguagePreferences(resourceUri) : {};
   }
 
-  async setPreference(preferenceName: string, value: any, resourceUri: string | undefined = this.ensureResourceUri(), language?: string): Promise<boolean> {
+  async doSetPreference(preferenceName: string, value: any, resourceUri: string | undefined = this.ensureResourceUri(), language?: string): Promise<boolean> {
     const delegate = this.delegate;
     if (delegate) {
       return delegate.setPreference(preferenceName, value, resourceUri, language);

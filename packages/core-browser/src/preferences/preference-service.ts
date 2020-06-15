@@ -5,7 +5,6 @@ import { PreferenceProvider, PreferenceProviderDataChange, PreferenceProviderDat
 import { PreferenceSchemaProvider } from './preference-contribution';
 import { PreferenceScope } from './preference-scope';
 import { PreferenceConfigurations } from './preference-configurations';
-import { getExternalPreferenceProvider, getExternalPreference } from './early-preferences';
 
 export interface PreferenceChange {
   readonly preferenceName: string;
@@ -92,6 +91,8 @@ export interface PreferenceService extends IDisposable {
     workspaceFolderValue: T | undefined, // Folder Preference
   } | undefined;
 
+  getProvider(scope: PreferenceScope): PreferenceProvider | undefined;
+
   resolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): PreferenceResolveResult<T>;
 }
 
@@ -163,7 +164,6 @@ export class PreferenceServiceImpl implements PreferenceService {
       for (const scope of scopes) {
         const provider = this.providerProvider(scope);
         this.preferenceProviders.set(scope, provider);
-        this.setExternalProvider(scope, provider);
         this.toDispose.push(provider.onDidPreferencesChanged((changes) =>
           this.reconcilePreferences(changes),
         ));
@@ -263,49 +263,13 @@ export class PreferenceServiceImpl implements PreferenceService {
   }
 
   /**
-   * 通知外部的配置项样式更改
-   * @private
-   * @param {PreferenceScope} scope
-   * @param {PreferenceProvider} provider
-   * @memberof PreferenceServiceImpl
-   */
-  private setExternalProvider(scope: PreferenceScope, provider: PreferenceProvider): void {
-    if (!provider) {
-      return;
-    }
-    if (provider.getPreferences) {
-      Object.keys(provider.getPreferences()).forEach((key) => {
-        const externalProvider = getExternalPreferenceProvider(key);
-        if (externalProvider) {
-          const value = provider.getPreferences()[key];
-          if (externalProvider.get(scope) !== value) {
-            provider.setPreference(key, externalProvider.get(scope));
-          }
-        }
-      });
-    }
-    if (provider.onDidPreferencesChanged) {
-      provider.onDidPreferencesChanged((e: PreferenceProviderDataChanges) => {
-        if (e) {
-          Object.keys(e).forEach((key) => {
-            const externalProvider = getExternalPreferenceProvider(key);
-            if (externalProvider) {
-              externalProvider.set(e[key].newValue, scope);
-            }
-          });
-        }
-      });
-    }
-  }
-
-  /**
    * 获取对应scope下的preferenceProvider
    * @protected
    * @param {PreferenceScope} scope
    * @returns {(PreferenceProvider | undefined)}
    * @memberof PreferenceServiceImpl
    */
-  protected getProvider(scope: PreferenceScope): PreferenceProvider | undefined {
+  public getProvider(scope: PreferenceScope): PreferenceProvider | undefined {
     return this.preferenceProviders.get(scope);
   }
 
@@ -381,22 +345,6 @@ export class PreferenceServiceImpl implements PreferenceService {
     }
     if (resolvedScope === PreferenceScope.Folder && !resourceUri) {
       throw new Error('Unable to write to Folder Settings because no resource is provided.');
-    }
-    const externalProvider = getExternalPreferenceProvider(preferenceName);
-    if (externalProvider) {
-      const oldValue = externalProvider.get(resolvedScope);
-      externalProvider.set(value, resolvedScope);
-      // FIXME 使用reconcile函数
-      if ((this.doResolve(preferenceName).scope || 0) <= resolvedScope) {
-        this.onPreferenceChangedEmitter.fire({
-          preferenceName,
-          newValue: value,
-          oldValue,
-          affects: () => false,
-          scope: resolvedScope,
-        });
-      }
-      return;
     }
     const provider = this.getProvider(resolvedScope);
     if (provider && await provider.setPreference(preferenceName, value, resourceUri)) {
@@ -496,10 +444,6 @@ export class PreferenceServiceImpl implements PreferenceService {
 
   protected doResolveWithOutCache<T>(preferenceName: string, resourceUri?: string, untilScope?: PreferenceScope, language?: string): PreferenceResolveResult<T> {
     const result: PreferenceResolveResult<T> = { scope: PreferenceScope.Default };
-    const externalProvider = getExternalPreferenceProvider(preferenceName);
-    if (externalProvider) {
-      return getExternalPreference(preferenceName, this.schema.getPreferenceProperty(preferenceName), untilScope);
-    }
     const scopes = untilScope ? PreferenceScope.getScopes().filter((s) => s <= untilScope) : PreferenceScope.getScopes();
     for (const scope of scopes) {
       if (this.schema.isValidInScope(preferenceName, scope)) {

@@ -56,7 +56,7 @@ export class MockPreferenceProvider extends PreferenceProvider {
     return {};
   }
 
-  async setPreference(key: string, value: any, resourceUri?: string): Promise<boolean> {
+  async doSetPreference(key: string, value: any, resourceUri?: string): Promise<boolean> {
     this.preferences[key] = value;
     return true;
   }

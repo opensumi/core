@@ -87,7 +87,7 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
     return this.workspaceService.tryGetRoots().map((root) => root.uri);
   }
 
-  resolve<T>(preferenceName: string, resourceUri?: string, language?: string): PreferenceResolveResult<T> {
+  doResolve<T>(preferenceName: string, resourceUri?: string, language?: string): PreferenceResolveResult<T> {
     const result: PreferenceResolveResult<T> = {};
     const groups = this.groupProvidersByConfigName(resourceUri);
     for (const group of groups.values()) {
@@ -133,7 +133,7 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
     return result;
   }
 
-  async setPreference(preferenceName: string, value: any, resourceUri?: string, language?: string): Promise<boolean> {
+  async doSetPreference(preferenceName: string, value: any, resourceUri?: string, language?: string): Promise<boolean> {
     const sectionName = preferenceName.split('.', 1)[0];
     const configName = this.configurations.isSectionName(sectionName) ? sectionName : this.configurations.getConfigName();
 
@@ -214,7 +214,7 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
   protected createProvider(options: FolderPreferenceProviderOptions): FolderPreferenceProvider {
     const provider = this.folderPreferenceProviderFactory(options);
     this.toDispose.push(provider);
-    this.toDispose.push(provider.onDidPreferencesChanged((change) => this.onDidPreferencesChangedEmitter.fire(change)));
+    this.toDispose.push(provider.onDidPreferencesChanged((change) => this.emitPreferencesChangedEvent(change)));
     return provider;
   }
 

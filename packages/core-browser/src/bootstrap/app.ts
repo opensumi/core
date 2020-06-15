@@ -31,7 +31,7 @@ import { ClientAppContribution } from '../common';
 import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
 import { RPCMessageConnection, WSChannelHandler } from '@ali/ide-connection';
 import {
-  PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId, getExternalPreferenceProvider, registerLocalStorageProvider,
+  PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId, registerLocalStorageProvider,
 } from '../preferences';
 import { injectCorePreferences } from '../core-preferences';
 import { ClientAppConfigProvider } from '../application';
@@ -498,7 +498,9 @@ export class ClientApp implements IClientApp {
   injectPreferenceService(injector: Injector, opts: IClientAppOpts): void {
     const preferencesProviderFactory = () => {
       return (scope: PreferenceScope) => {
-        return injector.get(PreferenceProvider, { tag: scope });
+        const provider: PreferenceProvider = injector.get(PreferenceProvider, { tag: scope });
+        provider.asScope(scope);
+        return provider;
       };
     };
     injectPreferenceConfigurations(this.injector);
@@ -515,12 +517,9 @@ export class ClientApp implements IClientApp {
     });
     // 设置默认配置
     if (opts.defaultPreferences) {
-      const defaultPreference: PreferenceProvider = injector.get(PreferenceProvider, {tag: PreferenceScope.Default});
+      const providerFactory: PreferenceProviderProvider = injector.get(PreferenceProviderProvider);
+      const defaultPreference: PreferenceProvider = providerFactory(PreferenceScope.Default);
       for (const key of Object.keys(opts.defaultPreferences)) {
-        const external = getExternalPreferenceProvider(key);
-        if (external) {
-          external.set(opts.defaultPreferences[key], PreferenceScope.Default);
-        }
         defaultPreference.setPreference(key, opts.defaultPreferences[key]);
       }
     }

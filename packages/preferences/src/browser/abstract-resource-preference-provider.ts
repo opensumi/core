@@ -100,7 +100,7 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     }
   }
 
-  async setPreference(key: string, value: any, resourceUri?: string, language?: string): Promise<boolean> {
+  async doSetPreference(key: string, value: any, resourceUri?: string, language?: string): Promise<boolean> {
     if (!this.contains(resourceUri)) {
       return false;
     }
@@ -190,7 +190,7 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     if (this.configurations.getPath(this.getUri()) !== this.configurations.getPaths()[0]) {
       return true;
     }
-    return preferenceValue === undefined || this.schemaProvider.validate(preferenceName, preferenceValue);
+    return preferenceValue === undefined || this.schemaProvider.validate(preferenceName, preferenceValue).valid;
   }
 
   protected parse(content: string): any {

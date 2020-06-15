@@ -6,7 +6,7 @@ import { Color, IThemeColor } from '../common/color';
 import { ThemeChangedEvent } from '../common/event';
 import { ThemeData } from './theme-data';
 import { ThemeStore } from './theme-store';
-import { Logger, getPreferenceThemeId, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService } from '@ali/ide-core-browser';
+import { Logger, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService } from '@ali/ide-core-browser';
 import { Registry } from 'vscode-textmate';
 
 const DEFAULT_THEME_ID = 'ide-dark';
@@ -87,15 +87,16 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
   public async applyTheme(themeId: string) {
     if (!themeId) {
-      themeId = getPreferenceThemeId();
+      themeId = this.preferenceService.get<string>(COLOR_THEME_SETTING)!;
     }
     const existedTheme = this.getAvailableThemeInfos().find((info) => info.themeId === themeId);
     if (!existedTheme) {
       themeId = DEFAULT_THEME_ID;
     }
-    if (this.currentThemeId === themeId) {
-      return;
-    }
+    // 这里暂时去除，否侧token颜色出不来
+    // if (this.currentThemeId === themeId) {
+    //   return;
+    // }
     const prevThemeType = this.currentTheme ? this.currentTheme.type : 'dark';
     this.currentThemeId = themeId;
     const theme = await this.getTheme(themeId);
