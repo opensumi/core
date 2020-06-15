@@ -10,7 +10,8 @@ import { TerminalController } from '../../src/browser/terminal.controller';
 import { TerminalClientFactory } from '../../src/browser/terminal.client';
 import { TerminalGroupViewService } from '../../src/browser/terminal.view';
 import { TerminalInternalService } from '../../src/browser/terminal.service';
-import { ITerminalExternalService, ITerminalTheme, ITerminalClientFactory, ITerminalController, ITerminalGroupViewService, ITerminalInternalService, IWidget } from '../../src/common';
+import { TerminalPreference } from '../../src/browser/terminal.preference';
+import { ITerminalService, ITerminalPreference, ITerminalTheme, ITerminalClientFactory, ITerminalController, ITerminalGroupViewService, ITerminalInternalService, IWidget } from '../../src/common';
 import {
   MockMainLayoutService,
   MockTerminalThemeService,
@@ -32,11 +33,15 @@ export const injector = new Injector([
     useClass: TerminalController,
   },
   {
+    token: ITerminalPreference,
+    useClass: TerminalPreference,
+  },
+  {
     token: IEventBus,
     useValue: new EventBusImpl(),
   },
   {
-    token: ITerminalExternalService,
+    token: ITerminalService,
     useValue: new MockSocketService(),
   },
   {

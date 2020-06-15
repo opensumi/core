@@ -1,8 +1,12 @@
 import { Terminal } from 'xterm';
 import { Disposable, Event, Deferred } from '@ali/ide-core-common';
-import { Event as CoreEvent } from '@ali/ide-core-browser';
 import { TerminalOptions } from './pty';
 import { IWidget } from './resize';
+
+export interface ITerminalDataEvent {
+  id: string;
+  data: string | ArrayBuffer;
+}
 
 export interface ITerminalClient extends Disposable {
   /**
@@ -54,10 +58,6 @@ export interface ITerminalClient extends Disposable {
    * 渲染窗口
    */
   widget: IWidget;
-  /**
-   * 接收到 pty 消息事件
-   */
-  onReceivePtyMessage: CoreEvent<{ id: string, message: string }>;
 
   /**
    * 终端客户端获取输入焦点
@@ -111,6 +111,16 @@ export interface ITerminalClient extends Disposable {
    * @param clear
    */
   dispose(clear?: boolean): void;
+
+  /**
+   * stdout 输出事件
+   */
+  onOutput: Event<ITerminalDataEvent>;
+
+  /**
+   * stdin 输入事件
+   */
+  onInput: Event<ITerminalDataEvent>;
 }
 
 export const ITerminalClientFactory = Symbol('ITerminalClientFactory');

@@ -10,8 +10,8 @@ export interface IPtyExitEvent {
   signal?: number;
 }
 
-export const ITerminalExternalService = Symbol('ITerminalExternalService');
-export interface ITerminalExternalService {
+export const ITerminalService = Symbol('ITerminalService');
+export interface ITerminalService {
   /**
    * 自定义 sessionId
    */
@@ -78,20 +78,8 @@ export interface ITerminalExternalService {
 }
 
 export const ITerminalInternalService = Symbol('ITerminalInternalService');
-export interface ITerminalInternalService extends ITerminalExternalService {
+export interface ITerminalInternalService extends ITerminalService {
   generateSessionId(): string;
   getOptions(): ITerminalOptions;
   check(sessionIds: string[]): Promise<boolean>;
 }
-
-export const TerminalSupportType = {
-  'terminal.fontFamily': 'fontFamily',
-  'terminal.fontSize': 'fontSize',
-  'terminal.fontWeight': 'fontWeight',
-  'terminal.lineHeight': 'lineHeight',
-  'terminal.cursorBlink': 'cursorBlink',
-  'terminal.scrollback': 'scrollback',
-};
-
-export const defaultTerminalFontFamily = 'courier-new, courier, monospace';
-export const defaultTerminalFontSize = 14;

@@ -78,7 +78,7 @@ export class MockContextKeyService implements IScopedContextKeyService {
 export class MockStatusBarService implements IStatusBarService {
   getBackgroundColor() { return 'white'; }
   setColor() { }
-  addElement() { return { dispose: () => {} }; }
+  addElement() { return null as any; }
   setBackgroundColor() { }
   setElement() { }
   removeElement() { }

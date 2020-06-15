@@ -2,13 +2,13 @@ import * as WebSocket from 'ws';
 import { Terminal } from 'xterm';
 import { uuid, URI, Emitter } from '@ali/ide-core-common';
 import { Disposable } from '@ali/ide-core-browser';
-import { ITerminalExternalService, ITerminalConnection } from '../../src/common';
+import { ITerminalService, ITerminalConnection } from '../../src/common';
 import { getPort, localhost, MessageMethod } from './proxy';
 import { delay } from './utils';
 
 export const defaultName = 'bash';
 
-export class MockSocketService implements ITerminalExternalService {
+export class MockSocketService implements ITerminalService {
   static resId = 1;
 
   private _socks: Map<string, WebSocket>;

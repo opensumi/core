@@ -1,14 +1,14 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { ITerminalErrorService, ITerminalError, ITerminalExternalService, ITerminalGroupViewService, ITerminalController, IPtyExitEvent } from '../common';
+import { ITerminalErrorService, ITerminalError, ITerminalService, ITerminalGroupViewService, ITerminalController, IPtyExitEvent } from '../common';
 
 @Injectable()
 export class TerminalErrorService implements ITerminalErrorService {
   @observable
   errors: Map<string, ITerminalError> = new Map();
 
-  @Autowired(ITerminalExternalService)
-  protected readonly service: ITerminalExternalService;
+  @Autowired(ITerminalService)
+  protected readonly service: ITerminalService;
 
   @Autowired(ITerminalController)
   protected readonly controller: ITerminalController;

@@ -1,11 +1,14 @@
 export * from './controller';
 export * from './resize';
-export * from './external';
 export * from './restore';
 export * from './error';
 export * from './pty';
+export * from './service';
 export * from './client';
 export * from './api';
 export * from './theme';
 export * from './commands';
 export * from './utils';
+export * from './preference';
+
+export const TerminalContainerId = 'Terminal';
