@@ -113,9 +113,9 @@ export class FileTreeService extends Tree {
     this.isCompactMode = this.corePreferences['explorer.compactFolders'] as boolean;
 
     this.toDispose.push(this.workspaceService.onWorkspaceChanged(async () => {
-      this.dispose();
       this._roots = await this.workspaceService.roots;
-      // TODO: 切换工作区时更新文件树
+      // 切换工作区时更新文件树
+      this.refresh();
     }));
 
     this.toDispose.push(Disposable.create(() => {
@@ -169,6 +169,13 @@ export class FileTreeService extends Tree {
       } else {
         if (this._roots.length > 0) {
           children = await (await this.fileTreeAPI.resolveChildren(this as ITree, this._roots[0])).children;
+          children.forEach((child) => {
+            // 根据workspace更新Root名称
+            const rootName = this.workspaceService.getWorkspaceName(child.uri);
+            if (rootName && rootName !== child.name) {
+              child.updateName(rootName);
+            }
+          });
           this.watchFilesChange(new URI(this._roots[0].uri));
           this.cacheNodes(children as (File | Directory)[]);
           this.root = children[0] as Directory;
@@ -181,7 +188,7 @@ export class FileTreeService extends Tree {
         // 加载根目录
         const roots = await this.workspaceService.roots;
         for (const fileStat of roots) {
-          const child = this.fileTreeAPI.toNode(this as ITree, fileStat, parent);
+          const child = this.fileTreeAPI.toNode(this as ITree, fileStat, parent, this.workspaceService.getWorkspaceName(new URI(fileStat.uri)));
           this.watchFilesChange(new URI(fileStat.uri));
           children = children.concat(child);
         }
@@ -238,10 +245,6 @@ export class FileTreeService extends Tree {
     return !!node && 'filestat' in node && !node.filestat.isDirectory;
   }
 
-  private isFileStatNode(node: object | undefined) {
-    return !!node && 'filestat' in node;
-  }
-
   private isFileContentChanged(change: FileChange): boolean {
     return change.type === FileChangeType.UPDATED && this.isContentFile(this.getNodeByPathOrUri(change.uri));
   }
@@ -258,10 +261,11 @@ export class FileTreeService extends Tree {
   }
 
   private isRootAffected(changes: FileChange[]): boolean {
-    const root = this.root;
-    if (this.isFileStatNode(root)) {
+    if (!!this._roots) {
       return changes.some((change) =>
-        change.type > FileChangeType.UPDATED && new URI(change.uri).parent.toString() === (root as Directory)!.uri.toString(),
+        change.type > FileChangeType.UPDATED && this._roots && this._roots.find((root) => {
+          return change.uri.indexOf(root.uri) >= 0;
+        }),
       );
     }
     return false;

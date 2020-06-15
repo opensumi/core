@@ -31,6 +31,7 @@ import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { WorkspacePreferences } from './workspace-preferences';
 import { IWindowService } from '@ali/ide-window';
 import * as jsoncparser from 'jsonc-parser';
+import { Path } from '@ali/ide-core-common/lib/path';
 
 @Injectable()
 export class WorkspaceService implements IWorkspaceService {
@@ -453,10 +454,9 @@ export class WorkspaceService implements IWorkspaceService {
     const roots = this._roots.map((root) => (dedup.add(root.uri), root.uri));
     const toAdd: string[] = [];
     // 更新工作区映射
-    this.workspaceToName = {
-      ...this.workspaceToName,
-      ...workspaceToName,
-    };
+    for (const uri of Object.keys(workspaceToName)) {
+      this.workspaceToName[new URI(uri).toString()] = workspaceToName[uri];
+    }
     for (const root of rootsToAdd) {
       const uri = root.toString();
       if (!dedup.has(uri)) {
@@ -481,7 +481,7 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   public getWorkspaceName(uri: URI) {
-    return this.workspaceToName[uri.toString()] || uri.displayName;
+    return this.workspaceToName[uri.toString()] || this.workspaceToName[uri.toString() + Path.separator] || uri.displayName;
   }
 
   protected async getUntitledWorkspace(): Promise<URI | undefined> {
