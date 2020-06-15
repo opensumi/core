@@ -110,7 +110,9 @@ export class OpenedEditorService extends Tree {
       }
 
     }
-    this.onDirtyNodesChangeEmitter.fire(dirtyNodes);
+    if (dirtyNodes.length > 0) {
+      this.onDirtyNodesChangeEmitter.fire(dirtyNodes);
+    }
   }
 
   public getEditorNodeByUri(resource?: IResource | URI, group?: IEditorGroup) {

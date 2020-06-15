@@ -86,7 +86,7 @@ export class OpenedEditorModelService {
 
   // 右键菜单局部ContextKeyService
   private _contextMenuContextKeyService: IContextKeyService;
-  private _currentDirtyNodes: EditorFile[];
+  private _currentDirtyNodes: EditorFile[] = [];
 
   private ignoreRefreshAndActiveTimes: number;
 
@@ -144,10 +144,18 @@ export class OpenedEditorModelService {
     this.initDecorations(root);
 
     this.disposableCollection.push(this.openedEditorService.onDirtyNodesChange((nodes) => {
-      this._currentDirtyNodes = nodes;
+      for (const node of nodes) {
+        if (!this.dirtyDecoration.hasTarget(node as EditorFile)) {
+          this.dirtyDecoration.addTarget(node as EditorFile);
+        }
+      }
+      this._currentDirtyNodes = this._currentDirtyNodes.concat(nodes);
+      this.setExplorerTabBarBadge();
+      this.treeModel.dispatchChange();
     }));
 
     this.disposableCollection.push(this.labelService.onDidChange(() => {
+      this._currentDirtyNodes = [];
       // 当labelService注册的对应节点图标变化时，通知视图更新
       this.refresh();
     }));
@@ -156,6 +164,7 @@ export class OpenedEditorModelService {
       if (this.ignoreRefreshAndActiveTimes > 0 && this.ignoreRefreshAndActiveTimes--) {
         return;
       }
+      this._currentDirtyNodes = [];
       this.refresh();
     }));
 
