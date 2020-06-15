@@ -54,15 +54,6 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   private cachedGroupSection: Map<string, ISettingSection[]> = new Map();
 
   constructor() {
-    defaultSettingGroup.forEach((g) => {
-      this.registerSettingGroup(g);
-    });
-    Object.keys(defaultSettingSections).forEach((key) => {
-      defaultSettingSections[key].forEach((section) => {
-        this.registerSettingSection(key, section);
-      });
-    });
-
     this.setEnumLabels('general.language', new Proxy({}, {
       get: (target, key ) => {
         return getAvailableLanguages().find((l) => l.languageId === key)!.localizedLanguageName;
@@ -98,7 +89,8 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   }
 
   registerSettingGroup(group: ISettingGroup): IDisposable {
-    return addElement(this.settingsGroups, group);
+    const disposable = addElement(this.settingsGroups, group);
+    return disposable;
   }
 
   registerSettingSection(groupId: string, section: ISettingSection): IDisposable {
@@ -106,7 +98,8 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
       this.settingsSections.set(groupId, []);
     }
     this.cachedGroupSection.clear();
-    return addElement(this.settingsSections.get(groupId)!, section);
+    const disposable = addElement(this.settingsSections.get(groupId)!, section);
+    return disposable;
   }
 
   getSections(groupId: string, scope: PreferenceScope, search?: string): ISettingSection[] {

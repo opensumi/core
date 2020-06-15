@@ -9,10 +9,11 @@ import { FolderPreferenceProviderFactory, FolderPreferenceProviderOptions, Folde
 import { WorkspaceFilePreferenceProviderFactory, WorkspaceFilePreferenceProviderOptions, WorkspaceFilePreferenceProvider } from './workspace-file-preference-provider';
 import { PreferenceSettingsService } from './preference.service';
 import { UserStorageServiceImpl, UserStorageResolver } from './userstorage';
-import { IUserStorageService } from '../common';
+import { IUserStorageService, SettingContribution } from '../common';
 
 @Injectable()
 export class PreferencesModule extends BrowserModule {
+  contributionProvider = SettingContribution;
   providers: Provider[] = [
     ...createPreferenceProviders(),
     {
