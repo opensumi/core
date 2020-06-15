@@ -82,14 +82,15 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
   async execute(task: Task): Promise<{ exitCode?: number }> {
     this.createTerminal();
-    await this.terminalClient.attached.promise;
-    this.pid = await this.terminalClient.pid;
-
-    this.processReady.resolve();
 
     this.terminalClient.term.writeln(`\x1b[1m> Executing task: ${task._label} <\x1b[0m\n`);
     const { shellArgs } = this.terminalOptions;
     this.terminalClient.term.writeln(`\x1b[1m> Command: ${typeof shellArgs === 'string' ? shellArgs : shellArgs![1]} <\x1b[0m\n`);
+
+    await this.terminalClient.attached.promise;
+    this.pid = await this.terminalClient.pid;
+
+    this.processReady.resolve();
     this.terminalView.selectWidget(this.terminalClient.id);
     this.terminalClient.term.write('\n\x1b[G');
     return this.exitDefer.promise;
