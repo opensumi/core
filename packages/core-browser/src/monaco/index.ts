@@ -87,14 +87,8 @@ export interface IMimeService {
   updateMime(): void;
 }
 
-export type SuggestWidget = any;
-
 export interface SuggestEventPayload {
   eventType: 'onDidSelect' | 'onDidHide' | 'onDidShow' | 'onDidFocus';
-  data: {
-    index: number;
-    item: monaco.languages.CompletionItem;
-    model: any;
-  } | SuggestWidget;
+  data: monaco.suggestController.ISelectedSuggestion | monaco.suggestController.SuggestWidget;
 }
 export class SuggestEvent extends BasicEvent<SuggestEventPayload> {}
