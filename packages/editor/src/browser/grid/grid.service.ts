@@ -2,7 +2,7 @@ import { IEditorGroup, IEditorGroupState, Direction } from '../../common';
 import { observable, runInAction } from 'mobx';
 import { IDisposable, IEventBus, MaybeNull } from '@ali/ide-core-browser';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
-import { GridResizeEvent } from '../types';
+import { GridResizeEvent, IDiffEditor, ICodeEditor } from '../types';
 
 export const editorGridUid = new Set();
 
@@ -65,12 +65,12 @@ export class EditorGrid implements IDisposable {
       // 顶层 grid 且未有指定方向，生成初始父级单元
       if (!this.parent) {
         this.generateSplitParent(direction, editorGroup, before);
-      // 非顶层 grid
+        // 非顶层 grid
       } else {
         // 与父元素方向一致，则为同级子元素
         if (this.parent.splitDirection === direction) {
           this.generateSplitSibling(editorGroup, before);
-        // 与父元素方向不一致，则生成为父级单元
+          // 与父元素方向不一致，则生成为父级单元
         } else if (this.parent.splitDirection !== direction) {
           this.generateSplitParent(direction, editorGroup, before);
         }
@@ -106,7 +106,7 @@ export class EditorGrid implements IDisposable {
   }
 
   public emitResizeWithEventBus(eventBus: IEventBus) {
-    eventBus.fire(new GridResizeEvent({gridId: this.uid}));
+    eventBus.fire(new GridResizeEvent({ gridId: this.uid }));
     this.children.forEach((c) => {
       c.emitResizeWithEventBus(eventBus);
     });
@@ -124,7 +124,7 @@ export class EditorGrid implements IDisposable {
       if (this.parent && this.children.length === 0) {
         return null;
       }
-      const children = this.children.map((c) => c.serialize()).filter((c) => !!c) as  IEditorGridState[];
+      const children = this.children.map((c) => c.serialize()).filter((c) => !!c) as IEditorGridState[];
       if (children.length === 1) {
         // 只有一个孩子，直接覆盖
         return children[0];
@@ -257,6 +257,10 @@ export enum SplitDirection {
 export interface IGridEditorGroup extends IEditorGroup {
 
   grid: EditorGrid;
+
+  codeEditor: ICodeEditor;
+
+  diffEditor: IDiffEditor;
 
 }
 
