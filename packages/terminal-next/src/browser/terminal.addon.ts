@@ -132,3 +132,6 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
     this._connection.sendData(buffer);
   }
 }
+
+export const DEFAULT_ROW = 80;
+export const DEFAULT_COL = 24;

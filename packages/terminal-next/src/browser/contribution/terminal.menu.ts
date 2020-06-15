@@ -1,14 +1,10 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { Disposable, Domain, CommandService, isWindows, isElectronRenderer } from '@ali/ide-core-common';
-import { AbstractMenuService, IMenu, ICtxMenuRenderer, NextMenuContribution, IMenuRegistry, generateMergedCtxMenu, getTabbarCommonMenuId } from '@ali/ide-core-browser/lib/menu/next';
-import { memoize, IContextKeyService, localize, KeybindingContribution, KeybindingRegistry, PreferenceService, IPreferenceSettingsService, getSlotLocation, AppConfig, getTabbarCtxKey } from '@ali/ide-core-browser';
-import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService, TERMINAL_COMMANDS } from '../common';
+import { Autowired } from '@ali/common-di';
+import { Domain, CommandService, isWindows, isElectronRenderer } from '@ali/ide-core-common';
+import { NextMenuContribution, IMenuRegistry, getTabbarCommonMenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { localize, KeybindingContribution, KeybindingRegistry, PreferenceService, IPreferenceSettingsService, getSlotLocation, AppConfig, getTabbarCtxKey } from '@ali/ide-core-browser';
+import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService, TERMINAL_COMMANDS } from '../../common';
 import { IsTerminalFocused } from '@ali/ide-core-browser/lib/contextkey';
-
-export enum MenuId {
-  TermTab = 'TermTab',
-  TermPanel = 'TermPanel',
-}
+import { MenuId } from '../../common/menu';
 
 export const group = 'panel_menu';
 export const more1 = 'more_1';
@@ -27,9 +23,6 @@ export class TerminalMenuContribution implements NextMenuContribution, Keybindin
   @Autowired(ITerminalSearchService)
   protected readonly search: ITerminalSearchService;
 
-  @Autowired(PreferenceService)
-  protected readonly preference: PreferenceService;
-
   @Autowired(IPreferenceSettingsService)
   protected readonly settingService: IPreferenceSettingsService;
 
@@ -38,6 +31,9 @@ export class TerminalMenuContribution implements NextMenuContribution, Keybindin
 
   @Autowired(AppConfig)
   protected readonly config: AppConfig;
+
+  @Autowired(PreferenceService)
+  protected readonly preference: PreferenceService;
 
   registerKeybindings(registry: KeybindingRegistry) {
     registry.registerKeybinding({
@@ -157,57 +153,5 @@ export class TerminalMenuContribution implements NextMenuContribution, Keybindin
       when,
     });
     /** end */
-  }
-}
-
-@Injectable()
-export class TerminalContextMenuService extends Disposable {
-  @Autowired(AbstractMenuService)
-  private readonly menuService: AbstractMenuService;
-
-  @Autowired(ICtxMenuRenderer)
-  private readonly ctxMenuRenderer: ICtxMenuRenderer;
-
-  @Autowired(IContextKeyService)
-  private contextKeyService: IContextKeyService;
-
-  @memoize get contextMenu(): IMenu {
-    const contributedContextMenu = this.menuService.createMenu(MenuId.TermPanel, this.contextKeyService);
-    this.addDispose(contributedContextMenu);
-    return contributedContextMenu;
-  }
-
-  onContextMenu(event: React.MouseEvent<HTMLElement>) {
-    event.preventDefault();
-
-    const { x, y } = event.nativeEvent;
-    const menus = this.contextMenu;
-    const menuNodes = generateMergedCtxMenu({ menus });
-
-    this.ctxMenuRenderer.show({
-      anchor: { x, y },
-      menuNodes,
-      args: [],
-    });
-  }
-
-  @memoize get tabContextMenu(): IMenu {
-    const contributedContextMenu = this.menuService.createMenu(MenuId.TermTab, this.contextKeyService);
-    this.addDispose(contributedContextMenu);
-    return contributedContextMenu;
-  }
-
-  onTabContextMenu(event: React.MouseEvent<HTMLElement>, index: number) {
-    event.preventDefault();
-
-    const { x, y } = event.nativeEvent;
-    const menus = this.tabContextMenu;
-    const menuNodes = generateMergedCtxMenu({ menus });
-
-    this.ctxMenuRenderer.show({
-      anchor: { x, y },
-      menuNodes,
-      args: [ event.target, index ],
-    });
   }
 }

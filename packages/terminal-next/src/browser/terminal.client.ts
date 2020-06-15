@@ -1,17 +1,16 @@
 import { observable } from 'mobx';
-import { Terminal, ITerminalOptions } from 'xterm';
+import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { SearchAddon } from 'xterm-addon-search';
 import { WebLinksAddon } from 'xterm-addon-web-links';
 import { Injectable, Autowired, Injector } from '@ali/common-di';
-import { Disposable, Deferred, Emitter, debounce, Event } from '@ali/ide-core-common';
+import { Disposable, Deferred, Emitter, debounce } from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
-import { PreferenceService } from '@ali/ide-core-browser';
-import { FilePathAddon, AttachAddon } from './terminal.addon';
+import { FilePathAddon, AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
 import { TerminalKeyBoardInputService } from './terminal.input';
-import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, TerminalSupportType, ITerminalGroupViewService, ITerminalInternalService, IWidget, defaultTerminalFontFamily } from '../common';
+import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, ITerminalGroupViewService, ITerminalInternalService, IWidget, ITerminalPreference, ITerminalDataEvent } from '../common';
 
 import * as styles from './component/terminal.module.less';
 
@@ -37,11 +36,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   /** status */
   private _ready: boolean = false;
   private _attached = new Deferred<void>();
-  private _rendered = new Deferred<void>();
+  private _firstStdout = new Deferred<void>();
   /** end */
-
-  private readonly ptyProcessMessageEvent = new Emitter<{ id: string; message: string }>();
-  public onReceivePtyMessage: Event<{ id: string; message: string }> = this.ptyProcessMessageEvent.event;
 
   @Autowired(ITerminalInternalService)
   protected readonly service: ITerminalInternalService;
@@ -58,26 +54,23 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   @Autowired(ITerminalTheme)
   protected readonly theme: ITerminalTheme;
 
-  @Autowired(PreferenceService)
-  protected readonly preference: PreferenceService;
-
   @Autowired(ITerminalController)
   protected readonly controller: ITerminalController;
 
   @Autowired(ITerminalGroupViewService)
   protected readonly view: ITerminalGroupViewService;
 
+  @Autowired(ITerminalPreference)
+  protected readonly preference: ITerminalPreference;
+
   @Autowired(TerminalKeyBoardInputService)
   protected readonly keyboard: TerminalKeyBoardInputService;
 
-  static defaultOptions: ITerminalOptions = {
-    allowTransparency: true,
-    macOptionIsMeta: false,
-    cursorBlink: false,
-    scrollback: 2500,
-    tabStopWidth: 8,
-    fontSize: 12,
-  };
+  private _onInput = new Emitter<ITerminalDataEvent>();
+  onInput = this._onInput.event;
+
+  private _onOutput = new Emitter<ITerminalDataEvent>();
+  onOutput = this._onOutput.event;
 
   init(widget: IWidget, options: TerminalOptions = {}, autofocus: boolean = true) {
     this._autofocus = autofocus;
@@ -88,10 +81,19 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._container.className = styles.terminalInstance;
     this._term = new Terminal({
       theme: this.theme.terminalTheme,
-      ...TerminalClient.defaultOptions,
+      ...this.preference.toJSON(),
       ...this.service.getOptions(),
-      ...this._customTermOptions(),
     });
+
+    this.addDispose(this.preference.onChange(({ name, value }) => {
+      this._term.setOption(name, value);
+    }));
+
+    const { dispose } = this.onOutput(() => {
+      dispose();
+      this._firstStdout.resolve();
+    });
+
     this._apply(widget);
     this.attach();
   }
@@ -133,49 +135,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   get attached() {
     return this._attached;
-  }
-
-  private _handleTerminalOption(name: string, value: any) {
-    switch (name) {
-      case 'fontFamily':
-        this._term.setOption(name, value || defaultTerminalFontFamily);
-        break;
-      case 'fontSize':
-        // TODO: 现在 client 自己这里限制，保证 windows 不会卡死
-        // FIXME: preference validation 完成后去除, windows下大小为 1 会导致界面卡死
-        this._term.setOption(name, value > 2 ? value : 2);
-        break;
-      default:
-        this._term.setOption(name, value);
-        break;
-    }
-  }
-
-  private _customTermOptions(): ITerminalOptions {
-    const options = {};
-    const support = TerminalSupportType;
-
-    Object.keys(support).forEach((key) => {
-      let value = this.preference.get<any>(key);
-      if (value !== undefined && value !== '') {
-        // FIXME: preference validation完成后去除
-        if (support[key] === 'fontSize') {
-            value = value > 2 ? value : 2;
-        }
-        options[support[key]] = value;
-      }
-    });
-
-    this.addDispose(this.preference.onPreferenceChanged(({ preferenceName, newValue }) => {
-      if (support[preferenceName]) {
-        const option = this._term.getOption(support[preferenceName]);
-        if (option !== newValue) {
-          this._handleTerminalOption(support[preferenceName], newValue);
-        }
-      }
-    }));
-
-    return options;
   }
 
   private _prepareAddons() {
@@ -232,10 +191,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     const type = this.preference.get<string>('terminal.type');
     this._attachXterm();
 
-    // 获取初始化的宽高，必须首先获取到外层的 dom 节点，所以这里需要等待
-    await this._rendered.promise;
-
-    const { rows, cols } = this._fitAddon.proposeDimensions();
+    const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this._fitAddon.proposeDimensions() || {};
     const connection = await this.service.attach(sessionId, this._term, rows, cols, this._options, type);
 
     if (!connection) {
@@ -244,8 +200,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     }
 
     this._attachAddon.setConnection(connection);
-    this.addDispose(connection.onData((e) => {
-      this.ptyProcessMessageEvent.fire({ id: this.id, message: e.toString() });
+    this.addDispose(connection.onData((data) => {
+      this._onOutput.fire({ id: this.id, data });
     }));
 
     this.name = (this.name || connection.name) || 'shell';
@@ -256,6 +212,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   reset() {
     this._ready = false;
     this._attached = new Deferred<void>();
+    this._firstStdout = new Deferred<void>();
     this.attach();
   }
 
@@ -289,14 +246,18 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private async _firstOnRender() {
     this._widget.element.appendChild(this._container);
     this._term.open(this._container);
-    this._rendered.resolve();
     await this.attached.promise;
     this._widget.name = this.name;
   }
 
   @debounce(100)
   private _debouceResize() {
-    this.layout();
+    // 云环境下面，容器 resize 终端的宽高信息可能存在时间竞争，
+    // 所以这里我们加一个等待首次 stdout 的 deferred，
+    // 保证 resize 消息一定能够生效
+    this._firstStdout.promise.then(() => {
+      this.layout();
+    });
   }
 
   private async _apply(widget: IWidget) {
@@ -340,7 +301,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   async sendText(message: string) {
-    return this.service.sendText(this.id, message);
+    await this.service.sendText(this.id, message);
+    this._onInput.fire({ id: this.id, data: message });
   }
 
   dispose(clear: boolean = true) {

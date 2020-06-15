@@ -2,7 +2,7 @@ import { Terminal as XTerm } from 'xterm';
 import Uri from 'vscode-uri';
 
 export const ITerminalServicePath = 'ITerminalServicePath';
-export const ITerminalService = Symbol('ITerminalService');
+export const ITerminalNodeService = Symbol('ITerminalNodeService');
 export const ITerminalServiceClient = Symbol('ITerminalServiceClient');
 export const IExternlTerminalService = Symbol('IExternlTerminalService');
 
@@ -119,7 +119,7 @@ export interface TerminalOptions {
   args?: any;
 }
 
-export interface ITerminalService {
+export interface ITerminalNodeService {
   create(id: string, rows: number, cols: number, options: TerminalOptions);
 
   onMessage(id: string, msg: string): void;

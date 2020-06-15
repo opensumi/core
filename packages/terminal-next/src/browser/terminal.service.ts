@@ -4,7 +4,7 @@ import { isElectronEnv, Emitter, ILogger, Event, isWindows } from '@ali/ide-core
 import { Emitter as Dispatcher } from 'event-kit';
 import { electronEnv, AppConfig } from '@ali/ide-core-browser';
 import { WSChannelHandler as IWSChanneHandler, RPCService } from '@ali/ide-connection';
-import { generate, ITerminalExternalService, ITerminalInternalService, ITerminalError, ITerminalServiceClient, ITerminalServicePath, ITerminalConnection, IPtyExitEvent  } from '../common';
+import { generate, ITerminalService, ITerminalInternalService, ITerminalError, ITerminalServiceClient, ITerminalServicePath, ITerminalConnection, IPtyExitEvent } from '../common';
 
 export interface EventMessage {
   data: string;
@@ -12,8 +12,8 @@ export interface EventMessage {
 
 @Injectable()
 export class TerminalInternalService implements ITerminalInternalService {
-  @Autowired(ITerminalExternalService)
-  service: ITerminalExternalService;
+  @Autowired(ITerminalService)
+  service: ITerminalService;
 
   generateSessionId() {
     return this.service.generateSessionId ? this.service.generateSessionId() : generate();
@@ -57,7 +57,7 @@ export class TerminalInternalService implements ITerminalInternalService {
 }
 
 @Injectable()
-export class NodePtyTerminalService extends RPCService implements ITerminalExternalService {
+export class NodePtyTerminalService extends RPCService implements ITerminalService {
 
   static countId = 1;
 

@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { RPCService } from '@ali/ide-connection';
-import { ITerminalService, ITerminalServiceClient, TerminalOptions } from '../common';
+import { ITerminalNodeService, ITerminalServiceClient, TerminalOptions } from '../common';
 import { IPty } from './pty';
 import { INodeLogger } from '@ali/ide-core-node';
 
@@ -12,8 +12,9 @@ import { INodeLogger } from '@ali/ide-core-node';
 export class TerminalServiceClientImpl extends RPCService implements ITerminalServiceClient {
   private terminalMap: Map<string, IPty> = new Map();
 
-  @Autowired(ITerminalService)
-  private terminalService: ITerminalService;
+  @Autowired(ITerminalNodeService)
+  private terminalService: ITerminalNodeService;
+
   private clientId: string;
 
   @Autowired(INodeLogger)

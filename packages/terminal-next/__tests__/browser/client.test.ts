@@ -76,12 +76,11 @@ describe('Terminal Client', () => {
   it('Terminal Send Text', async () => {
     await client.attached.promise;
     client.clear();
-    client.sendText('pwd\r');
-    await delay(200);
+    await client.sendText('pwd\r');
+    await delay(500);
 
-    const line = client.term.buffer.active.getLine(1);
+    const line = client.term.buffer.active.getLine(0);
     const lineText = (line && line.translateToString()) || '';
-
     expect(lineText.trim().length).toBeGreaterThan(0);
   });
 
@@ -100,7 +99,7 @@ describe('Terminal Client', () => {
 
   it('After Terminal Dispose', async () => {
     await client.attached.promise;
-    await client.sendText('pwd\r');
+    client.sendText('pwd\r');
     client.focus();
     client.selectAll();
     client.updateTheme();

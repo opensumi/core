@@ -1,24 +1,45 @@
 import { Provider, Injectable } from '@ali/common-di';
 import { BrowserModule } from '@ali/ide-core-browser';
-import { ITerminalController, ITerminalExternalService, ITerminalRestore, ITerminalTheme, ITerminalServicePath, ITerminalClientFactory, ITerminalApiService, ITerminalSearchService, ITerminalGroupViewService, ITerminalErrorService, ITerminalInternalService, TerminalOptions, IWidget } from '../common';
-import { TerminalBrowserContribution } from './terminal.contribution';
+import {
+  ITerminalController,
+  ITerminalService,
+  ITerminalRestore,
+  ITerminalTheme,
+  ITerminalServicePath,
+  ITerminalClientFactory,
+  ITerminalApiService,
+  ITerminalSearchService,
+  ITerminalGroupViewService,
+  ITerminalErrorService,
+  ITerminalInternalService,
+  TerminalOptions,
+  IWidget,
+  ITerminalPreference,
+} from '../common';
+import {
+  TerminalCommandContribution,
+  TerminalMenuContribution,
+  TerminalLifeCycleContribution,
+  TerminalRenderContribution,
+} from './contribution';
 import { TerminalController } from './terminal.controller';
 import { TerminalTheme } from './terminal.theme';
 import { TerminalInternalService, NodePtyTerminalService } from './terminal.service';
 import { TerminalRestore } from './terminal.restore';
-import { TerminalContextMenuService, TerminalMenuContribution } from './terminal.menu';
 import { TerminalClientFactory } from './terminal.client';
 import { TerminalApiService } from './terminal.api';
 import { TerminalSearchService } from './terminal.search';
 import { TerminalGroupViewService } from './terminal.view';
 import { TerminalErrorService } from './terminal.error';
+import { TerminalPreference } from './terminal.preference';
 
 @Injectable()
 export class TerminalNextModule extends BrowserModule {
   providers: Provider[] = [
-    TerminalBrowserContribution,
+    TerminalLifeCycleContribution,
+    TerminalRenderContribution,
+    TerminalCommandContribution,
     TerminalMenuContribution,
-    TerminalContextMenuService,
     {
       token: ITerminalApiService,
       useClass: TerminalApiService,
@@ -44,7 +65,7 @@ export class TerminalNextModule extends BrowserModule {
       useClass: TerminalErrorService,
     },
     {
-      token: ITerminalExternalService,
+      token: ITerminalService,
       useClass: NodePtyTerminalService,
     },
     {
@@ -56,6 +77,10 @@ export class TerminalNextModule extends BrowserModule {
       useClass: TerminalRestore,
     },
     {
+      token: ITerminalPreference,
+      useClass: TerminalPreference,
+    },
+    {
       token: ITerminalClientFactory,
       useFactory: (injector) => (widget: IWidget, options?: TerminalOptions, autofocus: boolean = true) => {
         return TerminalClientFactory.createClient(injector, widget, options, autofocus);
@@ -65,7 +90,7 @@ export class TerminalNextModule extends BrowserModule {
   backServices = [
     {
       servicePath: ITerminalServicePath,
-      clientToken: ITerminalExternalService,
+      clientToken: ITerminalService,
     },
   ];
 }

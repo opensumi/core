@@ -1,0 +1,50 @@
+import {
+  Domain,
+  localize,
+  ToolbarRegistry,
+  ComponentRegistry,
+  ComponentContribution,
+  TabBarToolbarContribution,
+} from '@ali/ide-core-browser';
+import { TERMINAL_COMMANDS, TerminalContainerId } from '../../common';
+import TerminalView from '../component/terminal.view';
+import TerminalTabs from '../component/tab.view';
+
+@Domain(ComponentContribution, TabBarToolbarContribution)
+export class TerminalRenderContribution implements ComponentContribution, TabBarToolbarContribution {
+  static viewId = TerminalContainerId;
+
+  registerToolbarItems(registry: ToolbarRegistry) {
+    registry.registerItem({
+      id: TERMINAL_COMMANDS.OPEN_SEARCH.id,
+      command: TERMINAL_COMMANDS.OPEN_SEARCH.id,
+      viewId: TerminalRenderContribution.viewId,
+      tooltip: localize('terminal.search'),
+    });
+    registry.registerItem({
+      id: TERMINAL_COMMANDS.SPLIT.id,
+      command: TERMINAL_COMMANDS.SPLIT.id,
+      viewId: TerminalRenderContribution.viewId,
+      tooltip: localize('terminal.split'),
+    });
+    registry.registerItem({
+      id: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
+      command: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
+      viewId: TerminalRenderContribution.viewId,
+      tooltip: localize('terminal.menu.clearGroups'),
+    });
+  }
+
+  registerComponent(registry: ComponentRegistry) {
+    registry.register('@ali/ide-terminal-next', {
+      component: TerminalView,
+      id: 'ide-terminal-next',
+    }, {
+      title: localize('terminal.name'),
+      priority: 1,
+      activateKeyBinding: 'ctrl+`',
+      containerId: TerminalRenderContribution.viewId,
+      titleComponent: TerminalTabs,
+    });
+  }
+}

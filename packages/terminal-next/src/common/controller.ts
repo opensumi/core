@@ -12,6 +12,11 @@ export interface ITerminalExternalClient {
   dispose(): void;
 }
 
+export interface IBoundSize {
+  width: number;
+  height: number;
+}
+
 export const ITerminalController = Symbol('ITerminalController');
 export interface ITerminalController extends Disposable {
   ready: Deferred<void>;

@@ -2,10 +2,10 @@
 
 ## 实现方式
 
-实现 src/common/term.ts 文件中的 ITerminalExternalService 类型，并在 src/browser/index.ts 中替换默认的 service 类型。
+实现 src/common/term.ts 文件中的 ITerminalService 类型，并在 src/browser/index.ts 中替换默认的 service 类型。
 
 ```ts
-export interface ITerminalExternalService {
+export interface ITerminalService {
   /**
    * 集成方自定义会话唯一标识的函数
    */
@@ -76,3 +76,10 @@ export interface ITerminalExternalService {
   onError(handler: (error: ITerminalError) => void): void;
 }
 ```
+
+## 接下来
+
+* [ ] 终端首次初始化使用对比的外层 dom 节点需要可指定，这里可能需要使用 core 内部 api 手动计算
+* [ ] 终端 Singleton 模式
+* [ ] 终端后端 Pty 代码优化，需要支持开发时重连
+* [ ] Vim 显示优化

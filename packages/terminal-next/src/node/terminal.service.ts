@@ -1,14 +1,14 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { RPCService } from '@ali/ide-connection';
 import { PtyService, IPty } from './pty';
-import { ITerminalService, TerminalOptions, ITerminalServiceClient } from '../common';
+import { ITerminalNodeService, TerminalOptions, ITerminalServiceClient } from '../common';
 import { INodeLogger, AppConfig, isDevelopment } from '@ali/ide-core-node';
 
 /**
  * terminal service 的具体实现
  */
 @Injectable()
-export class TerminalServiceImpl extends RPCService implements ITerminalService {
+export class TerminalServiceImpl extends RPCService implements ITerminalNodeService {
 
   static TerminalPtyCloseThreshold = 10 * 1000;
 

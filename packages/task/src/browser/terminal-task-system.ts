@@ -3,7 +3,7 @@ import { Event, formatLocalize, IProblemMatcherRegistry, Disposable, Deferred, P
 
 import { ITaskSystem, ITaskExecuteResult, ITaskExecutor, TaskExecuteKind, IActivateTaskExecutorData, TaskTerminateResponse } from '../common';
 import { Task, ContributedTask, CommandString, CommandConfiguration, TaskEvent, TaskEventKind } from '../common/task';
-import { TerminalOptions, ITerminalController, ITerminalGroupViewService, ITerminalClient, ITerminalExternalService } from '@ali/ide-terminal-next/lib/common';
+import { TerminalOptions, ITerminalController, ITerminalGroupViewService, ITerminalClient, ITerminalService } from '@ali/ide-terminal-next/lib/common';
 import { CustomTask } from '../common/task';
 import { IVariableResolverService } from '@ali/ide-variable';
 import { ProblemCollector } from './problem-collector';
@@ -18,8 +18,8 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
   @Autowired(ITerminalController)
   protected readonly terminalController: ITerminalController;
 
-  @Autowired(ITerminalExternalService)
-  protected readonly terminalService: ITerminalExternalService;
+  @Autowired(ITerminalService)
+  protected readonly terminalService: ITerminalService;
 
   private terminalClient: ITerminalClient;
 
@@ -68,8 +68,8 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     this.terminalClient = this.terminalController.createClientWithWidget({ ...this.terminalOptions, closeWhenExited: false });
     this.terminalController.showTerminalPanel();
 
-    this.addDispose(this.terminalClient.onReceivePtyMessage((e) => {
-      this.collector.processLine(removeAnsiEscapeCodes(e.message));
+    this.addDispose(this.terminalClient.onOutput((e) => {
+      this.collector.processLine(removeAnsiEscapeCodes(e.data.toString()));
     }));
 
     this.addDispose(this.terminalService.onExit((e) => {
@@ -82,14 +82,15 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
   async execute(task: Task): Promise<{ exitCode?: number }> {
     this.createTerminal();
-    await this.terminalClient.attached.promise;
-    this.pid = await this.terminalClient.pid;
-
-    this.processReady.resolve();
 
     this.terminalClient.term.writeln(`\x1b[1m> Executing task: ${task._label} <\x1b[0m\n`);
     const { shellArgs } = this.terminalOptions;
     this.terminalClient.term.writeln(`\x1b[1m> Command: ${typeof shellArgs === 'string' ? shellArgs : shellArgs![1]} <\x1b[0m\n`);
+
+    await this.terminalClient.attached.promise;
+    this.pid = await this.terminalClient.pid;
+
+    this.processReady.resolve();
     this.terminalView.selectWidget(this.terminalClient.id);
     this.terminalClient.term.write('\n\x1b[G');
     return this.exitDefer.promise;
