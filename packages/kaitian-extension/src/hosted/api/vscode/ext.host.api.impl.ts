@@ -91,7 +91,7 @@ export function createApiFactory(
       debug: createDebugApiFactory(extHostDebug),
       version: '1.37.0',
       comments: createCommentsApiFactory(extension, extHostComments),
-      extensions: createExtensionsApiFactory(rpcProtocol, extensionService, mainThreadExtensionService),
+      extensions: createExtensionsApiFactory(extensionService),
       tasks: createTaskApiFactory(rpcProtocol, extensionService, extHostTasks, extension),
       scm: {
         get inputBox() {

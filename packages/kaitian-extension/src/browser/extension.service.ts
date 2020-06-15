@@ -22,7 +22,6 @@ import {
 } from '../common';
 import {
   MainThreadAPIIdentifier,
-  VSCodeExtensionService,
   ExtHostAPIIdentifier,
   IMainThreadCommands,
   isLanguagePackExtension,
@@ -53,9 +52,8 @@ import {
 } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { Extension } from './extension';
-import { createApiFactory as createVSCodeAPIFactory } from './vscode/api/main.thread.api.impl';
+import { createApiFactory as createVSCodeAPIFactory, initWorkerTheadAPIProxy } from './vscode/api/main.thread.api.impl';
 import { createKaitianApiFactory } from './kaitian/main.thread.api.impl';
-import { createExtensionLogFactory } from './extension-log';
 
 import { WorkbenchEditorService, IResourceOpenOptions } from '@ali/ide-editor';
 import { IActivationEventService } from './types';
@@ -79,8 +77,6 @@ import { UriComponents } from '../common/vscode/ext-types';
 
 import { IThemeService, IIconService } from '@ali/ide-theme';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
-import { MainThreadCommands } from './vscode/api/main.thread.commands';
-import { createBrowserApi } from './kaitian-browser';
 import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { ExtensionCandiDate, localize, OnEvent, WithEventBus } from '@ali/ide-core-common';
 import { IKaitianBrowserContributions } from './kaitian-browser/types';
@@ -91,6 +87,7 @@ import { createProxiedWindow, createProxiedDocument } from './proxies';
 import { getAMDDefine, getMockAmdLoader, getAMDRequire, getWorkerBootstrapUrl } from './loader';
 import { KtViewLocation } from './kaitian/contributes/browser-views';
 import { ExtensionNoExportsView } from './components';
+import { createBrowserApi } from './kaitian-browser';
 
 const LOAD_FAILED_CODE = 'load';
 
@@ -221,12 +218,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
     await this.initCommonBrowserDependency();
 
-    if (!this.appConfig.noExtHost) {
-      await this.startProcess(true);
-    }
-
-    // this.ready.resolve();
-
+    await this.startProcess(true);
   }
 
   public getExtensions() {
@@ -345,9 +337,12 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   public async postDisableExtension(extensionPath: string) {
-    const extension = this.extensionMap.get(extensionPath)!;
-    extension.disable();
-    await this.updateExtensionHostData();
+    const extension = this.extensionMap.get(extensionPath);
+    if (extension) {
+      extension.disable();
+      extension.dispose();
+      await this.updateExtensionHostData();
+    }
   }
 
   public async postEnableExtension(extensionPath: string) {
@@ -400,14 +395,24 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       // await this.layoutContribute();
     }
 
-    await this.createExtProcess();
+    if (!this.appConfig.noExtHost) {
+      await this.createExtProcess();
+      this.vscodeAPIFactoryDisposer = await createVSCodeAPIFactory(this.protocol, this.injector, this);
+      this.kaitianAPIFactoryDisposer = createKaitianApiFactory(this.protocol, this.injector);
+      this.mainThreadCommands.set('node', this.protocol.get(MainThreadAPIIdentifier.MainThreadCommands));
+      const proxy = this.protocol.getProxy<IExtensionHostService>(ExtHostAPIIdentifier.ExtHostExtensionService);
+      await proxy.$initExtensions();
+    }
 
-    const proxy = this.protocol.getProxy<IExtensionHostService>(ExtHostAPIIdentifier.ExtHostExtensionService);
-    await proxy.$initExtensions();
-
-    if (this.workerProtocol) {
-      const workerProxy = this.workerProtocol.getProxy(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
-      await workerProxy.$initExtensions();
+    if (this.appConfig.extWorkerHost) {
+      const workerUrl = getWorkerBootstrapUrl(this.appConfig.extWorkerHost, 'extWorkerHost');
+      await this.initWorkerHost(workerUrl);
+      if (this.workerProtocol) {
+        await initWorkerTheadAPIProxy(this.workerProtocol, this.injector, this);
+        this.mainThreadCommands.set('worker', this.workerProtocol.get(MainThreadAPIIdentifier.MainThreadCommands));
+        const workerProxy = this.workerProtocol.getProxy(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
+        await workerProxy.$initExtensions();
+      }
     }
 
     if (init) {
@@ -567,28 +572,15 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       const WSChanneHandler = this.injector.get(IWSChanneHandler);
       clientId = WSChanneHandler.clientId;
     }
-    // await this.extensionNodeService.createProcess();
 
     await this.extensionNodeService.createProcess(clientId);
 
     await this.initExtProtocol();
-    this.initWorkerHost();
-
-    await this.setVSCodeMainThreadAPI();
-
-    // await this.extensionNodeService.resolveConnection();
-    this.setExtensionLogThread();
-    // await this.extensionNodeService.resolveProcessInit(clientId);
 
   }
 
-  private async initWorkerHost() {
+  private async initWorkerHost(workerUrl: string) {
     // @ts-ignore
-    const workerUrl = getWorkerBootstrapUrl(this.appConfig.extWorkerHost, 'extWorkerHost');
-    if (!workerUrl) {
-      return;
-    }
-
     this.logger.verbose('workerUrl', workerUrl);
 
     const extendWorkerHost = new Worker(workerUrl, { name: 'KaitianWorkerExtensionHost' });
@@ -640,18 +632,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     this.protocol = mainThreadProtocol;
   }
 
-  public async setVSCodeMainThreadAPI() {
-    this.vscodeAPIFactoryDisposer = await createVSCodeAPIFactory(this.protocol, this.injector, this);
-    this.kaitianAPIFactoryDisposer = createKaitianApiFactory(this.protocol, this.injector);
-    this.mainThreadCommands.set('node', this.protocol.get(MainThreadAPIIdentifier.MainThreadCommands));
-    // 注册 worker 环境的响应 API
-    if (this.workerProtocol) {
-      this.workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, this);
-      this.workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, this.injector.get(MainThreadCommands, [this.workerProtocol]));
-      this.mainThreadCommands.set('worker', this.workerProtocol.get(MainThreadAPIIdentifier.MainThreadCommands));
-    }
-  }
-
   async executeExtensionCommand(command: string, args: any[]): Promise<void> {
     const targetHost = this.getExtensionCommand(command);
     if (!targetHost) {
@@ -669,14 +649,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
   getExtensionCommand(command: string): 'node' | 'worker' | undefined {
     return this.extensionCommands.get(command);
-  }
-
-  public setExtensionLogThread() {
-    createExtensionLogFactory(this.protocol, this.injector);
-
-    if (this.workerProtocol) {
-      createExtensionLogFactory(this.workerProtocol, this.injector);
-    }
   }
 
   private normalizeDeprecatedViewsConfig(moduleExports: { [key: string]: any }, extension: IExtension, proxiedHead?: HTMLHeadElement) {
@@ -713,10 +685,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     if (extendConfig.worker && extendConfig.worker.main) {
       if (!this.workerProtocol) {
         this.logger.warn('[Worker Host] extension worker host not yet initialized.');
-        return;
+      } else {
+        const workerProxy = this.workerProtocol.getProxy<IExtensionWorkerHost>(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
+        await workerProxy.$activateExtension(extension.id);
       }
-      const workerProxy = this.workerProtocol.getProxy<IExtensionWorkerHost>(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
-      await workerProxy.$activateExtension(extension.id);
     }
 
     // TODO: 存储插件与 component 的关系，用于 dispose
@@ -773,17 +745,22 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     return moduleExports[id];
   }
 
-  public async activeExtension(extension: IExtension) {
-    if (!this.appConfig.noExtHost) {
-      const proxy = await this.getProxy<IExtensionHostService>(ExtHostAPIIdentifier.ExtHostExtensionService);
-      await proxy.$activateExtension(extension.id);
+  private async doActivateExtension(extension: IExtension) {
+    const { contributes } = extension;
+    if (contributes && contributes.workerMain) {
+      if (!this.workerProtocol) {
+        this.logger.warn('[Worker Host] extension worker host not yet initialized.');
+      } else {
+        const workerProxy = this.workerProtocol.getProxy<IExtensionWorkerHost>(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
+        await workerProxy.$activateExtension(extension.id);
+      }
     }
-    const { extendConfig, packageJSON } = extension;
 
-    if (packageJSON.kaitianContributes && packageJSON.kaitianContributes.browserMain) {
-      const browserModuleUri = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(packageJSON.kaitianContributes.browserMain).toString()));
-      if (packageJSON.kaitianContributes.browserViews) {
-        const { browserViews } = packageJSON.kaitianContributes;
+    if (contributes && contributes.browserMain) {
+      const browserModuleUri = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(contributes.browserMain).toString()));
+      if (contributes.browserViews) {
+        const { browserViews } = contributes;
+        this.registerPortalShadowRoot(extension.id);
         const { moduleExports, proxiedHead } = await this.getExtensionModuleExports(browserModuleUri.toString(), extension);
         const viewsConfig = Object.keys(browserViews).reduce((config, location) => {
           config[location] = {
@@ -800,10 +777,24 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       }
       return;
     }
+  }
 
+  public async activeExtension(extension: IExtension) {
+    if (!this.appConfig.noExtHost) {
+      const proxy = await this.getProxy<IExtensionHostService>(ExtHostAPIIdentifier.ExtHostExtensionService);
+      await proxy.$activateExtension(extension.id);
+    }
+
+    const { extendConfig, packageJSON } = extension;
+    // 默认使用 kaitianContributes 激活插件
+    if (packageJSON.kaitianContributes) {
+      this.doActivateExtension(extension);
+      return;
+    }
     if (extendConfig) {
       this.activateExtensionByDeprecatedExtendConfig(extension);
     }
+
   }
 
   private dollarProxy(proxy) {
@@ -1023,18 +1014,24 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     });
   }
 
+  private getWorkerExtensionProps(extension: IExtension, workerMain: string) {
+    const workerScriptURI = this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(workerMain).toString()));
+    const workerScriptPath = workerScriptURI.toString();
+
+    return Object.assign({}, extension.toJSON(), { workerScriptPath });
+  }
+
   // remote call
   public async $getExtensions(): Promise<IExtensionProps[]> {
     return Array.from(this.extensionMap.values()).map((extension) => {
-      if (
+      if (extension.contributes && extension.contributes.workerMain) {
+        return this.getWorkerExtensionProps(extension, extension.contributes.workerMain);
+      } else if (
         extension.extendConfig &&
         extension.extendConfig.worker &&
         extension.extendConfig.worker.main
       ) {
-        const workerScriptURI = this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(extension.extendConfig.worker.main).toString()));
-        const workerScriptPath = workerScriptURI.toString();
-
-        return Object.assign({}, extension.toJSON(), { workerScriptPath });
+        return this.getWorkerExtensionProps(extension, extension.extendConfig.worker.main);
       } else {
         return extension;
       }
@@ -1046,6 +1043,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     if (extension) {
       extension.activate();
     }
+  }
+
+  public async $getStaticServicePath(): Promise<string> {
+    return this.appConfig.staticServicePath || 'http://127.0.0.1:8000';
   }
 
   public async getProxy<T>(identifier: ProxyIdentifier<T>): Promise<T> {

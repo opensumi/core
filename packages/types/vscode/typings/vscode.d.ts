@@ -638,7 +638,7 @@ declare module 'vscode' {
 		 * Extension runs where the remote extension host runs.
 		 */
 		Workspace = 2,
-	}
+  }
 
 	export interface SelectionRangeProvider {
 		/**

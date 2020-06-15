@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { IDisposable, IRange } from '@ali/ide-core-common';
+import { IDisposable, IRange, CancellationToken } from '@ali/ide-core-common';
 import { Uri, UriComponents} from './ext-types';
 import { FileStat } from '@ali/ide-file-service';
 import { EndOfLineSequence } from '@ali/ide-editor/lib/common';
@@ -8,6 +8,7 @@ export interface IMainThreadWorkspace extends IDisposable {
   $saveAll(): Promise<boolean>;
   $tryApplyWorkspaceEdit(dto: WorkspaceEditDto): Promise<boolean>;
   $updateWorkspaceFolders(start: number, deleteCount?: number, workspaceToName?: {[key: string]: string}, ...rootsToAdd: string[]): Promise<void>;
+  $startFileSearch(includePattern: string, options: { cwd?: string; absolute: boolean }, excludePatternOrDisregardExcludes: string | false | undefined, maxResult: number | undefined, token: CancellationToken): Promise<string[]>;
 }
 
 export interface IExtHostWorkspace {

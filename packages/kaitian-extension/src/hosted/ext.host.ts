@@ -11,8 +11,7 @@ import { createAPIFactory as createKaitianAPIFactory } from './api/kaitian/ext.h
 import { MainThreadAPIIdentifier, VSCodeExtensionService } from '../common/vscode';
 import { ExtenstionContext } from './api/vscode/ext.host.extensions';
 import { ExtensionsActivator, ActivatedExtension} from './ext.host.activator';
-import { VSCExtension } from './vscode.extension';
-// import { ExtensionLogger } from './extension-log';
+import { KTExtension } from './vscode.extension';
 import { ExtensionReporterService } from './extension-reporter';
 import { AppConfig } from '@ali/ide-core-node';
 
@@ -74,25 +73,28 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   }
 
   public $getExtensions(): IExtension[] {
-    return this.getExtensions();
+    return this.extensions;
   }
-  public async close() {
-    this.extensionsActivator.deactivated();
-  }
-  public async init() {
-    /*
-    this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService).$getExtensions();
 
-    this.logger.$debug('kaitian extensions', this.extensions.map((extension) => {
-      return extension.packageJSON.name;
-    }));
-    */
+  public async close() {
+    this.extensionsActivator.deactivate();
+  }
+
+  public async init() {
     this.extensionsActivator = new ExtensionsActivator(this.logger);
     this.defineAPI();
   }
 
-  public getExtensions(): IExtension[] {
-    return this.extensions;
+  public getExtensions(): KTExtension[] {
+    return this.extensions.map((ext) => {
+      return new KTExtension(
+        ext,
+        this as unknown as IExtensionHostService,
+        this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService),
+        this.getExtensionExports(ext.id),
+        this.getExtendExports(ext.id),
+      );
+    });
   }
 
   public async $initExtensions() {
@@ -106,15 +108,15 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     this.extensionsChangeEmitter.fire();
   }
 
-  public getExtension(extensionId: string): VSCExtension<any> | undefined {
+  public getExtension(extensionId: string): KTExtension<any> | undefined {
     const extension = this.extensions.find((extension) => {
       return getExtensionId(extensionId) === getExtensionId(extension.id);
     });
     if (extension) {
       const activateExtension = this.extensionsActivator.get(extension.id);
-      return new VSCExtension(
+      return new KTExtension(
         extension,
-        this,
+        this as unknown as IExtensionHostService,
         this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService),
         activateExtension && activateExtension.exports,
         activateExtension && activateExtension.extendExports,
@@ -125,6 +127,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   private findExtension(filePath: string) {
     return this.extensions.find((extension) => filePath.startsWith(fs.realpathSync(extension.path)));
   }
+
   private defineAPI() {
     const module = getNodeRequire()('module');
     const originalLoad = module._load;
@@ -339,7 +342,6 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     ) {
       return this.getExtensionViewModuleProxy(extension, extension.extendConfig.browser.componentId);
     } else {
-      this.logger.warn(`Can not found any view component proxies config in extension ${extension.id}`);
       return {};
     }
   }

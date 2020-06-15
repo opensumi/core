@@ -5,6 +5,15 @@ import { isOSX, isWindows } from './os';
  */
 export const empty = '';
 
+const hasTextEncoder = (typeof TextEncoder !== 'undefined');
+const hasTextDecoder = (typeof TextDecoder !== 'undefined');
+
+export namespace stringUtils {
+  export const TextEncoder = hasTextEncoder ? globalThis.TextEncoder : require('util').TextEncoder;
+
+  export const TextDecoder = hasTextDecoder ? globalThis.TextDecoder : require('util').TextDecoder;
+}
+
 export function isFalsyOrWhitespace(str: string | undefined): boolean {
 	if (!str || typeof str !== 'string') {
 		return true;

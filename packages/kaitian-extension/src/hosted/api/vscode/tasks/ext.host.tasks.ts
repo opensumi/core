@@ -320,15 +320,14 @@ class TaskExecutionImpl implements vscode.TaskExecution {
 }
 
 class CustomExecutionData implements IDisposable {
-  private static waitForDimensionsTimeoutInMs: number = 5000;
   private _cancellationSource?: CancellationTokenSource;
   private readonly _onTaskExecutionComplete: Emitter<CustomExecutionData> = new Emitter<CustomExecutionData>();
   private readonly _disposables = new DisposableStore();
-  private terminal?: vscode.Terminal;
   private terminalId?: number;
   public result: number | undefined;
 
   constructor(
+    // tslint:disable-next-line: no-unused-variable
     private readonly customExecution: vscode.CustomExecution,
     private readonly terminalService: IExtHostTerminal) {
   }
@@ -340,12 +339,6 @@ class CustomExecutionData implements IDisposable {
 
   public get onTaskExecutionComplete(): Event<CustomExecutionData> {
     return this._onTaskExecutionComplete.event;
-  }
-
-  private onDidCloseTerminal(terminal: vscode.Terminal): void {
-    if ((this.terminal === terminal) && this._cancellationSource) {
-      this._cancellationSource.cancel();
-    }
   }
 
   private onDidOpenTerminal(terminal: vscode.Terminal): void {
@@ -380,47 +373,6 @@ class CustomExecutionData implements IDisposable {
     if (callbackTerminals.length !== 1) {
       throw new Error(`Expected to only have one terminal at this point`);
     }
-
-    this.terminal = callbackTerminals[0];
-    // const terminalRenderer: vscode.TerminalRenderer = await this.terminalService.resolveTerminalRenderer(terminalId);
-
-    // // If we don't have the maximum dimensions yet, then we need to wait for them (but not indefinitely).
-    // // Custom executions will expect the dimensions to be set properly before they are launched.
-    // // BUT, due to the API contract VSCode has for terminals and dimensions, they are still responsible for
-    // // handling cases where they are not set.
-    // if (!terminalRenderer.maximumDimensions) {
-    //   const dimensionTimeout: Promise<void> = new Promise((resolve) => {
-    //     setTimeout(() => {
-    //       resolve();
-    //     }, CustomExecutionData.waitForDimensionsTimeoutInMs);
-    //   });
-
-    //   let dimensionsRegistration: IDisposable | undefined;
-    //   const dimensionsPromise: Promise<void> = new Promise((resolve) => {
-    //     dimensionsRegistration = terminalRenderer.onDidChangeMaximumDimensions((newDimensions) => {
-    //       resolve();
-    //     });
-    //   });
-
-    //   await Promise.race([dimensionTimeout, dimensionsPromise]);
-    //   if (dimensionsRegistration) {
-    //     dimensionsRegistration.dispose();
-    //   }
-    // }
-
-    // this._cancellationSource = new CancellationTokenSource();
-    // this._disposables.add(this._cancellationSource);
-
-    // this._disposables.add(this.terminalService.onDidCloseTerminal(this.onDidCloseTerminal.bind(this)));
-
-    // // Regardless of how the task completes, we are done with this custom execution task.
-    // this.customExecution.callback(terminalRenderer, this._cancellationSource.token).then(
-    //   (success) => {
-    //     this.result = success;
-    //     this._onTaskExecutionComplete.fire(this);
-    //   }, (rejected) => {
-    //     this._onTaskExecutionComplete.fire(this);
-    //   });
   }
 }
 
@@ -431,11 +383,7 @@ export class ExtHostTasks implements IExtHostTasks {
 
   private providedCustomExecutions: Map<string, CustomExecutionData>;
 
-  private activeCustomExecutions = new Map<string, CustomExecutionData>();
-
   private providedCustomExecutions2: Map<string, vscode.CustomExecution2>;
-
-  private activeCustomExecutions2: Map<string, vscode.CustomExecution2>;
 
   private _taskExecutions: Map<string, TaskExecutionImpl>;
 
@@ -451,8 +399,6 @@ export class ExtHostTasks implements IExtHostTasks {
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadTasks);
     this.providedCustomExecutions = new Map();
     this.providedCustomExecutions2 = new Map();
-    this.activeCustomExecutions = new Map();
-    this.activeCustomExecutions2 = new Map();
     this._taskExecutions = new Map();
   }
 
@@ -602,6 +548,7 @@ export class ExtHostTasks implements IExtHostTasks {
         if (result) {
           for (const task of result) {
             if (!task.definition || !validTypes[task.definition.type]) {
+              // tslint:disable-next-line: no-console
               console.warn(false, `The task [${task.source}, ${task.name}] uses an undefined task type. The task will be ignored in the future.`);
             }
             const taskDTO: TaskDTO | undefined = TaskDTO.from(task, provider.extension);

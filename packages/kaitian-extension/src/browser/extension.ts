@@ -127,6 +127,10 @@ export class Extension extends Disposable implements IExtension {
     return this._activating;
   }
 
+  get contributes() {
+    return this.packageJSON.contributes;
+  }
+
   toJSON(): IExtensionProps {
     return {
       id: this.id,

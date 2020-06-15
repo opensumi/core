@@ -1,4 +1,4 @@
-import { ExtensionService, IExtensionNodeClientService, ExtraMetaData, IExtensionMetaData, IExtension, IExtensionProps, ExtensionNodeServiceServerPath } from '../../lib/common';
+import { IExtensionNodeClientService, ExtraMetaData, IExtensionMetaData, IExtension } from '../../lib/common';
 import { mockExtensionProps } from './extensions';
 import { Injectable } from '@ali/common-di';
 

@@ -28,6 +28,7 @@ export const mockExtensionProps: IExtensionProps = {
 
 export const mockExtensions: IExtension[] = [{
   ...mockExtensionProps,
+  contributes: mockExtensionProps.packageJSON.contributes,
   activate: () => {
     return true;
   },

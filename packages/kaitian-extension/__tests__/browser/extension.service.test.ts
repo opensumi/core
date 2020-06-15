@@ -29,6 +29,8 @@ import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
 import { MonacoSnippetSuggestProvider } from '@ali/ide-monaco/lib/browser/monaco-snippet-suggest-provider';
 import { IToolbarRegistry } from '@ali/ide-core-browser/lib/toolbar';
 import { NextToolbarRegistryImpl } from '@ali/ide-core-browser/src/toolbar/toolbar.registry';
+import { IActivationEventService } from '@ali/ide-kaitian-extension/lib/browser/types';
+import { ActivationEventServiceImpl } from '@ali/ide-kaitian-extension/lib/browser/activation.service';
 
 @Injectable()
 class MockLoggerManagerClient {
@@ -165,6 +167,7 @@ class MockWorkbenchEditorService {
 
 const mockExtensions: IExtension[] = [{
   ...mockExtensionProps,
+  contributes: mockExtensionProps.packageJSON.contributes,
   activate: () => {
     return true;
   },
@@ -246,6 +249,10 @@ describe('Extension service', () => {
       {
         token: KeybindingRegistry,
         useClass: KeybindingRegistryImpl,
+      },
+      {
+        token: IActivationEventService,
+        useClass: ActivationEventServiceImpl,
       },
       {
         token: IContextKeyService,

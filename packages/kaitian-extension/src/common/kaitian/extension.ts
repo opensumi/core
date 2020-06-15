@@ -15,6 +15,15 @@ export interface IContributedSubmenu extends Omit<ISubmenuItem, 'submenu' | 'lab
   icon?: { [index in ThemeType]: string } | string;
 }
 
+export interface IBrowserView {
+  type: 'add';
+  view: Array<{
+    id: string;
+    icon: string;
+    [prop: string]: any;
+  }>;
+}
+
 export interface IKaitianExtensionContributions extends IExtensionContributions {
   menubars?: IContributeMenubarItem[];
   browserViews?: {

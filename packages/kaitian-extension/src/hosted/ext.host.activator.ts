@@ -50,7 +50,7 @@ export class ActivatedExtension {
     this.exports = exports;
     this.subscriptions = subscriptions;
 
-    // TODO 支持 activationTimes
+    // TODO 支持 activationTimes 了吗?
     if (activationTimes) {
       this.activationTimes = activationTimes;
     }
@@ -59,13 +59,10 @@ export class ActivatedExtension {
 
 export class ExtensionsActivator {
   private readonly activatedExtensions: Map<string, ActivatedExtension> = new Map();
-  // private extenstionProcessService: IExtensionProcessService;
 
   constructor(
     private logger: any = console,
-    // extenstionProcessService: IExtensionProcessService,
   ) {
-    // this.extenstionProcessService = extenstionProcessService;
   }
 
   has(id: string) {
@@ -84,7 +81,7 @@ export class ExtensionsActivator {
     return this.activatedExtensions.delete(id);
   }
 
-  deactivated() {
+  deactivate() {
     this.activatedExtensions.forEach((ext) => {
       const extModule = ext.module;
       if (extModule.deactivate) {

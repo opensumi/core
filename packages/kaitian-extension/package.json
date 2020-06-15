@@ -60,7 +60,6 @@
     "glob-to-regexp": "0.4.1",
     "is-running": "^2.1.0",
     "lodash.clonedeep": "^4.5.0",
-    "mz-modules": "^2.1.0",
     "picomatch": "^2.2.1",
     "react-shadow-dom-retarget-events": "^1.0.11",
     "shell-path": "^2.1.0",

@@ -12,7 +12,6 @@ import { TypeConverts, fromGlobPattern } from '../../../common/vscode/converter'
 import { WorkspaceFolder } from '../../../common/vscode/models/workspace';
 import { ExtensionIdentifier } from '../../../common/vscode/extension';
 import { CancellationToken } from '@ali/vscode-jsonrpc';
-import * as glob from 'mz-modules/glob';
 import { IExtHostTasks } from '../../../common/vscode/tasks';
 import { IExtension } from '../../../common';
 import { ExtHostFileSystem } from './ext.host.file-system';
@@ -377,19 +376,10 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
     }
 
     // TODO: 临时用 glob 实现
-    return glob(includePattern, {
+    return this.proxy.$startFileSearch(includePattern || '*', {
       cwd: includeFolder ? includeFolder.fsPath : this.rootPath,
       absolute: true,
-      ignore: excludePatternOrDisregardExcludes,
-    })
-      .then((files) => {
-        return files.map((file) => Uri.file(file));
-      })
-      .then((uris) => {
-        if (maxResults) {
-          return uris.slice(0, maxResults);
-        }
-        return uris;
-      });
+    }, excludePatternOrDisregardExcludes, maxResults, token)
+      .then((files) => files.map((file) => Uri.parse(file)));
   }
 }
