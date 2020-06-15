@@ -52,6 +52,10 @@ export class MockPreferenceProvider extends PreferenceProvider {
     return this.preferences;
   }
 
+  getLanguagePreferences(resourceUri?: string) {
+    return {};
+  }
+
   async setPreference(key: string, value: any, resourceUri?: string): Promise<boolean> {
     this.preferences[key] = value;
     return true;

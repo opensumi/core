@@ -35,7 +35,7 @@ describe('editor Options Converter Tests', () => {
     mockedPreferenceService.set('editor.fontSize', 1000);
     mockedPreferenceService.set('editor.tabSize', 100);
     mockedPreferenceService.set('editor.enableSplitViewResizing', true);
-    const options = getConvertedMonacoOptions(mockedPreferenceService, ['editor.fontSize']);
+    const options = getConvertedMonacoOptions(mockedPreferenceService, undefined, undefined, ['editor.fontSize']);
     expect(options.editorOptions.fontSize).toBe(1000);
     expect(options.modelOptions.tabSize).toBeUndefined();
     expect(options.diffOptions.enableSplitViewResizing).toBeUndefined();

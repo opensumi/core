@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { URI, PreferenceProvider, PreferenceResolveResult, PreferenceConfigurations } from '@ali/ide-core-browser';
+import { URI, PreferenceProvider, PreferenceResolveResult, PreferenceConfigurations, ILogger } from '@ali/ide-core-browser';
 import { FolderPreferenceProvider, FolderPreferenceProviderFactory, FolderPreferenceProviderOptions } from './folder-preference-provider';
 import { IWorkspaceService } from '@ali/ide-workspace';
 @Injectable()
@@ -16,6 +16,9 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
 
   protected readonly providers = new Map<string, FolderPreferenceProvider>();
 
+  @Autowired(ILogger)
+  logger: ILogger;
+
   constructor() {
     super();
     this.init();
@@ -29,7 +32,7 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
 
     const readyPromises: Promise<void>[] = [];
     for (const provider of this.providers.values()) {
-      readyPromises.push(provider.ready.catch((e) => console.error(e)));
+      readyPromises.push(provider.ready.catch((e) => this.logger.error(e)));
     }
     Promise.all(readyPromises).then(() => this._ready.resolve());
   }
@@ -84,12 +87,12 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
     return this.workspaceService.tryGetRoots().map((root) => root.uri);
   }
 
-  resolve<T>(preferenceName: string, resourceUri?: string): PreferenceResolveResult<T> {
+  resolve<T>(preferenceName: string, resourceUri?: string, language?: string): PreferenceResolveResult<T> {
     const result: PreferenceResolveResult<T> = {};
     const groups = this.groupProvidersByConfigName(resourceUri);
     for (const group of groups.values()) {
       for (const provider of group) {
-        const { value, configUri } = provider.resolve<T>(preferenceName, resourceUri);
+        const { value, configUri } = provider.resolve<T>(preferenceName, resourceUri, language);
         if (configUri && value !== undefined) {
           result.configUri = configUri;
           result.value = PreferenceProvider.merge(result.value as any, value as any) as any;
@@ -100,13 +103,13 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
     return result;
   }
 
-  getPreferences(resourceUri?: string): { [p: string]: any } {
+  getPreferences(resourceUri?: string, language?: string): { [p: string]: any } {
     let result = {};
     const groups = this.groupProvidersByConfigName(resourceUri);
     for (const group of groups.values()) {
       for (const provider of group) {
         if (provider.getConfigUri(resourceUri)) {
-          const preferences = provider.getPreferences();
+          const preferences = provider.getPreferences(undefined, language);
           result = PreferenceProvider.merge(result, preferences) as any;
           break;
         }
@@ -115,7 +118,22 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
     return result;
   }
 
-  async setPreference(preferenceName: string, value: any, resourceUri?: string): Promise<boolean> {
+  getLanguagePreferences(resourceUri?: string) {
+    let result = {};
+    const groups = this.groupProvidersByConfigName(resourceUri);
+    for (const group of groups.values()) {
+      for (const provider of group) {
+        if (provider.getConfigUri(resourceUri)) {
+          const preferences = provider.getLanguagePreferences();
+          result = PreferenceProvider.merge(result, preferences) as any;
+          break;
+        }
+      }
+    }
+    return result;
+  }
+
+  async setPreference(preferenceName: string, value: any, resourceUri?: string, language?: string): Promise<boolean> {
     const sectionName = preferenceName.split('.', 1)[0];
     const configName = this.configurations.isSectionName(sectionName) ? sectionName : this.configurations.getConfigName();
 
@@ -149,7 +167,7 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
     while (next) {
       const provider = next();
       if (provider) {
-        if (await provider.setPreference(preferenceName, value, resourceUri)) {
+        if (await provider.setPreference(preferenceName, value, resourceUri, language)) {
           return true;
         }
       }

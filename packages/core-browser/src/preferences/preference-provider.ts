@@ -2,6 +2,12 @@ import { Injectable } from '@ali/common-di';
 import { IDisposable, DisposableCollection, Emitter, Event, URI, Deferred, JSONUtils, JSONValue, Resource } from '@ali/ide-core-common';
 import { PreferenceScope } from '@ali/ide-core-common/lib/preferences/preference-scope';
 
+export interface IResolvedPreferences {
+  default: {[key: string]: any};
+  languageSpecific: {
+    [languageId: string]: {[key: string]: any},
+  };
+}
 export interface PreferenceProviderDataChange {
   readonly preferenceName: string;
   readonly newValue?: any;
@@ -11,13 +17,24 @@ export interface PreferenceProviderDataChange {
 }
 
 export interface PreferenceProviderDataChanges {
-  [preferenceName: string]: PreferenceProviderDataChange;
+  default: {
+    [preferenceName: string]: PreferenceProviderDataChange;
+  };
+  languageSpecific: ILanguagePreferenceProviderDataChanges;
+}
+
+export interface ILanguagePreferenceProviderDataChanges {
+  [languageId: string]: {
+    [preferenceName: string]: PreferenceProviderDataChange;
+  };
 }
 
 export interface PreferenceResolveResult<T> {
   configUri?: URI;
   value?: T;
   scope?: PreferenceScope;
+  // 是否存在来自针对语言的设置
+  languageSpecific?: boolean;
 }
 
 @Injectable()
@@ -48,9 +65,9 @@ export abstract class PreferenceProvider implements IDisposable {
    */
   protected emitPreferencesChangedEvent(changes: PreferenceProviderDataChanges | PreferenceProviderDataChange[]): void {
     if (Array.isArray(changes)) {
-      const prefChanges: PreferenceProviderDataChanges = {};
+      const prefChanges: PreferenceProviderDataChanges = {default: {}, languageSpecific: {}};
       for (const change of changes) {
-        prefChanges[change.preferenceName] = change;
+        prefChanges.default[change.preferenceName] = change;
       }
       this.onDidPreferencesChangedEmitter.fire(prefChanges);
     } else {
@@ -58,12 +75,12 @@ export abstract class PreferenceProvider implements IDisposable {
     }
   }
 
-  public get<T>(preferenceName: string, resourceUri?: string): T | undefined {
-    return this.resolve<T>(preferenceName, resourceUri).value;
+  public get<T>(preferenceName: string, resourceUri?: string, language?: string): T | undefined {
+    return this.resolve<T>(preferenceName, resourceUri, language).value;
   }
 
-  public resolve<T>(preferenceName: string, resourceUri?: string): PreferenceResolveResult<T> {
-    const value = this.getPreferences(resourceUri)[preferenceName];
+  public resolve<T>(preferenceName: string, resourceUri?: string, language?: string): PreferenceResolveResult<T> {
+    const value = this.getPreferences(resourceUri, language)[preferenceName];
     if (value !== undefined) {
       return {
         value,
@@ -73,9 +90,11 @@ export abstract class PreferenceProvider implements IDisposable {
     return {};
   }
 
-  public abstract getPreferences(resourceUri?: string): { [p: string]: any };
+  public abstract getPreferences(resourceUri?: string, language?: string): { [p: string]: any };
 
-  public abstract setPreference(key: string, value: any, resourceUri?: string): Promise<boolean>;
+  public abstract getLanguagePreferences(resourceUri?: string, language?: string): { [language: string]: {[p: string]: any} };
+
+  public abstract setPreference(key: string, value: any, resourceUri?: string, language?: string): Promise<boolean>;
 
   /**
    * 返回promise，当 preference provider 已经可以提供配置时返回resolved

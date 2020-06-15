@@ -37,7 +37,7 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
       return;
     }
 
-    const preferenceActions = this.preferenceService.get('editor.codeActionsOnSave', {});
+    const preferenceActions = this.preferenceService.get<any>('editor.codeActionsOnSave', undefined, e.payload.uri.toString(), e.payload.language);
 
     const codeActionsOnSave: monaco.codeAction.codeActionTrigger.CodeActionKind[] = [];
 
@@ -60,7 +60,7 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
 
     const tokenSource = new CancellationTokenSource();
 
-    const timeout = this.preferenceService.get<number>('editor.codeActionsOnSaveTimeout');
+    const timeout = this.preferenceService.get<number>('editor.codeActionsOnSaveTimeout', undefined, e.payload.uri.toString(), e.payload.language);
 
     return Promise.race([
       new Promise<void>((_resolve, reject) =>

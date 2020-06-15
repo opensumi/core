@@ -44,32 +44,38 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
 
   constructor() {
     super();
-    this.preferenceService.onPreferencesChanged((e) => {
+    this.addDispose(this.preferenceService.onPreferencesChanged((e) => {
       const changedEditorKeys = Object.keys(e).filter((key) => isEditorOption(key));
       if (changedEditorKeys.length > 0) {
-        const optionsDelta = getConvertedMonacoOptions(this.preferenceService, changedEditorKeys);
         this._editors.forEach((editor) => {
+          const uriStr = editor.currentUri ? editor.currentUri.toString() : undefined;
+          const languageId = editor.currentDocumentModel ? editor.currentDocumentModel.languageId : undefined;
+          const optionsDelta = getConvertedMonacoOptions(this.preferenceService, uriStr, languageId, changedEditorKeys);
           editor.updateOptions(optionsDelta.editorOptions, optionsDelta.modelOptions);
         });
         this.documentModelService.getAllModels().forEach((m) => {
+          const optionsDelta = getConvertedMonacoOptions(this.preferenceService, m.uri.toString(), m.languageId, changedEditorKeys);
           m.updateOptions(optionsDelta.modelOptions);
         });
         this._diffEditors.forEach((editor) => {
+          const uriStr = editor.modifiedEditor.currentUri ? editor.modifiedEditor.currentUri.toString() : undefined;
+          const languageId = editor.modifiedEditor.currentDocumentModel ? editor.modifiedEditor.currentDocumentModel.languageId : undefined;
+          const optionsDelta = getConvertedMonacoOptions(this.preferenceService, uriStr, languageId, changedEditorKeys);
           (editor as BrowserDiffEditor).updateDiffOptions(optionsDelta.diffOptions);
         });
       }
-    });
-    this.editorFeatureRegistry.onDidRegisterFeature((contribution) => {
+    }));
+    this.addDispose(this.editorFeatureRegistry.onDidRegisterFeature((contribution) => {
       this._editors.forEach((editor) => {
         this.editorFeatureRegistry.runOneContribution(editor, contribution);
       });
-    });
+    }));
   }
 
   async createCodeEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): Promise<ICodeEditor> {
     const mergedOptions = { ...getConvertedMonacoOptions(this.preferenceService).editorOptions, ...options };
     const monacoCodeEditor = await this.monacoService.createCodeEditor(dom, mergedOptions, overrides);
-    const editor = this.injector.get(BrowserCodeEditor, [monacoCodeEditor]);
+    const editor = this.injector.get(BrowserCodeEditor, [monacoCodeEditor, options]);
 
     this._onCodeEditorCreate.fire(editor);
     return editor;
@@ -115,7 +121,7 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     const preferenceOptions = getConvertedMonacoOptions(this.preferenceService);
     const mergedOptions = {...preferenceOptions.editorOptions, ...preferenceOptions.diffOptions, ...options};
     const monacoDiffEditor = await this.monacoService.createDiffEditor(dom, mergedOptions, overrides);
-    const editor = this.injector.get(BrowserDiffEditor, [monacoDiffEditor]);
+    const editor = this.injector.get(BrowserDiffEditor, [monacoDiffEditor, options]);
     this._onDiffEditorCreate.fire(editor);
     return editor;
   }
@@ -207,6 +213,7 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
   private decorationApplier: MonacoEditorDecorationApplier;
 
   private _onRefOpen = new Emitter<IEditorDocumentModelRef>();
+
   public onRefOpen = this._onRefOpen.event;
 
   @Autowired(PreferenceService)
@@ -241,12 +248,12 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
   }
 
   updateOptions(editorOptions: monaco.editor.IEditorOptions, modelOptions: monaco.editor.ITextModelUpdateOptions) {
-    // TODO sd
-    updateOptionsWithMonacoEditor(this.monacoEditor, editorOptions, modelOptions);
+    updateOptionsWithMonacoEditor(this.monacoEditor, {...editorOptions, ...this.spacialOptions}, modelOptions);
   }
 
   constructor(
     public readonly monacoEditor: monaco.editor.IStandaloneCodeEditor,
+    private spacialOptions: any = {},
   ) {
     super();
 
@@ -337,6 +344,14 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
       position: this.monacoEditor.getPosition(),
       selectionLength: 0,
     });
+    this.updateOptionsOnModelChange();
+  }
+
+  private updateOptionsOnModelChange() {
+    const uriStr = this.currentUri ? this.currentUri.toString() : undefined;
+    const languageId = this.currentDocumentModel ? this.currentDocumentModel.languageId : undefined;
+    const options = getConvertedMonacoOptions(this.preferenceService, uriStr, languageId, undefined);
+    this.updateOptions(options.editorOptions, options.modelOptions);
   }
 
   updateReadonly() {
@@ -442,7 +457,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
     }
   }
 
-  constructor(public readonly monacoDiffEditor: monaco.editor.IDiffEditor) {
+  constructor(public readonly monacoDiffEditor: monaco.editor.IDiffEditor, private specialOptions: any = {}) {
     super();
     this.wrapEditors();
   }
@@ -504,6 +519,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
         });
       }
     }
+    this.updateOptionsOnModelChange();
   }
 
   showFirstDiff() {
@@ -521,8 +537,15 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
     });
   }
 
+  private updateOptionsOnModelChange() {
+    const uriStr = this.modifiedEditor.currentUri ? this.modifiedEditor.currentUri.toString() : undefined;
+    const languageId = this.modifiedEditor.currentDocumentModel ? this.modifiedEditor.currentDocumentModel.languageId : undefined;
+    const options = getConvertedMonacoOptions(this.preferenceService, uriStr, languageId);
+    this.updateDiffOptions({...options.editorOptions, ...options.diffOptions});
+  }
+
   updateDiffOptions(options: Partial<monaco.editor.IDiffEditorOptions>) {
-    this.monacoDiffEditor.updateOptions(options);
+    this.monacoDiffEditor.updateOptions({...options, ...this.specialOptions});
   }
 
   getLineChanges(): ILineChange[] | null {

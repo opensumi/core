@@ -1,8 +1,8 @@
 import { Injectable, Autowired } from '@ali/common-di';
 
-import { Deferred, Event, Emitter, DisposableCollection, IDisposable, Disposable, deepFreeze, URI, isUndefined } from '@ali/ide-core-common';
+import { Deferred, Event, Emitter, DisposableCollection, IDisposable, Disposable, URI, isUndefined, LRUMap, deepClone } from '@ali/ide-core-common';
 import { PreferenceProvider, PreferenceProviderDataChange, PreferenceProviderDataChanges, PreferenceResolveResult } from './preference-provider';
-import { PreferenceSchemaProvider, OverridePreferenceName } from './preference-contribution';
+import { PreferenceSchemaProvider } from './preference-contribution';
 import { PreferenceScope } from './preference-scope';
 import { PreferenceConfigurations } from './preference-configurations';
 import { getExternalPreferenceProvider, getExternalPreference } from './early-preferences';
@@ -45,17 +45,45 @@ export interface PreferenceChanges {
 }
 export const PreferenceService = Symbol('PreferenceService');
 
+/**
+ * `defaultValue`
+ * `globalValue` (if defined)
+ * `workspaceValue` (if defined)
+ * `workspaceFolderValue` (if defined)
+ * `defaultLanguageValue` (if defined)
+ * `globalLanguageValue` (if defined)
+ * `workspaceLanguageValue` (if defined)
+ * `workspaceFolderLanguageValue` (if defined)
+ */
 export interface PreferenceService extends IDisposable {
+
   readonly ready: Promise<void>;
-  get<T>(preferenceName: string): T | undefined;
-  get<T>(preferenceName: string, defaultValue: T): T;
-  // tslint:disable-next-line:unified-signatures
-  get<T>(preferenceName: string, defaultValue: T, resourceUri: string): T;
-  // tslint:disable-next-line:unified-signatures
-  get<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): T | undefined;
-  set(preferenceName: string, value: any, scope?: PreferenceScope, resourceUri?: string): Promise<void>;
+  get<T>(preferenceName: string, defaultValue?: T, resourceUri?: string, language?: string): T | undefined;
+
+  /**
+   * 是否一个配置在指定 scope 存在针对语言的配置
+   * @param preferenceName 配置名称
+   * @param language 语言
+   * @param resourceUri uri
+   */
+  hasLanguageSpecific(preferenceName: any, language: string, resourceUri: string): boolean;
+
+  /**
+   * 设置一个偏好值
+   * @param preferenceName 偏好名称
+   * @param value 设置值
+   * @param scope 目标scope级别 如 User, Workspace
+   * @param resourceUri 目标资源位置，对于Folder来说，用于找到对应的文件夹
+   * @param language 目标语言偏好
+   */
+  set(preferenceName: string, value: any, scope?: PreferenceScope, resourceUri?: string, language?: string): Promise<void>;
+
   onPreferenceChanged: Event<PreferenceChange>;
+
   onPreferencesChanged: Event<PreferenceChanges>;
+
+  onLanguagePreferencesChanged: Event<{language: string, changes: PreferenceChanges}>;
+
   inspect<T>(preferenceName: string, resourceUri?: string): {
     preferenceName: string,
     defaultValue: T | undefined,
@@ -63,9 +91,6 @@ export interface PreferenceService extends IDisposable {
     workspaceValue: T | undefined, // Workspace Preference
     workspaceFolderValue: T | undefined, // Folder Preference
   } | undefined;
-
-  overridePreferenceName(options: OverridePreferenceName): string;
-  overriddenPreferenceName(preferenceName: string): OverridePreferenceName | undefined;
 
   resolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): PreferenceResolveResult<T>;
 }
@@ -81,6 +106,9 @@ export class PreferenceServiceImpl implements PreferenceService {
 
   protected readonly onPreferencesChangedEmitter = new Emitter<PreferenceChanges>();
   public readonly onPreferencesChanged = this.onPreferencesChangedEmitter.event;
+
+  private readonly onLanguagePreferencesChangedEmitter = new Emitter<{language: string, changes: PreferenceChanges}>();
+  public readonly onLanguagePreferencesChanged = this.onLanguagePreferencesChangedEmitter.event;
 
   protected readonly toDispose = new DisposableCollection(this.onPreferenceChangedEmitter, this.onPreferencesChangedEmitter);
 
@@ -102,6 +130,11 @@ export class PreferenceServiceImpl implements PreferenceService {
    * 使用 getPreferences()方法获取
    */
   protected preferences: { [key: string]: any } = {};
+
+  /**
+   * 缓存，减少每次都 doResolve 的开销
+   */
+  private cachedPreference = new LRUMap<string, LRUMap<string, PreferenceResolveResult<any>>>(1000, 500);
 
   constructor() {
     this.init();
@@ -148,50 +181,27 @@ export class PreferenceServiceImpl implements PreferenceService {
    */
   protected reconcilePreferences(changes: PreferenceProviderDataChanges): void {
     const changesToEmit: PreferenceChanges = {};
-    const acceptChange = (change: PreferenceProviderDataChange) => {
-      return this.getAffectedPreferenceNames(change, (preferenceName) =>
-        changesToEmit[preferenceName] = new PreferenceChangeImpl({ ...change, preferenceName }),
-      );
+    const languageSpecificChangesToEmit: {
+      [languageId: string]: PreferenceChanges,
+    } = {};
+    const acceptChange = (change: PreferenceProviderDataChange, language) => {
+      this.cachedPreference.delete(change.preferenceName);
+      if (language) {
+        if (!languageSpecificChangesToEmit[language]) {
+          languageSpecificChangesToEmit[language] = {};
+        }
+        languageSpecificChangesToEmit[language][change.preferenceName] = new PreferenceChangeImpl(change);
+      } else {
+        changesToEmit[change.preferenceName] = new PreferenceChangeImpl(change);
+      }
     };
 
-    for (const preferenceName of Object.keys(changes)) {
-      let change = changes[preferenceName];
-      if (change.newValue === undefined) {
-        const overridden = this.overriddenPreferenceName(change.preferenceName);
-        if (overridden) {
-          change = {
-            ...change, newValue: this.doGet(overridden.preferenceName),
-          };
-        }
-      }
-      if (this.schema.isValidInScope(preferenceName, PreferenceScope.Folder)) {
-        acceptChange(change);
-        continue;
-      }
-      for (const scope of PreferenceScope.getReversedScopes()) {
-        if (this.schema.isValidInScope(preferenceName, scope)) {
-          const provider = this.getProvider(scope);
-          if (provider) {
-            const value = provider.get(preferenceName);
-            if (scope > change.scope && value !== undefined) {
-              // preference defined in a more specific scope
-              break;
-            } else if (scope === change.scope && change.newValue !== undefined) {
-              // preference is changed into something other than `undefined`
-              acceptChange(change);
-            } else if (scope < change.scope && change.newValue === undefined && value !== undefined) {
-              // preference is changed to `undefined`, use the value from a more general scope
-              change = {
-                ...change,
-                newValue: value,
-                scope,
-              };
-              acceptChange(change);
-            }
-          }
-        }
-      }
-    }
+    // 获得改变
+    this.tryAcceptChanges(changes.default, acceptChange);
+    Object.keys(changes.languageSpecific).forEach((language) => {
+      this.tryAcceptChanges(changes.languageSpecific[language], acceptChange, language);
+    });
+
     // 触发配置变更事件
     const changedPreferenceNames = Object.keys(changesToEmit);
     if (changedPreferenceNames.length > 0) {
@@ -200,13 +210,54 @@ export class PreferenceServiceImpl implements PreferenceService {
     changedPreferenceNames.forEach((preferenceName) => {
       this.onPreferenceChangedEmitter.fire(changesToEmit[preferenceName]);
     });
+    Object.keys(languageSpecificChangesToEmit).forEach((language) => {
+      this.onLanguagePreferencesChangedEmitter.fire({
+        language,
+        changes: languageSpecificChangesToEmit[language],
+      });
+    });
   }
 
-  protected getAffectedPreferenceNames(change: PreferenceProviderDataChange, accept: (affectedPreferenceName: string) => void): void {
-    accept(change.preferenceName);
-    for (const overridePreferenceName of this.schema.getOverridePreferenceNames(change.preferenceName)) {
-      if (!this.doHas(overridePreferenceName)) {
-        accept(overridePreferenceName);
+  private tryAcceptChanges(changes: {[preferenceName: string]: PreferenceProviderDataChange}, acceptChange: (change: PreferenceProviderDataChange, language?: string) => void, language?: string) {
+    for (const preferenceName of Object.keys(changes)) {
+      let change = changes[preferenceName];
+      if (this.schema.isValidInScope(preferenceName, PreferenceScope.Folder)) {
+        acceptChange(change, language);
+        continue;
+      }
+      for (const scope of PreferenceScope.getReversedScopes()) {
+        if (this.schema.isValidInScope(preferenceName, scope)) {
+          const provider = this.getProvider(scope);
+          if (provider) {
+            const value = provider.get(preferenceName, change.domain ? change.domain[0] : undefined, language);
+            if (scope > change.scope && value !== undefined) {
+              // preference defined in a more specific scope
+              break;
+            } else if (scope === change.scope && change.newValue !== undefined) {
+              // preference is changed into something other than `undefined`
+              acceptChange(change, language);
+              break;
+            } else if (scope < change.scope && change.newValue === undefined && value !== undefined) {
+              // preference is changed to `undefined`, use the value from a more general scope
+              change = {
+                ...change,
+                newValue: value,
+                scope,
+              };
+              acceptChange(change, language);
+              break;
+            } else if (scope === PreferenceScope.Default && change.newValue === undefined && value === undefined ) {
+              // 到达这里, 说明已经没有针对语言的配置，因此需要将其变为非语言指定的值
+              change = {
+                ...change,
+                newValue: this.get(preferenceName, undefined, change.domain ? change.domain[0] : undefined),
+                scope,
+              };
+              acceptChange(change, language);
+              break;
+            }
+          }
+        }
       }
     }
   }
@@ -279,16 +330,12 @@ export class PreferenceServiceImpl implements PreferenceService {
    * @returns {boolean}
    * @memberof PreferenceServiceImpl
    */
-  public has(preferenceName: string, resourceUri?: string): boolean {
-    return this.get(preferenceName, undefined, resourceUri) !== undefined;
+  public has(preferenceName: string, resourceUri?: string, language?: string): boolean {
+    return this.get(preferenceName, undefined, resourceUri, language) !== undefined;
   }
 
-  public get<T>(preferenceName: string): T | undefined;
-  public get<T>(preferenceName: string, defaultValue: T): T;
-  // tslint:disable-next-line: unified-signatures
-  public get<T>(preferenceName: string, defaultValue: T, resourceUri?: string): T;
-  public get<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): T | undefined {
-    return this.resolve<T>(preferenceName, defaultValue, resourceUri).value;
+  public get<T>(preferenceName: string, defaultValue?: T, resourceUri?: string, language?: string): T | undefined {
+    return this.resolve<T>(preferenceName, defaultValue, resourceUri, language).value;
   }
 
   public lookUp<T>(key: string): PreferenceResolveResult<T> {
@@ -318,17 +365,12 @@ export class PreferenceServiceImpl implements PreferenceService {
     return { value };
   }
 
-  public resolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): PreferenceResolveResult<T> {
-    const { value, configUri, scope } = this.doResolve(preferenceName, defaultValue, resourceUri);
-    if (typeof value === 'undefined') {
-      const overridden = this.overriddenPreferenceName(preferenceName);
-      if (overridden) {
-        return this.doResolve(overridden.preferenceName, defaultValue, resourceUri);
-      } else {
-        return this.lookUp(preferenceName);
-      }
+  public resolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string, language?: string): PreferenceResolveResult<T> {
+    const result = this.doResolve(preferenceName, defaultValue, resourceUri, undefined, language);
+    if (typeof result.value === 'undefined') {
+      return this.lookUp(preferenceName);
     }
-    return { value, configUri, scope };
+    return result;
   }
 
   public async set(preferenceName: string, value: any, scope: PreferenceScope | undefined, resourceUri?: string): Promise<void> {
@@ -361,6 +403,10 @@ export class PreferenceServiceImpl implements PreferenceService {
       return;
     }
     throw new Error(`Unable to write to ${PreferenceScope.getScopeNames(resolvedScope)[0]} Settings.`);
+  }
+
+  public hasLanguageSpecific(preferenceName: string, language: string, resourceUri?: string): boolean {
+    return !!this.doResolve(preferenceName, undefined, resourceUri, undefined, language).languageSpecific;
   }
 
   public getBoolean(preferenceName: string): boolean | undefined;
@@ -415,21 +461,7 @@ export class PreferenceServiceImpl implements PreferenceService {
   }
   protected inspectInScope<T>(preferenceName: string, scope: PreferenceScope, resourceUri?: string): T | undefined {
     const value = this.doInspectInScope<T>(preferenceName, scope, resourceUri);
-    if (value === undefined) {
-      const overridden = this.overriddenPreferenceName(preferenceName);
-      if (overridden) {
-        return this.doInspectInScope(overridden.preferenceName, scope, resourceUri);
-      }
-    }
     return value;
-  }
-
-  public overridePreferenceName(options: OverridePreferenceName): string {
-    return this.schema.overridePreferenceName(options);
-  }
-
-  public overriddenPreferenceName(preferenceName: string): OverridePreferenceName | undefined {
-    return this.schema.overriddenPreferenceName(preferenceName);
   }
 
   protected doHas(preferenceName: string, resourceUri?: string): boolean {
@@ -445,7 +477,24 @@ export class PreferenceServiceImpl implements PreferenceService {
     return this.doResolve(preferenceName, defaultValue, resourceUri).value;
   }
 
-  protected doResolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string, untilScope?: PreferenceScope): PreferenceResolveResult<T> {
+  protected doResolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string, untilScope?: PreferenceScope, language?: string): PreferenceResolveResult<T> {
+
+    if (!this.cachedPreference.has(preferenceName)) {
+      this.cachedPreference.set(preferenceName, new LRUMap(500, 200));
+    }
+    const cache = this.cachedPreference.get(preferenceName)!;
+    const cacheKey = cacheHash(language, untilScope, resourceUri);
+    if (!cache.has(cacheKey)) {
+      cache.set(cacheKey, this.doResolveWithOutCache<T>(preferenceName, resourceUri, untilScope, language));
+    }
+    const result = cache.get(cacheKey)!;
+    if (result.value === undefined) {
+      result.value = defaultValue;
+    }
+    return result;
+  }
+
+  protected doResolveWithOutCache<T>(preferenceName: string, resourceUri?: string, untilScope?: PreferenceScope, language?: string): PreferenceResolveResult<T> {
     const result: PreferenceResolveResult<T> = { scope: PreferenceScope.Default };
     const externalProvider = getExternalPreferenceProvider(preferenceName);
     if (externalProvider) {
@@ -465,10 +514,30 @@ export class PreferenceServiceImpl implements PreferenceService {
         }
       }
     }
+
+    // 添加语言的设置
+    if (language) {
+      for (const scope of scopes) {
+        if (this.schema.isValidInScope(preferenceName, scope)) {
+          const provider = this.getProvider(scope);
+          if (provider) {
+            const { configUri, value, languageSpecific } = provider.resolve<T>(preferenceName, resourceUri, language);
+            if (value !== undefined) {
+              result.configUri = configUri;
+              result.value = PreferenceProvider.merge(result.value as any, value as any) as any;
+              result.scope = scope;
+              result.languageSpecific = result.languageSpecific || languageSpecific;
+            }
+          }
+        }
+      }
+    }
+
     return {
       configUri: result.configUri,
-      value: result.value !== undefined ? deepFreeze(result.value) : defaultValue,
-      scope: result.scope || PreferenceScope.Default, // TODO @魁武 这里可以是Default吗
+      value: result.value !== undefined ? deepClone(result.value) : undefined,
+      scope: result.scope || PreferenceScope.Default,
+      languageSpecific: result.languageSpecific,
     };
   }
 
@@ -519,6 +588,7 @@ export class PreferenceServiceImpl implements PreferenceService {
 
   protected readonly _onDidChangeConfiguration = new Emitter<IConfigurationChangeEvent>();
   public readonly onDidChangeConfiguration = this._onDidChangeConfiguration.event;
+
 }
 
 // copied from vscdoe
@@ -535,4 +605,8 @@ const enum ConfigurationTarget {
   WORKSPACE_FOLDER,
   DEFAULT,
   MEMORY,
+}
+
+function cacheHash(language?: string, untilScope?: PreferenceScope, resourceUri?: string) {
+  return `${language}:::${untilScope}:::${resourceUri}`;
 }

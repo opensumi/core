@@ -9,6 +9,8 @@ import { IEditorDocumentModelServiceImpl, SaveTask } from './save-task';
 import { EditorDocumentModelContentChangedEvent, EditorDocumentModelOptionChangedEvent, EditorDocumentModelRemovalEvent, EditorDocumentModelSavedEvent, IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, ORIGINAL_DOC_SCHEME, EditorDocumentModelWillSaveEvent } from './types';
 
 import debounce = require('lodash.debounce');
+import { EditorPreferences } from '../preference/schema';
+import { createEditorPreferenceProxy } from '../preference/util';
 
 export interface EditorDocumentModelConstructionOptions {
   eol?: EOL;
@@ -41,8 +43,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   @Autowired(IDocPersistentCacheProvider)
   cacheProvider: IDocPersistentCacheProvider;
 
-  @Autowired(PreferenceService)
-  preferenceService: PreferenceService;
+  editorPreferences: EditorPreferences;
 
   @Autowired(IMessageService)
   messageService: IMessageService;
@@ -58,6 +59,9 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   @Autowired(IReporterService)
   private reporter: IReporterService;
+
+  @Autowired(PreferenceService)
+  preferences: PreferenceService;
 
   private monacoModel: monaco.editor.ITextModel;
 
@@ -91,6 +95,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   constructor(public readonly uri: URI, content: string, options: EditorDocumentModelConstructionOptions = {}) {
     super();
+
     this.onDispose(() => {
       this.eventBus.fire(new EditorDocumentModelRemovalEvent(this.uri));
     });
@@ -103,6 +108,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     this.closeAutoSave = !!options.closeAutoSave;
 
     this.monacoModel = monaco.editor.createModel(content, options.languageId, monaco.Uri.parse(uri.toString()));
+    this.editorPreferences = createEditorPreferenceProxy(this.preferences, this.uri.toString(), this.languageId);
     this.updateOptions({});
     if (options.eol) {
       this.eol = options.eol;
@@ -119,9 +125,9 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   updateOptions(options) {
     const finalOptions = {
-      tabSize: this.preferenceService.get<number>('editor.tabSize') || 1,
-      insertSpaces: this.preferenceService.get<boolean>('editor.insertSpaces'),
-      detectIndentation: this.preferenceService.get<boolean>('editor.detectIndentation'),
+      tabSize: this.editorPreferences['editor.tabSize'] || 1,
+      insertSpaces: this.editorPreferences['editor.insertSpaces'],
+      detectIndentation: this.editorPreferences['editor.detectIndentation'],
       ...options,
     };
     if (finalOptions.detectIndentation) {
@@ -270,8 +276,9 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     await this.eventBus.fireAndAwait(new EditorDocumentModelWillSaveEvent({
       uri: this.uri,
       reason,
+      language: this.languageId,
     }));
-    if (!this.preferenceService.get<boolean>('editor.askIfDiff')) {
+    if (!this.editorPreferences['editor.askIfDiff']) {
       force = true;
     }
     // 新建的文件也可以保存
@@ -418,12 +425,12 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     if (!this._tryAutoSaveAfterDelay) {
       this._tryAutoSaveAfterDelay = debounce(() => {
         this.save(undefined, SaveReason.AfterDelay);
-      }, this.preferenceService.get('editor.autoSaveDelay') || 1000);
-      this.addDispose(this.preferenceService.onPreferenceChanged((change) => {
+      }, this.editorPreferences['editor.autoSaveDelay'] || 1000);
+      this.addDispose(this.editorPreferences.onPreferenceChanged((change) => {
         if (change.preferenceName === 'editor.autoSaveDelay') {
           this._tryAutoSaveAfterDelay = debounce(() => {
             this.save(undefined, SaveReason.AfterDelay);
-          }, this.preferenceService.get('editor.autoSaveDelay') || 1000);
+          }, this.editorPreferences['editor.autoSaveDelay'] || 1000);
         }
       }));
     }
@@ -431,7 +438,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   private notifyChangeEvent(changes: IEditorDocumentModelContentChange[] = []) {
-    if (!this.closeAutoSave && this.savable && this.preferenceService.get('editor.autoSave') === 'afterDelay') {
+    if (!this.closeAutoSave && this.savable && this.editorPreferences['editor.autoSave'] === 'afterDelay') {
       this.tryAutoSaveAfterDelay();
     }
     // 发出内容变化的事件
@@ -465,11 +472,11 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   protected async formatOnSave(reason: SaveReason) {
-    const formatOnSave = this.preferenceService.get<boolean>('editor.formatOnSave');
+    const formatOnSave = this.editorPreferences['editor.formatOnSave'];
 
     // 和 vscode 逻辑保持一致，如果是 AfterDelay 则不执行 formatOnSave
     if (formatOnSave && reason !== SaveReason.AfterDelay) {
-      const formatOnSaveTimeout = this.preferenceService.get<number>('editor.formatOnSaveTimeout') || 3000;
+      const formatOnSaveTimeout = this.editorPreferences['editor.formatOnSaveTimeout'] || 3000;
       const timer = this.reporter.time(REPORT_NAME.FORMAT_ON_SAVE);
       try {
         await Promise.race([
