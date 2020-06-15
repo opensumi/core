@@ -13,7 +13,7 @@ export class ThemesContributionPoint extends VSCodeContributePoint<ThemesSchema>
 
   contribute() {
     const themes = this.json;
-    this.themeService.registerThemes(themes, this.extension.path);
+    this.addDispose(this.themeService.registerThemes(themes, this.extension.path));
   }
 
 }

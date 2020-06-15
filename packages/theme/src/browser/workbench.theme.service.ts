@@ -1,5 +1,5 @@
 import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, getThemeId, getThemeTypeSelector, IColorCustomizations, ITokenColorizationRule, ITokenColorCustomizations } from '../common/theme.service';
-import { WithEventBus, localize, Emitter, Event, isObject } from '@ali/ide-core-common';
+import { WithEventBus, localize, Emitter, Event, isObject, DisposableCollection } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
 import { Color, IThemeColor } from '../common/color';
@@ -35,6 +35,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   // TODO 初始化时读取本地存储配置
   public currentThemeId: string;
   private currentTheme: Theme;
+  private themeIdNotFound?: string;
 
   private themes: Map<string, ThemeData> = new Map();
   private themeContributionRegistry: Map<string, { contribution: ThemeContribution, basePath: string }> = new Map();
@@ -64,34 +65,44 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   }
 
   public registerThemes(themeContributions: ThemeContribution[], extPath: string) {
+    const disposables = new DisposableCollection();
+    disposables.push({
+      dispose: () => this.doSetPrefrenceSchema(),
+    });
     themeContributions.forEach((contribution) => {
       const themeExtContribution = { basePath: extPath, contribution };
-      this.themeContributionRegistry.set(getThemeId(contribution), themeExtContribution);
-      this.preferenceSchemaProvider.setSchema({
-        properties: {
-          [COLOR_THEME_SETTING]: {
-            type: 'string',
-            default: 'Default Dark+',
-            enum: this.getAvailableThemeInfos().map((info) => info.themeId),
-            description: '%preference.description.general.theme%',
-          },
+      const themeId = getThemeId(contribution);
+      this.themeContributionRegistry.set(themeId, themeExtContribution);
+      if (this.themeIdNotFound && themeId === this.themeIdNotFound) {
+        this.applyTheme(themeId);
+      }
+      disposables.push({
+        dispose: () => {
+          this.themeContributionRegistry.delete(themeId);
         },
-      }, true);
-      const map = {};
-      this.getAvailableThemeInfos().forEach((info) => {
-        map[info.themeId] = info.name;
       });
-      this.preferenceSettings.setEnumLabels(COLOR_THEME_SETTING, map);
+      disposables.push({
+        dispose: () => {
+          if (this.currentThemeId === themeId) {
+            this.applyTheme(DEFAULT_THEME_ID);
+          }
+        },
+      });
     });
+    this.doSetPrefrenceSchema();
+    return disposables;
   }
 
-  public async applyTheme(themeId: string) {
+  public async applyTheme(themeId?: string) {
     if (!themeId) {
       themeId = this.preferenceService.get<string>(COLOR_THEME_SETTING)!;
     }
     const existedTheme = this.getAvailableThemeInfos().find((info) => info.themeId === themeId);
     if (!existedTheme) {
+      this.themeIdNotFound = themeId;
       themeId = DEFAULT_THEME_ID;
+    } else {
+      this.themeIdNotFound = '';
     }
     // 这里暂时去除，否侧token颜色出不来
     // if (this.currentThemeId === themeId) {
@@ -178,6 +189,24 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       });
     }
     return themeInfos;
+  }
+
+  protected doSetPrefrenceSchema() {
+    this.preferenceSchemaProvider.setSchema({
+      properties: {
+        [COLOR_THEME_SETTING]: {
+          type: 'string',
+          default: 'Default Dark+',
+          enum: this.getAvailableThemeInfos().map((info) => info.themeId),
+          description: '%preference.description.general.theme%',
+        },
+      },
+    }, true);
+    const map = {};
+    this.getAvailableThemeInfos().forEach((info) => {
+      map[info.themeId] = info.name;
+    });
+    this.preferenceSettings.setEnumLabels(COLOR_THEME_SETTING, map);
   }
 
   private get colorCustomizations(): IColorCustomizations {
