@@ -88,7 +88,11 @@ export class ExtensionsActivator {
     this.activatedExtensions.forEach((ext) => {
       const extModule = ext.module;
       if (extModule.deactivate) {
-        extModule.deactivate();
+        try {
+          extModule.deactivate();
+        } catch (e) {
+          this.logger.error(`deactivate error ${e}`);
+        }
       }
 
       ext.subscriptions.forEach((disposable) => {
