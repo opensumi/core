@@ -76,3 +76,10 @@ export interface ITerminalService {
   onError(handler: (error: ITerminalError) => void): void;
 }
 ```
+
+## 接下来
+
+* [ ] 终端首次初始化使用对比的外层 dom 节点需要可指定，这里可能需要使用 core 内部 api 手动计算
+* [ ] 终端 Singleton 模式
+* [ ] 终端后端 Pty 代码优化，需要支持开发时重连
+* [ ] Vim 显示优化

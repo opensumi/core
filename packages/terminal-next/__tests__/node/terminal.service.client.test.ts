@@ -1,19 +1,19 @@
 import { Injector } from '@ali/common-di';
 import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { ITerminalServiceClient, ITerminalService } from '../../src/common';
+import { ITerminalServiceClient, ITerminalNodeService } from '../../src/common';
 import { TerminalNodePtyModule } from '../../src/node';
 import { IPty } from '../../src/node/pty';
 
 describe('TerminalServiceClientImpl', () => {
   let terminalServiceClient: ITerminalServiceClient;
-  let terminalService: ITerminalService;
+  let terminalService: ITerminalNodeService;
   let injector: Injector;
   const mockClientId = 'a';
 
   beforeEach(() => {
     injector = createNodeInjector([TerminalNodePtyModule], new Injector([]));
     terminalServiceClient = injector.get(ITerminalServiceClient);
-    terminalService = injector.get(ITerminalService);
+    terminalService = injector.get(ITerminalNodeService);
   });
 
   it('setConnectionClientId, should be set the id correctly.', () => {
