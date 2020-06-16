@@ -1,17 +1,16 @@
-import { Event, Disposable, IEventBus } from '@ali/ide-core-common';
+import { Event, Disposable, uuid, URI, localize, Deferred } from '@ali/ide-core-common';
 import { Optional, Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { PreferenceService } from '@ali/ide-core-browser';
+import { IEditorDocumentModelService, IEditorDocumentModelRef } from '@ali/ide-editor/lib/browser';
 
-import { ContentChangeEvent, ContentChangeEventPayload, ContentChangeType } from '../common';
 import { OutputPreferences } from './output-preference';
 
-const maxChannelHistory = 1000;
+const DEFAULT_MAX_CHANNEL_LINE = 50000;
 
 @Injectable({ multiple: true })
 export class OutputChannel extends Disposable {
-  private lines: string[] = [];
-  private currentLine: string | undefined;
+  private outputLines: string[] = [];
   private visible: boolean = true;
   private shouldLogToBrowser = false;
 
@@ -24,18 +23,78 @@ export class OutputChannel extends Disposable {
   @Autowired(OutputPreferences)
   private readonly outputPreferences: OutputPreferences;
 
-  @Autowired(IEventBus)
-  private readonly eventBus: IEventBus;
+  @Autowired(IEditorDocumentModelService)
+  protected readonly documentService: IEditorDocumentModelService;
+
+  public outputModel: IEditorDocumentModelRef;
+
+  private monacoModel: monaco.editor.ITextModel;
+
+  public modelReady: Deferred<boolean> = new Deferred();
+
+  private maxChannelLine: number = DEFAULT_MAX_CHANNEL_LINE;
+
+  private enableHighlight: boolean = true;
 
   constructor(@Optional() public readonly name: string) {
     super();
 
+    const preferenceMaxLine = this.preferenceService.get<number>('output.maxChannelLine');
+    if (preferenceMaxLine) {
+      this.maxChannelLine = preferenceMaxLine;
+    }
+
+    this.enableHighlight = Boolean(this.preferenceService.get<boolean>('output.enableLogHighlight'));
+
     this.setShouldLogToBrowser();
-    this.addDispose(Event.debounce(
-      this.preferenceService.onPreferenceChanged,
-      (last, event) => last || event.preferenceName === 'output.logWhenNoPanel',
-      50,
-    )(this.setShouldLogToBrowser, this));
+
+    this.addDispose(this.preferenceService.onPreferenceChanged((e) => {
+      switch (e.preferenceName) {
+        case 'output.maxChannelLine':
+          this.onDidMaxChannelLineChange(e);
+          break;
+        case 'output.logWhenNoPanel':
+          this.setShouldLogToBrowser();
+          break;
+        case 'output.enableLogHighlight':
+          this.onDidLogHighlightChange(e);
+          break;
+        default:
+          break;
+      }
+    }));
+
+    const uri = new URI(`walkThroughSnippet://output/${name || uuid()}`);
+    this.documentService.createModelReference(uri)
+      .then((model) => {
+        this.outputModel = model;
+        this.monacoModel = this.outputModel.instance.getMonacoModel();
+        this.monacoModel.setValue(localize('output.channel.none', '还没有任何输出'));
+
+        if (this.enableHighlight) {
+          this.outputModel.instance.languageId = 'log';
+        }
+        this.modelReady.resolve();
+      });
+  }
+
+  private onDidMaxChannelLineChange(event) {
+    if (event.newValue !== this.maxChannelLine) {
+      this.maxChannelLine = event.newValue;
+    }
+  }
+
+  private onDidLogHighlightChange(event) {
+    this.modelReady.promise.then(() => {
+      if (event.newValue !== this.enableHighlight) {
+        this.enableHighlight = event.newValue;
+      }
+      if (event.newValue) {
+        this.outputModel.instance.languageId = 'log';
+      } else {
+        this.outputModel.instance.languageId = 'plaintext';
+      }
+    });
   }
 
   private setShouldLogToBrowser() {
@@ -44,38 +103,60 @@ export class OutputChannel extends Disposable {
     this.shouldLogToBrowser = Boolean(noVisiblePanel && logWhenNoPanel);
   }
 
+  private doReplace(value: string) {
+    this.monacoModel.setValue(value);
+  }
+
+  private pushEditOperations(value: string): void {
+    const lineCount = this.monacoModel.getLineCount();
+    const character = value.length;
+    // 用 pushEditOperations 插入文本，直接替换 content 会触发重新计算高亮
+    this.monacoModel.pushEditOperations([], [{
+      range: new monaco.Range(lineCount, 0, lineCount + 1, character),
+      text: value,
+      forceMoveMarkers: true,
+    }], () => []);
+  }
+
+  private isEmptyChannel(): boolean {
+    return this.outputLines.length === 0;
+  }
+
+  private doAppend(value: string): void {
+    let needSlice = false;
+    if (this.outputLines.length + 1 >= this.maxChannelLine) {
+      needSlice = true;
+      this.outputLines = this.outputLines.slice(this.maxChannelLine / 2);
+    }
+    // 由于 model 创建是异步的， 这里要等 modelReady 才能写入
+    this.modelReady.promise.then(() => {
+      if (this.isEmptyChannel() || needSlice) {
+        this.doReplace(this.outputLines.join('') + value);
+      } else {
+        this.pushEditOperations(value);
+      }
+      this.outputLines.push(value);
+    });
+  }
+
   append(value: string): void {
-    if (this.currentLine === undefined) {
-      this.currentLine = value;
-    } else {
-      this.currentLine += value;
-    }
-    this.eventBus.fire(new ContentChangeEvent(new ContentChangeEventPayload(this.name, ContentChangeType.append, value, this.getLines())));
-    if (this.shouldLogToBrowser) {
-      console.log(`%c[${this.name}]` + `%c ${value}`, 'background:rgb(50, 150, 250); color: #fff', 'background: none; color: inherit');
-    }
+    this.doAppend(value);
   }
 
   appendLine(line: string): void {
-    if (this.currentLine !== undefined) {
-      this.lines.push(this.currentLine + line);
-      this.currentLine = undefined;
-    } else {
-      this.lines.push(line);
+    let value = line;
+    if (!value.endsWith('\n')) {
+      value += '\n';
     }
-    if (this.lines.length > maxChannelHistory) {
-      this.lines.splice(0, this.lines.length - maxChannelHistory);
-    }
-    this.eventBus.fire(new ContentChangeEvent(new ContentChangeEventPayload(this.name, ContentChangeType.appendLine, line, this.getLines())));
+    this.doAppend(value);
     if (this.shouldLogToBrowser) {
       console.log(`%c[${this.name}]` + `%c ${line}}`, 'background:rgb(50, 150, 250); color: #fff', 'background: none; color: inherit');
     }
   }
 
   clear(): void {
-    this.lines.length = 0;
-    this.currentLine = undefined;
-    this.eventBus.fire(new ContentChangeEvent(new ContentChangeEventPayload(this.name, ContentChangeType.appendLine, '', this.getLines())));
+    this.outputLines = [];
+    this.monacoModel.setValue(localize('output.channel.none', '还没有任何输出'));
   }
 
   setVisibility(visible: boolean): void {
@@ -89,14 +170,6 @@ export class OutputChannel extends Disposable {
       if (!handler.isVisible) {
         handler.activate();
       }
-    }
-  }
-
-  getLines(): string[] {
-    if (this.currentLine !== undefined) {
-      return [...this.lines, this.currentLine];
-    } else {
-      return this.lines;
     }
   }
 

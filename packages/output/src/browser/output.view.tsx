@@ -1,12 +1,11 @@
 import * as React from 'react';
-import { useEffect } from 'react';
+import { useEffect, createRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useInjectable, localize, CommandService, EDITOR_COMMANDS, isElectronRenderer, ViewState } from '@ali/ide-core-browser';
+import { useInjectable, isElectronRenderer, ViewState } from '@ali/ide-core-browser';
 import { Select, Option } from '@ali/ide-components';
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
 import { OutputService } from './output.service';
 import * as styles from './output.module.less';
-import { InfinityList } from '@ali/ide-core-browser/lib/components';
 
 import Ansi from '../common/ansi';
 
@@ -29,62 +28,20 @@ const OutputTemplate: React.FC<{ data: IOutputItem; index: number }> = ({ data: 
 
 export const Output = observer(({ viewState }: { viewState: ViewState }) => {
   const outputService = useInjectable<OutputService>(OutputService);
-  const commandService = useInjectable<CommandService>(CommandService);
-  const [rawLines, setRawLines] = React.useState(outputService.getChannels()[0]?.getLines() || []);
+  const outputRef = createRef<HTMLDivElement>();
 
   useEffect(() => {
     outputService.viewHeight = String(viewState.height);
   }, [viewState.height]);
 
   useEffect(() => {
-    setRawLines(outputService.selectedChannel?.getLines());
-  }, [outputService.selectedChannel]);
-
-  useEffect(() => {
-    if (!outputService.selectedChannel) {
-      outputService.selectedChannel = outputService.getChannels()[0];
+    if (outputRef.current) {
+      outputService.initOuputMonacoInstance(outputRef.current);
     }
-    setRawLines(outputService.selectedChannel?.getLines() || []);
-  }, [outputService.keys]);
-
-  const renderLines = (rawLines): IOutputItem[] => {
-
-    const result: IOutputItem[] = [];
-
-    const onPath = (path) => {
-      commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, path, { disableNavigate: false, preview: false });
-    };
-    for (const text of rawLines) {
-      const lines = text.split(/[\n\r]+/);
-      lines.forEach((line, idx) => {
-        if (line) {
-          result.push({ line, id: idx, onPath });
-        }
-      });
-    }
-
-    if (result.length === 0) {
-      result.push({ line: localize('output.channel.none', '还没有任何输出'), id: -1, onPath });
-    }
-    return result;
-  };
+  }, []);
 
   return <React.Fragment>
-    <div className={styles.output}>
-      <InfinityList
-        template={OutputTemplate}
-        getContainer={(ref) => ref}
-        style={style}
-        data={renderLines(rawLines)}
-        className={styles.content}
-        keyProp={'id'}
-        isLoading={false}
-        isDrained={false}
-        sliceSize={30}
-        sliceThreshold={30}
-        scrollBottomIfActive={true}
-      />
-    </div>
+    <div className={styles.output} ref={outputRef} />
   </React.Fragment>;
 });
 
@@ -117,7 +74,7 @@ export const ChannelSelector = observer(() => {
     }
 
     if (channelName !== NONE) {
-      outputService.selectedChannel = outputService.getChannel(channelName);
+      outputService.updateSelectedChannel(outputService.getChannel(channelName));
     }
   }
 
