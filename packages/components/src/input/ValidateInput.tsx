@@ -64,15 +64,22 @@ export const ValidateInput = React.forwardRef<HTMLInputElement, ValidateInputPro
   };
 
   const handleChange = (event) => {
+    const input: HTMLInputElement = event.target;
+    let value;
+    if (input.type === 'number') {
+      value = event.target.valueAsNumber;
+    } else {
+      value = event.target.value;
+    }
     if (typeof validate === 'function') {
-      const message = validate(event.target.value);
+      const message = validate(value);
       setValidateMessage(message);
     }
     if (typeof onChange === 'function') {
       onChange(event);
     }
     if (typeof onValueChange === 'function') {
-      onValueChange(event.target.value);
+      onValueChange(value);
     }
   };
 

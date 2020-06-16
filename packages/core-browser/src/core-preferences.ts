@@ -147,6 +147,14 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'object',
       description: '%preference.files.exclude%',
       default: FILES_DEFAULTS.filesExclude,
+      additionalProperties: {
+        anyOf: [
+          {
+            'type': 'boolean',
+            'description': localize('files.exclude.boolean', 'The glob pattern to match file paths against. Set to true or false to enable or disable the pattern.'),
+          },
+        ],
+      },
     },
     'files.watcherExclude': {
       type: 'object',

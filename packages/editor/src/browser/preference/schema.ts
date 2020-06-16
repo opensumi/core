@@ -1100,6 +1100,7 @@ const customEditorSchema: PreferenceSchemaProperties = {
     type: 'number',
     default: EDITOR_FONT_DEFAULTS.fontSize,
     description: '%editor.configuration.fontSize%',
+    minimum: 6,
   },
   'editor.tabSize': {
     type: 'number',
@@ -1157,6 +1158,9 @@ const customEditorSchema: PreferenceSchemaProperties = {
     type: 'array',
     default: [],
     description: '%editor.configuration.readonlyFiles%',
+    items: {
+      type: 'string',
+    },
   },
   'editor.formatOnSave': {
     type: 'boolean',

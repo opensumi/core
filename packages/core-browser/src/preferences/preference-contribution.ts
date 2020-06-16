@@ -75,6 +75,8 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
   protected readonly onDidPreferenceSchemaChangedEmitter = new Emitter<void>();
   public readonly onDidPreferenceSchemaChanged: Event<void> = this.onDidPreferenceSchemaChangedEmitter.event;
 
+  private validationFunctions = new Map<string, Ajv.ValidateFunction>();
+
   protected fireDidPreferenceSchemaChanged(): void {
     this.onDidPreferenceSchemaChangedEmitter.fire(undefined);
   }
@@ -186,12 +188,21 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
   }
 
   protected readonly unsupportedPreferences = new Set<string>();
-  public validate(name: string, value: any): boolean {
+
+  public validate(name: string, value: any): { valid: boolean, reason?: string} {
     if (this.configurations.isSectionName(name)) {
-      return true;
+      return { valid: true };
+    }
+    // 对于不存在的先过
+    if (!this.getPreferenceProperty(name)) {
+      return { valid: true };
+    }
+    if (!this.validationFunctions.has(name)) {
+      this.validationFunctions.set(name, new Ajv().compile(this.getPreferenceProperty(name)!));
     }
     // 验证是否合并schema配置
-    const result = this.validateFunction({ [name]: value }) as boolean;
+    const validationFn = this.validationFunctions.get(name)!;
+    const result = validationFn(value) as boolean;
     if (!result && !(name in this.combinedSchema.properties)) {
       // 避免每次发生变化时重复提示警告
       if (!this.unsupportedPreferences.has(name)) {
@@ -199,7 +210,8 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
         this.logger.warn(`"${name}" preference is not supported`);
       }
     }
-    return result;
+    const errorReason = validationFn.errors && validationFn.errors[0] ? normalizeAjvValidationError(validationFn.errors[0]) : undefined;
+    return { valid: result, reason: errorReason };
   }
 
   public getCombinedSchema(): PreferenceDataSchema {
@@ -220,7 +232,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     return {};
   }
 
-  public async setPreference(): Promise<boolean> {
+  public async doSetPreference(): Promise<boolean> {
     return false;
   }
 
@@ -279,7 +291,7 @@ export class DefaultPreferenceProvider extends PreferenceProvider {
     return this.preferences.languageSpecific;
   }
 
-  public async setPreference(key: string, value: any, resourceUri?: string, language?: string) {
+  public async doSetPreference(key: string, value: any, resourceUri?: string, language?: string) {
     if (!language) {
       const oldValue = this.preferences.default[key];
       this.preferences.default[key] = value;
@@ -316,4 +328,9 @@ export class DefaultPreferenceProvider extends PreferenceProvider {
       this.emitPreferencesChangedEvent([prefChange]);
     }
   }
+}
+
+function normalizeAjvValidationError(error: Ajv.ErrorObject) {
+  // TODO 变成可阅读的错误
+  return error.message;
 }

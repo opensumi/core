@@ -1,11 +1,11 @@
 import { PreferenceScope } from './preference-scope';
-import { PreferenceItem } from '@ali/ide-core-common';
+import { PreferenceItem, Event } from '@ali/ide-core-common';
 
 // 这些设置选项生效时间太早, 并且可能在app生命周期外生效，不能只由preference服务进行管理
 export interface IExternalPreferenceProvider<T = any> {
   get(scope: PreferenceScope): T | undefined;
   set(value: T, scope: PreferenceScope): void;
-  onDidChange?: ({value: T, scope: PreferenceScope}) => void;
+  onDidChange?: Event<{newValue?: T, oldValue?: T, scope: PreferenceScope}>;
 }
 
 const providers = new Map<string, IExternalPreferenceProvider>();
@@ -78,4 +78,8 @@ export function getExternalPreference<T>(preferenceName: string, schema?: Prefer
     value: schema && schema.default,
     scope: PreferenceScope.Default,
   };
+}
+
+export function getAllExternalProviders(): Array<[string, IExternalPreferenceProvider]> {
+  return Array.from(providers.entries());
 }

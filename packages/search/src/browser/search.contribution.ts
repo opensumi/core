@@ -1,6 +1,6 @@
 import * as copy from 'copy-to-clipboard';
 import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command, DisposableCollection } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry, DisposableCollection } from '@ali/ide-core-common';
 import { localize, PreferenceSchema, SEARCH_COMMANDS } from '@ali/ide-core-browser';
 import { KeybindingContribution, KeybindingRegistry, ClientAppContribution, ComponentRegistry, ComponentContribution, PreferenceContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
@@ -17,8 +17,8 @@ import { SearchTreeService } from './search-tree.service';
 import { ContentSearchResult, ISearchTreeItem, OpenSearchCmdOptions } from '../common';
 import { SearchContextKey } from './search-contextkey';
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution, NextMenuContribution)
-export class SearchContribution implements CommandContribution, KeybindingContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution, NextMenuContribution {
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution, NextMenuContribution, ClientAppContribution)
+export class SearchContribution implements CommandContribution, KeybindingContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution, NextMenuContribution, ClientAppContribution {
 
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
@@ -37,6 +37,10 @@ export class SearchContribution implements CommandContribution, KeybindingContri
   private readonly toDispose = new DisposableCollection();
 
   constructor() {
+
+  }
+
+  onStart() {
     this.toDispose.push(this.searchBrowserService.onTitleStateChange(() => {
       const bar = this.mainLayoutService.getTabbarHandler(SEARCH_CONTAINER_ID);
       if (!bar) {

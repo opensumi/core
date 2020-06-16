@@ -342,6 +342,8 @@ export const localizationBundle = {
     'preference.noResults': 'No Setting Found Containing \'{0}\'',
     'preference.editSettingsJson': 'Edit in settings.json',
     'preference.overwritten': '(Overwritten by next scope)',
+    'preference.overwrittenInUser': '（Set in User Settings）',
+    'preference.overwrittenInWorkspace': '（Set in Workspace Settings）',
     'preference.searchPlaceholder': 'Search settings...',
     'preference.editor.formatOnSave': 'Enable format on manual save.',
     'preference.editor.formatOnSaveTimeout': 'Timeout in milliseconds after which the formatting that is run on file save is cancelled.',
