@@ -1,8 +1,9 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-browser';
+import { Emitter as EventEmitter, Event } from '@ali/ide-core-common';
+
 import { loadMonaco } from './monaco-loader';
 import { MonacoService, ServiceNames } from '../common';
-import { Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 import { TextmateService } from './textmate.service';
 
 @Injectable()
@@ -31,7 +32,6 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     overrides: {[key: string]: any} = {},
   ): Promise<monaco.editor.IStandaloneCodeEditor> {
     const editor =  monaco.editor.create(monacoContainer, options, { ...this.overrideServices, ...overrides});
-
     return editor;
   }
 
@@ -68,5 +68,4 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   public testTokenize(text: string, languageId: string) {
     this.textMateService.testTokenize(text, languageId);
   }
-
 }

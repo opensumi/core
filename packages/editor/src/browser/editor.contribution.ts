@@ -17,6 +17,7 @@ import { NavigationMenuContainer } from './navigation.view';
 import { IEditorDocumentModelService } from './doc-model/types';
 import { FormattingSelector } from './format/formatterSelect';
 import { EditorTopPaddingContribution } from './view/topPadding';
+import { EditorSuggestWidgetContribution } from './view/suggest-widget';
 
 interface ResourceArgs {
   group: EditorGroup;
@@ -878,7 +879,7 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
       'windowLostFocus': localize('editor.autoSave.enum.windowLostFocus'),
     });
     registry.registerEditorFeatureContribution(new EditorTopPaddingContribution());
-
+    registry.registerEditorFeatureContribution(this.injector.get(EditorSuggestWidgetContribution));
   }
 
   registerCommands(commands: CommandRegistry): void {

@@ -1073,10 +1073,21 @@ declare module monaco.suggest {
 
 declare module monaco.suggestController {
 
+  export interface ISelectedSuggestion {
+    item: monaco.languages.CompletionItem;
+    index: number;
+    model: any; // CompletionModel
+  }
+
     export class SuggestWidget {
         suggestWidgetVisible: {
             get(): boolean;
         };
+
+        readonly onDidSelect: monaco.IEvent<ISelectedSuggestion>;
+        readonly onDidFocus:  monaco.IEvent<ISelectedSuggestion>;
+        readonly onDidHide:  monaco.IEvent<this>;
+        readonly onDidShow:  monaco.IEvent<this>;
     }
 
     export class SuggestController {
