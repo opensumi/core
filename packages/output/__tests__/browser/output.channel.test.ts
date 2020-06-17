@@ -7,6 +7,7 @@ import { PreferenceService } from '@ali/ide-core-browser';
 import { OutputPreferences } from '../../src/browser/output-preference';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { EditorDocumentModelServiceImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
+import { ContentChangeEvent, ContentChangeType } from '@ali/ide-output/lib/common';
 
 @Injectable()
 class MockLoggerManagerClient {
@@ -82,10 +83,22 @@ describe('OutputChannel Test Sutes', () => {
 
   it('can append text via outputChannel', () => {
     outputChannel.append('text');
+    eventBus.once(ContentChangeEvent, (e) => {
+      if (e.payload.changeType === ContentChangeType.append) {
+        expect(e.payload.channelName).toBe('test channel');
+        expect(e.payload.value).toBe('text');
+      }
+    });
   });
 
   it('can appendLine via outputChannel', () => {
     outputChannel.appendLine('text line');
+    eventBus.once(ContentChangeEvent, (e) => {
+      if (e.payload.changeType === ContentChangeType.appendLine) {
+        expect(e.payload.channelName).toBe('test channel');
+        expect(e.payload.value).toBe('text line');
+      }
+    });
   });
 
   it('can setVisibility', () => {
