@@ -3,7 +3,7 @@ import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNode
 import { FileTreeService } from '../file-tree.service';
 import { FileTreeModel } from '../file-tree-model';
 import { File, Directory } from '../file-tree-nodes';
-import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, formatLocalize, isValidBasename, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IStorage, Event, ThrottledDelayer, Emitter, ILogger } from '@ali/ide-core-browser';
+import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, formatLocalize, isValidBasename, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IStorage, Event, ThrottledDelayer, Emitter, ILogger, Deferred } from '@ali/ide-core-browser';
 import { FileContextKey } from '../file-contextkey';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
@@ -126,9 +126,10 @@ export class FileTreeModelService {
   private onDidFocusedFileChangeEmitter: Emitter<URI | void> = new Emitter();
   private onDidSelectedFileChangeEmitter: Emitter<URI[]> = new Emitter();
 
+  private locationDeferred: Deferred<void>;
+  private collapsedAllDeferred: Deferred<void>;
+
   private treeStateWatcher: TreeStateWatcher;
-  // 折叠全部功能Promise
-  private collapsedAllPromise: Promise<void> | null;
 
   constructor() {
     this._whenReady = this.initTreeModel();
@@ -247,6 +248,8 @@ export class FileTreeModelService {
         }
       });
     }));
+    // 确保文件树响应刷新操作时无正在操作的CollapsedAll和Location
+    this.disposableCollection.push(this.fileTreeService.requestFlushEventSignalEvent(this.canHandleRefreshEvent));
     this.disposableCollection.push(this.labelService.onDidChange(() => {
       // 当labelService注册的对应节点图标变化时，通知视图更新
       this.fileTreeService.refresh();
@@ -274,7 +277,6 @@ export class FileTreeModelService {
   // 确保文件树操作前没有额外的操作影响
   private async ensurePerformedEffect() {
     await this.fileTreeService.flushEventQueuePromise;
-    await this.collapsedAllPromise;
     this.refreshedActionDelayer.cancel();
   }
 
@@ -295,6 +297,11 @@ export class FileTreeModelService {
 
   private async loadFileTreeSnapshot(snapshot: ISerializableState) {
     await this._treeModel.loadTreeState(snapshot);
+  }
+
+  async canHandleRefreshEvent() {
+    await this.collapsedAllDeferred;
+    await this.locationDeferred;
   }
 
   // 清空所有节点选中态
@@ -646,7 +653,9 @@ export class FileTreeModelService {
   // 命令调用
   async collapseAll() {
     await this.ensurePerformedEffect();
-    this.collapsedAllPromise = this.treeModel.root.collapsedAll();
+    this.collapsedAllDeferred = new Deferred();
+    await this.treeModel.root.collapsedAll();
+    this.collapsedAllDeferred.resolve();
   }
 
   // 展开所有缓存目录
@@ -1158,6 +1167,7 @@ export class FileTreeModelService {
     // 确保在刷新等动作执行完后进行定位
     await this.ensurePerformedEffect();
     return this.locationDelayer.trigger(async () => {
+      this.locationDeferred = new Deferred();
       let path;
       if (typeof pathOrUri === 'string') {
         path = pathOrUri;
@@ -1172,6 +1182,7 @@ export class FileTreeModelService {
         if (node) {
           this.selectFileDecoration(node);
         }
+        this.locationDeferred.resolve();
       }
     });
   }
