@@ -13,6 +13,11 @@ export interface FolderPreferenceProviderOptions {
   readonly configUri: URI;
 }
 
+/**
+ * 这玩意应该叫 FolderFilePreferenceProvider， 它代表的是一个文件夹下的 “一个” 文件读出来的配置项
+ * 但是一个文件夹的配置文件夹比如 .kaitian 内可以存在多个这样的文件, 比如 settings.json, launch.json
+ * 他们的结果会合并并且放入各自的section中。
+ */
 @Injectable()
 export class FolderPreferenceProvider extends AbstractResourcePreferenceProvider {
 
@@ -25,6 +30,8 @@ export class FolderPreferenceProvider extends AbstractResourcePreferenceProvider
   // 缓存目录URI
   private _folderUri: URI;
 
+  private _isMainWorkspace: boolean = false;
+
   get folderUri(): URI {
     if (!this._folderUri) {
       this._folderUri = new URI(this.options.folder.uri);
@@ -32,15 +39,17 @@ export class FolderPreferenceProvider extends AbstractResourcePreferenceProvider
     return this._folderUri;
   }
 
-  protected getUri(): URI {
+  public getUri(): URI {
     return this.options.configUri;
   }
 
-  protected getScope(): PreferenceScope {
-    // 当在混合工作区下时，采用Folder作用域配置
-    if (!this.workspaceService.isMultiRootWorkspaceOpened) {
-      return PreferenceScope.Workspace;
+  public setIsMain(isMain: boolean) {
+    this._isMainWorkspace = isMain;
+  }
 
+  protected getScope(): PreferenceScope {
+    if (this._isMainWorkspace) {
+      return PreferenceScope.Workspace;
     }
     return PreferenceScope.Folder;
   }

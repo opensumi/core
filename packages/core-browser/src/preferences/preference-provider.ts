@@ -139,24 +139,27 @@ export abstract class PreferenceProvider implements IDisposable {
     } else {
       prefChanges = changes;
     }
-    for (const preferenceName of Object.keys(prefChanges.default)) {
-      const change = prefChanges.default[preferenceName];
-      if (PreferenceProvider.PreferenceDelegates[change.preferenceName]) {
-        const delegate = PreferenceProvider.PreferenceDelegates[change.preferenceName];
-        if (this.get(delegate.delegateTo) !== undefined && this.get(change.preferenceName) === undefined) {
-          // 这种情况不发出 delegateTo 的改变
-        } else {
-          prefChanges.default[delegate.delegateTo] = {
-            ...change,
-            oldValue: undefined,
-            newValue: change.newValue !== undefined ? (delegate.transform ? delegate.transform(change.newValue) : change.newValue) : undefined,
-            preferenceName: delegate.delegateTo,
-          };
+    if (this._scope) {
+      // 只对scope preference provider做处理
+      for (const preferenceName of Object.keys(prefChanges.default)) {
+        const change = prefChanges.default[preferenceName];
+        if (PreferenceProvider.PreferenceDelegates[change.preferenceName]) {
+          const delegate = PreferenceProvider.PreferenceDelegates[change.preferenceName];
+          if (this.get(delegate.delegateTo) !== undefined && this.get(change.preferenceName) === undefined) {
+            // 这种情况不发出 delegateTo 的改变
+          } else {
+            prefChanges.default[delegate.delegateTo] = {
+              ...change,
+              oldValue: undefined,
+              newValue: change.newValue !== undefined ? (delegate.transform ? delegate.transform(change.newValue) : change.newValue) : undefined,
+              preferenceName: delegate.delegateTo,
+            };
+          }
         }
-      }
-      if (!noFilterExternal && !!getExternalPreferenceProvider(preferenceName)) {
-        // 过滤externalProvider管理的preference
-        delete prefChanges.default[preferenceName];
+        if (!noFilterExternal && !!getExternalPreferenceProvider(preferenceName)) {
+          // 过滤externalProvider管理的preference
+          delete prefChanges.default[preferenceName];
+        }
       }
     }
     this.onDidPreferencesChangedEmitter.fire(prefChanges);
