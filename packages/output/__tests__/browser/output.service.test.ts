@@ -6,6 +6,10 @@ import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
 import { PreferenceService } from '@ali/ide-core-browser';
 import { OutputPreferences } from '../../src/browser/output-preference';
 import { OutputModule } from '../../src/browser';
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { EditorDocumentModelServiceImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
+import { MonacoService } from '@ali/ide-monaco';
+import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
 
 @Injectable()
 class MockLoggerManagerClient {
@@ -29,6 +33,23 @@ class MockMainLayoutService {
 
 }
 
+const preferences: Map<string, any> = new Map();
+
+const mockedPreferenceService: any = {
+  get: (k) => {
+    return preferences.get(k);
+  },
+  set: (k, v) => {
+    preferences.set(k, v);
+  },
+  onPreferenceChanged: (listener) => {
+    //
+    return {
+      dispose: () => {},
+    }
+  },
+};
+
 describe('Output.service.ts', () => {
   // let mockPreferenceVal = false;
 
@@ -41,10 +62,15 @@ describe('Output.service.ts', () => {
       useClass : MockMainLayoutService,
     }, {
       token: PreferenceService,
-      useValue: {
-        onPreferenceChanged: Event.None,
-      },
+      useValue: mockedPreferenceService,
     }, {
+      token: MonacoService,
+      useClass: MockedMonacoService,
+    },
+    {
+      token: IEditorDocumentModelService,
+      useClass: EditorDocumentModelServiceImpl,
+    },{
       token: OutputPreferences,
       useValue: {
         'output.logWhenNoPanel': true,

@@ -7,12 +7,34 @@ import { OutputPreferences } from '@ali/ide-output/lib/browser/output-preference
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { FileUri, Uri } from '@ali/ide-core-common';
+import { MonacoService } from '@ali/ide-monaco';
+import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
 import { PreferenceService, ISchemaRegistry, ISchemaStore, QuickOpenService } from '@ali/ide-core-browser';
 import { SchemaRegistry, SchemaStore } from '@ali/ide-monaco/lib/browser/schema-registry';
 import { taskSchemaUri, schema } from '@ali/ide-task/lib/browser/task.schema';
 import { TaskService } from '@ali/ide-task/lib/browser/task.service';
 import { TerminalTaskSystem } from '@ali/ide-task/lib/browser/terminal-task-system';
 import { MockQuickOpenService } from '@ali/ide-quick-open/lib/common/mocks/quick-open.service';
+import { IEditorDocumentModelService } from '@ali/ide-editor/src/browser';
+import { EditorDocumentModelServiceImpl } from '@ali/ide-editor/src/browser/doc-model/main';
+
+const preferences: Map<string, any> = new Map();
+
+const mockedPreferenceService: any = {
+  get: (k) => {
+    return preferences.get(k);
+  },
+  set: (k, v) => {
+    preferences.set(k, v);
+  },
+  onPreferenceChanged: (listener) => {
+    //
+    console.warn('mocked onPreferenceChanged');
+    return {
+      dispose: () => {},
+    }
+  },
+};
 
 describe('TaskService Test Suite', () => {
   const injector = createBrowserInjector([]);
@@ -22,6 +44,18 @@ describe('TaskService Test Suite', () => {
     {
       token: QuickOpenService,
       useClass: MockQuickOpenService,
+    },
+    {
+      token: PreferenceService,
+      useValue: mockedPreferenceService,
+    },
+    {
+      token: MonacoService,
+      useClass: MockedMonacoService,
+    },
+    {
+      token: IEditorDocumentModelService,
+      useClass: EditorDocumentModelServiceImpl,
     },
     {
       token: ITaskService,
