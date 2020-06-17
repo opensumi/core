@@ -115,7 +115,7 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
 
   protected getFolderProvider(resourceUri?: string): FolderPreferenceCollectionProvider | undefined {
     if (!resourceUri) {
-      return this.getDefaultFolderProvider();
+      return undefined;
     }
     const resourcePath = new URI(resourceUri).path;
     let folder: Readonly<{ relativity: number, uri?: string }> = { relativity: Number.MAX_SAFE_INTEGER };
