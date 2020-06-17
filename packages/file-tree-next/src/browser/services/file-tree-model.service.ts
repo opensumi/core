@@ -1168,8 +1168,7 @@ export class FileTreeModelService {
         if (!this.fileTreeHandle) {
           return;
         }
-        let node = this.fileTreeService.getNodeByPathOrUri(path);
-        node = await this.fileTreeHandle.ensureVisible(node || path) as File;
+        const node = await this.fileTreeHandle.ensureVisible(path) as File;
         if (node) {
           this.selectFileDecoration(node);
         }
