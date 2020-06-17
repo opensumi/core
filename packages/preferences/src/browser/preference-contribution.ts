@@ -20,17 +20,21 @@ import {
   JsonSchemaContribution,
   ISchemaRegistry,
   IPreferenceSettingsService,
+  ContributionProvider,
+  ISettingGroup,
+  IDisposable,
+  addElement,
 } from '@ali/ide-core-browser';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
-import { PREF_SCHEME } from '../common';
+import { PREF_SCHEME, SettingContribution } from '../common';
 import { PreferenceView } from './preferences.view';
 import { getIcon } from '@ali/ide-core-browser';
 import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
-import { PreferenceSettingsService } from './preference.service';
+import { PreferenceSettingsService, defaultSettingGroup, defaultSettingSections } from './preference.service';
 
 const PREF_PREVIEW_COMPONENT_ID = 'pref-preview';
 
@@ -90,6 +94,28 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   @Autowired(IPreferenceSettingsService)
   preferenceService: PreferenceSettingsService;
 
+  @Autowired(SettingContribution)
+  private readonly contributions: ContributionProvider<SettingContribution>;
+
+  private settingGroupsWillRegister: ISettingGroup[] = defaultSettingGroup;
+
+  private settingSectionsWillRegister = defaultSettingSections;
+
+  onStart() {
+    /**
+     * 收集 contribution 里对 settingGroupsWillRegister, settingSectionsWillRegister 增删
+     */
+    this.saveSettings();
+    this.handleSettingGroups();
+    this.handleSettingSections();
+
+    /**
+     * 将收集到的 group 和 section 真正注册到 service
+    */
+    this.registerSettings();
+    this.registerSettingSections();
+  }
+
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(COMMON_COMMANDS.OPEN_PREFERENCES, {
       execute: async (searchString?) => {
@@ -116,6 +142,53 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
     keybindings.registerKeybinding({
       command: COMMON_COMMANDS.OPEN_PREFERENCES.id,
       keybinding: 'ctrlcmd+,',
+    });
+  }
+
+  handleSettingGroups() {
+    for (const contrib of this.contributions.getContributions()) {
+      if (contrib.handleSettingGroup) {
+        this.settingGroupsWillRegister = contrib.handleSettingGroup(this.settingGroupsWillRegister);
+      }
+    }
+  }
+
+  handleSettingSections() {
+    for (const contrib of this.contributions.getContributions()) {
+      if (contrib.handleSettingSections) {
+        this.settingSectionsWillRegister = contrib.handleSettingSections({ ...this.settingSectionsWillRegister });
+      }
+    }
+  }
+
+  saveSettings() {
+    for (const contrib of this.contributions.getContributions()) {
+      contrib.registerSetting && contrib.registerSetting({
+        registerSettingGroup: (settingGroup: ISettingGroup): IDisposable => {
+          return addElement(this.settingGroupsWillRegister, settingGroup);
+        },
+        registerSettingSection: (key, section): IDisposable => {
+          const has = (key: string) => Object.keys(this.settingSectionsWillRegister).includes(key);
+          if (!has(key)) {
+            this.settingSectionsWillRegister[key] = [];
+          }
+          return addElement(this.settingSectionsWillRegister[key], section);
+        },
+      });
+    }
+  }
+
+  registerSettings() {
+    this.settingGroupsWillRegister.forEach((g) => {
+      this.preferenceService.registerSettingGroup(g);
+    });
+  }
+
+  registerSettingSections() {
+    Object.keys(this.settingSectionsWillRegister).forEach((key) => {
+      defaultSettingSections[key].forEach((section) => {
+        this.preferenceService.registerSettingSection(key, section);
+      });
     });
   }
 
