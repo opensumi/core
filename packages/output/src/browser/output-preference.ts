@@ -13,7 +13,7 @@ export const outputPreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       description: localize('output.logWhenNoPanel'),
       default: true,
-    }
+    },
   },
 };
 

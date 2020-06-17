@@ -28,11 +28,9 @@ const mockedPreferenceService: any = {
     preferences.set(k, v);
   },
   onPreferenceChanged: (listener) => {
-    //
-    console.warn('mocked onPreferenceChanged');
     return {
       dispose: () => {},
-    }
+    };
   },
 };
 

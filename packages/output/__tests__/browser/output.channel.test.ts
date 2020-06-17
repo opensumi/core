@@ -1,6 +1,6 @@
 import { Injector, Injectable } from '@ali/common-di';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { ILoggerManagerClient, Event, IEventBus, EventBusImpl } from '@ali/ide-core-common';
+import { ILoggerManagerClient, IEventBus, EventBusImpl } from '@ali/ide-core-common';
 import { OutputChannel } from '../../src/browser/output.channel';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
 import { PreferenceService } from '@ali/ide-core-browser';
@@ -41,11 +41,9 @@ const mockedPreferenceService: any = {
     preferences.set(k, v);
   },
   onPreferenceChanged: (listener) => {
-    //
-    console.warn('mocked onPreferenceChanged');
     return {
       dispose: () => {},
-    }
+    };
   },
 };
 
