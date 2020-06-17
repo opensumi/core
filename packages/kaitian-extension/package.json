@@ -14,7 +14,8 @@
     "build": "tnpm run build:pkg && tnpm run compile:worker",
     "build:pkg": "tsc --build ../../configs/ts/references/tsconfig.kaitian-extension.json",
     "compile:worker": "webpack --config webpack.config.worker.js --progress",
-    "watch:worker": "webpack -w --config webpack.config.worker.js --progress"
+    "watch:worker": "webpack -w --config webpack.config.worker.js --progress",
+    "watch:ext-host": "tsc --watch -p ../../configs/ts/references/tsconfig.kaitian-extension.json"
   },
   "repository": {
     "type": "git",
