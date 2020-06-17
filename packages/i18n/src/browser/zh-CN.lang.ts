@@ -209,6 +209,12 @@ export const localizationBundle = {
     'output.channel.none': '<还没有任何输出>',
     'output.configurationTitle': '输出配置',
     'output.logWhenNoPanel': '无面板时是否输出到浏览器 console',
+    'output.maxChannelLine': '限制输出最大行数',
+    'output.maxChannelLineDesc': '限制单个输出通道最大行数，超出后会自动裁剪',
+    'output.enableLogHighlight': '启用/禁用输出高亮',
+    'output.enableLogHighlightDesc': '启用后将对输出文本使用 Log 类型进行高亮解析，这需要安装 vscode-log 语言插件',
+    'output.enableSmartScroll': '启用/禁用智能滚动',
+    'output.enableSmartScrollDesc': '智能滚动会在你点击输出视图时禁用自动滚动，点击最后一行输出时启用自动滚动',
 
     'debug.stack.loadMore': '加载更多堆栈',
     'debug.breakpoint.deactive': '关闭所有断点',

@@ -265,6 +265,12 @@ export const localizationBundle = {
     'output.channel.none': '<no output yet>',
     'output.configurationTitle': 'Ouput settings',
     'output.logWhenNoPanel': 'Whether to output to the browser when no available panel',
+    'output.maxChannelLine': 'Max channel message line length',
+    'output.maxChannelLineDesc': 'Max channel message line length',
+    'output.enableLogHighlight': 'Enable/disable Log Highlight',
+    'output.enableLogHighlightDesc': 'Use Log language to tokenization log text, vscode-log extension is required',
+    'output.enableSmartScroll': 'Enable/disable Smart scrolling',
+    'output.enableSmartScrollDesc': 'Smart scrolling allows you to lock scrolling automatically when you click in the output view and unlocks when you click in the last line.',
 
     'preference.explorer.confirm.delete': 'Controls whether the explorer should ask for confirmation when deleting a file via trash',
     'preference.explorer.confirm.move': 'Controls whether the explorer should ask for confirmation when moving a file',

@@ -30,6 +30,10 @@ import { VariableModule } from '@ali/ide-variable/lib/browser';
 import { ITerminalInternalService, ITerminalController } from '@ali/ide-terminal-next';
 import { TerminalInternalService } from '@ali/ide-terminal-next/lib/browser/terminal.service';
 import { TerminalController } from '@ali/ide-terminal-next/lib/browser/terminal.controller';
+import { MonacoService } from '@ali/ide-monaco';
+import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
+import { IEditorDocumentModelService } from '@ali/ide-editor/src/browser';
+import { EditorDocumentModelServiceImpl } from '@ali/ide-editor/src/browser/doc-model/main';
 
 const extension = Object.assign({}, mockExtensions[0], {
   packageJSON: {
@@ -115,6 +119,14 @@ describe('MainThreadTask Test Suite', () => {
     {
       token: ITaskDefinitionRegistry,
       useClass: TaskDefinitionRegistryImpl,
+    },
+    {
+      token: MonacoService,
+      useClass: MockedMonacoService,
+    },
+    {
+      token: IEditorDocumentModelService,
+      useClass: EditorDocumentModelServiceImpl,
     },
     {
       token: ITaskSystem,

@@ -5,7 +5,8 @@ import { OutputChannel } from '../../src/browser/output.channel';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
 import { PreferenceService } from '@ali/ide-core-browser';
 import { OutputPreferences } from '../../src/browser/output-preference';
-import { ContentChangeEvent, ContentChangeType } from '@ali/ide-output/lib/common';
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { EditorDocumentModelServiceImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
 
 @Injectable()
 class MockLoggerManagerClient {
@@ -29,6 +30,24 @@ class MockMainLayoutService {
 
 }
 
+const preferences: Map<string, any> = new Map();
+
+const mockedPreferenceService: any = {
+  get: (k) => {
+    return preferences.get(k);
+  },
+  set: (k, v) => {
+    preferences.set(k, v);
+  },
+  onPreferenceChanged: (listener) => {
+    //
+    console.warn('mocked onPreferenceChanged');
+    return {
+      dispose: () => {},
+    }
+  },
+};
+
 describe('OutputChannel Test Sutes', () => {
   const injector: Injector = createBrowserInjector([], new Injector([
     {
@@ -39,9 +58,10 @@ describe('OutputChannel Test Sutes', () => {
       useClass : MockMainLayoutService,
     }, {
       token: PreferenceService,
-      useValue: {
-        onPreferenceChanged: Event.None,
-      },
+      useValue: mockedPreferenceService,
+    }, {
+      token: IEditorDocumentModelService,
+      useClass: EditorDocumentModelServiceImpl,
     }, {
       token: IEventBus,
       useClass: EventBusImpl,
@@ -62,22 +82,10 @@ describe('OutputChannel Test Sutes', () => {
 
   it('can append text via outputChannel', () => {
     outputChannel.append('text');
-    eventBus.once(ContentChangeEvent, (e) => {
-      if (e.payload.changeType === ContentChangeType.append) {
-        expect(e.payload.channelName).toBe('test channel');
-        expect(e.payload.value).toBe('text');
-      }
-    });
   });
 
   it('can appendLine via outputChannel', () => {
     outputChannel.appendLine('text line');
-    eventBus.once(ContentChangeEvent, (e) => {
-      if (e.payload.changeType === ContentChangeType.appendLine) {
-        expect(e.payload.channelName).toBe('test channel');
-        expect(e.payload.value).toBe('text line');
-      }
-    });
   });
 
   it('can setVisibility', () => {

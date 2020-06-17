@@ -227,6 +227,21 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: 5000,
       description: '%preference.terminal.scrollbackDesc%',
     },
+    'output.maxChannelLine': {
+      type: 'number',
+      default: 50000,
+      description: '%output.maxChannelLineDesc%',
+    },
+    'output.enableLogHighlight': {
+      type: 'boolean',
+      default: true,
+      description: '%output.enableLogHighlightDesc%',
+    },
+    'output.enableSmartScroll': {
+      type: 'boolean',
+      default: true,
+      description: '%output.enableSmartScrollDesc%',
+    },
   },
 };
 

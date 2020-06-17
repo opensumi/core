@@ -1,16 +1,27 @@
-import { observable } from 'mobx';
+import { observable, action } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { OnEvent, WithEventBus } from '@ali/ide-core-common';
-import { AppConfig } from '@ali/ide-core-browser';
+import { WithEventBus } from '@ali/ide-core-common';
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { AppConfig, MonacoService, PreferenceService } from '@ali/ide-core-browser';
 
 import { OutputChannel } from './output.channel';
-import { ContentChangeEvent } from '../common';
 
 @Injectable()
 export class OutputService extends WithEventBus {
 
   @Autowired(AppConfig)
   private config: AppConfig;
+
+  @Autowired(MonacoService)
+  private readonly monacoService: MonacoService;
+
+  @Autowired(IEditorDocumentModelService)
+  protected readonly documentService: IEditorDocumentModelService;
+
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
+  private outputEditor: monaco.editor.IStandaloneCodeEditor;
 
   @observable
   readonly channels = new Map<string, OutputChannel>();
@@ -21,8 +32,43 @@ export class OutputService extends WithEventBus {
   @observable
   public keys: string = '' + Math.random();
 
+  private monacoDispose: monaco.IDisposable;
+
+  private autoReveal: boolean = true;
+
+  private enableSmartScroll: boolean = true;
+
   constructor() {
     super();
+
+    this.enableSmartScroll = Boolean(this.preferenceService.get<boolean>('output.enableSmartScroll'));
+    this.addDispose(this.preferenceService.onPreferenceChanged((e) => {
+      if (e.preferenceName === 'output.enableSmartScroll' && e.newValue !== this.enableSmartScroll) {
+        this.enableSmartScroll = e.newValue;
+      }
+    }));
+  }
+
+  @action
+  public updateSelectedChannel(channel: OutputChannel) {
+    if (this.monacoDispose) {
+      this.monacoDispose.dispose();
+    }
+    this.selectedChannel = channel;
+    this.selectedChannel.modelReady.promise.then(() => {
+      const model = this.selectedChannel.outputModel.instance.getMonacoModel();
+      this.outputEditor.setModel(model);
+      if (this.enableSmartScroll) {
+        this.outputEditor.revealLine(model.getLineCount());
+        this.autoReveal = true;
+      }
+
+      this.monacoDispose = model.onDidChangeContent(() => {
+        if (this.autoReveal && this.enableSmartScroll) {
+          this.outputEditor.revealLine(model.getLineCount(), 0);
+        }
+      });
+    });
   }
 
   @observable
@@ -43,6 +89,9 @@ export class OutputService extends WithEventBus {
     }
     const channel = this.config.injector.get(OutputChannel, [name]);
     this.channels.set(name, channel);
+    if (this.channels.size === 1) {
+      this.updateSelectedChannel(channel);
+    }
     return channel;
   }
 
@@ -54,8 +103,37 @@ export class OutputService extends WithEventBus {
     return Array.from(this.channels.values());
   }
 
-  @OnEvent(ContentChangeEvent)
-  OnContentChange() {
-    this.keys = '' + Math.random();
+  public async initOuputMonacoInstance(container: HTMLDivElement) {
+    this.outputEditor = await this.monacoService.createCodeEditor(container, {
+      automaticLayout: true,
+      minimap: {
+        enabled: false,
+      },
+      lineNumbers: 'off',
+      readOnly: true,
+      scrollbar: {
+        useShadows: false,
+      },
+      scrollBeyondLastLine: false,
+      scrollBeyondLastColumn: 0,
+    });
+
+    this.addDispose(this.outputEditor.onMouseUp((e) => {
+      /**
+       * 这里的逻辑是
+       * 当开启智能滚动后，如果鼠标事件点击所在行小于当前总行数，则停止自动滚动
+       * 如果点击到最后一行，则启用自动滚动
+       */
+      if (this.enableSmartScroll) {
+        const { range } = e.target;
+        const maxLine = this.outputEditor.getModel()?.getLineCount();
+        if (range?.startLineNumber! < maxLine!) {
+          this.autoReveal = false;
+        }
+        if (range?.startLineNumber! >= maxLine!) {
+          this.autoReveal = true;
+        }
+      }
+    }));
   }
 }
