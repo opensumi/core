@@ -698,6 +698,14 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     // 当前节点为折叠状态，更新分支信息
     if (this !== branch && this._flattenedBranch) {
       const injectionStartIdx = this._flattenedBranch.indexOf(branch.id) + 1;
+      if (injectionStartIdx === 0) {
+        // 中途发生了branch更新事件，此时的_flattenedBranch可能已被更新，即查找不到branch.id
+        // 这种情况在父节点发生了多路径目录的创建定位动作下更易复现
+        // 例：文件树在执行a/b/c定位操作时需要请求三次数据，而更新操作可能只需要一次
+        // 导致就算更新操作后置执行，也可能比定位操作先执行完，同时将_flattenedBranch更新
+        // 最终导致此处查询不到对应节点，下面的shrinkBranch同样可能有相同问题，如点击折叠全部功能时
+        return;
+      }
       this.setFlattenedBranch(spliceTypedArray(this._flattenedBranch, injectionStartIdx, 0, branch._flattenedBranch), withoutNotify);
       // 取消展开分支对于分支的所有权，即最终只会有顶部Root拥有所有分支信息
       branch.setFlattenedBranch(null, withoutNotify);
@@ -718,6 +726,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
     if (this !== branch && this._flattenedBranch) {
       const removalStartIdx = this._flattenedBranch.indexOf(branch.id) + 1;
+      if (removalStartIdx === 0) {
+        // 中途发生了branch更新事件，此时的_flattenedBranch可能已被更新，即查找不到branch.id
+        return;
+      }
       // 返回分支对于分支信息所有权，即将折叠的节点信息再次存储于折叠了的节点中
       branch.setFlattenedBranch(this._flattenedBranch.slice(removalStartIdx, removalStartIdx + branch._branchSize), withoutNotify);
       this.setFlattenedBranch(spliceTypedArray(this._flattenedBranch, removalStartIdx, branch._flattenedBranch ? branch._flattenedBranch.length : 0), withoutNotify);

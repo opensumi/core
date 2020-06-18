@@ -8,6 +8,8 @@ import {
   FILE_COMMANDS,
   PreferenceService,
   Deferred,
+  Event,
+  Emitter,
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { IFileTreeAPI } from '../common';
@@ -87,6 +89,8 @@ export class FileTreeService extends Tree {
 
   public flushEventQueueDeferred: Deferred<void> | null;
 
+  private requestFlushEventSignalEmitter: Emitter<void> = new Emitter();
+
   @observable
   // 筛选模式开关
   filterMode: boolean = false;
@@ -103,6 +107,10 @@ export class FileTreeService extends Tree {
 
   get cacheFiles() {
     return Array.from(this._cacheNodesMap.values());
+  }
+
+  get requestFlushEventSignalEvent(): Event<void> {
+    return this.requestFlushEventSignalEmitter.event;
   }
 
   async init() {
@@ -604,6 +612,8 @@ export class FileTreeService extends Tree {
       this.flushEventQueueDeferred = new Deferred<void>();
       clearTimeout(this._eventFlushTimeout);
       this._eventFlushTimeout = setTimeout(async () => {
+        // 询问是否此时可进行刷新事件
+        await this.requestFlushEventSignalEmitter.fireAndAwait();
         await this.flushEventQueue()!;
         this.flushEventQueueDeferred?.resolve();
         this.flushEventQueueDeferred = null;
