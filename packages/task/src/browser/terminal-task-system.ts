@@ -33,6 +33,8 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
   public processReady: Deferred<void> = new Deferred<void>();
 
+  private processExited: boolean = false;
+
   constructor(private terminalOptions: TerminalOptions, private collector: ProblemCollector) {
     super();
   }
@@ -41,12 +43,18 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     return new Promise((resolve) => {
       if (this.terminalClient) {
         this.terminalClient.dispose();
-        this.terminalService.onExit((e) => {
-          if (e.sessionId === this.terminalClient.id) {
-            this.terminalView.removeWidget(this.terminalClient.id);
-            resolve({ success: true });
-          }
-        });
+        if (this.processExited) {
+          // 如果在调 terminate 之前进程已经退出，直接删掉 terminalWidget 即可
+          this.terminalView.removeWidget(this.terminalClient.id);
+          resolve({ success: true });
+        } else {
+          this.terminalService.onExit((e) => {
+            if (e.sessionId === this.terminalClient.id) {
+              this.terminalView.removeWidget(this.terminalClient.id);
+              resolve({ success: true });
+            }
+          });
+        }
       } else {
         resolve({ success: true });
       }
@@ -75,6 +83,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     this.addDispose(this.terminalService.onExit((e) => {
       if (e.sessionId === this.terminalClient.id) {
         this.onTaskExit(e.code);
+        this.processExited = true;
         this.exitDefer.resolve({ exitCode: e.code });
       }
     }));
