@@ -1,6 +1,6 @@
 import { Color, IThemeColor } from './color';
 import { vs, vs_dark, hc_black } from './default-themes';
-import { Event, URI } from '@ali/ide-core-common';
+import { Event, URI, IDisposable } from '@ali/ide-core-common';
 import { IRawThemeSetting } from 'vscode-textmate';
 
 export const ThemeServicePath = 'themeServicePath';
@@ -56,7 +56,7 @@ export interface IThemeData extends IStandaloneThemeData {
 export interface IThemeService {
   currentThemeId: string;
   onThemeChange: Event<ITheme>;
-  registerThemes(themeContributions: ThemeContribution[], extPath: string): void;
+  registerThemes(themeContributions: ThemeContribution[], extPath: string): IDisposable;
   applyTheme(id?: string): Promise<void>;
   getAvailableThemeInfos(): ThemeInfo[];
   getCurrentTheme(): Promise<ITheme>;
