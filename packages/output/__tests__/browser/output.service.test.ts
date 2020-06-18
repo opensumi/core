@@ -1,6 +1,6 @@
 import { Injector, Injectable } from '@ali/common-di';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { ILoggerManagerClient, Event } from '@ali/ide-core-common';
+import { ILoggerManagerClient } from '@ali/ide-core-common';
 import { OutputService } from '../../src/browser/output.service';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
 import { PreferenceService } from '@ali/ide-core-browser';
@@ -46,7 +46,7 @@ const mockedPreferenceService: any = {
     //
     return {
       dispose: () => {},
-    }
+    };
   },
 };
 
@@ -70,7 +70,7 @@ describe('Output.service.ts', () => {
     {
       token: IEditorDocumentModelService,
       useClass: EditorDocumentModelServiceImpl,
-    },{
+    }, {
       token: OutputPreferences,
       useValue: {
         'output.logWhenNoPanel': true,

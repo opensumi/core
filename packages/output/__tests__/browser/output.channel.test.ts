@@ -1,12 +1,13 @@
 import { Injector, Injectable } from '@ali/common-di';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { ILoggerManagerClient, Event, IEventBus, EventBusImpl } from '@ali/ide-core-common';
+import { ILoggerManagerClient, IEventBus, EventBusImpl } from '@ali/ide-core-common';
 import { OutputChannel } from '../../src/browser/output.channel';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
 import { PreferenceService } from '@ali/ide-core-browser';
 import { OutputPreferences } from '../../src/browser/output-preference';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { EditorDocumentModelServiceImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
+import { ContentChangeEvent, ContentChangeType } from '@ali/ide-output/lib/common';
 
 @Injectable()
 class MockLoggerManagerClient {
@@ -40,11 +41,9 @@ const mockedPreferenceService: any = {
     preferences.set(k, v);
   },
   onPreferenceChanged: (listener) => {
-    //
-    console.warn('mocked onPreferenceChanged');
     return {
       dispose: () => {},
-    }
+    };
   },
 };
 
@@ -82,10 +81,22 @@ describe('OutputChannel Test Sutes', () => {
 
   it('can append text via outputChannel', () => {
     outputChannel.append('text');
+    eventBus.once(ContentChangeEvent, (e) => {
+      if (e.payload.changeType === ContentChangeType.append) {
+        expect(e.payload.channelName).toBe('test channel');
+        expect(e.payload.value).toBe('text');
+      }
+    });
   });
 
   it('can appendLine via outputChannel', () => {
     outputChannel.appendLine('text line');
+    eventBus.once(ContentChangeEvent, (e) => {
+      if (e.payload.changeType === ContentChangeType.appendLine) {
+        expect(e.payload.channelName).toBe('test channel');
+        expect(e.payload.value).toBe('text line');
+      }
+    });
   });
 
   it('can setVisibility', () => {

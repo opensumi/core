@@ -1,10 +1,11 @@
-import { Event, Disposable, uuid, URI, localize, Deferred } from '@ali/ide-core-common';
+import { Event, Disposable, uuid, URI, localize, Deferred, IEventBus } from '@ali/ide-core-common';
 import { Optional, Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { PreferenceService } from '@ali/ide-core-browser';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from '@ali/ide-editor/lib/browser';
 
 import { OutputPreferences } from './output-preference';
+import { ContentChangeEvent, ContentChangeEventPayload, ContentChangeType } from '../common';
 
 const DEFAULT_MAX_CHANNEL_LINE = 50000;
 
@@ -25,6 +26,9 @@ export class OutputChannel extends Disposable {
 
   @Autowired(IEditorDocumentModelService)
   protected readonly documentService: IEditorDocumentModelService;
+
+  @Autowired(IEventBus)
+  private readonly eventBus: IEventBus;
 
   public outputModel: IEditorDocumentModelRef;
 
@@ -140,6 +144,7 @@ export class OutputChannel extends Disposable {
   }
 
   append(value: string): void {
+    this.eventBus.fire(new ContentChangeEvent(new ContentChangeEventPayload(this.name, ContentChangeType.append, value, this.outputLines)));
     this.doAppend(value);
   }
 
@@ -148,6 +153,7 @@ export class OutputChannel extends Disposable {
     if (!value.endsWith('\n')) {
       value += '\n';
     }
+    this.eventBus.fire(new ContentChangeEvent(new ContentChangeEventPayload(this.name, ContentChangeType.appendLine, value, this.outputLines)));
     this.doAppend(value);
     if (this.shouldLogToBrowser) {
       console.log(`%c[${this.name}]` + `%c ${line}}`, 'background:rgb(50, 150, 250); color: #fff', 'background: none; color: inherit');
@@ -157,6 +163,7 @@ export class OutputChannel extends Disposable {
   clear(): void {
     this.outputLines = [];
     this.monacoModel.setValue(localize('output.channel.none', '还没有任何输出'));
+    this.eventBus.fire(new ContentChangeEvent(new ContentChangeEventPayload(this.name, ContentChangeType.appendLine, '', this.outputLines)));
   }
 
   setVisibility(visible: boolean): void {

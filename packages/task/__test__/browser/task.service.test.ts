@@ -28,11 +28,9 @@ const mockedPreferenceService: any = {
     preferences.set(k, v);
   },
   onPreferenceChanged: (listener) => {
-    //
-    console.warn('mocked onPreferenceChanged');
     return {
       dispose: () => {},
-    }
+    };
   },
 };
 
@@ -93,7 +91,7 @@ describe('TaskService Test Suite', () => {
     injector.overrideProviders({
       token: PreferenceService,
       useValue: {
-        onPreferenceChanged: jest.fn(() => {}),
+        onPreferenceChanged: jest.fn(() => ({dispose: () => {}})),
         get: () => {
           return {
             'version': '2.0.0',
