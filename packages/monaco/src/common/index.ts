@@ -1,3 +1,5 @@
+import { URI } from '@ali/ide-core-common';
+
 export * from '@ali/ide-core-browser/lib/monaco';
 
 export interface LanguagesContribution {
@@ -24,6 +26,7 @@ export interface GrammarsContribution {
   language?: string;
   scopeName: string;
   path: string;
+  location?: URI; // 通过 path 转换成 location URI
   embeddedLanguages?: ScopeMap;
   tokenTypes?: ScopeMap;
   injectTo?: string[];

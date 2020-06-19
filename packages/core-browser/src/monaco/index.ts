@@ -45,6 +45,7 @@ export interface ISchemaContributions {
   schemas: { [id: string]: IJSONSchema };
 }
 
+// FIXME: should named as IJSONSchemaRegistry ?
 export interface ISchemaRegistry {
 
   readonly onDidChangeSchema: Event<string>;

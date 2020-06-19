@@ -10,9 +10,10 @@ import {
   ResourceError,
   getDebugLogger,
 } from '@ali/ide-core-browser';
-import { FileStat, FileSystemError, IFileServiceClient } from '../common';
+import { FileStat, FileSystemError, IFileServiceClient, IDiskFileProvider, IShadowFileProvider } from '../common';
 import { FileChangeEvent } from '../common/file-service-watcher-protocol';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-protocol';
+import { FileServiceClient } from './file-service-client';
 
 export class FileResource implements Resource {
 
@@ -48,7 +49,7 @@ export class FileResource implements Resource {
     }));
 
     try {
-      const exist = await this.fileSystem.exists(this.uri.toString());
+      const exist = await this.fileSystem.access(this.uri.toString());
       if (exist) {
         this.toDispose.push(await this.fileSystem.watchFileChanges(this.uri));
       }
@@ -63,9 +64,12 @@ export class FileResource implements Resource {
 
   async readContents(options?: { encoding?: string }): Promise<string> {
     try {
-      const { stat, content } = await this.fileSystem.resolveContent(this.uriString, options);
+      const [ ret, stat ] = await Promise.all([
+        this.fileSystem.resolveContent(this.uriString, options),
+        this.fileSystem.getFileStat(this.uriString),
+      ]);
       this.stat = stat;
-      return content;
+      return ret!.content;
     } catch (e) {
       if (FileSystemError.FileNotFound.is(e)) {
         this.stat = undefined;
@@ -118,7 +122,7 @@ export class FileResource implements Resource {
   }
 
   protected async getFileStat(): Promise<FileStat | undefined> {
-    const exist = await this.fileSystem.exists(this.uriString);
+    const exist = await this.fileSystem.access(this.uriString);
     if (!exist) {
       return undefined;
     }
@@ -137,7 +141,18 @@ export class FileResource implements Resource {
 export class FileResourceResolver implements ResourceResolverContribution {
 
   @Autowired(IFileServiceClient)
-  protected readonly fileSystem: IFileServiceClient;
+  protected readonly fileSystem: FileServiceClient;
+
+  @Autowired(IDiskFileProvider)
+  private diskFileServiceProvider: IDiskFileProvider;
+
+  @Autowired(IShadowFileProvider)
+  private shadowFileServiceProvider: IShadowFileProvider;
+
+  constructor() {
+    this.fileSystem.registerProvider('file', this.diskFileServiceProvider);
+    this.fileSystem.registerProvider('debug', this.shadowFileServiceProvider);
+  }
 
   async resolve(uri: URI): Promise<FileResource | void> {
     if (uri.scheme !== 'file') {

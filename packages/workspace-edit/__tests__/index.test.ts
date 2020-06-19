@@ -72,7 +72,7 @@ describe('workspace edit tests', () => {
   {
     token: IFileServiceClient,
     useValue: mockService({
-      exists: (uri: URI) => {
+      access: (uri: URI) => {
         return true;
       },
     }),

@@ -1,13 +1,13 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { ITokenThemeRule, IColors, BuiltinTheme, ITokenColorizationRule, IColorMap, getThemeType, IThemeData } from '../common/theme.service';
 import { IRawThemeSetting } from 'vscode-textmate';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+import { URI, localize, parseWithComments, ILogger, IReporterService, REPORT_NAME } from '@ali/ide-core-common';
+
+import { ITokenThemeRule, IColors, BuiltinTheme, ITokenColorizationRule, IColorMap, getThemeType, IThemeData } from '../common/theme.service';
 import { parse as parsePList } from '../common/plistParser';
-import { localize, parseWithComments, ILogger, IReporterService, REPORT_NAME } from '@ali/ide-core-common';
 import { convertSettings } from '../common/themeCompatibility';
 import { Color } from '../common/color';
-import URI from 'vscode-uri';
 
 @Injectable({ multiple: true })
 export class ThemeData implements IThemeData {
@@ -44,7 +44,7 @@ export class ThemeData implements IThemeData {
     this.inherit = data.inherit;
   }
 
-  public async initializeThemeData(id: string, name: string, base: string, themeLocation: string) {
+  public async initializeThemeData(id: string, name: string, base: string, themeLocation: URI) {
     this.id = id;
     this.name = name;
     this.base = base as BuiltinTheme;
@@ -98,17 +98,21 @@ export class ThemeData implements IThemeData {
     }
   }
 
-  private async loadColorTheme(themeLocation: string, resultRules: ITokenColorizationRule[], resultColors: IColorMap): Promise<any> {
+  private async loadColorTheme(themeLocation: URI, resultRules: ITokenColorizationRule[], resultColors: IColorMap): Promise<any> {
     const timer = this.reporter.time(REPORT_NAME.THEME_LOAD);
-    const themeContent = await this.fileServiceClient.resolveContent(URI.file(themeLocation).toString());
-    timer.timeEnd(themeLocation);
-    if (/\.json$/.test(themeLocation)) {
-      const theme = this.safeParseJSON(themeContent.content);
+    const ret = await this.fileServiceClient.resolveContent(themeLocation.toString());
+    const themeContent = ret.content;
+    timer.timeEnd(themeLocation.toString());
+    const themeLocationPath = themeLocation.path.toString();
+    if (/\.json$/.test(themeLocationPath)) {
+      const theme = this.safeParseJSON(themeContent);
       let includeCompletes: Promise<any> = Promise.resolve(null);
       if (theme.include) {
         this.inherit = true;
-        const includePath = new Path(themeLocation).dir.join(theme.include.replace(/^\.\//, '')).toString();
-        includeCompletes = this.loadColorTheme(includePath, resultRules, resultColors);
+        // http 的不作支持
+        const includePath = themeLocation.path.dir.join(theme.include.replace(/^\.\//, ''));
+        const includeLocation = themeLocation.withPath(includePath);
+        includeCompletes = this.loadColorTheme(includeLocation, resultRules, resultColors);
       }
       await includeCompletes;
       // settings
@@ -138,9 +142,11 @@ export class ThemeData implements IThemeData {
           resultRules.push(...tokenColors);
           return null;
         } else if (typeof tokenColors === 'string') {
-          const tokenPath = new Path(themeLocation).dir.join(tokenColors.replace(/^\.\//, '')).toString();
+
+          const tokenPath = themeLocation.path.dir.join(tokenColors.replace(/^\.\//, ''));
+          const tokenLocation = themeLocation.withPath(tokenPath);
           // tmTheme
-          return this.loadSyntaxTokens(tokenPath);
+          return this.loadSyntaxTokens(tokenLocation);
         } else {
           return Promise.reject(new Error(localize('error.invalidformat.tokenColors', "Problem parsing color theme file: {0}. Property 'tokenColors' should be either an array specifying colors or a path to a TextMate theme file", themeLocation.toString())));
         }
@@ -151,10 +157,10 @@ export class ThemeData implements IThemeData {
     }
   }
 
-  private async loadSyntaxTokens(themeLocation): Promise<ITokenColorizationRule[]> {
-    const {content} = await this.fileServiceClient.resolveContent(URI.file(themeLocation).toString());
+  private async loadSyntaxTokens(themeLocation: URI): Promise<ITokenColorizationRule[]> {
+    const ret = await this.fileServiceClient.resolveContent(themeLocation.toString());
     try {
-      const theme = parsePList(content);
+      const theme = parsePList(ret.content);
       const settings = theme.settings;
       if (!Array.isArray(settings)) {
         return Promise.reject(new Error(localize('error.plist.invalidformat', "Problem parsing tmTheme file: {0}. 'settings' is not array.")));

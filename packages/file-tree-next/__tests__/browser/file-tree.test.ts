@@ -6,7 +6,7 @@ import { IFileTreeAPI } from '../../src/common';
 import { FileTreeService } from '../../src/browser/file-tree.service';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { FileStat, FileServicePath } from '@ali/ide-file-service';
+import { FileStat, FileServicePath, IDiskFileProvider } from '@ali/ide-file-service';
 import { FileTreeModelService } from '../../src/browser/services/file-tree-model.service';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { FileSystemNodeOptions, FileService } from '@ali/ide-file-service/lib/node';
@@ -26,6 +26,7 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import * as temp from 'temp';
 import * as fs from 'fs-extra';
 import * as styles from '../../src/browser/file-tree-node.module.less';
+import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
 
 describe('FileTree should be work while on single workspace model', () => {
   let track;
@@ -151,10 +152,16 @@ describe('FileTree should be work while on single workspace model', () => {
         useClass: FileServiceClient,
       },
       {
+        token: IDiskFileProvider,
+        useClass: DiskFileSystemProvider,
+      },
+      {
         token: WorkbenchEditorService,
         useClass: MockWorkspaceService,
       },
     );
+    const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
+    fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
 
     const rawFileTreeApi = injector.get(IFileTreeAPI);
     rawFileTreeApi.mv = mockFileTreeApi.mv;

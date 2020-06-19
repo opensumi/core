@@ -4,7 +4,7 @@ import * as paths from 'path';
 import * as os from 'os';
 import * as mv from 'mv';
 import { v4 } from 'uuid';
-import Uri from 'vscode-uri';
+import Uri, { UriComponents } from 'vscode-uri';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import {
   Event,
@@ -13,8 +13,9 @@ import {
   Emitter,
   isUndefined,
   DebugLog,
+  DisposableCollection,
 } from '@ali/ide-core-common';
-import { FileUri } from '@ali/ide-core-node';
+import { FileUri, AppConfig } from '@ali/ide-core-node';
 import { NsfwFileSystemWatcherServer } from './file-service-watcher';
 import {
   FileChangeEvent,
@@ -23,56 +24,55 @@ import {
   DidFilesChangedParams,
   FileSystemError,
   FileMoveOptions,
+  isErrnoException,
+  notEmpty,
+  IDiskFileProvider,
   FileAccess,
-  FileSystemProvider,
 } from '../common/';
+import { Injectable, Autowired } from '@ali/common-di';
+import { RPCService } from '@ali/ide-connection';
+import * as fileType from 'file-type';
+import { decode, encode } from './encoding';
 
 const debugLog = new DebugLog();
 
-function notEmpty<T>(value: T | undefined): value is T {
-  return value !== undefined;
-}
-
-function isErrnoException(error: any | NodeJS.ErrnoException): error is NodeJS.ErrnoException {
-  return (error as NodeJS.ErrnoException).code !== undefined && (error as NodeJS.ErrnoException).errno !== undefined;
-}
-
-export class DiskFileSystemProvider implements FileSystemProvider {
+@Injectable({ multiple: true })
+export class DiskFileSystemProvider extends RPCService implements IDiskFileProvider {
   private fileChangeEmitter = new Emitter<FileChangeEvent>();
   private watcherServer: NsfwFileSystemWatcherServer;
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
+  protected toDispose = new DisposableCollection();
 
-  constructor(options?: ConstructorParameters<typeof NsfwFileSystemWatcherServer>[0]) {
-    this.initWatcher(options);
+  protected readonly watcherDisposerMap = new Map<number, IDisposable>();
+
+  @Autowired(AppConfig)
+  appConfig: AppConfig;
+
+  constructor() {
+    super();
+    this.initWatcher();
   }
 
-  protected initWatcher(options: ConstructorParameters<typeof NsfwFileSystemWatcherServer>[0] = {}) {
-    this.watcherServer = new NsfwFileSystemWatcherServer({
-      verbose: true,
-      ...options,
-    });
-    this.watcherServer.setClient({
-      onDidFilesChanged: (events: DidFilesChangedParams) => {
-        this.fileChangeEmitter.fire(events.changes);
-      },
-    });
+  dispose(): void {
+    this.toDispose.dispose();
   }
 
   /**
    * @param {Uri} uri
    * @param {{ recursive: boolean; excludes: string[] }} [options]  // 还不支持 recursive 参数
-   * @returns {IDisposable}
+   * @returns {number}
    * @memberof DiskFileSystemProvider
    */
-  watch(uri: Uri, options?: { recursive: boolean; excludes: string[] }): IDisposable {
+  watch(uri: UriComponents, options?: { recursive: boolean; excludes: string[] }) {
     let watcherId;
+    const _uri = Uri.revive(uri);
     const watchPromise = this.watcherServer.watchFileChanges(
-      new URI(uri).toString(),
+      _uri.toString(),
       {
         excludes: options && options.excludes ? options.excludes : [],
       },
     ).then((id) => watcherId = id);
-    return {
+    const disposable = {
       dispose: () => {
         if (!watcherId) {
           return watchPromise.then((id) => {
@@ -81,26 +81,39 @@ export class DiskFileSystemProvider implements FileSystemProvider {
         }
         this.watcherServer.unwatchFileChanges(watcherId);
       },
-    } as any;
+    };
+    this.watcherDisposerMap.set(watcherId, disposable);
+    return watcherId;
   }
 
-  stat(uri: Uri | string): FileStat | Thenable<FileStat> {
-    const _uri = new URI(uri);
+  unwatch(watcherId: number) {
+    const disposable = this.watcherDisposerMap.get(watcherId);
+    if (!disposable || !disposable.dispose) {
+      return;
+    }
+    disposable.dispose();
+  }
+
+  stat(uri: UriComponents): Thenable<FileStat> {
+    const _uri = Uri.revive(uri);
     return new Promise(async (resolve) => {
        this.doGetStat(_uri, 1)
-        .then((stat) => resolve(stat))
+        .then((stat) => {
+          // console.log(stat, 'provider stat bkend');
+          resolve(stat);
+        })
         .catch((e) => resolve());
     });
   }
 
-  async readDirectory(uri: Uri | string): Promise<[string, FileType][]> {
+  async readDirectory(uri: UriComponents): Promise<[string, FileType][]> {
+    const _uri = Uri.revive(uri);
     const result: [string, FileType][] = [];
     try {
-      const uriString = uri.toString();
-      const dirList = fs.readdirSync(uriString);
+      const dirList = fs.readdirSync(_uri.fsPath);
 
       dirList.forEach((name) => {
-        const filePath = paths.join(uriString, name);
+        const filePath = paths.join(_uri.fsPath, name);
         result.push([name, this.getFileStatType(fs.statSync(filePath))]);
       });
       return result;
@@ -109,8 +122,8 @@ export class DiskFileSystemProvider implements FileSystemProvider {
     }
   }
 
-  async createDirectory(uri: Uri | string): Promise<FileStat> {
-    const _uri = new URI(uri);
+  async createDirectory(uri: UriComponents): Promise<FileStat> {
+    const _uri = Uri.revive(uri);
     const stat = await this.doGetStat(_uri, 0);
     if (stat) {
       if (stat.isDirectory) {
@@ -118,7 +131,7 @@ export class DiskFileSystemProvider implements FileSystemProvider {
       }
       throw FileSystemError.FileExists(uri, 'Error occurred while creating the directory: path is a file.');
     }
-    await fs.mkdirs(FileUri.fsPath(_uri));
+    await fs.mkdirs(FileUri.fsPath(new URI(_uri)));
     const newStat = await this.doGetStat(_uri, 1);
     if (newStat) {
       return newStat;
@@ -126,49 +139,74 @@ export class DiskFileSystemProvider implements FileSystemProvider {
     throw FileSystemError.FileNotFound(uri, 'Error occurred while creating the directory.');
   }
 
-  readFile(uri: Uri | string): Promise<Buffer> {
-    const _uri = new URI(uri);
-    return fs.readFile(FileUri.fsPath(_uri));
+  async readFile(uri: UriComponents, encoding = 'utf8'): Promise<string> {
+    const _uri = Uri.revive(uri);
+    if (typeof encoding !== 'string') {
+      // cancellation token兼容
+      encoding = 'utf8';
+    }
+
+    try {
+      const buffer = await fs.readFile(FileUri.fsPath(new URI(_uri)));
+      return decode(buffer, encoding);
+    } catch (error) {
+      if (isErrnoException(error)) {
+        if (error.code === 'ENOENT') {
+          throw FileSystemError.FileNotFound(uri, 'Error occurred while reading file');
+        }
+
+        if (error.code === 'EISDIR') {
+          throw FileSystemError.FileIsDirectory(uri, 'Error occurred while reading file: path is a directory.');
+        }
+
+        if (error.code === 'EPERM') {
+          throw FileSystemError.FileIsNoPermissions(uri, 'Error occurred while reading file: path is a directory.');
+        }
+      }
+
+      throw error;
+    }
   }
 
   async writeFile(
-    uri: Uri | string,
-    content: Buffer,
-    options: { create: boolean, overwrite: boolean },
+    uri: UriComponents,
+    content: string,
+    options: { create: boolean, overwrite: boolean, encoding?: string },
   ): Promise<void | FileStat> {
-    const _uri = new URI(uri);
-    const exists = await this.exists(uri);
+    const _uri = Uri.revive(uri);
+    const exists = await this.access(uri);
 
     if (exists && !options.overwrite) {
       throw FileSystemError.FileExists(_uri.toString());
     } else if (!exists && !options.create) {
       throw FileSystemError.FileNotFound(_uri.toString());
     }
+    const buffer = encode(content, options.encoding || 'utf8');
 
     if (options.create) {
-      return await this.createFile(uri, { content });
+      return await this.createFile(uri, { content: buffer });
     }
 
     try {
-      await writeFileAtomicSync(FileUri.fsPath(_uri), content);
+      await writeFileAtomicSync(FileUri.fsPath(new URI(_uri)), buffer);
     } catch (e) {
       debugLog.warn('writeFileAtomicSync 出错，使用 fs', e);
-      fs.writeFileSync(FileUri.fsPath(_uri), content);
+      fs.writeFileSync(FileUri.fsPath(new URI(_uri)), buffer);
     }
   }
 
-  async exists(uri: Uri | string): Promise<boolean> {
-    return fs.pathExists(FileUri.fsPath(new URI(uri)));
+  access(uri: UriComponents, mode: number = FileAccess.Constants.F_OK): Promise<boolean> {
+    return fs.access(FileUri.fsPath(URI.from(uri)), mode).then(() => true).catch(() => false);
   }
 
-  async delete(uri: Uri | string, options: { recursive?: boolean, moveToTrash?: boolean }): Promise<void> {
-    const _uri = new URI(uri);
+  async delete(uri: UriComponents, options: { recursive?: boolean, moveToTrash?: boolean }): Promise<void> {
+    const _uri = Uri.revive(uri);
     const stat = await this.doGetStat(_uri, 0);
     if (!stat) {
       throw FileSystemError.FileNotFound(uri);
     }
     if (!isUndefined(options.recursive)) {
-      console.warn(`DiskFileSystemProvider not support options.recursive!`);
+      debugLog.warn(`DiskFileSystemProvider not support options.recursive!`);
     }
     // Windows 10.
     // Deleting an empty directory throws `EPERM error` instead of `unlinkDir`.
@@ -176,9 +214,9 @@ export class DiskFileSystemProvider implements FileSystemProvider {
     // Force moveToTrash
     const moveToTrash = !!options.moveToTrash;
     if (moveToTrash) {
-      return trash([FileUri.fsPath(_uri)]);
+      return trash([FileUri.fsPath(new URI(_uri))]);
     } else {
-      const filePath = FileUri.fsPath(_uri);
+      const filePath = FileUri.fsPath(new URI(_uri));
       const outputRootPath = paths.join(os.tmpdir(), v4());
       try {
         await new Promise<void>((resolve, reject) => {
@@ -200,8 +238,8 @@ export class DiskFileSystemProvider implements FileSystemProvider {
   }
 
   async rename(
-    sourceUri: Uri | string,
-    targetUri: Uri | string,
+    sourceUri: UriComponents,
+    targetUri: UriComponents,
     options: { overwrite: boolean },
   ): Promise<FileStat> {
     // const _sourceUri = new URI(sourceUri);
@@ -209,7 +247,7 @@ export class DiskFileSystemProvider implements FileSystemProvider {
     // if (this.client) {
     //   this.client.onWillMove(sourceUri, targetUri);
     // }
-    const result = await this.doMove(sourceUri.toString(), targetUri.toString(), options);
+    const result = await this.doMove(sourceUri, targetUri, options);
     // if (this.client) {
     //   this.client.onDidMove(sourceUri, targetUri);
     // }
@@ -217,12 +255,12 @@ export class DiskFileSystemProvider implements FileSystemProvider {
   }
 
   async copy(
-    sourceUri: Uri | string,
-    targetUri: Uri | string,
+    sourceUri: UriComponents,
+    targetUri: UriComponents,
     options: { overwrite: boolean, recursive?: boolean },
   ): Promise<FileStat> {
-    const _sourceUri = new URI(sourceUri);
-    const _targetUri = new URI(targetUri);
+    const _sourceUri = Uri.revive(sourceUri);
+    const _targetUri = Uri.revive(targetUri);
     const [sourceStat, targetStat] = await Promise.all([
       this.doGetStat(_sourceUri, 0),
       this.doGetStat(_targetUri, 0),
@@ -238,7 +276,7 @@ export class DiskFileSystemProvider implements FileSystemProvider {
     if (targetStat && targetStat.uri === sourceStat.uri) {
       throw FileSystemError.FileExists(targetUri, 'Cannot perform copy, source and destination are the same.');
     }
-    await fs.copy(FileUri.fsPath(_sourceUri), FileUri.fsPath(_targetUri), { overwrite, recursive });
+    await fs.copy(FileUri.fsPath(_sourceUri.toString()), FileUri.fsPath(_targetUri.toString()), { overwrite, recursive });
     const newStat = await this.doGetStat(_targetUri, 1);
     if (newStat) {
       return newStat;
@@ -246,25 +284,45 @@ export class DiskFileSystemProvider implements FileSystemProvider {
     throw FileSystemError.FileNotFound(targetUri, `Error occurred while copying ${sourceUri} to ${targetUri}.`);
   }
 
-  async access(uri: string, mode: number = FileAccess.Constants.F_OK): Promise<boolean> {
-    try {
-      await fs.access(FileUri.fsPath(uri), mode);
-      return true;
-    } catch (error) {
-      return false;
-    }
+  async getCurrentUserHome(): Promise<FileStat | undefined> {
+    return this.stat(FileUri.create(os.homedir()).codeUri);
+  }
+
+  protected initWatcher() {
+    this.watcherServer = new NsfwFileSystemWatcherServer({
+      verbose: true,
+      useExperimentalEfsw: this.appConfig.useExperimentalEfsw,
+    });
+    this.watcherServer.setClient({
+      onDidFilesChanged: (events: DidFilesChangedParams) => {
+        this.fileChangeEmitter.fire(events.changes);
+        if (this.rpcClient) {
+          // 一个后端实例不是应该只对应一个client吗
+          this.rpcClient.forEach((client) => {
+            client.onDidFilesChanged({
+              changes: events.changes,
+            });
+          });
+        }
+      },
+    });
+    this.toDispose.push({
+      dispose: () => {
+        this.watcherServer.dispose();
+      },
+    });
   }
 
   // Protected or private
 
-  protected async createFile(uri: string | Uri, options: { content: Buffer }): Promise<FileStat> {
-    const _uri = new URI(uri);
-    const parentUri = _uri.parent;
-    const parentStat = await this.doGetStat(parentUri, 0);
+  protected async createFile(uri: UriComponents, options: { content: Buffer }): Promise<FileStat> {
+    const _uri = Uri.revive(uri);
+    const parentUri = new URI(_uri).parent;
+    const parentStat = await this.doGetStat(parentUri.codeUri, 0);
     if (!parentStat) {
       await fs.mkdirs(FileUri.fsPath(parentUri));
     }
-    await fs.writeFile(FileUri.fsPath(_uri), options.content);
+    await fs.writeFile(FileUri.fsPath(_uri.toString()), options.content);
     const newStat = await this.doGetStat(_uri, 1);
     if (newStat) {
       return newStat;
@@ -276,7 +334,7 @@ export class DiskFileSystemProvider implements FileSystemProvider {
    * Return `true` if it's possible for this URI to have children.
    * It might not be possible to be certain because of permission problems or other filesystem errors.
    */
-  protected async mayHaveChildren(uri: URI): Promise<boolean> {
+  protected async mayHaveChildren(uri: Uri): Promise<boolean> {
     /* If there's a problem reading the root directory. Assume it's not empty to avoid overwriting anything.  */
     try {
       const rootStat = await this.doGetStat(uri, 0);
@@ -304,9 +362,9 @@ export class DiskFileSystemProvider implements FileSystemProvider {
     }
   }
 
-  protected async doMove(sourceUri: string, targetUri: string, options: FileMoveOptions): Promise<FileStat> {
-    const _sourceUri = new URI(sourceUri);
-    const _targetUri = new URI(targetUri);
+  protected async doMove(sourceUri: UriComponents, targetUri: UriComponents, options: FileMoveOptions): Promise<FileStat> {
+    const _sourceUri = Uri.revive(sourceUri);
+    const _targetUri = Uri.revive(targetUri);
     const [sourceStat, targetStat] = await Promise.all([
       this.doGetStat(_sourceUri, 1),
       this.doGetStat(_targetUri, 1),
@@ -333,8 +391,8 @@ export class DiskFileSystemProvider implements FileSystemProvider {
       // The value should be a Unix timestamp in seconds.
       // For example, `Date.now()` returns milliseconds, so it should be divided by `1000` before passing it in.
       const now = Date.now() / 1000;
-      await fs.utimes(FileUri.fsPath(_targetUri), now, now);
-      await fs.rmdir(FileUri.fsPath(_sourceUri));
+      await fs.utimes(FileUri.fsPath(_targetUri.toString()), now, now);
+      await fs.rmdir(FileUri.fsPath(_sourceUri.toString()));
       const newStat = await this.doGetStat(_targetUri, 1);
       if (newStat) {
         return newStat;
@@ -343,11 +401,11 @@ export class DiskFileSystemProvider implements FileSystemProvider {
     } else if (overwrite && targetStat && targetStat.isDirectory && sourceStat.isDirectory && !targetMightHaveChildren && sourceMightHaveChildren) {
       // Copy source to target, since target is empty. Then wipe the source content.
       const newStat = await this.copy(sourceUri, targetUri, { overwrite });
-      await this.delete(sourceUri, {moveToTrash: false});
+      await this.delete(sourceUri, { moveToTrash: false });
       return newStat;
     } else {
       return new Promise<FileStat>((resolve, reject) => {
-        mv(FileUri.fsPath(_sourceUri), FileUri.fsPath(_targetUri), { mkdirp: true, clobber: overwrite }, async (error: any) => {
+        mv(FileUri.fsPath(_sourceUri.toString()), FileUri.fsPath(_targetUri.toString()), { mkdirp: true, clobber: overwrite }, async (error: any) => {
           if (error) {
             return reject(error);
           }
@@ -357,15 +415,15 @@ export class DiskFileSystemProvider implements FileSystemProvider {
     }
   }
 
-  protected async doGetStat(uri: URI, depth: number): Promise<FileStat | undefined> {
+  protected async doGetStat(uri: Uri, depth: number): Promise<FileStat | undefined> {
     try {
-      const filePath = FileUri.fsPath(uri);
+      const filePath = uri.fsPath;
       const lstat = await fs.lstat(filePath);
 
       if (lstat.isSymbolicLink()) {
         let realPath;
         try {
-          realPath = await fs.realpath(FileUri.fsPath(uri));
+          realPath = await fs.realpath(FileUri.fsPath(new URI(uri)));
         } catch (e) {
           return undefined;
         }
@@ -375,9 +433,9 @@ export class DiskFileSystemProvider implements FileSystemProvider {
 
         let realStatData;
         if (stat.isDirectory()) {
-          realStatData = await this.doCreateDirectoryStat(realURI, realStat, depth);
+          realStatData = await this.doCreateDirectoryStat(realURI.codeUri, realStat, depth);
         } else {
-          realStatData = await this.doCreateFileStat(realURI, realStat);
+          realStatData = await this.doCreateFileStat(realURI.codeUri, realStat);
         }
 
         return {
@@ -405,7 +463,7 @@ export class DiskFileSystemProvider implements FileSystemProvider {
     }
   }
 
-  protected async doCreateFileStat(uri: URI, stat: fs.Stats): Promise<FileStat> {
+  protected async doCreateFileStat(uri: Uri, stat: fs.Stats): Promise<FileStat> {
     // Then stat the target and return that
     // const isLink = !!(stat && stat.isSymbolicLink());
     // if (isLink) {
@@ -436,7 +494,7 @@ export class DiskFileSystemProvider implements FileSystemProvider {
     return FileType.Unknown;
   }
 
-  protected async doCreateDirectoryStat(uri: URI, stat: fs.Stats, depth: number): Promise<FileStat> {
+  protected async doCreateDirectoryStat(uri: Uri, stat: fs.Stats, depth: number): Promise<FileStat> {
     const children = depth > 0 ? await this.doGetChildren(uri, depth) : [];
     return {
       uri: uri.toString(),
@@ -448,69 +506,64 @@ export class DiskFileSystemProvider implements FileSystemProvider {
     };
   }
 
-  protected async doGetChildren(uri: URI, depth: number): Promise<FileStat[]> {
-    const files = await fs.readdir(FileUri.fsPath(uri));
-    const children = await Promise.all(files.map((fileName) => uri.resolve(fileName)).map((childUri) => this.doGetStat(childUri, depth - 1)));
+  protected async doGetChildren(uri: Uri, depth: number): Promise<FileStat[]> {
+    const _uri = new URI(uri);
+    const files = await fs.readdir(FileUri.fsPath(_uri));
+    const children = await Promise.all(files.map((fileName) => _uri.resolve(fileName)).map((childUri) => this.doGetStat(childUri.codeUri, depth - 1)));
     return children.filter(notEmpty);
+  }
+
+  async getFileType(uri: string): Promise<string | undefined> {
+    try {
+      // 兼容性处理，本质 disk-file 不支持非 file 协议的文件头嗅探
+      if (!uri.startsWith('file:/')) {
+        return this._getFileType('');
+      }
+      // const lstat = await fs.lstat(FileUri.fsPath(uri));
+      const stat = await fs.stat(FileUri.fsPath(uri));
+
+      let ext: string = '';
+      if (!stat.isDirectory()) {
+
+        // if(lstat.isSymbolicLink){
+
+        // }else {
+        if (stat.size) {
+          const type = await fileType.stream(fs.createReadStream(FileUri.fsPath(uri)));
+          // 可以拿到 type.fileType 说明为二进制文件
+          if (type.fileType) {
+            ext = type.fileType.ext;
+          }
+        }
+        return this._getFileType(ext);
+        // }
+      } else {
+        return 'directory';
+      }
+    } catch (error) {
+      if (isErrnoException(error)) {
+        if (error.code === 'ENOENT' || error.code === 'EACCES' || error.code === 'EBUSY' || error.code === 'EPERM') {
+          return undefined;
+        }
+      }
+    }
+  }
+
+  private _getFileType(ext) {
+    let type = 'text';
+
+    if (['png', 'gif', 'jpg', 'jpeg', 'svg'].indexOf(ext) !== -1) {
+      type = 'image';
+    } else if (ext && ['xml'].indexOf(ext) === -1) {
+      type = 'binary';
+    }
+
+    return type;
   }
 }
 
 export class DiskFileSystemProviderWithoutWatcher extends DiskFileSystemProvider {
   initWatcher() {
     // Do nothing
-  }
-}
-
-// 这里的 DiskFileSystemProviderWithoutWatcherForExtHost 仅仅给插件使用
-export class DiskFileSystemProviderWithoutWatcherForExtHost extends DiskFileSystemProviderWithoutWatcher {
-  initWatcher() {
-    // Do nothing
-  }
-
-  stat(uri: Uri | string): FileStat | Thenable<FileStat> {
-    const _uri = new URI(uri);
-    return this.doGetStat(_uri, 1);
-  }
-
-  protected async doGetStat(uri: URI, depth: number): Promise<FileStat | undefined> {
-    try {
-      const filePath = FileUri.fsPath(uri);
-      const lstat = await fs.lstat(filePath);
-
-      if (lstat.isSymbolicLink()) {
-        let realPath;
-        realPath = await fs.realpath(FileUri.fsPath(uri));
-
-        const stat = await fs.stat(filePath);
-        const realURI = FileUri.create(realPath);
-        const realStat = await fs.lstat(realPath);
-
-        let realStatData;
-        if (stat.isDirectory()) {
-          realStatData = await this.doCreateDirectoryStat(realURI, realStat, depth);
-        } else {
-          realStatData = await this.doCreateFileStat(realURI, realStat);
-        }
-
-        return {
-          ...realStatData,
-          isSymbolicLink: true,
-          uri: uri.toString(),
-        };
-
-      } else {
-        if (lstat.isDirectory()) {
-          return await this.doCreateDirectoryStat(uri, lstat, depth);
-        }
-        const fileStat = await this.doCreateFileStat(uri, lstat);
-
-        return fileStat;
-      }
-
-    } catch (error) {
-      // 将错误直接抛出，因为插件有对应的依赖
-      // https://yuque.antfin-inc.com/zymuwz/topics/17
-      throw error;
-    }
   }
 }

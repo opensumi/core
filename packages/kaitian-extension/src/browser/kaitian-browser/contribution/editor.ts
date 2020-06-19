@@ -91,18 +91,16 @@ export class EditorBrowserContributionRunner extends AbstractKaitianBrowserContr
         });
       }));
     }
-    if (!this.resourceService.handlesScheme(scheme)) {
-      this.resourceService.registerResourceProvider({
-        scheme,
-        provideResource: (uri: URI) => {
-          return {
-            uri,
-            name: viewContribution.tabTitle || viewContribution.id,
-            icon: viewContribution.tabIconPath ? this.iconService.fromIcon(this.extension.path, viewContribution.tabIconPath, IconType.Background)! : '',
-          };
-        },
-      });
-    }
+    this.resourceService.registerResourceProvider({
+      scheme,
+      provideResource: (uri: URI) => {
+        return {
+          uri,
+          name: viewContribution.tabTitle || viewContribution.id,
+          icon: viewContribution.tabIconPath ? this.iconService.fromIcon(this.extension.path, viewContribution.tabIconPath, IconType.Background)! : '',
+        };
+      },
+    });
     return disposer;
   }
 

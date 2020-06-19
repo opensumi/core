@@ -69,7 +69,7 @@ describe('FileTreeService should be work', () => {
     });
   });
 
-  describe('02 #API should be worked.', () => {
+  describe.skip('02 #API should be worked.', () => {
     it('getFiles should be work while there has not file', async (done) => {
       const getCurrentUserHome = jest.fn(() => {
         return {

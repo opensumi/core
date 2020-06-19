@@ -1,7 +1,8 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { URI, getDebugLogger } from '@ali/ide-core-common';
+
 import { ThemeData } from './theme-data';
 import { ThemeContribution, getThemeId } from '../common/theme.service';
-import { Path } from '@ali/ide-core-common/lib/path';
 import defaultTheme from './default-theme';
 
 @Injectable()
@@ -14,8 +15,9 @@ export class ThemeStore {
   injector: Injector;
 
   // TODO 支持插件安装（运行时的加载？）
-  protected async initTheme(contribution: ThemeContribution, basePath: string): Promise<ThemeData> {
-    const themeLocation = new Path(basePath).join(contribution.path.replace(/^\.\//, '')).toString();
+  protected async initTheme(contribution: ThemeContribution, extPath: URI): Promise<ThemeData> {
+    const themePath = contribution.path.replace(/^\.\//, '');
+    const themeLocation = extPath.resolve(themePath);
     const themeName = contribution.label;
     const themeId = getThemeId(contribution);
     const themeBase = contribution.uiTheme || 'vs-dark';
@@ -23,7 +25,7 @@ export class ThemeStore {
     return this.themes[themeId];
   }
 
-  private async initThemeData(id: string, themeName: string, themeBase: string, themeLocation: string) {
+  private async initThemeData(id: string, themeName: string, themeBase: string, themeLocation: URI) {
     let themeData = this.themes[id];
     if (!themeData) {
       themeData = this.injector.get(ThemeData);
@@ -33,13 +35,13 @@ export class ThemeStore {
   }
 
   loadDefaultTheme() {
-    console.warn('没有检测到默认主题插件，使用默认主题样式！');
+    getDebugLogger().warn('没有检测到默认主题插件，使用默认主题样式！');
     const theme = this.injector.get(ThemeData);
     theme.initializeFromData(defaultTheme);
     return theme;
   }
 
-  public async getThemeData(contribution?: ThemeContribution, basePath?: string): Promise<ThemeData> {
+  public async getThemeData(contribution?: ThemeContribution, basePath?: URI): Promise<ThemeData> {
     // 测试情况下传入的contribution为空，加载默认主题
     if (!contribution || !basePath) {
       return this.loadDefaultTheme();

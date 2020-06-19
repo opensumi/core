@@ -5,7 +5,7 @@ import { IExtensionHostService} from '../../../common';
 import { createWindowApiFactory, ExtHostWindow } from './ext.host.window.api.impl';
 import { ExtensionDocumentDataManagerImpl } from './doc';
 import * as extTypes from '../../../common/vscode/ext-types';
-import * as fileSystemTypes from '../../../common/vscode/file-system-types';
+import * as fileSystemTypes from '../../../common/vscode/file-system';
 import { ViewColumn } from '../../../common/vscode/enums';
 import { ExtHostCommands, createCommandsApiFactory } from './ext.host.command';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
@@ -34,6 +34,7 @@ import { ExtHostProgress } from './ext.host.progress';
 import { ExtHostAppConfig } from '../../ext.process-base';
 import { ExtHostTasks, createTaskApiFactory } from './tasks/ext.host.tasks';
 import { ExtHostComments, createCommentsApiFactory } from './ext.host.comments';
+import { ExtHostFileSystemEvent } from './ext.host.file-system-event';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -51,6 +52,7 @@ export function createApiFactory(
   const extHostEnv = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEnv, new ExtHostEnv(rpcProtocol));
   const extHostLanguages = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostLanguages, new ExtHostLanguages(rpcProtocol, extHostDocs, extHostCommands));
   const extHostFileSystem = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostFileSystem, new ExtHostFileSystem(rpcProtocol));
+  const extHostFileSystemEvent = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostFileSystemEvent, new ExtHostFileSystemEvent());
   const extHostMessage = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocol));
   const extHostWorkspace = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWorkspace, new ExtHostWorkspace(rpcProtocol, extHostMessage, extHostDocs)) as ExtHostWorkspace;
   const extHostPreference = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostPreference, new ExtHostPreference(rpcProtocol, extHostWorkspace)) as ExtHostPreference;
@@ -81,7 +83,7 @@ export function createApiFactory(
         extHostQuickOpen, extHostOutput, extHostTerminal, extHostWindow, extHostProgress,
       ),
       languages: createLanguagesApiFactory(extHostLanguages, extension),
-      workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem, extHostTasks, extension),
+      workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem, extHostFileSystemEvent, extHostTasks, extension),
       env: createEnvApiFactory(rpcProtocol, extensionService, extHostEnv),
       debug: createDebugApiFactory(extHostDebug),
       version: '1.37.0',

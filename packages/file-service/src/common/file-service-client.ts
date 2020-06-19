@@ -6,18 +6,31 @@ import { FileStat,
   FileSetContentOptions,
   FileCreateOptions,
   FileCopyOptions,
+  FileSystemProvider,
 } from './files';
 import { IFileServiceWatcher } from './watcher';
 import { DidFilesChangedParams, FileChangeEvent } from './file-service-watcher-protocol';
-import { EncodingInfo } from '../common/encoding';
 
 export const IFileServiceClient = IFileServiceClientToken;
 
 export interface IFileServiceClient {
 
+  onFilesChanged: Event<FileChangeEvent>;
+
+  registerProvider(scheme: string, provider: FileSystemProvider): IDisposable;
+
   handlesScheme(scheme: string): boolean;
 
-  resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ stat: FileStat, content: string }>;
+  /**
+   * Read the entire contents of a file.
+   *
+   * @param uri The uri of the file.
+   * @return An array of bytes or a thenable that resolves to such.
+   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
+   * @throws [`FileIsDirectory`](#FileSystemError.FileIsDirectory) when `uri` is a directory.
+   * @throws [`FileIsNoPermissions`](#FileSystemError.FileIsNoPermissions) when `uri` has no permissions.
+   */
+  resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ content: string }>;
 
   getFileStat(uri: string): Promise<FileStat | undefined>;
 
@@ -41,17 +54,11 @@ export interface IFileServiceClient {
 
   getCurrentUserHome(): Promise<FileStat | undefined>;
 
-  onDidFilesChanged(event: DidFilesChangedParams): void;
+  fireFilesChange(event: DidFilesChangedParams): void;
 
   watchFileChanges(uri: URI, excludes?: string[]): Promise<IFileServiceWatcher>;
 
   unwatchFileChanges(watchId: number): Promise<void>;
-
-  exists(uri: string): Promise<boolean>;
-
-  fireFilesChange(e: FileChangeEvent): Promise<void>;
-
-  onFilesChanged: Event<FileChangeEvent>;
 
   setWatchFileExcludes(excludes: string[]): Promise<void>;
 
@@ -64,8 +71,6 @@ export interface IFileServiceClient {
   setWorkspaceRoots(roots: string[]): Promise<void>;
 
   getEncoding(uri: string): Promise<string>;
-
-  getEncodingInfo(encoding: string): Promise<EncodingInfo | null>;
 }
 
 export interface IBrowserFileSystemRegistry {

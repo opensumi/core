@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { URI, IDisposable, IEventBus, Emitter } from '@ali/ide-core-browser';
+import { URI, IDisposable, IEventBus, Emitter, LRUMap } from '@ali/ide-core-browser';
 
 import { IEditorDocumentModelContentRegistry, IEditorDocumentModelContentProvider, EditorDocumentModelOptionExternalUpdatedEvent, ORIGINAL_DOC_SCHEME } from './types';
 
@@ -14,6 +14,8 @@ export class EditorDocumentModelContentRegistryImpl implements IEditorDocumentMo
   private _onOriginalDocChanged: Emitter<URI> = new Emitter();
 
   private originalProvider: IEditorDocumentModelContentProvider;
+
+  private cachedProviders = new LRUMap<string, Promise<IEditorDocumentModelContentProvider | undefined>>(1000, 500);
 
   constructor() {
     this.originalProvider = {
@@ -35,6 +37,7 @@ export class EditorDocumentModelContentRegistryImpl implements IEditorDocumentMo
 
   registerEditorDocumentModelContentProvider(provider: IEditorDocumentModelContentProvider): IDisposable {
     this.providers.push(provider);
+    this.cachedProviders.clear();
     const disposer = provider.onDidChangeContent((uri) => {
       this.eventBus.fire(new EditorDocumentModelOptionExternalUpdatedEvent(uri));
     });
@@ -56,21 +59,54 @@ export class EditorDocumentModelContentRegistryImpl implements IEditorDocumentMo
         const index = this.providers.indexOf(provider);
         if (index) {
           this.providers.splice(index, 1);
+          this.cachedProviders.clear();
         }
       },
     };
   }
 
-  getProvider(uri: URI): IEditorDocumentModelContentProvider | undefined {
-    for (const p of this.providers) {
-      if (p.handlesScheme(uri.scheme)) {
-        return p;
+  getProvider(uri: URI): Promise<IEditorDocumentModelContentProvider | undefined> {
+    const uriStr = uri.toString();
+    if (!this.cachedProviders.has(uriStr)) {
+      this.cachedProviders.set(uriStr, this.calculateProvider(uri));
+    }
+    return this.cachedProviders.get(uriStr)!;
+  }
+
+  private async calculateProvider(uri: URI): Promise<IEditorDocumentModelContentProvider | undefined> {
+    let calculated: {
+      provider: IEditorDocumentModelContentProvider | undefined,
+      weight: number,
+      index: number,
+    } = {
+      provider: undefined,
+      weight: -1,
+      index: 1,
+    };
+    for (const provider of this.providers) {
+      let weight = -1;
+      const index = this.providers.indexOf(provider);
+      if (provider.handlesUri) {
+        weight = await provider.handlesUri(uri);
+      } else if (provider.handlesScheme) {
+        weight = (await provider.handlesScheme(uri.scheme) ) ? 10 : -1;
+      }
+
+      if (weight >= 0) {
+        if (weight > calculated.weight || (weight === calculated.weight && index > calculated.index ) ) {
+          calculated = {
+            index,
+            weight,
+            provider,
+          };
+        }
       }
     }
+    return calculated.provider;
   }
 
   async getContentForUri(uri: URI, encoding?: string ): Promise<string> {
-    const p = this.getProvider(uri);
+    const p = await this.getProvider(uri);
     if (!p) {
       throw new Error();
     }

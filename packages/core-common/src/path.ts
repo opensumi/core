@@ -84,8 +84,19 @@ export class Path {
     this.root = this.computeRoot();
 
     const extIndex = this.base.lastIndexOf('.');
-    this.name = extIndex === -1 ? this.base : this.base.substr(0, extIndex);
-    this.ext = extIndex === -1 ? '' : this.base.substr(extIndex);
+    // 处理无后缀文件或者 dot 打头的无后缀文件
+    // file like 'a/b/c/test'
+    if (extIndex === -1) {
+      this.name = this.base;
+      this.ext = '';
+    } else if (extIndex === 0) {
+      // dot file like `a/b/c/.eslintrc`
+      this.name = this.base;
+      this.ext = '';
+    } else {
+      this.name = this.base.substr(0, extIndex);
+      this.ext = this.base.substr(extIndex);
+    }
   }
 
   protected computeRoot(): Path | undefined {

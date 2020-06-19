@@ -137,3 +137,12 @@ npm run build:electron
 ````
 npm run start:electron
 ````
+
+### IDE Superman
+
+通过环境变量 `SCM_PLATFORM` 指定启动的 SCM 代码托管平台，目前已支持 antcode (aone 支持中)
+通过环境变量 `LSIF_HOST` 指定请求的 lsif 服务
+
+```
+SCM_PLATFORM=antcode LSIF_HOST=${your_lsif_host} yarn start:lite
+```

@@ -22,7 +22,7 @@ export class StaticResourceModule extends BrowserModule {
 export class StaticResourceClientAppContribution implements ClientAppContribution {
 
   @Autowired()
-  staticResourceService: StaticResourceService;
+  private readonly staticResourceService: StaticResourceService;
 
   @Autowired(StaticResourceContribution)
   private readonly contributions: ContributionProvider<StaticResourceContribution>;

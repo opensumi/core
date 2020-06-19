@@ -90,6 +90,10 @@ export function isUndefinedOrNull(obj: any): obj is undefined | null {
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
+export function hasProperty<X extends {}, Y extends PropertyKey>(obj: X, prop: Y): obj is X & Record<Y, unknown> {
+  return prop in obj;
+}
+
 /**
  * @returns whether the provided parameter is an empty JavaScript Object or not.
  */
@@ -110,7 +114,7 @@ export function isEmptyObject(obj: any): obj is any {
 /**
  * @returns whether the provided parameter is a JavaScript Function or not.
  */
-export function isFunction(obj: any): obj is Function {
+export function isFunction<T extends Function>(obj: any): obj is T {
   return typeof obj === _typeof.function;
 }
 

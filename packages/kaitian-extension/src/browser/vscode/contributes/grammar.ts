@@ -1,9 +1,9 @@
-// import { VscodeContributionPoint, Contributes } from './common';
-import { VSCodeContributePoint, Contributes } from '../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { GrammarsContribution } from '@ali/ide-monaco';
 import { TextmateService } from '@ali/ide-monaco/lib/browser/textmate.service';
-import { localize } from '@ali/ide-core-common';
+import { localize, URI } from '@ali/ide-core-common';
+
+import { VSCodeContributePoint, Contributes } from '../../../common';
 
 export type GrammarSchema = Array<GrammarsContribution>;
 
@@ -14,8 +14,9 @@ export class GrammarsContributionPoint extends VSCodeContributePoint<GrammarSche
   textMateService: TextmateService;
 
   contribute() {
+    const extPath = URI.file(this.extension.path);
     for (const grammar of this.json) {
-      this.textMateService.registerGrammar(grammar, this.extension.path);
+      this.textMateService.registerGrammar(grammar, extPath);
     }
   }
 

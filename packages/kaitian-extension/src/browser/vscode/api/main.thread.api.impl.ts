@@ -43,6 +43,7 @@ import { MainThreadWindow } from './main.thread.window';
 import { MainThreadProgress } from './main.thread.api.progress';
 import { MainthreadTasks } from './main.thread.tasks';
 import { MainthreadComments } from './main.thread.comments';
+import { MainThreadFileSystemEvent } from './main.thread.file-system-event';
 
 export async function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -63,6 +64,7 @@ export async function createApiFactory(
   const MainThreadStorageAPI = injector.get(MainThreadStorage, [rpcProtocol]);
   const MainThreadOutputAPI = injector.get(MainThreadOutput);
   const MainThreadFileSystemAPI = injector.get(MainThreadFileSystem, [rpcProtocol]);
+  const MainThreadFileSystemEventAPI = injector.get(MainThreadFileSystemEvent, [rpcProtocol]);
   const MainThreadWebviewAPI = injector.get(MainThreadWebview, [rpcProtocol]);
   const MainThreadSCMAPI = injector.get(MainThreadSCM, [rpcProtocol]);
   const MainThreadTreeViewAPI = injector.get(MainThreadTreeView, [rpcProtocol]);
@@ -119,6 +121,7 @@ export async function createApiFactory(
     MainThreadStorageAPI.dispose();
     MainThreadOutputAPI.dispose();
     MainThreadFileSystemAPI.dispose();
+    MainThreadFileSystemEventAPI.dispose();
     MainThreadWebviewAPI.dispose();
     MainThreadSCMAPI.dispose();
     MainThreadTreeViewAPI.dispose();

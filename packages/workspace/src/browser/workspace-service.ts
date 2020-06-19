@@ -42,7 +42,7 @@ export class WorkspaceService implements IWorkspaceService {
   private deferredRoots = new Deferred<FileStat[]>();
 
   @Autowired(IFileServiceClient)
-  protected readonly fileSystem: IFileServiceClient;
+  protected readonly fileServiceClient: IFileServiceClient;
 
   @Autowired(IWindowService)
   protected readonly windowService: IWindowService;
@@ -94,7 +94,7 @@ export class WorkspaceService implements IWorkspaceService {
     if (wpUriString) {
       const wpStat = await this.toFileStat(wpUriString);
       await this.setWorkspace(wpStat);
-      this.fileSystem.onFilesChanged((event) => {
+      this.fileServiceClient.onFilesChanged((event) => {
         if (this._workspace && FileChangeEvent.isAffected(event, new URI(this._workspace.uri))) {
           this.updateWorkspace();
         }
@@ -117,8 +117,8 @@ export class WorkspaceService implements IWorkspaceService {
     const filesExcludeName = 'files.exclude';
 
     // TODO 尚不支持多 roots 更新
-    await this.fileSystem.setWatchFileExcludes(this.getPreferenceFileExcludes(watchExcludeName));
-    await this.fileSystem.setFilesExcludes(
+    await this.fileServiceClient.setWatchFileExcludes(this.getPreferenceFileExcludes(watchExcludeName));
+    await this.fileServiceClient.setFilesExcludes(
       this.getPreferenceFileExcludes(filesExcludeName),
       this._roots.map((stat) => {
         return stat.uri;
@@ -126,10 +126,10 @@ export class WorkspaceService implements IWorkspaceService {
     );
     this.corePreferences.onPreferenceChanged((e) => {
       if (e.preferenceName === watchExcludeName) {
-        this.fileSystem.setWatchFileExcludes(this.getPreferenceFileExcludes(watchExcludeName));
+        this.fileServiceClient.setWatchFileExcludes(this.getPreferenceFileExcludes(watchExcludeName));
       }
       if (e.preferenceName === filesExcludeName) {
-        this.fileSystem.setFilesExcludes(
+        this.fileServiceClient.setFilesExcludes(
           this.getPreferenceFileExcludes(filesExcludeName),
           this._roots.map((stat) => {
             return stat.uri;
@@ -201,7 +201,7 @@ export class WorkspaceService implements IWorkspaceService {
     this._workspace = workspaceStat;
     if (this._workspace) {
       const uri = new URI(this._workspace.uri);
-      this.toDisposeOnWorkspace.push(await this.fileSystem.watchFileChanges(uri));
+      this.toDisposeOnWorkspace.push(await this.fileServiceClient.watchFileChanges(uri));
     }
     this.updateTitle();
     await this.updateWorkspace();
@@ -268,16 +268,17 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   protected async getWorkspaceDataFromFile(): Promise<WorkspaceData | undefined> {
-    if (this._workspace && await this.fileSystem.exists(this._workspace.uri)) {
+    if (this._workspace && await this.fileServiceClient.access(this._workspace.uri)) {
       if (this._workspace.isDirectory) {
         return {
           folders: [{ path: this._workspace.uri }],
         };
       }
-      const { stat, content } = await this.fileSystem.resolveContent(this._workspace.uri);
+      const { content } = await this.fileServiceClient.resolveContent(this._workspace.uri);
       const strippedContent = jsoncparser.stripComments(content);
       const data = jsoncparser.parse(strippedContent);
       if (data && WorkspaceData.is(data)) {
+        const stat = await this.fileServiceClient.getFileStat(this._workspace.uri);
         return WorkspaceData.transformToAbsolute(data, stat);
       }
       this.logger.error(`Unable to retrieve workspace data from the file: '${this._workspace.uri}'. Please check if the file is corrupted.`);
@@ -485,7 +486,7 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   protected async getUntitledWorkspace(): Promise<URI | undefined> {
-    const home = await this.fileSystem.getCurrentUserHome();
+    const home = await this.fileServiceClient.getCurrentUserHome();
     return home && this.getTemporaryWorkspaceFileUri(new URI(home.uri));
   }
 
@@ -494,7 +495,7 @@ export class WorkspaceService implements IWorkspaceService {
       const data = JSON.stringify(WorkspaceData.transformToRelative(workspaceData, workspaceFile));
       const edits = jsoncparser.format(data, undefined, { tabSize: 2, insertSpaces: true, eol: '' });
       const result = jsoncparser.applyEdits(data, edits);
-      const stat = await this.fileSystem.setContent(workspaceFile, result);
+      const stat = await this.fileServiceClient.setContent(workspaceFile, result);
       return stat;
     }
   }
@@ -531,7 +532,7 @@ export class WorkspaceService implements IWorkspaceService {
       if (uriStr.endsWith('/')) {
         uriStr = uriStr.slice(0, -1);
       }
-      const fileStat = await this.fileSystem.getFileStat(uriStr);
+      const fileStat = await this.fileServiceClient.getFileStat(uriStr);
       if (!fileStat) {
         return undefined;
       }
@@ -582,7 +583,7 @@ export class WorkspaceService implements IWorkspaceService {
         const uri = new URI(root.uri);
         for (const path of paths) {
           const fileUri = uri.resolve(path).toString();
-          const exists = await this.fileSystem.exists(fileUri);
+          const exists = await this.fileServiceClient.access(fileUri);
           if (exists) {
             return exists;
           }
@@ -602,8 +603,8 @@ export class WorkspaceService implements IWorkspaceService {
    */
   async save(uri: URI | FileStat): Promise<void> {
     const uriStr = uri instanceof URI ? uri.toString() : uri.uri;
-    if (!await this.fileSystem.exists(uriStr)) {
-      await this.fileSystem.createFile(uriStr);
+    if (!await this.fileServiceClient.access(uriStr)) {
+      await this.fileServiceClient.createFile(uriStr);
     }
     const workspaceData: WorkspaceData = { folders: [], settings: {} };
     if (!this.saved) {
@@ -645,7 +646,7 @@ export class WorkspaceService implements IWorkspaceService {
     if (this.rootWatchers.has(uriStr)) {
       return;
     }
-    const watcher = this.fileSystem.watchFileChanges(new URI(root.uri));
+    const watcher = this.fileServiceClient.watchFileChanges(new URI(root.uri));
     this.rootWatchers.set(uriStr, Disposable.create(() => {
       watcher.then((disposable) => disposable.dispose());
       this.rootWatchers.delete(uriStr);

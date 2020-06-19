@@ -3,15 +3,15 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger, ExtensionActivateEvent, getDebugLogger } from '@ali/ide-core-browser';
 import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap, INITIAL } from 'vscode-textmate';
 import { loadWASM, OnigScanner, OnigString } from 'onigasm';
-import { createTextmateTokenizer, TokenizerOption } from './textmate-tokenizer';
-import { getNodeRequire } from './monaco-loader';
 import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
-import { LanguagesContribution, FoldingRules, IndentationRules, GrammarsContribution, ScopeMap, ILanguageConfiguration, IAutoClosingPairConditional, CommentRule } from '../common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import { Path } from '@ali/ide-core-common/lib/path';
-import URI from 'vscode-uri';
+import { URI } from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IThemeData } from '@ali/ide-theme';
+
+import { createTextmateTokenizer, TokenizerOption } from './textmate-tokenizer';
+import { getNodeRequire } from './monaco-loader';
+import { LanguagesContribution, FoldingRules, IndentationRules, GrammarsContribution, ScopeMap, ILanguageConfiguration, IAutoClosingPairConditional, CommentRule } from '../common';
 
 export function getEncodedLanguageId(languageId: string): number {
   return monaco.languages.getEncodedLanguageId(languageId);
@@ -81,7 +81,7 @@ export class TextmateService extends WithEventBus {
   @Autowired(ILogger)
   private logger: ILogger;
 
-  private grammarRegistry: Registry;
+  public grammarRegistry: Registry;
 
   private injections = new Map<string, string[]>();
 
@@ -106,7 +106,7 @@ export class TextmateService extends WithEventBus {
     });
   }
 
-  async registerLanguage(language: LanguagesContribution, extPath: string) {
+  async registerLanguage(language: LanguagesContribution, extPath: URI) {
     monaco.languages.register({
       id: language.id,
       aliases: language.aliases,
@@ -117,23 +117,29 @@ export class TextmateService extends WithEventBus {
       mimetypes: language.mimetypes,
     });
     if (language.configuration) {
-      const configurationPath = new Path(extPath).join(language.configuration.replace(/^\.\//, '')).toString();
-      const { content } = await this.fileServiceClient.resolveContent(URI.file(configurationPath).toString());
-      const configuration = this.safeParseJSON(content);
-      monaco.languages.setLanguageConfiguration(language.id, {
-        wordPattern: this.createRegex(configuration.wordPattern),
-        autoClosingPairs: this.extractValidAutoClosingPairs(language.id, configuration),
-        brackets: this.extractValidBrackets(language.id, configuration),
-        comments: this.extractValidCommentRule(language.id, configuration),
-        folding: this.convertFolding(configuration.folding),
-        surroundingPairs: this.extractValidSurroundingPairs(language.id, configuration),
-        indentationRules: this.convertIndentationRules(configuration.indentationRules),
-      });
+      // remove `./` prefix
+      const langPath = language.configuration.replace(/^\.\//, '');
+      // http 的不作支持
+      const configurationPath = extPath.resolve(langPath);
+      const ret = await this.fileServiceClient.resolveContent(configurationPath.toString());
+      const content = ret.content;
+      if (content) {
+        const configuration = this.safeParseJSON(content);
+        monaco.languages.setLanguageConfiguration(language.id, {
+          wordPattern: this.createRegex(configuration.wordPattern),
+          autoClosingPairs: this.extractValidAutoClosingPairs(language.id, configuration),
+          brackets: this.extractValidBrackets(language.id, configuration),
+          comments: this.extractValidCommentRule(language.id, configuration),
+          folding: this.convertFolding(configuration.folding),
+          surroundingPairs: this.extractValidSurroundingPairs(language.id, configuration),
+          indentationRules: this.convertIndentationRules(configuration.indentationRules),
+        });
 
-      monaco.languages.onLanguage(language.id, () => {
-        this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onLanguage', data: language.id }));
-        this.activateLanguage(language.id);
-      });
+        monaco.languages.onLanguage(language.id, () => {
+          this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onLanguage', data: language.id }));
+          this.activateLanguage(language.id);
+        });
+      }
     }
     if (this.initialized) {
       const modelService = monaco.services.StaticServices.modelService.get();
@@ -151,9 +157,11 @@ export class TextmateService extends WithEventBus {
     }
   }
 
-  async registerGrammar(grammar: GrammarsContribution, extPath) {
+  async registerGrammar(grammar: GrammarsContribution, extPath: URI) {
     if (grammar.path) {
-      grammar.path = new Path(extPath).join(grammar.path.replace(/^\.\//, '')).toString();
+      const grammarPath = grammar.path.replace(/^\.\//, '');
+      // get content in `initGrammarRegistry`
+      grammar.location = extPath.resolve(grammarPath);
     }
     this.doRegisterGrammar(grammar);
   }
@@ -173,7 +181,7 @@ export class TextmateService extends WithEventBus {
       async getGrammarDefinition() {
         return {
           format: /\.json$/.test(grammar.path) ? 'json' : 'plist',
-          location: URI.file(grammar.path),
+          location: grammar.location!,
         };
       },
       getInjections: (scopeName: string) => {
@@ -231,11 +239,19 @@ export class TextmateService extends WithEventBus {
     }
   }
 
-  public setTheme(themeData: IThemeData) {
-    const theme = themeData;
-    this.grammarRegistry.setTheme(theme);
+  public setTheme(theme: IThemeData) {
+    this.generateEncodedTokenColors(theme);
     monaco.editor.defineTheme(getLegalThemeName(theme.name), theme);
     monaco.editor.setTheme(getLegalThemeName(theme.name));
+  }
+
+  private generateEncodedTokenColors(themeData: IThemeData) {
+    // load时会转换customTokenColors
+    this.grammarRegistry.setTheme(themeData);
+    themeData.encodedTokensColors = this.grammarRegistry.getColorMap();
+    // index 0 has to be set to null as it is 'undefined' by default, but monaco code expects it to be null
+    // tslint:disable-next-line:no-null-keyword
+    themeData.encodedTokensColors[0] = null!;
   }
 
   // 字符串转正则
@@ -479,12 +495,13 @@ export class TextmateService extends WithEventBus {
 
   private async initGrammarRegistry() {
     this.grammarRegistry = new Registry({
-      getOnigLib: this.getOnigLib,
+      onigLib: this.getOnigLib(),
       loadGrammar: async (scopeName: string) => {
         const provider = this.textmateRegistry.getProvider(scopeName);
         if (provider) {
           const definition = await provider.getGrammarDefinition();
-          const { content } = await this.fileServiceClient.resolveContent(definition.location.toString());
+          const ret = await this.fileServiceClient.resolveContent(definition.location.toString());
+          const content = ret.content;
           definition.content = definition.format === 'json' ? this.safeParseJSON(content) : content;
           let rawGrammar: IRawGrammar;
           if (typeof definition.content === 'string') {
@@ -538,8 +555,8 @@ export class TextmateService extends WithEventBus {
     }
     const configuration = this.textmateRegistry.getGrammarConfiguration(languageId)();
     const initialLanguage = getEncodedLanguageId(languageId);
-    const grammar = await this.grammarRegistry.loadGrammarWithConfiguration(
-      scopeName, initialLanguage, configuration);
+    const grammar = (await this.grammarRegistry.loadGrammarWithConfiguration(
+      scopeName, initialLanguage, configuration))!;
     let ruleStack = INITIAL;
     const lineTokens = grammar.tokenizeLine(line, ruleStack);
     const debugLogger = getDebugLogger('tokenize');

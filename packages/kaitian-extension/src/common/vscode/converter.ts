@@ -8,6 +8,7 @@ import { SymbolInformation, Range as R, Position as P, SymbolKind as S } from 'v
 import { ExtensionDocumentDataManager } from './doc';
 import { WorkspaceEditDto, ResourceTextEditDto, ResourceFileEditDto, ITextEdit } from './workspace';
 import { ViewColumn } from './enums';
+import { FileStat, FileType } from '@ali/ide-file-service';
 
 export function toPosition(position: model.Position): types.Position {
   return new types.Position(position.lineNumber - 1, position.column - 1);
@@ -798,4 +799,30 @@ export namespace ProgressLocation {
     }
     throw new Error(`Unknown 'ProgressLocation'`);
   }
+}
+
+// FIXME: 不完备，fileService.FileStat信息会更多
+export function fromFileStat(stat: vscode.FileStat, uri: types.Uri) {
+  const isSymbolicLink = stat.type.valueOf() === FileType.SymbolicLink.valueOf();
+  const isDirectory = stat.type.valueOf() === FileType.Directory.valueOf();
+
+  const result: FileStat = {
+    uri: uri.toString(),
+    lastModification: stat.mtime,
+    createTime: stat.ctime,
+    isSymbolicLink,
+    isDirectory,
+    size: stat.size,
+  };
+
+  return result;
+}
+
+export function toFileStat(stat: FileStat): vscode.FileStat {
+  return {
+    ctime: stat.createTime || 0,
+    mtime: stat.lastModification,
+    size: stat.size || 0,
+    type: stat.type || FileType.Unknown,
+  };
 }

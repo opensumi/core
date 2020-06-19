@@ -4,11 +4,12 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { URI, IFileServiceClient, StorageProvider } from '@ali/ide-core-common';
 import { PreferenceService, CorePreferences, FILES_DEFAULTS, IClientApp } from '@ali/ide-core-browser';
 import { WorkspaceModule } from '../../src/browser';
-import { FileStat } from '@ali/ide-file-service';
+import { FileStat, DiskFileServicePath } from '@ali/ide-file-service';
 import { WorkspacePreferences } from '../../src/browser/workspace-preferences';
 import { MockedStorageProvider } from '@ali/ide-core-browser/lib/mocks/storage';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
 import { IWindowService } from '@ali/ide-window';
+import { MockFsProvider } from '@ali/ide-file-service/lib/common/mocks';
 
 describe('WorkspaceService should be work while workspace was a single directory', () => {
   let workspaceService: WorkspaceService;
@@ -42,6 +43,7 @@ describe('WorkspaceService should be work while workspace was a single directory
     }),
     resolveContent: jest.fn(),
     createFile: jest.fn(),
+    access: (...args) => true,
   };
   const mockCorePreferences = {
     onPreferenceChanged: jest.fn(),
@@ -83,6 +85,10 @@ describe('WorkspaceService should be work while workspace was a single directory
       {
         token: IFileServiceClient,
         useValue: mockFileSystem,
+      },
+      {
+        token: DiskFileServicePath,
+        useClass: MockFsProvider,
       },
       {
         token: CorePreferences,

@@ -644,14 +644,6 @@ describe('FileService', () => {
 
   });
 
-  describe('#14 roots', () => {
-
-    it('should not throw error', async () => {
-      expect(await fileService.getRoots()).toBeDefined();
-    });
-
-  });
-
   describe('#15 getCurrentUserHome', () => {
 
     it('should not throw error', async () => {

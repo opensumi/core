@@ -106,20 +106,23 @@ export class MockSCMResourceGroup implements ISCMResourceGroup {
     this._onDidChange.fire();
   }
 
-  toJSON: () => { $mid: 4 };
+  toJSON() { return { $mid: 4 }; }
 }
 
 export class MockSCMResource implements ISCMResource {
   private _resourceGroup: ISCMResourceGroup;
   readonly sourceUri = Uri.file('/test/workspace/src/a.ts');
-  readonly decorations: {};
+  readonly decorations = {};
 
   get resourceGroup() { return this._resourceGroup; }
 
-  constructor(resourceGroup: ISCMResourceGroup) {
+  constructor(resourceGroup: ISCMResourceGroup, fsPath?: string) {
     this._resourceGroup = resourceGroup;
+    if (fsPath) {
+      this.sourceUri = Uri.file(fsPath);
+    }
   }
 
   async open() {}
-  toJSON: () => { $mid: 3 };
+  toJSON() { return { $mid: 3 }; }
 }

@@ -14,8 +14,12 @@ export class URI {
     return new URI(Uri.from(components));
   }
 
-  static file (path:string) {
+  static file(path:string) {
     return new URI(Uri.file(path));
+  }
+
+  static parse(path: string) {
+    return new URI(Uri.parse(path));
   }
 
   static isUri(thing: any): thing is URI {

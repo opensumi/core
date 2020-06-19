@@ -76,7 +76,7 @@ export class FileTreeAPI implements IFileTreeAPI {
   }
 
   async exists(uri: URI) {
-    return await this.fileServiceClient.exists(uri.toString());
+    return await this.fileServiceClient.access(uri.toString());
   }
 
   async deleteFile(uri: URI) {
@@ -91,7 +91,7 @@ export class FileTreeAPI implements IFileTreeAPI {
   }
 
   async moveFile(from: URI, to: URI, isDirectory: boolean = false) {
-    const exists = await this.fileServiceClient.exists(to.toString());
+    const exists = await this.fileServiceClient.access(to.toString());
     if (exists) {
       this.messageService.error(localize('file.move.existMessage'));
       return;
@@ -112,7 +112,7 @@ export class FileTreeAPI implements IFileTreeAPI {
 
   async copyFile(from: URI, to: URI) {
     let idx = 1;
-    let exists = await this.fileServiceClient.exists(to.toString());
+    let exists = await this.fileServiceClient.access(to.toString());
     while (exists) {
       const name = to.displayName.replace(/\Wcopy\W\d+/, '');
       const extname = paths.extname(name);
@@ -120,7 +120,7 @@ export class FileTreeAPI implements IFileTreeAPI {
       const newFileName = `${basename} copy ${idx}${extname}`;
       to = to.parent.resolve(newFileName);
       idx++;
-      exists = await this.fileServiceClient.exists(to.toString());
+      exists = await this.fileServiceClient.access(to.toString());
     }
     this.fileServiceClient.copy(from.toString(), to.toString());
   }

@@ -1,7 +1,11 @@
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 import { FileSystemWatcherServer, FileChangeEvent, DidFilesChangedParams, WatchOptions } from './file-service-watcher-protocol'
-import { ApplicationError, Event, IDisposable, Uri, URI } from '@ali/ide-core-common';
+import { ApplicationError, Event, IDisposable, Uri, URI, isUndefinedOrNull, hasProperty, isFunction } from '@ali/ide-core-common';
 import { EncodingInfo } from './encoding';
+
+export const IDiskFileProvider = Symbol('IDiskFileProvider');
+
+export const IShadowFileProvider = Symbol('IShadowFileProvider');
 
 export const IFileService = Symbol('IFileService');
 
@@ -15,11 +19,6 @@ export interface IFileService extends FileSystemWatcherServer {
    * `undefined` if a file for the given URI does not exist.
    */
   getFileStat(uri: string): Promise<FileStat | undefined>;
-
-  /**
-   * Finds out if a file identified by the resource exists.
-   */
-  exists(uri: string): Promise<boolean>;
 
   /**
    * Resolve the contents of a file identified by the resource.
@@ -92,22 +91,12 @@ export interface IFileService extends FileSystemWatcherServer {
   /**
    * Returns the encoding info of the given encoding id
    */
-  getEncodingInfo(encodingId: string | null): EncodingInfo | null;
-
-  /**
-   * Return list of available roots.
-   */
-  getRoots(): Promise<FileStat[]>;
+  // getEncodingInfo(encodingId: string | null): EncodingInfo | null;
 
   /**
    * Returns a promise that resolves to a file stat representing the current user's home directory.
    */
   getCurrentUserHome(): Promise<FileStat | undefined>;
-
-  /**
-   * Resolves to an array of URIs pointing to the available drives on the filesystem.
-   */
-  getDrives(): Promise<string[]>;
 
   /**
    * Tests a user's permissions for the file or directory specified by URI.
@@ -290,6 +279,36 @@ export namespace FileSystemError {
     message: `'${file.uri}' is out of sync.`,
     data: { file, stat }
   }));
+  export const FileIsNoPermissions = ApplicationError.declare(-33005, (uri: string, prefix?: string) => ({
+    message: `${prefix ? prefix + ' ' : ''}'${uri}' is no permissions.`,
+    data: { uri }
+  }));
+}
+
+export class FileOperationError extends Error {
+	constructor(message: string, public fileOperationResult: FileOperationResult, public options?: any) {
+		super(message);
+	}
+
+	static isFileOperationError(obj: unknown): obj is FileOperationError {
+		return obj instanceof Error && !isUndefinedOrNull((obj as FileOperationError).fileOperationResult);
+	}
+}
+
+
+export const enum FileOperationResult {
+	FILE_IS_DIRECTORY,
+	FILE_NOT_FOUND,
+	FILE_NOT_MODIFIED_SINCE,
+	FILE_MODIFIED_SINCE,
+	FILE_MOVE_CONFLICT,
+	FILE_READ_ONLY,
+	FILE_PERMISSION_DENIED,
+	FILE_TOO_LARGE,
+	FILE_INVALID_PATH,
+	FILE_EXCEEDS_MEMORY_LIMIT,
+	FILE_NOT_DIRECTORY,
+	FILE_OTHER_ERROR
 }
 
 /**
@@ -341,7 +360,9 @@ export interface FileSystemProvider {
    * @param options Configures the watch.
    * @returns A disposable that tells the provider to stop watching the `uri`.
    */
-  watch(uri: Uri, options: { recursive: boolean; excludes: string[] }): IDisposable;
+  watch(uri: Uri, options: { recursive: boolean; excludes: string[] }): number | Promise<number>;
+
+  unwatch?(watcherId: number): void | Promise<void>;
 
   /**
    * Retrieve metadata about a file.
@@ -354,7 +375,7 @@ export interface FileSystemProvider {
    * @return The file metadata about the file.
    * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
    */
-  stat(uri: Uri): FileStat | Thenable<FileStat>;
+  stat(uri: Uri): Thenable<FileStat>;
 
   /**
    * Retrieve all entries of a [directory](#FileType.Directory).
@@ -382,7 +403,7 @@ export interface FileSystemProvider {
    * @return An array of bytes or a thenable that resolves to such.
    * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
    */
-  readFile(uri: Uri): Uint8Array | Thenable<Uint8Array>;
+  readFile(uri: Uri, encoding?: string): string | Thenable<string>;
 
   /**
    * Write data to a file, replacing its entire contents.
@@ -395,7 +416,7 @@ export interface FileSystemProvider {
    * @throws [`FileExists`](#FileSystemError.FileExists) when `uri` already exists, `create` is set but `overwrite` is not set.
    * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
    */
-  writeFile(uri: Uri, content: Uint8Array, options: { create: boolean, overwrite: boolean }): void | Thenable<void | FileStat>;
+  writeFile(uri: Uri, content: string, options: { create: boolean, overwrite: boolean, encoding?: string }): void | Thenable<void | FileStat>;
 
   /**
    * Delete a file.
@@ -408,48 +429,101 @@ export interface FileSystemProvider {
   /**
    * Rename a file or folder.
    *
-   * @param oldUri The existing file.
-   * @param newUri The new location.
+   * @param oldstring The existing file.
+   * @param newstring The new location.
    * @param options Defines if existing files should be overwritten.
-   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `oldUri` doesn't exist.
-   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when parent of `newUri` doesn't exist, e.g. no mkdirp-logic required.
-   * @throws [`FileExists`](#FileSystemError.FileExists) when `newUri` exists and when the `overwrite` option is not `true`.
+   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `oldstring` doesn't exist.
+   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when parent of `newstring` doesn't exist, e.g. no mkdirp-logic required.
+   * @throws [`FileExists`](#FileSystemError.FileExists) when `newstring` exists and when the `overwrite` option is not `true`.
    * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
    */
-  rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean }): void | Thenable<void | FileStat>;
-
-  /**
-   * Copy files or folders. Implementing this function is optional but it will speedup
-   * the copy operation.
-   *
-   * @param source The existing file.
-   * @param destination The destination location.
-   * @param options Defines if existing files should be overwritten.
-   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `source` doesn't exist.
-   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when parent of `destination` doesn't exist, e.g. no mkdirp-logic required.
-   * @throws [`FileExists`](#FileSystemError.FileExists) when `destination` exists and when the `overwrite` option is not `true`.
-   * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
-   */
-  copy?(source: Uri, destination: Uri, options: { overwrite: boolean }): void | Thenable<void | FileStat>;
-
-  /**
-   * @param {(Uri | string)} uri
-   * @returns {Promise<boolean>}
-   * @memberof FileSystemProvider
-   */
-  exists?(uri: Uri | string): Promise<boolean>;
-
-  /**
-   * @param {string} uri
-   * @param {number} mode
-   * @returns {Promise<boolean>}
-   * @memberof FileSystemProvider
-   */
-  access?(uri: string, mode: number): Promise<boolean>;
+  rename(oldstring: Uri, newstring: Uri, options: { overwrite: boolean }): void | Thenable<void | FileStat>;
 }
+
+/**
+ * Copy files or folders. Implementing this function is optional but it will speedup
+ * the copy operation.
+ *
+ * @param source The existing file.
+ * @param destination The destination location.
+ * @param options Defines if existing files should be overwritten.
+ * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `source` doesn't exist.
+ * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when parent of `destination` doesn't exist, e.g. no mkdirp-logic required.
+ * @throws [`FileExists`](#FileSystemError.FileExists) when `destination` exists and when the `overwrite` option is not `true`.
+ * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
+ */
+export interface FileCopyFn {
+  (source: Uri, destination: Uri, options: { overwrite: boolean }): void | Thenable<void | FileStat>;
+}
+
+/**
+ * @param {(string)} uri
+ * @returns {Promise<boolean>}
+ */
+export interface FileAccessFn {
+  (uri: Uri, mode: number): Promise<boolean>;
+}
+
+export interface FileGetCurrentUserHomeFn {
+  (): Promise<FileStat | undefined>;
+}
+
+/**
+ * 返回文件的后缀名，目录则返回 'directory'，找不到则返回 undefined
+ * @param uri string
+ */
+export interface FileGetFileTypeFn {
+  (uri: string): Promise<string | undefined>
+}
+
+interface ExtendedFileFns {
+  copy: FileCopyFn;
+  access: FileAccessFn;
+  getCurrentUserHome: FileGetCurrentUserHomeFn;
+  getFileType: FileGetFileTypeFn;
+}
+
+/**
+ * 判断一个对象是否包含某个方法
+ * @param obj object
+ * @param prop string
+ */
+export function containsExtraFileMethod<X extends {}, Y extends keyof ExtendedFileFns>(obj: X, prop: Y): obj is X & Record<Y, ExtendedFileFns[Y]> {
+  return hasProperty<X, Y>(obj, prop) && isFunction<ExtendedFileFns[Y]>(obj[prop]);
+}
+
+export interface IDiskFileProvider extends FileSystemProvider {
+  copy: FileCopyFn;
+  access: FileAccessFn;
+  getCurrentUserHome: FileGetCurrentUserHomeFn;
+  getFileType: FileGetFileTypeFn;
+}
+
+export interface IShadowFileProvider extends FileSystemProvider {}
 
 /**
  * Inner FileSystemProvider：内部实现的 Provider，可以直接在NODE主进程使用的，用FileSystemProvider标记
  * Insert FileSystemProvider: 一般指通过插件API注入进来的 Provider，主进程无法直接使用，用ID来标记，远程调用
  */
 export type InnerOrInsertFileSystemProvider = FileSystemProvider | number;
+
+export function notEmpty<T>(value: T | undefined): value is T {
+  return value !== undefined;
+}
+
+export function isErrnoException(error: any | NodeJS.ErrnoException): error is NodeJS.ErrnoException {
+  return (error as NodeJS.ErrnoException).code !== undefined && (error as NodeJS.ErrnoException).errno !== undefined;
+}
+
+export const enum FileSystemProviderCapabilities {
+	FileReadWrite = 1 << 1,
+	FileOpenReadWriteClose = 1 << 2,
+	FileReadStream = 1 << 4,
+
+	FileFolderCopy = 1 << 3,
+
+	PathCaseSensitive = 1 << 10,
+	Readonly = 1 << 11,
+
+	Trash = 1 << 12
+}

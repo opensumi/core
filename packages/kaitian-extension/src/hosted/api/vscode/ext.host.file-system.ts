@@ -2,52 +2,22 @@ import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import {
   FileChangeType,
-  FileChangeEvent,
-  VSCFileChangeType,
   FileStat,
-  FileType,
+  FileSystemProviderCapabilities,
+  FileChange,
 } from '@ali/ide-file-service';
-import { DiskFileSystemProviderWithoutWatcherForExtHost } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
 import {
   URI,
-  Emitter,
-  DisposableCollection,
   IDisposable,
   Schemas,
-  Uri,
+  toDisposable,
 } from '@ali/ide-core-common';
 import {
   MainThreadAPIIdentifier,
 } from '../../../common/vscode';
-import {
-  IExtHostFileSystem,
-  IMainThreadFileSystem,
-  ExtFileChangeEventInfo,
-  ExtFileSystemWatcherOptions,
-  VSCFileType,
-} from '@ali/ide-file-service/lib/common/ext-file-system';
-
-export function createFileSystemApiFactory(
-  extHostFileSystem: IExtHostFileSystem,
-) {
-  return {
-    fs: new VSCFileSystem(),
-    createFileSystemWatcher(
-      globPattern: vscode.GlobPattern,
-      ignoreCreateEvents?: boolean,
-      ignoreChangeEvents?: boolean,
-      ignoreDeleteEvents?: boolean,
-    ): vscode.FileSystemWatcher {
-      return new FileSystemWatcher({
-        globPattern,
-        ignoreCreateEvents: !!ignoreCreateEvents,
-        ignoreChangeEvents: !!ignoreChangeEvents,
-        ignoreDeleteEvents: !!ignoreDeleteEvents,
-      }, extHostFileSystem);
-    },
-    registerFileSystemProvider: extHostFileSystem.registerFileSystemProvider.bind(extHostFileSystem),
-  };
-}
+import * as files from '../../../common/vscode/file-system';
+import { TextEncoder, TextDecoder } from 'util';
+import { UriComponents } from '../../../common/vscode/ext-types';
 
 export function convertToVSCFileStat(stat: FileStat): vscode.FileStat {
   return {
@@ -58,340 +28,203 @@ export function convertToVSCFileStat(stat: FileStat): vscode.FileStat {
   };
 }
 
-export class VSCFileSystem implements vscode.FileSystem {
-  innerFs: DiskFileSystemProviderWithoutWatcherForExtHost;
+class ConsumerFileSystem implements vscode.FileSystem {
 
-  constructor() {
-    this.innerFs = new DiskFileSystemProviderWithoutWatcherForExtHost();
+  constructor(private _proxy: files.IMainThreadFileSystemShape) { }
+
+  stat(uri: vscode.Uri): Promise<vscode.FileStat> {
+    return this._proxy.$stat(uri).catch(ConsumerFileSystem._handleError);
   }
-
-  async stat(uri: Uri): Promise<vscode.FileStat> {
-    const state = await this.innerFs.stat(uri);
-    return convertToVSCFileStat(state);
+  readDirectory(uri: vscode.Uri): Promise<[string, vscode.FileType][]> {
+    return this._proxy.$readdir(uri).catch(ConsumerFileSystem._handleError);
   }
-
-  async readDirectory(uri: Uri): Promise<[string, FileType][]> {
-    try {
-      return await this.innerFs.readDirectory(uri);
-    } catch (e) {
-      return [];
+  createDirectory(uri: vscode.Uri): Promise<void> {
+    return this._proxy.$mkdir(uri).catch(ConsumerFileSystem._handleError);
+  }
+  async readFile(uri: vscode.Uri): Promise<Uint8Array> {
+    return this._proxy.$readFile(uri).then((content) => new TextEncoder().encode(content)).catch(ConsumerFileSystem._handleError);
+  }
+  writeFile(uri: vscode.Uri, content: Uint8Array): Promise<void> {
+    return this._proxy.$writeFile(uri, new TextDecoder().decode(content)).catch(ConsumerFileSystem._handleError);
+  }
+  delete(uri: vscode.Uri, options?: { recursive?: boolean; useTrash?: boolean; }): Promise<void> {
+    return this._proxy.$delete(uri, { ...{ recursive: false, useTrash: false }, ...options }).catch(ConsumerFileSystem._handleError);
+  }
+  rename(oldUri: vscode.Uri, newUri: vscode.Uri, options?: { overwrite?: boolean; }): Promise<void> {
+    return this._proxy.$rename(oldUri, newUri, { ...{ overwrite: false }, ...options }).catch(ConsumerFileSystem._handleError);
+  }
+  copy(source: vscode.Uri, destination: vscode.Uri, options?: { overwrite?: boolean }): Promise<void> {
+    return this._proxy.$copy(source, destination, { ...{ overwrite: false }, ...options }).catch(ConsumerFileSystem._handleError);
+  }
+  private static _handleError(err: any): never {
+    // generic error
+    if (!(err instanceof Error)) {
+      throw new files.FileSystemError(String(err));
     }
-  }
 
-  async createDirectory(uri: Uri): Promise<void> {
-    try {
-      await this.innerFs.createDirectory(uri);
-    } catch (e) {}
-  }
-
-  async readFile(uri: Uri): Promise<Uint8Array> {
-    try {
-      return await this.innerFs.readFile(uri);
-    } catch (e) {
-      return new Uint8Array();
+    // no provider (unknown scheme) error
+    if (err.name === 'ENOPRO') {
+      throw files.FileSystemError.Unavailable(err.message);
     }
-  }
 
-  async writeFile(uri: Uri, content: Uint8Array, options?: { create: boolean, overwrite: boolean }): Promise<void> {
-    options = Object.assign({}, options, {
-      create: true,
-      overwrite: true,
-    });
-    try {
-      await this.innerFs.writeFile(
-        uri,
-        Buffer.from(content),
-        options,
-      );
-    } catch (e) {}
-  }
+    // file system error
+    switch (err.name) {
+      case files.FileSystemProviderErrorCode.FileExists: throw files.FileSystemError.FileExists(err.message);
+      case files.FileSystemProviderErrorCode.FileNotFound: throw files.FileSystemError.FileNotFound(err.message);
+      case files.FileSystemProviderErrorCode.FileNotADirectory: throw files.FileSystemError.FileNotADirectory(err.message);
+      case files.FileSystemProviderErrorCode.FileIsADirectory: throw files.FileSystemError.FileIsADirectory(err.message);
+      case files.FileSystemProviderErrorCode.NoPermissions: throw files.FileSystemError.NoPermissions(err.message);
+      case files.FileSystemProviderErrorCode.Unavailable: throw files.FileSystemError.Unavailable(err.message);
 
-  async delete(uri: Uri, options?: { recursive: boolean }): Promise<void> {
-    options = Object.assign({}, options, {
-      recursive: true,
-    });
-    try {
-      return await this.innerFs.delete(uri, options);
-    } catch (e) {}
-  }
-
-  async rename(source: Uri, target: Uri, options?: { overwrite: boolean }): Promise<void> {
-    options = Object.assign({}, options, {
-      overwrite: true,
-    });
-    try {
-      await this.innerFs.rename(source, target, options);
-    } catch (e) {}
-  }
-
-  async copy(source: Uri, target: Uri, options?: { overwrite: boolean }): Promise<void> {
-    options = Object.assign({}, options, {
-      overwrite: true,
-    });
-    try {
-      await this.innerFs.copy(source, target, options);
-    } catch (e) {}
+      default: throw new files.FileSystemError(err.message, err.name as files.FileSystemProviderErrorCode);
+    }
   }
 }
 
-export class FileSystemWatcher implements vscode.FileSystemWatcher {
-  private readonly toDispose = new DisposableCollection();
-  private readonly extFileSystem: IExtHostFileSystem;
-  private id: number;
+export class ExtHostFileSystem implements files.IExtHostFileSystemShape {
+  private readonly _proxy: files.IMainThreadFileSystemShape;
+  private readonly _fsProvider = new Map<number, vscode.FileSystemProvider>();
+  private readonly _usedSchemes = new Set<string>();
+  private readonly _watches = new Map<number, IDisposable>();
 
-  protected createEmitter = new Emitter<vscode.Uri>();
-  protected changeEmitter = new Emitter<vscode.Uri>();
-  protected deleteEmitter = new Emitter<vscode.Uri>();
+  private _handlePool: number = 0;
 
-  ignoreCreateEvents: boolean;
-  ignoreChangeEvents: boolean;
-  ignoreDeleteEvents: boolean;
+  readonly fileSystem: vscode.FileSystem;
 
-  constructor(options: ExtFileSystemWatcherOptions, extFileSystem: IExtHostFileSystem) {
-    this.extFileSystem = extFileSystem;
-    this.ignoreCreateEvents = options.ignoreCreateEvents;
-    this.ignoreChangeEvents = options.ignoreChangeEvents;
-    this.ignoreDeleteEvents = options.ignoreDeleteEvents;
+  constructor(private readonly rpcProtocol: IRPCProtocol) {
+    this._proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadFileSystem);
+    this.fileSystem = new ConsumerFileSystem(this._proxy);
 
-    this.extFileSystem.subscribeWatcher(options).then((id) => this.id = id);
-
-    this.toDispose.push(extFileSystem.onDidChange((info: ExtFileChangeEventInfo) => {
-      if (info.id !== this.id) {
-        return;
-      }
-      if (info.event.type === FileChangeType.ADDED) {
-        this.createEmitter.fire(new URI(info.event.uri).codeUri);
-      }
-      if (info.event.type === FileChangeType.UPDATED) {
-        this.changeEmitter.fire(new URI(info.event.uri).codeUri);
-      }
-      if (info.event.type === FileChangeType.DELETED) {
-        this.deleteEmitter.fire(new URI(info.event.uri).codeUri);
-      }
-    }));
+    // register used schemes
+    Object.keys(Schemas).forEach((scheme) => this._usedSchemes.add(scheme));
   }
 
-  get onDidCreate(): vscode.Event<vscode.Uri> {
-    return this.createEmitter.event;
-  }
-  get onDidChange(): vscode.Event<vscode.Uri> {
-    return this.changeEmitter.event;
-  }
-  get onDidDelete(): vscode.Event<vscode.Uri> {
-    return this.deleteEmitter.event;
-  }
+  registerFileSystemProvider(scheme: string, provider: vscode.FileSystemProvider, options: { isCaseSensitive?: boolean, isReadonly?: boolean } = {}) {
 
-  dispose() {
-    this.toDispose.dispose();
-    this.extFileSystem.unsubscribeWatcher(this.id).then();
-  }
-}
-
-export class ExtHostFileSystem implements IExtHostFileSystem {
-  private rpcProtocol: IRPCProtocol;
-  private proxy: IMainThreadFileSystem;
-  private readonly watchEmitter = new Emitter<ExtFileChangeEventInfo>();
-  private readonly fsProviders = new Map<string, vscode.FileSystemProvider>();
-  private readonly usedSchemes = new Set<string>();
-  private readonly fsProvidersWatcherDisposerMap = new Map<number, IDisposable>();
-  private fsProvidersWatchId: number = 0;
-
-  constructor(rpcProtocol: IRPCProtocol) {
-    this.rpcProtocol = rpcProtocol;
-    this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadFileSystem);
-    this.initUsedSchemas();
-  }
-
-  private initUsedSchemas() {
-    this.usedSchemes.add(Schemas.file);
-    this.usedSchemes.add(Schemas.untitled);
-    this.usedSchemes.add(Schemas.vscode);
-    this.usedSchemes.add(Schemas.inMemory);
-    this.usedSchemes.add(Schemas.internal);
-    this.usedSchemes.add(Schemas.http);
-    this.usedSchemes.add(Schemas.https);
-    this.usedSchemes.add(Schemas.mailto);
-    this.usedSchemes.add(Schemas.data);
-    this.usedSchemes.add(Schemas.command);
-  }
-
-  $onFileEvent(options: ExtFileChangeEventInfo) {
-    this.watchEmitter.fire(options);
-  }
-
-  get onDidChange() {
-    return this.watchEmitter.event;
-  }
-
-  async subscribeWatcher(options: ExtFileSystemWatcherOptions): Promise<number> {
-    return await this.proxy.$subscribeWatcher(options);
-  }
-
-  async unsubscribeWatcher(id: number): Promise<void> {
-    await this.proxy.$unsubscribeWatcher(id);
-  }
-
-  /**
-   * Not support `options`, will ignore!
-   */
-  registerFileSystemProvider(
-    scheme: string,
-    provider: vscode.FileSystemProvider,
-    options: { isCaseSensitive?: boolean, isReadonly?: boolean } = {},
-  ): IDisposable {
-    if (this.usedSchemes.has(scheme)) {
+    if (this._usedSchemes.has(scheme)) {
       throw new Error(`a provider for the scheme '${scheme}' is already registered`);
     }
-    const toDisposable = new DisposableCollection();
 
-    this.fsProviders.set(scheme, provider);
-    this.usedSchemes.add(scheme);
+    const handle = this._handlePool++;
+    this._usedSchemes.add(scheme);
+    this._fsProvider.set(handle, provider);
 
-    this.proxy.$registerFileSystemProvider(scheme);
+    let capabilities = FileSystemProviderCapabilities.FileReadWrite;
+    if (options.isCaseSensitive) {
+      capabilities += FileSystemProviderCapabilities.PathCaseSensitive;
+    }
+    if (options.isReadonly) {
+      capabilities += FileSystemProviderCapabilities.Readonly;
+    }
+    if (typeof provider.copy === 'function') {
+      capabilities += FileSystemProviderCapabilities.FileFolderCopy;
+    }
+    // TODO: proposed api
+    // if (typeof provider.open === 'function' && typeof provider.close === 'function'
+    // 	&& typeof provider.read === 'function' && typeof provider.write === 'function'
+    // ) {
+    // 	capabilities += FileSystemProviderCapabilities.FileOpenReadWriteClose;
+    // }
 
-    toDisposable.push(provider.onDidChangeFile((e: vscode.FileChangeEvent[]) => {
-      this.fireProvidersFilesChange(this.convertToKtFileChangeEvent(e));
-    }));
-    toDisposable.push({
-      dispose: () => {
-         this.fsProviders.delete(scheme);
-         this.usedSchemes.delete(scheme);
-         this.proxy.$unregisterFileSystemProvider(scheme);
-      },
+    this._proxy.$registerFileSystemProvider(handle, scheme, capabilities);
+
+    const subscription = provider.onDidChangeFile((event) => {
+      const mapped: FileChange[] = [];
+      for (const e of event) {
+        const { uri, type } = e;
+        if (uri.scheme !== scheme) {
+          // dropping events for wrong scheme
+          continue;
+        }
+        let newType: FileChangeType | undefined;
+        switch (type) {
+          case files.FileChangeType.Changed:
+            newType = FileChangeType.UPDATED;
+            break;
+          case files.FileChangeType.Created:
+            newType = FileChangeType.ADDED;
+            break;
+          case files.FileChangeType.Deleted:
+            newType = FileChangeType.DELETED;
+            break;
+          default:
+            throw new Error('Unknown FileChangeType');
+        }
+        mapped.push({ uri: uri.toString(), type: newType });
+      }
+      this._proxy.$onFileSystemChange(handle, mapped);
     });
 
-    return toDisposable;
-  }
-
-  haveProvider(scheme: string): boolean {
-    return this.fsProviders.has(scheme);
-  }
-
-  async $haveProvider(scheme: string): Promise<boolean> {
-    return await this.haveProvider(scheme);
-  }
-
-  async $runProviderMethod(scheme: string, funName: string, args: any[]) {
-    const provider = this.fsProviders.get(scheme);
-
-    if (!provider) {
-      throw new Error(`Not find ${scheme} provider!`);
-    }
-
-    if (!provider[funName]) {
-      throw new Error(`Not find menthod ${funName}`);
-    }
-
-    if (funName === 'rename' || funName === 'copy') {
-      args[0] = Uri.parse(args[0]);
-      args[1] = Uri.parse(args[1]);
-    } else {
-      args[0] = Uri.parse(args[0]);
-    }
-
-    if (funName === 'stat') {
-      try {
-        return await this.getStat(provider, args[0]);
-      } catch (e) {
-        return;
-      }
-    }
-
-    return await provider[funName].apply(provider, args);
-  }
-
-  async getStat(provider: vscode.FileSystemProvider, uri: Uri): Promise<FileStat> {
-    return await this.convertToKtStat(provider, uri, 1);
-  }
-
-  async $watchFileWithProvider(uri: string, options: { recursive: boolean; excludes: string[] }): Promise<number> {
-    const _codeUri = Uri.parse(uri);
-    const scheme = _codeUri.scheme;
-    const provider = this.fsProviders.get(scheme);
-
-    if (!provider) {
-      throw new Error(`Not find ${scheme} provider!`);
-    }
-    const id = this.fsProvidersWatchId++;
-    this.fsProvidersWatcherDisposerMap.set(
-      id,
-      provider.watch(_codeUri, options),
-    );
-
-    return id;
-  }
-
-  async $unWatchFileWithProvider(id: number) {
-    const disposable = this.fsProvidersWatcherDisposerMap.get(id);
-    if (disposable && disposable.dispose) {
-      disposable.dispose();
-    }
-  }
-
-  private async convertToKtStat(
-    provider: vscode.FileSystemProvider,
-    uri: Uri,
-    depth: number,
-  ): Promise<FileStat> {
-    const stat = await provider.stat(uri);
-    const isSymbolicLink = stat.type.valueOf() === VSCFileType.SymbolicLink.valueOf();
-    const isDirectory = stat.type.valueOf() === VSCFileType.Directory.valueOf();
-
-    const result: FileStat = {
-      uri: uri.toString(),
-      lastModification: stat.mtime,
-      createTime: stat.ctime,
-      isSymbolicLink,
-      isDirectory,
-      size: stat.size,
-    };
-
-    if (isDirectory) {
-      result.children = await this.convertToKtDirectoryStat(provider, uri, depth);
-    }
-
-    return result;
-  }
-
-  private async convertToKtDirectoryStat(
-    provider: vscode.FileSystemProvider,
-    uri: Uri,
-    depth: number,
-  ): Promise<FileStat[]> {
-    if (depth < 1) {
-      return [];
-    }
-    const outChildren: FileStat[] = [];
-    const children = await provider.readDirectory(uri);
-    for (const child of children) {
-      const ktUrl = new URI(uri.toString()).resolve(`${child[0]}`);
-      outChildren.push(await this.convertToKtStat(provider, ktUrl.codeUri, depth - 1));
-    }
-
-    return outChildren;
-  }
-
-  private convertToKtFileChangeEvent(events: vscode.FileChangeEvent[]): FileChangeEvent {
-    const result: FileChangeEvent = [];
-
-    events.forEach((event: vscode.FileChangeEvent ) => {
-      const newEvent = {
-        uri: event.uri.toString(),
-        type: FileChangeType.UPDATED,
-      };
-      if (event.type.valueOf() === VSCFileChangeType.Deleted.valueOf()) {
-        newEvent.type = FileChangeType.DELETED;
-      }
-      if (event.type.valueOf() === VSCFileChangeType.Created.valueOf()) {
-        newEvent.type = FileChangeType.ADDED;
-      }
-      result.push(newEvent);
+    return toDisposable(() => {
+      subscription.dispose();
+      this._usedSchemes.delete(scheme);
+      this._fsProvider.delete(handle);
+      this._proxy.$unregisterProvider(handle);
     });
-
-    return result;
   }
 
-  private fireProvidersFilesChange(e: FileChangeEvent) {
-    return this.proxy.$fireProvidersFilesChange(e);
+  private static _asIStat(stat: vscode.FileStat): files.FileStat {
+    const { type, ctime, mtime, size } = stat;
+    return { type, ctime, mtime, size };
+  }
+
+  $stat(handle: number, resource: UriComponents): Promise<files.FileStat> {
+    return Promise.resolve(this._getFsProvider(handle).stat(URI.revive(resource))).then(ExtHostFileSystem._asIStat);
+  }
+
+  $readdir(handle: number, resource: UriComponents): Promise<[string, files.FileType][]> {
+    return Promise.resolve(this._getFsProvider(handle).readDirectory(URI.revive(resource)));
+  }
+
+  $readFile(handle: number, resource: UriComponents): Promise<string> {
+    return Promise.resolve(this._getFsProvider(handle).readFile(URI.revive(resource))).then((data) => new TextDecoder().decode(data));
+  }
+
+  $writeFile(handle: number, resource: UriComponents, content: string, opts: files.FileWriteOptions): Promise<void> {
+    return Promise.resolve(this._getFsProvider(handle).writeFile(URI.revive(resource), new TextEncoder().encode(content), opts));
+  }
+
+  $delete(handle: number, resource: UriComponents, opts: files.FileDeleteOptions): Promise<void> {
+    return Promise.resolve(this._getFsProvider(handle).delete(URI.revive(resource), opts));
+  }
+
+  $rename(handle: number, oldUri: UriComponents, newUri: UriComponents, opts: files.FileOverwriteOptions): Promise<void> {
+    return Promise.resolve(this._getFsProvider(handle).rename(URI.revive(oldUri), URI.revive(newUri), opts));
+  }
+
+  $copy(handle: number, oldUri: UriComponents, newUri: UriComponents, opts: files.FileOverwriteOptions): Promise<void> {
+    const provider = this._getFsProvider(handle);
+    if (!provider.copy) {
+      throw new Error('FileSystemProvider does not implement "copy"');
+    }
+    return Promise.resolve(provider.copy(URI.revive(oldUri), URI.revive(newUri), opts));
+  }
+
+  $mkdir(handle: number, resource: UriComponents): Promise<void> {
+    return Promise.resolve(this._getFsProvider(handle).createDirectory(URI.revive(resource)));
+  }
+
+  $watch(handle: number, session: number, resource: UriComponents, opts: files.IWatchOptions): void {
+    const subscription = this._getFsProvider(handle).watch(URI.revive(resource), opts);
+    this._watches.set(session, subscription);
+  }
+
+  $unwatch(_handle: number, session: number): void {
+    const subscription = this._watches.get(session);
+    if (subscription) {
+      subscription.dispose();
+      this._watches.delete(session);
+    }
+  }
+
+  private _getFsProvider(handle: number): vscode.FileSystemProvider {
+    const provider = this._fsProvider.get(handle);
+    if (!provider) {
+      const err = new Error();
+      err.name = 'ENOPRO';
+      err.message = `no provider`;
+      throw err;
+    }
+    return provider;
   }
 }

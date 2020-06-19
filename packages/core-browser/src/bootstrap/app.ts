@@ -177,7 +177,7 @@ export class ClientApp implements IClientApp {
     }
   }
 
-  public async start(container: HTMLElement, type?: string, connection?: RPCMessageConnection) {
+  public async start(container: HTMLElement, type?: string, connection?: RPCMessageConnection, callback?: () => void) {
 
     if (connection) {
       await bindConnectionService(this.injector, this.modules, connection);
@@ -202,7 +202,7 @@ export class ClientApp implements IClientApp {
     await this.startContributions();
     this.stateService.state = 'started_contributions';
     this.registerEventListeners();
-    await this.renderApp(container);
+    await this.renderApp(container, callback);
     this.stateService.state = 'ready';
   }
 
@@ -324,9 +324,10 @@ export class ClientApp implements IClientApp {
 
   }
 
-  private async renderApp(container: HTMLElement) {
+  private async renderApp(container: HTMLElement, callback?: () => void) {
     this.container = container;
     await renderClientApp(this, this.container);
+    callback && callback();
 
     const eventBus = this.injector.get(IEventBus);
     eventBus.fire(new RenderedEvent());

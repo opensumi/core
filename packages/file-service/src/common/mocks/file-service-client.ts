@@ -1,13 +1,16 @@
 import { IFileServiceClient } from '../file-service-client';
-import { URI, Emitter, Event, FileUri } from '@ali/ide-core-common';
+import { URI, Emitter, Event, FileUri, IDisposable } from '@ali/ide-core-common';
 import { FileChangeEvent, DidFilesChangedParams, FileChange } from '../file-service-watcher-protocol';
-import { FileSetContentOptions, FileStat, FileMoveOptions, FileCreateOptions, FileCopyOptions, FileDeleteOptions } from '../files';
+import { FileSetContentOptions, FileStat, FileMoveOptions, FileCreateOptions, FileCopyOptions, FileDeleteOptions, FileSystemProvider } from '../files';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 import { IFileServiceWatcher } from '../watcher';
 import { Injectable } from '@ali/common-di';
 
 @Injectable()
 export class MockFileServiceClient implements IFileServiceClient {
+  registerProvider(scheme: string, provider: FileSystemProvider): IDisposable {
+    throw new Error('Method not implemented.');
+  }
 
   defaultMockFileStat: FileStat = {
     uri: '',
@@ -16,6 +19,7 @@ export class MockFileServiceClient implements IFileServiceClient {
   };
 
   private watchExcludes: string[];
+  // @ts-ignore
   private fileExcludes: string[];
 
   protected readonly onFileChangedEmitter = new Emitter<FileChangeEvent>();
@@ -103,7 +107,7 @@ export class MockFileServiceClient implements IFileServiceClient {
     }
   }
 
-  onDidFilesChanged(event: DidFilesChangedParams): void {
+  fireFilesChange(event: DidFilesChangedParams): void {
     const changes: FileChange[] = event.changes.map((change) => {
       return {
         uri: change.uri,
@@ -152,14 +156,6 @@ export class MockFileServiceClient implements IFileServiceClient {
     return;
   }
 
-  async exists(uri: string) {
-    return true;
-  }
-
-  async fireFilesChange(e: FileChangeEvent) {
-    return;
-  }
-
   async getEncoding(uri: string) {
     return 'utf8';
   }
@@ -171,4 +167,5 @@ export class MockFileServiceClient implements IFileServiceClient {
       id: 'utf8',
     };
   }
+
 }

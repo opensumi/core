@@ -1,5 +1,7 @@
-import { Uri, Event } from '@ali/ide-core-common';
+import { Uri, Event, IDisposable } from '@ali/ide-core-common';
+import { FileSystemProviderCapabilities, FileChange } from '@ali/ide-file-service';
 import { Disposable } from './ext-types';
+import { UriComponents } from './models';
 
 class URI extends Uri { }
 
@@ -85,6 +87,59 @@ export interface FileStat {
    * The size in bytes.
    */
   size: number;
+}
+
+export const enum FileOperation {
+  CREATE,
+  DELETE,
+  MOVE,
+  COPY,
+}
+
+export interface FileOverwriteOptions {
+  overwrite: boolean;
+}
+
+export interface FileReadStreamOptions {
+
+  /**
+	 * Is an integer specifying where to begin reading from in the file. If position is undefined,
+	 * data will be read from the current file position.
+	 */
+  readonly position?: number;
+
+  /**
+	 * Is an integer specifying how many bytes to read from the file. By default, all bytes
+	 * will be read.
+	 */
+  readonly length?: number;
+
+  /**
+	 * If provided, the size of the file will be checked against the limits.
+	 */
+  limits?: {
+    readonly size?: number;
+    readonly memory?: number;
+  };
+}
+
+export interface FileWriteOptions {
+  overwrite: boolean;
+  create: boolean;
+}
+
+export interface FileOpenOptions {
+  create: boolean;
+}
+
+export interface FileDeleteOptions {
+  recursive: boolean;
+  useTrash: boolean;
+}
+
+export interface IWatchOptions {
+  recursive: boolean;
+  excludes: string[];
 }
 
 export enum FileSystemProviderErrorCode {
@@ -274,4 +329,50 @@ export interface FileSystemProvider {
    * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
    */
   copy?(source: Uri, destination: Uri, options: { overwrite: boolean }): void | Thenable<void>;
+}
+
+export interface IExtHostFileSystemShape {
+  $stat(handle: number, resource: UriComponents): Promise<FileStat>;
+  $readdir(handle: number, resource: UriComponents): Promise<[string, FileType][]>;
+  $readFile(handle: number, resource: UriComponents): Promise<string>;
+  $writeFile(handle: number, resource: UriComponents, content: string, opts: FileWriteOptions): Promise<void>;
+  $rename(handle: number, resource: UriComponents, target: UriComponents, opts: FileOverwriteOptions): Promise<void>;
+  $copy(handle: number, resource: UriComponents, target: UriComponents, opts: FileOverwriteOptions): Promise<void>;
+  $mkdir(handle: number, resource: UriComponents): Promise<void>;
+  $delete(handle: number, resource: UriComponents, opts: FileDeleteOptions): Promise<void>;
+  $watch(handle: number, session: number, resource: UriComponents, opts: IWatchOptions): void;
+  $unwatch(handle: number, session: number): void;
+  // TODO: proposed
+  // $open(handle: number, resource: UriComponents, opts: FileOpenOptions): Promise<number>;
+  // $close(handle: number, fd: number): Promise<void>;
+  // $read(handle: number, fd: number, pos: number, length: number): Promise<string>;
+  // $write(handle: number, fd: number, pos: number, data: string): Promise<number>;
+}
+
+export interface IMainThreadFileSystemShape extends IDisposable {
+  $registerFileSystemProvider(handle: number, scheme: string, capabilities: FileSystemProviderCapabilities): void;
+  $unregisterProvider(handle: number): void;
+  $onFileSystemChange(handle: number, resource: FileChange[]): void;
+
+  $stat(uri: UriComponents): Promise<FileStat>;
+  $readdir(resource: UriComponents): Promise<[string, FileType][]>;
+  $readFile(resource: UriComponents): Promise<string>;
+  $writeFile(resource: UriComponents, content: string): Promise<void>;
+  $rename(resource: UriComponents, target: UriComponents, opts: FileOverwriteOptions): Promise<void>;
+  $copy(resource: UriComponents, target: UriComponents, opts: FileOverwriteOptions): Promise<void>;
+  $mkdir(resource: UriComponents): Promise<void>;
+  $delete(resource: UriComponents, opts: FileDeleteOptions): Promise<void>;
+}
+
+export interface FileSystemEvents {
+  created: UriComponents[];
+  changed: UriComponents[];
+  deleted: UriComponents[];
+}
+
+export interface IExtHostFileSystemEvent {
+  $onFileEvent(events: FileSystemEvents): void;
+  // TODO: api update
+  // $onWillRunFileOperation(operation: FileOperation, target: UriComponents, source: UriComponents | undefined, timeout: number, token: CancellationToken): Promise<any>;
+  // $onDidRunFileOperation(operation: FileOperation, target: UriComponents, source: UriComponents | undefined): void;
 }

@@ -3,7 +3,7 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { WorkbenchThemeService } from '../../src/browser/workbench.theme.service';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { IThemeService } from '../../';
-import { PreferenceSchemaProvider, IPreferenceSettingsService, ILoggerManagerClient } from '@ali/ide-core-browser';
+import { PreferenceSchemaProvider, IPreferenceSettingsService, ILoggerManagerClient, URI } from '@ali/ide-core-browser';
 import { MockPreferenceSchemaProvider, MockPreferenceSettingsService } from '@ali/ide-core-browser/lib/mocks/preference';
 import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
 import { Injectable } from '@ali/common-di';
@@ -90,7 +90,7 @@ class MockFileServiceClient {
 describe('color theme service test', () => {
   let service: IThemeService;
   let injector: MockInjector;
-  beforeAll(() => {
+  beforeEach(() => {
     injector = createBrowserInjector([]);
 
     injector.addProviders(
@@ -132,7 +132,7 @@ describe('color theme service test', () => {
       label: 'Dark Default Colors',
       uiTheme: 'vs',
       path: './test-relativa-path/theme.json',
-    }], 'file://base-ext-path');
+    }], new URI('file://base-ext-path'));
     const availableThemes = service.getAvailableThemeInfos();
     expect(availableThemes.length).toEqual(1);
   });
@@ -143,7 +143,7 @@ describe('color theme service test', () => {
       label: 'Dracula',
       uiTheme: 'vs',
       path: './test-relativa-path/theme.plist',
-    }], 'file://base-ext-path');
+    }], new URI('file://base-ext-path'));
     const availableThemes = service.getAvailableThemeInfos();
     expect(availableThemes.length).toEqual(2);
   });
@@ -164,7 +164,7 @@ describe('color theme service test', () => {
     const themeData = currentTheme.themeData;
     expect(Object.keys(themeData.colors).length).toBeGreaterThan(0);
     expect(themeData.encodedTokensColors).toBeDefined();
-    expect(themeData.encodedTokensColors!.length).toBeGreaterThan(0);
+    expect(themeData.encodedTokensColors!.length).toEqual(0);
     expect(['vs', 'vs-dark', 'hc-black'].indexOf(themeData.base)).toBeGreaterThan(-1);
     expect(themeData.rules.length).toBeGreaterThan(0);
   });
@@ -200,7 +200,7 @@ describe('color theme service test', () => {
     const testColor = currentTheme.getColor(legalColorId);
     expect(testColor).toBeDefined();
     expect(testColor!.toString()).toBeDefined();
-    console.log('test color to string: ', testColor!.toString());
+    // console.log('test color to string: ', testColor!.toString());
   });
 
   it('css styler service test', () => {

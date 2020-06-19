@@ -1,12 +1,13 @@
 import { Provider, Injectable } from '@ali/common-di';
-import { FileServicePath, IFileServiceClient, IBrowserFileSystemRegistry } from '../common/index';
+import { IFileServiceClient, IBrowserFileSystemRegistry, IDiskFileProvider, ShadowFileServicePath, IShadowFileProvider, DiskFileServicePath } from '../common/index';
 import { FileServiceClient, BrowserFileSystemRegistryImpl } from './file-service-client';
 import { BrowserModule } from '@ali/ide-core-browser';
 import { FileResourceResolver } from './file-service-contribution';
-import { FileServiceExtClient } from './file-service-ext-client';
+import { DiskFsProviderClient, ShadowFsProviderClient } from './file-service-provider-client';
 
 @Injectable()
 export class FileServiceClientModule extends BrowserModule {
+
   providers: Provider[] = [
     {
       token: IFileServiceClient,
@@ -16,18 +17,26 @@ export class FileServiceClientModule extends BrowserModule {
       token: IBrowserFileSystemRegistry,
       useClass: BrowserFileSystemRegistryImpl,
     },
+    {
+      token: IDiskFileProvider,
+      useClass: DiskFsProviderClient,
+    },
+    {
+      token: IShadowFileProvider,
+      useClass: ShadowFsProviderClient,
+    },
     FileResourceResolver,
   ];
 
   // 依赖 fileService 服务
   backServices = [
     {
-      servicePath: FileServicePath,
-      clientToken: IFileServiceClient,
+      servicePath: DiskFileServicePath,
+      clientToken: IDiskFileProvider,
     },
     {
-      servicePath: FileServicePath,
-      clientToken: FileServiceExtClient,
+      servicePath: ShadowFileServicePath,
+      clientToken: IShadowFileProvider,
     },
   ];
 }

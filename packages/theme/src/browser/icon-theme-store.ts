@@ -2,7 +2,6 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { IIconTheme, ThemeContribution, getThemeId } from '../common';
 import { IconThemeData } from './icon-theme-data';
 import { URI } from '@ali/ide-core-common';
-import { Path } from '@ali/ide-core-common/lib/path';
 
 @Injectable()
 export class IconThemeStore {
@@ -11,7 +10,7 @@ export class IconThemeStore {
 
   private iconThemeMap: Map<string, IIconTheme> = new Map();
 
-  async getIconTheme(contribution?: ThemeContribution, basePath?: string): Promise<IIconTheme | undefined> {
+  async getIconTheme(contribution?: ThemeContribution, basePath?: URI): Promise<IIconTheme | undefined> {
     if (!contribution || !basePath) {
       return;
     }
@@ -25,10 +24,13 @@ export class IconThemeStore {
     return iconTheme;
   }
 
-  protected async initIconTheme(contribution: ThemeContribution, basePath: string): Promise<IconThemeData> {
-    const themeLocation = new Path(basePath).join(contribution.path.replace(/^\.\//, '')).toString();
+  protected async initIconTheme(contribution: ThemeContribution, basePath: URI): Promise<IconThemeData> {
+    const contributedPath = contribution.path.replace(/^\.\//, '');
+    // http 的不作支持
+    const themeLocation = basePath.resolve(contributedPath);
+
     const iconThemeData = this.injector.get(IconThemeData);
-    await iconThemeData.load(URI.file(themeLocation));
+    await iconThemeData.load(themeLocation);
     return iconThemeData;
   }
 }

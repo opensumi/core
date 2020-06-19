@@ -33,7 +33,7 @@ export class IconService implements IIconService {
 
   private iconThemes: Map<string, IIconTheme> = new Map();
 
-  private iconContributionRegistry: Map<string, {contribution: ThemeContribution, basePath: string}> = new Map();
+  private iconContributionRegistry: Map<string, {contribution: ThemeContribution, basePath: URI }> = new Map();
 
   public currentThemeId: string;
   public currentTheme: IIconTheme;
@@ -152,9 +152,9 @@ export class IconService implements IIconService {
     return targetIconClass;
   }
 
-  registerIconThemes(iconContributions: ThemeContribution[], basePath: string) {
+  registerIconThemes(iconContributions: ThemeContribution[], basePath: URI) {
     for (const contribution of iconContributions) {
-      this.iconContributionRegistry.set(getThemeId(contribution), {contribution, basePath});
+      this.iconContributionRegistry.set(getThemeId(contribution), { contribution, basePath });
     }
     this.preferenceSchemaProvider.setSchema({
       properties: {

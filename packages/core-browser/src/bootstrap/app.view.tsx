@@ -1,12 +1,13 @@
 import * as React from 'react';
-import { ConfigProvider, allSlot } from '../react-providers';
-import { IClientApp } from '../browser-module';
 import * as ReactDom from 'react-dom';
-import { DefaultLayout } from '../components/layout/default-layout';
-import { IEventBus } from '@ali/ide-core-common';
-import { ResizeEvent } from '../layout';
-import { getIcon } from '../style/icon/icon';
+import { getDebugLogger, IEventBus } from '@ali/ide-core-common';
 import { IconContextProvider } from '@ali/ide-components';
+
+import { ResizeEvent } from '../layout';
+import { IClientApp } from '../browser-module';
+import { getIcon } from '../style/icon/icon';
+import { DefaultLayout } from '../components/layout/default-layout';
+import { ConfigProvider, allSlot } from '../react-providers';
 
 export interface AppProps {
   app: IClientApp;
@@ -47,7 +48,7 @@ export function renderClientApp(app: IClientApp, dom: HTMLElement) {
   const Layout = app.config.layoutComponent || DefaultLayout;
   const overlayComponents = app.browserModules.filter((module) => module.isOverlay).map((module) => {
     if (!module.component) {
-      console.warn('检测到空的overlay模块', module);
+      getDebugLogger().warn('检测到空的overlay模块', module);
       return () => <></>;
     }
     return module.component;
@@ -56,7 +57,7 @@ export function renderClientApp(app: IClientApp, dom: HTMLElement) {
   return new Promise((resolve) => {
     ReactDom.render((
       <App app={app} main={Layout} overlays={overlayComponents} />
-    ), dom, async () => {
+    ), dom, () => {
       resolve();
     });
   });

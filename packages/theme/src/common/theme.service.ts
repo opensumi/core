@@ -39,7 +39,7 @@ export interface IIconService {
    */
   fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string, type?: IconType, shape?: IconShape): string | undefined;
   getVscodeIconClass(iconKey: string): string;
-  registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: string): void;
+  registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: URI): void;
   getAvailableThemeInfos(): IconThemeInfo[];
 }
 
@@ -50,13 +50,13 @@ export interface IThemeData extends IStandaloneThemeData {
   themeSettings: IRawThemeSetting[];
   settings: IRawThemeSetting[];
   initializeFromData(data): void;
-  initializeThemeData(id, name, base, themeLocation: string): Promise<void>;
+  initializeThemeData(id, name, base, themeLocation: URI): Promise<void>;
 }
 
 export interface IThemeService {
   currentThemeId: string;
   onThemeChange: Event<ITheme>;
-  registerThemes(themeContributions: ThemeContribution[], extPath: string): IDisposable;
+  registerThemes(themeContributions: ThemeContribution[], extPath: URI): IDisposable;
   applyTheme(id?: string): Promise<void>;
   getAvailableThemeInfos(): ThemeInfo[];
   getCurrentTheme(): Promise<ITheme>;

@@ -1,7 +1,7 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { ResourceService, IResourceProvider, ResourceDecorationChangeEvent, ResourceNeedUpdateEvent, ResourceDidUpdateEvent, WorkbenchEditorService } from '../../src';
 import { ResourceServiceImpl } from '../../src/browser/resource.service';
-import { URI, IEventBus, Schemas } from '@ali/ide-core-common';
+import { URI, IEventBus, Schemas, ILoggerManagerClient } from '@ali/ide-core-common';
 import { IEditorDocumentModelService, ICompareService } from '@ali/ide-editor/lib/browser';
 import { UntitledSchemeDocumentProvider } from '@ali/ide-editor/lib/browser/untitled-resource';
 import { AppConfig, EDITOR_COMMANDS } from '@ali/ide-core-browser';
@@ -16,6 +16,19 @@ describe('resource service tests', () => {
   injector.addProviders({
     token: ResourceService,
     useClass : ResourceServiceImpl,
+  }, {
+    token: ILoggerManagerClient,
+    useValue: {
+      getLogger: () => {
+        return {
+          log() { },
+          debug() { },
+          error() { },
+          verbose() { },
+          warn() {},
+        };
+      },
+    },
   });
 
   let data = 0;

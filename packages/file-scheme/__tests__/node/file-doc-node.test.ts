@@ -41,7 +41,7 @@ describe('node file doc service test', () => {
       };
     }));
 
-    injector.mock(IFileService, 'exists', jest.fn((uri: string) => {
+    injector.mock(IFileService, 'access', jest.fn((uri: string) => {
       return uri.indexOf('notexist') === -1;
     }));
 

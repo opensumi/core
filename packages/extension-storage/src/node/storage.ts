@@ -5,6 +5,7 @@ import { StoragePaths } from '@ali/ide-core-common';
 import { IFileService, FileStat } from '@ali/ide-file-service';
 import { ExtensionStoragePath, IExtensionStoragePathServer, IExtensionStorageServer, KeysToAnyValues, KeysToKeysToAnyValue, DEFAULT_EXTENSION_STORAGE_DIR_NAME } from '../common/';
 
+// FIXME 依赖IFileService
 @Injectable()
 export class ExtensionStorageServer implements IExtensionStorageServer {
   private workspaceDataDirPath: string | undefined;
@@ -99,7 +100,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
 
   private async readFromFile(pathToFile: string): Promise<KeysToKeysToAnyValue> {
     const target = URI.file(pathToFile);
-    const existed = await this.fileSystem.exists(target.toString());
+    const existed = await this.fileSystem.access(target.toString());
     if (!existed) {
       return {};
     }
@@ -114,7 +115,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
 
   private async writeToFile(pathToFile: string, data: KeysToKeysToAnyValue): Promise<void> {
     const target = URI.file(pathToFile);
-    const existed = await this.fileSystem.exists(target.parent.toString());
+    const existed = await this.fileSystem.access(target.parent.toString());
     if (!existed) {
       await this.fileSystem.createFolder(target.parent.toString());
     }

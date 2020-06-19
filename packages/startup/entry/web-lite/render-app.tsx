@@ -1,40 +1,46 @@
 import { Injector } from '@ali/common-di';
-import { ClientApp, IClientAppOpts, LogServiceForClientPath, IContextKeyService, StorageProvider, IFileServiceClient } from '@ali/ide-core-browser';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { IThemeService } from '@ali/ide-theme';
+import { ClientApp, IClientAppOpts, LogServiceForClientPath, StorageProvider } from '@ali/ide-core-browser';
+import { ensureDir } from '@ali/ide-core-common/lib/browser-fs/ensure-dir';
+
+import * as BrowserFS from 'browserfs';
+
 import { MockLogServiceForClient } from './mock-implements/mock-logger';
-import { MockContextKeyService } from './mock-implements/mock-monaco.context-key.service';
-import { MockedStorageProvider } from './mock-implements/mock-storage';
-import { injectMockPreferences } from './mock-implements/mock-preference';
-import { MockWorkspace } from './mock-implements/mock-workspace';
-import { MockFileServiceClient } from './mock-implements/mock-fs';
-import { MockThemeService } from './mock-implements/mock-theme';
+
+import { IMetaService, MetaService } from './simple-module/meta-service';
+
+BrowserFS.configure({
+  fs: 'IndexedDB',
+  options: {},
+}, (e) => {});
+
+import { MockedStorageProvider } from '@ali/ide-core-browser/lib/mocks/storage';
+import { IFileTreeAPI } from '@ali/ide-file-tree-next';
+import { FileTreeApiOverride } from './simple-module/file-tree-api.override';
 
 export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();
   opts.workspaceDir = opts.workspaceDir || process.env.WORKSPACE_DIR;
   opts.injector = injector;
 
+  // FIXME: 应尽快去掉 mock 模块的使用
   injector.addProviders({
     token: LogServiceForClientPath,
     useClass: MockLogServiceForClient,
   }, {
-    token: IContextKeyService,
-    useClass: MockContextKeyService,
-  }, {
     token: StorageProvider,
     useValue: MockedStorageProvider,
   }, {
-    token: IWorkspaceService,
-    useClass: MockWorkspace,
+    token: IFileTreeAPI,
+    useClass: FileTreeApiOverride,
   }, {
-    token: IFileServiceClient,
-    useClass: MockFileServiceClient,
-  }, {
-    token: IThemeService,
-    useClass: MockThemeService,
+    token: IMetaService,
+    useValue: new MetaService({
+      projectId: process.env.PROJECT_ID!,
+      group: 'ide-s',
+      name: 'TypeScript-Node-Starter',
+      ref: 'df72e4d1c394af6d1c21cd042116f83a792fa8c6',
+    }),
   });
-  injectMockPreferences(injector);
 
   // 跟后端通信部分配置，需要解耦
   opts.extensionDir = opts.extensionDir || process.env.EXTENSION_DIR;
@@ -44,19 +50,20 @@ export async function renderApp(opts: IClientAppOpts) {
 
   opts.editorBackgroudImage = 'https://img.alicdn.com/tfs/TB1Y6vriuL2gK0jSZFmXXc7iXXa-200-200.png';
 
-  const app = new ClientApp(opts);
-
-  app.fireOnReload = (forcedReload: boolean) => {
-    window.location.reload(forcedReload);
-  };
-
-  // FIXME: 支持剥离connection
-  await app.start(document.getElementById('main')!);
-  const loadingDom = document.getElementById('loading');
-  if (loadingDom) {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    loadingDom.classList.add('loading-hidden');
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    loadingDom.remove();
-  }
+  BrowserFS.initialize(new BrowserFS.FileSystem.IndexedDB(async () => {
+    await ensureDir(opts.workspaceDir!);
+    const app = new ClientApp(opts);
+    app.fireOnReload = (forcedReload: boolean) => {
+      window.location.reload(forcedReload);
+    };
+    await app.start(document.getElementById('main')!, undefined, undefined, () => {
+      const loadingDom = document.getElementById('loading');
+      if (loadingDom) {
+        // await new Promise((resolve) => setTimeout(resolve, 1000));
+        loadingDom.classList.add('loading-hidden');
+        // await new Promise((resolve) => setTimeout(resolve, 500));
+        loadingDom.remove();
+      }
+    });
+  }, 'kaitian-browser-fs'));
 }

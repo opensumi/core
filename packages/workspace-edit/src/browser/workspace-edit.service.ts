@@ -258,16 +258,16 @@ export class ResourceFileEdit implements IResourceFileEdit {
     }
   }
 
-  async apply(editorService: WorkbenchEditorService, fileSystemService: IFileServiceClient, documentModelService: IEditorDocumentModelService, eventBus: IEventBus) {
+  async apply(editorService: WorkbenchEditorService, fileServiceClient: IFileServiceClient, documentModelService: IEditorDocumentModelService, eventBus: IEventBus) {
     const options = this.options || {};
 
     if (this.newUri && this.oldUri) {
       // rename
-      if (options.overwrite === undefined && options.ignoreIfExists && await fileSystemService.exists(this.newUri.toString())) {
+      if (options.overwrite === undefined && options.ignoreIfExists && await fileServiceClient.access(this.newUri.toString())) {
         return; // not overwriting, but ignoring, and the target file exists
       }
 
-      await fileSystemService.move(this.oldUri.toString(), this.newUri.toString(), options);
+      await fileServiceClient.move(this.oldUri.toString(), this.newUri.toString(), options);
 
       await this.notifyEditor(editorService, documentModelService);
 
@@ -276,21 +276,21 @@ export class ResourceFileEdit implements IResourceFileEdit {
 
     } else if (!this.newUri && this.oldUri) {
       // 删除文件
-      if (await fileSystemService.exists(this.oldUri.toString())) {
+      if (await fileServiceClient.access(this.oldUri.toString())) {
         // 默认recursive
         await editorService.close(this.oldUri, true);
         // electron windows下moveToTrash大量文件会导致IDE卡死，如果检测到这个情况就不使用moveToTrash
-        await fileSystemService.delete(this.oldUri.toString(), { moveToTrash: !(isWindows && this.oldUri.path.name === 'node_modules') });
+        await fileServiceClient.delete(this.oldUri.toString(), { moveToTrash: !(isWindows && this.oldUri.path.name === 'node_modules') });
         eventBus.fire(new WorkspaceEditDidDeleteFileEvent({ oldUri: this.oldUri}));
       } else if (!options.ignoreIfNotExists) {
         throw new Error(`${this.oldUri} 不存在`);
       }
     } else if (this.newUri && !this.oldUri) {
       // 创建文件
-      if (options.overwrite === undefined && options.ignoreIfExists && await fileSystemService.exists(this.newUri.toString())) {
+      if (options.overwrite === undefined && options.ignoreIfExists && await fileServiceClient.access(this.newUri.toString())) {
         return; // not overwriting, but ignoring, and the target file exists
       }
-      await fileSystemService.createFile(this.newUri.toString(), { content: '', overwrite: options.overwrite });
+      await fileServiceClient.createFile(this.newUri.toString(), { content: '', overwrite: options.overwrite });
       if (options.showInEditor) {
         editorService.open(this.newUri);
       }

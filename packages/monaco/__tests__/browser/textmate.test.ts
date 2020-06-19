@@ -5,7 +5,7 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { TextmateService } from '../../src/browser/textmate.service';
 import { Injectable } from '@ali/common-di';
 import { IFileServiceClient } from '@ali/ide-file-service';
-import { IEventBus, EventBusImpl, ExtensionActivateEvent } from '@ali/ide-core-browser';
+import { IEventBus, EventBusImpl, ExtensionActivateEvent, URI } from '@ali/ide-core-browser';
 
 @Injectable()
 class MockFileServiceClient {
@@ -162,7 +162,7 @@ describe('textmate service test', () => {
         'text/html',
       ],
       configuration: './language-configuration.json',
-    }, 'file:///mock/base');
+    }, new URI('file:///mock/base'));
     const eventBus = injector.get(IEventBus);
     eventBus.on(ExtensionActivateEvent, (e) => done());
   });
@@ -186,7 +186,7 @@ describe('textmate service test', () => {
       'tokenTypes': {
         'meta.tag string.quoted': 'other',
       },
-    }, 'file:///mock/extpath');
+    }, new URI('file:///mock/extpath'));
     textmateService.registerGrammar({
       'scopeName': 'text.html.basic',
       'path': './syntaxes/html.tmLanguage.json',
@@ -200,7 +200,7 @@ describe('textmate service test', () => {
       'tokenTypes': {
         'meta.tag string.quoted': 'other',
       },
-    }, 'file:///mock/extpath');
+    }, new URI('file:///mock/extpath'));
   });
 
   it('grammar registry should init correctly after grammars registed', () => {

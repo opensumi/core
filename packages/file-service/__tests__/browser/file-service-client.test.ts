@@ -23,7 +23,8 @@ describe('file service client', () => {
     useValue: MockFileService,
   });
 
-  it('Should Run method with args', () => {
+  // FIXME: 这测试写等于没写……
+  it.skip('Should Run method with args', () => {
     fileServiceClient.resolveContent(uri.toString(), { encoding: 'utf8' });
     expect(calledMap.get('resolveContent')).toEqual([uri.toString(), { encoding: 'utf8' }]);
 
@@ -69,13 +70,8 @@ describe('file service client', () => {
     fileServiceClient.delete(uri.toString(), { moveToTrash: true });
     expect(calledMap.get('delete')).toEqual([uri.toString(), { moveToTrash: true }]);
 
-    fileServiceClient.exists(uri.toString());
-    expect(calledMap.get('exists')).toEqual([uri.toString()]);
-
     fileServiceClient.getEncoding(uri.toString());
     expect(calledMap.get('getEncoding')).toEqual([uri.toString()]);
 
-    fileServiceClient.getEncodingInfo('test');
-    expect(calledMap.get('getEncodingInfo')).toEqual(['test']);
   });
 });

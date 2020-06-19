@@ -65,7 +65,7 @@ export class WorkspaceStorageServer extends StorageServer {
       const storagePaths = new Path(storageName);
       storageName = storagePaths.name;
       const uriString = new URI(storagePath!).resolve(storagePaths.dir).toString();
-      if (!await this.fileSystem.exists(uriString)) {
+      if (!await this.fileSystem.access(uriString)) {
         await this.fileSystem.createFolder(uriString);
       }
       return storagePath ? new URI(uriString).resolve(`${storageName}.json`).toString() : undefined;
@@ -82,7 +82,7 @@ export class WorkspaceStorageServer extends StorageServer {
       this.logger.error(`Storage [${this.storageName}] is invalid.`);
     } else {
       const uriString = new URI(storagePath).toString();
-      if (await this.fileSystem.exists(uriString)) {
+      if (await this.fileSystem.access(uriString)) {
         const data = await this.fileSystem.resolveContent(uriString);
         try {
           items = JSON.parse(data.content);
@@ -187,7 +187,7 @@ export class GlobalStorageServer extends StorageServer {
       const storagePaths = new Path(storageName);
       storageName = storagePaths.name;
       const uriString = new URI(storagePath!).resolve(storagePaths.dir).toString();
-      if (!await this.fileSystem.exists(uriString)) {
+      if (!await this.fileSystem.access(uriString)) {
         await this.fileSystem.createFolder(uriString);
       }
       return storagePath ? new URI(uriString).resolve(`${storageName}.json`).toString() : undefined;
@@ -204,7 +204,7 @@ export class GlobalStorageServer extends StorageServer {
       this.logger.error(`Storage [${this.storageName}] is invalid.`);
     } else {
       const uriString = new URI(storagePath).toString();
-      if (await this.fileSystem.exists(uriString)) {
+      if (await this.fileSystem.access(uriString)) {
         const data = await this.fileSystem.resolveContent(uriString);
         try {
           items = JSON.parse(data.content);

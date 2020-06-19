@@ -12,7 +12,6 @@ import { ExtHostLanguages } from '../../hosted/api/vscode/ext.host.language'; //
 import { IExtension } from '../../common';
 import { IMainThreadPreference, IExtHostPreference } from './preference';
 import { IMainThreadEnv, IExtHostEnv } from './env';
-import { IExtHostFileSystem, IMainThreadFileSystem } from '@ali/ide-file-service/lib/common/';
 import { IMainThreadStorage, IExtHostStorage } from './storage';
 import { ExtHostStorage } from '../../hosted/api/vscode/ext.host.storage'; // '../node/api/ext.host.storage';
 import { IMainThreadLanguages } from './languages';
@@ -26,10 +25,13 @@ import { IExtensionHostService } from '../';
 import { IExtHostDebug, IMainThreadDebug } from './debug';
 import { IExtHostConnection, IMainThreadConnection } from './connection';
 import { IExtHostTerminal, IMainThreadTerminal } from './terminal';
+import { IMainThreadFileSystemShape } from './file-system';
 import { IKaitianExtHostWebviews } from '../kaitian/webview';
 import { IExtHostProgress, IMainThreadProgress } from './progress';
 import { IExtHostTasks, IMainThreadTasks } from './tasks';
 import { IExtHostComments, IMainThreadComments } from './comments';
+import { ExtHostFileSystem } from '../../hosted/api/vscode/ext.host.file-system';
+import { ExtHostFileSystemEvent } from '../../hosted/api/vscode/ext.host.file-system-event';
 
 export const VSCodeExtensionService = Symbol('VSCodeExtensionService');
 export interface VSCodeExtensionService {
@@ -55,7 +57,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadEnv: createExtHostContextProxyIdentifier<IMainThreadEnv>('MainThreadEnv'),
   MainThreadQuickOpen: createExtHostContextProxyIdentifier<IMainThreadQuickOpen>('MainThreadQuickPick'),
   MainThreadStorage: createExtHostContextProxyIdentifier<IMainThreadStorage>('MainThreadStorage'),
-  MainThreadFileSystem: createExtHostContextProxyIdentifier<IMainThreadFileSystem>('MainThreadFileSystem'),
+  MainThreadFileSystem: createExtHostContextProxyIdentifier<IMainThreadFileSystemShape>('MainThreadFileSystem'),
   MainThreadWebview: createExtHostContextProxyIdentifier<IMainThreadWebview>('MainThreadWebview'),
   MainThreadTreeView: createExtHostContextProxyIdentifier<IMainThreadTreeView>('MainThreadTreeView'),
   MainThreadSCM: createExtHostContextProxyIdentifier<IMainThreadSCMShape>('MainThreadSCM'),
@@ -85,7 +87,8 @@ export const ExtHostAPIIdentifier = {
   ExtHostQuickOpen: createExtHostContextProxyIdentifier<IExtHostQuickOpen>('ExtHostQuickOpen'),
   ExtHostStorage: createExtHostContextProxyIdentifier<IExtHostStorage>('ExtHostStorage'),
   ExtHostOutput: createExtHostContextProxyIdentifier<IExtHostOutput>('ExtHostOutput'),
-  ExtHostFileSystem: createExtHostContextProxyIdentifier<IExtHostFileSystem>('ExtHostFileSystem'),
+  ExtHostFileSystem: createExtHostContextProxyIdentifier<ExtHostFileSystem>('ExtHostFileSystem'),
+  ExtHostFileSystemEvent: createExtHostContextProxyIdentifier<ExtHostFileSystemEvent>('ExtHostFileSystemEvent'),
   ExtHostWebivew: createExtHostContextProxyIdentifier<IExtHostWebview>('ExtHostWebivew'),
   ExtHostTreeView: createExtHostContextProxyIdentifier<IExtHostTreeView>('ExtHostTreeView'),
   ExtHostSCM: createExtHostContextProxyIdentifier<IExtHostSCMShape>('ExtHostSCM'),

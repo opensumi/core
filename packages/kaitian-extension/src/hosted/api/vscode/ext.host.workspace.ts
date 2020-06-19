@@ -5,27 +5,28 @@ import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, Exten
 import { Uri, WorkspaceEdit, UriComponents } from '../../../common/vscode/ext-types';
 import { WorkspaceRootsChangeEvent, IExtHostMessage, relative, normalize } from '../../../common/vscode';
 import { ExtHostPreference } from './ext.host.preference';
-import { createFileSystemApiFactory } from './ext.host.file-system';
 import { Emitter, Event, MessageType } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { FileStat, IExtHostFileSystem } from '@ali/ide-file-service';
-import { TypeConverts } from '../../../common/vscode/converter';
+import { FileStat } from '@ali/ide-file-service';
+import { TypeConverts, fromGlobPattern } from '../../../common/vscode/converter';
 import { WorkspaceFolder } from '../../../common/vscode/models/workspace';
 import { ExtensionIdentifier } from '../../../common/vscode/extension';
 import { CancellationToken } from '@ali/vscode-jsonrpc';
 import * as glob from 'mz-modules/glob';
 import { IExtHostTasks } from '../../../common/vscode/tasks';
 import { IExtension } from '../../../common';
+import { ExtHostFileSystem } from './ext.host.file-system';
+import { ExtHostFileSystemEvent } from './ext.host.file-system-event';
 
 export function createWorkspaceApiFactory(
   extHostWorkspace: ExtHostWorkspace,
   extHostPreference: ExtHostPreference,
   extHostDocument: ExtensionDocumentDataManager,
-  extHostFileSystem: IExtHostFileSystem,
+  extHostFileSystem: ExtHostFileSystem,
+  extHostFileSystemEvent: ExtHostFileSystemEvent,
   extHostTasks: IExtHostTasks,
   extension: IExtension,
 ) {
-  const fileSystemApi = createFileSystemApiFactory(extHostFileSystem);
 
   const workspace = {
     rootPath: extHostWorkspace.rootPath,
@@ -55,6 +56,7 @@ export function createWorkspaceApiFactory(
     onDidSaveTextDocument: extHostDocument.onDidSaveTextDocument.bind(extHostDocument),
     registerTextDocumentContentProvider: extHostDocument.registerTextDocumentContentProvider.bind(extHostDocument),
     registerTaskProvider: (type, provider) => {
+      // tslint:disable-next-line:no-console
       console.warn(false, '[Deprecated warning]: Use the corresponding function on the `tasks` namespace instead');
       return extHostTasks.registerTaskProvider(type, provider, extension);
     },
@@ -64,7 +66,15 @@ export function createWorkspaceApiFactory(
     get textDocuments() {
       return extHostDocument.getAllDocument();
     },
-    ...fileSystemApi,
+    registerFileSystemProvider(scheme, provider, options) {
+      return extHostFileSystem.registerFileSystemProvider(scheme, provider, options);
+    },
+    get fs() {
+      return extHostFileSystem.fileSystem;
+    },
+    createFileSystemWatcher: (pattern, ignoreCreate, ignoreChange, ignoreDelete): vscode.FileSystemWatcher => {
+      return extHostFileSystemEvent.createFileSystemWatcher(fromGlobPattern(pattern), ignoreCreate, ignoreChange, ignoreDelete);
+    },
     onDidRenameFile: extHostWorkspace.onDidRenameFile,
     saveAll: () => {
       return extHostWorkspace.saveAll();

@@ -15,7 +15,7 @@ import * as paths from '@ali/ide-core-common/lib/path';
 export class FileTreeAPI implements IFileTreeAPI {
 
   @Autowired(IFileServiceClient)
-  private fileServiceClient: IFileServiceClient;
+  protected fileServiceClient: IFileServiceClient;
 
   @Autowired(IWorkspaceEditService)
   private workspaceEditService: IWorkspaceEditService;
@@ -158,7 +158,7 @@ export class FileTreeAPI implements IFileTreeAPI {
   }
 
   async mv(from: URI, to: URI, isDirectory: boolean = false) {
-    const exists = await this.fileServiceClient.exists(to.toString());
+    const exists = await this.fileServiceClient.access(to.toString());
     if (exists) {
       return localize('file.move.existMessage');
     }
@@ -227,7 +227,7 @@ export class FileTreeAPI implements IFileTreeAPI {
     let idx = 1;
     let exists;
     try {
-      exists = await this.fileServiceClient.exists(to.toString());
+      exists = await this.fileServiceClient.access(to.toString());
     } catch (e) {
       return e.message;
     }
@@ -239,7 +239,7 @@ export class FileTreeAPI implements IFileTreeAPI {
       to = to.parent.resolve(newFileName);
       idx++;
       try {
-        exists = await this.fileServiceClient.exists(to.toString());
+        exists = await this.fileServiceClient.access(to.toString());
       } catch (e) {
         return;
       }

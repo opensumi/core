@@ -2,7 +2,6 @@ import Uri from 'vscode-uri';
 import {
   Event,
   Emitter,
-  IDisposable,
 } from '@ali/ide-core-common';
 import {
     FileChangeEvent,
@@ -10,15 +9,18 @@ import {
     FileType,
     FileSystemProvider,
   } from '../common/';
+import { Injectable } from '@ali/common-di';
 
+// TODO: 挪到前端？
+@Injectable()
 export class ShadowFileSystemProvider implements FileSystemProvider {
-    shadowFiles: Map<string, Uint8Array> = new Map<string, Uint8Array>();
+    shadowFiles: Map<string, string> = new Map<string, string>();
     private fileChangeEmitter = new Emitter<FileChangeEvent>();
     onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
-    watch(uri: Uri, options: { recursive: boolean; excludes: string[]; }): IDisposable {
+    watch(uri: Uri, options: { recursive: boolean; excludes: string[]; }): number {
         throw new Error('Method not implemented.');
     }
-    stat(uri: Uri): FileStat | Thenable<FileStat> {
+    stat(uri: Uri): Thenable<FileStat> {
       return Promise.resolve({
         uri: uri.toString(),
         lastModification: 0,
@@ -32,9 +34,9 @@ export class ShadowFileSystemProvider implements FileSystemProvider {
     }
     readFile(uri: Uri) {
         const content = this.shadowFiles.get(uri.toString());
-        return content ? new Buffer(content) : Buffer.from('no available');
+        return content ? new Buffer(content).toString() : Buffer.from('no available').toString();
     }
-    writeFile(uri: Uri, content: Uint8Array, options: { create: boolean; overwrite: boolean; }) {
+    writeFile(uri: Uri, content: string, options: { create: boolean; overwrite: boolean; }) {
         this.shadowFiles.set(uri.toString(), content);
     }
     delete(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean; }) {
@@ -46,10 +48,10 @@ export class ShadowFileSystemProvider implements FileSystemProvider {
     copy?(source: Uri, destination: Uri, options: { overwrite: boolean; }) {
         throw new Error('Method not implemented.');
     }
-    exists?(uri: string | Uri): Promise<boolean> {
+    exists?(uri: Uri | Uri): Promise<boolean> {
         throw new Error('Method not implemented.');
     }
-    access?(uri: string, mode: number): Promise<boolean> {
+    access?(uri: Uri, mode: number): Promise<boolean> {
         throw new Error('Method not implemented.');
     }
 }

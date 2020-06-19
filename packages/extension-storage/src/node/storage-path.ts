@@ -62,13 +62,13 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
       return this.cachedStoragePath = undefined;
     }
 
-    if (!await this.fileSystem.exists(URI.file(parentStorageDir).toString())) {
+    if (!await this.fileSystem.access(URI.file(parentStorageDir).toString())) {
       await this.fileSystem.createFolder(URI.file(parentStorageDir).toString());
     }
 
     const storageDirName = await this.buildWorkspaceId(workspace, roots, extensionStorageDirName);
     const storageDirPath = path.join(parentStorageDir, storageDirName);
-    if (!await this.fileSystem.exists(URI.file(storageDirPath).toString())) {
+    if (!await this.fileSystem.access(URI.file(storageDirPath).toString())) {
       await this.fileSystem.createFolder(URI.file(storageDirPath).toString());
     }
 

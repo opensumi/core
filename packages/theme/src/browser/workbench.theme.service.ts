@@ -1,5 +1,5 @@
 import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, getThemeId, getThemeTypeSelector, IColorCustomizations, ITokenColorizationRule, ITokenColorCustomizations } from '../common/theme.service';
-import { WithEventBus, localize, Emitter, Event, isObject, DisposableCollection } from '@ali/ide-core-common';
+import { URI, WithEventBus, localize, Emitter, Event, isObject, DisposableCollection } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
 import { Color, IThemeColor } from '../common/color';
@@ -7,7 +7,6 @@ import { ThemeChangedEvent } from '../common/event';
 import { ThemeData } from './theme-data';
 import { ThemeStore } from './theme-store';
 import { Logger, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService } from '@ali/ide-core-browser';
-import { Registry } from 'vscode-textmate';
 
 const DEFAULT_THEME_ID = 'ide-dark';
 // from vscode
@@ -38,7 +37,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   private themeIdNotFound?: string;
 
   private themes: Map<string, ThemeData> = new Map();
-  private themeContributionRegistry: Map<string, { contribution: ThemeContribution, basePath: string }> = new Map();
+  private themeContributionRegistry: Map<string, { contribution: ThemeContribution, basePath: URI }> = new Map();
 
   private themeChangeEmitter: Emitter<ITheme> = new Emitter();
 
@@ -64,7 +63,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     this.listen();
   }
 
-  public registerThemes(themeContributions: ThemeContribution[], extPath: string) {
+  public registerThemes(themeContributions: ThemeContribution[], extPath: URI) {
     const disposables = new DisposableCollection();
     disposables.push({
       dispose: () => this.doSetPrefrenceSchema(),
@@ -389,7 +388,7 @@ class Theme implements ITheme {
     this.themeData = themeData;
     this.patchColors();
     this.patchTokenColors();
-    this.generateEncodedTokenColors();
+    this.themeData.loadCustomTokens(this.customTokenColors);
   }
 
   getColor(colorId: ColorIdentifier, useDefault?: boolean): Color | undefined {
@@ -431,18 +430,7 @@ class Theme implements ITheme {
     if (isObject(themeSpecificTokenColors)) {
       this.addCustomTokenColors(themeSpecificTokenColors);
     }
-    this.generateEncodedTokenColors();
-  }
-
-  private generateEncodedTokenColors() {
-    const reg = new Registry();
-    // load时会转换customTokenColors
     this.themeData.loadCustomTokens(this.customTokenColors);
-    reg.setTheme(this.themeData);
-    this.themeData.encodedTokensColors = reg.getColorMap();
-    // index 0 has to be set to null as it is 'undefined' by default, but monaco code expects it to be null
-    // tslint:disable-next-line:no-null-keyword
-    this.themeData.encodedTokensColors[0] = null!;
   }
 
   private addCustomTokenColors(customTokenColors: ITokenColorCustomizations) {

@@ -145,7 +145,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       if (doc.dirty) {
         // do nothing
       } else {
-        const provider = this.contentRegistry.getProvider(doc.uri);
+        const provider = await this.contentRegistry.getProvider(doc.uri);
         if (provider) {
           if (provider.provideEditorDocumentModelContentMd5) {
             const nextMd5 = await provider.provideEditorDocumentModelContentMd5(doc.uri, doc.encoding);
@@ -200,7 +200,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
   private async doCreateModel(uriString: string, encoding?: string): Promise<EditorDocumentModel> {
     await this.ready;
     const uri = new URI(uriString);
-    const provider = this.contentRegistry.getProvider(uri);
+    const provider = await this.contentRegistry.getProvider(uri);
 
     if (!provider) {
       throw new Error(`未找到${uri.toString()}的文档提供商`);
@@ -251,7 +251,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
   }
 
   async saveEditorDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding?: string, ignoreDiff?: boolean): Promise<IEditorDocumentModelSaveResult> {
-    const provider = this.contentRegistry.getProvider(uri);
+    const provider = await this.contentRegistry.getProvider(uri);
 
     if (!provider) {
       throw new Error(`未找到${uri.toString()}的文档提供商`);

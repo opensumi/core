@@ -1,26 +1,30 @@
+import '@ali/ide-i18n/lib/browser';
+
 import * as React from 'react';
 import { SlotLocation, SlotRenderer } from '@ali/ide-core-browser';
 import { BoxPanel, SplitPanel } from '@ali/ide-core-browser/lib/components';
+import { loadMonaco } from '@ali/ide-monaco/lib/browser/monaco-loader';
 
 import { CommonBrowserModules } from './common-modules';
 import { renderApp } from './render-app';
 
 // 引入公共样式文件
 import '@ali/ide-core-browser/lib/style/index.less';
-import './mock-implements/theme.less';
 
 import { SimpleModule } from './simple-module';
+
+import * as serviceWorker from './service-worker';
 
 // 视图和slot插槽的对应关系
 const layoutConfig = {
   [SlotLocation.top]: {
-    modules: ['@ali/ide-mock-top'],
+    modules: ['@ali/ide-menu-bar'],
   },
   [SlotLocation.action]: {
     modules: [''],
   },
   [SlotLocation.left]: {
-    modules: ['@ali/ide-dw'],
+    modules: ['@ali/ide-explorer', '@ali/ide-scm'],
   },
   [SlotLocation.right]: {
     modules: ['@ali/ide-dw-right'],
@@ -48,15 +52,24 @@ function LayoutComponent() {
   </BoxPanel>;
 }
 
+loadMonaco({
+  monacoCDNBase: 'https://g.alicdn.com/tb-ide/monaco-editor-core/0.17.0/',
+});
+
+// optional for sw registration
+serviceWorker.register();
+
 renderApp({
   modules: [ ...CommonBrowserModules, SimpleModule ],
   layoutConfig,
   layoutComponent: LayoutComponent,
+  useCdnIcon: true,
   defaultPreferences: {
-    'general.theme': 'ide-dark',
+    'general.theme': 'Default Dark+',
     'general.icon': 'vscode-icons',
     'application.confirmExit': 'never',
     'editor.quickSuggestionsDelay': 100,
     'editor.quickSuggestionsMaxCount': 50,
   },
+  workspaceDir: '/ide-s/TypeScript-Node-Starter',
 });

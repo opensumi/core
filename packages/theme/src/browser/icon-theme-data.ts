@@ -1,4 +1,4 @@
-import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { localize, getDebugLogger, URI, parseWithComments } from '@ali/ide-core-common';
 import { IIconTheme } from '../common';
@@ -11,27 +11,30 @@ export class IconThemeData implements IIconTheme {
   hidesExplorerArrows: boolean;
   styleSheetContent: string;
 
-  @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
-
   @Autowired(IFileServiceClient)
-  fileService: IFileServiceClient;
+  private readonly fileServiceClient: IFileServiceClient;
 
   @Autowired()
-  staticResourceService: StaticResourceService;
+  private readonly staticResourceService: StaticResourceService;
 
-  constructor() { }
   // TODO 无主题插件的fallback
   async load(location: URI) {
-    const content = await loadIconThemeDocument(this.fileService, location);
-    const result = processIconThemeDocument(location, content, this.staticResourceService);
+    const ret = await this.fileServiceClient.resolveContent(location.toString());
+    let contentValue = {} as IconThemeDocument;
+    try {
+      contentValue = parseWithComments<IconThemeDocument>(ret.content);
+    } catch (error) {
+      getDebugLogger().log(localize('error.cannotparseicontheme', 'Icon Theme parse出错！'));
+      // TODO 返回默认主题信息
+    }
+
+    const result = processIconThemeDocument(location, contentValue, this.staticResourceService);
     this.hasFileIcons = result.hasFileIcons;
     this.hasFolderIcons = result.hasFolderIcons;
     this.hidesExplorerArrows = result.hidesExplorerArrows;
     this.styleSheetContent = result.content;
     return result.content;
   }
-
 }
 
 // tslint:disable: forin
@@ -73,18 +76,6 @@ interface IconThemeDocument extends IconsAssociation {
   hidesExplorerArrows?: boolean;
 }
 
-async function loadIconThemeDocument(fileService: IFileServiceClient, location: URI): Promise<IconThemeDocument> {
-  try {
-    const content = await fileService.resolveContent(location.toString());
-    const contentValue = parseWithComments(content.content);
-    return contentValue as IconThemeDocument;
-  } catch (error) {
-    getDebugLogger().log(localize('error.cannotparseicontheme', 'Icon Theme parse出错！'));
-    // TODO 返回默认主题信息
-    return {} as any;
-  }
-}
-
 /**
  * 将图标配置信息转成 CSS
  * @param iconThemeDocumentLocation
@@ -98,10 +89,15 @@ function processIconThemeDocument(iconThemeDocumentLocation: URI, iconThemeDocum
     return result;
   }
   const selectorByDefinitionId: { [def: string]: string[] } = {};
-  const iconThemeDocumentLocationDir = iconThemeDocumentLocation.path.dir;
+
   function resolvePath(path: string) {
-    const targetPath = iconThemeDocumentLocationDir.join(path.replace(/^\.\//, '')).toString();
-    return staticResourceService.resolveStaticResource(URI.file(targetPath));
+    const targetPath = iconThemeDocumentLocation.path.dir.join(path.replace(/^\.\//, ''));
+    const targetLocation = iconThemeDocumentLocation.withPath(targetPath);
+    if (iconThemeDocumentLocation.scheme === 'https') {
+      return targetLocation.toString();
+    }
+    // file 协议的需要走 static-resource
+    return staticResourceService.resolveStaticResource(targetLocation);
   }
 
   /**
@@ -260,6 +256,7 @@ function processIconThemeDocument(iconThemeDocumentLocation: URI, iconThemeDocum
   result.content = cssRules.join('\n');
   return result;
 }
+
 function escapeCSS(str: string) {
   return ( window as any).CSS.escape(str);
 }

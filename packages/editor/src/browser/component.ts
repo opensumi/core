@@ -1,8 +1,15 @@
-import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver, EditorComponentRenderMode, RegisterEditorComponentResolverEvent } from './types';
+import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver, EditorComponentRenderMode } from './types';
 import { IDisposable, IEventBus } from '@ali/ide-core-common';
 import { IResource, IEditorOpenType } from '../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import * as ReactDOM from 'react-dom';
+
+type SchemeKey = string;
+
+interface INormalizedEditorComponentResolver  {
+  handleScheme: (scheme: string) => number;
+  resolver: IEditorComponentResolver;
+}
 
 @Injectable()
 export class EditorComponentRegistryImpl implements EditorComponentRegistry {
@@ -14,7 +21,9 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
 
   private initialPropsMap: Map<string, any> = new Map();
 
-  private resolvers: Map<string, IEditorComponentResolver[]> = new Map();
+  private resolvers: Map<SchemeKey, IEditorComponentResolver[]> = new Map();
+
+  private normalizedResolvers: INormalizedEditorComponentResolver[] = [];
 
   public readonly perWorkbenchComponents = {};
 
@@ -34,14 +43,36 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
     };
   }
 
-  public registerEditorComponentResolver<T>(scheme: string, resolver: IEditorComponentResolver<any>): IDisposable {
-    this.getResolvers(scheme).unshift(resolver); // 后来的resolver先处理
-    this.eventBus.fire(new RegisterEditorComponentResolverEvent(scheme));
+  public registerEditorComponentResolver<T>(scheme: string | ((scheme: string) => number), resolver: IEditorComponentResolver<any>): IDisposable {
+    let normalizedResolver: INormalizedEditorComponentResolver;
+    if (typeof scheme === 'function') {
+      normalizedResolver = {
+        handleScheme: scheme,
+        resolver,
+      };
+    } else {
+      normalizedResolver = {
+        handleScheme: (s: string) => (s === scheme ? 10 : -1),
+        resolver,
+      };
+    }
+    this.normalizedResolvers.push(normalizedResolver);
+
+    // 注册了新的，清除缓存
+    this.resolvers.clear();
     return {
       dispose: () => {
-        const index = this.getResolvers(scheme).indexOf(resolver);
-        if (index !== -1) {
-          this.getResolvers(scheme).splice(index, 1);
+        // 去除已被 cache 的resolver
+        for (const resolvers of this.resolvers.values()) {
+          const index = resolvers.indexOf(resolver);
+          if (index !== -1) {
+            resolvers.splice(index, 1);
+          }
+        }
+
+        const i = this.normalizedResolvers.indexOf(normalizedResolver);
+        if (i !== -1) {
+          this.normalizedResolvers.splice(i);
         }
       },
     };
@@ -69,9 +100,39 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
     return results;
   }
 
+  private calculateSchemeResolver(scheme: string): IEditorComponentResolver[] {
+    const resolvers = this.normalizedResolvers.slice();
+    const calculated: {
+      weight: number, // handleScheme 的权重
+      index: number, // resolver 在resolver中的位置(后来的先处理)
+      resolver: IEditorComponentResolver,
+    }[] = [];
+
+    resolvers.forEach((r, index) => {
+      const weight = r.handleScheme(scheme);
+      if (weight >= 0) {
+        calculated.push({
+          weight,
+          index,
+          resolver: r.resolver,
+        });
+      }
+    });
+
+    return calculated.sort((a, b) => {
+      if (a.weight > b.weight) {
+        return -1;
+      } else if (a.weight < b. weight) {
+        return 1;
+      } else {
+        return b.index - a.index;
+      }
+    }).map((c) => c.resolver);
+  }
+
   private getResolvers(scheme: string): IEditorComponentResolver[] {
     if (!this.resolvers.has(scheme)) {
-      this.resolvers.set(scheme, []);
+      this.resolvers.set(scheme, this.calculateSchemeResolver(scheme));
     }
     return this.resolvers.get(scheme) as IEditorComponentResolver[];
   }

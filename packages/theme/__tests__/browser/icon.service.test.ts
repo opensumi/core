@@ -181,7 +181,7 @@ describe('icon theme test', () => {
       label: 'Test IconTheme',
       uiTheme: 'vs',
       path: './test/path',
-    }], 'file://mock/path');
+    }], new URI('file://mock/path'));
     const infos = service.getAvailableThemeInfos();
     expect(infos.length).toEqual(1);
   });
@@ -249,7 +249,7 @@ describe('icon theme test', () => {
       label: 'Test IconTheme',
       uiTheme: 'vs',
       path: './test/font/path',
-    }], 'file://mock/path');
+    }], new URI('file://mock/path'));
     await service.applyTheme('test-font-icon-theme');
     expect(service.currentThemeId).toEqual('test-font-icon-theme');
     done();

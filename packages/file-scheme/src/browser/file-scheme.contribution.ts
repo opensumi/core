@@ -94,7 +94,9 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
     });
 
     // 如果文件无法在当前IDE编辑器中找到打开方式
-    editorComponentRegistry.registerEditorComponentResolver(FILE_SCHEME, (resource: IResource<any>, results: IEditorOpenType[]) => {
+    editorComponentRegistry.registerEditorComponentResolver((scheme: string) => {
+      return (scheme === FILE_SCHEME || this.fileServiceClient.handlesScheme(scheme)) ? 10 : -1;
+    }, (resource: IResource<any>, results: IEditorOpenType[]) => {
       if (results.length === 0) {
         results.push({
           type: 'component',
@@ -104,7 +106,9 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
     });
 
     // 图片文件
-    editorComponentRegistry.registerEditorComponentResolver(FILE_SCHEME, async (resource: IResource<any>, results: IEditorOpenType[]) => {
+    editorComponentRegistry.registerEditorComponentResolver((scheme: string) => {
+      return (scheme === FILE_SCHEME || this.fileServiceClient.handlesScheme(scheme)) ? 10 : -1;
+    }, async (resource: IResource<any>, results: IEditorOpenType[]) => {
       const type = await this.getFileType(resource.uri.toString());
 
       if (type === 'image') {
@@ -157,9 +161,18 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
         // 对于已知 language 对应扩展名的文件，当 text 处理
         this.cachedFileType.set(uri, 'text');
       } else {
-        this.cachedFileType.set(uri, await this.fileServiceClient.getFileType(uri));
+        this.cachedFileType.set(uri, await this.getRealFileType(uri));
       }
     }
     return this.cachedFileType.get(uri);
+  }
+
+  private async getRealFileType(uri: string) {
+    try {
+      return await this.fileServiceClient.getFileType(uri);
+    } catch (err) {
+      // 沿用之前设计，继续使用 `text` 作为返回值
+      return 'text';
+    }
   }
 }

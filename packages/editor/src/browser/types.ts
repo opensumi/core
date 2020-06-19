@@ -15,7 +15,8 @@ export interface IEditorComponent<MetaData = any> {
   component: ReactEditorComponent<MetaData>;
 
   // 要被handle的scheme
-  scheme: string;
+  // @deprecated
+  scheme?: string;
 
   // 渲染模式 默认为 ONE_PER_GROUP
   renderMode?: EditorComponentRenderMode;
@@ -37,7 +38,12 @@ export abstract class EditorComponentRegistry {
 
   abstract registerEditorComponent<T>(component: IEditorComponent<T>, initialProps?: any): IDisposable;
 
-  abstract registerEditorComponentResolver<T>(scheme: string, resolver: IEditorComponentResolver<T>): IDisposable;
+  // 等同于 handlesScheme => 10
+  abstract registerEditorComponentResolver<T>(scheme: string , resolver: IEditorComponentResolver<T>): IDisposable;
+
+  // handlesScheme 返回权重， 小于 0 表示不处理
+  // tslint:disable-next-line: unified-signatures
+  abstract registerEditorComponentResolver<T>(handlesScheme: (scheme: string) => number, resolver: IEditorComponentResolver<T>): IDisposable;
 
   abstract resolveEditorComponent(resource: IResource): Promise<IEditorOpenType[]>;
 

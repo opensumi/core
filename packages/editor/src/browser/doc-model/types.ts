@@ -85,9 +85,16 @@ export interface IEditorDocumentModelContentProvider {
 
   /**
    * 是否处理这个Scheme的uri
+   * 权重等级等同于 handlesUri => 10
    * @param scheme
    */
-  handlesScheme(scheme: string): MaybePromise<boolean>;
+  handlesScheme?(scheme: string): MaybePromise<boolean>;
+
+  /**
+   * 处理一个URI的权重, -1表示不处理, 如果存在handlesUri, handlesScheme将被忽略
+   * @param scheme
+   */
+  handlesUri?(uri: URI): MaybePromise<number>;
 
   /**
    * 提供文档内容
@@ -197,7 +204,7 @@ export interface IEditorDocumentModelContentRegistry {
   */
   registerEditorDocumentModelContentProvider(provider: IEditorDocumentModelContentProvider): IDisposable;
 
-  getProvider(uri: URI): IEditorDocumentModelContentProvider | undefined;
+  getProvider(uri: URI): Promise<IEditorDocumentModelContentProvider | undefined>;
 
   getContentForUri(uri: URI, encoding?: string): Promise<string>;
 

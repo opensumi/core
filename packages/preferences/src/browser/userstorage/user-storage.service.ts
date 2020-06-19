@@ -15,7 +15,7 @@ export class UserStorageServiceImpl implements IUserStorageService {
   protected readonly userStorageFolder: Promise<URI | undefined>;
 
   @Autowired(IFileServiceClient)
-  protected readonly fileSystem: IFileServiceClient;
+  protected readonly fileServiceClient: IFileServiceClient;
   @Autowired(ILogger)
   protected readonly logger: ILogger;
   @Autowired(AppConfig)
@@ -23,13 +23,13 @@ export class UserStorageServiceImpl implements IUserStorageService {
 
   constructor() {
     // 请求用户路径并存储
-    this.userStorageFolder = this.fileSystem.getCurrentUserHome().then((home) => {
+    this.userStorageFolder = this.fileServiceClient.getCurrentUserHome().then((home) => {
       if (home) {
         const userStorageFolderUri = new URI(home.uri).resolve(this.appConfig.preferenceDirName || DEFAULT_USER_STORAGE_FOLDER);
-        this.fileSystem.watchFileChanges(userStorageFolderUri, ['**/logs/**']).then((disposable) =>
+        this.fileServiceClient.watchFileChanges(userStorageFolderUri, ['**/logs/**']).then((disposable) =>
           this.toDispose.push(disposable),
         );
-        this.toDispose.push(this.fileSystem.onFilesChanged((changes) => this.onDidFilesChanged(changes)));
+        this.toDispose.push(this.fileServiceClient.onFilesChanged((changes) => this.onDidFilesChanged(changes)));
         return new URI(home.uri).resolve(this.appConfig.preferenceDirName || DEFAULT_USER_STORAGE_FOLDER);
       }
     });
@@ -64,10 +64,10 @@ export class UserStorageServiceImpl implements IUserStorageService {
     const folderUri = await this.userStorageFolder;
     if (folderUri) {
       const filesystemUri = UserStorageServiceImpl.toFilesystemURI(folderUri, uri);
-      const exists = await this.fileSystem.exists(filesystemUri.toString());
+      const exists = await this.fileServiceClient.access(filesystemUri.toString());
 
       if (exists) {
-        return this.fileSystem.resolveContent(filesystemUri.toString()).then(({ stat, content }) => content);
+        return this.fileServiceClient.resolveContent(filesystemUri.toString()).then(({ content }) => content);
       }
     }
     return '';
@@ -80,11 +80,11 @@ export class UserStorageServiceImpl implements IUserStorageService {
     }
     const filesystemUri = UserStorageServiceImpl.toFilesystemURI(folderUri, uri);
 
-    const fileStat = await this.fileSystem.getFileStat(filesystemUri.toString());
+    const fileStat = await this.fileServiceClient.getFileStat(filesystemUri.toString());
     if (fileStat) {
-      this.fileSystem.setContent(fileStat, content).then(() => Promise.resolve());
+      this.fileServiceClient.setContent(fileStat, content).then(() => Promise.resolve());
     } else {
-      this.fileSystem.createFile(filesystemUri.toString(), { content });
+      this.fileServiceClient.createFile(filesystemUri.toString(), { content });
     }
   }
 

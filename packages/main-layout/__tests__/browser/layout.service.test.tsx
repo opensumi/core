@@ -100,13 +100,10 @@ describe('main layout test', () => {
         useClass: MockWorkspaceService,
       },
       {
-        token: MainLayoutModuleContribution,
-        useClass: MainLayoutModuleContribution,
-      },
-      {
         token: ILoggerManagerClient,
         useClass: MockLoggerManageClient,
       },
+      MainLayoutModuleContribution,
     );
     useMockStorage(injector);
     const registry: ComponentRegistry = injector.get(ComponentRegistry);

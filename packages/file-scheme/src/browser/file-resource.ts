@@ -18,7 +18,6 @@ enum AskSaveResult {
 
 @Injectable()
 export class FileSystemResourceProvider extends WithEventBus implements IResourceProvider {
-  readonly scheme: string = FILE_SCHEME;
 
   @Autowired()
   protected labelService: LabelService;
@@ -39,6 +38,15 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
   constructor() {
     super();
     this.listen();
+  }
+
+  handlesUri(uri: URI) {
+    const scheme = uri.scheme;
+    if (scheme === FILE_SCHEME || this.fileServiceClient.handlesScheme(scheme)) {
+      return 10;
+    } else {
+      return -1;
+    }
   }
 
   protected listen() {

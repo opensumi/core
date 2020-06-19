@@ -58,7 +58,7 @@ export namespace JSONUtils {
 
   /**
    * 判断JSON是否为普通类型值，如JSONPrimitive
-   * @param value 
+   * @param value
    */
   export function isPrimitive(value: ReadonlyJSONValue): value is JSONPrimitive {
     return (
@@ -81,7 +81,7 @@ export namespace JSONUtils {
 
   /**
    * 判断JSON值是否为Object.
-   * @param value 
+   * @param value
    */
   export function isObject(value: JSONValue): value is JSONObject;
   export function isObject(value: ReadonlyJSONValue): value is ReadonlyJSONObject;
@@ -91,8 +91,8 @@ export namespace JSONUtils {
 
   /**
    * 判断两个值是否深层相等
-   * @param first 
-   * @param second 
+   * @param first
+   * @param second
    */
   export function deepEqual(first: ReadonlyJSONValue, second: ReadonlyJSONValue): boolean {
     if (first === second) {
@@ -119,7 +119,7 @@ export namespace JSONUtils {
 
   /**
    * 深拷贝JSON值
-   * @param value 
+   * @param value
    */
   export function deepCopy<T extends ReadonlyJSONValue>(value: T): T {
     if (isPrimitive(value)) {
@@ -212,7 +212,7 @@ export namespace JSONUtils {
 }
 
 
-export function parseWithComments(content) {
+export function parseWithComments<T>(content): T {
   content = stripTrailingComma(stripJsonComments(content));
   const res = JSON.parse(content);
   return res;

@@ -11,9 +11,9 @@ export interface IExtensionMetaData {
   id: string;
   extensionId: string;
   path: string;
-  packageJSON: {[key: string]: any};
+  packageJSON: { [key: string]: any };
   defaultPkgNlsJSON: { [key: string]: any } | undefined;
-  packageNlsJSON: {[key: string]: any} | undefined;
+  packageNlsJSON: { [key: string]: any } | undefined;
   extraMetadata: JSONType;
   realPath: string; // 真实路径，用于去除symbolicLink
   extendConfig: JSONType;
@@ -40,7 +40,7 @@ export interface IExtensionNodeService {
   resolveProcessInit();
   getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
   setConnectionServiceClient(clientId: string, serviceClient: IExtensionNodeClientService);
-  disposeClientExtProcess(clientId: string,  info: boolean): Promise<void>;
+  disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
 }
 
 export const IExtensionNodeClientService = Symbol('IExtensionNodeClientService');
@@ -71,7 +71,7 @@ export abstract class ExtensionService {
    * @param command command id
    * @param targetHost 目标插件进程的位置，默认 'node' // TODO worker中的声明未支持，
    */
-  abstract declareExtensionCommand(command: string, targetHost?: ExtensionHostType ): IDisposable;
+  abstract declareExtensionCommand(command: string, targetHost?: ExtensionHostType): IDisposable;
   abstract getExtensionCommand(command: string): ExtensionHostType | undefined;
   abstract async activate(): Promise<void>;
   abstract async activeExtension(extension: IExtension): Promise<void>;
@@ -112,7 +112,7 @@ export interface IExtension extends IExtensionProps {
 }
 
 //  VSCode Types
-export abstract class VSCodeContributePoint< T extends JSONType = JSONType > extends Disposable {
+export abstract class VSCodeContributePoint<T extends JSONType = JSONType> extends Disposable {
   constructor(
     protected json: T,
     protected contributes: any,

@@ -1,6 +1,6 @@
 import { ThemeContribution, ExtColorContribution, IThemeService, ITheme, IThemeColor } from '@ali/ide-theme';
 import { Injectable } from '@ali/common-di';
-import { Emitter } from '@ali/ide-core-common';
+import { Emitter, URI } from '@ali/ide-core-common';
 
 @Injectable()
 export class MockThemeService implements IThemeService {
@@ -12,7 +12,7 @@ export class MockThemeService implements IThemeService {
     return this._onThemeChange.event;
   }
 
-  registerThemes(themeContributions: ThemeContribution[], extPath: string) {
+  registerThemes(themeContributions: ThemeContribution[], extPath: URI) {
     throw new Error('Method not implemented.');
   }
   async applyTheme(id?: string) {

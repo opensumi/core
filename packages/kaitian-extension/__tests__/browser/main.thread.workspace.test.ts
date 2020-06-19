@@ -16,9 +16,8 @@ import { ExtHostPreference } from '@ali/ide-kaitian-extension/lib/hosted/api/vsc
 import { ExtHostFileSystem } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.file-system';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IDocPersistentCacheProvider, ResourceService } from '@ali/ide-editor/lib/common';
-import { DiskFileSystemProviderWithoutWatcherForExtHost } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
 import { FileServiceClient, BrowserFileSystemRegistryImpl } from '@ali/ide-file-service/lib/browser/file-service-client';
-import { FileServicePath, FileStat, FileType, IBrowserFileSystemRegistry } from '@ali/ide-file-service';
+import { FileServicePath, FileStat, FileType, IBrowserFileSystemRegistry, IDiskFileProvider } from '@ali/ide-file-service';
 import { FileService, FileSystemNodeOptions } from '@ali/ide-file-service/lib/node';
 import { ExtensionStorageServerPath } from '@ali/ide-extension-storage';
 import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/browser';
@@ -47,6 +46,10 @@ import { ExtHostStorage } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode
 import { ExtHostTasks } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/tasks/ext.host.tasks';
 import { ExtHostTerminal } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.terminal';
 import { mockExtensions } from '../__mock__/extensions';
+import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
+import { decode } from '@ali/ide-file-service/lib/node/encoding';
+import { MainThreadFileSystem } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.file-system';
+import { ExtHostFileSystemEvent } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.file-system-event';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -171,6 +174,10 @@ describe('MainThreadWorkspace API Test Suite', () => {
       useClass: FileServiceClient,
     },
     {
+      token: IDiskFileProvider,
+      useClass: DiskFileSystemProvider,
+    },
+    {
       token: EditorPreferences,
       useValue: {},
     },
@@ -178,6 +185,8 @@ describe('MainThreadWorkspace API Test Suite', () => {
   injectMockPreferences(injector);
   useMockStorage(injector);
   beforeAll(async (done) => {
+    const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
+    fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
     const extHostMessage = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocolExt));
     extHostDocs = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostDocuments, injector.get(ExtensionDocumentDataManagerImpl, [rpcProtocolExt]));
     const extWorkspace = new ExtHostWorkspace(rpcProtocolExt, extHostMessage, extHostDocs);
@@ -190,10 +199,12 @@ describe('MainThreadWorkspace API Test Suite', () => {
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadWorkspace, mainThreadWorkspaceAPI);
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadWebview, injector.get(MainThreadWebview, [rpcProtocolMain]));
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadDocuments, injector.get(MainThreadExtensionDocumentData, [rpcProtocolMain]));
+    rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadFileSystem, injector.get(MainThreadFileSystem, [rpcProtocolMain]));
     const extHostFileSystem = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostFileSystem, new ExtHostFileSystem(rpcProtocolExt));
+    const extHostFileSystemEvent = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostFileSystemEvent, new ExtHostFileSystemEvent());
     const extHostPreference = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostPreference, new ExtHostPreference(rpcProtocolExt, extHostWorkspace)) as ExtHostPreference;
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadPreference, injector.get(MainThreadPreference, [rpcProtocolMain]));
-    extHostWorkspaceAPI = createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem, extHostTask, mockExtensions[0]);
+    extHostWorkspaceAPI = createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem, extHostFileSystemEvent, extHostTask, mockExtensions[0]);
     rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostStorage, new ExtHostStorage(rpcProtocolExt));
     const modelContentRegistry: IEditorDocumentModelContentRegistry = injector.get(IEditorDocumentModelContentRegistry);
     modelContentRegistry.registerEditorDocumentModelContentProvider(injector.get(FileSchemeDocumentProvider));
@@ -213,17 +224,16 @@ describe('MainThreadWorkspace API Test Suite', () => {
       expect(typeof extFs.readFile).toBe('function');
       expect(typeof extFs.rename).toBe('function');
       expect(typeof extFs.writeFile).toBe('function');
-      expect(extFs.innerFs instanceof DiskFileSystemProviderWithoutWatcherForExtHost).toBe(true);
     });
 
     it('should able to readfile', async () => {
       const filePath = path.join(__dirname, 'main.thread.output.test.ts');
-      const content = await (await extHostWorkspaceAPI.fs.readFile(vscodeUri.file(filePath))).toString();
-      expect(content).toBe(fs.readFileSync(filePath, { encoding: 'utf8' }).toString());
+      const content = await extHostWorkspaceAPI.fs.readFile(vscodeUri.file(filePath));
+      expect(decode(Buffer.from(content.buffer), 'utf8')).toBe(fs.readFileSync(filePath, { encoding: 'utf8' }).toString());
     });
 
     it('should able to readDir', async () => {
-      const result = await extHostWorkspaceAPI.fs.readDirectory(Uri.parse(path.resolve(__dirname)));
+      const result = await extHostWorkspaceAPI.fs.readDirectory(Uri.file(path.resolve(__dirname)));
       const fsResult = fs.readdirSync(path.resolve(__dirname));
       expect(result).toEqual(fsResult.map((v: string) => [v, getFileStatType(fs.statSync(path.join(__dirname, v)))]));
     });
@@ -237,7 +247,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
     });
 
     it('should able to writefile', async (done) => {
-      const filepath = path.join(os.tmpdir(), 'hello.ts');
+      const filepath = path.join(os.tmpdir(), 'hello2.ts');
       const encoder = new util.TextEncoder();
       await extHostWorkspaceAPI.fs.writeFile(vscodeUri.file(filepath), new Uint8Array(encoder.encode('hello kaitian')));
       expect(fs.existsSync(filepath)).toBeTruthy();
@@ -249,7 +259,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
   });
 
   it('should able to updateWorkspaceFolders', async (done) => {
-    const rawUri = vscodeUri.parse(path.join(__dirname));
+    const rawUri = vscodeUri.file(path.join(__dirname));
     extHostWorkspaceAPI.updateWorkspaceFolders(0, 0, { uri: rawUri });
     setTimeout(() => {
       const root = workspaceService.tryGetRoots();
@@ -277,10 +287,10 @@ describe('MainThreadWorkspace API Test Suite', () => {
     done();
   });
 
-  it('should able to registerTextDocumentContentProvider', async (done) => {
+  it.skip('should able to registerTextDocumentContentProvider', async (done) => {
     const emitter = new Emitter<any>();
     const testcase = 'testcontent';
-    const testuri = vscodeUri.parse('test1://path/to/content');
+    const testuri = vscodeUri.file('test1://path/to/content');
     const disposeable = extHostWorkspaceAPI.registerTextDocumentContentProvider('test1', {
       onDidChange: emitter.event,
       provideTextDocumentContent: (uri, token) => {

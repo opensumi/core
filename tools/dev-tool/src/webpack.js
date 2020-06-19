@@ -21,6 +21,10 @@ const port = process.env.IDE_FRONT_PORT || 8080;
 
 console.log('front port', port);
 
+const styleLoader = process.env.NODE_ENV === 'production'
+  ? MiniCssExtractPlugin.loader
+  : require.resolve('style-loader');
+
 exports.createWebpackConfig = function (dir, entry, extraConfig) {
 
   const webpackConfig = merge({
@@ -53,12 +57,14 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         {
           test: /\.tsx?$/,
           use: [
-            {
-              loader: 'cache-loader',
-              options: {
-                cacheDirectory: path.resolve(__dirname, '../../../.cache'),
-              }
-            },
+            process.env.NODE_ENV === 'production'
+              ? {
+                loader: 'cache-loader',
+                options: {
+                  cacheDirectory: path.resolve(__dirname, '../../../.cache'),
+                }
+              } : null
+          ].filter(Boolean).concat([
             {
               loader: 'thread-loader',
               options: {
@@ -76,7 +82,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
                 }
               },
             },
-          ],
+          ]),
         },
         {
           test: /\.png$/,
@@ -84,13 +90,12 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         },
         {
           test: /\.css$/,
-          use: [MiniCssExtractPlugin.loader, 'css-loader'],
+          use: [styleLoader, 'css-loader'],
         },
         {
           test: /\.module.less$/,
-          use: [{
-              loader: 'style-loader'
-            },
+          use: [
+            styleLoader,
             {
               loader: 'css-loader',
               options: {
@@ -111,7 +116,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         {
           test: /^((?!\.module).)*less$/,
           use: [
-            'style-loader',
+            styleLoader,
             {
               loader: 'css-loader',
               options: {
@@ -157,7 +162,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         chunkFilename: '[id].css',
       }),
       new webpack.DefinePlugin({
-        'process.env.IS_DEV': process.env.IS_DEV || '1',
+        'process.env.IS_DEV': JSON.stringify(process.env.NODE_ENV === 'development' ? 1 : 0),
         'process.env.WORKSPACE_DIR': JSON.stringify(process.env.MY_WORKSPACE || path.join(__dirname, '../../workspace')),
         'process.env.CORE_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../core-extensions/')),
         'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../extensions')),
@@ -170,7 +175,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
       }),
       new FriendlyErrorsWebpackPlugin({
         compilationSuccessInfo: {
-            messages: [`Your application is running here: http://localhost:${port}`],
+          messages: [`Your application is running here: http://localhost:${port}`],
         },
         onErrors: utils.createNotifierCallback(),
         clearConsole: true,

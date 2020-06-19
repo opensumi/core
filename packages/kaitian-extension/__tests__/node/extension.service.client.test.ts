@@ -10,8 +10,9 @@ import { IExtensionNodeClientService, IExtensionNodeService } from '../../src/co
 import { ExtensionServiceClientImpl } from '../../src/node/extension.service.client';
 import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
 import { IExtensionStoragePathServer } from '@ali/ide-extension-storage/lib/common';
-import { IFileService } from '@ali/ide-file-service/lib/common';
+import { IFileService, IDiskFileProvider } from '@ali/ide-file-service/lib/common';
 import { FileSystemNodeOptions, FileService } from '@ali/ide-file-service/lib/node';
+import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
 
 describe('Extension Client Serivce', () => {
   let injector: Injector;
@@ -45,6 +46,10 @@ describe('Extension Client Serivce', () => {
       useClass: FileService,
     },
     {
+      token: IDiskFileProvider,
+      useClass: DiskFileSystemProvider,
+    },
+    {
       token: 'FileServiceOptions',
       useValue: FileSystemNodeOptions.DEFAULT,
     },
@@ -63,7 +68,6 @@ describe('Extension Client Serivce', () => {
         useClass: ExtensionServiceClientImpl,
       },
     );
-
     extensionNodeClient = injector.get(IExtensionNodeClientService);
     done();
   });

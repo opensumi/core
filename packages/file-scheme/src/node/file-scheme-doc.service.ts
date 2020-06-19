@@ -85,7 +85,7 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
 
   async $getMd5(uri: string, encoding?: string | undefined): Promise<string | undefined> {
     try {
-      if (await this.fileService.exists(uri)) {
+      if (await this.fileService.access(uri)) {
         const res = await this.fileService.resolveContent(uri, {encoding});
         return md5(res.content);
       } else {

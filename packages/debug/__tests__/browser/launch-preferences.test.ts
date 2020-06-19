@@ -1,10 +1,11 @@
+import { Injectable } from '@ali/common-di';
 import { enableJSDOM } from '@ali/ide-core-browser/lib/mocks/jsdom';
 const disableJSDOM = enableJSDOM();
 
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { PreferenceService, ClientAppConfigProvider, FileUri, Disposable, DisposableCollection, ILogger, ResourceProvider, PreferenceScope, injectPreferenceSchemaProvider, DefaultResourceProvider } from '@ali/ide-core-browser';
+import { PreferenceService, ClientAppConfigProvider, FileUri, Disposable, DisposableCollection, ILogger, ResourceProvider, PreferenceScope, injectPreferenceSchemaProvider, DefaultResourceProvider, ILoggerManagerClient } from '@ali/ide-core-browser';
 import { AppConfig } from '@ali/ide-core-node';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IMessageService } from '@ali/ide-overlay';
@@ -14,13 +15,28 @@ import { FolderPreferenceProvider } from '@ali/ide-preferences/lib/browser/folde
 import { LaunchFolderPreferenceProvider } from '../../src/browser/preferences/launch-folder-preference-provider';
 import { injectPreferenceProviders, createPreferenceProviders } from '@ali/ide-preferences/lib/browser';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
-import { IFileServiceClient, FileServicePath, FileStat } from '@ali/ide-file-service';
+import { IFileServiceClient, FileServicePath, FileStat, IDiskFileProvider, IShadowFileProvider } from '@ali/ide-file-service';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { FileSystemNodeOptions, FileService } from '@ali/ide-file-service/lib/node';
 import { MockUserStorageResolver } from '@ali/ide-preferences/lib/common/mocks';
 import { FileResourceResolver } from '@ali/ide-file-service/lib/browser/file-service-contribution';
 import { WorkspacePreferences } from '@ali/ide-workspace/lib/browser/workspace-preferences';
+import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
+import { ShadowFileSystemProvider } from '@ali/ide-file-service/lib/node/shadow-file-system.provider';
 disableJSDOM();
+
+@Injectable()
+export class MockLoggerManagerClient {
+  getLogger = () => {
+    return {
+      log() { },
+      debug() { },
+      error() { },
+      verbose() { },
+      warn() {},
+    };
+  }
+}
 
 /**
  * launch配置项需要与VSCode中的配置项对齐
@@ -421,12 +437,24 @@ describe('Launch Preferences', () => {
             useValue: FileSystemNodeOptions.DEFAULT,
           },
           {
+            token: IDiskFileProvider,
+            useClass: DiskFileSystemProvider,
+          },
+          {
+            token: IShadowFileProvider,
+            useClass: ShadowFileSystemProvider,
+          },
+          {
             token: FileServicePath,
             useClass: FileService,
           },
           {
             token: IFileServiceClient,
             useClass: FileServiceClient,
+          },
+          {
+            token: ILoggerManagerClient,
+            useClass: MockLoggerManagerClient,
           },
           {
             token: ResourceProvider,

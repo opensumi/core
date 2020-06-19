@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { Injectable, Autowired } from '@ali/common-di';
-import { isWindows, Deferred, URI, AppConfig } from '@ali/ide-core-node';
+import { isWindows, Deferred, URI } from '@ali/ide-core-node';
 import { IStoragePathServer } from '../common';
 import { IFileService } from '@ali/ide-file-service';
 import { StoragePaths } from '@ali/ide-core-common';
@@ -21,11 +21,6 @@ export class StoragePathServer implements IStoragePathServer {
   @Autowired(IFileService)
   private readonly fileSystem: IFileService;
 
-  @Autowired(AppConfig)
-  private readonly appConfig: AppConfig;
-
-  private storageDirName: string;
-
   constructor() {
     this.deferredWorkspaceStoragePath = new Deferred<string>();
     this.deferredGlobalStoragePath = new Deferred<string>();
@@ -41,7 +36,7 @@ export class StoragePathServer implements IStoragePathServer {
       throw new Error('Unable to get parent storage directory');
     }
 
-    if (!await this.fileSystem.exists(uriString)) {
+    if (!await this.fileSystem.access(uriString)) {
       await this.fileSystem.createFolder(uriString);
     }
 
@@ -60,7 +55,7 @@ export class StoragePathServer implements IStoragePathServer {
       throw new Error('Unable to get parent storage directory');
     }
 
-    if (!await this.fileSystem.exists(uriString)) {
+    if (!await this.fileSystem.access(uriString)) {
       await this.fileSystem.createFolder(uriString);
     }
 

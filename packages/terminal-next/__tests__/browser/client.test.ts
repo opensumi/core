@@ -35,7 +35,7 @@ describe('Terminal Client', () => {
     proxy = createProxyServer();
   });
 
-  it('Not Ready To Show it', async () => {
+  it('Not Ready To Show it', () => {
     const index = view.createGroup();
     const group = view.getGroup(index);
     widget = view.createWidget(group);
@@ -51,10 +51,11 @@ describe('Terminal Client', () => {
     }
   });
 
-  it('Render Terminal', async () => {
+  it('Render Terminal', async (done) => {
     widget.element = createDOMContainer();
     await client.attached.promise;
     expect(client.ready).toBeTruthy();
+    done();
   });
 
   it('Terminal Pid And Name', () => {
@@ -72,7 +73,7 @@ describe('Terminal Client', () => {
       .toEqual(client.term.cols);
   });
 
-  it('Terminal Send Text', async () => {
+  it.skip('Terminal Send Text', async (done) => {
     await client.attached.promise;
     client.clear();
     await client.sendText('pwd\r');
@@ -81,28 +82,30 @@ describe('Terminal Client', () => {
     const line = client.term.buffer.active.getLine(0);
     const lineText = (line && line.translateToString()) || '';
     expect(lineText.trim().length).toBeGreaterThan(0);
+    done();
   });
 
-  it('Terminal Find Next', async () => {
+  it.skip('Terminal Find Next', async () => {
     const searched = 'pwd';
     client.findNext(searched);
     expect(client.term.getSelection()).toEqual(searched);
   });
 
-  it('Terminal Dispose', async () => {
+  it('Terminal Dispose', () => {
     client.dispose();
 
     expect(client.disposed).toBeTruthy();
     expect(client.container.children.length).toBe(0);
   });
 
-  it('After Terminal Dispose', async () => {
+  it('After Terminal Dispose', async (done) => {
     await client.attached.promise;
     client.sendText('pwd\r');
     client.focus();
     client.selectAll();
     client.updateTheme();
     client.clear();
+    done();
   });
 
   afterAll(() => {

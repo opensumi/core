@@ -20,9 +20,9 @@ describe('ShadowFileSystemProvider', () => {
   it('Should work', async () => {
     expect(await shadowFileSystemProvider.stat(uri.codeUri)).toEqual({ uri: uri.codeUri.toString(), lastModification: 0 });
 
-    await shadowFileSystemProvider.writeFile(uri.codeUri, Buffer.alloc(10, 'a'), { create: true, overwrite: true });
+    await shadowFileSystemProvider.writeFile(uri.codeUri, 'mock fs content', { create: true, overwrite: true });
 
-    expect(shadowFileSystemProvider.readFile(uri.codeUri)).toEqual(Buffer.alloc(10, 'a'));
+    expect(shadowFileSystemProvider.readFile(uri.codeUri)).toEqual('mock fs content');
   });
 
 });

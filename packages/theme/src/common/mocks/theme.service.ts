@@ -1,7 +1,7 @@
 import { ThemeContribution, ExtColorContribution, IThemeService, ITheme } from '../theme.service';
 import { IThemeColor } from '../color';
 import { Injectable } from '@ali/common-di';
-import { Emitter } from '@ali/ide-core-common';
+import { Emitter, Event, URI } from '@ali/ide-core-common';
 
 @Injectable()
 export class MockThemeService implements IThemeService {
@@ -9,11 +9,11 @@ export class MockThemeService implements IThemeService {
 
   private _onThemeChange = new Emitter<ITheme>();
 
-  get onThemeChange() {
+  get onThemeChange(): Event<ITheme> {
     return this._onThemeChange.event;
   }
 
-  registerThemes(themeContributions: ThemeContribution[], extPath: string) {
+  registerThemes(themeContributions: ThemeContribution[], extPath: URI) {
     return {
       dispose: () => {},
     };

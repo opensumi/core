@@ -85,7 +85,7 @@ export class ReferenceManager<T> {
     this.addRef(key, ref);
     return ref;
   }
-  
+
 
   private addRef(key: string , ref: Ref<T>) {
     if (!this.refs.get(key)){

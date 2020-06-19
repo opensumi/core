@@ -2,7 +2,15 @@ import { URI, BasicEvent, MaybePromise, IDisposable } from '@ali/ide-core-common
 
 export interface IResourceProvider {
 
-  scheme: string;
+  scheme?: string; // 相当于 handlesUri => 10
+
+  /**
+   * 一个 provider 是否处理某个资源
+   * 返回优先级，这个值越高的 provider 越优先处理， 小于 0 表示不处理
+   * 这个比较的计算结果会被缓存，仅仅当 provider 数量变更时才会清空
+   * 存在 handlesURI 时， 上面的scheme会被忽略
+   */
+  handlesUri?(uri: URI): number;
 
   provideResource(uri: URI): MaybePromise<IResource>;
 
@@ -36,18 +44,6 @@ export abstract class ResourceService {
   abstract getResourceDecoration(uri: URI): IResourceDecoration;
 
   abstract getResourceSubname(resource: IResource, groupResources: IResource[]): string | null;
-
-  /**
-   * 是否存在resourceProvider处理对应Scheme
-   * @param scheme
-   */
-  abstract handlesScheme(scheme: string): boolean;
-
-  /**
-   * 停止对一个scheme的继续处理
-   * @param scheme
-   */
-  abstract stopProvideScheme(scheme: string): void;
 
   /**
    * 销毁一个 resource

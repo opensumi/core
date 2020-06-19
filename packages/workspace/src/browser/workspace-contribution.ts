@@ -27,6 +27,9 @@ export class WorkspaceContribution implements ClientAppContribution, PreferenceC
   schema: PreferenceSchema = workspacePreferenceSchema;
 
   protected initWorkspaceContextKeys(): void {
+    const workspaceStateKey = this.contextKeyService.createKey<string>('workbenchState', 'empty');
+    // TODO: 监听工作区变化
+    this.workspaceService.whenReady.then(() => workspaceStateKey.set(this.workspaceService.tryGetRoots().length > 1 ? 'workspace' : 'folder'));
     const workspaceFolderCountKey = this.contextKeyService.createKey<number>('workspaceFolderCount', 0);
     const updateWorkspaceFolderCountKey = () => workspaceFolderCountKey.set(this.workspaceService.tryGetRoots().length);
     updateWorkspaceFolderCountKey();

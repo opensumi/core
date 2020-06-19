@@ -17,7 +17,7 @@
 import { Injectable } from '@ali/common-di';
 import { IGrammarConfiguration } from 'vscode-textmate';
 import { TokenizerOption } from './textmate-tokenizer';
-import URI from 'vscode-uri';
+import { getDebugLogger, URI } from '@ali/ide-core-common';
 
 export interface TextmateGrammarConfiguration extends IGrammarConfiguration {
 
@@ -49,7 +49,7 @@ export class TextmateRegistry {
     // 将语法定义描述绑定到某一个Scope：source.json.comments
     registerTextmateGrammarScope(scope: string, description: GrammarDefinitionProvider): void {
         if (this.scopeToProvider.has(scope)) {
-            console.warn(new Error(`a registered grammar provider for '${scope}' scope is overridden`));
+            getDebugLogger().warn(new Error(`a registered grammar provider for '${scope}' scope is overridden`));
         }
         this.scopeToProvider.set(scope, description);
     }
@@ -61,7 +61,7 @@ export class TextmateRegistry {
     mapLanguageIdToTextmateGrammar(languageId: string, scope: string): void {
         const existingScope = this.getScope(languageId);
         if (typeof existingScope === 'string') {
-            console.warn(
+            getDebugLogger().warn(
                 new Error(`'${languageId}' language is remapped from '${existingScope}' to '${scope}' scope`),
             );
         }

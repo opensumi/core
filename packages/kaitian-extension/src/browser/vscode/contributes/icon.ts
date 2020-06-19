@@ -1,7 +1,8 @@
-import { VSCodeContributePoint, Contributes } from '../../../common';
-// import { VscodeContributionPoint, Contributes } from './common';
 import { Injectable, Autowired } from '@ali/common-di';
+import { URI } from '@ali/ide-core-common';
 import { ThemeContribution, IIconService } from '@ali/ide-theme';
+
+import { VSCodeContributePoint, Contributes } from '../../../common';
 
 export type ThemesSchema = Array<ThemeContribution>;
 
@@ -9,11 +10,9 @@ export type ThemesSchema = Array<ThemeContribution>;
 @Contributes('iconThemes')
 export class IconThemesContributionPoint extends VSCodeContributePoint<ThemesSchema> {
   @Autowired(IIconService)
-  iconService: IIconService;
+  private readonly iconService: IIconService;
 
   contribute() {
-    const icons = this.json;
-    this.iconService.registerIconThemes(icons, this.extension.path);
+    this.iconService.registerIconThemes(this.json, URI.file(this.extension.path));
   }
-
 }
