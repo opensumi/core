@@ -15,7 +15,7 @@ export class ThemeAndIconContribution implements ClientAppContribution {
   @Autowired(IIconService)
   private readonly iconService: IIconService;
 
-  async onStart() {
+  async initialize() {
     this.themeService.registerThemes(themeDefaultExtContributes.pkgJSON.contributes.themes as ThemeContribution[], URI.parse(themeDefaultExtContributes.extPath));
     for (const themeExt of [ themeDefaultExtContributes, themeSetiExtContributes ]) {
       this.iconService.registerIconThemes(themeExt.pkgJSON.contributes.iconThemes, URI.parse(themeExt.extPath));

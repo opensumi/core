@@ -23,7 +23,8 @@
     "bundle:lite": "NODE_ENV=production webpack --config webpack.lite.config.js",
     "bundle:lite:stats": "NODE_ENV=production webpack --progress --profile --config webpack.lite.config.js --json > stats.json",
     "bundle:lite:analysis": "analysis=1 npm run bundle:lite",
-    "prod": "node prod-server.js"
+    "prod": "node prod-server.js",
+    "prod:lite": "npm run bundle:lite && npm run prod"
   },
   "repository": {
     "type": "git",

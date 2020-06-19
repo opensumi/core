@@ -1,12 +1,12 @@
 import { Provider, Injectable } from '@ali/common-di';
 import { BrowserModule } from '@ali/ide-core-browser';
 
-import { SampleContribution } from './sample.contribution';
-import { LangContribution } from './lang.contribution';
 import { LiteDocumentDataManager, SimpleLanguageService } from '../modules/simple-language-service';
-import { SCMContribution } from './scm.contribution';
 import { SCMRawFileServiceContribution } from '../modules/static-resource/scm-raw';
 
+import { LangContribution } from './lang.contribution';
+import { ViewContribution } from './view.contribution';
+import { SCMContribution } from './scm.contribution';
 import { FSProviderContribution, KtExtFsProviderContribution } from './fs.contribution';
 import { ThemeAndIconContribution } from './theme.contribution';
 
@@ -20,7 +20,7 @@ export class SimpleModule extends BrowserModule {
     ThemeAndIconContribution,
     SCMRawFileServiceContribution,
     SCMContribution,
-    SampleContribution,
+    ViewContribution,
   ].concat(process.env.LSIF_HOST ? LangContribution : (null as any))
    .filter(Boolean);
 }
