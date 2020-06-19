@@ -1,6 +1,5 @@
-import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IMainThreadOutput, IExtHostOutput } from '../../../common/vscode';
-import { Injectable, Autowired, Optinal } from '@ali/common-di';
+import { IMainThreadOutput } from '../../../common/vscode';
+import { Injectable, Autowired } from '@ali/common-di';
 import { OutputService } from '@ali/ide-output/lib/browser/output.service';
 import { OutputChannel } from '@ali/ide-output/lib/browser/output.channel';
 import { IMainLayoutService } from '@ali/ide-main-layout';
@@ -13,14 +12,8 @@ export class MainThreadOutput implements IMainThreadOutput {
 
   private channels: Map<string, OutputChannel> = new Map();
 
-  private readonly proxy: IExtHostOutput;
-
   @Autowired(IMainLayoutService)
   layoutService: IMainLayoutService;
-
-  constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
-    this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostOutput);
-  }
 
   public dispose() {
     this.channels.forEach((channel) => {
@@ -59,9 +52,6 @@ export class MainThreadOutput implements IMainThreadOutput {
   async $reveal(channelName: string, preserveFocus: boolean): Promise<void> {
     const outputChannel = this.getChannel(channelName);
     if (outputChannel) {
-      const activate = !preserveFocus;
-      const reveal = preserveFocus;
-      // this.commonOutputWidget = await this.outputContribution.openView({ activate, reveal });
       outputChannel.setVisibility(true);
       this.outputService.updateSelectedChannel(outputChannel);
     }
@@ -72,14 +62,6 @@ export class MainThreadOutput implements IMainThreadOutput {
     if (outputChannel) {
       outputChannel.setVisibility(false);
     }
-    const channels = this.outputService.getChannels();
-    const isEmpty = channels.findIndex((channel: OutputChannel) => channel.isVisible) === -1;
-    /*
-    if (isEmpty && this.commonOutputWidget) {
-        this.commonOutputWidget.close();
-    }
-    */
-
     return Promise.resolve();
   }
 

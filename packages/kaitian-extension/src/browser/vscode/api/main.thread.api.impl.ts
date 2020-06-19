@@ -61,7 +61,7 @@ export async function createApiFactory(
   const MainThreadEnvAPI = injector.get(MainThreadEnv, [rpcProtocol]);
   const MainThreadQuickOpenAPI = injector.get(MainThreadQuickOpen, [rpcProtocol]);
   const MainThreadStorageAPI = injector.get(MainThreadStorage, [rpcProtocol]);
-  const MainThreadOutputAPI = injector.get(MainThreadOutput, [rpcProtocol]);
+  const MainThreadOutputAPI = injector.get(MainThreadOutput);
   const MainThreadFileSystemAPI = injector.get(MainThreadFileSystem, [rpcProtocol]);
   const MainThreadWebviewAPI = injector.get(MainThreadWebview, [rpcProtocol]);
   const MainThreadSCMAPI = injector.get(MainThreadSCM, [rpcProtocol]);
