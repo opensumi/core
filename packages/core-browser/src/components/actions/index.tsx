@@ -174,13 +174,13 @@ const InlineActionWidget: React.FC<{
   if (type === 'icon') {
     return (
       <Button
-        type='icon'
+        type={ data.icon ? 'icon' : 'link'}
         className={clsx(styles.iconAction, className, { [styles.disabled]: data.disabled })}
         title={title}
         iconClass={data.icon}
         onClick={handleClick}
         {...restProps}
-      />
+    >{ data.icon ? '' : data.label }</Button>
     );
   }
 
