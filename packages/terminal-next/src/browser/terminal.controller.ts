@@ -205,8 +205,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this.addDispose(this.themeService.onThemeChange((_) => {
       this._clients.forEach((client) => {
         client.updateTheme();
-        this.themeBackground = this.terminalTheme.terminalTheme.background || '';
       });
+      this.themeBackground = this.terminalTheme.terminalTheme.background || '';
     }));
 
     this.addDispose(this.eventBus.on(ResizeEvent, (e: ResizeEvent) => {
