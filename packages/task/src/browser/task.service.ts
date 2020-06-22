@@ -205,7 +205,7 @@ export class TaskService extends Disposable implements ITaskService {
     valideTaskTypes['shell'] = true;
     valideTaskTypes['process'] = true;
     const result: TaskSet[] = [];
-    for (const [handler, provider] of this.providers) {
+    for (const [, provider] of this.providers) {
       const value = await provider.provideTasks(valideTaskTypes);
       result.push(value);
     }
@@ -358,10 +358,6 @@ export class TaskService extends Disposable implements ITaskService {
 
   protected showOutput(): void {
     this.outputChannel.appendLine('There are task errors. See the output for details.');
-  }
-
-  private getTaskDefinition(type: string): TaskDefinition | undefined {
-    return this.taskDefinitionRegistry.get(type);
   }
 
   public registerTaskProvider(provider: ITaskProvider, type: string): IDisposable {

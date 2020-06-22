@@ -1,10 +1,11 @@
 import { observable, action } from 'mobx';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { WithEventBus } from '@ali/ide-core-common';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { AppConfig, MonacoService, PreferenceService } from '@ali/ide-core-browser';
 
 import { OutputChannel } from './output.channel';
+import { OuputLinkProvider } from './output-link.provider';
 
 @Injectable()
 export class OutputService extends WithEventBus {
@@ -20,6 +21,9 @@ export class OutputService extends WithEventBus {
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
+
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
 
   private outputEditor: monaco.editor.IStandaloneCodeEditor;
 
@@ -47,6 +51,8 @@ export class OutputService extends WithEventBus {
         this.enableSmartScroll = e.newValue;
       }
     }));
+
+    this.addDispose(monaco.languages.registerLinkProvider('log', this.injector.get(OuputLinkProvider)));
   }
 
   @action

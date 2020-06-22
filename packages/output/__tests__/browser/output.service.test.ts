@@ -5,7 +5,8 @@ import { OutputService } from '../../src/browser/output.service';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
 import { PreferenceService } from '@ali/ide-core-browser';
 import { OutputPreferences } from '../../src/browser/output-preference';
-import { OutputModule } from '../../src/browser';
+import { IWorkspaceService } from '@ali/ide-workspace';
+import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { EditorDocumentModelServiceImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
 import { MonacoService } from '@ali/ide-monaco';
@@ -52,8 +53,9 @@ const mockedPreferenceService: any = {
 
 describe('Output.service.ts', () => {
   // let mockPreferenceVal = false;
+  let outputService: OutputService;
 
-  const injector: Injector = createBrowserInjector([OutputModule], new Injector([
+  const injector: Injector = createBrowserInjector([], new Injector([
     {
       token: ILoggerManagerClient,
       useClass: MockLoggerManagerClient,
@@ -68,6 +70,14 @@ describe('Output.service.ts', () => {
       useClass: MockedMonacoService,
     },
     {
+      token: OutputService,
+      useClass: OutputService,
+    },
+    {
+      token: IWorkspaceService,
+      useClass: MockWorkspaceService,
+    },
+    {
       token: IEditorDocumentModelService,
       useClass: EditorDocumentModelServiceImpl,
     }, {
@@ -78,7 +88,11 @@ describe('Output.service.ts', () => {
     },
   ]));
 
-  const outputService = injector.get(OutputService);
+  beforeAll(async () => {
+    const monacoService = injector.get(MonacoService);
+    await monacoService.loadMonaco();
+    outputService = injector.get(OutputService);
+  });
 
   test('getChannel', () => {
     const output = outputService.getChannel('1');

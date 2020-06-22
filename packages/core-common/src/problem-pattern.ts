@@ -371,6 +371,9 @@ export class ProblemPatternRegistryImpl implements IProblemPatternRegistry {
    * @return a problem pattern or an array of the problem patterns associated with the name. If no problem patterns are found, `undefined` is returned.
    */
   get(key: string): undefined | NamedProblemPattern | NamedProblemPattern[] {
+    if (key.startsWith('$')) {
+      return this.patterns.get(key.slice(1));
+    }
     return this.patterns.get(key);
   }
 
