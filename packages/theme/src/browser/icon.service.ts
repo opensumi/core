@@ -1,4 +1,4 @@
-import { URI, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService, Emitter, Event, getPreferenceIconThemeId, ILogger } from '@ali/ide-core-browser';
+import { URI, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService, Emitter, Event, ILogger } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { ThemeType, IIconService, ThemeContribution, getThemeId, IIconTheme, getThemeTypeSelector, IconType, IconShape, IconThemeInfo } from '../common';
@@ -204,7 +204,7 @@ export class IconService implements IIconService {
   async applyTheme(themeId?: string) {
     this.toggleIconVisible(true);
     if (!themeId) {
-      themeId = getPreferenceIconThemeId();
+      themeId = this.preferenceService.get<string>('general.icon')!;
     }
     if (this.currentTheme && this.currentThemeId === themeId) {
       return;
