@@ -19,8 +19,8 @@ interface RawExtensionProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
-   extension, select, install, className,
-  }) => {
+  extension, select, install, className,
+}) => {
   const timmer = React.useRef<any>();
   const clickCount = React.useRef(0);
 
@@ -77,15 +77,14 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
               <div className={styles.name}>{extension.displayName || extension.name}</div>
               {extension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin')}</span>) : null}
             </div>
-              <span style={{display: 'flex', flexShrink: 0}} onClick={(e) => e.stopPropagation()}>
-                {extension.reloadRequire && <Button size='small' type='primary' ghost={true} style={{marginRight: 4}} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}
-                {extension.installed ? (
-                  <InlineActionBar
+            <span style={{ display: 'flex', flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
+              {extension.reloadRequire && <Button size='small' type='primary' ghost={true} style={{ marginRight: 4 }} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}
+              {extension.installed ? (
+                <InlineActionBar
                   menus={extensionManagerService.contextMenu}
                   context={[extension]} />
-                ) : null}
-              </span>
-            {!extension.installed ? <Button size='small' type='primary' loading={isInstalling} onClick={handleInstall} ghost={true} style={{flexShrink: 0}}>{localize('marketplace.extension.install')}</Button> : null}
+              ) : <Button size='small' type='primary' loading={isInstalling} onClick={handleInstall} ghost={true} style={{ flexShrink: 0 }}>{localize('marketplace.extension.install')}</Button>}
+            </span>
           </div>
           <div className={styles.extension_props}>
             {extension.downloadCount ? (<span><i className={clx(commonStyles.icon, getIcon('download'))}></i> {extension.downloadCount}</span>) : null}
