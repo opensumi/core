@@ -1,4 +1,4 @@
-import { Event, Disposable, uuid, URI, localize, Deferred, IEventBus } from '@ali/ide-core-common';
+import { Disposable, uuid, URI, localize, Deferred, IEventBus } from '@ali/ide-core-common';
 import { Optional, Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { PreferenceService } from '@ali/ide-core-browser';
@@ -149,10 +149,7 @@ export class OutputChannel extends Disposable {
   }
 
   appendLine(line: string): void {
-    let value = line;
-    if (!value.endsWith('\n')) {
-      value += '\n';
-    }
+    const value = line;
     this.eventBus.fire(new ContentChangeEvent(new ContentChangeEventPayload(this.name, ContentChangeType.appendLine, value, this.outputLines)));
     this.doAppend(value);
     if (this.shouldLogToBrowser) {

@@ -114,6 +114,8 @@ export class OutputService extends WithEventBus {
       scrollbar: {
         useShadows: false,
       },
+      renderIndentGuides: false,
+      glyphMargin: false,
       scrollBeyondLastLine: false,
       scrollBeyondLastColumn: 0,
     });
