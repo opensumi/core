@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { replaceLocalizePlaceholder, useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService, localize, PreferenceScope, EDITOR_COMMANDS, IFileServiceClient, formatLocalize, ILogger, AppConfig, PreferenceService, isElectronRenderer } from '@ali/ide-core-browser';
+import { replaceLocalizePlaceholder, useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService, localize, PreferenceScope, EDITOR_COMMANDS, formatLocalize, ILogger, AppConfig, PreferenceService, isElectronRenderer } from '@ali/ide-core-browser';
 import { PreferenceSettingsService } from './preference.service';
 import './index.less';
 import * as styles from './preferences.module.less';
@@ -15,6 +15,8 @@ import { getIcon } from '@ali/ide-core-browser';
 import { CheckBox, Input, Button, IconContextProvider } from '@ali/ide-components';
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
 import { Select, Option, Tabs } from '@ali/ide-components';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+
 import { toPreferenceReadableName, toNormalCase } from '../common';
 import { NextPreferenceItem } from './preferenceItem.view';
 
@@ -176,14 +178,14 @@ export const PreferenceSection = ({section, scope}: {section: ISettingSection, s
 };
 
 export const PreferenceItemView = ({preferenceName, localizedName, scope}: {preferenceName: string, localizedName?: string, scope: PreferenceScope}) => {
-  const appConfig: AppConfig = useInjectable(AppConfig);
-  const logger = useInjectable(ILogger);
+  const appConfig = useInjectable<AppConfig>(AppConfig);
+  const logger = useInjectable<ILogger>(ILogger);
 
-  const preferenceService: PreferenceSettingsService  = useInjectable(IPreferenceSettingsService);
-  const defaultPreferenceProvider: PreferenceSchemaProvider = useInjectable(PreferenceSchemaProvider);
+  const preferenceService = useInjectable<PreferenceSettingsService>(IPreferenceSettingsService);
+  const defaultPreferenceProvider = useInjectable<PreferenceSchemaProvider>(PreferenceSchemaProvider);
 
-  const commandService = useInjectable(CommandService);
-  const fileServiceClient = useInjectable(IFileServiceClient);
+  const commandService = useInjectable<CommandService>(CommandService);
+  const fileServiceClient = useInjectable<IFileServiceClient>(IFileServiceClient);
 
   const key = preferenceName;
   const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
@@ -458,7 +460,7 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
     if (!openUri) {
       return;
     }
-    const exist = await fileServiceClient.exists(openUri);
+    const exist = await fileServiceClient.access(openUri);
     if (!exist) {
       try {
         await fileServiceClient.createFile(openUri, {content: '', overwrite: false});

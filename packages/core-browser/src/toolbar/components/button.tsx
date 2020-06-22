@@ -7,8 +7,7 @@ import * as classnames from 'classnames';
 import { AppConfig, ConfigProvider } from '../../react-providers';
 
 export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionElementProps) => {
-
-  const context = useInjectable(AppConfig);
+  const context = useInjectable<AppConfig>(AppConfig);
   const ref = React.useRef<HTMLDivElement>();
   const [viewState, setViewState] = React.useState(props.defaultState || 'default');
   const [title, setTitle] = React.useState(undefined);
