@@ -2,6 +2,8 @@ import { IJSONSchemaMap } from '@ali/ide-core-browser';
 import { IDisposable, Event, URI, TaskIdentifier, Uri, Deferred } from '@ali/ide-core-common';
 import { Task, ConfiguringTask, ContributedTask, TaskSet, KeyedTaskIdentifier, TaskEvent } from './task';
 import { UriComponents } from '@ali/ide-editor';
+import { ProblemCollector } from '../browser/problem-collector';
+import { TerminalOptions } from '@ali/ide-terminal-next/lib/common';
 
 // tslint:disable-next-line: no-empty-interface
 interface TaskMap {}
@@ -104,9 +106,17 @@ export interface ExecutorOptions {}
 export const ITaskExecutor = Symbol('ITaskExecutor');
 
 export interface ITaskExecutor {
-  execute(task: Task): Promise<{ exitCode?: number }>;
-  terminate(): Promise<{ success: boolean }>;
+  executorId: number;
+  processId: number | undefined;
+  widgetId: string | undefined;
   processReady: Deferred<void>;
+  execute(task: Task, reuse?: boolean): Promise<{ exitCode?: number }>;
+  reset(): void;
+  terminate(): Promise<{ success: boolean }>;
+  updateTerminalOptions(options: TerminalOptions): void;
+  updateProblemCollector(collector: ProblemCollector): void;
+  onDidTerminalWidgetRemove: Event<void>;
+  onDidTaskProcessExit: Event<number | undefined>;
 }
 
 export interface TaskTerminateResponse extends TerminateResponse {

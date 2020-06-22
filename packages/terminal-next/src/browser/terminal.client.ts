@@ -213,6 +213,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._ready = false;
     this._attached = new Deferred<void>();
     this._firstStdout = new Deferred<void>();
+    this._attachAddon.dispose();
     this.attach();
   }
 
@@ -298,6 +299,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   updateTheme() {
     return this._term.setOption('theme', this.theme.terminalTheme);
+  }
+
+  updateOptions(options: TerminalOptions) {
+    this._options = { ...this._options, ...options };
   }
 
   async sendText(message: string) {
