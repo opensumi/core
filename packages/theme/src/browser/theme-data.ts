@@ -39,6 +39,7 @@ export class ThemeData implements IThemeData {
     this.name = data.name;
     this.colors = data.colors;
     this.encodedTokensColors = data.encodedTokensColors;
+    this.themeSettings = data.themeSettings;
     this.rules = data.rules;
     this.base = data.base;
     this.inherit = data.inherit;
