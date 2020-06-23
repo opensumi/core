@@ -96,7 +96,7 @@ export class MainThreadFileSystem implements IMainThreadFileSystemShape {
     if (!stat) {
       // 文件不存在
       await ensureDir(new URI(_uri).path.dir.toString(), (path) => this.$mkdir(URI.file(path).codeUri));
-      return this._fileService.createFile(_uri.toString())
+      return this._fileService.createFile(_uri.toString(), { content })
         .then(() => undefined).catch(MainThreadFileSystem._handleError);
     } else {
       return this._fileService.setContent(stat!, content)

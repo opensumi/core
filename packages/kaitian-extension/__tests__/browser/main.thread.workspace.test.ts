@@ -247,7 +247,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
     });
 
     it('should able to writefile', async (done) => {
-      const filepath = path.join(os.tmpdir(), 'hello2.ts');
+      const filepath = path.join(os.tmpdir(), Math.floor(Math.random() * 1000) + '', 'hello.ts');
       const encoder = new util.TextEncoder();
       await extHostWorkspaceAPI.fs.writeFile(vscodeUri.file(filepath), new Uint8Array(encoder.encode('hello kaitian')));
       expect(fs.existsSync(filepath)).toBeTruthy();
