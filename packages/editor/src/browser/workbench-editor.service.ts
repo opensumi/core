@@ -822,8 +822,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           this.currentEditor.monacoEditor.focus();
         }
         if (options.range && this.currentEditor) {
-          this.currentEditor.monacoEditor.revealRangeInCenter(options.range);
-          this.currentEditor.monacoEditor.setSelection(options.range);
+          this.currentEditor.monacoEditor.revealRangeInCenter(options.range as monaco.IRange);
+          this.currentEditor.monacoEditor.setSelection(options.range as monaco.IRange);
         }
         if ((options && options.disableNavigate) || (options && options.backend)) {
           // no-op
@@ -927,7 +927,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
       if (activeOpenType.type === 'code') {
         await this.codeEditorReady.promise;
-        await this.codeEditor.open(await this.getDocumentModelRef(resource.uri), options.range);
+        await this.codeEditor.open(await this.getDocumentModelRef(resource.uri), options.range ? new monaco.Range(options.range.startLineNumber!, options.range.startColumn!, options.range.startLineNumber!, options.range.startColumn!) : undefined);
         if (options.focus) {
           this.codeEditor.focus();
         }

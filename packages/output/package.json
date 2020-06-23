@@ -24,6 +24,7 @@
     "@ali/ide-main-layout": "1.8.31",
     "@ali/ide-components": "1.8.31",
     "@ali/ide-editor": "1.8.31",
+    "@ali/ide-workspace": "1.8.31",
     "anser": "^1.4.9",
     "escape-carriage": "^1.3.0"
   },

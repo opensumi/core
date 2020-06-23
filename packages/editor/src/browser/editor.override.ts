@@ -41,7 +41,16 @@ export class MonacoCodeService extends monaco.services.CodeEditorServiceImpl {
         index ++;
       }
     }
-    await editorGroup.open(resourceUri, {index, range: input.options && input.options.selection as IRange, focus: true});
+    const selection = input.options ? input.options.selection : null;
+    let range;
+    if (selection) {
+      if (typeof selection.endLineNumber === 'number' && typeof selection.endColumn === 'number') {
+        range = selection;
+      } else {
+        range = new monaco.Range(selection.startLineNumber!, selection.startColumn!, selection.startLineNumber!, selection.startColumn!);
+      }
+    }
+    await editorGroup.open(resourceUri, {index, range: range as IRange, focus: true});
     return (editorGroup.codeEditor as BrowserCodeEditor).monacoEditor;
   }
 

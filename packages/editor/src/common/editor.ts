@@ -203,7 +203,7 @@ export interface IUntitledOptions extends IResourceOpenOptions {
 
 export interface IResourceOpenOptions {
 
-  range?: IRange;
+  range?: Partial<IRange>;
 
   index?: number;
 
