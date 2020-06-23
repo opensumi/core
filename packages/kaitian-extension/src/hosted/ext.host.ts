@@ -87,8 +87,8 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       return extension.packageJSON.name;
     }));
     */
-  this.extensionsActivator = new ExtensionsActivator(this.logger);
-  this.defineAPI();
+    this.extensionsActivator = new ExtensionsActivator(this.logger);
+    this.defineAPI();
   }
 
   public getExtensions(): IExtension[] {

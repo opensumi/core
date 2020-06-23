@@ -1,10 +1,12 @@
 import * as React from 'react';
-import { PreferenceScope, PreferenceService, useInjectable, PreferenceSchemaProvider, PreferenceItem, replaceLocalizePlaceholder, localize, getIcon, PreferenceDataProperty, isElectronRenderer, CommandService, IFileServiceClient, EDITOR_COMMANDS, URI } from '@ali/ide-core-browser';
+import { PreferenceScope, PreferenceService, useInjectable, PreferenceSchemaProvider, PreferenceItem, replaceLocalizePlaceholder, localize, getIcon, PreferenceDataProperty, isElectronRenderer, CommandService, EDITOR_COMMANDS, URI } from '@ali/ide-core-browser';
 import * as styles from './preferences.module.less';
 import * as classnames from 'classnames';
 import { Input, Select, Option, CheckBox, Button, ValidateInput } from '@ali/ide-components';
 import { PreferenceSettingsService } from './preference.service';
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+
 import { toPreferenceReadableName } from '../common';
 import { ValidateMessage } from '../../../components/lib';
 
@@ -274,8 +276,8 @@ function SelectPreferenceItem({preferenceName, localizedName, currentValue, sche
 
 function EditInSettingsJsonPreferenceItem({preferenceName, localizedName, schema, effectingScope, scope, hasValueInScope}: IPreferenceItemProps) {
 
-  const commandService = useInjectable(CommandService);
-  const fileServiceClient = useInjectable(IFileServiceClient);
+  const commandService = useInjectable<CommandService>(CommandService);
+  const fileServiceClient = useInjectable<IFileServiceClient>(IFileServiceClient);
 
   const settingsService: PreferenceSettingsService = useInjectable(PreferenceSettingsService);
 
@@ -285,7 +287,7 @@ function EditInSettingsJsonPreferenceItem({preferenceName, localizedName, schema
     if (!openUri) {
       return;
     }
-    const exist = await fileServiceClient.exists(openUri);
+    const exist = await fileServiceClient.access(openUri);
     if (!exist) {
       try {
         await fileServiceClient.createFile(openUri, {content: '', overwrite: false});
