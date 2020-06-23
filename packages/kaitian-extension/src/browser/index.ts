@@ -1,5 +1,5 @@
 import { Provider, Injectable, Autowired } from '@ali/common-di';
-import { BrowserModule, ClientAppContribution, Domain, localize, IPreferenceSettingsService, CommandContribution, CommandRegistry, IClientApp, IEventBus, CommandService, IAsyncResult } from '@ali/ide-core-browser';
+import { IContextKeyService, BrowserModule, ClientAppContribution, Domain, localize, IPreferenceSettingsService, CommandContribution, CommandRegistry, IClientApp, IEventBus, CommandService, IAsyncResult, MonacoContribution } from '@ali/ide-core-browser';
 import { ExtensionNodeServiceServerPath, ExtensionService, EMIT_EXT_HOST_EVENT} from '../common';
 import { ExtensionServiceImpl } from './extension.service';
 import { IMainLayoutService } from '@ali/ide-main-layout';
@@ -10,6 +10,7 @@ import { getIcon } from '@ali/ide-core-browser';
 import { ExtHostEvent, Serializable, IActivationEventService } from './types';
 import { FileSearchServicePath } from '@ali/ide-file-search/lib/common';
 import { ActivationEventServiceImpl } from './activation.service';
+import { VSCodeCommands } from './vscode/commands';
 
 const RELOAD_WINDOW_COMMAND = {
   id: 'reload_window',
@@ -50,8 +51,8 @@ export class KaitianExtensionModule extends BrowserModule {
   ];
 }
 
-@Domain(ClientAppContribution, CommandContribution)
-export class KaitianExtensionClientAppContribution implements ClientAppContribution, CommandContribution {
+@Domain(ClientAppContribution, CommandContribution, MonacoContribution)
+export class KaitianExtensionClientAppContribution implements ClientAppContribution, CommandContribution, MonacoContribution {
   @Autowired(ExtensionService)
   private extensionService: ExtensionService;
 
@@ -73,6 +74,9 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
   @Autowired(CommandService)
   commandService: CommandService;
 
+  @Autowired(IContextKeyService)
+  private readonly contextKeyService: IContextKeyService;
+
   async initialize() {
     await this.extensionService.activate();
   }
@@ -85,7 +89,20 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
     });
   }
 
+  onContextKeyServiceReady(contextKeyService: IContextKeyService) {
+    // `listFocus` 为 vscode 旧版 api，已经废弃，默认设置为 true
+    contextKeyService.createKey('listFocus', true);
+  }
+
   registerCommands(registry: CommandRegistry) {
+    // vscode `setContext` for extensions
+    // only works for global scoped context
+    registry.registerCommand(VSCodeCommands.SET_CONTEXT, {
+      execute: (contextKey: any, contextValue: any) => {
+        this.contextKeyService.createKey(String(contextKey), contextValue);
+      },
+    });
+
     registry.registerCommand(RELOAD_WINDOW_COMMAND, {
       execute: () => {
         this.clientApp.fireOnReload();

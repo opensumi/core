@@ -35,7 +35,6 @@ import {
   isElectronEnv,
   Emitter,
   Event,
-  IContextKeyService,
   CommandService,
   CommandRegistry,
   URI,
@@ -115,9 +114,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   // @Autowired(WSChanneHandler)
   // private wsChannelHandler: WSChanneHandler;
 
-  // @Autowired(IContextKeyService)
-  private contextKeyService: IContextKeyService;
-
   @Autowired(CommandRegistry)
   private commandRegistry: CommandRegistry;
 
@@ -193,7 +189,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   public async activate(): Promise<void> {
-    this.contextKeyService = this.injector.get(IContextKeyService);
     await this.initBaseData();
     // 前置 contribute 操作
     this.extensionMetaDataArr = await this.getAllExtensions();
@@ -951,9 +946,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   private registerVSCodeDependencyService() {
-    // `listFocus` 为 vscode 旧版 api，已经废弃，默认设置为 true
-    this.contextKeyService.createKey('listFocus', true);
-
     const workbenchEditorService: WorkbenchEditorService = this.injector.get(WorkbenchEditorService);
     const commandService: CommandService = this.injector.get(CommandService);
     const commandRegistry = this.commandRegistry;
@@ -961,12 +953,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     commandRegistry.beforeExecuteCommand(async (command, args) => {
       await this.activationEventService.fireEvent('onCommand', command);
       return args;
-    });
-
-    commandRegistry.registerCommand(VSCodeCommands.SET_CONTEXT, {
-      execute: (contextKey: any, contextValue: any) => {
-        this.contextKeyService.createKey(String(contextKey), contextValue);
-      },
     });
 
     commandRegistry.registerCommand(VSCodeCommands.WORKBENCH_CLOSE_ACTIVE_EDITOR);
