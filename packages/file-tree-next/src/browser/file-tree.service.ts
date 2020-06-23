@@ -24,6 +24,7 @@ import { observable, action, runInAction } from 'mobx';
 import pSeries = require('p-series');
 import { FileContextKey } from './file-contextkey';
 import { isWindows } from '@ali/ide-core-common/lib/platform';
+import { IIconService } from '@ali/ide-theme';
 
 export interface IMoveChange {
   source: FileChange;
@@ -65,6 +66,9 @@ export class FileTreeService extends Tree {
   @Autowired(FileContextKey)
   private readonly fileTreeContextKey: FileContextKey;
 
+  @Autowired(IIconService)
+  private readonly iconService: IIconService;
+
   private _contextMenuContextKeyService: IContextKeyService;
 
   private _cacheNodesMap: Map<string, File | Directory> = new Map();
@@ -94,6 +98,10 @@ export class FileTreeService extends Tree {
   @observable
   // 筛选模式开关
   filterMode: boolean = false;
+
+  @observable
+  // 筛选模式开关
+  hasFolderIcons: boolean = true;
 
   @observable
   baseIndent: number;
@@ -131,6 +139,12 @@ export class FileTreeService extends Tree {
       this._roots = null;
     }));
 
+    this.toDispose.push(this.labelService.onDidChange(() => {
+      runInAction(() => {
+        this.hasFolderIcons = !this.iconService.currentTheme || (this.iconService.currentTheme && this.iconService.currentTheme.hasFolderIcons);
+      });
+    }));
+
     this.toDispose.push(this.corePreferences.onPreferenceChanged((change) => {
       if (change.preferenceName === 'explorer.fileTree.baseIndent') {
         runInAction(() => {
@@ -145,6 +159,8 @@ export class FileTreeService extends Tree {
         this.refresh();
       }
     }));
+
+    this.hasFolderIcons = !this.iconService.currentTheme || (this.iconService.currentTheme && this.iconService.currentTheme.hasFolderIcons);
   }
 
   public startWatchFileEvent() {
