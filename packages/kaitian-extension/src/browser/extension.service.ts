@@ -86,7 +86,7 @@ import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { ExtensionCandiDate, localize, OnEvent, WithEventBus } from '@ali/ide-core-common';
 import { IKaitianBrowserContributions } from './kaitian-browser/types';
 import { KaitianBrowserContributionRunner } from './kaitian-browser/contribution';
-import { viewColumnToResourceOpenOptions } from '../common/vscode/converter';
+import { viewColumnToResourceOpenOptions, isLikelyVscodeRange, fromRange } from '../common/vscode/converter';
 import { getShadowRoot } from './shadowRoot';
 import { createProxiedWindow, createProxiedDocument } from './proxies';
 import { getAMDDefine, getMockAmdLoader, getAMDRequire, getWorkerBootstrapUrl } from './loader';
@@ -1006,6 +1006,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
           } else {
             options.groupIndex = columnOrOptions.viewColumn;
             options.preserveFocus = columnOrOptions.preserveFocus;
+            // 这个range 可能是 vscode.range， 因为不会经过args转换
+            if (columnOrOptions.selection && isLikelyVscodeRange(columnOrOptions.selection)) {
+              columnOrOptions.selection = fromRange(columnOrOptions.selection);
+            }
             options.range = columnOrOptions.selection;
             options.preview = columnOrOptions.preview;
           }

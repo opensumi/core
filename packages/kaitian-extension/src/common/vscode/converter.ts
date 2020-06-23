@@ -826,3 +826,10 @@ export function toFileStat(stat: FileStat): vscode.FileStat {
     type: stat.type || FileType.Unknown,
   };
 }
+
+export function isLikelyVscodeRange(thing: any): thing is types.Range {
+  if (!thing) {
+    return false;
+  }
+  return (thing as types.Range).start !== undefined && (thing as types.Range).end !== undefined;
+}
