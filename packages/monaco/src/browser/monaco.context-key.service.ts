@@ -34,11 +34,11 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
   }
 
   getContextValue<T>(key: string): T | undefined {
-    return this.contextKeyService.getContextValuesContainer(this.contextKeyService._myContextId).getValue<T>(key);
+    return this.contextKeyService.getContextKeyValue(key);
   }
 
   createScoped(target: monaco.contextkey.IContextKeyServiceTarget | monaco.contextKeyService.ContextKeyService): IScopedContextKeyService {
-    if (target && (target as any)._myContextId ) {
+    if (target && (target as any)._myContextId) {
       return new ScopedContextKeyService(target as any);
     } else {
       const scopedContextKeySerivce = this.contextKeyService.createScoped(target as monaco.contextkey.IContextKeyServiceTarget) as monaco.contextKeyService.ContextKeyService;
@@ -69,8 +69,7 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
 export class MonacoContextKeyService extends BaseContextKeyService implements IContextKeyService {
   match(expression: string | monaco.contextkey.ContextKeyExpr | undefined, context?: HTMLElement): boolean {
     try {
-      // 这里存在手动管理 context 的使用，可以直接在 contextService 上挂载 context 完成 context 传递
-      // 这样做真的好脏，还不如要求传递进来呢
+      // keybinding 将 html target 传递过来完成激活区域的 context 获取和匹配
       // thiea 中是通过 activeElement 来搞 quickopen 的上下文的, 见 thiea/packages/monaco/src/browser/monaco-quick-open-service.ts
       const ctx = context || this.activeContext || (window.document.activeElement instanceof HTMLElement ? window.document.activeElement : undefined);
       let parsed: monaco.contextkey.ContextKeyExpr | undefined;
