@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-browser';
-import { Emitter as EventEmitter, Event } from '@ali/ide-core-common';
+import { Deferred, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 
 import { loadMonaco } from './monaco-loader';
 import { MonacoService, ServiceNames } from '../common';
@@ -17,8 +17,12 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   private loadingPromise!: Promise<any>;
 
   private _onMonacoLoaded = new EventEmitter<boolean>();
-
   public onMonacoLoaded: Event<boolean> = this._onMonacoLoaded.event;
+
+  private readonly _monacoLoaded = new Deferred<void>();
+  get monacoLoaded(): Promise<void> {
+    return this._monacoLoaded.promise;
+  }
 
   private overrideServices = {};
 
@@ -80,6 +84,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       this.loadingPromise = loadMonaco().then(() => {
         // TODO 改成eventbus
         this._onMonacoLoaded.fire(true);
+        this._monacoLoaded.resolve();
       });
     }
     return this.loadingPromise;

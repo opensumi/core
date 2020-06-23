@@ -6,24 +6,30 @@ declare const __non_webpack_require__;
 export function getNodeRequire() {
   return __non_webpack_require__ as any;
 }
-import { getLanguageId } from '@ali/ide-core-common';
+
+import { Deferred, getLanguageId } from '@ali/ide-core-common';
 import { join } from '@ali/ide-core-common/lib/path';
 
 const monacoCDNBase = isDevelopment() ? 'https://dev.g.alicdn.com/tb-ide/monaco-editor-core/0.17.99/' : 'https://g.alicdn.com/tb-ide/monaco-editor-core/0.17.0/';
-
-let loadingMonaco: Promise<void> | undefined;
 
 export interface LoadMonacoOptions {
   monacoCDNBase: string;
 }
 
-export function loadMonaco(loadMonacoOptions: LoadMonacoOptions = {
+let _monacoLoaded: Deferred<void> | undefined;
+export function isMonacoLoaded(): Promise<void> | undefined {
+  return _monacoLoaded && _monacoLoaded.promise;
+}
+
+export async function loadMonaco(loadMonacoOptions: LoadMonacoOptions = {
   monacoCDNBase,
 }): Promise<void> {
-  if (!loadingMonaco) {
-    loadingMonaco = doLoadMonaco(loadMonacoOptions);
+  if (!_monacoLoaded) {
+    _monacoLoaded = new Deferred<void>();
+    await doLoadMonaco(loadMonacoOptions);
+    _monacoLoaded.resolve();
   }
-  return loadingMonaco!;
+  return isMonacoLoaded();
 }
 
 function doLoadMonaco(loadMonacoOptions: LoadMonacoOptions): Promise<void> {

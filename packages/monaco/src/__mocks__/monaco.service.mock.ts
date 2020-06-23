@@ -1,4 +1,4 @@
-import { Emitter } from '@ali/ide-core-common';
+import { Deferred, Emitter } from '@ali/ide-core-common';
 import { createMockedMonaco } from './monaco';
 import { Injectable } from '@ali/common-di';
 import { MonacoService, ServiceNames } from '../common';
@@ -10,10 +10,16 @@ export class MockedMonacoService implements MonacoService {
   public onMonacoLoaded = this._onMonacoLoaded.event;
   private mockedMonaco = createMockedMonaco() as (typeof monaco);
 
+  private readonly _monacoLoaded = new Deferred<void>();
+  get monacoLoaded(): Promise<void> {
+    return this._monacoLoaded.promise;
+  }
+
   constructor() {
     (global as any).monaco = this.mockedMonaco;
     setTimeout(() => {
       this._onMonacoLoaded.fire(true);
+      this._monacoLoaded.resolve();
     });
   }
 

@@ -1,12 +1,17 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, ISchemaRegistry, Disposable, CommandRegistry, IMimeService, CorePreferences } from '@ali/ide-core-browser';
-import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames, KeybindingContribution, KeybindingRegistry, Keystroke, KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService, IEventBus } from '@ali/ide-core-browser';
+import {
+  PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, ISchemaRegistry, Disposable,
+  CommandRegistry, IMimeService, CorePreferences, ClientAppContribution, CommandContribution, ContributionProvider,
+  Domain, MonacoService, MonacoContribution, ServiceNames, KeybindingContribution, KeybindingRegistry, Keystroke,
+  KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService, IEventBus,
+} from '@ali/ide-core-browser';
 import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next';
+import { IThemeService } from '@ali/ide-theme';
+import { getDebugLogger } from '@ali/ide-core-common';
 
 import { MonacoCommandService, MonacoCommandRegistry, MonacoActionRegistry } from './monaco.command.service';
 import { MonacoMenus } from './monaco-menu';
 import { TextmateService } from './textmate.service';
-import { IThemeService } from '@ali/ide-theme';
 import { MonacoSnippetSuggestProvider } from './monaco-snippet-suggest-provider';
 
 @Domain(ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution, KeybindingContribution)
@@ -141,6 +146,8 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
         this.mimeService.updateMime();
       }
     });
+
+    getDebugLogger().info('monaco loaded');
   }
 
   registerCommands(commands: CommandRegistry) {

@@ -11,6 +11,7 @@ export enum ServiceNames {
 
 export abstract class MonacoService {
   public abstract onMonacoLoaded: Event<boolean>;
+  public abstract monacoLoaded: Promise<void>;
 
   public abstract async createCodeEditor(
     monacoContainer: HTMLElement,

@@ -1,6 +1,6 @@
 import { TextmateRegistry } from './textmate-registry';
 import { Injectable, Autowired } from '@ali/common-di';
-import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger, ExtensionActivateEvent, getDebugLogger } from '@ali/ide-core-browser';
+import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger, ExtensionActivateEvent, getDebugLogger, MonacoService } from '@ali/ide-core-browser';
 import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap, INITIAL } from 'vscode-textmate';
 import { loadWASM, OnigScanner, OnigString } from 'onigasm';
 import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
@@ -81,6 +81,9 @@ export class TextmateService extends WithEventBus {
   @Autowired(ILogger)
   private logger: ILogger;
 
+  @Autowired()
+  private readonly monacoService: MonacoService;
+
   public grammarRegistry: Registry;
 
   private injections = new Map<string, string[]>();
@@ -107,6 +110,7 @@ export class TextmateService extends WithEventBus {
   }
 
   async registerLanguage(language: LanguagesContribution, extPath: URI) {
+    await this.monacoService.monacoLoaded;
     monaco.languages.register({
       id: language.id,
       aliases: language.aliases,
