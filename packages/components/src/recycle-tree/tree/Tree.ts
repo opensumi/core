@@ -1,5 +1,5 @@
 import { TreeNode, CompositeTreeNode } from './TreeNode';
-import { Emitter, DisposableCollection, Mutable } from '@ali/ide-core-common';
+import { Emitter, DisposableCollection } from '../../utils';
 import { ITreeNodeOrCompositeTreeNode, ITree } from '../types';
 
 export abstract class Tree implements ITree {
@@ -9,7 +9,7 @@ export abstract class Tree implements ITree {
   protected readonly toDispose = new DisposableCollection();
 
   protected nodes: {
-    [id: string]: Mutable<TreeNode> | undefined,
+    [id: string]: TreeNode | undefined,
   } = {};
 
   get onNodeRefreshed() {

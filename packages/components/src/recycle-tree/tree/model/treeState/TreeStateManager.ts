@@ -1,8 +1,7 @@
-import { Event, Emitter } from '@ali/ide-core-common';
+import { Event, Emitter, Path } from '../../../../utils';
 import { ISerializableState } from './types';
 import { CompositeTreeNode, TreeNode } from '../../TreeNode';
 import { TreeNodeEvent, ITreeNodeOrCompositeTreeNode } from '../../../types';
-import { Path } from '@ali/ide-core-common/lib/path';
 
 export enum Operation {
   SetExpanded = 1,

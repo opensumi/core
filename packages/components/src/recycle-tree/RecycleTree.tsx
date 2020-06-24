@@ -4,7 +4,7 @@ import { TreeModel } from './tree/model/TreeModel';
 import { TreeNode, CompositeTreeNode, spliceTypedArray } from './tree';
 import { RenamePromptHandle, PromptHandle } from './prompt';
 import { NewPromptHandle } from './prompt/NewPromptHandle';
-import { DisposableCollection, Emitter, Event, Disposable } from '@ali/ide-core-common';
+import { DisposableCollection, Emitter, Event, Disposable } from '../utils';
 import { INodeRendererProps, NodeRendererWrap, INodeRenderer } from './TreeNodeRendererWrap';
 import { TreeNodeType, TreeNodeEvent } from './types';
 import { Scrollbars } from 'react-custom-scrollbars';
@@ -102,6 +102,8 @@ export interface IRecycleTreeHandle {
   onDidChangeModel: Event<IModelChange>;
   // Tree更新事件
   onDidUpdate: Event<void>;
+  // Tree更新事件, 仅触发一次
+  onOnceDidUpdate: Event<void>;
   // 监听渲染报错
   onError: Event<IRecycleTreeError>;
 }
@@ -452,6 +454,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         getModel: () => this.props.model,
         onDidChangeModel: this.onDidModelChangeEmitter.event,
         onDidUpdate: this.onDidUpdateEmitter.event,
+        onOnceDidUpdate: Event.once(this.onDidUpdateEmitter.event),
         onError: this.onErrorEmitter.event,
       };
 

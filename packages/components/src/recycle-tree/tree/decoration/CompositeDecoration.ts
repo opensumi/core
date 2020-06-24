@@ -1,6 +1,6 @@
 import { Decoration, TargetMatchMode, IDecorationEventData } from './Decoration';
 import { TreeNode, CompositeTreeNode } from '../TreeNode';
-import { DisposableCollection } from '@ali/ide-core-common';
+import { DisposableCollection } from '../../../utils';
 
 export class ClasslistComposite {
   public classlist: ReadonlyArray<string>;

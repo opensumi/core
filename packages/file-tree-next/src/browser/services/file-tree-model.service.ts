@@ -136,11 +136,11 @@ export class FileTreeModelService {
     return this.fileTreeService.hasFolderIcons;
   }
 
-  get onDidFocusedFileChange() {
+  get onDidFocusedFileChange(): Event<URI | void> {
     return this.onDidFocusedFileChangeEmitter.event;
   }
 
-  get onDidSelectedFileChange() {
+  get onDidSelectedFileChange(): Event<URI[]> {
     return this.onDidSelectedFileChangeEmitter.event;
   }
 
@@ -802,7 +802,7 @@ export class FileTreeModelService {
     let isCommit = false;
     const locationFileWhileFileExist = (pathOrUri: URI | string) => {
       // 文件树更新后尝试定位文件位置
-      Event.once(this.fileTreeHandle.onDidUpdate)(() => {
+      this.fileTreeHandle.onOnceDidUpdate(() => {
         this.location(pathOrUri);
       });
     };

@@ -1,4 +1,4 @@
-import { Event, Emitter, IDisposable, DisposableCollection } from '@ali/ide-core-common';
+import { Event, Emitter, IDisposable, DisposableCollection } from '../../../../utils';
 import { TreeStateManager, IPathChange, IExpansionStateChange } from './TreeStateManager';
 import { ISerializableState, TreeStateWatcherChangeType as TreeStateChangeType } from './types';
 
