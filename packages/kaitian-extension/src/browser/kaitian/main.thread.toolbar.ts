@@ -3,6 +3,8 @@ import { IToolbarActionBtnDelegate, IToolbarRegistry, createToolbarActionBtn, Co
 import { IToolbarButtonContribution, IToolbarSelectContribution } from './types';
 import { IIconService, IconType } from '@ali/ide-theme';
 import { EMIT_EXT_HOST_EVENT } from '../../common';
+import { Disposable } from '@ali/ide-core-browser';
+import { IMainThreadToolbar } from '../../common/kaitian/toolbar';
 
 @Injectable()
 export class KaitianExtensionToolbarService {
@@ -204,4 +206,22 @@ export class KaitianExtensionToolbarService {
     }
   }
 
+}
+
+// 与 KaitianExtensionToolbarService 区分一下，只是为了给插件进程调用注册 actions
+@Injectable({ multiple: true })
+export class MainThreadToolbar extends Disposable implements IMainThreadToolbar {
+
+  @Autowired(KaitianExtensionToolbarService)
+  toolbarService: KaitianExtensionToolbarService;
+
+  $registerToolbarButtonAction(extensionId: string, extensionPath: string, contribution: IToolbarButtonContribution): Promise<void> {
+    this.addDispose(this.toolbarService.registerToolbarButton(extensionId, extensionPath, contribution));
+    return Promise.resolve();
+  }
+
+  $registerToolbarSelectAction<T = any>(extensionId: string, extensionPath: string, contribution: IToolbarSelectContribution<T>): Promise<void> {
+    this.addDispose(this.toolbarService.registerToolbarSelect(extensionId, extensionPath, contribution));
+    return Promise.resolve();
+  }
 }

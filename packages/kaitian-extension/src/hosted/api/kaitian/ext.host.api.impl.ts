@@ -32,7 +32,7 @@ export function createAPIFactory(
   const kaitianLayout = rpcProtocol.set(ExtHostKaitianAPIIdentifier.ExtHostLayout, new KaitianExtHostLayout(rpcProtocol));
   const kaitianExtHostTheme = rpcProtocol.set(ExtHostKaitianAPIIdentifier.ExtHostTheme, new ExtHostTheme(rpcProtocol)) as  ExtHostTheme;
   const kaitianExtHostCommon = rpcProtocol.set(ExtHostKaitianAPIIdentifier.ExtHostCommon, new ExtHostCommon(rpcProtocol)) as ExtHostCommon;
-  const kaitianExtHostToolbar = new ExtHostToolbarActionService(extHostCommands, kaitianExtHostCommon);
+  const kaitianExtHostToolbar = rpcProtocol.set(ExtHostKaitianAPIIdentifier.ExtHostToolbar, new ExtHostToolbarActionService(extHostCommands, kaitianExtHostCommon, rpcProtocol)) as ExtHostToolbarActionService;
 
   return (extension: IExtension) => {
     const reporter = new ExtensionReporterService(reporterEmitter, {
