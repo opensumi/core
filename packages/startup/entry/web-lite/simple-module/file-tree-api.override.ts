@@ -35,6 +35,7 @@ export class FileTreeApiOverride extends FileTreeAPI {
     }
     // FIXME: projectId可以用group/repo吗
     const childNodes = await getRepoFiles(this.metaService.projectId, this.metaService.ref, relativePath);
+    // FIXME: syncToRemote不能耦合在fsProvider里，外层无法判断是否需要sync，应该要加一层browser-scm来处理
     const ensureNodes: Promise<FileStat>[] = [];
     for (const node of childNodes) {
       if (node.type === 'tree') {

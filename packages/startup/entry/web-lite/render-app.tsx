@@ -38,7 +38,8 @@ export async function renderApp(opts: IClientAppOpts) {
       projectId: process.env.PROJECT_ID!,
       group: 'ide-s',
       name: 'TypeScript-Node-Starter',
-      ref: 'df72e4d1c394af6d1c21cd042116f83a792fa8c6',
+      ref: 'test',
+      // branch: 'test',
     }),
   });
 

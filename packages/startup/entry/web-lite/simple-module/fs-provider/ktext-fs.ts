@@ -1,5 +1,4 @@
 import { Uri, Event } from '@ali/ide-core-browser';
-import { IDisposable } from '@ali/ide-core-common';
 import { FileSystemProvider, FileStat, FileType, FileChangeEvent } from '@ali/ide-file-service';
 
 /**
@@ -8,7 +7,7 @@ import { FileSystemProvider, FileStat, FileType, FileChangeEvent } from '@ali/id
 
 export class KaitianExtFsProvider implements FileSystemProvider {
   onDidChangeFile: Event<FileChangeEvent>;
-  watch(uri: Uri, options: { recursive: boolean; excludes: string[]; }): IDisposable {
+  watch(uri: Uri, options: { recursive: boolean; excludes: string[]; }): number {
     throw new Error('Method not implemented.');
   }
   stat(uri: Uri): Thenable<FileStat> {

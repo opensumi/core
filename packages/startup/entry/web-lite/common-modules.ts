@@ -20,6 +20,7 @@ import { MenuBarModule } from '@ali/ide-menu-bar/lib/browser';
 import { OverlayModule } from '@ali/ide-overlay/lib/browser';
 import { SCMModule } from '@ali/ide-scm/lib/browser';
 import { StaticResourceModule } from '@ali/ide-static-resource/lib/browser';
+import { WorkspaceEditModule } from '@ali/ide-workspace-edit/lib/browser';
 
 import { BrowserFileSchemeModule } from './modules/file-scheme/browser-file-scheme';
 
@@ -45,6 +46,7 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   DecorationModule,
   SCMModule,
   StaticResourceModule,
+  WorkspaceEditModule,
   // browser custom modules
   BrowserFileSchemeModule,
 ];
