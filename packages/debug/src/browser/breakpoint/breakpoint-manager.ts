@@ -1,16 +1,20 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { Emitter, Event, URI, isUndefined, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-browser';
 import { IWorkspaceStorageService } from '@ali/ide-workspace';
-import { SourceBreakpoint, BREAKPOINT_KIND } from './breakpoint-marker';
+import { DebugBreakpoint, DebugExceptionBreakpoint, BREAKPOINT_KIND } from './breakpoint-marker';
 import { MarkerManager, Marker } from '../markers';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { DebugModel } from '../editor';
 
 export interface BreakpointsChangeEvent {
-  uri: URI;
-  added: SourceBreakpoint[];
-  removed: SourceBreakpoint[];
-  changed: SourceBreakpoint[];
+  affected: URI[];
+  added: DebugBreakpoint[];
+  removed: DebugBreakpoint[];
+  changed: DebugBreakpoint[];
+  /**
+   * 标识后端调试状态已更新，这是纯视图更新。
+   */
+  statusUpdated?: boolean;
 }
 
 export interface ExceptionBreakpointsChangeEvent {
@@ -18,18 +22,20 @@ export interface ExceptionBreakpointsChangeEvent {
 }
 
 export interface SelectedBreakpoint {
-  breakpoint?: SourceBreakpoint;
+  breakpoint?: DebugBreakpoint;
   model: DebugModel;
 }
 
 @Injectable()
-export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
+export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
 
   protected readonly owner = 'breakpoint';
   private _selectedBreakpoint: SelectedBreakpoint;
 
   private defaultExceptionFilter: DebugProtocol.ExceptionBreakpointsFilter[] = [];
-  private exceptionFilterValue: {[key: string]: boolean} = {};
+  private exceptionFilterValue: { [key: string]: boolean } | undefined;
+  private _affected = new Set<string>();
+
   @Autowired(IWorkspaceStorageService)
   protected readonly storage: IWorkspaceStorageService;
 
@@ -48,18 +54,23 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
     this._selectedBreakpoint = value;
   }
 
+  get affected() {
+    return Array.from(this._affected.values());
+  }
+
   protected readonly onDidChangeBreakpointsEmitter = new Emitter<BreakpointsChangeEvent>();
   readonly onDidChangeBreakpoints: Event<BreakpointsChangeEvent> = this.onDidChangeBreakpointsEmitter.event;
   protected readonly onDidChangeExceptionsBreakpointsEmitter = new Emitter<ExceptionBreakpointsChangeEvent>();
   readonly onDidChangeExceptionsBreakpoints: Event<ExceptionBreakpointsChangeEvent> = this.onDidChangeExceptionsBreakpointsEmitter.event;
 
-  setMarkers(uri: URI, owner: string, newMarkers: SourceBreakpoint[]): Marker<SourceBreakpoint>[] {
+  setMarkers(uri: URI, owner: string, newMarkers: DebugBreakpoint[]): Marker<DebugBreakpoint>[] {
     const result = super.setMarkers(uri, owner, newMarkers);
-    const added: SourceBreakpoint[] = [];
-    const removed: SourceBreakpoint[] = [];
-    const changed: SourceBreakpoint[] = [];
-    const oldMarkers = new Map(result.map(({ data }) => [data.id, data] as [string, SourceBreakpoint]));
+    const added: DebugBreakpoint[] = [];
+    const removed: DebugBreakpoint[] = [];
+    const changed: DebugBreakpoint[] = [];
+    const oldMarkers = new Map(result.map(({ data }) => [data.id, data] as [string, DebugBreakpoint]));
     const ids = new Set<string>();
+
     for (const newMarker of newMarkers) {
       ids.add(newMarker.id);
       if (oldMarkers.has(newMarker.id)) {
@@ -73,11 +84,11 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
         removed.push(data);
       }
     }
-    this.onDidChangeBreakpointsEmitter.fire({ uri, added, removed, changed });
+    this.onDidChangeBreakpointsEmitter.fire({ affected: [uri], added, removed, changed });
     return result;
   }
 
-  getBreakpoint(uri: URI, line: number): SourceBreakpoint | undefined {
+  getBreakpoint(uri: URI, line: number): DebugBreakpoint | undefined {
     const marker = this.findMarkers({
       uri,
       dataFilter: (breakpoint) => breakpoint.raw.line === line,
@@ -85,15 +96,20 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
     return marker && marker.data;
   }
 
-  getBreakpoints(uri?: URI): SourceBreakpoint[] {
+  getBreakpoints(uri?: URI): DebugBreakpoint[] {
     return this.findMarkers({ uri }).map((marker) => marker.data);
   }
 
-  setBreakpoints(uri: URI, breakpoints: SourceBreakpoint[]): void {
+  setBreakpoints(uri: URI, breakpoints: DebugBreakpoint[]): void {
+    if (breakpoints.length > 0) {
+      this._affected.add(uri.toString());
+    } else {
+      this._affected.delete(uri.toString());
+    }
     this.setMarkers(uri, this.owner, breakpoints.sort((a, b) => a.raw.line - b.raw.line));
   }
 
-  addBreakpoint(breakpoint: SourceBreakpoint): boolean {
+  addBreakpoint(breakpoint: DebugBreakpoint): boolean {
     const uri = new URI(breakpoint.uri);
     const breakpoints = this.getBreakpoints(uri);
     const newBreakpoints = breakpoints.filter(({ raw }) => raw.line !== breakpoint.raw.line);
@@ -103,6 +119,56 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
       return true;
     }
     return false;
+  }
+
+  delBreakpoint(breakpoint: DebugBreakpoint): boolean {
+    const uri = URI.parse(breakpoint.uri);
+    const breakpoints = this.getBreakpoints(uri);
+    const index = breakpoints.indexOf(breakpoint);
+    if (index > -1) {
+      breakpoints.splice(index, 1);
+      this.setBreakpoints(uri, ([] as DebugBreakpoint[]).concat(breakpoints));
+      return true;
+    }
+    return false;
+  }
+
+  clearBreakpoints() {
+    const affected = new Set<string>();
+    const breakpoints = this.getBreakpoints();
+    breakpoints.map((b) => affected.add(b.uri));
+    this.cleanAllMarkers();
+    this.onDidChangeBreakpointsEmitter.fire({
+      affected: Array.from(affected.values()).map((str) => URI.parse(str)),
+      added: [],
+      removed: breakpoints,
+      changed: [],
+    });
+  }
+
+  updateBreakpoint(breakpoint: DebugBreakpoint, statusUpdated: boolean = false) {
+    const uri = URI.parse(breakpoint.uri);
+    this.onDidChangeBreakpointsEmitter.fire({
+      affected: [uri],
+      added: [],
+      removed: [],
+      changed: [breakpoint],
+      statusUpdated,
+    });
+  }
+
+  updateBreakpoints(breakpoints: DebugBreakpoint[], statusUpdated: boolean = false) {
+    const uriStrings = new Set<string>();
+    breakpoints.forEach((breakpoint) => {
+      uriStrings.add(breakpoint.uri);
+    });
+    this.onDidChangeBreakpointsEmitter.fire({
+      affected: Array.from(uriStrings.values()).map((v) => URI.parse(v)),
+      added: [],
+      removed: [],
+      changed: breakpoints,
+      statusUpdated,
+    });
   }
 
   enableAllBreakpoints(enabled: boolean): void {
@@ -140,21 +206,25 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
     const data = storage.get<BreakpointManager.Data>('breakpoints', {
       breakpointsEnabled: true,
       breakpoints: {},
-      exceptionsBreakpoints: {},
+      defaultExceptionFilter: [],
     });
     this._breakpointsEnabled = data!.breakpointsEnabled;
     // tslint:disable-next-line:forin
     for (const uri in data!.breakpoints) {
-      this.setBreakpoints(new URI(uri), data!.breakpoints[uri]);
+      this.setBreakpoints(new URI(uri), data!.breakpoints[uri].map((v) => Object.assign(v, { status: new Map() })));
     }
-    this.exceptionFilterValue = data!.exceptionsBreakpoints || {};
+    this.defaultExceptionFilter = data.defaultExceptionFilter || [];
+    this.exceptionFilterValue = {};
+    this.defaultExceptionFilter.forEach((item) => {
+      this.exceptionFilterValue![item.filter] = !!item.default;
+    });
   }
 
   async save(): Promise<void> {
     const data: BreakpointManager.Data = {
       breakpointsEnabled: this._breakpointsEnabled,
       breakpoints: {},
-      exceptionsBreakpoints: this.exceptionFilterValue,
+      defaultExceptionFilter: this.defaultExceptionFilter,
     };
     const uris = this.getUris();
     for (const uri of uris) {
@@ -162,6 +232,14 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
     }
     const storage: IStorage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
     await storage.set('breakpoints', data);
+  }
+
+  clearAllStatus(sessionId: string) {
+    const breakpoints = this.getBreakpoints();
+    breakpoints.forEach((breakpoint) => {
+      breakpoint.status.delete(sessionId);
+    });
+    this.updateBreakpoints(breakpoints);
   }
 
   /**
@@ -173,9 +251,10 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
     this.defaultExceptionFilter = filters;
     for (const item of filters) {
       if (!isUndefined(this.exceptionFilterValue)) {
-        this.updateExceptionBreakpoints(item.filter, this.exceptionFilterValue[item.filter]);
+        this.updateExceptionBreakpoints(item.filter,
+          isUndefined(this.exceptionFilterValue[item.filter]) ? !!item.default : this.exceptionFilterValue[item.filter]);
       } else {
-        this.updateExceptionBreakpoints(item.filter, item.default || false);
+        this.updateExceptionBreakpoints(item.filter, !!item.default);
       }
     }
   }
@@ -184,11 +263,11 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
    * 获取异常断点元信息
    * @param session
    */
-  getExceptionBreakpoints(): DebugProtocol.ExceptionBreakpointsFilter[] {
+  getExceptionBreakpoints(): DebugExceptionBreakpoint[] {
     return this.defaultExceptionFilter.map((breakpoint) => {
       return {
         ...breakpoint,
-        default: this.exceptionFilterValue[breakpoint.filter] || false,
+        default: (this.exceptionFilterValue || {})[breakpoint.filter] || false,
       };
     });
   }
@@ -198,9 +277,15 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
    * @param exceptionBreakpoints
    */
   updateExceptionBreakpoints(filter: string, value: boolean) {
+    if (isUndefined(this.exceptionFilterValue)) {
+      this.exceptionFilterValue = {};
+    }
     this.exceptionFilterValue[filter] = value;
-    const filters = this.defaultExceptionFilter.filter((exp) => this.exceptionFilterValue[exp.filter]).map((exp) => exp.filter);
-    this.onDidChangeExceptionsBreakpointsEmitter.fire({filters});
+
+    const filters = this.defaultExceptionFilter
+      .filter((exp) => (this.exceptionFilterValue || {})[exp.filter])
+      .map((exp) => exp.filter);
+    this.onDidChangeExceptionsBreakpointsEmitter.fire({ filters });
   }
 }
 
@@ -208,10 +293,8 @@ export namespace BreakpointManager {
   export interface Data {
     breakpointsEnabled: boolean;
     breakpoints: {
-      [uri: string]: SourceBreakpoint[],
+      [uri: string]: DebugBreakpoint[],
     };
-    exceptionsBreakpoints: {
-      [filter: string]: boolean,
-    };
+    defaultExceptionFilter: DebugExceptionBreakpoint[];
   }
 }

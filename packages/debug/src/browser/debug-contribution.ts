@@ -1,8 +1,8 @@
 import { Domain, ClientAppContribution, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution, CommandService } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser';
 import { DebugBreakpointView } from './view/debug-breakpoints.view';
-import { DebugStackFrameView } from './view/debug-stack-frames.view';
-import { DebugVariableView } from './view/debug-variable.view';
+import { DebugVariableView } from './view/variables/debug-variables.view';
+import { DebugCallStackView } from './view/debug-call-stack.view';
 import { DebugConfigurationView } from './view/debug-configuration.view';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { Autowired } from '@ali/common-di';
@@ -103,6 +103,9 @@ export namespace DEBUG_COMMANDS {
     id: 'debug.add.conditional',
     label: localize('debug.menu.add.conditional'),
   };
+  export const SET_VARIABLE_VALUE = {
+    id: 'debug.variables.setValue',
+  };
 }
 
 export namespace DebugBreakpointWidgetCommands {
@@ -179,7 +182,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
         collapsed: false,
       },
       {
-        component: DebugStackFrameView,
+        component: DebugCallStackView,
         id: DEBUG_STACK_ID,
         name: localize('debug.callStack.title'),
         collapsed: false,
@@ -240,6 +243,9 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
       this.configurations.save();
     });
     this.breakpointManager.onDidChangeBreakpoints(() => {
+      this.breakpointManager.save();
+    });
+    this.breakpointManager.onDidChangeExceptionsBreakpoints(() => {
       this.breakpointManager.save();
     });
     this.debugWatchService.onDidChange(() => {
@@ -362,9 +368,10 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
         const { selectedBreakpoint } = this;
         if (selectedBreakpoint) {
           const { uri } = selectedBreakpoint.model;
-          const breakpoint = this.sessionManager.getBreakpoint(uri, position.lineNumber);
+          const breakpoint = this.breakpointManager.getBreakpoint(uri, position.lineNumber);
           if (breakpoint) {
-            breakpoint.setEnabled(false);
+            breakpoint.enabled = false;
+            this.breakpointManager.updateBreakpoint(breakpoint);
           }
         }
       },
@@ -376,9 +383,10 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
         const { selectedBreakpoint } = this;
         if (selectedBreakpoint) {
           const { uri } = selectedBreakpoint.model;
-          const breakpoint = this.sessionManager.getBreakpoint(uri, position.lineNumber);
+          const breakpoint = this.breakpointManager.getBreakpoint(uri, position.lineNumber);
           if (breakpoint) {
-            breakpoint.setEnabled(true);
+            breakpoint.enabled = true;
+            this.breakpointManager.updateBreakpoint(breakpoint);
           }
         }
       },
@@ -390,9 +398,9 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
         const { selectedBreakpoint } = this;
         if (selectedBreakpoint) {
           const { uri } = selectedBreakpoint.model;
-          const breakpoint = this.sessionManager.getBreakpoint(uri, position.lineNumber);
+          const breakpoint = this.breakpointManager.getBreakpoint(uri, position.lineNumber);
           if (breakpoint) {
-            breakpoint.remove();
+            this.breakpointManager.delBreakpoint(breakpoint);
           }
         }
       },
@@ -477,7 +485,9 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   }
 
   registerToolbarItems(registry: ToolbarRegistry) {
-    // Watch 面板菜单
+    /**
+     * Watch 面板菜单
+     */
     registry.registerItem({
       id: DEBUG_COMMANDS.REMOVE_ALL_WATCHER.id,
       command: DEBUG_COMMANDS.REMOVE_ALL_WATCHER.id,
@@ -498,7 +508,13 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
       viewId: DEBUG_WATCH_ID,
       tooltip: localize('debug.watch.add'),
     });
+    /**
+     * end
+     */
 
+    /**
+     * 断点面板菜单
+     */
     registry.registerItem({
       id: DEBUG_COMMANDS.REMOVE_ALL_BREAKPOINTS.id,
       command: DEBUG_COMMANDS.REMOVE_ALL_BREAKPOINTS.id,
@@ -512,7 +528,9 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
       viewId: DEBUG_BREAKPOINTS_ID,
       tooltip: localize('debug.breakpoint.toggle'),
     });
-
+    /**
+     * end
+     */
   }
 
   registerSchema(registry: ISchemaRegistry) {

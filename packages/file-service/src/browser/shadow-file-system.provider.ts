@@ -8,10 +8,9 @@ import {
     FileStat,
     FileType,
     FileSystemProvider,
-  } from '../common/';
+  } from '../common';
 import { Injectable } from '@ali/common-di';
 
-// TODO: 挪到前端？
 @Injectable()
 export class ShadowFileSystemProvider implements FileSystemProvider {
     shadowFiles: Map<string, string> = new Map<string, string>();

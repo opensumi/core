@@ -1,8 +1,7 @@
-import { Disposable, URI, Emitter, DisposableCollection } from '@ali/ide-core-common';
+import { Disposable, URI, Emitter, Event, DisposableCollection } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EditorCollectionService, ICodeEditor, WorkbenchEditorService } from '@ali/ide-editor';
-import { DebugSessionManager } from '../debug-session-manager';
-import { IDebugSessionManager, DebugModelFactory, IDebugModel } from '../../common';
+import { DebugModelFactory, IDebugModel } from '../../common';
 import { BreakpointManager, BreakpointsChangeEvent } from '../breakpoint';
 import { DebugConfigurationManager } from '../debug-configuration-manager';
 
@@ -27,9 +26,6 @@ export class DebugModelManager extends Disposable {
   @Autowired(DebugModelFactory)
   private debugModelFactory: DebugModelFactory;
 
-  @Autowired(IDebugSessionManager)
-  private debugSessionManager: DebugSessionManager;
-
   @Autowired(BreakpointManager)
   private breakpointManager: BreakpointManager;
 
@@ -45,6 +41,9 @@ export class DebugModelManager extends Disposable {
   public onMouseMove = this._onMouseMove;
   public onMouseLeave = this._onMouseLeave;
   public onMouseUp = this._onMouseUp;
+
+  private _onModelChanged = new Emitter<monaco.editor.IModelChangedEvent>();
+  public onModelChanged: Event<monaco.editor.IModelChangedEvent> = this._onModelChanged.event;
 
   constructor() {
     super();
@@ -62,13 +61,14 @@ export class DebugModelManager extends Disposable {
   init() {
     this.editorColletion.onCodeEditorCreate((codeEditor: ICodeEditor) => this.push(codeEditor));
 
-    this.debugSessionManager.onDidChangeBreakpoints(({ session, uri }) => {
-      if (!session || session === this.debugSessionManager.currentSession) {
+    this.breakpointManager.onDidChangeBreakpoints((event) => {
+      const { currentEditor } = this.editorService;
+      const uri = currentEditor && currentEditor.currentUri;
+
+      if (uri) {
         this.render(uri);
       }
-    });
-    this.breakpointManager.onDidChangeBreakpoints((event) => {
-      // 移除breakpointWidget
+
       this.closeBreakpointIfAffected(event);
     });
   }
@@ -82,22 +82,24 @@ export class DebugModelManager extends Disposable {
     }
   }
 
-  protected closeBreakpointIfAffected({ uri, removed }: BreakpointsChangeEvent): void {
-    const models = this.models.get(uri.toString());
-    if (!models) {
-        return;
-    }
-    for (const model of models) {
-      const position = model.breakpointWidget.position;
-      if (!position) {
+  protected closeBreakpointIfAffected({ affected, removed }: BreakpointsChangeEvent): void {
+    affected.forEach((uri) => {
+      const models = this.models.get(uri.toString());
+      if (!models) {
           return;
       }
-      for (const breakpoint of removed) {
-        if (breakpoint.raw.line === position.lineNumber) {
-          model.breakpointWidget.dispose();
+      for (const model of models) {
+        const position = model.breakpointWidget.position;
+        if (!position) {
+            return;
+        }
+        for (const breakpoint of removed) {
+          if (breakpoint.raw.line === position.lineNumber) {
+            model.breakpointWidget.dispose();
+          }
         }
       }
-    }
+    });
   }
 
   protected render(uri: URI): void {
@@ -154,6 +156,8 @@ export class DebugModelManager extends Disposable {
       monacoEditor.onMouseLeave((event) => handleMonacoModelEvent(DebugModelSupportedEventType.leave, event)));
     this.toDispose.push(
       monacoEditor.onContextMenu((event) => handleMonacoModelEvent(DebugModelSupportedEventType.contextMenu, event)));
+    this.toDispose.push(
+      monacoEditor.onDidChangeModel((event) => this._onModelChanged.fire(event)));
   }
 
   resolve(uri: URI) {

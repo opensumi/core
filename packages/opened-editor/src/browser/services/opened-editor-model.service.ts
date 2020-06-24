@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNode } from '@ali/ide-components';
-import { URI, DisposableCollection, Emitter, IContextKeyService, EDITOR_COMMANDS, CommandService, ThrottledDelayer, Deferred } from '@ali/ide-core-browser';
+import { URI, DisposableCollection, Emitter, IContextKeyService, EDITOR_COMMANDS, CommandService, ThrottledDelayer, Deferred, Event } from '@ali/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { OpenedEditorService } from './opened-editor-tree.service';
@@ -130,7 +130,7 @@ export class OpenedEditorModelService {
     return this._selectedFiles;
   }
 
-  get onDidRefreshed() {
+  get onDidRefreshed(): Event<void> {
     return this.onDidRefreshedEmitter.event;
   }
   async initTreeModel() {

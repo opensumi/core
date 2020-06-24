@@ -1,31 +1,73 @@
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
+import btoa = require('btoa');
 import { Marker } from '../markers';
-import { uuid, URI } from '@ali/ide-core-browser';
 
 export const BREAKPOINT_KIND = 'breakpoint';
 
-export interface SourceBreakpoint {
+export interface ISourceBreakpoint {
   id: string;
-  uri: string;
   enabled: boolean;
+  uri: string;
   raw: DebugProtocol.SourceBreakpoint;
+  logMessage?: string;
+  message?: string;
+  status: Map<string, DebugProtocol.Breakpoint>;
 }
 
-export namespace SourceBreakpoint {
-  export function create(uri: URI, data: DebugProtocol.SourceBreakpoint, origin?: SourceBreakpoint): SourceBreakpoint {
+export interface IRuntimeBreakpoint extends ISourceBreakpoint {
+  status: Map<string, DebugProtocol.Breakpoint>;
+}
+
+export type DebugBreakpoint = ISourceBreakpoint | IRuntimeBreakpoint;
+
+function generateId(uri: string, line: number, column: number = 1) {
+  return btoa(`${uri}:${line}:${column}`);
+}
+
+export namespace DebugBreakpoint {
+  export function create(uri: string, data: DebugProtocol.SourceBreakpoint, enabled: boolean = true): DebugBreakpoint {
     return {
-      id: origin ? origin.id : uuid(),
-      uri: uri.toString(),
-      enabled: origin ? origin.enabled : true,
+      id: generateId(uri, data.line, data.column),
+      uri,
+      enabled,
+      status: new Map(),
       raw: {
-        ...(origin && origin.raw),
+        column: undefined,
+        condition: undefined,
+        hitCondition: undefined,
+        logMessage: undefined,
         ...data,
       },
     };
   }
 }
 
-export interface BreakpointMarker extends Marker<SourceBreakpoint> {
+export interface IExceptionBreakpoint {
+  label: string;
+  filter: string;
+  default?: boolean;
+}
+
+export type DebugExceptionBreakpoint = IExceptionBreakpoint;
+
+export function isDebugBreakpoint(breakpoint: DebugBreakpoint | DebugExceptionBreakpoint): breakpoint is DebugBreakpoint  {
+  return !!breakpoint && !!(breakpoint as DebugBreakpoint).raw;
+}
+
+export function getStatus(breakpoint: IRuntimeBreakpoint) {
+  return Array.from(breakpoint.status.values()).filter((b) => b.verified)[0];
+}
+
+export function isRuntimeBreakpoint(breakpoint: DebugBreakpoint): breakpoint is IRuntimeBreakpoint {
+  const status = getStatus(breakpoint);
+  return !!(status && status.verified);
+}
+
+export function isDebugExceptionBreakpoint(breakpoint: DebugBreakpoint | DebugExceptionBreakpoint): breakpoint is DebugExceptionBreakpoint {
+  return breakpoint && !!(breakpoint as DebugExceptionBreakpoint).filter;
+}
+
+export interface BreakpointMarker extends Marker<DebugBreakpoint> {
   kind: 'breakpoint';
 }
 

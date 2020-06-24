@@ -4,7 +4,7 @@ import { Event, Emitter, Uri } from '@ali/ide-core-common';
 import {
   IDiskFileProvider, FileChangeEvent, FileStat,
   DiskFileServicePath, FileSystemProvider, FileType,
-  DidFilesChangedParams, FileChange, ShadowFileServicePath,
+  DidFilesChangedParams, FileChange,
 } from '../common';
 
 export abstract class CoreFileServiceProviderClient implements FileSystemProvider {
@@ -85,10 +85,4 @@ export class DiskFsProviderClient extends CoreFileServiceProviderClient implemen
   getFileType(uri: string) {
     return this.fileServiceProvider.getFileType(uri);
   }
-}
-
-@Injectable()
-export class ShadowFsProviderClient extends CoreFileServiceProviderClient {
-  @Autowired(ShadowFileServicePath)
-  fileServiceProvider: FileSystemProvider;
 }

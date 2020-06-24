@@ -19,7 +19,7 @@ import { DebugHoverSource } from './editor/debug-hover-source';
 import { LaunchFolderPreferenceProvider } from './preferences/launch-folder-preference-provider';
 import { LaunchPreferencesContribution } from './preferences/launch-preferences-contribution';
 import { DebugToolbarOverlayWidget } from './view/debug-toolbar.view';
-import { VariablesPanelContribution } from './view/debug-variable.menu';
+import { VariablesPanelContribution } from './view/variables/debug-variables.contribution';
 
 import './debug-style.less';
 

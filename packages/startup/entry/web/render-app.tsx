@@ -18,7 +18,6 @@ export async function renderApp(opts: IClientAppOpts) {
   opts.editorBackgroudImage = 'https://img.alicdn.com/tfs/TB1Y6vriuL2gK0jSZFmXXc7iXXa-200-200.png';
   // 定制Layout
   opts.layoutComponent = ToolbarActionBasedLayout;
-
   const app = new ClientApp(opts);
 
   app.fireOnReload = (forcedReload: boolean) => {

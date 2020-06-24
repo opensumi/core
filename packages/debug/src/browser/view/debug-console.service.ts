@@ -1,7 +1,7 @@
 import { observable, action } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { URI, Emitter, CommandRegistry } from '@ali/ide-core-common';
+import { URI, CommandRegistry, Emitter, Event } from '@ali/ide-core-common';
 import { IEditorDocumentModelService, IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
 import { EditorCollectionService } from '@ali/ide-editor';
 import { DebugConsoleSession } from '../console/debug-console-session';
@@ -83,7 +83,7 @@ export class DebugConsoleService {
   throttleUpdateNodes = throttle(this.updateNodes, 200);
 
   private _onValueChange = new Emitter<URI>();
-  public onValueChange = this._onValueChange.event;
+  public onValueChange: Event<URI> = this._onValueChange.event;
 
   @action
   updateNodes() {
