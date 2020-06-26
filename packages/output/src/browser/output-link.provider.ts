@@ -105,7 +105,7 @@ class OutputLinkComputer {
 }
 
 @Injectable()
-export class OuputLinkProvider implements monaco.languages.LinkProvider {
+export class OutputLinkProvider implements monaco.languages.LinkProvider {
 
   private linkComputer: OutputLinkComputer;
 

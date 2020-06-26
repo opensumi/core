@@ -1,12 +1,13 @@
 import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command, localize, PreferenceSchema } from '@ali/ide-core-common';
-import { getIcon, PreferenceContribution } from '@ali/ide-core-browser';
+import { Disposable, CommandContribution, CommandRegistry, Command, localize, PreferenceSchema } from '@ali/ide-core-common';
+import { getIcon, PreferenceContribution, MonacoContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 
 import { Output, ChannelSelector } from './output.view';
 import { OutputService } from './output.service';
 import { outputPreferenceSchema } from './output-preference';
+import { OutputLinkProvider } from './output-link.provider';
 
 const OUTPUT_CLEAR: Command = {
   id: 'output.channel.clear',
@@ -14,13 +15,22 @@ const OUTPUT_CLEAR: Command = {
   label: localize('output.channel.clear', '清理日志'),
 };
 const OUTPUT_CONTAINER_ID = 'ide-output';
-@Domain(CommandContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution)
-export class OutputContribution implements CommandContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution {
+@Domain(CommandContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MonacoContribution)
+export class OutputContribution extends Disposable implements CommandContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MonacoContribution {
 
   @Autowired()
   private readonly outputService: OutputService;
 
+  @Autowired()
+  private readonly outputLinkProvider: OutputLinkProvider;
+
   schema: PreferenceSchema = outputPreferenceSchema;
+
+  onMonacoLoaded() {
+    this.addDispose(
+      monaco.languages.registerLinkProvider('log', this.outputLinkProvider),
+    );
+  }
 
   registerToolbarItems(registry: ToolbarRegistry) {
     registry.registerItem({
