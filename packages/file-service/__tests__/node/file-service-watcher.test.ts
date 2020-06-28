@@ -5,7 +5,7 @@ import { execSync } from 'child_process';
 import { URI } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import { NsfwFileSystemWatcherServer } from '../../src/node/file-service-watcher';
-import { DidFilesChangedParams, FileChangeType } from '../../src/common/file-service-watcher-protocol';
+import { DidFilesChangedParams, FileChangeType } from '../../src/common';
 // tslint:disable:no-unused-expression
 
 function createNsfwFileSystemWatcherServer() {
@@ -112,7 +112,6 @@ describe('测试重命名、移动、新建相关', () => {
   const sleepTime = 1500;
   let root: URI;
   let watcherServer: NsfwFileSystemWatcherServer;
-  let watcherId: number;
   jest.setTimeout(10000);
 
   beforeEach(async () => {
@@ -120,7 +119,7 @@ describe('测试重命名、移动、新建相关', () => {
     fs.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
     fs.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
     watcherServer = createNsfwFileSystemWatcherServer();
-    watcherId = await watcherServer.watchFileChanges(root.toString());
+    await watcherServer.watchFileChanges(root.toString());
     await sleep(sleepTime);
   });
 
@@ -290,5 +289,6 @@ describe('测试重命名、移动、新建相关', () => {
 
 // tslint:disable-next-line:no-any
 process.on('unhandledRejection', (reason: any) => {
+  // tslint:disable-next-line:no-console
   console.error('Unhandled promise rejection: ' + reason);
 });

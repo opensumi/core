@@ -19,7 +19,7 @@ import {
 import { FileUri, INodeLogger, AppConfig } from '@ali/ide-core-node';
 import { RPCService } from '@ali/ide-connection'
 import { parse, ParsedPattern, match } from '@ali/ide-core-common/lib/utils/glob';
-import { FileChangeEvent } from '../common/file-service-watcher-protocol';
+import { FileChangeEvent } from '../common';
 import { FileSystemManage } from './file-system-manage';
 import { ShadowFileSystemProvider } from './shadow-file-system.provider';
 import { getEncodingInfo, decode, encode, UTF8 } from './encoding';

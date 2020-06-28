@@ -13,7 +13,7 @@ import {
   ContributionProvider,
 } from '@ali/ide-core-browser';
 import { FileStat, FileSystemError, IFileServiceClient, IDiskFileProvider, IShadowFileProvider } from '../common';
-import { FileChangeEvent } from '../common/file-service-watcher-protocol';
+import { FileChangeEvent } from '../common';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-protocol';
 import { FileServiceClient } from './file-service-client';
 

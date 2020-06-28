@@ -1,6 +1,5 @@
 import { IFileServiceClient } from './file-service-client';
-import { FileChange } from './file-service-watcher-protocol';
-import { URI, Event } from '@ali/ide-core-common';
+import { URI, Event, FileChange } from '@ali/ide-core-common';
 
 export interface FileServiceWatcherOptions {
   fileServiceClient: IFileServiceClient;

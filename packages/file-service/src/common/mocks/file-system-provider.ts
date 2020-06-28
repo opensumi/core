@@ -1,7 +1,7 @@
 import { Injectable } from '@ali/common-di';
 import { IDiskFileProvider, FileType } from '../';
 import { Emitter, Event } from '@ali/ide-core-common';
-import { FileChangeEvent } from '../file-service-watcher-protocol';
+import { FileChangeEvent } from '..';
 
 @Injectable()
 export class MockFsProvider implements IDiskFileProvider {

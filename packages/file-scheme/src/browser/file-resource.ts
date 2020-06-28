@@ -5,8 +5,8 @@ import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { FILE_SCHEME } from '../common';
 import { IFileServiceClient, FileStat } from '@ali/ide-file-service/lib/common';
-import { FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { Path } from '@ali/ide-core-common/lib/path';
+import { FileChangeType } from '@ali/ide-core-common';
 import { IDialogService } from '@ali/ide-overlay';
 import { FileTreeSet } from './file-tree-set';
 

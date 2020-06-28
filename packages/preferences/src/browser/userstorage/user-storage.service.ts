@@ -2,7 +2,7 @@
 import { DisposableCollection, ILogger, Emitter, Event, URI, AppConfig } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { USER_STORAGE_SCHEME, UserStorageChangeEvent, IUserStorageService } from '../../common';
-import { FileChangeEvent } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
+import { FileChangeEvent } from '@ali/ide-file-service/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 
 export const DEFAULT_USER_STORAGE_FOLDER = '.kaitian';

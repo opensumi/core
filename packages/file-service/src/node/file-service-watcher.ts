@@ -10,7 +10,7 @@ import {
   FileSystemWatcherClient,
   FileSystemWatcherServer,
   WatchOptions,
-} from '../common/file-service-watcher-protocol';
+} from '..';
 import { FileChangeCollection } from './file-change-collection';
 import { INsfw, IEfsw } from '../common/watcher';
 import { setInterval, clearInterval } from 'timers';

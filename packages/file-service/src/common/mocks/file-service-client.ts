@@ -1,6 +1,6 @@
 import { IFileServiceClient } from '../file-service-client';
 import { URI, Emitter, Event, FileUri, IDisposable } from '@ali/ide-core-common';
-import { FileChangeEvent, DidFilesChangedParams, FileChange } from '../file-service-watcher-protocol';
+import { FileChangeEvent, DidFilesChangedParams, FileChange } from '..';
 import { FileSetContentOptions, FileStat, FileMoveOptions, FileCreateOptions, FileCopyOptions, FileDeleteOptions, FileSystemProvider } from '../files';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 import { IFileServiceWatcher } from '../watcher';
