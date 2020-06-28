@@ -4,6 +4,8 @@ import {
   ResourceResolverContribution,
   URI,
   Uri,
+  FsProviderContribution,
+  AppConfig,
 } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { FileResource } from '@ali/ide-file-service/lib/browser/file-service-contribution';
@@ -14,15 +16,14 @@ import { ClientAppContribution } from '@ali/ide-core-browser';
 
 import { IMetaService } from './meta-service';
 import { KaitianExtFsProvider } from './fs-provider/ktext-fs';
-import { IWorkspaceService } from '@ali/ide-workspace';
 
 @Injectable()
 class AoneCodeHttpFileService extends HttpFileServiceBase {
   @Autowired(IMetaService)
   metaService: IMetaService;
 
-  @Autowired(IWorkspaceService)
-  private workspaceService: IWorkspaceService;
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
 
   static base64ToUnicode(str: string) {
     return decodeURIComponent(
@@ -55,7 +56,7 @@ class AoneCodeHttpFileService extends HttpFileServiceBase {
 
   async readDir(uri: Uri) {
     const _uri = new URI(uri);
-    const relativePath = new URI(this.workspaceService.workspace!.uri).relative(_uri)!;
+    const relativePath = URI.file(this.appConfig.workspaceDir).relative(_uri)!.toString();
     const children = await fetch(
       `/code-service/projects/${this.metaService.projectId}/repository/tree?ref_name=${this.metaService.ref}&type=direct${relativePath ? `&path=${relativePath}` : ''}`,
       {
@@ -72,16 +73,20 @@ class AoneCodeHttpFileService extends HttpFileServiceBase {
     const params: any = {
       branch_name: this.metaService.ref,
       commit_message: 'auto update file with DEF WebIDE',
-      old_path: this.getRelativePath(_uri),
       content,
       ...options,
     };
+    let requestUri = this.getResolveService(_uri, 3);
     if (params.newUri) {
-      params.new_path = this.getRelativePath(new URI(params.newUri));
+      requestUri = this.getResolveService(_uri, 4);
+      params.old_path = this.getRelativePath(_uri, false),
+      params.new_path = this.getRelativePath(new URI(params.newUri), false);
       delete params.newUri;
+    } else {
+      params.file_path = this.getRelativePath(_uri, false);
     }
     await fetch(
-      this.getResolveService(_uri, 4),
+      requestUri,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -103,7 +108,7 @@ class AoneCodeHttpFileService extends HttpFileServiceBase {
     const params: any = {
       branch_name: this.metaService.ref,
       commit_message: 'auto create file with DEF WebIDE',
-      file_path: this.getRelativePath(_uri),
+      file_path: this.getRelativePath(_uri, false),
       content,
       ...options,
     };
@@ -144,8 +149,9 @@ class AoneCodeHttpFileService extends HttpFileServiceBase {
     });
   }
 
-  protected getRelativePath(uri: URI) {
-    return encodeURIComponent(new Path(`/${this.metaService.repo}`).relative(uri.path)!.toString());
+  protected getRelativePath(uri: URI, encoding = true) {
+    const path = new Path(`/${this.metaService.repo}`).relative(uri.path)!.toString();
+    return encoding ? encodeURIComponent(path) : path;
   }
 
   // get restful http request url
@@ -157,8 +163,8 @@ class AoneCodeHttpFileService extends HttpFileServiceBase {
 }
 
 // file 文件资源 远程读取
-@Domain(ResourceResolverContribution)
-export class FSProviderContribution implements ResourceResolverContribution {
+@Domain(ResourceResolverContribution, FsProviderContribution)
+export class FSProviderContribution implements ResourceResolverContribution, FsProviderContribution {
 
   @Autowired(IFileServiceClient)
   private readonly fileSystem: FileServiceClient;
@@ -166,17 +172,8 @@ export class FSProviderContribution implements ResourceResolverContribution {
   @Autowired(AoneCodeHttpFileService)
   private httpImpl: AoneCodeHttpFileService;
 
-  @Autowired(IWorkspaceService)
-  private workspaceService: IWorkspaceService;
-
-  private rootFolder: string;
-
-  constructor() {
-    if (!this.rootFolder) {
-      this.rootFolder = new URI(this.workspaceService.workspace!.uri).codeUri.fsPath;
-    }
-    this.fileSystem.registerProvider('file', new BrowserFsProvider(this.httpImpl, {rootFolder: this.rootFolder}));
-  }
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
 
   async resolve(uri: URI): Promise<FileResource | void> {
     if (uri.scheme !== 'file') {
@@ -185,6 +182,10 @@ export class FSProviderContribution implements ResourceResolverContribution {
     const resource = new FileResource(uri, this.fileSystem);
     await resource.init();
     return resource;
+  }
+
+  registerProvider(registry: IFileServiceClient) {
+    registry.registerProvider('file', new BrowserFsProvider(this.httpImpl, {rootFolder: this.appConfig.workspaceDir}));
   }
 
 }

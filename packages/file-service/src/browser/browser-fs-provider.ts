@@ -147,6 +147,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
     }
     return await promisify(fs.unlink)((uri.fsPath));
   }
+  // FIXME: @魁武 fileTree的移动可以不依赖fileService的watch事件
   async rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean; }): Promise<void | FileStat> {
     this.checkCapability();
     const content = await this.readFile(oldUri);
@@ -176,7 +177,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
     if (this.httpFileService.createFile) {
       await this.httpFileService.createFile(destination, content, {});
     }
-    await promisify(fs.copyFile)(source.fsPath, destination.fsPath);
+    await promisify(fs.writeFile)(destination.fsPath, content);
   }
   async getCurrentUserHome(): Promise<FileStat | undefined> {
     return undefined;
@@ -249,9 +250,6 @@ export class BrowserFsProvider implements IDiskFileProvider {
 
   protected async doGetStat(uri: URI, depth: number): Promise<FileStat | undefined> {
     try {
-      // TODO: 获取stat前拉取一遍远端的结构信息，理论上要加一个cache做优化
-      await this.ensureNodeFetched(uri);
-
       const filePath = FileUri.fsPath(uri);
       const lstat = await promisify(fs.lstat)(filePath);
 
@@ -321,6 +319,8 @@ export class BrowserFsProvider implements IDiskFileProvider {
   }
 
   protected async doGetChildren(uri: URI, depth: number): Promise<FileStat[]> {
+    // TODO: 获取stat前拉取一遍远端的结构信息，理论上要加一个cache做优化
+    await this.ensureNodeFetched(uri);
     return new Promise((resolve) => {
       fs.readdir(FileUri.fsPath(uri), async (err, files) => {
         const children = await Promise.all(files.map((fileName) => uri.resolve(fileName)).map((childUri) => this.doGetStat(childUri, depth - 1)));

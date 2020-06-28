@@ -301,7 +301,7 @@ export class FileServiceClient implements IFileServiceClient {
       throw FileSystemError.FileNotFound(uriString);
     }
 
-    await (provider as any).delete(uriString, {
+    await provider.delete(_uri.codeUri, {
       recursive: true,
       moveToTrash: await this.doGetMoveToTrash(options),
     });

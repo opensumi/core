@@ -1,4 +1,5 @@
 import { BasicEvent } from '..';
+import { IFileServiceClient } from '@ali/ide-file-service';
 
 export interface FileChange {
   uri: string;
@@ -12,3 +13,10 @@ export enum FileChangeType {
 }
 
 export class FilesChangeEvent extends BasicEvent<FileChange[]> {}
+
+export interface FsProviderContribution {
+  registerProvider?(registry: IFileServiceClient): void;
+  onFileServiceReady?(): void;
+}
+
+export const FsProviderContribution = Symbol('FsProviderContribution');

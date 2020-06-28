@@ -80,10 +80,6 @@ export class WorkspaceService implements IWorkspaceService {
   // 映射工作区显示的文字信息
   private workspaceToName = {};
 
-  constructor() {
-    this.whenReady = this.init();
-  }
-
   public async init(): Promise<void> {
     // TODO 用户可配置
     this.applicationName = ClientAppConfigProvider.get().applicationName;
