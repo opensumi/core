@@ -92,9 +92,6 @@ export class KeymapsContribution implements CommandContribution, KeybindingContr
     await this.keymapService.init();
   }
 
-  initialize(): void {
-  }
-
   registerResource(resourceService: ResourceService) {
     resourceService.registerResourceProvider(this.keymapsResourceProvider);
   }
