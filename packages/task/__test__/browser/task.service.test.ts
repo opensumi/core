@@ -87,7 +87,9 @@ describe('TaskService Test Suite', () => {
     },
   ]);
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    const monacoService = injector.get(MonacoService);
+    await monacoService.loadMonaco();
     injector.overrideProviders({
       token: PreferenceService,
       useValue: {
