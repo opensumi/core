@@ -205,7 +205,7 @@ export class PreferenceServiceImpl implements PreferenceService {
     // 触发配置变更事件
     const changedPreferenceNames = Object.keys(changesToEmit);
     if (changedPreferenceNames.length > 0) {
-      this.triggerPeferencesChanged(changesToEmit);
+      this.onPreferencesChangedEmitter.fire(changesToEmit);
     }
     changedPreferenceNames.forEach((preferenceName) => {
       this.onPreferenceChangedEmitter.fire(changesToEmit[preferenceName]);
@@ -484,71 +484,6 @@ export class PreferenceServiceImpl implements PreferenceService {
       languageSpecific: result.languageSpecific,
     };
   }
-
-  // hack duck types for ContextKeyService
-  // https://yuque.antfin-inc.com/zymuwz/lsxfi3/kg9bng#5wAGA
-  // https://github.com/microsoft/vscode/blob/master/src/vs/platform/configuration/common/configuration.ts
-  protected triggerPeferencesChanged(changesToEmit: PreferenceChanges) {
-    this.onPreferencesChangedEmitter.fire(changesToEmit);
-
-    const changes = Object.values(changesToEmit);
-    const defaultScopeChanges = changes.filter((change) => change.scope === PreferenceScope.Default);
-    const userScopeChanges = changes.filter((change) => change.scope === PreferenceScope.User);
-    const workspaceScopeChanges = changes.filter((change) => change.scope === PreferenceScope.Workspace);
-    const folderScopeChanges = changes.filter((change) => change.scope === PreferenceScope.Folder);
-
-    if (defaultScopeChanges.length) {
-      this._onDidChangeConfiguration.fire({
-        affectedKeys: defaultScopeChanges.map((n) => n.preferenceName),
-        source: ConfigurationTarget.DEFAULT,
-      });
-    }
-
-    if (userScopeChanges.length) {
-      this._onDidChangeConfiguration.fire({
-        affectedKeys: userScopeChanges.map((n) => n.preferenceName),
-        source: ConfigurationTarget.USER,
-      });
-    }
-
-    if (workspaceScopeChanges.length) {
-      this._onDidChangeConfiguration.fire({
-        affectedKeys: workspaceScopeChanges.map((n) => n.preferenceName),
-        source: ConfigurationTarget.WORKSPACE,
-      });
-    }
-
-    if (folderScopeChanges.length) {
-      this._onDidChangeConfiguration.fire({
-        affectedKeys: folderScopeChanges.map((n) => n.preferenceName),
-        source: ConfigurationTarget.WORKSPACE_FOLDER,
-      });
-    }
-  }
-
-  public getValue<T>(preferenceName: string): T | undefined {
-    return this.resolve<T>(preferenceName).value;
-  }
-
-  protected readonly _onDidChangeConfiguration = new Emitter<IConfigurationChangeEvent>();
-  public readonly onDidChangeConfiguration = this._onDidChangeConfiguration.event;
-
-}
-
-// copied from vscdoe
-interface IConfigurationChangeEvent {
-  source: ConfigurationTarget;
-  affectedKeys: string[];
-}
-
-const enum ConfigurationTarget {
-  USER = 1,
-  USER_LOCAL,
-  USER_REMOTE,
-  WORKSPACE,
-  WORKSPACE_FOLDER,
-  DEFAULT,
-  MEMORY,
 }
 
 function cacheHash(language?: string, untilScope?: PreferenceScope, resourceUri?: string) {
