@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { MainThreadAPIIdentifier, IExtHostQuickOpen, IMainThreadQuickOpen } from '../../../common/vscode';
+import { MainThreadAPIIdentifier, IExtHostQuickOpen, IMainThreadQuickOpen, IExtHostWorkspace } from '../../../common/vscode';
 import { CancellationToken, hookCancellationToken, Event, Emitter, DisposableCollection, MaybePromise } from '@ali/ide-core-common';
 import { QuickPickItem } from '@ali/ide-quick-open';
 
@@ -11,7 +11,10 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
   private proxy: IMainThreadQuickOpen;
   private validateInputHandler: undefined | ((input: string) => MaybePromise<string | null | undefined>);
 
-  constructor(rpc: IRPCProtocol) {
+  constructor(
+    rpc: IRPCProtocol,
+    private readonly workspace: IExtHostWorkspace,
+  ) {
     this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadQuickOpen);
   }
 
@@ -58,6 +61,27 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
       options.onDidSelectItem(result);
     }
     return result;
+  }
+
+  async showWorkspaceFolderPick(options: vscode.WorkspaceFolderPickOptions, token: CancellationToken = CancellationToken.None) {
+    const workspaceFolders = await this.workspace.resolveWorkspaceFolder();
+    if (!workspaceFolders) {
+      return undefined;
+    }
+    const pickItems = workspaceFolders.map((folder: vscode.WorkspaceFolder, index) => {
+      const quickPickItem: QuickPickItem<number> = {
+        // QuickPickItem
+        label: folder.name,
+        value: folder.index, // handle
+      };
+      return quickPickItem;
+    });
+    const quickPickPromise = this.proxy.$showQuickPick(pickItems, options && {
+      placeholder: options.placeHolder,
+      ignoreFocusOut: options.ignoreFocusOut,
+    });
+    const value = await hookCancellationToken<number | undefined>(token, quickPickPromise);
+    return workspaceFolders.find((folder) => folder.index === value);
   }
 
   hideQuickPick(): void {

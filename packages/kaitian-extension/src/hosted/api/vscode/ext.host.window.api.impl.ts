@@ -90,6 +90,9 @@ export function createWindowApiFactory(
     showQuickPick(items: any, options: vscode.QuickPickOptions, token?: CancellationToken): Promise<vscode.QuickPickItem | undefined> {
       return extHostQuickOpen.showQuickPick(items, options, token);
     },
+    showWorkspaceFolderPick(options: vscode.WorkspaceFolderPickOptions): Promise<vscode.WorkspaceFolder | undefined> {
+      return extHostQuickOpen.showWorkspaceFolderPick(options);
+    },
     createQuickPick<T extends vscode.QuickPickItem>(): vscode.QuickPick<T> {
       return extHostQuickOpen.createQuickPick();
     },

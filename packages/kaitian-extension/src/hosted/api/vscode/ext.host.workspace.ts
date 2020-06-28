@@ -93,10 +93,10 @@ export function createWorkspaceApiFactory(
   return workspace;
 }
 
-export function toWorkspaceFolder(folder: WorkspaceFolder): vscode.WorkspaceFolder {
+export function toWorkspaceFolder(folder: WorkspaceFolder, workspaceToName: any = {}): vscode.WorkspaceFolder {
   return {
     uri: Uri.revive(folder.uri),
-    name: folder.name,
+    name: folder.name || (!!folder.uri.path ? workspaceToName[folder.uri.toString()] : workspaceToName[folder.uri.toString() + '/']),
     index: folder.index,
   };
 }
@@ -116,6 +116,10 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
 
   private _onDidRenameFile = new Emitter<{oldUri: Uri; readonly newUri: Uri}>();
   public onDidRenameFile: Event<{oldUri: Uri; readonly newUri: Uri}> = this._onDidRenameFile.event;
+
+  private workspaceToName: {
+    [key: string]: string;
+  } = {};
 
   constructor(rpcProtocol: IRPCProtocol, extHostMessage: IExtHostMessage, private extHostDoc: ExtensionDocumentDataManager) {
     this.messageService = extHostMessage;
@@ -206,14 +210,13 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
 
   updateWorkspaceFolders(start: number, deleteCount: number, ...workspaceFoldersToAdd: { uri: Uri, name?: string }[]): boolean {
     const rootsToAdd = new Set<string>();
-    const workspaceToName: any = {};
     if (Array.isArray(workspaceFoldersToAdd)) {
       workspaceFoldersToAdd.forEach((folderToAdd) => {
         const uri = Uri.isUri(folderToAdd.uri) && folderToAdd.uri.toString();
         if (uri && !rootsToAdd.has(uri)) {
           rootsToAdd.add(uri);
           if (folderToAdd.name) {
-            workspaceToName[uri.toString()] = folderToAdd.name;
+            this.workspaceToName[uri.toString()] = folderToAdd.name;
           }
         }
       });
@@ -249,7 +252,7 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
     }
 
     // 通知主进程更新对应目录
-    this.proxy.$updateWorkspaceFolders(start, deleteCount, workspaceToName, ...rootsToAdd).then(undefined, (error) =>
+    this.proxy.$updateWorkspaceFolders(start, deleteCount, this.workspaceToName, ...rootsToAdd).then(undefined, (error) =>
       this.messageService.showMessage(MessageType.Error, `Failed to update workspace folders: ${error}`),
     );
 
@@ -291,7 +294,7 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
       const folderPath = folder.uri.toString();
 
       if (resourcePath === folderPath) {
-        return toWorkspaceFolder(folder);
+        return toWorkspaceFolder(folder,  this.workspaceToName);
       }
 
       if (resourcePath.startsWith(folderPath)
@@ -301,6 +304,18 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
       }
     }
     return workspaceFolder;
+  }
+
+  // 用于直接获取工作区列表
+  resolveWorkspaceFolder(): vscode.WorkspaceFolder[] | undefined {
+    if (!this.folders || !this.folders.length) {
+      return undefined;
+    }
+    const workspaceFolders: vscode.WorkspaceFolder[] = [];
+    for (const folder of this.folders) {
+      workspaceFolders?.push(toWorkspaceFolder(folder, this.workspaceToName));
+    }
+    return workspaceFolders;
   }
 
   private hasFolder(uri: Uri): boolean {

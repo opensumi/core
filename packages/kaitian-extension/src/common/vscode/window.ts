@@ -27,6 +27,7 @@ export interface IExtHostQuickOpen {
   showQuickPick(promiseOrItems: vscode.QuickPickItem[] | Promise<vscode.QuickPickItem[]>, options?: vscode.QuickPickOptions, token?: CancellationToken): Promise<vscode.QuickPickItem | undefined>;
   showQuickPick(promiseOrItems: vscode.QuickPickItem[] | Promise<vscode.QuickPickItem[]>, options?: vscode.QuickPickOptions & { canSelectMany: true; }, token?: CancellationToken): Promise<vscode.QuickPickItem[] | undefined>;
   showQuickPick(promiseOrItems: string[] | Promise<string[]>, options?: vscode.QuickPickOptions, token?: CancellationToken): Promise<string | undefined>;
+  showWorkspaceFolderPick(options: vscode.WorkspaceFolderPickOptions, token?: CancellationToken): Promise<vscode.WorkspaceFolder | undefined>;
   createQuickPick<T extends vscode.QuickPickItem>(): vscode.QuickPick<T>;
   createInputBox(): vscode.InputBox;
   hideQuickPick(): void;

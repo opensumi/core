@@ -12,6 +12,7 @@ export interface IMainThreadWorkspace extends IDisposable {
 
 export interface IExtHostWorkspace {
   getWorkspaceFolder(uri: Uri, resolveParent?: boolean): vscode.WorkspaceFolder | undefined;
+  resolveWorkspaceFolder(): vscode.WorkspaceFolder[] | undefined;
   $onWorkspaceFoldersChanged(event: WorkspaceRootsChangeEvent): void;
   $didRenameFile(oldUri: UriComponents, newUri: UriComponents): Promise<void>;
 }
