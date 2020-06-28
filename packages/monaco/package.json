@@ -25,6 +25,7 @@
     "@ali/ide-editor": "1.8.31",
     "@ali/ide-file-service": "1.8.31",
     "@ali/ide-theme": "1.8.31",
+    "@reexport/vsc-modules": "^1.1.0",
     "monaco-editor-core": "^0.17.0"
   },
   "devDependencies": {

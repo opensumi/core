@@ -3,11 +3,13 @@ import {
   PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, ISchemaRegistry, Disposable,
   CommandRegistry, IMimeService, CorePreferences, ClientAppContribution, CommandContribution, ContributionProvider,
   Domain, MonacoService, MonacoContribution, ServiceNames, KeybindingContribution, KeybindingRegistry, Keystroke,
-  KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService, IEventBus,
+  KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService,
 } from '@ali/ide-core-browser';
 import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next';
 import { IThemeService } from '@ali/ide-theme';
 import { getDebugLogger } from '@ali/ide-core-common';
+
+import { ContextKeyExpr } from '@reexport/vsc-modules/lib/contextkey/common/contextkey';
 
 import { MonacoCommandService, MonacoCommandRegistry, MonacoActionRegistry } from './monaco.command.service';
 import { MonacoMenus } from './monaco-menu';
@@ -109,18 +111,9 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     this.monacoCommandService.setDelegate(standaloneCommandService);
     // 替换 monaco 内部的 commandService
     monacoService.registerOverride(ServiceNames.COMMAND_SERVICE, this.monacoCommandService);
-    /**
-     * 替换 monaco 内部的 contextKeyService
-     * 这里没有继续使用 monaco 内置的 monaco.services.StaticServices.configurationService.get()
-     * 而是使用我们自己的 PreferenceService 让 ContextKeyService 去获取全局配置信息
-     */
-    const contextKeyService = new monaco.contextKeyService.ContextKeyService(this.preferenceService as any);
-    const { MonacoContextKeyService } = require('./monaco.context-key.service');
-    // 提供全局的 IContextKeyService 调用
-    this.injector.addProviders({
-      token: IContextKeyService,
-      useValue: new MonacoContextKeyService(contextKeyService, this.injector.get(IEventBus)),
-    });
+
+    // workbench-editor.service.ts 内部做了 registerOverride
+    // monacoService.registerOverride(ServiceNames.CONTEXT_KEY_SERVICE, (this.contextKeyService as any).contextKeyService);
 
     for (const contribution of this.monacoContributionProvider.getContributions()) {
       if (contribution.onContextKeyServiceReady) {
@@ -189,9 +182,9 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
         let when = item.when;
         const editorFocus = monaco.contextkey.EditorContextKeys.focus;
         if (!when) {
-            when = editorFocus as any;
+          when = editorFocus as any;
         } else {
-            when = monaco.contextkey.ContextKeyExpr.and(editorFocus, when as any)!;
+          when = ContextKeyExpr.and(editorFocus, when as any)!;
         }
         // 转换 monaco 快捷键
         const keybindingStr = raw.parts.map((part) => this.keyCode(part)).join(' ');
