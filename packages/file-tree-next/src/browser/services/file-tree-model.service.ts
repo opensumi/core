@@ -839,6 +839,10 @@ export class FileTreeModelService {
         // Cause the treeNode move event just changing path and name by default.
         // We should update target uri to new uri by ourself.
         target.uri = to;
+        // 但重命名文件为文件夹时，刷新文件夹更新子文件路径
+        if (Directory.is(target)) {
+          this.fileTreeService.refresh(target as Directory);
+        }
         locationFileWhileFileExist(target.path);
       } else if (promptHandle instanceof NewPromptHandle) {
         const parent = promptHandle.parent as Directory;
