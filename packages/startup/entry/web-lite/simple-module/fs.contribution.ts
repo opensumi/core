@@ -14,11 +14,15 @@ import { ClientAppContribution } from '@ali/ide-core-browser';
 
 import { IMetaService } from './meta-service';
 import { KaitianExtFsProvider } from './fs-provider/ktext-fs';
+import { IWorkspaceService } from '@ali/ide-workspace';
 
 @Injectable()
 class AoneCodeHttpFileService extends HttpFileServiceBase {
   @Autowired(IMetaService)
   metaService: IMetaService;
+
+  @Autowired(IWorkspaceService)
+  private workspaceService: IWorkspaceService;
 
   static base64ToUnicode(str: string) {
     return decodeURIComponent(
@@ -49,7 +53,21 @@ class AoneCodeHttpFileService extends HttpFileServiceBase {
     return content;
   }
 
-  async updateFile?(uri: Uri, content: string, options: { encoding?: string; newUri?: Uri; }): Promise<void> {
+  async readDir(uri: Uri) {
+    const _uri = new URI(uri);
+    const relativePath = new URI(this.workspaceService.workspace!.uri).relative(_uri)!;
+    const children = await fetch(
+      `/code-service/projects/${this.metaService.projectId}/repository/tree?ref_name=${this.metaService.ref}&type=direct${relativePath ? `&path=${relativePath}` : ''}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    ).then((res) => res.json());
+    return children;
+  }
+
+  async updateFile(uri: Uri, content: string, options: { encoding?: string; newUri?: Uri; }): Promise<void> {
     const _uri = new URI(uri);
     const params: any = {
       branch_name: this.metaService.ref,
@@ -148,8 +166,16 @@ export class FSProviderContribution implements ResourceResolverContribution {
   @Autowired(AoneCodeHttpFileService)
   private httpImpl: AoneCodeHttpFileService;
 
+  @Autowired(IWorkspaceService)
+  private workspaceService: IWorkspaceService;
+
+  private rootFolder: string;
+
   constructor() {
-    this.fileSystem.registerProvider('file', new BrowserFsProvider(this.httpImpl));
+    if (!this.rootFolder) {
+      this.rootFolder = new URI(this.workspaceService.workspace!.uri).codeUri.fsPath;
+    }
+    this.fileSystem.registerProvider('file', new BrowserFsProvider(this.httpImpl, {rootFolder: this.rootFolder}));
   }
 
   async resolve(uri: URI): Promise<FileResource | void> {

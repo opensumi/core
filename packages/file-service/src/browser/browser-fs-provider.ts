@@ -1,12 +1,13 @@
 import { IDiskFileProvider, FileChangeEvent, FileStat, FileType, FileSystemError, notEmpty, isErrnoException } from '../common';
 import { Event, URI, FileUri, Uri } from '@ali/ide-core-common';
+import { Path } from '@ali/ide-core-common/lib/path';
 import { promisify } from '@ali/ide-core-common/lib/browser-fs/util';
 import { ensureDir } from '@ali/ide-core-common/lib/browser-fs/ensure-dir';
 
 import * as fs from 'fs';
 import * as paths from 'path';
 
-interface BrowserFsProviderOptions { isReadonly: boolean; }
+interface BrowserFsProviderOptions { isReadonly?: boolean; rootFolder: string; }
 
 export class BrowserFsProvider implements IDiskFileProvider {
 
@@ -56,7 +57,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
 
   onDidChangeFile: Event<FileChangeEvent>;
 
-  constructor(private httpFileService: HttpFileServiceBase, private options?: BrowserFsProviderOptions) {
+  constructor(private httpFileService: HttpFileServiceBase, private options: BrowserFsProviderOptions) {
 
   }
 
@@ -115,7 +116,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
     }
     return content;
   }
-  async writeFile(uri: Uri, content: string, options: { create: boolean; overwrite: boolean; }): Promise<void | FileStat> {
+  async writeFile(uri: Uri, content: string, options: { create: boolean; overwrite: boolean; isInit?: boolean }): Promise<void | FileStat> {
     this.checkCapability();
 
     const _uri = new URI(uri);
@@ -129,12 +130,12 @@ export class BrowserFsProvider implements IDiskFileProvider {
     }
 
     if (options.create) {
-      if (this.httpFileService.createFile) {
+      if (!options.isInit && this.httpFileService.createFile) {
         await this.httpFileService.createFile(uri, content, {});
       }
       return await this.createFile(uri, { content });
     }
-    if (this.httpFileService.updateFile) {
+    if (!options.isInit && this.httpFileService.updateFile) {
       await this.httpFileService.updateFile(uri, content, {});
     }
     await promisify(fs.writeFile)(FileUri.fsPath(_uri), content);
@@ -248,6 +249,9 @@ export class BrowserFsProvider implements IDiskFileProvider {
 
   protected async doGetStat(uri: URI, depth: number): Promise<FileStat | undefined> {
     try {
+      // TODO: 获取stat前拉取一遍远端的结构信息，理论上要加一个cache做优化
+      await this.ensureNodeFetched(uri);
+
       const filePath = FileUri.fsPath(uri);
       const lstat = await promisify(fs.lstat)(filePath);
 
@@ -265,6 +269,24 @@ export class BrowserFsProvider implements IDiskFileProvider {
         }
       }
       throw error;
+    }
+  }
+
+  protected async ensureNodeFetched(uri: URI) {
+    const childNodes = await this.httpFileService.readDir(uri.codeUri);
+    const ensureNodes: Promise<FileStat>[] = [];
+    for (const node of childNodes) {
+      if (node.type === 'tree') {
+        ensureNodes.push(this.createDirectory(URI.file(new Path(this.options.rootFolder).join(`${node.path}`).toString()).codeUri));
+      } else {
+        ensureNodes.push(this.writeFile(URI.file(new Path(this.options.rootFolder).join(`${node.path}`).toString()).codeUri, '', {create: true, isInit: true, overwrite: false}) as Promise<FileStat>);
+      }
+    }
+    try {
+      await Promise.all(ensureNodes);
+    } catch (err) {
+      // logger
+      // console.error('node fetch failed ', err);
     }
   }
 
@@ -322,6 +344,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
 
 export abstract class HttpFileServiceBase {
   abstract readFile(uri: Uri, encoding?: string): Promise<string>;
+  abstract readDir(uri: Uri): Promise<Array<{type: 'tree' | 'leaf', path: string}>>;
   updateFile?(uri: Uri, content: string, options: { encoding?: string; newUri?: Uri; }): Promise<void> {
     throw new Error('updateFile method not implemented');
   }
