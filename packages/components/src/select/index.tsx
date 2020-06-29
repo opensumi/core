@@ -160,10 +160,11 @@ export function Select<T = string>({
   groupTitleRenderer,
 }: ISelectProps<T>) {
   const [open, setOpen] = useState(false);
+  let initialValue;
   if (options && isDataOptions(options)) {
     const index = options.findIndex((option) => equals(option.value, value));
     if (index === -1) {
-      value = options[0]?.value;
+      initialValue = options[0]?.value;
     }
   } else if (options && isDataOptionGroups(options)) {
     let found = false;
@@ -174,14 +175,15 @@ export function Select<T = string>({
       }
     }
     if (!found) {
-      value = options[0]?.options[0]?.value;
+      initialValue = options[0]?.options[0]?.value;
     }
   }
-  const [select, setSelect] = useState<T | undefined>(value);
+  const [select, setSelect] = useState<T | undefined>(initialValue);
+  const prevSelect = usePrevious(select);
   const selectRef = React.useRef<HTMLDivElement | null>(null);
   const overlayRef = React.useRef<HTMLDivElement | null>(null);
   useEffect(() => {
-    if (onChange && select !== undefined && !equals(select, value)) {
+    if (onChange && select !== undefined && !equals(select, prevSelect)) {
       onChange(select);
     }
   }, [select]);
@@ -386,3 +388,11 @@ export const SelectOptionsList = React.forwardRef(<T, >(props: ISelectOptionsLis
     }
   </div>;
 });
+
+function usePrevious(value) {
+  const ref = React.useRef();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}

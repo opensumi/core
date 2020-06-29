@@ -47,6 +47,7 @@ export interface IToolBarViewContribution {
 
   weight?: number;
 
+  description?: string;
 }
 
 export interface ITabBarViewContribution {

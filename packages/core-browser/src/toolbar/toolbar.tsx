@@ -8,6 +8,8 @@ import debounce = require('lodash.debounce');
 import { getIcon } from '../style/icon/icon';
 import { DomListener } from '../utils';
 import * as classnames from 'classnames';
+import { PreferenceService } from '../preferences';
+import { AbstractMenuService, MenuId, generateCtxMenu, ICtxMenuRenderer } from '../menu/next';
 
 // TODO: use preference
 export const DEFAULT_TOOLBAR_ACTION_MARGIN = 5;
@@ -24,22 +26,31 @@ const dropDownShouldCloseEmitter: Emitter<string> = new Emitter();
 export const ToolbarLocation = (props: IToolbarLocationProps & React.HTMLAttributes<HTMLDivElement>) => {
 
   const registry: IToolbarRegistry = useInjectable(IToolbarRegistry);
+  const menuService: AbstractMenuService = useInjectable(AbstractMenuService);
+  const contextMenuRenderer: ICtxMenuRenderer = useInjectable(ICtxMenuRenderer);
   if (!registry.hasLocation(props.location)) {
     registry.addLocation(props.location);
   }
   const context: AppConfig = React.useContext(ConfigContext);
   const eventBus: IEventBus = useInjectable(IEventBus);
   const container = React.useRef<HTMLDivElement>();
+  const preferenceService: PreferenceService = useInjectable(PreferenceService);
   const { location, preferences = {} } = props;
+  let ignoreActions: string[];
+  const setIgnoreActions = (v) => {
+    ignoreActions = v.slice();
+  };
+  setIgnoreActions((preferenceService.get<{[location: string]: string[]}>('toolbar.ignoreActions', {}) || {})[location] || []);
 
   React.useEffect(() => {
     if (container.current) {
       const disposer = new Disposable();
       const debouncedUpdate = debounce(() => {
         if (container.current) {
-          renderToolbarLocation(container.current, location, preferences, registry, context, eventBus);
+          setIgnoreActions((preferenceService.get<{[location: string]: string[]}>('toolbar.ignoreActions', {}) || {})[location] || []);
+          renderToolbarLocation(container.current, location, preferences, registry, context, ignoreActions);
         }
-      }, 200, { maxWait: 500});
+      }, 100, { maxWait: 500});
       disposer.addDispose(eventBus.on(ToolbarActionGroupsChangedEvent, (e) => {
         if (e.payload.location === location) {
           debouncedUpdate();
@@ -56,9 +67,27 @@ export const ToolbarLocation = (props: IToolbarLocationProps & React.HTMLAttribu
           debouncedUpdate();
         }
       }));
+      disposer.addDispose(preferenceService.onPreferenceChanged((e) => {
+        if (e.preferenceName === 'toolbar.ignoreActions') {
+          const newValue = (preferenceService.get<{[location: string]: string[]}>('toolbar.ignoreActions', {}) || {})[location] || [];
+          // 如果两个数组存在不同，刷新
+          for (const id of newValue) {
+            if (ignoreActions.indexOf(id) === -1) {
+              debouncedUpdate();
+              return;
+            }
+          }
+          for (const id of ignoreActions) {
+            if (newValue.indexOf(id) === -1) {
+              debouncedUpdate();
+              return;
+            }
+          }
+        }
+      }));
       if (!preferences.noDropDown) {
         let previousWidth = container.current.offsetWidth;
-        renderToolbarLocation(container.current, location, preferences, registry, context, eventBus);
+        renderToolbarLocation(container.current, location, preferences, registry, context, ignoreActions);
         const observer = new ResizeObserver((entries) => {
           const contentRect = entries[0].contentRect;
           if (contentRect.width !== previousWidth) {
@@ -73,13 +102,25 @@ export const ToolbarLocation = (props: IToolbarLocationProps & React.HTMLAttribu
           },
         });
       } else {
-        renderToolbarLocation(container.current, location, preferences, registry, context, eventBus);
+        renderToolbarLocation(container.current, location, preferences, registry, context, ignoreActions);
       }
       return () => disposer.dispose();
     }
   }, []);
 
-  return <div {...props} className={classnames('kt-toolbar-location', props.className)} id={'toolbar-location-' + location} ref={container as any} ></div>;
+  return <div {...props} className={classnames('kt-toolbar-location', props.className)} id={'toolbar-location-' + location} ref={container as any}
+            onContextMenu={
+              (event) => {
+                event.preventDefault();
+                const menus = menuService.createMenu(MenuId.KTToolbarLocationContext);
+                const menuNodes = generateCtxMenu({ menus });
+                contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
+                  x: event.clientX,
+                  y: event.clientY,
+                } });
+              }
+            }
+          ></div>;
 
 };
 
@@ -91,7 +132,7 @@ function isActionSplit(target: IToolbarAction | ActionSplit): target is ActionSp
   return (target as ActionSplit).type === 'split';
 }
 
-function renderToolbarLocation(container: HTMLDivElement, location: string, preference: IToolbarLocationPreference, registry: IToolbarRegistry, context: AppConfig, eventBus: IEventBus) {
+function renderToolbarLocation(container: HTMLDivElement, location: string, preference: IToolbarLocationPreference, registry: IToolbarRegistry, context: AppConfig, ignoreActions: string[]) {
   const TOOLBAR_ACTION_MARGIN = preference.actionMargin === undefined ? DEFAULT_TOOLBAR_ACTION_MARGIN : preference.actionMargin;
   const TOOLBAR_MORE_WIDTH = preference.moreActionWidth === undefined ? DEFAULT_TOOLBAR_MORE_WIDTH : preference.moreActionWidth;
 
@@ -129,15 +170,16 @@ function renderToolbarLocation(container: HTMLDivElement, location: string, pref
   const dropDownActionsOrSplits: Array<IToolbarAction | ActionSplit> = [];
 
   for (const group of groups) {
-    const actions = registry.getToolbarActions({location, group});
-    if (actions && actions.actions.length > 0) {
+    const result = registry.getToolbarActions({location, group});
+    const actions = result?.actions.filter( (a) => ignoreActions.indexOf(a.id) === -1);
+    if (actions && actions.length > 0) {
       if (visibleActionsOrSplits.length > 0) {
         visibleActionsOrSplits.push({
           type: 'split',
         });
       }
-      visibleActionsOrSplits.push(...actions.actions);
-      groupActions.push(actions.actions.slice(0));
+      visibleActionsOrSplits.push(...actions);
+      groupActions.push(actions);
     }
   }
 

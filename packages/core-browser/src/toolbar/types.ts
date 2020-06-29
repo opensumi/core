@@ -40,6 +40,8 @@ export interface IToolbarRegistry {
 
   getActionPosition(actionId: string): IToolbarActionPosition | undefined;
 
+  getAllLocations(): string[];
+
 }
 
 export interface IToolbarActionGroupForRender {
@@ -114,6 +116,10 @@ export interface IToolbarAction {
 
   id: string;
 
+  /**
+   * 这个action的介绍，为了让用户能明白这个组件是做什么，理论上必填
+   */
+  description: string;
   /**
    * 顺序重量, 数值越大，排在越前面
    */

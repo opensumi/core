@@ -45,6 +45,7 @@ export class StartupContribution implements CommandContribution, KeybindingContr
     for (let i = 0; i < 6; i ++ ) {
       registry.registerToolbarAction({
         id: 'test-' + i,
+        description: 'test-' + i + '按钮',
         component: createToolbarActionBtn({
           id: 'test-' + i,
           title: 'test-' + i,
@@ -65,6 +66,7 @@ export class StartupContribution implements CommandContribution, KeybindingContr
     for (let i = 7; i < 10; i ++ ) {
       registry.registerToolbarAction({
         id: 'test-' + i,
+        description: 'test-' + i + '按钮',
         component: createToolbarActionBtn({
           id: 'test-' + i,
           title: 'test-' + i,
@@ -85,6 +87,7 @@ export class StartupContribution implements CommandContribution, KeybindingContr
     }
     registry.registerToolbarAction({
       id: 'test-select-1',
+      description: '选项框1',
       weight: 11,
       component: createToolbarActionSelect({
         name: 'test-1',
@@ -113,6 +116,7 @@ export class StartupContribution implements CommandContribution, KeybindingContr
     registry.registerToolbarAction({
       id: 'test-select-2',
       weight: 11,
+      description: '选项框2',
       component: createToolbarActionSelect({
         name: 'test-2',
         delegate: ((d) => {

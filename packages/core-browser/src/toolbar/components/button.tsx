@@ -6,19 +6,23 @@ import { BasicEvent, Disposable, Emitter } from '@ali/ide-core-common';
 import * as classnames from 'classnames';
 import { AppConfig, ConfigProvider } from '../../react-providers';
 import { Button } from '@ali/ide-components';
+import { PreferenceService } from '../../preferences';
 
 export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionElementProps) => {
   const context = useInjectable<AppConfig>(AppConfig);
   const ref = React.useRef<HTMLDivElement>();
   const [viewState, setViewState] = React.useState(props.defaultState || 'default');
   const [title, setTitle] = React.useState(undefined);
+  const preferenceService: PreferenceService = useInjectable(PreferenceService);
+  const [, updateState] = React.useState();
+  const forceUpdate = React.useCallback(() => updateState({}), []);
 
   const { defaultButtonStyle = {} } = props.preferences || {} ;
 
   const styles: IToolbarActionBtnState = {
     title: props.title,
     iconClass: props.iconClass,
-    showTitle: true,
+    showTitle: preferenceService.get('toolbar.buttonDisplay') !== 'icon',
     btnStyle: 'button',
     ...defaultButtonStyle,
     ...props.defaultStyle,
@@ -35,6 +39,9 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
 
   React.useEffect(() => {
     const disposer = new Disposable();
+    disposer.addDispose(preferenceService.onSpecificPreferenceChange('toolbar.buttonDisplay', () => {
+      forceUpdate();
+    }));
     if (ref.current && props.delegate) {
       delegate.current = new ToolbarBtnDelegate(ref.current, props.id, (state, title) => {
         setViewState(state);

@@ -585,5 +585,11 @@ export const localizationBundle = {
     'TerminalTaskSystem.terminalName': 'Task - {0}',
     'terminal.integrated.exitedWithCode': 'The terminal process terminated with exit code: {0}',
     'reuseTerminal': 'Terminal will be reused by tasks, press any key to close it.',
+
+    'toolbar-customize.buttonDisplay.description': 'Button Style',
+    'toolbar-customize.buttonDisplay.icon': 'Icon Only',
+    'toolbar-customize.buttonDisplay.iconAndText': 'Icon And Text',
+    'toolbar-customize.complete': 'Complete',
+    'toolbar.customize.menu': 'Customize Toolbar...',
   },
 };

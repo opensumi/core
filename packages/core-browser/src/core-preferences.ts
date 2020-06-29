@@ -242,6 +242,27 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: true,
       description: '%output.enableSmartScrollDesc%',
     },
+    'toolbar.ignoreActions': {
+      type: 'object',
+      patternProperties: {
+        '.*': {
+          type: 'array',
+          items: [
+            { type: 'string' },
+          ],
+        },
+      },
+      description: '%preference.toolbar.ignoreActions%',
+    },
+    'toolbar.buttonDisplay': {
+      type: 'string',
+      enum: [
+        'icon',
+        'iconAndText',
+      ],
+      default: 'iconAndText',
+      description: '%preference.toolbar.buttonDisplay%',
+    },
   },
 };
 

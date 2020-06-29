@@ -94,6 +94,13 @@ export interface PreferenceService extends IDisposable {
   getProvider(scope: PreferenceScope): PreferenceProvider | undefined;
 
   resolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): PreferenceResolveResult<T>;
+
+  /**
+   * 都走 onPreferenceChanged 再用if判断性能太差了
+   * TODO: 将只监听一个偏好的使用这个方法
+   * @param preferenceName
+   */
+  onSpecificPreferenceChange(preferenceName, listener: (change: PreferenceChange) => void): IDisposable;
 }
 
 export const PreferenceProviderProvider = Symbol('PreferenceProviderProvider');
@@ -127,6 +134,8 @@ export class PreferenceServiceImpl implements PreferenceService {
 
   protected readonly preferenceProviders = new Map<PreferenceScope, PreferenceProvider>();
 
+  private specificEmitters = new Map<string, Emitter<PreferenceChange>>();
+
   /**
    * 使用 getPreferences()方法获取
    */
@@ -148,6 +157,13 @@ export class PreferenceServiceImpl implements PreferenceService {
 
   public dispose(): void {
     this.toDispose.dispose();
+  }
+
+  public onSpecificPreferenceChange(preferenceName, listener) {
+    if (!this.specificEmitters.has(preferenceName)) {
+      this.specificEmitters.set(preferenceName, new Emitter());
+    }
+    return this.specificEmitters.get(preferenceName)!.event(listener);
   }
 
   protected readonly _ready = new Deferred<void>();
@@ -209,6 +225,9 @@ export class PreferenceServiceImpl implements PreferenceService {
     }
     changedPreferenceNames.forEach((preferenceName) => {
       this.onPreferenceChangedEmitter.fire(changesToEmit[preferenceName]);
+      if (this.specificEmitters.has(preferenceName)) {
+        this.specificEmitters.get(preferenceName)!.fire(changesToEmit[preferenceName]);
+      }
     });
     Object.keys(languageSpecificChangesToEmit).forEach((language) => {
       this.onLanguagePreferencesChangedEmitter.fire({
