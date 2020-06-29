@@ -227,8 +227,6 @@ export class KeyCode {
     const schema: KeyCodeSchema = {};
     const keys = keybinding
       .trim().toLowerCase()
-      // 中文输入法时可能存在同时输入两个相同字符的情况
-      .replace(/(.)\1+/g, '$1')
       .split('+');
     /* If duplicates i.e ctrl+ctrl+a or alt+alt+b or b+alt+b it is invalid */
     if (keys.length !== new Set(keys).size) {
