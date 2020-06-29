@@ -1,5 +1,5 @@
 import { Injector } from '@ali/common-di';
-import { FileServiceModule } from '../../src/node';
+import { FileServiceModule, FileService } from '../../src/node';
 import { IFileService, FileChangeType } from '../../src/common';
 import { URI, FileUri, AppConfig } from '@ali/ide-core-node';
 import { isWindows } from '../../../core-common';
@@ -696,11 +696,9 @@ describe('FileService', () => {
   describe('fireFilesChange', () => {
     it('Should fireFilesChange event', () => {
       let changes;
-      (fileService as any).rpcClient = [{
-        onDidFilesChanged(args) {
-          changes = args.changes;
-        },
-      }];
+      (fileService as FileService).onFilesChanged((e) => {
+        changes = e.changes;
+      });
       const uri = root.resolve('foo.txt');
       fileService.fireFilesChange([{ uri: uri.toString(), type: FileChangeType.UPDATED}]);
 

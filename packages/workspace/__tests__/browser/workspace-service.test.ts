@@ -113,6 +113,7 @@ describe('WorkspaceService should be work while workspace was a single directory
     );
     mockFileSystem.watchFileChanges.mockResolvedValue({dispose: () => {}});
     workspaceService = injector.get(IWorkspaceService);
+    workspaceService.init();
     await workspaceService.whenReady;
     done();
   });
