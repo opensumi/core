@@ -5,6 +5,8 @@ import { DisposableCollection, Disposable, ILogger } from '@ali/ide-core-browser
 import { IFileTreeAPI } from '../../common';
 import { IMessageService } from '@ali/ide-overlay';
 import { Decoration, TargetMatchMode } from '@ali/ide-components';
+import { Path } from '@ali/ide-core-common/lib/path';
+import { FileTreeService } from '../file-tree.service';
 import * as styles from '../file-tree.module.less';
 import * as treeNodeStyles from '../file-tree-node.module.less';
 
@@ -21,6 +23,9 @@ export class DragAndDropService {
 
   @Autowired(IMessageService)
   private readonly messageService: IMessageService;
+
+  @Autowired(FileTreeService)
+  private readonly fileTreeService: FileTreeService;
 
   private toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
 
@@ -170,7 +175,7 @@ export class DragAndDropService {
       if (!!containing) {
         const resources = this.beingDraggedNodes;
         if (resources.length > 0) {
-          const resourcesCanBeMoved = resources.filter((resource: File | Directory) => resource && resource.parent && !(resource.parent as Directory).uri.isEqual( containing.uri));
+          const resourcesCanBeMoved = resources.filter((resource: File | Directory) => resource && resource.parent && !(resource.parent as Directory).uri.isEqual(containing.uri));
           if (resourcesCanBeMoved.length > 0) {
             // 最小化移动文件
             const errors = await this.fileTreeAPI.mvFiles(resourcesCanBeMoved.map((res) => res.uri), containing.uri);
@@ -178,6 +183,23 @@ export class DragAndDropService {
               errors.forEach((error) => {
                 this.messageService.error(error);
               });
+            } else {
+              for (const target of resourcesCanBeMoved) {
+                const to = containing.uri.resolve(target.name);
+                this.fileTreeService.moveNodeByPath(target.parent as Directory, target.path, new Path(containing.path).join(target.name).toString());
+                // 由于节点移动时默认仅更新节点路径
+                // 我们需要自己更新额外的参数，如uri, filestat等
+                target.updateURI(to);
+                target.updateFileStat({
+                  ...target.filestat,
+                  uri: to.toString(),
+                });
+                target.updateToolTip(this.fileTreeAPI.getReadableTooltip(to));
+                // 当重命名文件为文件夹时，刷新文件夹更新子文件路径
+                if (Directory.is(target)) {
+                  this.fileTreeService.refresh(target as Directory);
+                }
+              }
             }
           }
         }
