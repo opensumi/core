@@ -437,6 +437,112 @@ declare module 'kaitian' {
       getValue(): T;
     }
 
+    export interface IToolbarActionBasicContribution {
+      id: string;
+      preferredPosition?: {
+        location?: string,
+        group?: string,
+      };
+      strictPosition?: {
+        location: string,
+        group: string,
+      };
+    }
+
+    export interface IToolbarSelectStyle {
+      // 背景色
+      backgroundColor?: string;
+
+      // 下拉菜单前景色
+      labelForegroundColor?: string;
+
+      // icon 前景色
+      iconForegroundColor?: string;
+
+      // 宽度
+      width?: number;
+
+      // 最小宽度
+      minWidth?: number;
+    }
+
+    export interface IToolbarActionBtnStyle {
+
+      // 是否显示 Title
+      showTitle?: boolean;
+
+      // icon 前景色
+      iconForeground?: string;
+
+      // icon 背景色
+      iconBackground?: string;
+
+      // title 前景色
+      titleForeground?: string;
+
+      // title 背景色
+      titleBackground?: string;
+
+      // 整体背景色
+      background?: string;
+
+      // 样式类型，
+      // inline则不会有外边框
+      // button则为按钮样式
+      btnStyle?: 'inline' | 'button';
+
+      // button 的文本位置样式
+      // vertical: 上icon 下文本
+      // horizontal: 左icon 右文本
+      btnTitleStyle?: 'vertical' | 'horizontal';
+    }
+
+    export interface IToolbarButtonContribution extends  IToolbarActionBasicContribution {
+      type: 'button';
+      command?: string;
+      title: string;
+      iconPath: string;
+      iconMaskMode?: boolean;
+      states?: {
+        [key: string]: {
+          title?: string,
+          iconPath?: string,
+          iconMaskMode?: boolean ;
+        } & IToolbarActionBtnStyle,
+      };
+      defaultState?: string;
+    }
+
+    export interface IToolbarSelectContribution<T = any> extends IToolbarActionBasicContribution {
+      type: 'select';
+      command?: string;
+      options: {
+        iconPath?: string,
+        iconMaskMode?: boolean;
+        label?: string,
+        value: T
+      }[];
+      defaultValue: T;
+      optionEqualityKey?: string;
+      states?: {
+        [key: string]: IToolbarSelectStyle,
+      };
+      defaultState?: string;
+    }
+
+    /**
+     * 注册一个 select 类型的 toolbar Action
+     * @param contribution IToolbarSelectContribution
+     * 返回一个用于操作和响应 toolbar 上对应 select 控件的 handle
+     */
+    export function registerToolbarAction<T>(contribution: IToolbarSelectContribution<T>): Promise<IToolbarSelectActionHandle<T>>;
+    /**
+     * 注册一个 button 类型的 toolbar action
+     * @param contribution IToolbarButtonContribution
+     * 返回一个用于操作和响应 toolbar 上对应 button 控件的 handle
+     */
+    export function registerToolbarAction(contribution: IToolbarButtonContribution): Promise<IToolbarButtonActionHandle>;
+
     /**
      * 获得一个 toolbar action 的 handle， 用于操作和响应 toolbar 上的 button
      * @param id
