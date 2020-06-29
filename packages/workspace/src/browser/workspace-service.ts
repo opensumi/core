@@ -75,12 +75,20 @@ export class WorkspaceService implements IWorkspaceService {
 
   protected applicationName: string;
 
-  public whenReady: Promise<void>;
+  private _whenReady: Promise<void>;
 
   // 映射工作区显示的文字信息
   private workspaceToName = {};
 
-  public async init(): Promise<void> {
+  public init() {
+    this._whenReady = this.doInit();
+  }
+
+  public get whenReady() {
+    return this._whenReady;
+  }
+
+  protected async doInit(): Promise<void> {
     // TODO 用户可配置
     this.applicationName = ClientAppConfigProvider.get().applicationName;
     const wpUriString = this.getDefaultWorkspacePath();

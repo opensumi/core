@@ -48,7 +48,7 @@ export class WorkspaceContribution implements ClientAppContribution, PreferenceC
   }
 
   onFileServiceReady() {
-    this.workspaceService.whenReady = this.workspaceService.init();
+    this.workspaceService.init();
   }
 
 }
