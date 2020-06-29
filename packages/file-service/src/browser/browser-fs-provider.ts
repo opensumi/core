@@ -66,6 +66,11 @@ export class BrowserFsProvider implements IDiskFileProvider {
     return 0;
   }
   unwatch(watcherId: number): void {}
+  setWatchFileExcludes(excludes: string[]) {}
+  getWatchFileExcludes(): string[] {
+    return [];
+  }
+
   async stat(uri: Uri): Promise<FileStat> {
     const _uri = new URI(uri);
     return new Promise(async (resolve) => {
@@ -130,31 +135,26 @@ export class BrowserFsProvider implements IDiskFileProvider {
     }
 
     if (options.create) {
-      if (!options.isInit && this.httpFileService.createFile) {
+      if (!options.isInit) {
         await this.httpFileService.createFile(uri, content, {});
       }
       return await this.createFile(uri, { content });
     }
-    if (!options.isInit && this.httpFileService.updateFile) {
+    if (!options.isInit) {
       await this.httpFileService.updateFile(uri, content, {});
     }
     await promisify(fs.writeFile)(FileUri.fsPath(_uri), content);
   }
   async delete(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean | undefined; }): Promise<void> {
     this.checkCapability();
-    if (this.httpFileService.deleteFile) {
-      await this.httpFileService.deleteFile(uri, {recursive: options.recursive});
-    }
+    await this.httpFileService.deleteFile(uri, {recursive: options.recursive});
     return await promisify(fs.unlink)((uri.fsPath));
   }
-  // FIXME: @魁武 fileTree的移动可以不依赖fileService的watch事件
   async rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean; }): Promise<void | FileStat> {
     this.checkCapability();
     const content = await this.readFile(oldUri);
     // FIXME: 如何保证browserFs侧写入和远端写入的原子性？
-    if (this.httpFileService.updateFile) {
-      await this.httpFileService.updateFile(oldUri, content, { newUri });
-    }
+    await this.httpFileService.updateFile(oldUri, content, { newUri });
     return await promisify(fs.rename)(oldUri.fsPath, newUri.fsPath);
   }
   async access(uri: Uri): Promise<boolean> {
@@ -174,9 +174,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
   async copy(source: Uri, destination: Uri, options: { overwrite: boolean; }): Promise<void | FileStat> {
     this.checkCapability();
     const content = await this.readFile(source);
-    if (this.httpFileService.createFile) {
-      await this.httpFileService.createFile(destination, content, {});
-    }
+    await this.httpFileService.createFile(destination, content, {});
     await promisify(fs.writeFile)(destination.fsPath, content);
   }
   async getCurrentUserHome(): Promise<FileStat | undefined> {
@@ -345,13 +343,13 @@ export class BrowserFsProvider implements IDiskFileProvider {
 export abstract class HttpFileServiceBase {
   abstract readFile(uri: Uri, encoding?: string): Promise<string>;
   abstract readDir(uri: Uri): Promise<Array<{type: 'tree' | 'leaf', path: string}>>;
-  updateFile?(uri: Uri, content: string, options: { encoding?: string; newUri?: Uri; }): Promise<void> {
+  updateFile(uri: Uri, content: string, options: { encoding?: string; newUri?: Uri; }): Promise<void> {
     throw new Error('updateFile method not implemented');
   }
-  createFile?(uri: Uri, content: string, options: { encoding?: string; }): Promise<void> {
+  createFile(uri: Uri, content: string, options: { encoding?: string; }): Promise<void> {
     throw new Error('createFile method not implemented');
   }
-  deleteFile?(uri: Uri, options: { recursive?: boolean }): Promise<void> {
+  deleteFile(uri: Uri, options: { recursive?: boolean }): Promise<void> {
     throw new Error('deleteFile method not implemented');
   }
 }

@@ -14,6 +14,10 @@ export class MockFsProvider implements IDiskFileProvider {
   unwatch(watcherId: number) {
 
   }
+  setWatchFileExcludes(excludes: string[]) {}
+  getWatchFileExcludes(): string[] {
+    return [];
+  }
   async stat(uri) {
     return {
       uri: uri.toString(),
