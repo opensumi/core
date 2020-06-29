@@ -33,6 +33,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { RPCService } from '@ali/ide-connection';
 import * as fileType from 'file-type';
 import { decode, encode } from './encoding';
+import { ParsedPattern, parse } from '@ali/ide-core-common/lib/utils/glob';
 
 const debugLog = new DebugLog();
 
@@ -44,6 +45,8 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
   protected toDispose = new DisposableCollection();
 
   protected readonly watcherDisposerMap = new Map<number, IDisposable>();
+  protected watchFileExcludes: string[] = [];
+  protected watchFileExcludesMatcherList: ParsedPattern[] = [];
 
   @Autowired(AppConfig)
   appConfig: AppConfig;
@@ -288,6 +291,17 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
     return this.stat(FileUri.create(os.homedir()).codeUri);
   }
 
+  // 出于通信成本的考虑，排除文件的逻辑必须放在node层（fs provider层，不同的fs实现的exclude应该不一样）
+  setWatchFileExcludes(excludes: string[]) {
+    debugLog.info('set watch file exclude:', excludes);
+    this.watchFileExcludes = excludes;
+    this.watchFileExcludesMatcherList = excludes.map((pattern) => parse(pattern));
+  }
+
+  getWatchFileExcludes() {
+    return this.watchFileExcludes;
+  }
+
   protected initWatcher() {
     this.watcherServer = new NsfwFileSystemWatcherServer({
       verbose: true,
@@ -295,12 +309,17 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
     });
     this.watcherServer.setClient({
       onDidFilesChanged: (events: DidFilesChangedParams) => {
-        this.fileChangeEmitter.fire(events.changes);
+        const filteredChange = events.changes.filter((file) => {
+          const uri = new URI(file.uri);
+          const uriString = uri.withoutScheme().toString();
+          return !this.watchFileExcludesMatcherList.some((match) => match(uriString));
+        });
+        this.fileChangeEmitter.fire(filteredChange);
         if (this.rpcClient) {
           // 一个后端实例不是应该只对应一个client吗
           this.rpcClient.forEach((client) => {
             client.onDidFilesChanged({
-              changes: events.changes,
+              changes: filteredChange,
             });
           });
         }

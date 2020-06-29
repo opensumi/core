@@ -256,12 +256,13 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   async setWatchFileExcludes(excludes: string[]) {
-    this.watchFileExcludes = excludes;
-    this.watchFileExcludesMatcherList = excludes.map((pattern) => parse(pattern));
+    const provider = await this.getProvider('file');
+    return await provider.setWatchFileExcludes(excludes);
   }
 
   async getWatchFileExcludes() {
-    return this.watchFileExcludes;
+    const provider = await this.getProvider('file');
+    return await provider.getWatchFileExcludes();
   }
 
   async setFilesExcludes(excludes: string[], roots?: string[]): Promise<void> {

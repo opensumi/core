@@ -306,6 +306,9 @@ export interface IDiskFileProvider extends FileSystemProvider {
   access: FileAccessFn;
   getCurrentUserHome: FileGetCurrentUserHomeFn;
   getFileType: FileGetFileTypeFn;
+  // TODO: exclude from watcher，理论上需要关联到scheme
+  setWatchFileExcludes(excludes: string[]): void | Thenable<void>;
+  getWatchFileExcludes(): string[] | Thenable<string[]>;
 }
 
 export interface IShadowFileProvider extends FileSystemProvider {}

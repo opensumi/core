@@ -1,8 +1,8 @@
 import { IDisposable } from '@ali/ide-core-common';
-import { FileSystemProvider } from '../common/';
+import { FileSystemProvider, IDiskFileProvider } from '../common/';
 
 export class FileSystemManage {
-  readonly providers = new Map<string, FileSystemProvider>();
+  readonly providers = new Map<string, FileSystemProvider | IDiskFileProvider>();
 
   add(schema: string, provider: FileSystemProvider): IDisposable {
     if (this.providers.has(schema)) {

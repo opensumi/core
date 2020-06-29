@@ -66,8 +66,6 @@ export class FileService extends RPCService implements IFileService {
   protected readonly fileSystemManage = new FileSystemManage();
   readonly onFilesChanged: Event<DidFilesChangedParams> = this.onFileChangedEmitter.event;
   protected toDisposable = new DisposableCollection();
-  protected watchFileExcludes: string[] = [];
-  protected watchFileExcludesMatcherList: ParsedPattern[] = [];
   protected filesExcludes: string[] = [];
   protected filesExcludesMatcherList: ParsedPattern[] = [];
   protected workspaceRoots: string[] = [];
@@ -75,15 +73,11 @@ export class FileService extends RPCService implements IFileService {
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
 
-  @Autowired(AppConfig)
-  private readonly appConfig: AppConfig;
-
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
   constructor(
     @Inject('FileServiceOptions') protected readonly options: FileSystemNodeOptions,
-    @Optional() private watcherOption?: NsfwFileSystemWatcherOption
   ) {
     super();
     this.initProvider();
@@ -130,12 +124,13 @@ export class FileService extends RPCService implements IFileService {
   }
 
   setWatchFileExcludes(excludes: string[]) {
-    this.watchFileExcludes = excludes;
-    this.watchFileExcludesMatcherList = excludes.map((pattern) => parse(pattern));
+    const provider = this.getProvider('file');
+    provider.setWatchFileExcludes(excludes);
   }
 
   getWatchFileExcludes(): string[] {
-    return this.watchFileExcludes;
+    const provider = this.getProvider('file');
+    return provider.getWatchFileExcludes() as string[];
   }
 
   setFilesExcludes(excludes: string[], roots?: string[]) {
@@ -459,15 +454,6 @@ export class FileService extends RPCService implements IFileService {
    * Current policy: sends * all * Provider onDidChangeFile events to * all * clients and listeners
    */
   fireFilesChange(e: FileChangeEvent) {
-    e = (e || []).filter(file => {
-      const uri = new URI(file.uri);
-      const uriString = uri.withoutScheme().toString();
-
-      return !this.watchFileExcludesMatcherList.some((match) => {
-        const result = match(uriString);
-        return result;
-      });
-    });
     if (e.length < 1) {
       return false;
     }
@@ -475,13 +461,6 @@ export class FileService extends RPCService implements IFileService {
     this.onFileChangedEmitter.fire({
       changes: e,
     });
-      if (this.rpcClient) {
-      this.rpcClient.forEach((client) => {
-        client.onDidFilesChanged({
-          changes: e
-        });
-      });
-    }
   }
 
   dispose(): void {
@@ -569,8 +548,9 @@ export class FileService extends RPCService implements IFileService {
     this.registerProvider('debug', new ShadowFileSystemProvider());
   }
 
-  private async getProvider(scheme: string): Promise<FileSystemProvider> {
-    let provider: FileSystemProvider | void = this.fileSystemManage.get(scheme);
+  private getProvider<T extends string>(scheme: T): T extends 'file' ? IDiskFileProvider : FileSystemProvider;
+  private getProvider(scheme: string): IDiskFileProvider | FileSystemProvider {
+    let provider = this.fileSystemManage.get(scheme);
 
     if (!provider) {
       throw new Error( `Not find ${scheme} provider.`);
