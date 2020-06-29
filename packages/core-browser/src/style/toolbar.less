@@ -23,11 +23,11 @@
       cursor: pointer;
     }
   }
-  
+
   // button
   .kt-toolbar-action-btn {
     display: flex;
-    
+
     align-items: center;
     justify-content: center;
     cursor: pointer;
@@ -38,11 +38,11 @@
             padding: 0px 5px;
             border-radius: 3px;
             color: var(--kt-defaultButton-foreground);
-            background: var(--kt-defaultButton-background); 
+            background: var(--kt-defaultButton-background);
         }
         &:hover {
           .kt-toolbar-action-btn-icon {
-            background: var(--kt-defaultButton-hoverBackground); 
+            background: var(--kt-defaultButton-hoverBackground);
             color: var(--kt-defaultButton-hoverForeground);
           }
         }
@@ -54,7 +54,7 @@
       }
     }
     &.kt-toolbar-action-btn-horizontal {
-      
+
       &.kt-toolbar-action-btn-inline {
         &:hover {
           transform: scale(1.08);
@@ -84,7 +84,7 @@
   }
   &.action-btn-in-dropdown {
     flex-direction: row;
-    padding: 5px;
+    padding: 2px 7px;
   }
 }
 
@@ -96,24 +96,45 @@
     .kt-toolbar-action-btn {
       display: flex;
       align-items: center;
-      justify-content: center;
+      font-size:12px;
       cursor: pointer;
+      background: var(--menu-background);
       &:hover {
-        background: #5F656B; /* TODO: */
+        background: var(--menubar-selectionBackground);
       }
       &.action-btn-in-dropdown {
         flex-direction: row;
-        padding: 5px;
+        padding: 5px 20px;
       }
       .kt-toolbar-action-btn-icon {
           margin-right: 4px;
           position: relative;
           top: 1px;
       }
+      &.kt-toolbar-action-select {
+        position: relative;
+        padding-right: 30px;
+        .kt-toolbar-action-select-right {
+          position: absolute;
+          right: 0;
+          top: 4px;
+        }
+      }
     }
+
   .kt-toolbar-action-split {
     border-top: 1px solid rgba(0,0,0,.25);
     width:100%;
   }
   .overlay-shadow();
+}
+
+.kt-toolbar-action-select-dropdown {
+  position: fixed;
+  width: 150px;
+  top:0;
+  left:0;
+  display: block;
+  z-index: 11;
+  visibility: hidden;
 }

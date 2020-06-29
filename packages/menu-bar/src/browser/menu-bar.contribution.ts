@@ -27,6 +27,7 @@ export class MenuBarContribution implements ComponentContribution, ToolBarAction
   registerToolbarActions(registry: IToolbarRegistry) {
     if (!isElectronEnv()) {
       registry.addLocation('menu-right');
+      registry.addLocation('menu-left');
     }
   }
 }

@@ -5,12 +5,23 @@ import * as classNames from 'classnames';
 import './style.less';
 import { Icon, getDefaultIcon } from '../icon';
 
+export interface IDataOption<T> {
+  iconClass?: string;
+  label?: string;
+  value: T;
+}
+
+export interface IDataOptionGroup<T> {
+  iconClass?: string;
+  groupName: string;
+  options: IDataOption<T>[];
+}
+
 export interface ISelectProps<T = string> {
   className?: string;
   size?: 'large' | 'default' | 'small';
   loading?: boolean;
-  options?: Array<React.ReactNode | { iconClass?: string, label?: string, value: T} >;
-  groupSplits?: {[beforeIndex: number]: string};
+  options?: Array<React.ReactNode > | Array <IDataOption<T>> | IDataOptionGroup<T>[];
   value?: T;
   disabled?: boolean;
   onChange?: (value: T) => void;
@@ -18,8 +29,8 @@ export interface ISelectProps<T = string> {
   [prop: string]: any;
   optionStyle?: any;
   equals?: (v1: T | undefined, v2: T | undefined) => boolean;
-  optionRenderer?: React.FC<{ iconClass?: string, label?: string, value: T, index: number, setSelect: (v: T) => void, isCurrent: boolean, style: any}>;
-  splitRenderer?: React.FC<{ groupName: string, beforeIndex: number}>;
+  optionRenderer?: React.FC<{ data: IDataOption<T>, isCurrent: boolean }>;
+  groupTitleRenderer?: React.FC<{ group: IDataOptionGroup<T>, index: number }>;
 }
 
 export const Option: React.FC<React.PropsWithChildren<{
@@ -85,28 +96,52 @@ function getLabelWithChildrenProps<T = string>(value: T | undefined, children: R
   return currentOption ? (currentOption.props?.label || currentOption.props?.value) : nodes[0].props?.value;
 }
 
-function isDataOptions<T = any>(options: Array<React.ReactNode | { label: string, value: T}>): options is Array<{ label: string, value: T, iconClass?: string}> {
+export function isDataOptions<T = any>(options: Array<React.ReactNode | { label: string, value: T}> | undefined): options is Array<{ label: string, value: T, iconClass?: string}> {
+  if (!options) {
+    return false;
+  }
   if (options.length === 0) {
     return true;
   }
   return isDataOption(options[0]);
 }
 
+export function isDataOptionGroups<T = any>(options: Array<React.ReactNode > | Array <IDataOption<T>> | IDataOptionGroup<T>[] | undefined): options is IDataOptionGroup<T>[] {
+  if (!options) {
+    return false;
+  }
+  if (options.length === 0) {
+    return true;
+  }
+  return isDataOptionGroup(options[0]);
+}
+
 function isDataOption<T = any>(option: React.ReactNode | { label: string, value: T}): option is { label: string, value: T, iconClass?: string} {
   return (option as any).value !== undefined;
 }
-function defaultOptionRenderer<T>(v: { iconClass?: string, label?: string, value: T, index: number, setSelect: (v: T) => void, isCurrent: boolean, style: any}) {
- return <Option value={v.index} key={v.index} className={classNames({
-          ['kt-select-option-select']: v.isCurrent,
-          ['kt-select-option-default']: true,
-        })} onClick={() => v.setSelect(v.value)} style={v.style}>
-          {v.iconClass ?
-            <div className={classNames(v.iconClass, 'kt-select-option-icon')}></div>
-            : undefined
-          }
-          {v.label}
-        </Option>;
+
+function isDataOptionGroup<T = any>(option: any): option is IDataOptionGroup<T> {
+  return (option as any).groupName !== undefined && isDataOptions((option as any).options);
 }
+
+function defaultOptionRenderer<T>(v: { data: IDataOption<T>, isCurrent: boolean}) {
+  return <React.Fragment>
+            {v.data.iconClass ?
+              <div className={classNames(v.data.iconClass, 'kt-select-option-icon')}></div>
+              : undefined
+            }
+            {v.data.label}
+        </React.Fragment>;
+}
+
+function defaultGroupTitleRenderer<T>({group, index}: {group: IDataOptionGroup<T>, index: number} ) {
+  return <div key={'header_' + index} className={'kt-select-group-header'}>
+      {group.iconClass ?
+            <div className={classNames(group.iconClass, 'kt-select-option-icon')}></div>
+            : undefined
+        }<div>{group.groupName}</div>
+  </div>;
+ }
 
 export function Select<T = string>({
   disabled,
@@ -122,12 +157,24 @@ export function Select<T = string>({
   maxHeight,
   equals = (v1, v2) => v1 === v2,
   optionRenderer = defaultOptionRenderer,
+  groupTitleRenderer,
 }: ISelectProps<T>) {
   const [open, setOpen] = useState(false);
   if (options && isDataOptions(options)) {
     const index = options.findIndex((option) => equals(option.value, value));
     if (index === -1) {
       value = options[0]?.value;
+    }
+  } else if (options && isDataOptionGroups(options)) {
+    let found = false;
+    for (const group of options) {
+      const index = group.options.findIndex((option) => equals(option.value, value));
+      if (index !== -1) {
+        found = true;
+      }
+    }
+    if (!found) {
+      value = options[0]?.options[0]?.value;
     }
   }
   const [select, setSelect] = useState<T | undefined>(value);
@@ -176,6 +223,15 @@ export function Select<T = string>({
       overlayRef.current.style.width = `${boxRect.width}px`;
       overlayRef.current.style.top = `${boxRect.top + boxRect.height}px`;
     }
+    if (open) {
+      const listener = () => {
+        setOpen(false);
+      };
+      document.addEventListener('click', listener);
+      return () => {
+        document.removeEventListener('click', listener);
+      };
+    }
   }, [open]);
 
   function getSelectedValue() {
@@ -189,8 +245,23 @@ export function Select<T = string>({
         }
       }
       return {
-        iconClass: options[0].iconClass,
-        label: options[0].label,
+        iconClass: options[0]?.iconClass,
+        label: options[0]?.label,
+      };
+    } else if (options && isDataOptionGroups(options)) {
+      for (const group of options) {
+        for (const option of group.options) {
+          if (equals(select, option.value)) {
+            return {
+              iconClass: option.iconClass,
+              label: option.label,
+            };
+          }
+        }
+      }
+      return {
+        iconClass: options[0]?.options[0]?.iconClass,
+        label: options[0]?.options[0]?.label,
       };
     } else {
       const text = children && getLabelWithChildrenProps<T>(value, children);
@@ -214,18 +285,104 @@ export function Select<T = string>({
       <Icon iconClass={getDefaultIcon('down')} />
     </p>
 
-    <div className={optionsContainerClasses} style={{ maxHeight: `${maxHeight}px` }} ref={overlayRef}>
-      {options && options.map((v, i) => {
-        if (isDataOption<T>(v)) {
-          return optionRenderer({...v, isCurrent: equals(select, v.value), index: i, setSelect: (value) => {
-            setSelect(value);
-            setOpen(false);
-          }, style: optionStyle});
-        }
-        return Wrapper(v);
-      })}
-      {children && flatChildren(children, Wrapper)}
-      <div className='kt-select-overlay' onClick={toggleOpen}></div>
-    </div>
+    {
+      (isDataOptions(options) || isDataOptionGroups(options)) ?
+      <SelectOptionsList
+        optionRenderer={optionRenderer}
+        options={options}
+        equals={equals}
+        optionStyle={optionStyle}
+        currentValue={select}
+        size={size}
+        onSelect={(value: T) => {
+          setSelect(value);
+          setOpen(false);
+        }}
+        groupTitleRenderer={groupTitleRenderer}
+        className={optionsContainerClasses}
+        style={{ maxHeight: `${maxHeight}px` }}
+        ref={overlayRef}
+      /> :
+      // FIXME: to be deprecated
+      // 下面这种使用 children 的方式不够标准化，待废弃
+      <div className={optionsContainerClasses} style={{ maxHeight: `${maxHeight}px` }} ref={overlayRef}>
+        {options && (options as React.ReactNode[]).map((v, i) => {
+          return Wrapper(v);
+        })}
+        {children && flatChildren(children, Wrapper)}
+        <div className='kt-select-overlay' onClick={toggleOpen}></div>
+      </div>
+    }
   </div>);
 }
+
+export interface ISelectOptionsListProps<T = string> {
+  className?: string;
+  size?: 'large' | 'default' | 'small';
+  currentValue?: T;
+  options: IDataOption<T>[] | IDataOptionGroup<T>[];
+  onSelect: (value: T) => void;
+  optionStyle?: any;
+  equals?: (v1: T | undefined, v2: T | undefined) => boolean;
+  optionRenderer?: React.FC<{ data: IDataOption<T>, isCurrent: boolean }>;
+  groupTitleRenderer?: React.FC<{ group: IDataOptionGroup<T>, index: number }>;
+  style?: any;
+  renderCheck?: boolean;
+}
+
+export const SelectOptionsList = React.forwardRef(<T, >(props: ISelectOptionsListProps<T>, ref) => {
+  const {
+    options,
+    optionRenderer = defaultOptionRenderer,
+    equals = (v1, v2) => v1 === v2,
+    onSelect,
+    currentValue,
+    optionStyle,
+    size,
+    className,
+    style,
+    groupTitleRenderer = defaultGroupTitleRenderer,
+    renderCheck,
+  } = props;
+
+  const optionsContainerClasses = classNames('kt-select-options', {
+    [`kt-select-options-${size}`]: true,
+  }, className);
+
+  function renderWithGroup(groups: IDataOptionGroup<T>[]) {
+    return groups.map((group, index) => {
+      const header = groupTitleRenderer({group, index});
+      return <React.Fragment key={'group_' + index}>
+        {header}
+        {renderWithoutGroup(group.options)}
+      </React.Fragment>;
+    });
+  }
+
+  function renderWithoutGroup(options: IDataOption<T>[]) {
+    return options && options.map((v, index) => {
+      const isCurrent = equals(currentValue, v.value);
+      return <Option value={index} key={index} className={classNames({
+          ['kt-select-option-select']: isCurrent,
+          ['kt-select-option-default']: true,
+          ['kt-option-with-check']: renderCheck,
+        })} onClick={() => onSelect(v.value)} style={optionStyle}>
+          {
+            renderCheck && equals(currentValue, v.value) ?  <div className={'kt-option-check'}><Icon icon={'check'} /></div> : undefined
+          }
+          {optionRenderer({data: v, isCurrent})}
+      </Option>;
+
+    });
+  }
+
+  return <div className={optionsContainerClasses} style={style} ref={ref} onClick={
+    (event) => {
+      event.stopPropagation();
+    }
+  }>
+    {
+      (isDataOptionGroups(options)) ? renderWithGroup(options) : renderWithoutGroup(options)
+    }
+  </div>;
+});
