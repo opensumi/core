@@ -49,6 +49,7 @@
     "@ali/ide-file-service": "1.8.31",
     "@ali/ide-file-tree": "1.8.31",
     "@ali/ide-file-tree-next": "1.8.31",
+    "@ali/ide-i18n": "1.8.31",
     "@ali/ide-kaitian-extension": "1.8.31",
     "@ali/ide-logs": "1.8.31",
     "@ali/ide-main-layout": "1.8.31",
