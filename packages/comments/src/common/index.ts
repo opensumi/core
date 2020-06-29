@@ -132,6 +132,10 @@ export interface ICommentsZoneWidget {
    * 控制显隐
    */
   toggle(): void;
+  /**
+   * 销毁
+   */
+  dispose(): void;
 }
 
 export interface ICommentThreadTitle  extends ICommentsMenuContext {
@@ -252,6 +256,8 @@ export type PanelTreeNodeHandler = (nodes: ICommentsTreeNode[]) => ICommentsTree
 
 export type FileUploadHandler = (text: string, files: FileList) => MaybePromise<string>;
 
+export type ZoneWidgerRender = (thread: ICommentsThread, widget: ICommentsZoneWidget) => React.ReactNode;
+
 export interface MentionsData {
   id: string;
   display: string;
@@ -302,6 +308,12 @@ export interface ICommentsFeatureRegistry {
    * @param options
    */
   registerMentionsOptions(options: MentionsOptions): void;
+
+  /**
+   * 注册 WidgetView
+   * @param render
+   */
+  registerZoneWidgetRender(render: ZoneWidgerRender): void;
   /**
    * 获取底部面板参数
    */
@@ -318,6 +330,11 @@ export interface ICommentsFeatureRegistry {
    * 获取提及相关参数
    */
   getMentionsOptions(): MentionsOptions;
+
+  /**
+   * 获取指定的 zone widget
+   */
+  getZoneWidgetRender(): ZoneWidgerRender | undefined;
 }
 
 export const CommentsContribution = Symbol('CommentsContribution');

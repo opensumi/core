@@ -109,6 +109,9 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
   @Autowired(AppConfig)
   appConfig: AppConfig;
 
+  @Autowired(ICommentsFeatureRegistry)
+  private readonly commentsFeatureRegistry: ICommentsFeatureRegistry;
+
   private _wrapper: HTMLDivElement;
 
   private _editor: IEditor;
@@ -120,9 +123,13 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
     this._isShow = !thread.isCollapsed;
     this._container.appendChild(this._wrapper);
     this.addDispose(this.observeContainer(this._wrapper));
+    const customRender = this.commentsFeatureRegistry.getZoneWidgetRender();
     ReactDOM.render(
       <ConfigProvider value={this.appConfig}>
-        <CommentsZone thread={thread} widget={this} />
+        { customRender ?
+          customRender(thread, this) :
+          <CommentsZone thread={thread} widget={this} />
+        }
       </ConfigProvider>,
       this._wrapper,
     );

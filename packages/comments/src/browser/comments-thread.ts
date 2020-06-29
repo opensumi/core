@@ -133,8 +133,9 @@ export class CommentsThread extends Disposable implements ICommentsThread {
 
   private addWidgetByEditor(editor: IEditor) {
     const widget = this.injector.get(CommentsZoneWidget, [editor, this]);
-    this.widgets.set(editor, widget);
+    widget.onDispose(() => !this.disposed && this.dispose());
     this.addDispose(widget);
+    this.widgets.set(editor, widget);
     editor.onDispose(() => {
       widget.dispose();
       this.widgets.delete(editor);
