@@ -140,8 +140,9 @@ export abstract class PreferenceProvider implements IDisposable {
       prefChanges = changes;
     }
     if (this._scope) {
+      const preferenceNames = Object.keys(prefChanges.default);
       // 只对scope preference provider做处理
-      for (const preferenceName of Object.keys(prefChanges.default)) {
+      for (const preferenceName of preferenceNames) {
         const change = prefChanges.default[preferenceName];
         if (PreferenceProvider.PreferenceDelegates[change.preferenceName]) {
           const delegate = PreferenceProvider.PreferenceDelegates[change.preferenceName];
@@ -158,6 +159,9 @@ export abstract class PreferenceProvider implements IDisposable {
         }
         if (!noFilterExternal && !!getExternalPreferenceProvider(preferenceName)) {
           // 过滤externalProvider管理的preference
+          delete prefChanges.default[preferenceName];
+        }
+        if (change.oldValue === change.newValue) {
           delete prefChanges.default[preferenceName];
         }
       }
@@ -267,12 +271,14 @@ export abstract class PreferenceProvider implements IDisposable {
       const externalProvider = getExternalPreferenceProvider(preferenceName);
       if (externalProvider) {
         try {
+          const oldValue = externalProvider.get(this._scope);
           await externalProvider.set(value, this._scope);
           // 如果外部provider没有监听器，帮助他发送改变事件
           if (!externalProvider.onDidChange) {
             this.emitPreferencesChangedEvent([{
               preferenceName,
               scope: this._scope,
+              oldValue,
               newValue: externalProvider.get(this._scope),
             }], true);
           }
