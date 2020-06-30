@@ -8,9 +8,9 @@ import { DisposableCollection, Emitter, Event, Disposable } from '../utils';
 import { INodeRendererProps, NodeRendererWrap, INodeRenderer } from './TreeNodeRendererWrap';
 import { TreeNodeType, TreeNodeEvent } from './types';
 import { Scrollbars } from 'react-custom-scrollbars';
-import * as styles from './recycle-tree.module.less';
 import * as cls from 'classnames';
 import * as fuzzy from 'fuzzy';
+import './recycle-tree.less';
 
 export interface IModelChange {
   preModel: TreeModel;
@@ -149,15 +149,15 @@ const CustomScrollbars = ({ onScroll, forwardedRef, style, children, className }
       onUpdate={handleUpdate}
       onScroll={onScroll}
       renderThumbVertical={({ style, ...props }) =>
-        <div {...props} className={styles.scrollbar_thumb_vertical}/>
+        <div {...props} className={'scrollbar-thumb-vertical'}/>
       }
       renderThumbHorizontal={({ style, ...props }) =>
-        <div {...props} className={styles.scrollbar_thumb_horizontal}/>
+        <div {...props} className={'scrollbar-thumb-horizontal'}/>
       }
       >
       <div
         ref={(ref) => { shadowTopRef = ref; }}
-        className={styles.scrollbar_decoration}/>
+        className={'scrollbar-decoration'}/>
       {children}
     </Scrollbars>
   );
@@ -711,7 +711,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         ref={this.listRef}
         onScroll={this.handleListScroll}
         style={style}
-        className={cls(className, styles.recycle_tree)}
+        className={cls(className, 'kt-recycle-tree')}
         outerElementType={CustomScrollbarsVirtualList}>
         {this.renderItem}
       </FixedSizeList>);
