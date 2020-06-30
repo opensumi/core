@@ -36,7 +36,7 @@ import {
 import { injectCorePreferences } from '../core-preferences';
 import { ClientAppConfigProvider } from '../application';
 import { CorePreferences } from '../core-preferences';
-import { renderClientApp } from './app.view';
+import { renderClientApp, IAppRenderer } from './app.view';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { electronEnv } from '../utils';
 import { MenuRegistryImpl, IMenuRegistry } from '../menu/next';
@@ -116,8 +116,6 @@ export class ClientApp implements IClientApp {
 
   stateService: ClientAppStateService;
 
-  container: HTMLElement;
-
   constructor(opts: IClientAppOpts) {
     this.initEarlyPreference(opts.workspaceDir || '');
     setLanguageId(getPreferenceLanguageId());
@@ -177,8 +175,7 @@ export class ClientApp implements IClientApp {
     }
   }
 
-  public async start(container: HTMLElement, type?: string, connection?: RPCMessageConnection, callback?: () => void) {
-
+  public async start(container: HTMLElement | IAppRenderer, type?: string, connection?: RPCMessageConnection): Promise<void> {
     if (connection) {
       await bindConnectionService(this.injector, this.modules, connection);
     } else {
@@ -202,7 +199,7 @@ export class ClientApp implements IClientApp {
     await this.startContributions();
     this.stateService.state = 'started_contributions';
     this.registerEventListeners();
-    await this.renderApp(container, callback);
+    await this.renderApp(container);
     this.stateService.state = 'ready';
   }
 
@@ -326,10 +323,8 @@ export class ClientApp implements IClientApp {
     }
   }
 
-  private async renderApp(container: HTMLElement, callback?: () => void) {
-    this.container = container;
-    await renderClientApp(this, this.container);
-    callback && callback();
+  private async renderApp(container: HTMLElement | IAppRenderer) {
+    await renderClientApp(this, container);
 
     const eventBus = this.injector.get(IEventBus);
     eventBus.fire(new RenderedEvent());
