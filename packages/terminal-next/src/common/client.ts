@@ -104,6 +104,11 @@ export interface ITerminalClient extends Disposable {
   updateTheme(): void;
 
   /**
+   * 更新终端客户端配置
+   */
+  updateOptions(options: TerminalOptions): void;
+
+  /**
    * clear 参数用于判断是否需要清理 meta 信息，
    * 不需要 clear 参数的时候基本为正常推出，
    * 异常的时候需要将 clear 设为 false，保留现场
