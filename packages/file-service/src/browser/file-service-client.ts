@@ -89,11 +89,11 @@ export class FileServiceClient implements IFileServiceClient {
     return { content };
   }
 
-  async getFileStat(uri: string) {
+  async getFileStat(uri: string, withChildren: boolean = true) {
     const _uri = this.getUri(uri);
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
-    return this.filterStat(stat);
+    return this.filterStat(stat, withChildren);
   }
 
   async setContent(file: FileStat, content: string, options?: FileSetContentOptions) {
@@ -415,7 +415,7 @@ export class FileServiceClient implements IFileServiceClient {
     });
   }
 
-  private filterStat(stat?: FileStat) {
+  private filterStat(stat?: FileStat, withChildren: boolean = true) {
     if (!stat) {
       return;
     }
@@ -423,7 +423,8 @@ export class FileServiceClient implements IFileServiceClient {
       return;
     }
 
-    if (stat.children) {
+    // 这里传了 false 就走不到后面递归逻辑了
+    if (stat.children && withChildren) {
       stat.children = this.filterStatChildren(stat.children);
     }
 

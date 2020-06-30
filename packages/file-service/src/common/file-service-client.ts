@@ -32,7 +32,12 @@ export interface IFileServiceClient {
    */
   resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ content: string }>;
 
-  getFileStat(uri: string): Promise<FileStat | undefined>;
+  /**
+   * Read the file stat
+   * @param uri {string} The uri of the file.
+   * @param withChildren {boolean} [true]
+   */
+  getFileStat(uri: string, withChildren?: boolean): Promise<FileStat | undefined>;
 
   getFileType(uri: string): Promise<string|undefined>;
 

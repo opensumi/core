@@ -92,10 +92,17 @@ export class MainThreadFileSystem implements IMainThreadFileSystemShape {
 
   async $writeFile(uri: UriComponents, content: string): Promise<void> {
     const _uri = URI.revive(uri);
-    const stat = await this._fileService.getFileStat(_uri.toString());
+    const stat = await this._fileService.getFileStat(_uri.toString(), false);
     if (!stat) {
       // 文件不存在
-      await ensureDir(new URI(_uri).path.dir.toString(), (path) => this.$mkdir(URI.file(path).codeUri));
+      await ensureDir(new URI(_uri).path.dir.toString(), {
+        mkdir: (path: string) => this.$mkdir(URI.file(path).codeUri),
+        access: (path: string) => {
+          return this._fileService
+            .getFileStat(URI.file(path).codeUri.toString(), false)
+            .then((stat) => !!stat);
+        },
+      });
       return this._fileService.createFile(_uri.toString(), { content })
         .then(() => undefined).catch(MainThreadFileSystem._handleError);
     } else {
