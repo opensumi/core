@@ -9,7 +9,6 @@ export interface IMainThreadDebug {
   $appendToDebugConsole(value: string): Promise<void>;
   $appendLineToDebugConsole(value: string): Promise<void>;
   $registerDebuggerContribution(description: DebuggerDescription): Promise<void>;
-  $unregisterDebuggerConfiguration(debugType: string): Promise<void>;
   $addBreakpoints(breakpoints: Breakpoint[]): Promise<void>;
   $removeBreakpoints(breakpoints: Breakpoint[]): Promise<void>;
   $startDebugging(folder: WorkspaceFolder | undefined, nameOrConfiguration: string | DebugConfiguration): Promise<boolean>;
