@@ -227,6 +227,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: 5000,
       description: '%preference.terminal.scrollbackDesc%',
     },
+    'terminal.integrated.shellArgs.linux': {
+      type: 'array',
+      default: [],
+      description: '%preference.terminal.integrated.shellArgs.linux%',
+    },
     'output.maxChannelLine': {
       type: 'number',
       default: 50000,
@@ -264,6 +269,7 @@ export interface CoreConfiguration {
   'files.encoding': string;
   'general.language': string;
   'general.theme': string;
+  'terminal.integrated.shellArgs.linux': string[];
 }
 
 export const CorePreferences = Symbol('CorePreferences');
