@@ -14,8 +14,6 @@ BrowserFS.configure({
 }, (e) => {});
 
 import { MockedStorageProvider } from '@ali/ide-core-browser/lib/mocks/storage';
-import { IFileTreeAPI } from '@ali/ide-file-tree-next';
-import { FileTreeApiOverride } from './simple-module/file-tree-api.override';
 
 export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();
@@ -30,15 +28,13 @@ export async function renderApp(opts: IClientAppOpts) {
     token: StorageProvider,
     useValue: MockedStorageProvider,
   }, {
-    token: IFileTreeAPI,
-    useClass: FileTreeApiOverride,
-  }, {
     token: IMetaService,
     useValue: new MetaService({
       projectId: process.env.PROJECT_ID!,
       group: 'ide-s',
       name: 'TypeScript-Node-Starter',
-      ref: 'df72e4d1c394af6d1c21cd042116f83a792fa8c6',
+      ref: 'test',
+      // branch: 'test',
     }),
   });
 

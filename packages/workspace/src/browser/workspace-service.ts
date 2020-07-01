@@ -25,7 +25,7 @@ import {
 } from '@ali/ide-core-browser';
 import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-common';
 import { FileStat } from '@ali/ide-file-service';
-import { FileChangeEvent } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
+import { FileChangeEvent } from '@ali/ide-file-service/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { WorkspacePreferences } from './workspace-preferences';
@@ -75,16 +75,20 @@ export class WorkspaceService implements IWorkspaceService {
 
   protected applicationName: string;
 
-  public whenReady: Promise<void>;
+  private _whenReady: Promise<void>;
 
   // 映射工作区显示的文字信息
   private workspaceToName = {};
 
-  constructor() {
-    this.whenReady = this.init();
+  public init() {
+    this._whenReady = this.doInit();
   }
 
-  public async init(): Promise<void> {
+  public get whenReady() {
+    return this._whenReady;
+  }
+
+  protected async doInit(): Promise<void> {
     // TODO 用户可配置
     this.applicationName = ClientAppConfigProvider.get().applicationName;
     const wpUriString = this.getDefaultWorkspacePath();

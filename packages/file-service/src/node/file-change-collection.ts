@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { FileChange, FileChangeType } from '../common/file-service-watcher-protocol';
+import { FileChange, FileChangeType } from '../common';
 
 /**
  * A file change collection guarantees that only one change is reported for each URI.

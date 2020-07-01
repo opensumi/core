@@ -7,16 +7,18 @@ import {
   PreferenceContribution,
   PreferenceSchema,
   IContextKeyService,
+  FsProviderContribution,
 } from '@ali/ide-core-browser';
 
 import { IWorkspaceService } from '../common';
 import { workspacePreferenceSchema } from './workspace-preferences';
+import { WorkspaceService } from './workspace-service';
 
-@Domain(ClientAppContribution, PreferenceContribution)
-export class WorkspaceContribution implements ClientAppContribution, PreferenceContribution {
+@Domain(ClientAppContribution, PreferenceContribution, FsProviderContribution)
+export class WorkspaceContribution implements ClientAppContribution, PreferenceContribution, FsProviderContribution {
 
   @Autowired(IWorkspaceService)
-  protected readonly workspaceService: IWorkspaceService;
+  protected readonly workspaceService: WorkspaceService;
 
   @Autowired(CommandRegistry)
   protected readonly commandRegistry: CommandRegistry;
@@ -43,6 +45,10 @@ export class WorkspaceContribution implements ClientAppContribution, PreferenceC
   // 关闭前存储工作区
   async onStop() {
     // Do nothing
+  }
+
+  onFileServiceReady() {
+    this.workspaceService.init();
   }
 
 }

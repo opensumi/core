@@ -1,19 +1,15 @@
 import { IDiskFileProvider, FileChangeEvent, FileStat, FileType, FileSystemError, notEmpty, isErrnoException } from '../common';
 import { Event, URI, FileUri, Uri } from '@ali/ide-core-common';
+import { Path } from '@ali/ide-core-common/lib/path';
 import { promisify } from '@ali/ide-core-common/lib/browser-fs/util';
 import { ensureDir } from '@ali/ide-core-common/lib/browser-fs/ensure-dir';
 
 import * as fs from 'fs';
 import * as paths from 'path';
 
+interface BrowserFsProviderOptions { isReadonly?: boolean; rootFolder: string; }
+
 export class BrowserFsProvider implements IDiskFileProvider {
-  static base64ToUnicode(str: string) {
-    return decodeURIComponent(
-      atob(str)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''),
-    );
-  }
 
   static binaryExtList = [
     'aac',
@@ -61,7 +57,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
 
   onDidChangeFile: Event<FileChangeEvent>;
 
-  constructor(private getResolveService: (uri: URI) => string) {
+  constructor(private httpFileService: HttpFileServiceBase, private options: BrowserFsProviderOptions) {
 
   }
 
@@ -70,6 +66,11 @@ export class BrowserFsProvider implements IDiskFileProvider {
     return 0;
   }
   unwatch(watcherId: number): void {}
+  setWatchFileExcludes(excludes: string[]) {}
+  getWatchFileExcludes(): string[] {
+    return [];
+  }
+
   async stat(uri: Uri): Promise<FileStat> {
     const _uri = new URI(uri);
     return new Promise(async (resolve) => {
@@ -116,53 +117,47 @@ export class BrowserFsProvider implements IDiskFileProvider {
     let content = await promisify(fs.readFile)(FileUri.fsPath(_uri), { encoding: 'utf8' });
     if (!content) {
       // content为空读取远程
-      content = await fetch(
-        this.getResolveService(_uri),
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      )
-        .then((res) => res.json())
-        .then((ret) => {
-          if (ret.encoding === 'base64') {
-            ret.content = BrowserFsProvider.base64ToUnicode(ret.content);
-          }
-          return ret.content;
-        });
+      content = await this.httpFileService.readFile(uri);
     }
     return content;
   }
-  async writeFile(uri: Uri, content: string, options: { create: boolean; overwrite: boolean; }): Promise<void | FileStat> {
+  async writeFile(uri: Uri, content: string, options: { create: boolean; overwrite: boolean; isInit?: boolean }): Promise<void | FileStat> {
+    this.checkCapability();
+
     const _uri = new URI(uri);
 
+    const exists = await this.access(uri);
+
+    if (exists && !options.overwrite) {
+      throw FileSystemError.FileExists(_uri.toString());
+    } else if (!exists && !options.create) {
+      throw FileSystemError.FileNotFound(_uri.toString());
+    }
+
     if (options.create) {
+      if (!options.isInit) {
+        await this.httpFileService.createFile(uri, content, {});
+      }
       return await this.createFile(uri, { content });
     }
-    try {
-      await promisify(fs.stat)(FileUri.fsPath(_uri));
-      if (!options.overwrite) {
-        throw FileSystemError.FileExists(_uri.toString());
-      }
-    } catch (err) {
-      if (err.code === 'ENOENT') {
-        if (!options.create) {
-          throw FileSystemError.FileNotFound(_uri.toString());
-        }
-        await promisify(fs.writeFile)(FileUri.fsPath(_uri), content);
-      } else {
-        throw err;
-      }
+    if (!options.isInit) {
+      await this.httpFileService.updateFile(uri, content, {});
     }
+    await promisify(fs.writeFile)(FileUri.fsPath(_uri), content);
   }
-  delete(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean | undefined; }): void | Thenable<void> {
-    throw new Error('Method not implemented.');
+  async delete(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean | undefined; }): Promise<void> {
+    this.checkCapability();
+    await this.httpFileService.deleteFile(uri, {recursive: options.recursive});
+    return await promisify(fs.unlink)((uri.fsPath));
   }
-  rename(oldstring: Uri, newstring: Uri, options: { overwrite: boolean; }): void | Thenable<void | FileStat> {
-    throw new Error('Method not implemented.');
+  async rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean; }): Promise<void | FileStat> {
+    this.checkCapability();
+    const content = await this.readFile(oldUri);
+    // FIXME: 如何保证browserFs侧写入和远端写入的原子性？
+    await this.httpFileService.updateFile(oldUri, content, { newUri });
+    return await promisify(fs.rename)(oldUri.fsPath, newUri.fsPath);
   }
-  async exists(uri: Uri): Promise<boolean> {
+  async access(uri: Uri): Promise<boolean> {
     const _uri = new URI(uri);
     try {
       await promisify(fs.stat)(FileUri.fsPath(_uri));
@@ -173,6 +168,48 @@ export class BrowserFsProvider implements IDiskFileProvider {
       } else {
         throw err;
       }
+    }
+  }
+
+  async copy(source: Uri, destination: Uri, options: { overwrite: boolean; }): Promise<void | FileStat> {
+    this.checkCapability();
+    const content = await this.readFile(source);
+    await this.httpFileService.createFile(destination, content, {});
+    await promisify(fs.writeFile)(destination.fsPath, content);
+  }
+  async getCurrentUserHome(): Promise<FileStat | undefined> {
+    return undefined;
+  }
+
+  async getFileType(uri: string): Promise<string | undefined> {
+    if (!uri.startsWith('file:/')) {
+      return this._getFileType('');
+    }
+
+    try {
+      const stat = await promisify(fs.stat)(FileUri.fsPath(uri));
+
+      if (!stat.isDirectory()) {
+        let ext = new URI(uri).path.ext;
+        if (ext.startsWith('.')) {
+          ext = ext.slice(1);
+        }
+        return this._getFileType(ext);
+      } else {
+        return 'directory';
+      }
+    } catch (error) {
+      if (isErrnoException(error)) {
+        if (error.code === 'ENOENT' || error.code === 'EACCES' || error.code === 'EBUSY' || error.code === 'EPERM') {
+          return undefined;
+        }
+      }
+    }
+  }
+
+  protected checkCapability() {
+    if (this.options && this.options.isReadonly) {
+      throw new Error('FileSystem is readonly!');
     }
   }
 
@@ -231,6 +268,24 @@ export class BrowserFsProvider implements IDiskFileProvider {
     }
   }
 
+  protected async ensureNodeFetched(uri: URI) {
+    const childNodes = await this.httpFileService.readDir(uri.codeUri);
+    const ensureNodes: Promise<FileStat>[] = [];
+    for (const node of childNodes) {
+      if (node.type === 'tree') {
+        ensureNodes.push(this.createDirectory(URI.file(new Path(this.options.rootFolder).join(`${node.path}`).toString()).codeUri));
+      } else {
+        ensureNodes.push(this.writeFile(URI.file(new Path(this.options.rootFolder).join(`${node.path}`).toString()).codeUri, '', {create: true, isInit: true, overwrite: false}) as Promise<FileStat>);
+      }
+    }
+    try {
+      await Promise.all(ensureNodes);
+    } catch (err) {
+      // logger
+      // console.error('node fetch failed ', err);
+    }
+  }
+
   protected async doCreateFileStat(uri: URI, stat: fs.Stats): Promise<FileStat> {
     // Then stat the target and return that
     // const isLink = !!(stat && stat.isSymbolicLink());
@@ -262,54 +317,14 @@ export class BrowserFsProvider implements IDiskFileProvider {
   }
 
   protected async doGetChildren(uri: URI, depth: number): Promise<FileStat[]> {
+    // TODO: 获取stat前拉取一遍远端的结构信息，理论上要加一个cache做优化
+    await this.ensureNodeFetched(uri);
     return new Promise((resolve) => {
       fs.readdir(FileUri.fsPath(uri), async (err, files) => {
         const children = await Promise.all(files.map((fileName) => uri.resolve(fileName)).map((childUri) => this.doGetStat(childUri, depth - 1)));
         resolve(children.filter(notEmpty));
       });
     });
-  }
-
-  copy(source: Uri, destination: Uri, options: { overwrite: boolean; }): void | Thenable<void | FileStat> {
-    throw new Error('Method not implemented.');
-  }
-  async getCurrentUserHome(): Promise<FileStat | undefined> {
-    return undefined;
-  }
-
-  async getFileType(uri: string): Promise<string | undefined> {
-    if (!uri.startsWith('file:/')) {
-      return this._getFileType('');
-    }
-
-    try {
-      const stat = await promisify(fs.stat)(FileUri.fsPath(uri));
-
-      if (!stat.isDirectory()) {
-        let ext = new URI(uri).path.ext;
-        if (ext.startsWith('.')) {
-          ext = ext.slice(1);
-        }
-        return this._getFileType(ext);
-      } else {
-        return 'directory';
-      }
-    } catch (error) {
-      if (isErrnoException(error)) {
-        if (error.code === 'ENOENT' || error.code === 'EACCES' || error.code === 'EBUSY' || error.code === 'EPERM') {
-          return undefined;
-        }
-      }
-    }
-  }
-
-  async access(uri: Uri, mode): Promise<boolean> {
-    try {
-      await promisify(fs.access)(uri.fsPath, mode);
-      return true;
-    } catch (err) {
-      return false;
-    }
   }
 
   private _getFileType(ext: string) {
@@ -322,5 +337,19 @@ export class BrowserFsProvider implements IDiskFileProvider {
     }
 
     return type;
+  }
+}
+
+export abstract class HttpFileServiceBase {
+  abstract readFile(uri: Uri, encoding?: string): Promise<string>;
+  abstract readDir(uri: Uri): Promise<Array<{type: 'tree' | 'leaf', path: string}>>;
+  updateFile(uri: Uri, content: string, options: { encoding?: string; newUri?: Uri; }): Promise<void> {
+    throw new Error('updateFile method not implemented');
+  }
+  createFile(uri: Uri, content: string, options: { encoding?: string; }): Promise<void> {
+    throw new Error('createFile method not implemented');
+  }
+  deleteFile(uri: Uri, options: { recursive?: boolean }): Promise<void> {
+    throw new Error('deleteFile method not implemented');
   }
 }

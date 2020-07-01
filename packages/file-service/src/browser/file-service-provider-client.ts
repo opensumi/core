@@ -52,7 +52,14 @@ export class DiskFsProviderClient extends CoreFileServiceProviderClient implemen
   @Autowired(DiskFileServicePath)
   fileServiceProvider: IDiskFileProvider;
 
-  // FIXME: 多次dispose之后fire不出来了？
+  setWatchFileExcludes(excludes: string[]) {
+    return this.fileServiceProvider.setWatchFileExcludes(excludes);
+  }
+
+  getWatchFileExcludes() {
+    return this.fileServiceProvider.getWatchFileExcludes();
+  }
+
   onDidFilesChanged(event: DidFilesChangedParams): void {
     const changes: FileChange[] = event.changes.map((change) => {
       return {

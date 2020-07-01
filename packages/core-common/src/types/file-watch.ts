@@ -1,4 +1,4 @@
-import { URI } from '@ali/ide-core-common';
+import { URI } from '../'
 export interface FileSystemWatcherServer {
   /**
    * 根据给定参数启动文件监听

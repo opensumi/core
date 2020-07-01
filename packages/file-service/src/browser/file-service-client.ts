@@ -256,12 +256,13 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   async setWatchFileExcludes(excludes: string[]) {
-    this.watchFileExcludes = excludes;
-    this.watchFileExcludesMatcherList = excludes.map((pattern) => parse(pattern));
+    const provider = await this.getProvider('file');
+    return await provider.setWatchFileExcludes(excludes);
   }
 
   async getWatchFileExcludes() {
-    return this.watchFileExcludes;
+    const provider = await this.getProvider('file');
+    return await provider.getWatchFileExcludes();
   }
 
   async setFilesExcludes(excludes: string[], roots?: string[]): Promise<void> {
@@ -301,7 +302,7 @@ export class FileServiceClient implements IFileServiceClient {
       throw FileSystemError.FileNotFound(uriString);
     }
 
-    await (provider as any).delete(uriString, {
+    await provider.delete(_uri.codeUri, {
       recursive: true,
       moveToTrash: await this.doGetMoveToTrash(options),
     });

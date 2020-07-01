@@ -9,7 +9,7 @@ import { FileStat,
   FileSystemProvider,
 } from './files';
 import { IFileServiceWatcher } from './watcher';
-import { DidFilesChangedParams, FileChangeEvent } from './file-service-watcher-protocol';
+import { DidFilesChangedParams, FileChangeEvent } from '.';
 
 export const IFileServiceClient = IFileServiceClientToken;
 
