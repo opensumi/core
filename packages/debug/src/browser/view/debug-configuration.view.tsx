@@ -5,11 +5,11 @@ import { useInjectable, localize, isElectronRenderer } from '@ali/ide-core-brows
 import { DebugAction } from '../components/debug-action';
 import { DebugConfigurationService } from './debug-configuration.service';
 import { observer } from 'mobx-react-lite';
-import { DebugToolbarView, FloatDebugToolbarView } from './debug-toolbar.view';
+import { DebugToolbarView } from './debug-toolbar.view';
 import { Select, Option } from '@ali/ide-components';
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
 
-export const DebubgConfigurationView = observer(() => {
+export const DebugConfigurationView = observer(() => {
   const {
     configurationOptions,
     toValue,
@@ -21,7 +21,7 @@ export const DebubgConfigurationView = observer(() => {
     updateConfiguration,
     start,
     float,
-  }: DebugConfigurationService = useInjectable(DebugConfigurationService);
+  } = useInjectable<DebugConfigurationService>(DebugConfigurationService);
   const addConfigurationLabel = localize('debug.action.add.configuration');
 
   const setCurrentConfiguration = (event: React.ChangeEvent<HTMLSelectElement> | string) => {
@@ -79,6 +79,6 @@ export const DebubgConfigurationView = observer(() => {
         <DebugAction color={ 'var(--foreground)' } icon={ 'terminal' } label={ localize('debug.action.debug.console') } run={ openDebugConsole }></DebugAction>
       </div>
     </div>
-    { float ? <FloatDebugToolbarView /> : <DebugToolbarView float={ false } /> }
+    { !float && <DebugToolbarView float={false} /> }
   </div>;
 });

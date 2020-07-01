@@ -1,17 +1,18 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import * as styles from './debug-configuration.module.less';
-import * as cls from 'classnames';
 import { Injectable } from '@ali/common-di';
-import { observable, action } from 'mobx';
-import { useInjectable, localize, getIcon, isElectronRenderer, IClientApp, PreferenceService } from '@ali/ide-core-browser';
+import { Option, Select } from '@ali/ide-components';
+import { getIcon, isElectronRenderer, localize, PreferenceService, useInjectable } from '@ali/ide-core-browser';
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
-import { DebugAction } from '../components/debug-action';
+import * as cls from 'classnames';
+import { action, observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { DebugToolbarService } from './debug-toolbar.service';
-import { DebugState, DebugSession } from '../debug-session';
+import * as React from 'react';
+
+import { DebugAction } from '../components/debug-action';
+import { DebugSession, DebugState } from '../debug-session';
 import { isExtensionHostDebugging } from '../debugUtils';
-import { Select, Option } from '@ali/ide-components';
+import { DebugConfigurationService } from './debug-configuration.service';
+import { DebugToolbarService } from './debug-toolbar.service';
+import * as styles from './debug-configuration.module.less';
 
 @Injectable()
 class FloatController {
@@ -79,7 +80,7 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
     currentSession,
     sessions,
     updateCurrentSession,
-  }: DebugToolbarService = useInjectable(DebugToolbarService);
+  } = useInjectable<DebugToolbarService>(DebugToolbarService);
 
   const isAttach = !!currentSession && currentSession.configuration.request === 'attach' && !isExtensionHostDebugging(currentSession.configuration);
 
@@ -162,17 +163,16 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
 const DebugPreferenceTopKey = 'debug.toolbar.top';
 const DebugPreferenceHeightKey = 'debug.toolbar.height';
 
-export const FloatDebugToolbarView = observer(() => {
-  const app = useInjectable<IClientApp>(IClientApp);
+const FloatDebugToolbarView = observer(() => {
   const controller = useInjectable<FloatController>(FloatController);
   const preference = useInjectable<PreferenceService>(PreferenceService);
+  const { state } = useInjectable<DebugToolbarService>(DebugToolbarService);
+
   const customTop = preference.get<number>(DebugPreferenceTopKey) || 0;
   const customHeight = preference.get<number>(DebugPreferenceHeightKey) || 0;
-  const {
-    state,
-  }: DebugToolbarService = useInjectable(DebugToolbarService);
-  if (app.container && state) {
-    return ReactDOM.createPortal(
+
+  if (state) {
+    return (
       <div
         style={ { pointerEvents: controller.enable ? 'all' : 'none' } }
         className={ styles.debug_toolbar_container }
@@ -193,13 +193,21 @@ export const FloatDebugToolbarView = observer(() => {
               onMouseMove={ (e) => controller.onMouseMove(e) }
             ></div>
           </div>
-          <DebugToolbarView float={ true } />
+          <DebugToolbarView float />
         </div>
-      </div>,
-      app.container,
+      </div>
     );
-  } else {
-    controller.enable = false;
+  }
+
+  controller.enable = false;
+  return null;
+});
+
+export const DebugToolbarOverlayWidget = observer(() => {
+  const { float } = useInjectable<DebugConfigurationService>(DebugConfigurationService);
+  if (!float) {
     return null;
   }
+
+  return <FloatDebugToolbarView />;
 });

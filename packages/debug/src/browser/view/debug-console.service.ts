@@ -4,11 +4,11 @@ import { IMainLayoutService } from '@ali/ide-main-layout';
 import { URI, Emitter, CommandRegistry } from '@ali/ide-core-common';
 import { IEditorDocumentModelService, IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
 import { EditorCollectionService } from '@ali/ide-editor';
-import { DebugContribution } from '../debug-contribution';
 import { DebugConsoleSession } from '../console/debug-console-session';
 
 import throttle = require('lodash.throttle');
 import { IContextKeyService } from '@ali/ide-core-browser';
+import { DEBUG_CONSOLE_CONTAINER_ID } from '../../common';
 
 const options: monaco.editor.IEditorOptions = {
   wordWrap: 'on',
@@ -91,12 +91,12 @@ export class DebugConsoleService {
   }
 
   get isVisible() {
-    const bottomPanelHandler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONSOLE_CONTAINER_ID);
+    const bottomPanelHandler = this.mainlayoutService.getTabbarHandler(DEBUG_CONSOLE_CONTAINER_ID);
     return bottomPanelHandler && bottomPanelHandler.isVisible;
   }
 
   activate() {
-    const bottomPanelHandler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONSOLE_CONTAINER_ID);
+    const bottomPanelHandler = this.mainlayoutService.getTabbarHandler(DEBUG_CONSOLE_CONTAINER_ID);
     if (bottomPanelHandler && !bottomPanelHandler.isVisible) {
       bottomPanelHandler.activate();
     }

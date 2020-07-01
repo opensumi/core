@@ -3,7 +3,7 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser'
 import { DebugBreakpointView } from './view/debug-breakpoints.view';
 import { DebugStackFrameView } from './view/debug-stack-frames.view';
 import { DebugVariableView } from './view/debug-variable.view';
-import { DebubgConfigurationView } from './view/debug-configuration.view';
+import { DebugConfigurationView } from './view/debug-configuration.view';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { Autowired } from '@ali/common-di';
 import { DebugModelManager } from './editor/debug-model-manager';
@@ -21,7 +21,7 @@ import { DebugViewModel } from './view/debug-view-model';
 import { DebugSession } from './debug-session';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
-import { IDebugSessionManager, launchSchemaUri } from '../common';
+import { IDebugSessionManager, launchSchemaUri, DEBUG_CONTAINER_ID, DEBUG_WATCH_ID, DEBUG_VARIABLES_ID, DEBUG_STACK_ID, DEBUG_BREAKPOINTS_ID } from '../common';
 import { DebugConsoleService, DebugConsoleDocumentProvider } from './view/debug-console.service';
 import { DebugToolbarService } from './view/debug-toolbar.service';
 import { NextMenuContribution, MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
@@ -116,15 +116,6 @@ export namespace DebugBreakpointWidgetCommands {
 
 @Domain(ClientAppContribution, ComponentContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution, NextMenuContribution, BrowserEditorContribution)
 export class DebugContribution implements ComponentContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution, NextMenuContribution, BrowserEditorContribution {
-
-  static DEBUG_THREAD_ID: string = 'debug-thread';
-  static DEBUG_WATCH_ID: string = 'debug-watch';
-  static DEBUG_VARIABLES_ID: string = 'debug-variable';
-  static DEBUG_BREAKPOINTS_ID: string = 'debug-breakpoints';
-  static DEBUG_STACK_ID: string = 'debug-stack';
-  static DEBUG_CONTAINER_ID: string = 'debug';
-  static DEBUG_CONSOLE_CONTAINER_ID: string = 'debug-console-constainer';
-
   schema: PreferenceSchema = debugPreferencesSchema;
 
   @Autowired(IMainLayoutService)
@@ -183,25 +174,25 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
     registry.register('@ali/ide-debug', [
       {
         component: DebugWatchView,
-        id: DebugContribution.DEBUG_WATCH_ID,
+        id: DEBUG_WATCH_ID,
         name: localize('debug.watch.title'),
         collapsed: false,
       },
       {
         component: DebugStackFrameView,
-        id: DebugContribution.DEBUG_STACK_ID,
+        id: DEBUG_STACK_ID,
         name: localize('debug.callStack.title'),
         collapsed: false,
       },
       {
         component: DebugVariableView,
-        id: DebugContribution.DEBUG_VARIABLES_ID,
+        id: DEBUG_VARIABLES_ID,
         name: localize('debug.variables.title'),
         collapsed: false,
       },
       {
         component: DebugBreakpointView,
-        id: DebugContribution.DEBUG_BREAKPOINTS_ID,
+        id: DEBUG_BREAKPOINTS_ID,
         name: localize('debug.breakpoints.title'),
         collapsed: false,
       },
@@ -209,8 +200,8 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
       iconClass: getIcon('debug'),
       priority: 7,
       title: localize('debug.container.title'),
-      containerId: DebugContribution.DEBUG_CONTAINER_ID,
-      titleComponent: DebubgConfigurationView,
+      containerId: DEBUG_CONTAINER_ID,
+      titleComponent: DebugConfigurationView,
       activateKeyBinding: 'ctrlcmd+shift+d',
     });
   }
@@ -257,7 +248,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   }
 
   openView() {
-    const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
+    const handler = this.mainlayoutService.getTabbarHandler(DEBUG_CONTAINER_ID);
     if (handler && !handler.isVisible) {
       handler.activate();
     }
@@ -267,9 +258,9 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   }
 
   onDidRender() {
-    const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
+    const handler = this.mainlayoutService.getTabbarHandler(DEBUG_CONTAINER_ID);
     if (handler) {
-      handler!.setTitleComponent(DebubgConfigurationView);
+      handler!.setTitleComponent(DebugConfigurationView);
     }
   }
 
@@ -279,7 +270,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
         this.debugWatchService.addWatchHandler();
       },
       isVisible: () => {
-        const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
+        const handler = this.mainlayoutService.getTabbarHandler(DEBUG_CONTAINER_ID);
         return handler ? handler.isVisible : false;
       },
     });
@@ -288,7 +279,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
         this.debugWatchService.collapseAll();
       },
       isVisible: () => {
-        const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
+        const handler = this.mainlayoutService.getTabbarHandler(DEBUG_CONTAINER_ID);
         return handler ? handler.isVisible : false;
       },
     });
@@ -297,7 +288,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
         this.debugWatchService.removeAll();
       },
       isVisible: () => {
-        const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
+        const handler = this.mainlayoutService.getTabbarHandler(DEBUG_CONTAINER_ID);
         return handler ? handler.isVisible : false;
       },
     });
@@ -307,7 +298,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
         this.debugBreakpointsService.removeAllBreakpoints();
       },
       isVisible: () => {
-        const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
+        const handler = this.mainlayoutService.getTabbarHandler(DEBUG_CONTAINER_ID);
         return handler ? handler.isVisible : false;
       },
     });
@@ -351,7 +342,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
         this.debugBreakpointsService.toggleBreakpoints();
       },
       isVisible: () => {
-        const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
+        const handler = this.mainlayoutService.getTabbarHandler(DEBUG_CONTAINER_ID);
         return handler ? handler.isVisible : false;
       },
     });
@@ -490,35 +481,35 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
     registry.registerItem({
       id: DEBUG_COMMANDS.REMOVE_ALL_WATCHER.id,
       command: DEBUG_COMMANDS.REMOVE_ALL_WATCHER.id,
-      viewId: DebugContribution.DEBUG_WATCH_ID,
+      viewId: DEBUG_WATCH_ID,
       tooltip: localize('debug.watch.removeAll'),
     });
 
     registry.registerItem({
       id: DEBUG_COMMANDS.COLLAPSE_ALL_WATCHER.id,
       command: DEBUG_COMMANDS.COLLAPSE_ALL_WATCHER.id,
-      viewId: DebugContribution.DEBUG_WATCH_ID,
+      viewId: DEBUG_WATCH_ID,
       tooltip: localize('debug.watch.collapseAll'),
     });
 
     registry.registerItem({
       id: DEBUG_COMMANDS.ADD_WATCHER.id,
       command: DEBUG_COMMANDS.ADD_WATCHER.id,
-      viewId: DebugContribution.DEBUG_WATCH_ID,
+      viewId: DEBUG_WATCH_ID,
       tooltip: localize('debug.watch.add'),
     });
 
     registry.registerItem({
       id: DEBUG_COMMANDS.REMOVE_ALL_BREAKPOINTS.id,
       command: DEBUG_COMMANDS.REMOVE_ALL_BREAKPOINTS.id,
-      viewId: DebugContribution.DEBUG_BREAKPOINTS_ID,
+      viewId: DEBUG_BREAKPOINTS_ID,
       tooltip: localize('debug.breakpoint.removeAll'),
     });
 
     registry.registerItem({
       id: DEBUG_COMMANDS.TOGGLE_BREAKPOINTS.id,
       command: DEBUG_COMMANDS.TOGGLE_BREAKPOINTS.id,
-      viewId: DebugContribution.DEBUG_BREAKPOINTS_ID,
+      viewId: DEBUG_BREAKPOINTS_ID,
       tooltip: localize('debug.breakpoint.toggle'),
     });
 
