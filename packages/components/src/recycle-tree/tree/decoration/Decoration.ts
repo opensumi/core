@@ -1,5 +1,5 @@
 import { TreeNode, CompositeTreeNode } from '../TreeNode';
-import { IDisposable, Disposable, Emitter } from '@ali/ide-core-common';
+import { IDisposable, Disposable, Emitter } from '../../../utils';
 
 export enum TargetMatchMode {
   None = 1,

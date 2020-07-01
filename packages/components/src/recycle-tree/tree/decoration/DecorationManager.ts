@@ -1,4 +1,4 @@
-import { IDisposable, DisposableCollection } from '@ali/ide-core-common';
+import { IDisposable, DisposableCollection } from '../../../utils';
 import { TreeNode, CompositeTreeNode } from '../TreeNode';
 import { Decoration, IDecorationTargetChangeEventData } from './Decoration';
 import { CompositeDecoration, CompositeDecorationType, ClasslistComposite } from './CompositeDecoration';
