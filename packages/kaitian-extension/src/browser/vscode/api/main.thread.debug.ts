@@ -182,14 +182,6 @@ export class MainThreadDebug implements IMainThreadDebug {
     ]);
   }
 
-  async $unregisterDebuggerConfiguration(debugType: string): Promise<void> {
-    const disposable = this.toDispose.get(debugType);
-    if (disposable) {
-      disposable.dispose();
-      this.toDispose.delete(debugType);
-    }
-  }
-
   async $addBreakpoints(breakpoints: Breakpoint[]): Promise<void> {
     const newBreakpoints = new Map<string, Breakpoint>();
     breakpoints.forEach((b) => newBreakpoints.set(b.id, b));
@@ -241,7 +233,7 @@ export class MainThreadDebug implements IMainThreadDebug {
     throw new Error(`Debug session '${sessionId}' not found`);
   }
 
-  async $startDebugging(folder: WorkspaceFolder | undefined, nameOrConfiguration: string | DebugConfiguration): Promise<boolean> {
+  async $startDebugging(folder: WorkspaceFolder | undefined, nameOrConfiguration: string | DebugConfiguration ): Promise<boolean> {
     let configuration: DebugConfiguration | undefined;
 
     if (typeof nameOrConfiguration === 'string') {
@@ -255,8 +247,7 @@ export class MainThreadDebug implements IMainThreadDebug {
     }
 
     if (!configuration) {
-      this.logger.error(`不存在配置 ${nameOrConfiguration}`);
-      return false;
+      throw new Error(`No configuration ${nameOrConfiguration}`);
     }
 
     const session = await this.sessionManager.start({
