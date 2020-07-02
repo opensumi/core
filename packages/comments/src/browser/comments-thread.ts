@@ -9,7 +9,7 @@ import {
   localize,
 } from '@ali/ide-core-browser';
 import { CommentsZoneWidget } from './comments-zone.view';
-import { ICommentsThread, IComment, ICommentsThreadOptions, ICommentsService, IThreadComment } from '../common';
+import { ICommentsThread, IComment, ICommentsThreadOptions, ICommentsService, IThreadComment, ICommentsZoneWidget } from '../common';
 import { IEditor, EditorCollectionService } from '@ali/ide-editor';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 
@@ -48,9 +48,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
 
   private widgets = new Map<IEditor, CommentsZoneWidget>();
 
-  static getId(uri: URI, range: IRange): string {
-    return `${uri}#${range.startLineNumber}`;
-  }
+  private _id = `thread_${uuid()}`;
 
   @observable
   public isCollapsed: boolean;
@@ -99,9 +97,12 @@ export class CommentsThread extends Disposable implements ICommentsThread {
       },
     });
   }
+  getWidgetByEditor(editor: IEditor): ICommentsZoneWidget | undefined {
+    return this.widgets.get(editor);
+  }
 
   get id() {
-    return CommentsThread.getId(this.uri, this.range);
+    return this._id;
   }
 
   get contextKeyService() {
@@ -133,6 +134,20 @@ export class CommentsThread extends Disposable implements ICommentsThread {
 
   private addWidgetByEditor(editor: IEditor) {
     const widget = this.injector.get(CommentsZoneWidget, [editor, this]);
+    // 如果当前 widget 发生高度变化，通知同一个 同一个 editor 的其他 range 相同的 thread 也重新计算一下高度
+    this.addDispose(widget.onChangeZoneWidget(() => {
+      const threads = this.commentsService.commentsThreads
+        .filter((thread) => this.isEqual(thread));
+      // 只需要 resize 当前 thread 之后的 thread
+      const currentIndex = threads.findIndex((thread) => thread === this);
+      const resizeThreads = threads.slice(currentIndex + 1);
+      for (const thread of resizeThreads) {
+        if (thread.isShowWidget(editor)) {
+          const widget = thread.getWidgetByEditor(editor);
+          widget?.resize();
+        }
+      }
+    }));
     this.addDispose(widget);
     this.widgets.set(editor, widget);
     editor.onDispose(() => {
@@ -171,33 +186,46 @@ export class CommentsThread extends Disposable implements ICommentsThread {
           widget = this.addWidgetByEditor(editor);
         }
         // 如果标记之前是已经展示的 widget，则调用 show 方法
-        if (editor.currentUri?.isEqual(this.uri) && widget.isShow) {
+        if (editor.currentUri?.isEqual(this.uri)) {
           widget.show();
         }
       });
     }
   }
 
-  public hide() {
-    for (const [editor, widget] of this.widgets) {
-      if (!editor.currentUri?.isEqual(this.uri) && widget.isShow) {
-        widget.dispose();
+  public isShowWidget(editor?: IEditor) {
+    if (editor) {
+      const widget = this.widgets.get(editor);
+      return widget ? widget.isShow : false;
+    } else {
+      for (const [, widget] of this.widgets) {
+        return widget.isShow;
       }
+      return false;
+    }
+  }
+
+  public hide(editor?: IEditor) {
+    if (editor) {
+      const widget = this.widgets.get(editor);
+      widget?.hide();
+    } else {
+      this.hideAll();
     }
   }
 
   public showAll() {
     for (const [, widget] of this.widgets) {
-      if (!widget.isShow) {
-        widget.toggle();
-      }
+      widget.show();
     }
   }
 
-  public hideAll() {
+  public hideAll(isDospose?: boolean) {
     for (const [, widget] of this.widgets) {
-      if (widget.isShow) {
-        widget.toggle();
+      if (isDospose) {
+        widget.dispose();
+      } else {
+        widget.hide();
       }
     }
   }
@@ -214,5 +242,9 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     if (index !== -1) {
       this.comments.splice(index, 1);
     }
+  }
+
+  public isEqual(thread: ICommentsThread): boolean {
+    return thread.uri.isEqual(this.uri) && thread.range.startLineNumber === this.range.startLineNumber;
   }
 }

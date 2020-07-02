@@ -285,7 +285,7 @@ export class MainThreadCommentThread implements CommentThread {
   ) {
     // 查找当前位置是否已经有评论
     // 如果则不创建
-    const thread = this.commentsService.commentsThreads.find((commentThread) => commentThread.id === `${resource}#${_range.startLineNumber}`);
+    const thread = this.commentsService.commentsThreads.find((commentThread) => commentThread.uri.toString() === resource && commentThread.range.startLineNumber === _range.startLineNumber);
     // 在 data 字段保存 handle id
     const threadData = {
       commentControlHandle: controllerHandle,

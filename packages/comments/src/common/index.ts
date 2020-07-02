@@ -129,13 +129,31 @@ export interface ICommentsZoneWidget {
    */
   isShow: boolean;
   /**
-   * 控制显隐
+   * 切换显隐
    */
   toggle(): void;
+  /**
+   * 设置为显示
+   */
+  show(): void;
+  /**
+   * 设置为隐藏
+   */
+  hide(): void;
   /**
    * 销毁
    */
   dispose(): void;
+  /**
+   * 重新设置 widget
+   * 会先 remove zone 再 append
+   */
+  resize(): void;
+  /**
+   * monaco 默认正只能写死 zone widget height，若要随着 view 变化进行高度的变化则需要删除重建
+   * 如果有此类操作则会触发该事件
+   */
+  onChangeZoneWidget: Event<IRange>;
 }
 
 export interface ICommentThreadTitle  extends ICommentsMenuContext {
@@ -286,8 +304,26 @@ export interface MentionsOptions {
   markup?: string;
 }
 
+export interface ICommentsConfig {
+  /**
+   * 是否支持单行多个评论
+   * 默认为 false
+   */
+  isMultiCommentsForSingleLine?: boolean;
+  /**
+   * 当前用户信息，用于第一次创建时面板左侧的显示的用户头像
+   */
+  author?: {
+    avatar: string;
+  };
+}
+
 export const ICommentsFeatureRegistry = Symbol('ICommentsFeatureRegistry');
 export interface ICommentsFeatureRegistry {
+  /**
+   * 注册基础信息
+   */
+  registerConfig(config: ICommentsConfig): void;
   /**
    * 注册在评论面板里文件上传的处理函数
    * @param handler
@@ -335,6 +371,10 @@ export interface ICommentsFeatureRegistry {
    * 获取指定的 zone widget
    */
   getZoneWidgetRender(): ZoneWidgerRender | undefined;
+  /**
+   * 获取基础配置
+   */
+  getConfig(): ICommentsConfig;
 }
 
 export const CommentsContribution = Symbol('CommentsContribution');
@@ -357,7 +397,6 @@ export interface CommentsContribution {
 export interface ICommentsThread extends IDisposable {
   /**
    * thread id
-   * id 为 uri#range
    */
   id: string;
   /**
@@ -393,6 +432,14 @@ export interface ICommentsThread extends IDisposable {
    */
   options: ICommentsThreadOptions;
   /**
+   * thread 头部文案
+   */
+  threadHeaderTitle: string;
+  /**
+   * 是否是只读
+   */
+  readOnly: boolean;
+  /**
    * 评论面板的 context key service
    */
   contextKeyService: IContextKeyService;
@@ -417,16 +464,33 @@ export interface ICommentsThread extends IDisposable {
   toggle(editor: IEditor): void;
   /**
    * 隐藏 zone widget
+   * @param editor 指定在某一个 editor 中隐藏
    */
-  hide(): void;
+  hide(editor?: IEditor): void;
   /**
    * 显示所有 zone widget
    */
   showAll(): void;
   /**
    * 隐藏所有 widget
+   * @param isDispose dispose widget，此时不修改内部 _isShow 变量
    */
-  hideAll(): void;
+  hideAll(isDispose?: boolean): void;
+  /**
+   * 判断当前 editor 是否有显示的 widget
+   * @param editor
+   */
+  isShowWidget(editor?: IEditor): boolean;
+  /**
+   * 判断是否是统一 uri，同一 range 的 thread
+   * @param thread
+   */
+  isEqual(thread: ICommentsThread): boolean;
+  /**
+   * 通过 editor 获取 zone widget
+   * @param editor
+   */
+  getWidgetByEditor(editor: IEditor): ICommentsZoneWidget | undefined;
 }
 
 export interface ICommentsThreadOptions {
@@ -522,6 +586,10 @@ export interface ICommentsService {
    * @param line
    */
   getProviderIdsByLine(line: number): string[];
+  /**
+   * 销毁所有的 thread
+   */
+  dispose(): void;
 }
 
 export const CollapseId = 'comments.panel.action.collapse';

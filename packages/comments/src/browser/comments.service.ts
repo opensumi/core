@@ -14,12 +14,13 @@ import {
   IDisposable,
   getIcon,
   positionToRange,
+  Event,
+  memoize,
 } from '@ali/ide-core-browser';
 import { IEditor } from '@ali/ide-editor';
 import { IEditorDecorationCollectionService, IEditorDocumentModelService, WorkbenchEditorService } from '@ali/ide-editor/lib/browser';
 import {
   ICommentsService,
-  CommentGutterType,
   ICommentsThreadOptions,
   ICommentsThread,
   ICommentsTreeNode,
@@ -87,33 +88,45 @@ export class CommentsService extends Disposable implements ICommentsService {
     return [...this.threads.values()];
   }
 
-  get onThreadsChanged() {
+  @memoize
+  get isMultiCommentsForSingleLine() {
+    return !!this.commentsFeatureRegistry.getConfig()?.isMultiCommentsForSingleLine;
+  }
+
+  @memoize
+  get currentAuthorAvatar() {
+    return this.commentsFeatureRegistry.getConfig()?.author?.avatar;
+  }
+
+  get onThreadsChanged(): Event<ICommentsThread> {
     return this.threadsChangeEmitter.event;
   }
 
-  get onThreadsCreated() {
+  get onThreadsCreated(): Event<ICommentsThread> {
     return this.threadsCreatedEmitter.event;
   }
 
-  private createDecoration(
-    type: CommentGutterType,
-  ): monaco.textModel.ModelDecorationOptions {
+  private createThreadDecoration(thread: ICommentsThread) {
+    // 对于新增的空的 thread，默认显示当前用户的头像，否则使用第一个用户的头像
+    const avatar = thread.comments.length === 0 ? this.currentAuthorAvatar : thread.comments[0].author.iconPath?.toString();
+    const icon = avatar ? this.iconService.fromIcon('', avatar, IconType.Background) : getIcon('message');
     const decorationOptions: monaco.editor.IModelDecorationOptions = {
-      // 评论组件跟随鼠标移动显示
-      beforeContentClassName: this.getLinesDecorationsClassName(type),
-      // stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+      // 创建评论显示在 glyph margin 处
+      glyphMarginClassName: ['comments-decoration', 'comments-thread', icon].join(' '),
     };
     return monaco.textModel.ModelDecorationOptions.createDynamic(
       decorationOptions,
     );
   }
 
-  private getLinesDecorationsClassName(type: CommentGutterType) {
-    return `comments-glyph ${
-      type === CommentGutterType.Empty
-        ? 'comment-diff-added'
-        : 'comment-thread'
-      } ` + getIcon('message');
+  private createBeforeDecoration(): monaco.textModel.ModelDecorationOptions {
+    const decorationOptions: monaco.editor.IModelDecorationOptions = {
+      // 评论组件跟随鼠标移动显示
+      beforeContentClassName: ['comments-decoration', 'comments-add', getIcon('message')].join(' '),
+    };
+    return monaco.textModel.ModelDecorationOptions.createDynamic(
+      decorationOptions,
+    );
   }
 
   public init() {
@@ -128,30 +141,40 @@ export class CommentsService extends Disposable implements ICommentsService {
   private bindClickGutterEvent(editor: IEditor) {
     const dispose = editor.monacoEditor.onMouseDown((event) => {
       if (
-        event.target.type ===
-        monaco.editor.MouseTargetType.CONTENT_TEXT &&
-        event.target.element &&
-        event.target.element.className.indexOf('comments-glyph') > -1
+        (
+          event.target.type === monaco.editor.MouseTargetType.CONTENT_TEXT
+          || event.target.type === monaco.editor.MouseTargetType.CONTENT_EMPTY
+        )
+        && event.target.element
+        && event.target.element.className.indexOf('comments-add') > -1
       ) {
         const { target } = event;
-        const { element } = target;
-        if (target && element && target.range) {
+        if (target && target.range) {
           const { range } = target;
-          const threadId = CommentsThread.getId(editor.currentUri!, range);
-          const thread = this.threads.get(threadId);
-          if (!thread) {
-            const thread = this.createThread(editor.currentUri!, range);
-            const element = event.target.element;
-            element.classList.remove('comment-diff-added');
-            element.classList.add('comment-thread');
-            thread.onDispose(() => {
-              element.classList.remove('comment-thread');
-              element.classList.add('comment-diff-added');
-            });
-            thread.show();
-          } else {
-            thread.toggle(editor);
+          const thread = this.createThread(editor.currentUri!, range);
+          thread.show(editor);
+        }
+      } else if (
+        event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN
+        && event.target.element
+        && event.target.element.className.indexOf('comments-thread') > -1
+      ) {
+        const { target } = event;
+        if (target && target.range) {
+          const { range } = target;
+          const threads = this.commentsThreads
+            .filter((thread) => thread.uri.isEqual(editor.currentUri!) && thread.range.startLineNumber === range.startLineNumber);
+          if (threads.length) {
+            // 判断当前 widget 是否是显示的
+            const isShowWidget = threads.some((thread) => thread.isShowWidget(editor));
+
+            if (isShowWidget) {
+              threads.forEach((thread) => thread.hide(editor));
+            } else {
+              threads.forEach((thread) => thread.show(editor));
+            }
           }
+
         }
       }
     });
@@ -318,46 +341,46 @@ export class CommentsService extends Disposable implements ICommentsService {
         key: 'comments',
         onDidDecorationChange: this.decorationChangeEmitter.event,
         provideEditorDecoration: async (uri: URI) => {
+          const threads = [...this.threads.values()];
           const decorations: monaco.editor.IModelDeltaDecoration[] = [];
           const ranges = await this.getContributionRanges(uri);
-          if (ranges && ranges.length) {
-            decorations.push(
-              ...ranges.map((range) => ({
-                range,
-                options: this.createDecoration(
-                  CommentGutterType.Empty,
+          // 设置新增评论的 decoration
+          decorations.push(
+            ...ranges
+              .filter((range) =>
+                this.isMultiCommentsForSingleLine ? true :
+                // 如果不支持对同一行进行多个评论，那么过滤掉当前有 thread 行号的 beforeDecoration
+                !threads.some((thread) =>
+                  thread.uri.isEqual(uri)
+                  && thread.range.startLineNumber === range.startLineNumber,
                 ),
+              )
+              .map((range) => ({
+                range,
+                options: this.createBeforeDecoration(),
               })),
-            );
-          }
-          if (this.threads.size) {
-            const threads = [...this.threads.values()]
-              // 先隐藏上一个 thread，否则同组会显示已经有这个 widgetId
-              .map((thread) => {
-                if (!thread.uri.isEqual(uri)) {
-                  thread.hide();
-                }
-                return thread;
-              })
+          );
+          // 设置已有评论的 decoration
+          decorations.push(
+            ...threads
               .filter((thread) => {
                 const isCurrentThread = thread.uri.isEqual(uri);
-                if (isCurrentThread) {
+                if (isCurrentThread && thread.isShowWidget()) {
                   // 恢复之前的现场
                   thread.show();
+                } else {
+                  // 设置为 dispose 方式消失，不会修改内部 isShow 变量，用这个变量来判断下次且回来后是否要恢复显示
+                  thread.hideAll(true);
                 }
                 return isCurrentThread;
-              });
-            decorations.push(
-              ...threads.map((thread) => {
+              })
+              .map((thread) => {
                 return {
                   range: thread.range,
-                  options: this.createDecoration(
-                    CommentGutterType.Thread,
-                  ),
+                  options: this.createThreadDecoration(thread),
                 };
               }),
-            );
-          }
+          );
 
           return decorations;
         },
