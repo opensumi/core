@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Uri } from '@ali/ide-core-common/src/uri';
+import { Uri } from '@ali/ide-core-common/lib/uri';
 import { rtrim, escapeRegExpCharacters } from '@ali/ide-core-common/lib/utils/strings';
 import { format } from '@ali/ide-core-common/lib/utils/strings';
 import { IWorkspaceService } from '@ali/ide-workspace';
