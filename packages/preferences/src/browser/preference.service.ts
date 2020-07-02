@@ -280,6 +280,7 @@ export const defaultSettingSections: {
         { id: 'terminal.lineHeight', localized: 'preference.terminal.lineHeight' },
         { id: 'terminal.cursorBlink', localized: 'preference.terminal.cursorBlink' },
         { id: 'terminal.scrollback', localized: 'preference.terminal.scrollback' },
+        { id: 'terminal.integrated.shellArgs.linux', localized: 'preference.terminal.integrated.shellArgs.linux' },
       ],
     },
   ],

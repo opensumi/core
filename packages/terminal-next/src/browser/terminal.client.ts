@@ -11,6 +11,7 @@ import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
 import { FilePathAddon, AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
 import { TerminalKeyBoardInputService } from './terminal.input';
 import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, ITerminalGroupViewService, ITerminalInternalService, IWidget, ITerminalPreference, ITerminalDataEvent } from '../common';
+import { CorePreferences } from '@ali/ide-core-browser';
 
 import * as styles from './component/terminal.module.less';
 
@@ -53,6 +54,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   @Autowired(ITerminalTheme)
   protected readonly theme: ITerminalTheme;
+
+  @Autowired(CorePreferences)
+  protected readonly corePreferences: CorePreferences;
 
   @Autowired(ITerminalController)
   protected readonly controller: ITerminalController;
@@ -191,8 +195,18 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     const type = this.preference.get<string>('terminal.type');
     this._attachXterm();
 
+    const linuxShellArgs = this.corePreferences.get('terminal.integrated.shellArgs.linux');
+
+    const ptyOptions = {
+      ...this._options,
+      shellArgs: [
+        ...(this._options.shellArgs || []),
+        ...linuxShellArgs,
+      ],
+    };
+
     const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this._fitAddon.proposeDimensions() || {};
-    const connection = await this.service.attach(sessionId, this._term, rows, cols, this._options, type);
+    const connection = await this.service.attach(sessionId, this._term, rows, cols, ptyOptions, type);
 
     if (!connection) {
       this._attached.resolve();
@@ -322,6 +336,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
 @Injectable()
 export class TerminalClientFactory {
+
   static createClient(injector: Injector, widget: IWidget, options?: TerminalOptions, autofocus?: boolean) {
     const child = injector.createChild([
       {

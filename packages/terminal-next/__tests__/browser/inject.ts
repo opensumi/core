@@ -1,6 +1,6 @@
 import { Injector } from '@ali/common-di';
 import { IEventBus, CommandService, ILogger, IFileServiceClient } from '@ali/ide-core-common';
-import { AppConfig, IContextKeyService, PreferenceService, EventBusImpl } from '@ali/ide-core-browser';
+import { AppConfig, IContextKeyService, PreferenceService, EventBusImpl, CorePreferences } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { IThemeService } from '@ali/ide-theme';
@@ -22,6 +22,9 @@ import {
   MockEditorService,
   MockWorkspaceService,
 } from './mock.service';
+
+const mockPreferences = new Map();
+mockPreferences.set('terminal.integrated.shellArgs.linux', []);
 
 export const injector = new Injector([
   {
@@ -79,6 +82,10 @@ export const injector = new Injector([
   {
     token: ITerminalGroupViewService,
     useClass: TerminalGroupViewService,
+  },
+  {
+    token: CorePreferences,
+    useValue: mockPreferences,
   },
   {
     token: ITerminalClientFactory,

@@ -307,7 +307,7 @@ export const localizationBundle = {
     'preference.terminal.cursorBlinkDesc': 'To change the cursor link of all terminals',
     'preference.terminal.scrollback': 'Terminal Cursor Scrollback',
     'preference.terminal.scrollbackDesc': 'To change the scrollback of terminals',
-
+    'preference.terminal.integrated.shellArgs.linux': 'The command line arguments to use when on the Linux terminal. ',
     'common.preference.open': 'Settings',
     'common.keymaps.open': 'Keyboard Shortcut',
     'common.about': 'About',

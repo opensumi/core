@@ -37,6 +37,7 @@ renderApp({
     'application.confirmExit': 'never',
     'editor.quickSuggestionsDelay': 100,
     'editor.quickSuggestionsMaxCount': 50,
+    // 'terminal.integrated.shellArgs.linux': ['-l'],
     // 'editor.forceReadOnly': true,
   },
   defaultPanels: {

@@ -301,6 +301,7 @@ export const localizationBundle = {
     'preference.terminal.cursorBlinkDesc': '改变所有终端的光标是否闪烁',
     'preference.terminal.scrollback': '终端可滚动内容行数',
     'preference.terminal.scrollbackDesc': '改变终端可滚动内容行数',
+    'preference.terminal.integrated.shellArgs.linux': '在 Linux 终端上时要使用的命令行参数。',
 
     'settings.group.general': '常规',
     'settings.group.shortcut': '快捷键',
