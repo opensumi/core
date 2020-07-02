@@ -1,4 +1,4 @@
-import { Disposable, uuid, URI, localize, Deferred, IEventBus } from '@ali/ide-core-common';
+import { Disposable, uuid, URI, localize, Deferred, IEventBus, removeAnsiEscapeCodes } from '@ali/ide-core-common';
 import { Optional, Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { PreferenceService } from '@ali/ide-core-browser';
@@ -145,14 +145,15 @@ export class OutputChannel extends Disposable {
 
   append(value: string): void {
     this.eventBus.fire(new ContentChangeEvent(new ContentChangeEventPayload(this.name, ContentChangeType.append, value, this.outputLines)));
-    this.doAppend(value);
+    this.doAppend(removeAnsiEscapeCodes(value));
   }
 
   appendLine(line: string): void {
     const value = line;
     this.eventBus.fire(new ContentChangeEvent(new ContentChangeEventPayload(this.name, ContentChangeType.appendLine, value, this.outputLines)));
-    this.doAppend(value);
+    this.doAppend(removeAnsiEscapeCodes(value));
     if (this.shouldLogToBrowser) {
+      // tslint:disable no-console
       console.log(`%c[${this.name}]` + `%c ${line}}`, 'background:rgb(50, 150, 250); color: #fff', 'background: none; color: inherit');
     }
   }
