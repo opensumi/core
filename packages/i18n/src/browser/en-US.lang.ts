@@ -6,6 +6,9 @@ export const localizationBundle = {
     'extension': 'Extension',
     'common.yes': 'Yes',
     'common.no': 'No',
+
+    'tree.filter.placeholder': 'Enter a keyword or path to filter',
+
     'file.new': 'New File',
     'file.folder.new': 'New Folder',
     'file.save': 'Save File',
@@ -47,7 +50,6 @@ export const localizationBundle = {
     'file.search.folder': 'Search on this folder',
     'file.focus.files': 'Focus on Files Explorer',
     'file.filetree.filter': 'Filter on opened files',
-    'file.filetree.filter.placeholder': 'Enter a keyword or path to filter',
     'file.filetree.openWithPath': 'Open In The Terminal',
     'file.tooltip.symbolicLink': 'Symbolic Link',
     'file.resource-deleted': '(Deleted)',
