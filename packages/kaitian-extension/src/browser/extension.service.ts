@@ -195,8 +195,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     this.logger.verbose('kaitian extensionMetaDataArr', this.extensionMetaDataArr);
     await this.initExtension();
     await this.enableAvailableExtensions();
-    await this.themeService.applyTheme();
-    await this.iconService.applyTheme();
+    await this.themeService.applyTheme(undefined, true);
+    await this.iconService.applyTheme(undefined, true);
     this.doActivate();
   }
 
