@@ -29,7 +29,12 @@ export enum IconShape {
 export interface IIconService {
   currentThemeId: string;
   currentTheme: IIconTheme;
-  applyTheme(themeId?: string): Promise<void>;
+  /**
+   * 应用主题（外部需要改主题请直接修改preference）
+   * @param themeId 主题ID
+   * @param fromExtension 是否来源于插件（内部参数）
+   */
+  applyTheme(themeId?: string, fromExtension?: boolean): Promise<void>;
   /**
    * 将一个url地址或插件主题url转换为icon的class
    * @param basePath 路径前缀
@@ -57,7 +62,12 @@ export interface IThemeService {
   currentThemeId: string;
   onThemeChange: Event<ITheme>;
   registerThemes(themeContributions: ThemeContribution[], extPath: URI): IDisposable;
-  applyTheme(id?: string): Promise<void>;
+  /**
+   * 应用主题（外部需要改主题请直接修改preference）
+   * @param id 主题ID
+   * @param fromExtension 是否来源于插件（内部参数）
+   */
+  applyTheme(id?: string, fromExtension?: boolean): Promise<void>;
   getAvailableThemeInfos(): ThemeInfo[];
   getCurrentTheme(): Promise<ITheme>;
   getCurrentThemeSync(): ITheme;

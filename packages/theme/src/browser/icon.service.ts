@@ -37,6 +37,7 @@ export class IconService implements IIconService {
 
   public currentThemeId: string;
   public currentTheme: IIconTheme;
+  protected extensionReady = false;
 
   private iconMap: Map<string, string> = new Map();
 
@@ -59,9 +60,9 @@ export class IconService implements IIconService {
   }
 
   private listen() {
-    this.preferenceService.onPreferenceChanged( (e) => {
-      if (e.preferenceName === 'general.icon') {
-        this.applyTheme(this.preferenceService.get<string>('general.icon')!);
+    this.preferenceService.onPreferenceChanged(async (e) => {
+      if (e.preferenceName === 'general.icon' && this.extensionReady) {
+        await this.applyTheme(this.preferenceService.get<string>('general.icon')!);
       }
     });
   }
@@ -201,7 +202,11 @@ export class IconService implements IIconService {
     return;
   }
 
-  async applyTheme(themeId?: string) {
+  async applyTheme(themeId?: string, fromExtension?: boolean) {
+    // TODO: 复用图标和颜色主题的部分逻辑
+    if (fromExtension) {
+      this.extensionReady = true;
+    }
     this.toggleIconVisible(true);
     if (!themeId) {
       themeId = this.preferenceService.get<string>('general.icon')!;

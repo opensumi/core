@@ -40,6 +40,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   private themeContributionRegistry: Map<string, { contribution: ThemeContribution, basePath: URI }> = new Map();
 
   private themeChangeEmitter: Emitter<ITheme> = new Emitter();
+  protected extensionReady: boolean;
 
   public onThemeChange: Event<ITheme> = this.themeChangeEmitter.event;
 
@@ -92,7 +93,10 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     return disposables;
   }
 
-  public async applyTheme(themeId?: string) {
+  public async applyTheme(themeId?: string, fromExtension?: boolean) {
+    if (fromExtension) {
+      this.extensionReady = true;
+    }
     if (!themeId) {
       themeId = this.preferenceService.get<string>(COLOR_THEME_SETTING)!;
     }
@@ -220,9 +224,9 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     this.eventBus.on(ThemeChangedEvent, (e) => {
       this.themeChangeEmitter.fire(e.payload.theme);
     });
-    this.preferenceService.onPreferenceChanged((e) => {
-      if (e.preferenceName === COLOR_THEME_SETTING) {
-        this.applyTheme(e.newValue);
+    this.preferenceService.onPreferenceChanged(async (e) => {
+      if (e.preferenceName === COLOR_THEME_SETTING && this.extensionReady) {
+        await this.applyTheme(e.newValue);
       }
       if (this.currentTheme) {
         if (e.preferenceName === CUSTOM_WORKBENCH_COLORS_SETTING) {
