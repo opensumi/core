@@ -12,7 +12,7 @@ import throttle = require('lodash.throttle');
 import debounce = require('lodash.debounce');
 import * as cls from 'classnames';
 import { getIcon } from '@ali/ide-core-browser';
-import { CheckBox, Input, Button, IconContextProvider } from '@ali/ide-components';
+import { CheckBox, Input, Button, ComponentContextProvider } from '@ali/ide-components';
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
 import { Select, Option, Tabs } from '@ali/ide-components';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
@@ -73,7 +73,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
   }, []);
 
   return (
-    <IconContextProvider value={{ getIcon }}>
+    <ComponentContextProvider value={{ getIcon, localize }}>
       <div className = {styles.preferences}>
         <div className = {styles.preferences_header}>
           {appConfig.isSyncPreference ? <div /> : headers}
@@ -97,7 +97,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
           </div>
         }
       </div>
-    </IconContextProvider>
+    </ComponentContextProvider>
   );
 });
 

@@ -9,6 +9,8 @@ export const localizationBundle = {
     'common.no': '否',
     'extension': '插件',
 
+    'tree.filter.placeholder': '输入关键字或路径查找',
+
     'file.new': '新建文件',
     'file.folder.new': '新建文件夹',
 
@@ -51,7 +53,6 @@ export const localizationBundle = {
     'file.search.folder': '在文件夹中查找',
     'file.focus.files': '在资源管理器中聚焦文件',
     'file.filetree.filter': '在展开文件中查找',
-    'file.filetree.filter.placeholder': '输入关键字或路径查找',
     'file.filetree.openWithPath': '在终端中打开',
     'file.tooltip.symbolicLink': '符号链接',
     'file.resource-deleted': '（已删除）',

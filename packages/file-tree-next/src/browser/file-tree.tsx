@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { ViewState, useInjectable, isOSX, localize, URI } from '@ali/ide-core-browser';
-import { RecycleTree, IRecycleTreeHandle, TreeNodeType, Input, Icon, INodeRendererWrapProps } from '@ali/ide-components';
+import { ViewState, useInjectable, isOSX, URI } from '@ali/ide-core-browser';
+import { RecycleTreeFilterDecorator, RecycleTree, IRecycleTreeHandle, TreeNodeType, INodeRendererWrapProps } from '@ali/ide-components';
 import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
@@ -9,11 +9,12 @@ import { Directory, File } from './file-tree-nodes';
 import { EmptyTreeView } from './empty.view';
 import * as cls from 'classnames';
 import * as styles from './file-tree.module.less';
-import throttle = require('lodash.throttle');
 
 export const FILTER_AREA_HEIGHT = 30;
 export const FILE_TREE_FIELD_NAME = 'FILE_TREE_FIELD';
 export const FILE_TREE_FILTER_DELAY = 500;
+
+const FilterableRecycleTree = RecycleTreeFilterDecorator(RecycleTree);
 
 export const FileTree = observer(({
   viewState,
@@ -161,13 +162,15 @@ export const FileTree = observer(({
   const renderFileTree = () => {
     if (isReady) {
       if (!!fileTreeModelService.treeModel) {
-        return <RecycleTree
-          height={filterMode ? height - FILTER_AREA_HEIGHT : height}
+        return <FilterableRecycleTree
+          height={height}
           width={width}
           itemHeight={FILE_TREE_NODE_HEIGHT}
           onReady={handleTreeReady}
           model={fileTreeModelService.treeModel}
           filter={filter}
+          filterEnabled={filterMode}
+          afterClear={() => locationToCurrentFile()}
         >
           {(props: INodeRendererWrapProps) => <FileTreeNode
             item={props.item}
@@ -185,36 +188,10 @@ export const FileTree = observer(({
             hasPrompt = {props.hasPrompt}
             hasFolderIcons={fileTreeModelService.hasFolderIcons}
           />}
-        </RecycleTree>;
+        </FilterableRecycleTree>;
       } else {
         return <EmptyTreeView />;
       }
-    }
-  };
-  const throttleSetFilter = throttle((value) => {
-    setPreFilter(value);
-  }, FILE_TREE_FILTER_DELAY);
-
-  const renderFilterView = () => {
-    const handleFilterChange = (value: string) => {
-      throttleSetFilter(value);
-    };
-    const handleAfterClear = () => {
-      locationToCurrentFile();
-    };
-
-    if (filterMode) {
-      return <div className={styles.filter_wrapper} style={{ height: FILTER_AREA_HEIGHT }}>
-      <Input
-        hasClear
-        autoFocus
-        size='small'
-        onValueChange={handleFilterChange}
-        className={styles.filter_input}
-        afterClear={handleAfterClear}
-        placeholder={localize('file.filetree.filter.placeholder')}
-        addonBefore={<Icon className={styles.filterIcon} icon='retrieval' />} />
-      </div>;
     }
   };
 
@@ -234,7 +211,6 @@ export const FileTree = observer(({
     onDrop={handleOuterDrop}
     data-name={FILE_TREE_FIELD_NAME}
   >
-    {renderFilterView()}
     {renderFileTree()}
   </div>;
 });
