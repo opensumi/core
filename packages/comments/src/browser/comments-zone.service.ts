@@ -1,6 +1,6 @@
 import { Disposable, memoize } from '@ali/ide-core-common';
 import { Autowired, Injectable, Optional } from '@ali/common-di';
-import { AbstractMenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, MenuId, IMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 import { CommentsThread } from './comments-thread';
 
@@ -14,7 +14,7 @@ export class CommentsZoneService extends Disposable {
   }
 
   @memoize
-  get commentThreadTitle() {
+  get commentThreadTitle(): IMenu {
     return this.registerDispose(
       this.menuService.createMenu(
         MenuId.CommentsCommentThreadTitle,
@@ -24,7 +24,7 @@ export class CommentsZoneService extends Disposable {
   }
 
   @memoize
-  get commentThreadContext() {
+  get commentThreadContext(): IMenu {
     return this.registerDispose(
       this.menuService.createMenu(
         MenuId.CommentsCommentThreadContext,

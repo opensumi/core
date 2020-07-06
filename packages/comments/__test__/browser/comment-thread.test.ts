@@ -25,6 +25,10 @@ describe('comment service test', () => {
     commentsService = injector.get<ICommentsService>(ICommentsService);
   });
 
+  afterEach(() => {
+    commentsService.dispose();
+  });
+
   afterAll(() => {
     (global as any).monaco = undefined;
   });
@@ -40,7 +44,6 @@ describe('comment service test', () => {
         body: '评论内容1',
       }],
     });
-    expect(thread.id).toBe(`${uri}#${1}`);
     expect(thread.uri.isEqual(uri));
     expect(thread.range.startLineNumber).toBe(1);
   });
@@ -108,6 +111,7 @@ describe('comment service test', () => {
 
   it('thread context service', () => {
     const uri = URI.file('/test');
+    expect(commentsService.commentsThreads.length).toBe(0);
     const thread = commentsService.createThread(uri, positionToRange(1), {
       contextValue: 'aaa',
     });

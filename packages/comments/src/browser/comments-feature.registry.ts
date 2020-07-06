@@ -1,8 +1,10 @@
 import { Injectable } from '@ali/common-di';
-import { CommentsPanelOptions, ICommentsFeatureRegistry, PanelTreeNodeHandler, FileUploadHandler, MentionsOptions, ZoneWidgerRender } from '../common';
+import { CommentsPanelOptions, ICommentsFeatureRegistry, PanelTreeNodeHandler, FileUploadHandler, MentionsOptions, ZoneWidgerRender, ICommentsConfig } from '../common';
 
 @Injectable()
 export class CommentsFeatureRegistry implements ICommentsFeatureRegistry {
+
+  private config: ICommentsConfig = {};
 
   private options: CommentsPanelOptions = {};
 
@@ -13,6 +15,13 @@ export class CommentsFeatureRegistry implements ICommentsFeatureRegistry {
   private mentionsOptions: MentionsOptions = {};
 
   private zoneWidgetRender: ZoneWidgerRender;
+
+  registerConfig(config: ICommentsConfig): void {
+    this.config = {
+      ...this.config,
+      ...config,
+    };
+  }
 
   registerPanelTreeNodeHandler(handler: PanelTreeNodeHandler): void {
     this.panelTreeNodeHandlers.push(handler);
@@ -35,6 +44,10 @@ export class CommentsFeatureRegistry implements ICommentsFeatureRegistry {
 
   registerZoneWidgetRender(render: ZoneWidgerRender): void {
     this.zoneWidgetRender = render;
+  }
+
+  getConfig(): ICommentsConfig {
+    return this.config;
   }
 
   getCommentsPanelOptions(): CommentsPanelOptions {

@@ -1,13 +1,12 @@
 import * as React from 'react';
 import * as styles from './comments.module.less';
-import { IThreadComment, ICommentsCommentTitle, CommentMode, ICommentReply, ICommentsCommentContext, ICommentsZoneWidget, ICommentsFeatureRegistry} from '../common';
+import { IThreadComment, ICommentsCommentTitle, CommentMode, ICommentReply, ICommentsCommentContext, ICommentsZoneWidget, ICommentsFeatureRegistry, ICommentsThread } from '../common';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { observer } from 'mobx-react-lite';
 import { CommentsTextArea } from './comments-textarea.view';
 import { AbstractMenuService, MenuId, IMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { useInjectable, localize, IContextKeyService, isUndefined } from '@ali/ide-core-browser';
 import { Button } from '@ali/ide-components';
-import { CommentsThread } from './comments-thread';
 import { CommentsBody } from './comments-body';
 import * as marked from 'marked';
 
@@ -82,7 +81,7 @@ const useCommentContext
 
 const ReplyItem: React.FC<{
   reply: IThreadComment,
-  thread: CommentsThread,
+  thread: ICommentsThread,
 }> = observer(({ reply, thread }) => {
   const { contextKeyService } = thread;
   const { author, label, body, mode } = reply;
@@ -213,7 +212,7 @@ const ReplyItem: React.FC<{
 });
 
 export const CommentItem: React.FC<{
-  thread: CommentsThread,
+  thread: ICommentsThread,
   commentThreadContext: IMenu,
   widget: ICommentsZoneWidget,
 }> = observer(({ thread, commentThreadContext, widget }) => {
