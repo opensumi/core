@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@ali/ide-components';
 import { EditorFileGroup, EditorFile, EditorFileRoot, OpenedEditorData } from '../opened-editor-node.define';
 import { WorkbenchEditorService, IEditorGroup, IResource, ResourceService } from '@ali/ide-editor';
-import { URI, formatLocalize, Emitter } from '@ali/ide-core-browser';
+import { URI, formatLocalize, Emitter, Event } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -28,7 +28,7 @@ export class OpenedEditorService extends Tree {
 
   private onDirtyNodesChangeEmitter: Emitter<EditorFile[]> = new Emitter();
 
-  get onDirtyNodesChange() {
+  get onDirtyNodesChange(): Event<EditorFile[]> {
     return this.onDirtyNodesChangeEmitter.event;
   }
 
