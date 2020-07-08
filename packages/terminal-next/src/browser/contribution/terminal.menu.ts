@@ -2,7 +2,7 @@ import { Autowired } from '@ali/common-di';
 import { Domain, CommandService, isWindows, isElectronRenderer } from '@ali/ide-core-common';
 import { NextMenuContribution, IMenuRegistry, getTabbarCommonMenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { localize, KeybindingContribution, KeybindingRegistry, PreferenceService, IPreferenceSettingsService, getSlotLocation, AppConfig, getTabbarCtxKey } from '@ali/ide-core-browser';
-import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService, TERMINAL_COMMANDS } from '../../common';
+import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService, TerminalContainerId, TERMINAL_COMMANDS } from '../../common';
 import { IsTerminalFocused } from '@ali/ide-core-browser/lib/contextkey';
 import { MenuId } from '../../common/menu';
 
@@ -86,7 +86,7 @@ export class TerminalMenuContribution implements NextMenuContribution, Keybindin
     const location = getSlotLocation('@ali/ide-terminal-next', this.config.layoutConfig);
     const tabbarCtxKey = getTabbarCtxKey(location);
     const commonMenuId = getTabbarCommonMenuId(location);
-    const when = `${tabbarCtxKey} == terminal`;
+    const when = `${tabbarCtxKey} == ${TerminalContainerId}`;
     /** 更多菜单 */
     menuRegistry.registerMenuItem(commonMenuId, {
       command: TERMINAL_COMMANDS.CLEAR_ALL_CONTENT,
