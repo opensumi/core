@@ -186,7 +186,7 @@ export class KaitianExtensionToolbarService {
               });
             }
             if (this.connected.has(id)) {
-              this.doConnectToolbarButtonHandle(id);
+              this.doConnectToolbarSelectHandle(id);
             }
           }
         },
