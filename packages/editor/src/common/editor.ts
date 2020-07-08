@@ -92,7 +92,7 @@ export interface ICodeEditor extends IEditor, IDisposable {
  */
 export interface IDiffEditor extends IDisposable {
 
-  compare(originalDocModelRef: IEditorDocumentModelRef, modifiedDocModelRef: IEditorDocumentModelRef, options?: IResourceOpenOptions);
+  compare(originalDocModelRef: IEditorDocumentModelRef, modifiedDocModelRef: IEditorDocumentModelRef, options?: IResourceOpenOptions, rawUri?: URI);
 
   originalEditor: IEditor;
 

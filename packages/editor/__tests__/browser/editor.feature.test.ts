@@ -13,8 +13,6 @@ import { EditorContextMenuBrowserEditorContribution } from '@ali/ide-editor/lib/
 import { MockedCodeEditor } from '@ali/ide-monaco/lib/__mocks__/monaco/editor/code-editor';
 import { TabTitleMenuService } from '@ali/ide-editor/lib/browser/menu/title-context.menu';
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
-import { EditorActionRegistryImpl } from '@ali/ide-editor/lib/browser/menu/editor.menu';
-import { observable } from 'mobx';
 
 describe('editor status bar item test', () => {
 
@@ -377,85 +375,6 @@ describe('editor menu test', () => {
     });
 
     expect(injector.get<ICtxMenuRenderer>(ICtxMenuRenderer).show).toBeCalled();
-  });
-
-  it('editor title menu test', () => {
-    const service: EditorActionRegistryImpl = injector.get(EditorActionRegistryImpl);
-
-    let currentExpr = 'testExpr1';
-    const testResource = { uri: new URI('file:///test1.ts')};
-    const exprChangeEmitter = new Emitter<{affectSome: () => boolean}>();
-    const testEditorGroup: IEditorGroup = observable({
-      contextKeyService: {
-        match: (expr) => {
-          return expr === currentExpr || expr.expr === currentExpr;
-        },
-        parse: () => {
-          return {};
-        },
-        onDidChangeContext: exprChangeEmitter.event,
-      },
-      addDispose: jest.fn(),
-      currentResource: testResource,
-      currentEditor: null,
-      index: 0,
-    } as any);
-
-    const addListener = jest.fn();
-    const removeListener = jest.fn();
-
-    service.onAddAction(addListener);
-    service.onRemoveAction(removeListener);
-
-    const disposer1 = service.registerEditorAction({
-      iconClass: 'test1',
-      title: 'testAction1',
-      isVisible: (resource) => {
-        return resource ? (resource.uri.toString() === testResource.uri.toString()) : false;
-      },
-      tipWhen: 'testExpr1',
-      tip: 'testTip',
-      onClick: jest.fn(),
-    });
-
-    const disposer2 = service.registerEditorAction({
-      iconClass: 'test2',
-      title: 'testAction2',
-      onClick: jest.fn(),
-      when: 'testExpr2',
-    });
-
-    const disposer3 = service.registerEditorAction({
-      iconClass: 'test3',
-      title: 'testAction3',
-      onClick: jest.fn(),
-      when: 'testExpr2',
-    });
-
-    expect(addListener).toBeCalledTimes(3);
-
-    expect(service.getActions(testEditorGroup).length).toBe(1);
-
-    currentExpr = 'testExpr2';
-
-    exprChangeEmitter.fire({affectSome: () => true});
-
-    testEditorGroup.currentResource = { uri: new URI('file:///test2.ts') } as any;
-
-    expect(service.getActions(testEditorGroup).length).toBe(2);
-
-    disposer1.dispose();
-
-    disposer2.dispose();
-
-    expect(service.getActions(testEditorGroup).length).toBe(1);
-
-    disposer3.dispose();
-
-    expect(service.getActions(testEditorGroup).length).toBe(0);
-
-    expect(removeListener).toBeCalledTimes(3);
-
   });
 
   it('editor title context menu test', () => {

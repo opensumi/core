@@ -429,9 +429,9 @@ describe('Extension service', () => {
       const contextMenu = newMenuRegistry.getMenuItems('editor/context');
       expect(contextMenu.length).toBe(1);
       expect((contextMenu[0] as IMenuItem).command!).toBe('HelloKaitian');
-      const editorAction: EditorActionRegistryImpl = injector.get(IEditorActionRegistry);
-      expect(editorAction.items.length).toBe(1);
-      expect(editorAction.items[0].title).toBe('HelloKaitian');
+      const actionMenu = newMenuRegistry.getMenuItems('editor/title');
+      expect(actionMenu.length).toBe(1);
+      expect((actionMenu).findIndex((item) => (item as IMenuItem).command === 'HelloKaitian')).toBeGreaterThan(-1);
       done();
     });
 

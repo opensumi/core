@@ -41,6 +41,15 @@ export interface IMenuItem {
   // 单独变更此 action 的 args
   argsTransformer?: ((...args: any[]) => any[]);
   type?: IMenuActionDisplayType;
+
+  /**
+   * 该属性为 kaitian 拓展的属性
+   * 当menu在inlineActionBar出现时，使用的iconClass
+   * 如果这个值不存在，则默认跟随command的iconClass
+   * 如果command的icon也不存在，使用command的label
+   * // TODO: 未来可能废弃command内的iconClass
+   */
+  iconClass?: string;
 }
 
 export interface ISubmenuItem {

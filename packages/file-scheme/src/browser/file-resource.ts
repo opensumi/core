@@ -2,7 +2,7 @@ import { IResourceProvider, IResource, ResourceNeedUpdateEvent } from '@ali/ide-
 import { URI, MaybePromise, WithEventBus, localize, MessageType, LRUMap } from '@ali/ide-core-browser';
 import { Autowired, Injectable } from '@ali/common-di';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { IEditorDocumentModelService, DIFF_SCHEME } from '@ali/ide-editor/lib/browser';
 import { FILE_SCHEME } from '../common';
 import { IFileServiceClient, FileStat } from '@ali/ide-file-service/lib/common';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -121,6 +121,9 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
     let count = 0;
     for (const resources of openedResources) {
       for (const r of resources) {
+        if (r.uri.scheme === DIFF_SCHEME && r.metadata && r.metadata.modified.toString() === resource.uri.toString()) {
+          count ++;
+        }
         if (r.uri.scheme === FILE_SCHEME && r.uri.toString() === resource.uri.toString()) {
           count ++;
         }
