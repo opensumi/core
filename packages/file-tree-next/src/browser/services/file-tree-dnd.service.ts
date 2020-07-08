@@ -1,7 +1,7 @@
 import { Injectable, Autowired, Optional } from '@ali/common-di';
 import { FileTreeModelService } from './file-tree-model.service';
 import { Directory, File } from '../file-tree-nodes';
-import { DisposableCollection, Disposable, ILogger } from '@ali/ide-core-browser';
+import { DisposableCollection, Disposable, ILogger, WithEventBus } from '@ali/ide-core-browser';
 import { IFileTreeAPI } from '../../common';
 import { IMessageService } from '@ali/ide-overlay';
 import { Decoration, TargetMatchMode } from '@ali/ide-components';
@@ -9,9 +9,10 @@ import { Path } from '@ali/ide-core-common/lib/path';
 import { FileTreeService } from '../file-tree.service';
 import * as styles from '../file-tree.module.less';
 import * as treeNodeStyles from '../file-tree-node.module.less';
+import { FileTreeDropEvent } from '@ali/ide-core-common/lib/types/dnd';
 
 @Injectable()
-export class DragAndDropService {
+export class DragAndDropService extends WithEventBus {
 
   static MS_TILL_DRAGGED_OVER_EXPANDS: number = 500;
 
@@ -40,6 +41,7 @@ export class DragAndDropService {
   private draggedOverNode: Directory | File;
 
   constructor(@Optional() private readonly model: FileTreeModelService) {
+    super();
     this.model.decorations.addDecoration(this.beingDraggedDec);
     this.model.decorations.addDecoration(this.draggedOverDec);
   }
@@ -161,6 +163,10 @@ export class DragAndDropService {
   }
 
   handleDrop = async (ev: React.DragEvent, node?: File | Directory) => {
+    this.eventBus.fire(new FileTreeDropEvent({
+      event: ev.nativeEvent,
+      targetDir: node && node instanceof File ? (node.parent as Directory)?.uri.codeUri.path : node?.uri.codeUri.path,
+    }));
     try {
       ev.preventDefault();
       ev.stopPropagation();
