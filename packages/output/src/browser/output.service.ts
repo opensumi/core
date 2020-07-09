@@ -21,7 +21,7 @@ export class OutputService extends WithEventBus {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
-  private outputEditor: monaco.editor.IStandaloneCodeEditor;
+  private outputEditor?: monaco.editor.IStandaloneCodeEditor;
 
   @observable
   readonly channels = new Map<string, OutputChannel>();
@@ -57,15 +57,15 @@ export class OutputService extends WithEventBus {
     this.selectedChannel = channel;
     this.selectedChannel.modelReady.promise.then(() => {
       const model = this.selectedChannel.outputModel.instance.getMonacoModel();
-      this.outputEditor.setModel(model);
+      this.outputEditor?.setModel(model);
       if (this.enableSmartScroll) {
-        this.outputEditor.revealLine(model.getLineCount());
+        this.outputEditor?.revealLine(model.getLineCount());
         this.autoReveal = true;
       }
 
       this.monacoDispose = model.onDidChangeContent(() => {
         if (this.autoReveal && this.enableSmartScroll) {
-          this.outputEditor.revealLine(model.getLineCount(), 0);
+          this.outputEditor?.revealLine(model.getLineCount(), 0);
         }
       });
     });
@@ -133,7 +133,7 @@ export class OutputService extends WithEventBus {
        */
       if (this.enableSmartScroll) {
         const { range } = e.target;
-        const maxLine = this.outputEditor.getModel()?.getLineCount();
+        const maxLine = this.outputEditor?.getModel()?.getLineCount();
         if (range?.startLineNumber! < maxLine!) {
           this.autoReveal = false;
         }
