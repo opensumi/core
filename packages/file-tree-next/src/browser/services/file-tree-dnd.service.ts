@@ -107,6 +107,12 @@ export class DragAndDropService extends WithEventBus {
     ev.preventDefault();
     ev.stopPropagation();
     this.toCancelNodeExpansion.dispose();
+    // 拖拽目标离开时，清除选中态
+    if (this.potentialParent) {
+      this.draggedOverDec.removeTarget(this.potentialParent);
+      // 通知视图更新
+      this.model.treeModel.dispatchChange();
+    }
   }
 
   handleDragOver = (ev: React.DragEvent, node: File | Directory) => {
@@ -159,7 +165,6 @@ export class DragAndDropService extends WithEventBus {
       }, DragAndDropService.MS_TILL_DRAGGED_OVER_EXPANDS);
       this.toCancelNodeExpansion.push(Disposable.create(() => clearTimeout(timer)));
     }
-
   }
 
   handleDrop = async (ev: React.DragEvent, node?: File | Directory) => {
