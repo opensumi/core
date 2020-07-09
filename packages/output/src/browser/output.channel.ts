@@ -149,7 +149,10 @@ export class OutputChannel extends Disposable {
   }
 
   appendLine(line: string): void {
-    const value = line;
+    let value = line;
+    if (!line.endsWith('\r\n')) {
+      value = line + '\r\n';
+    }
     this.eventBus.fire(new ContentChangeEvent(new ContentChangeEventPayload(this.name, ContentChangeType.appendLine, value, this.outputLines)));
     this.doAppend(removeAnsiEscapeCodes(value));
     if (this.shouldLogToBrowser) {
