@@ -27,10 +27,6 @@
         "version": "1.0.0"
       },
       {
-        "name": "typescript-basics",
-        "version": "1.0.0"
-      },
-      {
         "name": "atom-one-dark",
         "version": "2.1.0"
       },
@@ -93,16 +89,20 @@
       {
         "name": "ide-dark-theme",
         "version": "2.0.0"
+      },
+      {
+        "name": "typescript-basics",
+        "version": "1.37.2-patch.1"
+      },
+      {
+        "name": "typescript-language-features",
+        "version": "1.46.1-patch.2"
       }
     ],
     "cloud-ide": [
       {
         "name": "vscode-eslint",
         "version": "1.9.0-patch.1"
-      },
-      {
-        "name": "typescript-language-features",
-        "version": "1.37.1-patch.6"
       }
     ]
   }
