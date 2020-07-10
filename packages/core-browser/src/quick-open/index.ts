@@ -1,5 +1,5 @@
 import { Keybinding } from '../keybinding';
-import { URI, MessageType, MaybePromise, IDisposable } from '@ali/ide-core-common';
+import { URI, MessageType, MaybePromise, IDisposable, Event } from '@ali/ide-core-common';
 
 /**
  * 高亮显示的范围
@@ -31,6 +31,13 @@ export enum HideReason {
   FOCUS_LOST,
   /* 取消输入 */
   CANCELED,
+}
+
+export interface QuickTitleButton {
+  icon: string; // a background image coming from a url
+  iconClass?: string; // a class such as one coming from font awesome
+  tooltip?: string | undefined;
+  side: QuickTitleButtonSide;
 }
 
 /**
@@ -169,6 +176,11 @@ export interface QuickOpenService {
   hide(reason?: HideReason): void;
   showDecoration(type: MessageType): void;
   hideDecoration(): void;
+  refresh(): void;
+  /**
+   * Dom node of the QuickOpenWidget
+   */
+  widgetNode: HTMLElement;
 }
 
 export type QuickOpenOptions = Partial<QuickOpenOptions.Resolved>;
@@ -182,6 +194,12 @@ export namespace QuickOpenOptions {
     enableSeparateSubstringMatching?: boolean;
   }
   export interface Resolved {
+
+    /**
+     * 启用状态
+     */
+    readonly enabled: boolean;
+
     /**
      * 显示前缀
      */
@@ -190,6 +208,7 @@ export namespace QuickOpenOptions {
      * 占位符
      */
     readonly placeholder: string;
+    readonly valueSelection: Readonly<[number, number]>;
     /**
      * 关闭回调
      * @param canceled 是否是取消关闭
@@ -237,9 +256,11 @@ export namespace QuickOpenOptions {
     selectIndex(lookFor: string): number;
   }
   export const defaultOptions: Resolved = Object.freeze({
+    enabled: true,
     prefix: '',
     placeholder: '',
     onClose: () => { /* no-op*/ },
+    valueSelection: [-1, -1] as Readonly<[number, number]>,
     fuzzyMatchLabel: false,
     fuzzyMatchDetail: false,
     fuzzyMatchDescription: false,
@@ -249,6 +270,7 @@ export namespace QuickOpenOptions {
     password: false,
     showItemsWithoutHighlight: false,
     selectIndex: () => -1,
+    title: '',
   });
   export function resolve(options: QuickOpenOptions = {}, source: Resolved = defaultOptions): Resolved {
     return Object.assign({}, source, options);
@@ -270,6 +292,45 @@ export interface QuickPickItem<T> {
 
 // tslint:disable-next-line: no-empty-interface
 export interface QuickPickOptions extends QuickOpenOptions {
+  placeholder?: string;
+  /**
+   * default: true
+   */
+  fuzzyMatchLabel?: boolean;
+  /**
+   * default: true
+   */
+  fuzzyMatchDescription?: boolean;
+
+  /**
+   * Current step count
+   */
+  step?: number | undefined;
+
+  /**
+   * The title of the input
+   */
+  title?: string | undefined;
+
+  /**
+   * Total number of steps
+   */
+  totalSteps?: number | undefined;
+
+  /**
+   * Buttons that are displayed on the title panel
+   */
+  buttons?: ReadonlyArray<QuickTitleButton>;
+
+  /**
+   * Set to `true` to keep the input box open when focus moves to another part of the editor or to another window.
+   */
+  ignoreFocusOut?: boolean;
+
+  /**
+   * The prefill value.
+   */
+  value?: string;
 }
 
 export const QuickPickService = Symbol('QuickPickService');
@@ -279,6 +340,8 @@ export interface QuickPickService {
   show<T>(elements: QuickPickItem<T>[], options?: QuickPickOptions): Promise<T | undefined>;
   show<T>(elements: (string | QuickPickItem<T>)[], options?: QuickPickOptions): Promise<T | string | undefined>;
   hide(reason?: HideReason): void;
+  readonly onDidAccept: Event<void>;
+  readonly onDidChangeActiveItems: Event<QuickOpenItem<QuickOpenItemOptions>[]>;
 }
 
 export const PrefixQuickOpenService = Symbol('PrefixQuickOpenService');
@@ -293,6 +356,42 @@ export interface IQuickInputService {
 }
 
 export interface QuickInputOptions {
+
+  /**
+   * Show the progress indicator if true
+   */
+  busy?: boolean;
+
+  /**
+   * Allow user input
+   */
+  enabled?: boolean;
+
+  /**
+   * Current step count
+   */
+  step?: number | undefined;
+
+  /**
+   * The title of the input
+   */
+  title?: string | undefined;
+
+  /**
+   * Total number of steps
+   */
+  totalSteps?: number | undefined;
+
+  /**
+   * Buttons that are displayed on the title panel
+   */
+  buttons?: ReadonlyArray<QuickTitleButton>;
+
+  /**
+   * Text for when there is a problem with the current input value
+   */
+  validationMessage?: string | undefined;
+
   /**
    * The prefill value.
    */
@@ -317,6 +416,14 @@ export interface QuickInputOptions {
    * Set to `true` to keep the input box open when focus moves to another part of the editor or to another window.
    */
   ignoreFocusOut?: boolean;
+
+  /**
+   * Selection of the prefilled [`value`](#InputBoxOptions.value). Defined as tuple of two number where the
+   * first is the inclusive start index and the second the exclusive end index. When `undefined` the whole
+   * word will be selected, when empty (start equals end) only the cursor will be set,
+   * otherwise the defined range will be selected.
+   */
+  valueSelection?: [number, number];
 
   /**
    * An optional function that will be called to validate input and to give a hint
@@ -346,6 +453,30 @@ export interface QuickOpenActionOptions {
 
 export interface QuickOpenAction extends QuickOpenActionOptions, IDisposable {
   run(item?: QuickOpenItem): Promise<void>;
+}
+
+export enum QuickTitleButtonSide {
+  LEFT = 0,
+  RIGHT = 1,
+}
+
+export class ThemeIcon {
+
+  static readonly File: ThemeIcon = new ThemeIcon('file');
+
+  static readonly Folder: ThemeIcon = new ThemeIcon('folder');
+
+  private constructor(public id: string) {
+  }
+
+}
+
+export interface QuickTitleButton {
+  iconPath: URI | { light: string | URI; dark: string | URI } | ThemeIcon;
+  icon: string; // a background image coming from a url
+  iconClass?: string; // a class such as one coming from font awesome
+  tooltip?: string | undefined;
+  side: QuickTitleButtonSide;
 }
 
 export * from './recent-files';

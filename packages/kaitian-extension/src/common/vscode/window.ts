@@ -3,7 +3,8 @@ import * as types from './ext-types';
 import { CancellationToken, MessageType, MaybePromise } from '@ali/ide-core-common';
 import { QuickPickItem, QuickPickOptions, QuickInputOptions } from '@ali/ide-quick-open';
 import { Event } from '@ali/ide-core-common';
-import { UriComponents } from './ext-types';
+import { QuickTitleButton } from '@ali/ide-core-browser/lib/quick-open';
+import { UriComponents, QuickInputButton } from './ext-types';
 
 export interface IMainThreadMessage {
   $showMessage(type: MessageType, message: string, options: vscode.MessageOptions, actions: string[], from?: string): Promise<number | undefined>;
@@ -26,14 +27,67 @@ export interface IMainThreadQuickOpen {
 export interface IExtHostQuickOpen {
   showQuickPick(promiseOrItems: vscode.QuickPickItem[] | Promise<vscode.QuickPickItem[]>, options?: vscode.QuickPickOptions, token?: CancellationToken): Promise<vscode.QuickPickItem | undefined>;
   showQuickPick(promiseOrItems: vscode.QuickPickItem[] | Promise<vscode.QuickPickItem[]>, options?: vscode.QuickPickOptions & { canSelectMany: true; }, token?: CancellationToken): Promise<vscode.QuickPickItem[] | undefined>;
-  showQuickPick(promiseOrItems: string[] | Promise<string[]>, options?: vscode.QuickPickOptions, token?: CancellationToken): Promise<string | undefined>;
+  showQuickPick(promiseOrItems: string[] | Promise<string[]>, options?: QuickPickOptions, token?: CancellationToken): Promise<string | undefined>;
   showWorkspaceFolderPick(options: vscode.WorkspaceFolderPickOptions, token?: CancellationToken): Promise<vscode.WorkspaceFolder | undefined>;
   createQuickPick<T extends vscode.QuickPickItem>(): vscode.QuickPick<T>;
   createInputBox(): vscode.InputBox;
   hideQuickPick(): void;
-  $validateInput(input: string): MaybePromise<string | null | undefined>;
-  showInputBox(options?: vscode.InputBoxOptions, token?: CancellationToken): PromiseLike<string | undefined>;
+  showInputBox(options?: QuickInputOptions, token?: CancellationToken): PromiseLike<string | undefined>;
   hideInputBox(): void;
+  $validateInput(input: string): MaybePromise<string | null | undefined>;
+}
+
+export interface QuickInputTitleButtonHandle extends QuickTitleButton {
+  index: number; // index of where they are in buttons array if QuickInputButton or -1 if QuickInputButtons.Back
+}
+
+export interface ITransferQuickInput {
+  quickInputIndex: number;
+  title: string | undefined;
+  step: number | undefined;
+  totalSteps: number | undefined;
+  enabled: boolean;
+  busy: boolean;
+  ignoreFocusOut: boolean;
+}
+
+export interface ITransferInputBox extends ITransferQuickInput {
+  value: string;
+  placeholder: string | undefined;
+  password: boolean;
+  buttons: ReadonlyArray<QuickInputButton>;
+  prompt: string | undefined;
+  validationMessage: string | undefined;
+  validateInput(value: string): MaybePromise<string | undefined>;
+}
+
+export interface ITransferQuickPick<T extends vscode.QuickPickItem> extends ITransferQuickInput {
+  value: string;
+  placeholder: string | undefined;
+  buttons: ReadonlyArray<QuickInputButton>;
+  items: PickOpenItem[];
+  canSelectMany: boolean;
+  matchOnDescription: boolean;
+  matchOnDetail: boolean;
+  activeItems: ReadonlyArray<T>;
+  selectedItems: ReadonlyArray<T>;
+}
+
+export interface QuickPickValue<T> {
+  label: string;
+  value: T;
+  description?: string;
+  detail?: string;
+  iconClass?: string;
+}
+
+export interface PickOpenItem {
+  handle: number;
+  id?: string;
+  label: string;
+  description?: string;
+  detail?: string;
+  picked?: boolean;
 }
 
 export interface IMainThreadStatusBar {

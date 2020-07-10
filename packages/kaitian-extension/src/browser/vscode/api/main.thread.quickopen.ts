@@ -1,10 +1,14 @@
-import * as vscode from 'vscode';
-import { IMainThreadQuickOpen, IExtHostQuickOpen, ExtHostAPIIdentifier } from '../../../common/vscode';
+import { IMainThreadQuickOpen, IExtHostQuickOpen, ExtHostAPIIdentifier,
+} from '../../../common/vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { QuickPickService, QuickPickItem, QuickPickOptions, QuickInputOptions, IQuickInputService } from '@ali/ide-quick-open';
+import { QuickPickService, QuickPickItem, QuickPickOptions, QuickInputOptions } from '@ali/ide-quick-open';
+import {
+  QuickTitleBar,
+} from '@ali/ide-quick-open/src/browser/quick-title-bar';
+import { IQuickInputService } from '@ali/ide-core-browser/lib/quick-open';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class MainThreadQuickOpen implements IMainThreadQuickOpen {
 
   protected readonly proxy: IExtHostQuickOpen;
@@ -15,11 +19,14 @@ export class MainThreadQuickOpen implements IMainThreadQuickOpen {
   @Autowired(IQuickInputService)
   protected quickInputService: IQuickInputService;
 
+  @Autowired(QuickTitleBar)
+  protected quickTitleBarService: QuickTitleBar;
+
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostQuickOpen);
   }
 
-  public dispose() {}
+  public dispose() { }
 
   $showQuickPick(items: QuickPickItem<number>[], options?: QuickPickOptions): Promise<number | undefined> {
     return this.quickPickService.show(items, options);
