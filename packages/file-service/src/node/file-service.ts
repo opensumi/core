@@ -158,6 +158,11 @@ export class FileService extends RPCService implements IFileService {
     return this.filterStat(stat);
   }
 
+  async exists(uri: string): Promise<boolean> {
+    this.logger.warn('Deprecated Warning: fileService.exists is deprecated, please use fileService.access instead!');
+    return this.access(uri);
+  }
+
   async resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ stat: FileStat, content: string }> {
     const _uri = this.getUri(uri);
     const provider = await this.getProvider(_uri.scheme);
