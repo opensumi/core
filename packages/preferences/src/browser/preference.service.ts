@@ -59,6 +59,11 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
         return getAvailableLanguages().find((l) => l.languageId === key)!.localizedLanguageName;
       },
     }));
+    this.setEnumLabels('files.eol', {
+      '\n': 'LF',
+      '\r\n': 'CRLF',
+      'auto': 'auto',
+    });
   }
 
   public async setPreference(key: string, value: any, scope: PreferenceScope) {
@@ -291,6 +296,7 @@ export const defaultSettingSections: {
         {id: 'files.exclude', localized: 'preference.files.exclude.title'},
         {id: 'files.watcherExclude', localized: 'preference.files.watcherExclude.title'},
         {id: 'files.associations', localized: 'preference.files.associations.title'},
+        {id: 'files.eol', localized: 'preference.files.eol' },
         {id: 'search.exclude', localized: 'preference.search.exclude.title'},
         {id: 'output.maxChannelLine', localized: 'output.maxChannelLine'},
         {id: 'output.enableLogHighlight', localized: 'output.enableLogHighlight'},
