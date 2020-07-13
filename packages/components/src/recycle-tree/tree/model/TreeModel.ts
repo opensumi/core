@@ -1,4 +1,4 @@
-import { Event, Emitter } from '@ali/ide-core-common';
+import { Event, Emitter } from '../../../utils';
 import { ISerializableState, TreeStateManager, TreeStateWatcher } from './treeState';
 import { CompositeTreeNode, TreeNode } from '../TreeNode';
 import { ICompositeTreeNode, TreeNodeEvent } from '../../types';

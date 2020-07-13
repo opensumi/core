@@ -1,8 +1,10 @@
 import { Injectable } from '@ali/common-di';
-import { CommentsPanelOptions, ICommentsFeatureRegistry, PanelTreeNodeHandler, FileUploadHandler, MentionsOptions } from '../common';
+import { CommentsPanelOptions, ICommentsFeatureRegistry, PanelTreeNodeHandler, FileUploadHandler, MentionsOptions, ZoneWidgerRender, ICommentsConfig } from '../common';
 
 @Injectable()
 export class CommentsFeatureRegistry implements ICommentsFeatureRegistry {
+
+  private config: ICommentsConfig = {};
 
   private options: CommentsPanelOptions = {};
 
@@ -11,6 +13,15 @@ export class CommentsFeatureRegistry implements ICommentsFeatureRegistry {
   private fileUploadHandler: FileUploadHandler;
 
   private mentionsOptions: MentionsOptions = {};
+
+  private zoneWidgetRender: ZoneWidgerRender;
+
+  registerConfig(config: ICommentsConfig): void {
+    this.config = {
+      ...this.config,
+      ...config,
+    };
+  }
 
   registerPanelTreeNodeHandler(handler: PanelTreeNodeHandler): void {
     this.panelTreeNodeHandlers.push(handler);
@@ -31,6 +42,14 @@ export class CommentsFeatureRegistry implements ICommentsFeatureRegistry {
     this.mentionsOptions = options;
   }
 
+  registerZoneWidgetRender(render: ZoneWidgerRender): void {
+    this.zoneWidgetRender = render;
+  }
+
+  getConfig(): ICommentsConfig {
+    return this.config;
+  }
+
   getCommentsPanelOptions(): CommentsPanelOptions {
     return this.options;
   }
@@ -45,5 +64,9 @@ export class CommentsFeatureRegistry implements ICommentsFeatureRegistry {
 
   getMentionsOptions() {
     return this.mentionsOptions;
+  }
+
+  getZoneWidgetRender(): ZoneWidgerRender | undefined {
+    return this.zoneWidgetRender;
   }
 }

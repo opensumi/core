@@ -6,6 +6,7 @@ import { MainThreaLayout } from './main.thread.layout';
 import { Disposable } from '@ali/ide-core-common';
 import { MainThreadTheme } from './main.thread.theme';
 import { MainThreadCommon } from './main.thread.common';
+import { MainThreadToolbar } from './main.thread.toolbar';
 
 export function createKaitianApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -23,10 +24,14 @@ export function createKaitianApiFactory(
   const common = injector.get(MainThreadCommon, [rpcProtocol, injector]);
   disposer.addDispose(common);
 
+  const toolbar = injector.get(MainThreadToolbar);
+  disposer.addDispose(toolbar);
+
   rpcProtocol.set(MainThreadKaitianAPIIdentifier.MainThreadLifecycle, lifeCycle);
   rpcProtocol.set(MainThreadKaitianAPIIdentifier.MainThreadTheme, mainThreadTheme);
   rpcProtocol.set(MainThreadKaitianAPIIdentifier.MainThreadLayout, layout);
   rpcProtocol.set(MainThreadKaitianAPIIdentifier.MainThreadCommon, common);
+  rpcProtocol.set(MainThreadKaitianAPIIdentifier.MainThreadToolbar, toolbar);
 
   return () => {
     disposer.dispose();

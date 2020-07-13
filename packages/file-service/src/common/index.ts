@@ -1,7 +1,8 @@
-export * from './files';
-export * from './file-service-watcher-protocol';
 export * from './file-service-client';
+export * from './files';
 export * from './watcher';
+
+export { IFileServiceClient } from './file-service-client';
 
 export const FileServicePath = 'FileService';
 export const DiskFileServicePath = 'DiskFileService';

@@ -1,21 +1,29 @@
 :global {
   .monaco-editor {
-    .comments-glyph {
-      position: absolute;
+    .comments-decoration {
+      border-radius: 50%;
       &::before {
-        visibility: hidden;
+        position: absolute;
+        z-index: 1;
         cursor: pointer;
         font-weight: normal;
         color: var(--foreground);
         background: var(--editor-background);
+        border-radius: 50%;
       }
     }
-    .comment-thread::before {
-      visibility: visible;
+    .comments-add {
+      &::before {
+        visibility: hidden;
+      }
     }
-
+    .comments-thread {
+      &::before {
+        left: 4px;
+      }
+    }
     .view-line:hover {
-      .comment-diff-added:not(.comment-thread) {
+      .comments-add {
         &::before {
           visibility: visible;
         }

@@ -1,5 +1,5 @@
 import { ITreeNode, ICompositeTreeNode, ITreeNodeOrCompositeTreeNode } from './tree-node';
-import { IDisposable } from '@ali/ide-core-common';
+import { IDisposable } from '../../utils';
 
 export enum TreeNodeEvent {
   WillChangeExpansionState = 1,

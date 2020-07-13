@@ -199,7 +199,9 @@ describe('MainThreadTask Test Suite', () => {
     required: ['script'],
     extensionId: extension.id,
   });
-  beforeAll(() => {
+  beforeAll(async () => {
+    const monacoService = injector.get(MonacoService);
+    await monacoService.loadMonaco();
     const extHostMessage = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocolExt));
     const extHostDocs = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostDocuments, injector.get(ExtensionDocumentDataManagerImpl, [rpcProtocolExt]));
     const extHostTerminal = new ExtHostTerminal(rpcProtocolExt);

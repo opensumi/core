@@ -1,8 +1,8 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { RecentStorage } from '../common/common.storage';
 import { WithEventBus } from '..';
-import { OnEvent } from '@ali/ide-core-common';
-import { FilesChangeEvent, FileChangeType } from '../fs';
+import { OnEvent, FileChangeType } from '@ali/ide-core-common';
+import { FilesChangeEvent } from '../fs';
 
 @Injectable()
 export class RecentFilesManager extends WithEventBus {

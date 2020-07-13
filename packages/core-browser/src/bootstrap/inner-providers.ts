@@ -50,11 +50,13 @@ import { IProgressService } from '../progress';
 import { ProgressService } from '../progress/progress.service';
 import { NextToolbarRegistryImpl, ToolbarClientAppContribution } from '../toolbar/toolbar.registry';
 import { IToolbarRegistry, ToolBarActionContribution } from '../toolbar';
+import { FsProviderContribution } from '../fs';
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider
   createContributionProvider(injector, ClientAppContribution);
   createContributionProvider(injector, CommandContribution);
+  createContributionProvider(injector, FsProviderContribution);
   createContributionProvider(injector, KeybindingContribution);
   createContributionProvider(injector, NextMenuContribution);
   createContributionProvider(injector, MenuContribution);

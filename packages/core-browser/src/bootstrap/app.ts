@@ -292,17 +292,9 @@ export class ClientApp implements IClientApp {
 
   protected async startContributions() {
     this.logger.verbose('startContributions clientAppContributions', this.contributions);
-    for (const contribution of this.contributions) {
-      if (contribution.initialize) {
-        try {
-          await this.measure(contribution.constructor.name + '.initialize',
-            () => contribution.initialize!(this),
-          );
-        } catch (error) {
-          this.logger.error('Could not initialize contribution', error);
-        }
-      }
-    }
+
+    // run contribution#initialize
+    await this.runContributionsPhase(this.contributions, 'initialize');
 
     this.logger.verbose('contributions.initialize done');
 
@@ -310,18 +302,28 @@ export class ClientApp implements IClientApp {
     this.keybindingRegistry.onStart();
     this.nextMenuRegistry.onStart();
 
-    for (const contribution of this.contributions) {
-      if (contribution.onStart) {
-        try {
-          await this.measure(contribution.constructor.name + '.onStart',
-            () => contribution.onStart!(this),
-          );
-        } catch (error) {
-          this.logger.error('Could not start contribution', error);
-        }
+    // run contribution#onStart
+    await this.runContributionsPhase(this.contributions, 'onStart');
+  }
+
+  private async runContributionsPhase(contributions: ClientAppContribution[], phaseName: keyof ClientAppContribution) {
+    return await Promise.all(
+      contributions.map((contribution) => {
+        return this.contributionPhaseRunner(contribution, phaseName);
+      }),
+    );
+  }
+
+  private async contributionPhaseRunner(contribution: ClientAppContribution, phaseName: keyof ClientAppContribution) {
+    const phase = contribution[phaseName];
+    if (typeof phase === 'function') {
+      try {
+        const uid = contribution.constructor.name + '.' + phaseName;
+        return await this.measure(uid, () => phase.call(contribution, this));
+      } catch (error) {
+        this.logger.error(`Could not run contribution#${phaseName}`, error);
       }
     }
-
   }
 
   private async renderApp(container: HTMLElement, callback?: () => void) {
@@ -332,17 +334,8 @@ export class ClientApp implements IClientApp {
     const eventBus = this.injector.get(IEventBus);
     eventBus.fire(new RenderedEvent());
 
-    for (const contribution of this.contributions) {
-      if (contribution.onDidStart) {
-        try {
-          await this.measure(contribution.constructor.name + '.onDidStart',
-            () => contribution.onDidStart!(this),
-          );
-        } catch (error) {
-          this.logger.error('Could not start contribution', error);
-        }
-      }
-    }
+    // run contribution#onDidStart
+    await this.runContributionsPhase(this.contributions, 'onDidStart');
   }
 
   protected async measure<T>(name: string, fn: () => MaybePromise<T>): Promise<T> {

@@ -1,15 +1,18 @@
 import { Injectable, Autowired, Optional } from '@ali/common-di';
 import { FileTreeModelService } from './file-tree-model.service';
 import { Directory, File } from '../file-tree-nodes';
-import { DisposableCollection, Disposable, ILogger } from '@ali/ide-core-browser';
+import { DisposableCollection, Disposable, ILogger, WithEventBus } from '@ali/ide-core-browser';
 import { IFileTreeAPI } from '../../common';
 import { IMessageService } from '@ali/ide-overlay';
 import { Decoration, TargetMatchMode } from '@ali/ide-components';
+import { Path } from '@ali/ide-core-common/lib/path';
+import { FileTreeService } from '../file-tree.service';
 import * as styles from '../file-tree.module.less';
 import * as treeNodeStyles from '../file-tree-node.module.less';
+import { FileTreeDropEvent } from '@ali/ide-core-common/lib/types/dnd';
 
 @Injectable()
-export class DragAndDropService {
+export class DragAndDropService extends WithEventBus {
 
   static MS_TILL_DRAGGED_OVER_EXPANDS: number = 500;
 
@@ -21,6 +24,9 @@ export class DragAndDropService {
 
   @Autowired(IMessageService)
   private readonly messageService: IMessageService;
+
+  @Autowired(FileTreeService)
+  private readonly fileTreeService: FileTreeService;
 
   private toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
 
@@ -35,6 +41,7 @@ export class DragAndDropService {
   private draggedOverNode: Directory | File;
 
   constructor(@Optional() private readonly model: FileTreeModelService) {
+    super();
     this.model.decorations.addDecoration(this.beingDraggedDec);
     this.model.decorations.addDecoration(this.draggedOverDec);
   }
@@ -100,6 +107,12 @@ export class DragAndDropService {
     ev.preventDefault();
     ev.stopPropagation();
     this.toCancelNodeExpansion.dispose();
+    // 拖拽目标离开时，清除选中态
+    if (this.potentialParent) {
+      this.draggedOverDec.removeTarget(this.potentialParent);
+      // 通知视图更新
+      this.model.treeModel.dispatchChange();
+    }
   }
 
   handleDragOver = (ev: React.DragEvent, node: File | Directory) => {
@@ -152,10 +165,13 @@ export class DragAndDropService {
       }, DragAndDropService.MS_TILL_DRAGGED_OVER_EXPANDS);
       this.toCancelNodeExpansion.push(Disposable.create(() => clearTimeout(timer)));
     }
-
   }
 
   handleDrop = async (ev: React.DragEvent, node?: File | Directory) => {
+    this.eventBus.fire(new FileTreeDropEvent({
+      event: ev.nativeEvent,
+      targetDir: node && node instanceof File ? (node.parent as Directory)?.uri.codeUri.path : node?.uri.codeUri.path,
+    }));
     try {
       ev.preventDefault();
       ev.stopPropagation();
@@ -170,7 +186,7 @@ export class DragAndDropService {
       if (!!containing) {
         const resources = this.beingDraggedNodes;
         if (resources.length > 0) {
-          const resourcesCanBeMoved = resources.filter((resource: File | Directory) => resource && resource.parent && !(resource.parent as Directory).uri.isEqual( containing.uri));
+          const resourcesCanBeMoved = resources.filter((resource: File | Directory) => resource && resource.parent && !(resource.parent as Directory).uri.isEqual(containing.uri));
           if (resourcesCanBeMoved.length > 0) {
             // 最小化移动文件
             const errors = await this.fileTreeAPI.mvFiles(resourcesCanBeMoved.map((res) => res.uri), containing.uri);
@@ -178,6 +194,23 @@ export class DragAndDropService {
               errors.forEach((error) => {
                 this.messageService.error(error);
               });
+            } else {
+              for (const target of resourcesCanBeMoved) {
+                const to = containing.uri.resolve(target.name);
+                this.fileTreeService.moveNodeByPath(target.parent as Directory, target.path, new Path(containing.path).join(target.name).toString());
+                // 由于节点移动时默认仅更新节点路径
+                // 我们需要自己更新额外的参数，如uri, filestat等
+                target.updateURI(to);
+                target.updateFileStat({
+                  ...target.filestat,
+                  uri: to.toString(),
+                });
+                target.updateToolTip(this.fileTreeAPI.getReadableTooltip(to));
+                // 当重命名文件为文件夹时，刷新文件夹更新子文件路径
+                if (Directory.is(target)) {
+                  this.fileTreeService.refresh(target as Directory);
+                }
+              }
             }
           }
         }

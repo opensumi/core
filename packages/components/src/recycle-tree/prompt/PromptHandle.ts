@@ -1,5 +1,5 @@
 import { bindInputElement, ProxiedInputProp } from '../../input';
-import { DisposableCollection, Emitter, Event, IAsyncResult } from '@ali/ide-core-common';
+import { DisposableCollection, Emitter, Event, IAsyncResult } from '../../utils';
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 

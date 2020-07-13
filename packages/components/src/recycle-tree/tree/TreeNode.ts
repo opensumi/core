@@ -1,6 +1,5 @@
 import { ITreeNodeOrCompositeTreeNode, ITreeNode, ICompositeTreeNode, TreeNodeEvent, IWatcherEvent, MetadataChangeType, ITreeWatcher, IMetadataChange, ITree, WatchEvent, TreeNodeType, TopDownIteratorCallback  } from '../types';
-import { Event, Emitter, DisposableCollection } from '@ali/ide-core-common';
-import { Path } from '@ali/ide-core-common/lib/path';
+import { Event, Emitter, DisposableCollection, Path } from '../../utils';
 import { IWatcherCallback, IWatchTerminator, IWatcherInfo } from '../types';
 
 /**

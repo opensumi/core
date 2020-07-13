@@ -1,4 +1,5 @@
 import { Event } from '@ali/ide-core-common';
+import { IToolbarButtonContribution, IToolbarSelectContribution } from '../../browser/kaitian/types';
 
 export interface IToolbarButtonActionHandle {
 
@@ -29,4 +30,10 @@ export interface IToolbarSelectActionHandle<T> {
   setSelect(value: T): Promise<void>;
 
   getValue(): T;
+}
+
+export interface IMainThreadToolbar {
+  $registerToolbarButtonAction(extensionId: string, extensionPath: string, contribution: IToolbarButtonContribution): Promise<void>;
+
+  $registerToolbarSelectAction<T = any>(extensionId: string, extensionPath: string, contribution: IToolbarSelectContribution<T>): Promise<void>;
 }

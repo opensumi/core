@@ -1,13 +1,14 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import { getDebugLogger, IEventBus } from '@ali/ide-core-common';
-import { IconContextProvider } from '@ali/ide-components';
+import { ComponentContextProvider } from '@ali/ide-components';
 
 import { ResizeEvent } from '../layout';
 import { IClientApp } from '../browser-module';
 import { getIcon } from '../style/icon/icon';
 import { DefaultLayout } from '../components/layout/default-layout';
 import { ConfigProvider, allSlot } from '../react-providers';
+import { localize } from '@ali/ide-core-common';
 
 export interface AppProps {
   app: IClientApp;
@@ -35,12 +36,12 @@ export function App(props: AppProps) {
     return () => { window.removeEventListener('resize', handle); };
   }, []);
   return (
-    <IconContextProvider value={{ getIcon }}>
+    <ComponentContextProvider value={{ getIcon, localize }}>
       <ConfigProvider value={ props.app.config }>
         {<props.main />}
         {props.overlays && props.overlays.map((Component, index) => <Component key={index} />)}
       </ConfigProvider>
-    </IconContextProvider>
+    </ComponentContextProvider>
   );
 }
 

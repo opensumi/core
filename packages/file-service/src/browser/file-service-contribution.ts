@@ -9,9 +9,11 @@ import {
   Emitter,
   ResourceError,
   getDebugLogger,
+  FsProviderContribution,
+  ContributionProvider,
 } from '@ali/ide-core-browser';
 import { FileStat, FileSystemError, IFileServiceClient, IDiskFileProvider, IShadowFileProvider } from '../common';
-import { FileChangeEvent } from '../common/file-service-watcher-protocol';
+import { FileChangeEvent } from '../common';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-protocol';
 import { FileServiceClient } from './file-service-client';
 
@@ -149,9 +151,19 @@ export class FileResourceResolver implements ResourceResolverContribution {
   @Autowired(IShadowFileProvider)
   private shadowFileServiceProvider: IShadowFileProvider;
 
+  @Autowired(FsProviderContribution)
+  contributionProvider: ContributionProvider<FsProviderContribution>;
+
   constructor() {
     this.fileSystem.registerProvider('file', this.diskFileServiceProvider);
     this.fileSystem.registerProvider('debug', this.shadowFileServiceProvider);
+    const fsProviderContributions = this.contributionProvider.getContributions();
+    for (const contribution of fsProviderContributions) {
+      contribution.registerProvider && contribution.registerProvider(this.fileSystem);
+    }
+    for (const contribution of fsProviderContributions) {
+      contribution.onFileServiceReady && contribution.onFileServiceReady();
+    }
   }
 
   async resolve(uri: URI): Promise<FileResource | void> {

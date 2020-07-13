@@ -1,14 +1,20 @@
 import { IExtHostCommands } from '../../../common/vscode';
 import { ExtHostCommon } from './ext.host.common';
 import { IExtension } from '../../../common';
-import { IToolbarButtonActionHandle, IToolbarSelectActionHandle } from '../../../common/kaitian/toolbar';
+import { IToolbarButtonActionHandle, IToolbarSelectActionHandle, IMainThreadToolbar } from '../../../common/kaitian/toolbar';
 import { Emitter, Disposable } from '@ali/ide-core-common';
+import { IRPCProtocol } from '@ali/ide-connection';
+import { MainThreadKaitianAPIIdentifier } from '../../../common/kaitian';
+import { IToolbarButtonContribution, IToolbarSelectContribution } from '../../../browser/kaitian/types';
 
 export function createToolbarAPIFactory(
   extension: IExtension,
   service: ExtHostToolbarActionService,
 ) {
   return {
+    registerToolbarAction: async <T>(contribution: IToolbarButtonContribution | IToolbarSelectContribution<T>): Promise<IToolbarButtonActionHandle | IToolbarSelectActionHandle<T>> => {
+      return service.registerToolbarAction<T>(extension.id, extension.path, contribution);
+    },
     getToolbarActionButtonHandle: async (id) => {
       return service.getToolbarButtonActionHandle(id, extension.id);
     },
@@ -24,8 +30,23 @@ export class ExtHostToolbarActionService {
 
   private selectHandles = new Map<string, Promise<ToolbarSelectActionHandleController<any>>>();
 
-  constructor(private extHostCommands: IExtHostCommands, private kaitianCommon: ExtHostCommon) {
+  private readonly proxy: IMainThreadToolbar;
 
+  constructor(
+    private extHostCommands: IExtHostCommands,
+    private kaitianCommon: ExtHostCommon,
+    private rpcProtocol: IRPCProtocol,
+    ) {
+    this.proxy = this.rpcProtocol.getProxy(MainThreadKaitianAPIIdentifier.MainThreadToolbar);
+  }
+
+  async registerToolbarAction<T>(extensionId: string, extensionPath: string, contribution: IToolbarButtonContribution | IToolbarSelectContribution): Promise<IToolbarButtonActionHandle | IToolbarSelectActionHandle<T>> {
+    if (contribution.type === 'button') {
+      await this.proxy.$registerToolbarButtonAction(extensionId, extensionPath, contribution);
+      return this.getToolbarButtonActionHandle(contribution.id, extensionId);
+    }
+    await this.proxy.$registerToolbarSelectAction(extensionId, extensionPath, contribution);
+    return this.getToolbarSelectActionHandle(contribution.id, extensionId);
   }
 
   getToolbarButtonActionHandle(id: string, extensionId: string): Promise<IToolbarButtonActionHandle> {

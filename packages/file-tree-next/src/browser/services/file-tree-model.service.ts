@@ -136,11 +136,11 @@ export class FileTreeModelService {
     return this.fileTreeService.hasFolderIcons;
   }
 
-  get onDidFocusedFileChange() {
+  get onDidFocusedFileChange(): Event<URI | void> {
     return this.onDidFocusedFileChangeEmitter.event;
   }
 
-  get onDidSelectedFileChange() {
+  get onDidSelectedFileChange(): Event<URI[]> {
     return this.onDidSelectedFileChangeEmitter.event;
   }
 
@@ -802,7 +802,7 @@ export class FileTreeModelService {
     let isCommit = false;
     const locationFileWhileFileExist = (pathOrUri: URI | string) => {
       // 文件树更新后尝试定位文件位置
-      Event.once(this.fileTreeHandle.onDidUpdate)(() => {
+      this.fileTreeHandle.onOnceDidUpdate(() => {
         this.location(pathOrUri);
       });
     };
@@ -823,7 +823,8 @@ export class FileTreeModelService {
             from = from.parent;
           }
         }
-        const to = from.parent.resolve(newName);
+        // 压缩目录情况下，直接获取父节点的uri更稳妥
+        const to = (target.parent as Directory).uri.resolve(newName);
         const error = await this.fileTreeAPI.mv(from, to, target.type === TreeNodeType.CompositeTreeNode);
         promptHandle.removeAddonAfter();
         if (!!error) {
@@ -836,9 +837,18 @@ export class FileTreeModelService {
           return false;
         }
         this.fileTreeService.moveNodeByPath(target.parent as Directory, target.path, new Path(target.parent!.path).join(newName).toString());
-        // Cause the treeNode move event just changing path and name by default.
-        // We should update target uri to new uri by ourself.
-        target.uri = to;
+        // 由于节点移动时默认仅更新节点路径
+        // 我们需要自己更新额外的参数，如uri, filestat等
+        target.updateURI(to);
+        target.updateFileStat({
+          ...target.filestat,
+          uri: to.toString(),
+        });
+        target.updateToolTip(this.fileTreeAPI.getReadableTooltip(to));
+        // 当重命名文件为文件夹时，刷新文件夹更新子文件路径
+        if (Directory.is(target)) {
+          this.fileTreeService.refresh(target as Directory);
+        }
         locationFileWhileFileExist(target.path);
       } else if (promptHandle instanceof NewPromptHandle) {
         const parent = promptHandle.parent as Directory;

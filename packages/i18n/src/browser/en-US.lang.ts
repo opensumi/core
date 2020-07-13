@@ -6,6 +6,9 @@ export const localizationBundle = {
     'extension': 'Extension',
     'common.yes': 'Yes',
     'common.no': 'No',
+
+    'tree.filter.placeholder': 'Enter a keyword or path to filter',
+
     'file.new': 'New File',
     'file.folder.new': 'New Folder',
     'file.save': 'Save File',
@@ -47,7 +50,6 @@ export const localizationBundle = {
     'file.search.folder': 'Search on this folder',
     'file.focus.files': 'Focus on Files Explorer',
     'file.filetree.filter': 'Filter on opened files',
-    'file.filetree.filter.placeholder': 'Enter a keyword or path to filter',
     'file.filetree.openWithPath': 'Open In The Terminal',
     'file.tooltip.symbolicLink': 'Symbolic Link',
     'file.resource-deleted': '(Deleted)',
@@ -307,7 +309,7 @@ export const localizationBundle = {
     'preference.terminal.cursorBlinkDesc': 'To change the cursor link of all terminals',
     'preference.terminal.scrollback': 'Terminal Cursor Scrollback',
     'preference.terminal.scrollbackDesc': 'To change the scrollback of terminals',
-
+    'preference.terminal.integrated.shellArgs.linux': 'The command line arguments to use when on the Linux terminal. ',
     'common.preference.open': 'Settings',
     'common.keymaps.open': 'Keyboard Shortcut',
     'common.about': 'About',

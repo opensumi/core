@@ -9,6 +9,8 @@ export const localizationBundle = {
     'common.no': '否',
     'extension': '插件',
 
+    'tree.filter.placeholder': '输入关键字或路径查找',
+
     'file.new': '新建文件',
     'file.folder.new': '新建文件夹',
 
@@ -51,7 +53,6 @@ export const localizationBundle = {
     'file.search.folder': '在文件夹中查找',
     'file.focus.files': '在资源管理器中聚焦文件',
     'file.filetree.filter': '在展开文件中查找',
-    'file.filetree.filter.placeholder': '输入关键字或路径查找',
     'file.filetree.openWithPath': '在终端中打开',
     'file.tooltip.symbolicLink': '符号链接',
     'file.resource-deleted': '（已删除）',
@@ -301,6 +302,7 @@ export const localizationBundle = {
     'preference.terminal.cursorBlinkDesc': '改变所有终端的光标是否闪烁',
     'preference.terminal.scrollback': '终端可滚动内容行数',
     'preference.terminal.scrollbackDesc': '改变终端可滚动内容行数',
+    'preference.terminal.integrated.shellArgs.linux': '在 Linux 终端上时要使用的命令行参数。',
 
     'settings.group.general': '常规',
     'settings.group.shortcut': '快捷键',

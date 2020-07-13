@@ -1,4 +1,4 @@
-import { Disposable, IDisposable } from '@ali/ide-core-common';
+import { Disposable, IDisposable, Event, Emitter, IRange } from '@ali/ide-core-common';
 // import * as styles from './styles.module.less';
 
 export class ViewZoneDelegate implements monaco.editor.IViewZone {
@@ -205,6 +205,8 @@ export abstract class ResizeZoneWidget extends ZoneWidget {
   private heightInLines: number;
   private lineHeight: number;
   private wrap: HTMLDivElement;
+  protected readonly _onChangeZoneWidget = new Emitter<IRange>();
+  public readonly onChangeZoneWidget: Event<IRange> = this._onChangeZoneWidget.event;
 
   protected _isShow = false;
 
@@ -244,7 +246,7 @@ export abstract class ResizeZoneWidget extends ZoneWidget {
       wrapperHeight = this.preWrapperHeight;
     }
     if (wrapperHeight) {
-      const heightInLines = Math.ceil(wrapperHeight / this.lineHeight);
+      const heightInLines = wrapperHeight / this.lineHeight;
       if (this._isShow && this.heightInLines !== heightInLines) {
         this.heightInLines = heightInLines;
         this.show();
@@ -255,13 +257,22 @@ export abstract class ResizeZoneWidget extends ZoneWidget {
 
   public show() {
     const needResize = !this.wrap.offsetHeight && !this.preWrapperHeight;
-    const activeElement = document.activeElement as HTMLElement;
-    super.show(this.range, this.heightInLines);
-    // reset focus on the previously active element.
-    activeElement?.focus({ preventScroll: true });
+    this.resize();
+    this.fireChangeEvent();
     // 如果默认为隐藏，打开后是没有 this.heightInLines 的，需要显示后再计算一下
     if (needResize) {
       this.resizeZoneWidget();
     }
+  }
+
+  private fireChangeEvent() {
+    this._onChangeZoneWidget.fire(this.range);
+  }
+
+  public resize() {
+    const activeElement = document.activeElement as HTMLElement;
+    super.show(this.range, this.heightInLines);
+    // reset focus on the previously active element.
+    activeElement?.focus({ preventScroll: true });
   }
 }

@@ -1,7 +1,7 @@
 import { Autowired } from '@ali/common-di';
 import { Disposable, Domain, URI, Uri } from '@ali/ide-core-common';
 import { ClientAppContribution } from '@ali/ide-core-browser';
-import { Position, Range, Location } from '@ali/ide-kaitian-extension/src/common/vscode/ext-types';
+import { Position, Range, Location } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
 import * as vscode from 'vscode';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { TextmateService } from '@ali/ide-monaco/lib/browser/textmate.service';

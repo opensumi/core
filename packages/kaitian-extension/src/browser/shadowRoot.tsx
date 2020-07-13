@@ -2,7 +2,8 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { useEffect, useRef, useState } from 'react';
 import * as clx from 'classnames';
-import { IconContextProvider, IconContext } from '@ali/ide-components';
+import { ComponentContextProvider, IconContext } from '@ali/ide-components';
+import { localize } from '@ali/ide-core-common';
 
 import { IExtension, ExtensionService } from '../common';
 import { IThemeService, getThemeTypeSelector, ThemeType } from '@ali/ide-theme';
@@ -99,8 +100,8 @@ export function getShadowRoot(panel, extension: IExtension, props, id, proxiedHe
   const Component = panel;
   const { getIcon } = React.useContext(IconContext);
   return (
-    <IconContextProvider value={{ getIcon }}>
+    <ComponentContextProvider value={{ getIcon, localize }}>
       <ShadowRoot id={`${extension.id}-${id}`} extensionId={extension.id} proxiedHead={proxiedHead}><Component {...props} /></ShadowRoot>
-    </IconContextProvider>
+    </ComponentContextProvider>
   );
 }

@@ -6,18 +6,17 @@ import * as styles from './comments.module.less';
 import { ConfigProvider, localize, AppConfig, useInjectable } from '@ali/ide-core-browser';
 import { CommentItem } from './comments-item.view';
 import { CommentsTextArea } from './comments-textarea.view';
-import { ICommentReply, ICommentsZoneWidget, ICommentThreadTitle, ICommentsFeatureRegistry } from '../common';
+import { ICommentReply, ICommentsZoneWidget, ICommentThreadTitle, ICommentsFeatureRegistry, ICommentsThread } from '../common';
 import * as clx from 'classnames';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { ResizeZoneWidget } from '@ali/ide-monaco-enhance';
-import { CommentsThread } from './comments-thread';
 import { IEditor } from '@ali/ide-editor';
 import { CommentsZoneService } from './comments-zone.service';
 import { MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 export interface ICommentProps {
-  thread: CommentsThread;
-  widget: CommentsZoneWidget;
+  thread: ICommentsThread;
+  widget: ICommentsZoneWidget;
 }
 
 const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
@@ -109,20 +108,27 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
   @Autowired(AppConfig)
   appConfig: AppConfig;
 
+  @Autowired(ICommentsFeatureRegistry)
+  private readonly commentsFeatureRegistry: ICommentsFeatureRegistry;
+
   private _wrapper: HTMLDivElement;
 
   private _editor: IEditor;
 
-  constructor(editor: IEditor, thread: CommentsThread) {
+  constructor(editor: IEditor, thread: ICommentsThread) {
     super(editor.monacoEditor, thread.range);
     this._editor = editor;
     this._wrapper = document.createElement('div');
     this._isShow = !thread.isCollapsed;
     this._container.appendChild(this._wrapper);
-    this.addDispose(this.observeContainer(this._wrapper));
+    this.observeContainer(this._wrapper);
+    const customRender = this.commentsFeatureRegistry.getZoneWidgetRender();
     ReactDOM.render(
       <ConfigProvider value={this.appConfig}>
-        <CommentsZone thread={thread} widget={this} />
+        { customRender ?
+          customRender(thread, this) :
+          <CommentsZone thread={thread} widget={this} />
+        }
       </ConfigProvider>,
       this._wrapper,
     );
@@ -136,13 +142,21 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
     return this._isShow;
   }
 
+  public show() {
+    super.show();
+    this._isShow = true;
+  }
+
+  public hide() {
+    super.dispose();
+    this._isShow = false;
+  }
+
   public toggle() {
     if (this._isShow) {
-      this.dispose();
-      this._isShow = false;
+      this.hide();
     } else {
       this.show();
-      this._isShow = true;
     }
   }
 
@@ -153,4 +167,5 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
   protected applyStyle(): void {
     // noop
   }
+
 }

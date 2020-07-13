@@ -22,7 +22,15 @@ describe('comment service test', () => {
       token: IIconService,
       useClass: IconService,
     }]));
+
+  });
+
+  beforeEach(() => {
     commentsService = injector.get<ICommentsService>(ICommentsService);
+  });
+
+  afterEach(() => {
+    commentsService.dispose();
   });
 
   afterAll(() => {
@@ -42,17 +50,18 @@ describe('comment service test', () => {
     const [ thread, thread2 ] = createTestThreads(uri);
     expect(commentsService.commentsThreads.length).toBe(2);
     // 按照创建时间排列
-    expect(commentsService.commentsThreads[0]).toBe(thread);
-    expect(commentsService.commentsThreads[1]).toBe(thread2);
+    expect(commentsService.commentsThreads[0].id).toBe(thread.id);
+    expect(commentsService.commentsThreads[1].id).toBe(thread2.id);
   });
 
   it('getThreadByUri', () => {
     const uri = URI.file('/test');
     const [ thread, thread2 ] = createTestThreads(uri);
     const threads = commentsService.getThreadsByUri(uri);
+    expect(threads.length).toBe(2);
     // 按照 range 升序排列
-    expect(threads[0]).toBe(thread);
-    expect(threads[1]).toBe(thread2);
+    expect(threads[0].id).toBe(thread.id);
+    expect(threads[1].id).toBe(thread2.id);
   });
 
   it('commentsTreeNodes', () => {
@@ -89,7 +98,7 @@ describe('comment service test', () => {
     expect(nodes[2].parent?.comment).toBe(thread.comments[0]);
     // 第三个节点为第二个 thread
     expect(nodes[3].description).toBe('评论内容2');
-    expect(nodes[3].thread).toBe(thread2);
+    expect(nodes[3].thread.id).toBe(thread2.id);
   });
 
   it('onThreadsCreated', () => {
@@ -106,14 +115,14 @@ describe('comment service test', () => {
       }],
     });
     expect(threadsCreatedListener.mock.calls.length).toBe(1);
-    expect(threadsCreatedListener.mock.calls[0][0]).toBe(thread);
+    expect(threadsCreatedListener.mock.calls[0][0].id).toBe(thread.id);
   });
 
   it('onThreadsChanged', () => {
     const threadsChangedListener = jest.fn();
     commentsService.onThreadsChanged(threadsChangedListener);
     const uri = URI.file('/test');
-    const thread = commentsService.createThread(uri, positionToRange(1), {
+    commentsService.createThread(uri, positionToRange(1), {
       comments: [{
         mode: CommentMode.Editor,
         author: {
@@ -122,8 +131,7 @@ describe('comment service test', () => {
         body: '评论内容1',
       }],
     });
-    thread.dispose();
-    expect(threadsChangedListener.mock.calls.length).toBe(2);
+    expect(threadsChangedListener.mock.calls.length).toBe(1);
   });
 
   function createTestThreads(uri: URI) {

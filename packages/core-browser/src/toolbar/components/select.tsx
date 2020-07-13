@@ -152,6 +152,7 @@ export function ToolbarActionSelect<T>(props: IToolbarActionSelectProps<T> & ITo
       props.onSelect(v!);
     }
     selectEmitter.current.fire(v);
+    setValue(v);
   }} optionStyle={optionStyle} style={selectStyle}/>;
 }
 

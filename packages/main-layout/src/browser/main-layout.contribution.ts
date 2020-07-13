@@ -109,11 +109,12 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
     for (const contribution of contributions) {
       contribution.registerToolbarItems(this.toolBarRegistry);
     }
+
+    // 全局只要初始化一次
+    await this.layoutState.initStorage();
   }
 
   async onStart() {
-    // 全局只要初始化一次
-    await this.layoutState.initStorage();
     this.registerSideToggleKey();
   }
 

@@ -1,23 +1,26 @@
-import { Provider, Injectable, Injector } from '@ali/common-di';
+import { Injectable, Injector, Provider } from '@ali/common-di';
 import { BrowserModule, IContextKeyService } from '@ali/ide-core-browser';
+import { FolderPreferenceProvider } from '@ali/ide-preferences/lib/browser/folder-preference-provider';
+
+import { DebugEditor, DebugModelFactory, DebugServerPath, IDebugServer, IDebugService, IDebugSessionManager } from '../common';
+import { BreakpointManager } from './breakpoint';
+import { DebugConsoleSession } from './console/debug-console-session';
+import { DebugConsoleContribution } from './console/debug-console.contribution';
+import { BreakpointWidgetInputFocus, DebugCallStackItemTypeKey } from './contextkeys';
+import { DebugConfigurationManager } from './debug-configuration-manager';
+import { DebugContribution } from './debug-contribution';
 import { injectDebugPreferences } from './debug-preferences';
 import { DebugResourceResolverContribution } from './debug-resource';
-import { DebugContribution } from './debug-contribution';
-import { DebugServerPath, IDebugService, IDebugServer, DebugEditor, IDebugSessionManager, DebugModelFactory } from '../common';
-import { DebugConfigurationManager } from './debug-configuration-manager';
-import { DebugSessionFactory, DefaultDebugSessionFactory, DebugSessionContributionRegistry, DebugSessionContributionRegistryImpl, DebugSessionContribution } from './debug-session-contribution';
-import { DebugSessionManager } from './debug-session-manager';
-import { LaunchPreferencesContribution } from './preferences/launch-preferences-contribution';
-import { FolderPreferenceProvider } from '@ali/ide-preferences/lib/browser/folder-preference-provider';
-import { LaunchFolderPreferenceProvider } from './preferences/launch-folder-preference-provider';
-import { DebugCallStackItemTypeKey, BreakpointWidgetInputFocus } from './contextkeys';
 import { DebugService } from './debug-service';
-import { DebugModel, DebugModelManager, DebugExpressionProvider } from './editor';
+import { DebugSessionContribution, DebugSessionContributionRegistry, DebugSessionContributionRegistryImpl, DebugSessionFactory, DefaultDebugSessionFactory } from './debug-session-contribution';
+import { DebugSessionManager } from './debug-session-manager';
+import { DebugExpressionProvider, DebugModel, DebugModelManager } from './editor';
 import { DebugHoverSource } from './editor/debug-hover-source';
-import { DebugConsoleContribution } from './console/debug-console.contribution';
-import { DebugConsoleSession } from './console/debug-console-session';
-import { BreakpointManager } from './breakpoint';
+import { LaunchFolderPreferenceProvider } from './preferences/launch-folder-preference-provider';
+import { LaunchPreferencesContribution } from './preferences/launch-preferences-contribution';
+import { DebugToolbarOverlayWidget } from './view/debug-toolbar.view';
 import { VariablesPanelContribution } from './view/debug-variable.menu';
+
 import './debug-style.less';
 
 @Injectable()
@@ -109,21 +112,23 @@ export class DebugModule extends BrowserModule {
   backServices = [{
     servicePath: DebugServerPath,
   }];
+
+  isOverlay = true;
+  component = DebugToolbarOverlayWidget;
 }
 
 export * from './breakpoint';
 export * from './contextkeys';
-export * from './markers';
-export * from './model';
-export * from './debug-preferences';
 export * from './debug-configuration-manager';
 export * from './debug-configuration-model';
 export * from './debug-contribution';
-export * from './debug-session-manager';
-export * from './debug-session-manager';
+export * from './debug-preferences';
 export * from './debug-resource';
 export * from './debug-schema-updater';
 export * from './debug-session';
 export * from './debug-session-connection';
 export * from './debug-session-contribution';
+export * from './debug-session-manager';
 export * from './editor/debug-model-manager';
+export * from './markers';
+export * from './model';

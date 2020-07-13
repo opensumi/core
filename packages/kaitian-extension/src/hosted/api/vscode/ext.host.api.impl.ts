@@ -62,7 +62,7 @@ export function createApiFactory(
   const extHostWindowState = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWindowState, new ExtHostWindowState(rpcProtocol));
   const extHostDecorations = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostDecorations, new ExtHostDecorations(rpcProtocol));
   const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
-  const extHostQuickOpen = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickOpen, new ExtHostQuickOpen(rpcProtocol));
+  const extHostQuickOpen = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickOpen, new ExtHostQuickOpen(rpcProtocol, extHostWorkspace));
   const extHostOutput = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostOutput, new ExtHostOutput(rpcProtocol));
   const extHostWindow = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWindow, new ExtHostWindow(rpcProtocol)) as ExtHostWindow;
   const extHostConnection = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostConnection, new ExtHostConnection(rpcProtocol)) as IExtHostConnectionService;

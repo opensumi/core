@@ -15,14 +15,14 @@ export class TaskContribution implements ClientAppContribution, CommandContribut
   taskService: ITaskService;
 
   @Autowired(PreferenceService)
-  prefereces: PreferenceService;
+  preferences: PreferenceService;
 
   registerSchema(registry: ISchemaRegistry) {
     registry.registerSchema(taskSchemaUri, schema, ['tasks.json']);
   }
 
   initialize() {
-    this.prefereces.onPreferenceChanged((e) => {
+    this.preferences.onPreferenceChanged((e) => {
     });
   }
 

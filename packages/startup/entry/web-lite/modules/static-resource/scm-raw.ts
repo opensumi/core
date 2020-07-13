@@ -2,7 +2,7 @@ import { Domain, URI, AppConfig } from '@ali/ide-core-browser';
 import { Autowired } from '@ali/common-di';
 import { StaticResourceContribution, StaticResourceService } from '@ali/ide-static-resource/lib/browser/static.definition';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { Path } from '@ali/ide-core-common/src/path';
+import { Path } from '@ali/ide-core-common/lib/path';
 
 import { IMetaService } from '../../simple-module/meta-service';
 
