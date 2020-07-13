@@ -160,7 +160,7 @@ export function Select<T = string>({
   groupTitleRenderer,
 }: ISelectProps<T>) {
   const [open, setOpen] = useState(false);
-  let initialValue;
+  let initialValue = value;
   if (options && isDataOptions(options)) {
     const index = options.findIndex((option) => equals(option.value, value));
     if (index === -1) {
