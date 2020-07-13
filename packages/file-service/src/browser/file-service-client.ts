@@ -85,7 +85,7 @@ export class FileServiceClient implements IFileServiceClient {
   async resolveContent(uri: string, options?: FileSetContentOptions) {
     const _uri = this.getUri(uri);
     const provider = await this.getProvider(_uri.scheme);
-    const content = await provider.readFile(_uri.codeUri);
+    const content = await provider.readFile(_uri.codeUri, options?.encoding);
     return { content };
   }
 
