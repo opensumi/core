@@ -1,7 +1,7 @@
 import { TreeModel, IOptionalMetaData, TreeNodeEvent, CompositeTreeNode } from '@ali/ide-components';
 import { Injectable, Optional, Autowired} from '@ali/common-di';
 import { Directory } from './file-tree-nodes';
-import { URI, ThrottledDelayer } from '@ali/ide-core-browser';
+import { URI, ThrottledDelayer,  Emitter, Event } from '@ali/ide-core-browser';
 import { FileStat } from '@ali/ide-file-service';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 
@@ -19,10 +19,15 @@ export class FileTreeModel extends TreeModel {
   public readonly decorationService: FileTreeDecorationService;
 
   private flushDispatchChangeDelayer =  new ThrottledDelayer<void>(FileTreeModel.DEFAULT_FLUSH_DELAY);
+  private onWillUpdateEmitter: Emitter<void> = new Emitter();
 
   constructor(@Optional() root: Directory) {
     super();
     this.init(root);
+  }
+
+  get onWillUpdate(): Event<void> {
+    return this.onWillUpdateEmitter.event;
   }
 
   init(root: CompositeTreeNode) {
@@ -35,6 +40,7 @@ export class FileTreeModel extends TreeModel {
         this.flushDispatchChangeDelayer.cancel();
       }
       this.flushDispatchChangeDelayer.trigger(async () => {
+        await this.onWillUpdateEmitter.fireAndAwait();
         this.dispatchChange();
       });
     });

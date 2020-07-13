@@ -1,4 +1,4 @@
-import { formatLocalize } from '@ali/ide-core-browser';
+import { formatLocalize, URI } from '@ali/ide-core-browser';
 import { TreeNode, CompositeTreeNode, ITree } from '@ali/ide-components';
 import { OpenedEditorService } from './services/opened-editor-tree.service';
 import { IEditorGroup, IResource } from '@ali/ide-editor';
@@ -87,7 +87,7 @@ export class EditorFile extends TreeNode {
   }
 
   get uri() {
-    return this.resource ? this.resource.uri : '';
+    return this.resource ? this.resource.uri : new URI();
   }
 
   dispose() {
