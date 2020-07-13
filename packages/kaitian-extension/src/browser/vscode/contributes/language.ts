@@ -14,7 +14,7 @@ export class LanguagesContributionPoint extends VSCodeContributePoint<LanguagesS
   private readonly textMateService: TextmateService;
 
   contribute() {
-    const extUri = URI.file(this.extension.path);
+    const extUri = new URI(this.extension.path).scheme ? new URI(this.extension.path) : URI.file(this.extension.path);
     for (const language of this.json) {
       this.textMateService.registerLanguage(language, extUri);
     }

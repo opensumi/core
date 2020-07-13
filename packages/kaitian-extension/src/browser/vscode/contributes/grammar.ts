@@ -14,9 +14,9 @@ export class GrammarsContributionPoint extends VSCodeContributePoint<GrammarSche
   textMateService: TextmateService;
 
   contribute() {
-    const extPath = URI.file(this.extension.path);
+    const extUri = new URI(this.extension.path).scheme ? new URI(this.extension.path) : URI.file(this.extension.path);
     for (const grammar of this.json) {
-      this.textMateService.registerGrammar(grammar, extPath);
+      this.textMateService.registerGrammar(grammar, extUri);
     }
   }
 
