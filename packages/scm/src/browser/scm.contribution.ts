@@ -1,5 +1,5 @@
 import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command, CommandService, PreferenceSchema, localize, URI } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry, Command, PreferenceSchema, localize, URI } from '@ali/ide-core-common';
 import { ClientAppContribution, PreferenceContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
@@ -13,16 +13,14 @@ import { scmPreferenceSchema } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
 import { getIcon } from '@ali/ide-core-browser';
 import { WorkbenchEditorService, EditorCollectionService, IEditor } from '@ali/ide-editor/lib/common';
-import { BrowserEditorContribution, IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
+import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 export const SCM_ACCEPT_INPUT: Command = {
   id: 'scm.acceptInput',
 };
 
-@Domain(ClientAppContribution, CommandContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, BrowserEditorContribution)
-export class SCMContribution implements CommandContribution, ClientAppContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, BrowserEditorContribution {
-  @Autowired(CommandService)
-  private readonly commandService: CommandService;
+@Domain(ClientAppContribution, CommandContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, NextMenuContribution)
+export class SCMContribution implements CommandContribution, ClientAppContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, NextMenuContribution {
 
   @Autowired(SCMBadgeController)
   private readonly statusUpdater: SCMBadgeController;
@@ -106,25 +104,25 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
     });
   }
 
-  registerEditorActions(registry: IEditorActionRegistry) {
-    registry.registerEditorAction({
+  registerNextMenus(menuRegistry: IMenuRegistry) {
+    menuRegistry.registerMenuItem(MenuId.EditorTitle, {
+      command: {
+        id: GOTO_PREVIOUS_CHANGE.id,
+        label: localize('scm.diff.change.previous'),
+      },
+      when: 'isInDiffEditor',
       iconClass: getIcon('arrowup'),
-      title: localize('scm.diff.change.previous'),
-      when: 'isInDiffEditor',
-      onClick: () => {
-        this.commandService.executeCommand(GOTO_PREVIOUS_CHANGE.id);
-      },
+      group: 'navigation',
     });
-
-    registry.registerEditorAction({
+    menuRegistry.registerMenuItem(MenuId.EditorTitle, {
+      command: {
+        id: GOTO_NEXT_CHANGE.id,
+        label: localize('scm.diff.change.next'),
+      },
       iconClass: getIcon('arrowdown'),
-      title: localize('scm.diff.change.next'),
       when: 'isInDiffEditor',
-      onClick: () => {
-        this.commandService.executeCommand(GOTO_NEXT_CHANGE.id);
-      },
+      group: 'navigation',
     });
-
   }
 
   private getDiffChangesIndex(uri: URI, editor: IEditor) {

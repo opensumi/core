@@ -13,13 +13,16 @@ export class ResourceContextKey {
   private resourceKey: IContextKey<string>;
   private isFileSystemResource: IContextKey<boolean>;
 
-  constructor(private contextKeyService: IContextKeyService, private languageResolver: ILanguageResolver = getLanguageIdFromMonaco) {
-    this.resourceScheme = this.contextKeyService.createKey<string>('resourceScheme', '');
-    this.resourceFilename = this.contextKeyService.createKey<string>('resourceFilename', '');
-    this.resourceExtname = this.contextKeyService.createKey<string>('resourceExtname', '');
-    this.resourceLangId = this.contextKeyService.createKey<string>('resourceLangId', '');
-    this.resourceKey = this.contextKeyService.createKey<string>('resource', '');
-    this.isFileSystemResource = this.contextKeyService.createKey<boolean>('isFileSystemResource', false);
+  constructor(private contextKeyService: IContextKeyService, private languageResolver: ILanguageResolver = getLanguageIdFromMonaco, prefix: string = 'resource') {
+    if (!prefix) {
+      throw new Error('resource key prefix cannot be empty!');
+    }
+    this.resourceScheme = this.contextKeyService.createKey<string>(prefix + 'Scheme', '');
+    this.resourceFilename = this.contextKeyService.createKey<string>(prefix + 'Filename', '');
+    this.resourceExtname = this.contextKeyService.createKey<string>(prefix + 'Extname', '');
+    this.resourceLangId = this.contextKeyService.createKey<string>(prefix + 'LangId', '');
+    this.resourceKey = this.contextKeyService.createKey<string>(prefix, '');
+    this.isFileSystemResource = this.contextKeyService.createKey<boolean>('isFileSystem' + prefix.substr(0, 1).toUpperCase() + prefix.substr(1), false);
   }
 
   set(uri: URI) {

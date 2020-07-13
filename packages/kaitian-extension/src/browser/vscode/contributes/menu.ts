@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, CommandService, ILogger, formatLocalize, replaceLocalizePlaceholder, IContextKeyService, isUndefined, URI } from '@ali/ide-core-browser';
+import { CommandRegistry, CommandService, ILogger, formatLocalize, IContextKeyService, isUndefined, URI } from '@ali/ide-core-browser';
 import { ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next';
 import { IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
@@ -146,44 +146,28 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
         }
 
         const [group, order] = parseMenuGroup(item.group);
-
-        if (menuId === MenuId.EditorTitle && command.iconClass) {
-          this.addDispose(this.editorActionRegistry.registerEditorAction({
-            title: replaceLocalizePlaceholder(command.label)!,
-            onClick: (resource, group: IEditorGroup) => {
-              if (group.currentEditor) {
-                this.commandService.executeCommand(command.id, group.currentEditor.currentUri);
-              } else {
-                this.commandService.executeCommand(command.id, resource ? resource.uri : undefined);
-              }
-            },
-            iconClass: command.iconClass,
-            when: item.when,
-          }));
-        } else {
-          let argsTransformer: ((...args: any[]) => any[]) | undefined;
-          if (menuId === MenuId.EditorTitleContext) {
-            argsTransformer = ({ uri, group }: {uri: URI, group: IEditorGroup}) => {
-              return [uri.codeUri];
-            };
-          }
-
-          this.addDispose(this.menuRegistry.registerMenuItem(
-            menuId,
-            {
-              command: item.command,
-              alt,
-              group,
-              order,
-              when: item.when,
-              // 以下为 kaitian 扩展部分
-              argsTransformer,
-              type: item.type,
-              toggledWhen: item.toggledWhen,
-              enabledWhen: item.enabledWhen,
-            } as IMenuItem,
-          ));
+        let argsTransformer: ((...args: any[]) => any[]) | undefined;
+        if (menuId === MenuId.EditorTitleContext) {
+          argsTransformer = ({ uri, group }: {uri: URI, group: IEditorGroup}) => {
+            return [uri.codeUri];
+          };
         }
+
+        this.addDispose(this.menuRegistry.registerMenuItem(
+          menuId,
+          {
+            command: item.command,
+            alt,
+            group,
+            order,
+            when: item.when,
+            // 以下为 kaitian 扩展部分
+            argsTransformer,
+            type: item.type,
+            toggledWhen: item.toggledWhen,
+            enabledWhen: item.enabledWhen,
+          } as IMenuItem,
+        ));
       }
     }
   }

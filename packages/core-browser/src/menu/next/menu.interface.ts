@@ -39,6 +39,7 @@ export class MenuItemNode extends MenuNode {
 
   constructor(
     @Optional() item: Command,
+    @Optional() icon: string | undefined,
     @Optional() options: IMenuNodeOptions = {},
     @Optional() disabled: boolean,
     @Optional() checked: boolean,
@@ -48,7 +49,7 @@ export class MenuItemNode extends MenuNode {
   ) {
     super({
       id: item.id,
-      icon: item.iconClass,
+      icon,
       label: item.label!,
       type,
       checked,
@@ -154,6 +155,7 @@ export class SeparatorMenuItemNode extends MenuNode {
 export interface IMenu extends IDisposable {
   readonly onDidChange: Event<IMenu | undefined>;
   getMenuNodes(options?: IMenuNodeOptions): Array<[string, Array<MenuItemNode | SubmenuItemNode>]>;
+  onDispose: Event<void>;
 }
 
 export interface IContextMenu extends IDisposable {
