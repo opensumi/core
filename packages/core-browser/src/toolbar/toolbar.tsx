@@ -46,11 +46,14 @@ export const ToolbarLocation = (props: IToolbarLocationProps & React.HTMLAttribu
     if (container.current) {
       const disposer = new Disposable();
       const debouncedUpdate = debounce(() => {
+        updateNow();
+      }, 100, { maxWait: 500});
+      const updateNow = () => {
         if (container.current) {
           setIgnoreActions((preferenceService.get<{[location: string]: string[]}>('toolbar.ignoreActions', {}) || {})[location] || []);
           renderToolbarLocation(container.current, location, preferences, registry, context, ignoreActions);
         }
-      }, 100, { maxWait: 500});
+      };
       disposer.addDispose(eventBus.on(ToolbarActionGroupsChangedEvent, (e) => {
         if (e.payload.location === location) {
           debouncedUpdate();
@@ -73,13 +76,13 @@ export const ToolbarLocation = (props: IToolbarLocationProps & React.HTMLAttribu
           // 如果两个数组存在不同，刷新
           for (const id of newValue) {
             if (ignoreActions.indexOf(id) === -1) {
-              debouncedUpdate();
+              updateNow();
               return;
             }
           }
           for (const id of ignoreActions) {
             if (newValue.indexOf(id) === -1) {
-              debouncedUpdate();
+              updateNow();
               return;
             }
           }
@@ -288,7 +291,7 @@ function renderToolbarLocation(container: HTMLDivElement, location: string, pref
     moreElement.classList.add('kt-toolbar-more', ...getIcon('more').split(' '));
     locationContainer.append(moreElement);
     moreElement.addEventListener('mousedown', () => {
-      showDropDown(moreElement, location);
+      toggleDropdown(moreElement, location);
     });
   }
 
@@ -307,12 +310,15 @@ function renderToolbarLocation(container: HTMLDivElement, location: string, pref
 
 }
 
-function showDropDown(ele, location: string) {
+function toggleDropdown(ele, location: string) {
   const locationId = 'toolbar-location-visible-' + location;
   const dropDownId = 'toolbar-location-dropdown-' + location;
   const locationElement = document.getElementById(locationId);
   const dropDownElement = document.getElementById(dropDownId);
   if (locationElement && dropDownElement) {
+    if (dropDownElement.style.display === 'block') {
+      return;
+    }
     const pos = locationElement.getBoundingClientRect();
     dropDownElement.style.top = pos.y + pos.height + 'px';
     dropDownElement.style.right = window.innerWidth - pos.x - pos.width + 'px';
@@ -320,6 +326,8 @@ function showDropDown(ele, location: string) {
     setTimeout(() => {
       const disposer = new Disposable();
       disposer.addDispose(new DomListener(ele, 'mousedown', (e: MouseEvent) => {
+        dropDownShouldCloseEmitter.fire(location);
+        disposer.dispose();
         e.stopPropagation();
       }));
       disposer.addDispose(new DomListener(dropDownElement, 'mousedown', (e: MouseEvent) => {

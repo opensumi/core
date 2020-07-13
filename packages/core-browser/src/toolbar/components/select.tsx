@@ -93,12 +93,16 @@ export function ToolbarActionSelect<T>(props: IToolbarActionSelectProps<T> & ITo
     if (dropdownRef.current && selectInMenuRef.current) {
       const menuClientRect = selectInMenuRef.current.getBoundingClientRect();
       if (window.innerWidth - menuClientRect.x - menuClientRect.width < dropdownRef.current.offsetWidth) {
-        dropdownRef.current.style.left = menuClientRect.x - dropdownRef.current.offsetWidth - 5 + 'px';
-        dropdownRef.current.style.top = menuClientRect.y + 'px';
+        // 在左边
+        dropdownRef.current.style.right = 'calc(100% + 5px)';
+        dropdownRef.current.style.left = '';
+        dropdownRef.current.style.top = '0';
         dropdownRef.current.style.visibility = 'visible';
       } else {
-        dropdownRef.current.style.left = menuClientRect.x + menuClientRect.width + 5 + 'px';
-        dropdownRef.current.style.top = menuClientRect.y + 'px';
+        // 在右边
+        dropdownRef.current.style.left = 'calc(100% + 5px)';
+        dropdownRef.current.style.right = '';
+        dropdownRef.current.style.top = '0';
         dropdownRef.current.style.visibility = 'visible';
       }
     }

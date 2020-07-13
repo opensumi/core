@@ -9,6 +9,9 @@
     width: 100%;
     height: 100%;
   }
+  .kt-toolbar-action-btn-title {
+    white-space: nowrap;
+  }
   .kt-toolbar-location-visible, .kt-toolbar-location-dropdown {
     width: 100%;
     display: flex;
@@ -130,10 +133,9 @@
 }
 
 .kt-toolbar-action-select-dropdown {
-  position: fixed;
+  position: absolute;
   width: 150px;
-  top:0;
-  left:0;
+  max-width: none;
   display: block;
   z-index: 11;
   visibility: hidden;

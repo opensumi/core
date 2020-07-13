@@ -91,30 +91,32 @@ export const ToolbarCustomizeComponent = () => {
     </div>;
   }
 
-  return <div className={styles['toolbar-customize']}>
-    {
-      locations.map((location) => {
-        return renderLocationPref(location);
-      })
-    }
-    <div className={styles['button-display']}>
-      <div>{localize('toolbar-customize.buttonDisplay.description')}</div>
-      <Select options={[
-        {
-          label: localize('toolbar-customize.buttonDisplay.icon'),
-          value: 'icon',
-        }, {
-          label: localize('toolbar-customize.buttonDisplay.iconAndText'),
-          value: 'iconAndText',
-        },
-      ]} value={currentDisplayPref} onChange={(v) => {
-        const effectingScope = preferenceService.inspect('toolbar.buttonDisplay')!.workspaceValue ? PreferenceScope.Workspace : PreferenceScope.User;
-        preferenceService.set('toolbar.buttonDisplay', v, effectingScope);
-        currentDisplayPref = v;
-      }} className={styles['button-display-select']}></Select>
-    </div>
-    <div className={styles['customize-complete']} onClick={() => setVisible(false)}>
-      <Button type='primary'>{localize('toolbar-customize.complete')}</Button>
+  return <div className={styles['toolbar-customize-overlay']}>
+    <div className={styles['toolbar-customize']}>
+      {
+        locations.map((location) => {
+          return renderLocationPref(location);
+        })
+      }
+      <div className={styles['button-display']}>
+        <div>{localize('toolbar-customize.buttonDisplay.description')}</div>
+        <Select options={[
+          {
+            label: localize('toolbar-customize.buttonDisplay.icon'),
+            value: 'icon',
+          }, {
+            label: localize('toolbar-customize.buttonDisplay.iconAndText'),
+            value: 'iconAndText',
+          },
+        ]} value={currentDisplayPref} onChange={(v) => {
+          const effectingScope = preferenceService.inspect('toolbar.buttonDisplay')!.workspaceValue ? PreferenceScope.Workspace : PreferenceScope.User;
+          preferenceService.set('toolbar.buttonDisplay', v, effectingScope);
+          currentDisplayPref = v;
+        }} className={styles['button-display-select']}></Select>
+      </div>
+      <div className={styles['customize-complete']}>
+        <Button type='primary' onClick={() => setVisible(false)}>{localize('toolbar-customize.complete')}</Button>
+      </div>
     </div>
   </div>;
 };
