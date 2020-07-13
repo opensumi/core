@@ -316,6 +316,10 @@ export interface ICommentsConfig {
   author?: {
     avatar: string;
   };
+  /**
+   * 设置在编辑器里是否展示特定评论的过滤函数
+   */
+  filterThreadDecoration?: (thread: ICommentsThread) => boolean;
 }
 
 export const ICommentsFeatureRegistry = Symbol('ICommentsFeatureRegistry');

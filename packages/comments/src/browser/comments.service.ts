@@ -98,6 +98,11 @@ export class CommentsService extends Disposable implements ICommentsService {
     return this.commentsFeatureRegistry.getConfig()?.author?.avatar;
   }
 
+  @memoize
+  get filterThreadDecoration() {
+    return this.commentsFeatureRegistry.getConfig()?.filterThreadDecoration;
+  }
+
   get onThreadsChanged(): Event<ICommentsThread> {
     return this.threadsChangeEmitter.event;
   }
@@ -363,14 +368,20 @@ export class CommentsService extends Disposable implements ICommentsService {
           // 设置已有评论的 decoration
           decorations.push(
             ...threads
-              .filter((thread) => {
-                const isCurrentThread = thread.uri.isEqual(uri);
-                if (isCurrentThread && thread.isShowWidget()) {
+              .map((thread) => {
+                if (thread.uri.isEqual(uri) && thread.isShowWidget()) {
                   // 恢复之前的现场
                   thread.show();
                 } else {
                   // 设置为 dispose 方式消失，不会修改内部 isShow 变量，用这个变量来判断下次且回来后是否要恢复显示
                   thread.hideAll(true);
+                }
+                return thread;
+              })
+              .filter((thread) => {
+                const isCurrentThread = thread.uri.isEqual(uri);
+                if (this.filterThreadDecoration) {
+                  return isCurrentThread && this.filterThreadDecoration(thread);
                 }
                 return isCurrentThread;
               })
