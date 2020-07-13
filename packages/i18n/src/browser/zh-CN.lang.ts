@@ -189,6 +189,7 @@ export const localizationBundle = {
     'scm.provider.init': '点击初始化仓库',
     'scm.diff.change.next': '下一个变化',
     'scm.diff.change.previous': '上一个变化',
+    'scm.diff.toggle.renderSideBySide': '切换内联视图',
 
     'debug.action.start': '启动调试',
     'debug.action.no.configuration': '暂无配置',
@@ -375,6 +376,11 @@ export const localizationBundle = {
 
     'editor.largeFile.prevent': '文件过大，继续打开可能会导致卡顿或者崩溃。',
     'editor.largeFile.prevent.stillOpen': '仍要打开',
+
+    'preference.diffEditor.renderSideBySide': '显示并排差异编辑器',
+    'preference.diffEditor.ignoreTrimWhitespace': '忽略差异编辑器的前导和尾随空白字符',
+    'diffEditor.configuration.renderSideBySide': '控制差异编辑器的显示方式是是并排还是内联',
+    'diffEditor.configuration.ignoreTrimWhitespace': '启用后，差异编辑器的前导和尾随空白字符将会忽略',
 
     'status.editor.chooseLanguage': '选择语言模式',
     'status.editor.chooseEncoding': '选择编码',

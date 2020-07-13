@@ -989,16 +989,6 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     'description': localize('selectionClipboard', 'Controls whether the Linux primary clipboard should be supported.'),
     'included': isLinux,
   },
-  'diffEditor.renderSideBySide': {
-    'type': 'boolean',
-    'default': true,
-    'description': localize('sideBySide', 'Controls whether the diff editor shows the diff side by side or inline.'),
-  },
-  'diffEditor.ignoreTrimWhitespace': {
-    'type': 'boolean',
-    'default': false, // 开天修改
-    'description': localize('ignoreTrimWhitespace', 'Controls whether the diff editor shows changes in leading or trailing whitespace as diffs.'),
-  },
   'editor.largeFileOptimizations': {
     'type': 'boolean',
     'default': EDITOR_MODEL_DEFAULTS.largeFileOptimizations,
@@ -1190,6 +1180,16 @@ const customEditorSchema: PreferenceSchemaProperties = {
   'editor.quickSuggestionsMaxCount': {
     type: 'integer',
     default: 0,
+  },
+  'diffEditor.renderSideBySide': {
+    'type': 'boolean',
+    'default': true,
+    'description': '%diffEditor.configuration.renderSideBySide%',
+  },
+  'diffEditor.ignoreTrimWhitespace': {
+    'type': 'boolean',
+    'default': false, // 开天修改
+    'description': '%diffEditor.configuration.ignoreTrimWhitespace%',
   },
 };
 

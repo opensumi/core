@@ -1,13 +1,13 @@
 import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command, PreferenceSchema, localize, URI } from '@ali/ide-core-common';
-import { ClientAppContribution, PreferenceContribution } from '@ali/ide-core-browser';
+import { CommandContribution, CommandRegistry, Command, PreferenceSchema, localize, URI, PreferenceScope } from '@ali/ide-core-common';
+import { ClientAppContribution, PreferenceContribution, PreferenceService } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 
 import { SCMPanel } from './scm.view';
-import { scmContainerId, IDirtyDiffWorkbenchController, OPEN_DIRTY_DIFF_WIDGET, GOTO_NEXT_CHANGE, GOTO_PREVIOUS_CHANGE } from '../common';
+import { scmContainerId, IDirtyDiffWorkbenchController, OPEN_DIRTY_DIFF_WIDGET, GOTO_NEXT_CHANGE, GOTO_PREVIOUS_CHANGE, TOGGLE_DIFF_SIDE_BY_SIDE } from '../common';
 import { SCMBadgeController, SCMStatusBarController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
@@ -42,6 +42,9 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
   schema: PreferenceSchema = scmPreferenceSchema;
 
   private diffChangesIndex: Map<URI, number> = new Map();
+
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
 
   onDidRender() {
     [
@@ -91,6 +94,13 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
         }
       },
     });
+
+    commands.registerCommand(TOGGLE_DIFF_SIDE_BY_SIDE, {
+      execute: () => {
+        const newValue = !this.preferenceService.get<boolean>('diffEditor.renderSideBySide');
+        this.preferenceService.set('diffEditor.renderSideBySide', newValue, PreferenceScope.User);
+      },
+    });
   }
 
   registerComponent(registry: ComponentRegistry) {
@@ -122,6 +132,14 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
       iconClass: getIcon('arrowdown'),
       when: 'isInDiffEditor',
       group: 'navigation',
+    });
+    menuRegistry.registerMenuItem(MenuId.EditorTitle, {
+      command: {
+        id: TOGGLE_DIFF_SIDE_BY_SIDE.id,
+        label: localize('scm.diff.toggle.renderSideBySide'),
+      },
+      when: 'isInDiffEditor',
+      group: '1_internal',
     });
   }
 

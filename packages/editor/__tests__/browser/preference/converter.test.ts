@@ -21,7 +21,7 @@ describe('editor Options Converter Tests', () => {
     mockedPreferenceService.set('editor.fontSize', 1000);
     mockedPreferenceService.set('editor.minimap', true);
     mockedPreferenceService.set('editor.tabSize', 100);
-    mockedPreferenceService.set('editor.enableSplitViewResizing', true);
+    mockedPreferenceService.set('diffEditor.enableSplitViewResizing', true);
     const options = getConvertedMonacoOptions(mockedPreferenceService);
     expect(options.editorOptions.fontSize).toBe(1000);
     expect(options.editorOptions.minimap).toMatchObject({
@@ -34,7 +34,7 @@ describe('editor Options Converter Tests', () => {
   it('should be able to filter preference settings by updating params', () => {
     mockedPreferenceService.set('editor.fontSize', 1000);
     mockedPreferenceService.set('editor.tabSize', 100);
-    mockedPreferenceService.set('editor.enableSplitViewResizing', true);
+    mockedPreferenceService.set('diffEditor.enableSplitViewResizing', true);
     const options = getConvertedMonacoOptions(mockedPreferenceService, undefined, undefined, ['editor.fontSize']);
     expect(options.editorOptions.fontSize).toBe(1000);
     expect(options.modelOptions.tabSize).toBeUndefined();
@@ -45,7 +45,7 @@ describe('editor Options Converter Tests', () => {
     expect(isEditorOption('app.confirmOnExit')).toBe(false);
     expect(isEditorOption('editor.fontSize')).toBe(true);
     expect(isEditorOption('editor.tabSize')).toBe(true);
-    expect(isEditorOption('editor.enableSplitViewResizing')).toBe(true);
+    expect(isEditorOption('diffEditor.enableSplitViewResizing')).toBe(true);
   });
 
 });

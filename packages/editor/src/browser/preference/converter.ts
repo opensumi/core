@@ -13,7 +13,7 @@ export interface IConvertedMonacoOptions {
  */
 export function getConvertedMonacoOptions(preferenceService: PreferenceService, resourceUri?: string, language?: string, updatingKey?: string[]): IConvertedMonacoOptions {
   const editorOptions: Partial<monaco.editor.IEditorOptions> = {};
-  const diffOptions: Partial<monaco.editor.IEditorOptions> = {};
+  const diffOptions: Partial<monaco.editor.IDiffEditorOptions> = {};
   const modelOptions: Partial<monaco.editor.ITextModelUpdateOptions> = {};
   const editorOptionsKeys = updatingKey ? updatingKey.filter((key) => editorOptionsConverters.has(key)) : Array.from(editorOptionsConverters.keys());
   const textModelUpdateOptionsKeys = updatingKey ? updatingKey.filter((key) => textModelUpdateOptionsConverters.has(key)) :  Array.from(textModelUpdateOptionsConverters.keys());
@@ -664,27 +664,27 @@ export const diffEditorOptionsConverters: Map<KaitianPreferenceKey , NoConverter
    * Allow the user to resize the diff editor split view.
    * Defaults to true.
    */
-  ['editor.enableSplitViewResizing', { monaco: 'enableSplitViewResizing' }],
+  ['diffEditor.enableSplitViewResizing', { monaco: 'enableSplitViewResizing' }],
   /**
    * Render the differences in two side-by-side editors.
    * Defaults to true.
    */
-  ['editor.enableSplitViewResizing', { monaco: 'enableSplitViewResizing' }],
+  ['diffEditor.renderSideBySide', { monaco: 'renderSideBySide' }],
   /**
    * Compute the diff by ignoring leading/trailing whitespace
    * Defaults to true.
    */
-  ['editor.ignoreTrimWhitespace', { monaco: 'ignoreTrimWhitespace' }],
+  ['diffEditor.ignoreTrimWhitespace', { monaco: 'ignoreTrimWhitespace' }],
   /**
    * Render +/- indicators for added/deleted changes.
    * Defaults to true.
    */
-  ['editor.renderIndicators', { monaco: 'renderIndicators' }],
+  ['diffEditor.renderIndicators', { monaco: 'renderIndicators' }],
   /**
    * Original model should be editable?
    * Defaults to false.
    */
-  ['editor.originalEditable', { monaco: 'originalEditable' }],
+  ['diffEditor.originalEditable', { monaco: 'originalEditable' }],
 ]);
 
 export function isEditorOption(key: string) {
