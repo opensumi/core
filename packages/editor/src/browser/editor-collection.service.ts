@@ -620,7 +620,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
         return monacoEditor.setSelection(selection as any);
       },
       updateOptions(editorOptions: monaco.editor.IEditorOptions, modelOptions: monaco.editor.ITextModelUpdateOptions) {
-        updateOptionsWithMonacoEditor(diffEditor.monacoDiffEditor.getModifiedEditor(), editorOptions, modelOptions);
+        updateOptionsWithMonacoEditor(diffEditor.monacoDiffEditor.getOriginalEditor(), editorOptions, modelOptions);
       },
     };
 
@@ -693,7 +693,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
         return diffEditor.monacoDiffEditor.getModifiedEditor().onDidDispose as Event<void>;
       },
       updateOptions(editorOptions: monaco.editor.IEditorOptions, modelOptions: monaco.editor.ITextModelUpdateOptions) {
-        updateOptionsWithMonacoEditor(diffEditor.monacoDiffEditor.getOriginalEditor(), editorOptions, modelOptions);
+        updateOptionsWithMonacoEditor(diffEditor.monacoDiffEditor.getModifiedEditor(), editorOptions, modelOptions);
       },
     };
     this.collectionService.addEditors([this.originalEditor, this.modifiedEditor]);
