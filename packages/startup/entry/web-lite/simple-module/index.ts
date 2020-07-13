@@ -4,7 +4,8 @@ import { BrowserModule } from '@ali/ide-core-browser';
 import { LiteDocumentDataManager, SimpleLanguageService } from '../modules/simple-language-service';
 import { SCMRawFileServiceContribution } from '../modules/static-resource/scm-raw';
 
-import { LangContribution } from './lang.contribution';
+import { LanguageServiceContribution } from './language-service.contribution';
+import { LanguageGrammarContribution } from './language-grammar.contribution';
 import { ViewContribution } from './view.contribution';
 import { SCMContribution } from './scm.contribution';
 import { FSProviderContribution, KtExtFsProviderContribution } from './fs.contribution';
@@ -21,6 +22,7 @@ export class SimpleModule extends BrowserModule {
     SCMRawFileServiceContribution,
     SCMContribution,
     ViewContribution,
-  ].concat(process.env.LSIF_HOST ? LangContribution : (null as any))
+    LanguageGrammarContribution,
+  ].concat(process.env.LSIF_HOST ? LanguageServiceContribution : (null as any))
    .filter(Boolean);
 }
