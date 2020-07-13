@@ -345,6 +345,7 @@ export const localizationBundle = {
     'preference.editor.maxTokenizationLineLength': '最大解析标识长度',
     'preference.editor.quickSuggestionsDelay': '智能提示延迟（毫秒）',
     'preference.editor.largeFile': '超大文件尺寸',
+    'preference.files.eol': '文件行尾字符',
     'preference.editor.formatOnPaste': '粘贴时自动格式化',
 
     'preference.array.additem': '添加',

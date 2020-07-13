@@ -171,6 +171,16 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: 'utf8',
       enum: Object.keys(SUPPORTED_ENCODINGS),
     },
+    'files.eol': {
+      type: 'string',
+      description: '%preference.files.eol%',
+      enum: [
+        '\n',
+        '\r\n',
+        'auto',
+      ],
+      default: 'auto',
+    },
     // 设置面板是否用户Scope在前
     'settings.userBeforeWorkspace': {
       type: 'boolean',

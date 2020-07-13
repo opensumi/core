@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IEditorDocumentModelContentProvider, EditorPreferences } from '@ali/ide-editor/lib/browser';
 import { FILE_SCHEME, FILE_SAVE_BY_CHANGE_THRESHOLD, IFileSchemeDocClient } from '../common';
-import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, CorePreferences, ISchemaStore, IDisposable, Disposable, ISchemaRegistry, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
+import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, CorePreferences, ISchemaStore, IDisposable, Disposable, ISchemaRegistry, replaceLocalizePlaceholder, isWindows } from '@ali/ide-core-browser';
 import { IFileServiceClient, FileChangeType } from '@ali/ide-file-service';
 import * as md5 from 'md5';
 
@@ -52,6 +52,15 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
     }
 
     return await this.fileServiceClient.getEncoding(uri.toString());
+  }
+
+  provideEOL() {
+    const eol = this.corePreferences['files.eol'];
+
+    if (eol !== 'auto') {
+      return eol;
+    }
+    return isWindows ? '\r\n' : '\n';
   }
 
   async provideEditorDocumentModelContent(uri: URI, encoding) {

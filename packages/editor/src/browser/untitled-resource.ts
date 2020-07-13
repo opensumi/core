@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { URI, Emitter, Event, Schemas, WithEventBus, IEditorDocumentChange, IEditorDocumentModelSaveResult, localize, AppConfig, CommandService, CorePreferences } from '@ali/ide-core-browser';
+import { URI, Emitter, Event, Schemas, WithEventBus, IEditorDocumentChange, IEditorDocumentModelSaveResult, localize, AppConfig, CommandService, CorePreferences, isWindows } from '@ali/ide-core-browser';
 import * as path from '@ali/ide-core-common/lib/path';
 
 import { IResourceProvider, WorkbenchEditorService } from '../common';
@@ -33,6 +33,15 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
   async provideEncoding() {
     const encoding = this.corePreferences['files.encoding'];
     return encoding || 'utf8';
+  }
+
+  provideEOL() {
+    const eol = this.corePreferences['files.eol'];
+
+    if (eol !== 'auto') {
+      return eol;
+    }
+    return isWindows ? '\r\n' : '\n';
   }
 
   async provideEditorDocumentModelContent(uri: URI, encoding?: string | undefined): Promise<string> {

@@ -360,6 +360,7 @@ export const localizationBundle = {
     'preference.editor.quickSuggestionsDelay': 'Quick suggestions show delay (in ms) Defaults to 10 (ms)',
     'preference.editor.largeFile': 'Large File Size',
     'preference.editor.formatOnPaste': 'Format On Paste',
+    'preference.files.eol': 'Files EOL',
     'keymaps.tab.name': 'Keyboard Shortcuts',
 
     'preference.editor.previewMode': 'Preview Mode',
