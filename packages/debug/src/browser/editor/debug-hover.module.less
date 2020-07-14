@@ -10,7 +10,7 @@
 }
 
 .debug_hover_title {
-  padding-left: 10px;
+  padding-left: 16px;
   padding-right: 10px;
   line-height: 18px;
   font-size: 12px;
@@ -21,42 +21,6 @@
   white-space: pre;
   &.has_complex_value {
     border-bottom: 1px solid hsla(0,0%,50%,.35);
-    min-width: 300px;
-  }
-}
-
-.debug_hover_string {
-  font-size: 12px;
-  padding: 0px 8px;
-}
-
-.debug_hover_content {
-  font-size: 12px;
-}
-
-// variable
-.debug_console_variable {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  &.name {
-    overflow: visible;
-    color: #c586c0;
-  }
-
-  &.error {
-    color: #F48771;
-  }
-
-  &.number {
-    color: #B5CEA8;
-  }
-
-  &.boolean {
-    color: #4E94CE;
-  }
-
-  &.string {
-    color: #CE9178;
+    width: 300px;
   }
 }

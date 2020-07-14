@@ -1,9 +1,10 @@
 import { Provider, Injectable } from '@ali/common-di';
-import { IFileServiceClient, IBrowserFileSystemRegistry, IDiskFileProvider, ShadowFileServicePath, IShadowFileProvider, DiskFileServicePath } from '../common/index';
+import { IFileServiceClient, IBrowserFileSystemRegistry, IDiskFileProvider, IShadowFileProvider, DiskFileServicePath } from '../common/index';
 import { FileServiceClient, BrowserFileSystemRegistryImpl } from './file-service-client';
 import { BrowserModule } from '@ali/ide-core-browser';
 import { FileResourceResolver } from './file-service-contribution';
-import { DiskFsProviderClient, ShadowFsProviderClient } from './file-service-provider-client';
+import { DiskFsProviderClient } from './file-service-provider-client';
+import { ShadowFileSystemProvider } from './shadow-file-system.provider';
 
 @Injectable()
 export class FileServiceClientModule extends BrowserModule {
@@ -23,7 +24,7 @@ export class FileServiceClientModule extends BrowserModule {
     },
     {
       token: IShadowFileProvider,
-      useClass: ShadowFsProviderClient,
+      useClass: ShadowFileSystemProvider,
     },
     FileResourceResolver,
   ];
@@ -33,10 +34,6 @@ export class FileServiceClientModule extends BrowserModule {
     {
       servicePath: DiskFileServicePath,
       clientToken: IDiskFileProvider,
-    },
-    {
-      servicePath: ShadowFileServicePath,
-      clientToken: IShadowFileProvider,
     },
   ];
 }

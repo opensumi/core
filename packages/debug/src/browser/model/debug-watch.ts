@@ -35,16 +35,22 @@ export class DebugWatch implements DebugWatchData {
   }
 
   async init() {
-    this.toDispose.push(this.manager.onDidStopDebugSession((session) => {
+    this.toDispose.push(this.manager.onDidStopDebugSession(() => {
       this.fireDidChange();
     }));
-    this.toDispose.push(this.manager.onDidDestroyDebugSession((session) => {
+    this.toDispose.push(this.manager.onDidDestroyDebugSession(() => {
       this.fireDidChange();
     }));
-    this.toDispose.push(this.manager.onDidChangeActiveDebugSession((session) => {
+    this.toDispose.push(this.manager.onDidChangeActiveDebugSession(() => {
       const thread = this.manager.currentThread;
+      const session = this.manager.currentSession;
       if (thread) {
         thread.onDidChanged(() => {
+          this.fireDidChange();
+        });
+      }
+      if (session) {
+        session.onVariableChange(() => {
           this.fireDidChange();
         });
       }
@@ -59,7 +65,7 @@ export class DebugWatch implements DebugWatchData {
     const childs: any = [];
     for (const node of this.nodes) {
       const expression = new ExpressionWatchItem(node.expression, this.manager.currentSession);
-      await expression.evaluate();
+      await expression.evaluate('watch');
       childs.push(expression);
     }
     return childs;

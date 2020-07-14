@@ -24,7 +24,7 @@ import { DebugConfigurationModel } from './debug-configuration-model';
 import { DebugSessionOptions } from '../common';
 import { FileSystemError } from '@ali/ide-file-service';
 import { DebugConfiguration } from '../common';
-import { WorkbenchEditorService, ICodeEditor } from '@ali/ide-editor';
+import { WorkbenchEditorService, IOpenResourceResult } from '@ali/ide-editor';
 import debounce = require('lodash.debounce');
 import { DebugPreferences } from './debug-preferences';
 
@@ -282,7 +282,7 @@ export class DebugConfigurationManager {
     return this.models.values().next().value;
   }
 
-  protected async doOpen(model: DebugConfigurationModel) {
+  protected async doOpen(model: DebugConfigurationModel): Promise<IOpenResourceResult> {
     let uri = model.uri;
     if (!uri) {
       uri = await this.doCreate(model);

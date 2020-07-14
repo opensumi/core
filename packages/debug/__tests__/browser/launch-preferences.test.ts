@@ -22,7 +22,6 @@ import { MockUserStorageResolver } from '@ali/ide-preferences/lib/common/mocks';
 import { FileResourceResolver } from '@ali/ide-file-service/lib/browser/file-service-contribution';
 import { WorkspacePreferences } from '@ali/ide-workspace/lib/browser/workspace-preferences';
 import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
-import { ShadowFileSystemProvider } from '@ali/ide-file-service/lib/node/shadow-file-system.provider';
 disableJSDOM();
 
 @Injectable()
@@ -442,7 +441,7 @@ describe('Launch Preferences', () => {
           },
           {
             token: IShadowFileProvider,
-            useClass: ShadowFileSystemProvider,
+            useValue: {},
           },
           {
             token: FileServicePath,

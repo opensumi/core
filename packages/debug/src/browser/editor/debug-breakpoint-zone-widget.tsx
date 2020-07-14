@@ -5,8 +5,7 @@ import { DebugEditor } from '../../common';
 import * as styles from './debug-breakpoint.module.less';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { Input, Select } from '@ali/ide-components';
-import { localize } from '@ali/ide-core-common';
-import { Emitter } from '@ali/ide-core-browser';
+import { localize, Emitter, Event } from '@ali/ide-core-common';
 
 export interface BreakpointChangeData {
   context: DebugBreakpointZoneWidget.Context;
@@ -24,13 +23,13 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
   private _input: HTMLDivElement;
 
   protected readonly _onDidChangeBreakpoint = new Emitter<BreakpointChangeData>();
-  readonly onDidChangeBreakpoint = this._onDidChangeBreakpoint.event;
+  readonly onDidChangeBreakpoint: Event<BreakpointChangeData> = this._onDidChangeBreakpoint.event;
 
   protected readonly _onFocus = new Emitter<void>();
-  readonly onFocus = this._onFocus.event;
+  readonly onFocus: Event<void> = this._onFocus.event;
 
   protected readonly _onBlur = new Emitter<void>();
-  readonly onBlur = this._onBlur.event;
+  readonly onBlur: Event<void> = this._onBlur.event;
 
   protected context: DebugBreakpointZoneWidget.Context;
 
@@ -46,7 +45,11 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     };
   }
 
-  constructor(editor: DebugEditor, contexts: DebugBreakpointWidgetContext = {}, defaultContext: DebugBreakpointZoneWidget.Context = 'condition') {
+  constructor(
+    editor: DebugEditor,
+    contexts: DebugBreakpointWidgetContext = {},
+    defaultContext: DebugBreakpointZoneWidget.Context = 'condition',
+  ) {
     super(editor);
 
     this._values = contexts;
@@ -73,20 +76,20 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     return <option value={context}>{label}</option>;
   }
 
-  protected readonly updateInput = (value: string) => {
-    if (!!this.textInput) {
-      this._values[this.context] = this.textInput.value || undefined;
-    }
-    this.context = value as DebugBreakpointZoneWidget.Context;
-    this.render();
-  }
-
   protected readonly inputFocusHandler = () => {
     this._onFocus.fire();
   }
 
   protected readonly inputBlurHandler = () => {
     this._onBlur.fire();
+  }
+
+  protected readonly selectContextHandler = (value: any) => {
+    if (this.textInput) {
+      this._values[this.context] = this.textInput.value || undefined;
+    }
+    this.context = value as DebugBreakpointZoneWidget.Context;
+    this.render();
   }
 
   applyClass() {
@@ -101,7 +104,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
       this.textInput.setAttribute('placeholder', this.placeholder);
       this.textInput.focus();
     }
-    ReactDOM.render(<Select value={this.context} onChange={this.updateInput}>
+    ReactDOM.render(<Select value={this.context} onChange={this.selectContextHandler}>
       {this.renderOption('condition', localize('debug.expression.condition'))}
       {this.renderOption('hitCondition', localize('debug.expression.hitCondition'))}
       {this.renderOption('logMessage', localize('debug.expression.logMessage'))}

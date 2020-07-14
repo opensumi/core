@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
 import { DebugViewModel } from './debug-view-model';
-import { DebugBreakpoint, DebugExceptionBreakpoint } from '../model';
+import { DebugBreakpoint, DebugExceptionBreakpoint, isDebugBreakpoint, isDebugExceptionBreakpoint } from '../breakpoint';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { URI, WithEventBus, OnEvent, IContextKeyService } from '@ali/ide-core-browser';
 import { BreakpointItem } from './debug-breakpoints.view';
@@ -54,10 +54,10 @@ export class DebugBreakpointsService extends WithEventBus {
       await this.updateRoots();
     });
     this.updateBreakpoints();
-    this.sessions.onDidChangeBreakpoints(() => {
+    this.breakpoints.onDidChangeBreakpoints(() => {
       this.updateBreakpoints();
     });
-    this.sessions.onDidChangeActiveDebugSession(() => {
+    this.breakpoints.onDidChangeExceptionsBreakpoints(() => {
       this.updateBreakpoints();
     });
     this.contextKeyService.onDidChangeContext((e) => {
@@ -88,26 +88,40 @@ export class DebugBreakpointsService extends WithEventBus {
     this.roots = roots.map((file) => new URI(file.uri));
   }
 
-  extractNodes(items: (DebugBreakpoint | DebugExceptionBreakpoint)[]) {
+  @action.bound
+  toggleBreakpointEnable(data: DebugBreakpoint | DebugExceptionBreakpoint) {
+    if (isDebugBreakpoint(data)) {
+      const real = this.breakpoints.getBreakpoint(URI.parse(data.uri), data.raw.line);
+      if (real) {
+        real.enabled = !real.enabled;
+        this.breakpoints.updateBreakpoint(real);
+      }
+    }
+    if (isDebugExceptionBreakpoint(data)) {
+      this.breakpoints.updateExceptionBreakpoints(data.filter, !data.default);
+    }
+  }
+
+  extractNodes(items: (DebugExceptionBreakpoint | DebugBreakpoint)[]) {
     const nodes: BreakpointItem[] = [];
     items.forEach((item) => {
-      if (item) {
-        if (item instanceof DebugBreakpoint) {
-          const parent = this.roots.filter((root) => root.isEqualOrParent(item.uri))[0];
-          nodes.push({
-            id: item.id,
-            name: item.uri.displayName,
-            description: parent && parent.relative(item.uri)!.toString(),
-            breakpoint: item,
-          });
-        } else if (item instanceof DebugExceptionBreakpoint) {
-          nodes.push({
-            id: item.id,
-            name: item.label,
-            description: '',
-            breakpoint: item,
-          });
-        }
+      if (isDebugBreakpoint(item)) {
+        const uri = URI.parse(item.uri);
+        const parent = this.roots.filter((root) => root.isEqualOrParent(uri))[0];
+        nodes.push({
+          id: item.id,
+          name: uri.displayName,
+          description: parent && parent.relative(uri)!.toString(),
+          breakpoint: item,
+        });
+      }
+      if (isDebugExceptionBreakpoint(item)) {
+        nodes.push({
+          id: item.filter,
+          name: item.label,
+          description: '',
+          breakpoint: item,
+        });
       }
     });
     return nodes;
@@ -115,12 +129,11 @@ export class DebugBreakpointsService extends WithEventBus {
 
   @action
   updateBreakpoints() {
-    this.nodes = this.extractNodes([...this.model.exceptionBreakpoints, ...this.model.breakpoints]);
+    this.nodes = this.extractNodes([ ...this.breakpoints.getExceptionBreakpoints(), ...this.breakpoints.getBreakpoints() ]);
   }
 
   removeAllBreakpoints() {
-    this.breakpoints.cleanAllMarkers();
-    this.updateBreakpoints();
+    this.breakpoints.clearBreakpoints();
   }
 
   toggleBreakpoints() {

@@ -21,7 +21,6 @@ import { RPCService } from '@ali/ide-connection'
 import { parse, ParsedPattern, match } from '@ali/ide-core-common/lib/utils/glob';
 import { FileChangeEvent } from '../common';
 import { FileSystemManage } from './file-system-manage';
-import { ShadowFileSystemProvider } from './shadow-file-system.provider';
 import { getEncodingInfo, decode, encode, UTF8 } from './encoding';
 import {
   FileSystemError,
@@ -550,7 +549,6 @@ export class FileService extends RPCService implements IFileService {
   private initProvider() {
     // @ts-ignore
     this.registerProvider(Schemas.file, this.injector.get(IDiskFileProvider));
-    this.registerProvider('debug', new ShadowFileSystemProvider());
   }
 
   private getProvider<T extends string>(scheme: T): T extends 'file' ? IDiskFileProvider : FileSystemProvider;

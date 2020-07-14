@@ -17,7 +17,11 @@ import { IBuiltInCommand } from '../../ext.process-base';
 export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extHostEditors: ExtensionHostEditorService, extension: IExtension) {
   const commands: typeof vscode.commands = {
     registerCommand(id: string, command: <T>(...args: any[]) => T | Promise<T>, thisArgs?: any): Disposable {
-      return extHostCommands.registerCommand(true, id, command, thisArgs);
+      try {
+        return extHostCommands.registerCommand(true, id, command, thisArgs);
+      } catch {
+        return new Disposable(() => {});
+      }
     },
     executeCommand<T>(id: string, ...args: any[]): Thenable<T | undefined> {
       const extensionInfo: IExtensionInfo = {

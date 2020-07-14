@@ -263,6 +263,11 @@ export const localizationBundle = {
     'debug.menu.add.conditional': 'Add Condition Breakpoint',
     'debug.menu.add.breakpoint': 'Add Breakpoint',
     'debug.menu.disable.logpoint': 'Disable Log Breakpoint',
+    'debug.stack.frame.noSource': 'Unknown',
+    'debug.stack.frame.because': 'Because Of',
+    'debug.stack.frame.stopped': 'Stopped',
+    'debug.stack.frame.running': 'Running',
+    'debug.hover.not.available': 'not available',
 
     'output.tabbar.title': 'OUTPUT',
     'output.channel.none': '<no output yet>',

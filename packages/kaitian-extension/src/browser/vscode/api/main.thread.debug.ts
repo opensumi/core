@@ -2,7 +2,8 @@ import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IMainThreadDebug, ExtHostAPIIdentifier, IExtHostDebug, ExtensionWSChannel, IMainThreadConnectionService } from '../../../common/vscode';
 import { DisposableCollection, Uri, ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, URI } from '@ali/ide-core-browser';
 import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer, IDebuggerContribution } from '@ali/ide-debug';
-import { DebugSessionManager, BreakpointManager, DebugConfigurationManager, DebugPreferences, DebugSessionContributionRegistry, DebugModelManager, SourceBreakpoint } from '@ali/ide-debug/lib/browser';
+import { DebugSessionManager, BreakpointManager, DebugConfigurationManager, DebugPreferences, DebugSessionContributionRegistry, DebugModelManager } from '@ali/ide-debug/lib/browser';
+import { DebugBreakpoint } from '@ali/ide-debug/lib/browser/breakpoint/breakpoint-marker';
 import { IRPCProtocol, WSChannelHandler } from '@ali/ide-connection';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@ali/ide-file-service';
@@ -197,18 +198,17 @@ export class MainThreadDebug implements IMainThreadDebug {
     for (const breakpoint of newBreakpoints.values()) {
       if (breakpoint.location) {
         const location = breakpoint.location;
-        this.breakpointManager.addBreakpoint({
-          id: breakpoint.id,
-          uri: Uri.revive(location.uri).toString(),
-          enabled: true,
-          raw: {
+        this.breakpointManager.addBreakpoint(DebugBreakpoint.create(
+          Uri.revive(location.uri).toString(),
+          {
             line: breakpoint.location.range.startLineNumber + 1,
             column: 1,
             condition: breakpoint.condition,
             hitCondition: breakpoint.hitCondition,
             logMessage: breakpoint.logMessage,
           },
-        });
+          true,
+        ));
       }
     }
   }
@@ -258,7 +258,7 @@ export class MainThreadDebug implements IMainThreadDebug {
     return !!session;
   }
 
-  private toCustomApiBreakpoints(sourceBreakpoints: SourceBreakpoint[]): Breakpoint[] {
+  private toCustomApiBreakpoints(sourceBreakpoints: DebugBreakpoint[]): Breakpoint[] {
     return sourceBreakpoints.map((b) => ({
       id: b.id,
       enabled: b.enabled,

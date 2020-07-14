@@ -62,7 +62,6 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
   }
 
   protected init(): void {
-    this.editor.addContentWidget(this);
     this.toDispose.pushAll([
       Disposable.create(() => this.editor.removeContentWidget(this)),
       Disposable.create(() => this.hide()),
@@ -72,6 +71,10 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
         }
       }),
     ]);
+  }
+
+  handleWindowWheel(event) {
+    event.stopPropagation();
   }
 
   getId(): string {
@@ -101,6 +104,7 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
   show(options?: ShowDebugHoverOptions): void {
     this.schedule(() => this.doShow(options), options && options.immediate);
   }
+
   hide(options?: HideDebugHoverOptions): void {
     this.schedule(() => this.doHide(), options && options.immediate);
   }
@@ -123,23 +127,24 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
   }
 
   protected doHide(): void {
+    window.removeEventListener('mousewheel', this.handleWindowWheel, true);
     if (this.domNode.contains(document.activeElement)) {
       this.editor.focus();
     }
-    this.hoverSource.reset();
+    this.hoverSource.dispose();
     this.options = undefined;
-    this.editor.layoutContentWidget(this);
+    this.editor.removeContentWidget(this);
   }
 
   protected async doShow(options: ShowDebugHoverOptions | undefined = this.options): Promise<void> {
     if (!this.isEditorFrame()) {
-      this.hide();
       return;
     }
+
     if (!options) {
-      this.hide();
       return;
     }
+
     if (this.options && this.options.selection.equalsRange(options.selection)) {
       return;
     }
@@ -147,17 +152,19 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
     this.options = options;
     const expression = this.expressionProvider.get(this.editor.getModel()!, options.selection);
     if (!expression) {
-      this.hide();
       return;
     }
 
     if (!await this.hoverSource.evaluate(expression)) {
-      this.hide();
       return;
     }
-    ReactDOM.render((<ConfigProvider value={this.configContext} >
+
+    this.editor.addContentWidget(this);
+    // 展示变量面板时临时屏蔽滚轮事件
+    window.addEventListener('mousewheel', this.handleWindowWheel, true);
+    ReactDOM.render((<ConfigProvider value={ this.configContext } >
       <DebugHoverView />
-    </ConfigProvider>), this.domNode, () => {
+    </ConfigProvider>), this.getDomNode(), () => {
       this.editor.layoutContentWidget(this);
     });
   }

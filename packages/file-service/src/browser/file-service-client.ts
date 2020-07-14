@@ -78,7 +78,7 @@ export class FileServiceClient implements IFileServiceClient {
   constructor() {}
 
   handlesScheme(scheme: string) {
-    return this.registry.providers.has(scheme);
+    return this.registry.providers.has(scheme) || this.fsProviders.has(scheme);
   }
 
   // 直接先读文件，错误在后端抛出
