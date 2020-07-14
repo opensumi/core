@@ -39,6 +39,7 @@ describe('toolbar tests', () => {
         location: 'top',
         group: 'test-top',
       },
+      description: 'test-top-action1',
       component: {} as any,
     });
 
@@ -50,6 +51,7 @@ describe('toolbar tests', () => {
         location: 'top',
         group: 'test-top2',
       },
+      description: 'test-top-action2',
       component: {} as any,
     });
 
@@ -70,6 +72,7 @@ describe('toolbar tests', () => {
       preferredPosition: {
         location: 'middle',
       },
+      description: 'test-middle-action',
       component: {} as any,
     });
 
@@ -79,6 +82,7 @@ describe('toolbar tests', () => {
         location: 'bottom',
         group: 'test3',
       },
+      description: 'test-middle-action2',
       component: {} as any,
     });
 
