@@ -131,11 +131,6 @@ export class FileTreeModelService {
     this._whenReady = this.initTreeModel();
   }
 
-  get hasFolderIcons() {
-    // 图标主题命中fallback时为默认有文件夹图标的主题，否则则获取对应主题设置
-    return this.fileTreeService.hasFolderIcons;
-  }
-
   get onDidFocusedFileChange(): Event<URI | void> {
     return this.onDidFocusedFileChangeEmitter.event;
   }
@@ -581,9 +576,9 @@ export class FileTreeModelService {
     this.fileTreeContextKey.filesExplorerFocused.set(true);
   }
 
-  handleItemRangeClick = (item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
+  handleItemRangeClick = (item: File | Directory, type: TreeNodeType) => {
     if (!this.focusedFile) {
-      this.handleItemClick(item, type, activeUri);
+      this.handleItemClick(item, type);
     } else if (this.focusedFile && this.focusedFile !== item) {
       this._isMutiSelected = true;
       const targetIndex = this.treeModel.root.getIndexAtTreeNode(item);
@@ -596,7 +591,7 @@ export class FileTreeModelService {
     }
   }
 
-  handleItemToggleClick = (item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
+  handleItemToggleClick = (item: File | Directory, type: TreeNodeType) => {
     this._isMutiSelected = true;
     if (type !== TreeNodeType.CompositeTreeNode && type !== TreeNodeType.TreeNode) {
       return;

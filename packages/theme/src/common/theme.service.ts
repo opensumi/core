@@ -29,6 +29,8 @@ export enum IconShape {
 export interface IIconService {
   currentThemeId: string;
   currentTheme: IIconTheme;
+
+  onThemeChange: Event<IIconTheme>;
   /**
    * 应用主题（外部需要改主题请直接修改preference）
    * @param themeId 主题ID

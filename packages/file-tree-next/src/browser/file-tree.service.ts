@@ -67,7 +67,7 @@ export class FileTreeService extends Tree {
   private readonly fileTreeContextKey: FileContextKey;
 
   @Autowired(IIconService)
-  private readonly iconService: IIconService;
+  public readonly iconService: IIconService;
 
   private _contextMenuContextKeyService: IContextKeyService;
 
@@ -98,10 +98,6 @@ export class FileTreeService extends Tree {
   @observable
   // 筛选模式开关
   filterMode: boolean = false;
-
-  @observable
-  // 筛选模式开关
-  hasFolderIcons: boolean = true;
 
   @observable
   baseIndent: number;
@@ -139,12 +135,6 @@ export class FileTreeService extends Tree {
       this._roots = null;
     }));
 
-    this.toDispose.push(this.labelService.onDidChange(() => {
-      runInAction(() => {
-        this.hasFolderIcons = !this.iconService.currentTheme || (this.iconService.currentTheme && this.iconService.currentTheme.hasFolderIcons);
-      });
-    }));
-
     this.toDispose.push(this.corePreferences.onPreferenceChanged((change) => {
       if (change.preferenceName === 'explorer.fileTree.baseIndent') {
         runInAction(() => {
@@ -159,8 +149,6 @@ export class FileTreeService extends Tree {
         this.refresh();
       }
     }));
-
-    this.hasFolderIcons = !this.iconService.currentTheme || (this.iconService.currentTheme && this.iconService.currentTheme.hasFolderIcons);
   }
 
   public startWatchFileEvent() {
