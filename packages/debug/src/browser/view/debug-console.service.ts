@@ -4,12 +4,15 @@ import { IMainLayoutService } from '@ali/ide-main-layout';
 import { URI, CommandRegistry, Emitter, Event } from '@ali/ide-core-common';
 import { IEditorDocumentModelService, IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
 import { EditorCollectionService } from '@ali/ide-editor';
-import { DebugConsoleSession } from '../console/debug-console-session';
-
-import throttle = require('lodash.throttle');
 import { IContextKeyService } from '@ali/ide-core-browser';
+import { DebugConsoleSession } from '../console/debug-console-session';
 import { DEBUG_CONSOLE_CONTAINER_ID, IDebugSessionManager } from '../../common';
 import { DebugSessionManager } from '../debug-session-manager';
+import throttle = require('lodash.throttle');
+
+const firstUpperCase = (str: string) => {
+  return str.replace(/^\S/, (s) => s.toUpperCase());
+};
 
 const options: monaco.editor.IEditorOptions = {
   wordWrap: 'on',
@@ -194,7 +197,7 @@ export class DebugConsoleService {
                 label: item.label,
                 insertText: item.text || item.label,
                 sortText: item.sortText,
-                kind: monaco.languages.CompletionItemKind.Property,
+                kind: monaco.languages.CompletionItemKind[firstUpperCase(item.type || 'property')],
                 range: {
                   startLineNumber: position.lineNumber,
                   endLineNumber: position.lineNumber,
@@ -227,7 +230,7 @@ export class DebugConsoleService {
                 label: item.label,
                 insertText: item.text || item.label,
                 sortText: item.sortText,
-                kind: monaco.languages.CompletionItemKind.Property,
+                kind: monaco.languages.CompletionItemKind[firstUpperCase(item.type || 'property')],
                 range: {
                   startLineNumber: position.lineNumber,
                   endLineNumber: position.lineNumber,
