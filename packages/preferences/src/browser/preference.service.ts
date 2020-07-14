@@ -272,6 +272,8 @@ export const defaultSettingSections: {
         {id: 'editor.quickSuggestionsDelay', localized: 'preference.editor.quickSuggestionsDelay'},
         {id: 'editor.largeFile', localized: 'preference.editor.largeFile' },
         {id: 'editor.formatOnPaste', localized: 'preference.editor.formatOnPaste' },
+        {id: 'diffEditor.renderSideBySide', localized: 'preference.diffEditor.renderSideBySide' },
+        {id: 'diffEditor.ignoreTrimWhitespace', localized: 'preference.diffEditor.ignoreTrimWhitespace' },
       ],
     },
   ],
