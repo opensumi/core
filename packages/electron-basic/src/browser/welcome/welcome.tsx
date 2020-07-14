@@ -1,9 +1,8 @@
 import * as React from 'react';
 import { IWelcomeMetaData } from './common';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { useInjectable, localize, FileUri, URI, CommandService, FILE_COMMANDS } from '@ali/ide-core-browser';
+import { useInjectable, localize, FileUri, URI, CommandService, FILE_COMMANDS, IWindowService } from '@ali/ide-core-browser';
 import * as styles from './welcome.module.less';
-import { IWindowService } from '@ali/ide-window';
 
 export const EditorWelcomeComponent: ReactEditorComponent<IWelcomeMetaData> = ({resource}) => {
 

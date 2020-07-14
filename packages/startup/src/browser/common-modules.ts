@@ -26,7 +26,6 @@ import { SCMModule } from '@ali/ide-scm/lib/browser';
 
 import { MarkersModule } from '@ali/ide-markers/lib/browser';
 
-import { WindowModule } from '@ali/ide-window/lib/browser';
 // import { Terminal2Module } from '@ali/ide-terminal2/lib/browser';
 
 import { WebviewModule } from '@ali/ide-webview';
@@ -75,7 +74,6 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     OutlineModule,
     PreferencesModule,
     ToolbarModule,
-    WindowModule,
     WebviewModule,
     MarkdownModule,
     WorkspaceEditModule,

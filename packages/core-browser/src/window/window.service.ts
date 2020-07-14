@@ -1,14 +1,14 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { IWindowService, IOpenWorkspaceOption } from '../common';
-import { isElectronRenderer, URI } from '@ali/ide-core-browser';
+import { IWindowService, IOpenWorkspaceOption } from '.';
+import { isElectronRenderer, URI } from '@ali/ide-core-common';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
-import { electronEnv } from '@ali/ide-core-browser';
+import { electronEnv } from '../utils/electron';
 
 @Injectable()
-export class WindowServiceImpl implements IWindowService {
+export class WindowService implements IWindowService {
 
   @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
+  private readonly injector: Injector;
 
   openNewWindow(url: string): Window | undefined {
     const newWindow = window.open(url);

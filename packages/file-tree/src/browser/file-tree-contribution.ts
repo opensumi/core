@@ -1,4 +1,4 @@
-import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, ToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, IElectronNativeDialogService, ILogger, SEARCH_COMMANDS, CommandService, isWindows } from '@ali/ide-core-browser';
+import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, ToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, IElectronNativeDialogService, ILogger, SEARCH_COMMANDS, CommandService, isWindows, IWindowService } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileTreeService } from './file-tree.service';
@@ -12,7 +12,6 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import * as copy from 'copy-to-clipboard';
 import { KAITIAN_MUTI_WORKSPACE_EXT, IWorkspaceService, UNTITLED_WORKSPACE } from '@ali/ide-workspace';
 import { NextMenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
-import { IWindowService } from '@ali/ide-window';
 import { IWindowDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@ali/ide-overlay';
 import { ExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 import { TERMINAL_COMMANDS } from '@ali/ide-terminal-next';

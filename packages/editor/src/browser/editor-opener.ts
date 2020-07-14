@@ -1,0 +1,45 @@
+import { Autowired, Injectable } from '@ali/common-di';
+import { IOpener, URI, IRange } from '@ali/ide-core-browser';
+import { IEditorDocumentModelContentRegistry } from './doc-model/types';
+import { WorkbenchEditorService } from '../common';
+
+@Injectable()
+export class EditorOpener implements IOpener {
+
+  @Autowired(IEditorDocumentModelContentRegistry)
+  private readonly editorDocumentModelContentRegistry: IEditorDocumentModelContentRegistry;
+
+  @Autowired(WorkbenchEditorService)
+  workbenchEditorService: WorkbenchEditorService;
+
+  async open(uri: URI) {
+    let range: IRange | undefined;
+    const match = /^L?(\d+)(?:,(\d+))?/.exec(uri.fragment);
+    if (match) {
+      // support file:///some/file.js#73,84
+      // support file:///some/file.js#L73
+      const startLineNumber = parseInt(match[1], 10);
+      const startColumn = match[2] ? parseInt(match[2], 10) : 1;
+      range = {
+        startLineNumber,
+        startColumn,
+        endLineNumber: startLineNumber,
+        endColumn: startColumn,
+      };
+      // remove fragment
+      uri = uri.withFragment('');
+    }
+    await this.workbenchEditorService.open(uri, {
+      range,
+    });
+    return true;
+  }
+  async handleURI(uri: URI) {
+    // 判断编辑器是否可以打开
+    return !!await this.editorDocumentModelContentRegistry.getProvider(uri);
+  }
+  handleScheme() {
+    // 使用 handleURI 后会忽略 handleScheme
+    return false;
+  }
+}

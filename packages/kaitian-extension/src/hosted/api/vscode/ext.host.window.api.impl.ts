@@ -4,7 +4,7 @@ import {
   IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState, IExtHostStatusBar,
   IExtHostQuickOpen, IExtHostOutput, IExtHostTerminal, IExtHostWindow, IMainThreadWindow, MainThreadAPIIdentifier, IExtOpenDialogOptions, IExtSaveDialogOptions,
 } from '../../../common/vscode';
-import { MessageType, IDisposable, CancellationToken, Emitter } from '@ali/ide-core-common';
+import { MessageType, IDisposable, CancellationToken, Emitter, IExtensionInfo } from '@ali/ide-core-common';
 
 import { ExtensionHostEditorService } from './editor/editor.host';
 import { ExtHostWebviewService } from './ext.host.api.webview';
@@ -31,6 +31,11 @@ export function createWindowApiFactory(
   extHostWindow: ExtHostWindow,
   extHostProgress: ExtHostProgress,
 ) {
+  const extensionInfo: IExtensionInfo = {
+    id: extension.id,
+    extensionId: extension.extensionId,
+    isBuiltin: extension.isBuiltin,
+  };
   return {
     // @deprecated
     withScmProgress<R>(task: (progress: vscode.Progress<number>) => Thenable<R>) {
@@ -103,7 +108,7 @@ export function createWindowApiFactory(
       return extHostQuickOpen.createInputBox();
     },
     createWebviewPanel(viewType: string, title: string, showOptions: ViewColumn | {preserveFocus: boolean, viewColumn: ViewColumn}, options?: IWebviewPanelOptions & IWebviewOptions): WebviewPanel {
-      return extHostWebviews.createWebview(Uri.parse('not-implemented://'), viewType, title, showOptions, options);
+      return extHostWebviews.createWebview(Uri.parse('not-implemented://'), viewType, title, showOptions, options, extensionInfo);
     },
     registerWebviewPanelSerializer(viewType: string, serializer: WebviewPanelSerializer): IDisposable {
       return extHostWebviews.registerWebviewPanelSerializer(viewType, serializer);
@@ -114,11 +119,11 @@ export function createWindowApiFactory(
     registerUriHandler() {
        // TODO git
        /* tslint:disable:no-console */
-       console.log('registerUriHandler is not implemented');
+      console.log('registerUriHandler is not implemented');
 
-       return {
-         dispose: () => {},
-       };
+      return {
+        dispose: () => {},
+      };
     },
 
     showOpenDialog: (options) => {

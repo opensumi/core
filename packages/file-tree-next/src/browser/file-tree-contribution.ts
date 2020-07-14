@@ -1,4 +1,4 @@
-import { URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, isWindows, IElectronNativeDialogService, ToolbarRegistry, KeybindingRegistry } from '@ali/ide-core-browser';
+import { URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, isWindows, IElectronNativeDialogService, ToolbarRegistry, KeybindingRegistry, IWindowService } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileTreeService } from './file-tree.service';
@@ -13,7 +13,6 @@ import { FileTreeModelService } from './services/file-tree-model.service';
 import { Directory } from './file-tree-nodes';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import * as copy from 'copy-to-clipboard';
-import { IWindowService } from '@ali/ide-window';
 import { IOpenDialogOptions, IWindowDialogService, ISaveDialogOptions } from '@ali/ide-overlay';
 import { FilesExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 import { FilesExplorerFocusedContext, FilesExplorerInputFocusedContext } from '@ali/ide-core-browser/lib/contextkey/explorer';

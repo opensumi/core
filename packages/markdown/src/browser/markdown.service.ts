@@ -3,13 +3,22 @@ import { IMarkdownService } from '../common';
 import * as marked from 'marked';
 import { markdownCss } from './mardown.style';
 import { IWebviewService } from '@ali/ide-webview';
-import { IDisposable, Disposable, CancellationToken, Event } from '@ali/ide-core-browser';
+import { IDisposable, Disposable, CancellationToken, Event, URI, IOpenerService } from '@ali/ide-core-browser';
+import { HttpOpener } from '@ali/ide-core-browser/lib/opener/http-opener';
 
 @Injectable()
 export class MarkdownServiceImpl implements IMarkdownService {
 
   @Autowired(IWebviewService)
   webviewService: IWebviewService;
+
+  @Autowired(IOpenerService)
+  private readonly openerService: IOpenerService;
+
+  // 检测下支持的协议，以防打开内部协议
+  private isSupportedLink(uri: URI) {
+    return HttpOpener.standardSupportedLinkSchemes.has(uri.scheme);
+  }
 
   async previewMarkdownInContainer(content: string, container: HTMLElement, cancellationToken: CancellationToken, onUpdate?: Event<string>): Promise<IDisposable> {
     const body = await this.getBody(content);
@@ -31,8 +40,8 @@ export class MarkdownServiceImpl implements IMarkdownService {
         return;
       }
       // Whitelist supported schemes for links
-      if (['http', 'https', 'mailto'].indexOf(link.scheme) >= 0 || (link.scheme === 'command')) {
-        window.open(link.toString(true));
+      if (this.isSupportedLink(link)) {
+        this.openerService.open(link);
       }
     }));
     disposer.addDispose(webviewElement);
