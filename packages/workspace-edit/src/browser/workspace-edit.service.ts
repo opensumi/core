@@ -1,5 +1,5 @@
 import { IResourceTextEdit, ITextEdit, IWorkspaceEditService, IWorkspaceEdit, IResourceFileEdit, WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '../common';
-import { URI, IEventBus, isWindows } from '@ali/ide-core-browser';
+import { URI, IEventBus, isWindows, isUndefined } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EndOfLineSequence, WorkbenchEditorService, EOL } from '@ali/ide-editor';
@@ -107,13 +107,14 @@ export class ResourceTextEdit implements IResourceTextEdit {
   constructor(edit: IResourceTextEdit) {
     this.resource = edit.resource;
     this.modelVersionId = edit.modelVersionId,
-      this.edits = edit.edits;
+    this.edits = edit.edits;
     this.options = edit.options || {};
   }
 
   async apply(documentModelService: IEditorDocumentModelService, editorService: WorkbenchEditorService): Promise<void> {
     const docRef = await documentModelService.createModelReference(this.resource, 'bulk-edit');
-    const monacoModel = docRef.instance.getMonacoModel();
+    const documentModel = docRef.instance;
+    const monacoModel = documentModel.getMonacoModel();
     if (this.modelVersionId) {
       if (monacoModel.getVersionId() !== this.modelVersionId) {
         throw new Error('文档版本不一致，无法执行变更');
@@ -122,7 +123,7 @@ export class ResourceTextEdit implements IResourceTextEdit {
     const edits: monaco.editor.IIdentifiedSingleEditOperation[] = [];
     let newEOL: EndOfLineSequence | null = null;
     for (const edit of this.edits) {
-      if (edit.eol) {
+      if (!isUndefined(edit.eol)) {
         newEOL = edit.eol;
       }
       edits.push({
@@ -135,14 +136,14 @@ export class ResourceTextEdit implements IResourceTextEdit {
       monacoModel.pushEditOperations([], edits, () => []);
       monacoModel.pushStackElement();
     }
-    if (newEOL) {
+    if (!isUndefined(newEOL)) {
       monacoModel.pushStackElement();
-      monacoModel.setEOL(newEOL as any);
+      documentModel.eol = newEOL === EndOfLineSequence.CRLF ? EOL.CRLF : EOL.LF;
       monacoModel.pushStackElement();
     }
     const shouldSave = await this.editorOperation(editorService);
     if (shouldSave) {
-      docRef.instance.save();
+      documentModel.save();
     }
     docRef.dispose();
   }
