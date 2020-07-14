@@ -1,8 +1,8 @@
 import { observable, action } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { WithEventBus } from '@ali/ide-core-common';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
-import { AppConfig, MonacoService, PreferenceService } from '@ali/ide-core-browser';
+import { IEditorDocumentModelService, EditorCollectionService, ICodeEditor } from '@ali/ide-editor/lib/browser';
+import { AppConfig, PreferenceService } from '@ali/ide-core-browser';
 
 import { OutputChannel } from './output.channel';
 
@@ -12,8 +12,8 @@ export class OutputService extends WithEventBus {
   @Autowired(AppConfig)
   private config: AppConfig;
 
-  @Autowired(MonacoService)
-  private readonly monacoService: MonacoService;
+  @Autowired(EditorCollectionService)
+  private readonly editorCollectionService: EditorCollectionService;
 
   @Autowired(IEditorDocumentModelService)
   protected readonly documentService: IEditorDocumentModelService;
@@ -21,7 +21,7 @@ export class OutputService extends WithEventBus {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
-  private outputEditor?: monaco.editor.IStandaloneCodeEditor;
+  private outputEditor?: ICodeEditor;
 
   @observable
   readonly channels = new Map<string, OutputChannel>();
@@ -57,15 +57,15 @@ export class OutputService extends WithEventBus {
     this.selectedChannel = channel;
     this.selectedChannel.modelReady.promise.then(() => {
       const model = this.selectedChannel.outputModel.instance.getMonacoModel();
-      this.outputEditor?.setModel(model);
+      this.outputEditor?.open(this.selectedChannel.outputModel);
       if (this.enableSmartScroll) {
-        this.outputEditor?.revealLine(model.getLineCount());
+        this.outputEditor?.monacoEditor.revealLine(model.getLineCount());
         this.autoReveal = true;
       }
 
       this.monacoDispose = model.onDidChangeContent(() => {
         if (this.autoReveal && this.enableSmartScroll) {
-          this.outputEditor?.revealLine(model.getLineCount(), 0);
+          this.outputEditor?.monacoEditor.revealLine(model.getLineCount(), 0);
         }
       });
     });
@@ -104,7 +104,7 @@ export class OutputService extends WithEventBus {
   }
 
   public async initOuputMonacoInstance(container: HTMLDivElement) {
-    this.outputEditor = await this.monacoService.createCodeEditor(container, {
+    this.outputEditor = (await this.editorCollectionService.createCodeEditor(container, {
       automaticLayout: true,
       minimap: {
         enabled: false,
@@ -123,9 +123,9 @@ export class OutputService extends WithEventBus {
       glyphMargin: false,
       scrollBeyondLastLine: false,
       scrollBeyondLastColumn: 0,
-    });
+    }));
 
-    this.addDispose(this.outputEditor.onMouseUp((e) => {
+    this.addDispose(this.outputEditor.monacoEditor.onMouseUp((e) => {
       /**
        * 这里的逻辑是
        * 当开启智能滚动后，如果鼠标事件点击所在行小于当前总行数，则停止自动滚动
@@ -133,7 +133,7 @@ export class OutputService extends WithEventBus {
        */
       if (this.enableSmartScroll) {
         const { range } = e.target;
-        const maxLine = this.outputEditor?.getModel()?.getLineCount();
+        const maxLine = this.outputEditor?.currentDocumentModel?.getMonacoModel().getLineCount();
         if (range?.startLineNumber! < maxLine!) {
           this.autoReveal = false;
         }
