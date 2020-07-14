@@ -38,10 +38,27 @@ export class TreeNode implements ITreeNode {
   }
 
   public static getTreeNodeById(id: number) {
-    return TreeNode.idToTreeNode.get(id);
+    const pathAndNode = TreeNode.idToTreeNode[id];
+    return pathAndNode && pathAndNode[1];
   }
 
-  public static idToTreeNode: Map<number, TreeNode> = new Map();
+  public static getTreeNodeByPath(path: string) {
+    const ids = Object.keys(TreeNode.idToTreeNode);
+    for (let i = ids.length - 1; i >= 0; i --) {
+      const pathAndNode = TreeNode.idToTreeNode[ids[i]];
+      const [nodePath, node] = pathAndNode || [];
+      if (nodePath === path ) {
+        return node;
+      }
+    }
+    return ;
+  }
+
+  public static setTreeNode(id: number, path: string, node: TreeNode) {
+    TreeNode.idToTreeNode[id] = [path, node];
+  }
+
+  public static idToTreeNode: {[key: number]: [string, TreeNode]} = {};
   protected _uid: number;
   protected _depth: number;
   private _parent: ICompositeTreeNode | undefined;
@@ -67,7 +84,7 @@ export class TreeNode implements ITreeNode {
     } else if (parent) {
       this._watcher = (parent as any).watcher;
     }
-    TreeNode.idToTreeNode.set(this._uid, this);
+    TreeNode.setTreeNode(this._uid, this.path, this);
   }
 
   get disposed() {
@@ -98,6 +115,10 @@ export class TreeNode implements ITreeNode {
   }
 
   get name() {
+    // 根节点保证路径不重复
+    if (!this.parent) {
+      return `root_${this._uid}`;
+    }
     return this.getMetadata('name');
   }
 
@@ -181,7 +202,7 @@ export class TreeNode implements ITreeNode {
     if (this._disposed) { return; }
     this._watcher.notifyWillDispose(this);
     this._disposed = true;
-    TreeNode.idToTreeNode.delete(this._uid);
+    delete TreeNode.idToTreeNode[this._uid];
     this._watcher.notifyDidDispose(this);
   }
 }
@@ -1014,6 +1035,16 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    */
   public getTreeNodeById(id: number) {
     return TreeNode.getTreeNodeById(id);
+  }
+
+    /**
+   * 根据节点路径获取节点
+   * @param {string} path
+   * @returns
+   * @memberof CompositeTreeNode
+   */
+  public getTreeNodeByPath(path: string) {
+    return TreeNode.getTreeNodeByPath(path);
   }
 
   /**

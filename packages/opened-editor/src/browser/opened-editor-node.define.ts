@@ -1,4 +1,4 @@
-import { URI, formatLocalize } from '@ali/ide-core-browser';
+import { formatLocalize, URI } from '@ali/ide-core-browser';
 import { TreeNode, CompositeTreeNode, ITree } from '@ali/ide-components';
 import { OpenedEditorService } from './services/opened-editor-tree.service';
 import { IEditorGroup, IResource } from '@ali/ide-editor';
@@ -8,7 +8,7 @@ export type OpenedEditorData = IEditorGroup | IResource;
 export class EditorFileRoot extends CompositeTreeNode {
 
   static is(node: EditorFileGroup | EditorFileRoot): node is EditorFileRoot {
-    return !!node && (node as EditorFileGroup).name === 'root';
+    return !!node && !node.parent;
   }
 
   constructor(
@@ -18,15 +18,11 @@ export class EditorFileRoot extends CompositeTreeNode {
     super(tree as ITree, undefined);
     // 根节点默认展开节点
     this._uid = id || this._uid;
-    TreeNode.idToTreeNode.set(this._uid, this);
+    TreeNode.idToTreeNode[this._uid] = [this.path, this];
   }
 
   get expanded() {
     return true;
-  }
-
-  get name() {
-    return 'root';
   }
 
   dispose() {
@@ -55,7 +51,7 @@ export class EditorFileGroup extends CompositeTreeNode {
     super(tree as ITree, parent);
     this.groupIndex = this.group.index;
     this._uid = id || this._uid;
-    TreeNode.idToTreeNode.set(this._uid, this);
+    TreeNode.idToTreeNode[this._uid] = [this.path, this];
     // 根节点默认展开节点
     this.setExpanded(false, true);
   }
@@ -83,15 +79,15 @@ export class EditorFile extends TreeNode {
   ) {
     super(tree as ITree, parent);
     this._uid = id || this._uid;
-    TreeNode.idToTreeNode.set(this._uid, this);
+    TreeNode.idToTreeNode[this._uid] = [this.path, this];
   }
 
   get name() {
-    return this.resource.name;
+    return this.resource ? this.resource.name : '';
   }
 
   get uri() {
-    return this.resource.uri;
+    return this.resource ? this.resource.uri : new URI();
   }
 
   dispose() {

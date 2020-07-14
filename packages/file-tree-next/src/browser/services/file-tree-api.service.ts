@@ -9,6 +9,7 @@ import { URI, localize, CommandService, formatLocalize } from '@ali/ide-core-com
 import { IDialogService } from '@ali/ide-overlay';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import { EDITOR_COMMANDS, CorePreferences } from '@ali/ide-core-browser';
+import { Path } from '@ali/ide-components/lib/utils';
 import * as paths from '@ali/ide-core-common/lib/path';
 
 @Injectable()
@@ -114,7 +115,7 @@ export class FileTreeAPI implements IFileTreeAPI {
         name,
         filestat,
         this.getReadableTooltip(uri),
-        this.cacheNodeID.get(uri.toString()),
+        parent && this.cacheNodeID.get(new Path(parent.path).join(name).toString()),
       );
     } else {
       node = new File(
@@ -124,11 +125,11 @@ export class FileTreeAPI implements IFileTreeAPI {
         name,
         filestat,
         this.getReadableTooltip(uri),
-        this.cacheNodeID.get(uri.toString()),
+        parent && this.cacheNodeID.get(new Path(parent.path).join(name).toString()),
       );
     }
     // 用于固定各个节点的ID，防止文件操作出现定位错误
-    this.cacheNodeID.set(node.uri.toString(), node.id);
+    this.cacheNodeID.set(node.path, node.id);
     return node;
   }
 
