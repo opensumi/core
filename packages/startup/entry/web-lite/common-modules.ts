@@ -4,7 +4,7 @@ import { MonacoModule } from '@ali/ide-monaco/lib/browser';
 import { EditorModule } from '@ali/ide-editor/lib/browser';
 import { StatusBarModule } from '@ali/ide-status-bar/lib/browser';
 import { ClientCommonModule, BrowserModule } from '@ali/ide-core-browser';
-import { CoreQuickOpenModule } from '@ali/ide-quick-open/lib/browser';
+import { QuickOpenModule } from '@ali/ide-quick-open/lib/browser';
 import { ConstructorOf } from '@ali/ide-core-common';
 import { FileTreeNextModule } from '@ali/ide-file-tree-next/lib/browser';
 import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
@@ -21,6 +21,7 @@ import { OverlayModule } from '@ali/ide-overlay/lib/browser';
 import { SCMModule } from '@ali/ide-scm/lib/browser';
 import { StaticResourceModule } from '@ali/ide-static-resource/lib/browser';
 import { WorkspaceEditModule } from '@ali/ide-workspace-edit/lib/browser';
+import { KeymapsModule } from '@ali/ide-keymaps/lib/browser';
 
 import { BrowserFileSchemeModule } from './modules/file-scheme/browser-file-scheme';
 
@@ -34,7 +35,8 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   MonacoModule,
   ExplorerModule,
   EditorModule,
-  CoreQuickOpenModule,
+  QuickOpenModule,
+  KeymapsModule,
   FileTreeNextModule,
   FileServiceClientModule,
   ThemeModule,

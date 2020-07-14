@@ -30,10 +30,10 @@ export async function renderApp(opts: IClientAppOpts) {
   }, {
     token: IMetaService,
     useValue: new MetaService({
-      projectId: process.env.PROJECT_ID!,
+      projectId: process.env.PROJECT_ID! || encodeURIComponent('ide-s/TypeScript-Node-Starter'),
       group: 'ide-s',
       name: 'TypeScript-Node-Starter',
-      ref: 'test',
+      ref: 'master',
       // branch: 'test',
     }),
   });
