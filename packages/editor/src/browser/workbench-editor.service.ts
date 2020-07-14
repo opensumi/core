@@ -5,7 +5,7 @@ import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as Ev
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution, ResourceOpenTypeChangedEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
-import { FILE_COMMANDS, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, MonacoService, IScopedContextKeyService, IContextKey, RecentFilesManager, PreferenceService } from '@ali/ide-core-browser';
+import { FILE_COMMANDS, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, MonacoService, IScopedContextKeyService, IContextKey, RecentFilesManager, PreferenceService, IOpenerService } from '@ali/ide-core-browser';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
 import { Schemas } from '@ali/ide-core-common';
 import { isNullOrUndefined } from 'util';
@@ -423,6 +423,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @Autowired(AppConfig)
   config: AppConfig;
 
+  @Autowired(IOpenerService)
+  private readonly openerService: IOpenerService;
+
   codeEditor!: ICodeEditor;
 
   diffEditor!: IDiffEditor;
@@ -811,7 +814,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @action.bound
   async doOpen(uri: URI, options: IResourceOpenOptions = {}): Promise<{ group: IEditorGroup, resource: IResource } | false> {
     if (uri.scheme === 'http' || uri.scheme === 'https') {
-      window.open(uri.toString());
+      this.openerService.open(uri);
       return false;
     }
     try {

@@ -3,12 +3,15 @@ import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { IWebviewService, IEditorWebviewComponent, IWebview, IPlainWebview, IPlainWebviewComponentHandle } from '@ali/ide-webview';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { WorkbenchEditorService, IResource } from '@ali/ide-editor';
-import { IDisposable, Disposable, URI, MaybeNull, IEventBus, ILogger } from '@ali/ide-core-browser';
+import { IDisposable, Disposable, URI, MaybeNull, IEventBus, ILogger, Schemas, IExtensionInfo, CommandRegistry } from '@ali/ide-core-browser';
 import { EditorGroupChangeEvent } from '@ali/ide-editor/lib/browser';
 import { IKaitianExtHostWebviews } from '../../../common/kaitian/webview';
 import { IIconService, IconType } from '@ali/ide-theme';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { viewColumnToResourceOpenOptions } from '../../../common/vscode/converter';
+import { IOpenerService } from '@ali/ide-core-browser';
+import { HttpOpener } from '@ali/ide-core-browser/lib/opener/http-opener';
+import { CommandOpener } from '@ali/ide-core-browser/lib/opener/command-opener';
 
 @Injectable({multiple: true})
 export class MainThreadWebview extends Disposable implements IMainThreadWebview {
@@ -43,6 +46,12 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
   @Autowired(StaticResourceService)
   staticResourceService: StaticResourceService;
 
+  @Autowired(IOpenerService)
+  private readonly openerService: IOpenerService;
+
+  @Autowired(CommandRegistry)
+  private readonly commandRegistry: CommandRegistry;
+
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostWebivew);
@@ -52,6 +61,23 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
 
   async init() {
     await this.proxy.$init();
+  }
+
+  private isSupportedLink(uri: URI, options: IWebviewOptions, extension: IExtensionInfo) {
+    if (HttpOpener.standardSupportedLinkSchemes.has(uri.scheme)) {
+      return true;
+    }
+    // webview 支持打开 command 协议
+    if (!!options.enableCommandUris && uri.scheme === Schemas.command) {
+      // 从 webview 过来的 command 也要做安全校验
+      const { id, args } = CommandOpener.parseURI(uri);
+      const isPermitted = this.commandRegistry.isPermittedCommand(id, extension, ...args);
+      if (!isPermitted) {
+        throw new Error(`Extension ${extension.id} has not permit to execute ${id}`);
+      }
+      return true;
+    }
+    return false;
   }
 
   initEvents() {
@@ -121,7 +147,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     });
   }
 
-  $createWebviewPanel(id: string, viewType: string , title: string, showOptions: WebviewPanelShowOptions = {}, options: IWebviewPanelOptions & IWebviewOptions = {}): void {
+  $createWebviewPanel(id: string, viewType: string , title: string, showOptions: WebviewPanelShowOptions = {}, options: IWebviewPanelOptions & IWebviewOptions = {}, extension: IExtensionInfo): void {
     const editorWebview = this.webviewService.createEditorWebviewComponent({allowScripts: options.enableScripts, longLive: options.retainContextWhenHidden});
     const disposer = new Disposable();
     editorWebview.title = title;
@@ -150,7 +176,9 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
       }
     }});
     editorWebview.webview.onDidClickLink((e) => {
-      window.open(e.toString(true));
+      if (this.isSupportedLink(e, options, extension)) {
+        this.openerService.open(e);
+      }
     });
     const editorOpenOptions = viewColumnToResourceOpenOptions(showOptions.viewColumn);
     editorWebview.open(editorOpenOptions);

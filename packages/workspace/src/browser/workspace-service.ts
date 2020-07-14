@@ -22,6 +22,7 @@ import {
   Disposable,
   AppConfig,
   IClientApp,
+  IWindowService,
 } from '@ali/ide-core-browser';
 import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-common';
 import { FileStat } from '@ali/ide-file-service';
@@ -29,7 +30,6 @@ import { FileChangeEvent } from '@ali/ide-file-service/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { WorkspacePreferences } from './workspace-preferences';
-import { IWindowService } from '@ali/ide-window';
 import * as jsoncparser from 'jsonc-parser';
 import { Path } from '@ali/ide-core-common/lib/path';
 

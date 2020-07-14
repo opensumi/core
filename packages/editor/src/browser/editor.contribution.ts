@@ -1,6 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { BrowserCodeEditor } from './editor-collection.service';
-import {  IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService } from '@ali/ide-core-browser';
+import {  IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { isElectronEnv, isWindows, PreferenceScope } from '@ali/ide-core-common';
 import * as copy from 'copy-to-clipboard';
@@ -18,14 +18,15 @@ import { IEditorDocumentModelService } from './doc-model/types';
 import { FormattingSelector } from './format/formatterSelect';
 import { EditorTopPaddingContribution } from './view/topPadding';
 import { EditorSuggestWidgetContribution } from './view/suggest-widget';
+import { EditorOpener } from './editor-opener';
 
 interface ResourceArgs {
   group: EditorGroup;
   uri: URI;
 }
 
-@Domain(CommandContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, NextMenuContribution)
-export class EditorContribution implements CommandContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, NextMenuContribution {
+@Domain(CommandContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, NextMenuContribution, OpenerContribution)
+export class EditorContribution implements CommandContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, NextMenuContribution, OpenerContribution {
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -56,6 +57,9 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
 
   @Autowired()
   monacoService: MonacoService;
+
+  @Autowired()
+  private editorOpener: EditorOpener;
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-editor', {
@@ -249,7 +253,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         if (editor) {
           const group = this.workbenchEditorService.currentEditorGroup;
           if (group && group.currentResource) {
-             group.pin(group.currentResource!.uri);
+            group.pin(group.currentResource!.uri);
           }
           await editor.save();
         }
@@ -813,6 +817,10 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       when: 'resource',
       order: 5,
     });
+  }
+
+  registerOpener(regisry: IOpenerService) {
+    regisry.registerOpener(this.editorOpener);
   }
 
 }

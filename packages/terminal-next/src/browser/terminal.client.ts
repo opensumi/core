@@ -11,7 +11,7 @@ import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
 import { FilePathAddon, AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
 import { TerminalKeyBoardInputService } from './terminal.input';
 import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, ITerminalGroupViewService, ITerminalInternalService, IWidget, ITerminalPreference, ITerminalDataEvent } from '../common';
-import { CorePreferences } from '@ali/ide-core-browser';
+import { CorePreferences, IOpenerService } from '@ali/ide-core-browser';
 
 import * as styles from './component/terminal.module.less';
 
@@ -75,6 +75,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private _onOutput = new Emitter<ITerminalDataEvent>();
   onOutput = this._onOutput.event;
+
+  @Autowired(IOpenerService)
+  private readonly openerService: IOpenerService;
 
   init(widget: IWidget, options: TerminalOptions = {}, autofocus: boolean = true) {
     this._autofocus = autofocus;
@@ -148,7 +151,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._filelinksAddon = new FilePathAddon(this.workspace, this.fileService, this.editorService, this.keyboard);
     this._weblinksAddon = new WebLinksAddon((_, url) => {
       if (this.keyboard.isCommandOrCtrl) {
-        window.open(url, '_blank');
+        this.openerService.open(url);
       }
     });
 

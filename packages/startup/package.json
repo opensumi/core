@@ -75,7 +75,6 @@
     "@ali/ide-userstorage": "1.8.35",
     "@ali/ide-variable": "1.8.35",
     "@ali/ide-webview": "1.8.35",
-    "@ali/ide-window": "1.8.35",
     "@ali/ide-workspace": "1.8.35",
     "@ali/ide-workspace-edit": "1.8.35",
     "@ali/ide-keymaps": "1.8.35",

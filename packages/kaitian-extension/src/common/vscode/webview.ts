@@ -1,5 +1,5 @@
 import { Uri } from './ext-types';
-import { URI, Event } from '@ali/ide-core-common';
+import { URI, Event, IExtensionInfo } from '@ali/ide-core-common';
 import { ViewColumn } from './editor';
 
 export interface WebviewPanelShowOptions {
@@ -29,7 +29,7 @@ export interface IMainThreadWebview {
 
   $getWebviewResourceRoots(): Promise<string[]>;
 
-  $createWebviewPanel(id: string, viewType: string, title: string, showOptions: WebviewPanelShowOptions, options: IWebviewPanelOptions & IWebviewOptions): void;
+  $createWebviewPanel(id: string, viewType: string, title: string, showOptions: WebviewPanelShowOptions, options: IWebviewPanelOptions & IWebviewOptions, extensionInfo: IExtensionInfo): void;
   $disposeWebview(id: string): void;
   $reveal(id: string, showOptions: WebviewPanelShowOptions): void;
   $setTitle(id: string, value: string): void;

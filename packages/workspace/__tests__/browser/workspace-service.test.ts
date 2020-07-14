@@ -2,13 +2,12 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { URI, IFileServiceClient, StorageProvider } from '@ali/ide-core-common';
-import { PreferenceService, CorePreferences, FILES_DEFAULTS, IClientApp } from '@ali/ide-core-browser';
+import { PreferenceService, CorePreferences, FILES_DEFAULTS, IClientApp, IWindowService } from '@ali/ide-core-browser';
 import { WorkspaceModule } from '../../src/browser';
 import { FileStat, DiskFileServicePath } from '@ali/ide-file-service';
 import { WorkspacePreferences } from '../../src/browser/workspace-preferences';
 import { MockedStorageProvider } from '@ali/ide-core-browser/lib/mocks/storage';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
-import { IWindowService } from '@ali/ide-window';
 import { MockFsProvider } from '@ali/ide-file-service/lib/common/mocks';
 
 describe('WorkspaceService should be work while workspace was a single directory', () => {

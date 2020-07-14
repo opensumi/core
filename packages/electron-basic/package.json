@@ -23,7 +23,6 @@
     "@ali/ide-core-node": "1.8.35",
     "@ali/ide-editor": "1.8.35",
     "@ali/ide-main-layout": "1.8.35",
-    "@ali/ide-window": "1.8.35",
     "@ali/ide-workspace": "1.8.35",
     "@ali/ide-overlay": "1.8.35"
   },

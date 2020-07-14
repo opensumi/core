@@ -51,6 +51,10 @@ import { ProgressService } from '../progress/progress.service';
 import { NextToolbarRegistryImpl, ToolbarClientAppContribution } from '../toolbar/toolbar.registry';
 import { IToolbarRegistry, ToolBarActionContribution } from '../toolbar';
 import { FsProviderContribution } from '../fs';
+import { IOpenerService } from '../opener';
+import { OpenerService } from '../opener/opener.service';
+import { IWindowService } from '../window';
+import { WindowService } from '../window/window.service';
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider
@@ -172,6 +176,14 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: ITaskDefinitionRegistry,
       useClass: TaskDefinitionRegistryImpl,
+    },
+    {
+      token: IOpenerService,
+      useClass: OpenerService,
+    },
+    {
+      token: IWindowService,
+      useClass: WindowService,
     },
   ];
   injector.addProviders(...providers);

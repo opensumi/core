@@ -3,12 +3,9 @@ import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ILoggerManagerClient } from '@ali/ide-logs/lib/browser';
 import { IMainThreadEnv, IExtHostEnv, ExtHostAPIIdentifier } from '../../../common/vscode';
-import {
-  ClientAppConfigProvider,
-} from '@ali/ide-core-browser';
-import {
-  getLanguageId,
-} from '@ali/ide-core-common';
+import { ClientAppConfigProvider, IOpenerService } from '@ali/ide-core-browser';
+import { getLanguageId, URI } from '@ali/ide-core-common';
+import { HttpOpener } from '@ali/ide-core-browser/lib/opener/http-opener';
 
 @Injectable({multiple: true})
 export class MainThreadEnv implements IMainThreadEnv {
@@ -17,6 +14,14 @@ export class MainThreadEnv implements IMainThreadEnv {
 
   private eventDispose;
   private readonly proxy: IExtHostEnv;
+
+  @Autowired(IOpenerService)
+  private readonly openerService: IOpenerService;
+
+  // 检测下支持的协议，以防打开内部协议
+  private isSupportedLink(uri: URI) {
+    return HttpOpener.standardSupportedLinkSchemes.has(uri.scheme);
+  }
 
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostEnv);
@@ -60,7 +65,9 @@ export class MainThreadEnv implements IMainThreadEnv {
   }
 
   $openExternal(target: vscode.Uri): Thenable<boolean> {
-    window.open(target.toString(true));
+    if (this.isSupportedLink(URI.from(target))) {
+      this.openerService.open(target.toString(true));
+    }
     return Promise.resolve(true);
   }
 }
