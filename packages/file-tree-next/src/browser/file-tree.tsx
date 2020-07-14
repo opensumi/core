@@ -26,8 +26,14 @@ export const FileTree = observer(({
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   const { width, height } = viewState;
-  const { decorationService, labelService, filterMode, locationToCurrentFile, indent, baseIndent } = useInjectable<FileTreeService>(FileTreeService);
+  const { decorationService, labelService, iconService, filterMode, locationToCurrentFile, indent, baseIndent } = useInjectable<FileTreeService>(FileTreeService);
   const fileTreeModelService = useInjectable<FileTreeModelService>(FileTreeModelService);
+
+  const [iconTheme, setIconTheme ] = React.useState<{
+    hasFolderIcons: boolean;
+    hasFileIcons: boolean;
+    hidesExplorerArrows: boolean;
+  }>(iconService.currentTheme);
 
   const hasShiftMask = (event): boolean => {
     // Ctrl/Cmd 权重更高
@@ -53,9 +59,9 @@ export const FileTree = observer(({
     const shiftMask = hasShiftMask(event);
     const ctrlCmdMask = hasCtrlCmdMask(event);
     if (shiftMask) {
-      handleItemRangeClick(item, type, activeUri);
+      handleItemRangeClick(item, type);
     } else if (ctrlCmdMask) {
-      handleItemToggleClick(item, type, activeUri);
+      handleItemToggleClick(item, type);
     } else {
       handleItemClick(item, type, activeUri);
     }
@@ -73,6 +79,9 @@ export const FileTree = observer(({
 
   React.useEffect(() => {
     ensureIsReady();
+    iconService.onThemeChange((theme) => {
+      setIconTheme(theme);
+    });
     return () => {
       fileTreeModelService.removeFileDecoration();
     };
@@ -186,7 +195,9 @@ export const FileTree = observer(({
             defaultLeftPadding={baseIndent}
             leftPadding={indent}
             hasPrompt = {props.hasPrompt}
-            hasFolderIcons={fileTreeModelService.hasFolderIcons}
+            hasFolderIcons={iconTheme.hasFolderIcons}
+            hasFileIcons={iconTheme.hasFileIcons}
+            hidesExplorerArrows={iconTheme.hidesExplorerArrows}
           />}
         </FilterableRecycleTree>;
       } else {
