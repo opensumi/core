@@ -246,9 +246,12 @@ interface BaseActionListProps {
   afterClick?: () => void;
 
   /**
-   * 只显示 more 按钮而不显示 nav 内容
+   * 将 Nav MenuNode 和 More MenuNode 进行重新分组
+   * 解决
+   *  * `editor/title` 下只展示 more menu
+   *  * `scm/input` 下只展示一个 nav menu 其他都进到 more menu
    */
-  onlyMore?: boolean;
+  regroup?: (...args: [MenuNode[], MenuNode[]]) => [MenuNode[], MenuNode[]];
 }
 
 /**
@@ -262,16 +265,17 @@ export const TitleActionList: React.FC<{
   className?: string;
 } & BaseActionListProps> = ({
   type = 'icon', // ActionListType 默认为 icon 类型
-  nav: primary = [],
-  more: secondary = [],
+  nav = [],
+  more = [],
   context = [],
   extraNavActions = [],
   moreAtFirst = false,
   className,
   afterClick,
-  onlyMore,
+  regroup = (...args: [MenuNode[], MenuNode[]]) => args,
 }) => {
   const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
+  const [ primary, secondary ] = regroup(nav, more);
 
   const handleShowMore = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
@@ -299,7 +303,7 @@ export const TitleActionList: React.FC<{
     <div className={clsx([styles.titleActions, className])}>
       { moreAtFirst && moreAction }
       {
-        !onlyMore && primary.map((item) => (
+        primary.map((item) => (
           <InlineActionWidget
             className={clsx({ [styles.selected]: item.checked })}
             type={type}
@@ -321,6 +325,8 @@ export const TitleActionList: React.FC<{
     </div>
   );
 };
+
+TitleActionList.displayName = 'TitleActionList';
 
 type TupleContext<T, U, K, M> = (
   M extends undefined

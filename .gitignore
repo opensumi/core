@@ -106,3 +106,6 @@ tools/extensions
 
 # temp release log
 releaselog.md
+
+# devcontainer
+.devcontainer

@@ -4,8 +4,11 @@ import { isOSX, CommandService, DisposableStore } from '@ali/ide-core-common';
 import { format } from '@ali/ide-core-common/lib/utils/strings';
 import { useHotKey } from '@ali/ide-core-browser/lib/react-hooks/hot-key';
 import { Input } from '@ali/ide-components';
+import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 
-import { ISCMRepository, InputValidationType } from '../../common';
+import { ISCMRepository, InputValidationType, ISCMProvider } from '../../common';
+import { ViewModelContext } from '../scm-model';
+
 import * as styles from './scm-header.module.less';
 
 export function convertValidationType(type: InputValidationType) {
@@ -20,6 +23,7 @@ export const SCMHeader: React.FC<{
   repository: ISCMRepository;
 }> = ({ repository }) => {
   const commandService = useInjectable<CommandService>(CommandService);
+  const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
 
   const [ commitMsg, setCommitMsg ] = React.useState('');
   const [ placeholder, setPlaceholder] = React.useState('');
@@ -78,15 +82,34 @@ export const SCMHeader: React.FC<{
     handleCommit,
   );
 
+  const inputMenu = React.useMemo(() => {
+    const scmMenuService = viewModel.getSCMMenuService(repository);
+    if (scmMenuService) {
+      return scmMenuService.getInputMenu();
+    }
+  }, [ repository ]);
+
   return (
-    <div className={styles.scmInput}>
+    <div className={styles.scmHeader}>
       <Input
+        className={styles.scmInput}
         placeholder={placeholder}
         value={commitMsg}
         onKeyDown={(e) => onKeyDown(e.keyCode)}
         onKeyUp={onKeyUp}
         onValueChange={handleValueChange}
       />
+      {
+        repository && repository.provider && inputMenu && (
+          <InlineActionBar<ISCMProvider, string>
+            className={styles.scmMenu}
+            context={[repository.provider, commitMsg]}
+            type='button'
+            // limit show one nav menu only
+            regroup={(nav, more) => [[nav[0]].filter(Boolean), [...nav.slice(1), ...more]]}
+            menus={inputMenu} />
+        )
+      }
     </div>
   );
 };
