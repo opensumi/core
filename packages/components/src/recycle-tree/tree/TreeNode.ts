@@ -58,6 +58,10 @@ export class TreeNode implements ITreeNode {
     TreeNode.idToTreeNode[id] = [path, node];
   }
 
+  public static removeTreeNode(id: number) {
+    delete TreeNode.idToTreeNode[id];
+  }
+
   public static idToTreeNode: {[key: number]: [string, TreeNode]} = {};
   protected _uid: number;
   protected _depth: number;
@@ -72,7 +76,7 @@ export class TreeNode implements ITreeNode {
 
   protected _tree: ITree;
 
-  protected constructor(tree: ITree, parent?: ICompositeTreeNode, watcher?: ITreeWatcher, optionalMetadata?: { [key: string]: any }) {
+  protected constructor(tree: ITree, parent?: ICompositeTreeNode, watcher?: ITreeWatcher, optionalMetadata?: { [key: string]: any }, options?: {disableCache?: boolean}) {
     this._uid = TreeNode.nextId();
     this._parent = parent;
     this._tree = tree;
@@ -84,7 +88,9 @@ export class TreeNode implements ITreeNode {
     } else if (parent) {
       this._watcher = (parent as any).watcher;
     }
-    TreeNode.setTreeNode(this._uid, this.path, this);
+    if (!(options && options.disableCache)) {
+      TreeNode.setTreeNode(this._uid, this.path, this);
+    }
   }
 
   get disposed() {
@@ -202,7 +208,7 @@ export class TreeNode implements ITreeNode {
     if (this._disposed) { return; }
     this._watcher.notifyWillDispose(this);
     this._disposed = true;
-    delete TreeNode.idToTreeNode[this._uid];
+    TreeNode.removeTreeNode(this._uid);
     this._watcher.notifyDidDispose(this);
   }
 }
@@ -310,8 +316,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   }
 
   // parent 为undefined即表示该节点为根节点
-  constructor(tree: ITree, parent: ICompositeTreeNode | undefined, watcher?: ITreeWatcher, optionalMetadata?: { [key: string]: any }) {
-    super(tree, parent, watcher, optionalMetadata);
+  constructor(tree: ITree, parent: ICompositeTreeNode | undefined, watcher?: ITreeWatcher, optionalMetadata?: { [key: string]: any }, options?: { disableCache?: boolean}) {
+    super(tree, parent, watcher, optionalMetadata, options);
     this.isExpanded = !!parent ? false : true;
     this._branchSize = 0;
     if (!parent) {
@@ -431,33 +437,45 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       if (needReload) {
         await this.hardReloadChildren(true);
       }
-      forceLoadPath = expandedPaths.shift();
-      if (!!this.children) {
-        for (const child of this.children) {
-          if (!forceLoadPath) {
+      while (forceLoadPath = expandedPaths.shift()) {
+        const relativePath = new Path(this.path).relative(new Path(forceLoadPath));
+        if (!relativePath) {
+          break;
+        }
+        const child = TreeNode.getTreeNodeByPath(forceLoadPath);
+        if (!child) {
+          if (!this.children) {
             break;
           }
-          if (child.path === forceLoadPath) {
-            if ((child as CompositeTreeNode).isExpanded) {
-              // 说明此时节点初始化时已默认展开，不需要进一步处理
-              continue;
-            }
-            (child as CompositeTreeNode).isExpanded = true;
-            await (child as CompositeTreeNode).forceReloadChildrenQuiet(expandedPaths);
-            forceLoadPath = expandedPaths.shift();
-          } else if (forceLoadPath.indexOf(child.path) === 0) {
-            // 包含压缩节点的情况
-            // 加载路径包含当前判断路径，尝试加载该节点再匹配
-            await (child as CompositeTreeNode).hardReloadChildren(true);
-            if (child.path === forceLoadPath) {
+          for (const child of this.children) {
+            if (forceLoadPath.indexOf(child.path) === 0) {
+              // 包含压缩节点的情况
+              // 加载路径包含当前判断路径，尝试加载该节点再匹配
+              await (child as CompositeTreeNode).hardReloadChildren(true);
               if ((child as CompositeTreeNode).isExpanded) {
                 // 说明此时节点初始化时已默认展开，不需要进一步处理
                 continue;
               }
               (child as CompositeTreeNode).isExpanded = true;
-              await (child as CompositeTreeNode).forceReloadChildrenQuiet(expandedPaths, false);
-              forceLoadPath = expandedPaths.shift();
+              if (expandedPaths.length > 0) {
+                // 不需要重新reload压缩节点的子节点内容
+                await (child as CompositeTreeNode).forceReloadChildrenQuiet(expandedPaths, false);
+              } else {
+                (child as CompositeTreeNode).expandBranch((child as CompositeTreeNode), true);
+              }
             }
+          }
+        } else {
+          if ((child as CompositeTreeNode).isExpanded) {
+            // 说明此时节点初始化时已默认展开，不需要进一步处理
+            continue;
+          }
+          (child as CompositeTreeNode).isExpanded = true;
+          if (expandedPaths.length > 0) {
+            await (child as CompositeTreeNode).forceReloadChildrenQuiet(expandedPaths);
+          } else {
+            await (child as CompositeTreeNode).hardReloadChildren(true);
+            (child as CompositeTreeNode).expandBranch(child, true);
           }
         }
       }

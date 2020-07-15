@@ -89,7 +89,7 @@ export class FileTreeService extends Tree {
   // 等待监听的路径队列
   private _watchRootsQueue: URI[] = [];
 
-  public isCompactMode: boolean;
+  private _isCompactMode: boolean;
 
   public flushEventQueueDeferred: Deferred<void> | null;
 
@@ -117,12 +117,16 @@ export class FileTreeService extends Tree {
     return this.requestFlushEventSignalEmitter.event;
   }
 
+  get isCompactMode(): boolean {
+    return this._isCompactMode;
+  }
+
   async init() {
     this._roots = await this.workspaceService.roots;
 
     this.baseIndent = this.corePreferences['explorer.fileTree.baseIndent'] || 8;
     this.indent = this.corePreferences['explorer.fileTree.indent'] || 8;
-    this.isCompactMode = this.corePreferences['explorer.compactFolders'] as boolean;
+    this._isCompactMode = this.corePreferences['explorer.compactFolders'] as boolean;
 
     this.toDispose.push(this.workspaceService.onWorkspaceChanged(async () => {
       this._roots = await this.workspaceService.roots;
@@ -145,7 +149,7 @@ export class FileTreeService extends Tree {
           this.indent = change.newValue as number || 8;
         });
       } else if (change.preferenceName === 'explorer.compactFolders') {
-        this.isCompactMode = change.newValue as boolean;
+        this._isCompactMode = change.newValue as boolean;
         this.refresh();
       }
     }));
@@ -596,6 +600,9 @@ export class FileTreeService extends Tree {
    * 刷新指定下的所有子节点
    */
   async refresh(node: Directory = this.root as Directory) {
+    if (!node) {
+      return;
+    }
     if (!Directory.is(node) && node.parent) {
       node = node.parent as Directory;
     }
@@ -635,8 +642,9 @@ export class FileTreeService extends Tree {
       return;
     }
     this._changeEventDispatchQueue.sort((pathA, pathB) => {
-      const pathADepth = Path.pathDepth(pathA);
-      const pathBDepth = Path.pathDepth(pathB);
+      // 直接获取节点深度比通过path取深度更可靠
+      const pathADepth = this.getNodeByPathOrUri(pathA)?.depth || 0;
+      const pathBDepth = this.getNodeByPathOrUri(pathB)?.depth || 0;
       return pathADepth - pathBDepth;
     });
     const roots = [this._changeEventDispatchQueue[0]];

@@ -16,7 +16,7 @@ export class Directory extends CompositeTreeNode {
     public tooltip: string,
     id?: number,
   ) {
-    super(tree as ITree, parent);
+    super(tree as ITree, parent, undefined, { name }, { disableCache: false });
     if (!parent) {
       // 根节点默认展开节点
       this.setExpanded();
@@ -28,6 +28,9 @@ export class Directory extends CompositeTreeNode {
 
   updateName(name: string) {
     this.name = name;
+    TreeNode.removeTreeNode(this._uid);
+    // 更新name后需要重设节点路径索引
+    TreeNode.setTreeNode(this._uid, this.path, this);
   }
 
   updateURI(uri: URI) {
@@ -60,7 +63,7 @@ export class File extends TreeNode {
     public tooltip: string,
     id?: number,
   ) {
-    super(tree as ITree, parent);
+    super(tree as ITree, parent, undefined, { name }, { disableCache: false });
     this.fileTreeService = tree;
     this._uid = id || this._uid;
     TreeNode.setTreeNode(this._uid, this.path, this);
@@ -68,6 +71,9 @@ export class File extends TreeNode {
 
   updateName(name: string) {
     this.name = name;
+    TreeNode.removeTreeNode(this._uid);
+    // 更新name后需要重设节点路径索引
+    TreeNode.setTreeNode(this._uid, this.path, this);
   }
 
   updateURI(uri: URI) {

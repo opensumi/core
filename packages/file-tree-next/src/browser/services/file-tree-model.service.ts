@@ -237,6 +237,9 @@ export class FileTreeModelService {
             this.location(currentEditor.currentUri);
           }
         }
+        if (!this.fileTreeService.isCompactMode) {
+          this._activeUri = null;
+        }
       });
     }));
     this.disposableCollection.push(this.treeModel!.onWillUpdate(() => {
@@ -515,7 +518,7 @@ export class FileTreeModelService {
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
-      args: [activeUri ? activeUri : node.uri, nodes.map((node) => node.uri)],
+      args: activeUri ? [activeUri, [activeUri]] : [node.uri, nodes.map((node) => node.uri)],
     });
   }
 
@@ -693,8 +696,11 @@ export class FileTreeModelService {
   async deleteFile(uri: URI) {
     // 提前缓存文件路径
     let targetPath: string | URI | undefined;
-    // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
-    if (this.focusedFile) {
+    // 当存在activeUri时，即存在压缩目录的子路径被删除
+    if (this.activeUri) {
+      targetPath = uri;
+    } else if (this.focusedFile) {
+      // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
       targetPath = this.focusedFile.path;
     } else if (this.selectedFiles.length > 0) {
       targetPath = this.selectedFiles[this.selectedFiles.length - 1].path;
@@ -707,8 +713,11 @@ export class FileTreeModelService {
       return false;
     }
     const effectNode = this.fileTreeService.getNodeByPathOrUri(targetPath);
-    if (effectNode) {
+    if (effectNode && effectNode.uri.isEqual(uri)) {
       this.fileTreeService.deleteAffectedNodeByPath(effectNode.path);
+    } else if (effectNode) {
+      // 说明是异常情况或子路径删除
+      this.fileTreeService.refresh((effectNode as File).parent as Directory);
     }
     return true;
   }
