@@ -33,7 +33,11 @@ export const FileTree = observer(({
     hasFolderIcons: boolean;
     hasFileIcons: boolean;
     hidesExplorerArrows: boolean;
-  }>(iconService.currentTheme);
+  }>(iconService.currentTheme || {
+    hasFolderIcons: true,
+    hasFileIcons: true,
+    hidesExplorerArrows: true,
+  });
 
   const hasShiftMask = (event): boolean => {
     // Ctrl/Cmd 权重更高
