@@ -39,7 +39,6 @@ export class TerminalErrorService implements ITerminalErrorService {
         if (client.ready) {
           this.errors.delete(clientId);
         }
-        client.layout();
       });
     }
   }

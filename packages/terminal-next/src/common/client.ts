@@ -50,6 +50,16 @@ export interface ITerminalClient extends Disposable {
   attached: Deferred<void>;
 
   /**
+   * 首次消息输出
+   */
+  firstOutput: Deferred<void>;
+
+  /**
+   *
+   */
+  show: Deferred<void> | null;
+
+  /**
    * Xterm 实例
    */
   term: Terminal;

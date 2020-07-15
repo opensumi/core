@@ -54,7 +54,7 @@ export default ({ widget, error, show }: IProps) => {
   }, []);
 
   React.useEffect(() => {
-    widget.show = show;
+    widget.show = !error && show;
   }, [show]);
 
   const onFocus = () => {

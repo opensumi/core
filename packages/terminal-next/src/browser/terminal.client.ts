@@ -164,6 +164,14 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     return this._attached;
   }
 
+  get firstOutput() {
+    return this._firstStdout;
+  }
+
+  get show() {
+    return this._show;
+  }
+
   private _prepareAddons() {
     this._attachAddon = new AttachAddon();
     this._searchAddon = new SearchAddon();
@@ -247,10 +255,20 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   reset() {
+    this._attached.reject();
+    this._firstStdout.reject();
+    this._show && this._show.reject();
     this._ready = false;
     this._attached = new Deferred<void>();
-    this._firstStdout = new Deferred<void>();
+    this._show = new Deferred<void>();
     this._attachAddon.dispose();
+    // fit 操作在对比行列没有发送变化的时候不会做任何操作，
+    // 但是实际上是设置为 display none 了，所以手动 resize 一下
+    this._term.resize(1, 1);
+    const { dispose } = this.onOutput(() => {
+      dispose();
+      this._firstStdout.resolve();
+    });
     this.attach();
   }
 
@@ -309,7 +327,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     }));
 
     this.addDispose(widget.onResize(async () => {
-      await this._attached.promise;
       this._debouceResize();
     }));
 
