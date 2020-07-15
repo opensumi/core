@@ -10,6 +10,7 @@ export interface IToolbarActionBasicContribution {
     location: string,
     group: string,
   };
+  description: string;
 }
 
 export interface IToolbarButtonContribution extends  IToolbarActionBasicContribution {

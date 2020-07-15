@@ -48,6 +48,7 @@ export interface IToolBarAction extends IToolBarElement {
 
   click: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => any;
 
+  description?: string;
 }
 
 export interface IToolBarComponent<InitialPropsType = any> extends IToolBarElement {
@@ -57,6 +58,8 @@ export interface IToolBarComponent<InitialPropsType = any> extends IToolBarEleme
   component: React.FunctionComponent<InitialPropsType> | React.ComponentClass<InitialPropsType>;
 
   initialProps?: InitialPropsType;
+
+  description?: string;
 }
 
 export enum ToolBarPosition {

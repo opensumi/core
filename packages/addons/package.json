@@ -24,6 +24,7 @@
     "@ali/ide-core-node": "1.8.35"
   },
   "devDependencies": {
+    "@ali/ide-components": "1.8.35",
     "@ali/ide-core-browser": "1.8.35",
     "@ali/ide-dev-tool": "^1.1.0",
     "@ali/ide-editor": "1.8.35",

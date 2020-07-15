@@ -1,7 +1,7 @@
 import { observable } from 'mobx';
 import { Injectable  } from '@ali/common-di';
-import { Disposable } from '../..';
 import { ViewState } from '../';
+import { Disposable } from '@ali/ide-core-common';
 
 @Injectable()
 export class ViewUiStateManager extends Disposable {

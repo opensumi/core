@@ -81,68 +81,74 @@
     line-height: 22px;
   }
 
-  .kt-select-options {
-    display: none;
-    position: fixed;
-    margin-top: 4px;
-    max-width: 100%;
-    color: var(--kt-selectDropdown-foreground);
-    background-color: var(--kt-selectDropdown-background);
-    z-index: 20;
-    border-radius: 2px;
-    overflow-y: auto !important;
-    .overlay-shadow();
-    
-    .kt-select-option-default {
-      display: flex;
-      align-items: center;
-      .kt-select-option-icon {
-        margin-right:5px;
-      }
-    }
+}
 
-    .kt-select-option-select {
+.kt-select-option-icon {
+  margin-right: 5px;
+}
 
-      span {
-        display: inline-block;
-        width: 100%;
-        background-color: var(--kt-selectDropdown-selectionBackground);
-        &:hover {
-          background-color: var(--kt-selectDropdown-selectionBackground);
-        }
-      }
+.kt-select-options {
+  display: none;
+  position: fixed;
+  margin-top: 4px;
+  max-width: 100%;
+  color: var(--kt-selectDropdown-foreground);
+  background-color: var(--kt-selectDropdown-background);
+  z-index: 20;
+  border-radius: 2px;
+  overflow-y: auto !important;
+  .overlay-shadow();
+
+  .kt-select-option-default {
+    display: flex;
+    align-items: center;
+    .kt-select-option-icon {
+      margin-right:5px;
     }
+    position: relative;
+  }
+
+  .kt-select-option-select {
 
     span {
-      color: var(--kt-selectDropdown-foreground);
-      background-color: var(--kt-selectDropdown-background);
-      cursor: pointer;
-      height: 26px;
-      padding: 0px 16px;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
-      line-height: 26px;
       display: inline-block;
       width: 100%;
-      box-sizing: border-box;
+      background-color: var(--kt-selectDropdown-selectionBackground);
       &:hover {
-        background-color: var(--kt-selectDropdown-hoverBackground);
+        background-color: var(--kt-selectDropdown-selectionBackground);
       }
-    }
-
-    .kt-option-disabled {
-      pointer-events: none;
-      background-color: var(--kt-select-disableBackground);
-      color: var(--kt-select-disableForeground);
-    }
-
-    &.kt-select-options-visible {
-      display: block;
     }
   }
 
-  .kt-select-options-large {
+  span {
+    color: var(--kt-selectDropdown-foreground);
+    background-color: var(--kt-selectDropdown-background);
+    cursor: pointer;
+    height: 26px;
+    padding: 0px 16px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    line-height: 26px;
+    display: inline-block;
+    width: 100%;
+    box-sizing: border-box;
+    &:hover {
+      background-color: var(--kt-selectDropdown-hoverBackground);
+    }
+  }
+
+  .kt-option-disabled {
+    pointer-events: none;
+    background-color: var(--kt-select-disableBackground);
+    color: var(--kt-select-disableForeground);
+  }
+
+  &.kt-select-options-visible {
+    display: block;
+  }
+
+  &.kt-select-options-large {
     padding: 4px 0px;
 
     & > span, & > div > span {
@@ -150,9 +156,13 @@
       font-size: 14px;
       line-height: 30px;
     }
+    .kt-select-group-header {
+      font-size: 14px;
+      line-height: 30px;
+    }
   }
 
-  .kt-select-options-default {
+  &.kt-select-options-default {
     padding: 3px 0px;
 
     & > span, & > div > span {
@@ -160,9 +170,13 @@
       font-size: 12px;
       line-height: 26px;
     }
+    .kt-select-group-header {
+      font-size: 12px;
+      line-height: 26px;
+    }
   }
 
-  .kt-select-options-small {
+  &.kt-select-options-small {
     padding: 3px 0px;
 
     & > span, & > div > span {
@@ -170,9 +184,33 @@
       font-size: 12px;
       line-height: 26px;
     }
+    .kt-select-group-header {
+      font-size: 12px;
+      line-height: 26px;
+    }
+  }
+
+  .kt-option-with-check {
+    padding-left: 20px;
+  }
+
+  .kt-select-group-header {
+    padding-left:5px;
+    color: var(--kt-selectDropdown-teamForeground);
+    display: flex;
+  }
+
+  .kt-option-check {
+    position: absolute;
+    left:0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    .kt-icon {
+      width: 20px;
+      padding: 0 4px;
+      background-color: transparent;
+    }
   }
 }
 
-.kt-select-option-icon {
-  margin-right: 5px;
-}

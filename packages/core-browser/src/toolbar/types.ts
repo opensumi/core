@@ -1,4 +1,5 @@
 import { IDisposable, BasicEvent, Event } from '@ali/ide-core-common';
+import { IDataOption, IDataOptionGroup } from '@ali/ide-components';
 
 export const IToolbarRegistry = Symbol('IToolbarRegistry');
 
@@ -38,6 +39,8 @@ export interface IToolbarRegistry {
   getActionGroups(location: string): IToolbarActionGroup[] | undefined;
 
   getActionPosition(actionId: string): IToolbarActionPosition | undefined;
+
+  getAllLocations(): string[];
 
 }
 
@@ -102,6 +105,8 @@ export interface IToolbarActionElementProps {
 
   action: IToolbarAction;
 
+  closeDropDown: () => void;
+
   preferences?: IToolbarLocationPreference;
 }
 
@@ -111,6 +116,10 @@ export interface IToolbarAction {
 
   id: string;
 
+  /**
+   * 这个action的介绍，为了让用户能明白这个组件是做什么，理论上必填
+   */
+  description: string;
   /**
    * 顺序重量, 数值越大，排在越前面
    */
@@ -155,6 +164,11 @@ export interface IToolbarAction {
    */
   strictPosition?: IToolbarActionPosition;
 
+  /**
+   * 是否永远不被收起
+   */
+  neverCollapse?: boolean;
+
 }
 
 // events
@@ -178,6 +192,7 @@ export interface IToolbarActionBtnProps {
   id: string;
   title: string;
   iconClass: string;
+  defaultStyle?: IToolbarActionBtnStyle;
   styles?: {
     [key: string]: IToolbarActionBtnState,
   };
@@ -215,6 +230,7 @@ export interface IToolbarActionBtnDelegate {
 export interface IToolbarActionBtnStyle {
 
   // 是否显示 Title
+  // 20200629改动 - 默认为 true
   showTitle?: boolean;
 
   // icon 前景色
@@ -235,6 +251,8 @@ export interface IToolbarActionBtnStyle {
   // 样式类型，
   // inline则不会有外边框
   // button则为按钮样式
+  // 20200629改动 - 默认为 button
+  // inline 模式showTitle会失效, 只显示icon
   btnStyle?: 'inline' | 'button';
 
   // button 的文本位置样式
@@ -245,16 +263,13 @@ export interface IToolbarActionBtnStyle {
 
 // Select
 export interface IToolbarActionSelectProps<T> {
-  options: {
-    iconClass?: string,
-    label?: string,
-    value: T,
-  }[];
-  customOptionRenderer?: React.FC<{value: T, setSelect: (v: T) => void, index: number, isCurrent: boolean}>;
+  options: IDataOption<T>[] | IDataOptionGroup<T>[];
+  customOptionRenderer?: React.FC<{data: IDataOption<T>, isCurrent: boolean}>;
   defaultValue?: T;
   styles?: {
     [key: string]: IToolbarSelectStyle,
   };
+  name?: string;
   searchMode?: boolean;
   defaultState?: string;
   equals?: (v1: T | undefined, v2: T | undefined) => boolean;

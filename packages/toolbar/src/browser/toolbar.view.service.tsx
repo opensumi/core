@@ -46,6 +46,7 @@ export class ToolBarViewService implements IToolBarViewService {
         preferredPosition: {
           location,
         },
+        description: element.description || element.title,
       }));
       handle.addDispose(this.eventBus.on(ToolbarActionBtnClickEvent, (e) => {
         if (e.payload.id === id) {
@@ -54,6 +55,7 @@ export class ToolBarViewService implements IToolBarViewService {
       }));
     } else {
       handle.addDispose(this.registry.registerToolbarAction({
+        description: element.description || id,
         component: () => {
           return <element.component {...element.initialProps} />;
         },

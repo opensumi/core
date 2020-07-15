@@ -41,6 +41,7 @@ export class ToolBarBrowserContributionRunner extends AbstractKaitianBrowserCont
             kaitianExtendService: extendService,
             kaitianExtendSet: extendProtocol,
           },
+          description: view.description,
           order: view.order,
           weight: view.weight,
         });

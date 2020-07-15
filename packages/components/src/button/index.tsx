@@ -5,7 +5,7 @@ import classNames from 'classnames';
 import './style.less';
 import { Icon, getDefaultIcon, DefaultIconKeys } from '../icon';
 
-export type ButtonType = 'primary' | 'secondary' | 'ghost' | 'danger' | 'link' | 'icon';
+export type ButtonType = 'primary' | 'secondary' | 'ghost' | 'danger' | 'link' | 'icon' | 'default';
 
 export type ButtonHTMLType = 'submit' | 'button' | 'reset';
 

@@ -53,6 +53,8 @@ export enum MenuId {
   CommentsCommentTitle = 'comments/comment/title',
   // Below the comment panel reply text box
   CommentsCommentContext = 'comments/comment/context',
+  // ToolbarLocation
+  KTToolbarLocationContext = 'kt/toolbar/context',
 }
 
 export function getTabbarCommonMenuId(location: string) {

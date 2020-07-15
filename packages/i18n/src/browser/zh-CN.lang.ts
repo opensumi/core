@@ -603,5 +603,11 @@ export const localizationBundle = {
     'TerminalTaskSystem.terminalName': '任务 - {0}',
     'terminal.integrated.exitedWithCode': '终端进程已终止，退出代码: {0}',
     'reuseTerminal': '终端将被任务重用，按任意键关闭。',
+
+    'toolbar-customize.buttonDisplay.description': '按钮展示形式',
+    'toolbar-customize.buttonDisplay.icon': '仅图标',
+    'toolbar-customize.buttonDisplay.iconAndText': '图标和文字',
+    'toolbar-customize.complete': '完成',
+    'toolbar.customize.menu': '自定义工具栏...',
   },
 };

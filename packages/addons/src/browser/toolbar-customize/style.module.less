@@ -1,0 +1,54 @@
+
+@import "~@ali/ide-components/lib/style/mixins.less";
+
+.toolbar-customize-overlay {
+  position: fixed;
+  width:  100%;
+  height: 100%;
+  left:0;
+  top:0;
+  z-index: 1000;
+  .toolbar-customize {
+    position: fixed;
+    width: 720px;
+    margin-left: -360px;
+    left: 50%;
+    top: 30px;
+    z-index: 1001;
+    .overlay-shadow();
+    background-color: var(--kt-modal-background);
+    color: var(--kt-modal-foreground);
+    min-height: 200px;
+    .toolbar-customize-location {
+      display: flex;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--kt-modal-separatorBackground);
+      .action-item {
+        margin-right: 10px;
+        margin-bottom: 5px;
+        margin-top: 5px;
+      }
+      padding: 15px 20px;
+    }
+    .button-display {
+      padding: 20px;
+      display: flex;
+      justify-content: left;
+      align-items: center;
+      > div:first-child {
+        margin-right: 10px;
+        font-size:12px;
+      }
+      .button-display-select {
+        width: 200px;
+      }
+    }
+    .customize-complete {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+  }
+
+}

@@ -117,6 +117,7 @@ export class KaitianExtensionToolbarService {
       id,
       preferredPosition: contribution.preferredPosition,
       strictPosition: contribution.strictPosition,
+      description: contribution.description || contribution.title || id,
       component: createToolbarActionBtn({
         id,
         title: contribution.title,
@@ -164,6 +165,7 @@ export class KaitianExtensionToolbarService {
       id,
       preferredPosition: contribution.preferredPosition,
       strictPosition: contribution.strictPosition,
+      description: contribution.description,
       component: createToolbarActionSelect<T>({
         styles: contribution.states,
         options,

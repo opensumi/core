@@ -3,6 +3,7 @@ import { IToolbarRegistry, IToolbarActionGroup, IToolbarAction, IToolbarActionGr
 import { IDisposable, Emitter, WithEventBus, ContributionProvider, Domain } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ClientAppContribution } from '../common';
+import { PreferenceService } from '../preferences';
 
 type LocationName = string;
 type GroupName = string;
@@ -38,6 +39,9 @@ export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarReg
   @Autowired(ToolBarActionContribution)
   contributions: ContributionProvider<ToolBarActionContribution>;
 
+  @Autowired(PreferenceService)
+  preferenceService: PreferenceService;
+
   private _inited = false;
 
   get defaultLocation(): string {
@@ -45,6 +49,10 @@ export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarReg
       return this._preferredDefaultLocation;
     }
     return this.locations[0] || 'default';
+  }
+
+  getAllLocations(): string[] {
+    return this.locations;
   }
 
   init() {

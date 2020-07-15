@@ -79,6 +79,7 @@ export class ToolbarActionService extends Disposable implements IToolbarActionSe
       if (item.type === 'action') {
         disposer.addDispose(this.registry.registerToolbarAction({
           id: actionId,
+          description: item.description || actionId,
           component: createToolbarActionBtn({
             iconClass: item.iconClass!,
             title: item.title,
@@ -96,6 +97,7 @@ export class ToolbarActionService extends Disposable implements IToolbarActionSe
       } else if (item.type === 'enum') {
         disposer.addDispose(this.registry.registerToolbarAction({
           id: actionId,
+          description: item.description || actionId,
           component: createToolbarActionSelect({
             defaultValue: item.defaultValue || item.title,
             options: item.enum.map((e) => {
