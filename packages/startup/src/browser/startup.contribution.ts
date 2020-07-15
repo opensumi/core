@@ -6,9 +6,11 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/
 // import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 import { IStatusBarService} from '@ali/ide-core-browser/lib/services';
 import { OutputService } from '@ali/ide-output/lib/browser/output.service';
+import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
+import { ExampleEditorBottomWidget } from './editor-bottom-example';
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, ComponentContribution, ToolBarActionContribution)
-export class StartupContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, ComponentContribution, ToolBarActionContribution {
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, ComponentContribution, ToolBarActionContribution, BrowserEditorContribution)
+export class StartupContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, ComponentContribution, ToolBarActionContribution, BrowserEditorContribution {
 
   @Autowired(IEventBus)
   eventBus: IEventBus;
@@ -24,6 +26,16 @@ export class StartupContribution implements CommandContribution, KeybindingContr
 
   @Autowired(IToolbarRegistry)
   toolbarRegistry: IToolbarRegistry;
+
+  registerEditorComponent(registry: EditorComponentRegistry) {
+    registry.registerEditorSideWidget({
+      id: 'example-bottom',
+      component: ExampleEditorBottomWidget,
+      displaysOnResource: (r) => {
+        return r.uri.scheme === 'file';
+      },
+    });
+  }
 
   onStart() {
 

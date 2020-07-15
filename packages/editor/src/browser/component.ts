@@ -1,4 +1,4 @@
-import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver, EditorComponentRenderMode } from './types';
+import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver, EditorComponentRenderMode, IEditorSideWidget, EditorSide } from './types';
 import { IDisposable, IEventBus } from '@ali/ide-core-common';
 import { IResource, IEditorOpenType } from '../common';
 import { Injectable, Autowired } from '@ali/common-di';
@@ -18,6 +18,10 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
   eventBus: IEventBus;
 
   private components: Map<string, IEditorComponent> = new Map();
+
+  private sideWidgets = {
+    'bottom': new Set<IEditorSideWidget>(),
+  };
 
   private initialPropsMap: Map<string, any> = new Map();
 
@@ -148,6 +152,30 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
   public clearPerWorkbenchComponentCache(componentId: string) {
     ReactDOM.unmountComponentAtNode(this.perWorkbenchComponents[componentId]);
     delete this.perWorkbenchComponents[componentId];
+  }
+
+  public getSideWidgets(side: EditorSide, resource: IResource): IEditorSideWidget<any>[] {
+    const res: IEditorSideWidget<any>[] = [];
+    this.sideWidgets[side].forEach((widget) => {
+      if (widget.displaysOnResource(resource)) {
+        res.push(widget);
+      }
+    });
+    return res.sort((w1, w2) => {
+      const weight1 = w1.weight === undefined ? 10 : w1.weight;
+      const weight2 = w2.weight === undefined ? 10 : w2.weight;
+      return weight2 - weight1;
+    });
+  }
+
+  public registerEditorSideWidget(widget: IEditorSideWidget<any>): IDisposable {
+    const side = widget.side || 'bottom';
+    this.sideWidgets[side].add(widget);
+    return {
+      dispose: () => {
+        this.sideWidgets[side].delete(widget);
+      },
+    };
   }
 
 }

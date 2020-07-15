@@ -5,7 +5,7 @@ import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.serv
 import * as styles from './editor.module.less';
 import { WorkbenchEditorService, IResource, IEditorOpenType } from '../common';
 import classnames from 'classnames';
-import { IEditorComponent, EditorComponentRegistry, DragOverPosition, EditorGroupsResetSizeEvent, EditorComponentRenderMode, EditorGroupFileDropEvent } from './types';
+import { IEditorComponent, EditorComponentRegistry, DragOverPosition, EditorGroupsResetSizeEvent, EditorComponentRenderMode, EditorGroupFileDropEvent, EditorSide } from './types';
 import { Tabs } from './tab.view';
 import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus, AppConfig, ErrorBoundary, ComponentRegistry, PreferenceService } from '@ali/ide-core-browser';
 import { EditorGrid, SplitDirection } from './grid/grid.service';
@@ -306,6 +306,9 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
           })} ref={(ele) => diffEditorRef.current = ele}>
           </div>
         </div>
+        {
+          group.currentResource && <EditorSideView side={'bottom'} resource={group.currentResource}></EditorSideView>
+        }
         <OpenTypeSwitcher options={group.availableOpenTypes} current={group.currentOpenType} group={group} />
       </div>
 
@@ -406,3 +409,16 @@ function removeDecorationDragOverElement(element: HTMLElement) {
     element.classList.remove(styles['kt_on_drag_over_' + pos]);
   });
 }
+
+const EditorSideView = ({side, resource}: {side: EditorSide, resource: IResource}) => {
+  const componentRegistry: EditorComponentRegistry = useInjectable(EditorComponentRegistry);
+  const widgets = componentRegistry.getSideWidgets(side, resource);
+  return <div className={classnames(styles['kt_editor_side_widgets'], styles['kt_editor_side_widgets_' + side])}>
+    {
+      widgets.map((widget) => {
+        const C = widget.component;
+        return <C resource={resource} key={widget.id}></C>;
+      })
+    }
+  </div>;
+};

@@ -211,6 +211,20 @@ describe('workbench editor service tests', () => {
     done();
   });
 
+  it('side widget registration should be ok', () => {
+    editorComponentRegistry.registerEditorSideWidget({
+      component: () => null as any,
+      id: 'test-1',
+      displaysOnResource: (resource) => {
+        return resource.uri.scheme === 'testScheme';
+      },
+    });
+
+    expect(editorComponentRegistry.getSideWidgets('bottom', { uri: new URI('testScheme://tes/t')} as any).length).toBe(1);
+    expect(editorComponentRegistry.getSideWidgets('bottom', { uri: new URI('testScheme2://tes/t')} as any).length).toBe(0);
+
+  });
+
   afterAll(() => {
     disposer.dispose();
   });
