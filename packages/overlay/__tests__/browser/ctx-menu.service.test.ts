@@ -53,7 +53,7 @@ describe('test for packages/menu-bar/src/browser/menu-bar.store.ts', () => {
     expect(ctxMenuService.point).toEqual({ pageX: 10, pageY: 20 });
     expect(ctxMenuService.menuNodes.length).toBe(1);
 
-    ctxMenuService.hide();
+    ctxMenuService.hide(true);
     expect(onHide).toBeCalledTimes(1);
     expect(ctxMenuService.visible).toBeFalsy();
 
@@ -85,7 +85,7 @@ describe('test for packages/menu-bar/src/browser/menu-bar.store.ts', () => {
     expect(ctxMenuService.menuNodes.length).toBe(2);
     expect(ctxMenuService.onHide).toBeUndefined();
 
-    ctxMenuService.hide();
+    ctxMenuService.hide(true);
     ctxMenuService.show({
       anchor: { x: 1, y: 2 },
       menuNodes: [],

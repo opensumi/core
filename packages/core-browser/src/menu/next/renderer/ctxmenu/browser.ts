@@ -7,14 +7,14 @@ import { AbstractContextMenuService } from '../../menu.interface';
 
 export abstract class IBrowserCtxMenu extends ICtxMenuRenderer {
   visible: boolean;
-  onHide: (() => void) | undefined;
+  onHide: ((canceled: boolean) => void) | undefined;
   point?: {
     pageX: number;
     pageY: number;
   };
   context: any;
   menuNodes: MenuNode[];
-  abstract hide(): void;
+  abstract hide(canceled: boolean): void;
 }
 
 @Injectable()
