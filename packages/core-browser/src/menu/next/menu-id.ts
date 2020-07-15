@@ -37,6 +37,7 @@ export enum MenuId {
   SCMResourceGroupContext = 'scm/resourceGroup/context',
   SCMSourceControl = 'scm/sourceControl',
   SCMTitle = 'scm/title',
+  SCMInput = 'scm/input',
   SearchContext = 'search/context',
   StatusBarWindowIndicatorMenu = 'statusbar/windowIndicator',
   TouchBarContext = 'touchBar/context', /* 并未实现 */

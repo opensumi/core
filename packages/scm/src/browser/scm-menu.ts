@@ -19,6 +19,7 @@ interface ISCMMenus {
 @Injectable({ multiple: true })
 export class SCMMenus implements IDisposable {
   private titleMenu: IMenu;
+  private inputMenu: IMenu;
 
   private readonly resourceGroupMenuEntries: ISCMResourceGroupMenuEntry[] = [];
   private readonly resourceGroupMenus = new Map<ISCMResourceGroup, ISCMMenus>();
@@ -50,7 +51,9 @@ export class SCMMenus implements IDisposable {
     }
 
     this.titleMenu = this.menuService.createMenu(MenuId.SCMTitle, this.scopedCtxKeyService);
-    this.disposables.push(this.titleMenu);
+    this.inputMenu = this.menuService.createMenu(MenuId.SCMInput, this.scopedCtxKeyService);
+
+    this.disposables.push(this.titleMenu, this.inputMenu);
   }
 
   dispose(): void {
@@ -64,6 +67,13 @@ export class SCMMenus implements IDisposable {
    */
   getTitleMenu() {
     return this.titleMenu;
+  }
+
+  /**
+   * scm/input toolbar
+   */
+  getInputMenu() {
+    return this.inputMenu;
   }
 
   /**

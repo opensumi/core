@@ -1,19 +1,20 @@
 
 import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, IEventBus } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry, IEventBus, CommandService } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, IToolbarRegistry, ToolBarActionContribution, createToolbarActionBtn, createToolbarActionSelect } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 // import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 import { IStatusBarService} from '@ali/ide-core-browser/lib/services';
 import { OutputService } from '@ali/ide-output/lib/browser/output.service';
+import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { ISCMProvider } from '@ali/ide-scm';
 import { getIcon } from '@ali/ide-core-browser';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { ExampleEditorBottomWidget } from './editor-bottom-example';
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, ComponentContribution, ToolBarActionContribution, BrowserEditorContribution)
-export class StartupContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, ComponentContribution, ToolBarActionContribution, BrowserEditorContribution {
-
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, ComponentContribution, ToolBarActionContribution, NextMenuContribution, BrowserEditorContribution)
+export class StartupContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, ComponentContribution, ToolBarActionContribution, NextMenuContribution, BrowserEditorContribution {
   @Autowired(IEventBus)
   eventBus: IEventBus;
 
@@ -29,6 +30,13 @@ export class StartupContribution implements CommandContribution, KeybindingContr
   @Autowired(IToolbarRegistry)
   toolbarRegistry: IToolbarRegistry;
 
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
+
+  onStart() {
+
+  }
+
   registerEditorComponent(registry: EditorComponentRegistry) {
     registry.registerEditorSideWidget({
       id: 'example-bottom',
@@ -39,14 +47,25 @@ export class StartupContribution implements CommandContribution, KeybindingContr
     });
   }
 
-  onStart() {
-
-  }
-
   registerComponent(registry: ComponentRegistry) {
   }
 
   registerCommands(commands: CommandRegistry): void {
+    commands.registerCommand({
+      id: 'gitCommitAndPush',
+    }, {
+      execute: async (provider: ISCMProvider, commitMsg: string) => {
+        // 强依赖了 git 插件的命令
+        const mergeChanges = provider.groups.elements.filter((n) => n.id === 'merge');
+        if (mergeChanges.length > 0) {
+          // console.log('有冲突尚未解决，请先解决');
+          return;
+        }
+        await this.commandService.executeCommand('git.stageAll', provider);
+        await this.commandService.executeCommand('git.commit', provider);
+        await this.commandService.executeCommand('git.push', provider);
+      },
+    });
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
@@ -178,6 +197,26 @@ export class StartupContribution implements CommandContribution, KeybindingContr
         ],
         defaultValue: 'cc',
       }),
+    });
+  }
+
+  registerNextMenus(menuRegistry: IMenuRegistry) {
+    menuRegistry.registerMenuItem(MenuId.SCMInput, {
+      command: {
+        id: 'gitCommitAndPush',
+        label: '提交并推送',
+      },
+      group: 'navigation',
+      type: 'primary',
+    });
+
+    menuRegistry.registerMenuItem(MenuId.SCMInput, {
+      command: {
+        id: 'editor.action.quickCommand',
+        label: '打开 quick open',
+      },
+      group: 'navigation',
+      type: 'primary',
     });
   }
 }
