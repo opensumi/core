@@ -4,7 +4,7 @@ import { FitAddon } from 'xterm-addon-fit';
 import { SearchAddon } from 'xterm-addon-search';
 import { WebLinksAddon } from 'xterm-addon-web-links';
 import { Injectable, Autowired, Injector } from '@ali/common-di';
-import { Disposable, Deferred, Emitter, debounce } from '@ali/ide-core-common';
+import { Disposable, Deferred, Emitter, Event, debounce } from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
@@ -38,6 +38,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private _ready: boolean = false;
   private _attached = new Deferred<void>();
   private _firstStdout = new Deferred<void>();
+  private _show: Deferred<void> | null;
   /** end */
 
   @Autowired(ITerminalInternalService)
@@ -71,10 +72,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   protected readonly keyboard: TerminalKeyBoardInputService;
 
   private _onInput = new Emitter<ITerminalDataEvent>();
-  onInput = this._onInput.event;
+  onInput: Event<ITerminalDataEvent> = this._onInput.event;
 
   private _onOutput = new Emitter<ITerminalDataEvent>();
-  onOutput = this._onOutput.event;
+  onOutput: Event<ITerminalDataEvent> = this._onOutput.event;
 
   @Autowired(IOpenerService)
   private readonly openerService: IOpenerService;
@@ -93,7 +94,26 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     });
 
     this.addDispose(this.preference.onChange(({ name, value }) => {
-      this._term.setOption(name, value);
+      if (!widget.show) {
+        if (!this._show) {
+          this._show = new Deferred();
+          this._show.promise.then(() => this._setOption(name, value));
+        } else {
+          this._show.promise.then(() => this._setOption(name, value));
+        }
+      } else {
+        this._setOption(name, value);
+      }
+    }));
+
+    this.addDispose(widget.onShow((status) => {
+      if (status) {
+        this.layout();
+        if (this._show) {
+          this._show.resolve();
+          this._show = null;
+        }
+      }
     }));
 
     const { dispose } = this.onOutput(() => {
@@ -142,6 +162,14 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   get attached() {
     return this._attached;
+  }
+
+  get firstOutput() {
+    return this._firstStdout;
+  }
+
+  get show() {
+    return this._show;
   }
 
   private _prepareAddons() {
@@ -227,10 +255,20 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   reset() {
+    this._attached.reject();
+    this._firstStdout.reject();
+    this._show && this._show.reject();
     this._ready = false;
     this._attached = new Deferred<void>();
-    this._firstStdout = new Deferred<void>();
+    this._show = new Deferred<void>();
     this._attachAddon.dispose();
+    // fit 操作在对比行列没有发送变化的时候不会做任何操作，
+    // 但是实际上是设置为 display none 了，所以手动 resize 一下
+    this._term.resize(1, 1);
+    const { dispose } = this.onOutput(() => {
+      dispose();
+      this._firstStdout.resolve();
+    });
     this.attach();
   }
 
@@ -240,14 +278,19 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     }
   }
 
+  private _setOption(name: string, value: string | number | boolean) {
+    this._term.setOption(name, value);
+    this.layout();
+  }
+
   private _checkReady() {
     if (!this._ready) {
       throw new Error('client not ready');
     }
   }
 
-  layout() {
-    this._checkReady();
+  private async layout() {
+    await this._attached.promise;
     if (!this._term.element || this._term.element.clientHeight === 0 || this._term.element.clientWidth === 0) {
       setTimeout(() => {
         this._container.innerHTML = '';
@@ -284,7 +327,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     }));
 
     this.addDispose(widget.onResize(async () => {
-      await this._attached.promise;
       this._debouceResize();
     }));
 

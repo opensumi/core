@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { PreferenceService } from '@ali/ide-core-browser';
-import { Emitter } from '@ali/ide-core-common';
+import { Emitter, Event } from '@ali/ide-core-common';
 import { ITerminalPreference, IPreferenceValue, DefaultOptions, OptionTypeName, DefaultOptionValue } from '../common/preference';
 
 @Injectable()
@@ -16,13 +16,17 @@ export class TerminalPreference implements ITerminalPreference {
   };
 
   private _onChange = new Emitter<IPreferenceValue>();
-  onChange = this._onChange.event;
+  onChange: Event<IPreferenceValue> = this._onChange.event;
 
   @Autowired(PreferenceService)
   service: PreferenceService;
 
   protected _prefToOption(pref: string): string {
     return pref.replace('terminal.', '');
+  }
+
+  protected _optionToPref(option: string): string {
+    return `terminal.${option}`;
   }
 
   protected _valid(option: string, value: any): any {
@@ -51,7 +55,7 @@ export class TerminalPreference implements ITerminalPreference {
   }
 
   get<T = any>(option: string): T {
-    const val = this.service.get<T>(option, DefaultOptionValue[option]);
+    const val = this.service.get<T>(this._optionToPref(option), DefaultOptionValue[option]);
     return this._valid(option, val);
   }
 

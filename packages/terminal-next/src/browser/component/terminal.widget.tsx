@@ -7,6 +7,7 @@ import * as styles from './terminal.module.less';
 
 export interface IProps {
   widget: IWidget;
+  show: boolean;
   error: ITerminalError | undefined;
 }
 
@@ -41,7 +42,7 @@ function renderError(error: ITerminalError, eService: ITerminalErrorService, vie
   );
 }
 
-export default ({ widget, error }: IProps) => {
+export default ({ widget, error, show }: IProps) => {
   const content = React.createRef<HTMLDivElement>();
   const errorService = useInjectable<ITerminalErrorService>(ITerminalErrorService);
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
@@ -51,6 +52,10 @@ export default ({ widget, error }: IProps) => {
       widget.element = content.current;
     }
   }, []);
+
+  React.useEffect(() => {
+    widget.show = !error && show;
+  }, [show]);
 
   const onFocus = () => {
     view.selectWidget(widget.id);

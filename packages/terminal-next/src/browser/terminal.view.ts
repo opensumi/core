@@ -1,12 +1,13 @@
 import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { Emitter, Disposable } from '@ali/ide-core-browser';
+import { Emitter, Disposable, Event } from '@ali/ide-core-browser';
 import { ITerminalGroupViewService, IWidget, ITerminalInternalService, userActionViewUuid, IWidgetGroup } from '../common';
 
 export class Widget extends Disposable implements IWidget {
   protected _id: string;
   protected _group: WidgetGroup;
   protected _element: HTMLDivElement;
+  protected _show: boolean;
 
   @observable
   dynamic: number = 0;
@@ -46,10 +47,21 @@ export class Widget extends Disposable implements IWidget {
     }
   }
 
+  get show() {
+    return this._show;
+  }
+
+  set show(status: boolean) {
+    this._show = status;
+    this._onShow.fire(status);
+  }
+
   protected _onRender = new Emitter<void>();
   protected _onResize = new Emitter<void>();
-  onRender = this._onRender.event;
-  onResize = this._onResize.event;
+  protected _onShow = new Emitter<boolean>();
+  onRender: Event<void> = this._onRender.event;
+  onResize: Event<void> = this._onResize.event;
+  onShow: Event<boolean> = this._onShow.event;
 
   resize(dynamic?: number) {
     this.dynamic = dynamic || this.shadowDynamic;

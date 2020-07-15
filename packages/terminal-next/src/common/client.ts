@@ -50,6 +50,16 @@ export interface ITerminalClient extends Disposable {
   attached: Deferred<void>;
 
   /**
+   * 首次消息输出
+   */
+  firstOutput: Deferred<void>;
+
+  /**
+   *
+   */
+  show: Deferred<void> | null;
+
+  /**
    * Xterm 实例
    */
   term: Terminal;
@@ -73,11 +83,6 @@ export interface ITerminalClient extends Disposable {
    * 重置
    */
   reset(): void;
-
-  /**
-   * 重新计算宽高
-   */
-  layout(): void;
 
   /**
    * 全选内容

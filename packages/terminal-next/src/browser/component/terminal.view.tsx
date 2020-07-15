@@ -27,11 +27,11 @@ export default observer(() => {
     }
   });
 
-  const renderWidget = (widget: IWidget) => {
+  const renderWidget = (widget: IWidget, index: number) => {
     const client = controller.findClientFromWidgetId(widget.id);
     const error = client && errors.get(client.id);
     return (
-      <TerminalWidget error={ error } widget={ widget } />
+      <TerminalWidget show={ !error && currentGroupIndex === index } error={ error } widget={ widget } />
     );
   };
 
@@ -85,19 +85,19 @@ export default observer(() => {
               return;
             }
             return (<div
-                data-group-rendered={ group.activated }
-                key={ `terminal-${group.id}` }
-                style={ { display: currentGroupIndex === index ? 'block' : 'none' } }
-                className={ styles.group }
-              >
-                <ResizeView
-                  shadow={ false }
-                  useFlex={ false }
-                  direction={ ResizeDirection.horizontal }
-                  group={ group }
-                  draw={ (widget: IWidget) => renderWidget(widget) }
-                />
-              </div>);
+              data-group-rendered={ group.activated }
+              key={ `terminal-${group.id}` }
+              style={ { display: currentGroupIndex === index ? 'block' : 'none' } }
+              className={ styles.group }
+            >
+              <ResizeView
+                shadow={ false }
+                useFlex={ false }
+                direction={ ResizeDirection.horizontal }
+                group={ group }
+                draw={ (widget: IWidget) => renderWidget(widget, index) }
+              />
+            </div>);
           })
       }
     </div>
