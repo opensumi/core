@@ -133,6 +133,9 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   }
 
   async startNode() {
+    if (this.node) {
+      this.clear();
+    }
     this._nodeReady = new Deferred();
     this.node = new KTNodeProcess(this.appConfig.nodeEntry, this.appConfig.extensionEntry, this.windowClientId, this.appConfig.extensionDir);
     this.rpcListenPath = normalizedIpcHandlerPath('electron-window', true);
