@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { URI, Emitter, Event, Schemas, WithEventBus, IEditorDocumentChange, IEditorDocumentModelSaveResult, localize, AppConfig, CommandService, CorePreferences, isWindows } from '@ali/ide-core-browser';
 import * as path from '@ali/ide-core-common/lib/path';
 
-import { IResourceProvider, WorkbenchEditorService } from '../common';
+import { IResourceProvider, WorkbenchEditorService, EOL } from '../common';
 import { IEditorDocumentModelService, IEditorDocumentModelContentProvider } from './doc-model/types';
 
 @Injectable()
@@ -41,7 +41,7 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
     if (eol !== 'auto') {
       return eol;
     }
-    return isWindows ? '\r\n' : '\n';
+    return isWindows ? EOL.CRLF : EOL.LF;
   }
 
   async provideEditorDocumentModelContent(uri: URI, encoding?: string | undefined): Promise<string> {
