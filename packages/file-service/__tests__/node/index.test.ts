@@ -187,8 +187,13 @@ describe('FileService', () => {
 
       const stat = await fileService.getFileStat(uri.toString());
       expect(stat).toBeDefined();
+      await fileService.setContent(stat!, 'bar', {encoding: 'ascii'});
+      expect(fs.readFileSync(FileUri.fsPath(uri), 'ascii')).toEqual('bar');
+      const newStat = await fileService.getFileStat(uri.toString());
+      expect(newStat).toBeDefined();
+      await fileService.updateContent(newStat!, [{text: 'foo'}], {encoding: 'ascii'});
+      expect(fs.readFileSync(FileUri.fsPath(uri), 'ascii')).toEqual('foo');
       await expectThrowsAsync(fileService.setContent(stat!, 'baz', { encoding: 'unknownEncoding' }), Error);
-
     });
 
     it('Should return with a stat representing the latest state of the successfully modified file.', async () => {
