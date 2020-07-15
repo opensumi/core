@@ -6,8 +6,6 @@ import { Disposable, DomListener, useInjectable } from '@ali/ide-core-browser';
 declare const ResizeObserver: any;
 declare const MutationObserver: any;
 
-const WEBVIEW_OVERLAY_CONTAINER_ID = 'webview-overlay-container';
-
 export const EditorWebviewComponentView: ReactEditorComponent<IEditorWebviewMetaData> = ({resource}) => {
 
   const webview = resource && resource.metadata && resource.metadata.editorWebview.webview;
@@ -15,7 +13,7 @@ export const EditorWebviewComponentView: ReactEditorComponent<IEditorWebviewMeta
 
   React.useEffect(() => {
     if (webview && container) {
-      const mounter = new WebviewMounter(webview, container, document.getElementById('workbench-editor')!);
+      const mounter = new WebviewMounter(webview, container, document.getElementById('workbench-editor')!, document.getElementById('workbench-editor')!);
       webview.onRemove(() => {
         mounter.dispose();
       });
@@ -33,7 +31,7 @@ export const EditorWebviewComponentView: ReactEditorComponent<IEditorWebviewMeta
  * 同一个ID创建的webview会保存在内存以便重复使用，不要使用这个组件进行大量不同webview的创建
  * @param param0
  */
-export const PlainWebview: React.FunctionComponent<{id: string}> = ({id}) => {
+export const PlainWebview: React.FunctionComponent<{id: string, renderRoot?: HTMLElement}> = ({id, renderRoot = document.body}) => {
 
   let container: HTMLDivElement | null = null;
   const webviewService = useInjectable(IWebviewService) as IWebviewService;
@@ -41,7 +39,7 @@ export const PlainWebview: React.FunctionComponent<{id: string}> = ({id}) => {
   React.useEffect(() => {
     const component = webviewService.getOrCreatePlainWebviewComponent(id);
     if (component && container) {
-      const mounter = new WebviewMounter(component.webview, container, document.getElementById('workbench-editor')!);
+      const mounter = new WebviewMounter(component.webview, container, document.getElementById('workbench-editor')!, renderRoot);
       component.webview.onRemove(() => {
         mounter.dispose();
       });
@@ -62,7 +60,7 @@ class WebviewMounter extends Disposable {
 
   private _container: HTMLElement | null;
 
-  constructor(private webview: IWebview | IPlainWebview, private container: HTMLElement, private mutationRoot: HTMLElement) {
+  constructor(private webview: IWebview | IPlainWebview, private container: HTMLElement, mutationRoot: HTMLElement, private renderRoot: HTMLElement = document.body) {
     super();
     if (!this.webview.getDomNode()) {
       return;
@@ -104,7 +102,6 @@ class WebviewMounter extends Disposable {
           this._container = null;
           this.webview  = null as any;
           this.container = null as any;
-          this.mutationRoot = null as any;
         }
         resizeObserver.disconnect();
         mutationObserver.disconnect();
@@ -136,8 +133,9 @@ class WebviewMounter extends Disposable {
           this.webview.setListenMessages(true);
         }
       }
-      this.webview.getDomNode()!.style.top = rect.top + 'px';
-      this.webview.getDomNode()!.style.left = rect.left + 'px';
+      const renderRootRects = this.renderRoot.getBoundingClientRect();
+      this.webview.getDomNode()!.style.top = (rect.top - renderRootRects.top) + 'px';
+      this.webview.getDomNode()!.style.left = (rect.left - renderRootRects.left) + 'px';
       this.webview.getDomNode()!.style.height = rect.height + 'px';
       this.webview.getDomNode()!.style.width = rect.width + 'px';
       this.mounting = 0;
@@ -148,16 +146,18 @@ class WebviewMounter extends Disposable {
     if (this._container) {
       return this._container;
     }
-    if (!document.getElementById(WEBVIEW_OVERLAY_CONTAINER_ID)) {
+    let mountContainer = this.renderRoot.querySelector(':scope > div[data-webview-container=true]');
+    if (!mountContainer) {
       const container = document.createElement('div');
-      container.id = WEBVIEW_OVERLAY_CONTAINER_ID;
       container.style.zIndex = '2';
       container.style.position = 'absolute';
+      container.setAttribute('data-webview-container', 'true');
       container.style.top = '0';
-      document.body.appendChild(container);
+      this.renderRoot.appendChild(container);
+      mountContainer = container;
     }
     this._container = document.createElement('div');
-    document.getElementById(WEBVIEW_OVERLAY_CONTAINER_ID)!.appendChild(this._container);
+    mountContainer!.appendChild(this._container);
     return this._container!;
   }
 
