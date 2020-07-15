@@ -110,7 +110,7 @@ export class FileServiceClient implements IFileServiceClient {
     if (!(await this.isInSync(file, stat))) {
       throw this.createOutOfSyncError(file, stat);
     }
-    await provider.writeFile(_uri.codeUri, content, { create: false, overwrite: true });
+    await provider.writeFile(_uri.codeUri, content, { create: false, overwrite: true, encoding: options?.encoding });
     const newStat = await provider.stat(_uri.codeUri);
     if (newStat) {
       return newStat;
@@ -136,7 +136,7 @@ export class FileServiceClient implements IFileServiceClient {
     }
     const content = await provider.readFile(_uri.codeUri);
     const newContent = this.applyContentChanges(content, contentChanges);
-    await provider.writeFile(_uri.codeUri, newContent, { create: false, overwrite: true });
+    await provider.writeFile(_uri.codeUri, newContent, { create: false, overwrite: true, encoding: options?.encoding });
     const newStat = await provider.stat(_uri.codeUri);
     if (newStat) {
       return newStat;
@@ -152,6 +152,7 @@ export class FileServiceClient implements IFileServiceClient {
     let newStat: any = await provider.writeFile(_uri.codeUri, content, {
       create: true,
       overwrite: options && options.overwrite || false,
+      encoding: options?.encoding,
     });
     newStat = newStat || await provider.stat(_uri.codeUri);
     if (newStat) {
