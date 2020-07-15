@@ -722,7 +722,7 @@ export class TextEdit {
   }
 
   static setEndOfLine(eol: EndOfLine): TextEdit {
-    const ret = new TextEdit(undefined, undefined);
+    const ret = new TextEdit(new Range(new Position(0, 0), new Position(0, 0)), '');
     ret.newEol = eol;
     return ret;
   }

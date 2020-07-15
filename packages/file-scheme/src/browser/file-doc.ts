@@ -1,4 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
+import { EOL } from '@ali/ide-editor';
 import { IEditorDocumentModelContentProvider, EditorPreferences } from '@ali/ide-editor/lib/browser';
 import { FILE_SCHEME, FILE_SAVE_BY_CHANGE_THRESHOLD, IFileSchemeDocClient } from '../common';
 import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, CorePreferences, ISchemaStore, IDisposable, Disposable, ISchemaRegistry, replaceLocalizePlaceholder, isWindows } from '@ali/ide-core-browser';
@@ -60,7 +61,7 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
     if (eol !== 'auto') {
       return eol;
     }
-    return isWindows ? '\r\n' : '\n';
+    return isWindows ? EOL.CRLF : EOL.LF;
   }
 
   async provideEditorDocumentModelContent(uri: URI, encoding) {
