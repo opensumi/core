@@ -99,7 +99,7 @@ export class ElectronCtxMenuRenderer implements IElectronCtxMenuRenderer {
     this.createNativeContextMenu({submenu: template}, onHide);
   }
 
-  createNativeContextMenu(template: INativeMenuTemplate, onHide?: () => void) {
+  createNativeContextMenu(template: INativeMenuTemplate, onHide?: (canceled) => void) {
     this.electronMainMenuService.showContextMenu(template, electronEnv.currentWebContentsId);
     const disposer = new Disposable();
     disposer.addDispose(this.electronMainMenuService.on('menuClose', (targetId, contextMenuId) => {
@@ -108,7 +108,7 @@ export class ElectronCtxMenuRenderer implements IElectronCtxMenuRenderer {
       }
       disposer.dispose();
       if (onHide) {
-        onHide();
+        onHide(true);
       }
     }));
 

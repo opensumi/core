@@ -10,7 +10,7 @@ export class BrowserCtxMenuService implements IBrowserCtxMenu {
   visible: boolean = false;
 
   @observable
-  onHide: (() => void) | undefined = undefined;
+  onHide: ((canceled: boolean) => void) | undefined = undefined;
 
   @observable
   point: { pageX: number; pageY: number; } | undefined = undefined;
@@ -38,9 +38,9 @@ export class BrowserCtxMenuService implements IBrowserCtxMenu {
   }
 
   @action.bound
-  public hide() {
+  public hide(canceled: boolean) {
     if (typeof this.onHide === 'function') {
-      this.onHide();
+      this.onHide(canceled);
     }
     this.reset();
   }

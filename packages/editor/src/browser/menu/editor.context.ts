@@ -74,6 +74,11 @@ export class EditorContextMenuController extends Disposable {
       anchor,
       menuNodes,
       args: [ this.editor.currentUri ],
+      onHide: (canceled) => {
+        if (!canceled) {
+          this.editor.monacoEditor.focus();
+        }
+      },
     });
   }
 

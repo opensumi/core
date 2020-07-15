@@ -12,7 +12,7 @@ export const CtxMenu = observer(() => {
   const ctxMenuService = useInjectable<IBrowserCtxMenu>(IBrowserCtxMenu);
 
   const handleClick = React.useCallback(() => {
-    ctxMenuService.hide();
+    ctxMenuService.hide(false);
   }, []);
 
   // todo: 缓存上一次点击 visible 完成 toggle 效果
@@ -34,7 +34,7 @@ export const CtxMenu = observer(() => {
       popup={(
         <ClickOutside
           mouseEvents={['click', 'contextmenu']}
-          onOutsideClick={() => ctxMenuService.hide()}>
+          onOutsideClick={() => ctxMenuService.hide(true)}>
           <MenuActionList
             data={ctxMenuService.menuNodes}
             afterClick={handleClick}

@@ -10,7 +10,7 @@ export interface CtxMenuParams extends IMenuNodeOptions {
 
 export interface CtxMenuRenderParams extends CtxMenuParams {
   anchor: MouseEvent | { x: number, y: number };
-  onHide?: () => void;
+  onHide?: (canceled: boolean) => void;
 }
 
 export abstract class ICtxMenuRenderer {
