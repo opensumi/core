@@ -244,6 +244,11 @@ interface BaseActionListProps {
    * InlineAction 点击之后的回调
    */
   afterClick?: () => void;
+
+  /**
+   * 只显示 more 按钮而不显示 nav 内容
+   */
+  onlyMore?: boolean;
 }
 
 /**
@@ -264,6 +269,7 @@ export const TitleActionList: React.FC<{
   moreAtFirst = false,
   className,
   afterClick,
+  onlyMore,
 }) => {
   const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
 
@@ -293,7 +299,7 @@ export const TitleActionList: React.FC<{
     <div className={clsx([styles.titleActions, className])}>
       { moreAtFirst && moreAction }
       {
-        primary.map((item) => (
+        !onlyMore && primary.map((item) => (
           <InlineActionWidget
             className={clsx({ [styles.selected]: item.checked })}
             type={type}

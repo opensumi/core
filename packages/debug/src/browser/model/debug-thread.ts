@@ -33,7 +33,7 @@ export class DebugThread extends DebugThreadData {
   }
   set currentFrame(frame: DebugStackFrame | undefined) {
     this._currentFrame = frame;
-    this.onDidChangedEmitter.fire(undefined);
+    this.onDidChangedEmitter.fire();
   }
 
   get stopped(): boolean {
@@ -147,6 +147,7 @@ export class DebugThread extends DebugThreadData {
     this.currentFrame = typeof frameId === 'number' &&
       this._frames.get(frameId) ||
       this._frames.values().next().value;
+    this.onDidChangedEmitter.fire();
   }
 
   protected toArgs<T extends object>(arg?: T): { threadId: number } & T {

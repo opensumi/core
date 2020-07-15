@@ -3,7 +3,7 @@ import {
   Event,
   URI,
   DisposableCollection,
-  Disposable,
+  Deferred,
   IDisposable,
   Mutable,
 } from '@ali/ide-core-browser';
@@ -17,13 +17,12 @@ import { DebugSource } from './model/debug-source';
 import { DebugConfiguration } from '../common';
 import { StoppedDetails, DebugThread, DebugThreadData } from './model/debug-thread';
 import { IMessageService } from '@ali/ide-overlay';
-import { DebugBreakpoint, DebugBreakpointData } from './model/debug-breakpoint';
-import { BreakpointManager } from './breakpoint/breakpoint-manager';
-import { SourceBreakpoint } from './breakpoint';
+import { BreakpointManager, BreakpointsChangeEvent, IRuntimeBreakpoint, DebugBreakpoint } from './breakpoint';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { DebugModelManager } from './editor/debug-model-manager';
-import { ITerminalApiService, TerminalOptions} from '@ali/ide-terminal-next';
+import { ITerminalApiService, TerminalOptions } from '@ali/ide-terminal-next';
+import { ExpressionContainer } from './tree/debug-tree-node.define';
 
 export enum DebugState {
   Inactive,
@@ -40,13 +39,8 @@ export class DebugSession implements IDisposable {
     this.onDidChangeEmitter.fire(undefined);
   }
 
-  // 断点改变事件
-  protected readonly onDidChangeBreakpointsEmitter = new Emitter<URI>();
-  readonly onDidChangeBreakpoints: Event<URI> = this.onDidChangeBreakpointsEmitter.event;
-
-  protected fireDidChangeBreakpoints(uri: URI): void {
-    this.onDidChangeBreakpointsEmitter.fire(uri);
-  }
+  private _onVariableChange = new Emitter<void>();
+  readonly onVariableChange: Event<void> = this._onVariableChange.event;
 
   protected readonly toDispose = new DisposableCollection();
 
@@ -55,6 +49,8 @@ export class DebugSession implements IDisposable {
   get capabilities(): DebugProtocol.Capabilities {
     return this._capabilities;
   }
+
+  protected updateDeffered: Deferred<void> | null = null;
 
   constructor(
     readonly id: string,
@@ -68,22 +64,19 @@ export class DebugSession implements IDisposable {
     protected readonly messages: IMessageService,
     protected readonly fileSystem: IFileServiceClient) {
 
-    this.connection.onRequest('runInTerminal', (request: DebugProtocol.RunInTerminalRequest) => this.runInTerminal(request));
+    this.connection.onRequest('runInTerminal', (request: DebugProtocol.RunInTerminalRequest) => {
+      this.runInTerminal(request);
+    });
 
     this.toDispose.pushAll([
       this.onDidChangeEmitter,
-      this.onDidChangeBreakpointsEmitter,
-      Disposable.create(() => {
-        // 清理断点
-        this.clearBreakpoints();
-        // 更新线程
-        this.doUpdateThreads([]);
-      }),
       this.connection,
       // 返回调试配置
-      this.on('initialized', () => this.configure()),
+      this.on('initialized', () => {
+        this.configure();
+      }),
       // 更新断点
-      this.on('breakpoint', ({ body }) => this.updateBreakpoint(body)),
+      this.on('breakpoint', ({ body }) => this.onUpdateBreakpoint(body)),
       this.on('continued', ({ body: { allThreadsContinued, threadId } }) => {
         // 更新线程
         if (allThreadsContinued !== false) {
@@ -93,8 +86,10 @@ export class DebugSession implements IDisposable {
         }
       }),
       this.on('stopped', async ({ body }) => {
+        this.updateDeffered = new Deferred();
         await this.updateThreads(body);
         await this.updateFrames();
+        this.updateDeffered.resolve();
       }),
       this.on('thread', ({ body: { reason, threadId } }) => {
         if (reason === 'started') {
@@ -109,11 +104,16 @@ export class DebugSession implements IDisposable {
         this.terminated = true;
       }),
       this.on('capabilities', (event) => this.updateCapabilities(event.body.capabilities)),
-      // 断点更新时更新断点数据
-      this.breakpoints.onDidChangeMarkers((uri) => this.updateBreakpoints({ uri, sourceModified: true })),
+      this.breakpoints.onDidChangeBreakpoints((event) => this.updateBreakpoint(event)),
       this.breakpoints.onDidChangeExceptionsBreakpoints((args) => {
         this.sendExceptionBreakpoints(args);
       }),
+      {
+        dispose: () => {
+          // 清除断点的运行时状态
+          this.breakpoints.clearAllStatus(this.id);
+        },
+      },
     ]);
   }
 
@@ -122,13 +122,14 @@ export class DebugSession implements IDisposable {
   }
 
   async start(): Promise<void> {
+    await this.workbenchEditorService.saveAll();
     await this.initialize();
     await this.launchOrAttach();
   }
 
   protected async runInTerminal({ arguments: { title, cwd, args, env } }: DebugProtocol.RunInTerminalRequest): Promise<DebugProtocol.RunInTerminalResponse['body']> {
     // TODO: shellPath 参数解析
-    return this.doRunInTerminal({ name: title, cwd,  env }, args.join(' '));
+    return this.doRunInTerminal({ name: title, cwd, env }, args.join(' '));
   }
 
   protected async doRunInTerminal(options: TerminalOptions, command?: string): Promise<DebugProtocol.RunInTerminalResponse['body']> {
@@ -165,14 +166,14 @@ export class DebugSession implements IDisposable {
       }
     } catch (reason) {
       this.fireExited(reason);
-      await this.messages.error(reason.message || 'Debug session initialization failed. See console for details.');
-      throw reason;
+      this.messages.error(reason.message || 'Debug session initialization failed. See console for details.');
+      throw reason && reason.message;
     }
   }
   protected initialized = false;
 
   protected async configure(): Promise<void> {
-    await this.updateBreakpoints({ sourceModified: false });
+    await this.initBreakpoints();
     // 更新exceptionBreakpoint配置
     this.breakpoints.setExceptionBreakpoints(this.capabilities.exceptionBreakpointFilters || []);
     if (this.capabilities.supportsConfigurationDoneRequest) {
@@ -182,162 +183,118 @@ export class DebugSession implements IDisposable {
     await this.updateThreads(undefined);
   }
 
-  protected async sendExceptionBreakpoints(args: DebugProtocol.SetExceptionBreakpointsArguments): Promise<DebugProtocol.SetExceptionBreakpointsResponse> {
+  protected async sendExceptionBreakpoints(
+    args: DebugProtocol.SetExceptionBreakpointsArguments,
+  ): Promise<DebugProtocol.SetExceptionBreakpointsResponse> {
     return this.sendRequest('setExceptionBreakpoints', args);
   }
 
-  protected readonly _breakpoints = new Map<string, DebugBreakpoint[]>();
-  protected async updateBreakpoints(options: {
-    uri?: URI,
-    sourceModified: boolean,
-  }): Promise<void> {
-    if (this.updatingBreakpoints) {
+  /**
+   * runtime 时候的临时缓存，每次调试的时候都应该清空，
+   * 会等待首次初始化完成
+   */
+  protected id2Breakpoint = new Map<number, DebugBreakpoint>();
+  /**
+   * 运行时的断点修改
+   *
+   * @param body
+   */
+  protected async onUpdateBreakpoint(body: any): Promise<void> {
+    let breakpoint: DebugBreakpoint | undefined;
+    if (this.settingBreakpoints) {
+      await this.settingBreakpoints.promise;
+    }
+
+    switch (body.reason) {
+      case 'new':
+        if (!this.id2Breakpoint.has(body.breakpoint.id)) {
+          this.breakpoints.addBreakpoint(body.breakpoint);
+        }
+        break;
+      case 'removed':
+        breakpoint = this.id2Breakpoint.get(body.breakpoint.id);
+        if (breakpoint) {
+          this.breakpoints.delBreakpoint(breakpoint);
+        }
+        break;
+      case 'changed':
+        breakpoint = this.id2Breakpoint.get(body.breakpoint.id);
+        if (breakpoint) {
+          (breakpoint as IRuntimeBreakpoint).status.set(this.id, body.breakpoint);
+          this.breakpoints.updateBreakpoint(breakpoint);
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  private async setBreakpoints(affected: URI[]) {
+    const promises: Promise<void>[] = [];
+    for (const uri of affected) {
+      const source = await this.toSource(uri);
+      const enabled = this.breakpoints.getBreakpoints(uri).filter((b) => b.enabled);
+
+      promises.push(
+        this.sendRequest('setBreakpoints', {
+          source: source.raw,
+          sourceModified: false,
+          lines: enabled.map((breakpoint) => breakpoint.raw.line),
+          breakpoints: enabled.map((breakpoint) => breakpoint.raw),
+        })
+          .then((res) => {
+            res.body.breakpoints.forEach((status, index) => {
+              if (status.id) {
+                this.id2Breakpoint.set(status.id, enabled[index]);
+              }
+              (enabled[index] as IRuntimeBreakpoint).status.set(this.id, status);
+            });
+            this.breakpoints.updateBreakpoints(enabled, true);
+            return Promise.resolve();
+          })
+          .catch((error) => {
+            if (!(error instanceof Error)) {
+              const genericMessage: string = 'Breakpoint not valid for current debug session';
+              const message: string = error.message ? `${error.message}` : genericMessage;
+              enabled.forEach((breakpoint) => {
+                (breakpoint as IRuntimeBreakpoint).status.set(this.id, { verified: false, message });
+                this.breakpoints.updateBreakpoint(breakpoint, true);
+              });
+            }
+          }));
+    }
+
+    return await Promise.all(promises);
+  }
+
+  /**
+   * 运行时修改断点信息
+   */
+  async updateBreakpoint(event: BreakpointsChangeEvent) {
+    const { affected, statusUpdated } = event;
+
+    if (statusUpdated) {
       return;
     }
-    const { uri, sourceModified } = options;
-    for (const affectedUri of this.getAffectedUris(uri)) {
-      const source = await this.toSource(affectedUri);
-      const all = this.breakpoints.findMarkers({ uri: affectedUri }).map(({ data }) =>
-        new DebugBreakpoint(data, this.labelProvider, this.breakpoints, this.workbenchEditorService, this),
-      );
-      const enabled = all.filter((b) => b.enabled);
 
-      try {
-        const response = await this.sendRequest('setBreakpoints', {
-          source: source.raw,
-          sourceModified,
-          lines: enabled.map(({ origin }) => origin.raw.line),
-          breakpoints: enabled.map(({ origin }) => origin.raw),
-        });
-        response.body.breakpoints.map((raw, index) => enabled[index].update({ raw }));
-      } catch (error) {
-        // could be error or promise rejection of DebugProtocol.SetBreakpointsResponse
-        if (error instanceof Error) {
-          // console.error(`Error setting breakpoints: ${error.message}`);
-        } else {
-          // handle adapters that send failed DebugProtocol.SetBreakpointsResponse for invalid breakpoints
-          const genericMessage: string = 'Breakpoint not valid for current debug session';
-          const message: string = error.message ? `${error.message}` : genericMessage;
-          // console.warn(`Could not handle breakpoints for ${affectedUri}: ${message}, disabling...`);
-          enabled.forEach((brkPoint: DebugBreakpoint) => {
-            const debugBreakpointData: Partial<DebugBreakpointData> = {
-              raw: {
-                verified: false,
-                message,
-              },
-            };
-            brkPoint.update(debugBreakpointData);
-          });
-        }
-      } finally {
-        this.setBreakpoints(affectedUri, all);
-      }
-    }
+    return await this.setBreakpoints(affected);
   }
 
-  protected setBreakpoints(uri: URI, breakpoints: DebugBreakpoint[]): void {
-    const distinct = this.dedupBreakpoints(breakpoints);
-    this._breakpoints.set(uri.toString(), distinct);
-    this.fireDidChangeBreakpoints(uri);
-  }
-  protected dedupBreakpoints(all: DebugBreakpoint[]): DebugBreakpoint[] {
-    const lines = new Map<number, DebugBreakpoint>();
-    for (const breakpoint of all) {
-      let primary = lines.get(breakpoint.line) || breakpoint;
-      if (primary !== breakpoint) {
-        let secondary = breakpoint;
-        if (secondary.raw && secondary.raw.line === secondary.origin.raw.line) {
-          [primary, secondary] = [breakpoint, primary];
-        }
-        primary.origins.push(...secondary.origins);
-      }
-      lines.set(primary.line, primary);
-    }
-    return [...lines.values()];
-  }
-  protected getAffectedUris(uri?: URI): URI[] {
-    const uris: URI[] = [];
-    if (uri) {
-      uris.push(uri);
-    } else {
-      for (const uriString of this.breakpoints.getUris()) {
-        uris.push(new URI(uriString));
-      }
-    }
-    return uris;
-  }
-  get breakpointUris(): IterableIterator<string> {
-    return this._breakpoints.keys();
-  }
-  getBreakpoints(uri?: URI): DebugBreakpoint[] {
-    if (uri) {
-      return this._breakpoints.get(uri.toString()) || [];
-    }
-    const result: any[] = [];
-    for (const breakpoints of this._breakpoints.values()) {
-      result.push(...breakpoints);
-    }
-    return result;
-  }
-  protected clearBreakpoints(): void {
-    const uris = [...this._breakpoints.keys()];
-    this._breakpoints.clear();
-    for (const uri of uris) {
-      this.fireDidChangeBreakpoints(new URI(uri));
-    }
-  }
+  /**
+   * 初始化断点信息的锁
+   */
+  protected settingBreakpoints: Deferred<void> | null = null;
+  /**
+   * 初始化加载用户的断点信息
+   */
+  protected async initBreakpoints() {
+    this.settingBreakpoints = new Deferred();
+    this.id2Breakpoint.clear();
 
-  protected updatingBreakpoints = false;
-  protected updateBreakpoint(body: DebugProtocol.BreakpointEvent['body']): void {
-    this.updatingBreakpoints = true;
-    try {
-      const raw = body.breakpoint;
-      if (body.reason === 'new') {
-        if (raw.source && typeof raw.line === 'number') {
-          const uri = DebugSource.toUri(raw.source);
-          const origin = SourceBreakpoint.create(uri, { line: raw.line, column: 1 });
-          if (this.breakpoints.addBreakpoint(origin)) {
-            const breakpoints = this.getBreakpoints(uri);
-            const breakpoint = new DebugBreakpoint(origin, this.labelProvider, this.breakpoints, this.workbenchEditorService, this);
-            breakpoint.update({ raw });
-            breakpoints.push(breakpoint);
-            this.setBreakpoints(uri, breakpoints);
-          }
-        }
-      }
-      if (body.reason === 'removed' && raw.id) {
-        const toRemove = this.findBreakpoint((b) => b.idFromAdapter === raw.id);
-        if (toRemove) {
-          toRemove.remove();
-          const breakpoints = this.getBreakpoints(toRemove.uri);
-          const index = breakpoints.indexOf(toRemove);
-          if (index !== -1) {
-            breakpoints.splice(index, 1);
-            this.setBreakpoints(toRemove.uri, breakpoints);
-          }
-        }
-      }
-      if (body.reason === 'changed' && raw.id) {
-        const toUpdate = this.findBreakpoint((b) => b.idFromAdapter === raw.id);
-        if (toUpdate) {
-          toUpdate.update({ raw });
-          this.fireDidChangeBreakpoints(toUpdate.uri);
-        }
-      }
-    } finally {
-      this.updatingBreakpoints = false;
-    }
-  }
+    await this.setBreakpoints(this.breakpoints.affected.map((str) => URI.parse(str)));
 
-  protected findBreakpoint(match: (breakpoint: DebugBreakpoint) => boolean): DebugBreakpoint | undefined {
-    for (const [, breakpoints] of this._breakpoints) {
-      for (const breakpoint of breakpoints) {
-        if (match(breakpoint)) {
-          return breakpoint;
-        }
-      }
-    }
-    return undefined;
+    this.settingBreakpoints.resolve();
+    this.settingBreakpoints = null;
   }
 
   protected _currentThread: DebugThread | undefined;
@@ -364,7 +321,7 @@ export class DebugSession implements IDisposable {
   }
 
   protected clearThread(threadId: number): void {
-    const thread = this._threads.get(threadId);
+    const thread = this._threads.find((t) => t.raw.id === threadId);
     if (thread) {
       thread.clear();
     }
@@ -389,9 +346,9 @@ export class DebugSession implements IDisposable {
     return this.currentThread && this.currentThread.currentFrame;
   }
 
-  async getScopes(): Promise<any[]> {
+  async getScopes(parent?: ExpressionContainer): Promise<any[]> {
     const { currentFrame } = this;
-    return currentFrame ? currentFrame.getScopes() : [];
+    return currentFrame ? currentFrame.getScopes(parent) : [];
   }
 
   get label(): string {
@@ -437,15 +394,20 @@ export class DebugSession implements IDisposable {
     if (uri.scheme === 'file') {
       path = await this.fileSystem.getFsPath(path);
     }
-    return { name, path };
+    return {
+      name,
+      path,
+      adapterData: undefined,
+      sourceReference: undefined,
+    };
   }
 
-  protected _threads = new Map<number, DebugThread>();
-  get threads(): IterableIterator<DebugThread> {
-    return this._threads.values();
+  protected _threads: DebugThread[] = [];
+  get threads() {
+    return this._threads;
   }
   get threadCount(): number {
-    return this._threads.size;
+    return this._threads.length;
   }
   *getThreads(filter: (thread: DebugThread) => boolean): IterableIterator<DebugThread> {
     for (const thread of this.threads) {
@@ -476,11 +438,11 @@ export class DebugSession implements IDisposable {
   }
   protected doUpdateThreads(threads: DebugProtocol.Thread[], stoppedDetails?: StoppedDetails): void {
     const existing = this._threads;
-    this._threads = new Map();
+    this._threads = [];
     for (const raw of threads) {
       const id = raw.id;
-      const thread = existing.get(id) || new DebugThread(this);
-      this._threads.set(id, thread);
+      const thread = existing.find((t) => t.raw.id === id) || new DebugThread(this);
+      this._threads.push(thread);
       const data: Partial<Mutable<DebugThreadData>> = { raw };
       if (stoppedDetails && (stoppedDetails.allThreadsStopped || stoppedDetails.threadId === id)) {
         data.stoppedDetails = stoppedDetails;
@@ -496,20 +458,36 @@ export class DebugSession implements IDisposable {
     if (stoppedDetails && !stoppedDetails.preserveFocusHint && !!stoppedDetails.threadId) {
       threadId = stoppedDetails.threadId;
     }
-    this.currentThread = typeof threadId === 'number' && this._threads.get(threadId)
+    this.currentThread = typeof threadId === 'number' && this._threads.find((t) => t.raw.id === threadId)
       || this._threads.values().next().value;
   }
 
   protected async updateFrames(): Promise<void> {
-    const thread = this._currentThread;
-    if (!thread || thread.frameCount) {
-      return;
-    }
-    if (this.capabilities.supportsDelayedStackTraceLoading) {
-      await thread.fetchFrames(1);
-      await thread.fetchFrames(19);
-    } else {
-      await thread.fetchFrames();
+    const promises = this.threads.map(async (thread) => {
+      if (!thread || thread.frameCount) {
+        return;
+      }
+      if (this.capabilities.supportsDelayedStackTraceLoading) {
+        await thread.fetchFrames(1);
+        return await thread.fetchFrames(19);
+      } else {
+        return await thread.fetchFrames();
+      }
+    });
+
+    await Promise.all(promises);
+
+    // set current frame from editor
+    const editor = this.workbenchEditorService.currentEditor;
+    if (editor && this.currentThread && !this.currentFrame) {
+      const model = editor.monacoEditor.getModel();
+      if (model) {
+        const uri = URI.parse(model.uri.toString());
+        const frames = this.currentThread.frames.filter((f) => f.source?.uri.toString() === uri.toString());
+        if (frames) {
+          this.currentThread.currentFrame = frames[0];
+        }
+      }
     }
   }
 
@@ -574,7 +552,13 @@ export class DebugSession implements IDisposable {
   }
 
   async evaluate(expression: string, context?: string): Promise<DebugProtocol.EvaluateResponse['body']> {
+    // evaluate muse wait for frames updated
+    if (this.updateDeffered) {
+      await this.updateDeffered?.promise;
+    }
+
     const frameId = this.currentFrame && this.currentFrame.raw.id;
+
     const response = await this.sendRequest('evaluate', { expression, frameId, context });
     return response.body;
   }
@@ -589,6 +573,7 @@ export class DebugSession implements IDisposable {
   async setVariableValue(args: DebugProtocol.SetVariableArguments): Promise<DebugProtocol.SetVariableResponse | void> {
     if (this.capabilities.supportsSetVariable) {
       const res = await this.sendRequest('setVariable', args);
+      this._onVariableChange.fire();
       return res;
     }
   }

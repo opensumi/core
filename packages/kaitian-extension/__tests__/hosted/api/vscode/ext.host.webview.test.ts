@@ -1,4 +1,4 @@
-import { Uri } from '@ali/ide-core-common';
+import { Uri, IExtensionInfo } from '@ali/ide-core-common';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { MainThreadAPIIdentifier, IMainThreadWebview } from '@ali/ide-kaitian-extension/lib/common/vscode';
 import { ExtHostWebviewService } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.api.webview';
@@ -26,9 +26,13 @@ describe('vscode extHostWebview Test', () => {
   it('ext host vscode webview test', async (done) => {
     await extHostWebview.$init();
     expect((extHostWebview as any).resourceRoots).toEqual(['testResourceRoots']);
-
+    const extensionInfo: IExtensionInfo = {
+      id: 'id',
+      extensionId: 'extensionId',
+      isBuiltin: true,
+    };
     const webviewPanel = extHostWebview.createWebview(
-      undefined, 'editor', 'testWebview', {viewColumn: 1}, {enableFindWidget: true},
+      undefined, 'editor', 'testWebview', {viewColumn: 1}, {enableFindWidget: true}, extensionInfo,
     );
 
     const id = (webviewPanel as any)._handle;
@@ -39,6 +43,7 @@ describe('vscode extHostWebview Test', () => {
       'testWebview',
       expect.objectContaining({viewColumn: 1}),
       expect.objectContaining({enableFindWidget: true}),
+      extensionInfo,
     );
 
     // basic

@@ -23,7 +23,7 @@ export class Directory extends CompositeTreeNode {
     }
     this.fileTreeService = tree;
     this._uid = id || this._uid;
-    TreeNode.idToTreeNode.set(this._uid, this);
+    TreeNode.setTreeNode(this._uid, this.path, this);
   }
 
   updateName(name: string) {
@@ -63,7 +63,7 @@ export class File extends TreeNode {
     super(tree as ITree, parent);
     this.fileTreeService = tree;
     this._uid = id || this._uid;
-    TreeNode.idToTreeNode.set(this._uid, this);
+    TreeNode.setTreeNode(this._uid, this.path, this);
   }
 
   updateName(name: string) {

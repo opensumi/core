@@ -27,7 +27,7 @@ module.exports = createWebpackConfig(
       new webpack.DefinePlugin({
         'process.env.SCM_PLATFORM': JSON.stringify(process.env.SCM_PLATFORM),
         'process.env.LSIF_HOST': JSON.stringify(process.env.LSIF_HOST),
-        'process.env.PROJECT_ID': JSON.stringify(process.env.SCM_PLATFORM === 'aone' ? '1812048' : '122688')
+        'process.env.PROJECT_ID': JSON.stringify(process.env.SCM_PLATFORM === 'aone' ? '1812048' : '')
       }),
       // Expose BrowserFS, process, and Buffer globals.
       // NOTE: If you intend to use BrowserFS in a script tag, you do not need

@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle, PromptValidateMessage, PROMPT_VALIDATE_TYPE, TreeNodeEvent, IRecycleTreeError } from '@ali/ide-components';
+import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle, PromptValidateMessage, PROMPT_VALIDATE_TYPE, TreeNodeEvent, IRecycleTreeError } from '@ali/ide-components';
 import { FileTreeService } from '../file-tree.service';
 import { FileTreeModel } from '../file-tree-model';
 import { File, Directory } from '../file-tree-nodes';
@@ -76,7 +76,7 @@ export class FileTreeModelService {
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
-  private _treeModel: TreeModel;
+  private _treeModel: FileTreeModel;
   private _dndService: DragAndDropService;
 
   private _whenReady: Promise<void>;
@@ -129,11 +129,6 @@ export class FileTreeModelService {
 
   constructor() {
     this._whenReady = this.initTreeModel();
-  }
-
-  get hasFolderIcons() {
-    // 图标主题命中fallback时为默认有文件夹图标的主题，否则则获取对应主题设置
-    return this.fileTreeService.hasFolderIcons;
   }
 
   get onDidFocusedFileChange(): Event<URI | void> {
@@ -236,13 +231,24 @@ export class FileTreeModelService {
     this.disposableCollection.push(this.fileTreeService.onNodeRefreshed((node) => {
       this.refreshedActionDelayer.trigger(async () => {
         // 当无选中节点时，选中编辑器中激活的节点
-        if (Directory.isRoot(node)) {
+        if (Directory.isRoot(node) && this.selectedFiles.length === 0) {
           const currentEditor = this.editorService.currentEditor;
           if (currentEditor && currentEditor.currentUri) {
             this.location(currentEditor.currentUri);
           }
         }
       });
+    }));
+    this.disposableCollection.push(this.treeModel!.onWillUpdate(() => {
+      // 更新树前更新下选中节点
+      if (this.selectedFiles.length !== 0) {
+        // 仅处理一下单选情况
+        const node = this.treeModel?.root.getTreeNodeByPath(this.selectedFiles[0].path);
+        for (const target of this.selectedDecoration.appliedTargets.keys()) {
+          this.selectedDecoration.removeTarget(target);
+        }
+        this.selectedDecoration.addTarget(node as File);
+      }
     }));
     // 确保文件树响应刷新操作时无正在操作的CollapsedAll和Location
     this.disposableCollection.push(this.fileTreeService.requestFlushEventSignalEvent(this.canHandleRefreshEvent));
@@ -570,9 +576,9 @@ export class FileTreeModelService {
     this.fileTreeContextKey.filesExplorerFocused.set(true);
   }
 
-  handleItemRangeClick = (item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
+  handleItemRangeClick = (item: File | Directory, type: TreeNodeType) => {
     if (!this.focusedFile) {
-      this.handleItemClick(item, type, activeUri);
+      this.handleItemClick(item, type);
     } else if (this.focusedFile && this.focusedFile !== item) {
       this._isMutiSelected = true;
       const targetIndex = this.treeModel.root.getIndexAtTreeNode(item);
@@ -585,7 +591,7 @@ export class FileTreeModelService {
     }
   }
 
-  handleItemToggleClick = (item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
+  handleItemToggleClick = (item: File | Directory, type: TreeNodeType) => {
     this._isMutiSelected = true;
     if (type !== TreeNodeType.CompositeTreeNode && type !== TreeNodeType.TreeNode) {
       return;
@@ -802,9 +808,7 @@ export class FileTreeModelService {
     let isCommit = false;
     const locationFileWhileFileExist = (pathOrUri: URI | string) => {
       // 文件树更新后尝试定位文件位置
-      this.fileTreeHandle.onOnceDidUpdate(() => {
-        this.location(pathOrUri);
-      });
+      this.location(pathOrUri);
     };
     const commit = async (newName) => {
       this.validateMessage = undefined;
@@ -910,7 +914,7 @@ export class FileTreeModelService {
       if (isCommit) {
         return false;
       }
-      if (!!this.validateMessage && this.validateMessage.type === PROMPT_VALIDATE_TYPE.ERROR ) {
+      if (!!this.validateMessage && this.validateMessage.type === PROMPT_VALIDATE_TYPE.ERROR) {
         this.validateMessage = undefined;
         return true;
       }

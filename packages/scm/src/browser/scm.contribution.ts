@@ -1,28 +1,26 @@
 import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command, CommandService, PreferenceSchema, localize, URI } from '@ali/ide-core-common';
-import { ClientAppContribution, PreferenceContribution } from '@ali/ide-core-browser';
+import { CommandContribution, CommandRegistry, Command, PreferenceSchema, localize, URI, PreferenceScope } from '@ali/ide-core-common';
+import { ClientAppContribution, PreferenceContribution, PreferenceService } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 
 import { SCMPanel } from './scm.view';
-import { scmContainerId, IDirtyDiffWorkbenchController, OPEN_DIRTY_DIFF_WIDGET, GOTO_NEXT_CHANGE, GOTO_PREVIOUS_CHANGE } from '../common';
+import { scmContainerId, IDirtyDiffWorkbenchController, OPEN_DIRTY_DIFF_WIDGET, GOTO_NEXT_CHANGE, GOTO_PREVIOUS_CHANGE, TOGGLE_DIFF_SIDE_BY_SIDE } from '../common';
 import { SCMBadgeController, SCMStatusBarController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
 import { getIcon } from '@ali/ide-core-browser';
 import { WorkbenchEditorService, EditorCollectionService, IEditor } from '@ali/ide-editor/lib/common';
-import { BrowserEditorContribution, IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
+import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 export const SCM_ACCEPT_INPUT: Command = {
   id: 'scm.acceptInput',
 };
 
-@Domain(ClientAppContribution, CommandContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, BrowserEditorContribution)
-export class SCMContribution implements CommandContribution, ClientAppContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, BrowserEditorContribution {
-  @Autowired(CommandService)
-  private readonly commandService: CommandService;
+@Domain(ClientAppContribution, CommandContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, NextMenuContribution)
+export class SCMContribution implements CommandContribution, ClientAppContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, NextMenuContribution {
 
   @Autowired(SCMBadgeController)
   private readonly statusUpdater: SCMBadgeController;
@@ -44,6 +42,9 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
   schema: PreferenceSchema = scmPreferenceSchema;
 
   private diffChangesIndex: Map<URI, number> = new Map();
+
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
 
   onDidRender() {
     [
@@ -93,6 +94,13 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
         }
       },
     });
+
+    commands.registerCommand(TOGGLE_DIFF_SIDE_BY_SIDE, {
+      execute: () => {
+        const newValue = !this.preferenceService.get<boolean>('diffEditor.renderSideBySide');
+        this.preferenceService.set('diffEditor.renderSideBySide', newValue, PreferenceScope.User);
+      },
+    });
   }
 
   registerComponent(registry: ComponentRegistry) {
@@ -106,25 +114,33 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
     });
   }
 
-  registerEditorActions(registry: IEditorActionRegistry) {
-    registry.registerEditorAction({
+  registerNextMenus(menuRegistry: IMenuRegistry) {
+    menuRegistry.registerMenuItem(MenuId.EditorTitle, {
+      command: {
+        id: GOTO_PREVIOUS_CHANGE.id,
+        label: localize('scm.diff.change.previous'),
+      },
+      when: 'isInDiffEditor',
       iconClass: getIcon('arrowup'),
-      title: localize('scm.diff.change.previous'),
-      when: 'isInDiffEditor',
-      onClick: () => {
-        this.commandService.executeCommand(GOTO_PREVIOUS_CHANGE.id);
-      },
+      group: 'navigation',
     });
-
-    registry.registerEditorAction({
+    menuRegistry.registerMenuItem(MenuId.EditorTitle, {
+      command: {
+        id: GOTO_NEXT_CHANGE.id,
+        label: localize('scm.diff.change.next'),
+      },
       iconClass: getIcon('arrowdown'),
-      title: localize('scm.diff.change.next'),
       when: 'isInDiffEditor',
-      onClick: () => {
-        this.commandService.executeCommand(GOTO_NEXT_CHANGE.id);
-      },
+      group: 'navigation',
     });
-
+    menuRegistry.registerMenuItem(MenuId.EditorTitle, {
+      command: {
+        id: TOGGLE_DIFF_SIDE_BY_SIDE.id,
+        label: localize('scm.diff.toggle.renderSideBySide'),
+      },
+      when: 'isInDiffEditor',
+      group: '1_internal',
+    });
   }
 
   private getDiffChangesIndex(uri: URI, editor: IEditor) {

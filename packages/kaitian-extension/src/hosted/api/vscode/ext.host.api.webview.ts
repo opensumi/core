@@ -1,5 +1,5 @@
 import { IMainThreadWebview, IExtHostWebview, MainThreadAPIIdentifier, IWebviewPanelViewState, IWebviewOptions, Webview, WebviewPanel, IWebviewPanelOptions, ViewColumn, WebviewPanelOnDidChangeViewStateEvent, WebviewPanelSerializer } from '../../../common/vscode';
-import { Emitter, Event } from '@ali/ide-core-common';
+import { Emitter, Event, IExtensionInfo } from '@ali/ide-core-common';
 import { Uri, Disposable } from '../../../common/vscode/ext-types';
 import { IRPCProtocol } from '@ali/ide-connection';
 
@@ -276,6 +276,7 @@ export class ExtHostWebviewService implements IExtHostWebview {
     title: string,
     showOptions: ViewColumn | { viewColumn: ViewColumn, preserveFocus?: boolean },
     options: (IWebviewPanelOptions & IWebviewOptions) = {},
+    extension: IExtensionInfo,
   ) {
     const viewColumn = typeof showOptions === 'object' ? showOptions.viewColumn : showOptions;
     const webviewShowOptions = {
@@ -284,7 +285,7 @@ export class ExtHostWebviewService implements IExtHostWebview {
     };
 
     const handle = ExtHostWebviewService.newHandle();
-    this._proxy.$createWebviewPanel(handle, viewType, title, webviewShowOptions, options);
+    this._proxy.$createWebviewPanel(handle, viewType, title, webviewShowOptions, options, extension);
 
     const webview = new ExtHostWebview(handle, this._proxy, options, this.resourceRoots);
     const panel = new ExtHostWebviewPanel(handle, this._proxy, viewType, title, viewColumn, options, webview);

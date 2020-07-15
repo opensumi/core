@@ -2,6 +2,7 @@ import { IResource, ResourceService, IEditorGroup, IDecorationRenderOptions, ITe
 import { MaybePromise, IDisposable, BasicEvent, IRange, MaybeNull, ISelection, URI, Event } from '@ali/ide-core-browser';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
 import { IEditorDocumentModelContentRegistry } from './doc-model/types';
+import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
 export * from '../common';
 
 export type ReactEditorComponent<MetaData = any> = React.ComponentClass<{resource: IResource<MetaData>}> | React.FunctionComponent<{resource: IResource<MetaData>}>;
@@ -234,9 +235,14 @@ export class EditorDecorationChangeEvent extends BasicEvent<{uri: URI, key: stri
 export class EditorDecorationTypeRemovedEvent extends BasicEvent<string> {}
 
 export interface IEditorActionRegistry {
+  /**
+   * 请不要再使用,暂时除了tip相关和isVisible仍然兼容
+   * @deprecated
+   * @param
+   */
   registerEditorAction(action: IEditorActionItem): IDisposable;
-  getActions(editorGroup: IEditorGroup): IVisibleAction[];
-  showMore(x: number, y: number, group: IEditorGroup);
+
+  getMenu(group: IEditorGroup): IMenu;
 }
 
 export interface IEditorActionItem {
@@ -245,7 +251,13 @@ export interface IEditorActionItem {
   tip?: string;
   tipWhen?: string;
   tipClass?: string;
+  /**
+   * @deprecated 现在无效
+   */
   isVisible?: (resource: MaybeNull<IResource>, editorGroup: IEditorGroup) => boolean;
+  /**
+   * @deprecated 现在会自动转为临时command
+   */
   onClick: (resource: MaybeNull<IResource>, editorGroup: IEditorGroup) => void;
   when?: string; // 使用contextkey
 }

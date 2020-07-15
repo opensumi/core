@@ -1,10 +1,10 @@
 import { DebugSessionManager } from '../debug-session-manager';
-import { ExpressionContainer, ExpressionItem, DebugVariable } from '../console/debug-console-items';
+import { DebugVariable, DebugScope, DebugVariableContainer, DebugHoverVariableRoot } from '../tree/debug-tree-node.define';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IDebugSessionManager } from '../../common';
 import { Event, Emitter } from '@ali/ide-core-browser';
 
-export type ExpressionVariable = ExpressionItem | DebugVariable | undefined;
+export type ExpressionVariable = DebugHoverVariableRoot | DebugVariable | DebugVariableContainer | undefined;
 
 @Injectable()
 export class DebugHoverSource {
@@ -15,15 +15,8 @@ export class DebugHoverSource {
   private onDidChangeEmitter: Emitter<ExpressionVariable> = new Emitter();
   onDidChange: Event<ExpressionVariable> = this.onDidChangeEmitter.event;
 
-  children: ExpressionContainer[] = [];
-
-  getChildren(): ExpressionContainer[] {
-    return this.children;
-  }
-
-  reset(): void {
+  dispose(): void {
     this._expression = undefined;
-    this.children = [];
   }
 
   protected _expression: ExpressionVariable;
@@ -34,8 +27,6 @@ export class DebugHoverSource {
   async evaluate(expression: string): Promise<boolean> {
     const evaluated = await this.doEvaluate(expression);
     this._expression = evaluated;
-    const children = evaluated && await evaluated.getChildren();
-    this.children = children ? [...children] : [];
     this.onDidChangeEmitter.fire(evaluated);
     return !!evaluated;
   }
@@ -46,14 +37,14 @@ export class DebugHoverSource {
       return undefined;
     }
     if (currentSession.capabilities.supportsEvaluateForHovers) {
-      const item = new ExpressionItem(expression, currentSession);
+      const item = new DebugHoverVariableRoot(expression, currentSession);
       await item.evaluate('hover');
       return item.available && item || undefined;
     }
     return this.findVariable(expression.split('.').map((word) => word.trim()).filter((word) => !!word));
   }
 
-  protected async findVariable(namesToFind: string[]): Promise<DebugVariable | undefined> {
+  protected async findVariable(namesToFind: string[]): Promise<DebugVariable | DebugVariableContainer | undefined> {
     const { currentFrame } = this.sessions;
     if (!currentFrame) {
       return undefined;
@@ -72,21 +63,27 @@ export class DebugHoverSource {
     return variable;
   }
 
-  protected async doFindVariable(owner: ExpressionContainer, namesToFind: string[]): Promise<DebugVariable | undefined> {
-    const elements = await owner.getChildren();
-    const variables: DebugVariable[] = [];
+  protected async doFindVariable(owner: DebugScope | DebugVariableContainer, namesToFind: string[]): Promise<DebugVariable | undefined> {
+    await owner.ensureLoaded();
+    const elements = owner.children;
+    const variables: (DebugVariable | DebugVariableContainer)[] = [];
+    if (!elements) {
+      return;
+    }
     for (const element of elements) {
-      if (element instanceof DebugVariable && element.name === namesToFind[0]) {
-        variables.push(element);
+      if (element instanceof DebugVariableContainer || element instanceof DebugVariable) {
+        if (element.name === namesToFind[0]) {
+          variables.push(element);
+        }
       }
     }
     if (variables.length !== 1) {
       return undefined;
     }
     if (namesToFind.length === 1) {
-      return variables[0];
+      return variables[0] as DebugVariable;
     } else {
-      return this.doFindVariable(variables[0], namesToFind.slice(1));
+      return this.doFindVariable(variables[0] as DebugVariableContainer, namesToFind.slice(1));
     }
   }
 

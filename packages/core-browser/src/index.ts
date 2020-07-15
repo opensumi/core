@@ -32,3 +32,6 @@ export * from './dom';
 export * from './core-preferences';
 
 export * from './style/icon/icon';
+
+export * from './window';
+export * from './opener';

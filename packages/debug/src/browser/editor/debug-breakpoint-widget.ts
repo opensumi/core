@@ -1,7 +1,7 @@
-import { Disposable, Emitter, positionToRange } from '@ali/ide-core-common';
+import { Disposable, positionToRange } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { DebugEditor } from '../../common';
-import { DebugBreakpointZoneWidget, BreakpointChangeData, DebugBreakpointWidgetContext } from './debug-breakpoint-zone-widget';
+import { DebugBreakpointZoneWidget, DebugBreakpointWidgetContext } from './debug-breakpoint-zone-widget';
 import { BreakpointWidgetInputFocus } from '../contextkeys';
 
 export enum TopStackType {
@@ -24,9 +24,6 @@ export class DebugBreakpointWidget extends Disposable {
 
   private _position: monaco.Position | undefined;
 
-  protected readonly _onDidChangeBreakpoint = new Emitter<BreakpointChangeData>();
-  readonly onDidChangeBreakpoint = this._onDidChangeBreakpoint.event;
-
   constructor() {
     super();
   }
@@ -39,12 +36,14 @@ export class DebugBreakpointWidget extends Disposable {
     return this.zone.values;
   }
 
-  show(position: monaco.Position, contexts?: DebugBreakpointWidgetContext, defaultContext?: DebugBreakpointZoneWidget.Context) {
+  show(position: monaco.Position, contexts?: DebugBreakpointWidgetContext, defaultContext: DebugBreakpointZoneWidget.Context = 'condition') {
     this.dispose();
     this._position = position;
-    this.addDispose(this.zone = new DebugBreakpointZoneWidget(this.editor, contexts, defaultContext));
-    this.addDispose(this.zone.onDidChangeBreakpoint((data) => {
-      this._onDidChangeBreakpoint.fire(data);
+    this.addDispose(this.zone = new DebugBreakpointZoneWidget(this.editor, { ...contexts }, defaultContext));
+    this.addDispose(this.zone.onDidChangeBreakpoint(({ context, value }) => {
+      if (contexts) {
+        contexts[context] = value;
+      }
     }));
     this.addDispose(this.zone.onFocus(() => {
       this.breakpointWidgetInputFocus.set(true);

@@ -233,6 +233,7 @@ export class IconService implements IIconService {
       styleNode.innerHTML = styleSheetContent;
       document.getElementsByTagName('head')[0].appendChild(styleNode);
     }
+    this.themeChangeEmitter.fire(this.currentTheme);
   }
 
   toggleIconVisible(show?: boolean) {

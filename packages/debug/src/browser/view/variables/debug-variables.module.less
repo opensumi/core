@@ -1,0 +1,156 @@
+
+.debug_variables_node {
+  height: 22px;
+  line-height: 22px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--kt-tree-hoverForeground);
+    background: var(--kt-tree-hoverBackground);
+  }
+
+  &.mod_selected {
+    color: var(--kt-tree-inactiveSelectionForeground) !important;
+    background: var(--kt-tree-inactiveSelectionBackground);
+    .expansion_toggle {
+      color: var(--kt-tree-inactiveSelectionForeground) !important;
+    }
+  }
+
+  &.mod_focused {
+    color: var(--kt-tree-activeSelectionForeground) !important;;
+    background: var(--kt-tree-activeSelectionBackground);
+    .expansion_toggle {
+      color: var(--kt-tree-activeSelectionForeground) !important;;
+    }
+    .debug_variables_node_displayname {
+      .compact_name {
+        &.active {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+
+  &.mod_loading {
+    opacity: .8;
+  }
+
+}
+
+.debug_variables_node_content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  user-select: text;
+  match {
+    background-color: var(--editor-findMatchHighlightBackground);
+  }
+}
+
+.debug_variables_node_status {
+  opacity: .75;
+  text-align: center;
+  font-size: 12px;
+  padding-right: 0;
+}
+
+.debug_variables_node_segment {
+  flex-grow: 0;
+  white-space: nowrap;
+  color: inherit;
+}
+
+.debug_variables_node_display_name {
+  margin-right: 6px;
+  display: inline;
+  white-space:pre;
+  .compact_name {
+    color: inherit;
+    display: inline;
+    &:focus,
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+  .compact_name_separator {
+    margin: 0 2px;
+    opacity: .5;
+  }
+}
+
+.debug_variables_node_description {
+  display: inline;
+  transform: scale(0.96);
+  color: var(--descriptionForeground);
+}
+
+.debug_variables_node_overflow_wrap {
+  flex: 1;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.expansion_toggle {
+  min-width: 20px;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+  color: var(--foreground);
+  &.mod_collapsed {
+    &:before {
+      display: block;
+    }
+  }
+
+  &:not(.mod_collapsed) {
+    &:before {
+      display: block;
+      transform: rotate(90deg);
+    }
+  }
+}
+
+.debug_variables_node_tail {
+  text-align: center;
+  margin-right: 10px;
+  position: relative;
+  height: 22px;
+  display: flex;
+  align-items: center;
+}
+
+// variable
+.debug_variables_variable {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  &.name {
+    overflow: visible;
+    color: #c586c0;
+  }
+
+  &.error {
+    color: #F48771;
+  }
+
+  &.number {
+    color: #B5CEA8;
+  }
+
+  &.boolean {
+    color: #4E94CE;
+  }
+
+  &.string {
+    color: #CE9178;
+  }
+}

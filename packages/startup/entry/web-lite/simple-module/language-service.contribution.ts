@@ -4,15 +4,13 @@ import { ClientAppContribution } from '@ali/ide-core-browser';
 import { Position, Range, Location } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
 import * as vscode from 'vscode';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { TextmateService } from '@ali/ide-monaco/lib/browser/textmate.service';
 
 import { SimpleLanguageService } from '../modules/simple-language-service';
 import * as lsifApi from '../modules/lsif/api';
 import { IMetaService } from './meta-service';
-import { tsLangBasicExtContributes } from '../ide-exts/ts';
 
 @Domain(ClientAppContribution)
-export class LangContribution extends Disposable implements ClientAppContribution {
+export class LanguageServiceContribution extends Disposable implements ClientAppContribution {
   @Autowired(SimpleLanguageService)
   private readonly simpleLanguageService: SimpleLanguageService;
 
@@ -21,9 +19,6 @@ export class LangContribution extends Disposable implements ClientAppContributio
 
   @Autowired(IWorkspaceService)
   private readonly workspaceService: IWorkspaceService;
-
-  @Autowired(TextmateService)
-  private readonly textMateService: TextmateService;
 
   get workspaceUri() {
     return new URI(this.workspaceService.workspace!.uri);
@@ -36,15 +31,6 @@ export class LangContribution extends Disposable implements ClientAppContributio
   // 由于使用了预加载 monaco, 导致 lang/grammar contribute 提前
   // 由于依赖了 kt-ext fs provider 注册，因此这里从 onMonacoLoad 改为 onStart
   onStart() {
-    // languages/grammars registration
-    tsLangBasicExtContributes.pkgJSON.contributes.languages.forEach((language) => {
-      this.textMateService.registerLanguage(language as any, URI.parse(tsLangBasicExtContributes.extPath));
-    });
-
-    tsLangBasicExtContributes.pkgJSON.contributes.grammars.forEach((grammar) => {
-      this.textMateService.registerGrammar(grammar as any, URI.parse(tsLangBasicExtContributes.extPath));
-    });
-
     // lsif registration
     this.addDispose(
       this.simpleLanguageService.registerHoverProvider({ pattern: '**/*.{js,jsx,ts,tsx,java,go}' }, {

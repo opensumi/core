@@ -207,6 +207,7 @@ export const localizationBundle = {
     'scm.provider.init': 'Click to initialize a repository',
     'scm.diff.change.next': 'Next Change',
     'scm.diff.change.previous': 'Previous Change',
+    'scm.diff.toggle.renderSideBySide': 'Toggle Inline View',
 
     'debug.action.add.configuration': 'Add Configuration...',
     'debug.action.no.configuration': 'No Configurations',
@@ -262,6 +263,11 @@ export const localizationBundle = {
     'debug.menu.add.conditional': 'Add Condition Breakpoint',
     'debug.menu.add.breakpoint': 'Add Breakpoint',
     'debug.menu.disable.logpoint': 'Disable Log Breakpoint',
+    'debug.stack.frame.noSource': 'Unknown',
+    'debug.stack.frame.because': 'Because Of',
+    'debug.stack.frame.stopped': 'Stopped',
+    'debug.stack.frame.running': 'Running',
+    'debug.hover.not.available': 'not available',
 
     'output.tabbar.title': 'OUTPUT',
     'output.channel.none': '<no output yet>',
@@ -387,6 +393,11 @@ export const localizationBundle = {
 
     'editor.largeFile.prevent': 'The file is too large, continuing to open it may cause it to jam or crash.',
     'editor.largeFile.prevent.stillOpen': 'Still open it.',
+
+    'preference.diffEditor.renderSideBySide': 'Render Side By Side',
+    'preference.diffEditor.ignoreTrimWhitespace': 'Ignore Trim Whitespace',
+    'diffEditor.configuration.renderSideBySide': 'Controls whether the diff editor shows the diff side by side or inline.',
+    'diffEditor.configuration.ignoreTrimWhitespace': 'Controls whether the diff editor shows changes in leading or trailing whitespace as diffs.',
 
     'validate.tree.emptyFileNameError': 'Please provide a file or folder name',
     'validate.tree.fileNameStartsWithSlashError': 'File or folder name cannot start with /',

@@ -1,14 +1,18 @@
 import { observable, action } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { URI, Emitter, CommandRegistry } from '@ali/ide-core-common';
+import { URI, CommandRegistry, Emitter, Event } from '@ali/ide-core-common';
 import { IEditorDocumentModelService, IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
 import { EditorCollectionService } from '@ali/ide-editor';
-import { DebugConsoleSession } from '../console/debug-console-session';
-
-import throttle = require('lodash.throttle');
 import { IContextKeyService } from '@ali/ide-core-browser';
-import { DEBUG_CONSOLE_CONTAINER_ID } from '../../common';
+import { DebugConsoleSession } from '../console/debug-console-session';
+import { DEBUG_CONSOLE_CONTAINER_ID, IDebugSessionManager } from '../../common';
+import { DebugSessionManager } from '../debug-session-manager';
+import throttle = require('lodash.throttle');
+
+const firstUpperCase = (str: string) => {
+  return str.replace(/^\S/, (s) => s.toUpperCase());
+};
 
 const options: monaco.editor.IEditorOptions = {
   wordWrap: 'on',
@@ -21,13 +25,15 @@ const options: monaco.editor.IEditorOptions = {
   selectionHighlight: false,
   scrollbar: {
     horizontal: 'hidden',
+    vertical: 'hidden',
+    handleMouseWheel: false,
   },
   lineDecorationsWidth: 0,
   overviewRulerBorder: false,
   scrollBeyondLastLine: false,
   renderLineHighlight: 'none',
   fixedOverflowWidgets: true,
-  acceptSuggestionOnEnter: 'smart',
+  acceptSuggestionOnEnter: 'on',
   minimap: {
     enabled: false,
   },
@@ -54,6 +60,9 @@ export class DebugConsoleService {
   @Autowired(IContextKeyService)
   protected readonly contextKeyService: IContextKeyService;
 
+  @Autowired(IDebugSessionManager)
+  protected readonly manager: DebugSessionManager;
+
   @observable.shallow
   nodes: any[] = [];
 
@@ -61,6 +70,7 @@ export class DebugConsoleService {
   protected _consoleEditor: monaco.editor.ICodeEditor;
   protected _isCommandOrCtrl: boolean = false;
   protected _element: HTMLDivElement | null = null;
+  protected _updateDisposable: monaco.IDisposable | null = null;
 
   static keySet = new Set(['inDebugMode']);
 
@@ -83,7 +93,7 @@ export class DebugConsoleService {
   throttleUpdateNodes = throttle(this.updateNodes, 200);
 
   private _onValueChange = new Emitter<URI>();
-  public onValueChange = this._onValueChange.event;
+  public onValueChange: Event<URI> = this._onValueChange.event;
 
   @action
   updateNodes() {
@@ -110,32 +120,20 @@ export class DebugConsoleService {
     return new URI('walkThroughSnippet://debug/console');
   }
 
-  private _handleKeyDown(e: monaco.IKeyboardEvent, model: monaco.editor.ITextModel) {
-    switch (e.code) {
-      case 'Enter':
-        e.preventDefault();
-        this.execute(model.getValue());
-        model.setValue('');
-        break;
-      default:
-        break;
-    }
-  }
-
-  private _handleKeyUp() {
-    this._isCommandOrCtrl = false;
-  }
-
   set element(e: HTMLDivElement | null) {
     this._element = e;
     this.editorService.createCodeEditor(this._element!, { ...options }).then((codeEditor) => {
       const editor = codeEditor.monacoEditor;
-      editor.onKeyDown((e) => {
-        this._handleKeyDown(e, this._consoleModel);
+
+      editor.onDidChangeModelContent(({ changes }) => {
+        const change = changes[0];
+        if (change.text === '\n') {
+          const value = editor.getValue();
+          this.execute(value);
+          editor.setValue('');
+        }
       });
-      editor.onKeyUp(() => {
-        this._handleKeyUp();
-      });
+
       this._consoleEditor = editor;
     });
   }
@@ -172,10 +170,91 @@ export class DebugConsoleService {
   }
 
   async enable() {
+    this._updateDisposable = monaco.languages.registerCompletionItemProvider('plaintext', {
+      triggerCharacters: ['.'],
+      provideCompletionItems: async (model, position, ctx) => {
+        if (model.uri.toString() !== this.consoleInputUri.toString()) {
+          return null;
+        }
+
+        const session = this.manager.currentSession;
+        const { triggerCharacter } = ctx;
+
+        /**
+         * 代码字符串处理
+         */
+        let value = model.getWordAtPosition(position);
+        if (value && session) {
+          const { word, startColumn, endColumn } = value;
+          const res = await session.sendRequest('completions', {
+            text: word,
+            column: endColumn,
+            frameId: session.currentFrame && session.currentFrame.raw.id,
+          });
+          return {
+            suggestions: res.body.targets.map((item) => {
+              return {
+                label: item.label,
+                insertText: item.text || item.label,
+                sortText: item.sortText,
+                kind: monaco.languages.CompletionItemKind[firstUpperCase(item.type || 'property')],
+                range: {
+                  startLineNumber: position.lineNumber,
+                  endLineNumber: position.lineNumber,
+                  startColumn,
+                  endColumn,
+                },
+              };
+            }),
+          } as monaco.languages.CompletionList;
+        }
+
+        /**
+         * 特殊字符处理
+         */
+        value = model.getWordAtPosition({
+          lineNumber: position.lineNumber,
+          column: position.column - 1,
+        });
+        if (value && session && triggerCharacter) {
+          const { word, endColumn } = value;
+
+          const res = await session.sendRequest('completions', {
+            text: word + triggerCharacter,
+            column: endColumn + 1,
+            frameId: session.currentFrame && session.currentFrame.raw.id,
+          });
+          return {
+            suggestions: res.body.targets.map((item) => {
+              return {
+                label: item.label,
+                insertText: item.text || item.label,
+                sortText: item.sortText,
+                kind: monaco.languages.CompletionItemKind[firstUpperCase(item.type || 'property')],
+                range: {
+                  startLineNumber: position.lineNumber,
+                  endLineNumber: position.lineNumber,
+                  startColumn: endColumn + 1,
+                  endColumn: endColumn + 1,
+                },
+              };
+            }),
+          } as monaco.languages.CompletionList;
+        }
+
+        return null;
+      },
+    });
+
     return await this._createConsoleInput();
   }
 
   disable() {
+    if (this._updateDisposable) {
+      this._updateDisposable.dispose();
+      this._updateDisposable = null;
+    }
+    this._consoleEditor.setValue('');
     this._consoleEditor.setModel(null);
   }
 }

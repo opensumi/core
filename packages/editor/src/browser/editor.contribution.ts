@@ -1,6 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { BrowserCodeEditor } from './editor-collection.service';
-import {  IClientApp, getIcon, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService } from '@ali/ide-core-browser';
+import {  IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { isElectronEnv, isWindows, PreferenceScope } from '@ali/ide-core-common';
 import * as copy from 'copy-to-clipboard';
@@ -8,7 +8,7 @@ import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-brows
 import { SUPPORTED_ENCODINGS } from '@ali/ide-core-common/lib/const';
 
 import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider, IEditor, SaveReason, EOL } from '../common';
-import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorActionRegistry, IEditorFeatureRegistry } from './types';
+import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorFeatureRegistry } from './types';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { EditorView } from './editor.view';
@@ -18,14 +18,15 @@ import { IEditorDocumentModelService } from './doc-model/types';
 import { FormattingSelector } from './format/formatterSelect';
 import { EditorTopPaddingContribution } from './view/topPadding';
 import { EditorSuggestWidgetContribution } from './view/suggest-widget';
+import { EditorOpener } from './editor-opener';
 
 interface ResourceArgs {
   group: EditorGroup;
   uri: URI;
 }
 
-@Domain(CommandContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, BrowserEditorContribution, NextMenuContribution)
-export class EditorContribution implements CommandContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, BrowserEditorContribution, NextMenuContribution {
+@Domain(CommandContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, NextMenuContribution, OpenerContribution)
+export class EditorContribution implements CommandContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, NextMenuContribution, OpenerContribution {
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -45,9 +46,6 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
   @Autowired(ILanguageService)
   private languagesService: ILanguageService;
 
-  @Autowired(CommandService)
-  private commandService: CommandService;
-
   @Autowired(IEditorDocumentModelService)
   private editorDocumentModelService: IEditorDocumentModelService;
 
@@ -59,6 +57,9 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
 
   @Autowired()
   monacoService: MonacoService;
+
+  @Autowired()
+  private editorOpener: EditorOpener;
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-editor', {
@@ -252,7 +253,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         if (editor) {
           const group = this.workbenchEditorService.currentEditorGroup;
           if (group && group.currentResource) {
-             group.pin(group.currentResource!.uri);
+            group.pin(group.currentResource!.uri);
           }
           await editor.save();
         }
@@ -809,17 +810,17 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       command: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
       group: '0_internal',
     });
+
+    menus.registerMenuItem(MenuId.EditorTitle, {
+      command: EDITOR_COMMANDS.SPLIT_TO_RIGHT.id,
+      group: 'navigation',
+      when: 'resource',
+      order: 5,
+    });
   }
 
-  registerEditorActions(registry: IEditorActionRegistry) {
-    registry.registerEditorAction({
-      iconClass: getIcon('embed'),
-      title: localize('editor.splitToRight'),
-      when: 'resource',
-      onClick: () => {
-        this.commandService.executeCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT.id);
-      },
-    });
+  registerOpener(regisry: IOpenerService) {
+    regisry.registerOpener(this.editorOpener);
   }
 
 }

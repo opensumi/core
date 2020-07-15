@@ -4,7 +4,7 @@ import { DebugThread } from './debug-thread';
 import { DebugSource } from './debug-source';
 import { IResourceOpenOptions } from '@ali/ide-editor';
 import { IRange } from '@ali/ide-core-browser';
-import { DebugScope } from '../console/debug-console-items';
+import { DebugScope, ExpressionContainer } from '../tree/debug-tree-node.define';
 
 export class DebugStackFrameData {
   readonly raw: DebugProtocol.StackFrame;
@@ -67,14 +67,14 @@ export class DebugStackFrame extends DebugStackFrameData {
     });
   }
 
-  protected scopes: Promise<any[]> | undefined;
-  getScopes(): Promise<any[]> {
-    return this.scopes || (this.scopes = this.doGetScopes());
+  protected scopes: Promise<DebugScope[]> | undefined;
+  getScopes(parent?: ExpressionContainer): Promise<DebugScope[]> {
+    return this.scopes || (this.scopes = this.doGetScopes(parent));
   }
-  protected async doGetScopes(): Promise<any[]> {
+  protected async doGetScopes(parent?: ExpressionContainer): Promise<DebugScope[]> {
     try {
       const response = await this.session.sendRequest('scopes', this.toArgs());
-      return response.body.scopes.map((raw) => new DebugScope(raw, this.session));
+      return response.body.scopes.map((raw) => new DebugScope(raw, this.session, parent));
     } catch (e) {
       return [];
     }

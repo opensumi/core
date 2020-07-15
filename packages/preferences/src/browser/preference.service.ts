@@ -66,26 +66,11 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
     });
   }
 
+  /**
+   * @deprecated
+   */
   public async setPreference(key: string, value: any, scope: PreferenceScope) {
     await this.preferenceService.set(key, value, scope);
-    if (key === 'general.language' ) {
-      this.onLocalizationLanguageChanged();
-    }
-  }
-
-  private async onLocalizationLanguageChanged() {
-    if (this.preferenceService.get('general.askReloadOnLanguageChange')) {
-      const msg = await this.dialogService.info(
-        localize('preference.general.language.change.refresh.info', '更改语言后需重启后生效，是否立即刷新?'),
-        [
-          localize('preference.general.language.change.refresh.later', '稍后自己刷新'),
-          localize('preference.general.language.change.refresh.now', '立即刷新'),
-        ],
-      );
-      if (msg === localize('preference.general.language.change.refresh.now', '立即刷新')) {
-        this.clientApp.fireOnReload();
-      }
-    }
   }
 
   getSettingGroups(scope: PreferenceScope, search?: string | undefined): ISettingGroup[] {
@@ -163,9 +148,6 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
 
   async reset(preferenceName: string, scope: PreferenceScope) {
     await this.preferenceService.set(preferenceName, undefined, scope);
-    if (preferenceName === 'general.language' ) {
-      this.onLocalizationLanguageChanged();
-    }
   }
 
   async getPreferenceUrl(scope: PreferenceScope) {
@@ -272,6 +254,8 @@ export const defaultSettingSections: {
         {id: 'editor.quickSuggestionsDelay', localized: 'preference.editor.quickSuggestionsDelay'},
         {id: 'editor.largeFile', localized: 'preference.editor.largeFile' },
         {id: 'editor.formatOnPaste', localized: 'preference.editor.formatOnPaste' },
+        {id: 'diffEditor.renderSideBySide', localized: 'preference.diffEditor.renderSideBySide' },
+        {id: 'diffEditor.ignoreTrimWhitespace', localized: 'preference.diffEditor.ignoreTrimWhitespace' },
       ],
     },
   ],

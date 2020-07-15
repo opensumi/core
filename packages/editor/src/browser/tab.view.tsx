@@ -5,10 +5,11 @@ import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { IResource, ResourceService, IEditorGroup } from '../common';
 import * as styles from './editor.module.less';
 import classnames from 'classnames';
-import { getIcon, MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent, URI, localize } from '@ali/ide-core-browser';
+import { getIcon, MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent, URI } from '@ali/ide-core-browser';
 // TODO editor 不应该依赖main-layout
 import { Scroll } from './component/scroll/scroll';
 import { GridResizeEvent, IEditorActionRegistry } from './types';
+import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 
 const pkgName = require('../../package.json').name;
 
@@ -181,33 +182,10 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
 
 export const EditorActions = observer(({group, hasFocus}: {hasFocus: boolean, group: IEditorGroup}) => {
   const editorActionRegistry = useInjectable<IEditorActionRegistry>(IEditorActionRegistry);
+  const menu = editorActionRegistry.getMenu(group);
 
   return <div className={styles.editor_actions}>
-    {
-      hasFocus ? editorActionRegistry.getActions(group).map((visibleAction, i) => {
-        const item = visibleAction.item;
-        const icon = <div className={classnames(styles.editor_action, item.iconClass)} title={item.title} key={item.title}
-                    onClick={() => item.onClick(group.currentResource, group)} />;
-        return <div className={classnames(styles.editor_action_wrapper)} key={'editor-action-' + i}>
-          {icon}
-          {
-            (!item.tip || !visibleAction.tipVisible) ? null :
-            <div className={classnames(styles.editor_action_tip, item.tipClass)}>
-              {item.tip}
-              <div className={classnames(styles.editor_action_tip_close, getIcon('close'))} onClick={() => visibleAction.closeTip()}></div>
-            </div>
-          }
-        </div>;
-      }) : null
-    }
-    <div className={classnames(styles.editor_action_wrapper)} >
-      <div className={classnames(styles.editor_action, getIcon('ellipsis'))} title={localize('editor.moreActions')}
-        onClick={(event) => {
-          const { x, y } = event.nativeEvent;
-          editorActionRegistry.showMore(x, y, group);
-        }}
-      />
-    </div>
+    <InlineActionBar menus={menu} onlyMore={!hasFocus} />
   </div>;
 });
 

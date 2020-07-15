@@ -1,13 +1,12 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { DebugSession, DebugState } from './debug-session';
-import { WaitUntilEvent, URI, Emitter, Event, IContextKey, DisposableCollection, IContextKeyService, formatLocalize, Uri } from '@ali/ide-core-browser';
+import { WaitUntilEvent, Emitter, Event, URI, IContextKey, DisposableCollection, IContextKeyService, formatLocalize, Uri } from '@ali/ide-core-browser';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
 import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions } from '../common';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { IMessageService } from '@ali/ide-overlay';
 import { IVariableResolverService } from '@ali/ide-variable';
 import { DebugThread } from './model/debug-thread';
-import { DebugBreakpoint, DebugExceptionBreakpoint } from './model/debug-breakpoint';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { DebugSessionContributionRegistry, DebugSessionFactory } from './debug-session-contribution';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -25,11 +24,6 @@ export interface WillResolveDebugConfiguration extends WaitUntilEvent {
 export interface DidChangeActiveDebugSession {
   previous: DebugSession | undefined;
   current: DebugSession | undefined;
-}
-
-export interface DidChangeBreakpointsEvent {
-  session?: DebugSession;
-  uri: URI;
 }
 
 export interface DebugSessionCustomEvent {
@@ -65,12 +59,6 @@ export class DebugSessionManager {
 
   protected readonly onDidReceiveDebugSessionCustomEventEmitter = new Emitter<DebugSessionCustomEvent>();
   readonly onDidReceiveDebugSessionCustomEvent: Event<DebugSessionCustomEvent> = this.onDidReceiveDebugSessionCustomEventEmitter.event;
-
-  protected readonly onDidChangeBreakpointsEmitter = new Emitter<DidChangeBreakpointsEvent>();
-  readonly onDidChangeBreakpoints: Event<DidChangeBreakpointsEvent> = this.onDidChangeBreakpointsEmitter.event;
-  protected fireDidChangeBreakpoints(event: DidChangeBreakpointsEvent): void {
-    this.onDidChangeBreakpointsEmitter.fire(event);
-  }
 
   protected readonly onDidChangeEmitter = new Emitter<DebugSession | undefined>();
   readonly onDidChange: Event<DebugSession | undefined> = this.onDidChangeEmitter.event;
@@ -124,7 +112,26 @@ export class DebugSessionManager {
     this.debugTypeKey = this.contextKeyService.createKey<string>('debugType', undefined);
     this.inDebugModeKey = this.contextKeyService.createKey<boolean>('inDebugMode', this.inDebugMode);
     this.debugStopped = this.contextKeyService.createKey<boolean>('debugStopped', false);
-    this.breakpoints.onDidChangeMarkers((uri) => this.fireDidChangeBreakpoints({ uri }));
+
+    this.modelManager.onModelChanged((event) => {
+      const { newModelUrl } = event;
+      if (newModelUrl) {
+        const uri = URI.parse(newModelUrl.toString());
+        const model = this.modelManager.model;
+        if (this.currentSession && this.currentThread && model) {
+          const frame = this.currentThread.frames.find(
+            (f) => f.source?.uri.toString() === uri.toString());
+          if (frame && frame !== this.currentFrame) {
+            this.currentThread.currentFrame = frame;
+            setTimeout(() => {
+              if (this.workbenchEditorService.currentEditor) {
+                this.workbenchEditorService.currentEditor.monacoEditor.revealLineInCenter(frame.raw.line);
+              }
+            }, 0);
+          }
+        }
+      }
+    });
   }
 
   async start(options: DebugSessionOptions): Promise<DebugSession | undefined> {
@@ -212,9 +219,7 @@ export class DebugSessionManager {
           this.debugStopped.set(false);
         }
       }
-      this.updateCurrentSession(session);
     });
-    session.onDidChangeBreakpoints((uri) => this.fireDidChangeBreakpoints({ session, uri }));
     session.on('terminated', (event) => {
       const restart = event.body && event.body.restart;
       if (restart) {
@@ -228,6 +233,8 @@ export class DebugSessionManager {
     session.onDidCustomEvent(({ event, body }) =>
       this.onDidReceiveDebugSessionCustomEventEmitter.fire({ event, body, session }),
     );
+
+    this.updateCurrentSession(session);
     return session;
   }
 
@@ -300,7 +307,7 @@ export class DebugSessionManager {
       return;
     }
     this.toDisposeOnCurrentSession.dispose();
-    const previous = this.currentSession;
+    const previous = this._currentSession;
     this._currentSession = current;
     this.onDidChangeActiveDebugSessionEmitter.fire({ previous, current });
     if (current) {
@@ -311,7 +318,6 @@ export class DebugSessionManager {
         this.fireDidChange(current);
       }));
     }
-    this.updateBreakpoints(previous, current);
     this.open();
     this.fireDidChange(current);
   }
@@ -320,23 +326,6 @@ export class DebugSessionManager {
     const { currentFrame } = this;
     if (currentFrame) {
       currentFrame.open();
-    }
-  }
-
-  protected updateBreakpoints(previous: DebugSession | undefined, current: DebugSession | undefined): void {
-    const affectedUri = new Set();
-    for (const session of [previous, current]) {
-      if (session) {
-        for (const uriString of session.breakpointUris) {
-          if (!affectedUri.has(uriString)) {
-            affectedUri.add(uriString);
-            this.fireDidChangeBreakpoints({
-              session: current,
-              uri: new URI(uriString),
-            });
-          }
-        }
-      }
     }
   }
 
@@ -358,8 +347,8 @@ export class DebugSessionManager {
   private doDestroy(session: DebugSession): void {
     this.debug.terminateDebugSession(session.id);
 
-    session.dispose();
     this.remove(session.id);
+    session.dispose();
     this.onDidDestroyDebugSessionEmitter.fire(session);
   }
 
@@ -369,37 +358,5 @@ export class DebugSessionManager {
     if (currentSession && currentSession.id === sessionId) {
       this.updateCurrentSession(undefined);
     }
-  }
-
-  getBreakpoints(session?: DebugSession): DebugBreakpoint[];
-  getBreakpoints(uri: URI, session?: DebugSession): DebugBreakpoint[];
-  getBreakpoints(arg?: URI | DebugSession, arg2?: DebugSession): (DebugBreakpoint | DebugExceptionBreakpoint)[] {
-    const uri = arg instanceof URI ? arg : undefined;
-    const session = arg instanceof DebugSession ? arg : arg2 instanceof DebugSession ? arg2 : this.currentSession;
-    if (session && session.state > DebugState.Initializing) {
-      return session.getBreakpoints(uri);
-    }
-    const breakpoints = this.breakpoints.findMarkers({ uri }).map(({ data }) => new DebugBreakpoint(data, this.labelProvider, this.breakpoints, this.workbenchEditorService));
-    return breakpoints;
-  }
-
-  getBreakpoint(uri: URI, line: number): DebugBreakpoint | undefined {
-    const session = this.currentSession;
-    if (session && session.state > DebugState.Initializing) {
-      return session.getBreakpoints(uri).filter((breakpoint) => breakpoint.line === line)[0];
-    }
-    const origin = this.breakpoints.getBreakpoint(uri, line);
-    return origin && new DebugBreakpoint(origin, this.labelProvider, this.breakpoints, this.workbenchEditorService);
-  }
-
-  getExceptionBreakpoints(session?: DebugSession): DebugExceptionBreakpoint[] {
-    let exceptions: DebugExceptionBreakpoint[] = [];
-    if (session) {
-      const expBreakpoints = this.breakpoints.getExceptionBreakpoints();
-      if (expBreakpoints) {
-        exceptions = expBreakpoints.map((exb) => new DebugExceptionBreakpoint(exb, this.breakpoints));
-      }
-    }
-    return exceptions;
   }
 }

@@ -1,0 +1,155 @@
+.debug_stack_item_label {
+  display: flex;
+  align-items: center;
+  padding: 0 5px;
+  height: 22px;
+  width: 100%;
+  cursor: pointer;
+  &:hover {
+    background:  var(--list-hoverBackground);
+    color:  var(--list-hoverForeground);
+  }
+  &.selected {
+    background: var(--list-activeSelectionBackground);
+    color: var(--list-activeSelectionForeground);
+  }
+}
+
+.debug_stack_item_label_title {
+  flex: 1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.debug_stack_item {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.debug_stack_space {
+  width: 16px;
+}
+
+.debug_stack_item_next_panel {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.debug_session_icon {
+  padding: 0px 2px;
+}
+
+.debug_stack_frames {
+  display: flex;
+  align-items: baseline;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.debug_stack_frames_item {
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  height: 22px;
+  width: 100%;
+  cursor: pointer;
+  &:hover {
+    background:  var(--list-hoverBackground);
+    color:  var(--list-hoverForeground);
+  }
+  &.selected {
+    background: var(--list-activeSelectionBackground);
+    color: var(--list-activeSelectionForeground);
+  }
+}
+.debug_stack_frames_load_more {
+  display: block;
+  text-align: center;
+  width: 100%;
+}
+.debug_stack_frames_error_message {
+  display: block;
+  text-align: center;
+  width: 100%;
+  cursor: default;
+  color: var(--list-errorForeground);
+  &.hover {
+    color: var(--list-errorForeground);
+  }
+}
+
+.debug_stack_frames_item_label {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin-right: 12px;
+  &.label {
+    text-align: center;
+    min-width: fit-content;
+    opacity: .7;
+  }
+  &.subtle {
+    opacity: .7;
+  }
+}
+.debug_stack_frames_item_description {
+  white-space: nowrap;
+  opacity: .9;
+}
+.debug_stack_frames_item_badge {
+  display: inline-block;
+  border-radius: 2px;
+  padding: 0px 5px;
+  background: var(--badge-background);
+  color: var(--badge-foreground);
+  font-size: 12px;
+  margin-left: 5px;
+  display: inline-block;
+}
+.debug_stack_frames_item_hidden {
+  opacity: 0.4;
+}
+
+
+.debug_threads_item {
+  flex: 1;
+  align-items: center;
+  padding: 0 5px;
+  height: 22px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  cursor: pointer;
+}
+.debug_threads_item_label {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.debug_threads_item_description {
+  font-size: 12px !important;
+  opacity: 0.8;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+
+.debug_stack_thread_operations {
+  display: flex;
+  div {
+    padding: 0px 10px;
+  }
+}
+
+.debug_stack_session_operations {
+  display: flex;
+  div {
+    padding: 0px 10px;
+  }
+}

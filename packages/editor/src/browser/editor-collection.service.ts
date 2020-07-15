@@ -1,13 +1,14 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ILineChange, URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event, ISelection, Disposable } from '@ali/ide-core-common';
 import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus, IUndoStopOptions, IDecorationApplyOptions, EditorType, IResourceOpenOptions } from '../common';
-import { IRange, MonacoService, PreferenceService } from '@ali/ide-core-browser';
+import { IRange, MonacoService, PreferenceService, IContextKeyService } from '@ali/ide-core-browser';
 import { MonacoEditorDecorationApplier } from './decoration-applier';
 import { IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, IEditorDocumentModelService } from './doc-model/types';
 import { Emitter } from '@ali/ide-core-common';
 import { IEditorFeatureRegistry } from './types';
 import { EditorFeatureRegistryImpl } from './feature';
 import { getConvertedMonacoOptions, isEditorOption } from './preference/converter';
+import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey';
 
 @Injectable()
 export class EditorCollectionServiceImpl extends WithEventBus implements EditorCollectionService {
@@ -434,9 +435,14 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
   @Autowired(PreferenceService)
   preferenceService: PreferenceService;
 
+  @Autowired(IContextKeyService)
+  contextKeyService: IContextKeyService;
+
   private editorState: Map<string, monaco.editor.IDiffEditorViewState> = new Map();
 
   private currentUri: URI | undefined;
+
+  private diffResourceKey: ResourceContextKey;
 
   protected saveCurrentState() {
     if (this.currentUri) {
@@ -462,7 +468,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
     this.wrapEditors();
   }
 
-  async compare(originalDocModelRef: IEditorDocumentModelRef, modifiedDocModelRef: IEditorDocumentModelRef, options: IResourceOpenOptions = {}) {
+  async compare(originalDocModelRef: IEditorDocumentModelRef, modifiedDocModelRef: IEditorDocumentModelRef, options: IResourceOpenOptions = {}, rawUri?: URI) {
     this.saveCurrentState(); // 保存上一个状态
     this.originalDocModelRef = originalDocModelRef;
     this.modifiedDocModelRef = modifiedDocModelRef;
@@ -478,14 +484,18 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       }
     }));
 
-    this.currentUri = URI.from({
-      scheme: 'diff',
-      query: URI.stringifyQuery({
-        name,
-        original: this.originalDocModel!.uri.toString(),
-        modified: this.modifiedDocModel!.uri.toString(),
-      }),
-    });
+    if (rawUri) {
+      this.currentUri = rawUri;
+    } else {
+      this.currentUri = URI.from({
+        scheme: 'diff',
+        query: URI.stringifyQuery({
+          name,
+          original: this.originalDocModel!.uri.toString(),
+          modified: this.modifiedDocModel!.uri.toString(),
+        }),
+      });
+    }
 
     if (options.range) {
 
@@ -520,6 +530,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       }
     }
     this.updateOptionsOnModelChange();
+    this.diffResourceKey.set(this.currentUri);
   }
 
   showFirstDiff() {
@@ -620,7 +631,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
         return monacoEditor.setSelection(selection as any);
       },
       updateOptions(editorOptions: monaco.editor.IEditorOptions, modelOptions: monaco.editor.ITextModelUpdateOptions) {
-        updateOptionsWithMonacoEditor(diffEditor.monacoDiffEditor.getModifiedEditor(), editorOptions, modelOptions);
+        updateOptionsWithMonacoEditor(diffEditor.monacoDiffEditor.getOriginalEditor(), editorOptions, modelOptions);
       },
     };
 
@@ -693,11 +704,15 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
         return diffEditor.monacoDiffEditor.getModifiedEditor().onDidDispose as Event<void>;
       },
       updateOptions(editorOptions: monaco.editor.IEditorOptions, modelOptions: monaco.editor.ITextModelUpdateOptions) {
-        updateOptionsWithMonacoEditor(diffEditor.monacoDiffEditor.getOriginalEditor(), editorOptions, modelOptions);
+        updateOptionsWithMonacoEditor(diffEditor.monacoDiffEditor.getModifiedEditor(), editorOptions, modelOptions);
       },
     };
     this.collectionService.addEditors([this.originalEditor, this.modifiedEditor]);
     this.collectionService.addDiffEditors([this]);
+
+    // 为 modified editor 的 contextKeyService 注入diffEditor的ResourceKey
+    const modifiedContextKeyService =  this.contextKeyService.createScoped((this.modifiedEditor.monacoEditor as any)._contextKeyService);
+    this.diffResourceKey = new ResourceContextKey(modifiedContextKeyService, undefined, 'diffResource');
   }
 
   layout(): void {

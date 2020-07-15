@@ -286,6 +286,10 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     if (this.props.filter !== prevProps.filter) {
       this.filterItems(prevProps.filter!);
     }
+    if (this.props.model !== prevProps.model) {
+      // model变化时，在渲染前清理缓存
+      this.idxToRendererPropsCache.clear();
+    }
   }
 
   public componentDidUpdate(prevProps: IRecycleTreeProps) {

@@ -1,10 +1,9 @@
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 import * as styles from './header.module.less';
-import { useInjectable, MaybeNull, isWindows, ComponentRenderer, ComponentRegistry, Disposable, DomListener, AppConfig, replaceLocalizePlaceholder, electronEnv, isOSX } from '@ali/ide-core-browser';
+import { useInjectable, MaybeNull, isWindows, ComponentRenderer, ComponentRegistry, Disposable, DomListener, AppConfig, replaceLocalizePlaceholder, electronEnv, isOSX, IWindowService } from '@ali/ide-core-browser';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { WorkbenchEditorService, IResource } from '@ali/ide-editor';
-import { IWindowService } from '@ali/ide-window';
 import { getIcon } from '@ali/ide-core-browser';
 import { observable } from 'mobx';
 import { basename } from '@ali/ide-core-common/lib/utils/paths';

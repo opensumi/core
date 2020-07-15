@@ -2,7 +2,6 @@ import { DebugSession, DebugState } from '../debug-session';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugThread } from '../model/debug-thread';
 import { DebugStackFrame } from '../model/debug-stack-frame';
-import { DebugBreakpoint, DebugExceptionBreakpoint } from '../model/debug-breakpoint';
 import { URI, IDisposable, DisposableCollection, Event, Emitter } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IDebugSessionManager } from '../../common/debug-session';
@@ -84,9 +83,9 @@ export class DebugViewModel implements IDisposable {
         this.fireDidChange();
       }
     }));
-    this.toDispose.push(this.manager.onDidChangeBreakpoints(({ session, uri }) => {
-      if (!session || session === this.currentSession) {
-        this.fireDidChangeBreakpoints(uri);
+    this.toDispose.push(this.manager.onDidDestroyDebugSession((current) => {
+      if (this.has(current)) {
+        this.fireDidChange();
       }
     }));
   }
@@ -95,6 +94,11 @@ export class DebugViewModel implements IDisposable {
     this.toDispose.dispose();
   }
 
+  get threads(): IterableIterator<DebugThread> | undefined {
+    if (this.manager.currentSession) {
+      return this.manager.currentSession.getThreads(() => true);
+    }
+  }
   get currentSession(): DebugSession | undefined {
     const { currentSession } = this.manager;
     return this.has(currentSession) && currentSession || this.session;
@@ -114,14 +118,6 @@ export class DebugViewModel implements IDisposable {
   get currentFrame(): DebugStackFrame | undefined {
     const { currentThread } = this;
     return currentThread && currentThread.currentFrame;
-  }
-
-  get breakpoints(): DebugBreakpoint[] {
-    return this.manager.getBreakpoints(this.currentSession);
-  }
-
-  get exceptionBreakpoints(): DebugExceptionBreakpoint[] {
-    return this.manager.getExceptionBreakpoints(this.currentSession);
   }
 
   async start(): Promise<void> {
