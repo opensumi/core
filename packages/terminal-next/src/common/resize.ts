@@ -9,11 +9,13 @@ export interface IWidget extends Disposable {
   element: HTMLDivElement;
   group: IWidgetGroup;
   reuse: boolean;
+  show: boolean;
   resize: (dynamic?: number) => void;
   increase: (increment: number) => void;
   dispose: () => void;
   onRender: Event<void>;
   onResize: Event<void>;
+  onShow: Event<boolean>;
 }
 
 export interface IWidgetGroup extends Disposable {

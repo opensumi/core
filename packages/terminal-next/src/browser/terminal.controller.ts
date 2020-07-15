@@ -183,17 +183,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       this._createClient(widget, {}, true);
     }));
 
-    this.addDispose(this.terminalView.onWidgetSelected(async (widget) => {
-      const client = this._clients.get(widget.id);
-      if (client) {
-        await client.attached.promise;
-        setTimeout(() => {
-          client.layout();
-          client.focus();
-        }, 0);
-      }
-    }));
-
     this.addDispose(this.terminalView.onWidgetDisposed((widget) => {
       this._disposeClient(widget);
     }));
