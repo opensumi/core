@@ -24,6 +24,37 @@ export interface IEditorComponent<MetaData = any> {
 
 }
 
+export type EditorSide = 'bottom';
+
+export interface IEditorSideWidget<MetaData = any> {
+
+  /**
+   * id, 需要唯一，会作为react组件的key
+   */
+  id: string;
+
+  /**
+   * TODO: 当前仅支持bottom
+   */
+  side?: EditorSide;
+
+  /**
+   * 组件元素
+   */
+  component: ReactEditorComponent<MetaData>;
+
+  /**
+   * 排序因子, 默认10
+   */
+  weight?: number;
+
+  /**
+   * 是否要在某个resource显示
+   */
+  displaysOnResource: (resource: IResource<any>) => boolean;
+
+}
+
 export enum EditorComponentRenderMode {
   ONE_PER_RESOURCE = 1, // 每个resource渲染一个新的
   ONE_PER_GROUP = 2, // 每个Group最多存在一个新的
@@ -53,6 +84,14 @@ export abstract class EditorComponentRegistry {
   abstract getEditorInitialProps(id: string): any;
 
   abstract clearPerWorkbenchComponentCache(componentId: string): void;
+
+  /**
+   * 注册一个编辑器的边缘组件（目前只开放了bottom)
+   * @param widget
+   */
+  abstract registerEditorSideWidget(widget: IEditorSideWidget): IDisposable;
+
+  abstract getSideWidgets(side: EditorSide, resource: IResource): IEditorSideWidget<any>[];
 }
 
 /**
