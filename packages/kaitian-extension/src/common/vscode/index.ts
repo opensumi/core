@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { Emitter } from '@ali/ide-core-common';
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@ali/ide-connection';
 // import { VSCodeExtensionService } from '../browser/types';
@@ -32,6 +32,7 @@ import { IExtHostTasks, IMainThreadTasks } from './tasks';
 import { IExtHostComments, IMainThreadComments } from './comments';
 import { ExtHostFileSystem } from '../../hosted/api/vscode/ext.host.file-system';
 import { ExtHostFileSystemEvent } from '../../hosted/api/vscode/ext.host.file-system-event';
+import { IMainThreadUrls, IExtHostUrls } from './urls';
 
 export const VSCodeExtensionService = Symbol('VSCodeExtensionService');
 export interface VSCodeExtensionService {
@@ -70,6 +71,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadProgress: createExtHostContextProxyIdentifier<IMainThreadProgress>('MainThreadProgress'),
   MainThreadTasks: createExtHostContextProxyIdentifier<IMainThreadTasks>('MainThreadTasks'),
   MainThreadComments: createExtHostContextProxyIdentifier<IMainThreadComments>('MainThreadComments'),
+  MainThreadUrls: createExtHostContextProxyIdentifier<IMainThreadUrls>('MainThreadUrls'),
 };
 
 export const ExtHostAPIIdentifier = {
@@ -102,6 +104,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostTasks: createExtHostContextProxyIdentifier<IExtHostTasks>('ExtHostTasks'),
   KaitianExtHostWebview: createExtHostContextProxyIdentifier<IKaitianExtHostWebviews>('KaitianExtHostWebview'),
   ExtHostComments: createExtHostContextProxyIdentifier<IExtHostComments>('ExtHostComments'),
+  ExtHostUrls: createExtHostContextProxyIdentifier<IExtHostUrls>('ExtHostUrls'),
 };
 
 export abstract class VSCodeExtensionNodeService {
@@ -144,3 +147,4 @@ export * from './terminal';
 export * from './progress';
 export * from './tasks';
 export * from './comments';
+export * from './urls';

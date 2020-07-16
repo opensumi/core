@@ -6,7 +6,7 @@ export interface IMainThreadEnv {
   $clipboardReadText(): Thenable<string>;
   $clipboardWriteText(value: string): Thenable<void>;
 
-  $openExternal(target: vscode.Uri): Thenable<boolean>;
+  $openExternal(target: vscode.Uri): Promise<boolean>;
 }
 
 export interface IExtHostEnv {
