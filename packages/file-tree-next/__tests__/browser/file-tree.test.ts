@@ -394,7 +394,6 @@ describe('FileTree should be work while on single workspace model', () => {
         stopPropagation: jest.fn(),
         dataTransfer: {
           setDragImage: jest.fn(),
-          setData: jest.fn(),
         },
         currentTarget: {
           addEventListener: jest.fn(),
@@ -405,7 +404,6 @@ describe('FileTree should be work while on single workspace model', () => {
       expect(fileDecoration?.classlist).toEqual([styles.mod_dragging]);
       expect(mockEvent.stopPropagation).toBeCalled();
       expect(mockEvent.dataTransfer.setDragImage).toBeCalled();
-      expect(mockEvent.dataTransfer.setData).toBeCalled();
       done();
     });
 
@@ -416,9 +414,11 @@ describe('FileTree should be work while on single workspace model', () => {
       const fileNode = rootNode.getTreeNodeAtIndex(2) as File;
       const mockEvent = {
         preventDefault: jest.fn(),
+        stopPropagation: jest.fn(),
       };
       dndService.handleDragEnter(mockEvent as any, fileNode);
       expect(mockEvent.preventDefault).toBeCalled();
+      expect(mockEvent.stopPropagation).toBeCalled();
       done();
     });
 

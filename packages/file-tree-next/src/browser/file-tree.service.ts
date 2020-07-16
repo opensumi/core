@@ -121,6 +121,11 @@ export class FileTreeService extends Tree {
     return this._isCompactMode;
   }
 
+  // FIXME: 临时给测试用例使用
+  set isCompactMode(value: boolean) {
+    this._isCompactMode = value;
+  }
+
   async init() {
     this._roots = await this.workspaceService.roots;
 

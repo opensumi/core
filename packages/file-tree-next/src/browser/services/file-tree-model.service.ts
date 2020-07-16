@@ -661,6 +661,17 @@ export class FileTreeModelService {
     await this.ensurePerformedEffect();
     this.collapsedAllDeferred = new Deferred();
     await this.treeModel.root.collapsedAll();
+    const snapshot = this.explorerStorage.get<ISerializableState>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
+    if (snapshot) {
+      // 折叠全部后确保将所有目录状态更新，防止立即刷新时状态异常
+      this.explorerStorage.set(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY, {
+        ...snapshot,
+        expandedDirectories: {
+          atSurface: [],
+          buried: [],
+        },
+      });
+    }
     this.collapsedAllDeferred.resolve();
   }
 
