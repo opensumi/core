@@ -121,7 +121,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       if (status) {
         // fit 操作在对比行列没有发送变化的时候不会做任何操作，
         // 但是实际上是设置为 display none 了，所以手动 resize 一下
-        this._term.resize(1, 1);
+        // this._term.resize(1, 1);
       } else {
         this._error.resolve();
         this.layout();
@@ -248,7 +248,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       ],
     };
 
-    const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this._fitAddon.proposeDimensions() || {};
+    const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this._term;
     const connection = await this.service.attach(sessionId, this._term, rows, cols, ptyOptions, type);
 
     if (!connection) {
