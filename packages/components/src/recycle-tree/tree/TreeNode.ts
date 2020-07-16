@@ -867,7 +867,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         this.isExpanded = false;
         this._children = null;
       } else {
-        await this.forceReloadChildrenQuiet(expandedPaths);
+        // needReload --- 判断根目录是否需要进行一次刷新，部分情况，如压缩目录下的文件创建后不应该刷新
+        await this.forceReloadChildrenQuiet(expandedPaths, event.needReload);
       }
     }
     this.watcher.notifyDidProcessWatchEvent(this, event);

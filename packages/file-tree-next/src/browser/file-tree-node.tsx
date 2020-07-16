@@ -227,7 +227,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
         </div>;
     }
     if (isCompactName) {
-      const paths = node.name.split(Path.separator);
+      const paths = node.displayName.split(Path.separator);
       const nameBlock = paths.map((path, index) => {
         const localPath = paths.slice(0, index + 1).join(Path.separator);
         const clickHandler = (event: React.MouseEvent) => {
@@ -259,7 +259,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     return <div
         className={cls(styles.file_tree_node_segment, styles.file_tree_node_displayname)}
       >
-        { labelService.getName(node.uri) || node.name }
+        { labelService.getName(node.uri) || node.displayName }
       </div>;
   };
 

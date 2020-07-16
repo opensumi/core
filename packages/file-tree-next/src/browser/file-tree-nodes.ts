@@ -6,6 +6,7 @@ import { FileTreeService } from './file-tree.service';
 export class Directory extends CompositeTreeNode {
 
   private fileTreeService: FileTreeService;
+  private _displayName: string;
 
   constructor(
     tree: FileTreeService,
@@ -26,11 +27,19 @@ export class Directory extends CompositeTreeNode {
     TreeNode.setTreeNode(this._uid, this.path, this);
   }
 
+  get displayName() {
+    return this._displayName || this.name;
+  }
+
   updateName(name: string) {
     this.name = name;
     TreeNode.removeTreeNode(this._uid);
     // 更新name后需要重设节点路径索引
     TreeNode.setTreeNode(this._uid, this.path, this);
+  }
+
+  updateDisplayName(name: string) {
+    this._displayName = name;
   }
 
   updateURI(uri: URI) {
@@ -53,6 +62,7 @@ export class Directory extends CompositeTreeNode {
 
 export class File extends TreeNode {
   private fileTreeService: FileTreeService;
+  private _displayName: string;
 
   constructor(
     tree: FileTreeService,
@@ -69,11 +79,19 @@ export class File extends TreeNode {
     TreeNode.setTreeNode(this._uid, this.path, this);
   }
 
+  get displayName() {
+    return this._displayName || this.name;
+  }
+
   updateName(name: string) {
     this.name = name;
     TreeNode.removeTreeNode(this._uid);
     // 更新name后需要重设节点路径索引
     TreeNode.setTreeNode(this._uid, this.path, this);
+  }
+
+  updateDisplayName(name: string) {
+    this._displayName = name;
   }
 
   updateURI(uri: URI) {

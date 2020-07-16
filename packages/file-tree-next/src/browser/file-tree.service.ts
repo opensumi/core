@@ -189,7 +189,7 @@ export class FileTreeService extends Tree {
             // 根据workspace更新Root名称
             const rootName = this.workspaceService.getWorkspaceName(child.uri);
             if (rootName && rootName !== child.name) {
-              child.updateName(rootName);
+              child.updateDisplayName(rootName);
             }
           });
           this.watchFilesChange(new URI(this._roots[0].uri));
@@ -225,13 +225,14 @@ export class FileTreeService extends Tree {
           if (parent && parent.parent) {
             const parentName = (parent.parent as Directory).uri.relative(parentURI)?.toString();
             if (parentName && parentName !== parent.name) {
-              this.removeNodeCacheByPath(parent.path);
+              const prePath = parent.path;
+              this.removeNodeCacheByPath(prePath);
               parent.updateName(parentName);
               parent.updateURI(parentURI);
               parent.updateFileStat(childrenParentStat);
               parent.updateToolTip(this.fileTreeAPI.getReadableTooltip(parentURI));
               // Re-Cache Node
-              this.cacheNodes([parent] as (File | Directory)[]);
+              this.reCacheNode(parent, prePath);
             }
           }
         }
@@ -478,12 +479,23 @@ export class FileTreeService extends Tree {
     return nodes;
   }
 
+  ignoreFileEvent(uri: URI, type: FileChangeType) {
+    this._cacheIgnoreFileEvent.set(uri.toString(), type);
+  }
+
   cacheNodes(nodes: (File | Directory)[]) {
     // 切换工作区的时候需清理
     nodes.map((node) => {
       // node.path 不会重复，node.uri在软连接情况下可能会重复
       this._cacheNodesMap.set(node.path, node);
     });
+  }
+
+  reCacheNode(node: File | Directory, prePath: string) {
+    if (this.root?.watchEvents.has(prePath)) {
+      this.root?.watchEvents.set(node.path, this.root?.watchEvents.get(prePath)!);
+    }
+    this._cacheNodesMap.set(node.path, node);
   }
 
   removeNodeCacheByPath(path: string) {
@@ -599,7 +611,7 @@ export class FileTreeService extends Tree {
   /**
    * 刷新指定下的所有子节点
    */
-  async refresh(node: Directory = this.root as Directory) {
+  async refresh(node: Directory = this.root as Directory, needReload: boolean = true) {
     if (!node) {
       return;
     }
