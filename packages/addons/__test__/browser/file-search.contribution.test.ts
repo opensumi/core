@@ -7,7 +7,7 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 import { ClientAddonModule } from '../../src/browser';
-import { FileSearchContribution, quickFileOpen, FileSearchQuickCommandHandler } from '../../src/browser/file-search.contribution';
+import { FileSearchContribution, quickFileOpen, FileSearchQuickCommandHandler, matchLineReg } from '../../src/browser/file-search.contribution';
 
 describe('test for browser/file-search.contribution.ts', () => {
   let injector: MockInjector;
@@ -81,5 +81,30 @@ describe('test for browser/file-search.contribution.ts', () => {
 
     contribution.registerQuickOpenHandlers(registry);
     expect(registry.getHandlers().length).toBe(1);
+  });
+
+  it('get range by search quickopen', () => {
+    const match1 = '/some/file.js(73,84)'.match(matchLineReg)!;
+    expect(match1[1]).toBe('/some/file.js');
+    expect(match1[2]).toBe('73');
+    expect(match1[3]).toBe('84');
+
+    const match2 = '/some/file.js#73,84'.match(matchLineReg)!;
+    expect(match2[1]).toBe('/some/file.js');
+    expect(match2[2]).toBe('73');
+    expect(match2[3]).toBe('84');
+
+    const match3 = '/some/file.js#L73'.match(matchLineReg)!;
+    expect(match3[1]).toBe('/some/file.js');
+    expect(match3[2]).toBe('73');
+
+    const match4 = '/some/file.js:73:84'.match(matchLineReg)!;
+    expect(match4[1]).toBe('/some/file.js');
+    expect(match4[2]).toBe('73');
+    expect(match4[3]).toBe('84');
+
+    const match5 = '/some/file.js:73'.match(matchLineReg)!;
+    expect(match5[1]).toBe('/some/file.js');
+    expect(match5[2]).toBe('73');
   });
 });
