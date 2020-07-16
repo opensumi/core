@@ -1,7 +1,7 @@
 import { Injectable, Autowired, Optional } from '@ali/common-di';
 import { FileTreeModelService } from './file-tree-model.service';
 import { Directory, File } from '../file-tree-nodes';
-import { DisposableCollection, Disposable, ILogger, WithEventBus } from '@ali/ide-core-browser';
+import { DisposableCollection, Disposable, ILogger, WithEventBus, URI, ThrottledDelayer, FileStat } from '@ali/ide-core-browser';
 import { IFileTreeAPI } from '../../common';
 import { IMessageService } from '@ali/ide-overlay';
 import { Decoration, TargetMatchMode } from '@ali/ide-components';
@@ -37,8 +37,12 @@ export class DragAndDropService extends WithEventBus {
   private potentialParent: Directory | null;
   // 开始拖拽的节点
   private beingDraggedNodes: (File | Directory)[] = [];
+  private beingDraggedActiveUri: URI | undefined;
+
   // 拖拽进入的节点
   private draggedOverNode: Directory | File;
+
+  private dragOverTrigger =  new ThrottledDelayer<void>(DragAndDropService.MS_TILL_DRAGGED_OVER_EXPANDS);
 
   constructor(@Optional() private readonly model: FileTreeModelService) {
     super();
@@ -50,13 +54,7 @@ export class DragAndDropService extends WithEventBus {
     return this.model.treeModel.root;
   }
 
-  setDraggableTreeNodeAsData(data: DataTransfer, nodes: (File | Directory)[]) {
-    if (nodes.length > 0) {
-      data.setData('uri', nodes[0].uri.toString());
-    }
-  }
-
-  handleDragStart = (ev: React.DragEvent, node: File | Directory) => {
+  handleDragStart = (ev: React.DragEvent, node: File | Directory, activeUri?: URI) => {
     ev.stopPropagation();
     // React中的DragEnd事件可能不会触发，需要手动用Dom监听
     // issue https://stackoverflow.com/a/24543568
@@ -74,9 +72,8 @@ export class DragAndDropService extends WithEventBus {
       draggedNodes = [node];
     }
 
-    this.setDraggableTreeNodeAsData(ev.dataTransfer, draggedNodes);
-
     this.beingDraggedNodes = draggedNodes;
+    this.beingDraggedActiveUri = activeUri;
 
     draggedNodes.forEach((node) => {
       // 添加拖拽样式
@@ -86,7 +83,7 @@ export class DragAndDropService extends WithEventBus {
     if (ev.dataTransfer) {
       let label: string;
       if (draggedNodes.length === 1) {
-        label = typeof node.name === 'string' ? node.name : '';
+        label = activeUri ? activeUri.displayName : typeof node.name === 'string' ? node.name : '';
       } else {
         label = String(draggedNodes.length);
       }
@@ -100,6 +97,7 @@ export class DragAndDropService extends WithEventBus {
   }
 
   handleDragEnter = (ev: React.DragEvent, node: File | Directory) => {
+    ev.stopPropagation();
     ev.preventDefault();
   }
 
@@ -131,7 +129,7 @@ export class DragAndDropService extends WithEventBus {
       ? node as Directory
       : node.parent as Directory;
 
-    if (this.potentialParent !== newPotentialParent) {
+    if (this.potentialParent !== newPotentialParent || !this.draggedOverDec.hasTarget(newPotentialParent)) {
       if (this.potentialParent) {
         this.draggedOverDec.removeTarget(this.potentialParent);
       }
@@ -142,7 +140,7 @@ export class DragAndDropService extends WithEventBus {
     }
 
     if (this.potentialParent !== node && Directory.is(node)) {
-      const timer = setTimeout(async () => {
+      this.dragOverTrigger.trigger(async () => {
         if (!node.expanded) {
           await (node as Directory).setExpanded(true);
           // 确保当前仍在当前拖区域节点中
@@ -162,55 +160,101 @@ export class DragAndDropService extends WithEventBus {
         }
         // 通知视图更新
         this.model.treeModel.dispatchChange();
-      }, DragAndDropService.MS_TILL_DRAGGED_OVER_EXPANDS);
-      this.toCancelNodeExpansion.push(Disposable.create(() => clearTimeout(timer)));
+      });
+      this.toCancelNodeExpansion.push(Disposable.create(() => {
+        this.dragOverTrigger.cancel();
+      }));
     }
   }
 
-  handleDrop = async (ev: React.DragEvent, node?: File | Directory) => {
+  handleDrop = async (ev: React.DragEvent, node?: File | Directory, activeUri?: URI) => {
     this.eventBus.fire(new FileTreeDropEvent({
       event: ev.nativeEvent,
-      targetDir: node && node instanceof File ? (node.parent as Directory)?.uri.codeUri.path : node?.uri.codeUri.path,
+      targetDir: activeUri ? activeUri.codeUri.path : node && node instanceof File ? (node.parent as Directory)?.uri.codeUri.path : node?.uri.codeUri.path,
     }));
     try {
       ev.preventDefault();
       ev.stopPropagation();
       // 移除染色
       ev.dataTransfer.dropEffect = 'copy';
-      let containing: File | Directory;
-      if (node) {
+      let containing: File | Directory | null;
+      const isCompactFolderMove = !!this.beingDraggedActiveUri;
+      if (this.fileTreeService.isCompactMode && activeUri && !node?.uri.isEqual(activeUri)) {
+        containing = null;
+      } else if (node) {
         containing = Directory.is(node) ? node as Directory : node.parent as Directory;
       } else {
         containing = this.root as Directory;
       }
-      if (!!containing) {
-        const resources = this.beingDraggedNodes;
-        if (resources.length > 0) {
-          const resourcesCanBeMoved = resources.filter((resource: File | Directory) => resource && resource.parent && !(resource.parent as Directory).uri.isEqual(containing.uri));
-          if (resourcesCanBeMoved.length > 0) {
-            // 最小化移动文件
-            const errors = await this.fileTreeAPI.mvFiles(resourcesCanBeMoved.map((res) => res.uri), containing.uri);
-            if (errors && errors.length > 0) {
-              errors.forEach((error) => {
-                this.messageService.error(error);
-              });
-            } else {
-              for (const target of resourcesCanBeMoved) {
-                const to = containing.uri.resolve(target.name);
-                this.fileTreeService.moveNodeByPath(target.parent as Directory, target.path, new Path(containing.path).join(target.name).toString());
-                // 由于节点移动时默认仅更新节点路径
-                // 我们需要自己更新额外的参数，如uri, filestat等
-                target.updateURI(to);
-                target.updateFileStat({
-                  ...target.filestat,
-                  uri: to.toString(),
-                });
-                target.updateToolTip(this.fileTreeAPI.getReadableTooltip(to));
-                // 当重命名文件为文件夹时，刷新文件夹更新子文件路径
-                if (Directory.is(target)) {
-                  this.fileTreeService.refresh(target as Directory);
+      let resources;
+      if (this.beingDraggedActiveUri) {
+        const compactNode = this.fileTreeService.getNodeByPathOrUri(this.beingDraggedActiveUri);
+        // 生成临时节点用于数据处理
+        resources = [new Directory(
+          this.fileTreeService,
+          compactNode?.parent,
+          this.beingDraggedActiveUri,
+          this.beingDraggedActiveUri.displayName,
+          { uri:  this.beingDraggedActiveUri.toString(), isDirectory: true, lastModification: new Date().getTime()} as FileStat,
+          this.beingDraggedActiveUri.displayName,
+          )];
+      } else {
+        resources = this.beingDraggedNodes;
+      }
+      if (resources.length > 0) {
+        const targetContainerUri = activeUri ? activeUri : (containing && containing.uri)!;
+        const resourcesCanBeMoved = resources.filter((resource: File | Directory) => resource && resource.parent && !(resource.parent as Directory).uri.isEqual(targetContainerUri));
+        if (resourcesCanBeMoved.length > 0) {
+          // 最小化移动文件
+          const errors = await this.fileTreeAPI.mvFiles(resourcesCanBeMoved.map((res) => res.uri), targetContainerUri);
+          if (errors && errors.length > 0) {
+            errors.forEach((error) => {
+              this.messageService.error(error);
+            });
+          } else if (!errors) {
+            return ;
+          } else {
+            if (!!containing) {
+              // 这里不能直接使用this.beingDraggedActiveUri做判断，因为需要等待上面移动文件成功后，此时dropEnd事件可能已经执行完了
+              if (this.fileTreeService.isCompactMode && isCompactFolderMove) {
+                // 当从压缩目录移动子节点到其他容器时
+                for (const target of resourcesCanBeMoved) {
+                  this.fileTreeService.refresh(target.parent as Directory);
+                }
+                this.fileTreeService.refresh(containing as Directory);
+              } else {
+                // 非压缩目录模式情况
+                for (const target of resourcesCanBeMoved) {
+                  const to = containing.uri.resolve(target.name);
+                  this.fileTreeService.moveNodeByPath(target.parent as Directory, target.path, new Path(containing.path).join(target.name).toString());
+                  // 由于节点移动时默认仅更新节点路径
+                  // 我们需要自己更新额外的参数，如uri, filestat等
+                  target.updateURI(to);
+                  target.updateFileStat({
+                    ...target.filestat,
+                    uri: to.toString(),
+                  });
+                  target.updateToolTip(this.fileTreeAPI.getReadableTooltip(to));
+                  // 当重命名文件为文件夹时，刷新文件夹更新子文件路径
+                  if (Directory.is(target)) {
+                    this.fileTreeService.refresh(target as Directory);
+                  }
                 }
               }
+            } else if (!!node) {
+              if (this.fileTreeService.isCompactMode && isCompactFolderMove) {
+                // 从压缩目录子节点移动到压缩目录子节点下
+                for (const target of resourcesCanBeMoved) {
+                  this.fileTreeService.refresh(target.parent as Directory);
+                }
+              } else {
+                // 当从普通目录移动到压缩目录子节点时
+                for (const target of resourcesCanBeMoved) {
+                  this.fileTreeService.deleteAffectedNodeByPath(target.path);
+                }
+              }
+              // 否则，刷新模板节点的父节点
+              this.fileTreeService.refresh(node.parent as Directory);
             }
           }
         }
@@ -226,6 +270,7 @@ export class DragAndDropService extends WithEventBus {
         this.beingDraggedDec.removeTarget(node);
       });
       this.beingDraggedNodes = [];
+      this.beingDraggedActiveUri = undefined;
       this.potentialParent = null;
       // 通知视图更新
       this.model.treeModel.dispatchChange();
@@ -247,6 +292,7 @@ export class DragAndDropService extends WithEventBus {
       this.beingDraggedDec.removeTarget(node);
     });
     this.beingDraggedNodes = [];
+    this.beingDraggedActiveUri = undefined;
     this.potentialParent = null;
     // 通知视图更新
     this.model.treeModel.dispatchChange();
