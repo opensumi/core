@@ -8,6 +8,7 @@ export class Widget extends Disposable implements IWidget {
   protected _group: WidgetGroup;
   protected _element: HTMLDivElement;
   protected _show: boolean;
+  protected _error: boolean;
 
   @observable
   dynamic: number = 0;
@@ -56,12 +57,23 @@ export class Widget extends Disposable implements IWidget {
     this._onShow.fire(status);
   }
 
+  get error() {
+    return this._error;
+  }
+
+  set error(status: boolean) {
+    this._error = status;
+    this._onError.fire(status);
+  }
+
   protected _onRender = new Emitter<void>();
   protected _onResize = new Emitter<void>();
   protected _onShow = new Emitter<boolean>();
+  protected _onError = new Emitter<boolean>();
   onRender: Event<void> = this._onRender.event;
   onResize: Event<void> = this._onResize.event;
   onShow: Event<boolean> = this._onShow.event;
+  onError: Event<boolean> = this._onError.event;
 
   resize(dynamic?: number) {
     this.dynamic = dynamic || this.shadowDynamic;

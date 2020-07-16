@@ -38,6 +38,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private _ready: boolean = false;
   private _attached = new Deferred<void>();
   private _firstStdout = new Deferred<void>();
+  private _error = new Deferred<void>();
   private _show: Deferred<void> | null;
   /** end */
 
@@ -108,11 +109,22 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
     this.addDispose(widget.onShow((status) => {
       if (status) {
-        this.layout();
         if (this._show) {
           this._show.resolve();
           this._show = null;
         }
+        this.layout();
+      }
+    }));
+
+    this.addDispose(widget.onError((status) => {
+      if (status) {
+        // fit 操作在对比行列没有发送变化的时候不会做任何操作，
+        // 但是实际上是设置为 display none 了，所以手动 resize 一下
+        // this._term.resize(1, 1);
+      } else {
+        this._error.resolve();
+        this.layout();
       }
     }));
 
@@ -236,7 +248,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       ],
     };
 
-    const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this._fitAddon.proposeDimensions() || {};
+    const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this._term;
     const connection = await this.service.attach(sessionId, this._term, rows, cols, ptyOptions, type);
 
     if (!connection) {
@@ -257,19 +269,25 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   reset() {
     this._attached.reject();
     this._firstStdout.reject();
+    this._error.reject();
     this._show && this._show.reject();
     this._ready = false;
     this._attached = new Deferred<void>();
     this._show = new Deferred<void>();
+    this._error = new Deferred<void>();
     this._attachAddon.dispose();
-    // fit 操作在对比行列没有发送变化的时候不会做任何操作，
-    // 但是实际上是设置为 display none 了，所以手动 resize 一下
-    this._term.resize(1, 1);
     const { dispose } = this.onOutput(() => {
       dispose();
       this._firstStdout.resolve();
     });
-    this.attach();
+    if (this.widget.show) {
+      this.attach();
+    } else {
+      this._show.promise.then(async () => {
+        await this.attach();
+        this._show = new Deferred<void>();
+      });
+    }
   }
 
   private async attach() {

@@ -31,7 +31,7 @@ export default observer(() => {
     const client = controller.findClientFromWidgetId(widget.id);
     const error = client && errors.get(client.id);
     return (
-      <TerminalWidget show={ !error && currentGroupIndex === index } error={ error } widget={ widget } />
+      <TerminalWidget show={ currentGroupIndex === index } error={ error } widget={ widget } />
     );
   };
 
