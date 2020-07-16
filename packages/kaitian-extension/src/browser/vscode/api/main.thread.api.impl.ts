@@ -14,6 +14,7 @@ import {
   IMainThreadProgress,
   IMainThreadTasks,
   IMainThreadComments,
+  IMainThreadUrls,
 } from '../../../common/vscode'; // '../../common';
 import { MainThreadCommands } from './main.thread.commands';
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
@@ -44,6 +45,7 @@ import { MainThreadProgress } from './main.thread.api.progress';
 import { MainthreadTasks } from './main.thread.tasks';
 import { MainthreadComments } from './main.thread.comments';
 import { MainThreadFileSystemEvent } from './main.thread.file-system-event';
+import { MainThreadUrls } from './main.thread.urls';
 
 export async function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -77,6 +79,7 @@ export async function createApiFactory(
   const MainThreadProgressAPI = injector.get(MainThreadProgress, [rpcProtocol]);
   const MainthreadTasksAPI = injector.get(MainthreadTasks, [rpcProtocol]);
   const MainthreadCommentsAPI = injector.get(MainthreadComments, [rpcProtocol, MainThreadCommandsAPI]);
+  const MainthreadUrlsAPI = injector.get(MainThreadUrls, [rpcProtocol]);
 
   rpcProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   rpcProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
@@ -104,6 +107,7 @@ export async function createApiFactory(
   rpcProtocol.set<IMainThreadProgress>(MainThreadAPIIdentifier.MainThreadProgress, MainThreadProgressAPI);
   rpcProtocol.set<IMainThreadTasks>(MainThreadAPIIdentifier.MainThreadTasks, MainthreadTasksAPI);
   rpcProtocol.set<IMainThreadComments>(MainThreadAPIIdentifier.MainThreadComments, MainthreadCommentsAPI);
+  rpcProtocol.set<IMainThreadUrls>(MainThreadAPIIdentifier.MainThreadUrls, MainthreadUrlsAPI);
 
   await MainThreadWebviewAPI.init();
 
@@ -134,5 +138,6 @@ export async function createApiFactory(
     MainThreadProgressAPI.dispose();
     MainthreadTasksAPI.dispose();
     MainthreadCommentsAPI.dispose();
+    MainthreadUrlsAPI.dispose();
   };
 }

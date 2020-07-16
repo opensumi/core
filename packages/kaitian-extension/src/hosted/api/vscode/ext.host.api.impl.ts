@@ -35,6 +35,7 @@ import { ExtHostAppConfig } from '../../ext.process-base';
 import { ExtHostTasks, createTaskApiFactory } from './tasks/ext.host.tasks';
 import { ExtHostComments, createCommentsApiFactory } from './ext.host.comments';
 import { ExtHostFileSystemEvent } from './ext.host.file-system-event';
+import { ExtHostUrls } from './ext.host.urls';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -72,6 +73,7 @@ export function createApiFactory(
 
   const extHostTasks = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostTasks, new ExtHostTasks(rpcProtocol, extHostTerminal, extHostWorkspace));
   const extHostComments = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostComments, new ExtHostComments(rpcProtocol, extHostCommands, extHostDocs)) as ExtHostComments;
+  const extHostUrls = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostUrls, new ExtHostUrls(rpcProtocol));
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
 
   return (extension: IExtension) => {
@@ -81,6 +83,7 @@ export function createApiFactory(
         extension, extHostEditors, extHostMessage, extHostWebview,
         extHostTreeView, extHostWindowState, extHostDecorations, extHostStatusBar,
         extHostQuickOpen, extHostOutput, extHostTerminal, extHostWindow, extHostProgress,
+        extHostUrls,
       ),
       languages: createLanguagesApiFactory(extHostLanguages, extension),
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem, extHostFileSystemEvent, extHostTasks, extension),

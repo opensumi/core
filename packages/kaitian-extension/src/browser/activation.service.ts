@@ -71,7 +71,7 @@ export class ActivationEventServiceImpl implements IActivationEventService {
    * @param topic
    * @param listener
    */
-  private addListener(topic, listener: IActivationEventListener): IDisposable {
+  private addListener(topic: string, listener: IActivationEventListener): IDisposable {
     if (this.wildCardTopics.has(topic)) {
       if (!this.eventListeners.has(topic)) {
         this.eventListeners.set(topic, []);

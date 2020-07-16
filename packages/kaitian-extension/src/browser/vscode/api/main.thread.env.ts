@@ -19,8 +19,9 @@ export class MainThreadEnv implements IMainThreadEnv {
   private readonly openerService: IOpenerService;
 
   // 检测下支持的协议，以防打开内部协议
+  // 支持 http/https/mailto/projectScheme 协议
   private isSupportedLink(uri: URI) {
-    return HttpOpener.standardSupportedLinkSchemes.has(uri.scheme);
+    return HttpOpener.standardSupportedLinkSchemes.has(uri.scheme) || uri.scheme === ClientAppConfigProvider.get().uriScheme;
   }
 
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
@@ -64,10 +65,10 @@ export class MainThreadEnv implements IMainThreadEnv {
     });
   }
 
-  $openExternal(target: vscode.Uri): Thenable<boolean> {
+  async $openExternal(target: vscode.Uri): Promise<boolean> {
     if (this.isSupportedLink(URI.from(target))) {
-      this.openerService.open(target.toString(true));
+      return await this.openerService.open(target.toString(true));
     }
-    return Promise.resolve(true);
+    return false;
   }
 }
