@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import {
   IExtHostMessage, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions,
   IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState, IExtHostStatusBar,
-  IExtHostQuickOpen, IExtHostOutput, IExtHostTerminal, IExtHostWindow, IMainThreadWindow, MainThreadAPIIdentifier, IExtOpenDialogOptions, IExtSaveDialogOptions,
+  IExtHostQuickOpen, IExtHostOutput, IExtHostTerminal, IExtHostWindow, IMainThreadWindow, MainThreadAPIIdentifier, IExtOpenDialogOptions, IExtSaveDialogOptions, IExtHostUrls,
 } from '../../../common/vscode';
 import { MessageType, IDisposable, CancellationToken, Emitter, IExtensionInfo } from '@ali/ide-core-common';
 
@@ -30,6 +30,7 @@ export function createWindowApiFactory(
   extHostTerminal: IExtHostTerminal,
   extHostWindow: ExtHostWindow,
   extHostProgress: ExtHostProgress,
+  extHostUrls: IExtHostUrls,
 ) {
   const extensionInfo: IExtensionInfo = {
     id: extension.id,
@@ -116,16 +117,9 @@ export function createWindowApiFactory(
     registerDecorationProvider: proposedApiFunction(extension, (provider: vscode.DecorationProvider) => {
       return extHostDecorations.registerDecorationProvider(provider, extension.id);
     }),
-    registerUriHandler() {
-       // TODO git
-       /* tslint:disable:no-console */
-      console.log('registerUriHandler is not implemented');
-
-      return {
-        dispose: () => {},
-      };
+    registerUriHandler(handler: vscode.UriHandler) {
+      return extHostUrls.registerUriHandler(extension.id, handler);
     },
-
     showOpenDialog: (options) => {
       return extHostWindow.openDialog(options);
     },

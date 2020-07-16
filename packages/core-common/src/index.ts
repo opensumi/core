@@ -36,3 +36,4 @@ export * from './progress';
 export * from './problem-pattern';
 export * from './problem-matcher';
 export * from './task-definition';
+export * from './errors';

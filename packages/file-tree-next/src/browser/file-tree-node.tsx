@@ -52,7 +52,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   hidesExplorerArrows,
   hasPrompt,
 }: FileTreeNodeRenderedProps) => {
-  const [activeIndex, setActiveIndex] = React.useState<number>();
+  const [activeIndex, setActiveIndex] = React.useState<number>(-1);
 
   const isRenamePrompt = itemType === TreeNodeType.RenamePrompt;
   const isNewPrompt = itemType === TreeNodeType.NewPrompt;
@@ -61,11 +61,6 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
 
   const decoration = isPrompt ? null : decorationService.getDecoration(item.uri, Directory.is(item));
 
-  React.useEffect(() => {
-    if (isCompactName) {
-      setActiveIndex(item.name.split(Path.separator).length - 1);
-    }
-  }, [item]);
   const handleClick = (ev: React.MouseEvent) => {
     if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
       if (isCompactName) {
@@ -227,7 +222,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
         </div>;
     }
     if (isCompactName) {
-      const paths = node.name.split(Path.separator);
+      const paths = node.displayName.split(Path.separator);
       const nameBlock = paths.map((path, index) => {
         const localPath = paths.slice(0, index + 1).join(Path.separator);
         const clickHandler = (event: React.MouseEvent) => {
@@ -242,11 +237,51 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
           const activeUri: URI = item.parent.uri.resolve(paths.slice(0, index + 1).join(Path.separator));
           onContextMenu(event, item as File, itemType, activeUri!);
         };
-        return <span key={localPath}>
-          <a className={cls(activeIndex === index && styles.active, styles.compact_name)} onContextMenu={contextMenuHandler} onClick={clickHandler}>{path}</a>
-          {
-            index !== paths.length - 1 ? <span className={styles.compact_name_separator}>{Path.separator}</span> : null
+        const dragOverHandler = (event: React.DragEvent) => {
+          event.stopPropagation();
+          event.preventDefault();
+          if (activeIndex !== index) {
+            setActiveIndex(index);
+            dndService.handleDragOver(event, item as File);
           }
+        };
+        const dragLeaveHandler = (event: React.DragEvent) => {
+          event.stopPropagation();
+          event.preventDefault();
+          setActiveIndex(-1);
+          return;
+        };
+
+        const dragStartHandler = (event: React.DragEvent) => {
+          event.stopPropagation();
+          if (activeIndex !== index) {
+            setActiveIndex(index);
+          }
+          const activeUri: URI = item.parent.uri.resolve(paths.slice(0, index + 1).join(Path.separator));
+          dndService.handleDragStart(event, item as File, activeUri!);
+        };
+
+        const dropHandler = (event: React.DragEvent) => {
+          event.stopPropagation();
+          const activeUri: URI = item.parent.uri.resolve(paths.slice(0, index + 1).join(Path.separator));
+          dndService.handleDrop(event, item as File, activeUri!);
+        };
+        const pathClassName = cls(activeIndex === index && styles.active, styles.compact_name);
+        return <span key={localPath}>
+          <a
+            className={pathClassName}
+            draggable={true}
+            onContextMenu={contextMenuHandler}
+            onDragStart={dragStartHandler}
+            onDragOver={dragOverHandler}
+            onDragLeave={dragLeaveHandler}
+            onDrop={dropHandler}
+            onClick={clickHandler}>
+              {path}
+          </a>
+            {
+              index !== paths.length - 1 ? <span className={styles.compact_name_separator}>{Path.separator}</span> : null
+            }
         </span>;
       });
 
@@ -259,7 +294,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     return <div
         className={cls(styles.file_tree_node_segment, styles.file_tree_node_displayname)}
       >
-        { labelService.getName(node.uri) || node.name }
+        { labelService.getName(node.uri) || node.displayName }
       </div>;
   };
 

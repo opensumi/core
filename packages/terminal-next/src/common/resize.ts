@@ -10,12 +10,14 @@ export interface IWidget extends Disposable {
   group: IWidgetGroup;
   reuse: boolean;
   show: boolean;
+  error: boolean;
   resize: (dynamic?: number) => void;
   increase: (increment: number) => void;
   dispose: () => void;
   onRender: Event<void>;
   onResize: Event<void>;
   onShow: Event<boolean>;
+  onError: Event<boolean>;
 }
 
 export interface IWidgetGroup extends Disposable {
