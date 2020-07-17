@@ -33,8 +33,8 @@ export abstract class CoreFileServiceProviderClient implements FileSystemProvide
   createDirectory(uri: Uri): void | Thenable<void | FileStat> {
     return this.fileServiceProvider.createDirectory(uri);
   }
-  readFile(uri: Uri): string | Thenable<string> {
-    return this.fileServiceProvider.readFile(uri);
+  readFile(uri: Uri, encoding: string): string | Thenable<string> {
+    return this.fileServiceProvider.readFile(uri, encoding);
   }
   writeFile(uri: Uri, content: string, options: { create: boolean; overwrite: boolean; }): void | Thenable<void | FileStat> {
     return this.fileServiceProvider.writeFile(uri, content, options);
