@@ -74,37 +74,6 @@ export class ClientCommonContribution implements CommandContribution, Preference
     menus.registerMenubarItem(MenuId.MenubarViewMenu, { label: localize('menu-bar.title.view'), order: 4 });
     menus.registerMenubarItem(MenuId.MenubarHelpMenu, { label: localize('menu-bar.title.help'), order: 999 });
 
-    /* ---- test for submenu ---- */
-    // if (process.env.NODE_ENV !== 'production') {
-    //   const testSubmenuId = 'greatmenu';
-    //   menus.registerMenuItem(MenuId.SCMResourceGroupContext, {
-    //     label: 'kaitian submenu',
-    //     submenu: testSubmenuId,
-    //   });
-
-    //   menus.registerMenuItems(testSubmenuId, [{
-    //     command: FILE_COMMANDS.NEW_FILE.id,
-    //     group: '1_new',
-    //   }]);
-
-    //   menus.registerMenuItem(testSubmenuId, {
-    //     label: 'kaitian sub_submenu',
-    //     submenu: 'sub_submenu',
-    //   });
-
-    //   menus.registerMenuItems(testSubmenuId, [{
-    //     command: FILE_COMMANDS.NEW_FOLDER.id,
-    //     group: '1_new',
-    //   }]);
-
-    //   menus.registerMenuItem('sub_submenu', {
-    //     command: COMMON_COMMANDS.ABOUT_COMMAND.id,
-    //     group: '1_new',
-    //   });
-    // }
-
-    /* ---- end for submenu ---- */
-
     // File 菜单
     menus.registerMenuItems(MenuId.MenubarFileMenu, [{
       command: FILE_COMMANDS.OPEN_FOLDER.id,

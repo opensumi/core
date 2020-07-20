@@ -164,7 +164,6 @@ class Menu extends Disposable implements IMenu {
         // 只有 label 存在值的时候才渲染
         if (item.label) {
           const action = this.injector.get(SubmenuItemNode, [item]);
-
           return action;
         }
       }
