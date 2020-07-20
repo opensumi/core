@@ -75,6 +75,13 @@ export class DragAndDropService extends WithEventBus {
     this.beingDraggedNodes = draggedNodes;
     this.beingDraggedActiveUri = activeUri;
 
+    const draggedFile = draggedNodes.find((node) => !Directory.is(node));
+
+    // 保证多选情况下找到首个文件
+    if (draggedFile) {
+      ev.dataTransfer.setData('uri', draggedFile.uri.toString());
+    }
+
     draggedNodes.forEach((node) => {
       // 添加拖拽样式
       this.beingDraggedDec.addTarget(node, TargetMatchMode.Self);
