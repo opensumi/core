@@ -1,6 +1,6 @@
 {
   "name": "@ali/kaitian-cli-engine",
-  "version": "1.9.1",
+  "version": "1.9.1-patch.1",
   "description": "Integration engine runtime for kaitian-cli and kaitian extension",
   "main": "",
   "files": [
