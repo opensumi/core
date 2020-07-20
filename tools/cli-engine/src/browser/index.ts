@@ -44,7 +44,7 @@ const customClientOpts = ((window as any).KAITIAN_CLIENT_OPTS || {}) as IClientA
 
 renderApp({
   layoutConfig,
-  useCdnIcon: false,
+  useCdnIcon: true,
   modules,
   ...customClientOpts,
   defaultPreferences: {
