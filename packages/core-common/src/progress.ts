@@ -25,13 +25,15 @@ export interface IProgressOptions {
   readonly source?: string;
   readonly total?: number;
   readonly cancellable?: boolean;
+  // 暂不支持
   readonly buttons?: string[];
 }
 
 export interface IProgressNotificationOptions extends IProgressOptions {
   readonly location: ProgressLocation.Notification;
-  readonly primaryActions?: ReadonlyArray<IAction>;
-  readonly secondaryActions?: ReadonlyArray<IAction>;
+  // 暂不支持
+  // readonly primaryActions?: ReadonlyArray<IAction>;
+  // readonly secondaryActions?: ReadonlyArray<IAction>;
   readonly delay?: number;
   readonly silent?: boolean;
 }
