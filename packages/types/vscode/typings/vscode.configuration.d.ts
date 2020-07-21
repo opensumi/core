@@ -4,57 +4,6 @@
 
 declare module 'vscode' {
 
-	/**
-	 * Namespace for dealing with the current workspace. A workspace is the representation
-	 * of the folder that has been opened. There is no workspace when just a file but not a
-	 * folder has been opened.
-	 *
-	 * The workspace offers support for [listening](#workspace.createFileSystemWatcher) to fs
-	 * events and for [finding](#workspace.findFiles) files. Both perform well and run _outside_
-	 * the editor-process so that they should be always used instead of nodejs-equivalents.
-	 */
-	export namespace workspace {
-     /**
-		 * Returns the [workspace folder](#WorkspaceFolder) that contains a given uri.
-		 * * returns `undefined` when the given uri doesn't match any workspace folder
-		 * * returns the *input* when the given uri is a workspace folder itself
-		 *
-		 * @param uri An uri.
-		 * @return A workspace folder or `undefined`
-		 */
-		export function getWorkspaceFolder(uri: Uri): WorkspaceFolder | undefined;
-
-    /**
-		 * Get a workspace configuration object.
-		 *
-		 * When a section-identifier is provided only that part of the configuration
-		 * is returned. Dots in the section-identifier are interpreted as child-access,
-		 * like `{ myExt: { setting: { doIt: true }}}` and `getConfiguration('myExt.setting').get('doIt') === true`.
-		 *
-		 * When a resource is provided, configuration scoped to that resource is returned.
-		 *
-		 * @param section A dot-separated identifier.
-		 * @param resource A resource for which the configuration is asked for
-		 * @return The full configuration or a subset.
-		 */
-		export function getConfiguration(section?: string, resource?: Uri | null): WorkspaceConfiguration;
-
-    /**
-		 * An event that is emitted when the [configuration](#WorkspaceConfiguration) changed.
-		 */
-    export const onDidChangeConfiguration: Event<ConfigurationChangeEvent>;
-
-    /**
-		 * Returns the [workspace folder](#WorkspaceFolder) that contains a given uri.
-		 * * returns `undefined` when the given uri doesn't match any workspace folder
-		 * * returns the *input* when the given uri is a workspace folder itself
-		 *
-		 * @param uri An uri.
-		 * @return A workspace folder or `undefined`
-		 */
-		export function getWorkspaceFolder(uri: Uri): WorkspaceFolder | undefined;
-
-  }
   	/**
 	 * Represents the configuration. It is a merged view of
 	 *
