@@ -2,9 +2,10 @@
   .monaco-editor {
     .comments-decoration {
       border-radius: 50%;
+      // 防止被其他的 decoration 盖住
+      position: absolute;
+      z-index: 1;
       &::before {
-        position: absolute;
-        z-index: 1;
         cursor: pointer;
         font-weight: normal;
         color: var(--foreground);
