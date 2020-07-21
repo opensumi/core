@@ -221,9 +221,10 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   }
 
   public hideAll(isDospose?: boolean) {
-    for (const [, widget] of this.widgets) {
+    for (const [editor, widget] of this.widgets) {
       if (isDospose) {
-        widget.dispose();
+        // 如果 thread 出现在当前 editor 则不隐藏
+        !editor.currentUri?.isEqual(this.uri) && widget.dispose();
       } else {
         widget.hide();
       }
