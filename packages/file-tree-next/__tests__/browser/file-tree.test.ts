@@ -381,6 +381,50 @@ describe('FileTree should be work while on single workspace model', () => {
       expect(fileDecoration?.classlist).toEqual([styles.mod_selected]);
       done();
     });
+
+    it('New File with root uri should be work', async (done) => {
+      const promptHandle = {
+        destroyed: false,
+        onChange: jest.fn(),
+        onCommit: jest.fn(),
+        onBlur: jest.fn(),
+        onFocus: jest.fn(),
+        onDestroy: jest.fn(),
+        onCancel: jest.fn(),
+      };
+      mockTreeHandle.promptNewTreeNode.mockResolvedValueOnce(promptHandle);
+      await fileTreeModelService.newFilePrompt(root);
+      expect(mockTreeHandle.promptNewTreeNode).toBeCalled();
+      expect(promptHandle.onChange).toBeCalled();
+      expect(promptHandle.onCommit).toBeCalled();
+      expect(promptHandle.onBlur).toBeCalled();
+      expect(promptHandle.onFocus).toBeCalled();
+      expect(promptHandle.onDestroy).toBeCalled();
+      expect(promptHandle.onCancel).toBeCalled();
+      done();
+    });
+
+    it('New Directory with root uri should be work', async (done) => {
+      const promptHandle = {
+        destroyed: false,
+        onChange: jest.fn(),
+        onCommit: jest.fn(),
+        onBlur: jest.fn(),
+        onFocus: jest.fn(),
+        onDestroy: jest.fn(),
+        onCancel: jest.fn(),
+      };
+      mockTreeHandle.promptNewCompositeTreeNode.mockResolvedValueOnce(promptHandle);
+      await fileTreeModelService.newDirectoryPrompt(root);
+      expect(mockTreeHandle.promptNewCompositeTreeNode).toBeCalled();
+      expect(promptHandle.onChange).toBeCalled();
+      expect(promptHandle.onCommit).toBeCalled();
+      expect(promptHandle.onBlur).toBeCalled();
+      expect(promptHandle.onFocus).toBeCalled();
+      expect(promptHandle.onDestroy).toBeCalled();
+      expect(promptHandle.onCancel).toBeCalled();
+      done();
+    });
   });
 
   describe('03 #DragAndDrop Service should be work', () => {

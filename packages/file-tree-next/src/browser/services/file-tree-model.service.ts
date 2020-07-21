@@ -1088,7 +1088,9 @@ export class FileTreeModelService {
       targetNode = await this.fileTreeService.getNodeByPathOrUri(uri)!;
     }
     const namePieces = Path.splitPath(targetNode.name);
-    if (targetNode.name !== uri.displayName && namePieces[namePieces.length - 1] !== uri.displayName) {
+    if (Directory.isRoot(targetNode)) {
+      return targetNode;
+    } else if (targetNode.name !== uri.displayName && namePieces[namePieces.length - 1] !== uri.displayName) {
       // 说明当前在压缩节点的非末尾路径上触发的新建事件， 如 a/b 上右键 a 产生的新建事件
       const removePathName = uri.relative(targetNode.uri)?.toString();
       const relativeName = targetNode.name.replace(`${Path.separator}${removePathName}`, '');

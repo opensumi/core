@@ -351,7 +351,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         this.fileTreeModelService.deleteFileByUris(uris);
       },
       isVisible: () => {
-        return this.fileTreeModelService.selectedFiles.length > 0;
+        return !!this.fileTreeModelService.focusedFile;
       },
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.RENAME_FILE, {
@@ -451,7 +451,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         copy(decodeURIComponent(copyUri.withoutScheme().toString()));
       },
       isVisible: () => {
-        return !!this.fileTreeModelService.focusedFile;
+        return this.fileTreeModelService.selectedFiles.length > 0;
       },
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_RELATIVE_PATH, {
@@ -461,6 +461,9 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
           // 多工作区额外处理
           for (const root of await this.workspaceService.roots) {
             rootUri = new URI(root.uri);
+            if (rootUri.isEqual(uri)) {
+              return copy('./');
+            }
             if (rootUri.isEqualOrParent(uri)) {
               return copy(decodeURIComponent(rootUri.relative(uri)!.toString()));
             }
@@ -468,12 +471,15 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         } else {
           if (this.workspaceService.workspace) {
             rootUri = new URI(this.workspaceService.workspace.uri);
+            if (rootUri.isEqual(uri)) {
+              return copy('./');
+            }
             return copy(decodeURIComponent(rootUri.relative(uri)!.toString()));
           }
         }
       },
       isVisible: () => {
-        return !!this.fileTreeModelService.focusedFile;
+        return this.fileTreeModelService.selectedFiles.length > 0;
       },
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_FILE, {
@@ -488,7 +494,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         }
       },
       isVisible: () => {
-        return this.fileTreeModelService.selectedFiles.length >= 1;
+        return !!this.fileTreeModelService.focusedFile;
       },
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.CUT_FILE, {
@@ -503,7 +509,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         }
       },
       isVisible: () => {
-        return this.fileTreeModelService.selectedFiles.length >= 1;
+        return !!this.fileTreeModelService.focusedFile;
       },
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.PASTE_FILE, {
