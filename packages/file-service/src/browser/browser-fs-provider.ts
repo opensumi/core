@@ -103,7 +103,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
       if (stat.isDirectory) {
         return stat;
       }
-      throw FileSystemError.FileExists(uri, 'Error occurred while creating the directory: path is a file.');
+      throw FileSystemError.FileExists(uri.path, 'Error occurred while creating the directory: path is a file.');
     }
     try {
       await promisify(fs.mkdir)(FileUri.fsPath(_uri));
@@ -230,7 +230,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
     if (newStat) {
       return newStat;
     }
-    throw FileSystemError.FileNotFound(uri, 'Error occurred while creating the file.');
+    throw FileSystemError.FileNotFound(uri.path, 'Error occurred while creating the file.');
   }
 
   protected getFileStatType(stat: fs.Stats) {
