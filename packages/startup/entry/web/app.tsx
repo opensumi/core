@@ -13,11 +13,15 @@ import { SlotLocation } from '@ali/ide-core-browser';
 
 // require('@ali/ide-monaco/lib/browser/monaco-loader').loadMonaco();
 
+import { SampleModule } from '../sample-modules';
+
 renderApp({
   modules: [
     ...CommonBrowserModules,
     ExpressFileServerModule,
     StartupModule,
+    // 示例代码
+    SampleModule,
   ],
   layoutConfig: {
     ...defaultConfig,

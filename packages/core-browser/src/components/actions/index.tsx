@@ -171,20 +171,23 @@ const InlineActionWidget: React.FC<{
 
   const title = data.tooltip || data.label;
 
-  if (type === 'icon') {
+  const isSubmenuNode = data.id === SubmenuItemNode.ID;
+
+  // Button 类型需要额外处理来自 MenuNode 上的类型
+  if (type === 'icon' && !data.type) {
     return (
       <Button
         type={ data.icon ? 'icon' : 'link'}
-        className={clsx(styles.iconAction, className, { [styles.disabled]: data.disabled })}
+        className={clsx(styles.iconAction, className, { [styles.disabled]: data.disabled, [styles.submenuIconAction]: isSubmenuNode })}
         title={title}
         iconClass={data.icon}
         onClick={handleClick}
-        {...restProps}
-    >{ data.icon ? '' : data.label }</Button>
+        {...restProps}>
+        { !data.icon && data.label /* 没有 icon 时渲染 label */ }
+      </Button>
     );
   }
 
-  // Button 类型需要额外处理来自 MenuNode 上的类型
   if (data.type === 'checkbox') {
     return (
       <CheckBox
@@ -209,6 +212,11 @@ const InlineActionWidget: React.FC<{
       title={title}
       {...restProps}>
       {data.label}
+      {
+        isSubmenuNode && (
+          <Icon icon='down' className='kt-button-secondary-more' />
+        )
+      }
     </Button>
   );
 };
@@ -264,7 +272,11 @@ export const TitleActionList: React.FC<{
   more?: MenuNode[];
   className?: string;
 } & BaseActionListProps> = ({
-  type = 'icon', // ActionListType 默认为 icon 类型
+  /**
+   * ActionListType 默认为 icon 类型
+   * 所有没有增加 type 的 menu 都是 icon 类型
+   */
+  type = 'icon',
   nav = [],
   more = [],
   context = [],

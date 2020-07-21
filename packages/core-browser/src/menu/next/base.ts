@@ -16,60 +16,58 @@ export interface MenuCommandDesc {
   label: string;
 }
 
-export interface IMenuItem {
-
-  command: string | MenuCommandDesc;
+interface IBaseMenuItem {
+  group?: 'navigation' | string;
+  order?: number;
   /**
    * 决定是否在视图层展示
    */
   when?: string | monaco.contextkey.ContextKeyExpr;
-  group?: 'navigation' | string;
-  order?: number;
   // 以下为 kaitian 拓展的属性
   /**
-   * 该属性为 kaitian 拓展的属性
-   * 决定 toggled 状态, 主要表现为文字左侧有一个 ✅
+   * 单独变更此 menu action 的 args
+   */
+  argsTransformer?: ((...args: any[]) => any[]);
+  /**
+   * 图标的名称
+   * 当 menu 在 InlineActionBar 出现时，使用的 iconClass
+   * 如果这个值不存在，则默认跟随 command 的 iconClass
+   * 如果command的icon也不存在，使用 command 的 label
+   * // TODO: 未来可能废弃 command 内的 iconClass
+   */
+  iconClass?: string;
+  /**
+   * electron native 菜单使用
+   */
+  nativeRole?: string;
+  /**
+   * 决定 menu 渲染的类型
+   * 默认值为 icon
+   */
+  type?: IMenuActionDisplayType;
+}
+
+export interface IMenuItem extends IBaseMenuItem {
+  command: string | MenuCommandDesc;
+  // 以下为 kaitian 拓展的属性
+  /**
+   * 决定 toggled 状态
+   * more-dropdown 中主要表现为文字左侧有一个 ✅
+   * icon 则表现为 背景色选中 状态
    */
   toggledWhen?: string | monaco.contextkey.ContextKeyExpr;
   /**
-   * 该属性为 kaitian 拓展的属性
    * 决定 disabled 状态，主要表现为 menu item 颜色变灰
    */
   enabledWhen?: string | monaco.contextkey.ContextKeyExpr;
-  nativeRole?: string; // electron native 菜单使用
-
-  // 单独变更此 action 的 args
-  argsTransformer?: ((...args: any[]) => any[]);
-  type?: IMenuActionDisplayType;
-
-  /**
-   * 该属性为 kaitian 拓展的属性
-   * 当menu在inlineActionBar出现时，使用的iconClass
-   * 如果这个值不存在，则默认跟随command的iconClass
-   * 如果command的icon也不存在，使用command的label
-   * // TODO: 未来可能废弃command内的iconClass
-   */
-  iconClass?: string;
 }
 
-export interface ISubmenuItem {
+export interface ISubmenuItem extends IBaseMenuItem {
   submenu: MenuId | string;
   /**
    * 支持国际化占位符，例如 %evenEditorGroups%
    */
   label?: string;
-  /**
-   * 图标的名称
-   */
-  iconClass?: string;
-  /**
-   * 决定是否在视图层展示
-   */
-  when?: string | monaco.contextkey.ContextKeyExpr;
-  group?: 'navigation' | string;
-  order?: number;
-  nativeRole?: string; // electron native 菜单使用
-  type?: IMenuActionDisplayType;
 }
 
 export type ICommandsMap = Map<string, Command>;
@@ -330,7 +328,7 @@ export class MenuNode implements IMenuAction {
   disabled: boolean;
   checked: boolean;
   nativeRole: string;
-  children: MenuNode[] = [];
+  children: MenuNode[];
   type?: IMenuActionDisplayType;
   protected _actionCallback?: (...args: any[]) => any;
 

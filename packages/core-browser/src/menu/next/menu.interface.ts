@@ -119,6 +119,7 @@ export class SubmenuItemNode extends MenuNode {
     super({
       id: SubmenuItemNode.ID,
       label: item.label!,
+      type: item.type,
     });
     this.submenuId = item.submenu;
     this.icon = item.iconClass!;
@@ -134,7 +135,7 @@ export class SubmenuItemNode extends MenuNode {
 
     this.ctxMenuRenderer.show({
       anchor,
-      menuNodes: this.children,
+      menuNodes: this.children || this.submenuId,
       args: restArgs,
     });
   }
