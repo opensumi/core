@@ -4,22 +4,41 @@ import { rtrim, escapeRegExpCharacters } from '@ali/ide-core-common/lib/utils/st
 import { format } from '@ali/ide-core-common/lib/utils/strings';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { join } from '@ali/ide-core-common/lib/path';
+import { Disposable } from '@ali/ide-core-common/lib';
+
+export interface IResourceCreator {
+  toResource: (folderRelativePath: string) => string | undefined;
+}
 
 // Copy from VS Code src/vs/workbench/contrib/output/common/outputLinkComputer.ts
 class OutputLinkComputer {
 
-  private patterns: RegExp[];
+  private patterns = new Map<string /* folder uri */, RegExp[]>();
 
-  private workspaceUri: string;
+  private workspaceUris: Set<string> = new Set();
 
   constructor(workspacePath?: string) {
     if (workspacePath) {
-      this.workspaceUri = Uri.parse(workspacePath).path;
+      const workspaceUri = this.workspaceUri(workspacePath);
+      this.workspaceUris.add(workspaceUri);
+
+      const patterns = this.createPatterns(workspaceUri);
+      this.patterns.set(workspaceUri, patterns);
     }
-    this.patterns = OutputLinkComputer.createPatterns(this.workspaceUri);
   }
 
-  static createPatterns(workspaceUri?: string): RegExp[] {
+  private workspaceUri(workspacePath: string): string {
+    return Uri.parse(workspacePath).path;
+  }
+
+  public updateWorkspaceUri(workspacePath: string): void {
+    const workspaceUri = this.workspaceUri(workspacePath);
+    if (!this.workspaceUris.has(workspacePath)) {
+      this.patterns.set(workspacePath, this.createPatterns(workspaceUri));
+    }
+  }
+
+  private createPatterns(workspaceUri?: string): RegExp[] {
     if (!workspaceUri) {
       return [];
     }
@@ -53,59 +72,81 @@ class OutputLinkComputer {
   public computeLinks(model: monaco.editor.ITextModel) {
     const links: monaco.languages.ILink[] = [];
     const lines = model.getValue().split(/\r\n|\r|\n/);
-    for (let i = 0; i < lines.length; i += 1) {
-      const line = lines[i];
-      this.patterns.forEach((pattern) => {
-        pattern.lastIndex = 0; // the holy grail of software development
 
-        let match: RegExpExecArray | null;
-        let offset = 0;
-        while ((match = pattern.exec(line)) !== null) {
-          const resourcePath = rtrim(match[1], '.').replace(/\\/g, '/');
-          const resourceUri = Uri.file(join(this.workspaceUri, resourcePath));
-          let resourceString: string = resourceUri.toString();
-          if (match[3]) {
-            const lineNumber = match[3];
-
-            if (match[5]) {
-              const columnNumber = match[5];
-              resourceString = format('{0}#{1},{2}', resourceString, lineNumber, columnNumber);
-            } else {
-              resourceString = format('{0}#{1}', resourceString, lineNumber);
-            }
+    // For each workspace root patterns
+    for (const [folderUri, folderPatterns] of this.patterns) {
+      const resourceCreator: IResourceCreator = {
+        toResource: (folderRelativePath: string): string | undefined => {
+          if (typeof folderRelativePath === 'string') {
+            return Uri.file(join(folderUri, folderRelativePath)).toString();
           }
 
-          const fullMatch = rtrim(match[0], '.');
+          return undefined;
+        },
+      };
 
-          const index = line.indexOf(fullMatch, offset);
-          offset += index + fullMatch.length;
-
-          const linkRange = {
-            startColumn: index + 1,
-            startLineNumber: i + 1,
-            endColumn: index + 1 + fullMatch.length,
-            endLineNumber: i + 1,
-          };
-
-          if (links.some((link) => monaco.Range.areIntersectingOrTouching(link.range, linkRange))) {
-            return; // Do not detect duplicate links
-          }
-
-          links.push({
-            range: linkRange,
-            url: resourceString,
-          });
-        }
-      });
+      for (let i = 0, len = lines.length; i < len; i++) {
+        links.push(...this.toLinks(lines[i], i + 1, folderPatterns, resourceCreator));
+      }
     }
-
     return links;
   }
 
+  private toLinks(line: string, lineIndex: number, patterns: RegExp[], resourceCreator: IResourceCreator) {
+    const links: monaco.languages.ILink[] = [];
+
+    patterns.forEach((pattern) => {
+      pattern.lastIndex = 0;
+
+      let match: RegExpExecArray | null;
+      let offset = 0;
+      while ((match = pattern.exec(line)) !== null) {
+        const folderRelativePath = rtrim(match[1], '.').replace(/\\/g, '/');
+        let resourceString: string | undefined;
+        try {
+          resourceString = resourceCreator.toResource(folderRelativePath);
+        } catch (error) {
+          continue; // we might find an invalid URI and then we dont want to loose all other links
+        }
+        if (match[3]) {
+          const lineNumber = match[3];
+
+          if (match[5]) {
+            const columnNumber = match[5];
+            resourceString = format('{0}#{1},{2}', resourceString, lineNumber, columnNumber);
+          } else {
+            resourceString = format('{0}#{1}', resourceString, lineNumber);
+          }
+        }
+
+        const fullMatch = rtrim(match[0], '.');
+
+        const index = line.indexOf(fullMatch, offset);
+        offset += index + fullMatch.length;
+
+        const linkRange = {
+          startColumn: index + 1,
+          startLineNumber: lineIndex,
+          endColumn: index + 1 + fullMatch.length,
+          endLineNumber: lineIndex,
+        };
+
+        if (links.some((link) => monaco.Range.areIntersectingOrTouching(link.range, linkRange))) {
+          return; // Do not detect duplicate links
+        }
+
+        links.push({
+          range: linkRange,
+          url: resourceString,
+        });
+      }
+    });
+    return links;
+  }
 }
 
 @Injectable()
-export class OutputLinkProvider implements monaco.languages.LinkProvider {
+export class OutputLinkProvider extends Disposable implements monaco.languages.LinkProvider {
 
   private linkComputer: OutputLinkComputer;
 
@@ -113,9 +154,17 @@ export class OutputLinkProvider implements monaco.languages.LinkProvider {
   private readonly workspaceService: IWorkspaceService;
 
   constructor() {
+    super();
     this.linkComputer = new OutputLinkComputer(
       this.workspaceService.workspace?.uri,
     );
+
+    this.addDispose(this.workspaceService.onWorkspaceChanged((e) => {
+      for (const fileStat of e) {
+        this.linkComputer.updateWorkspaceUri(fileStat.uri);
+      }
+    }));
+
   }
 
   provideLinks(model: monaco.editor.ITextModel): monaco.languages.ProviderResult<monaco.languages.ILinksList> {
