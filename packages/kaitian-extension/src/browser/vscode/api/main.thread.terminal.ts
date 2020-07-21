@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Disposable } from '@ali/ide-core-browser';
-import { ITerminalApiService, ITerminalController, ITerminalInfo } from '@ali/ide-terminal-next';
+import { ITerminalApiService, ITerminalController, ITerminalInfo, ITerminalPreference } from '@ali/ide-terminal-next';
 import { IMainThreadTerminal, IExtHostTerminal, ExtHostAPIIdentifier } from '../../../common/vscode';
 
 import { ILogger } from '@ali/ide-core-browser';
@@ -16,6 +16,9 @@ export class MainThreadTerminal implements IMainThreadTerminal {
 
   @Autowired(ITerminalController)
   private controller: ITerminalController;
+
+  @Autowired(ITerminalPreference)
+  protected readonly preference: ITerminalPreference;
 
   private disposable = new Disposable();
 
@@ -57,6 +60,8 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     });
 
     this.proxy.$setTerminals(infoList);
+    const shellPath = this.preference.get<string>('terminal.type');
+    this.proxy.$acceptDefaultShell(shellPath);
   }
 
   $sendText(id: string, text: string, addNewLine?: boolean) {
