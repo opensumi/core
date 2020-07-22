@@ -9,7 +9,10 @@ import { IIconService } from '@ali/ide-theme';
 export type KtViewLocation = 'left' | 'right' | 'bottom' | 'editor' | 'toolBar';
 
 export type KtViewsContribution = {
-  [key in KtViewLocation]: KtViewItem;
+  [key in KtViewLocation]: {
+    type: string;
+    view: KtViewItem[];
+  };
 };
 
 export interface KtViewItem {
@@ -19,11 +22,8 @@ export interface KtViewItem {
   icon?: string;
   iconPath?: string;
   priority?: number;
-}
-
-export interface KtViewItem {
-  type: 'add';
-  view: KtViewItem[];
+  noResize?: boolean;
+  expanded?: boolean;
 }
 
 export type KtViewsSchema = Array<KtViewsContribution>;
@@ -58,7 +58,7 @@ export class KtViewContributionPoint extends VSCodeContributePoint<KtViewsContri
             };
           });
           for (const view of views) {
-            const { title, icon, iconPath, id, priority, component, expanded } = view;
+            const { title, icon, iconPath, id, priority, component, expanded, noResize } = view;
             const containerId = `${this.extension.id}:${id}`;
             const handlerId = this.mainlayoutService.collectTabbarComponent([{
               id,
@@ -70,6 +70,7 @@ export class KtViewContributionPoint extends VSCodeContributePoint<KtViewsContri
               priority,
               expanded,
               containerId,
+              noResize,
               fromExtension: true,
             }, location);
             this.disposableCollection.push({

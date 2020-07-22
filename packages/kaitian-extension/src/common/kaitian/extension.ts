@@ -2,6 +2,7 @@ import { IMenubarItem, ISubmenuItem } from '@ali/ide-core-browser/lib/menu/next'
 import { ThemeType } from '@ali/ide-theme';
 
 import { IExtensionContributions } from '../vscode/extension';
+import { ITabBarViewContribution } from '../../browser/kaitian-browser/types';
 
 export interface IContributeMenubarItem extends Omit<IMenubarItem, 'label'> {
   title: IMenubarItem['label'];
@@ -16,4 +17,14 @@ export interface IContributedSubmenu extends Omit<ISubmenuItem, 'submenu' | 'lab
 
 export interface IKaitianExtensionContributions extends IExtensionContributions {
   menubars?: IContributeMenubarItem[];
+  browserViews?: {
+    [location: string]: {
+      type: string;
+      view: ITabBarViewContribution[];
+    };
+  };
+  viewsProxies?: string[];
+  workerMain?: string;
+  nodeMain?: string;
+  browserMain?: string;
 }
