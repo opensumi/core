@@ -51,6 +51,7 @@ import {
   ExtensionActivateEvent,
 } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
+import { warning } from '@ali/ide-components/lib/utils/warning';
 import { Extension } from './extension';
 import { createApiFactory as createVSCodeAPIFactory, initWorkerTheadAPIProxy } from './vscode/api/main.thread.api.impl';
 import { createKaitianApiFactory } from './kaitian/main.thread.api.impl';
@@ -786,13 +787,16 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
 
     const { extendConfig, packageJSON } = extension;
-    // 默认使用 kaitianContributes 激活插件
-    if (packageJSON.kaitianContributes) {
-      this.doActivateExtension(extension);
+    // 对使用 kaitian.js 的老插件兼容
+    // 因为可能存在即用了 kaitian.js 作为入口，又注册了 kaitianContributes 贡献点的插件
+    if (extendConfig) {
+      warning(false, '[Deprecated warning]: kaitian.js is deprecated, please use `package.json#kaitianContributes` instead');
+      this.activateExtensionByDeprecatedExtendConfig(extension);
       return;
     }
-    if (extendConfig) {
-      this.activateExtensionByDeprecatedExtendConfig(extension);
+
+    if (packageJSON.kaitianContributes) {
+      this.doActivateExtension(extension);
     }
 
   }

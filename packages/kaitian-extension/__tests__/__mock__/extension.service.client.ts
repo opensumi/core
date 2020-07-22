@@ -4,6 +4,7 @@ import { Injectable } from '@ali/common-di';
 
 const mockExtensions: IExtension[] = [{
   ...mockExtensionProps,
+  contributes: mockExtensionProps.packageJSON.contributes,
   activate: () => {
     return true;
   },
