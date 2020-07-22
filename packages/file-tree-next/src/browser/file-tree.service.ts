@@ -674,7 +674,7 @@ export class FileTreeService extends Tree {
    * @param uri
    */
   public openAndFixedFile(uri: URI) {
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true, preview: false });
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true, preview: false, focus: true });
   }
 
   /**
