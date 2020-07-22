@@ -19,6 +19,8 @@ antdNotification.config({
 
 export const notification = antdNotification;
 
+const cachedArgs: Map<string, [MessageType, ArgsProps]> = new Map();
+
 export function open<T = string>(
   message: string | React.ReactNode,
   type: MessageType,
@@ -26,6 +28,8 @@ export function open<T = string>(
   key: string,
   buttons?: string[],
   description?: string | React.ReactNode,
+  duration?: number,
+  onClose?: () => void,
 ): Promise<T | undefined> | undefined {
   return new Promise((resolve) => {
     const args: ArgsProps = {
@@ -35,8 +39,12 @@ export function open<T = string>(
         ['kt-notification-error']: type === MessageType.Error,
         ['kt-notification-warn']: type === MessageType.Warning,
       }),
-      duration: DURATION[type] / 1000,
-      onClose: () => resolve(undefined),
+      duration: duration !== undefined ? null : (DURATION[type] / 1000),
+      onClose: () => {
+        onClose && onClose();
+        cachedArgs.delete(key);
+        resolve(undefined);
+      },
       btn: buttons
         ? buttons.map((button, index) => (
           <Button
@@ -54,25 +62,43 @@ export function open<T = string>(
       message,
       description,
     };
+    cachedArgs.set(key, [type, args]);
 
     // closable 为 false 时，不展示 closeIcon
     if (!closable) {
       args.closeIcon = <span />;
     }
 
-    switch (type) {
-      case MessageType.Info:
-        notification.info(args);
-        break;
-      case MessageType.Warning:
-        notification.warning(args);
-        break;
-      case MessageType.Error:
-        notification.error(args);
-        break;
-      default:
-        notification.open(args);
-        break;
-    }
+    doOpenNotification(type, args);
   });
+}
+
+export function close(key: string) {
+  notification.close(key);
+}
+
+export function update(key: string, message: string) {
+  const args = cachedArgs.get(key)!;
+  doOpenNotification(args[0], {
+    key,
+    message,
+    ...args[1],
+  });
+}
+
+function doOpenNotification(type: MessageType, args: ArgsProps) {
+  switch (type) {
+    case MessageType.Info:
+      notification.info(args);
+      break;
+    case MessageType.Warning:
+      notification.warning(args);
+      break;
+    case MessageType.Error:
+      notification.error(args);
+      break;
+    default:
+      notification.open(args);
+      break;
+  }
 }

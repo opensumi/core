@@ -2,7 +2,7 @@ import { IMainThreadProgress, IExtHostProgress } from '../../../common/vscode/pr
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Autowired, Injectable, Optinal } from '@ali/common-di';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
-import { IProgressOptions, IProgressStep, IProgress, ProgressLocation } from '@ali/ide-core-common';
+import { IProgressOptions, IProgressStep, IProgress, ProgressLocation, IProgressNotificationOptions } from '@ali/ide-core-common';
 import { IProgressService } from '@ali/ide-core-browser/lib/progress';
 import { IExtension } from '../../../common';
 
@@ -22,7 +22,12 @@ export class MainThreadProgress implements IMainThreadProgress {
     const task = this.createTask(handle);
 
     if (options.location === ProgressLocation.Notification && extension) {
-      // TODO: 暂未实现
+      const notificationOptions: IProgressNotificationOptions = {
+        ...options,
+        location: ProgressLocation.Notification,
+      };
+
+      options = notificationOptions;
     }
 
     this.progressService.withProgress(options, task, () => this.proxy.$acceptProgressCanceled(handle));

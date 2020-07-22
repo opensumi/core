@@ -3,6 +3,7 @@ export const localizationBundle = {
   languageName: 'english',
   localizedLanguageName: 'English',
   contents: {
+    'ButtonCancel': 'Cancel',
     'extension': 'Extension',
     'common.yes': 'Yes',
     'common.no': 'No',

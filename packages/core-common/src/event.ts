@@ -6,7 +6,7 @@
 import { onUnexpectedError } from './errors';
 import { once as onceFn } from './functional';
 import { DisposableStore, combinedDisposable, Disposable, IDisposable, toDisposable } from './disposable';
-import { LinkedList } from './linkedList';
+import { LinkedList } from './linked-list';
 
 /**
  * To an event a function with one or zero parameters
@@ -574,11 +574,11 @@ export class Emitter<T> {
 
   /**
    * 发送一个异步事件，等待所有监听器返回，并收集返回值
-   * @param e 
-   * @param timeout 
+   * @param e
+   * @param timeout
    */
   async fireAndAwait<R = any>(event: T, timeout: number = 2000): Promise<Array<IAsyncResult<R>>> {
-    
+
     if (this._listeners) {
 
       if (!this._deliveryQueue) {
