@@ -858,7 +858,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           if (options && options.index !== undefined && options.index < this.resources.length) {
             this.resources.splice(options.index, 0, resource);
           } else {
-            this.resources.push(resource);
+            if (this.currentResource) {
+              const currentIndex = this.resources.indexOf(this.currentResource);
+              this.resources.splice(currentIndex + 1, 0, resource);
+            } else {
+              this.resources.push(resource);
+            }
           }
           if (previewMode) {
             if (this.previewURI) {
