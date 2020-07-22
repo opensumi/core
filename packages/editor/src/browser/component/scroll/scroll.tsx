@@ -177,6 +177,14 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
     });
   }
 
+  onMousewheel = (e: WheelEvent) => {
+    // 鼠标滚动滚轮只在有横向滚动条的情况下
+    if (this.ref.offsetHeight === this.ref.scrollHeight) {
+      // scrollLeft 内部有边界判断
+      this.ref.scrollLeft += e.deltaY;
+    }
+  }
+
   calculateYToTop(y) {
     const contentHeight = this.ref.scrollHeight;
     const height  = this.ref.offsetHeight;
@@ -202,6 +210,7 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
     }
     if (this.ref) {
       this.ref.addEventListener('mouseenter', this.onMouseEnter);
+      this.ref.addEventListener('mousewheel', this.onMousewheel);
     }
   }
 
@@ -212,6 +221,7 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
   componentWillUnmount() {
     if (this.ref) {
       this.ref.removeEventListener('mouseenter', this.onMouseEnter);
+      this.ref.addEventListener('mousewheel', this.onMousewheel);
     }
     window.removeEventListener('resize', this.handleWindowResize);
     if (this.requestFrame) {
