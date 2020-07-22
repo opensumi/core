@@ -346,6 +346,10 @@ export class LogServiceForClient extends RPCService implements ILogServiceForCli
     this.loggerManager.dispose();
   }
 
+  async getLogFolder() {
+    return this.loggerManager.getLogFolder();
+  }
+
   protected getLogger(namespace: SupportLogNamespace, options?: BaseLogServiceOptions) {
     const logger = this.loggerManager.getLogger(namespace, Object.assign({}, options));
     return logger;

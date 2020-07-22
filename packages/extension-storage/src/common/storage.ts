@@ -2,8 +2,6 @@
 import { KeysToAnyValues, KeysToKeysToAnyValue } from './types';
 import { FileStat } from '@ali/ide-file-service';
 
-export const ExtensionStorageServerPath = 'ExtensionStorage';
-
 export const IExtensionStorageServer = Symbol('ExtensionStorageServer');
 
 export interface IExtensionStorageServer {

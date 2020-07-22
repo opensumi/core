@@ -54,7 +54,7 @@ export interface IExtensionNodeClientService {
   infoProcessNotExist(): void;
   infoProcessCrash(): void;
   disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
-  updateLanguagePack(languageId: string, languagePackPath: string): Promise<void>;
+  updateLanguagePack(languageId: string, languagePackPath: string, storagePath: string): Promise<void>;
 }
 
 export type ExtensionHostType = 'node' | 'worker';

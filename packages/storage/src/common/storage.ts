@@ -12,9 +12,6 @@ export interface IStorageItemsChangeEvent {
 export const IWorkspaceStorageServer = 'IWorkspaceStorageServer';
 export const IGlobalStorageServer = 'IGlobalStorageServer';
 
-export const WorkspaceStorageServerPath = 'WorkspaceStorageServerPath';
-export const GlobalStorageServerPath = 'GlobalStorageServerPath';
-
 export interface StringKeyToAnyValue {
   [key: string]: any;
 }

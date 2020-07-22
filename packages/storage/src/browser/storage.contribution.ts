@@ -1,16 +1,16 @@
 import { Domain, StorageResolverContribution, URI, IStorage, ClientAppContribution, STORAGE_SCHEMA, AppConfig, ILogger } from '@ali/ide-core-browser';
 import { Autowired } from '@ali/common-di';
 import { Storage } from './storage';
-import { WorkspaceStorageServerPath, GlobalStorageServerPath, IStorageServer } from '../common';
+import { IStorageServer, IWorkspaceStorageServer, IGlobalStorageServer } from '../common';
 import { IWorkspaceService } from '@ali/ide-workspace';
 
 @Domain(StorageResolverContribution, ClientAppContribution)
 export class DatabaseStorageContribution implements StorageResolverContribution, ClientAppContribution {
 
-  @Autowired(WorkspaceStorageServerPath)
+  @Autowired(IWorkspaceStorageServer)
   private workspaceStorage: IStorageServer;
 
-  @Autowired(GlobalStorageServerPath)
+  @Autowired(IGlobalStorageServer)
   private globalStorage: IStorageServer;
 
   @Autowired(AppConfig)

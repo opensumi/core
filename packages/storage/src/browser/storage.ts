@@ -1,4 +1,4 @@
-import { getDebugLogger, IStorage, ThrottledDelayer, isUndefinedOrNull, Emitter, DisposableCollection } from '@ali/ide-core-common';
+import { getDebugLogger, IStorage, ThrottledDelayer, isUndefinedOrNull, Emitter, Event, DisposableCollection } from '@ali/ide-core-common';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IStorageServer, IUpdateRequest } from '../common';
 import { AppConfig } from '@ali/ide-core-browser';
@@ -13,7 +13,7 @@ export class Storage implements IStorage {
   private static readonly DEFAULT_FLUSH_DELAY = 100;
 
   private _onDidChangeStorage = new Emitter<string>();
-  readonly onDidChangeStorage = this._onDidChangeStorage.event;
+  readonly onDidChangeStorage: Event<string> = this._onDidChangeStorage.event;
 
   private flushDelayer: ThrottledDelayer<void>;
 

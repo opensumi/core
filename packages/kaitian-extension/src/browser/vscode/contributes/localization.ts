@@ -5,6 +5,7 @@ import { CommandRegistry, CommandService, ILogger, registerLocalizationBundle, U
 // import { VSCodeExtensionService } from '../types';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+import { IExtensionStoragePathServer } from '@ali/ide-extension-storage';
 
 export interface TranslationFormat {
   id: string;
@@ -38,6 +39,9 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
   @Autowired(PreferenceService)
   preferenceService: PreferenceService;
 
+  @Autowired(IExtensionStoragePathServer)
+  private extensionStoragePathServer: IExtensionStoragePathServer;
+
   // @Autowired(VSCodeExtensionService)
   // vscodeExtensionService: VSCodeExtensionService;
 
@@ -59,7 +63,7 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
       json = parseWithComments(content);
       return json;
     } catch (error) {
-      return console.error('语言配置文件解析出错！', content);
+      return this.logger.error('语言配置文件解析出错！', content);
     }
   }
 
@@ -90,7 +94,8 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
     });
 
     const currentLanguage: string = this.preferenceService.get('general.language') || 'zh-CN';
-    promises.push(this.extensionNodeService.updateLanguagePack(currentLanguage, this.extension.path));
+    const storagePath = await this.extensionStoragePathServer.getLastStoragePath() || '';
+    promises.push(this.extensionNodeService.updateLanguagePack(currentLanguage, this.extension.path, storagePath));
     await Promise.all(promises);
   }
 

@@ -1,11 +1,13 @@
 import { Injectable, Injector } from '@ali/common-di';
-import { StorageModule } from '../../src/node';
 import { IStorageServer, IStoragePathServer, IUpdateRequest, IWorkspaceStorageServer, IGlobalStorageServer } from '../../src/common';
 import { URI, FileUri, AppConfig } from '@ali/ide-core-node';
 import * as temp from 'temp';
 import * as fs from 'fs-extra';
-import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { FileServiceModule } from '@ali/ide-file-service/lib/node';
+import { IFileServiceClient, IDiskFileProvider } from '@ali/ide-file-service';
+import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
+import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
+import { StorageModule } from '../../src/browser';
 
 const track = temp.track();
 let root: URI;
@@ -37,8 +39,7 @@ describe('WorkspaceStorage should be work', () => {
   let injector: Injector;
   const storageName = 'testStorage';
   beforeAll(() => {
-    injector = createNodeInjector([
-      FileServiceModule,
+    injector = createBrowserInjector([
       StorageModule,
     ]);
 
@@ -48,10 +49,17 @@ describe('WorkspaceStorage should be work', () => {
     });
 
     injector.overrideProviders({
+      token: IFileServiceClient,
+      useClass: FileServiceClient,
+    }, {
+      token: IDiskFileProvider,
+      useClass: DiskFileSystemProvider,
+    }, {
       token: IStoragePathServer,
       useClass: MockDatabaseStoragePathServer,
     });
-
+    const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
+    fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
     workspaceStorage = injector.get(IWorkspaceStorageServer);
     globalStorage = injector.get(IGlobalStorageServer);
   });

@@ -1,12 +1,11 @@
-import * as path from 'path';
 import * as crypto from 'crypto';
 import { Injectable, Autowired } from '@ali/common-di';
-import { isWindows, URI, Deferred } from '@ali/ide-core-node';
-import { StoragePaths } from '@ali/ide-core-common';
+import { isWindows, URI, Deferred, StoragePaths } from '@ali/ide-core-common';
 import { IExtensionStoragePathServer } from '../common';
 import { KAITIAN_MUTI_WORKSPACE_EXT, WORKSPACE_USER_STORAGE_FOLDER_NAME, UNTITLED_WORKSPACE } from '@ali/ide-workspace';
-import { IFileService, FileStat } from '@ali/ide-file-service';
-import { ILogServiceManager } from '@ali/ide-logs';
+import { IFileServiceClient, FileStat } from '@ali/ide-file-service';
+import { ILoggerManagerClient } from '@ali/ide-logs';
+import { Path } from '@ali/ide-core-common/lib/path';
 
 @Injectable()
 export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
@@ -21,11 +20,11 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
   // 当初始化完成时为true
   private storagePathInitialized: boolean;
 
-  @Autowired(IFileService)
-  private readonly fileSystem: IFileService;
+  @Autowired(IFileServiceClient)
+  private readonly fileSystem: IFileServiceClient;
 
-  @Autowired(ILogServiceManager)
-  private readonly loggerManager: ILogServiceManager;
+  @Autowired(ILoggerManagerClient)
+  private readonly loggerManager: ILoggerManagerClient;
 
   constructor() {
     this.deferredWorkspaceStoragePath = new Deferred<string>();
@@ -40,7 +39,8 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
       throw new Error('Unable to get parent log directory');
     }
 
-    const extensionDirPath = path.join(parentLogsDir);
+    // FIXME: path.join(parentLogsDir)是啥意思
+    const extensionDirPath = parentLogsDir;
     await this.fileSystem.createFolder(URI.file(extensionDirPath).toString());
 
     return new URI(extensionDirPath).path.toString();
@@ -67,7 +67,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
     }
 
     const storageDirName = await this.buildWorkspaceId(workspace, roots, extensionStorageDirName);
-    const storageDirPath = path.join(parentStorageDir, storageDirName);
+    const storageDirPath = new Path(parentStorageDir).join(storageDirName).toString();
     if (!await this.fileSystem.access(URI.file(storageDirPath).toString())) {
       await this.fileSystem.createFolder(URI.file(storageDirPath).toString());
     }
@@ -143,8 +143,8 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
    * 获取日志路径
    */
   private async getLogsDirPath(): Promise<string> {
-    const logDir = this.loggerManager.getLogFolder();
-    return path.join(logDir, StoragePaths.EXTENSIONS_LOGS_DIR);
+    const logDir = await this.loggerManager.getLogFolder();
+    return new Path(logDir).join(StoragePaths.EXTENSIONS_LOGS_DIR).toString();
   }
 
   /**
@@ -152,7 +152,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
    */
   private async getWorkspaceStorageDirPath(extensionStorageDirName: string): Promise<string> {
     const appDataDir = await this.getWorkspaceDataDirPath(extensionStorageDirName);
-    return path.join(appDataDir, StoragePaths.EXTENSIONS_WORKSPACE_STORAGE_DIR);
+    return new Path(appDataDir).join(StoragePaths.EXTENSIONS_WORKSPACE_STORAGE_DIR).toString();
   }
 
   /**
@@ -161,11 +161,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
   async getWorkspaceDataDirPath(extensionStorageDirName: string): Promise<string> {
     const homeDir = await this.getUserHomeDir();
     const storageDirName = extensionStorageDirName;
-    return path.join(
-      homeDir,
-      ...(isWindows ? this.windowsDataFolders : ['']),
-      storageDirName,
-    );
+    return new Path(homeDir).join(...(isWindows ? this.windowsDataFolders : ['']), storageDirName).toString();
   }
 
   /**

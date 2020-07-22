@@ -1,17 +1,19 @@
-import { URI, StoragePaths, FileUri, ILogServiceManager } from '@ali/ide-core-common';
-import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { URI, StoragePaths, FileUri, IFileServiceClient, ILoggerManagerClient } from '@ali/ide-core-common';
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/node';
 import { IExtensionStorageServer, IExtensionStoragePathServer } from '@ali/ide-extension-storage';
-import { FileStat } from '@ali/ide-file-service';
+import { FileStat, IDiskFileProvider } from '@ali/ide-file-service';
 import * as fs from 'fs-extra';
 import * as temp from 'temp';
 import * as path from 'path';
-import { FileServiceModule } from '@ali/ide-file-service/lib/node';
 import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
 import { AppConfig } from '@ali/ide-core-node';
+import { ExtensionStorageModule } from '../../src/browser';
+import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
 
 process.on('unhandledRejection', (reason) => {
+  // tslint:disable-next-line:no-console
   console.error(reason);
 });
 
@@ -23,18 +25,26 @@ describe('Extension Storage Server -- Setup directory should be worked', () => {
 
   const initializeInjector = async () => {
 
-    injector = createNodeInjector([
-      FileServiceModule,
+    injector = createBrowserInjector([
       ExtensionStorageModule,
     ]);
 
     injector.addProviders({
-      token: ILogServiceManager,
+      token: ILoggerManagerClient,
       useClass: MockLoggerManageClient,
     }, {
       token: AppConfig,
       useValue: {},
+    }, {
+      token: IFileServiceClient,
+      useClass: FileServiceClient,
+    }, {
+      token: IDiskFileProvider,
+      useClass: DiskFileSystemProvider,
     });
+
+    const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
+    fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
   };
 
   beforeEach(() => {
@@ -55,7 +65,7 @@ describe('Extension Storage Server -- Setup directory should be worked', () => {
       lastModification: 0,
     } as FileStat;
     const extensionStorageDirName = '.extensionStorageDirName';
-    injector.mock(ILogServiceManager, 'getLogFolder', () => {
+    injector.mock(ILoggerManagerClient, 'getLogFolder', () => {
       return root.withoutScheme().toString();
     });
     injector.mock(IExtensionStoragePathServer, 'getUserHomeDir', async () => {
@@ -79,18 +89,26 @@ describe('Extension Storage Server -- Data operation should be worked', () => {
 
   const initializeInjector = async () => {
 
-    injector = createNodeInjector([
-      FileServiceModule,
+    injector = createBrowserInjector([
       ExtensionStorageModule,
     ]);
 
     injector.addProviders({
-      token: ILogServiceManager,
+      token: ILoggerManagerClient,
       useClass: MockLoggerManageClient,
     }, {
       token: AppConfig,
       useValue: {},
+    }, {
+      token: IFileServiceClient,
+      useClass: FileServiceClient,
+    }, {
+      token: IDiskFileProvider,
+      useClass: DiskFileSystemProvider,
     });
+
+    const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
+    fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
   };
 
   beforeEach(async () => {
@@ -105,7 +123,7 @@ describe('Extension Storage Server -- Data operation should be worked', () => {
       lastModification: 0,
     } as FileStat;
     const extensionStorageDirName = '.extensionStorageDirName';
-    injector.mock(ILogServiceManager, 'getLogFolder', () => {
+    injector.mock(ILoggerManagerClient, 'getLogFolder', () => {
       return root.withoutScheme().toString();
     });
     injector.mock(IExtensionStoragePathServer, 'getUserHomeDir', async () => {
