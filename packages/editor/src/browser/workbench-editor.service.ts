@@ -858,7 +858,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           if (options && options.index !== undefined && options.index < this.resources.length) {
             this.resources.splice(options.index, 0, resource);
           } else {
-            this.resources.push(resource);
+            if (this.currentResource) {
+              const currentIndex = this.resources.indexOf(this.currentResource);
+              this.resources.splice(currentIndex + 1, 0, resource);
+            } else {
+              this.resources.push(resource);
+            }
           }
           if (previewMode) {
             if (this.previewURI) {
@@ -1263,11 +1268,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   gainFocus() {
     this.workbenchEditorService.setCurrentGroup(this);
-    if (this.pendingResource) {
-      this.commands.tryExecuteCommand(FILE_COMMANDS.LOCATION.id, this.pendingResource.uri);
-    } else if (this.currentResource) {
-      this.commands.tryExecuteCommand(FILE_COMMANDS.LOCATION.id, this.currentResource.uri);
-    }
   }
 
   focus() {

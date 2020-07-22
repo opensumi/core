@@ -240,6 +240,7 @@ function renderToolbarLocation(container: HTMLDivElement, location: string, pref
     while (usedWidth + TOOLBAR_ACTION_MARGIN + TOOLBAR_MORE_WIDTH > totalWidth) {
       if (collapsableElementIndexes.length === 0) {
         // 此时已经再也无法满足条件，let it be
+        break;
       }
       const nextElementIndex = collapsableElementIndexes.pop()!;
       // 虽然此处splice会改变index，但是由于我们是从后往前，所以问题不大
