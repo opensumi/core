@@ -82,7 +82,7 @@ describe('Extension Serivce', () => {
   describe('createProcess2', () => {
     it.skip('should create extension host process', async (done) => {
       const mockExtClientId = 'mock_id' + Math.random();
-      const extProcess = extensionService.createProcess2(mockExtClientId);
+      const extProcess = extensionService.createProcess(mockExtClientId);
 
       expect(extProcess).toBeInstanceOf(Promise);
       await extensionService.disposeClientExtProcess(mockExtClientId, true);

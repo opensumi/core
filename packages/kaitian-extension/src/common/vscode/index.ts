@@ -1,27 +1,24 @@
 import type * as vscode from 'vscode';
-import { Emitter } from '@ali/ide-core-common';
+import { Emitter, IExtensionProps } from '@ali/ide-core-common';
+
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@ali/ide-connection';
-// import { VSCodeExtensionService } from '../browser/types';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
 import { IMainThreadCommands, IExtHostCommands } from './command';
 import { IMainThreadMessage, IExtHostMessage, IExtHostQuickOpen, IMainThreadQuickOpen, IMainThreadStatusBar, IExtHostStatusBar, IMainThreadOutput, IExtHostOutput, IExtHostWindowState, IExtHostWindow, IMainThreadWindow } from './window';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
 import { IMainThreadEditorsService, IExtensionHostEditorService } from './editor';
-import { ExtHostLanguages } from '../../hosted/api/vscode/ext.host.language'; // '../node/api/ext.host.language';
-// import { IFeatureExtension } from '@ali/ide-feature-extension/lib/browser/types';
-import { IExtension } from '../../common';
+import { ExtHostLanguages } from '../../hosted/api/vscode/ext.host.language';
+import { IExtension, IExtensionHostService } from '../../common';
 import { IMainThreadPreference, IExtHostPreference } from './preference';
 import { IMainThreadEnv, IExtHostEnv } from './env';
 import { IMainThreadStorage, IExtHostStorage } from './storage';
-import { ExtHostStorage } from '../../hosted/api/vscode/ext.host.storage'; // '../node/api/ext.host.storage';
+import { ExtHostStorage } from '../../hosted/api/vscode/ext.host.storage';
 import { IMainThreadLanguages } from './languages';
 import { IMainThreadWebview, IExtHostWebview } from './webview';
 import { IExtHostTreeView, IMainThreadTreeView } from './treeview';
 import { IMainThreadSCMShape, IExtHostSCMShape } from './scm';
 import { IExtHostDecorationsShape, IMainThreadDecorationsShape } from './decoration';
-import { IExtensionMetaData } from '../index';
 import { MainThreadWindowState } from '../../browser/vscode/api/main.thread.window-state';
-import { IExtensionHostService } from '../';
 import { IExtHostDebug, IMainThreadDebug } from './debug';
 import { IExtHostConnection, IMainThreadConnection } from './connection';
 import { IExtHostTerminal, IMainThreadTerminal } from './terminal';
@@ -37,11 +34,13 @@ import { IMainThreadUrls, IExtHostUrls } from './urls';
 export const VSCodeExtensionService = Symbol('VSCodeExtensionService');
 export interface VSCodeExtensionService {
 
-  // getProxy<T>(identifier: ProxyIdentifier<T>): Promise<T>;
-
-  $getExtensions(): Promise<IExtensionMetaData[]>;
+  $getExtensions(): Promise<IExtensionProps[]>;
 
   $activateExtension(extensionPath: string): Promise<void>;
+}
+
+export interface KTWorkerExtensionService extends VSCodeExtensionService {
+  $getStaticServicePath(): Promise<string>;
 }
 
 export const MainThreadAPIIdentifier = {

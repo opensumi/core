@@ -159,15 +159,15 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   }
 
-  public async createProcess2(clientId: string) {
-    this.logger.log('createProcess2', this.instanceId);
+  public async createProcess(clientId: string) {
+    this.logger.log('createProcess', this.instanceId);
     this.logger.log('appconfig exthost', this.appConfig.extHost);
     if (this.pendingClientExtProcessDisposer) {
       this.logger.log('Waiting for disposer to complete.');
       await this.pendingClientExtProcessDisposer;
     }
 
-    this.logger.log('createProcess2 clientId', clientId);
+    this.logger.log('createProcess clientId', clientId);
 
     const processClientIdArr = Array.from(this.clientExtProcessMap.keys());
     const maxExtProcessCount = this.appConfig.maxExtProcessCount || ExtensionNodeServiceImpl.MaxExtProcessCount;
@@ -254,7 +254,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
     this.clientExtProcessMap.set(clientId, extProcess);
 
-    this.logger.log('createProcess2', this.clientExtProcessMap.keys());
+    this.logger.log('createProcess', this.clientExtProcessMap.keys());
     const extProcessInitDeferred = new Deferred<void>();
     this.clientExtProcessInitDeferredMap.set(clientId, extProcessInitDeferred);
 

@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import URI from 'vscode-uri';
 import { illegalArgument } from './utils';
-import { CharCode } from './char-code';
 import { FileOperationOptions } from './model.api';
 import { startsWithIgnoreCase, uuid, es5ClassCompat } from '@ali/ide-core-common';
+import { isMarkdownString } from './models/html-content';
 export * from './models';
 export { URI as Uri };
 
@@ -560,17 +560,6 @@ export class MarkdownString {
   }
 }
 
-// tslint:disable-next-line:no-any
-export function isMarkdownString(thing: any): thing is MarkdownString {
-  if (thing instanceof MarkdownString) {
-    return true;
-  } else if (thing && typeof thing === 'object') {
-    return typeof (thing as MarkdownString).value === 'string'
-      && (typeof (thing as MarkdownString).isTrusted === 'boolean' || (thing as MarkdownString).isTrusted === void 0);
-  }
-  return false;
-}
-
 @es5ClassCompat
 export class SnippetString {
 
@@ -760,6 +749,16 @@ export enum CompletionItemKind {
   Event = 22,
   Operator = 23,
   TypeParameter = 24,
+}
+/**
+ * Completion item tags are extra annotations that tweak the rendering of a completion
+ * item.
+ */
+export enum CompletionItemTag {
+  /**
+   * Render a completion as obsolete, usually using a strike-out.
+   */
+  Deprecated = 1,
 }
 
 @es5ClassCompat
@@ -1003,18 +1002,6 @@ export class CodeAction {
     this.title = title;
     this.kind = kind;
   }
-}
-
-export function isAsciiLetter(code: number): boolean {
-  return isLowerAsciiLetter(code) || isUpperAsciiLetter(code);
-}
-
-export function isUpperAsciiLetter(code: number): boolean {
-  return code >= CharCode.A && code <= CharCode.Z;
-}
-
-export function isLowerAsciiLetter(code: number): boolean {
-  return code >= CharCode.a && code <= CharCode.z;
 }
 
 @es5ClassCompat

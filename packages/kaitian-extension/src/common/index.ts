@@ -1,9 +1,11 @@
 import { Disposable, IJSONSchema, IDisposable, ReporterProcessMessage, Deferred, localize, Event } from '@ali/ide-core-common';
 import { createExtHostContextProxyIdentifier, ProxyIdentifier } from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
-import { VSCExtension } from '../hosted/vscode.extension';
+import { Extension } from '../hosted/vscode.extension';
 import { ExtensionsActivator } from '../hosted/ext.host.activator';
 import { Emitter, IExtensionProps } from '@ali/ide-core-common';
+import { IExtensionContributions } from './vscode';
+import { IKaitianExtensionContributions } from './kaitian/extension';
 
 export { IExtensionProps } from '@ali/ide-core-common';
 
@@ -32,7 +34,7 @@ export interface ExtraMetaData {
 export const IExtensionNodeService = Symbol('IExtensionNodeService');
 export interface IExtensionNodeService {
   getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
-  createProcess2(clientId: string): Promise<void>;
+  createProcess(clientId: string): Promise<void>;
   getElectronMainThreadListenPath(clientId: string);
   getElectronMainThreadListenPath2(clientId: string);
   getExtServerListenPath(clientId: string);
@@ -107,6 +109,7 @@ export const LANGUAGE_BUNDLE_FIELD = 'languageBundle';
 export interface JSONType { [key: string]: any; }
 
 export interface IExtension extends IExtensionProps {
+  readonly contributes: IExtensionContributions & IKaitianExtensionContributions;
   activate();
   toJSON(): IExtensionProps;
 }
@@ -146,24 +149,28 @@ export function Contributes(name) {
 export const EXTENSION_EXTEND_SERVICE_PREFIX = 'extension_extend_service';
 export const MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER = createExtHostContextProxyIdentifier('mock_extension_extend_proxy_identifier');
 
-export interface IExtensionHostService {
-  reporterEmitter: Emitter<ReporterProcessMessage>;
-  getExtensions(): IExtension[];
+export interface IExtensionHost {
   $activateExtension(id: string): Promise<void>;
   $initExtensions(): Promise<void>;
-  $fireChangeEvent(): Promise<void>;
-  getExtension(extensionId: string): VSCExtension<any> | undefined;
-  storage: ExtHostStorage;
-  activateExtension(id: string): Promise<void>;
   getExtensionExports(id: string): any;
-  getExtendExports(id: string): any;
+  getExtensions(): Extension[];
+  getExtension(extensionId: string): Extension<any, IExtensionHost> | undefined;
   isActivated(id: string): boolean;
-  extensionsActivator: ExtensionsActivator;
+  activateExtension(id: string): Promise<void>;
   extensionsChangeEmitter: Emitter<void>;
+  storage: ExtHostStorage;
 }
 
-export interface IExtensionWorkerHost {
-  $initExtensions(): Promise<void>;
+export interface IExtensionHostService extends IExtensionHost {
+  reporterEmitter: Emitter<ReporterProcessMessage>;
+  $fireChangeEvent(): Promise<void>;
+  getExtendExports(id: string): any;
+  extensionsActivator: ExtensionsActivator;
+}
+
+// tslint:disable-next-line: no-empty-interface
+export interface IExtensionWorkerHost extends IExtensionHost {
+  staticServicePath: string;
 }
 
 export interface IExtendProxy {
@@ -190,4 +197,9 @@ export const EMIT_EXT_HOST_EVENT = {
 
 export function getExtensionId(extensionId: string) {
   return extensionId.toLowerCase();
+}
+
+export enum ExtensionHostKind {
+  NODE_HOST = 1,
+  WORKER_HOST = 2,
 }

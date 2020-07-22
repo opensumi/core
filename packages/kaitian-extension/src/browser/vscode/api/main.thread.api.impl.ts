@@ -46,6 +46,8 @@ import { MainthreadTasks } from './main.thread.tasks';
 import { MainthreadComments } from './main.thread.comments';
 import { MainThreadFileSystemEvent } from './main.thread.file-system-event';
 import { MainThreadUrls } from './main.thread.urls';
+import { IMainThreadExtensionLog, MainThreadExtensionLogIdentifier } from '../../../common/extension-log';
+import { MainThreadExtensionLog } from '../../extension-log';
 
 export async function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -108,6 +110,7 @@ export async function createApiFactory(
   rpcProtocol.set<IMainThreadTasks>(MainThreadAPIIdentifier.MainThreadTasks, MainthreadTasksAPI);
   rpcProtocol.set<IMainThreadComments>(MainThreadAPIIdentifier.MainThreadComments, MainthreadCommentsAPI);
   rpcProtocol.set<IMainThreadUrls>(MainThreadAPIIdentifier.MainThreadUrls, MainthreadUrlsAPI);
+  rpcProtocol.set<IMainThreadExtensionLog>(MainThreadExtensionLogIdentifier, injector.get(MainThreadExtensionLog));
 
   await MainThreadWebviewAPI.init();
 
@@ -140,4 +143,24 @@ export async function createApiFactory(
     MainthreadCommentsAPI.dispose();
     MainthreadUrlsAPI.dispose();
   };
+}
+
+export async function initWorkerTheadAPIProxy(
+  workerProtocol: IRPCProtocol,
+  injector: Injector,
+  extensionService: VSCodeExtensionService,
+) {
+  workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
+  workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, injector.get(MainThreadCommands, [workerProtocol]));
+  workerProtocol.set<IMainThreadLanguages>(MainThreadAPIIdentifier.MainThreadLanguages, injector.get(MainThreadLanguages, [workerProtocol]));
+  workerProtocol.set<MainThreadExtensionDocumentData>(MainThreadAPIIdentifier.MainThreadDocuments, injector.get(MainThreadExtensionDocumentData, [workerProtocol]));
+  workerProtocol.set(MainThreadAPIIdentifier.MainThreadWorkspace, injector.get(MainThreadWorkspace, [workerProtocol]));
+  workerProtocol.set(MainThreadAPIIdentifier.MainThreadFileSystem, injector.get(MainThreadFileSystem, [workerProtocol]));
+  workerProtocol.set(MainThreadAPIIdentifier.MainThreadPreference, injector.get(MainThreadPreference, [workerProtocol]));
+  workerProtocol.set(MainThreadAPIIdentifier.MainThreadOutput, injector.get(MainThreadOutput)) as MainThreadOutput;
+  workerProtocol.set<IMainThreadMessage>(MainThreadAPIIdentifier.MainThreadMessages, injector.get(MainThreadMessage, [workerProtocol]));
+  workerProtocol.set<IMainThreadExtensionLog>(MainThreadExtensionLogIdentifier, injector.get(MainThreadExtensionLog));
+  workerProtocol.set<IMainThreadWebview>(MainThreadAPIIdentifier.MainThreadWebview, injector.get(MainThreadWebview, [workerProtocol]));
+  workerProtocol.set<IMainThreadStorage>(MainThreadAPIIdentifier.MainThreadStorage, injector.get(MainThreadStorage, [workerProtocol]));
+  workerProtocol.set<IMainThreadUrls>(MainThreadAPIIdentifier.MainThreadUrls, injector.get(MainThreadUrls, [workerProtocol]));
 }

@@ -9,6 +9,7 @@ import { ExtensionDocumentDataManager } from './doc';
 import { WorkspaceEditDto, ResourceTextEditDto, ResourceFileEditDto, ITextEdit } from './workspace';
 import { ViewColumn } from './enums';
 import { FileStat, FileType } from '@ali/ide-file-service';
+import { isMarkdownString } from './models';
 
 export function toPosition(position: model.Position): types.Position {
   return new types.Position(position.lineNumber - 1, position.column - 1);
@@ -54,7 +55,7 @@ export function fromMarkdown(markup: vscode.MarkdownString | vscode.MarkedString
   if (isCodeblock(markup)) {
     const { language, value } = markup;
     return { value: '```' + language + '\n' + value + '\n```\n' };
-  } else if (types.isMarkdownString(markup)) {
+  } else if (isMarkdownString(markup)) {
     return markup;
   } else if (typeof markup === 'string') {
     return { value: markup as string };

@@ -3,10 +3,11 @@ import { ExtHostAPIIdentifier, IMainThreadWorkspace, IExtHostStorage, WorkspaceE
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
-import { URI, ILogger, WithEventBus, OnEvent } from '@ali/ide-core-browser';
+import { URI, ILogger, WithEventBus, OnEvent, CancellationToken } from '@ali/ide-core-browser';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
 import { IWorkspaceEditService, IWorkspaceEdit, IResourceTextEdit, IResourceFileEdit, WorkspaceEditDidRenameFileEvent } from '@ali/ide-workspace-edit';
 import { WorkbenchEditorService } from '@ali/ide-editor';
+import { FileSearchServicePath, IFileSearchService } from '@ali/ide-file-search/lib/common';
 
 @Injectable({multiple: true})
 export class MainThreadWorkspace extends WithEventBus implements IMainThreadWorkspace {
@@ -19,6 +20,9 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
 
   @Autowired(WorkbenchEditorService)
   editorService: WorkbenchEditorService;
+
+  @Autowired(FileSearchServicePath)
+  private readonly fileSearchService;
 
   @Autowired(IExtensionStorageService)
   extensionStorageService: IExtensionStorageService;
@@ -43,6 +47,18 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
     });
 
     this.storageProxy = rpcProtocol.getProxy<IExtHostStorage>(ExtHostAPIIdentifier.ExtHostStorage);
+  }
+
+  async $startFileSearch(includePattern: string, options: { cwd?: string; absolute: boolean }, excludePatternOrDisregardExcludes: string | false | undefined, maxResult: number | undefined, token: CancellationToken): Promise<string[]> {
+    const fileSearchOptions: IFileSearchService.Options = {
+      rootUris: options.cwd ? [options.cwd] : (this.workspaceService.tryGetRoots().map((root) => root.uri)),
+      excludePatterns: excludePatternOrDisregardExcludes ? [excludePatternOrDisregardExcludes] : undefined,
+      limit: maxResult,
+      includePatterns: [includePattern],
+    };
+    const result = await this.fileSearchService.find('', fileSearchOptions);
+
+    return result;
   }
 
   private isAnyRootChanged(roots: FileStat[]): boolean {

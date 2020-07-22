@@ -149,6 +149,11 @@ declare module 'kaitian' {
 
   }
 
+  export enum ExtensionHostKind {
+    NODE_HOST = 1,
+    WORKER_HOST = 2,
+  }
+
   export interface ExtensionCandiDate {
     path: string;
     isBuintin: boolean;

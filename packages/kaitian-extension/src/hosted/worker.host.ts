@@ -1,11 +1,15 @@
-import { Emitter, Deferred } from '@ali/ide-core-common';
+import { Emitter, Deferred, IExtensionProps } from '@ali/ide-core-common';
 import {
   RPCProtocol, ProxyIdentifier,
 } from '@ali/ide-connection';
-import { IExtension, IExtensionWorkerHost, EXTENSION_EXTEND_SERVICE_PREFIX } from '../common';
+import { IExtensionWorkerHost, EXTENSION_EXTEND_SERVICE_PREFIX } from '../common';
 import { createAPIFactory as createKaitianAPIFactory } from './api/worker/worker.host.api.impl';
-import { MainThreadAPIIdentifier } from '../common/vscode';
+import { MainThreadAPIIdentifier, KTWorkerExtensionService } from '../common/vscode';
 import { ExtensionLogger } from './extension-log';
+import { KTWorkerExtension } from './vscode.extension';
+import { KTWorkerExtensionContext } from './api/vscode/ext.host.extensions';
+import { ActivatedExtension } from './ext.host.activator';
+import { ExtHostStorage } from './api/vscode/ext.host.storage';
 
 function initRPCProtocol() {
   const onMessageEmitter = new Emitter<string>();
@@ -25,7 +29,7 @@ function initRPCProtocol() {
 const protocol = initRPCProtocol();
 
 class ExtensionWorkerHost implements IExtensionWorkerHost {
-  private extensions: IExtension[];
+  private extensions: IExtensionProps[];
   private rpcProtocol: RPCProtocol;
 
   private kaitianAPIFactory: any;
@@ -34,24 +38,64 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
 
   private initDeferred =  new Deferred();
 
+  private activatedExtensions: Map<string, ActivatedExtension> = new Map<string, ActivatedExtension>();
+
+  private mainThreadExtensionService: KTWorkerExtensionService;
+
+  readonly extensionsChangeEmitter: Emitter<void> = new Emitter<void>();
+
+  public staticServicePath: string;
+
+  public storage: ExtHostStorage;
+
   constructor(rpcProtocol: RPCProtocol) {
     this.rpcProtocol = rpcProtocol;
 
     this.kaitianAPIFactory = createKaitianAPIFactory(this.rpcProtocol, this, 'worker');
+    this.mainThreadExtensionService = this.rpcProtocol.getProxy<KTWorkerExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService);
     this.logger = new ExtensionLogger(rpcProtocol);
+    this.storage = new ExtHostStorage(rpcProtocol);
   }
 
-  public init() {
-    // TODO config?.loader
-    // try {
-    //   importScripts('http://127.0.0.1:8080/loader.js');
-    // } catch (err) {
-    //   this.logger.error(`[Worker-Host] ${err.message}`);
-    // }
+  private async init() {
+    this.staticServicePath = await this.mainThreadExtensionService.$getStaticServicePath();
   }
+
+  getExtensionExports(id: string) {
+    return this.activatedExtensions.get(id)?.exports;
+  }
+
+  getExtensions(): KTWorkerExtension[] {
+    return this.extensions.map((ext) => {
+      return new KTWorkerExtension(
+        ext,
+        this,
+        this.mainThreadExtensionService,
+        this.getExtensionExports(ext.id),
+      );
+    })
+    .filter((e) => !!e.workerScriptPath);
+
+  }
+
+  getExtension(extensionId: string) {
+    const extension = this.extensions.find((e) => e.id === extensionId);
+    const activated = this.activatedExtensions.get(extensionId);
+    if (extension) {
+      return new KTWorkerExtension(extension, this, this.mainThreadExtensionService, activated?.exports);
+    }
+  }
+
+  isActivated(id: string): boolean {
+    return this.activatedExtensions.has(id);
+  }
+
+  static workerApiNamespace: string[] = ['kaitian', 'kaitian-worker', 'vscode'];
 
   public async $initExtensions() {
-    this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService).$getExtensions();
+    await this.init();
+
+    this.extensions = await this.mainThreadExtensionService.$getExtensions();
     this.logger.verbose('worker $initExtensions', this.extensions.map((extension) => {
       return extension.packageJSON.name;
     }));
@@ -59,7 +103,7 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
     this.initDeferred.resolve();
   }
 
-  private getExtendModuleProxy(extension: IExtension) {
+  private getExtendModuleProxy(extension: IExtensionProps) {
     const extendProxy = {};
     if (
       extension.extendConfig &&
@@ -88,7 +132,7 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
     return extendProxy;
   }
 
-  private registerExtendModuleService(exportsData, extension: IExtension) {
+  private registerExtendModuleService(exportsData, extension: IExtensionProps) {
     const service = {};
     for (const key in exportsData) {
       if (exportsData.hasOwnProperty(key)) {
@@ -98,20 +142,21 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
       }
     }
 
-    // console.log('extension extend service worker', extension.id, 'service', service);
     this.rpcProtocol.set({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}`} as ProxyIdentifier<any>, service);
   }
 
-  private loadContext(extension: IExtension) {
+  private loadContext(extension: IExtensionProps) {
     const componentProxy = this.getExtendModuleProxy(extension);
     const registerExtendFn = (exportsData) => {
       return this.registerExtendModuleService(exportsData, extension);
     };
-
-    return {
-      componentProxy,
+    return new KTWorkerExtensionContext({
+      extendProxy: componentProxy,
       registerExtendModuleService: registerExtendFn,
-    };
+      extensionPath: extension.realPath,
+      staticServicePath: this.staticServicePath,
+      storage: this.storage,
+    });
   }
 
   public async $activateExtension(id: string) {
@@ -129,8 +174,7 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
 
     this.logger.verbose(`[Worker-Host] extension worker start activate ${id} ${extension.workerScriptPath}`);
 
-    const extendConfig = extension.extendConfig;
-    if (extendConfig.worker && extendConfig.worker.main && extension.workerScriptPath) {
+    if (extension.workerScriptPath) {
       const response = await fetch(extension.workerScriptPath);
 
       if (response.status !== 200) {
@@ -142,7 +186,7 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
       const _exports = {};
       const _module = { exports: _exports };
       const _require = (request: string) => {
-        if (request === 'kaitian') {
+        if (ExtensionWorkerHost.workerApiNamespace.includes(request)) {
           let kaitianAPIImpl = this.kaitianExtAPIImpl.get(id);
           if (!kaitianAPIImpl) {
             try {
@@ -160,27 +204,31 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
       try {
         initFn(_module, _exports, _require, self);
       } catch (err) {
-        this.logger.error(`[Worker-Host] failed to initialize extension ${extension.id}`);
+        this.logger.error(`[Worker-Host] failed to initialize extension ${extension.id} \n`, err);
       }
 
+      let extensionActivateFailed;
+      let moduleExports;
       if (_module.exports && (_module.exports as any).activate) {
         const workerExtContext = this.loadContext(extension);
         try {
-          /**
-           * @TODO
-           * @example
-           * function activate() {
-           *   return {
-           *    // api...
-           *   }
-           * }
-           * extension.getExtension(id).?
-           */
-          // tslint:disable-next-line
-          const exports = (_module.exports as any).activate(workerExtContext);
+          moduleExports = (_module.exports as any).activate(Object.freeze(workerExtContext));
         } catch (err) {
+          extensionActivateFailed = err;
           this.logger.error(`[Worker-Host] failed to activate extension ${extension.id} \n\n ${err.message}`);
         }
+        const activatedExtension = new ActivatedExtension(
+          !!extensionActivateFailed,
+          extensionActivateFailed,
+          _module.exports,
+          moduleExports,
+          workerExtContext.subscriptions,
+          undefined,
+          undefined,
+          undefined,
+        );
+
+        this.activatedExtensions.set(id, activatedExtension);
       }
     } else {
       this.logger.error('[Worker-Host] extension worker activate error', extension);
@@ -188,5 +236,4 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
   }
 }
 
-const host = new ExtensionWorkerHost(protocol);
-host.init();
+new ExtensionWorkerHost(protocol);
