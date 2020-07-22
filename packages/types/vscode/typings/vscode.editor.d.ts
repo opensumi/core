@@ -22,7 +22,7 @@ declare module 'vscode' {
 		 */
 		Command = 3
   }
-  
+
   /**
 	 * Represents an event describing the change in a [text editor's selections](#TextEditor.selections).
 	 */
@@ -274,7 +274,7 @@ declare module 'vscode' {
 		 */
 		selection?: Range;
   }
-  
+
   /**
 	 * Represents rendering styles for a [text editor decoration](#TextEditorDecorationType).
 	 */
@@ -454,7 +454,7 @@ declare module 'vscode' {
 		 */
 		hide(): void;
   }
-  
+
   export interface TextEditorEdit {
 		/**
 		 * Replace a certain text region with a new value.
@@ -489,7 +489,7 @@ declare module 'vscode' {
 		 */
 		setEndOfLine(endOfLine: EndOfLine): void;
   }
-  
+
   	/**
 	 * Denotes a location of an editor in the window. Editors can be arranged in a grid
 	 * and each column represents one editor location in that grid by counting the editors
@@ -545,30 +545,7 @@ declare module 'vscode' {
 		 */
 		Nine = 9
 	}
-	
-	export namespace workspace {
-		/**
-		 * Make changes to one or many resources or create, delete, and rename resources as defined by the given
-		 * [workspace edit](#WorkspaceEdit).
-		 *
-		 * All changes of a workspace edit are applied in the same order in which they have been added. If
-		 * multiple textual inserts are made at the same position, these strings appear in the resulting text
-		 * in the order the 'inserts' were made. Invalid sequences like 'delete file a' -> 'insert text in file a'
-		 * cause failure of the operation.
-		 *
-		 * When applying a workspace edit that consists only of text edits an 'all-or-nothing'-strategy is used.
-		 * A workspace edit with resource creations or deletions aborts the operation, e.g. consecutive edits will
-		 * not be attempted, when a single edit fails.
-		 *
-		 * @param edit A workspace edit.
-		 * @return A thenable that resolves when the edit could be applied.
-		 * @Owner 吭头
-		 */
-		export function applyEdit(edit: WorkspaceEdit): Thenable<boolean>;
-		
-	
-	}
-  
+
 
   export namespace window {
 
@@ -583,7 +560,7 @@ declare module 'vscode' {
 		 * The currently visible editors or an empty array.
 		 */
     export let visibleTextEditors: TextEditor[];
-    
+
     /**
 		 * An [event](#Event) which fires when the [active editor](#window.activeTextEditor)
 		 * has changed. *Note* that the event also fires when the active editor changes
@@ -661,7 +638,7 @@ declare module 'vscode' {
 		export function createTextEditorDecorationType(options: DecorationRenderOptions): TextEditorDecorationType;
 
 	}
-	
+
 	export class TextEdit {
 
 		/**
