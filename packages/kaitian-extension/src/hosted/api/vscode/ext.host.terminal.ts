@@ -13,6 +13,8 @@ export class ExtHostTerminal implements IExtHostTerminal {
   private openTerminalEvent: Emitter<vscode.Terminal> = new Emitter();
   private terminalsMap: Map<string, vscode.Terminal> = new Map();
 
+  private _shellPath: string;
+
   activeTerminal: vscode.Terminal | undefined;
   get terminals(): vscode.Terminal[] {
     return Array.from(this.terminalsMap.values());
@@ -57,6 +59,14 @@ export class ExtHostTerminal implements IExtHostTerminal {
 
   get onDidOpenTerminal(): Event<vscode.Terminal> {
     return this.openTerminalEvent.event;
+  }
+
+  $acceptDefaultShell(shellPath: string) {
+    this._shellPath = shellPath;
+  }
+
+  get shellPath() {
+    return this._shellPath;
   }
 
   createTerminal = (

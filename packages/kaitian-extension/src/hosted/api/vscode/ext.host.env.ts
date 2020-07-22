@@ -3,7 +3,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { createHash } from 'crypto';
 import { v4 } from 'uuid';
 import * as address from 'address';
-import { MainThreadAPIIdentifier, IMainThreadEnv } from '../../../common/vscode';
+import { MainThreadAPIIdentifier, IMainThreadEnv, IExtHostTerminal } from '../../../common/vscode';
 import {
   // IExtensionProcessService,
   IExtHostEnv,
@@ -41,6 +41,7 @@ export function createEnvApiFactory(
   rpcProtocol: IRPCProtocol,
   extensionService: IExtensionHostService,
   envHost: IExtHostEnv,
+  exthostTerminal: IExtHostTerminal,
 ): vscode.env {
   const proxy: IMainThreadEnv = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadEnv);
   const values: ExtHostEnvValues = envHost.getEnvValues();
@@ -52,6 +53,7 @@ export function createEnvApiFactory(
     machineId: values.machineId || envValue.machineId,
     appRoot: 'appRoot',
     remoteName: 'remoteName',
+    shell: exthostTerminal.shellPath,
     clipboard: {
       readText(): Thenable<string> {
         return proxy.$clipboardReadText();

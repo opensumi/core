@@ -1,7 +1,7 @@
 
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtHostConnectionService, IExtHostDebugService, ExtHostAPIIdentifier, TextEditorCursorStyle, TextEditorSelectionChangeKind, VSCodeExtensionService } from '../../../common/vscode'; // '../../common';
-import { IExtensionHostService} from '../../../common';
+import { IExtensionHostService } from '../../../common';
 import { createWindowApiFactory, ExtHostWindow } from './ext.host.window.api.impl';
 import { ExtensionDocumentDataManagerImpl } from './doc';
 import * as extTypes from '../../../common/vscode/ext-types';
@@ -87,7 +87,7 @@ export function createApiFactory(
       ),
       languages: createLanguagesApiFactory(extHostLanguages, extension),
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem, extHostFileSystemEvent, extHostTasks, extension),
-      env: createEnvApiFactory(rpcProtocol, extensionService, extHostEnv),
+      env: createEnvApiFactory(rpcProtocol, extensionService, extHostEnv, extHostTerminal),
       debug: createDebugApiFactory(extHostDebug),
       version: '1.37.0',
       comments: createCommentsApiFactory(extension, extHostComments),

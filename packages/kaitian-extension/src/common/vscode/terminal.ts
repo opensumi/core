@@ -19,6 +19,7 @@ export interface IMainThreadTerminal {
 export interface IExtHostTerminal {
   activeTerminal: vscode.Terminal | undefined;
   terminals: vscode.Terminal[];
+  shellPath: string;
 
   createTerminal(name?: string, shellPath?: string, shellArgs?: string[] | string): vscode.Terminal;
   createTerminal(options?: vscode.TerminalOptions, id?: string): vscode.Terminal;
@@ -37,5 +38,8 @@ export interface IExtHostTerminal {
 
   $onDidOpenTerminal(info: ITerminalInfo);
 
+  $acceptDefaultShell(shellPath: string);
+
   dispose(): void;
+
 }

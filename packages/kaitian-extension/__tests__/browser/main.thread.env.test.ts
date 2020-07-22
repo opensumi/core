@@ -4,6 +4,7 @@ import { Emitter, ILoggerManagerClient, LogServiceForClientPath, LogLevel, getLa
 import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { createEnvApiFactory, ExtHostEnv, envValue } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.env';
+import { ExtHostTerminal } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.terminal';
 import { MainThreadEnv } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.env';
 import { IMainThreadEnv, MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@ali/ide-kaitian-extension/lib/common/vscode';
 import ExtensionHostServiceImpl from '@ali/ide-kaitian-extension/lib/hosted/ext.host';
@@ -71,10 +72,11 @@ describe('MainThreadEnvAPI Test Suites ', () => {
       useClass: LoggerManagerClient,
     }]);
     const extHostEnv = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostEnv, new ExtHostEnv(rpcProtocolExt));
+    const extHostTerminal = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostTerminal, new ExtHostTerminal(rpcProtocolExt));
     const MainThreadEnvAPI = injector.get(MainThreadEnv, [rpcProtocolMain]);
     rpcProtocolMain.set<IMainThreadEnv>(MainThreadAPIIdentifier.MainThreadEnv, MainThreadEnvAPI);
     setTimeout(() => {
-      extHostEnvAPI = createEnvApiFactory(rpcProtocolExt, injector.get(ExtensionHostServiceImpl), extHostEnv);
+      extHostEnvAPI = createEnvApiFactory(rpcProtocolExt, injector.get(ExtensionHostServiceImpl), extHostEnv, extHostTerminal);
       done();
     }, 0);
   });

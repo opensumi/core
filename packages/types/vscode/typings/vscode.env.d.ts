@@ -53,7 +53,13 @@ declare module 'vscode' {
 		 * exists. Use [`Extension#extensionKind`](#Extension.extensionKind) to know if
 		 * a specific extension runs remote or not.
 		 */
-		export const remoteName: string | undefined;
+    export const remoteName: string | undefined;
+
+    /**
+		 * The detected default shell for the extension host, this is overridden by the
+		 * `terminal.integrated.shell` setting for the extension host's platform.
+		 */
+    export const shell: string;
 
 		/**
 		 * Opens an *external* item, e.g. a http(s) or mailto-link, using the
