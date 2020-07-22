@@ -115,7 +115,7 @@ export class FileServiceClient implements IFileServiceClient {
     if (newStat) {
       return newStat;
     }
-    throw FileSystemError.FileNotFound(_uri.codeUri, 'Error occurred while writing file content.');
+    throw FileSystemError.FileNotFound(_uri.codeUri.path, 'Error occurred while writing file content.');
   }
 
   async updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: FileSetContentOptions): Promise<FileStat> {
