@@ -15,6 +15,8 @@ import { SimpleModule } from './simple-module';
 
 import * as serviceWorker from './service-worker';
 
+import '../styles.less';
+
 // 视图和slot插槽的对应关系
 const layoutConfig = {
   [SlotLocation.top]: {
