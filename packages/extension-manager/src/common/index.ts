@@ -1,5 +1,6 @@
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { BasicEvent } from '@ali/ide-core-common';
+import { ExtensionDependencies } from '@ali/ide-kaitian-extension/lib/common';
 
 export const EXTENSION_DIR = 'extension/';
 
@@ -90,6 +91,7 @@ export interface ExtensionDetail extends RawExtension {
   changelog: string;
   license: string;
   categories: string;
+  packageJSON: any;
   // 代码仓库
   repository: string;
   contributes: {
@@ -123,6 +125,8 @@ export interface IExtensionManagerService  {
   searchMarketplaceResults: RawExtension[];
   contextMenu: IMenu;
   extensionMomentState: Map<string, ExtensionMomentState>;
+  installedIds: string[];
+  useEnabledIds: string[];
   init(): Promise<void>;
   getDetailById(extensionId: string): Promise<ExtensionDetail | undefined>;
   getDetailFromMarketplace(extensionId: string, version?: string): Promise<ExtensionDetail | undefined>;
@@ -139,13 +143,25 @@ export interface IExtensionManagerService  {
   setRequestHeaders(requestHeaders: RequestHeaders): Promise<void>;
   openExtensionDetail(options: OpenExtensionOptions): void;
   installExtensionByReleaseId(releaseId: string): Promise<string>;
-  installExtension(extension: BaseExtension, version?: string): Promise<string>;
+  installExtension(extension: BaseExtension, version?: string): Promise<string | void>;
   updateExtension(extension: BaseExtension, version: string): Promise<string>;
   uninstallExtension(extension: BaseExtension): Promise<boolean>;
   loadHotExtensions(): Promise<void>;
+  getExtDeps(extensionId: string, version?: string): Promise<ExtensionDependencies>;
+  dispose(): void;
+  getEnabledDeps(): Promise<Map<string, string[]>>;
 }
 
 export const IExtensionManagerServer = Symbol('IExtensionManagerServer');
+
+export interface IExtensionDependenciesResFromMarketPlace {
+  data: {
+    dependencies: ExtensionDependencies;
+    version: string;
+    id: string;
+    extensionId: string;
+  };
+}
 export interface IExtensionManagerServer {
   search(query: string, ignoreId?: string[]): Promise<any>;
   getExtensionFromMarketPlace(extensionId: string, version?: string): Promise<any>;
@@ -156,6 +172,7 @@ export interface IExtensionManagerServer {
   installExtension(extension: BaseExtension, version?: string): Promise<string>;
   updateExtension(extension: BaseExtension, version: string): Promise<string>;
   uninstallExtension(extension: BaseExtension): Promise<boolean>;
+  getExtensionDeps(extensionId: string, version: string): Promise<IExtensionDependenciesResFromMarketPlace | undefined>;
 }
 
 export interface RequestHeaders {

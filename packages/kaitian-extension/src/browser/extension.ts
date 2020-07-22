@@ -105,7 +105,32 @@ export class Extension extends Disposable implements IExtension {
     }
   }
 
-  async activate() {
+  // 本插件被谁依赖
+  // 激活前控制激活顺序
+  async getExtDependedList(): Promise<string[]> {
+    // 获取所有插件的以来关系
+    // ext:string 被 extDepended: string[] 依赖
+    // Map<ext, extDepended>
+    const allExtsDependedMap = await this.extensionService.getDependedExtMap();
+    return allExtsDependedMap.get(this.extensionId) || [];
+  }
+
+  async activate(visited = new Set<string>()) {
+    const deps = this.packageJSON?.extensionDependencies || [];
+
+    visited.add(this.extensionId);
+
+    for (const dep of deps) {
+      const nextDepId = typeof dep === 'string' ? dep : Object.keys(dep)[0];
+      // in order to  break cycle
+      // 循环依赖是不符合开发预期的行为，我们在这里直接跳过
+      if (visited.has(nextDepId)) {
+        continue;
+      }
+      const nextExt = this.extensionService.getExtensionByExtId(nextDepId);
+      nextExt && await nextExt.activate(visited);
+    }
+
     if (this._activated) {
       return ;
     }
@@ -150,5 +175,4 @@ export class Extension extends Disposable implements IExtension {
       isBuiltin: this.isBuiltin,
     };
   }
-
 }

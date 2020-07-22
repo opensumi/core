@@ -62,6 +62,7 @@ const mockExtensionProps: IExtensionProps = {
   isBuiltin: false,
   packageJSON: {
     name: 'kaitian-extension',
+    extensionDependencies: ['uuid-for-test-extension-deps'],
     contributes: {
       'actions': [
         { type: 'action', title: 'test action' },
@@ -165,14 +166,16 @@ class MockWorkbenchEditorService {
   apply() { }
 }
 
-const mockExtensions: IExtension[] = [{
+const mockExtension = {
   ...mockExtensionProps,
   contributes: mockExtensionProps.packageJSON.contributes,
   activate: () => {
     return true;
   },
   toJSON: () => mockExtensionProps,
-}];
+};
+
+const mockExtensions: IExtension[] = [mockExtension];
 
 @Injectable()
 class MockExtNodeClientService implements IExtensionNodeClientService {
@@ -399,6 +402,10 @@ describe('Extension service', () => {
       expect(extensionMetadata?.extraMetadata).toEqual({ readme: './README.md' });
     });
 
+    it('should return extension by extensionId', async () => {
+      const extension = extensionService.getExtensionByExtId('uuid-for-test-extension');
+      expect(extension?.extensionId).toBe(mockExtension.extensionId);
+    });
   });
 
   describe('extension status sync', () => {
@@ -414,6 +421,20 @@ describe('Extension service', () => {
       setTimeout(() => {
         done();
       }, 1000);
+    });
+  });
+
+  describe('extension dependencies', () => {
+    it('should return the all depended map', async () => {
+      const dependedMap = await extensionService.getDependedExtMap();
+      expect(dependedMap.size).toBe(1);
+      expect(dependedMap.get('uuid-for-test-extension-deps')).toEqual(['uuid-for-test-extension']);
+    });
+
+    it('should return the all dependencies map', async () => {
+      const dependenciesMap = await extensionService.getDependenciesExtMap();
+      expect(dependenciesMap.size).toBe(1);
+      expect(dependenciesMap.get('uuid-for-test-extension')).toEqual(['uuid-for-test-extension-deps']);
     });
   });
 

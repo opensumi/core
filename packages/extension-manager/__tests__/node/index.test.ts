@@ -27,7 +27,9 @@ describe('template test', () => {
     }, {
       token: INodeLogger,
       useValue: {
+        // tslint:disable-next-line:no-console
         log: console.log,
+        // tslint:disable-next-line:no-console
         error: console.error,
       },
     });
@@ -78,9 +80,36 @@ describe('template test', () => {
     }, 10000);
   });
 
+  describe('get extension deps', () => {
+    it('get extension dependencies', async () => {
+      injector.mock(IExtensionManagerRequester, 'request', () => {
+        return {
+          status: 200,
+          data: {
+            dependencies: ['aa.bb'],
+          },
+        };
+      });
+      const res = await service.getExtensionDeps('mock', '1.0.0');
+      expect(res).toEqual({ dependencies: ['aa.bb'] });
+    }, 20000);
+  });
+
   describe('download extension', () => {
     it('download a extension', async (done) => {
+
       const { extensionId, name, publisher, path: extensionPath } = await createExtension();
+      const { extensionId: extensionId2, path: extensionPath2 } = await createExtension();
+
+      injector.mock(IExtensionManagerRequester, 'request', () => {
+        return {
+          status: 200,
+          data: {
+            dependencies: [extensionId2],
+          },
+        };
+      });
+
       await service.installExtension({
         extensionId,
         name,
@@ -89,7 +118,11 @@ describe('template test', () => {
         publisher,
       });
       // 文件成功下载
+
       expect(await fs.pathExists(path.join(extensionPath, 'package.json')));
+
+      // 会下载俩插件
+      expect(await fs.pathExists(path.join(extensionPath2, 'package.json')));
       done();
     }, 30000);
   });
