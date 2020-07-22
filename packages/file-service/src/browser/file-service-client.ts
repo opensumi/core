@@ -18,7 +18,7 @@ import {
 } from '../common';
 import { FileSystemWatcher } from './watcher';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
-import { FilesChangeEvent } from '@ali/ide-core-browser';
+import { FilesChangeEvent, ExtensionActivateEvent } from '@ali/ide-core-browser';
 
 // TODO: 这里只做标记，实现插件注册的scheme统一走fs-client
 @Injectable()
@@ -391,6 +391,9 @@ export class FileServiceClient implements IFileServiceClient {
 
   private async getProvider<T extends string>(scheme: T): Promise<T extends 'file' ? IDiskFileProvider : FileSystemProvider>;
   private async getProvider(scheme: string): Promise<IDiskFileProvider | FileSystemProvider> {
+
+    this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onFileSystem', data: scheme }));
+
     const provider = this.fsProviders.get(scheme);
 
     if (!provider) {
