@@ -21,6 +21,8 @@ export interface ILogServiceForClient {
   setGlobalLogLevel(level: LogLevel);
   getGlobalLogLevel();
   disposeAll();
+
+  getLogFolder(): Promise<string>;
 }
 
 export interface LoggerManagerInitOptions {

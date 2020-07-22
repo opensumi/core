@@ -46,7 +46,7 @@ export function getDefaultIcon(iconKey: string, options?: {
   }
   const iconValue = iconMap[ktIconPrefixes[lastIndex]][iconKey];
   if (!iconValue) {
-    // tslint:disable no-console
+    // tslint:disable-next-line:no-console
     console.warn('图标库缺失图标:' + iconKey);
     return '';
   }

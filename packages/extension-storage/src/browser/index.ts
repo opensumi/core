@@ -1,7 +1,9 @@
-import { ExtensionStorageServerPath, IExtensionStorageService } from '../common';
+import { IExtensionStorageService, IExtensionStoragePathServer, IExtensionStorageServer } from '../common';
 import { Provider, Autowired } from '@ali/common-di';
 import { BrowserModule, EffectDomain, ClientAppContribution, Domain } from '@ali/ide-core-browser';
 import { ExtensionStorageService } from './storage.service';
+import { ExtensionStoragePathServer } from './storage-path';
+import { ExtensionStorageServer } from './storage';
 
 const pkgJson = require('../../package.json');
 @EffectDomain(pkgJson.name)
@@ -10,13 +12,16 @@ export class ExtensionStorageModule extends BrowserModule {
     token: IExtensionStorageService,
     useClass: ExtensionStorageService,
   },
+  {
+    token: IExtensionStoragePathServer,
+    useClass: ExtensionStoragePathServer,
+  },
+  {
+    token: IExtensionStorageServer,
+    useClass: ExtensionStorageServer,
+  },
   ExtensionStorageContribution,
 ];
-
-  // 依赖 Node 服务
-  backServices = [{
-    servicePath: ExtensionStorageServerPath,
-  }];
 }
 
 @Domain(ClientAppContribution)

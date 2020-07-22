@@ -1,20 +1,19 @@
 import { IStorageServer, IUpdateRequest, IStoragePathServer, StorageChange, StringKeyToAnyValue } from '../common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { IFileService } from '@ali/ide-file-service';
-import { Deferred, URI, Emitter, Event } from '@ali/ide-core-common';
-import { INodeLogger } from '@ali/ide-core-node';
+import { IFileServiceClient } from '@ali/ide-file-service';
+import { Deferred, URI, Emitter, Event, ILogger } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 
 @Injectable()
 export abstract class StorageServer implements IStorageServer {
-  @Autowired(IFileService)
-  protected readonly fileSystem: IFileService;
+  @Autowired(IFileServiceClient)
+  protected readonly fileSystem: IFileServiceClient;
 
   @Autowired(IStoragePathServer)
   protected readonly dataStoragePathServer: IStoragePathServer;
 
-  @Autowired(INodeLogger)
-  protected readonly logger: INodeLogger;
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   public deferredStorageDirPath = new Deferred<string>();
   public databaseStorageDirPath: string | undefined;

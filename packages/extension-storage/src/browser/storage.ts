@@ -1,11 +1,9 @@
-import * as path from 'path';
 import { Injectable, Autowired } from '@ali/common-di';
-import { Deferred, URI, INodeLogger } from '@ali/ide-core-node';
-import { StoragePaths } from '@ali/ide-core-common';
-import { IFileService, FileStat } from '@ali/ide-file-service';
+import { Deferred, URI, ILogger, StoragePaths } from '@ali/ide-core-common';
+import { IFileServiceClient, FileStat } from '@ali/ide-file-service';
 import { ExtensionStoragePath, IExtensionStoragePathServer, IExtensionStorageServer, KeysToAnyValues, KeysToKeysToAnyValue, DEFAULT_EXTENSION_STORAGE_DIR_NAME } from '../common/';
+import { Path } from '@ali/ide-core-common/lib/path';
 
-// FIXME 依赖IFileService
 @Injectable()
 export class ExtensionStorageServer implements IExtensionStorageServer {
   private workspaceDataDirPath: string | undefined;
@@ -16,11 +14,11 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
   @Autowired(IExtensionStoragePathServer)
   private readonly extensionStoragePathsServer: IExtensionStoragePathServer;
 
-  @Autowired(IFileService)
-  protected readonly fileSystem: IFileService;
+  @Autowired(IFileServiceClient)
+  protected readonly fileSystem: IFileServiceClient;
 
-  @Autowired(INodeLogger)
-  protected readonly logger: INodeLogger;
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   public async init(workspace: FileStat | undefined, roots: FileStat[], extensionStorageDirName?: string): Promise<ExtensionStoragePath> {
     return await this.setupDirectories(workspace, roots, extensionStorageDirName || DEFAULT_EXTENSION_STORAGE_DIR_NAME);
@@ -31,7 +29,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
     await this.fileSystem.createFolder(URI.file(workspaceDataDirPath).toString());
     this.workspaceDataDirPath = workspaceDataDirPath;
 
-    this.globalDataPath = path.join(this.workspaceDataDirPath, StoragePaths.EXTENSIONS_GLOBAL_STORAGE_DIR);
+    this.globalDataPath = new Path(this.workspaceDataDirPath).join(StoragePaths.EXTENSIONS_GLOBAL_STORAGE_DIR).toString();
     await this.fileSystem.createFolder(URI.file(this.globalDataPath).toString());
 
     this.deferredWorkspaceDataDirPath.resolve(this.workspaceDataDirPath);
@@ -91,10 +89,10 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
     }
 
     if (isGlobal) {
-      return path.join(this.globalDataPath!, 'global-state.json');
+      return new Path(this.globalDataPath!).join('global-state.json').toString();
     } else {
       const storagePath = await this.extensionStoragePathsServer.getLastWorkspaceStoragePath();
-      return storagePath ? path.join(storagePath, 'workspace-state.json') : undefined;
+      return storagePath ? new Path(storagePath).join('workspace-state.json').toString() : undefined;
     }
   }
 

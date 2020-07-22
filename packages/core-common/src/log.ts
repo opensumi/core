@@ -185,6 +185,7 @@ export interface ILoggerManagerClient {
 
   onDidLogLevelChanged(level: LogLevel);
   dispose(): Promise<void>;
+  getLogFolder(): Promise<string>;
 }
 
 /**

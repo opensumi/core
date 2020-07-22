@@ -1,9 +1,8 @@
-import * as path from 'path';
 import { Injectable, Autowired } from '@ali/common-di';
-import { isWindows, Deferred, URI } from '@ali/ide-core-node';
 import { IStoragePathServer } from '../common';
-import { IFileService } from '@ali/ide-file-service';
-import { StoragePaths } from '@ali/ide-core-common';
+import { IFileServiceClient } from '@ali/ide-file-service';
+import { StoragePaths, Deferred, URI, isWindows } from '@ali/ide-core-common';
+import { Path } from '@ali/ide-core-common/lib/path';
 
 @Injectable()
 export class StoragePathServer implements IStoragePathServer {
@@ -18,8 +17,8 @@ export class StoragePathServer implements IStoragePathServer {
   private workspaceStoragePathInitialized: boolean;
   private globalStoragePathInitialized: boolean;
 
-  @Autowired(IFileService)
-  private readonly fileSystem: IFileService;
+  @Autowired(IFileServiceClient)
+  private readonly fileSystem: IFileServiceClient;
 
   constructor() {
     this.deferredWorkspaceStoragePath = new Deferred<string>();
@@ -81,11 +80,8 @@ export class StoragePathServer implements IStoragePathServer {
   async getDataDirPath(storageDirName?: string): Promise<string> {
     const homeDir = await this.getUserHomeDir();
     const storageDir = storageDirName || StoragePaths.DEFAULT_STORAGE_DIR_NAME;
-    return path.join(
-      homeDir,
-      ...(isWindows ? this.windowsDataFolders : ['']),
-      storageDir,
-    );
+    const dirPath = new Path(homeDir).join(...(isWindows ? this.windowsDataFolders : ['']), storageDir);
+    return dirPath.toString();
   }
 
   /**

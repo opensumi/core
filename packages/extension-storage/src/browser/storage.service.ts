@@ -1,12 +1,12 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { ExtensionStoragePath, ExtensionStorageServerPath, IExtensionStorageService, KeysToAnyValues, KeysToKeysToAnyValue, IExtensionStorageServer, DEFAULT_EXTENSION_STORAGE_DIR_NAME } from '../common' ;
+import { ExtensionStoragePath, IExtensionStorageService, KeysToAnyValues, KeysToKeysToAnyValue, IExtensionStorageServer, DEFAULT_EXTENSION_STORAGE_DIR_NAME } from '../common' ;
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 import { AppConfig } from '@ali/ide-core-browser';
 
 @Injectable()
 export class ExtensionStorageService implements IExtensionStorageService {
-  @Autowired(ExtensionStorageServerPath)
+  @Autowired(IExtensionStorageServer)
   private readonly extensionStorageServer: IExtensionStorageServer;
 
   @Autowired(IWorkspaceService)

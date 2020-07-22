@@ -20,6 +20,10 @@ export class LoggerManagerClient implements ILoggerManagerClient {
     return new LogServiceClient(namespace, this.logServiceForClient, pid);
   }
 
+  async getLogFolder() {
+    return await this.logServiceForClient.getLogFolder();
+  }
+
   async setGlobalLogLevel(level: LogLevel) {
     return await this.logServiceForClient.setGlobalLogLevel(level);
   }

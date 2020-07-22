@@ -1,9 +1,6 @@
 import { NodeModule, ConstructorOf} from '@ali/ide-core-node';
 import { FileServiceModule } from '@ali/ide-file-service/lib/node';
 
-import { StorageModule } from '@ali/ide-storage/lib/node';
-import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/node';
-
 import { ProcessModule } from '@ali/ide-process';
 
 import { FileSearchModule } from '@ali/ide-file-search';
@@ -18,8 +15,6 @@ import { FileSchemeNodeModule } from '@ali/ide-file-scheme/lib/node';
 export const CommonNodeModules: ConstructorOf<NodeModule>[] = [
   LogServiceModule,
   FileServiceModule,
-  ExtensionStorageModule,
-  StorageModule,
   ProcessModule,
   FileSearchModule,
   SearchModule,

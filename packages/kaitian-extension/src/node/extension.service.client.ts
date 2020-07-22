@@ -7,7 +7,6 @@ import { createHash } from 'crypto';
 import { ExtraMetaData, IExtensionMetaData, IExtensionNodeService, IExtensionNodeClientService } from '../common';
 import { RPCService } from '@ali/ide-connection';
 import * as lp from './languagePack';
-import { IExtensionStoragePathServer } from '@ali/ide-extension-storage';
 import { IFileService } from '@ali/ide-file-service';
 
 export const DEFAULT_NLS_CONFIG_DIR = path.join(os.homedir(), '.kaitian');
@@ -17,9 +16,6 @@ export class ExtensionServiceClientImpl extends RPCService implements IExtension
 
   @Autowired(IExtensionNodeService)
   private extensionService: IExtensionNodeService;
-
-  @Autowired(IExtensionStoragePathServer)
-  private extensionStoragePathServer: IExtensionStoragePathServer;
 
   @Autowired(IFileService)
   private fileService: IFileService;
@@ -120,9 +116,9 @@ export class ExtensionServiceClientImpl extends RPCService implements IExtension
     return languagePacks;
   }
 
-  public async updateLanguagePack(languageId: string, languagePack: string): Promise<void> {
+  public async updateLanguagePack(languageId: string, languagePack: string, storagePath: string): Promise<void> {
     let languagePacks: { [key: string]: any } = {};
-    const storagePath = await this.extensionStoragePathServer.getLastStoragePath() || DEFAULT_NLS_CONFIG_DIR;
+    storagePath = storagePath || DEFAULT_NLS_CONFIG_DIR;
     this.logger.log(`find ${languageId}， storagePath：${storagePath}`);
     const languagePath = Uri.file(path.join(storagePath, 'languagepacks.json')).toString();
     if (await this.fileService.access(languagePath)) {
