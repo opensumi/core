@@ -113,8 +113,9 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
       this.collector.processLine(removeAnsiEscapeCodes(e.data.toString()));
     }));
 
-    this.disposableCollection.push(this.terminalService.onExit((e) => {
+    this.disposableCollection.push(this.terminalService.onExit(async (e) => {
       if (e.sessionId === this.terminalClient.id) {
+        await this.processReady.promise;
         this.onTaskExit(e.code);
         this.processExited = true;
         this.taskStatus = TaskStatus.PROCESS_EXITED;
@@ -132,9 +133,8 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     this.terminalClient.term.writeln(`\x1b[1m> Command: ${typeof shellArgs === 'string' ? shellArgs : shellArgs![1]} <\x1b[0m\n`);
 
     await this.terminalClient.attached.promise;
-    this.pid = await this.terminalClient.pid;
     this.taskStatus = TaskStatus.PROCESS_RUNNING;
-
+    this.pid = await this.terminalClient.pid;
     this.processReady.resolve();
     this.terminalView.selectWidget(this.terminalClient.id);
     this.terminalClient.term.write('\n\x1b[G');
@@ -277,7 +277,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     return {
       task,
       kind: TaskExecuteKind.Started,
-      promise: Promise.resolve(result),
+      promise: result,
     };
   }
 
