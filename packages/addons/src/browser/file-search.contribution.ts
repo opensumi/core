@@ -39,10 +39,15 @@ export const quickFileOpen: Command = {
   label: 'Open File...',
 };
 
-const matchLineReg = /(\S+)\(\s*(\d*)\s*,*\s*(\d*)\s*\)*\s*$/;
+// support /some/file.js(73,84)
+// support /some/file.js#73,84
+// support /some/file.js#L73
+// support /some/file.js:73
+// support /some/file.js:73:84
+export const matchLineReg = /^([^:#\(]*)[:#\(]?L?(\d+)?[:,]?(\d+)?/;
 
-function getRangeByInput(input: string): monaco.Range | undefined {
-  const matchList = (input || '').match(matchLineReg) || [];
+function getRangeByInput(input: string = ''): monaco.Range | undefined {
+  const matchList = input.match(matchLineReg) || [];
 
   if (matchList.length < 2) {
     return;
@@ -136,7 +141,7 @@ class FileSearchActionProvider implements QuickOpenActionProvider {
     return [this.fileSearchActionLeftRight];
   }
 
-  getValidateInput(lookFor) {
+  getValidateInput(lookFor: string) {
     return getValidateInput(lookFor);
   }
 }
