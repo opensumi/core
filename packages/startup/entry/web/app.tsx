@@ -11,6 +11,8 @@ import '@ali/ide-core-browser/lib/style/icon.less';
 import { ExpressFileServerModule } from '@ali/ide-express-file-server/lib/browser';
 import { SlotLocation } from '@ali/ide-core-browser';
 
+import '../styles.less';
+
 // require('@ali/ide-monaco/lib/browser/monaco-loader').loadMonaco();
 
 import { SampleModule } from '../sample-modules';

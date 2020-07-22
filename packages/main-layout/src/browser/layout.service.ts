@@ -5,7 +5,6 @@ import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
 import { IMenuRegistry, AbstractContextMenuService, MenuId, AbstractMenuService, IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
-import './main-layout.less';
 import { AccordionService } from './accordion/accordion.service';
 import debounce = require('lodash.debounce');
 
