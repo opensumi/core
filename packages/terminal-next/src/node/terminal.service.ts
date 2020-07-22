@@ -74,6 +74,8 @@ export class TerminalServiceImpl extends RPCService implements ITerminalNodeServ
     const clientId = id.split('|')[0];
     const terminal = this.ptyService.create(rows, cols, options);
 
+    this.terminalMap.set(id , terminal);
+
     terminal.on('data', (data) => {
       if (this.serviceClientMap.has(clientId)) {
         const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
@@ -91,8 +93,6 @@ export class TerminalServiceImpl extends RPCService implements ITerminalNodeServ
         this.logger.warn(`terminal: pty ${clientId} on data not found`);
       }
     });
-
-    this.terminalMap.set(id , terminal);
 
     const clientMap = this.clientTerminalMap.get(clientId);
 
