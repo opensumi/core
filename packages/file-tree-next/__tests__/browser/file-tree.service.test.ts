@@ -209,10 +209,10 @@ describe('FileTree Service should be work alone', () => {
     const mockOpenResource = jest.fn();
     injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, mockOpenResource);
     fileTreeService.openAndFixedFile(testUri);
-    expect(mockOpenResource).toBeCalledWith(testUri,  { disableNavigate: true, preview: false });
+    expect(mockOpenResource).toBeCalledWith(testUri,  { disableNavigate: true, preview: false, focus: true });
     // OpenToTheSide
     fileTreeService.openToTheSide(testUri);
-    expect(mockOpenResource).toBeCalledWith(testUri,  { disableNavigate: true, preview: false });
+    expect(mockOpenResource).toBeCalledWith(testUri,  { disableNavigate: true, split: 4 });
     // compare
     const mockCompare = jest.fn();
     injector.mockCommand(EDITOR_COMMANDS.COMPARE.id, mockCompare);

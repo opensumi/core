@@ -887,7 +887,7 @@ export class FileTreeModelService {
         promptHandle.addAddonAfter('loading_indicator');
         await this.ensurePerformedEffect();
         if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
-          if (this.fileTreeService.isCompactMode && isEmptyDirectory) {
+          if (this.fileTreeService.isCompactMode && isEmptyDirectory && !Directory.isRoot(parent)) {
             this.fileTreeService.ignoreFileEvent(parent.uri, FileChangeType.UPDATED);
             if (isWindows) {
               // Windows环境下会多触发一个UPDATED事件
@@ -909,7 +909,7 @@ export class FileTreeModelService {
           promptHandle.addValidateMessage(this.validateMessage);
           return false;
         }
-        if (this.fileTreeService.isCompactMode && newName.indexOf(Path.separator) > 0) {
+        if (this.fileTreeService.isCompactMode && newName.indexOf(Path.separator) > 0 && !Directory.isRoot(parent)) {
           // 压缩模式下，检查是否有同名父目录存在，有则不需要生成临时目录，刷新对应父节点并定位节点
           const parentPath = new Path(parent.path).join(Path.splitPath(newName)[0]).toString();
           const parentNode = this.fileTreeService.getNodeByPathOrUri(parentPath) as Directory;
@@ -967,7 +967,7 @@ export class FileTreeModelService {
             }
           }
         } else {
-          if (this.fileTreeService.isCompactMode && promptHandle.type === TreeNodeType.CompositeTreeNode && isEmptyDirectory) {
+          if (this.fileTreeService.isCompactMode && promptHandle.type === TreeNodeType.CompositeTreeNode && isEmptyDirectory && !Directory.isRoot(parent)) {
             // Remove TreeNode Cache
             const prePath = parent.path;
             this.fileTreeService.removeNodeCacheByPath(prePath);

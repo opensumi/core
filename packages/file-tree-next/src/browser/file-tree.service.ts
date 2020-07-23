@@ -220,12 +220,12 @@ export class FileTreeService extends Tree {
       if (parent.uri) {
         // 压缩节点模式需要在没有压缩节点焦点的情况下才启用
         const isCompressedFocused = this.contextKeyService.getContextValue('explorerViewletCompressedFocus');
-        const data = await this.fileTreeAPI.resolveChildren(this as ITree, parent.uri.toString(), parent, !isCompressedFocused && this.isCompactMode);
+        const data = await this.fileTreeAPI.resolveChildren(this as ITree, parent.uri.toString(), parent, !isCompressedFocused && this.isCompactMode && !Directory.isRoot(parent));
         children = data.children;
         const childrenParentStat = data.filestat;
         // 需要排除软连接下的直接空目录折叠，否则会导致路径计算错误
         // 但软连接目录下的其他目录不受影响
-        if (this.isCompactMode && !isCompressedFocused && !parent.filestat.isSymbolicLink) {
+        if (this.isCompactMode && !isCompressedFocused && !parent.filestat.isSymbolicLink && !Directory.isRoot(parent)) {
           const parentURI = new URI(childrenParentStat.uri);
           if (parent && parent.parent) {
             const parentName = (parent.parent as Directory).uri.relative(parentURI)?.toString();
@@ -390,7 +390,7 @@ export class FileTreeService extends Tree {
         tempUri = tempUri.resolve(path);
         this._cacheIgnoreFileEvent.set(tempUri.toString(), FileChangeType.ADDED);
       }
-      if (!this.isCompactMode) {
+      if (!this.isCompactMode || Directory.isRoot(node)) {
         tempName = namePaths[0];
       } else {
         if (type === TreeNodeType.CompositeTreeNode) {
@@ -699,7 +699,7 @@ export class FileTreeService extends Tree {
    * @param uri
    */
   public openAndFixedFile(uri: URI) {
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true, preview: false });
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true, preview: false, focus: true });
   }
 
   /**
