@@ -4,7 +4,7 @@ import {
 } from '@ali/ide-connection';
 import { IExtensionWorkerHost, EXTENSION_EXTEND_SERVICE_PREFIX } from '../common';
 import { createAPIFactory as createKaitianAPIFactory } from './api/worker/worker.host.api.impl';
-import { MainThreadAPIIdentifier, KTWorkerExtensionService } from '../common/vscode';
+import { MainThreadAPIIdentifier, ExtHostAPIIdentifier, KTWorkerExtensionService } from '../common/vscode';
 import { ExtensionLogger } from './extension-log';
 import { KTWorkerExtension } from './vscode.extension';
 import { KTWorkerExtensionContext } from './api/vscode/ext.host.extensions';
@@ -55,6 +55,7 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
     this.mainThreadExtensionService = this.rpcProtocol.getProxy<KTWorkerExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService);
     this.logger = new ExtensionLogger(rpcProtocol);
     this.storage = new ExtHostStorage(rpcProtocol);
+    rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, this.storage);
   }
 
   private async init() {
