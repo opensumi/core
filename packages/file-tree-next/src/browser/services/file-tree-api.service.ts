@@ -159,10 +159,6 @@ export class FileTreeAPI implements IFileTreeAPI {
   }
 
   async mv(from: URI, to: URI, isDirectory: boolean = false) {
-    const exists = await this.fileServiceClient.access(to.toString());
-    if (exists) {
-      return localize('file.move.existMessage');
-    }
     try {
       await this.workspaceEditService.apply({
         edits: [
