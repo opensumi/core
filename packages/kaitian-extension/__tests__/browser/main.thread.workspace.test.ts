@@ -1,5 +1,5 @@
-import { Emitter, IFileServiceClient, URI, Uri, IEventBus, PreferenceScope } from '@ali/ide-core-common';
-import { Injector } from '@ali/common-di';
+import { Emitter, IFileServiceClient, URI, Uri, IEventBus, PreferenceScope, ILoggerManagerClient, FileUri } from '@ali/ide-core-common';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -19,7 +19,6 @@ import { IDocPersistentCacheProvider, ResourceService } from '@ali/ide-editor/li
 import { FileServiceClient, BrowserFileSystemRegistryImpl } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { FileServicePath, FileStat, FileType, IBrowserFileSystemRegistry, IDiskFileProvider } from '@ali/ide-file-service';
 import { FileService, FileSystemNodeOptions } from '@ali/ide-file-service/lib/node';
-import { ExtensionStorageServerPath } from '@ali/ide-extension-storage';
 import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/browser';
 import { ExtensionService } from '@ali/ide-kaitian-extension';
 import { ExtensionServiceImpl } from '@ali/ide-kaitian-extension/lib/browser/extension.service';
@@ -50,6 +49,8 @@ import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file
 import { decode } from '@ali/ide-file-service/lib/node/encoding';
 import { MainThreadFileSystem } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.file-system';
 import { ExtHostFileSystemEvent } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.file-system-event';
+import { MockLoggerManagerClient } from '../__mock__/loggermanager';
+import temp = require('temp');
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -86,7 +87,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
   let extHostDocs: ExtensionDocumentDataManagerImpl;
   let eventBus: IEventBus;
 
-  const injector = createBrowserInjector([ExtensionStorageModule], new Injector([
+  const injector = createBrowserInjector([ExtensionStorageModule], new MockInjector([
     {
       token: IWorkspaceService,
       useClass: MockWorkspaceService,
@@ -110,6 +111,10 @@ describe('MainThreadWorkspace API Test Suite', () => {
     {
       token: IEditorDocumentModelContentRegistry,
       useClass: EditorDocumentModelContentRegistryImpl,
+    },
+    {
+      token: ILoggerManagerClient,
+      useClass: MockLoggerManagerClient,
     },
     {
       token: IEditorDocumentModelService,
@@ -159,17 +164,6 @@ describe('MainThreadWorkspace API Test Suite', () => {
       useClass: PreferenceServiceImpl,
     },
     {
-      token: ExtensionStorageServerPath,
-      useValue: {
-        getAll() {
-
-        },
-        init() {
-          return Promise.resolve();
-        },
-      } ,
-    },
-    {
       token: IFileServiceClient,
       useClass: FileServiceClient,
     },
@@ -185,8 +179,12 @@ describe('MainThreadWorkspace API Test Suite', () => {
   injectMockPreferences(injector);
   useMockStorage(injector);
   beforeAll(async (done) => {
+    const root = FileUri.create(fs.realpathSync(temp.mkdirSync('extension-storage-test')));
     const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
     fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
+    injector.mock(ILoggerManagerClient, 'getLogFolder', () => {
+      return root.withoutScheme().toString();
+    });
     const extHostMessage = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocolExt));
     extHostDocs = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostDocuments, injector.get(ExtensionDocumentDataManagerImpl, [rpcProtocolExt]));
     const extWorkspace = new ExtHostWorkspace(rpcProtocolExt, extHostMessage, extHostDocs);

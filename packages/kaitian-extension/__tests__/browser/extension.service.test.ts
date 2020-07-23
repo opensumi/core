@@ -9,7 +9,7 @@ import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.
 import { IThemeService, IIconService, getColorRegistry } from '@ali/ide-theme/lib/common';
 import { IconService } from '@ali/ide-theme/lib/browser';
 import { DatabaseStorageContribution } from '@ali/ide-storage/lib/browser/storage.contribution';
-import { WorkspaceStorageServerPath, GlobalStorageServerPath } from '@ali/ide-storage';
+import { IWorkspaceStorageServer, IGlobalStorageServer } from '@ali/ide-storage';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
@@ -259,7 +259,7 @@ describe('Extension service', () => {
         useClass: MockContextKeyService,
       },
       {
-        token: WorkspaceStorageServerPath,
+        token: IWorkspaceStorageServer,
         useValue: {
           getItems(key) {
             return JSON.stringify({ language: 'zh_CN' });
@@ -281,7 +281,7 @@ describe('Extension service', () => {
         },
       },
       {
-        token: GlobalStorageServerPath,
+        token: IGlobalStorageServer,
         useValue: {
           getItems(key) {
             return JSON.stringify({ language: 'zh_CN' });

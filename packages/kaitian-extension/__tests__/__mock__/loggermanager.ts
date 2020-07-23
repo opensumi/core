@@ -11,4 +11,6 @@ export class MockLoggerManagerClient {
       warn() {},
     };
   }
+
+  getLogFolder = () => '';
 }

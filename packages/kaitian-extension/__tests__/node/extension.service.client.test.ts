@@ -112,9 +112,10 @@ describe('Extension Client Serivce', () => {
       const version = '1.37.1';
       const lpPath = path.join(os.homedir(), '.kaitian', 'workspace-storage', 'languagepacks.json');
       // make sure the workspace-storage path is exist
-
+      const extensionStorageServer = injector.get(IExtensionStoragePathServer);
       const targetPath = path.join(extensionDir, `${publisher}.${name}-${version}`);
-      await extensionNodeClient.updateLanguagePack('zh-CN', targetPath);
+      const storagePath = await extensionStorageServer.getLastStoragePath() || '';
+      await extensionNodeClient.updateLanguagePack('zh-CN', targetPath, storagePath);
       expect(fs.existsSync(lpPath));
       // const content = fs.readFileSync(lpPath, { encoding: 'utf8' });
 
