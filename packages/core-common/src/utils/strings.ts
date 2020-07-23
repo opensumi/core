@@ -8,10 +8,14 @@ export const empty = '';
 const hasTextEncoder = (typeof TextEncoder !== 'undefined');
 const hasTextDecoder = (typeof TextDecoder !== 'undefined');
 
+/**
+ * 浏览器全局可以直接使用 TextEncoder/TextDecoder
+ * Node.js 11+ 才可以全局使用，以下需要 require('util')
+ */
 export namespace stringUtils {
-  export const TextEncoder = hasTextEncoder ? globalThis.TextEncoder : require('util').TextEncoder;
+  export const StringTextEncoder = hasTextEncoder ? TextEncoder : require('util').TextEncoder;
 
-  export const TextDecoder = hasTextDecoder ? globalThis.TextDecoder : require('util').TextDecoder;
+  export const StringTextDecoder = hasTextDecoder ? TextDecoder : require('util').TextDecoder;
 }
 
 export function isFalsyOrWhitespace(str: string | undefined): boolean {

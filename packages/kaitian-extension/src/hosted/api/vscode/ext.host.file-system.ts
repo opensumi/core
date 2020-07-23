@@ -11,12 +11,12 @@ import {
   IDisposable,
   Schemas,
   toDisposable,
+  stringUtils,
 } from '@ali/ide-core-common';
 import {
   MainThreadAPIIdentifier,
 } from '../../../common/vscode';
 import * as files from '../../../common/vscode/file-system';
-import { stringUtils } from '@ali/ide-core-common/lib/utils/strings';
 import { UriComponents } from '../../../common/vscode/ext-types';
 
 export function convertToVSCFileStat(stat: FileStat): vscode.FileStat {
@@ -42,10 +42,10 @@ class ConsumerFileSystem implements vscode.FileSystem {
     return this._proxy.$mkdir(uri).catch(ConsumerFileSystem._handleError);
   }
   async readFile(uri: vscode.Uri): Promise<Uint8Array> {
-    return this._proxy.$readFile(uri).then((content) => new stringUtils.TextEncoder().encode(content)).catch(ConsumerFileSystem._handleError);
+    return this._proxy.$readFile(uri).then((content) => new stringUtils.StringTextEncoder().encode(content)).catch(ConsumerFileSystem._handleError);
   }
   writeFile(uri: vscode.Uri, content: Uint8Array): Promise<void> {
-    return this._proxy.$writeFile(uri, new stringUtils.TextDecoder().decode(content)).catch(ConsumerFileSystem._handleError);
+    return this._proxy.$writeFile(uri, new stringUtils.StringTextDecoder().decode(content)).catch(ConsumerFileSystem._handleError);
   }
   delete(uri: vscode.Uri, options?: { recursive?: boolean; useTrash?: boolean; }): Promise<void> {
     return this._proxy.$delete(uri, { ...{ recursive: false, useTrash: false }, ...options }).catch(ConsumerFileSystem._handleError);
@@ -177,11 +177,11 @@ export class ExtHostFileSystem implements files.IExtHostFileSystemShape {
   }
 
   $readFile(handle: number, resource: UriComponents): Promise<string> {
-    return Promise.resolve(this._getFsProvider(handle).readFile(URI.revive(resource))).then((data) => new stringUtils.TextDecoder().decode(data));
+    return Promise.resolve(this._getFsProvider(handle).readFile(URI.revive(resource))).then((data) => new stringUtils.StringTextDecoder().decode(data));
   }
 
   $writeFile(handle: number, resource: UriComponents, content: string, opts: files.FileWriteOptions): Promise<void> {
-    return Promise.resolve(this._getFsProvider(handle).writeFile(URI.revive(resource), new stringUtils.TextEncoder().encode(content), opts));
+    return Promise.resolve(this._getFsProvider(handle).writeFile(URI.revive(resource), new stringUtils.StringTextEncoder().encode(content), opts));
   }
 
   $delete(handle: number, resource: UriComponents, opts: files.FileDeleteOptions): Promise<void> {
