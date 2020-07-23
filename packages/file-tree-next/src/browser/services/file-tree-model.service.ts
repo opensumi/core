@@ -697,11 +697,16 @@ export class FileTreeModelService {
         return;
       }
     }
+
+    for (const uri of uris) {
+      const effectNode = this.fileTreeService.getNodeByPathOrUri(uri);
+      this.loadingDecoration.addTarget(effectNode!);
+    }
+    // 通知视图更新
+    this.treeModel.dispatchChange();
     // 移除文件
     uris.forEach(async (uri: URI) => {
-      if (await this.deleteFile(uri)) {
-        await this.fileTreeService.deleteAffectedNodes([uri]);
-      }
+      await this.deleteFile(uri);
     });
   }
 
@@ -735,6 +740,7 @@ export class FileTreeModelService {
       // 说明是异常情况或子路径删除
       this.fileTreeService.refresh((effectNode as File).parent as Directory);
     }
+    this.loadingDecoration.removeTarget(effectNode!);
     return true;
   }
 
