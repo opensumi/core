@@ -13,6 +13,7 @@ import { getIcon } from '@ali/ide-core-browser';
 import { Button } from '@ali/ide-components';
 import Menu from 'antd/lib/menu';
 import { Tabs } from '@ali/ide-components';
+import { ExtensionList } from './components/extension-list';
 import 'antd/lib/menu/style/index.css';
 
 const tabMap = [
@@ -24,6 +25,10 @@ const tabMap = [
     key: 'changelog',
     label: localize('marketplace.extension.changelog'),
   },
+  {
+    key: 'dependencies',
+    label: localize('marketplace.extension.dependencies'),
+  },
 ];
 
 export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) => {
@@ -33,6 +38,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const [currentExtension, setCurrentExtension] = React.useState<ExtensionDetail | null>(null);
   const [latestExtension, setLatestExtension] = React.useState<ExtensionDetail | null>(null);
   const [updated, setUpdated] = React.useState(false);
+  const [dependencies, setDependencies] = React.useState<ExtensionDetail[]>([]);
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
   const dialogService = useInjectable<IDialogService>(IDialogService);
   const messageService = useInjectable<IMessageService>(IMessageService);
@@ -111,6 +117,14 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
     }
   }
 
+  async function getExtDetail(id: string, version: string): Promise<ExtensionDetail | void> {
+    // 已安装的读本地
+    return getInstalledIds().includes(id) ? await extensionManagerService.getDetailById(id) : await extensionManagerService.getDetailFromMarketplace(id, version);
+  }
+
+  const getUseEnabledIds = React.useCallback(() => extensionManagerService.useEnabledIds, []);
+  const getInstalledIds = React.useCallback(() => extensionManagerService.installedIds, []);
+
   const canUpdate = React.useMemo(() => {
     // 内置插件不应该升级
     if (currentExtension && currentExtension.isBuiltin) {
@@ -138,6 +152,44 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
     }
   }, [canUpdate, latestExtension]);
 
+  const saveDependencies = React.useCallback(async () => {
+
+    if (!currentExtension) {
+      setDependencies([]);
+      return;
+    }
+
+    const hasPackageJSON = !!currentExtension?.packageJSON;
+
+    // 已安装的插件本地有 package.json 优先从本地读取依赖，未安装的插件从 marketplace 读取依赖
+    const rawDependencies = (
+      hasPackageJSON
+        ? currentExtension?.packageJSON?.extensionDependencies
+        : await extensionManagerService.getExtDeps(currentExtension?.extensionId as string, currentExtension?.version)
+    ) || [];
+
+    const result: ExtensionDetail[] = await Promise.all(rawDependencies.map((dep) => {
+      // ['vscode.vim', 'vscode.eslint'] or [{ 'vscode.vim': '^1.0.0' }, { 'vscode.eslint': '1.9.x' }]
+      const id = typeof dep === 'string' ? dep : Object.keys(dep)[0];
+      const version = typeof dep === 'string' ? '*' : dep[id];
+
+      return getExtDetail(id, version);
+    }));
+
+    setDependencies(result || []);
+  }, [currentExtension]);
+
+  React.useEffect(() => {
+    saveDependencies();
+  }, [currentExtension, getUseEnabledIds().length, getInstalledIds().length]);
+
+  const tabs = React.useMemo(() => {
+    const hasDeps = dependencies.length > 0;
+
+    const filterTabs = hasDeps ? [] : ['dependencies'];
+
+    return tabMap.filter((tab) => !filterTabs.includes(tab.key));
+  }, [dependencies]);
   // https://yuque.antfin-inc.com/cloud-ide/za8zpk/kpwylo#RvfMV
   const menu = (
     extension && (<Menu className='kt-menu'>
@@ -191,14 +243,19 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
           className={styles.tabs}
           value={tabIndex}
           onChange={(index: number) => setTabIndex(index)}
-          tabs={tabMap.map((tab) => tab.label)}
+          tabs={tabs.map((tab) => tab.label)}
         />
         <div className={styles.content}>
-          {tabMap[tabIndex].key === 'readme' && (
+          {tabs[tabIndex].key === 'readme' && (
             <Markdown content={currentExtension.readme ? currentExtension.readme : `# ${currentExtension.displayName}\n${currentExtension.description}`} />
           )}
-          {tabMap[tabIndex].key === 'changelog' && (
+          {tabs[tabIndex].key === 'changelog' && (
             <Markdown content={currentExtension.changelog ? currentExtension.changelog : 'no changelog'} />
+          )}
+          {tabs[tabIndex].key === 'dependencies' && (
+            <ExtensionList
+              list={dependencies}
+            />
           )}
         </div>
       </div>)}

@@ -226,6 +226,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     return Array.from(this.extensionMap.values());
   }
 
+  public getExtensionByExtId(extensionId: string) {
+    return this.getExtensions().find((ext) => extensionId === ext.extensionId);
+  }
+
   public async activateExtensionByExtPath(path: string) {
     const extension = this.extensionMap.get(path);
     if (extension) {
@@ -1076,6 +1080,34 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     if (msg === okText) {
       this.clientApp.fireOnReload();
     }
+  }
+
+  public async getDependedExtMap(): Promise<Map<string, string[]>> {
+    const depended = new Map();
+    const extensionProps = await this.getAllExtensionJson();
+    extensionProps.forEach((prop) => {
+      prop?.packageJSON?.extensionDependencies?.forEach((dep) => {
+        const depId = typeof dep === 'string' ? dep : Object.keys(dep)[0];
+        depended.set(depId,
+          depended.has(depId) ? [...depended.get(depId), prop.extensionId] : [prop.extensionId],
+          );
+      });
+    });
+    return depended;
+  }
+
+  public async getDependenciesExtMap(): Promise<Map<string, string[]>> {
+    const denpencies = new Map();
+    const extensionProps = await this.getAllExtensionJson();
+    extensionProps.forEach((prop) => {
+      prop?.packageJSON.extensionDependencies?.forEach((dep) => {
+        const depId = typeof dep === 'string' ? dep : Object.keys(dep)[0];
+        denpencies.set(prop.extensionId,
+          denpencies.has(prop.extensionId) ? [...denpencies.get(prop.extensionId), depId] : [depId],
+        );
+      });
+    });
+    return denpencies;
   }
 
   public async processCrashRestart(clientId: string) {

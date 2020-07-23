@@ -1,6 +1,6 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, SearchExtension, RequestHeaders, BaseExtension, ExtensionMomentState, OpenExtensionOptions, ExtensionChangeEvent, ExtensionChangeType } from '../common';
-import { ExtensionService, IExtensionProps, EXTENSION_ENABLE } from '@ali/ide-kaitian-extension/lib/common';
+import { ExtensionService, IExtensionProps, EXTENSION_ENABLE, ExtensionDependencies } from '@ali/ide-kaitian-extension/lib/common';
 import { action, observable, computed, runInAction } from 'mobx';
 import { Path } from '@ali/ide-core-common/lib/path';
 import * as compareVersions from 'compare-versions';
@@ -222,13 +222,105 @@ export class ExtensionManagerService implements IExtensionManagerService {
   }
 
   /**
+   * 通过 extId 获取插件
+   * @param extensionId
+   */
+
+  private getExtension(extensionId): IExtension | void {
+    return this.extensions.find((extension) => extension.extensionId === extensionId);
+  }
+
+  /**
+   * 获取这个插件的所有依赖
+   * @param extensionId
+   * @param version
+   * dependencies: (string | { [key: string]: string })[]
+   */
+  async getExtDeps(extensionId, version?): Promise<ExtensionDependencies> {
+    try {
+      const res = await this.extensionManagerServer.getExtensionDeps(extensionId, version);
+      return res?.data?.dependencies || [];
+    } catch (e) {
+      this.logger.error(e);
+      return [];
+    }
+  }
+
+  /**
+   * 获取 publisher.name 格式的 extensionId
+   * @param extension
+   */
+
+  public getExtensionId(extension: BaseExtension): string {
+    const isPublisherDotName = (extensionId) => /^\w+\.\w+$/.test(extensionId);
+
+    return isPublisherDotName(extension?.extensionId)
+      ? extension.extensionId
+      : `${extension.publisher}.${extension.name}`;
+  }
+
+  /**
+   * 安装插件，同时安装依赖插件
+   * @param extension 插件基础信息
+   * @param version 指定版本
+   */
+  async installExtension(extension: BaseExtension, version?: string): Promise<string | void> {
+    const extensionId = extension.extensionId || `${extension.publisher}.${extension.name}`;
+
+    // 先安装依赖插件，最后装自己，loading 效果先放出来，避免被误解为卡死
+    this.extensionMomentState.set(extensionId, {
+      isInstalling: true,
+    });
+
+    try {
+      const deps = await this.getExtDeps(extension.extensionId, version || extension.version);
+      for (const dep of deps) {
+        let depVersion = '*';
+        let depId = dep;
+        if (!(typeof dep === 'string')) {
+          depId = Object.keys(dep)[0];
+          depVersion = dep[depId];
+        }
+
+        // 如果这个扩展已被安装，则跳过
+        if (this.installedIds.includes(depId as string)) {
+          continue;
+        }
+        const subExtensionRes = await this.extensionManagerServer.getExtensionFromMarketPlace(depId as string, depVersion);
+
+        const subExt = subExtensionRes?.data as BaseExtension;
+        // 安装依赖
+        await this.installExtensionSingle({
+            name: subExt?.name,
+            version: subExt?.version,
+            publisher: subExt?.publisher,
+            extensionId: this.getExtensionId(subExt),
+
+            // 依赖插件的 builtin 与父亲保持一致
+            isBuiltin: extension.isBuiltin,
+            path: '',
+          }, subExt?.version);
+      }
+      // 最后安装自己
+      const targetExtensionPath = await this.installExtensionSingle(extension, version);
+      return targetExtensionPath;
+    } catch (e) {
+      this.extensionMomentState.set(extensionId, {
+        isInstalling: false,
+      });
+      this.messageService.error(e.message);
+    }
+  }
+
+  /**
    * 安装插件
    * @param extension 插件基础信息
    * @param version 指定版本
    */
-  async installExtension(extension: BaseExtension, version?: string): Promise<string> {
+  async installExtensionSingle(extension: BaseExtension, version?: string): Promise<string> {
     const extensionId = extension.extensionId || `${extension.publisher}.${extension.name}`;
     const isBuiltin = !!extension.isBuiltin;
+
     this.extensionMomentState.set(extensionId, {
       isInstalling: true,
     });
@@ -254,7 +346,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
         extensionPath: path,
         isBuiltin,
       });
-      const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
+      const extension = this.getExtension(extensionId);
       // 如果有这个插件，直接置为这个插件已安装
       if (extension) {
         extension.installed = true;
@@ -274,7 +366,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
     } else {
       runInAction(() => {
-        const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
+        const extension = this.getExtension(extensionId);
         if (extension) {
           extension.reloadRequire = reloadRequire;
           extension.installed = true;
@@ -355,7 +447,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
     // 可能更新过程中加载了之前的插件，所以等待更新完毕后再去检测
     const reloadRequire = await this.computeReloadState(extension.path);
     runInAction(() => {
-      const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
+      const extension = this.getExtension(extensionId);
       if (extension) {
         extension.packageJSON.version = version;
         extension.isUseEnable = true;
@@ -507,9 +599,73 @@ export class ExtensionManagerService implements IExtensionManagerService {
     return this.rawExtension.find((extension) => this.equalExtensionId(extension, extensionId));
   }
 
+  /**
+   * 获取所有是依赖项并且当前是激活状态的扩展
+   * A 是 B 的依赖，A 当前被激活
+   * C 是 D 的依赖，D 当前没被激活
+   * E 并非别人的依赖，E 当前被激活
+   *
+   * 则 return 的结果为 A - B
+   *
+   */
+  public async getEnabledDeps(): Promise<Map<string, string[]>> {
+    const activeExtsDeps = new Map();
+    for (const installId of this.installedIds) {
+      const detail = this.getRawExtensionById(installId);
+      if (detail && detail.enable) {
+        const extProp = await this.extensionService.getExtensionProps(detail.path);
+        extProp?.packageJSON?.extensionDependencies?.forEach((dep) => {
+          const depId = typeof dep === 'string' ? dep : Object.keys(dep)[0];
+          // key 插件，value：被哪个插件依赖
+          activeExtsDeps.set(depId, extProp.extensionId);
+        });
+      }
+    }
+    return activeExtsDeps;
+  }
+
+  /**
+   * 如果 A 是 B 的依赖扩展，激活 B 的时候，应该先激活 A
+   */
+  private async beforeActiveExt(extension: BaseExtension, enable: boolean, scope: EnableScope ) {
+    // TODO fix cycle loop
+    const extensionId = extension.extensionId;
+
+    const allExtsDependedMap = (await this.extensionService.getDependenciesExtMap());
+    const allExtsDependedList = allExtsDependedMap.get(extensionId) || [];
+
+    for (const dependedExtId of allExtsDependedList) {
+      const detail = this.getRawExtensionById(dependedExtId);
+      await this.toggleActiveExtension({
+        extensionId: detail?.extensionId,
+        name: detail?.name,
+        version: detail?.version,
+        path: detail?.path,
+        publisher: detail?.publisher,
+        isBuiltin: !!detail?.isBuiltin,
+      } as BaseExtension , true, scope);
+    }
+  }
+
   @action
   async toggleActiveExtension(extension: BaseExtension, enable: boolean, scope: EnableScope) {
+
     const extensionId = extension.extensionId;
+
+    if (enable) {
+      // 激活当前插件前，先激活当前插件的依赖插件
+      this.beforeActiveExt(extension, enable, scope);
+    } else {
+      // 禁用当前插件前，先检查当前要禁用的扩展如果是被其他已启用的组件所依赖，那么当前插件不应该被禁用
+      const allEnabledDeps = await this.getEnabledDeps();
+      if (Array.from(allEnabledDeps.keys()).includes(extension.extensionId)) {
+        this.messageService.error(
+          formatLocalize('marketplace.extension.disabled.failed.depended', extension.name, allEnabledDeps.get(extension.extensionId)),
+        );
+        return;
+      }
+    }
+
     const reloadRequire = await this.computeReloadState(extension.path);
     await this.setExtensionEnable(extensionId, enable, scope);
     // 如果需要重启，后续操作不进行启用、禁用
@@ -522,7 +678,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
     }
     // 更新插件状态
     runInAction(() => {
-      const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
+      const extension = this.getExtension(extensionId);
       if (extension) {
         extension.isUseEnable = enable;
         extension.reloadRequire = reloadRequire;
@@ -557,12 +713,14 @@ export class ExtensionManagerService implements IExtensionManagerService {
     const extensionDetail = await this.extensionService.getExtensionProps(extension.path, {
       readme: './README.md',
       changelog: './CHANGELOG.md',
+      packageJSON: './package.json',
     });
     if (extensionDetail) {
       return {
         ...extension,
         readme: extensionDetail.extraMetadata.readme,
         changelog: extensionDetail.extraMetadata.changelog,
+        packageJSON: extensionDetail?.packageJSON,
         license: '',
         categories: '',
         repository: extensionDetail.packageJSON.repository ? extensionDetail.packageJSON.repository.url : '',
@@ -577,6 +735,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
   async getDetailFromMarketplace(extensionId: string, version?: string): Promise<ExtensionDetail | undefined> {
     const res = await this.extensionManagerServer.getExtensionFromMarketPlace(extensionId, version);
     if (res && res.data) {
+      // TODO add packageJSON field
+      // @ts-ignore
       return {
         id: `${res.data.publisher}.${res.data.name}`,
         extensionId: `${res.data.publisher}.${res.data.name}`,
@@ -640,6 +800,16 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   @action
   async uninstallExtension(extension: BaseExtension): Promise<boolean> {
+    const dependedExtsMap = await this.extensionService.getDependedExtMap();
+    const dependedExtIds = Array.from(dependedExtsMap.keys());
+    const depended = dependedExtIds.find((depsId) => depsId === extension.extensionId);
+
+    // 如果此插件是其他插件的依赖项，则不给卸载
+    if (depended) {
+        this.messageService.error(formatLocalize('marketplace.extension.uninstall.failed.depended', extension.name, dependedExtsMap.get(extension.extensionId)?.join(',')));
+        return false;
+    }
+
     const extensionPath = extension.path;
     const extensionId = extension.extensionId;
     this.extensionMomentState.set(extension.extensionId, {
@@ -658,7 +828,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
         });
       } else {
         runInAction(() => {
-          const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
+          const extension = this.getExtension(extensionId);
           if (extension) {
             extension.reloadRequire = reloadRequire;
             extension.installed = false;
@@ -684,11 +854,21 @@ export class ExtensionManagerService implements IExtensionManagerService {
   /**
    * 获取所有安装插件 id
    * @readonly
-   * @private
+   * @public
    * @memberof ExtensionManagerService
    */
-  private get installedIds() {
+  public get installedIds() {
     return this.extensions.map((extension) => extension.extensionId);
+  }
+
+  /**
+   * 获取所有 enable 插件
+   * @readonly
+   * @public
+   * @memberof ExtensionManagerService
+   */
+  public get useEnabledIds() {
+    return this.extensions.filter((ext) => ext.isUseEnable).map((ext) => ext.extensionId);
   }
 
   /**

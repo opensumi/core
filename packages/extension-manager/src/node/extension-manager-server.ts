@@ -192,9 +192,32 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
       throw new Error(err.message);
     }
   }
+
+  /**
+   *
+   * @param extensionId
+   * @param version
+   */
   async getExtensionFromMarketPlace(extensionId: string, version?: string) {
     try {
       const res = await this.extensionManagerRequester.request(`extension/${extensionId}${version ? `?version=${version}` : ''}`, {
+        dataType: 'json',
+        timeout: 5000,
+      });
+      if (res.status === 200) {
+        return res.data;
+      } else {
+        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
+      }
+    } catch (err) {
+      this.logger.error(err);
+      throw new Error(err.message);
+    }
+  }
+
+  async getExtensionDeps(extensionId: string, version?: string) {
+    try {
+      const res = await this.extensionManagerRequester.request(`dependencies/${extensionId}${version ? `?version=${version}` : '' }`, {
         dataType: 'json',
         timeout: 5000,
       });

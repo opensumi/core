@@ -9,7 +9,7 @@ import { useInjectable } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 
 interface ExtensionListProps {
-  height: number;
+  height?: number;
   loading?: boolean;
   empty?: React.ReactNode | string;
   onYReachEnd?: () => void;
@@ -50,7 +50,7 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
         <PerfectScrollbar
           onYReachEnd={onYReachEnd}
         >
-          <div style={{ height }}>
+          <div style={{ height: height ?? 'auto' }}>
             {list.map((rawExtension, index) => {
               return (<RawExtensionView className={clx({
                 [styles.selected]: rawExtension.extensionId === selectExtensionId,
