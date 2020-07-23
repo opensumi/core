@@ -50,6 +50,7 @@ import {
   CorePreferences,
   ExtensionActivateEvent,
 } from '@ali/ide-core-browser';
+import { isEmptyObject } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { warning } from '@ali/ide-components/lib/utils/warning';
 import { Extension } from './extension';
@@ -789,11 +790,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       const proxy = await this.getProxy<IExtensionHostService>(ExtHostAPIIdentifier.ExtHostExtensionService);
       await proxy.$activateExtension(extension.id);
     }
-
     const { extendConfig, packageJSON } = extension;
     // 对使用 kaitian.js 的老插件兼容
     // 因为可能存在即用了 kaitian.js 作为入口，又注册了 kaitianContributes 贡献点的插件
-    if (extendConfig) {
+    if (extendConfig && !isEmptyObject(extendConfig)) {
       warning(false, '[Deprecated warning]: kaitian.js is deprecated, please use `package.json#kaitianContributes` instead');
       this.activateExtensionByDeprecatedExtendConfig(extension);
       return;
