@@ -1,5 +1,5 @@
 import { Injector } from '@ali/common-di';
-import { Emitter, CommandRegistry, CommandRegistryImpl } from '@ali/ide-core-common';
+import { Emitter, CommandRegistry, CommandRegistryImpl, ILoggerManagerClient } from '@ali/ide-core-common';
 import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@ali/ide-kaitian-extension/lib/common/vscode';
@@ -8,7 +8,7 @@ import { MainThreadStatusBar } from '@ali/ide-kaitian-extension/lib/browser/vsco
 import { StatusBarAlignment } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
 import { IStatusBarService } from '@ali/ide-status-bar';
 import { StatusBarService } from '@ali/ide-status-bar/lib/browser/status-bar.service';
-
+import { MockLoggerManagerClient } from '../__mock__/loggermanager';
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
 
@@ -33,6 +33,9 @@ describe('MainThreadStatusBar API Test Suites', () => {
   injector.addProviders(...[{
     token: IStatusBarService,
     useClass: StatusBarService,
+  },  {
+    token: ILoggerManagerClient,
+    useClass: MockLoggerManagerClient,
   }, {
     token: CommandRegistry,
     useClass: CommandRegistryImpl,

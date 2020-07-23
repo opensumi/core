@@ -16,7 +16,7 @@ import { IExtensionStorageService } from '@ali/ide-extension-storage';
 import { IContextKeyService, AppConfig } from '@ali/ide-core-browser';
 import { AppConfig as NodeAppConfig } from '@ali/ide-core-node';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
-import { GlobalStorageServerPath } from '@ali/ide-storage';
+import { IGlobalStorageServer } from '@ali/ide-storage';
 import { MainThreadWebview } from '../../src/browser/vscode/api/main.thread.api.webview';
 
 import { MockExtNodeClientService } from '../__mock__/extension.service.client';
@@ -129,7 +129,7 @@ describe('MainThreadExtensions Test Suites', () => {
         },
       },
     }, {
-      token: GlobalStorageServerPath,
+      token: IGlobalStorageServer,
       useValue: {
         getItems() {
           return JSON.stringify({ language: 'zh_CN' });
