@@ -1,8 +1,6 @@
 @import '~@ali/ide-core-browser/lib/style/variable.less';
 
 /* Statusbar */
-@kt-statusbar-color: @kt-accent-color1;
-@kt-statusBar-font-color: @kt-ui-font-color1;
 @kt-statusBar-font-size: 12px;
 
 .statusBar {
@@ -22,12 +20,12 @@
 
 .left {
   justify-content: flex-start;
-  padding-left: calc(@kt-ui-padding*2);
+  padding-left: calc(@kt-ui-spacing*2);
 }
 
 .right {
   justify-content: flex-end;
-  padding-right: calc(@kt-ui-padding*2);
+  padding-right: calc(@kt-ui-spacing*2);
 }
 
 .element {
@@ -48,11 +46,11 @@
 }
 
 .area.left .element {
-  margin-right: @kt-ui-padding;
+  margin-right: @kt-ui-spacing;
 }
 
 .area.right .element {
-  margin-left: @kt-ui-padding;
+  margin-left: @kt-ui-spacing;
 }
 
 // .element {
