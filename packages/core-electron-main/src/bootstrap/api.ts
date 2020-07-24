@@ -51,14 +51,18 @@ export class ElectronMainApiProxy extends Disposable {
           throw new Error(`No Request Handler for ${name}.${method}`);
         }
         const result = await target[method].apply(target, args);
-        event.sender.send('response:' + name, requestId, undefined, result);
+        if (!event.sender.isDestroyed()) {
+          event.sender.send('response:' + name, requestId, undefined, result);
+        }
       } catch (e) {
         getDebugLogger().error(e);
         const err = {
           message: e.message || e.toString(),
           stack: e.stack,
         };
-        event.sender.send('response:' + name, requestId, err);
+        if (!event.sender.isDestroyed()) {
+          event.sender.send('response:' + name, requestId, err);
+        }
       }
     };
     ipcMain.on('request:' + name, requestHandler);
