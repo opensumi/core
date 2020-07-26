@@ -93,6 +93,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
         uri,
         metadata: null,
         deleted: !stat,
+        supportsRevive: true,
       };
     });
   }

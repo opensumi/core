@@ -2,7 +2,7 @@ import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, action, reaction } from 'mobx';
 import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider, Emitter, formatLocalize } from '@ali/ide-core-common';
-import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution, ResourceOpenTypeChangedEvent } from './types';
+import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution, ResourceOpenTypeChangedEvent, EditorComponentDisposeEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { FILE_COMMANDS, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, MonacoService, IScopedContextKeyService, IContextKey, RecentFilesManager, PreferenceService, IOpenerService } from '@ali/ide-core-browser';
@@ -504,6 +504,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if (e.payload.gridId === this.grid.uid) {
         this.doLayoutEditors();
       }
+    });
+    this.eventBus.on(EditorComponentDisposeEvent, (e: EditorComponentDisposeEvent) => {
+      this.activeComponents.delete(e.payload);
+      this.activateComponentsProps.delete(e.payload);
     });
   }
 
@@ -1293,12 +1297,17 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   getState(): IEditorGroupState {
-    // TODO 支持虚拟文档恢复
+    // TODO 此处为了避免 breaking change，仍然保留了对file的额外判断，等业务方不存在自定义file协议scheme后删除
+    // @伊北 cloudIDE 中自定义了 file 的provider
     const allowRecoverSchemes = ['file'];
-    const uris = this.resources.filter((r) => allowRecoverSchemes.indexOf(r.uri.scheme) !== -1 && !r.deleted).map((r) => r.uri.toString());
+    const couldRevive = (r: IResource): boolean => {
+      return !!((r.supportsRevive || allowRecoverSchemes.indexOf(r.uri.scheme) !== -1) && !r.deleted);
+    };
+
+    const uris = this.resources.filter(couldRevive).map((r) => r.uri.toString());
     return {
       uris,
-      current: this.currentResource && allowRecoverSchemes.indexOf(this.currentResource.uri.scheme) !== -1 ? this.currentResource.uri.toString() : undefined,
+      current: this.currentResource && couldRevive(this.currentResource) ? this.currentResource.uri.toString() : undefined,
       previewIndex: this.previewURI ? uris.indexOf(this.previewURI.toString()) : -1,
     };
   }

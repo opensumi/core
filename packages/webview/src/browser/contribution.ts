@@ -24,8 +24,15 @@ export class WebviewModuleContribution implements BrowserEditorContribution, Com
   registerResource(resourceService: ResourceService) {
     resourceService.registerResourceProvider({
       scheme: EDITOR_WEBVIEW_SCHEME,
-      provideResource: (uri: URI): IResource<IEditorWebviewMetaData> => {
-        return this.webviewService.editorWebviewComponents.get(uri.path.toString())!.resource;
+      provideResource: async (uri: URI): Promise<IResource<IEditorWebviewMetaData>> => {
+        const existingComponent = this.webviewService.editorWebviewComponents.get(uri.path.toString());
+        if (existingComponent) {
+          return existingComponent.resource;
+        } else {
+          // try revive, 如果无法恢复，会抛错
+          await this.webviewService.tryRestoredWebviewComponent(uri.path.toString());
+          return this.webviewService.editorWebviewComponents.get(uri.path.toString())!.resource;
+        }
       },
       shouldCloseResource: (resource: IResource<IEditorWebviewMetaData>, openedResources: IResource[][]) => {
         let count = 0;

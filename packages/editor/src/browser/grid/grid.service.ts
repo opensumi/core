@@ -114,11 +114,12 @@ export class EditorGrid implements IDisposable {
 
   serialize(): IEditorGridState | null {
     if (this.editorGroup) {
-      if (this.parent && this.editorGroup.resources.filter((r) => r.uri.scheme === 'file').length === 0) {
+      const editorGroupState = this.editorGroup.getState();
+      if (this.parent && editorGroupState.uris.length === 0) {
         return null;
       }
       return {
-        editorGroup: this.editorGroup.getState(),
+        editorGroup: editorGroupState,
       };
     } else {
       if (this.parent && this.children.length === 0) {
