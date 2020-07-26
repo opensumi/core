@@ -120,7 +120,10 @@ export class TextmateService extends WithEventBus {
       firstLine: language.firstLine,
       mimetypes: language.mimetypes,
     });
-    if (language.configuration) {
+    let configuration: ILanguageConfiguration | undefined;
+    if (typeof language.resolvedConfiguration === 'object') {
+      configuration = language.resolvedConfiguration;
+    } else if (language.configuration) {
       // remove `./` prefix
       const langPath = language.configuration.replace(/^\.\//, '');
       // http 的不作支持
@@ -128,23 +131,31 @@ export class TextmateService extends WithEventBus {
       const ret = await this.fileServiceClient.resolveContent(configurationPath.toString());
       const content = ret.content;
       if (content) {
-        const configuration = this.safeParseJSON(content);
-        monaco.languages.setLanguageConfiguration(language.id, {
-          wordPattern: this.createRegex(configuration.wordPattern),
-          autoClosingPairs: this.extractValidAutoClosingPairs(language.id, configuration),
-          brackets: this.extractValidBrackets(language.id, configuration),
-          comments: this.extractValidCommentRule(language.id, configuration),
-          folding: this.convertFolding(configuration.folding),
-          surroundingPairs: this.extractValidSurroundingPairs(language.id, configuration),
-          indentationRules: this.convertIndentationRules(configuration.indentationRules),
-        });
-
-        monaco.languages.onLanguage(language.id, () => {
-          this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onLanguage', data: language.id }));
-          this.activateLanguage(language.id);
-        });
+        const jsonContent = this.safeParseJSON<ILanguageConfiguration>(content);
+        if (jsonContent) {
+          configuration = jsonContent;
+        }
       }
     }
+
+    if (configuration) {
+      // FIXME: type for wordPattern/indentationRules @寻壑
+      monaco.languages.setLanguageConfiguration(language.id, {
+        wordPattern: this.createRegex(configuration.wordPattern as string),
+        autoClosingPairs: this.extractValidAutoClosingPairs(language.id, configuration),
+        brackets: this.extractValidBrackets(language.id, configuration),
+        comments: this.extractValidCommentRule(language.id, configuration),
+        folding: this.convertFolding(configuration.folding),
+        surroundingPairs: this.extractValidSurroundingPairs(language.id, configuration),
+        indentationRules: this.convertIndentationRules(configuration.indentationRules as any),
+      });
+
+      monaco.languages.onLanguage(language.id, () => {
+        this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onLanguage', data: language.id }));
+        this.activateLanguage(language.id);
+      });
+    }
+
     if (this.initialized) {
       const modelService = monaco.services.StaticServices.modelService.get();
       const uris = this.editorService.getAllOpenedUris();
@@ -186,6 +197,7 @@ export class TextmateService extends WithEventBus {
         return {
           format: /\.json$/.test(grammar.path) ? 'json' : 'plist',
           location: grammar.location!,
+          content: grammar.resolvedConfiguration,
         };
       },
       getInjections: (scopeName: string) => {
@@ -266,13 +278,14 @@ export class TextmateService extends WithEventBus {
     return undefined;
   }
 
-  private safeParseJSON(content) {
+  private safeParseJSON<T = any>(content): T | undefined {
     let json;
     try {
       json = parseWithComments(content);
       return json;
     } catch (error) {
-      return this.logger.error('语言配置文件解析出错！', content);
+      this.logger.error('语言配置文件解析出错！', content);
+      return;
     }
   }
 
@@ -504,13 +517,18 @@ export class TextmateService extends WithEventBus {
         const provider = this.textmateRegistry.getProvider(scopeName);
         if (provider) {
           const definition = await provider.getGrammarDefinition();
-          const ret = await this.fileServiceClient.resolveContent(definition.location.toString());
-          const content = ret.content;
-          definition.content = definition.format === 'json' ? this.safeParseJSON(content) : content;
+          if (!definition.content) {
+            const ret = await this.fileServiceClient.resolveContent(definition.location.toString());
+            const content = ret.content;
+            definition.content = definition.format === 'json' ? this.safeParseJSON(content) : content;
+          }
+
           let rawGrammar: IRawGrammar;
           if (typeof definition.content === 'string') {
             rawGrammar = parseRawGrammar(
-              definition.content, definition.format === 'json' ? 'grammar.json' : 'grammar.plist');
+              definition.content,
+              definition.format === 'json' ? 'grammar.json' : 'grammar.plist',
+            );
           } else {
             rawGrammar = definition.content as IRawGrammar;
           }
