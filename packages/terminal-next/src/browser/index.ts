@@ -14,8 +14,10 @@ import {
   ITerminalInternalService,
   TerminalOptions,
   IWidget,
-  ITerminalPreference,
 } from '../common';
+import {
+  ITerminalPreference,
+} from '../common/preference';
 import {
   TerminalCommandContribution,
   TerminalMenuContribution,
