@@ -163,7 +163,7 @@ export class KeyCode {
   }
 
   /**
-   * Create a KeyCode from one of several input types.
+   * 转化多种类型值为KeyCode
    */
   public static createKeyCode(input: KeyboardEvent | Keystroke | KeyCodeSchema | string): KeyCode {
     if (typeof input === 'string') {

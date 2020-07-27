@@ -19,7 +19,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
     validateKeybinding,
     detectKeybindings,
     setKeybinding,
-    removeKeybinding,
+    resetKeybinding,
     getRaw,
     getScope,
     covert,
@@ -129,7 +129,11 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       }
       const reset = (event) => {
         event.preventDefault();
-        removeKeybinding(data);
+        resetKeybinding({
+          command: getRaw(id),
+          when: getRaw(when) || '',
+          keybinding: value,
+        });
       };
       // 重置快捷键作用域
       if (source && getRaw(source) === getScope(KeybindingScope.USER)) {

@@ -111,8 +111,8 @@ export interface KeybindingContribution {
 export const KeybindingRegistry = Symbol('KeybindingRegistry');
 export interface KeybindingRegistry {
   onStart(): Promise<any>;
-  registerKeybinding(binding: Keybinding): IDisposable;
-  registerKeybindings(...bindings: Keybinding[]): IDisposable;
+  registerKeybinding(binding: Keybinding, scope?: KeybindingScope): IDisposable;
+  registerKeybindings(bindings: Keybinding[], scope?: KeybindingScope): IDisposable;
   unregisterKeybinding(keyOrBinding: Keybinding | string, scope?: KeybindingScope): void;
   resolveKeybinding(binding: ResolvedKeybinding): KeyCode[];
   containsKeybinding(bindings: Keybinding[], binding: Keybinding): boolean;
@@ -128,7 +128,6 @@ export interface KeybindingRegistry {
   getScopedKeybindingsForCommand(scope: KeybindingScope, commandId: string): Keybinding[];
   isEnabled(binding: Keybinding, event: KeyboardEvent): boolean;
   isPseudoCommand(commandId: string): boolean;
-  setKeymap(scope: KeybindingScope, bindings: Keybinding[]): IDisposable;
   resetKeybindings(): void;
   onKeybindingsChanged: Event<{ affectsCommands: string[] }>;
 }
@@ -210,19 +209,19 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   }
 
   /**
-   * 注册默认 Keybinding
+   * 注册默认 Keybinding, 支持指定作用域
    * @param binding
    */
-  public registerKeybinding(binding: Keybinding): IDisposable {
-    return this.doRegisterKeybinding(binding, KeybindingScope.DEFAULT);
+  public registerKeybinding(binding: Keybinding, scope: KeybindingScope = KeybindingScope.DEFAULT): IDisposable {
+    return this.doRegisterKeybinding(binding, scope);
   }
 
   /**
-   * 注册默认 Keybindings
+   * 注册默认 Keybindings, 支持指定作用域
    * @param bindings
    */
-  public registerKeybindings(...bindings: Keybinding[]): IDisposable {
-    return this.doRegisterKeybindings(bindings, KeybindingScope.DEFAULT);
+  public registerKeybindings(bindings: Keybinding[], scope: KeybindingScope = KeybindingScope.DEFAULT): IDisposable {
+    return this.doRegisterKeybindings(bindings, scope);
   }
 
   /**
@@ -235,14 +234,32 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   public unregisterKeybinding(keyOrBinding: Keybinding | string, scope: KeybindingScope = KeybindingScope.DEFAULT): void {
     const key = Keybinding.is(keyOrBinding) ? keyOrBinding.keybinding : keyOrBinding;
     const keymap = this.keymaps[scope];
-    const bindings = keymap.filter((el) => el.keybinding === key);
-
+    let bindings;
+    // 当传入的keybinding存在when条件时，严格匹配
+    if (Keybinding.is(keyOrBinding) && !!keyOrBinding.when) {
+      bindings = keymap.filter((el) => this.isKeybindingEqual(el.keybinding, keyOrBinding.keybinding) && el.when === keyOrBinding.when);
+    } else {
+      bindings = keymap.filter((el) => this.isKeybindingEqual(el.keybinding, key));
+    }
     bindings.forEach((binding) => {
       const idx = keymap.indexOf(binding);
       if (idx >= 0) {
         keymap.splice(idx, 1);
       }
     });
+  }
+
+  // 判断两个快捷键是否相等
+  // 如 ⌘ 默认等价于 cmd， ctrlcmd
+  private isKeybindingEqual(preKeybinding: string, nextKeybinding: string) {
+    return this.acceleratorForSequenceKeyString(preKeybinding) === this.acceleratorForSequenceKeyString(nextKeybinding);
+  }
+
+  // 解析快捷键字符串为统一的结果
+  private acceleratorForSequenceKeyString(key: string) {
+    const keyCodeStrings  = key.split(' ');
+    const keySequence: KeySequence = keyCodeStrings.map((key) => KeyCode.parse(key));
+    return this.acceleratorForSequence(keySequence, '+').join(' ');
   }
 
   /**
@@ -653,15 +670,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    */
   public isPseudoCommand(commandId: string): boolean {
     return commandId === KeybindingRegistryImpl.PASSTHROUGH_PSEUDO_COMMAND;
-  }
-
-  /**
-   * 在特定Scope下重新注册值绑定
-   * @param scope
-   * @param bindings
-   */
-  public setKeymap(scope: KeybindingScope, bindings: Keybinding[]): IDisposable {
-    return this.doRegisterKeybindings(bindings, scope);
   }
 
   /**
