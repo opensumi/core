@@ -5,7 +5,6 @@ import { LiteDocumentDataManager, SimpleLanguageService } from '../modules/simpl
 import { SCMRawFileServiceContribution } from '../modules/static-resource/scm-raw';
 
 import { LanguageServiceContribution } from './language-service.contribution';
-import { LanguageGrammarContribution } from './language-grammar.contribution';
 import { ViewContribution } from './view.contribution';
 import { SCMContribution } from './scm.contribution';
 import { FSProviderContribution, KtExtFsProviderContribution } from './fs.contribution';
@@ -22,7 +21,6 @@ export class SimpleModule extends BrowserModule {
     SCMRawFileServiceContribution,
     SCMContribution,
     ViewContribution,
-    LanguageGrammarContribution,
   ].concat(process.env.LSIF_HOST ? LanguageServiceContribution : (null as any))
    .filter(Boolean);
 }
