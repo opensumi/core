@@ -143,7 +143,11 @@ export class TerminalCommandContribution implements CommandContribution {
       iconClass: getIcon('clear'),
     }, {
       execute: () => {
-        this.terminalController.clearCurrentGroup();
+        const current = this.view.currentWidgetId;
+        const client = this.terminalController.findClientFromWidgetId(current);
+        if (client) {
+          client.clear();
+        }
       },
     });
 
