@@ -1,18 +1,17 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IWindowsKeyMapping } from 'native-keymap';
-import { isWindows, Emitter } from '@ali/ide-core-common';
+import { isWindows, Emitter, Event } from '@ali/ide-core-common';
 import { NativeKeyboardLayout, KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
 import { KeyCode, Key } from './keys';
 
 export interface KeyboardLayout {
   /**
-   * Mapping of standard US keyboard keys to the actual key codes to use.
-   * See `KeyboardLayoutService.getCharacterIndex` for the index computation.
+   * 映射美国标准键盘值到实际的KeyCode
+   * 对应KeyboardLayoutService.getCharacterIndex中使用
    */
   readonly key2KeyCode: KeyCode[];
   /**
-   * Mapping of KeyboardEvent codes to the characters shown on the user's keyboard
-   * for the respective keys.
+   * 映射键盘事件键值到用户可视化的字符
    */
   readonly code2Character: { [code: string]: string };
 }
@@ -37,7 +36,7 @@ export class KeyboardLayoutService {
 
   protected keyboardLayoutChanged = new Emitter<KeyboardLayout>();
 
-  get onKeyboardLayoutChanged() {
+  get onKeyboardLayoutChanged(): Event<KeyboardLayout> {
     return this.keyboardLayoutChanged.event;
   }
 
@@ -48,9 +47,9 @@ export class KeyboardLayoutService {
   }
 
   /**
-   * Resolve a KeyCode of a keybinding using the current keyboard layout.
-   * If no keyboard layout has been detected or the layout does not contain the
-   * key used in the KeyCode, the KeyCode is returned unchanged.
+   * 使用当前的键盘布局信息解析快捷键 KeyCode
+   * 如果当前没有监测到布局信息或当前布局信息不包含当前 KeyCode，直接返回入参的 KeycCode
+   * @param inCode
    */
   public resolveKeyCode(inCode: KeyCode): KeyCode {
     const layout = this.currentLayout;
@@ -70,8 +69,8 @@ export class KeyboardLayoutService {
   }
 
   /**
-   * Return the character shown on the user's keyboard for the given key.
-   * Use this to determine UI representations of keybindings.
+   * 根据键盘键值返回对应字符串，主要用于UI展示
+   * 如 shift展示为⇧
    */
   public getKeyboardCharacter(key: Key): string {
     const layout = this.currentLayout;
@@ -194,7 +193,7 @@ export class KeyboardLayoutService {
 }
 
 /**
- * Mapping of character values to the corresponding keys on a standard US keyboard layout.
+ * 字符值与标准美国键盘布局上的相应键的映射关系。
  */
 const VALUE_TO_KEY: { [value: string]: { key: Key, shift?: boolean } } = {
   '`': { key: Key.BACKQUOTE },
@@ -301,7 +300,7 @@ const VALUE_TO_KEY: { [value: string]: { key: Key, shift?: boolean } } = {
 };
 
 /**
- * Mapping of Windows Virtual Keys to the corresponding keys on a standard US keyboard layout.
+ * Windows虚拟键与标准美国键盘布局上的相应键的映射关系。
  */
 const VKEY_TO_KEY: { [value: string]: Key } = {
   VK_SHIFT: Key.SHIFT_LEFT,

@@ -29,7 +29,7 @@ import { ClientAppStateService } from '../application/application-state-service'
 
 import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
 
-import { KeybindingContribution, KeybindingService, KeybindingRegistryImpl, KeybindingRegistry, KeybindingContext } from '../keybinding';
+import { KeybindingContribution, KeybindingService, KeybindingRegistryImpl, KeybindingRegistry } from '../keybinding';
 import { BrowserKeyboardLayoutImpl } from '../keyboard';
 
 import { Logger, ILogger } from '../logger';
@@ -64,7 +64,6 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, KeybindingContribution);
   createContributionProvider(injector, NextMenuContribution);
   createContributionProvider(injector, MenuContribution);
-  createContributionProvider(injector, KeybindingContext);
   createContributionProvider(injector, ComponentContribution);
   createContributionProvider(injector, SlotRendererContribution);
   createContributionProvider(injector, PreferenceContribution);

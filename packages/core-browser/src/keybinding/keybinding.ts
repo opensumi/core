@@ -29,7 +29,6 @@ export namespace Keybinding {
     const copy: Keybinding = {
       command: binding.command,
       keybinding: binding.keybinding,
-      context: binding.context,
     };
     return JSON.stringify(copy);
   }
@@ -38,19 +37,6 @@ export namespace Keybinding {
   export function is(arg: Keybinding | any): arg is Keybinding {
     return !!arg && arg === Object(arg) && 'command' in arg && 'keybinding' in arg;
   }
-}
-
-export namespace KeybindingContexts {
-
-  export const NOOP_CONTEXT: KeybindingContext = {
-    id: 'noop.keybinding.context',
-    isEnabled: () => true,
-  };
-
-  export const DEFAULT_CONTEXT: KeybindingContext = {
-    id: 'default.keybinding.context',
-    isEnabled: () => false,
-  };
 }
 
 export namespace KeybindingsResultCollection {
@@ -95,9 +81,6 @@ export interface Keybinding {
   // 快捷键字符串
   keybinding: string;
 
-  // 指定执行快捷键的上下文环境
-  context?: string;
-
   /**
    * https://code.visualstudio.com/docs/getstarted/keybindings#_when-clause-contexts
    */
@@ -123,14 +106,6 @@ export const KeybindingContribution = Symbol('KeybindingContribution');
 
 export interface KeybindingContribution {
   registerKeybindings(keybindings: KeybindingRegistry): void;
-}
-
-export const KeybindingContext = Symbol('KeybindingContext');
-export interface KeybindingContext {
-
-  readonly id: string;
-
-  isEnabled(arg: Keybinding): boolean;
 }
 
 export const KeybindingRegistry = Symbol('KeybindingRegistry');
@@ -183,7 +158,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
 
   // 该伪命令用于让事件冒泡，使事件不被Keybinding消费掉
   public static readonly PASSTHROUGH_PSEUDO_COMMAND = 'passthrough';
-  protected readonly contexts: { [id: string]: KeybindingContext } = {};
   protected readonly keymaps: Keybinding[][] = [...Array(KeybindingScope.length)].map(() => []);
 
   protected keySequence: KeySequence = [];
@@ -198,9 +172,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
 
   @Autowired(KeybindingContribution)
   private readonly keybindingContributionProvider: ContributionProvider<KeybindingContribution>;
-
-  @Autowired(KeybindingContext)
-  private readonly keybindingContextContributionProvider: ContributionProvider<KeybindingContext>;
 
   @Autowired(CommandRegistry)
   protected readonly commandRegistry: CommandRegistry;
@@ -223,10 +194,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
       this.clearResolvedKeybindings();
       // this.keybindingsChanged.fire([]); // TODO 暂时不会改keyboard布局
     });
-    this.registerContext(KeybindingContexts.NOOP_CONTEXT);
-    this.registerContext(KeybindingContexts.DEFAULT_CONTEXT);
-    // 获取所有模块中注册的KeybindingContext进行注册
-    this.registerContext(...this.keybindingContextContributionProvider.getContributions());
     // 从模块中获取的KeybindingContribution
     for (const contribution of this.keybindingContributionProvider.getContributions()) {
       contribution.registerKeybindings(this);
@@ -240,22 +207,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    */
   get onKeybindingsChanged() {
     return this.keybindingsChanged.event;
-  }
-
-  /**
-   * 往应用注册Keybinding Context参数
-   * 当该参数已被注册时不会重复注册
-   * @param contexts 注册进应用的Keybinding Contexts.
-   */
-  protected registerContext(...contexts: KeybindingContext[]) {
-    for (const context of contexts) {
-      const { id } = context;
-      if (this.contexts[id]) {
-        this.logger.error(`A keybinding context with ID ${id} is already registered.`);
-      } else {
-        this.contexts[id] = context;
-      }
-    }
   }
 
   /**
@@ -363,7 +314,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   public containsKeybinding(bindings: Keybinding[], binding: Keybinding): boolean {
     const bindingKeySequence = this.resolveKeybinding(binding);
     const collisions = this.getKeySequenceCollisions(bindings, bindingKeySequence)
-      .filter((b) => b.context === binding.context || b.when === binding.when);
+      .filter((b) => b.when === binding.when);
 
     if (collisions.full.length > 0) {
       this.logger.warn('Collided keybinding is ignored; ',
@@ -395,7 +346,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   public validateKeybinding(bindings: Keybinding[], binding: Keybinding): string {
     const bindingKeySequence = this.resolveKeybinding(binding);
     const collisions = this.getKeySequenceCollisions(bindings, bindingKeySequence)
-      .filter((b) => b.context === binding.context || b.when === binding.when);
+      .filter((b) => b.when === binding.when);
 
     if (collisions.full.length > 0) {
       const collision = collisions.full[0];
@@ -657,27 +608,16 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   /**
    * 按优先级顺序对键值绑定进行排序
    *
-   * 具有Context判定的键绑定比没有的优先级更高
+   * 具有When判定的键绑定比没有的优先级更高
    * @param keybindings
    */
   private sortKeybindingsByPriority(keybindings: Keybinding[]) {
     keybindings.sort((a: Keybinding, b: Keybinding): number => {
-
-      let acontext: KeybindingContext | undefined;
-      if (a.context) {
-        acontext = this.contexts[a.context];
-      }
-
-      let bcontext: KeybindingContext | undefined;
-      if (b.context) {
-        bcontext = this.contexts[b.context];
-      }
-
-      if (acontext && !bcontext) {
+      if (a.when && !b.when) {
         return -1;
       }
 
-      if (!acontext && bcontext) {
+      if (!a.when && b.when) {
         return 1;
       }
 
@@ -701,10 +641,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param event
    */
   public isEnabled(binding: Keybinding, event?: KeyboardEvent): boolean {
-    const context = binding.context && this.contexts[binding.context];
-    if (context && !context.isEnabled(binding)) {
-      return false;
-    }
     if (binding.when && !this.whenContextService.match(binding.when, event && event.target as HTMLElement)) {
       return false;
     }

@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, DisposableCollection, KeybindingService, ILogger } from '@ali/ide-core-browser';
+import { KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, DisposableCollection, KeybindingService, ILogger, Event } from '@ali/ide-core-browser';
 import { KeymapsParser } from './keymaps-parser';
 import * as fuzzy from 'fuzzy';
 import { KEYMAPS_FILE_NAME, IKeymapService, KEYMAPS_SCHEME, KeybindingItem } from '../common';
@@ -50,7 +50,10 @@ export class KeymapService implements IKeymapService {
   protected resource: Resource;
 
   protected readonly keymapChangeEmitter = new Emitter<void>();
-  onDidKeymapChanges = this.keymapChangeEmitter.event;
+
+  get onDidKeymapChanges(): Event<void> {
+    return this.keymapChangeEmitter.event;
+  }
 
   private searchTimer: any = null;
 
@@ -103,7 +106,6 @@ export class KeymapService implements IKeymapService {
       return {
         when: kb.when,
         command: kb.command,
-        context: kb.context,
         keybinding: kb.keybinding,
       };
     })));
@@ -162,7 +164,6 @@ export class KeymapService implements IKeymapService {
       const item: Keybinding = {
         when: keybinding.when,
         command: keybinding.command,
-        context: keybinding.context,
         keybinding: keybinding.keybinding,
       };
       keybindings.push(item);
@@ -183,7 +184,6 @@ export class KeymapService implements IKeymapService {
       return {
         when: kb.when,
         command: kb.command,
-        context: kb.context,
         keybinding: kb.keybinding,
       };
     }), undefined, 2));
@@ -203,12 +203,12 @@ export class KeymapService implements IKeymapService {
    * @returns {Promise<void>}
    * @memberof KeymapsService
    */
-  removeKeybinding = async (commandId: string): Promise<void> => {
+  removeKeybinding = async (item: KeybindingItem): Promise<void> => {
     if (!this.resource.saveContents) {
       return;
     }
     const keybindings: Keybinding[] = this.storeKeybindings;
-    const filtered = keybindings.filter((a) => a.command !== commandId);
+    const filtered = keybindings.filter((a) => a.command !== item.id);
     this.saveKeybinding(filtered);
   }
 
@@ -322,7 +322,6 @@ export class KeymapService implements IKeymapService {
           id: command.id,
           command: command.label || command.id,
           keybinding: isUserKeybinding ? isUserKeybinding.keybinding : (keybindings && keybindings[0]) ? this.keybindingRegistry.acceleratorFor(keybindings[0], '+').join(' ') : '',
-          context: isUserKeybinding ? isUserKeybinding.context : (keybindings && keybindings[0]) ? (keybindings && keybindings[0]).context : '',
           when: isUserKeybinding ? this.getWhen(isUserKeybinding) : this.getWhen((keybindings && keybindings[0])),
           source: isUserKeybinding ? this.getScope(KeybindingScope.USER) : this.getScope(KeybindingScope.DEFAULT),
           hasCommandLabel: !!command.label,
@@ -333,7 +332,6 @@ export class KeymapService implements IKeymapService {
           command: command.label || command.id,
           keybinding: (keybindings && keybindings[0]) ? this.keybindingRegistry.acceleratorFor(keybindings[0], '+').join(' ') : '',
           when: this.getWhen((keybindings && keybindings[0])),
-          context: (keybindings && keybindings[0]) ? (keybindings && keybindings[0]).context : '',
           source: (keybindings && keybindings[0] && typeof keybindings[0].scope !== 'undefined')
             ? this.getScope(keybindings[0].scope!) : '',
           hasCommandLabel: !!command.label,

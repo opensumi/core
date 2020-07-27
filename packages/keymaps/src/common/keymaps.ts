@@ -46,11 +46,11 @@ export interface IKeymapService {
 
   /**
    * 移除给定ID的快捷键绑定
-   * @param {string} commandId
+   * @param {KeybindingItem} item
    * @returns {Promise<void>}
    * @memberof KeymapsService
    */
-  removeKeybinding(commandId: string): Promise<void>;
+  removeKeybinding(item: KeybindingItem): Promise<void>;
 
   /**
    * 从keymaps.json获取快捷键列表
