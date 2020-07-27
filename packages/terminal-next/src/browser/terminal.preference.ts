@@ -54,6 +54,9 @@ export class TerminalPreference implements ITerminalPreference {
     });
   }
 
+  /**
+   * @param option 终端的 option 选项名
+   */
   get<T = any>(option: string): T {
     const val = this.service.get<T>(this._optionToPref(option), DefaultOptionValue[option]);
     return this._valid(option, val);

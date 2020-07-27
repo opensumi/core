@@ -235,7 +235,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private async _doAttach() {
     const sessionId = this.id;
-    const type = this.preference.get<string>('terminal.type');
+    const type = this.preference.get<string>('type');
     this._attachXterm();
 
     const linuxShellArgs = this.corePreferences.get('terminal.integrated.shellArgs.linux');
@@ -297,8 +297,14 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   private _setOption(name: string, value: string | number | boolean) {
-    this._term.setOption(name, value);
-    this.layout();
+    /**
+     * 有可能 preference 引起的修改并不是对应终端的 option，
+     * 这种情况可能会报错
+     */
+    try {
+      this._term.setOption(name, value);
+      this.layout();
+    } catch { /** nothing */ }
   }
 
   private _checkReady() {
