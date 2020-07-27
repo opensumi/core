@@ -17,4 +17,6 @@ export interface ITerminalApiService {
   showTerm(id: string, preserveFocus?: boolean): void;
   hideTerm(id: string): void;
   removeTerm(id: string): void;
-}
+
+  createWidget(uniqName: string, widgetRenderFunc: (element: HTMLDivElement) => void): void;
+  }

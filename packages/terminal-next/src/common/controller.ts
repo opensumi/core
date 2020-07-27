@@ -62,7 +62,7 @@ export interface ITerminalGroupViewService {
   selectGroup(index: number): void;
   removeGroup(index: number): void;
 
-  createWidget(group: IWidgetGroup, id?: string): IWidget;
+  createWidget(group: IWidgetGroup, id?: string, reuse?: boolean, isSimpleWidget?: boolean): IWidget;
   getWidget(id: string): IWidget;
   selectWidget(widgetId: string): void;
   removeWidget(id: string): void;

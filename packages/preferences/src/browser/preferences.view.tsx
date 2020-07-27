@@ -26,7 +26,7 @@ const UserScope = {
   label: 'preference.tab.user',
 };
 
-export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
+export const PreferenceView: ReactEditorComponent<null> = observer(() => {
 
   const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
   const preferences: PreferenceService = useInjectable(PreferenceService);

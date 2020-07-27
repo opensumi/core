@@ -335,11 +335,13 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     this.selectGroup(index);
   }
 
-  createWidget(group: WidgetGroup, id?: string, reuse?: boolean) {
+  createWidget(group: WidgetGroup, id?: string, reuse?: boolean, isSimpleWidget: boolean = false) {
     const widget = new Widget(id || this.service.generateSessionId(), reuse);
     this._widgets.set(widget.id, widget);
     widget.group = group;
-    this._onWidgetCreated.fire(widget);
+    if (!isSimpleWidget) {
+      this._onWidgetCreated.fire(widget);
+    }
     return widget;
   }
 
