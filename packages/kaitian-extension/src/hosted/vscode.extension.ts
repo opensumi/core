@@ -51,8 +51,10 @@ export abstract class Extension<T = any, S extends IExtensionHost = any> impleme
    */
   async activate(): Promise<any> {
     try {
-      await this.mainThreadExtensionService.$activateExtension(this.extensionPath);
-      return this.extensionService.getExtensionExports(this.id);
+      if (!this.isActive) {
+        await this.mainThreadExtensionService.$activateExtension(this.extensionPath);
+      }
+      return this.exports;
     } catch (e) {}
   }
 }
