@@ -497,12 +497,13 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       });
     }
 
-    if (options.range) {
-
+    if (options.range || options.originalRange) {
+      const range = (options.range || options.originalRange) as monaco.IRange;
+      const currentEditor = options.range ? this.modifiedEditor.monacoEditor : this.originalEditor.monacoEditor;
       // 必须使用 setTimeout, 因为两边的 editor 出现时机问题，diffEditor是异步显示和渲染
       setTimeout(() => {
-        this.monacoDiffEditor.revealRangeInCenter(options.range! as monaco.IRange);
-        this.monacoDiffEditor.setSelection(options.range! as monaco.IRange);
+        currentEditor.revealRangeInCenter(range);
+        currentEditor.setSelection(range);
       });
       // monaco diffEditor 在setModel后，计算diff完成后, 左侧 originalEditor 会发出一个异步的onScroll，
       // 这个行为可能会带动右侧 modifiedEditor 进行滚动， 导致 revealRange 错位
@@ -510,8 +511,8 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       const disposer = this.monacoDiffEditor.onDidUpdateDiff(() => {
         disposer.dispose();
         setTimeout(() => {
-          this.monacoDiffEditor.revealRangeInCenter(options.range! as monaco.IRange);
-          this.monacoDiffEditor.setSelection(options.range! as monaco.IRange);
+          currentEditor.revealRangeInCenter(range);
+          currentEditor.setSelection(range);
         });
       });
     } else {

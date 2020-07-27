@@ -205,6 +205,9 @@ export interface IResourceOpenOptions {
 
   range?: Partial<IRange>;
 
+  // 如果打开的是 diff 编辑器，可以指定 original editor 的 range
+  originalRange?: Partial<IRange>;
+
   index?: number;
 
   backend?: boolean;
