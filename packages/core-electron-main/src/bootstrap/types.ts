@@ -37,6 +37,11 @@ export interface ElectronAppConfig {
   extensionWorkerEntry?: string;
 
   /**
+   * 是否为插件开发模式
+   */
+  extensionDevelopmentHost?: boolean;
+
+  /**
    * webviewPreload入口
    */
   webviewPreload: string;
@@ -120,4 +125,5 @@ export interface IParsedArgs {
   extensionDir?: string;
   workspaceDir?: string;
   extensionCandidate: string[];
+  extensionDevelopmentPath?: string | string[];
 }

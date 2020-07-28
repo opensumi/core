@@ -60,6 +60,7 @@ const mockExtensionProps: IExtensionProps = {
   isUseEnable: true,
   enableProposedApi: false,
   isBuiltin: false,
+  isDevelopment: false,
   packageJSON: {
     name: 'kaitian-extension',
     extensionDependencies: ['uuid-for-test-extension-deps'],

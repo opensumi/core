@@ -24,7 +24,7 @@ import {
   IClientApp,
   IWindowService,
 } from '@ali/ide-core-browser';
-import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-common';
+import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE, localize } from '@ali/ide-core-common';
 import { FileStat } from '@ali/ide-file-service';
 import { FileChangeEvent } from '@ali/ide-file-service/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
@@ -291,7 +291,12 @@ export class WorkspaceService implements IWorkspaceService {
 
   protected formatTitle(title?: string): string {
     const name = this.applicationName;
-    return title ? `${title} — ${name}` : name;
+
+    let documentTitle = title ? `${title} — ${name}` : name;
+    if (this.appConfig.extensionDevelopmentHost) {
+      documentTitle = `[${localize('workspace.development.title')}] ${documentTitle}`;
+    }
+    return documentTitle;
   }
 
   // 更新页面Title

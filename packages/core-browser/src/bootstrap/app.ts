@@ -25,6 +25,7 @@ import {
   REPORT_NAME,
   isElectronEnv,
   IEventBus,
+  asExtensionCandidate,
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
@@ -64,6 +65,10 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   useCdnIcon?: boolean;
   editorBackgroudImage?: string;
   defaultPreferences?: IPreferences;
+  /**
+   * 插件开发模式下指定的插件路径
+   */
+  extensionDevelopmentPath?: string | string[];
 }
 
 export interface LayoutConfig {
@@ -139,6 +144,20 @@ export class ClientApp implements IClientApp {
       layoutConfig: opts.layoutConfig as LayoutConfig,
       editorBackgroundImage: opts.editorBackgroundImage || editorBackgroudImage,
     };
+
+    if (isElectronEnv() && electronEnv.metadata.extensionDevelopmentHost) {
+      this.config.extensionDevelopmentHost = electronEnv.metadata.extensionDevelopmentHost;
+    }
+
+    if (opts.extensionDevelopmentPath) {
+      this.config.extensionCandidate = (this.config.extensionCandidate || []).concat(
+        Array.isArray(opts.extensionDevelopmentPath) ?
+        opts.extensionDevelopmentPath.map((e) => asExtensionCandidate(e, true)) :
+        [asExtensionCandidate(opts.extensionDevelopmentPath, true)]);
+
+      this.config.extensionDevelopmentHost = !!opts.extensionDevelopmentPath;
+    }
+
     // 旧方案兼容, 把electron.metadata.extensionCandidate提前注入appConfig的对应配置中
     if (isElectronEnv() && electronEnv.metadata.extensionCandidate) {
       this.config.extensionCandidate = (this.config.extensionCandidate || []).concat(electronEnv.metadata.extensionCandidate || []);
@@ -151,6 +170,7 @@ export class ClientApp implements IClientApp {
     this.appendIconStyleSheets(iconStyleSheets, useCdnIcon);
     this.createBrowserModules(defaultPreferences);
   }
+
   /**
    * 将被依赖但未被加入modules的模块加入到待加载模块最后
    */

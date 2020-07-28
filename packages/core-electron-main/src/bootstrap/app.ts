@@ -3,7 +3,7 @@ import { CodeWindow } from './window';
 import { Injector, ConstructorOf } from '@ali/common-di';
 import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
 import { ElectronMainApiRegistryImpl } from './api';
-import { createContributionProvider, ContributionProvider, URI, ExtensionCandiDate, IEventBus, EventBusImpl } from '@ali/ide-core-common';
+import { createContributionProvider, ContributionProvider, URI, ExtensionCandiDate, IEventBus, EventBusImpl, asExtensionCandidate } from '@ali/ide-core-common';
 import { serviceProviders } from './services';
 import { ICodeWindowOptions } from './types';
 import { ElectronMainModule } from '../electron-main-module';
@@ -27,14 +27,25 @@ export class ElectronMainApp {
   private parsedArgs: IParsedArgs = {
     extensionDir: argv.extensionDir as string | undefined,
     extensionCandidate: argv.extensionCandidate ? ((Array.isArray(argv.extensionCandidate) ? argv.extensionCandidate : [argv.extensionCandidate])) : [],
+    extensionDevelopmentPath: argv.extensionDevelopmentPath as string | undefined,
   };
 
   constructor(private config: ElectronAppConfig) {
     config.extensionDir =  this.parsedArgs.extensionDir ? this.parsedArgs.extensionDir : config.extensionDir || '';
     config.extensionCandidate = [
       ...config.extensionCandidate,
-      ...this.parsedArgs.extensionCandidate.map((ext) => ({ path: ext, isBuiltin: true })),
+      ...this.parsedArgs.extensionCandidate.map((e) => asExtensionCandidate(e, false)),
     ];
+
+    if (this.parsedArgs.extensionDevelopmentPath) {
+      config.extensionCandidate = config.extensionCandidate.concat(
+        Array.isArray(this.parsedArgs.extensionDevelopmentPath) ?
+        this.parsedArgs.extensionDevelopmentPath.map((e) => asExtensionCandidate(e, true)) :
+        [asExtensionCandidate(this.parsedArgs.extensionDevelopmentPath, true)]);
+    }
+
+    config.extensionDevelopmentHost = !!this.parsedArgs.extensionDevelopmentPath;
+
     this.injector.addProviders({
       token: IEventBus,
       useClass: EventBusImpl,

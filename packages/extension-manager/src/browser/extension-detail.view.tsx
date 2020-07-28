@@ -212,6 +212,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
             <div className={styles.title}>
               <span className={styles.name}>{extension.displayName || extension.name}</span>
               {extension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin')}</span>) : null}
+              {extension.isDevelopment ? (<span className={clx(commonStyles.tag, commonStyles.developmentMode)}>{localize('marketplace.extension.development')}</span>) : null}
               {canUpdate ? (<span className={clx(commonStyles.tag, styles.green)}>{localize('marketplace.extension.canupdate')}</span>) : null}
             </div>
             <div className={styles.subtitle}>
@@ -232,7 +233,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
               ) : null}
               {installed &&
                 <Button menu={menu} type='secondary' more className={styles.action}>{extension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}</Button>}
-              {installed && !extension.isBuiltin && (
+              {installed && !extension.isDevelopment && !extension.isBuiltin && (
                 <Button ghost={true} type='danger' className={styles.action} onClick={uninstall} loading={isUnInstalling}>{isUnInstalling ? localize('marketplace.extension.uninstalling') : localize('marketplace.extension.uninstall')}</Button>
               )}
             </div>
