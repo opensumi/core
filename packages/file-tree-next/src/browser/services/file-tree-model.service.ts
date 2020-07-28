@@ -248,10 +248,7 @@ export class FileTreeModelService {
       if (this.selectedFiles.length !== 0) {
         // 仅处理一下单选情况
         const node = this.treeModel?.root.getTreeNodeByPath(this.selectedFiles[0].path);
-        for (const target of this.selectedDecoration.appliedTargets.keys()) {
-          this.selectedDecoration.removeTarget(target);
-        }
-        this.selectedDecoration.addTarget(node as File);
+        this.selectFileDecoration(node);
       }
     }));
     // 确保文件树响应刷新操作时无正在操作的CollapsedAll和Location
