@@ -609,5 +609,7 @@ export const localizationBundle = {
     'toolbar-customize.buttonDisplay.iconAndText': 'Icon And Text',
     'toolbar-customize.complete': 'Complete',
     'toolbar.customize.menu': 'Customize Toolbar...',
+
+    'workbench.uploadingFiles': '{0} Files Uploading {1}/s',
   },
 };
