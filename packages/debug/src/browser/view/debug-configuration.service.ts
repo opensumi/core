@@ -49,7 +49,7 @@ export class DebugConfigurationService {
   configurationOptions: DebugSessionOptions[] = this.debugConfigurationManager.all || [];
 
   async init() {
-    const name = 'debug.toolbar.float';
+    this.updateCurrentValue(await this.getCurrentConfiguration() || '__NO_CONF__');
     this.debugConfigurationManager.onDidChange(() => {
       this.updateConfigurationOptions();
     });
@@ -59,8 +59,11 @@ export class DebugConfigurationService {
         this.float = newValue;
       }
     });
-    this.float = !!this.preferenceService.get<boolean>(name);
-    this.currentValue = await this.getCurrentConfiguration() || '__NO_CONF__';
+    this.float = !!this.preferenceService.get<boolean>('debug.toolbar.float');
+  }
+
+  @action updateCurrentValue(value: string) {
+    this.currentValue = value;
   }
 
   @action
@@ -70,9 +73,9 @@ export class DebugConfigurationService {
     if (current) {
       const currentValue = this.toValue(current);
       this.setCurrentConfiguration(currentValue);
-      this.currentValue = currentValue;
+      this.updateCurrentValue(currentValue);
     } else {
-      this.currentValue = '__NO_CONF__';
+      this.updateCurrentValue('__NO_CONF__');
     }
   }
 

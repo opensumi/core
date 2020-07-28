@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { DebugServer, IDebugServer, IDebuggerContribution, launchSchemaUri } from '../common';
 import { QuickPickService } from '@ali/ide-quick-open';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { IFileServiceClient } from '@ali/ide-file-service';
 import {
   PreferenceConfigurations,
   IContextKey,
@@ -53,8 +53,8 @@ export class DebugConfigurationManager {
   @Autowired(IContextKeyService)
   protected readonly contextKeyService: IContextKeyService;
 
-  @Autowired(FileServiceClient)
-  protected readonly filesystem: FileServiceClient;
+  @Autowired(IFileServiceClient)
+  protected readonly filesystem: IFileServiceClient;
 
   @Autowired(PreferenceService)
   protected readonly preferences: PreferenceService;
