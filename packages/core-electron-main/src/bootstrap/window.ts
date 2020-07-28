@@ -40,15 +40,20 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   constructor(workspace?: string, metadata?: any, options: BrowserWindowConstructorOptions & ICodeWindowOptions = {}) {
     super();
+    const defaultWebPreferences = {
+      webviewTag: true,
+    };
     this._workspace = new URI(workspace);
     this.metadata = metadata;
     this.windowClientId = 'CODE_WINDOW_CLIENT_ID:' + (++windowClientCount);
+
     this.browser = new BrowserWindow({
       show: false,
       webPreferences: {
+        ...defaultWebPreferences,
+        ...this.appConfig.overrideWebPreferences,
         nodeIntegration: this.appConfig.browserNodeIntegrated,
         preload: this.appConfig.browserPreload,
-        webviewTag: true,
       },
       frame: isOSX,
       titleBarStyle: 'hidden',

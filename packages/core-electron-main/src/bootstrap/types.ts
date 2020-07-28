@@ -16,11 +16,6 @@ export interface ElectronAppConfig {
   browserNodeIntegrated: boolean;
 
   /**
-   * browser的webPreferences
-   */
-  webPreferences?: any;
-
-  /**
    * 要加载的模块
    */
   modules: Array<ConstructorOf<ElectronMainModule>>;
@@ -57,6 +52,10 @@ export interface ElectronAppConfig {
    * 额外插件目录
    */
   extensionCandidate: ExtensionCandiDate[];
+  /**
+   * 覆盖browser层的WebPreferences配置
+   */
+  overrideWebPreferences: { [key: string]: any };
 }
 
 export const ElectronAppConfig = Symbol('ElectronAppConfig');
