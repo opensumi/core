@@ -309,7 +309,7 @@ export class FileTreeModelService {
     if (this.collapsedAllDeferred) {
       await this.collapsedAllDeferred.promise;
     }
-    if (this.locationDeferred.promise) {
+    if (this.locationDeferred) {
       await this.locationDeferred.promise;
     }
   }
@@ -1027,10 +1027,9 @@ export class FileTreeModelService {
     const enterCommit = async (newName) => {
       isCommit = true;
       if (!!this.validateMessage && this.validateMessage.type === PROMPT_VALIDATE_TYPE.ERROR) {
-        this.validateMessage = undefined;
-        promptHandle.removeValidateMessage();
+        return false;
       }
-      if (newName.trim() === '' || (!!this.validateMessage && this.validateMessage.type === PROMPT_VALIDATE_TYPE.ERROR)) {
+      if (newName.trim() === '' || (!!this.validateMessage && this.validateMessage.type !== PROMPT_VALIDATE_TYPE.ERROR)) {
         this.validateMessage = undefined;
         return true;
       }
