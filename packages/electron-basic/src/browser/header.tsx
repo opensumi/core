@@ -5,6 +5,7 @@ import { useInjectable, MaybeNull, isWindows, ComponentRenderer, ComponentRegist
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { WorkbenchEditorService, IResource } from '@ali/ide-editor';
 import { getIcon } from '@ali/ide-core-browser';
+import { localize } from '@ali/ide-core-common';
 import { observable } from 'mobx';
 import { basename } from '@ali/ide-core-common/lib/utils/paths';
 
@@ -77,6 +78,7 @@ export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
   const ref = React.useRef<HTMLDivElement>();
   const spanRef = React.useRef<HTMLSpanElement>();
   const appConfig: AppConfig = useInjectable(AppConfig);
+  const [appTitle, setAppTile] = React.useState<string>();
 
   React.useEffect(() => {
     setPosition();
@@ -119,12 +121,17 @@ export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
 
   // 同时更新 Html Title
   React.useEffect(() => {
-    document.title = title;
+    let documentTitle = title;
+    if (appConfig.extensionDevelopmentHost) {
+      documentTitle = `[${localize('workspace.development.title')}] ${title}`;
+    }
+    document.title = documentTitle;
+    setAppTile(documentTitle);
   }, [title]);
 
   if (hidden) {
     return null;
   }
 
-  return <div className={styles.title_info} ref={ref as any}><span ref={spanRef as any}>{title}</span></div>;
+  return <div className={styles.title_info} ref={ref as any}><span ref={spanRef as any}>{appTitle}</span></div>;
 });

@@ -35,6 +35,7 @@ export class Extension extends Disposable implements IExtension {
     @Optional(extensionServiceSymbol) private extensionService: ExtensionService,
     @Optional(Symbol()) public isUseEnable: boolean,
     @Optional(Symbol()) public isBuiltin: boolean,
+    @Optional(Symbol()) public isDevelopment: boolean,
     private didActivated: Emitter<IExtensionProps>,
   ) {
     super();
@@ -173,6 +174,7 @@ export class Extension extends Disposable implements IExtension {
       enableProposedApi: this.enableProposedApi,
       extraMetadata: this.extraMetadata,
       isBuiltin: this.isBuiltin,
+      isDevelopment: this.isDevelopment,
     };
   }
 }

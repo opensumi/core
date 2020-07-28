@@ -76,6 +76,7 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
             <div className={styles.name_wrapper}>
               <div className={styles.name}>{extension.displayName || extension.name}</div>
               {extension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin')}</span>) : null}
+              {extension.isDevelopment ? (<span className={clx(commonStyles.tag, commonStyles.developmentMode)}>{localize('marketplace.extension.development')}</span>) : null}
             </div>
             <span style={{ display: 'flex', flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
               {extension.reloadRequire && <Button size='small' type='primary' ghost={true} style={{ marginRight: 4 }} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}

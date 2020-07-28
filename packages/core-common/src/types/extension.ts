@@ -3,6 +3,16 @@ import { BasicEvent } from '../event-bus';
 export class ExtensionCandiDate {
   path: string;
   isBuiltin: boolean;
+  isDevelopment: boolean;
+}
+
+/**
+ * 将插件路径转换为 ExtensionCandidate 对象
+ * @param extensionPath 插件路径
+ * @param isDevelopment 是否为开发模式下加载的插件
+ */
+export function asExtensionCandidate(extensionPath: string, isDevelopment: boolean = false): ExtensionCandiDate {
+  return { path: extensionPath, isBuiltin: true, isDevelopment };
 }
 
 export interface JSONType { [key: string]: any; }
@@ -21,6 +31,11 @@ export interface IExtensionInfo {
    * 是否为内置插件
    */
   readonly isBuiltin: boolean;
+
+  /**
+   * 是否为开发模式
+   */
+  readonly isDevelopment?: boolean;
 }
 
 export interface IExtensionProps extends IExtensionInfo {

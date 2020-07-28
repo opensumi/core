@@ -585,11 +585,12 @@ export class ExtensionManagerService implements IExtensionManagerService {
         path: extension.realPath,
         enable: extension.isUseEnable,
         isBuiltin: extension.isBuiltin,
+        isDevelopment: extension.isDevelopment,
         reloadRequire: extension.reloadRequire,
         enableScope: extension.enableScope,
         engines: {
           vscode: extension.packageJSON.engines?.vscode,
-          kaitian: '',
+          kaitian: extension.packageJSON.engines?.kaitian,
         },
       };
     });
@@ -725,9 +726,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
         categories: '',
         repository: extensionDetail.packageJSON.repository ? extensionDetail.packageJSON.repository.url : '',
         enableScope: await this.getEnableScope(extension.extensionId),
-        contributes: {
-          a: '',
-        },
+        contributes: extensionDetail?.packageJSON?.contributes,
+        isDevelopment: extensionDetail.isDevelopment,
       };
     }
   }

@@ -499,6 +499,7 @@ export const localizationBundle = {
     'marketplace.extension.reload.delay': 'Restart later',
     'marketplace.extension.reload.now': 'Restart now',
     'marketplace.extension.builtin': 'Builtin',
+    'marketplace.extension.development': 'Develop',
     'marketplace.extension.enable': 'Enable',
     'marketplace.extension.disable': 'Disable',
     'marketplace.extension.enable.workspace': 'Enable(workspace)',
@@ -611,5 +612,6 @@ export const localizationBundle = {
     'toolbar.customize.menu': 'Customize Toolbar...',
 
     'workbench.uploadingFiles': '{0} Files Uploading {1}/s',
+    'workspace.development.title': 'Extension Development Host',
   },
 };

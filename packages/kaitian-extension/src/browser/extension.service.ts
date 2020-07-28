@@ -282,6 +282,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         this,
         await this.checkExtensionEnable(extensionMetadata),
         isBuiltin || (this.appConfig.extensionDir ? extensionMetadata.realPath.startsWith(this.appConfig.extensionDir) : false),
+        false,
         this._onDidExtensionActivated,
       ]);
 
@@ -521,12 +522,19 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       // 1. 通过路径判决是否是内置插件
       // 2. candidate 是否有  isBuiltin 标识符
       const isBuiltin = (this.appConfig.extensionDir ? extensionMetaData.realPath.startsWith(this.appConfig.extensionDir) : false) || (extensionCandidate ? extensionCandidate.isBuiltin : false);
+
+      let isDevelopment = false;
+      if (extensionCandidate) {
+        isDevelopment = extensionCandidate.isDevelopment;
+      }
+
       const extension = this.injector.get(Extension, [
         extensionMetaData,
         this,
         // 检测插件是否启用
         await this.checkExtensionEnable(extensionMetaData),
         isBuiltin,
+        isDevelopment,
         this._onDidExtensionActivated,
       ]);
 

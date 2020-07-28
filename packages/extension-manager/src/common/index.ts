@@ -75,6 +75,7 @@ export interface RawExtension extends BaseExtension {
   icon: string;
   enable: boolean;
   isBuiltin: boolean;
+  isDevelopment?: boolean;
   downloadCount?: number;
   reloadRequire?: boolean;
   // 启用范围

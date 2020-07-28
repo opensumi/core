@@ -41,6 +41,8 @@ export interface AppConfig {
   extensionCandidate?: ExtensionCandiDate[];
   staticServicePath?: string;
 
+  extensionDevelopmentHost?: boolean;
+
   editorBackgroundImage?: string;
 
   isSyncPreference?: boolean;
