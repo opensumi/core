@@ -157,7 +157,7 @@ describe('resource service tests', () => {
     const disposer = service.registerResourceProvider(TestResourceProvider1);
     const disposer2 = service.registerResourceProvider(TestResourceProvider2);
 
-    const resUri = new URI('test://testResource1');
+    const resUri = new URI('test://testResource12');
     const resource = await service.getResource(resUri);
 
     expect(await service.shouldCloseResource(resource!, [])).toBeTruthy();

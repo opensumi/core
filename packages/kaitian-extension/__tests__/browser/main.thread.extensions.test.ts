@@ -22,7 +22,7 @@ import { MainThreadWebview } from '../../src/browser/vscode/api/main.thread.api.
 import { MockExtNodeClientService } from '../__mock__/extension.service.client';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { MockWorkbenchEditorService } from '../../../editor/src/common/mocks/workbench-editor.service';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { MockedStorageProvider } from '@ali/ide-core-browser/lib/mocks/storage';
 import { FileSearchServicePath } from '@ali/ide-file-search';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -32,6 +32,7 @@ import { IconService } from '@ali/ide-theme/lib/browser';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
 import { WorkspacePreferences } from '@ali/ide-workspace/lib/browser/workspace-preferences';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
+import { IWebviewService } from '@ali/ide-webview';
 
 @Injectable()
 class MockLoggerManagerClient {
@@ -155,7 +156,12 @@ describe('MainThreadExtensions Test Suites', () => {
       useValue: {
         onPreferenceChanged: () => {},
       },
-    }]));
+    },
+    {
+      token: IWebviewService,
+      useValue: mockService({}),
+    },
+  ]));
   let extHostExtension: ReturnType<typeof createExtensionsApiFactory>;
   let mainthreadService: ExtensionServiceImpl;
   let extensionHostService: ExtensionHostServiceImpl;
