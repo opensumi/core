@@ -123,8 +123,8 @@ export class FileTreeModelService {
   private onDidFocusedFileChangeEmitter: Emitter<URI | void> = new Emitter();
   private onDidSelectedFileChangeEmitter: Emitter<URI[]> = new Emitter();
 
-  private locationDeferred: Deferred<void>;
-  private collapsedAllDeferred: Deferred<void>;
+  private locationDeferred: Deferred<void> | null;
+  private collapsedAllDeferred: Deferred<void> | null;
 
   private treeStateWatcher: TreeStateWatcher;
 
@@ -306,8 +306,12 @@ export class FileTreeModelService {
   }
 
   async canHandleRefreshEvent() {
-    await this.collapsedAllDeferred;
-    await this.locationDeferred;
+    if (this.collapsedAllDeferred) {
+      await this.collapsedAllDeferred.promise;
+    }
+    if (this.locationDeferred.promise) {
+      await this.locationDeferred.promise;
+    }
   }
 
   // 清空所有节点选中态
@@ -673,6 +677,7 @@ export class FileTreeModelService {
       });
     }
     this.collapsedAllDeferred.resolve();
+    this.collapsedAllDeferred = null;
   }
 
   // 展开所有缓存目录
@@ -1283,8 +1288,9 @@ export class FileTreeModelService {
         if (node) {
           this.selectFileDecoration(node);
         }
-        this.locationDeferred.resolve();
       }
+      this.locationDeferred.resolve();
+      this.locationDeferred = null;
     });
   }
 
