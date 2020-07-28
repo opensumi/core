@@ -254,7 +254,7 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
   createWebview(): T {
     this._webview = this.webviewFactory();
     this.addDispose(this._webview!);
-    if ((this._webview as IWebview).onDidFocus) {
+    if (typeof (this._webview as IWebview).onDidFocus === 'function') {
       this.addDispose((this._webview as IWebview).onDidFocus(() => {
         if (this.editorGroup) {
           (this.editorGroup as any).gainFocus();
