@@ -386,6 +386,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   updateOptions(options: TerminalOptions) {
     this._options = { ...this._options, ...options };
+    this._widget.name = options.name || this.name;
   }
 
   async sendText(message: string) {
