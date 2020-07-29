@@ -23,7 +23,6 @@ export function createBrowserApi(injector: Injector, useProxy: boolean, extensio
 
   const commands = createBrowserCommandsApiFactory(injector, extension, rpcProtocol);
   const components = createBrowserComponents(injector, useProxy, extension);
-
   return {
     // Components
     ...components,

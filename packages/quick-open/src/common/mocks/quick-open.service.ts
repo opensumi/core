@@ -4,6 +4,10 @@ import { Injectable } from '@ali/common-di';
 
 @Injectable()
 export class MockQuickOpenService implements QuickOpenService {
+  refresh(): void {
+    throw new Error('Method not implemented.');
+  }
+  widgetNode: HTMLElement;
 
   open(model: QuickOpenModel, options?: QuickOpenOptions): void {
     throw new Error('Method not implemented.');

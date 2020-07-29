@@ -27,6 +27,7 @@ export class CoreQuickOpenContribution implements ClientAppContribution, MonacoC
 
   // 串联 monaco 内部的 quick-open 组件
   onMonacoLoaded(monacoService: MonacoService) {
+
      // 加载依赖 monaco 的其他组件
     const { MonacoQuickOpenService } = require('./quick-open.service');
 

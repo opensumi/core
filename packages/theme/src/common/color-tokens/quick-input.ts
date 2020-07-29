@@ -15,3 +15,9 @@ export const QUICK_INPUT_FOREGROUND = registerColor('quickInput.foreground', {
   light: SIDE_BAR_FOREGROUND,
   hc: SIDE_BAR_FOREGROUND,
 }, localize('quickInputForeground', 'Quick Input foreground color. The Quick Input widget is the container for views like the color theme picker'));
+
+export const TITLE_BAR_BACKGROUND = registerColor('titlebar.background', {
+  dark: '#383838',
+  light: '#383838',
+  hc: '#383838',
+}, localize('titlebarBackgound', 'Titlebar background color.'));

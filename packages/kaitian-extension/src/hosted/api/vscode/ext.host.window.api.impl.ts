@@ -15,6 +15,7 @@ import { IExtHostDecorationsShape } from '../../../common/vscode/decoration';
 import { throwProposedApiError } from '../../../common/vscode/extension';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostProgress } from './ext.host.progress';
+import { QuickInputOptions } from '@ali/ide-quick-open';
 
 export function createWindowApiFactory(
   extension: IExtension,
@@ -102,7 +103,7 @@ export function createWindowApiFactory(
     createQuickPick<T extends vscode.QuickPickItem>(): vscode.QuickPick<T> {
       return extHostQuickOpen.createQuickPick();
     },
-    showInputBox(options?: vscode.InputBoxOptions, token?: CancellationToken): PromiseLike<string | undefined> {
+    showInputBox(options?: QuickInputOptions, token?: CancellationToken): PromiseLike<string | undefined> {
       return extHostQuickOpen.showInputBox(options, token);
     },
     createInputBox(): vscode.InputBox {

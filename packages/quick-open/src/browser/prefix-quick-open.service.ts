@@ -2,6 +2,7 @@ import { localize, QuickOpenActionProvider } from '@ali/ide-core-browser';
 import { MaybePromise, DisposableCollection, IDisposable, Disposable, ILogger } from '@ali/ide-core-common';
 import { QuickOpenModel, QuickOpenOptions, QuickOpenService, QuickOpenItem, PrefixQuickOpenService } from './quick-open.model';
 import { Injectable, Autowired } from '@ali/common-di';
+import { QuickTitleBar } from './quick-title-bar';
 
 export const QuickOpenContribution = Symbol('QuickOpenContribution');
 
@@ -96,6 +97,9 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
   @Autowired(QuickOpenService)
   protected readonly quickOpenService: QuickOpenService;
 
+  @Autowired(QuickTitleBar)
+  protected readonly quickTitleBar: QuickTitleBar;
+
   open(prefix: string): void {
     const handler = this.handlers.getHandlerOrDefault(prefix);
     this.setCurrentHandler(prefix, handler);
@@ -145,6 +149,11 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
   }
 
   protected doOpen(options?: QuickOpenOptions): void {
+
+    if (this.quickTitleBar.isAttached) {
+      this.quickTitleBar.hide();
+    }
+
     this.quickOpenService.open({
       onType: (lookFor, acceptor) => this.onType(lookFor, acceptor),
     }, options);

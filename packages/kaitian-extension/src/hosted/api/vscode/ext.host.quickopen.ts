@@ -2,7 +2,8 @@ import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, IExtHostQuickOpen, IMainThreadQuickOpen, IExtHostWorkspace } from '../../../common/vscode';
 import { CancellationToken, hookCancellationToken, Event, Emitter, DisposableCollection, MaybePromise } from '@ali/ide-core-common';
-import { QuickPickItem } from '@ali/ide-quick-open';
+import { QuickPickItem, QuickPickOptions } from '@ali/ide-quick-open';
+// import { QuickTitleButton } from '@ali/ide-core-browser/lib/quick-open/';
 
 type Item = string | vscode.QuickPickItem;
 
@@ -23,7 +24,6 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
   showQuickPick(promiseOrItems: string[] | Promise<string[]>, options?: vscode.QuickPickOptions | undefined, token?: CancellationToken | undefined): Promise<string | undefined>;
   async showQuickPick(promiseOrItems: Item[] | Promise<Item[]>, options?: vscode.QuickPickOptions, token: CancellationToken = CancellationToken.None): Promise<Item | Item[] | undefined> {
     const items = await promiseOrItems;
-
     const pickItems = items.map((item, index) => {
 
       if (typeof item === 'string') {
@@ -49,6 +49,10 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
       fuzzyMatchDescription: options.matchOnDescription,
       fuzzyMatchDetail: options.matchOnDetail,
       ignoreFocusOut: options.ignoreFocusOut,
+      title: (options as QuickPickOptions).title,
+      buttons: (options as QuickPickOptions).buttons,
+      step: (options as QuickPickOptions).step,
+      totalSteps: (options as QuickPickOptions).totalSteps,
     });
 
     const value = await hookCancellationToken<number | undefined>(token, quickPickPromise);
@@ -100,7 +104,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
     // 校验函数需要运行在扩展进程中
     this.validateInputHandler = options && options.validateInput;
 
-    const promise = this.proxy.$showQuickInput(options, typeof this.validateInputHandler === 'function');
+    const promise = this.proxy.$showQuickInput(options as vscode.QuickPickOptions , typeof this.validateInputHandler === 'function');
     return hookCancellationToken(token, promise);
   }
 
@@ -130,7 +134,6 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   title: string | undefined;
   totalSteps: number | undefined;
   value: string;
-
   private _items: T[];
   private _activeItems: T[];
   private _placeholder: string | undefined;
@@ -233,6 +236,7 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
       this.onDidAcceptEmitter.fire(undefined);
       this.onDidChangeSelectionEmitter.fire([item]);
     };
+
     this.quickOpen.showQuickPick(this.items.map((item) => item as T), {
       // tslint:disable-next-line:no-any
       onDidSelectItem(item: T | string): any {
@@ -240,8 +244,13 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
           selectItem(item);
         }
         hide();
-      }, placeHolder: this.placeholder,
-    });
+      },
+      title: this.title,
+      step: this.step,
+      totalSteps: this.totalSteps,
+      buttons: this.buttons,
+      placeHolder: this.placeholder,
+    } as unknown as QuickPickOptions );
   }
 
 }
@@ -307,6 +316,9 @@ class QuickInputExt implements vscode.InputBox {
       placeHolder: this.placeholder,
       password: this.password,
       ignoreFocusOut: this.ignoreFocusOut,
+      title: this.title,
+      totalSteps: this.totalSteps,
+      step: this.step,
     }).then((item) => {
       if (item) {
         this.value = item;

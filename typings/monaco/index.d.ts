@@ -688,6 +688,13 @@ declare module monaco.referenceSearch {
 
 declare module monaco.quickOpen {
 
+// https://github.com/theia-ide/vscode/blob/standalone/0.19.x/src/vs/base/parts/quickopen/browser/quickOpenWidget.ts#L79
+    export enum HideReason {
+        ELEMENT_SELECTED,
+        FOCUS_LOST,
+        CANCELED
+    }
+
     export interface IMessage {
         content: string;
         formatContent?: boolean; // defaults to false
