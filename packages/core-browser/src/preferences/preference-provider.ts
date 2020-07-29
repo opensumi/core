@@ -100,7 +100,7 @@ export abstract class PreferenceProvider implements IDisposable {
   }
 
   public asScope(scope: PreferenceScope) {
-    if (this._scope) {
+    if (typeof this._scope !== 'undefined') {
       return;
     }
     this._scope = scope;
@@ -139,7 +139,7 @@ export abstract class PreferenceProvider implements IDisposable {
     } else {
       prefChanges = changes;
     }
-    if (this._scope) {
+    if (typeof this._scope !== 'undefined') {
       const preferenceNames = Object.keys(prefChanges.default);
       // 只对scope preference provider做处理
       for (const preferenceName of preferenceNames) {
@@ -186,7 +186,7 @@ export abstract class PreferenceProvider implements IDisposable {
   }
 
   public getWithoutDelegate<T>(preferenceName: string, resourceUri?: string, language?: string): T | undefined {
-    if (this._scope) {
+    if (typeof this._scope !== 'undefined') {
       const externalProvider = getExternalPreferenceProvider(preferenceName);
       if (externalProvider) {
         return externalProvider.get(this._scope);
@@ -229,7 +229,7 @@ export abstract class PreferenceProvider implements IDisposable {
         return {value: res, scope: this._scope}; // FIXME: 这里好像scope有点问题，暂时不影响
       }
     }
-    if (this._scope) {
+    if (typeof this._scope !== 'undefined') {
       const externalProvider = getExternalPreferenceProvider(preferenceName);
       if (externalProvider) {
         return {
@@ -267,7 +267,7 @@ export abstract class PreferenceProvider implements IDisposable {
       const delegate = PreferenceProvider.PreferenceDelegatesReverse[preferenceName];
       await this.setPreference(delegate.delegated, undefined);
     }
-    if (this._scope) {
+    if (typeof this._scope !== 'undefined') {
       const externalProvider = getExternalPreferenceProvider(preferenceName);
       if (externalProvider) {
         try {
