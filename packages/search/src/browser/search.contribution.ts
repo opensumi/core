@@ -12,7 +12,7 @@ import { getIcon } from '@ali/ide-core-browser';
 import { Search } from './search.view';
 import { ContentSearchClientService } from './search.service';
 import { searchPreferenceSchema } from './search-preferences';
-import { SEARCH_CONTAINER_ID, SearchBindingContextIds } from '../common/content-search';
+import { SEARCH_CONTAINER_ID } from '../common/content-search';
 import { SearchTreeService } from './search-tree.service';
 import { ContentSearchResult, ISearchTreeItem, OpenSearchCmdOptions } from '../common';
 import { SearchContextKey } from './search-contextkey';
@@ -95,10 +95,16 @@ export class SearchContribution implements CommandContribution, KeybindingContri
       execute: (e) => {
         this.searchBrowserService.searchHistory.setRecentSearchWord();
       },
+      isEnabled(): boolean {
+        return !!(document.activeElement && document.activeElement.id === 'search-input-field');
+      },
     });
     commands.registerCommand(SEARCH_COMMANDS.GET_BACK_RECENT_SEARCH_WORD, {
       execute: (e) => {
         this.searchBrowserService.searchHistory.setBackRecentSearchWord();
+      },
+      isEnabled(): boolean {
+        return !!(document.activeElement && document.activeElement.id === 'search-input-field');
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_COPY, {
@@ -231,12 +237,10 @@ export class SearchContribution implements CommandContribution, KeybindingContri
     keybindings.registerKeybinding({
       command: SEARCH_COMMANDS.GET_BACK_RECENT_SEARCH_WORD.id,
       keybinding: 'down',
-      context: SearchBindingContextIds.searchInputFocus,
     });
     keybindings.registerKeybinding({
       command: SEARCH_COMMANDS.GET_RECENT_SEARCH_WORD.id,
       keybinding: 'up',
-      context: SearchBindingContextIds.searchInputFocus,
     });
   }
 
