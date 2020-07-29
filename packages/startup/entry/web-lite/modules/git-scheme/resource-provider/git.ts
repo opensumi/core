@@ -4,8 +4,8 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { Path } from '@ali/ide-core-common/lib/path';
 
-import { getMinimalDiffPath } from '../util';
-import { fromSCMUri } from '../scm-uri';
+import { getMinimalDiffPath } from '../../../utils';
+import { fromSCMUri } from '../../../utils/scm-uri';
 
 @Injectable()
 export class GitResourceProvider implements IResourceProvider {

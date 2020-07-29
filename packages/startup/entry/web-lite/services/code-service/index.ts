@@ -1,9 +1,7 @@
 import { Injectable } from '@ali/common-di';
 
 import { ICodeService } from './base';
-
-// FIXME: util 统一放到一起去
-import { base64ToUnicode } from '../../contributions/git-scheme/util';
+import { base64ToUnicode } from '../../utils';
 
 @Injectable()
 export class CodeServiceImpl implements ICodeService {

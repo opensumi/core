@@ -3,10 +3,10 @@ import { ClientApp, IClientAppOpts, LogServiceForClientPath, StorageProvider } f
 import { ensureDir } from '@ali/ide-core-common/lib/browser-fs/ensure-dir';
 import * as BrowserFS from 'browserfs';
 
-import { MetaService } from './modules/meta-service';
-
 import { MockedStorageProvider } from '@ali/ide-core-browser/lib/mocks/storage';
-import { IMetaService } from './modules/meta-service/base';
+
+import { MetaService } from './services/meta-service';
+import { IMetaService } from './services/meta-service/base';
 import { MockLogServiceForClient } from './overrides/mock-logger';
 
 BrowserFS.configure({

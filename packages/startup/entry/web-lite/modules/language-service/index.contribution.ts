@@ -5,9 +5,10 @@ import { Position } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types
 import * as vscode from 'vscode';
 import { IWorkspaceService } from '@ali/ide-workspace';
 
-import { SimpleLanguageService } from '../../modules/language-service/simple';
-import { IMetaService } from '../../modules/meta-service/base';
-import { ILsifService } from '../../modules/lsif-service/base';
+import { IMetaService } from '../../services/meta-service/base';
+import { ILsifService } from '../../services/lsif-service/base';
+
+import { SimpleLanguageService } from './simple';
 
 @Domain(ClientAppContribution)
 export class LanguageServiceContribution extends Disposable implements ClientAppContribution {

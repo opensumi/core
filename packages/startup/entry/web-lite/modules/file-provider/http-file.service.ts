@@ -3,8 +3,8 @@ import { URI, Uri, AppConfig } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { HttpFileServiceBase } from '@ali/ide-file-service/lib/browser/browser-fs-provider';
 
-import { IMetaService } from '../../modules/meta-service/base';
-import { base64ToUnicode } from '../git-scheme/util';
+import { IMetaService } from '../../services/meta-service/base';
+import { base64ToUnicode } from '../../utils';
 
 @Injectable()
 export class AoneCodeHttpFileService extends HttpFileServiceBase {

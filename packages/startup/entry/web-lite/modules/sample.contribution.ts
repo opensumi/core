@@ -2,8 +2,8 @@ import { Autowired } from '@ali/common-di';
 import { Domain, CommandService } from '@ali/ide-core-browser';
 import { ClientAppContribution } from '@ali/ide-core-browser';
 
-import { IMetaService } from '../modules/meta-service/base';
-import { toSCMUri } from './git-scheme/scm-uri';
+import { IMetaService } from '../services/meta-service/base';
+import { toSCMUri } from '../utils/scm-uri';
 
 @Domain(ClientAppContribution)
 export class SampleContribution implements ClientAppContribution {

@@ -1,22 +1,21 @@
 import { Provider, Injectable } from '@ali/common-di';
 import { BrowserModule } from '@ali/ide-core-browser';
 
-import { CommonCommandsContribution } from './contributions/common-commands/index.contribution';
-import { FileProviderContribution } from './contributions/file-provider/index.contribution';
-import { GitSchemeContribution } from './contributions/git-scheme/index.contribution';
-import { KtExtFsProviderContribution } from './contributions/kt-ext-provider/index.contribution';
-import { LanguageServiceContribution } from './contributions/language-service/index.contribution';
-import { TextmateLanguageGrammarContribution } from './contributions/textmate-language-grammar/index.contribution';
-import { ThemeAndIconContribution } from './contributions/theme-icon/index.contribution';
-import { ViewContribution } from './contributions/view/index.contribution';
+import { CommonCommandsContribution } from './modules/common-commands/index.contribution';
+import { FileProviderContribution } from './modules/file-provider/index.contribution';
+import { GitSchemeContribution } from './modules/git-scheme/index.contribution';
+import { KtExtFsProviderContribution } from './modules/kt-ext-provider/index.contribution';
+import { LanguageServiceContribution } from './modules/language-service/index.contribution';
+import { TextmateLanguageGrammarContribution } from './modules/textmate-language-grammar/index.contribution';
+import { ThemeAndIconContribution } from './modules/theme-icon/index.contribution';
+import { ViewContribution } from './modules/view/index.contribution';
 
-import { ICodeService } from './modules/code-service/base';
-import { CodeServiceImpl } from './modules/code-service';
-
-import { ILsifService } from './modules/lsif-service/base';
-import { LsifServiceImpl } from './modules/lsif-service';
+import { ICodeService } from './services/code-service/base';
+import { CodeServiceImpl } from './services/code-service';
+import { ILsifService } from './services/lsif-service/base';
+import { LsifServiceImpl } from './services/lsif-service';
 // sample
-import { SampleContribution } from './contributions/sample.contribution';
+import { SampleContribution } from './modules/sample.contribution';
 
 @Injectable()
 export class WebLiteModule extends BrowserModule {

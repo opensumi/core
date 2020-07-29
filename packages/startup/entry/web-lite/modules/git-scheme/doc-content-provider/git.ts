@@ -4,9 +4,8 @@ import { URI } from '@ali/ide-core-common';
 
 import { AbstractSCMDocContentProvider } from './base-scm';
 
-import { fromSCMUri } from '../scm-uri';
-
-import { ICodeService } from '../../../modules/code-service/base';
+import { ICodeService } from '../../../services/code-service/base';
+import { fromSCMUri } from '../../../utils/scm-uri';
 
 @Injectable()
 export class GitDocContentProvider extends AbstractSCMDocContentProvider implements IEditorDocumentModelContentProvider {

@@ -14,7 +14,7 @@ import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-servic
 import { StaticResourceContribution, StaticResourceService } from '@ali/ide-static-resource/lib/browser/static.definition';
 import { IWorkspaceService } from '@ali/ide-workspace';
 
-import { IMetaService } from '../../modules/meta-service/base';
+import { IMetaService } from '../../services/meta-service/base';
 import { AoneCodeHttpFileService } from './http-file.service';
 
 const EXPRESS_SERVER_PATH = window.location.href;

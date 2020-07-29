@@ -5,9 +5,7 @@
 ```
 .
 ├── README.md
-├── app.tsx
-├── common-modules.ts
-├── contributions
+├── modules
 │   ├── common-commands // 移植一些通用的 vscode namespace 命令
 │   ├── file-provider // fs provider browser 层实现
 │   ├── git-scheme // git scheme 相关实现
@@ -24,7 +22,7 @@
 │   ├── const.ts
 │   ├── ide-theme.ts
 │   └── seti-theme.ts
-├── modules // 一些通用模块实现
+├── service // 一些通用模块实现
 │   ├── code-service // 中心化代码服务
 │   ├── language-service // 简化版本的语言服务实现
 │   ├── lsif-service // 中心化 lsif 服务
@@ -33,9 +31,10 @@
 │   ├── browser-file-scheme.ts // 覆盖 file-scheme 模块
 │   ├── doc-client.ts
 │   └── mock-logger.ts // 覆盖 logger
+├── utils 放一些公共的 util
 └── web-lite-module.ts // 总的入口
 ```
 
 ## 一些原则
 
-**需要将对外部中心化的服务依赖抽象成依赖，然后集成时，只需要对照 interface 去实现时刻**
+**需要将对外部中心化的服务依赖抽象成依赖，然后集成时，只需要对照 interface 去实现即可**
