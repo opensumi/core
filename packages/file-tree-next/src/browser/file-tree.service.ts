@@ -637,9 +637,9 @@ export class FileTreeService extends Tree {
   // 队列化Changed事件
   private queueChangeEvent(path: string, callback: any) {
     if (!this.flushEventQueueDeferred) {
-      this.flushEventQueueDeferred = new Deferred<void>();
       clearTimeout(this._eventFlushTimeout);
       this._eventFlushTimeout = setTimeout(async () => {
+        this.flushEventQueueDeferred = new Deferred<void>();
         // 询问是否此时可进行刷新事件
         await this.requestFlushEventSignalEmitter.fireAndAwait();
         await this.flushEventQueue()!;

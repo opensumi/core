@@ -123,8 +123,8 @@ export class FileTreeModelService {
   private onDidFocusedFileChangeEmitter: Emitter<URI | void> = new Emitter();
   private onDidSelectedFileChangeEmitter: Emitter<URI[]> = new Emitter();
 
-  private locationDeferred: Deferred<void>;
-  private collapsedAllDeferred: Deferred<void>;
+  private locationDeferred: Deferred<void> | null;
+  private collapsedAllDeferred: Deferred<void> | null;
 
   private treeStateWatcher: TreeStateWatcher;
 
@@ -248,10 +248,7 @@ export class FileTreeModelService {
       if (this.selectedFiles.length !== 0) {
         // 仅处理一下单选情况
         const node = this.treeModel?.root.getTreeNodeByPath(this.selectedFiles[0].path);
-        for (const target of this.selectedDecoration.appliedTargets.keys()) {
-          this.selectedDecoration.removeTarget(target);
-        }
-        this.selectedDecoration.addTarget(node as File);
+        this.selectFileDecoration(node);
       }
     }));
     // 确保文件树响应刷新操作时无正在操作的CollapsedAll和Location
@@ -306,8 +303,12 @@ export class FileTreeModelService {
   }
 
   async canHandleRefreshEvent() {
-    await this.collapsedAllDeferred;
-    await this.locationDeferred;
+    if (this.collapsedAllDeferred) {
+      await this.collapsedAllDeferred.promise;
+    }
+    if (this.locationDeferred) {
+      await this.locationDeferred.promise;
+    }
   }
 
   // 清空所有节点选中态
@@ -673,6 +674,7 @@ export class FileTreeModelService {
       });
     }
     this.collapsedAllDeferred.resolve();
+    this.collapsedAllDeferred = null;
   }
 
   // 展开所有缓存目录
@@ -1022,10 +1024,9 @@ export class FileTreeModelService {
     const enterCommit = async (newName) => {
       isCommit = true;
       if (!!this.validateMessage && this.validateMessage.type === PROMPT_VALIDATE_TYPE.ERROR) {
-        this.validateMessage = undefined;
-        promptHandle.removeValidateMessage();
+        return false;
       }
-      if (newName.trim() === '' || (!!this.validateMessage && this.validateMessage.type === PROMPT_VALIDATE_TYPE.ERROR)) {
+      if (newName.trim() === '' || (!!this.validateMessage && this.validateMessage.type !== PROMPT_VALIDATE_TYPE.ERROR)) {
         this.validateMessage = undefined;
         return true;
       }
@@ -1283,8 +1284,9 @@ export class FileTreeModelService {
         if (node) {
           this.selectFileDecoration(node);
         }
-        this.locationDeferred.resolve();
       }
+      this.locationDeferred.resolve();
+      this.locationDeferred = null;
     });
   }
 
