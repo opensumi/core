@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { PreferenceScope, PreferenceService, useInjectable, PreferenceSchemaProvider, PreferenceItem, replaceLocalizePlaceholder, localize, getIcon, PreferenceDataProperty, isElectronRenderer, CommandService, EDITOR_COMMANDS, URI } from '@ali/ide-core-browser';
+import { PreferenceScope, PreferenceService, useInjectable, PreferenceSchemaProvider, PreferenceItem, replaceLocalizePlaceholder, localize, getIcon, PreferenceDataProperty, isElectronRenderer, CommandService, EDITOR_COMMANDS, URI, IPreferenceSettingsService } from '@ali/ide-core-browser';
 import * as styles from './preferences.module.less';
 import * as classnames from 'classnames';
 import { Input, Select, Option, CheckBox, Button, ValidateInput } from '@ali/ide-components';
@@ -34,7 +34,7 @@ interface IPreferenceItemProps {
 export const NextPreferenceItem = ({preferenceName, localizedName, scope}: {preferenceName: string, localizedName?: string, scope: PreferenceScope}) => {
 
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
-  const settingsService: PreferenceSettingsService = useInjectable(PreferenceSettingsService);
+  const settingsService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
   const schemaProvider: PreferenceSchemaProvider = useInjectable(PreferenceSchemaProvider);
   const preferenceProvider = preferenceService.getProvider(scope)!;
 
@@ -110,7 +110,7 @@ export const NextPreferenceItem = ({preferenceName, localizedName, scope}: {pref
 };
 
 const SettingStatus = ({preferenceName, scope, effectingScope, hasValueInScope}: {preferenceName: string, scope: PreferenceScope, effectingScope: PreferenceScope, hasValueInScope: boolean}) => {
-  const settingsService: PreferenceSettingsService = useInjectable(PreferenceSettingsService);
+  const settingsService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
   return <span className={styles.preference_status}>
     {
       effectingScope === PreferenceScope.Workspace && scope === PreferenceScope.User ? <span className={styles.preference_overwritten}>{localize('preference.overwrittenInWorkspace')}</span> :  undefined
@@ -223,7 +223,7 @@ function CheckboxPreferenceItem({preferenceName, localizedName, currentValue, sc
 function SelectPreferenceItem({preferenceName, localizedName, currentValue, schema, effectingScope, scope, hasValueInScope}: IPreferenceItemProps) {
 
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
-  const settingsService: PreferenceSettingsService = useInjectable(PreferenceSettingsService);
+  const settingsService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
 
   const optionEnum = (schema as PreferenceDataProperty).enum;
 
@@ -279,7 +279,7 @@ function EditInSettingsJsonPreferenceItem({preferenceName, localizedName, schema
   const commandService = useInjectable<CommandService>(CommandService);
   const fileServiceClient = useInjectable<IFileServiceClient>(IFileServiceClient);
 
-  const settingsService: PreferenceSettingsService = useInjectable(PreferenceSettingsService);
+  const settingsService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
 
   const editSettingsJson = async () => {
     // TODO 更好的创建方式
