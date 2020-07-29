@@ -23,7 +23,7 @@ import { StaticResourceModule } from '@ali/ide-static-resource/lib/browser';
 import { WorkspaceEditModule } from '@ali/ide-workspace-edit/lib/browser';
 import { KeymapsModule } from '@ali/ide-keymaps/lib/browser';
 
-import { BrowserFileSchemeModule } from './modules/file-scheme/browser-file-scheme';
+import { BrowserFileSchemeModule } from './overrides/browser-file-scheme';
 
 export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   MainLayoutModule,

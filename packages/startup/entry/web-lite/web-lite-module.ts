@@ -1,0 +1,42 @@
+import { Provider, Injectable } from '@ali/common-di';
+import { BrowserModule } from '@ali/ide-core-browser';
+
+import { CommonCommandsContribution } from './modules/common-commands/index.contribution';
+import { FileProviderContribution } from './modules/file-provider/index.contribution';
+import { GitSchemeContribution } from './modules/git-scheme/index.contribution';
+import { KtExtFsProviderContribution } from './modules/kt-ext-provider/index.contribution';
+import { LanguageServiceContribution } from './modules/language-service/index.contribution';
+import { TextmateLanguageGrammarContribution } from './modules/textmate-language-grammar/index.contribution';
+import { ThemeAndIconContribution } from './modules/theme-icon/index.contribution';
+import { ViewContribution } from './modules/view/index.contribution';
+
+import { ICodeService } from './services/code-service/base';
+import { CodeServiceImpl } from './services/code-service';
+import { ILsifService } from './services/lsif-service/base';
+import { LsifServiceImpl } from './services/lsif-service';
+// sample
+import { SampleContribution } from './modules/sample.contribution';
+
+@Injectable()
+export class WebLiteModule extends BrowserModule {
+  providers: Provider[] = [
+    {
+      token: ICodeService,
+      useClass: CodeServiceImpl,
+    },
+    {
+      token: ILsifService,
+      useClass: LsifServiceImpl,
+    },
+    CommonCommandsContribution,
+    GitSchemeContribution,
+    FileProviderContribution,
+    KtExtFsProviderContribution,
+    LanguageServiceContribution,
+    TextmateLanguageGrammarContribution,
+    ThemeAndIconContribution,
+    ViewContribution,
+    // sample
+    SampleContribution,
+  ];
+}
