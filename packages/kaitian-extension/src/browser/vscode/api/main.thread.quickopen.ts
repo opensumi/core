@@ -5,7 +5,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { QuickPickService, QuickPickItem, QuickPickOptions, QuickInputOptions } from '@ali/ide-quick-open';
 import {
   QuickTitleBar,
-} from '@ali/ide-quick-open/src/browser/quick-title-bar';
+} from '@ali/ide-quick-open/lib/browser/quick-title-bar';
 import { IQuickInputService } from '@ali/ide-core-browser/lib/quick-open';
 
 @Injectable({ multiple: true })
