@@ -12,6 +12,7 @@ export { IExtensionProps } from '@ali/ide-core-common';
 export interface IExtensionMetaData {
   id: string;
   extensionId: string;
+  // 支持使用自定义uri
   path: string;
   packageJSON: { [key: string]: any };
   defaultPkgNlsJSON: { [key: string]: any } | undefined;
