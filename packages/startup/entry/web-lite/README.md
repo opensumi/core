@@ -16,12 +16,9 @@
 │   ├── scm-provider
 │   │   └── index.contribution.tsx
 │   ├── textmate-language-grammar // 批量注册 language/grammar
-│   ├── theme-icon // icon/theme
 │   └── view // 视图层相关注册
 ├── extensions // 插件相关
-│   ├── const.ts
-│   ├── ide-theme.ts
-│   └── seti-theme.ts
+│   ├── index.ts
 ├── service // 一些通用模块实现
 │   ├── code-service // 中心化代码服务
 │   ├── language-service // 简化版本的语言服务实现

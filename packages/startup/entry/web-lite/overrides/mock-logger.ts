@@ -2,10 +2,12 @@
 
 import { Injectable } from '@ali/common-di';
 import { LogLevel, SupportLogNamespace } from '@ali/ide-core-browser';
+import { ensureDir } from '@ali/ide-core-common/lib/browser-fs/ensure-dir';
 
 @Injectable()
 export class MockLogServiceForClient {
   private level: LogLevel;
+  private dirInited = false;
 
   catchLogArgs: any[];
   namespace: SupportLogNamespace;
@@ -13,6 +15,13 @@ export class MockLogServiceForClient {
   async setLevel(namespace, level) {
     this.level = level;
     this.namespace = namespace;
+  }
+
+  async getLogFolder() {
+    if (!this.dirInited) {
+      await ensureDir('/log');
+    }
+    return '/log';
   }
 
   async getLevel() {

@@ -11,6 +11,7 @@ import {
   getDebugLogger,
   FsProviderContribution,
   ContributionProvider,
+  ClientAppContribution,
 } from '@ali/ide-core-browser';
 import { FileStat, FileSystemError, IFileServiceClient, IDiskFileProvider, IShadowFileProvider } from '../common';
 import { FileChangeEvent } from '../common';
@@ -139,8 +140,8 @@ export class FileResource implements Resource {
 }
 
 // 常规文件资源读取
-@Domain(ResourceResolverContribution)
-export class FileResourceResolver implements ResourceResolverContribution {
+@Domain(ResourceResolverContribution, ClientAppContribution)
+export class FileResourceResolver implements ResourceResolverContribution, ClientAppContribution {
 
   @Autowired(IFileServiceClient)
   protected readonly fileSystem: FileServiceClient;
@@ -154,15 +155,15 @@ export class FileResourceResolver implements ResourceResolverContribution {
   @Autowired(FsProviderContribution)
   contributionProvider: ContributionProvider<FsProviderContribution>;
 
-  constructor() {
+  async initialize() {
     this.fileSystem.registerProvider('file', this.diskFileServiceProvider);
     this.fileSystem.registerProvider('debug', this.shadowFileServiceProvider);
     const fsProviderContributions = this.contributionProvider.getContributions();
     for (const contribution of fsProviderContributions) {
-      contribution.registerProvider && contribution.registerProvider(this.fileSystem);
+      contribution.registerProvider && await contribution.registerProvider(this.fileSystem);
     }
     for (const contribution of fsProviderContributions) {
-      contribution.onFileServiceReady && contribution.onFileServiceReady();
+      contribution.onFileServiceReady && await contribution.onFileServiceReady();
     }
   }
 

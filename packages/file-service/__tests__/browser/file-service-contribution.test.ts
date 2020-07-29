@@ -13,13 +13,14 @@ describe('FileService Contribution should be work', () => {
   let fileResourceResolver;
   let fsProvider: MockFsProvider;
   const testUri = new URI('file://userhome/test.ts');
-  beforeEach(() => {
+  beforeEach(async () => {
     injector = createBrowserInjector([FileServiceClientModule]);
     injector.addProviders({
       token: DiskFileServicePath,
       useClass: MockFsProvider,
     });
     fileResourceResolver = injector.get(FileResourceResolver);
+    await fileResourceResolver.initialize();
     fsProvider = injector.get(DiskFileServicePath);
   });
 

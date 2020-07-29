@@ -1,6 +1,6 @@
 import { VSCodeContributePoint, Contributes, ExtensionService } from '../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, CommandService, ILogger, PreferenceService } from '@ali/ide-core-browser';
+import { CommandRegistry, CommandService, ILogger, PreferenceService, AppConfig } from '@ali/ide-core-browser';
 import { ThemeType, IIconService, IconType } from '@ali/ide-theme';
 
 export interface CommandFormat {
@@ -41,6 +41,9 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
   @Autowired(ILogger)
   logger: ILogger;
 
+  @Autowired(AppConfig)
+  config: AppConfig;
+
   async contribute() {
     this.json.forEach((command) => {
       this.addDispose(this.commandRegistry.registerCommand({
@@ -54,8 +57,13 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
           return this.extensionService.executeExtensionCommand(command.command, args);
         },
       }));
-      // TODO 支持定义worker中的command
-      this.addDispose(this.extensionService.declareExtensionCommand(command.command, 'node'));
+      // TODO: 支持定义worker中的command
+      if (this.config.noExtHost) {
+        this.addDispose(this.extensionService.declareExtensionCommand(command.command, 'worker'));
+      } else {
+        this.addDispose(this.extensionService.declareExtensionCommand(command.command, 'node'));
+        // this.addDispose(this.extensionService.declareExtensionCommand(command.command, 'worker'));
+      }
     });
   }
 }

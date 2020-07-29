@@ -131,7 +131,7 @@ export class AoneCodeHttpFileService extends HttpFileServiceBase {
   }
 
   protected getRelativePath(uri: URI, encoding = true) {
-    const path = new Path(`/${this.metaService.repo}`).relative(uri.path)!.toString();
+    const path = new Path(`/${this.metaService.ref}/${this.metaService.repo}`).relative(uri.path)!.toString();
     return encoding ? encodeURIComponent(path) : path;
   }
 

@@ -28,6 +28,7 @@ import { ExtHostQuickOpen } from '../vscode/ext.host.quickopen';
 import { ExtHostStatusBar } from '../vscode/ext.statusbar.host';
 import { ExtHostProgress } from '../vscode/ext.host.progress';
 import { ExtHostUrls } from '../vscode/ext.host.urls';
+import { ExtHostComments, createCommentsApiFactory } from '../vscode/ext.host.comments';
 
 export function createAPIFactory(
   rpcProtocol: IRPCProtocol,
@@ -57,6 +58,7 @@ export function createAPIFactory(
   const extHostWindow = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWindow, new ExtHostWindow(rpcProtocol)) as ExtHostWindow;
   const extHostProgress = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostProgress, new ExtHostProgress(rpcProtocol)) as ExtHostProgress;
   const extHostUrls = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostUrls, new ExtHostUrls(rpcProtocol));
+  const extHostComments = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostComments, new ExtHostComments(rpcProtocol, extHostCommands, extHostDocs)) as ExtHostComments;
 
   return (extension: IExtension) => {
     return {
@@ -85,6 +87,7 @@ export function createAPIFactory(
       ),
       // KAITIAN 扩展 API
       layout: createLayoutAPIFactory(extHostCommands),
+      comments: createCommentsApiFactory(extension, extHostComments),
     };
   };
 }

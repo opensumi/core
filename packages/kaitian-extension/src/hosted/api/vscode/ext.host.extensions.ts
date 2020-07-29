@@ -67,14 +67,15 @@ export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
   }
 
   asAbsolutePath(relativePath: string, scheme: 'http' | 'file' = 'http'): string {
-    if (scheme === 'http') {
-      const assetsUri = new URI(this.staticServicePath);
-      const assetSPath = assetsUri.withPath('assets').withQuery(URI.stringifyQuery({
-        path: path.join(this._extensionPath, relativePath),
-      })).toString();
-      return decodeURIComponent(assetSPath);
+    if (scheme === 'file' || new URI(this._extensionPath).scheme) {
+      // 在纯前端场景下，传入的extensionPath自带scheme kt-ext
+      return path.join(this._extensionPath, relativePath);
     }
-    return path.join(this._extensionPath, relativePath);
+    const assetsUri = new URI(this.staticServicePath);
+    const assetSPath = assetsUri.withPath('assets').withQuery(URI.stringifyQuery({
+      path: path.join(this._extensionPath, relativePath),
+    })).toString();
+    return decodeURIComponent(assetSPath);
   }
 }
 

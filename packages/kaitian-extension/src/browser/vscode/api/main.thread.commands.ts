@@ -31,9 +31,11 @@ export class MainThreadCommands implements IMainThreadCommands {
 
   private disposable = new Disposable();
 
-  constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
+  constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol, fromWorker?: boolean) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
-    this.proxy.$registerBuiltInCommands();
+    if (!fromWorker) {
+      this.proxy.$registerBuiltInCommands();
+    }
 
     this.registerUriArgProcessor();
   }

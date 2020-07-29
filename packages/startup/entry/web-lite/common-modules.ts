@@ -22,10 +22,13 @@ import { SCMModule } from '@ali/ide-scm/lib/browser';
 import { StaticResourceModule } from '@ali/ide-static-resource/lib/browser';
 import { WorkspaceEditModule } from '@ali/ide-workspace-edit/lib/browser';
 import { KeymapsModule } from '@ali/ide-keymaps/lib/browser';
+import { KaitianExtensionModule } from '@ali/ide-kaitian-extension/lib/browser';
+import { CommentsModule } from '@ali/ide-comments/lib/browser';
 
 import { BrowserFileSchemeModule } from './overrides/browser-file-scheme';
 
 export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
+  FileServiceClientModule,
   MainLayoutModule,
   OverlayModule,
   LogModule,
@@ -38,7 +41,6 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   QuickOpenModule,
   KeymapsModule,
   FileTreeNextModule,
-  FileServiceClientModule,
   ThemeModule,
   WorkspaceModule,
   ExtensionStorageModule,
@@ -49,6 +51,8 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   SCMModule,
   StaticResourceModule,
   WorkspaceEditModule,
+  CommentsModule,
   // browser custom modules
   BrowserFileSchemeModule,
+  KaitianExtensionModule,
 ];

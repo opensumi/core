@@ -66,6 +66,8 @@ renderApp({
   layoutConfig,
   layoutComponent: LayoutComponent,
   useCdnIcon: true,
+  noExtHost: true,
+  extWorkerHost: 'https://dev.g.alicdn.com/tao-ide/ide-lite/0.0.1/worker-host.js',
   defaultPreferences: {
     'general.theme': 'Default Dark+',
     'general.icon': 'vscode-icons',

@@ -7,7 +7,6 @@ import { GitSchemeContribution } from './modules/git-scheme/index.contribution';
 import { KtExtFsProviderContribution } from './modules/kt-ext-provider/index.contribution';
 import { LanguageServiceContribution } from './modules/language-service/index.contribution';
 import { TextmateLanguageGrammarContribution } from './modules/textmate-language-grammar/index.contribution';
-import { ThemeAndIconContribution } from './modules/theme-icon/index.contribution';
 import { ViewContribution } from './modules/view/index.contribution';
 
 import { ICodeService } from './services/code-service/base';
@@ -34,7 +33,6 @@ export class WebLiteModule extends BrowserModule {
     KtExtFsProviderContribution,
     LanguageServiceContribution,
     TextmateLanguageGrammarContribution,
-    ThemeAndIconContribution,
     ViewContribution,
     // sample
     SampleContribution,

@@ -1,9 +1,8 @@
 import { Injector } from '@ali/common-di';
-import { ClientApp, IClientAppOpts, LogServiceForClientPath, StorageProvider } from '@ali/ide-core-browser';
+import { ClientApp, IClientAppOpts, LogServiceForClientPath } from '@ali/ide-core-browser';
 import { ensureDir } from '@ali/ide-core-common/lib/browser-fs/ensure-dir';
 import * as BrowserFS from 'browserfs';
-
-import { MockedStorageProvider } from '@ali/ide-core-browser/lib/mocks/storage';
+import * as path from 'path';
 
 import { MetaService } from './services/meta-service';
 import { IMetaService } from './services/meta-service/base';
@@ -14,9 +13,13 @@ BrowserFS.configure({
   options: {},
 }, (e) => {});
 
+import { ExtensionNodeServiceServerPath } from '@ali/ide-kaitian-extension';
+import { FileSearchServicePath } from '@ali/ide-file-search';
+import { ExtensionClientService } from './overrides/mock-extension-server';
+import { MockFileSearch } from './overrides/mock-file-search';
+
 export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();
-  opts.workspaceDir = opts.workspaceDir || process.env.WORKSPACE_DIR;
   opts.injector = injector;
 
   // FIXME: 应尽快去掉 mock 模块的使用
@@ -24,19 +27,24 @@ export async function renderApp(opts: IClientAppOpts) {
     token: LogServiceForClientPath,
     useClass: MockLogServiceForClient,
   }, {
-    token: StorageProvider,
-    useValue: MockedStorageProvider,
+    token: ExtensionNodeServiceServerPath,
+    useClass: ExtensionClientService,
+  }, {
+    token: FileSearchServicePath,
+    useClass: MockFileSearch,
   }, {
     token: IMetaService,
     useValue: new MetaService({
       projectId: process.env.PROJECT_ID! || encodeURIComponent('ide-s/TypeScript-Node-Starter'),
       group: 'ide-s',
       name: 'TypeScript-Node-Starter',
-      ref: 'master',
+      ref: 'test',
       // branch: 'test',
     }),
   });
 
+  const metaService = injector.get(IMetaService);
+  opts.workspaceDir = path.join('/', metaService.ref, (opts.workspaceDir || process.env.WORKSPACE_DIR)!);
   // 跟后端通信部分配置，需要解耦
   opts.extensionDir = opts.extensionDir || process.env.EXTENSION_DIR;
   opts.wsPath =  process.env.WS_PATH || 'ws://127.0.0.1:8000';  // 代理测试地址: ws://127.0.0.1:8001

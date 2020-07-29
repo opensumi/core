@@ -32,7 +32,8 @@ export function transformErrorForSerialization(error: any): any {
   return error;
 }
 
-export class ProxyIdentifier<T> {
+// T 啥?
+export class ProxyIdentifier<T = any> {
   public static count = 0;
 
   public readonly serviceId: string;

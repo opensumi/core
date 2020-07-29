@@ -470,6 +470,11 @@ describe('Launch Preferences', () => {
         injector.get(FileServicePath);
         // 替换文件监听函数实现
         injector.mock(FileServicePath, 'watchFileChanges', () => { });
+        const fsClient: IFileServiceClient = injector.get(IFileServiceClient);
+        const diskProvider = injector.get(IDiskFileProvider);
+        const shadowProvider = injector.get(IShadowFileProvider);
+        fsClient.registerProvider('file', diskProvider);
+        fsClient.registerProvider('debug', shadowProvider);
 
         injectPreferenceSchemaProvider(injector);
 

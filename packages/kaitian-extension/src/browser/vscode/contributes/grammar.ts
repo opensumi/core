@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { GrammarsContribution } from '@ali/ide-monaco';
 import { TextmateService } from '@ali/ide-monaco/lib/browser/textmate.service';
-import { localize, URI } from '@ali/ide-core-common';
+import { localize } from '@ali/ide-core-common';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
 
@@ -14,9 +14,8 @@ export class GrammarsContributionPoint extends VSCodeContributePoint<GrammarSche
   textMateService: TextmateService;
 
   contribute() {
-    const extUri = new URI(this.extension.path).scheme ? new URI(this.extension.path) : URI.file(this.extension.path);
     for (const grammar of this.json) {
-      this.textMateService.registerGrammar(grammar, extUri);
+      this.textMateService.registerGrammar(grammar, this.extension.uri!);
     }
   }
 

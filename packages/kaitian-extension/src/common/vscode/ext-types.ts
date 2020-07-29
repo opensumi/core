@@ -2422,3 +2422,31 @@ export enum UIKind {
   Desktop = 1,
   Web = 2,
 }
+
+/**
+ * 评论模式
+ */
+export enum CommentMode {
+  /**
+   * 编辑状态
+   */
+  Editing = 0,
+  /**
+   * 预览状态
+   */
+  Preview = 1,
+}
+
+/**
+ * thread 展开模式
+ */
+export enum CommentThreadCollapsibleState {
+  /**
+   * 收起状态
+   */
+  Collapsed = 0,
+  /**
+   * 展开状态
+   */
+  Expanded = 1,
+}

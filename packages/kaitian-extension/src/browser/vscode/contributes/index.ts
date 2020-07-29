@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@ali/common-di';
-import { Disposable, ConstructorOf, PreferenceSchema, PreferenceSchemaProperties, ISchemaRegistry, localize, ILogger } from '@ali/ide-core-browser';
+import { Disposable, ConstructorOf, PreferenceSchema, PreferenceSchemaProperties, ISchemaRegistry, localize, ILogger, URI } from '@ali/ide-core-browser';
 import { IExtensionMetaData, VSCodeContributePoint, CONTRIBUTE_NAME_KEY } from '../../../common';
 
 import { CommandsSchema, CommandsContributionPoint } from './commands';
@@ -340,6 +340,7 @@ export class VSCodeContributeRunner extends Disposable {
           }
 
           this.addDispose(contributePoint);
+          this.extension.uri = new URI(this.extension.path).scheme ? new URI(this.extension.path) : URI.file(this.extension.path);
           await contributePoint.contribute();
 
         } catch (e) {

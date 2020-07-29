@@ -8,7 +8,10 @@ import * as fs from 'fs';
 import * as paths from 'path';
 
 interface BrowserFsProviderOptions { isReadonly?: boolean; rootFolder: string; }
+// FIXME: 工作区无关的路径需要绕过http那一层
+const HOME_DIR = FileUri.create('/home');
 
+// 利用storage来记录文件已加载的信息，dispose时记得清楚
 export class BrowserFsProvider implements IDiskFileProvider {
 
   static binaryExtList = [
@@ -115,9 +118,13 @@ export class BrowserFsProvider implements IDiskFileProvider {
   async readFile(uri: Uri): Promise<string> {
     const _uri = new URI(uri);
     let content = await promisify(fs.readFile)(FileUri.fsPath(_uri), { encoding: 'utf8' });
-    if (!content) {
+    if (!content && uri.fsPath.startsWith(this.options.rootFolder) && !window.localStorage.getItem(_uri.toString())) {
       // content为空读取远程
       content = await this.httpFileService.readFile(uri);
+      // TODO: dispose
+      window.localStorage.setItem(_uri.toString(), '1');
+      // workspaceDir 要带版本号信息(ref)，保证本地存储和版本号是对应的
+      content && fs.writeFile(FileUri.fsPath(_uri), content, () => {});
     }
     return content;
   }
@@ -135,26 +142,31 @@ export class BrowserFsProvider implements IDiskFileProvider {
     }
 
     if (options.create) {
-      if (!options.isInit) {
+      // isInit代表是懒加载时从上层创建空文件，与用户主动创建或更新文件区分开
+      if (!options.isInit && uri.fsPath.startsWith(this.options.rootFolder)) {
         await this.httpFileService.createFile(uri, content, {});
       }
       return await this.createFile(uri, { content });
     }
-    if (!options.isInit) {
+    if (!options.isInit && uri.fsPath.startsWith(this.options.rootFolder)) {
       await this.httpFileService.updateFile(uri, content, {});
     }
     await promisify(fs.writeFile)(FileUri.fsPath(_uri), content);
   }
   async delete(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean | undefined; }): Promise<void> {
     this.checkCapability();
-    await this.httpFileService.deleteFile(uri, {recursive: options.recursive});
+    if (uri.fsPath.startsWith(this.options.rootFolder)) {
+      await this.httpFileService.deleteFile(uri, {recursive: options.recursive});
+    }
     return await promisify(fs.unlink)((uri.fsPath));
   }
   async rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean; }): Promise<void | FileStat> {
     this.checkCapability();
     const content = await this.readFile(oldUri);
     // FIXME: 如何保证browserFs侧写入和远端写入的原子性？
-    await this.httpFileService.updateFile(oldUri, content, { newUri });
+    if (oldUri.fsPath.startsWith(this.options.rootFolder)) {
+      await this.httpFileService.updateFile(oldUri, content, { newUri });
+    }
     return await promisify(fs.rename)(oldUri.fsPath, newUri.fsPath);
   }
   async access(uri: Uri): Promise<boolean> {
@@ -174,11 +186,20 @@ export class BrowserFsProvider implements IDiskFileProvider {
   async copy(source: Uri, destination: Uri, options: { overwrite: boolean; }): Promise<void | FileStat> {
     this.checkCapability();
     const content = await this.readFile(source);
-    await this.httpFileService.createFile(destination, content, {});
+    if (source.fsPath.startsWith(this.options.rootFolder)) {
+      await this.httpFileService.createFile(destination, content, {});
+    }
     await promisify(fs.writeFile)(destination.fsPath, content);
   }
+
+  private homeStat: FileStat | undefined;
   async getCurrentUserHome(): Promise<FileStat | undefined> {
-    return undefined;
+    if (!this.homeStat) {
+      await ensureDir(HOME_DIR.codeUri.fsPath);
+      window.localStorage.setItem(HOME_DIR.toString(), '1');
+      this.homeStat = await this.stat(HOME_DIR.codeUri);
+    }
+    return this.homeStat;
   }
 
   async getFileType(uri: string): Promise<string | undefined> {
@@ -269,6 +290,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
   }
 
   protected async ensureNodeFetched(uri: URI) {
+    // FIXME: browserFs是否不应该耦合HttpFileService？
     const childNodes = await this.httpFileService.readDir(uri.codeUri);
     const ensureNodes: Promise<FileStat>[] = [];
     for (const node of childNodes) {
@@ -280,6 +302,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
     }
     try {
       await Promise.all(ensureNodes);
+      window.localStorage.setItem(uri.toString(), '1');
     } catch (err) {
       // logger
       // console.error('node fetch failed ', err);
@@ -318,7 +341,9 @@ export class BrowserFsProvider implements IDiskFileProvider {
 
   protected async doGetChildren(uri: URI, depth: number): Promise<FileStat[]> {
     // TODO: 获取stat前拉取一遍远端的结构信息，理论上要加一个cache做优化
-    await this.ensureNodeFetched(uri);
+    if (!window.localStorage.getItem(uri.toString()) && uri.codeUri.fsPath.startsWith(this.options.rootFolder)) {
+      await this.ensureNodeFetched(uri);
+    }
     return new Promise((resolve) => {
       fs.readdir(FileUri.fsPath(uri), async (err, files) => {
         const children = await Promise.all(files.map((fileName) => uri.resolve(fileName)).map((childUri) => this.doGetStat(childUri, depth - 1)));

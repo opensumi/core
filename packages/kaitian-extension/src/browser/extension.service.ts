@@ -71,6 +71,7 @@ import {
   createSocketConnection,
   RPCProtocol,
   ProxyIdentifier,
+  IRPCProtocol,
 } from '@ali/ide-connection';
 import * as retargetEvents from 'react-shadow-dom-retarget-events';
 
@@ -764,7 +765,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
 
     if (contributes && contributes.browserMain) {
-      const browserModuleUri = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(contributes.browserMain).toString()));
+      const absolutePath = new Path(extension.path).join(contributes.browserMain).toString();
+      const extUri = new URI(absolutePath).scheme ? new URI(absolutePath) : URI.file(absolutePath);
+      const browserModuleUri = await this.staticResourceService.resolveStaticResource(extUri);
       if (contributes.browserViews) {
         const { browserViews } = contributes;
         this.registerPortalShadowRoot(extension.id);
@@ -817,10 +820,14 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       },
     });
   }
+
+  private createExtendProxy(protocol: IRPCProtocol, extensionId: string): typeof Proxy {
+    const proxy = protocol.getProxy(new ProxyIdentifier(`${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}`));
+    return this.dollarProxy(proxy);
+  }
+
   private createExtensionExtendProtocol2(extension: IExtension, componentId: string) {
     const { id: extensionId } = extension;
-    const protocol = this.protocol;
-    const workerProtocol = this.workerProtocol;
 
     const extendProtocol = new Proxy<{
       getProxy: (identifier: ProxyIdentifier<any>) => {
@@ -836,19 +843,21 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
         if (prop === 'getProxy') {
           return () => {
-            let protocolProxy = protocol.getProxy({ serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}` } as ProxyIdentifier<any>);
-            protocolProxy = this.dollarProxy(protocolProxy);
-            let workerProtocolProxy;
 
-            if (workerProtocol) {
-              workerProtocolProxy = workerProtocol.getProxy({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}`} as ProxyIdentifier<any>);
-              workerProtocolProxy = this.dollarProxy(workerProtocolProxy);
+            let nodeProxy;
+            let workerProxy;
+
+            if (this.protocol) {
+              nodeProxy = this.createExtendProxy(this.protocol, extensionId);
             }
 
-            // TODO: 增加判断是否有对应环境的服务，没有的话做预防处理
+            if (this.workerProtocol) {
+              workerProxy = this.createExtendProxy(this.workerProtocol, extensionId);
+            }
+
             return {
-              node: protocolProxy,
-              worker: workerProtocolProxy,
+              node: nodeProxy,
+              worker: workerProxy,
             };
 
           };
@@ -865,10 +874,12 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
             this.logger.log('componentProxyIdentifier', componentProxyIdentifier, 'service', service);
 
-            if (workerProtocol) {
-              workerProtocol.set(componentProxyIdentifier as ProxyIdentifier<any>, service);
+            if (this.workerProtocol) {
+              this.workerProtocol.set(componentProxyIdentifier as ProxyIdentifier<any>, service);
             }
-            return protocol.set(componentProxyIdentifier as ProxyIdentifier<any>, service);
+            if (this.protocol) {
+              return this.protocol.set(componentProxyIdentifier as ProxyIdentifier<any>, service);
+            }
           };
         }
       },
@@ -879,6 +890,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   private getExtensionExtendService(extension: IExtension, id: string) {
     const protocol = this.createExtensionExtendProtocol2(extension, id);
+
     this.logger.log(`bind extend service for ${extension.id}:${id}`);
     return {
       extendProtocol: protocol,
@@ -890,6 +902,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     if (browserExported.default) {
       browserExported = browserExported.default;
     }
+
     const contribution: IKaitianBrowserContributions = browserExported;
     extension.addDispose(this.injector.get(KaitianBrowserContributionRunner, [extension, contribution]).run({
       getExtensionExtendService: this.getExtensionExtendService.bind(this),
@@ -1024,7 +1037,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   private getWorkerExtensionProps(extension: IExtension, workerMain: string) {
-    const workerScriptURI = this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(workerMain).toString()));
+    const absolutePath = new Path(extension.path).join(workerMain).toString();
+    const extUri = new URI(absolutePath).scheme ? new URI(absolutePath) : URI.file(absolutePath);
+    const workerScriptURI = this.staticResourceService.resolveStaticResource(extUri);
     const workerScriptPath = workerScriptURI.toString();
 
     return Object.assign({}, extension.toJSON(), { workerScriptPath });

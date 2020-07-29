@@ -50,6 +50,8 @@ export {
   SymbolKind,
   FileOperation,
   FileTextEdit,
+  CommentThreadCollapsibleState,
+  CommentMode,
 } from '../../../common/vscode/ext-types';
 
 export {
