@@ -77,6 +77,10 @@ export interface ITerminalService {
 }
 ```
 
+## 外部和内部 API
+
+对于 common 中默认导出的 api 认为为外部 api，而对于 common 中没有默认导出的类型则认为为内部 api，内部 api 依然可以通过子名称获取到类型进行覆盖或者使用，但是内部 api 的任何 api 修改不作为 bk，不推荐直接使用内部 api。
+
 ## 接下来
 
 * [ ] 终端首次初始化使用对比的外层 dom 节点需要可指定，这里可能需要使用 core 内部 api 手动计算

@@ -11,7 +11,8 @@ import { TerminalClientFactory } from '../../src/browser/terminal.client';
 import { TerminalGroupViewService } from '../../src/browser/terminal.view';
 import { TerminalInternalService } from '../../src/browser/terminal.service';
 import { TerminalPreference } from '../../src/browser/terminal.preference';
-import { ITerminalService, ITerminalPreference, ITerminalTheme, ITerminalClientFactory, ITerminalController, ITerminalGroupViewService, ITerminalInternalService, IWidget } from '../../src/common';
+import { ITerminalService, ITerminalTheme, ITerminalClientFactory, ITerminalController, ITerminalGroupViewService, ITerminalInternalService, IWidget } from '../../src/common';
+import { ITerminalPreference } from '../../src/common/preference';
 import {
   MockMainLayoutService,
   MockTerminalThemeService,

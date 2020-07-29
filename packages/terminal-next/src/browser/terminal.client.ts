@@ -10,7 +10,8 @@ import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
 import { FilePathAddon, AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
 import { TerminalKeyBoardInputService } from './terminal.input';
-import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, ITerminalGroupViewService, ITerminalInternalService, IWidget, ITerminalPreference, ITerminalDataEvent } from '../common';
+import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, ITerminalGroupViewService, ITerminalInternalService, IWidget, ITerminalDataEvent } from '../common';
+import { ITerminalPreference } from '../common/preference';
 import { CorePreferences, IOpenerService } from '@ali/ide-core-browser';
 
 import * as styles from './component/terminal.module.less';
