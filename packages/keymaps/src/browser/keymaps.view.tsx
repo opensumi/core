@@ -19,7 +19,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
     validateKeybinding,
     detectKeybindings,
     setKeybinding,
-    removeKeybinding,
+    resetKeybinding,
     getRaw,
     getScope,
     covert,
@@ -77,7 +77,6 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
         setKeybinding({
           command: getRaw(id),
           when: getRaw(when) || '',
-          context: getRaw(context) || '',
           keybinding: value,
         });
         setIsEditing(false);
@@ -130,7 +129,11 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       }
       const reset = (event) => {
         event.preventDefault();
-        removeKeybinding(id);
+        resetKeybinding({
+          command: getRaw(id),
+          when: getRaw(when) || '',
+          keybinding: value,
+        });
       };
       // 重置快捷键作用域
       if (source && getRaw(source) === getScope(KeybindingScope.USER)) {
@@ -182,7 +185,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
         </div>;
       } else {
         const keyBlocks = keybinding?.split(' ');
-        return <div className={styles.keybinding_key} title={getRaw(keybinding)}>
+        return <div className={styles.keybinding_key} title={getRaw(keybinding)} onDoubleClick={clickHandler}>
           <div className={styles.keybinding_action} onClick={clickHandler}>
             <span className={cls(keybinding ? getIcon('edit') : getIcon('plus'), styles.keybinding_inline_action)} title={keybinding ? localize('keymaps.action.edit') : localize('keymaps.action.add')}></span>
             {renderReset(source)}

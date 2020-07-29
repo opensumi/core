@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, DisposableCollection, KeybindingService, ILogger } from '@ali/ide-core-browser';
+import { Disposable, IDisposable, ScopedKeybinding, KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeybindingService, ILogger, Event } from '@ali/ide-core-browser';
 import { KeymapsParser } from './keymaps-parser';
 import * as fuzzy from 'fuzzy';
 import { KEYMAPS_FILE_NAME, IKeymapService, KEYMAPS_SCHEME, KeybindingItem } from '../common';
@@ -50,13 +50,17 @@ export class KeymapService implements IKeymapService {
   protected resource: Resource;
 
   protected readonly keymapChangeEmitter = new Emitter<void>();
-  onDidKeymapChanges = this.keymapChangeEmitter.event;
+
+  get onDidKeymapChanges(): Event<void> {
+    return this.keymapChangeEmitter.event;
+  }
 
   private searchTimer: any = null;
 
   protected convertKeySequence: KeySequence = [];
 
-  protected readonly toDisposeOnDetach = new DisposableCollection();
+  protected readonly toUnregisterUserKeybindingMap: Map<string, IDisposable> = new Map();
+  protected readonly toRestoreDefaultKeybindingMap: Map<string, IDisposable> = new Map();
 
   /**
    * fuzzy搜索参数，pre及post用于包裹搜索结果
@@ -86,7 +90,12 @@ export class KeymapService implements IKeymapService {
   }
 
   dispose() {
-    this.toDisposeOnDetach.dispose();
+    for (const [, value] of this.toUnregisterUserKeybindingMap) {
+      value.dispose();
+    }
+    for (const [, value] of this.toRestoreDefaultKeybindingMap) {
+      value.dispose();
+    }
   }
 
   /**
@@ -95,22 +104,76 @@ export class KeymapService implements IKeymapService {
    */
   async reconcile(keybindings?: Keybinding[]) {
     const keymap = keybindings ? keybindings.slice(0) : await this.parseKeybindings();
-    // 重新注册快捷键前取消注册先前的快捷键
-    // TODO: 差量注册，差量移除
-    this.dispose();
-    this.toDisposeOnDetach.push(this.keyBindingRegistry.setKeymap(KeybindingScope.USER, keymap.map((kb) => {
+    const bindings: Keybinding[] = keymap.map((kb) => {
       // 清洗存入keymap数据
       return {
         when: kb.when,
         command: kb.command,
-        context: kb.context,
         keybinding: kb.keybinding,
       };
-    })));
+    });
+    // 重新注册快捷键前取消注册先前的快捷键
+    this.dispose();
+    bindings.forEach((kb: Keybinding) => {
+      this.unregisterDefaultKeybinding(kb, true);
+      this.registerUserKeybinding(kb);
+    });
 
     this.updateKeybindings();
   }
 
+  private unregisterUserKeybinding(kb: Keybinding) {
+    const key = this.toStoreKey(kb);
+    if (this.toUnregisterUserKeybindingMap.has(key)) {
+      const disposeable = this.toUnregisterUserKeybindingMap.get(key);
+      disposeable?.dispose();
+      this.toUnregisterUserKeybindingMap.delete(key);
+    }
+  }
+
+  private registerUserKeybinding(kb: Keybinding) {
+    const key = this.toStoreKey(kb);
+    this.toUnregisterUserKeybindingMap.set(key, this.keybindingRegistry.registerKeybinding(kb, KeybindingScope.USER));
+  }
+
+  private unregisterDefaultKeybinding(kd: Keybinding, fromUserScope: boolean = false) {
+    if (fromUserScope) {
+      // 当卸载默认快捷键的操作是从用户快捷键初始化时操作的时候
+      // 此时需要找到command下对应keybindings中when及快捷键匹配的快捷键进行卸载
+      const keybindings = this.keybindingRegistry.getKeybindingsForCommand(kd.command);
+      keybindings.map((rawKd: ScopedKeybinding) => {
+        const targetKd = {
+          ...kd,
+          keybinding: rawKd.keybinding,
+        };
+        this.keybindingRegistry.unregisterKeybinding(targetKd);
+        const key = this.toStoreKey(targetKd);
+        // 存储可恢复默认快捷键注册的函数
+        this.toRestoreDefaultKeybindingMap.set(key, Disposable.create(() => {
+          this.keybindingRegistry.registerKeybinding(targetKd);
+        }));
+      });
+    } else {
+      // 当直接从快捷键编辑面板直接修改默认快捷键的时候
+      // 由于卸载是定向的快捷键，有明确的快捷键，不需要进行command对应到快捷键的查找，可直接卸载
+      this.keybindingRegistry.unregisterKeybinding(kd);
+      const key = this.toStoreKey(kd);
+      // 存储可恢复默认快捷键注册的函数
+      this.toRestoreDefaultKeybindingMap.set(key, Disposable.create(() => {
+        this.keybindingRegistry.registerKeybinding(kd);
+      }));
+    }
+  }
+
+  private restoreDefaultKeybinding(kb: Keybinding) {
+    const key = this.toStoreKey(kb);
+    const restore = this.toRestoreDefaultKeybindingMap.get(key);
+    restore?.dispose();
+  }
+
+  private toStoreKey(kb: Keybinding) {
+    return `${kb.command}-${kb.when}`;
+  }
   /**
    * 更新keybindings列表
    */
@@ -154,18 +217,28 @@ export class KeymapService implements IKeymapService {
     for (const kb of keybindings) {
       if (kb.command === keybinding.command) {
         updated = true;
+        this.unregisterUserKeybinding(kb);
         kb.keybinding = keybinding.keybinding;
+        this.registerUserKeybinding(kb);
       }
     }
     if (!updated) {
+      const defaultBinding: KeybindingItem = this.keybindings.find((kb: KeybindingItem) => kb.id === keybinding.command && this.getRaw(kb.when) === keybinding.when)!;
+      if (defaultBinding && defaultBinding.keybinding) {
+        this.unregisterDefaultKeybinding({
+          when: this.getRaw(defaultBinding.when),
+          command: defaultBinding.id,
+          keybinding: this.getRaw(defaultBinding.keybinding),
+        });
+      }
       // 不能额外传入keybinding的resolved值
       const item: Keybinding = {
         when: keybinding.when,
         command: keybinding.command,
-        context: keybinding.context,
         keybinding: keybinding.keybinding,
       };
       keybindings.push(item);
+      this.registerUserKeybinding(item);
     }
     // 后置存储流程
     this.saveKeybinding(keybindings);
@@ -176,14 +249,12 @@ export class KeymapService implements IKeymapService {
       return;
     }
     this.storeKeybindings = keybindings;
-    // 存储前配置化当前快捷键
-    this.reconcile(keybindings);
+    this.updateKeybindings();
     // 存储前清理多余属性
     await this.resource.saveContents(JSON.stringify(keybindings.map((kb) => {
       return {
         when: kb.when,
         command: kb.command,
-        context: kb.context,
         keybinding: kb.keybinding,
       };
     }), undefined, 2));
@@ -203,12 +274,14 @@ export class KeymapService implements IKeymapService {
    * @returns {Promise<void>}
    * @memberof KeymapsService
    */
-  removeKeybinding = async (commandId: string): Promise<void> => {
+  resetKeybinding = async (item: Keybinding) => {
     if (!this.resource.saveContents) {
       return;
     }
     const keybindings: Keybinding[] = this.storeKeybindings;
-    const filtered = keybindings.filter((a) => a.command !== commandId);
+    const filtered = keybindings.filter((a) => a.command !== item.command);
+    this.unregisterUserKeybinding(item);
+    this.restoreDefaultKeybinding(item);
     this.saveKeybinding(filtered);
   }
 
@@ -314,32 +387,31 @@ export class KeymapService implements IKeymapService {
     const items: KeybindingItem[] = [];
     for (const command of commands) {
       const keybindings = this.keybindingRegistry.getKeybindingsForCommand(command.id);
-      let item: KeybindingItem;
-
-      if (this.storeKeybindings) {
-        const isUserKeybinding = this.storeKeybindings.find((kb) => command && kb.command === command.id);
-        item = {
-          id: command.id,
-          command: command.label || command.id,
-          keybinding: isUserKeybinding ? isUserKeybinding.keybinding : (keybindings && keybindings[0]) ? this.keybindingRegistry.acceleratorFor(keybindings[0], '+').join(' ') : '',
-          context: isUserKeybinding ? isUserKeybinding.context : (keybindings && keybindings[0]) ? (keybindings && keybindings[0]).context : '',
-          when: isUserKeybinding ? this.getWhen(isUserKeybinding) : this.getWhen((keybindings && keybindings[0])),
-          source: isUserKeybinding ? this.getScope(KeybindingScope.USER) : this.getScope(KeybindingScope.DEFAULT),
-          hasCommandLabel: !!command.label,
-        };
-      } else {
-        item = {
-          id: command.id,
-          command: command.label || command.id,
-          keybinding: (keybindings && keybindings[0]) ? this.keybindingRegistry.acceleratorFor(keybindings[0], '+').join(' ') : '',
-          when: this.getWhen((keybindings && keybindings[0])),
-          context: (keybindings && keybindings[0]) ? (keybindings && keybindings[0]).context : '',
-          source: (keybindings && keybindings[0] && typeof keybindings[0].scope !== 'undefined')
-            ? this.getScope(keybindings[0].scope!) : '',
-          hasCommandLabel: !!command.label,
-        };
-      }
-      items.push(item);
+      keybindings.forEach((kd: ScopedKeybinding) => {
+        let item: KeybindingItem;
+        if (this.storeKeybindings) {
+          const isUserKeybinding = this.storeKeybindings.find((kb) => command && kb.command === command.id);
+          item = {
+            id: command.id,
+            command: command.label || command.id,
+            keybinding: isUserKeybinding ? isUserKeybinding.keybinding : kd ? this.keybindingRegistry.acceleratorFor(kd, '+').join(' ') : '',
+            when: isUserKeybinding ? this.getWhen(isUserKeybinding) : this.getWhen((keybindings && kd)),
+            source: isUserKeybinding ? this.getScope(KeybindingScope.USER) : this.getScope(KeybindingScope.DEFAULT),
+            hasCommandLabel: !!command.label,
+          };
+        } else {
+          item = {
+            id: command.id,
+            command: command.label || command.id,
+            keybinding: (keybindings && kd) ? this.keybindingRegistry.acceleratorFor(kd, '+').join(' ') : '',
+            when: this.getWhen((keybindings && kd)),
+            source: (keybindings && kd && typeof kd.scope !== 'undefined')
+              ? this.getScope(kd.scope!) : '',
+            hasCommandLabel: !!command.label,
+          };
+        }
+        items.push(item);
+      });
     }
 
     // 获取排序后的列表

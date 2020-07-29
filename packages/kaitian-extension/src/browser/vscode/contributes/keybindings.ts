@@ -27,7 +27,7 @@ export class KeybindingContributionPoint extends VSCodeContributePoint<Keybindin
       this.toKeybinding(contributedKeyBinding)),
     );
 
-    this.addDispose(this.keybindingRegistry.registerKeybindings(...keybindings));
+    this.addDispose(this.keybindingRegistry.registerKeybindings(keybindings));
   }
 
   protected toKeybinding(contributedKeyBinding: ContributedKeyBinding): Keybinding {

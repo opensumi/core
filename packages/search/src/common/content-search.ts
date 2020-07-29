@@ -191,10 +191,6 @@ export function getRoot(rootUris ?: string[], uri ?: string): string {
 
 export const SEARCH_CONTAINER_ID = 'search';
 
-export namespace SearchBindingContextIds {
-  export const searchInputFocus = 'searchInputFocus';
-}
-
 export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   children?: ISearchTreeItem[];
   badge?: number;
