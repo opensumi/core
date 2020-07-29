@@ -62,6 +62,10 @@ export interface IWebviewChannel {
   fakeLoad: boolean;
 }
 
+function addslashes( str ) {
+  return (str + '').replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
+}
+
 export function getVsCodeApiScript(state) {
   return `
     const acquireVsCodeApi = (function() {
@@ -69,7 +73,7 @@ export function getVsCodeApiScript(state) {
       const targetOrigin = '*';
       let acquired = false;
 
-      let state = ${state ? `JSON.parse(${JSON.stringify(state)})` : undefined};
+      let state = ${state ? `JSON.parse("${addslashes(JSON.stringify(state))}")` : undefined};
 
       return () => {
         if (acquired) {
@@ -94,6 +98,6 @@ export function getVsCodeApiScript(state) {
     delete window.parent;
     delete window.top;
     delete window.frameElement;
-    window.is_theia = true
+    window.acquireVsCodeApi = acquireVsCodeApi;
   `;
 }

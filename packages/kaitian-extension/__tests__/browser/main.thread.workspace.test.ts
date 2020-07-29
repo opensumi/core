@@ -1,5 +1,5 @@
 import { Emitter, IFileServiceClient, URI, Uri, IEventBus, PreferenceScope, ILoggerManagerClient, FileUri } from '@ali/ide-core-common';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -51,6 +51,7 @@ import { MainThreadFileSystem } from '@ali/ide-kaitian-extension/lib/browser/vsc
 import { ExtHostFileSystemEvent } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.file-system-event';
 import { MockLoggerManagerClient } from '../__mock__/loggermanager';
 import temp = require('temp');
+import { IWebviewService } from '@ali/ide-webview';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -174,6 +175,10 @@ describe('MainThreadWorkspace API Test Suite', () => {
     {
       token: EditorPreferences,
       useValue: {},
+    },
+    {
+      token: IWebviewService,
+      useValue: mockService({}),
     },
   ]));
   injectMockPreferences(injector);

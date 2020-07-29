@@ -246,11 +246,7 @@ export class ExtHostWebviewPanel implements WebviewPanel {
 }
 
 export class ExtHostWebviewService implements IExtHostWebview {
-  private static webviewHandlePool = 1;
-
-  private static newHandle(): string {
-    return ExtHostWebviewService.webviewHandlePool++ + '';
-  }
+  private webviewHandlePool = 1;
 
   private readonly _proxy: IMainThreadWebview;
   private readonly _webviewPanels = new Map<string, ExtHostWebviewPanel>();
@@ -270,6 +266,14 @@ export class ExtHostWebviewService implements IExtHostWebview {
     this.resourceRoots = await this._proxy.$getWebviewResourceRoots();
   }
 
+  private getNextHandle() {
+    let nextHandle = 'ext-host-webview-' + this.webviewHandlePool++ ;
+    while (this._webviewPanels.has(nextHandle)) {
+      nextHandle = 'ext-host-webview-' + this.webviewHandlePool++ ;
+    }
+    return nextHandle;
+  }
+
   public createWebview(
     extensionLocation: Uri | undefined,
     viewType: string,
@@ -284,7 +288,7 @@ export class ExtHostWebviewService implements IExtHostWebview {
       preserveFocus: typeof showOptions === 'object' && !!showOptions.preserveFocus,
     };
 
-    const handle = ExtHostWebviewService.newHandle();
+    const handle = this.getNextHandle();
     this._proxy.$createWebviewPanel(handle, viewType, title, webviewShowOptions, options, extension);
 
     const webview = new ExtHostWebview(handle, this._proxy, options, this.resourceRoots);
@@ -360,6 +364,7 @@ export class ExtHostWebviewService implements IExtHostWebview {
     const webview = new ExtHostWebview(webviewHandle, this._proxy, options, this.resourceRoots);
     const revivedPanel = new ExtHostWebviewPanel(webviewHandle, this._proxy, viewType, title, position, options, webview);
     this._webviewPanels.set(webviewHandle, revivedPanel);
+
     return serializer.deserializeWebviewPanel(revivedPanel, state);
   }
 

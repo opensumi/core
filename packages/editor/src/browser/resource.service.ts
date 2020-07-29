@@ -14,6 +14,11 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
     provider: IResourceProvider,
   }> = new Map();
 
+  private gettingResources: Map<string, Promise<{
+    resource: IResource,
+    provider: IResourceProvider,
+  } | null>> = new Map();
+
   private resourceDecoration: Map<string, IResourceDecoration> = new Map();
 
   private cachedProvider = new LRUMap<string, IResourceProvider | undefined>(500, 200);
@@ -31,7 +36,10 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
     if (this.resources.has(uri.toString())) {
       const resource = this.resources.get(uri.toString());
       this.doGetResource(uri).then((newResource) => {
-        Object.assign(resource, newResource);
+        if (resource) {
+          Object.assign(resource?.resource, newResource?.resource);
+          resource.provider = newResource?.provider!;
+        }
         this.eventBus.fire(new ResourceDidUpdateEvent(uri));
       });
     }
@@ -49,7 +57,10 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
       if (!r) {
         return null;
       }
-      const resource = observable(Object.assign({}, r));
+      const resource = {
+        resource: observable(Object.assign({}, r.resource)),
+        provider: r.provider,
+      };
       this.resources.set(uri.toString(), resource);
     }
     return this.resources.get(uri.toString())!.resource as IResource;
@@ -59,18 +70,27 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
     resource: IResource<any>,
     provider: IResourceProvider;
   } | null> {
-    const provider = this.calculateProvider(uri);
-    if (!provider) {
-      this.logger.error('URI has no resource provider: ' + uri);
-      return null;
-    } else {
-      const r = await provider.provideResource(uri);
-      r.uri = uri;
-      return {
-        resource: r,
-        provider,
-      };
+    if (!this.gettingResources.has(uri.toString())) {
+      const promise = (async () => {
+        const provider = this.calculateProvider(uri);
+        if (!provider) {
+          this.logger.error('URI has no resource provider: ' + uri);
+          return null;
+        } else {
+          const r = await provider.provideResource(uri);
+          r.uri = uri;
+          return {
+            resource: r,
+            provider,
+          };
+        }
+      })();
+      this.gettingResources.set(uri.toString(), promise);
+      promise.finally(() => {
+        this.gettingResources.delete(uri.toString());
+      });
     }
+    return this.gettingResources.get(uri.toString())!;
 
   }
 

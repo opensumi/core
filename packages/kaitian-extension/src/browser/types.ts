@@ -22,3 +22,5 @@ export abstract class IActivationEventService {
   activatedEventSet: Set<{topic: string, data: string}>;
 
 }
+
+export class ExtensionApiReadyEvent extends BasicEvent<void> {}

@@ -7,10 +7,11 @@ import { IDebugServer } from '@ali/ide-debug';
 import { ExtensionDebugService, ExtensionDebugSessionContributionRegistry } from './vscode/api/debug';
 import { DebugSessionContributionRegistry } from '@ali/ide-debug/lib/browser';
 import { getIcon } from '@ali/ide-core-browser';
-import { ExtHostEvent, Serializable, IActivationEventService } from './types';
+import { ExtHostEvent, Serializable, IActivationEventService, ExtensionApiReadyEvent } from './types';
 import { FileSearchServicePath } from '@ali/ide-file-search/lib/common';
 import { ActivationEventServiceImpl } from './activation.service';
 import { VSCodeCommands } from './vscode/commands';
+import { IWebviewService } from '@ali/ide-webview';
 
 const RELOAD_WINDOW_COMMAND = {
   id: 'reload_window',
@@ -77,8 +78,22 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;
 
+  @Autowired(IWebviewService)
+  webviewService: IWebviewService;
+
   async initialize() {
     await this.extensionService.activate();
+    const disposer = this.webviewService.registerWebviewReviver({
+      handles: (id: string) => 0,
+      revive: (id: string) => {
+        return new Promise<void>((resolve) => {
+          this.eventBus.on(ExtensionApiReadyEvent, () => {
+            disposer.dispose();
+            resolve(this.webviewService.tryReviveWebviewComponent(id));
+          });
+        });
+      },
+    });
   }
 
   async onStart() {

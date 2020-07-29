@@ -2,13 +2,15 @@ import * as React from 'react';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
 import { IWebview, IPlainWebview, IEditorWebviewMetaData, IWebviewService } from './types';
 import { Disposable, DomListener, useInjectable } from '@ali/ide-core-browser';
+import { WebviewServiceImpl } from './webview.service';
 
 declare const ResizeObserver: any;
 declare const MutationObserver: any;
 
 export const EditorWebviewComponentView: ReactEditorComponent<IEditorWebviewMetaData> = ({resource}) => {
 
-  const webview = resource && resource.metadata && resource.metadata.editorWebview.webview;
+  const webviewService = useInjectable(IWebviewService) as WebviewServiceImpl;
+  const webview = webviewService.editorWebviewComponents.get(resource.metadata!.id)?.webview;
   let container: HTMLDivElement | null = null;
 
   React.useEffect(() => {
@@ -23,7 +25,7 @@ export const EditorWebviewComponentView: ReactEditorComponent<IEditorWebviewMeta
     }
   });
 
-  return <div style={{height: '100%'}} ref = {(el) => container = el}></div>;
+  return <div style={{height: '100%'}} className='editor-webview-webview-component' ref = {(el) => container = el}></div>;
 
 };
 
@@ -49,7 +51,7 @@ export const PlainWebview: React.FunctionComponent<{id: string, renderRoot?: HTM
     }
   }, []);
 
-  return <div style={{height: '100%'}} ref = {(el) => container = el}></div>;
+  return <div style={{height: '100' }} ref = {(el) => container = el}></div>;
 };
 
 // 将iframe挂载在一个固定的位置，以overlay的形式覆盖在container中，

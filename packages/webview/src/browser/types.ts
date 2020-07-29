@@ -1,4 +1,4 @@
-import {Event, URI, IDisposable, MaybeNull } from '@ali/ide-core-common';
+import {Event, URI, IDisposable, MaybeNull, MaybePromise } from '@ali/ide-core-common';
 import { ITheme } from '@ali/ide-theme';
 import { IEditorGroup } from '@ali/ide-editor';
 
@@ -142,7 +142,7 @@ export interface IWebviewService {
 
   createWebview(options?: IWebviewContentOptions): IWebview;
 
-  createEditorWebviewComponent(options?: IWebviewContentOptions): IEditorWebviewComponent<IWebview>;
+  createEditorWebviewComponent(options?: IWebviewContentOptions, id?: string): IEditorWebviewComponent<IWebview>;
 
   createEditorPlainWebviewComponent(options?: IPlainWebviewConstructionOptions, id?: string): IEditorWebviewComponent<IPlainWebview>;
 
@@ -160,6 +160,10 @@ export interface IWebviewService {
    * @param env 会传递给 webview内的 window.env 的内容
    */
   createWebviewWindow(options?: Electron.BrowserWindowConstructorOptions, env?: {[key: string]: string}): IPlainWebviewWindow;
+
+  registerWebviewReviver(reviver: IWebviewReviver): IDisposable;
+
+  tryReviveWebviewComponent(id: string): Promise<void>;
 }
 
 export interface IPlainWebviewConstructionOptions {
@@ -184,7 +188,7 @@ export interface IEditorWebviewComponent<T extends IWebview | IPlainWebview> ext
   webview: T;
 
   // 容纳它的
-  group: IEditorGroup;
+  group: IEditorGroup | undefined;
 
   icon: string;
 
@@ -199,6 +203,12 @@ export interface IEditorWebviewComponent<T extends IWebview | IPlainWebview> ext
 
   webviewUri: URI;
 
+  onDidChangeGroupIndex: Event<number>;
+
+  /**
+   * 是否支持恢复
+   */
+  supportsRevive: boolean;
 }
 
 export interface IPlainWebviewComponentHandle extends IDisposable {
@@ -211,5 +221,19 @@ export interface IPlainWebviewComponentHandle extends IDisposable {
 }
 
 export interface IEditorWebviewMetaData {
-  editorWebview: IEditorWebviewComponent<IWebview | IPlainWebview>;
+  id: string;
+  options?: IWebviewContentOptions;
+}
+
+export interface IWebviewReviver {
+  /**
+   * revive 动作
+   */
+  revive: (id: string) => MaybePromise<void>;
+
+  /**
+   * 返回是否由它revive的优先级
+   * 负数表示不处理
+   */
+  handles: (id: string) => MaybePromise<number>;
 }

@@ -255,6 +255,8 @@ exports.createWebviewWebpackConfig = (entry, dir) => {
           test: /\.tsx?$/,
           loader: 'ts-loader',
           options: {
+            happyPackMode: true,
+            transpileOnly: true,
             configFile: tsConfigPath,
           }
         },

@@ -1,12 +1,12 @@
-import { IWebviewService, IPlainWebviewConstructionOptions, IPlainWebview, IWebview, IWebviewContentOptions, IWebviewThemeData, IEditorWebviewComponent, EDITOR_WEBVIEW_SCHEME, IEditorWebviewMetaData, IPlainWebviewComponentHandle, IPlainWebviewWindow } from './types';
-import { isElectronRenderer, getDebugLogger, localize, URI, IEventBus, Disposable, MaybeNull } from '@ali/ide-core-browser';
+import { IWebviewService, IPlainWebviewConstructionOptions, IPlainWebview, IWebview, IWebviewContentOptions, IWebviewThemeData, IEditorWebviewComponent, EDITOR_WEBVIEW_SCHEME, IEditorWebviewMetaData, IPlainWebviewComponentHandle, IPlainWebviewWindow, IWebviewReviver } from './types';
+import { isElectronRenderer, getDebugLogger, localize, URI, IEventBus, Disposable, MaybeNull, ILogger, addElement, Emitter, StorageProvider, IStorage, STORAGE_SCHEMA } from '@ali/ide-core-browser';
 import { ElectronPlainWebview, IframePlainWebview } from './plain-webview';
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
 import { IFrameWebviewPanel } from './iframe-webview';
 import { ITheme } from '@ali/ide-theme';
 import { getColorRegistry } from '@ali/ide-theme/lib/common/color-registry';
 import { IEditorGroup, WorkbenchEditorService, ResourceNeedUpdateEvent, IResource } from '@ali/ide-editor';
-import { EditorComponentRegistry, EditorComponentRenderMode, EditorPreferences } from '@ali/ide-editor/lib/browser';
+import { EditorComponentRegistry, EditorComponentRenderMode, EditorPreferences, EditorGroupChangeEvent } from '@ali/ide-editor/lib/browser';
 import { EditorWebviewComponentView } from './editor-webview';
 import { ElectronWebviewWebviewPanel } from './electron-webview-webview';
 import { ElectronPlainWebviewWindow } from './webview-window';
@@ -28,8 +28,53 @@ export class WebviewServiceImpl implements IWebviewService {
   @Autowired(EditorPreferences)
   protected readonly editorPreferences: EditorPreferences;
 
-  constructor() {
+  private _revivers: IWebviewReviver[] = [];
 
+  @Autowired(ILogger)
+  logger: ILogger;
+
+  @Autowired(StorageProvider)
+  getStorage: StorageProvider;
+
+  storage: Promise<IStorage>;
+
+  constructor() {
+    this.storage = this.getStorage(new URI('editor-webview').withScheme(STORAGE_SCHEMA.SCOPE));
+  }
+
+  async tryReviveWebviewComponent(id: string) {
+    if (this._revivers.length > 0) {
+      let targetReviver: {
+        weight: number,
+        reviver: IWebviewReviver;
+      }| undefined;
+      for (const reviver of this._revivers) {
+        try {
+          const weight = await reviver.handles(id);
+          if (weight >= 0 && (!targetReviver || targetReviver.weight < weight)) {
+            targetReviver = {
+              weight,
+              reviver,
+            };
+          }
+        } catch (e) {
+          this.logger.error(e);
+        }
+      }
+      if (targetReviver) {
+        try {
+          await targetReviver.reviver.revive(id);
+          return;
+        } catch (e) {
+          this.logger.error(e);
+        }
+      }
+    }
+    throw new Error('Cannot revive webview ' + id);
+  }
+
+  registerWebviewReviver(reviver: IWebviewReviver) {
+    return addElement(this._revivers, reviver);
   }
 
   createPlainWebview(options: IPlainWebviewConstructionOptions = {}): IPlainWebview {
@@ -56,10 +101,45 @@ export class WebviewServiceImpl implements IWebviewService {
     }
   }
 
-  createEditorWebviewComponent(options?: IWebviewContentOptions): IEditorWebviewComponent<IWebview> {
-    const id = (this.editorWebviewIdCount++).toString();
+  private async storeWebviewResource(id: string) {
+    return this.storage.then((storage) => {
+      if (this.editorWebviewComponents.has(id)) {
+        const res = { ...this.editorWebviewComponents.get(id)!.resource};
+        storage.set(id, JSON.stringify(res));
+      } else {
+        storage.delete(id);
+      }
+    });
+  }
+
+  public async tryRestoredWebviewComponent(id: string): Promise<void> {
+    const storage = await this.storage;
+    const resource: IResource<IEditorWebviewMetaData> | null = storage.get(id) ? JSON.parse(storage.get(id)!) : null;
+    if (resource) {
+      const component = this.createEditorWebviewComponent(resource.metadata?.options, resource.metadata?.id);
+      component.title = resource.name;
+      component.supportsRevive = !!resource.supportsRevive;
+      this.tryReviveWebviewComponent(id);
+    }
+  }
+
+  createEditorWebviewComponent(options?: IWebviewContentOptions, id?: string): IEditorWebviewComponent<IWebview> {
+    if (!id) {
+      id = (this.editorWebviewIdCount++).toString();
+    }
+    if (this.editorWebviewComponents.has(id)) {
+      return this.editorWebviewComponents.get(id) as IEditorWebviewComponent<IWebview>;
+    }
     const component = this.injector.get(EditorWebviewComponent, [id, () => this.createWebview(options)]) as EditorWebviewComponent<IWebview>;
     this.editorWebviewComponents.set(id, component);
+    component.addDispose({
+      dispose: () => {
+        this.editorWebviewComponents.delete(id!);
+      },
+    });
+    component.onDidUpdateResource(() => {
+      this.storeWebviewResource(id!);
+    });
     return component;
   }
 
@@ -70,6 +150,11 @@ export class WebviewServiceImpl implements IWebviewService {
     }
     const component = this.injector.get(EditorWebviewComponent, [id, () => this.createPlainWebview(options)]) as EditorWebviewComponent<IPlainWebview>;
     this.editorWebviewComponents.set(id, component);
+    component.addDispose({
+      dispose: () => {
+        this.editorWebviewComponents.delete(id!);
+      },
+    });
     return component;
   }
 
@@ -151,8 +236,6 @@ namespace ApiThemeClassName {
 @Injectable({multiple: true})
 export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends Disposable implements IEditorWebviewComponent<T> {
 
-  group: IEditorGroup;
-
   @Autowired()
   workbenchEditorService: WorkbenchEditorService;
 
@@ -163,6 +246,24 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
   eventBus: IEventBus;
 
   private _webview: MaybeNull<T>;
+
+  private _onDidUpdateResource = new Emitter<IResource<IEditorWebviewMetaData>>();
+  public readonly onDidUpdateResource = this._onDidUpdateResource.event;
+
+  private _onDidChangeGroupIndex = new Emitter<number>();
+  public onDidChangeGroupIndex = this._onDidChangeGroupIndex.event;
+
+  private _supportsRevive = false;
+
+  get supportsRevive() {
+    return this._supportsRevive;
+  }
+
+  set supportsRevive(value: boolean) {
+    this._supportsRevive = value;
+    this.eventBus.fire(new ResourceNeedUpdateEvent(this.webviewUri));
+    this._onDidUpdateResource.fire(this.resource);
+  }
 
   open(options: { groupIndex?: number, relativeGroupIndex?: number}) {
     return this.workbenchEditorService.open(this.webviewUri, {...options, preview: false});
@@ -183,6 +284,7 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
   set icon(icon: string) {
     this._icon = icon;
     this.eventBus.fire(new ResourceNeedUpdateEvent(this.webviewUri));
+    this._onDidUpdateResource.fire(this.resource);
   }
 
   get title() {
@@ -192,6 +294,7 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
   set title(title: string) {
     this._title = title;
     this.eventBus.fire(new ResourceNeedUpdateEvent(this.webviewUri));
+    this._onDidUpdateResource.fire(this.resource);
   }
 
   get webview() {
@@ -207,8 +310,10 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
       name: this.title,
       uri: this.webviewUri,
       metadata: {
-        editorWebview: this,
+        id: this.id,
+        options: (this.webview as IWebview).options,
       },
+      supportsRevive: this.supportsRevive,
     };
   }
 
@@ -226,16 +331,20 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
     });
   }
 
+  get group() {
+    return this.editorGroup;
+  }
+
   constructor(public readonly id: string, public webviewFactory: () =>  T) {
     super();
     const componentId = EDITOR_WEBVIEW_SCHEME + '_' + this.id;
-    this.addDispose(this.editorComponentRegistry.registerEditorComponent<{editorWebview: IEditorWebviewComponent<IWebview | IPlainWebview>}>({
+    this.addDispose(this.editorComponentRegistry.registerEditorComponent<IEditorWebviewMetaData>({
       scheme: EDITOR_WEBVIEW_SCHEME,
       uid: componentId,
       component: EditorWebviewComponentView,
       renderMode: EditorComponentRenderMode.ONE_PER_WORKBENCH,
     }));
-    this.addDispose(this.editorComponentRegistry.registerEditorComponentResolver<{editorWebview: IEditorWebviewComponent<IWebview | IPlainWebview>}>(EDITOR_WEBVIEW_SCHEME, (resource, results) => {
+    this.addDispose(this.editorComponentRegistry.registerEditorComponentResolver<IEditorWebviewMetaData>(EDITOR_WEBVIEW_SCHEME, (resource, results) => {
       if (resource.uri.path.toString() === this.id) {
         results.push({
           type: 'component',
@@ -248,7 +357,11 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
         this.workbenchEditorService.closeAll(this.webviewUri, true);
       },
     });
-
+    this.addDispose(this.eventBus.on(EditorGroupChangeEvent, (e) => {
+      if (e.payload.newResource?.uri.isEqual(this.webviewUri)) {
+        this._onDidChangeGroupIndex.fire(e.payload.group.index);
+      }
+    }));
   }
 
   createWebview(): T {

@@ -386,3 +386,5 @@ export interface IEditorFeatureContribution {
 }
 
 export class ResourceOpenTypeChangedEvent extends BasicEvent<URI> {}
+
+export class EditorComponentDisposeEvent extends BasicEvent<IEditorComponent> {}

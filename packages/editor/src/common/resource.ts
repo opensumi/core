@@ -82,6 +82,11 @@ export interface IResourceDecorationChangeEventPayload {
  */
 export interface IResource<MetaData = any> {
 
+  /**
+   * 是否允许刷新后恢复
+   */
+  supportsRevive?: boolean;
+
   // 资源名称
   name: string;
   // 资源URI
