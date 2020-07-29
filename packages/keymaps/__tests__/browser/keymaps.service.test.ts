@@ -2,7 +2,7 @@ import { KeymapService } from '@ali/ide-keymaps/lib/browser/keymaps.service';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { KeymapsParser } from '@ali/ide-keymaps/lib/browser/keymaps-parser';
-import { ResourceProvider, KeybindingRegistry, KeybindingService, URI, KeybindingScope, EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { ResourceProvider, KeybindingRegistry, KeybindingService, URI, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { KEYMAPS_FILE_NAME } from '@ali/ide-keymaps';
 import { USER_STORAGE_SCHEME } from '@ali/ide-preferences';
 import { KeymapsModule } from '@ali/ide-keymaps/lib/browser';
@@ -14,7 +14,6 @@ describe('KeymapsService should be work', () => {
   let resourceProvider;
 
   let onKeybindingsChanged;
-  let setKeymap;
   beforeEach(() => {
     injector = createBrowserInjector([
       KeymapsModule,
@@ -49,13 +48,7 @@ describe('KeymapsService should be work', () => {
       useValue: resourceProvider,
     });
     onKeybindingsChanged = jest.fn();
-    setKeymap = jest.fn(() => {
-      return {
-        dispose: () => {},
-      };
-    });
     injector.mock(KeybindingRegistry, 'onKeybindingsChanged', onKeybindingsChanged);
-    injector.mock(KeybindingRegistry, 'setKeymap', setKeymap);
 
     keymapsService = injector.get(KeymapService);
 
@@ -72,14 +65,13 @@ describe('KeymapsService should be work', () => {
     it('should ready to work after init', async (done) => {
 
       expect(resourceProvider).toBeCalledWith(new URI().withScheme(USER_STORAGE_SCHEME).withPath(KEYMAPS_FILE_NAME));
-      expect(setKeymap).toBeCalledWith(KeybindingScope.USER, []);
 
       expect(typeof keymapsService.init).toBe('function');
       expect(typeof keymapsService.dispose).toBe('function');
       expect(typeof keymapsService.reconcile).toBe('function');
       expect(typeof keymapsService.setKeybinding).toBe('function');
       expect(typeof keymapsService.covert).toBe('function');
-      expect(typeof keymapsService.removeKeybinding).toBe('function');
+      expect(typeof keymapsService.resetKeybinding).toBe('function');
       expect(typeof keymapsService.getKeybindings).toBe('function');
       expect(typeof keymapsService.open).toBe('function');
       expect(typeof keymapsService.getWhen).toBe('function');
