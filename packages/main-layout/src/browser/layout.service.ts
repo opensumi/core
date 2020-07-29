@@ -7,6 +7,7 @@ import { IMenuRegistry, AbstractContextMenuService, MenuId, AbstractMenuService,
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { AccordionService } from './accordion/accordion.service';
 import debounce = require('lodash.debounce');
+import { Deferred } from '@ali/ide-core-common/lib';
 
 @Injectable()
 export class LayoutService extends WithEventBus implements IMainLayoutService {
@@ -59,6 +60,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   @Autowired(AbstractContextMenuService)
   protected contextmenuService: AbstractContextMenuService;
 
+  public viewReady: Deferred<void> = new Deferred();
+
   constructor() {
     super();
   }
@@ -80,6 +83,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       (last, event) =>  last || event.payload.affectsSome(this.viewWhenContextkeys),
       50,
     )((e) => e && this.handleContextKeyChange(), this));
+    this.viewReady.resolve();
   }
 
   setFloatSize(size: number) {}
