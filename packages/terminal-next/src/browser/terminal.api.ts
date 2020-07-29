@@ -1,5 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { Event, Emitter } from '@ali/ide-core-common';
+import { capitalize } from 'lodash';
 import { ITerminalApiService, ITerminalGroupViewService, ITerminalController, ITerminalInfo, TerminalOptions, ITerminalExternalClient, ITerminalInternalService } from '../common';
 
 @Injectable()
@@ -104,5 +105,20 @@ export class TerminalApiService implements ITerminalApiService {
     }
 
     client.dispose();
+  }
+
+  createWidget(uniqName: string, widgetRenderFunc: (element: HTMLDivElement) => void) {
+    const widgetId = uniqName;
+    const groupIndex = this.view.createGroup();
+    const group = this.view.getGroup(groupIndex);
+    const widget = this.view.createWidget(group, widgetId, false, true);
+    widget.name = capitalize(uniqName);
+    this.view.selectWidget(widgetId);
+
+    widget.onRender(() => {
+      widgetRenderFunc(widget.element);
+    });
+
+    return widget;
   }
 }
