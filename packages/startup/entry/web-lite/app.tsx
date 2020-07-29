@@ -11,8 +11,7 @@ import { renderApp } from './render-app';
 // 引入公共样式文件
 import '@ali/ide-core-browser/lib/style/index.less';
 
-import { SimpleModule } from './simple-module';
-import { WebLiteModule } from './web-modules';
+import { WebLiteModule } from './web-lite-module';
 
 import * as serviceWorker from './service-worker';
 
@@ -63,7 +62,7 @@ loadMonaco({
 serviceWorker.register();
 
 renderApp({
-  modules: [ ...CommonBrowserModules, SimpleModule, WebLiteModule ],
+  modules: [ ...CommonBrowserModules, WebLiteModule ],
   layoutConfig,
   layoutComponent: LayoutComponent,
   useCdnIcon: true,

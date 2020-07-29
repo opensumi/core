@@ -1,19 +1,18 @@
 import { Injector } from '@ali/common-di';
 import { ClientApp, IClientAppOpts, LogServiceForClientPath, StorageProvider } from '@ali/ide-core-browser';
 import { ensureDir } from '@ali/ide-core-common/lib/browser-fs/ensure-dir';
-
 import * as BrowserFS from 'browserfs';
 
-import { MockLogServiceForClient } from './mock-implements/mock-logger';
+import { MetaService } from './modules/meta-service';
 
-import { IMetaService, MetaService } from './simple-module/meta-service';
+import { MockedStorageProvider } from '@ali/ide-core-browser/lib/mocks/storage';
+import { IMetaService } from './modules/meta-service/base';
+import { MockLogServiceForClient } from './overrides/mock-logger';
 
 BrowserFS.configure({
   fs: 'IndexedDB',
   options: {},
 }, (e) => {});
-
-import { MockedStorageProvider } from '@ali/ide-core-browser/lib/mocks/storage';
 
 export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();

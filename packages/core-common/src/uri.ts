@@ -4,13 +4,13 @@ import { IRelativePattern, match } from './utils/glob';
 
 export { default as Uri } from 'vscode-uri'
 export class URI {
-  static from (components:{
-        scheme: string;
-        authority?: string;
-        path?: string;
-        query?: string;
-        fragment?: string;
-    }) {
+  static from(components: {
+    scheme: string;
+    authority?: string;
+    path?: string;
+    query?: string;
+    fragment?: string;
+  }) {
     return new URI(Uri.from(components));
   }
 
