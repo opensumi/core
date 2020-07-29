@@ -51,9 +51,9 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       show: false,
       webPreferences: {
         ...defaultWebPreferences,
-        ...this.appConfig.overrideWebPreferences,
-        nodeIntegration: this.appConfig.browserNodeIntegrated,
-        preload: this.appConfig.browserPreload,
+        ...this.appConfig?.overrideWebPreferences,
+        nodeIntegration: this.appConfig?.browserNodeIntegrated,
+        preload: this.appConfig?.browserPreload,
       },
       frame: isOSX,
       titleBarStyle: 'hidden',

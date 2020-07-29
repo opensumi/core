@@ -55,7 +55,7 @@ export interface ElectronAppConfig {
   /**
    * 覆盖browser层的WebPreferences配置
    */
-  overrideWebPreferences: { [key: string]: any };
+  overrideWebPreferences?: { [key: string]: any };
 }
 
 export const ElectronAppConfig = Symbol('ElectronAppConfig');
