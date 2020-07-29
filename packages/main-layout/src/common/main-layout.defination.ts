@@ -4,6 +4,7 @@ import { TabBarHandler } from '../browser/tabbar-handler';
 import { TabbarService } from '../browser/tabbar/tabbar.service';
 import { AccordionService } from '../browser/accordion/accordion.service';
 import { IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { Deferred } from '@ali/ide-core-common/lib';
 
 export interface ComponentCollection {
   views?: View[];
@@ -12,6 +13,8 @@ export interface ComponentCollection {
 
 export const IMainLayoutService = Symbol('IMainLayoutService');
 export interface IMainLayoutService {
+  viewReady: Deferred<void>;
+
   didMount(): void;
   // 切换tabbar位置的slot，支持left、right、bottom
   toggleSlot(location: SlotLocation, show?: boolean, size?: number): void;
