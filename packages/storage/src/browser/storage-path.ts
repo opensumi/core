@@ -13,6 +13,8 @@ export class StoragePathServer implements IStoragePathServer {
   // 缓存存储路径
   private deferredWorkspaceStoragePath: Deferred<string>;
   private deferredGlobalStoragePath: Deferred<string>;
+
+  private deferredEnsureStoragePath: Deferred<void>;
   // 当初始化完成时为true
   private workspaceStoragePathInitialized: boolean;
   private globalStoragePathInitialized: boolean;
@@ -36,7 +38,13 @@ export class StoragePathServer implements IStoragePathServer {
     }
 
     if (!await this.fileSystem.access(uriString)) {
-      await this.fileSystem.createFolder(uriString);
+      if (this.deferredEnsureStoragePath) {
+        await this.deferredEnsureStoragePath;
+      } else {
+        this.deferredEnsureStoragePath = new Deferred();
+        await this.fileSystem.createFolder(uriString);
+        this.deferredEnsureStoragePath.resolve();
+      }
     }
 
     if (!this.workspaceStoragePathInitialized) {
