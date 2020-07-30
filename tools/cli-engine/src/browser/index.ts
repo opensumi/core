@@ -7,6 +7,7 @@ import '@ali/ide-core-browser/lib/style/index.less';
 // import '@ali/ide-core-browser/lib/style/icon.less';
 
 import { renderApp } from './app';
+import './style.less';
 
 export const modules: ConstructorOf<BrowserModule>[] = [
   ...CommonBrowserModules,
