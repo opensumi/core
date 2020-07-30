@@ -74,16 +74,8 @@ export class DebugThread extends DebugThreadData {
     return this.session.sendRequest('pause', this.toArgs());
   }
 
-  get supportsTerminate(): boolean {
-    return !!this.session.capabilities.supportsTerminateThreadsRequest;
-  }
-
-  async terminate(): Promise<void> {
-    if (this.supportsTerminate) {
-      await this.session.sendRequest('terminateThreads', {
-        threadIds: [this.raw.id],
-      });
-    }
+  terminate(): Promise<DebugProtocol.TerminateResponse> {
+    return this.session.sendRequest('terminateThreads', { threadIds: [this.raw.id] });
   }
 
   protected readonly _frames = new Map<number, DebugStackFrame>();

@@ -579,6 +579,14 @@ export class DebugSession implements IDisposable {
   }
 
   sendRequest<K extends keyof DebugRequestTypes>(command: K, args: DebugRequestTypes[K][0]): Promise<DebugRequestTypes[K][1]> {
+    if (
+      (!this._capabilities.supportsTerminateRequest && command === 'terminate') ||
+      (!this._capabilities.supportsCompletionsRequest && command === 'completions') ||
+      (!this._capabilities.supportsTerminateThreadsRequest && command === 'terminateThreads')
+    ) {
+      throw new Error(`debug: ${command} not supported`);
+    }
+
     return this.connection.sendRequest(command, args);
   }
 

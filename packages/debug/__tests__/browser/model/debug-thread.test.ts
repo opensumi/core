@@ -53,7 +53,6 @@ describe('DebugThread Model', () => {
       expect(debugThread.id).toBe(`${session.id}:${raw.id}`);
       expect(typeof debugThread.currentFrame).toBe('undefined');
       expect(typeof debugThread.stopped).toBe('boolean');
-      expect(typeof debugThread.supportsTerminate).toBe('boolean');
       expect(typeof debugThread.topFrame).toBe('undefined');
       expect(Array.isArray(debugThread.frames)).toBe(true);
     });
