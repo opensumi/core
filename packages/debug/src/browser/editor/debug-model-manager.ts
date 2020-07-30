@@ -1,4 +1,4 @@
-import { Disposable, URI, Emitter, Event, DisposableCollection } from '@ali/ide-core-common';
+import { Disposable, URI, Emitter, Event, DisposableCollection, Schemas } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EditorCollectionService, ICodeEditor, WorkbenchEditorService } from '@ali/ide-editor';
 import { DebugModelFactory, IDebugModel } from '../../common';
@@ -44,6 +44,8 @@ export class DebugModelManager extends Disposable {
 
   private _onModelChanged = new Emitter<monaco.editor.IModelChangedEvent>();
   public onModelChanged: Event<monaco.editor.IModelChangedEvent> = this._onModelChanged.event;
+  // 只支持 file 协议和 debug 协议
+  private supportSchemes = new Set([Schemas.file, Schemas.debug]);
 
   constructor() {
     super();
@@ -86,12 +88,12 @@ export class DebugModelManager extends Disposable {
     affected.forEach((uri) => {
       const models = this.models.get(uri.toString());
       if (!models) {
-          return;
+        return;
       }
       for (const model of models) {
         const position = model.breakpointWidget.position;
         if (!position) {
-            return;
+          return;
         }
         for (const breakpoint of removed) {
           if (breakpoint.raw.line === position.lineNumber) {
@@ -169,6 +171,9 @@ export class DebugModelManager extends Disposable {
   }
 
   handleMouseEvent(uri: URI, type: DebugModelSupportedEventType, event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent, monacoEditor: monaco.editor.ICodeEditor) {
+    if (!this.supportSchemes.has(uri.scheme)) {
+      return;
+    }
     const debugModel = this.models.get(uri.toString());
     if (!debugModel) {
       return;
