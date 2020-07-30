@@ -245,10 +245,14 @@ export class FileTreeModelService {
     }));
     this.disposableCollection.push(this.treeModel!.onWillUpdate(() => {
       // 更新树前更新下选中节点
-      if (this.selectedFiles.length !== 0) {
+      if (!!this.focusedFile) {
+        const node = this.treeModel?.root.getTreeNodeByPath(this.focusedFile.path);
+        this.activeFileDecoration(node, false);
+
+      } else if (this.selectedFiles.length !== 0) {
         // 仅处理一下单选情况
         const node = this.treeModel?.root.getTreeNodeByPath(this.selectedFiles[0].path);
-        this.selectFileDecoration(node);
+        this.selectFileDecoration(node, false);
       }
     }));
     // 确保文件树响应刷新操作时无正在操作的CollapsedAll和Location
@@ -321,7 +325,7 @@ export class FileTreeModelService {
   }
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
-  activeFileDecoration = (target: File | Directory) => {
+  activeFileDecoration = (target: File | Directory, dispatchChange: boolean = true) => {
     if (target === this.treeModel.root) {
       // 根节点不能选中
       return;
@@ -349,12 +353,14 @@ export class FileTreeModelService {
       this.onDidFocusedFileChangeEmitter.fire(target.uri);
       this.onDidSelectedFileChangeEmitter.fire([target.uri]);
       // 通知视图更新
-      this.treeModel.dispatchChange();
+      if (dispatchChange) {
+        this.treeModel.dispatchChange();
+      }
     }
   }
 
   // 清空其他选中/焦点态节点，更新当前选中节点
-  selectFileDecoration = (target: File | Directory) => {
+  selectFileDecoration = (target: File | Directory, dispatchChange: boolean = true) => {
     if (target === this.treeModel.root) {
       // 根节点不能选中
       return;
@@ -379,7 +385,9 @@ export class FileTreeModelService {
       // 选中及焦点文件变化
       this.onDidSelectedFileChangeEmitter.fire([target.uri]);
       // 通知视图更新
-      this.treeModel.dispatchChange();
+      if (dispatchChange) {
+        this.treeModel.dispatchChange();
+      }
     }
   }
 
