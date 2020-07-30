@@ -44,6 +44,7 @@ interface ServerParams {
   workspaceDir?: string;
   extensionCandidate?: string[];
   extHostPath?: string;
+  watchServerPort?: string;
 }
 
 async function readPkgUp() {
@@ -64,6 +65,7 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
     extensionCandidate = [__dirname],
     isDev,
     extHostPath,
+    watchServerPort,
   } = serverParams;
   console.log(extensionCandidate);
 
@@ -144,6 +146,7 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
           wsPath: `ws://${deviceIp}:${port}`,
           staticServicePath: `http://${deviceIp}:${port}`,
           webviewEndpoint: `http://${deviceIp}:${port}/webview`,
+          watchServerPath: `ws://${deviceIp}:${watchServerPort}`,
         };
 
         // todo: 手动读取外层 `package.json`
