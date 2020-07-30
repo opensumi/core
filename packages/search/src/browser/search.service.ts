@@ -50,6 +50,7 @@ import { SearchPreferences } from './search-preferences';
 import { SearchHistory } from './search-history';
 import { replaceAll } from './replace';
 import { SearchResultCollection } from './search-result-collection';
+import { SearchContextKey } from './search-contextkey';
 
 export interface SearchAllFromDocModelOptions {
   searchValue: string;
@@ -71,32 +72,46 @@ export class ContentSearchClientService implements IContentSearchClientService {
   protected eventBusDisposer: IDisposable;
 
   @Autowired(IEventBus)
-  eventBus: IEventBus;
+  private readonly eventBus: IEventBus;
+
   @Autowired(SearchPreferences)
-  searchPreferences: SearchPreferences;
+  private readonly searchPreferences: SearchPreferences;
+
   @Autowired(CorePreferences)
-  corePreferences: CorePreferences;
+  private readonly corePreferences: CorePreferences;
+
   @Autowired(INJECTOR_TOKEN)
-  private injector: Injector;
+  private readonly injector: Injector;
+
   @Autowired(ContentSearchServerPath)
-  contentSearchServer: IContentSearchServer;
+  private readonly contentSearchServer: IContentSearchServer;
+
   @Autowired(IWorkspaceService)
-  workspaceService: IWorkspaceService;
+  private readonly workspaceService: IWorkspaceService;
+
   @Autowired(RecentStorage)
-  recentStorage: RecentStorage;
+  private readonly recentStorage: RecentStorage;
+
   @Autowired(IEditorDocumentModelService)
-  documentModelManager: IEditorDocumentModelService;
+  private readonly documentModelManager: IEditorDocumentModelService;
+
   @Autowired(CommandService)
-  private commandService: CommandService;
+  private readonly commandService: CommandService;
+
   @Autowired(LocalStorageService)
   private readonly storageService: LocalStorageService;
+
   @Autowired(IDialogService)
-  private dialogService;
+  private readonly dialogService;
+
   @Autowired(IMessageService)
-  private messageService;
+  private readonly messageService;
 
   @Autowired(IWorkspaceEditService)
-  private workspaceEditService: IWorkspaceEditService;
+  private readonly workspaceEditService: IWorkspaceEditService;
+
+  @Autowired(SearchContextKey)
+  private readonly searchContextKey: SearchContextKey;
 
   workbenchEditorService: WorkbenchEditorService;
 
@@ -454,6 +469,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
   updateUIState = (obj, e?: React.KeyboardEvent | React.MouseEvent) => {
     if (!isUndefined(obj.isSearchFocus) && (obj.isSearchFocus !== this.UIState.isSearchFocus)) {
+      this.searchContextKey.searchInputFocused.set(obj.isSearchFocus);
       // 搜索框状态发现变化，重置搜索历史的当前位置
       this.searchHistory.reset();
       this.isShowValidateMessage = false;
