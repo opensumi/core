@@ -60,7 +60,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
 
   onDidChangeFile: Event<FileChangeEvent>;
 
-  constructor(private httpFileService: HttpFileServiceBase, private options: BrowserFsProviderOptions) {
+  constructor(private httpFileService: AbstractHttpFileService, private options: BrowserFsProviderOptions) {
 
   }
 
@@ -365,7 +365,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
   }
 }
 
-export abstract class HttpFileServiceBase {
+export abstract class AbstractHttpFileService {
   abstract readFile(uri: Uri, encoding?: string): Promise<string>;
   abstract readDir(uri: Uri): Promise<Array<{type: 'tree' | 'leaf', path: string}>>;
   updateFile(uri: Uri, content: string, options: { encoding?: string; newUri?: Uri; }): Promise<void> {

@@ -8,7 +8,7 @@ import {
 } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { FileResource } from '@ali/ide-file-service/lib/browser/file-service-contribution';
-import { BrowserFsProvider, HttpFileServiceBase } from '@ali/ide-file-service/lib/browser/browser-fs-provider';
+import { BrowserFsProvider, AbstractHttpFileService } from '@ali/ide-file-service/lib/browser/browser-fs-provider';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { StaticResourceContribution, StaticResourceService } from '@ali/ide-static-resource/lib/browser/static.definition';
@@ -25,8 +25,8 @@ export class FileProviderContribution implements ResourceResolverContribution, S
   @Autowired(IFileServiceClient)
   private readonly fileSystem: FileServiceClient;
 
-  @Autowired(HttpFileServiceBase)
-  private httpImpl: HttpFileServiceBase;
+  @Autowired(AbstractHttpFileService)
+  private httpImpl: AbstractHttpFileService;
 
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
