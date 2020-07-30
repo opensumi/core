@@ -1065,7 +1065,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   public async $activateExtension(extensionPath: string): Promise<void> {
     const extension = this.extensionMap.get(extensionPath);
     if (extension) {
-      extension.activate();
+      await extension.activate();
     }
   }
 
