@@ -24,6 +24,8 @@ import { WorkspaceEditModule } from '@ali/ide-workspace-edit/lib/browser';
 import { KeymapsModule } from '@ali/ide-keymaps/lib/browser';
 import { KaitianExtensionModule } from '@ali/ide-kaitian-extension/lib/browser';
 import { CommentsModule } from '@ali/ide-comments/lib/browser';
+import { WebviewModule } from '@ali/ide-webview/lib/browser';
+import { OutputModule } from '@ali/ide-output/lib/browser';
 
 import { BrowserFileSchemeModule } from './overrides/browser-file-scheme';
 
@@ -52,6 +54,8 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   StaticResourceModule,
   WorkspaceEditModule,
   CommentsModule,
+  WebviewModule,
+  OutputModule,
   // browser custom modules
   BrowserFileSchemeModule,
   KaitianExtensionModule,

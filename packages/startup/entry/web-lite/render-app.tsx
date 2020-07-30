@@ -1,5 +1,5 @@
 import { Injector } from '@ali/common-di';
-import { ClientApp, IClientAppOpts, LogServiceForClientPath } from '@ali/ide-core-browser';
+import { ClientApp, IClientAppOpts, LogServiceForClientPath, DEFAULT_WORKSPACE_STORAGE_DIR_NAME } from '@ali/ide-core-browser';
 import { ensureDir } from '@ali/ide-core-common/lib/browser-fs/ensure-dir';
 import * as BrowserFS from 'browserfs';
 import * as path from 'path';
@@ -13,10 +13,12 @@ BrowserFS.configure({
   options: {},
 }, (e) => {});
 
-import { ExtensionNodeServiceServerPath } from '@ali/ide-kaitian-extension';
+import { ExtensionNodeServiceServerPath } from '@ali/ide-kaitian-extension/lib/common';
 import { FileSearchServicePath } from '@ali/ide-file-search';
 import { ExtensionClientService } from './overrides/mock-extension-server';
 import { MockFileSearch } from './overrides/mock-file-search';
+import { HttpFileServiceBase, BROWSER_HOME_DIR } from '@ali/ide-file-service/lib/browser/browser-fs-provider';
+import { AoneCodeHttpFileService } from './modules/file-provider/http-file.service';
 
 export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();
@@ -32,6 +34,9 @@ export async function renderApp(opts: IClientAppOpts) {
   }, {
     token: FileSearchServicePath,
     useClass: MockFileSearch,
+  }, {
+    token: HttpFileServiceBase,
+    useClass: AoneCodeHttpFileService,
   }, {
     token: IMetaService,
     useValue: new MetaService({
@@ -55,6 +60,8 @@ export async function renderApp(opts: IClientAppOpts) {
 
   BrowserFS.initialize(new BrowserFS.FileSystem.IndexedDB(async () => {
     await ensureDir(opts.workspaceDir!);
+    await ensureDir(BROWSER_HOME_DIR.codeUri.fsPath);
+    await ensureDir(BROWSER_HOME_DIR.path.join(DEFAULT_WORKSPACE_STORAGE_DIR_NAME).toString());
     const app = new ClientApp(opts);
     app.fireOnReload = (forcedReload: boolean) => {
       window.location.reload(forcedReload);

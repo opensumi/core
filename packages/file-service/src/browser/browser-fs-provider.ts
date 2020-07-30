@@ -8,8 +8,8 @@ import * as fs from 'fs';
 import * as paths from 'path';
 
 interface BrowserFsProviderOptions { isReadonly?: boolean; rootFolder: string; }
-// FIXME: 工作区无关的路径需要绕过http那一层
-const HOME_DIR = FileUri.create('/home');
+
+export const BROWSER_HOME_DIR = FileUri.create('/home');
 
 // 利用storage来记录文件已加载的信息，dispose时记得清楚
 export class BrowserFsProvider implements IDiskFileProvider {
@@ -195,9 +195,9 @@ export class BrowserFsProvider implements IDiskFileProvider {
   private homeStat: FileStat | undefined;
   async getCurrentUserHome(): Promise<FileStat | undefined> {
     if (!this.homeStat) {
-      await ensureDir(HOME_DIR.codeUri.fsPath);
-      window.localStorage.setItem(HOME_DIR.toString(), '1');
-      this.homeStat = await this.stat(HOME_DIR.codeUri);
+      await ensureDir(BROWSER_HOME_DIR.codeUri.fsPath);
+      window.localStorage.setItem(BROWSER_HOME_DIR.toString(), '1');
+      this.homeStat = await this.stat(BROWSER_HOME_DIR.codeUri);
     }
     return this.homeStat;
   }

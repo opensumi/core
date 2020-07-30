@@ -1,8 +1,5 @@
 import '@ali/ide-i18n/lib/browser';
-
-import * as React from 'react';
-import { SlotLocation, SlotRenderer } from '@ali/ide-core-browser';
-import { BoxPanel, SplitPanel } from '@ali/ide-core-browser/lib/components';
+import { SlotLocation } from '@ali/ide-core-browser';
 import { loadMonaco } from '@ali/ide-monaco/lib/browser/monaco-loader';
 
 import { CommonBrowserModules } from './common-modules';
@@ -16,6 +13,7 @@ import { WebLiteModule } from './web-lite-module';
 import * as serviceWorker from './service-worker';
 
 import '../styles.less';
+import { LayoutComponent } from './modules/view/custom-layout-component';
 
 // 视图和slot插槽的对应关系
 const layoutConfig = {
@@ -41,18 +39,6 @@ const layoutConfig = {
     modules: [],
   },
 };
-// 插槽的划分
-function LayoutComponent() {
-  return <BoxPanel direction='top-to-bottom'>
-    <SlotRenderer slot='top' />
-    <SplitPanel overflow='hidden' id='main-horizontal' flex={1}>
-      <SlotRenderer slot='left' defaultSize={310}  minResize={204} minSize={49} />
-      <SlotRenderer flexGrow={1} minResize={300} slot='main' />
-      <SlotRenderer slot='right' defaultSize={310} minResize={200} minSize={31} />
-    </SplitPanel>
-    <SlotRenderer slot='statusBar' />
-  </BoxPanel>;
-}
 
 loadMonaco({
   monacoCDNBase: 'https://g.alicdn.com/tb-ide/monaco-editor-core/0.17.0/',
