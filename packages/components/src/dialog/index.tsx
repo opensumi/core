@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as clx from 'classnames';
 
 import { Overlay, IOverlayProps } from '../overlay';
-import { IconContext, getDefaultIcon } from '../icon';
+import { IconContext, getKaitianIcon } from '../icon';
 import { Button } from '../button';
 
 import { MessageType } from '../common';
@@ -67,12 +67,12 @@ export const Dialog: React.FC<IDialogProps> = ({
       afterClose={afterClose}>
       <>
         <div className={'kt-dialog-content'}>
-          {icon && <div style={{ color: icon.color }} className={clx('kt-dialog-icon', getDefaultIcon(icon.className) || getIcon(icon.className))}/>}
+          {icon && <div style={{ color: icon.color }} className={clx('kt-dialog-icon', getKaitianIcon(icon.className) || getIcon(icon.className))}/>}
           <div className={'kt-dialog-content_area'}>
             {type !== 'basic' && title && <p className={'kt-dialog-content_title'}>{title}</p>}
             {typeof message === 'string' ? (<span className={'kt-dialog-message'}>{ message }</span>) : message}
           </div>
-          {closable && type !== 'basic' && <button className={clx('kt-dialog-closex', getDefaultIcon('close'))} onClick={onClose}></button>}
+          {closable && type !== 'basic' && <button className={clx('kt-dialog-closex', getKaitianIcon('close'))} onClick={onClose}></button>}
         </div>
         {messageType !== MessageType.Empty && type !== 'basic' && <div className={'kt-dialog-buttonWrap'}>
           {type === 'confirm' ? buttons || <DefaultButtons onCancel={onCancel} onOk={onOk} okText={okText} cancelText={cancelText} /> : <Button size='large' onClick={onClose}>知道了</Button>}

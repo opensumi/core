@@ -3,7 +3,7 @@ import Dropdown from 'antd/lib/dropdown';
 import classNames from 'classnames';
 
 import './style.less';
-import { Icon, getDefaultIcon, DefaultIconKeys } from '../icon';
+import { Icon, getKaitianIcon, DefaultIconKeys } from '../icon';
 
 export type ButtonType = 'primary' | 'secondary' | 'ghost' | 'danger' | 'link' | 'icon' | 'default';
 
@@ -110,7 +110,7 @@ export function Button<T>({
         {(loading && type !== 'link') && <LoadingCircle />}
         {iconNode && iconNode}
         {children}
-        {more && <Icon iconClass={moreIconClass ? moreIconClass : getDefaultIcon('down')} className='kt-button-secondary-more' />}
+        {more && <Icon iconClass={moreIconClass ? moreIconClass : getKaitianIcon('down')} className='kt-button-secondary-more' />}
       </button>
     </Dropdown>);
   }
