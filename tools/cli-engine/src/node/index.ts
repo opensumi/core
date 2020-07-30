@@ -12,6 +12,7 @@ const {
   extensionCandidate,
   isDev,
   extHostPath,
+  watchServerPort,
 } = argv;
 
 let serverAppOpts = {
@@ -43,6 +44,7 @@ startServer({
   workspaceDir: workspaceDir as string,
   extensionCandidate: extensionCandidate ? strToArray(extensionCandidate as string | string[]) : undefined,
   extHostPath: extHostPath as string,
+  watchServerPort,
 }, {
   serverAppOpts,
   clientAppOpts,

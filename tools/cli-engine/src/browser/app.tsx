@@ -37,4 +37,21 @@ export async function renderApp(opts: IClientAppOpts) {
   console.log(opts, 'clientAppOpts');
 
   await app.start(document.getElementById('main')!, 'web');
+
+  const watchServerPath = (window as any).KAITIAN_SDK_CONFIG.watchServerPath;
+  if (watchServerPath) {
+    const ws = new WebSocket(watchServerPath);
+
+    ws.addEventListener('message', (e) => {
+      if (e.data) {
+        const data = JSON.parse(e.data);
+        if (['change', 'rename'].includes(data.event)) {
+          console.log(`Receive ${data.event} event for ${data.filename}, reload window...`);
+          setTimeout(() => {
+            window.location.reload();
+          }, 3000);
+        }
+      }
+    });
+  }
 }
