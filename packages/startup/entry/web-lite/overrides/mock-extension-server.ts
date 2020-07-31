@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { IExtensionNodeClientService, ExtraMetaData, IExtensionMetaData } from '@ali/ide-kaitian-extension';
+import { IExtensionNodeClientService, ExtraMetaData, IExtensionMetaData } from '@ali/ide-kaitian-extension/lib/common';
 import { nodeLessExtensions } from '../extensions';
 
 @Injectable()

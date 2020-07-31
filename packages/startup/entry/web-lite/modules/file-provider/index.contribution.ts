@@ -8,14 +8,13 @@ import {
 } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { FileResource } from '@ali/ide-file-service/lib/browser/file-service-contribution';
-import { BrowserFsProvider } from '@ali/ide-file-service/lib/browser/browser-fs-provider';
+import { BrowserFsProvider, AbstractHttpFileService } from '@ali/ide-file-service/lib/browser/browser-fs-provider';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { StaticResourceContribution, StaticResourceService } from '@ali/ide-static-resource/lib/browser/static.definition';
 import { IWorkspaceService } from '@ali/ide-workspace';
 
 import { IMetaService } from '../../services/meta-service/base';
-import { AoneCodeHttpFileService } from './http-file.service';
 
 const EXPRESS_SERVER_PATH = window.location.href;
 
@@ -26,8 +25,8 @@ export class FileProviderContribution implements ResourceResolverContribution, S
   @Autowired(IFileServiceClient)
   private readonly fileSystem: FileServiceClient;
 
-  @Autowired(AoneCodeHttpFileService)
-  private httpImpl: AoneCodeHttpFileService;
+  @Autowired(AbstractHttpFileService)
+  private httpImpl: AbstractHttpFileService;
 
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
