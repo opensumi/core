@@ -62,4 +62,14 @@ renderApp({
     'editor.quickSuggestionsMaxCount': 50,
   },
   workspaceDir: '/ide-s/TypeScript-Node-Starter',
+  iconStyleSheets: [
+    {
+      iconMap: {
+        explorer: 'fanhui',
+        shangchuan: 'shangchuan',
+      },
+      prefix: 'tbe tbe-',
+      cssPath: '//at.alicdn.com/t/font_403404_1qiu0eed62f.css',
+    },
+  ],
 });

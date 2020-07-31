@@ -1,91 +1,16 @@
-import { SymbolKind, getDebugLogger } from '@ali/ide-core-common';
-import { warning } from '@ali/ide-components/lib/utils/warning';
-import { defaultIconfont, ROTATE_TYPE, ANIM_TYPE } from '@ali/ide-components/lib/icon';
+import { SymbolKind } from '@ali/ide-core-common';
+import { updateKaitianIconMap, getKaitianIcon } from '@ali/ide-components/lib/icon';
 
 import { IDE_ICONFONT_CN_CSS } from './ide-iconfont';
 
 export const DEFAULT_CDN_ICON = IDE_ICONFONT_CN_CSS;
 
-const iconPrefixes = ['kaitian-icon kticon-'];
-
-const ROTATE_CLASS_NAME = ['rotate-90', 'rotate-180', 'rotate-270', 'flip-horizontal', 'flip-vertical', 'flip-both'];
-const ANIM_CLASS_NAME = ['spin', 'pulse'];
-
-/**
- * 获取 icon className
- * @param iconKey
- * @param options
- * @return 获取拼接好的 className，如果拿不到则返回空字符串
- */
-export function getIcon(iconKey: string, options?: {
-  rotate?: ROTATE_TYPE;
-  anim?: ANIM_TYPE;
-  fill?: boolean;
-}): string {
-  const {rotate, anim, fill} = options || {};
-  let lastIndex = iconPrefixes.length;
-  while (!iconMap[iconPrefixes[--lastIndex]][iconKey]) {
-    if (lastIndex === 0) { break; }
-  }
-  const iconValue = iconMap[iconPrefixes[lastIndex]][iconKey];
-  if (!iconValue) {
-    getDebugLogger().warn('图标库缺失图标:' + iconKey);
-    return '';
-  }
-
-  let iconClass = `${iconPrefixes[lastIndex]}${iconValue}`;
-  if (rotate !== undefined) {
-    iconClass += ` iconfont-${ROTATE_CLASS_NAME[rotate]}`;
-  }
-  if (anim !== undefined) {
-    iconClass += ` iconfont-anim-${ANIM_CLASS_NAME[anim]}`;
-  }
-  if (fill) {
-    iconClass += ' toggled';
-  }
-  return iconClass;
-}
+export const getIcon = getKaitianIcon;
+export const updateIconMap = updateKaitianIconMap;
 
 export function getOctIcon(iconKey: string) {
   return `octicon octicon-${iconKey}`;
 }
-
-export function updateIconMap(prefix: string, customIconMap: { [iconKey: string]: string }) {
-  iconMap[prefix] = customIconMap;
-  iconPrefixes.push(prefix);
-}
-
-// key 为 iconName enum, value 为 icon className
-const typoIconMap = {
-  'folder-fill-open': 'folder-fill',
-  'search-close': 'close-square',
-  'fold': 'collapse-all',
-  'setting-general': 'setting',
-  'setting-editor': 'codelibrary-fill',
-  'setting-file': 'file-text',
-  'setting-extension': 'extension',
-  'run-debug': 'rundebug',
-  'toggle-breakpoints': 'deactivate-breakpoints',
-  // new typos issue
-  'withdraw': 'fallback',
-  'terminate1': 'terminate',
-  'stop1': 'stop',
-  'add': 'plus',
-};
-
-const _defaultIconMap = Object.assign({}, defaultIconfont, typoIconMap);
-
-export const defaultIconMap = new Proxy(_defaultIconMap, {
-  get(obj, prop: string) {
-    const typoValue = typoIconMap[prop];
-    warning(!typoValue, `Icon '${prop}' was a typo, please use '${typoValue}' instead`);
-    return obj[prop];
-  },
-});
-
-const iconMap: { [iconPrefix: string]: { [iconKey: string]: string } } = {
-  [iconPrefixes[0]]: defaultIconMap,
-};
 
 /**
  * @internal

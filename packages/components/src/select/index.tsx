@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import * as classNames from 'classnames';
 
 import './style.less';
-import { Icon, getDefaultIcon } from '../icon';
+import { Icon, getKaitianIcon } from '../icon';
 
 export interface IDataOption<T> {
   iconClass?: string;
@@ -284,7 +284,7 @@ export function Select<T = string>({
     <p className={selectClasses} onClick={toggleOpen} style={style}>
       {selected.iconClass ? <span className={classNames(selected.iconClass, 'kt-select-option-icon')}></span> : undefined}
       <span className={'kt-select-option'}>{selected.label}</span>
-      <Icon iconClass={getDefaultIcon('down')} />
+      <Icon iconClass={getKaitianIcon('down')} />
     </p>
 
     {
