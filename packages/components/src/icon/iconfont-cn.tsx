@@ -73,7 +73,8 @@ export function createFromIconfontCN<T>(options: CustomIconOptions = {}): React.
     }
   }
 
-  const Iconfont = React.forwardRef<HTMLSpanElement, IconFontProps<T>>((props, ref) => {
+  // tslint:disable-next-line:only-arrow-functions
+  const Iconfont = function<T>(props: IconFontProps<T>) {
     const { icon, children, rotate, anim, fill, className = '', ...restProps } = props;
     const iconShapeOptions = { rotate, anim, fill };
 
@@ -92,11 +93,11 @@ export function createFromIconfontCN<T>(options: CustomIconOptions = {}): React.
 
     const iconShapeClx = getIconShapeClxList(iconShapeOptions);
     return (
-      <Icon {...extraCommonProps} {...restProps} className={clx(className, iconShapeClx)} ref={ref}>
+      <Icon {...extraCommonProps} {...restProps} className={clx(className, iconShapeClx)}>
         {content}
       </Icon>
     );
-  });
+  };
 
   Iconfont.displayName = 'Iconfont';
 

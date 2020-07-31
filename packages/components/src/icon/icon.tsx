@@ -38,7 +38,7 @@ export interface IconBaseProps<T> extends IIconShapeOptions {
   onClick?: React.MouseEventHandler<HTMLSpanElement>;
 }
 
-export type IconProp<T> = IconBaseProps<T> & React.RefAttributes<HTMLSpanElement> & React.HTMLAttributes<HTMLSpanElement>;
+export type IconProp<T> = IconBaseProps<T> & React.HTMLAttributes<HTMLSpanElement>;
 
 /**
  * 在 IDE 集成环境下使用自定义图标时，建议提供自定义 IconKeys 类型
@@ -53,6 +53,14 @@ export type IconProp<T> = IconBaseProps<T> & React.RefAttributes<HTMLSpanElement
  * );
  * ```
  */
+// 放弃了 forwardRef, 因为 ts 不支持 https://github.com/microsoft/TypeScript/issues/36502
+// export const Icon = React.forwardRef(
+//   <C extends React.ComponentType<C extends React.ComponentType<infer P> ? P : never>>(
+//     props: IconProp<C>,
+//     ref: React.Ref<HTMLSpanElement>,
+//   ) => {
+//   }
+// );
 // tslint:disable-next-line:only-arrow-functions
 export const Icon = function<T>(
   props: IconProp<T>,
@@ -61,11 +69,11 @@ export const Icon = function<T>(
     size = 'small', loading, icon,
     iconClass, className, tooltip,
     rotate, anim, fill, disabled,
-    onClick, ref, children, ...restProps
+    onClick, children, ...restProps
   } = props;
   const iconShapeOptions = { rotate, anim, fill };
 
-  let iconClx;
+  let iconClx: string | undefined;
   if (icon) {
     // FIXME: @柳千 这一段看不懂，是啥意思呢?
     // 因为 getIcon 默认是倒序查找优先级
@@ -84,7 +92,6 @@ export const Icon = function<T>(
 
   return (
     <span
-      ref={ref}
       title={tooltip}
       onClick={onClick}
       className={clx(
