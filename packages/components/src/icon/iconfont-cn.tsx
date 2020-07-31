@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as clx from 'classnames';
-import { Icon, IconProp } from './icon';
+import { Icon, IconProps } from './icon';
 import { getIconShapeClxList } from './util';
 
 // source code from '@ant-design/icons'
@@ -15,7 +15,7 @@ export interface CustomIconOptions {
  * 去掉 iconClass 属性
  * 保留的 icon 属性是为了保持 API 一致性，但是不会传递下去
  */
-export type IconFontProps<T> = Omit<IconProp<T>, 'iconClass'>;
+export type IconFontProps<T> = Omit<IconProps<T>, 'iconClass'>;
 
 function isValidCustomScriptUrl(scriptUrl: string): boolean {
   return Boolean(
@@ -74,7 +74,7 @@ export function createFromIconfontCN<T>(options: CustomIconOptions = {}): React.
   }
 
   // tslint:disable-next-line:only-arrow-functions
-  const Iconfont = function<T>(props: IconFontProps<T>) {
+  const IconFont = React.forwardRef((props: IconFontProps<T>) => {
     const { icon, children, rotate, anim, fill, className = '', ...restProps } = props;
     const iconShapeOptions = { rotate, anim, fill };
 
@@ -97,9 +97,12 @@ export function createFromIconfontCN<T>(options: CustomIconOptions = {}): React.
         {content}
       </Icon>
     );
-  };
+  });
 
-  Iconfont.displayName = 'Iconfont';
+  IconFont.displayName = 'Iconfont';
 
-  return Iconfont;
+  return IconFont as <T = any> (
+    props: IconProps<T>,
+    ref: React.Ref<HTMLSpanElement>,
+  ) => React.ReactElement;
 }

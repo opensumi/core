@@ -38,7 +38,7 @@ export interface IconBaseProps<T> extends IIconShapeOptions {
   onClick?: React.MouseEventHandler<HTMLSpanElement>;
 }
 
-export type IconProp<T> = IconBaseProps<T> & React.HTMLAttributes<HTMLSpanElement>;
+export type IconProps<T = any> = IconBaseProps<T> & React.HTMLAttributes<HTMLSpanElement>;
 
 /**
  * 在 IDE 集成环境下使用自定义图标时，建议提供自定义 IconKeys 类型
@@ -61,9 +61,10 @@ export type IconProp<T> = IconBaseProps<T> & React.HTMLAttributes<HTMLSpanElemen
 //   ) => {
 //   }
 // );
-// tslint:disable-next-line:only-arrow-functions
-export const Icon = function<T>(
-  props: IconProp<T>,
+
+const IconBase = function<T>(
+  props: IconProps<T>,
+  ref: React.Ref<HTMLSpanElement>,
 ) {
   const {
     size = 'small', loading, icon,
@@ -92,8 +93,10 @@ export const Icon = function<T>(
 
   return (
     <span
+      {...restProps}
       title={tooltip}
       onClick={onClick}
+      ref={ref}
       className={clx(
         'kt-icon',
         iconClx,
@@ -105,9 +108,13 @@ export const Icon = function<T>(
           'kt-icon-clickable': !!onClick,
         },
       )}
-      {...restProps}
     >
       {children}
     </span>
   );
 };
+
+export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(IconBase) as <T = any> (
+  props: IconProps<T>,
+  ref: React.Ref<HTMLSpanElement>,
+) => React.ReactElement;
