@@ -612,5 +612,7 @@ export const localizationBundle = {
     'toolbar-customize.buttonDisplay.iconAndText': '图标和文字',
     'toolbar-customize.complete': '完成',
     'toolbar.customize.menu': '自定义工具栏...',
+
+    'workbench.uploadingFiles': '{0} 个文件上传中 {1}/s',
   },
 };
