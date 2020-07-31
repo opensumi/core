@@ -73,7 +73,6 @@ import {
   ProxyIdentifier,
   IRPCProtocol,
 } from '@ali/ide-connection';
-import * as retargetEvents from 'react-shadow-dom-retarget-events';
 
 import { VSCodeCommands } from './vscode/commands';
 import { UriComponents } from '../common/vscode/ext-types';
@@ -91,6 +90,7 @@ import { getAMDDefine, getMockAmdLoader, getAMDRequire, getWorkerBootstrapUrl } 
 import { KtViewLocation } from './kaitian/contributes/browser-views';
 import { ExtensionNoExportsView } from './components';
 import { createBrowserApi } from './kaitian-browser';
+import { retargetEvents } from './retargetEvents';
 
 const LOAD_FAILED_CODE = 'load';
 
