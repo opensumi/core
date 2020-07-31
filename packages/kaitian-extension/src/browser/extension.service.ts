@@ -318,8 +318,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
 
     if (this.workerProtocol) {
-      const proxy: IExtensionHostService = this.workerProtocol.getProxy<IExtensionHostService>(ExtHostAPIIdentifier.ExtHostExtensionService);
-      // 同步 host 进程中的 extension 列表
+      const proxy: IExtensionHostService = this.workerProtocol.getProxy<IExtensionHostService>(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
       await proxy.$initExtensions();
     }
   }
