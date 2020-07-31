@@ -155,7 +155,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   const eventBus = useInjectable(IEventBus) as IEventBus;
 
   const appConfig = useInjectable(AppConfig);
-  const { editorBackgroudImage } = appConfig;
+  const { editorBackgroundImage } = appConfig;
   React.useEffect(() => {
     if (codeEditorRef.current) {
       if (cachedEditor[group.name]) {
@@ -207,7 +207,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
     }}
     >
       {group.resources.length === 0 && <div className={styles.kt_editor_background} style={{
-        backgroundImage: editorBackgroudImage ? `url(${editorBackgroudImage})` : 'none',
+        backgroundImage: editorBackgroundImage ? `url(${editorBackgroundImage})` : 'none',
       }}>
         {EmptyComponent ? <ErrorBoundary><EmptyComponent></EmptyComponent></ErrorBoundary> : undefined}
       </div>}

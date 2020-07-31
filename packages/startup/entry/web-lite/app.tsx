@@ -1,6 +1,7 @@
 import '@ali/ide-i18n/lib/browser';
 import { SlotLocation } from '@ali/ide-core-browser';
 import { loadMonaco } from '@ali/ide-monaco/lib/browser/monaco-loader';
+import * as React from 'react';
 
 import { CommonBrowserModules } from './common-modules';
 import { renderApp } from './render-app';
@@ -62,6 +63,7 @@ renderApp({
     'editor.quickSuggestionsMaxCount': 50,
   },
   workspaceDir: '/ide-s/TypeScript-Node-Starter',
+  extraContextProvider: (props) => <div id='#hi' style={{ width: '100%', height: '100%' }}>{props.children}</div>,
   iconStyleSheets: [
     {
       iconMap: {

@@ -56,18 +56,16 @@ export interface IPreferences {
 export interface IconInfo { cssPath: string; prefix: string; iconMap: IconMap; }
 export interface IClientAppOpts extends Partial<AppConfig> {
   modules: ModuleConstructor[];
-  layoutConfig?: LayoutConfig;
   contributions?: ContributionConstructor[];
   modulesInstances?: BrowserModule[];
   connectionPath?: string;
-  webviewEndpoint?: string;
   connectionProtocols?: string[];
-  extWorkerHost?: string;
   iconStyleSheets?: IconInfo[];
   useCdnIcon?: boolean;
   editorBackgroudImage?: string;
   defaultPreferences?: IPreferences;
 }
+
 export interface LayoutConfig {
   [area: string]: {
     modules: Array<string>;
@@ -117,49 +115,41 @@ export class ClientApp implements IClientApp {
   stateService: ClientAppStateService;
 
   constructor(opts: IClientAppOpts) {
+    const {
+      modules, contributions, modulesInstances,
+      connectionPath, connectionProtocols, iconStyleSheets,
+      useCdnIcon, editorBackgroudImage, defaultPreferences,
+      ...restOpts // rest part 为 AppConfig
+    } = opts;
+
     this.initEarlyPreference(opts.workspaceDir || '');
     setLanguageId(getPreferenceLanguageId());
     this.injector = opts.injector || new Injector();
-    this.modules = opts.modules;
+    this.modules = modules;
     this.modules.forEach((m) => this.resolveModuleDeps(m));
     // moduleInstance必须第一个是layout模块
     this.browserModules = opts.modulesInstances || [];
     this.config = {
+      ...restOpts,
+      // 一些转换和 typo 修复
       workspaceDir: opts.workspaceDir || '',
-      coreExtensionDir: opts.coreExtensionDir,
       extensionDir: opts.extensionDir || (isElectronRenderer() ? electronEnv.metadata.extensionDir : ''),
       injector: this.injector,
       wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
       layoutConfig: opts.layoutConfig as LayoutConfig,
-      webviewEndpoint: opts.webviewEndpoint,
-      extWorkerHost: opts.extWorkerHost,
-      appName: opts.appName,
-      staticServicePath: opts.staticServicePath,
-      editorBackgroudImage: opts.editorBackgroudImage,
-      extensionCandidate: opts.extensionCandidate,
-      layoutComponent: opts.layoutComponent,
-      isSyncPreference: opts.isSyncPreference,
-      useExperimentalMultiChannel: opts.useExperimentalMultiChannel,
-      useExperimentalShadowDom: opts.useExperimentalShadowDom,
-      clientId: opts.clientId,
-      preferenceDirName: opts.preferenceDirName,
-      storageDirName: opts.storageDirName,
-      extensionStorageDirName: opts.extensionStorageDirName,
-      noExtHost: opts.noExtHost,
-      defaultPanels: opts.defaultPanels,
-      panelSizes: opts.panelSizes,
+      editorBackgroundImage: opts.editorBackgroundImage || editorBackgroudImage,
     };
     // 旧方案兼容, 把electron.metadata.extensionCandidate提前注入appConfig的对应配置中
     if (isElectronEnv() && electronEnv.metadata.extensionCandidate) {
       this.config.extensionCandidate = (this.config.extensionCandidate || []).concat(electronEnv.metadata.extensionCandidate || []);
     }
 
-    this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;
-    this.connectionProtocols = opts.connectionProtocols;
-    this.initBaseProvider(opts);
+    this.connectionPath = connectionPath || `${this.config.wsPath}/service`;
+    this.connectionProtocols = connectionProtocols;
+    this.initBaseProvider();
     this.initFields();
-    this.appendIconStyleSheets(opts.iconStyleSheets, opts.useCdnIcon);
-    this.createBrowserModules(opts);
+    this.appendIconStyleSheets(iconStyleSheets, useCdnIcon);
+    this.createBrowserModules(defaultPreferences);
   }
   /**
    * 将被依赖但未被加入modules的模块加入到待加载模块最后
@@ -224,7 +214,7 @@ export class ClientApp implements IClientApp {
   /**
    * 给 injector 初始化默认的 Providers
    */
-  private initBaseProvider(opts: IClientAppOpts) {
+  private initBaseProvider() {
     this.injector.addProviders({ token: IClientApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
     injectInnerProviders(this.injector);
@@ -242,7 +232,7 @@ export class ClientApp implements IClientApp {
     this.nextMenuRegistry = this.injector.get(IMenuRegistry);
   }
 
-  private createBrowserModules(opts: IClientAppOpts) {
+  private createBrowserModules(defaultPreferences?: IPreferences) {
     const injector = this.injector;
 
     for (const Constructor of this.modules) {
@@ -261,7 +251,7 @@ export class ClientApp implements IClientApp {
     injectCorePreferences(this.injector);
 
     // 注册PreferenceService
-    this.injectPreferenceService(this.injector, opts);
+    this.injectPreferenceService(this.injector, defaultPreferences);
 
     // 注册资源处理服务
     this.injectResourceProvider(this.injector);
@@ -484,7 +474,7 @@ export class ClientApp implements IClientApp {
     }
   }
 
-  injectPreferenceService(injector: Injector, opts: IClientAppOpts): void {
+  injectPreferenceService(injector: Injector, defaultPreferences?: IPreferences): void {
     const preferencesProviderFactory = () => {
       return (scope: PreferenceScope) => {
         const provider: PreferenceProvider = injector.get(PreferenceProvider, { tag: scope });
@@ -505,11 +495,11 @@ export class ClientApp implements IClientApp {
       useClass: PreferenceServiceImpl,
     });
     // 设置默认配置
-    if (opts.defaultPreferences) {
+    if (defaultPreferences) {
       const providerFactory: PreferenceProviderProvider = injector.get(PreferenceProviderProvider);
       const defaultPreference: PreferenceProvider = providerFactory(PreferenceScope.Default);
-      for (const key of Object.keys(opts.defaultPreferences)) {
-        defaultPreference.setPreference(key, opts.defaultPreferences[key]);
+      for (const key of Object.keys(defaultPreferences)) {
+        defaultPreference.setPreference(key, defaultPreferences[key]);
       }
     }
   }
