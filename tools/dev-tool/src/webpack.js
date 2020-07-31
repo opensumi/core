@@ -108,7 +108,9 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
             {
               loader: 'less-loader',
               options: {
-                javascriptEnabled: true
+                lessOptions: {
+                  javascriptEnabled: true,
+                },
               }
             }
           ]
@@ -126,7 +128,9 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
             {
               loader: 'less-loader',
               options: {
-                javascriptEnabled: true,
+                lessOptions: {
+                  javascriptEnabled: true,
+                },
               }
             }
           ],
