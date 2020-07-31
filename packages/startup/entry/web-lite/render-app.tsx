@@ -8,6 +8,9 @@ import { MetaService } from './services/meta-service';
 import { IMetaService } from './services/meta-service/base';
 import { MockLogServiceForClient } from './overrides/mock-logger';
 
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
+
 BrowserFS.configure({
   fs: 'IndexedDB',
   options: {},
@@ -66,14 +69,20 @@ export async function renderApp(opts: IClientAppOpts) {
     app.fireOnReload = (forcedReload: boolean) => {
       window.location.reload(forcedReload);
     };
-    await app.start(document.getElementById('main')!, undefined, undefined, () => {
-      const loadingDom = document.getElementById('loading');
-      if (loadingDom) {
-        // await new Promise((resolve) => setTimeout(resolve, 1000));
-        loadingDom.classList.add('loading-hidden');
-        // await new Promise((resolve) => setTimeout(resolve, 500));
-        loadingDom.remove();
-      }
+
+    const targetDom = document.getElementById('main')!;
+    await app.start((app) => {
+      const MyApp = <div id='custom-wrapper' style={{ height: '100%' }}>{app}</div>;
+      return new Promise((resolve) => {
+        ReactDOM.render(MyApp, targetDom, resolve);
+      });
     });
+    const loadingDom = document.getElementById('loading');
+    if (loadingDom) {
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
+      loadingDom.classList.add('loading-hidden');
+      // await new Promise((resolve) => setTimeout(resolve, 500));
+      loadingDom.remove();
+    }
   }, 'kaitian-browser-fs'));
 }

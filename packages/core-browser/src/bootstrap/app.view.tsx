@@ -45,7 +45,19 @@ export function App(props: AppProps) {
   );
 }
 
-export function renderClientApp(app: IClientApp, dom: HTMLElement) {
+export type IAppRenderer = (app: React.ReactElement) => Promise<void>;
+
+const defaultAppRender = (dom: HTMLElement): IAppRenderer => {
+  return (app) => {
+    return new Promise((resolve) => {
+      ReactDom.render(app, dom, () => {
+        resolve();
+      });
+    });
+  };
+};
+
+export function renderClientApp(app: IClientApp, container: HTMLElement | IAppRenderer) {
   const Layout = app.config.layoutComponent || DefaultLayout;
   const overlayComponents = app.browserModules.filter((module) => module.isOverlay).map((module) => {
     if (!module.component) {
@@ -55,12 +67,11 @@ export function renderClientApp(app: IClientApp, dom: HTMLElement) {
     return module.component;
   });
 
-  return new Promise((resolve) => {
-    ReactDom.render((
-      <App app={app} main={Layout} overlays={overlayComponents} />
-    ), dom, () => {
-      resolve();
-    });
-  });
+  const IdeApp = <App app={app} main={Layout} overlays={overlayComponents} />;
 
+  const render = typeof container === 'function'
+    ? container
+    : defaultAppRender(container);
+
+  return render(IdeApp);
 }

@@ -10,7 +10,6 @@ export interface IClientApp {
   config: AppConfig;
   commandRegistry: CommandRegistry;
   fireOnReload: (forcedReload?: boolean) => void;
-  container: HTMLElement;
 }
 
 export abstract class BrowserModule<T = any> extends BasicModule {
