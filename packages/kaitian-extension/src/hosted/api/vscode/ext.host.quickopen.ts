@@ -3,7 +3,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, IExtHostQuickOpen, IMainThreadQuickOpen, IExtHostWorkspace } from '../../../common/vscode';
 import { CancellationToken, hookCancellationToken, Event, Emitter, DisposableCollection, MaybePromise } from '@ali/ide-core-common';
 import { QuickPickItem, QuickPickOptions } from '@ali/ide-quick-open';
-// import { QuickTitleButton } from '@ali/ide-core-browser/lib/quick-open/';
+import { QuickInputButton } from '../../../common/vscode/ext-types';
 
 type Item = string | vscode.QuickPickItem;
 
@@ -11,6 +11,9 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
 
   private proxy: IMainThreadQuickOpen;
   private validateInputHandler: undefined | ((input: string) => MaybePromise<string | null | undefined>);
+
+  private createdQuicks = new Map<number, QuickInputExt | QuickPickExt<vscode.QuickPickItem>>(); // Each quick will have a number so that we know where to fire events
+  private currentQuick = 0;
 
   constructor(
     rpc: IRPCProtocol,
@@ -72,7 +75,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
     if (!workspaceFolders) {
       return undefined;
     }
-    const pickItems = workspaceFolders.map((folder: vscode.WorkspaceFolder, index) => {
+    const pickItems = workspaceFolders.map((folder: vscode.WorkspaceFolder) => {
       const quickPickItem: QuickPickItem<number> = {
         // QuickPickItem
         label: folder.name,
@@ -93,16 +96,27 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
   }
 
   createQuickPick<T extends vscode.QuickPickItem>(): vscode.QuickPick<T> {
-    return new QuickPickExt(this);
+    this.currentQuick++;
+    const newQuickPick = new QuickPickExt(this, this.currentQuick);
+    this.createdQuicks.set(this.currentQuick, newQuickPick);
+    return newQuickPick as QuickPickExt<T>;
   }
 
   createInputBox(): vscode.InputBox {
-    return new QuickInputExt(this);
+    this.currentQuick++;
+    const newInputBox = new QuickInputExt(this, this.currentQuick);
+    this.createdQuicks.set(this.currentQuick, newInputBox);
+    return newInputBox;
+  }
+
+  $onDidTriggerButton(btnHandler: number): void {
+    return (this.createdQuicks.get(this.currentQuick) as QuickPickExt<vscode.QuickPickItem> )?.attachBtn(btnHandler);
   }
 
   showInputBox(options: vscode.InputBoxOptions = {}, token: CancellationToken = CancellationToken.None): PromiseLike<string | undefined> {
     // 校验函数需要运行在扩展进程中
     this.validateInputHandler = options && options.validateInput;
+    this.hideInputBox();
 
     const promise = this.proxy.$showQuickInput(options as vscode.QuickPickOptions , typeof this.validateInputHandler === 'function');
     return hookCancellationToken(token, promise);
@@ -122,7 +136,6 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
 }
 
 class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T> {
-  buttons: readonly vscode.QuickInputButton[];
   busy: boolean;
   canSelectMany: boolean;
   enabled: boolean;
@@ -134,6 +147,7 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   title: string | undefined;
   totalSteps: number | undefined;
   value: string;
+  _buttons: [];
   private _items: T[];
   private _activeItems: T[];
   private _placeholder: string | undefined;
@@ -143,15 +157,18 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   private readonly onDidChangeActiveEmitter: Emitter<T[]>;
   private readonly onDidChangeSelectionEmitter: Emitter<T[]>;
   private readonly onDidChangeValueEmitter: Emitter<string>;
-  private readonly onDidTriggerButtonEmitter: Emitter<vscode.QuickInputButton>;
+  private readonly onDidTriggerButtonEmitter: Emitter<QuickInputButton>;
 
   private didShow = false;
 
-  constructor(readonly quickOpen: IExtHostQuickOpen) {
+  readonly quickPickIndex: number;
+
+  constructor(readonly quickOpen: IExtHostQuickOpen, quickPickIndex: number) {
+    this.quickPickIndex = quickPickIndex;
     this._items = [];
     this._activeItems = [];
     this._placeholder = '';
-    this.buttons = [];
+    this._buttons = [];
     this.step = 0;
     this.title = '';
     this.totalSteps = 0;
@@ -209,7 +226,15 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
     return this.onDidChangeValueEmitter.event;
   }
 
-  get onDidTriggerButton(): Event<vscode.QuickInputButton> {
+  get buttons() {
+    return this._buttons;
+  }
+
+  set buttons(buttons) {
+    this._buttons = buttons;
+  }
+
+  get onDidTriggerButton(): Event<QuickInputButton> {
     return this.onDidTriggerButtonEmitter.event;
   }
 
@@ -219,6 +244,11 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
 
   dispose(): void {
     this.disposableCollection.dispose();
+  }
+
+  attachBtn(btnHandler: number): void {
+    const btn = this.buttons[btnHandler];
+    return this.onDidTriggerButtonEmitter.fire(btn);
   }
 
   hide(): void {
@@ -259,7 +289,7 @@ class QuickInputExt implements vscode.InputBox {
   value: string;
   placeholder: string | undefined;
   password: boolean;
-  buttons: readonly vscode.QuickInputButton[];
+  buttons: readonly QuickInputButton[];
   prompt: string | undefined;
   validationMessage: string | undefined;
   title: string | undefined;
@@ -271,12 +301,14 @@ class QuickInputExt implements vscode.InputBox {
 
   private disposableCollection: DisposableCollection;
 
-  onDidTriggerButtonEmitter: Emitter<vscode.QuickInputButton>;
+  readonly quickInputIndex: number;
+
+  onDidTriggerButtonEmitter: Emitter<QuickInputButton>;
   onDidChangeValueEmitter: Emitter<string>;
   onDidAcceptEmitter: Emitter<void>;
   onDidHideEmitter: Emitter<void>;
 
-  constructor(readonly quickOpen: IExtHostQuickOpen) {
+  constructor(readonly quickOpen: IExtHostQuickOpen, quickInputIndex: number) {
     this.buttons = [];
     this.step = 0;
     this.title = '';
@@ -286,6 +318,7 @@ class QuickInputExt implements vscode.InputBox {
     this.placeholder = '';
     this.password = false;
     this.ignoreFocusOut = false;
+    this.quickInputIndex = quickInputIndex;
     this.disposableCollection = new DisposableCollection();
     this.disposableCollection.push(this.onDidAcceptEmitter = new Emitter());
     this.disposableCollection.push(this.onDidChangeValueEmitter = new Emitter());
@@ -301,7 +334,7 @@ class QuickInputExt implements vscode.InputBox {
     return this.onDidAcceptEmitter.event;
   }
 
-  get onDidTriggerButton(): Event<vscode.QuickInputButton> {
+  get onDidTriggerButton(): Event<QuickInputButton> {
     return this.onDidTriggerButtonEmitter.event;
   }
 

@@ -7,9 +7,10 @@ import {
   QuickTitleBar,
 } from '@ali/ide-quick-open/lib/browser/quick-title-bar';
 import { IQuickInputService } from '@ali/ide-core-browser/lib/quick-open';
+import { Disposable } from '@ali/ide-core-browser';
 
 @Injectable({ multiple: true })
-export class MainThreadQuickOpen implements IMainThreadQuickOpen {
+export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickOpen {
 
   protected readonly proxy: IExtHostQuickOpen;
 
@@ -23,10 +24,16 @@ export class MainThreadQuickOpen implements IMainThreadQuickOpen {
   protected quickTitleBarService: QuickTitleBar;
 
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
+    super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostQuickOpen);
-  }
 
-  public dispose() { }
+    this.addDispose(
+      this.quickTitleBarService.onDidTriggerButton(async (button) => {
+        // @ts-ignore
+        await this.proxy.$onDidTriggerButton(button.handler);
+      }),
+    );
+  }
 
   $showQuickPick(items: QuickPickItem<number>[], options?: QuickPickOptions): Promise<number | undefined> {
     return this.quickPickService.show(items, options);

@@ -48,17 +48,17 @@ export class QuickInputService implements IQuickInputService {
         currentText = lookFor;
       },
     }, {
-        prefix: options.value,
-        placeholder: options.placeHolder,
-        password: options.password,
-        ignoreFocusOut: options.ignoreFocusOut,
-        enabled: options.enabled,
-        valueSelection: options.valueSelection,
-        onClose: () => {
-            result.resolve(undefined);
-            this.quickTitleBar.hide();
-        },
-      });
+      prefix: options.value,
+      placeholder: options.placeHolder,
+      password: options.password,
+      ignoreFocusOut: options.ignoreFocusOut,
+      enabled: options.enabled,
+      valueSelection: options.valueSelection,
+      onClose: () => {
+        result.resolve(undefined);
+        this.quickTitleBar.hide();
+      },
+    });
     return result.promise;
   }
 
@@ -83,7 +83,7 @@ export class QuickInputService implements IQuickInputService {
 
   readonly onDidChangeValueEmitter: Emitter<string> = new Emitter();
   get onDidChangeValue(): Event<string> {
-      return this.onDidChangeValueEmitter.event;
+    return this.onDidChangeValueEmitter.event;
   }
 
 }

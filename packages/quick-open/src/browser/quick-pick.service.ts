@@ -17,31 +17,31 @@ export class QuickPickServiceImpl implements QuickPickService {
   show<T>(elements: QuickPickItem<T>[], options?: QuickPickOptions): Promise<T | undefined>;
   async show<T>(elements: (string | QuickPickItem<T>)[], options?: QuickPickOptions): Promise<T | undefined> {
     return new Promise<T | undefined>((resolve) => {
-        const items = this.toItems(elements, resolve);
-        if (items.length === 1) {
-            items[0].run(QuickOpenMode.OPEN);
-            return;
-        }
-        if (options && this.quickOpenService.widgetNode && this.quickTitleBar.shouldShowTitleBar(options.title, options.step)) {
-            this.quickTitleBar.attachTitleBar(this.quickOpenService.widgetNode, options.title, options.step, options.totalSteps, options.buttons);
-        }
-        const prefix = options && options.value ? options.value : '';
-        this.quickOpenService.open({
-            onType: (_, acceptor) => {
-                acceptor(items);
-                this.onDidChangeActiveItemsEmitter.fire(items);
-            },
-        }, Object.assign({
-            onClose: () => {
-                resolve(undefined);
-                this.quickTitleBar.hide();
-            },
-            fuzzyMatchLabel: true,
-            fuzzyMatchDescription: true,
-            prefix,
-        }, options));
+      const items = this.toItems(elements, resolve);
+      if (items.length === 1) {
+        items[0].run(QuickOpenMode.OPEN);
+        return;
+      }
+      if (options && this.quickOpenService.widgetNode && this.quickTitleBar.shouldShowTitleBar(options.title, options.step)) {
+        this.quickTitleBar.attachTitleBar(this.quickOpenService.widgetNode, options.title, options.step, options.totalSteps, options.buttons);
+      }
+      const prefix = options && options.value ? options.value : '';
+      this.quickOpenService.open({
+        onType: (_, acceptor) => {
+          acceptor(items);
+          this.onDidChangeActiveItemsEmitter.fire(items);
+        },
+      }, Object.assign({
+        onClose: () => {
+          resolve(undefined);
+          this.quickTitleBar.hide();
+        },
+        fuzzyMatchLabel: true,
+        fuzzyMatchDescription: true,
+        prefix,
+      }, options));
     });
-}
+  }
 
   hide(reason?: HideReason): void {
     this.quickOpenService.hide(reason);
