@@ -59,7 +59,7 @@ export async function renderApp(opts: IClientAppOpts) {
   opts.extWorkerHost = opts.extWorkerHost || process.env.EXTENSION_WORKER_HOST; // `http://127.0.0.1:8080/kaitian/ext/worker-host.js`; // 访问 Host
   opts.webviewEndpoint = opts.webviewEndpoint || `http://localhost:50998`;
 
-  opts.editorBackgroudImage = 'https://img.alicdn.com/tfs/TB1Y6vriuL2gK0jSZFmXXc7iXXa-200-200.png';
+  opts.editorBackgroundImage = 'https://img.alicdn.com/tfs/TB1Y6vriuL2gK0jSZFmXXc7iXXa-200-200.png';
 
   BrowserFS.initialize(new BrowserFS.FileSystem.IndexedDB(async () => {
     await ensureDir(opts.workspaceDir!);

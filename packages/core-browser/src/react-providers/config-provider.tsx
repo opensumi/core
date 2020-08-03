@@ -30,6 +30,7 @@ export interface AppConfig {
   wsPath: string;
   layoutConfig: LayoutConfig;
   layoutComponent?: React.FC;
+
   panelSizes?: {[slotLocation: string]: number};
   defaultPanels?: {[slotLocation: string]: string};
   /**
@@ -40,7 +41,7 @@ export interface AppConfig {
   extensionCandidate?: ExtensionCandiDate[];
   staticServicePath?: string;
 
-  editorBackgroudImage?: string;
+  editorBackgroundImage?: string;
 
   isSyncPreference?: boolean;
 
@@ -57,6 +58,14 @@ export interface AppConfig {
   clientId?: string;
   // 是否禁用插件进程
   noExtHost?: boolean;
+
+  /**
+   * @ClientOption
+   * 额外的 ConfigProvider
+   * 可以让 IDE-framework 内部的 ReactDOM.render 调用时
+   * 都被其包裹一层，以达到额外的 context 传递效果
+   */
+  extraContextProvider?: React.ComponentType<React.PropsWithChildren<any>>;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
@@ -68,11 +77,18 @@ export const ConfigContext = React.createContext<AppConfig>({
 });
 
 export function ConfigProvider(props: React.PropsWithChildren<{ value: AppConfig }>) {
-  return (
-    <ConfigContext.Provider value={ props.value }>
+  const { extraContextProvider, ...restPropsValue } = props.value;
+  const app = (
+    <ConfigContext.Provider value={restPropsValue}>
       <ConfigContext.Consumer>
-        { (value) => props.value === value ? props.children : null }
+        { (value) => restPropsValue === value ? props.children : null }
       </ConfigContext.Consumer>
     </ConfigContext.Provider>
   );
+
+  if (!extraContextProvider) {
+    return app;
+  }
+
+  return React.createElement(extraContextProvider, { children: app });
 }
