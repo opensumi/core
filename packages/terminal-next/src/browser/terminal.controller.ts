@@ -1,6 +1,6 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { WithEventBus, Emitter, Deferred } from '@ali/ide-core-common';
+import { WithEventBus, Emitter, Deferred, Event } from '@ali/ide-core-common';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
 import { IThemeService } from '@ali/ide-theme';
@@ -17,7 +17,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   protected _clients: Map<string, ITerminalClient>;
   protected _onDidOpenTerminal = new Emitter<ITerminalInfo>();
   protected _onDidCloseTerminal = new Emitter<string>();
+  protected _onDidChangeActiveTerminal = new Emitter<string>();
   protected _ready = new Deferred<void>();
+
+  readonly onDidOpenTerminal: Event<ITerminalInfo> = this._onDidOpenTerminal.event;
+  readonly onDidCloseTerminal: Event<string> = this._onDidCloseTerminal.event;
+  readonly onDidChangeActiveTerminal: Event<string> = this._onDidChangeActiveTerminal.event;
 
   @Autowired(IMainLayoutService)
   protected readonly layoutService: IMainLayoutService;
@@ -189,6 +194,13 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
     this.addDispose(this.terminalView.onWidgetEmpty(() => {
       this.hideTerminalPanel();
+    }));
+
+    this.addDispose(this.terminalView.onWidgetSelected((widget) => {
+      const client = this.findClientFromWidgetId(widget.id);
+      if (client) {
+        this._onDidChangeActiveTerminal.fire(client.id);
+      }
     }));
 
     this.addDispose(this.themeService.onThemeChange((_) => {

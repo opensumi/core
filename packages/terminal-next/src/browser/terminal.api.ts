@@ -24,8 +24,22 @@ export class TerminalApiService implements ITerminalApiService {
 
   protected _entries = new Map<string, ITerminalExternalClient>();
 
+  constructor() {
+    this.controller.onDidOpenTerminal((info) => {
+      this._onDidOpenTerminal.fire(info);
+    });
+
+    this.controller.onDidCloseTerminal((id) => {
+      this._onDidCloseTerminal.fire(id);
+    });
+
+    this.controller.onDidChangeActiveTerminal((id) => {
+      this._onDidChangeActiveTerminal.fire(id);
+    });
+  }
+
   get terminals() {
-    return Array.from(this._entries.values()).map((v) => {
+    return Array.from(this.controller.clients.values()).map((v) => {
       return {
         id: v.id,
         name: v.name,
