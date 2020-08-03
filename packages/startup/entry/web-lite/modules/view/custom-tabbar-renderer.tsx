@@ -1,4 +1,4 @@
-import React = require('react');
+import * as React from 'react';
 import { ComponentRegistryInfo, useInjectable } from '@ali/ide-core-browser';
 import { TabRendererBase, TabbarConfig } from '@ali/ide-main-layout/lib/browser/tabbar/renderer.view';
 import { TabbarViewBase, IconElipses } from '@ali/ide-main-layout/lib/browser/tabbar/bar.view';
