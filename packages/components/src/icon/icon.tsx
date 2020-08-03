@@ -53,15 +53,8 @@ export type IconProps<T = any> = IconBaseProps<T> & React.HTMLAttributes<HTMLSpa
  * );
  * ```
  */
-// 放弃了 forwardRef, 因为 ts 不支持 https://github.com/microsoft/TypeScript/issues/36502
-// export const Icon = React.forwardRef(
-//   <C extends React.ComponentType<C extends React.ComponentType<infer P> ? P : never>>(
-//     props: IconProp<C>,
-//     ref: React.Ref<HTMLSpanElement>,
-//   ) => {
-//   }
-// );
 
+// tslint:disable-next-line:only-arrow-functions
 const IconBase = function<T>(
   props: IconProps<T>,
   ref: React.Ref<HTMLSpanElement>,
