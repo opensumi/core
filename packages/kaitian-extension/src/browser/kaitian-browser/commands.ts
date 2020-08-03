@@ -69,7 +69,7 @@ export function createBrowserCommandsApiFactory(injector: Injector, extension: I
   const commands: KaitianBrowserCommand = injector.get(KaitianBrowserCommand, [rpcProtocol]);
   return {
     executeCommand<T>(command: string, ...args: any) {
-      return commands.executeCommand<T>(command, extension, args);
+      return commands.executeCommand<T>(command, extension, ...args);
     },
   };
 }
