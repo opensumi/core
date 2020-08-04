@@ -2,6 +2,7 @@ extends:
   - tslint:recommended
 
 rules:
+  only-arrow-functions: false
   interface-name: false
   ordered-imports: false
   object-literal-key-quotes: false

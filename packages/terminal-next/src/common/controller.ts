@@ -1,7 +1,7 @@
 import { Event, Disposable, Deferred } from '@ali/ide-core-common';
 import { IWidgetGroup, IWidget } from './resize';
 import { ITerminalClient } from './client';
-import { TerminalOptions } from './pty';
+import { TerminalOptions, ITerminalInfo } from './pty';
 
 export interface ITerminalExternalClient {
   readonly id: string;
@@ -35,6 +35,10 @@ export interface ITerminalController extends Disposable {
   showTerminalPanel(): void;
   hideTerminalPanel(): void;
   toJSON(): ITerminalBrowserHistory;
+
+  onDidOpenTerminal: Event<ITerminalInfo>;
+  onDidCloseTerminal: Event<string>;
+  onDidChangeActiveTerminal: Event<string>;
 }
 
 export const ITerminalSearchService = Symbol('ITerminalSearchService');
