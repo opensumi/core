@@ -27,7 +27,6 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
   }
 
   opts.workspaceDir = electronEnv.env.WORKSPACE_DIR;
-  opts.coreExtensionDir = electronEnv.env.CORE_EXTENSION_DIR;
   opts.extensionDir = electronEnv.metadata.extensionDir;
   opts.injector = injector;
   if (electronEnv.metadata.workerHostEntry) {

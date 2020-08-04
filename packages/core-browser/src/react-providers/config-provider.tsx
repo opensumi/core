@@ -10,7 +10,6 @@ export interface AppConfig {
    */
   appName?: string;
   workspaceDir: string;
-  coreExtensionDir?: string;
   extensionDir?: string;
   /**
    * 设置全局存储的文件夹名称
