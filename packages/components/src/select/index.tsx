@@ -92,7 +92,6 @@ function getLabelWithChildrenProps<T = string>(value: T | undefined, children: R
     }
     return null;
   });
-
   return currentOption ? (currentOption.props?.label || currentOption.props?.value) : nodes[0].props?.value;
 }
 
@@ -160,36 +159,9 @@ export function Select<T = string>({
   groupTitleRenderer,
 }: ISelectProps<T>) {
   const [open, setOpen] = useState(false);
-  let initialValue = value;
-  if (options && isDataOptions(options)) {
-    const index = options.findIndex((option) => equals(option.value, value));
-    if (index === -1) {
-      initialValue = options[0]?.value;
-    }
-  } else if (options && isDataOptionGroups(options)) {
-    let found = false;
-    for (const group of options) {
-      const index = group.options.findIndex((option) => equals(option.value, value));
-      if (index !== -1) {
-        found = true;
-      }
-    }
-    if (!found) {
-      initialValue = options[0]?.options[0]?.value;
-    }
-  }
-  const [select, setSelect] = useState<T | undefined>(initialValue);
-  const prevSelect = usePrevious(select);
+
   const selectRef = React.useRef<HTMLDivElement | null>(null);
   const overlayRef = React.useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    if (onChange && select !== undefined && !equals(select, prevSelect)) {
-      onChange(select);
-    }
-  }, [select]);
-  useEffect(() => {
-    setSelect(select);
-  }, [value]);
 
   function toggleOpen() {
     setOpen(open ? false : true);
@@ -212,10 +184,12 @@ export function Select<T = string>({
     }
     const disabled = (node as React.ReactElement).props?.disabled || false;
     return <div key={(node as React.ReactElement).props.value} className={classNames({
-      ['kt-select-option-select']: select === (node as React.ReactElement).props.value,
+      ['kt-select-option-select']: value === (node as React.ReactElement).props.value,
     })} onClick={disabled ? noop : () => {
       setOpen(false);
-      setSelect(getValueWithProps((node as React.ReactElement), optionLabelProp));
+      if (onChange) {
+        onChange(getValueWithProps((node as React.ReactElement), optionLabelProp));
+      }
     }}>{node}</div>;
   }
 
@@ -239,7 +213,7 @@ export function Select<T = string>({
   function getSelectedValue() {
     if (options && isDataOptions(options)) {
       for (const option of options) {
-        if (equals(select, option.value)) {
+        if (equals(value, option.value)) {
           return {
             iconClass: option.iconClass,
             label: option.label,
@@ -253,7 +227,7 @@ export function Select<T = string>({
     } else if (options && isDataOptionGroups(options)) {
       for (const group of options) {
         for (const option of group.options) {
-          if (equals(select, option.value)) {
+          if (equals(value, option.value)) {
             return {
               iconClass: option.iconClass,
               label: option.label,
@@ -294,10 +268,12 @@ export function Select<T = string>({
         options={options}
         equals={equals}
         optionStyle={optionStyle}
-        currentValue={select}
+        currentValue={value}
         size={size}
         onSelect={(value: T) => {
-          setSelect(value);
+          if (onChange) {
+            onChange(value);
+          }
           setOpen(false);
         }}
         groupTitleRenderer={groupTitleRenderer}
@@ -389,6 +365,7 @@ export const SelectOptionsList = React.forwardRef(<T, >(props: ISelectOptionsLis
   </div>;
 });
 
+// @ts-ignore
 function usePrevious(value) {
   const ref = React.useRef();
   useEffect(() => {

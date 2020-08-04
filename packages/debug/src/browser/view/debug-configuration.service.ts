@@ -48,17 +48,19 @@ export class DebugConfigurationService {
   @observable.shallow
   configurationOptions: DebugSessionOptions[] = this.debugConfigurationManager.all || [];
 
+  private async initCurrentConfiguration() {
+    const preValue = await this.getCurrentConfiguration();
+    const hasConfig = !!this.debugConfigurationManager.all.find((config) => this.toValue(config) === preValue);
+    if (hasConfig) {
+      this.updateCurrentValue(preValue);
+    }
+  }
+
   async init() {
-    // this.updateCurrentValue(await this.getCurrentConfiguration() || '__NO_CONF__');
+    await this.initCurrentConfiguration();
     this.debugConfigurationManager.onDidChange(async () => {
       this.updateConfigurationOptions();
-      if (this.currentValue === '__NO_CONF__') {
-        const preValue = await this.getCurrentConfiguration();
-        const hasConfig = !!this.debugConfigurationManager.all.find((config) => this.toValue(config) === preValue);
-        if (hasConfig) {
-          this.updateCurrentValue(preValue);
-        }
-      }
+      await this.initCurrentConfiguration();
     });
     this.preferenceService.onPreferenceChanged((event) => {
       const { preferenceName, newValue } = event;
