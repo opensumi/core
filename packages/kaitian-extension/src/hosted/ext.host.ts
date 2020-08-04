@@ -77,7 +77,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   }
 
   public async close() {
-    this.extensionsActivator.deactivate();
+    await this.extensionsActivator.deactivate();
   }
 
   public async init() {
