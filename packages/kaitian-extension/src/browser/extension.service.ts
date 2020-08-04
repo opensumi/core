@@ -81,7 +81,7 @@ import { UriComponents } from '../common/vscode/ext-types';
 import { IThemeService, IIconService } from '@ali/ide-theme';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
-import { ExtensionCandiDate, localize, OnEvent, WithEventBus } from '@ali/ide-core-common';
+import { ExtensionCandiDate as ExtensionCandidate, localize, OnEvent, WithEventBus } from '@ali/ide-core-common';
 import { IKaitianBrowserContributions } from './kaitian-browser/types';
 import { KaitianBrowserContributionRunner } from './kaitian-browser/contribution';
 import { viewColumnToResourceOpenOptions, isLikelyVscodeRange, fromRange } from '../common/vscode/converter';
@@ -110,9 +110,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
-
-  // @Autowired(WSChanneHandler)
-  // private wsChannelHandler: WSChanneHandler;
 
   @Autowired(CommandRegistry)
   private commandRegistry: CommandRegistry;
@@ -511,7 +508,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   /**
    * @param realPath extension path
    */
-  private getExtensionCandidateByPath(realPath: string): ExtensionCandiDate | undefined {
+  private getExtensionCandidateByPath(realPath: string): ExtensionCandidate | undefined {
     return this.appConfig.extensionCandidate && this.appConfig.extensionCandidate.find((extension) => extension.path === realPath);
   }
 
@@ -931,8 +928,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
    * export const ComponentB = {...};
    * ```
    */
-  private async loadBrowserScriptByMockLoader<T>(browerPath: string, extension: IExtension, defaultExports: boolean): Promise<{ moduleExports: T, proxiedHead: HTMLHeadElement }> {
-    const pendingFetch = await fetch(decodeURIComponent(browerPath));
+  private async loadBrowserScriptByMockLoader<T>(browserPath: string, extension: IExtension, defaultExports: boolean): Promise<{ moduleExports: T, proxiedHead: HTMLHeadElement }> {
+    const pendingFetch = await fetch(decodeURIComponent(browserPath));
     const { _module, _exports, _require } = getMockAmdLoader<T>(this.injector, extension, this.protocol);
     const stylesCollection = [];
     const proxiedHead = document.createElement('head');
@@ -1118,17 +1115,17 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   public async getDependenciesExtMap(): Promise<Map<string, string[]>> {
-    const denpencies = new Map();
+    const dependencies = new Map();
     const extensionProps = await this.getAllExtensionJson();
     extensionProps.forEach((prop) => {
       prop?.packageJSON.extensionDependencies?.forEach((dep) => {
         const depId = typeof dep === 'string' ? dep : Object.keys(dep)[0];
-        denpencies.set(prop.extensionId,
-          denpencies.has(prop.extensionId) ? [...denpencies.get(prop.extensionId), depId] : [depId],
+        dependencies.set(prop.extensionId,
+          dependencies.has(prop.extensionId) ? [...dependencies.get(prop.extensionId), depId] : [depId],
         );
       });
     });
-    return denpencies;
+    return dependencies;
   }
 
   public async processCrashRestart(clientId: string) {
