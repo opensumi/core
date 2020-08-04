@@ -49,9 +49,16 @@ export class DebugConfigurationService {
   configurationOptions: DebugSessionOptions[] = this.debugConfigurationManager.all || [];
 
   async init() {
-    this.updateCurrentValue(await this.getCurrentConfiguration() || '__NO_CONF__');
-    this.debugConfigurationManager.onDidChange(() => {
+    // this.updateCurrentValue(await this.getCurrentConfiguration() || '__NO_CONF__');
+    this.debugConfigurationManager.onDidChange(async () => {
       this.updateConfigurationOptions();
+      if (this.currentValue === '__NO_CONF__') {
+        const preValue = await this.getCurrentConfiguration();
+        const hasConfig = !!this.debugConfigurationManager.all.find((config) => this.toValue(config) === preValue);
+        if (hasConfig) {
+          this.updateCurrentValue(preValue);
+        }
+      }
     });
     this.preferenceService.onPreferenceChanged((event) => {
       const { preferenceName, newValue } = event;

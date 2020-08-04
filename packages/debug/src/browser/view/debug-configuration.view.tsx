@@ -31,7 +31,6 @@ export const DebugConfigurationView = observer(() => {
     } else {
       value = event;
     }
-
     if (value === '__ADD_CONF__') {
       addConfiguration();
     } else {

@@ -374,7 +374,14 @@ export class DebugVariablesModelService {
   /**
    * 刷新指定下的所有子节点
    */
-  async refresh(node: ExpressionContainer = this.treeModel?.root as ExpressionContainer) {
+  async refresh(node?: ExpressionContainer) {
+    if (!node) {
+      if (!!this.treeModel) {
+        node = this.treeModel.root as ExpressionContainer;
+      } else {
+        return;
+      }
+    }
     if (!ExpressionContainer.is(node) && (node as ExpressionContainer).parent) {
       node = (node as ExpressionContainer).parent as ExpressionContainer;
     }
