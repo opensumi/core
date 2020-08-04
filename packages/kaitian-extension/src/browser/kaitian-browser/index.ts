@@ -34,7 +34,9 @@ export function createBrowserApi(injector: Injector, useProxy: boolean, extensio
 
     // common classes
     URI,
-    localize,
+    localize: (key: string, message?: string) => {
+      return localize(key, message, extension.id);
+    },
     getIcon,
 
     // theme
