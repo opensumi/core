@@ -22,7 +22,7 @@ export class QuickPickServiceImpl implements QuickPickService {
             items[0].run(QuickOpenMode.OPEN);
             return;
         }
-        if (options && this.quickTitleBar.shouldShowTitleBar(options.title, options.step)) {
+        if (options && this.quickOpenService.widgetNode && this.quickTitleBar.shouldShowTitleBar(options.title, options.step)) {
             this.quickTitleBar.attachTitleBar(this.quickOpenService.widgetNode, options.title, options.step, options.totalSteps, options.buttons);
         }
         const prefix = options && options.value ? options.value : '';
