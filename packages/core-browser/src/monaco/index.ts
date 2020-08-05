@@ -7,6 +7,7 @@ export enum ServiceNames {
   COMMAND_SERVICE = 'commandService',
   CONTEXT_KEY_SERVICE = 'contextKeyService',
   BULK_EDIT_SERVICE = 'IWorkspaceEditService',
+  OPENER_SERVICE = 'openerService',
 }
 
 export abstract class MonacoService {
