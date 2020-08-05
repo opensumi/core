@@ -3,7 +3,7 @@ import {
   PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, ISchemaRegistry, Disposable,
   CommandRegistry, IMimeService, CorePreferences, ClientAppContribution, CommandContribution, ContributionProvider,
   Domain, MonacoService, MonacoContribution, ServiceNames, KeybindingContribution, KeybindingRegistry, Keystroke,
-  KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService,
+  KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService, IOpenerService,
 } from '@ali/ide-core-browser';
 import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next';
 import { IThemeService } from '@ali/ide-theme';
@@ -105,6 +105,9 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
   }
 
   onMonacoLoaded(monacoService: MonacoService) {
+    const { MonacoCodeService } = require('@ali/ide-editor/lib/browser/editor.override');
+    const { MonacoOpenerService } = require('./monaco-opener.service');
+    const codeEditorService = this.injector.get(MonacoCodeService);
     // 该类从 vs/editor/standalone/browser/simpleServices 中获取
     const standaloneCommandService = new monaco.services.StandaloneCommandService(monaco.services.StaticServices.instantiationService.get());
     // 给 monacoCommandService 设置委托，执行 monaco 命令使用 standaloneCommandService 执行
@@ -112,6 +115,10 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     // 替换 monaco 内部的 commandService
     monacoService.registerOverride(ServiceNames.COMMAND_SERVICE, this.monacoCommandService);
 
+    const openService = this.injector.get(MonacoOpenerService);
+    const monacoOpenerService = new monaco.services.OpenerService(codeEditorService, this.monacoCommandService);
+    openService.setDelegate(monacoOpenerService);
+    monacoService.registerOverride(ServiceNames.OPENER_SERVICE, openService);
     // workbench-editor.service.ts 内部做了 registerOverride
     // monacoService.registerOverride(ServiceNames.CONTEXT_KEY_SERVICE, (this.contextKeyService as any).contextKeyService);
 
