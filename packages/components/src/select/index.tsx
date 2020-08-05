@@ -31,6 +31,9 @@ export interface ISelectProps<T = string> {
   equals?: (v1: T | undefined, v2: T | undefined) => boolean;
   optionRenderer?: React.FC<{ data: IDataOption<T>, isCurrent: boolean }>;
   groupTitleRenderer?: React.FC<{ group: IDataOptionGroup<T>, index: number }>;
+  headerComponent?: React.FC<any> | React.ComponentClass;
+  footerComponent?: React.FC<any> | React.ComponentClass;
+  setSelectHandle?: (handle: (v: T) => void) => void;
 }
 
 export const Option: React.FC<React.PropsWithChildren<{
@@ -157,6 +160,9 @@ export function Select<T = string>({
   equals = (v1, v2) => v1 === v2,
   optionRenderer = defaultOptionRenderer,
   groupTitleRenderer,
+  footerComponent,
+  headerComponent,
+  setSelectHandle,
 }: ISelectProps<T>) {
   const [open, setOpen] = useState(false);
 
@@ -280,6 +286,8 @@ export function Select<T = string>({
         className={optionsContainerClasses}
         style={{ maxHeight: `${maxHeight}px` }}
         ref={overlayRef}
+        footerComponent={footerComponent}
+        headerComponent={headerComponent}
       /> :
       // FIXME: to be deprecated
       // 下面这种使用 children 的方式不够标准化，待废弃
@@ -306,12 +314,14 @@ export interface ISelectOptionsListProps<T = string> {
   groupTitleRenderer?: React.FC<{ group: IDataOptionGroup<T>, index: number }>;
   style?: any;
   renderCheck?: boolean;
+  headerComponent?: React.FC<any> | React.ComponentClass;
+  footerComponent?: React.FC<any> | React.ComponentClass;
 }
 
 export const SelectOptionsList = React.forwardRef(<T, >(props: ISelectOptionsListProps<T>, ref) => {
   const {
     options,
-    optionRenderer = defaultOptionRenderer,
+    optionRenderer: OPC = defaultOptionRenderer,
     equals = (v1, v2) => v1 === v2,
     onSelect,
     currentValue,
@@ -319,8 +329,10 @@ export const SelectOptionsList = React.forwardRef(<T, >(props: ISelectOptionsLis
     size,
     className,
     style,
-    groupTitleRenderer = defaultGroupTitleRenderer,
+    groupTitleRenderer: GT = defaultGroupTitleRenderer,
     renderCheck,
+    headerComponent: HC,
+    footerComponent: FC,
   } = props;
 
   const optionsContainerClasses = classNames('kt-select-options', {
@@ -329,7 +341,7 @@ export const SelectOptionsList = React.forwardRef(<T, >(props: ISelectOptionsLis
 
   function renderWithGroup(groups: IDataOptionGroup<T>[]) {
     return groups.map((group, index) => {
-      const header = groupTitleRenderer({group, index});
+      const header = <GT group={group} index={index} />;
       return <React.Fragment key={'group_' + index}>
         {header}
         {renderWithoutGroup(group.options)}
@@ -348,7 +360,7 @@ export const SelectOptionsList = React.forwardRef(<T, >(props: ISelectOptionsLis
           {
             renderCheck && equals(currentValue, v.value) ?  <div className={'kt-option-check'}><Icon icon={'check'} /></div> : undefined
           }
-          {optionRenderer({data: v, isCurrent})}
+          <OPC data={v} isCurrent={isCurrent} />
       </Option>;
 
     });
@@ -359,9 +371,11 @@ export const SelectOptionsList = React.forwardRef(<T, >(props: ISelectOptionsLis
       event.stopPropagation();
     }
   }>
+    { HC ?  <HC /> : null }
     {
       (isDataOptionGroups(options)) ? renderWithGroup(options) : renderWithoutGroup(options)
     }
+    { FC ?  <FC /> : null }
   </div>;
 });
 
