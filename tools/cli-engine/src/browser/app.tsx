@@ -22,7 +22,6 @@ export async function renderApp(opts: IClientAppOpts) {
   const extensions: string[] = [...(window as any).KAITIAN_SDK_CONFIG.extensionCandidate].filter(Boolean);
   opts.extensionCandidate = extensions.map((e) => ({ path: e, isBuiltin: true }));
   opts.workspaceDir = (window as any).KAITIAN_SDK_CONFIG.ideWorkspaceDir;
-  opts.coreExtensionDir = (window as any).KAITIAN_SDK_CONFIG.extensionDir;
   opts.extensionDir = (window as any).KAITIAN_SDK_CONFIG.extensionDir;
 
   opts.wsPath = guessedConfig.wsPath || (window as any).KAITIAN_SDK_CONFIG.wsPath;

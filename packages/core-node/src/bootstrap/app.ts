@@ -45,7 +45,6 @@ export interface MarketplaceConfig {
 interface Config {
   injector: Injector;
   workspaceDir: string;
-  coreExtensionDir?: string;
   extensionDir?: string;
   /**
    * 设置落盘日志级别，默认为 Info 级别的log落盘
@@ -168,7 +167,6 @@ export class ServerApp implements IServerApp {
       injector: this.injector,
       workspaceDir: opts.workspaceDir || '',
       extensionDir: opts.extensionDir || process.env.EXTENSION_DIR,
-      coreExtensionDir: opts.coreExtensionDir,
       logDir: opts.logDir,
       logLevel: opts.logLevel,
       LogServiceClass: opts.LogServiceClass,

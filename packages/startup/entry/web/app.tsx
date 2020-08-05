@@ -32,11 +32,10 @@ renderApp({
     }},
     ...{[SlotLocation.action]: {
       modules: ['@ali/ide-toolbar-action'],
-    }},
+  }},
   },
   useCdnIcon: false,
   useExperimentalShadowDom: true,
-  // isSyncPreference: true,
   defaultPreferences: {
     'general.theme': 'ide-dark',
     'general.icon': 'vscode-icons',

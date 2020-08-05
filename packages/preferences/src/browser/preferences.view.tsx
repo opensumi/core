@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { replaceLocalizePlaceholder, useInjectable, localize, PreferenceScope, formatLocalize , AppConfig, PreferenceService} from '@ali/ide-core-browser';
+import { replaceLocalizePlaceholder, useInjectable, localize, PreferenceScope, formatLocalize, AppConfig, PreferenceService} from '@ali/ide-core-browser';
 import { PreferenceSettingsService } from './preference.service';
 import './index.less';
 import * as styles from './preferences.module.less';
@@ -31,7 +31,6 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
   const preferences: PreferenceService = useInjectable(PreferenceService);
   const appConfig: AppConfig = useInjectable(AppConfig);
-
   const userBeforeWorkspace = preferences.get<boolean>('settings.userBeforeWorkspace');
   const tabList = userBeforeWorkspace
     ? [ UserScope, WorkspaceScope ]
