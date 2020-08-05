@@ -404,7 +404,7 @@ describe('Extension service', () => {
     });
 
     it('should return extension by extensionId', async () => {
-      const extension = extensionService.getExtensionByExtId('uuid-for-test-extension');
+      const extension = extensionService.getExtensionByExtId('test.kaitian-extension');
       expect(extension?.extensionId).toBe(mockExtension.extensionId);
     });
   });
