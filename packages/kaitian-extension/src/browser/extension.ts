@@ -1,6 +1,6 @@
 import { Injectable, Optional, Autowired } from '@ali/common-di';
 import { JSONType, ExtensionService, IExtension, IExtensionProps, IExtensionMetaData } from '../common';
-import { getDebugLogger, Disposable, registerLocalizationBundle, getCurrentLanguageInfo, Emitter, Uri } from '@ali/ide-core-common';
+import { getDebugLogger, Disposable, registerLocalizationBundle, getCurrentLanguageInfo, Emitter, Uri, Deferred } from '@ali/ide-core-common';
 import { ExtensionMetadataService } from './metadata.service';
 
 const metaDataSymbol = Symbol.for('metaDataSymbol');
@@ -22,7 +22,7 @@ export class Extension extends Disposable implements IExtension {
   public readonly uri?: Uri;
 
   private _activated: boolean = false;
-  private _activating: Promise<void> | null = null;
+  private _activating: Deferred<void>;
 
   private _enabled: boolean;
 
@@ -139,20 +139,20 @@ export class Extension extends Disposable implements IExtension {
     }
 
     if (this._activating) {
-      return this._activating;
+      return this._activating.promise;
     }
-
+    this._activating = new Deferred();
     // initKaitianBrowserAPIDependency 时依赖 extension 实例，所以在插件激活前做这一步
     await this.extensionService.initKaitianBrowserAPIDependency(this);
 
-    this._activating = this.extensionService.activeExtension(this).then(() => {
+    this.extensionService.activeExtension(this).then(() => {
       this._activated = true;
       this.didActivated.fire(this.toJSON());
     }).catch((e) => {
       this.logger.error(e);
-    });
+    }).then(() => this._activating.resolve());
 
-    return this._activating;
+    return this._activating.promise;
   }
 
   get contributes() {
