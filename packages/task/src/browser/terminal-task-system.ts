@@ -262,10 +262,12 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
       executor.reset();
     }
 
-    this.addDispose(executor.onDidTaskProcessExit((code) => {
-      this._onDidStateChange.fire(TaskEvent.create(TaskEventKind.ProcessEnded, task, code));
-      this._onDidStateChange.fire(TaskEvent.create(TaskEventKind.End, task));
-    }));
+    if (!reuse) {
+      this.addDispose(executor.onDidTaskProcessExit((code) => {
+        this._onDidStateChange.fire(TaskEvent.create(TaskEventKind.ProcessEnded, task, code));
+        this._onDidStateChange.fire(TaskEvent.create(TaskEventKind.End, task));
+      }));
+    }
 
     const result = executor.execute(task, reuse);
 
