@@ -41,8 +41,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   @Autowired(IReporter)
   reporter: IReporter;
 
-  private extProcess: cp.ChildProcess;
-
   private clientExtProcessMap: Map<string, cp.ChildProcess> = new Map();
   private clientExtProcessInitDeferredMap: Map<string, Deferred<void>> = new Map();
   private clientExtProcessExtConnection: Map<string, any> = new Map();
@@ -51,9 +49,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private clientExtProcessThresholdExitTimerMap: Map<string, NodeJS.Timeout> = new Map();
   private clientServiceMap: Map<string, IExtensionNodeClientService> = new Map();
 
-  // 待废弃
-  private extServer: net.Server;
-  private electronMainThreadServer: net.Server;
   private connectionDeffered: Deferred<void>;
   private initDeferred: Deferred<void>;
 
@@ -292,7 +287,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     if (process.env.KTELECTRON) {
       const clientId = process.env.CODE_WINDOW_CLIENT_ID as string;
       const mainThreadServer: net.Server = net.createServer();
-      this.electronMainThreadServer = mainThreadServer;
       const mainThreadListenPath = this.getElectronMainThreadListenPath2(clientId);
       this.logger.log('mainThreadListenPath', mainThreadListenPath);
 
@@ -444,118 +438,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       this.pendingClientExtProcessDisposer = null;
 
     }
-  }
-  // 待废弃
-  private async _getMainThreadConnection(clientId: string) {
-    if (process.env.KTELECTRON) {
-      const server: net.Server = net.createServer();
-      this.electronMainThreadServer = server;
-      const listenPath = this.getElectronMainThreadListenPath(clientId);
-      try {
-        if (!isWindows) {
-          await fs.unlink(listenPath);
-        }
-      } catch (e) {
-        this.logger.error(e);
-      }
-
-      await new Promise((resolve) => {
-        server.listen(listenPath, () => {
-          this.logger.log(`electron mainThread listen on ${listenPath}`);
-          resolve();
-        });
-      });
-
-      return new Promise((resolve) => {
-
-        const connectionHandler = (connection) => {
-          this.logger.log('electron ext main connected');
-
-          resolve({
-            reader: new SocketMessageReader(connection),
-            writer: new SocketMessageWriter(connection),
-          });
-
-          connection.on('close', () => {
-            this.logger.log('remove electron ext main');
-            server.removeListener('connection', connectionHandler);
-            this._disposeConnection(clientId);
-          });
-        };
-
-        server.on('connection', connectionHandler);
-      });
-
-    } else {
-      return new Promise((resolve) => {
-        const channelHandler = {
-          handler: (connection, connectionClientId: string) => {
-            this.logger.log('kaitian ext main connected');
-
-            resolve({
-              reader: new WebSocketMessageReader(connection),
-              writer: new WebSocketMessageWriter(connection),
-            });
-          },
-          dispose: () => {
-            this.logger.log('remove _getMainThreadConnection handler');
-            // Dispose 连接操作
-            this._disposeConnection(clientId);
-            commonChannelPathHandler.removeHandler(clientId, channelHandler);
-          },
-        };
-
-        commonChannelPathHandler.register(clientId, channelHandler);
-      });
-    }
-  }
-  // 待废弃
-  private async _disposeConnection(clientId: string) {
-    if (this.extProcess) {
-      this.extProcess.kill(); // TODO: cache 保存
-      this.logger.log(`kaitian ext ${clientId} connected killed`);
-    }
-
-    if (this.extServer) {
-      this.extServer.close();
-    }
-
-    if (this.electronMainThreadServer) {
-      this.electronMainThreadServer.close();
-    }
-
-  }
-  // 待废弃
-  private async _getExtHostConnection(clientId: string) {
-    const extServerListenPath = this.getExtServerListenPath(clientId);
-    // TODO: 先使用单个 server，再尝试单个 server 与多个进程进行连接
-    const extServer = net.createServer();
-
-    try {
-      if (!isWindows) {
-        await fs.unlink(extServerListenPath);
-      }
-    } catch (e) { }
-
-    const extConnection = await new Promise((resolve) => {
-      extServer.on('connection', (connection) => {
-        this.logger.log('kaitian ext host connected');
-
-        const connectionObj = {
-          reader: new SocketMessageReader(connection),
-          writer: new SocketMessageWriter(connection),
-        };
-        resolve(connectionObj);
-      });
-      extServer.listen(extServerListenPath, () => {
-        this.logger.log(`kaitian ext server listen on ${extServerListenPath}`);
-      });
-      this.extServer = extServer;
-
-      // this.processServerMap.set(name, extServer);
-    });
-
-    return extConnection;
   }
 
   private async _getExtHostConnection2(clientId: string) {
