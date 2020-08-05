@@ -53,7 +53,9 @@ declare module 'kaitian-browser' {
 
   export const PlainWebview: React.FunctionComponent<{ id: string }>;
 
-  export function localize(key: string, defaultMessage?: string, env?: string): string;
+  // scope 目前不是必要的，可以直接从 extension 拿到 id
+  // 为了兼容已经在使用的插件，暂时先保留声明
+  export function localize(key: string, defaultMessage?: string, scope?: string): string;
 
   export function getIcon(iconKey: string, options?: { rotate?: ROTATE_TYPE, anim?: ANIM_TYPE }): string;
 
