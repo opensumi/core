@@ -222,10 +222,11 @@ export class FileTreeService extends Tree {
         const isCompressedFocused = this.contextKeyService.getContextValue('explorerViewletCompressedFocus');
         const data = await this.fileTreeAPI.resolveChildren(this as ITree, parent.uri.toString(), parent, !isCompressedFocused && this.isCompactMode && !Directory.isRoot(parent));
         children = data.children;
+        // 有概率获取不到Filestat，易发生在外部删除多文件情况下
         const childrenParentStat = data.filestat;
         // 需要排除软连接下的直接空目录折叠，否则会导致路径计算错误
         // 但软连接目录下的其他目录不受影响
-        if (this.isCompactMode && !isCompressedFocused && !parent.filestat.isSymbolicLink && !Directory.isRoot(parent)) {
+        if (!!childrenParentStat && this.isCompactMode && !isCompressedFocused && !parent.filestat.isSymbolicLink && !Directory.isRoot(parent)) {
           const parentURI = new URI(childrenParentStat.uri);
           if (parent && parent.parent) {
             const parentName = (parent.parent as Directory).uri.relative(parentURI)?.toString();
