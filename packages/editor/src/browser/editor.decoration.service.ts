@@ -170,7 +170,7 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
     if ( styles.contentText ) {
       content = `"${styles.contentText}"`;
     } else if (styles.contentIconPath) {
-      content = `url(${URI.from(styles.contentIconPath).toString()})`;
+      content = `url('${URI.from(styles.contentIconPath).toString(true).replace(/'/g, '%27')}')`;
     }
     return {
       content,
