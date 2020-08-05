@@ -19,8 +19,17 @@ export async function renderApp(opts: IClientAppOpts) {
   }
 
   const injector = new Injector();
-  const extensions: string[] = [...(window as any).KAITIAN_SDK_CONFIG.extensionCandidate].filter(Boolean);
-  opts.extensionCandidate = extensions.map((e) => ({ path: e, isBuiltin: true }));
+
+  //
+  // 兼容历史版本
+  // 老版本 cli 中不支持 extensionDevelopmentPath，是通过 extensionCandidate 实现的
+  //
+  if ((window as any).KAITIAN_SDK_CONFIG.extensionCandidate) {
+    const extensions: string[] = [...(window as any).KAITIAN_SDK_CONFIG.extensionCandidate].filter(Boolean);
+    opts.extensionCandidate = extensions.map((e) => ({ path: e, isBuiltin: true, isDevelopment: true }));
+    opts.extensionDevelopmentHost = true;
+  }
+
   opts.workspaceDir = (window as any).KAITIAN_SDK_CONFIG.ideWorkspaceDir;
   opts.extensionDir = (window as any).KAITIAN_SDK_CONFIG.extensionDir;
 

@@ -22,6 +22,7 @@ export interface IExtensionMetaData {
   extraMetadata: JSONType;
   realPath: string; // 真实路径，用于去除symbolicLink
   extendConfig: JSONType;
+  isDevelopment?: boolean;
 }
 
 export interface IExtraMetaData {

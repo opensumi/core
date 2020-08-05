@@ -421,6 +421,7 @@ export const localizationBundle = {
     'marketplace.extension.enable.workspace': '启用(工作空间)',
     'marketplace.extension.disable.workspace': '禁用(工作空间)',
     'marketplace.extension.builtin': '内置',
+    'marketplace.extension.development': '开发模式',
     'marketplace.extension.install': '安装',
     'marketplace.extension.container': '扩展市场',
     'marketplace.extension.empty.disabled': '暂无已禁用的扩展',
@@ -614,5 +615,6 @@ export const localizationBundle = {
     'toolbar.customize.menu': '自定义工具栏...',
 
     'workbench.uploadingFiles': '{0} 个文件上传中 {1}/s',
+    'workspace.development.title': '插件开发宿主模式',
   },
 };
