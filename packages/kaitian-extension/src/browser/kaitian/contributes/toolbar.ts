@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { IToolbarButtonContribution, IToolbarSelectContribution } from '../types';
+import { IToolbarButtonContribution, IToolbarSelectContribution, IToolbarActionBasicContribution } from '../types';
 import { KaitianExtensionToolbarService } from '../main.thread.toolbar';
 import { IToolbarRegistry } from '@ali/ide-core-browser';
 
@@ -24,6 +24,15 @@ export class KtToolbarContributionPoint extends VSCodeContributePoint<KtToolbarS
   @Autowired(IToolbarRegistry)
   private readonly toolbarRegistry: IToolbarRegistry ;
 
+  private toLocalized<T extends IToolbarActionBasicContribution>(action: T, props: string[]): T {
+    return props.reduce((pre, cur) => {
+      if (pre[cur]) {
+        pre[cur] = this.getLocalizeFromNlsJSON(pre[cur]);
+      }
+      return pre;
+    }, action);
+  }
+
   contribute() {
     if (this.json.groups) {
       for (const group of this.json.groups) {
@@ -37,9 +46,13 @@ export class KtToolbarContributionPoint extends VSCodeContributePoint<KtToolbarS
     if (this.json.actions) {
       for (const toolbarAction of this.json.actions) {
         if (toolbarAction.type === 'button') {
-          this.addDispose(this.kaitianExtToolbarService.registerToolbarButton(this.extension.id, this.extension.path, toolbarAction));
+          this.addDispose(
+            this.kaitianExtToolbarService.registerToolbarButton(this.extension.id, this.extension.path, this.toLocalized(toolbarAction, ['title'])),
+          );
         } else if (toolbarAction.type === 'select') {
-          this.addDispose(this.kaitianExtToolbarService.registerToolbarSelect(this.extension.id, this.extension.path, toolbarAction));
+          this.addDispose(
+            this.kaitianExtToolbarService.registerToolbarSelect(this.extension.id, this.extension.path, this.toLocalized(toolbarAction, ['description'])),
+          );
         }
       }
     }
