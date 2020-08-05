@@ -123,6 +123,7 @@ function doLoadMonaco(loadMonacoOptions: LoadMonacoOptions): Promise<void> {
         'vs/base/common/mime',
         'vs/editor/contrib/codeAction/codeAction',
         'vs/editor/contrib/codeAction/codeActionTrigger',
+        'vs/editor/browser/services/openerService',
       ], (standaloneServices: any, codeEditorService: any, codeEditorServiceImpl: any, contextViewService: any,
           quickOpen: any, quickOpenWidget: any, quickOpenModel: any, styler: any, filters: any,
           simpleServices: any, commands: any, editorExtensions: any, descriptors: any,
@@ -136,6 +137,7 @@ function doLoadMonaco(loadMonacoOptions: LoadMonacoOptions): Promise<void> {
           mime: any,
           codeAction: any,
           codeActionTrigger: any,
+          openerService: any,
         ) => {
           const global = window as any;
           const original = standaloneServices.StaticServices.init;
@@ -151,7 +153,7 @@ function doLoadMonaco(loadMonacoOptions: LoadMonacoOptions): Promise<void> {
             {},
             simpleServices, standaloneServices,
             codeEditorService, codeEditorServiceImpl,
-            contextViewService,
+            contextViewService, openerService,
           );
           global.monaco.quickOpen = Object.assign({}, quickOpen, quickOpenWidget, quickOpenModel);
           global.monaco.filters = filters;
