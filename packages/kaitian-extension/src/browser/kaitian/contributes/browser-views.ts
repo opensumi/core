@@ -62,7 +62,7 @@ export class KtViewContributionPoint extends VSCodeContributePoint<KtViewsContri
             component,
           }], {
             iconClass: iconPath ? this.iconService.fromIcon(this.extension.path, iconPath) : getIcon(icon!),
-            title,
+            title: title && this.getLocalizeFromNlsJSON(title),
             priority,
             expanded,
             containerId,
