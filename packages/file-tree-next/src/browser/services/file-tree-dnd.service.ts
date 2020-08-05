@@ -175,7 +175,6 @@ export class DragAndDropService extends WithEventBus {
   }
 
   handleDrop = async (ev: React.DragEvent, node?: File | Directory, activeUri?: URI) => {
-    console.log('do fire drop event');
     this.eventBus.fire(new FileTreeDropEvent({
       event: ev.nativeEvent,
       targetDir: activeUri ? activeUri.codeUri.path : node && node instanceof File ? (node.parent as Directory)?.uri.codeUri.path : node?.uri.codeUri.path,

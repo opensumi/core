@@ -571,8 +571,8 @@ export class FileTreeModelService {
     this._fileTreeHandle = handle;
     this.disposableCollection.push(handle.onError((event: IRecycleTreeError) => {
       // 出错时，暴露当前错误状态，用于排查问题
-      this.logger.error(event.type, event.message);
-      this.logger.error(`Current render state branchSize: ${this.treeModel.root.branchSize} flattenBranch size: ${this.treeModel.root.flattenedBranch?.length}`);
+      this.logger.warn(event.type, event.message);
+      this.logger.warn(`Current render state branchSize: ${this.treeModel.root.branchSize} flattenBranch size: ${this.treeModel.root.flattenedBranch?.length}`);
       // 当渲染出错时，尝试刷新Tree
       this.fileTreeService.refresh();
     }));
@@ -1101,6 +1101,9 @@ export class FileTreeModelService {
       }
     } else {
       targetNode = await this.fileTreeService.getNodeByPathOrUri(uri)!;
+    }
+    if (!targetNode) {
+      targetNode = this.treeModel.root as Directory;
     }
     const namePieces = Path.splitPath(targetNode.name);
     if (Directory.isRoot(targetNode)) {
