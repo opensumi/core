@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
+
 import { Injector } from '@ali/common-di';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
 import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, ReporterProcessMessage, REPORT_NAME } from '@ali/ide-core-common';
@@ -128,10 +129,26 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     return this.extensions.find((extension) => filePath.startsWith(fs.realpathSync(extension.path)));
   }
 
+  private lookup(extensionModule: NodeJS.Module, depth: number): IExtension | undefined {
+    if (depth >= 3) {
+      return undefined;
+    }
+
+    const extension = this.findExtension(extensionModule.filename);
+    if (extension) {
+      return extension;
+    }
+
+    if (extensionModule.parent) {
+      return this.lookup(extensionModule.parent, depth += 1);
+    }
+
+    return undefined;
+  }
+
   private defineAPI() {
     const module = getNodeRequire()('module');
     const originalLoad = module._load;
-    const findExtension = this.findExtension.bind(this);
 
     const vscodeExtAPIImpl = this.vscodeExtAPIImpl;
     const vscodeAPIFactory = this.vscodeAPIFactory.bind(this);
@@ -144,8 +161,14 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         return originalLoad.apply(this, arguments);
       }
 
-      const extension = findExtension(parent.filename);
-
+      //
+      // 可能存在开发插件时通过 npm link 的方式安装的依赖
+      // 只通过 parent.filename 查找插件无法兼容这种情况
+      // 因为 parent.filename 拿到的路径并不在同一个目录下
+      // 往上递归遍历依赖的模块是否在插件目录下
+      // 最多只查找 3 层，因为不太可能存在更长的依赖关系
+      //
+      const extension = that.lookup(parent, 0);
       if (!extension) {
         return;
       }
