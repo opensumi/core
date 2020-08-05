@@ -226,7 +226,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   public getExtensionByExtId(extensionId: string) {
-    return this.getExtensions().find((ext) => extensionId === ext.extensionId);
+    return this.getExtensions().find((ext) => extensionId === ext.id);
   }
 
   public async activateExtensionByExtPath(path: string) {
