@@ -1,4 +1,4 @@
-import { Disposable, IJSONSchema, IDisposable, ReporterProcessMessage, Deferred, localize, Event, URI } from '@ali/ide-core-common';
+import { Disposable, IJSONSchema, IDisposable, ReporterProcessMessage, Deferred, localize, Event, Uri } from '@ali/ide-core-common';
 import { createExtHostContextProxyIdentifier, ProxyIdentifier } from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { Extension } from '../hosted/vscode.extension';
@@ -14,8 +14,7 @@ export interface IExtensionMetaData {
   extensionId: string;
   // 支持使用自定义uri
   path: string;
-  // browser层使用，在contributes运行前会赋值
-  uri?: URI;
+  uri?: Uri;
   packageJSON: { [key: string]: any };
   defaultPkgNlsJSON: { [key: string]: any } | undefined;
   packageNlsJSON: { [key: string]: any } | undefined;

@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { LanguagesContribution } from '@ali/ide-monaco';
 import { TextmateService } from '@ali/ide-monaco/lib/browser/textmate.service';
-import { localize } from '@ali/ide-core-common';
+import { localize, URI } from '@ali/ide-core-common';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
 
@@ -15,7 +15,7 @@ export class LanguagesContributionPoint extends VSCodeContributePoint<LanguagesS
 
   contribute() {
     for (const language of this.json) {
-      this.textMateService.registerLanguage(language, this.extension.uri!);
+      this.textMateService.registerLanguage(language, URI.from(this.extension.uri!));
     }
   }
 
