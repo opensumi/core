@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
-import { getDebugLogger, getNodeRequire } from '@ali/ide-core-node';
+import { getDebugLogger, getNodeRequire, Uri } from '@ali/ide-core-node';
 import * as semver from 'semver';
 
 import { IExtensionMetaData, ExtraMetaData } from '../common';
@@ -115,7 +115,7 @@ export class ExtensionScanner {
       }
     }
 
-    let pkgNlsJSON: { [key: string]: string} | undefined ;
+    let pkgNlsJSON: { [key: string]: string } | undefined;
     if (pkgNlsPath) {
       pkgNlsJSON = await fs.readJSON(pkgNlsPath);
     }
@@ -125,9 +125,9 @@ export class ExtensionScanner {
       defaultPkgNlsJSON = await fs.readJSON(defaultPkgNlsPath);
     }
 
-    if ( !(pkgCheckResult || extendCheckResult) ) {
-     return;
-   }
+    if (!(pkgCheckResult || extendCheckResult)) {
+      return;
+    }
 
     const extensionExtraMetaData = {};
     let packageJSON = {} as any;
@@ -136,13 +136,13 @@ export class ExtensionScanner {
       if (extraMetaData) {
         for (const extraField of Object.keys(extraMetaData)) {
           try {
-          const basename = path.basename(extraMetaData[extraField]);
-          const suffix = path.extname(extraMetaData[extraField]);
-          const prefix = basename.substr(0, basename.length - suffix.length);
+            const basename = path.basename(extraMetaData[extraField]);
+            const suffix = path.extname(extraMetaData[extraField]);
+            const prefix = basename.substr(0, basename.length - suffix.length);
 
-          const extraFieldFilePath = await ExtensionScanner.getLocalizedExtraMetadataPath(prefix, extensionPath, localization, suffix);
+            const extraFieldFilePath = await ExtensionScanner.getLocalizedExtraMetadataPath(prefix, extensionPath, localization, suffix);
 
-          extensionExtraMetaData[extraField] = await fs.readFile(extraFieldFilePath || path.join(extensionPath, extraMetaData[extraField]), 'utf-8');
+            extensionExtraMetaData[extraField] = await fs.readFile(extraFieldFilePath || path.join(extensionPath, extraMetaData[extraField]), 'utf-8');
           } catch (e) {
             extensionExtraMetaData[extraField] = null;
           }
@@ -183,6 +183,7 @@ export class ExtensionScanner {
       packageNlsJSON: pkgNlsJSON,
       extraMetadata: extensionExtraMetaData,
       realPath: await fs.realpath(extensionPath),
+      uri: Uri.file(extensionPath),
     };
     return extension;
   }
@@ -223,11 +224,11 @@ export class ExtensionScanner {
 
       if (compared === 0) {
         return false;
-      // v1 greater
+        // v1 greater
       } else if (compared === 1) {
         return false;
       } else {
-      // v2 greater
+        // v2 greater
         return true;
       }
     }

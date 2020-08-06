@@ -1,12 +1,12 @@
 import { Injectable, Optional, Autowired } from '@ali/common-di';
 import { JSONType, ExtensionService, IExtension, IExtensionProps, IExtensionMetaData } from '../common';
-import { getDebugLogger, Disposable, registerLocalizationBundle, getCurrentLanguageInfo, Emitter, Deferred } from '@ali/ide-core-common';
+import { getDebugLogger, Disposable, registerLocalizationBundle, getCurrentLanguageInfo, Emitter, Uri, Deferred } from '@ali/ide-core-common';
 import { ExtensionMetadataService } from './metadata.service';
 
 const metaDataSymbol = Symbol.for('metaDataSymbol');
 const extensionServiceSymbol = Symbol.for('extensionServiceSymbol');
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class Extension extends Disposable implements IExtension {
   public readonly id: string;
   public readonly extensionId: string;
@@ -19,6 +19,7 @@ export class Extension extends Disposable implements IExtension {
   public readonly realPath: string;
   public readonly extendConfig: JSONType;
   public readonly enableProposedApi: boolean;
+  public readonly uri?: Uri;
 
   private _activated: boolean = false;
   private _activating: Deferred<void>;
@@ -49,6 +50,7 @@ export class Extension extends Disposable implements IExtension {
     this.name = this.packageJSON.name;
     this.extraMetadata = this.extensionData.extraMetadata;
     this.path = this.extensionData.path;
+    this.uri = this.extensionData.uri;
     this.realPath = this.extensionData.realPath;
     this.extendConfig = this.extensionData.extendConfig || {};
     this.enableProposedApi = Boolean(this.extensionData.packageJSON.enableProposedApi);
@@ -76,7 +78,7 @@ export class Extension extends Disposable implements IExtension {
 
   enable() {
     if (this._enabled) {
-      return ;
+      return;
     }
 
     this._enabled = true;
@@ -87,14 +89,14 @@ export class Extension extends Disposable implements IExtension {
       this.addDispose(this.extMetadataService);
       this.logger.log(`${this.name} extensionMetadataService.run`);
       if (this.packageNlsJSON) {
-        registerLocalizationBundle( {
+        registerLocalizationBundle({
           ...getCurrentLanguageInfo(),
           contents: this.packageNlsJSON as any,
         }, this.id);
       }
 
       if (this.defaultPkgNlsJSON) {
-        registerLocalizationBundle( {
+        registerLocalizationBundle({
           languageId: 'default',
           languageName: 'en-US',
           localizedLanguageName: '英文(默认)',
@@ -133,7 +135,7 @@ export class Extension extends Disposable implements IExtension {
     }
 
     if (this._activated) {
-      return ;
+      return;
     }
 
     if (this._activating) {

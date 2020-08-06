@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { ThemeContribution, IThemeService } from '@ali/ide-theme';
-
+import { URI } from '@ali/ide-core-common';
 import { VSCodeContributePoint, Contributes } from '../../../common';
 
 export type ThemesSchema = Array<ThemeContribution>;
@@ -13,7 +13,7 @@ export class ThemesContributionPoint extends VSCodeContributePoint<ThemesSchema>
 
   contribute() {
     const themes = this.json;
-    this.addDispose(this.themeService.registerThemes(themes, this.extension.uri!));
+    this.addDispose(this.themeService.registerThemes(themes, URI.from(this.extension.uri!)));
   }
 
 }
