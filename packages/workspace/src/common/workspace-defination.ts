@@ -152,6 +152,8 @@ export interface IWorkspaceService {
   getWorkspaceName(uri: URI): string;
   // 当前存在打开的工作区同时支持混合工作区时，返回true
   isMultiRootWorkspaceEnabled: boolean;
+  // 设置新的工作区
+  setWorkspace(workspaceStat: FileStat | undefined): Promise<void>;
 
 }
 

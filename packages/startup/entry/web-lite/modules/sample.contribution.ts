@@ -1,19 +1,38 @@
 import { Autowired } from '@ali/common-di';
-import { Domain, CommandService, ComponentContribution, ComponentRegistry, getIcon } from '@ali/ide-core-browser';
-import { ClientAppContribution } from '@ali/ide-core-browser';
-
+import { Domain, ComponentContribution, ComponentRegistry, getIcon, CommandContribution, CommandRegistry, ClientAppContribution, Command, URI, CommandService } from '@ali/ide-core-browser';
 import { IMetaService } from '../services/meta-service/base';
 import { toSCMUri } from '../utils/scm-uri';
 import { SampleView, SampleTopView, SampleBottomView, SampleMainView } from './view/sample.view';
+import { IStatusBarService } from '@ali/ide-status-bar';
+import { StatusBarAlignment, StatusBarEntryAccessor } from '@ali/ide-core-browser/lib/services';
+import { IWorkspaceService } from '@ali/ide-workspace';
+import { ensureDir } from '@ali/ide-core-common/lib/browser-fs/ensure-dir';
+import { IFileServiceClient } from '@ali/ide-file-service';
 
-@Domain(ClientAppContribution, ComponentContribution)
-export class SampleContribution implements ClientAppContribution, ComponentContribution {
+const TOGGLE_REF: Command = {
+  id: 'ide-s.toggleRef',
+  label: '切换ref',
+};
+
+@Domain(ClientAppContribution, ComponentContribution, CommandContribution)
+export class SampleContribution implements ClientAppContribution, ComponentContribution, CommandContribution {
 
   @Autowired(CommandService)
   private readonly commands: CommandService;
 
   @Autowired(IMetaService)
   private readonly metaService: IMetaService;
+
+  @Autowired(IStatusBarService)
+  statusBarService: IStatusBarService;
+
+  @Autowired(IWorkspaceService)
+  workspaceService: IWorkspaceService;
+
+  @Autowired(IFileServiceClient)
+  fileServiceClient: IFileServiceClient;
+
+  private accessor: StatusBarEntryAccessor;
 
   onDidStart() {
     const gitUri = toSCMUri({
@@ -27,6 +46,11 @@ export class SampleContribution implements ClientAppContribution, ComponentContr
       gitUri.codeUri,
       { preview: false },
     );
+    this.accessor = this.statusBarService.addElement('ide-s.toggleRef', {
+      text: this.metaService.ref,
+      alignment: StatusBarAlignment.LEFT,
+      command: TOGGLE_REF.id,
+    });
   }
 
   // 注册视图和token的绑定关系
@@ -80,6 +104,30 @@ export class SampleContribution implements ClientAppContribution, ComponentContr
     registry.register('@ali/ide-mock-main', {
       id: 'fake-main',
       component: SampleMainView,
+    });
+  }
+
+  registerCommands(registry: CommandRegistry) {
+    registry.registerCommand({
+      id: 'core.get.projectId',
+      label: '获取项目ID',
+    }, {
+      execute: () => this.metaService.projectId,
+    });
+
+    registry.registerCommand(TOGGLE_REF, {
+      execute: async () => {
+        // TODO: 约定使用/workspace作为工作区根目录，以便切换ref
+        const newRef = 'master';
+        const newWorkspaceDir = `/${newRef}/${this.metaService.repo}`;
+        await ensureDir(newWorkspaceDir);
+        const newStat = await this.fileServiceClient.getFileStat(URI.file(newWorkspaceDir).toString());
+        await this.workspaceService.setWorkspace(newStat);
+        this.accessor.update({
+          text: newRef,
+          alignment: StatusBarAlignment.LEFT,
+        });
+      },
     });
   }
 }

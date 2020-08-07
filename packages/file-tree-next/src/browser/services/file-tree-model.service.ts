@@ -243,6 +243,10 @@ export class FileTreeModelService {
         }
       });
     }));
+    this.disposableCollection.push(this.fileTreeService.onWorkspaceChange((workspace: Directory) => {
+      this.disposableCollection.dispose();
+      this.initTreeModel();
+    }));
     this.disposableCollection.push(this.treeModel!.onWillUpdate(() => {
       // 更新树前更新下选中节点
       if (!!this.focusedFile) {
