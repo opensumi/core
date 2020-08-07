@@ -93,7 +93,8 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       event.stopPropagation();
       event.preventDefault();
       const { key } = KeyCode.createKeyCode(event.nativeEvent);
-      if (key && Key.ENTER.keyCode === key.keyCode) {
+      const hasModifyKey = event.nativeEvent.shiftKey || event.nativeEvent.metaKey || event.nativeEvent.altKey || event.nativeEvent.ctrlKey;
+      if (key && Key.ENTER.keyCode === key.keyCode && !hasModifyKey) {
         if (value) {
           updateKeybinding(value);
         }
