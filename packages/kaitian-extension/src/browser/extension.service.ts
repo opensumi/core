@@ -45,7 +45,6 @@ import {
   IClientApp,
   ILogger,
   getPreferenceLanguageId,
-  isElectronRenderer,
   IDisposable,
   CorePreferences,
   ExtensionActivateEvent,
@@ -86,7 +85,7 @@ import { KaitianBrowserContributionRunner } from './kaitian-browser/contribution
 import { viewColumnToResourceOpenOptions, isLikelyVscodeRange, fromRange } from '../common/vscode/converter';
 import { getShadowRoot } from './shadowRoot';
 import { createProxiedWindow, createProxiedDocument } from './proxies';
-import { getAMDDefine, getMockAmdLoader, getAMDRequire, getWorkerBootstrapUrl } from './loader';
+import { getAMDDefine, getMockAmdLoader, getWorkerBootstrapUrl } from './loader';
 import { KtViewLocation } from './kaitian/contributes/browser-views';
 import { ExtensionNoExportsView } from './components';
 import { createBrowserApi } from './kaitian-browser';
@@ -717,11 +716,11 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         const rawExtension = this.extensionMap.get(extension.path);
         if (this.appConfig.useExperimentalShadowDom) {
           this.registerPortalShadowRoot(extension.id);
-          const { moduleExports, proxiedHead } = await this.loadBrowserScriptByMockLoader<IKaitianBrowserContributions>(browserScriptURI.toString(), extension, true /** use export default ... */);
+          const { moduleExports, proxiedHead } = await this.loadBrowserModuleUseInterceptor<IKaitianBrowserContributions>(browserScriptURI.toString(), extension, true /** use export default ... */);
           this.registerBrowserComponent(this.normalizeDeprecatedViewsConfig(moduleExports, extension, proxiedHead), rawExtension!);
         } else {
-          const browserExported = await this.loadBrowser(browserScriptURI.toString());
-          this.registerBrowserComponent(this.normalizeDeprecatedViewsConfig(browserExported, extension), rawExtension!);
+          const { moduleExports } = await this.loadBrowserModule<IKaitianBrowserContributions>(browserScriptURI.toString(), extension, true /** use export default ... */);
+          this.registerBrowserComponent(this.normalizeDeprecatedViewsConfig(moduleExports, extension), rawExtension!);
         }
       } catch (err) {
         if (err.errorCode === LOAD_FAILED_CODE) {
@@ -747,9 +746,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   private async getExtensionModuleExports(url: string, extension: IExtension): Promise<{ moduleExports: any; proxiedHead?: HTMLHeadElement }> {
     if (this.appConfig.useExperimentalShadowDom) {
-      return await this.loadBrowserScriptByMockLoader<IKaitianBrowserContributions>(url, extension, false /** use named exports ... */);
+      return await this.loadBrowserModuleUseInterceptor<IKaitianBrowserContributions>(url, extension, false /** use named exports ... */);
     }
-    const moduleExports = await this.loadBrowser(url);
+    const { moduleExports } = await this.loadBrowserModule(url, extension, false);
     return { moduleExports };
   }
 
@@ -936,7 +935,11 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
    * export const ComponentB = {...};
    * ```
    */
-  private async loadBrowserScriptByMockLoader<T>(browserPath: string, extension: IExtension, defaultExports: boolean): Promise<{ moduleExports: T, proxiedHead: HTMLHeadElement }> {
+  private async loadBrowserModuleUseInterceptor<T>(
+    browserPath: string,
+    extension: IExtension,
+    defaultExports: boolean,
+  ): Promise<{ moduleExports: T, proxiedHead: HTMLHeadElement }> {
     const pendingFetch = await fetch(decodeURIComponent(browserPath));
     const { _module, _exports, _require } = getMockAmdLoader<T>(this.injector, extension, this.protocol);
     const stylesCollection = [];
@@ -953,19 +956,16 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     };
   }
 
-  private async loadBrowser(browserPath: string): Promise<any> {
-    return await new Promise((resolve, reject) => {
-      this.logger.verbose('extend browser load', browserPath);
-      if (isElectronRenderer()) {
-        browserPath = decodeURIComponent(browserPath);
-      }
-      getAMDRequire()([browserPath], (exported) => {
-        this.logger.verbose('extend browser exported', exported);
-        resolve(exported);
-      }, (err) => {
-        reject(err);
-      });
-    });
+  private async loadBrowserModule<T>(browserPath: string, extension: IExtension, defaultExports: boolean): Promise<any> {
+    const pendingFetch = await fetch(decodeURIComponent(browserPath));
+    const { _module, _exports, _require } = getMockAmdLoader<T>(this.injector, extension, this.protocol);
+
+    const initFn = new Function('module', 'exports', 'require', await pendingFetch.text());
+
+    initFn(_module, _exports, _require);
+    return {
+      moduleExports: defaultExports ? _module.exports.default : _module.exports,
+    };
   }
 
   private registerVSCodeDependencyService() {
