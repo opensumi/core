@@ -1,5 +1,11 @@
 @import '~@ali/ide-core-browser/lib/style/variable.less';
 
+.menubarWrapper {
+  display: flex;
+  border-bottom: 1px solid var(--kt-menubar-border);
+  background-color: var(--kt-menubar-background);
+}
+
 .menubars {
   display: flex;
   align-items: center;
@@ -8,8 +14,6 @@
   font-size: 14px;
   flex-grow: 1;
   flex-shrink: 0;
-  border-bottom: 1px solid var(--kt-menubar-border);
-  background-color: var(--kt-menubar-background);
 }
 
 .menubar {
@@ -35,8 +39,4 @@
     left: 0;
     top: 100%;
   }
-}
-
-.menubarWrapper {
-  display: flex;
 }

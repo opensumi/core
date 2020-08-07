@@ -4,6 +4,7 @@ import { registerColor, transparent } from '../../color-registry';
 import { menuForeground } from '../menu';
 import { widgetShadow, foreground } from '../base';
 import { ACTIVITY_BAR_BORDER } from '../activity-bar';
+import { editorBackground } from '../editor';
 
 /* ---  menu --- */
 export const menuDescriptionForeground = registerColor(
@@ -37,7 +38,7 @@ export const menubarForeground = registerColor(
 
 export const menubarBackground = registerColor(
   'kt.menubar.background',
-  { dark: null, light: null, hc: null },
+  { dark: editorBackground, light: editorBackground, hc: editorBackground },
   localize('menubarBackground', 'Background color of menu bar.'),
 );
 
