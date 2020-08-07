@@ -193,6 +193,49 @@ export const EDITOR_DEFAULTS = {
 };
 
 const monacoEditorSchema: PreferenceSchemaProperties = {
+  'editor.ariaLabel': {
+    'type': 'string',
+    'default': EDITOR_DEFAULTS.viewInfo.ariaLabel,
+    'description': localize('ariaLabel', "The aria label for the editor's textarea (when it is focused)."),
+  },
+  'editor.extraEditorClassName': {
+    'type': 'string',
+    'description': localize('extraEditorClassName', 'Class name to be added to the editor.'),
+  },
+  'editor.fixedOverflowWidgets': {
+    'type': 'boolean',
+    'description': localize('fixedOverflowWidgets', 'Display overflow widgets as fixed. Defaults to false.'),
+  },
+  'editor.revealHorizontalRightPadding': {
+    'type': 'number',
+    'description': localize('revealHorizontalRightPadding', 'When revealing the cursor, a virtual padding (px) is added to the cursor, turning it into a rectangle. This virtual padding ensures that the cursor gets revealed before hitting the edge of the viewport. Defaults to 30 (px).'),
+  },
+  'editor.selectOnLineNumbers': {
+    'type': 'boolean',
+    'description': localize('selectOnLineNumbers', 'Should the corresponding line be selected when clicking on the line number? Defaults to true.'),
+  },
+  'editor.wordWrapMinified': {
+    'type': 'boolean',
+    'description': localize('wordWrapMinified', 'Force word wrapping when the text appears to be of a minified/generated file. Defaults to true.'),
+  },
+  'editor.wordWrapBreakAfterCharacters': {
+    'type': 'string',
+    'description': localize('wordWrapBreakAfterCharacters', "Configure word wrapping characters. A break will be introduced after these characters. Defaults to ' \t})]?|/&.,;¢°′″‰℃、。｡､￠，．：；？！％・･ゝゞヽヾーァィゥェォッャュョヮヵヶぁぃぅぇぉっゃゅょゎゕゖㇰㇱㇲㇳㇴㇵㇶㇷㇸㇹㇺㇻㇼㇽㇾㇿ々〻ｧｨｩｪｫｬｭｮｯｰ”〉》」』】〕）］｝｣'."),
+  },
+  'editor.wordWrapBreakBeforeCharacters': {
+    'type': 'string',
+    'description': localize('wordWrapBreakBeforeCharacters', "Configure word wrapping characters. A break will be introduced before these characters. Defaults to '([{‘“〈《「『【〔（［｛｢£¥＄￡￥+＋'."),
+  },
+  'editor.lineNumbersMinChars': {
+    'type': 'number',
+    'default': EDITOR_DEFAULTS.lineNumbersMinChars,
+    'description': localize('lineNumbersMinChars', 'Control the width of line numbers, by reserving horizontal space for rendering at least an amount of digits. Defaults to 5.'),
+  },
+  'editor.lineDecorationsWidth': {
+    'type': 'number',
+    'default': EDITOR_DEFAULTS.lineDecorationsWidth,
+    'description': localize('lineDecorationsWidth', 'The width reserved for line decorations (in px). Line decorations are placed between line numbers and the editor content. You can pass in a string in the format floating point followed by "ch". e.g. 1.3ch. Defaults to 10.'),
+  },
   'editor.fontFamily': {
     'type': 'string',
     'default': EDITOR_FONT_DEFAULTS.fontFamily,
