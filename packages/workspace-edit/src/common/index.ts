@@ -1,7 +1,7 @@
 import { URI, IRange, BasicEvent } from '@ali/ide-core-common';
 import { EndOfLineSequence } from '@ali/ide-editor';
 
-// 对文件位置(添加，删除，移动)
+// 对文件位置(添加，删除，移动, 复制)
 export interface IResourceFileEdit {
   oldUri?: URI;
   newUri?: URI;
@@ -12,6 +12,7 @@ export interface IResourceFileEdit {
     recursive?: boolean,
     showInEditor?: boolean,
     isDirectory?: boolean,
+    copy?: boolean,
   };
 }
 
