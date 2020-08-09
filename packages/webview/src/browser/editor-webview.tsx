@@ -25,7 +25,7 @@ export const EditorWebviewComponentView: ReactEditorComponent<IEditorWebviewMeta
     }
   });
 
-  return <div style={{height: '100%'}} className='editor-webview-webview-component' ref = {(el) => container = el}></div>;
+  return <div style={{height: '100%', width: '100%', position: 'relative' }} className='editor-webview-webview-component' ref = {(el) => container = el}></div>;
 
 };
 
@@ -33,7 +33,7 @@ export const EditorWebviewComponentView: ReactEditorComponent<IEditorWebviewMeta
  * 同一个ID创建的webview会保存在内存以便重复使用，不要使用这个组件进行大量不同webview的创建
  * @param param0
  */
-export const PlainWebview: React.FunctionComponent<{id: string, renderRoot?: HTMLElement}> = ({id, renderRoot = document.body}) => {
+export const PlainWebview: React.FunctionComponent<{id: string, renderRoot?: HTMLElement, appendToChild?: boolean }> = ({id, renderRoot = document.body, appendToChild}) => {
 
   let container: HTMLDivElement | null = null;
   const webviewService = useInjectable(IWebviewService) as IWebviewService;
@@ -41,17 +41,22 @@ export const PlainWebview: React.FunctionComponent<{id: string, renderRoot?: HTM
   React.useEffect(() => {
     const component = webviewService.getOrCreatePlainWebviewComponent(id);
     if (component && container) {
-      const mounter = new WebviewMounter(component.webview, container, document.getElementById('workbench-editor')!, renderRoot);
-      component.webview.onRemove(() => {
-        mounter.dispose();
-      });
+      if (appendToChild) {
+        component.webview.appendTo(container);
+      } else {
+        const mounter = new WebviewMounter(component.webview, container, document.getElementById('workbench-editor')!, renderRoot);
+        component.webview.onRemove(() => {
+          mounter.dispose();
+        });
+      }
+
       return () => {
         component.webview.remove();
       };
     }
   }, []);
 
-  return <div style={{height: '100' }} ref = {(el) => container = el}></div>;
+  return <div style={{height: '100%', width: '100%', position: 'relative' }} ref = {(el) => container = el}></div>;
 };
 
 // 将iframe挂载在一个固定的位置，以overlay的形式覆盖在container中，
@@ -113,6 +118,16 @@ class WebviewMounter extends Disposable {
     this.addDispose(new DomListener(window, 'resize', () => {
       this.doMount();
     }));
+
+    // 监听滚动
+    let parent = container.parentElement;
+    while (parent) {
+      this.addDispose(new DomListener(parent, 'scroll', () => {
+        this.doMount();
+      }));
+      parent = parent.parentElement;
+    }
+
   }
 
   doMount() {
