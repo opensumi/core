@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { DecorationsManager, Decoration, TreeNodeType, RenamePromptHandle, NewPromptHandle, PromptValidateMessage, PROMPT_VALIDATE_TYPE, TreeNodeEvent, IRecycleTreeError, IRecycleTreeFilterHandle } from '@ali/ide-components';
+import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle, PromptValidateMessage, PROMPT_VALIDATE_TYPE, TreeNodeEvent, IRecycleTreeError, TreeModel, IRecycleTreeFilterHandle } from '@ali/ide-components';
 import { FileTreeService } from '../file-tree.service';
 import { FileTreeModel } from '../file-tree-model';
 import { File, Directory } from '../file-tree-nodes';
@@ -122,6 +122,7 @@ export class FileTreeModelService {
   private refreshedActionDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_REFRESHED_ACTION_DELAY);
   private onDidFocusedFileChangeEmitter: Emitter<URI | void> = new Emitter();
   private onDidSelectedFileChangeEmitter: Emitter<URI[]> = new Emitter();
+  private onFileTreeModelChangeEmitter: Emitter<TreeModel> = new Emitter();
 
   private locationDeferred: Deferred<void> | null;
   private collapsedAllDeferred: Deferred<void> | null;
@@ -138,6 +139,10 @@ export class FileTreeModelService {
 
   get onDidSelectedFileChange(): Event<URI[]> {
     return this.onDidSelectedFileChangeEmitter.event;
+  }
+
+  get onFileTreeModelChange(): Event<TreeModel> {
+    return this.onFileTreeModelChangeEmitter.event;
   }
 
   get fileTreeHandle() {
@@ -275,6 +280,7 @@ export class FileTreeModelService {
     // 先加载快照后再监听文件变化，同时操作会出现Tree更新后节点无法对齐问题
     // 即找到插入节点位置为 0，导致重复问题
     this.fileTreeService.startWatchFileEvent();
+    this.onFileTreeModelChangeEmitter.fire(this._treeModel);
   }
 
   initDecorations(root) {
