@@ -9,7 +9,7 @@ import { FileStat,
   FileSystemProvider,
 } from './files';
 import { IFileServiceWatcher } from './watcher';
-import { DidFilesChangedParams, FileChangeEvent } from '.';
+import { DidFilesChangedParams, FileChangeEvent } from '@ali/ide-core-common';
 
 export const IFileServiceClient = IFileServiceClientToken;
 
