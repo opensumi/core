@@ -4,12 +4,14 @@ import { useInjectable } from '@ali/ide-core-browser';
 import { ITerminalGroupViewService } from '../../common';
 import TabItem, { ItemType } from './tab.item';
 import { TerminalContextMenuService } from '../terminal.context-menu';
+import { TerminalRenderProvider } from '../terminal.render';
 
 import * as styles from './tab.module.less';
 
 export default observer(() => {
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
   const menuService = useInjectable<TerminalContextMenuService>(TerminalContextMenuService);
+  const provider = useInjectable<TerminalRenderProvider>(TerminalRenderProvider);
 
   return (
     <div className={ styles.view_container }>
@@ -30,6 +32,7 @@ export default observer(() => {
               onClick={ () => view.selectGroup(index) }
               onClose={ () => view.removeGroup(index) }
               onContextMenu={ (event) => menuService.onTabContextMenu(event, index) }
+              provider={ provider }
             ></TabItem>
           );
         })
@@ -42,6 +45,7 @@ export default observer(() => {
           view.createWidget(group);
           view.selectGroup(index);
         } }
+        provider={ provider }
       ></TabItem>
     </div>
   );

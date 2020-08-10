@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as clx from 'classnames';
 import { getIcon } from '@ali/ide-core-browser';
+import { TerminalRenderProvider } from '../terminal.render';
 import debouce = require('lodash.debounce');
 
 import * as styles from './tab.module.less';
@@ -21,6 +22,7 @@ export interface ItemProps {
   onInputBlur?: (id: string) => void;
   onInputEnter?: (id: string, name: string) => void;
   onContextMenu?: (event: React.MouseEvent<HTMLElement>) => void;
+  provider: TerminalRenderProvider;
 }
 
 export function renderInfoItem(props: ItemProps) {
@@ -92,9 +94,9 @@ export default (props: ItemProps) => {
 
   switch (type) {
     case ItemType.info:
-      return renderInfoItem(props);
+      return props.provider.infoItemRender(props);
     case ItemType.add:
-      return renderAddItem(props);
+      return props.provider.addItemRender(props);
     default:
       return null;
   }
