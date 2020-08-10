@@ -195,6 +195,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
     recursive?: boolean | undefined;
     showInEditor?: boolean;
     isDirectory?: boolean;
+    copy?: boolean;
   } = {};
 
   constructor(edit: IResourceFileEdit) {
@@ -263,17 +264,27 @@ export class ResourceFileEdit implements IResourceFileEdit {
     const options = this.options || {};
 
     if (this.newUri && this.oldUri) {
-      // rename
+
       if (options.overwrite === undefined && options.ignoreIfExists && await fileServiceClient.access(this.newUri.toString())) {
         return; // not overwriting, but ignoring, and the target file exists
       }
 
-      await fileServiceClient.move(this.oldUri.toString(), this.newUri.toString(), options);
+      if (this.options.copy) {
+        await fileServiceClient.copy(this.oldUri.toString(), this.newUri.toString(), options);
 
-      await this.notifyEditor(editorService, documentModelService);
+      } else {
+        // rename
+        await fileServiceClient.move(this.oldUri.toString(), this.newUri.toString(), options);
 
-      // TODO 文件夹rename应该带传染性, 但是遍历实现比较坑，先不实现
-      eventBus.fire(new WorkspaceEditDidRenameFileEvent({ oldUri: this.oldUri, newUri: this.newUri }));
+        await this.notifyEditor(editorService, documentModelService);
+
+        // TODO 文件夹rename应该带传染性, 但是遍历实现比较坑，先不实现
+        eventBus.fire(new WorkspaceEditDidRenameFileEvent({ oldUri: this.oldUri, newUri: this.newUri }));
+      }
+
+      if (options.showInEditor) {
+        editorService.open(this.newUri);
+      }
 
     } else if (!this.newUri && this.oldUri) {
       // 删除文件
