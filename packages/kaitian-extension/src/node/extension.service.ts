@@ -5,7 +5,6 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { ExtensionScanner } from './extension.scanner';
 import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData, IExtensionNodeClientService, ProcessMessageType } from '../common';
 import { Deferred, isDevelopment, INodeLogger, AppConfig, isWindows, isElectronNode, ReporterProcessMessage, IReporter, IReporterService, REPORT_TYPE, PerformanceData, REPORT_NAME } from '@ali/ide-core-node';
-import * as shellPath from 'shell-path';
 import * as cp from 'child_process';
 import * as isRunning from 'is-running';
 import treeKill = require('tree-kill');
@@ -21,6 +20,7 @@ import {
   WSChannel,
 } from '@ali/ide-connection';
 import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
+import { getShellPath } from '@ali/ide-core-node';
 
 @Injectable()
 export class ExtensionNodeServiceImpl implements IExtensionNodeService {
@@ -176,10 +176,19 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     let forkOptions: cp.ForkOptions;
     // TODO: 软链模式下的路径兼容性存在问题
     if (isElectronNode()) {
+      this.logger.verbose('try get shell path for extension process');
+      let shellPath: string | undefined;
+      try {
+        shellPath = await getShellPath();
+        this.logger.verbose('shell path result: ' + shellPath);
+      } catch (e) {
+        this.logger.error('shell path error: ',  e);
+      }
       forkOptions = {
         env: {
           ...process.env,
-          PATH: await shellPath(),
+          // 可能会有获取失败的情况
+          PATH: shellPath ? shellPath : process.env.PATH,
          },
       };
     } else {

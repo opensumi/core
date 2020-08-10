@@ -65,7 +65,9 @@ module.exports = {
           {
             loader: "less-loader",
             options: {
-              javascriptEnabled: true
+              lessOptions: {
+                javascriptEnabled: true
+              }
             }
           }
         ]
@@ -81,7 +83,9 @@ module.exports = {
         {
           loader: "less-loader",
           options: {
-            javascriptEnabled: true
+            lessOptions: {
+              javascriptEnabled: true
+            }
           }
         }]
       },

@@ -1,6 +1,6 @@
 import * as types from '../../../../common/vscode/ext-types';
 import * as vscode from 'vscode';
-import { Uri } from '@ali/ide-core-node';
+import { Uri } from '../../../../common/vscode/ext-types';
 
 export interface TaskDto {
   type: string;
