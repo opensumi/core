@@ -19,7 +19,7 @@ export abstract class AbstractSCMDocContentProvider implements IEditorDocumentMo
     }
 
     const content = await this.fetchContentFromSCM(uri);
-    this._openedEditorResources.set(uri.toString(), content);
+    this._openedEditorResources.set(uriStr, { content });
     return content;
   }
 

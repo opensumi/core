@@ -46,13 +46,13 @@ export enum MenuId {
   GlobalActivity = 'global/activity',
   ExtensionContext = 'extension/context', // 插件市场 item
   SettingsIconMenu = 'settings/icon/menu', // 右下角 setting menu
-  // Below the comment panel text box
+  // The contributed comment thread context menu, rendered as buttons below the comment editor
   CommentsCommentThreadContext = 'comments/commentThread/context',
-  // In the comment panel head
+  // The contributed comment thread title menu
   CommentsCommentThreadTitle = 'comments/commentThread/title',
-  // In the comment panel comment reply
+  // The contributed comment title menu
   CommentsCommentTitle = 'comments/comment/title',
-  // Below the comment panel reply text box
+  // The contributed comment context menu, rendered as buttons below the comment editor
   CommentsCommentContext = 'comments/comment/context',
   // ToolbarLocation
   KTToolbarLocationContext = 'kt/toolbar/context',
