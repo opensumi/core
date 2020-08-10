@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { TaskProvider, Task, TaskExecution, TaskFilter } from 'vscode';
-import { IDisposable } from '@ali/ide-core-node';
-import { Event, CancellationToken, asPromise, CancellationTokenSource, Emitter, DisposableStore, Uri } from '@ali/ide-core-common';
+import { Event, CancellationToken, asPromise, CancellationTokenSource, Emitter, DisposableStore, Uri, IDisposable } from '@ali/ide-core-common';
 import { IExtensionHostService, IExtensionProps } from '../../../../common';
 import { IExtHostTasks, TaskHandlerData, IMainThreadTasks, TaskSetDTO, TaskPresentationOptionsDTO, ProcessExecutionOptionsDTO, ShellExecutionDTO, ProcessExecutionDTO, CustomExecutionDTO, CustomExecution2DTO, ShellExecutionOptionsDTO, TaskFilterDTO, TaskDTO, TaskDefinitionDTO, TaskProcessStartedDTO, TaskExecutionDTO, TaskHandleDTO, TaskProcessEndedDTO } from '../../../../common/vscode/tasks';
 import { MainThreadAPIIdentifier, IExtHostTerminal, IExtHostWorkspace } from '../../../../common/vscode';
