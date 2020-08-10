@@ -1,9 +1,10 @@
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
-import { FileSystemWatcherServer, DidFilesChangedParams, WatchOptions } from '.'
+import { FileSystemWatcherServer, DidFilesChangedParams, WatchOptions } from '@ali/ide-core-common'
 import { ApplicationError, Event, IDisposable, Uri, URI, isUndefinedOrNull, hasProperty, isFunction, FileChangeEvent } from '@ali/ide-core-common';
 import { FileSystemProvider, FileStat } from '@ali/ide-core-common/lib/types/file';
 
-export * from '@ali/ide-core-common/lib/types/file';
+export { FileSystemProviderCapabilities, FileSystemProvider, FileType, FileStat } from '@ali/ide-core-common/lib/types/file';
+export * from '@ali/ide-core-common/lib/types/file-watch';
 
 export const IDiskFileProvider = Symbol('IDiskFileProvider');
 

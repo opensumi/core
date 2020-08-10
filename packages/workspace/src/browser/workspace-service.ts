@@ -75,17 +75,17 @@ export class WorkspaceService implements IWorkspaceService {
 
   protected applicationName: string;
 
-  private _whenReady: Promise<void>;
+  private _whenReady: Deferred<void> = new Deferred();
 
   // 映射工作区显示的文字信息
   private workspaceToName = {};
 
   public init() {
-    this._whenReady = this.doInit();
+    this.doInit();
   }
 
   public get whenReady() {
-    return this._whenReady;
+    return this._whenReady.promise;
   }
 
   protected async doInit(): Promise<void> {
@@ -110,6 +110,7 @@ export class WorkspaceService implements IWorkspaceService {
         }
       });
     }
+    this._whenReady.resolve();
   }
 
   protected getTemporaryWorkspaceFileUri(home: URI): URI {
