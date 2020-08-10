@@ -9,5 +9,6 @@ export * from './api';
 export * from './theme';
 export * from './commands';
 export * from './utils';
+export * from './render';
 
 export const TerminalContainerId = 'Terminal';

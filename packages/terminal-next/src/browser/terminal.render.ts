@@ -1,8 +1,9 @@
 import { Injectable } from '@ali/common-di';
 import { renderInfoItem, renderAddItem } from './component/tab.item';
+import { ITerminalRenderProvider } from '../common';
 
 @Injectable()
-export class TerminalRenderProvider {
+export class TerminalRenderProvider implements ITerminalRenderProvider {
   /**
    * @override terminal tab item renderer
    */

@@ -1,17 +1,16 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser';
-import { ITerminalGroupViewService } from '../../common';
-import TabItem, { ItemType } from './tab.item';
+import { ITerminalGroupViewService, ITerminalRenderProvider, ItemType } from '../../common';
+import TabItem from './tab.item';
 import { TerminalContextMenuService } from '../terminal.context-menu';
-import { TerminalRenderProvider } from '../terminal.render';
 
 import * as styles from './tab.module.less';
 
 export default observer(() => {
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
+  const provider = useInjectable<ITerminalRenderProvider>(ITerminalRenderProvider);
   const menuService = useInjectable<TerminalContextMenuService>(TerminalContextMenuService);
-  const provider = useInjectable<TerminalRenderProvider>(TerminalRenderProvider);
 
   return (
     <div className={ styles.view_container }>

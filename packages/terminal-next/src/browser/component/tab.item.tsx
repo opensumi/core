@@ -1,29 +1,10 @@
 import * as React from 'react';
 import * as clx from 'classnames';
 import { getIcon } from '@ali/ide-core-browser';
-import { TerminalRenderProvider } from '../terminal.render';
+import { ItemProps, ItemType } from '../../common';
 import debouce = require('lodash.debounce');
 
 import * as styles from './tab.module.less';
-
-export enum ItemType {
-  info = 0,
-  add,
-}
-
-export interface ItemProps {
-  id?: string;
-  name?: string;
-  selected?: boolean;
-  type?: ItemType;
-  editable?: boolean;
-  onClick?: () => void;
-  onClose?: () => void;
-  onInputBlur?: (id: string) => void;
-  onInputEnter?: (id: string, name: string) => void;
-  onContextMenu?: (event: React.MouseEvent<HTMLElement>) => void;
-  provider: TerminalRenderProvider;
-}
 
 export function renderInfoItem(props: ItemProps) {
   const handleSelect = debouce(() => props.onClick && props.onClick(), 20);
