@@ -101,7 +101,40 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
       return extension.packageJSON.name;
     }));
 
+    this.initExtensionHostErrorStackTrace();
+
     this.initDeferred.resolve();
+  }
+
+  private initExtensionHostErrorStackTrace() {
+    Error.stackTraceLimit = 100;
+    Error.prepareStackTrace = (error: Error, stackTrace: any[]) => {
+      let extension: IExtensionProps | undefined;
+      let stackTraceMessage = '';
+
+      for (const call of stackTrace) {
+        stackTraceMessage += `\n\tat ${call.toString()}`;
+        if (call.isEval() && !extension) {
+          const scriptPath = call.getEvalOrigin();
+          const maybeExtension = this.findExtensionFormScriptPath(scriptPath);
+          if (maybeExtension) {
+            extension = maybeExtension;
+            const columnNumber = call.getColumnNumber();
+            const lineNumber = call.getLineNumber();
+            stackTraceMessage = `\n\tat ${extension.name} (${extension.workerScriptPath}:${lineNumber}:${columnNumber})` + stackTraceMessage;
+          }
+        }
+      }
+
+      if (extension) {
+        // FIXME worker 线程需要接入 reporter
+        this.logger.error(`${extension && extension.name} - ${error.name || 'Error'}: ${error.message || ''}${stackTraceMessage}`);
+      }
+    };
+  }
+
+  private findExtensionFormScriptPath(scriptPath: string) {
+    return this.extensions.find((extension) => extension.workerScriptPath === scriptPath);
   }
 
   private getExtendModuleProxy(extension: IExtensionProps) {
@@ -183,8 +216,10 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
         return;
       }
 
-      const initFn = new Function('module', 'exports', 'require', 'window', await response.text());
+      // https://developer.mozilla.org/en-US/docs/Tools/Debugger/How_to/Debug_eval_sources
+      const initFn = new Function('module', 'exports', 'require', 'window', await response.text() + `//# sourceURL=${extension.workerScriptPath}`);
       const _exports = {};
+
       const _module = { exports: _exports };
       const _require = (request: string) => {
         if (ExtensionWorkerHost.workerApiNamespace.includes(request)) {

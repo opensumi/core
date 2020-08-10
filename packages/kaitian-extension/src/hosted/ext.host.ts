@@ -71,6 +71,8 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     this.reporterService = new ExtensionReporterService(this.reporterEmitter, {
       host: REPORT_HOST.EXTENSION,
     });
+
+    Error.stackTraceLimit = 100;
   }
 
   public $getExtensions(): IExtension[] {
@@ -98,11 +100,42 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     });
   }
 
+  private initExtensionHostErrorStackTrace() {
+    Error.stackTraceLimit = 100;
+
+    Error.prepareStackTrace = (error: Error, stackTrace: any[]) => {
+      let extension: IExtension | undefined;
+      let stackTraceMessage = '';
+      let fileName: string;
+      for (const call of stackTrace) {
+        stackTraceMessage += `\n\tat ${call.toString()}`;
+        fileName = call.getFileName();
+        if (!extension && fileName) {
+          //
+          // 遍历异常堆栈中的 filename，尝试查找抛出异常的插件
+          //
+          extension = this.findExtension(fileName);
+        }
+      }
+
+      if (extension) {
+        this.reporterService.point(REPORT_NAME.RUNTIME_ERROR_EXTENSION, extension.name, {
+          error: error && error.message,
+          stackTraceMessage,
+        });
+      }
+      this.logger.error(`${error.name || 'Error'}: ${error.message || ''}${stackTraceMessage}`);
+    };
+
+  }
+
   public async $initExtensions() {
     this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService).$getExtensions();
     this.logger.debug('kaitian extensions', this.extensions.map((extension) => {
       return extension.packageJSON.name;
     }));
+
+    this.initExtensionHostErrorStackTrace();
   }
 
   public async $fireChangeEvent() {
