@@ -142,7 +142,7 @@ function unexpectedErrorHandler(e) {
 function onUnexpectedError(e: any) {
   let err = e;
   if (!err) {
-    getWarnLogger()(`Unknow Exception ${err}`);
+    getWarnLogger()(`Unknown Exception ${err}`);
     return;
   }
 
