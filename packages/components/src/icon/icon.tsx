@@ -1,7 +1,7 @@
 import * as React from 'react';
 import clx from 'classnames';
 
-import { defaultIconfont } from './iconfont/iconMap';
+import { defaultIconfont } from './iconfont/iconManager';
 import { getKaitianIcon, IIconShapeOptions } from './util';
 
 import './styles.less';

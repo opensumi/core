@@ -1,4 +1,4 @@
-import { iconManager } from './iconfont/iconMap';
+import { iconManager } from './iconfont/iconManager';
 
 export enum ROTATE_TYPE {
   rotate_90,

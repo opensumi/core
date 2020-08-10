@@ -1,5 +1,5 @@
-import { warning } from '../../utils';
-
+// GENERATE BY ./scripts/download-iconfont.ts
+// DON NOT EDIT IT MANUALLY
 export const defaultIconfont = {
   'Gitlab-fill': 'Gitlab-fill',
   'LinkE': 'LinkE',
@@ -65,6 +65,7 @@ export const defaultIconfont = {
   'error': 'error',
   'execute': 'execute',
   'expand': 'expand',
+  'expandAll': 'expandAll',
   'explorer': 'explorer',
   'extension': 'extension',
   'eye': 'eye',
@@ -139,6 +140,7 @@ export const defaultIconfont = {
   'terminate': 'terminate',
   'time-circle': 'time-circle',
   'time-circle-fill': 'time-circle-fill',
+  'toolkit': 'toolkit',
   'tree': 'tree',
   'undock': 'undock',
   'unorderedlist': 'unorderedlist',
@@ -149,65 +151,3 @@ export const defaultIconfont = {
   'warning-circle-fill': 'warning-circle-fill',
   'window-maximize': 'window-maximize',
 };
-
-/**
- * 以下为 typo 的字体，做一定兼容
- * key 为 iconName enum, value 为 icon className
- */
-const typoIconMap = {
-  'folder-fill-open': 'folder-fill',
-  'search-close': 'close-square',
-  'fold': 'collapse-all',
-  'setting-general': 'setting',
-  'setting-editor': 'codelibrary-fill',
-  'setting-file': 'file-text',
-  'setting-extension': 'extension',
-  'run-debug': 'rundebug',
-  'toggle-breakpoints': 'deactivate-breakpoints',
-  // new typos issue
-  'withdraw': 'fallback',
-  'terminate1': 'terminate',
-  'stop1': 'stop',
-  'add': 'plus',
-};
-
-const _defaultIconMap = Object.assign({}, defaultIconfont, typoIconMap);
-
-export const defaultIconMap = new Proxy(_defaultIconMap, {
-  get(obj, prop: string) {
-    const typoValue = typoIconMap[prop];
-    warning(!typoValue, `Icon '${prop}' was a typo, please use '${typoValue}' instead`);
-    return obj[prop];
-  },
-});
-
-class IconManager {
-  private _ktIconPrefixes: string[] = [];
-
-  private _iconMap: { [iconPrefix: string]: { [iconKey: string]: string } } = {};
-
-  update(prefix: string, customIconMap: { [iconKey: string]: string }) {
-    this._iconMap[prefix] = customIconMap;
-    this._ktIconPrefixes.push(prefix);
-  }
-
-  getIconClx(iconKey: string): string[] {
-    let lastIndex = this._ktIconPrefixes.length;
-    while (!this._iconMap[this._ktIconPrefixes[--lastIndex]][iconKey]) {
-      if (lastIndex === 0) { break; }
-    }
-    const iconValue = this._iconMap[this._ktIconPrefixes[lastIndex]][iconKey];
-
-    if (!iconValue) {
-      warning(false, '图标库缺失图标:' + iconKey);
-      return [];
-    }
-    return [`${this._ktIconPrefixes[lastIndex]}${iconValue}`];
-  }
-}
-
-export const iconManager = new IconManager();
-
-const defaultKtIconPrefix = 'kaitian-icon kticon-';
-// 将 default 的部分先配置进去
-iconManager.update(defaultKtIconPrefix, defaultIconMap);
