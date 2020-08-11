@@ -245,7 +245,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       ...this._options,
       shellArgs: [
         ...(this._options.shellArgs || []),
-        ...linuxShellArgs,
+        ...(linuxShellArgs || []),
       ],
     };
 
