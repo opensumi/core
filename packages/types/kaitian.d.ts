@@ -508,6 +508,7 @@ declare module 'kaitian' {
         location: string,
         group: string,
       };
+      description: string;
     }
 
     export interface IToolbarSelectStyle {
