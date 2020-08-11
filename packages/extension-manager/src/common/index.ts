@@ -125,6 +125,7 @@ export interface IExtensionManagerService  {
   searchMarketplaceState: SearchState;
   searchMarketplaceResults: RawExtension[];
   contextMenu: IMenu;
+  marketplaceNoResultsContext: IMenu;
   extensionMomentState: Map<string, ExtensionMomentState>;
   installedIds: string[];
   useEnabledIds: string[];

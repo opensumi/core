@@ -56,6 +56,8 @@ export enum MenuId {
   CommentsCommentContext = 'comments/comment/context',
   // ToolbarLocation
   KTToolbarLocationContext = 'kt/toolbar/context',
+  // 插件市场未搜索到结果
+  MarketplaceNoResultsContext = 'marketplace/noResults/context',
 }
 
 export function getTabbarCommonMenuId(location: string) {
