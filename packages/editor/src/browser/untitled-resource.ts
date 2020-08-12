@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { URI, Emitter, Event, Schemas, WithEventBus, IEditorDocumentChange, IEditorDocumentModelSaveResult, localize, AppConfig, CommandService, CorePreferences, isWindows } from '@ali/ide-core-browser';
+import { URI, Emitter, Event, Schemas, WithEventBus, IEditorDocumentChange, IEditorDocumentModelSaveResult, localize, AppConfig, CommandService, CorePreferences, OS, IApplicationService } from '@ali/ide-core-browser';
 import * as path from '@ali/ide-core-common/lib/path';
 
 import { IResourceProvider, WorkbenchEditorService, EOL } from '../common';
@@ -17,7 +17,10 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
   private readonly commandService: CommandService;
 
   @Autowired(AppConfig)
-  appConfig: AppConfig;
+  protected readonly appConfig: AppConfig;
+
+  @Autowired(IApplicationService)
+  protected readonly applicationService: IApplicationService;
 
   private _onDidChangeContent: Emitter<URI> = new Emitter();
 
@@ -35,13 +38,14 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
     return encoding || 'utf8';
   }
 
-  provideEOL() {
+  async provideEOL() {
+    const backendOS = await this.applicationService.getBackendOS();
     const eol = this.corePreferences['files.eol'];
 
     if (eol !== 'auto') {
       return eol;
     }
-    return isWindows ? EOL.CRLF : EOL.LF;
+    return backendOS === OS.Type.Windows ? EOL.CRLF : EOL.LF;
   }
 
   async provideEditorDocumentModelContent(uri: URI, encoding?: string | undefined): Promise<string> {
