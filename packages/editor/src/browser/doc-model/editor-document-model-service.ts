@@ -229,7 +229,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       (async () => provider.provideEditorDocumentModelContent(uri, encoding))(),
       (async () => provider.isReadonly ? provider.isReadonly(uri) : undefined)(),
       (async () => preferredLanguage ? preferredLanguage : (provider.preferLanguageForUri ? provider.preferLanguageForUri(uri) : undefined))(),
-      (async () => provider.provideEOL ? provider.provideEOL(uri) : undefined)(),
+      (async () => preferedOptions?.eol || (provider.provideEOL ? provider.provideEOL(uri) : undefined))(),
       (async () => provider.isAlwaysDirty ? provider.isAlwaysDirty(uri) : false)(),
       (async () => provider.closeAutoSave ? provider.closeAutoSave(uri) : false)(),
     ] as const);
