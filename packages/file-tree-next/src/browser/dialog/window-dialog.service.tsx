@@ -6,6 +6,7 @@ import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { FileDialog } from './file-dialog.view';
 import { FileTreeDialogModel } from './file-dialog-model.service';
 import { FileTreeDialogService } from './file-dialog.service';
+import { isMacintosh } from '@ali/ide-core-common/lib/platform';
 
 @Injectable()
 export class WindowDialogServiceImpl implements IWindowDialogService {
@@ -35,6 +36,11 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
       }
       if (options.canSelectMany) {
         properties.push('multiSelections');
+      }
+
+      if (isMacintosh) {
+        // macOS - Treat packages, such as .app folders, as a directory instead of a file.
+        properties.push('treatPackageAsDirectory');
       }
       const res = await electronUi.showOpenDialog(electronEnv.currentWindowId, {
         defaultPath: options.defaultUri ? options.defaultUri.codeUri.fsPath : 'undefined',
