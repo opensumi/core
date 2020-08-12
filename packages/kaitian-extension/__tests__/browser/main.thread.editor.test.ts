@@ -1,4 +1,4 @@
-import { Emitter, IFileServiceClient, DefaultResourceProvider, IEventBus } from '@ali/ide-core-common';
+import { Emitter, IFileServiceClient, DefaultResourceProvider, IEventBus, CommonServerPath, OS } from '@ali/ide-core-common';
 import { URI, IContextKeyService } from '@ali/ide-core-browser';
 import { injectMockPreferences } from '@ali/ide-core-browser/src/mocks/preference';
 import * as path from 'path';
@@ -135,6 +135,11 @@ describe('MainThreadEditor Test Suites', () => {
       }, FileResourceResolver, {
         token: IContextKeyService,
         useClass: MockContextKeyService,
+      }, {
+        token: CommonServerPath,
+        useValue: {
+          getBackendOS: () => OS.Type.Linux,
+        },
       }]);
     useMockStorage(injector);
     injectMockPreferences(injector);
