@@ -117,16 +117,22 @@ export class BrowserFsProvider implements IDiskFileProvider {
   }
   async readFile(uri: Uri): Promise<string> {
     const _uri = new URI(uri);
-    let content = await promisify(fs.readFile)(FileUri.fsPath(_uri), { encoding: 'utf8' });
+    let content: string | undefined;
+    try {
+      content = await promisify(fs.readFile)(FileUri.fsPath(_uri), { encoding: 'utf8' });
+    } catch (err) {
+      // 默认读不到时读取远端
+    }
     if (!content && uri.fsPath.startsWith(this.options.rootFolder) && !window.localStorage.getItem(_uri.toString())) {
       // content为空读取远程
       content = await this.httpFileService.readFile(uri);
+      await ensureDir(_uri.path.dir.toString());
       // TODO: dispose
       window.localStorage.setItem(_uri.toString(), '1');
       // workspaceDir 要带版本号信息(ref)，保证本地存储和版本号是对应的
       content && fs.writeFile(FileUri.fsPath(_uri), content, () => {});
     }
-    return content;
+    return content!;
   }
   async writeFile(uri: Uri, content: string, options: { create: boolean; overwrite: boolean; isInit?: boolean }): Promise<void | FileStat> {
     this.checkCapability();
