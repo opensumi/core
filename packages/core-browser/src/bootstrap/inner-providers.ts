@@ -23,10 +23,11 @@ import {
   ProblemMatchersRegistryImpl,
   ITaskDefinitionRegistry,
   TaskDefinitionRegistryImpl,
+  IApplicationService,
 } from '@ali/ide-core-common';
 import { ClientAppContribution } from '../common';
 import { ClientAppStateService } from '../application/application-state-service';
-
+import { ApplicationService } from '../application/application.service';
 import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
 
 import { KeybindingContribution, KeybindingService, KeybindingRegistryImpl, KeybindingRegistry } from '../keybinding';
@@ -183,6 +184,10 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: IWindowService,
       useClass: WindowService,
+    },
+    {
+      token: IApplicationService,
+      useClass: ApplicationService,
     },
   ];
   injector.addProviders(...providers);

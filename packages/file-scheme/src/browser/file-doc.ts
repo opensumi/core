@@ -2,9 +2,10 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { EOL } from '@ali/ide-editor';
 import { IEditorDocumentModelContentProvider, EditorPreferences } from '@ali/ide-editor/lib/browser';
 import { FILE_SCHEME, FILE_SAVE_BY_CHANGE_THRESHOLD, IFileSchemeDocClient } from '../common';
-import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, CorePreferences, ISchemaStore, IDisposable, Disposable, ISchemaRegistry, replaceLocalizePlaceholder, isWindows } from '@ali/ide-core-browser';
+import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, CorePreferences, ISchemaStore, IDisposable, Disposable, ISchemaRegistry, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 import { IFileServiceClient, FileChangeType } from '@ali/ide-file-service';
 import * as md5 from 'md5';
+import { IApplicationService, OS } from '@ali/ide-core-common';
 
 // TODO 这块其实应该放到file service当中
 @Injectable()
@@ -27,6 +28,9 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
 
   @Autowired(EditorPreferences)
   protected readonly editorPreferences: EditorPreferences;
+
+  @Autowired(IApplicationService)
+  protected readonly applicationService: IApplicationService;
 
   constructor() {
     this.fileServiceClient.onFilesChanged((changes) => {
@@ -55,13 +59,14 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
     return await this.fileServiceClient.getEncoding(uri.toString());
   }
 
-  provideEOL() {
+  async provideEOL() {
+    const backendOS = await this.applicationService.getBackendOS();
     const eol = this.corePreferences['files.eol'];
 
     if (eol !== 'auto') {
       return eol;
     }
-    return isWindows ? EOL.CRLF : EOL.LF;
+    return backendOS === OS.Type.Windows ? EOL.CRLF : EOL.LF;
   }
 
   async provideEditorDocumentModelContent(uri: URI, encoding) {

@@ -17,7 +17,6 @@ export * from './types';
 export * from './application-props';
 export * from './resource';
 export * from './application-error';
-export * from './types';
 export * from './cancellation';
 export * from './functional';
 export * from './preferences';
