@@ -6,12 +6,13 @@ import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.
 import { MockInjector } from '@ali/ide-dev-tool/src/mock-injector';
 import { ExtensionService } from '@ali/ide-kaitian-extension';
 import { ExtensionServiceImpl } from '@ali/ide-kaitian-extension/lib/browser/extension.service';
+import { Disposable } from '@ali/ide-core-common';
 
 describe('extension manager service test', () => {
   let injector: MockInjector;
   let extensionManagerService: IExtensionManagerService;
 
-  beforeAll(async (done) => {
+  beforeEach(async (done) => {
     injector = await createBrowserInjector([ ExtensionManagerModule ]);
 
     injector.addProviders({
@@ -27,6 +28,7 @@ describe('extension manager service test', () => {
         // @ts-ignore
         return extensionManagerService.extensions.find((ext) => ext.path === path);
       },
+      onDidExtensionActivated: () => Disposable.NULL,
     });
 
     extensionManagerService = injector.get<IExtensionManagerService>(IExtensionManagerService);

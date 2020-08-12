@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useInjectable, localize, CommandService, ViewState } from '@ali/ide-core-browser';
 import { IExtensionManagerService, SearchState, SearchFromMarketplaceCommandId } from '../common';
 import { ExtensionList } from './components/extension-list';
+import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import * as styles from './extension-panel.module.less';
 
 export const ExtensionDisableAccordion: React.FC<{
@@ -84,7 +85,17 @@ export const ExtensionSearchMarketplaceAccordion: React.FC<{
       height={viewState.height}
       loading={extensionManagerService.searchMarketplaceState === SearchState.LOADING}
       list={extensionManagerService.searchMarketplaceResults}
-      empty={extensionManagerService.searchMarketplaceState === SearchState.NO_CONTENT ? localize('marketplace.extension.notfound') : ''}
+      empty={extensionManagerService.searchMarketplaceState === SearchState.NO_CONTENT ? (
+        <div className={styles.search_nofound}>
+          <div>{localize('marketplace.extension.notfound')}</div>
+          <InlineActionBar<string>
+            className={styles.marketplace_search_nofound}
+            separator='inline'
+            menus={extensionManagerService.marketplaceNoResultsContext}
+            context={[extensionManagerService.marketplaceQuery]}
+          />
+        </div>
+      ) : ''}
     />
   );
 });

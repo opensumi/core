@@ -6,7 +6,7 @@ import { Path } from '@ali/ide-core-common/lib/path';
 import * as compareVersions from 'compare-versions';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, localize, IClientApp } from '@ali/ide-core-browser';
-import { IDisposable, dispose, getLanguageId, IReporterService, REPORT_NAME, formatLocalize, IEventBus } from '@ali/ide-core-common';
+import {  getLanguageId, IReporterService, REPORT_NAME, formatLocalize, IEventBus, memoize, Disposable } from '@ali/ide-core-common';
 import { IMenu, AbstractMenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -23,7 +23,7 @@ type IExtension = Writeable<IExtensionProps> & {
 };
 
 @Injectable()
-export class ExtensionManagerService implements IExtensionManagerService {
+export class ExtensionManagerService extends Disposable implements IExtensionManagerService {
 
   @Autowired()
   protected extensionService: ExtensionService;
@@ -57,8 +57,6 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   @Autowired(IMessageService)
   messageService: IMessageService;
-
-  private readonly disposables: IDisposable[] = [];
 
   @observable
   extensions: IExtension[] = [];
@@ -102,8 +100,6 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @observable
   isInit: boolean = false;
 
-  @observable contextMenu: IMenu;
-
   @observable
   extensionMomentState: Map<string, ExtensionMomentState> = new Map<string, ExtensionMomentState>();
 
@@ -113,18 +109,32 @@ export class ExtensionManagerService implements IExtensionManagerService {
   private hotPageIndex = 1;
 
   constructor() {
-    // 创建 contextMenu
-    this.contextMenu = this.menuService.createMenu(MenuId.ExtensionContext, this.contextKeyService);
-    this.disposables.push(this.contextMenu);
-    this.disposables.push(this.extensionService.onDidExtensionActivated(async (e) => {
+    super();
+    this.addDispose(this.extensionService.onDidExtensionActivated(async (e) => {
       if (!e.isBuiltin) {
         await this.checkExtensionUpdates(e);
       }
     }));
   }
 
-  dispose(): void {
-    dispose(this.disposables);
+  @memoize
+  get contextMenu(): IMenu {
+    return this.registerDispose(
+      this.menuService.createMenu(
+        MenuId.ExtensionContext,
+        this.contextKeyService,
+      ),
+    );
+  }
+
+  @memoize
+  get marketplaceNoResultsContext(): IMenu {
+    return this.registerDispose(
+      this.menuService.createMenu(
+        MenuId.MarketplaceNoResultsContext,
+        this.contextKeyService,
+      ),
+    );
   }
 
   @action
