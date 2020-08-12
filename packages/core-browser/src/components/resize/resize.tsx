@@ -43,11 +43,16 @@ export interface IResizeHandleDelegate {
 function preventWebviewCatchMouseEvents() {
   const iframes = document.getElementsByTagName('iframe');
   const webviews = document.getElementsByTagName('webview');
-  for (const webview of webviews as any) {
+  for (const webview of webviews as unknown as HTMLElement[]) {
     webview.classList.add('none-pointer-event');
   }
-  for (const iframe of iframes as any) {
+  for (const iframe of iframes as unknown as HTMLIFrameElement[]) {
     iframe.classList.add('none-pointer-event');
+  }
+
+  const shadowRootHost = document.getElementsByClassName('shadow-root-host');
+  for (const host of shadowRootHost as unknown as HTMLElement[]) {
+    host?.classList.add('none-pointer-event');
   }
 }
 
@@ -59,6 +64,11 @@ function allowWebviewCatchMouseEvents() {
   }
   for (const iframe of iframes  as any) {
     iframe.classList.remove('none-pointer-event');
+  }
+
+  const shadowRootHost = document.getElementsByClassName('shadow-root-host');
+  for (const host of shadowRootHost as unknown as HTMLElement[]) {
+    host?.classList.remove('none-pointer-event');
   }
 }
 
