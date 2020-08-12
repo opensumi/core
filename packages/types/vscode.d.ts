@@ -17,5 +17,3 @@
 
 /// <reference path='./vscode/typings-pending/vscode.d.ts' />
 /// <reference path='./vscode/typings-pending/vscode.proposed.d.ts' />
-/// <reference path='./vscode/typings-pending/vscode.quickpick.d.ts' />
-/// <reference path='./vscode/typings-pending/vscode.window.d.ts' />
