@@ -214,7 +214,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
           placeHolder: 'releaseId',
         });
         if (!releaseId) {
-          this.messageService.info(localize('marketplace.quickopen.install.id.required'));
+          this.messageService.info(localize('marketplace.quickopen.install.releaseId.required'));
           return;
         }
         try {

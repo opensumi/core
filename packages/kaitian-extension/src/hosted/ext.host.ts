@@ -10,7 +10,7 @@ import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
 import { createAPIFactory as createKaitianAPIFactory } from './api/kaitian/ext.host.api.impl';
 import { MainThreadAPIIdentifier, VSCodeExtensionService } from '../common/vscode';
-import { ExtenstionContext } from './api/vscode/ext.host.extensions';
+import { ExtensionContext } from './api/vscode/ext.host.extensions';
 import { ExtensionsActivator, ActivatedExtension} from './ext.host.activator';
 import { KTExtension } from './vscode.extension';
 import { ExtensionReporterService } from './extension-reporter';
@@ -394,7 +394,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       return this.registerExtendModuleService(exportsData, extension);
     };
 
-    const context = new ExtenstionContext({
+    const context = new ExtensionContext({
       extensionId,
       extensionPath: modulePath,
       storageProxy,

@@ -79,7 +79,7 @@ export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
   }
 }
 
-export class ExtenstionContext implements vscode.ExtensionContext, IKTExtensionContext {
+export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionContext {
 
   readonly subscriptions: { dispose(): any }[] = [];
 
