@@ -142,7 +142,7 @@ export const nodeLessExtensions: IExtensionMetaData[] = [
   {
     'id': 'kaitian-worker.volans-completions',
     'extensionId': 'extension',
-    'path': 'kt-ext://dev.g.alicdn.com/tao-ide/ide-lite/0.0.1',
+    'path': 'kt-ext://dev.g.alicdn.com/tao-ide/ide-lite/0.0.1/extensions/completion',
     'packageJSON': {
       'activationEvents': [
         '*',
@@ -172,7 +172,7 @@ export const nodeLessExtensions: IExtensionMetaData[] = [
       },
     },
     // 会作为extensionPath，需要带kt-ext scheme，插件代码里需要直接parse uri而不是直接URI.file
-    'realPath': 'kt-ext://dev.g.alicdn.com/tao-ide/ide-lite/0.0.1',
+    'realPath': 'https://dev.g.alicdn.com/tao-ide/ide-lite/0.0.1/extensions/completion',
     defaultPkgNlsJSON: undefined,
     packageNlsJSON: undefined,
     extraMetadata: {},
