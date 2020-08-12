@@ -14,6 +14,7 @@ import {
   ITerminalInternalService,
   TerminalOptions,
   IWidget,
+  ITerminalRenderProvider,
 } from '../common';
 import {
   ITerminalPreference,
@@ -34,6 +35,7 @@ import { TerminalSearchService } from './terminal.search';
 import { TerminalGroupViewService } from './terminal.view';
 import { TerminalErrorService } from './terminal.error';
 import { TerminalPreference } from './terminal.preference';
+import { TerminalRenderProvider } from './terminal.render';
 
 @Injectable()
 export class TerminalNextModule extends BrowserModule {
@@ -81,6 +83,10 @@ export class TerminalNextModule extends BrowserModule {
     {
       token: ITerminalPreference,
       useClass: TerminalPreference,
+    },
+    {
+      token: ITerminalRenderProvider,
+      useClass: TerminalRenderProvider,
     },
     {
       token: ITerminalClientFactory,

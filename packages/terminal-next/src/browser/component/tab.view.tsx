@@ -1,14 +1,15 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser';
-import { ITerminalGroupViewService } from '../../common';
-import TabItem, { ItemType } from './tab.item';
+import { ITerminalGroupViewService, ITerminalRenderProvider, ItemType } from '../../common';
+import TabItem from './tab.item';
 import { TerminalContextMenuService } from '../terminal.context-menu';
 
 import * as styles from './tab.module.less';
 
 export default observer(() => {
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
+  const provider = useInjectable<ITerminalRenderProvider>(ITerminalRenderProvider);
   const menuService = useInjectable<TerminalContextMenuService>(TerminalContextMenuService);
 
   return (
@@ -30,6 +31,7 @@ export default observer(() => {
               onClick={ () => view.selectGroup(index) }
               onClose={ () => view.removeGroup(index) }
               onContextMenu={ (event) => menuService.onTabContextMenu(event, index) }
+              provider={ provider }
             ></TabItem>
           );
         })
@@ -42,6 +44,7 @@ export default observer(() => {
           view.createWidget(group);
           view.selectGroup(index);
         } }
+        provider={ provider }
       ></TabItem>
     </div>
   );
