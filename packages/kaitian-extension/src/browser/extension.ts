@@ -108,16 +108,6 @@ export class Extension extends Disposable implements IExtension {
     }
   }
 
-  // 本插件被谁依赖
-  // 激活前控制激活顺序
-  async getExtDependedList(): Promise<string[]> {
-    // 获取所有插件的以来关系
-    // ext:string 被 extDepended: string[] 依赖
-    // Map<ext, extDepended>
-    const allExtsDependedMap = await this.extensionService.getDependedExtMap();
-    return allExtsDependedMap.get(this.extensionId) || [];
-  }
-
   async activate(visited = new Set<string>()) {
     const deps = this.packageJSON?.extensionDependencies || [];
 

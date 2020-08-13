@@ -1108,34 +1108,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
   }
 
-  public async getDependedExtMap(): Promise<Map<string, string[]>> {
-    const depended = new Map();
-    const extensionProps = await this.getAllExtensionJson();
-    extensionProps.forEach((prop) => {
-      prop?.packageJSON?.extensionDependencies?.forEach((dep) => {
-        const depId = typeof dep === 'string' ? dep : Object.keys(dep)[0];
-        depended.set(depId,
-          depended.has(depId) ? [...depended.get(depId), prop.extensionId] : [prop.extensionId],
-          );
-      });
-    });
-    return depended;
-  }
-
-  public async getDependenciesExtMap(): Promise<Map<string, string[]>> {
-    const dependencies = new Map();
-    const extensionProps = await this.getAllExtensionJson();
-    extensionProps.forEach((prop) => {
-      prop?.packageJSON.extensionDependencies?.forEach((dep) => {
-        const depId = typeof dep === 'string' ? dep : Object.keys(dep)[0];
-        dependencies.set(prop.extensionId,
-          dependencies.has(prop.extensionId) ? [...dependencies.get(prop.extensionId), depId] : [depId],
-        );
-      });
-    });
-    return dependencies;
-  }
-
   public async processCrashRestart(clientId: string) {
     const invalidReloadStrategy = this.getInvalidReloadStrategy();
     const okText = localize('common.yes');

@@ -425,20 +425,6 @@ describe('Extension service', () => {
     });
   });
 
-  describe('extension dependencies', () => {
-    it('should return the all depended map', async () => {
-      const dependedMap = await extensionService.getDependedExtMap();
-      expect(dependedMap.size).toBe(1);
-      expect(dependedMap.get('uuid-for-test-extension-deps')).toEqual(['uuid-for-test-extension']);
-    });
-
-    it('should return the all dependencies map', async () => {
-      const dependenciesMap = await extensionService.getDependenciesExtMap();
-      expect(dependenciesMap.size).toBe(1);
-      expect(dependenciesMap.get('uuid-for-test-extension')).toEqual(['uuid-for-test-extension-deps']);
-    });
-  });
-
   describe('extension contributes', () => {
     it('should register toolbar actions via new toolbar action contribution point', () => {
       const toolbarRegistry: IToolbarRegistry = injector.get(IToolbarRegistry);

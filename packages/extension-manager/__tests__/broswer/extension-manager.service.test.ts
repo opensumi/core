@@ -7,6 +7,8 @@ import { MockInjector } from '@ali/ide-dev-tool/src/mock-injector';
 import { ExtensionService } from '@ali/ide-kaitian-extension';
 import { ExtensionServiceImpl } from '@ali/ide-kaitian-extension/lib/browser/extension.service';
 import { Disposable } from '@ali/ide-core-common';
+import { ExtensionManagerServerPath } from '../../lib';
+import { ExtensionManagerServer } from '../../lib/node/extension-manager-server';
 
 describe('extension manager service test', () => {
   let injector: MockInjector;
@@ -21,6 +23,9 @@ describe('extension manager service test', () => {
     }, {
       token: ExtensionService,
       useClass: ExtensionServiceImpl,
+    }, {
+      token: ExtensionManagerServerPath,
+      useClass: ExtensionManagerServer,
     });
 
     injector.mockService(ExtensionService, {
@@ -32,6 +37,20 @@ describe('extension manager service test', () => {
     });
 
     extensionManagerService = injector.get<IExtensionManagerService>(IExtensionManagerService);
+
+    injector.mockService(ExtensionManagerServerPath, {
+      'getExtensionFromMarketPlace': async (id) => {
+        // @ts-ignore
+        const target = extensionManagerService.extensions.find((ext) => ext.extensionId === id);
+        return {
+          data: {
+            ...target,
+            identifier: target.extensionId,
+          },
+        };
+      },
+    });
+
     done();
   });
 
