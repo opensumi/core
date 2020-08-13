@@ -14,6 +14,7 @@ interface ExtensionListProps {
   empty?: React.ReactNode | string;
   onYReachEnd?: () => void;
   list: RawExtension[];
+  showExtraAction?: boolean;
 }
 
 export const ExtensionList: React.FC<ExtensionListProps> = observer(({
@@ -22,6 +23,7 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
   list,
   empty,
   onYReachEnd,
+  showExtraAction = true,
 }) => {
   const [selectExtensionId, setSelectExtensionId] = React.useState('');
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
@@ -61,6 +63,7 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
               extension={rawExtension}
               select={select}
               install={install}
+              showExtraAction={showExtraAction}
               />);
             })}
           </div>

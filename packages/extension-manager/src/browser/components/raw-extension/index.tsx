@@ -16,10 +16,12 @@ interface RawExtensionProps extends React.HTMLAttributes<HTMLDivElement> {
   extension: RawExtension;
   select: (extension: RawExtension, isDouble: boolean) => void;
   install: (extension: RawExtension) => Promise<void>;
+  showExtraAction?: boolean;
 }
 
 export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
   extension, select, install, className,
+  showExtraAction = true,
 }) => {
   const timmer = React.useRef<any>();
   const clickCount = React.useRef(0);
@@ -78,14 +80,15 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
               {extension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin')}</span>) : null}
               {extension.isDevelopment ? (<span className={clx(commonStyles.tag, commonStyles.developmentMode)}>{localize('marketplace.extension.development')}</span>) : null}
             </div>
-            <span style={{ display: 'flex', flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
-              {extension.reloadRequire && <Button size='small' type='primary' ghost={true} style={{ marginRight: 4 }} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}
-              {extension.installed ? (
-                <InlineActionBar
-                  menus={extensionManagerService.contextMenu}
-                  context={[extension]} />
-              ) : <Button size='small' type='primary' loading={isInstalling} onClick={handleInstall} ghost={true} style={{ flexShrink: 0 }}>{localize('marketplace.extension.install')}</Button>}
-            </span>
+            {showExtraAction && (
+              <span style={{ display: 'flex', flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
+                {extension.reloadRequire && <Button size='small' type='primary' ghost={true} style={{ marginRight: 4 }} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}
+                {extension.installed ? (
+                  <InlineActionBar
+                    menus={extensionManagerService.contextMenu}
+                    context={[extension]} />
+                ) : <Button size='small' type='primary' loading={isInstalling} onClick={handleInstall} ghost={true} style={{ flexShrink: 0 }}>{localize('marketplace.extension.install')}</Button>}
+            </span>)}
           </div>
           <div className={styles.extension_props}>
             {extension.downloadCount ? (<span><i className={clx(commonStyles.icon, getIcon('download'))}></i> {extension.downloadCount}</span>) : null}
