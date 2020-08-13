@@ -127,9 +127,12 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
       }
 
       if (extension) {
+        const traceMessage = `${extension && extension.name} - ${error.name || 'Error'}: ${error.message || ''}${stackTraceMessage}`;
         // FIXME worker 线程需要接入 reporter
-        this.logger.error(`${extension && extension.name} - ${error.name || 'Error'}: ${error.message || ''}${stackTraceMessage}`);
+        this.logger.error(traceMessage);
+        return traceMessage;
       }
+      return error.stack;
     };
   }
 
