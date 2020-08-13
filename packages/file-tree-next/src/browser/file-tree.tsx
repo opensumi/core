@@ -183,7 +183,7 @@ export const FileTree = observer(({
           model={fileTreeModelService.treeModel}
           filter={filter}
           filterEnabled={filterMode}
-          afterClear={() => locationToCurrentFile()}
+          fitlerAfterClear={() => locationToCurrentFile()}
         >
           {(props: INodeRendererWrapProps) => <FileTreeNode
             item={props.item}

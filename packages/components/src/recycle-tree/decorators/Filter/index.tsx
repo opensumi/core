@@ -40,15 +40,15 @@ const FilterInput: React.FC<IInputBaseProps> = (props) => {
  * @param recycleTreeComp RecycleTree 组件
  * 将原有的 RecycleTree 拓展增加三个新的 props
  *  * @param filterEnabled @optional 筛选模式控制开关
- *  * @param afterClear @optional 清空筛选 input 输入时的回调
- *  * @param placeholder @optional 筛选 input 的 placeholder
+ *  * @param fitlerAfterClear @optional 清空筛选 input 输入时的回调
+ *  * @param filterPlaceholder @optional 筛选 input 的 placeholder
  */
 export const RecycleTreeFilterDecorator: FilterHoc<
   IRecycleTreeProps,
   {
     filterEnabled?: boolean,
-    afterClear?: IInputBaseProps['afterClear'],
-    placeholder?: IInputBaseProps['placeholder'],
+    fitlerAfterClear?: IInputBaseProps['afterClear'],
+    filterPlaceholder?: IInputBaseProps['placeholder'],
   }
 > = (recycleTreeComp) => (props) => {
   const [value, setValue] = React.useState<string>('');
@@ -57,13 +57,17 @@ export const RecycleTreeFilterDecorator: FilterHoc<
     setValue(value);
   }, FILE_TREE_FILTER_DELAY);
 
-  const { filterEnabled, height, afterClear, ...recycleTreeProps } = props;
+  const {
+    filterEnabled, filterPlaceholder, fitlerAfterClear,
+    height, ...recycleTreeProps
+  } = props;
   return (
     <>
       {
         filterEnabled && (
           <FilterInput
-            afterClear={afterClear}
+            afterClear={fitlerAfterClear}
+            placeholder={filterPlaceholder}
             value={value}
             onValueChange={handleFilterChange} />
         )
