@@ -124,7 +124,9 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
           stackTraceMessage,
         });
       }
-      this.logger.error(`${error.name || 'Error'}: ${error.message || ''}${stackTraceMessage}`);
+      const traceMassage = `${error.name || 'Error'}: ${error.message || ''}${stackTraceMessage}`;
+      this.logger.error(traceMassage);
+      return traceMassage;
     };
 
   }
