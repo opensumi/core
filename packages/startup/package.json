@@ -97,7 +97,7 @@
     "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",
     "less": "^3.9.0",
-    "less-loader": "^5.0.0",
+    "less-loader": "^6.0.0",
     "mini-css-extract-plugin": "^0.6.0",
     "mobx": "^5.9.4",
     "mobx-react-lite": "^1.3.1",
