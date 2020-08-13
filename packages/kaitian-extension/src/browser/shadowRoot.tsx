@@ -52,14 +52,17 @@ function useMutationObserver(from: HTMLHeadElement, target: HTMLHeadElement) {
     },
   };
 }
-//
-// https://unpkg.alibaba-inc.com/@ali/ide-components@1.11.0/dist/index.css
-//
-const componentCdnBase = 'https://unpkg.alibaba-inc.com';
+
+/**
+ * 弃用 unpkg.alibaba-inc.ocm 是因为其没有达到生产环境的可用性
+ * https://gw.alipayobjects.com/os/lib/ali/ide-components/1.12.2/dist/index.css
+ */
+const componentCdnBase = 'https://gw.alipayobjects.com/os/lib';
 
 function getStyleSheet(filePath: string, version: string) {
   const link = document.createElement('link');
-  link.setAttribute('href', `${componentCdnBase}/@ali/ide-components@${version}/${filePath}`);
+  // basement 三方库不需要 @ 符
+  link.setAttribute('href', `${componentCdnBase}/ali/ide-components/${version}/${filePath}`);
   link.setAttribute('rel', 'stylesheet');
   return link;
 }
