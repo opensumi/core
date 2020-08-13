@@ -93,7 +93,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
   }
 
   private detectBlur = (event) => {
-    if (event.type === 'blur' &&  event.target?.dataset && event.target.dataset['name'] === FILE_TREE_FIELD_NAME) {
+    if (event.type === 'blur' && event.target?.dataset && event.target.dataset['name'] === FILE_TREE_FIELD_NAME) {
       this.fileTreeModelService.handleTreeBlur();
     }
   }
@@ -292,7 +292,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
             }
           }
         }
-        this.commandService.executeCommand(SEARCH_COMMANDS.OPEN_SEARCH.id, {includeValue: searchPath!});
+        this.commandService.executeCommand(SEARCH_COMMANDS.OPEN_SEARCH.id, { includeValue: searchPath! });
       },
       isVisible: () => {
         return !!this.fileTreeModelService.focusedFile && Directory.is(this.fileTreeModelService.focusedFile);
@@ -394,7 +394,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       execute: async (uri) => {
         if (uri) {
           this.fileTreeModelService.newDirectoryPrompt(uri);
-        }  else {
+        } else {
           if (this.fileTreeService.isCompactMode && this.fileTreeModelService.activeUri) {
             this.fileTreeModelService.newDirectoryPrompt(this.fileTreeModelService.activeUri);
           } else if (this.fileTreeModelService.selectedFiles && this.fileTreeModelService.selectedFiles.length > 0) {
@@ -446,8 +446,8 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         let pathStr: string = decodeURIComponent(copyUri.withoutScheme().toString());
         // windows下移除路径前的 /
         if (isWindows) {
-            pathStr = pathStr.slice(1);
-          }
+          pathStr = pathStr.slice(1);
+        }
         copy(decodeURIComponent(copyUri.withoutScheme().toString()));
       },
       isVisible: () => {
@@ -529,19 +529,19 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       },
     });
     commands.registerCommand(FILE_COMMANDS.OPEN_FOLDER, {
-      execute: (options: {newWindow: boolean}) => {
+      execute: (options: { newWindow: boolean }) => {
         const dialogService: IElectronNativeDialogService = this.injector.get(IElectronNativeDialogService);
         const windowService: IWindowService = this.injector.get(IWindowService);
         dialogService.showOpenDialog({
-            title: localize('workspace.open-directory'),
-            properties: [
-              'openDirectory',
-            ],
-          }).then((paths) => {
-            if (paths && paths.length > 0) {
-              windowService.openWorkspace(URI.file(paths[0]), options || {newWindow: true});
-            }
-          });
+          title: localize('workspace.open-directory'),
+          properties: [
+            'openDirectory',
+          ],
+        }).then((paths) => {
+          if (paths && paths.length > 0) {
+            windowService.openWorkspace(URI.file(paths[0]), options || { newWindow: true });
+          }
+        });
       },
     });
     commands.registerCommand(FILE_COMMANDS.FOCUS_FILES, {
@@ -578,6 +578,14 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         return this.fileTreeService.enableFilterMode();
       },
     });
+
+    commands.registerCommand(FILE_COMMANDS.FILTER_CLOSE, {
+      execute: () => {
+        if (this.fileTreeService.filterMode) {
+          this.fileTreeService.toggleFilterMode();
+        }
+      },
+    });
   }
 
   registerKeybindings(bindings: KeybindingRegistry) {
@@ -591,27 +599,38 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     bindings.registerKeybinding({
       command: FILE_COMMANDS.PASTE_FILE.id,
       keybinding: 'ctrlcmd+v',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw} && !editorFocus`});
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw} && !editorFocus`,
+    });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.CUT_FILE.id,
       keybinding: 'ctrlcmd+x',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus`});
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus`,
+    });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.RENAME_FILE.id,
       keybinding: 'enter',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw} && !editorFocus`});
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw} && !editorFocus`,
+    });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.DELETE_FILE.id,
       keybinding: 'ctrlcmd+backspace',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw} && !editorFocus`});
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw} && !editorFocus`,
+    });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.FILTER_OPEN.id,
       keybinding: 'ctrlcmd+f',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus`});
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus`,
+    });
+
+    bindings.registerKeybinding({
+      command: FILE_COMMANDS.FILTER_CLOSE.id,
+      keybinding: 'esc',
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus`,
+    });
   }
 
   registerToolbarItems(registry: ToolbarRegistry) {
