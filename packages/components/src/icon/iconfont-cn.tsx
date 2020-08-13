@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as clx from 'classnames';
-import { Icon, IconProps } from './icon';
+import { _InternalIcon, IconProps } from './icon';
 import { getIconShapeClxList } from './util';
 
 // source code from '@ant-design/icons'
@@ -73,8 +73,10 @@ export function createFromIconfontCN<T>(options: CustomIconOptions = {}): React.
     }
   }
 
-  // tslint:disable-next-line:only-arrow-functions
-  const IconFont = React.forwardRef((props: IconFontProps<T>) => {
+  const IconFont = React.forwardRef<HTMLSpanElement, IconProps>((
+    props: IconProps<T>,
+    ref: React.Ref<HTMLSpanElement>,
+  ) => {
     const { icon, children, rotate, anim, fill, className = '', ...restProps } = props;
     const iconShapeOptions = { rotate, anim, fill };
 
@@ -93,9 +95,13 @@ export function createFromIconfontCN<T>(options: CustomIconOptions = {}): React.
 
     const iconShapeClx = getIconShapeClxList(iconShapeOptions);
     return (
-      <Icon {...extraCommonProps} {...restProps} className={clx(className, iconShapeClx)}>
+      <_InternalIcon
+        {...extraCommonProps}
+        {...restProps}
+        className={clx(className, iconShapeClx)}
+        ref={ref}>
         {content}
-      </Icon>
+      </_InternalIcon>
     );
   });
 
