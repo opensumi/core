@@ -1,5 +1,6 @@
 import { Provider, Injectable } from '@ali/common-di';
 import { BrowserModule } from '@ali/ide-core-browser';
+import { CommonServerPath } from '@ali/ide-core-common';
 
 import { CommonCommandsContribution } from './modules/common-commands/index.contribution';
 import { FileProviderContribution } from './modules/file-provider/index.contribution';
@@ -13,6 +14,7 @@ import { ICodeService } from './services/code-service/base';
 import { CodeServiceImpl } from './services/code-service';
 import { ILsifService } from './services/lsif-service/base';
 import { LsifServiceImpl } from './services/lsif-service';
+import { BrowserCommonServer } from './overrides/browser-common-server';
 // sample
 import { SampleContribution } from './modules/sample.contribution';
 
@@ -26,6 +28,10 @@ export class WebLiteModule extends BrowserModule {
     {
       token: ILsifService,
       useClass: LsifServiceImpl,
+    },
+    {
+      token: CommonServerPath,
+      useClass: BrowserCommonServer,
     },
     CommonCommandsContribution,
     GitSchemeContribution,
