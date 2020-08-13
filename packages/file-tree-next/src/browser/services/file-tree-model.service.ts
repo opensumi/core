@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle, PromptValidateMessage, PROMPT_VALIDATE_TYPE, TreeNodeEvent, IRecycleTreeError } from '@ali/ide-components';
+import { DecorationsManager, Decoration, TreeNodeType, RenamePromptHandle, NewPromptHandle, PromptValidateMessage, PROMPT_VALIDATE_TYPE, TreeNodeEvent, IRecycleTreeError, IRecycleTreeFilterHandle } from '@ali/ide-components';
 import { FileTreeService } from '../file-tree.service';
 import { FileTreeModel } from '../file-tree-model';
 import { File, Directory } from '../file-tree-nodes';
@@ -23,7 +23,7 @@ export interface IParseStore {
   type: PasteTypes;
 }
 
-export interface IFileTreeHandle extends IRecycleTreeHandle {
+export interface IFileTreeHandle extends IRecycleTreeFilterHandle {
   hasDirectFocus: () => boolean;
 }
 
