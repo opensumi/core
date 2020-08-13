@@ -270,6 +270,38 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   }
 
   /**
+   * 安装某个插件的依赖插件
+   */
+  private async installExtensionDeps(extension: BaseExtension, version?: string): Promise<void> {
+    const deps = await this.getExtDeps(extension.extensionId, version || extension.version);
+    for (const dep of deps) {
+      let depVersion = '*';
+      let depId = dep;
+      if (!(typeof dep === 'string')) {
+        depId = Object.keys(dep)[0];
+        depVersion = dep[depId];
+      }
+
+      if (this.installedIds.includes(depId as string)) {
+        continue;
+      }
+      const subExtensionRes = await this.extensionManagerServer.getExtensionFromMarketPlace(depId as string, depVersion);
+      const subExt = subExtensionRes?.data as BaseExtension;
+
+      await this.installExtensionSingle({
+        name: subExt?.name,
+        version: subExt?.version,
+        publisher: subExt?.publisher,
+        extensionId: this.getExtensionId(subExt),
+
+        // 依赖插件的 builtin 与父亲保持一致
+        isBuiltin: extension.isBuiltin,
+        path: '',
+      }, subExt?.version);
+    }
+  }
+
+  /**
    * 安装插件，同时安装依赖插件
    * @param extension 插件基础信息
    * @param version 指定版本
@@ -283,34 +315,8 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
     });
 
     try {
-      const deps = await this.getExtDeps(extension.extensionId, version || extension.version);
-      for (const dep of deps) {
-        let depVersion = '*';
-        let depId = dep;
-        if (!(typeof dep === 'string')) {
-          depId = Object.keys(dep)[0];
-          depVersion = dep[depId];
-        }
-
-        // 如果这个扩展已被安装，则跳过
-        if (this.installedIds.includes(depId as string)) {
-          continue;
-        }
-        const subExtensionRes = await this.extensionManagerServer.getExtensionFromMarketPlace(depId as string, depVersion);
-
-        const subExt = subExtensionRes?.data as BaseExtension;
-        // 安装依赖
-        await this.installExtensionSingle({
-            name: subExt?.name,
-            version: subExt?.version,
-            publisher: subExt?.publisher,
-            extensionId: this.getExtensionId(subExt),
-
-            // 依赖插件的 builtin 与父亲保持一致
-            isBuiltin: extension.isBuiltin,
-            path: '',
-          }, subExt?.version);
-      }
+      // 先安装插件的依赖
+      await this.installExtensionDeps(extension, version);
       // 最后安装自己
       const targetExtensionPath = await this.installExtensionSingle(extension, version);
       return targetExtensionPath;
@@ -453,6 +459,13 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
     this.extensionMomentState.set(extensionId, {
       isUpdating: true,
     });
+
+    try {
+      await this.installExtensionDeps(extension, version);
+    } catch (e) {
+      this.logger.error(e);
+    }
+
     const extensionPath =  await this.extensionManagerServer.updateExtension(extension, version);
     // 可能更新过程中加载了之前的插件，所以等待更新完毕后再去检测
     const reloadRequire = await this.computeReloadState(extension.path);
