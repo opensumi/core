@@ -168,10 +168,13 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
 
 @Injectable()
 export class DebugResourceProvider extends FileSystemResourceProvider {
-  readonly scheme: string = 'debug';
 
   listen() {
     return; // 不继承 file 的监听逻辑
+  }
+
+  handlesUri(uri: URI) {
+    return uri.scheme === 'debug' ? 10 : -1;
   }
 
   provideResource(uri: URI): MaybePromise<IResource<any>> {
