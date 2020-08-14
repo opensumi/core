@@ -43,16 +43,20 @@ export class FilePathAddon extends Disposable implements ITerminalAddon {
 
   private _checkPathValid(uri: string, callback: (valid: boolean) => void) {
     const uriArray = uri.split(':');
-    const absolute = this._absolutePath(uriArray[0]);
 
-    this._fileService.getFileStat(URI.file(absolute).toString())
-      .then((stat) => {
-        if (stat) {
-          callback(true);
-        } else {
-          callback(false);
-        }
-      });
+    try {
+      const absolute = this._absolutePath(uriArray[0]);
+      this._fileService.getFileStat(URI.file(absolute).toString())
+        .then((stat) => {
+          if (stat) {
+            callback(true);
+          } else {
+            callback(false);
+          }
+        });
+    } catch {
+      callback(false);
+    }
   }
 
   private async _openFile(_, uri: string) {
