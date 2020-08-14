@@ -1,4 +1,4 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
+import { Optional, Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { IEditorActionRegistry, IEditorActionItem, IVisibleAction } from '../types';
 import { IDisposable, URI, Disposable, IContextKeyService, Emitter, ILogger } from '@ali/ide-core-browser';
 import { IEditorGroup } from '../../common';
@@ -86,7 +86,7 @@ export class EditorActionRegistryImpl implements IEditorActionRegistry {
       this._cachedMenus.set(key, menus);
       menus.onDispose(() => {
         if (this._cachedMenus.get(key) === menus) {
-           this._cachedMenus.delete(key);
+          this._cachedMenus.delete(key);
         }
       });
     }
@@ -111,7 +111,7 @@ export class EditorActionRegistryImpl implements IEditorActionRegistry {
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
-      args: [ currentUri ],
+      args: [ currentUri, group ],
     });
   }
 
@@ -130,7 +130,10 @@ export class VisibleEditorActions extends Disposable {
 
   @observable.shallow private visibleEditorActions: VisibleAction[] = [];
 
-  constructor(private group: IEditorGroup, registry: EditorActionRegistryImpl) {
+  constructor(
+    @Optional() private group: IEditorGroup,
+    @Optional() registry: EditorActionRegistryImpl,
+  ) {
     super();
     this.contextKeyService = (group as EditorGroup).contextKeyService;
     const disposer = reaction(() => group.currentResource, () => {

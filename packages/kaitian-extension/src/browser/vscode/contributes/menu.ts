@@ -147,7 +147,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
 
         const [group, order] = parseMenuGroup(item.group);
         let argsTransformer: ((...args: any[]) => any[]) | undefined;
-        if (menuId === MenuId.EditorTitleContext) {
+        if ([MenuId.EditorTitle, MenuId.EditorTitleContext].includes(menuId as MenuId)) {
           argsTransformer = ({ uri, group }: {uri: URI, group: IEditorGroup}) => {
             return [uri.codeUri];
           };
