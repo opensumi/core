@@ -111,7 +111,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   constructor() {
     super();
     this.addDispose(this.extensionService.onDidExtensionActivated(async (e) => {
-      if (!e.isBuiltin) {
+      if (!e.isBuiltin && !e.isDevelopment) {
         await this.checkExtensionUpdates(e);
       }
     }));
