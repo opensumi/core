@@ -24,7 +24,7 @@ describe('FileService', () => {
 
     injector = createNodeInjector([FileServiceModule], new Injector([{
       token: AppConfig,
-      useValue: { useExperimentalEfsw: true },
+      useValue: {},
     }]));
 
     // injector = new Injector([{

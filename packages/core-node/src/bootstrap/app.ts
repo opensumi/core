@@ -63,11 +63,6 @@ interface Config {
    */
   useExperimentalMultiChannel?: boolean;
   /**
-  * 是否使用试验性 efsw 作为文件监听底层依赖
-  * 目前开启则 *仅* 作用于 *linux* 平台
-  */
-  useExperimentalEfsw?: boolean;
-  /**
    * 启用插件进程的最大个数
    */
   maxExtProcessCount?: number;
@@ -189,7 +184,6 @@ export class ServerApp implements IServerApp {
       staticAllowPath: opts.staticAllowPath,
       useExperimentalMultiChannel: opts.useExperimentalMultiChannel,
       extLogServiceClassPath: opts.extLogServiceClassPath,
-      useExperimentalEfsw: opts.useExperimentalEfsw,
       maxExtProcessCount: opts.maxExtProcessCount,
       onDidCreateExtensionHostProcess: opts.onDidCreateExtensionHostProcess,
       extHost: process.env.EXTENSION_HOST_ENTRY || opts.extHost,

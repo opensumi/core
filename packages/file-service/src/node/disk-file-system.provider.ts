@@ -311,7 +311,6 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
   protected initWatcher() {
     this.watcherServer = new NsfwFileSystemWatcherServer({
       verbose: true,
-      useExperimentalEfsw: this.appConfig.useExperimentalEfsw,
     });
     this.watcherServer.setClient({
       onDidFilesChanged: (events: DidFilesChangedParams) => {
