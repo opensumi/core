@@ -127,6 +127,11 @@ export namespace FILE_COMMANDS {
     id: 'filetree.openWithPath',
     category: CATEGORY,
   };
+
+  export const FILTER_CLOSE: Command = {
+    id: 'filetree.quitFilterMode',
+    category: CATEGORY,
+  };
 }
 
 export namespace OPEN_EDITORS_COMMANDS {
