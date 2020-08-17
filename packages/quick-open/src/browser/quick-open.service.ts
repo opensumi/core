@@ -1,5 +1,5 @@
 
-import { KeySequence, KeybindingRegistry, QuickOpenActionProvider, QuickOpenAction, HideReason } from '@ali/ide-core-browser';
+import { KeySequence, KeybindingRegistry, QuickOpenActionProvider, QuickOpenAction, HideReason, compareAnything } from '@ali/ide-core-browser';
 import { MessageType, MarkerSeverity } from '@ali/ide-core-common';
 import { QuickOpenMode, QuickOpenModel, QuickOpenItem, QuickOpenGroupItem, QuickOpenService, QuickOpenOptions } from '@ali/ide-core-browser/lib/quick-open';
 import { Injectable, Autowired } from '@ali/common-di';
@@ -101,19 +101,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
   }
 
   hide(reason?: HideReason): void {
-    let hideReason: monaco.quickOpen.HideReason | undefined;
-    switch (reason) {
-      case HideReason.ELEMENT_SELECTED:
-        hideReason = monaco.quickOpen.HideReason.ELEMENT_SELECTED;
-        break;
-      case HideReason.FOCUS_LOST:
-        hideReason = monaco.quickOpen.HideReason.FOCUS_LOST;
-        break;
-      case HideReason.CANCELED:
-        hideReason = monaco.quickOpen.HideReason.CANCELED;
-        break;
-    }
-    this.widget.hide(hideReason);
+    this.widget.hide(reason);
   }
 
   internalOpen(opts: MonacoQuickOpenControllerOpts): void {
@@ -354,8 +342,36 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
     throw new Error('getModel not supported!');
   }
 
+  /**
+   * A good default sort implementation for quick open entries respecting highlight information
+   * as well as associated resources.
+   */
+  private compareEntries(elementA: monaco.quickOpen.QuickOpenEntry, elementB: monaco.quickOpen.QuickOpenEntry, lookFor: string): number {
+
+    // Give matches with label highlights higher priority over
+    // those with only description highlights
+    const labelHighlightsA = elementA.getHighlights()[0] || [];
+    const labelHighlightsB = elementB.getHighlights()[0] || [];
+    if (labelHighlightsA.length && !labelHighlightsB.length) {
+      return -1;
+    }
+
+    if (!labelHighlightsA.length && labelHighlightsB.length) {
+      return 1;
+    }
+
+    const nameA = elementA.getLabel()!;
+    const nameB = elementB.getLabel()!;
+
+    return compareAnything(nameA, nameB, lookFor);
+  }
+
   private toOpenModel(lookFor: string, items: QuickOpenItem[], actionProvider?: QuickOpenActionProvider): monaco.quickOpen.QuickOpenModel {
     const entries: monaco.quickOpen.QuickOpenEntry[] = [];
+    if (this.options.skipPrefix) {
+      lookFor = lookFor.substr(this.options.skipPrefix);
+    }
+
     if (actionProvider && actionProvider.getValidateInput) {
       lookFor = actionProvider.getValidateInput(lookFor);
     }
@@ -367,16 +383,13 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
       }
     }
     if (this.options.fuzzySort) {
-      entries.sort((a, b) => monaco.quickOpen.compareEntries(a, b, lookFor));
+      entries.sort((a, b) => this.compareEntries(a, b, lookFor));
     }
 
     return new monaco.quickOpen.QuickOpenModel(entries, actionProvider ? new MonacoQuickOpenActionProvider(actionProvider) : undefined);
   }
 
   protected createEntry(item: QuickOpenItem, lookFor: string): monaco.quickOpen.QuickOpenEntry | undefined {
-    if (this.options.skipPrefix) {
-      lookFor = lookFor.substr(this.options.skipPrefix);
-    }
     const { fuzzyMatchLabel, fuzzyMatchDescription, fuzzyMatchDetail } = this.options;
     const labelHighlights = fuzzyMatchLabel ? this.matchesFuzzy(lookFor, item.getLabel(), fuzzyMatchLabel) : item.getLabelHighlights();
     const descriptionHighlights = this.options.fuzzyMatchDescription ? this.matchesFuzzy(lookFor, item.getDescription(), fuzzyMatchDescription) : item.getDescriptionHighlights();
