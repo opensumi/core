@@ -10,9 +10,10 @@ import { IThemeService, getThemeTypeSelector, ThemeType } from '@ali/ide-theme';
 import { useInjectable, DisposableCollection } from '@ali/ide-core-browser';
 import './style.less';
 
+const pkgJson = require('../../package.json');
 const ShadowContent = ({ root, children }) => ReactDOM.createPortal(children, root);
 
-function cloneNode(head) {
+function cloneNode<T>(head): T {
   return head.cloneNode(true);
 }
 
@@ -52,6 +53,20 @@ function useMutationObserver(from: HTMLHeadElement, target: HTMLHeadElement) {
   };
 }
 
+/**
+ * 弃用 unpkg.alibaba-inc.ocm 是因为其没有达到生产环境的可用性
+ * https://gw.alipayobjects.com/os/lib/ali/ide-components/1.12.2/dist/index.css
+ */
+const componentCdnBase = 'https://gw.alipayobjects.com/os/lib';
+
+function getStyleSheet(filePath: string, version: string) {
+  const link = document.createElement('link');
+  // basement 三方库不需要 @ 符
+  link.setAttribute('href', `${componentCdnBase}/ali/ide-components/${version}/${filePath}`);
+  link.setAttribute('rel', 'stylesheet');
+  return link;
+}
+
 const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, extensionId: string, children: any, proxiedHead: HTMLHeadElement }) => {
   const shadowRootRef = useRef<HTMLDivElement | null>(null);
   const [shadowRoot, setShadowRoot] = React.useState<ShadowRoot | null>(null);
@@ -64,10 +79,13 @@ const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, ex
     if (shadowRootRef.current) {
       const shadowRootElement = shadowRootRef.current.attachShadow({ mode: 'open' });
       if (proxiedHead) {
+        proxiedHead.appendChild(getStyleSheet('dist/index.css', pkgJson.version));
+        proxiedHead.appendChild(getStyleSheet('lib/icon/iconfont/iconfont.css', pkgJson.version));
+
         // 如果是一个插件注册了多个视图，节点需要被 clone 才能生效，否则第一个视图 appendChild 之后节点就没了
-        const newNode = cloneNode(proxiedHead);
-        disposables.push(useMutationObserver(proxiedHead, newNode));
-        shadowRootElement.appendChild(newNode);
+        const newHead = cloneNode<HTMLHeadElement>(proxiedHead);
+        disposables.push(useMutationObserver(proxiedHead, newHead));
+        shadowRootElement.appendChild(newHead);
         const portalRoot = extensionService.getPortalShadowRoot(extensionId);
         if (portalRoot) {
           portalRoot.appendChild(proxiedHead);
