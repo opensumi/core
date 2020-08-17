@@ -59,10 +59,16 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
     const fetchData = async () => {
       let remote;
       try {
-        // 获取最新的插件信息，用来做更新提示
-        remote = await extensionManagerService.getDetailFromMarketplace(extensionId, isLocal ? '' : version);
-        if (remote) {
-          setLatestExtension(remote);
+
+        if (
+          // 当打开处于调试模式中的插件详情页时，不向插件市场请求，避免没有上架的 404
+          !(isLocal && (await extensionManagerService.getDetailById(extensionId))?.isDevelopment)
+        ) {
+          // 获取最新的插件信息，用来做更新提示
+          remote = await extensionManagerService.getDetailFromMarketplace(extensionId, isLocal ? '' : version);
+          if (remote) {
+            setLatestExtension(remote);
+          }
         }
       } catch (err) {
         logger.error(err);
