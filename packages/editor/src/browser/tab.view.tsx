@@ -185,8 +185,9 @@ export const EditorActions = observer(({group, hasFocus}: {hasFocus: boolean, gr
   const menu = editorActionRegistry.getMenu(group);
 
   return <div className={styles.editor_actions}>
-    <InlineActionBar
+    <InlineActionBar<URI, IEditorGroup>
       menus={menu}
+      context={group.currentResource?.uri && [ group.currentResource.uri, group]}
       // 不 focus 的时候只展示 more 菜单
       regroup={(nav, more) => hasFocus ? [nav, more] : [[], more]}/>
   </div>;
