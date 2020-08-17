@@ -614,5 +614,9 @@ export const localizationBundle = {
 
     'workbench.uploadingFiles': '{0} Files Uploading {1}/s',
     'workspace.development.title': 'Extension Development Host',
+
+    'variable.list.all': 'Variables: List All',
+    'variable.registered.variables': 'Registered variables',
+
   },
 };

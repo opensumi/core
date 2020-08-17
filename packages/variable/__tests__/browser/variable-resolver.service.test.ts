@@ -2,14 +2,14 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { VariableModule } from '@ali/ide-variable/lib/browser';
 import { IVariableResolverService } from '@ali/ide-variable/lib/common';
-import { QuickOpenService, VariableRegistry, Variable } from '@ali/ide-core-browser';
+import { QuickOpenService, VariableRegistry, Variable, URI } from '@ali/ide-core-browser';
 import { MockQuickOpenService } from '@ali/ide-quick-open/lib/common/mocks/quick-open.service';
 
 describe('VariableResolverService should be work', () => {
   let variableResolverService: IVariableResolverService;
   let variableRegistry: VariableRegistry;
   let injector: MockInjector;
-  const workspaceRoot = 'file://userhome/test.js';
+  const workspaceRoot = URI.file('test').toString();
   const currentName = 'Resolver Test Case';
 
   beforeEach(() => {
@@ -41,6 +41,9 @@ describe('VariableResolverService should be work', () => {
     ];
     variables.forEach((v) => variableRegistry.registerVariable(v));
 
+    // register once again to loop the resolve function
+    // should be reject and use pre register value
+    variableRegistry.registerVariable(variables[0]);
   });
 
   describe('01 #Init', () => {
@@ -78,9 +81,15 @@ describe('VariableResolverService should be work', () => {
         expect(resolved.indexOf(`root: ${workspaceRoot}`) >= 0).toBeTruthy();
     });
 
+    it('should resolve undefined variables', async () => {
+      const resolved = await variableResolverService.resolve(undefined);
+      expect(resolved).toBeUndefined();
+    });
+
     it('should skip unknown variables', async () => {
         const resolved = await variableResolverService.resolve('name: ${name}; root: ${root}; unkown: ${unkown}');
         expect(resolved).toBe(`name: ${currentName}; root: ${workspaceRoot}; unkown: \${unkown}`);
     });
+
   });
 });

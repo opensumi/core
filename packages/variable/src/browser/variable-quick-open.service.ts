@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { QuickOpenService, QuickOpenModel, QuickOpenItem, QuickOpenMode } from '@ali/ide-quick-open';
-import { VariableRegistry } from '@ali/ide-core-browser';
+import { VariableRegistry, localize } from '@ali/ide-core-browser';
 
 @Injectable()
 export class VariableQuickOpenService implements QuickOpenModel {
@@ -19,10 +19,11 @@ export class VariableQuickOpenService implements QuickOpenModel {
     );
 
     this.quickOpenService.open(this, {
-      placeholder: 'Registered variables',
+      placeholder: localize('variable.registered.variables'),
       fuzzyMatchLabel: true,
       fuzzyMatchDescription: true,
-      fuzzySort: true,
+      // FIXME: quickOpenService 当前暂不支持
+      // fuzzySort: true,
     });
   }
 
