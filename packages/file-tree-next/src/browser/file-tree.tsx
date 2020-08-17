@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ViewState, useInjectable, isOSX, URI } from '@ali/ide-core-browser';
-import { RecycleTreeFilterDecorator, RecycleTree, IRecycleTreeHandle, TreeNodeType, INodeRendererWrapProps } from '@ali/ide-components';
+import { RecycleTreeFilterDecorator, RecycleTree, TreeNodeType, INodeRendererWrapProps, IRecycleTreeFilterHandle } from '@ali/ide-components';
 import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
@@ -21,8 +21,6 @@ export const FileTree = observer(({
 }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const [isReady, setIsReady] = React.useState<boolean>(false);
   const [outerDragOver, setOuterDragOver] = React.useState<boolean>(false);
-  const [filter, setFilter ] = React.useState<string>('');
-  const [preFilter, setPreFilter ] = React.useState<string>('');
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   const { width, height } = viewState;
@@ -93,22 +91,15 @@ export const FileTree = observer(({
 
   React.useEffect(() => {
     if (!filterMode) {
-      setPreFilter('');
+      if (fileTreeModelService.fileTreeHandle) {
+        fileTreeModelService.fileTreeHandle.clearFilter();
+      }
     }
   }, [filterMode]);
 
-  React.useEffect(() => {
-    if (!!preFilter) {
-      preFilterTreeNode(preFilter);
-    } else {
-      setFilter('');
-    }
-  }, [preFilter]);
-
-  const preFilterTreeNode = async (filter: string) => {
+  const beforeFilterValueChange = async (filter: string) => {
     const { expandAllCacheDirectory } = fileTreeModelService;
     await expandAllCacheDirectory();
-    setFilter(filter);
   };
 
   const ensureIsReady = async () => {
@@ -121,7 +112,7 @@ export const FileTree = observer(({
     setIsReady(true);
   };
 
-  const handleTreeReady = (handle: IRecycleTreeHandle) => {
+  const handleTreeReady = (handle: IRecycleTreeFilterHandle) => {
     fileTreeModelService.handleTreeHandler({
       ...handle,
       getModel: () => fileTreeModelService.treeModel,
@@ -181,9 +172,9 @@ export const FileTree = observer(({
           itemHeight={FILE_TREE_NODE_HEIGHT}
           onReady={handleTreeReady}
           model={fileTreeModelService.treeModel}
-          filter={filter}
           filterEnabled={filterMode}
-          fitlerAfterClear={() => locationToCurrentFile()}
+          beforeFilterValueChange={beforeFilterValueChange}
+          filterAfterClear={() => locationToCurrentFile()}
         >
           {(props: INodeRendererWrapProps) => <FileTreeNode
             item={props.item}

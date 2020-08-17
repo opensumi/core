@@ -4,12 +4,12 @@ import throttle = require('lodash.throttle');
 import { Icon } from '../../../icon';
 import { IInputBaseProps, Input } from '../../../input';
 import { LocalizeContext } from '../../../locale-context-provider';
-import { IRecycleTreeProps } from '../../RecycleTree';
+import { IRecycleTreeProps, IRecycleTreeHandle } from '../../RecycleTree';
 
 import './filter.less';
 
 const FILTER_AREA_HEIGHT = 30;
-const FILE_TREE_FILTER_DELAY = 500;
+const TREE_FILTER_DELAY = 500;
 
 type FilterHoc<Props, ExtraProps = any> = (
   Component: React.ComponentType<Props>,
@@ -35,6 +35,10 @@ const FilterInput: React.FC<IInputBaseProps> = (props) => {
   );
 };
 
+export interface IRecycleTreeFilterHandle  extends IRecycleTreeHandle {
+  clearFilter: () => void;
+}
+
 /**
  * 将 RecycleTree 组件装饰到具备筛选功能
  * @param recycleTreeComp RecycleTree 组件
@@ -47,35 +51,55 @@ export const RecycleTreeFilterDecorator: FilterHoc<
   IRecycleTreeProps,
   {
     filterEnabled?: boolean,
-    fitlerAfterClear?: IInputBaseProps['afterClear'],
+    // 用于在filter变化前进行额外处理，例如展开所有目录
+    beforeFilterValueChange?: (value: string) => Promise<void>;
+    filterAfterClear?: IInputBaseProps['afterClear'],
     filterPlaceholder?: IInputBaseProps['placeholder'],
   }
 > = (recycleTreeComp) => (props) => {
   const [value, setValue] = React.useState<string>('');
+  // 引入多一个filter状态是为了在实际filter生效前不阻塞输入框值变化的过程
+  const [filter, setFilter] = React.useState<string>('');
 
-  const handleFilterChange = throttle((value) => {
+  const { beforeFilterValueChange, filterEnabled, height, filterPlaceholder, filterAfterClear, onReady, ...recycleTreeProps } = props;
+
+  const handleFilterChange = throttle(async (value: string) => {
+    if (beforeFilterValueChange) {
+      await beforeFilterValueChange(value);
+    }
+    setFilter(value);
+  }, TREE_FILTER_DELAY);
+
+  const handleFilterInputChange = (value: string) => {
     setValue(value);
-  }, FILE_TREE_FILTER_DELAY);
+    handleFilterChange(value);
+  };
 
-  const {
-    filterEnabled, filterPlaceholder, fitlerAfterClear,
-    height, ...recycleTreeProps
-  } = props;
+  const filterTreeReadyHandle = (api: IRecycleTreeHandle) => {
+    onReady && onReady({
+      ...api,
+      clearFilter: () => {
+        setFilter('');
+      },
+    } as IRecycleTreeFilterHandle);
+  };
+
   return (
     <>
       {
         filterEnabled && (
           <FilterInput
-            afterClear={fitlerAfterClear}
+            afterClear={filterAfterClear}
             placeholder={filterPlaceholder}
             value={value}
-            onValueChange={handleFilterChange} />
+            onValueChange={handleFilterInputChange} />
         )
       }
       {React.createElement(recycleTreeComp, {
         ...recycleTreeProps,
         height: height - (filterEnabled ? FILTER_AREA_HEIGHT : 0),
-        filter: value,
+        onReady: filterTreeReadyHandle,
+        filter,
       })}
     </>
   );

@@ -733,7 +733,7 @@ export class FileTreeService extends Tree {
     this.fileTreeContextKey.filesExplorerFilteredContext.set(this.filterMode);
     // 清理掉输入值
     if (this.filterMode === false) {
-      // 退出时若需要做 filter 值清理则做聚焦操作
+      // 退出时若需要做 filter 值清理以及聚焦操作
       this.commandService.executeCommand(FILE_COMMANDS.LOCATION.id);
     }
   }
