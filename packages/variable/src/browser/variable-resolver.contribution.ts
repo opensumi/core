@@ -1,10 +1,10 @@
 import { Autowired } from '@ali/common-di';
-import { ClientAppContribution, ContributionProvider, Command, CommandContribution, CommandRegistry, Domain, VariableRegistry, VariableContribution } from '@ali/ide-core-browser';
+import { ClientAppContribution, ContributionProvider, Command, CommandContribution, CommandRegistry, Domain, VariableRegistry, VariableContribution, localize } from '@ali/ide-core-browser';
 import { VariableQuickOpenService } from './variable-quick-open.service';
 
 export const LIST_VARIABLES: Command = {
   id: 'variable.list',
-  label: 'Variable: List All',
+  label: localize('variable.list.all'),
 };
 
 @Domain(ClientAppContribution, CommandContribution)
@@ -27,7 +27,6 @@ export class VariableResolverContribution implements ClientAppContribution, Comm
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(LIST_VARIABLES, {
-      isEnabled: () => true,
       execute: () => this.variableQuickOpenService.open(),
     });
   }
