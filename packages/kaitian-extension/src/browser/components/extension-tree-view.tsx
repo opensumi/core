@@ -89,9 +89,6 @@ export const ExtensionTabBarTreeView = observer(({
   };
 
   const ensureIsReady = async () => {
-    if (!model) {
-      return ;
-    }
     await model.whenReady;
     if (!!model.treeModel) {
       // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
@@ -107,7 +104,7 @@ export const ExtensionTabBarTreeView = observer(({
       model.registerCollapseAllCommand();
     }
     return () => {
-      model.removeNodeDecoration();
+      model && model.removeNodeDecoration();
     };
   }, [model]);
 
@@ -143,11 +140,7 @@ export const ExtensionTabBarTreeView = observer(({
             />;
           }}
         </RecycleTree>;
-      } else {
-        return <ExtensionLoadingView />;
-
       }
-
     } else {
       return <ExtensionLoadingView />;
     }

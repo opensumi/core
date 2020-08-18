@@ -3,16 +3,13 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optinal } from '@ali/c
 import { TreeViewItem, TreeViewBaseOptions } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { MenuPath, Emitter, DisposableStore, toDisposable, isUndefined } from '@ali/ide-core-browser';
+import { Emitter, DisposableStore, toDisposable, isUndefined } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { ExtensionTabBarTreeView } from '../../components';
 import { IIconService, IconType } from '@ali/ide-theme';
 import { ExtensionTreeViewModel } from './tree-view/tree-view.model.service';
 import { ExtensionCompositeTreeNode, ExtensionTreeRoot, ExtensionTreeNode } from './tree-view/tree-view.node.defined';
-import { Tree } from '@ali/ide-components';
-
-export const VIEW_ITEM_CONTEXT_MENU: MenuPath = ['view-item-context-menu'];
-export const VIEW_ITEM_INLINE_MNUE: MenuPath = ['view-item-inline-menu'];
+import { Tree, ITreeNodeOrCompositeTreeNode } from '@ali/ide-components';
 
 @Injectable({multiple: true})
 export class MainThreadTreeView implements IMainThreadTreeView {
@@ -89,6 +86,7 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   }
 
   async $reveal(treeViewId: string, treeItemId: string) {
+    this.mainLayoutService.revealView(treeViewId);
     const treeModel = this.treeModels.get(treeViewId);
     if (treeModel) {
       treeModel.reveal(treeItemId);
@@ -196,6 +194,17 @@ export class TreeViewDataProvider extends Tree {
     }
 
     return nodes;
+  }
+
+  // 按照默认次序排序
+  sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
+    if (!a) {
+      return 1;
+    }
+    if (!b) {
+      return -1;
+    }
+    return 0;
   }
 
   getNodeByTreeItemId(treeItemId: string) {

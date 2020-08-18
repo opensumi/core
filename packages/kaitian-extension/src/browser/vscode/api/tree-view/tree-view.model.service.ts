@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, PromptValidateMessage, TreeNodeEvent } from '@ali/ide-components';
-import { DisposableCollection, Emitter, PreferenceService, IContextKeyService, Command, localize, getIcon, CommandRegistry, Deferred, ThrottledDelayer } from '@ali/ide-core-browser';
+import { DisposableCollection, Emitter, PreferenceService, IContextKeyService, Command, localize, getIcon, CommandRegistry, Deferred, ThrottledDelayer, CommandService } from '@ali/ide-core-browser';
 import { ExtensionCompositeTreeNode, ExtensionTreeNode, ExtensionTreeRoot } from './tree-view.node.defined';
 import * as styles from './tree-view-node.module.less';
 import { ExtensionTreeModel } from './tree-view.model';
@@ -69,6 +69,9 @@ export class ExtensionTreeViewModel {
 
   @Autowired(CommandRegistry)
   private readonly commandRegistry: CommandRegistry;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
 
   @Autowired(IMenuRegistry)
   private readonly menuRegistry: IMenuRegistry;
@@ -386,33 +389,35 @@ export class ExtensionTreeViewModel {
 
   handleItemClick = (item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => {
     this._isMutiSelected = false;
-    this.clickTimes++;
     // 单选操作默认先更新选中状态
     if (type === TreeNodeType.CompositeTreeNode || type === TreeNodeType.TreeNode) {
       this.activeNodeDecoration(item);
     }
-    // 如果为文件夹需展开
-    // 如果为文件，则需要打开文件
-    if (type === TreeNodeType.CompositeTreeNode) {
-      if (this.preferenceService.get('workbench.list.openMode') === 'singleClick') {
-        this.toggleDirectory(item as ExtensionCompositeTreeNode);
-      }
-    }
-    if (this.clickTimer) {
-      clearTimeout(this.clickTimer);
-    }
-    this.clickTimer = setTimeout(() => {
-      // 单击事件
-      // 200ms内多次点击默认为双击事件
-      if (this.clickTimes > 1) {
-        if (type !== TreeNodeType.TreeNode) {
-          if (this.preferenceService.get('workbench.list.openMode') === 'doubleClick') {
-            this.toggleDirectory(item as ExtensionCompositeTreeNode);
-          }
+    if (item.command) {
+      this.commandService.executeCommand(item.command.id, ...(item.command.arguments || []));
+    } else {
+      this.clickTimes++;
+      if (type === TreeNodeType.CompositeTreeNode) {
+        if (this.preferenceService.get('workbench.list.openMode') === 'singleClick') {
+          this.toggleDirectory(item as ExtensionCompositeTreeNode);
         }
       }
-      this.clickTimes = 0;
-    }, 200);
+      if (this.clickTimer) {
+        clearTimeout(this.clickTimer);
+      }
+      this.clickTimer = setTimeout(() => {
+        // 单击事件
+        // 200ms内多次点击默认为双击事件
+        if (this.clickTimes > 1) {
+          if (type !== TreeNodeType.TreeNode) {
+            if (this.preferenceService.get('workbench.list.openMode') === 'doubleClick') {
+              this.toggleDirectory(item as ExtensionCompositeTreeNode);
+            }
+          }
+        }
+        this.clickTimes = 0;
+      }, 200);
+    }
   }
 
   handleContextMenu = (ev: React.MouseEvent, item?: ExtensionCompositeTreeNode | ExtensionTreeNode) => {
@@ -499,7 +504,8 @@ export class ExtensionTreeViewModel {
     this.treeModel.root.collapsedAll();
   }
 
-  refresh(item?: TreeViewItem) {
+  async refresh(item?: TreeViewItem) {
+    await this.whenReady;
     if (!item) {
       this.treeModel.root.forceReloadChildrenQuiet();
     } else {
@@ -516,6 +522,7 @@ export class ExtensionTreeViewModel {
   }
 
   async reveal(treeItemId: string) {
+    await this.whenReady;
     if (this.revealDeferred) {
       await this.revealDeferred.promise;
     }

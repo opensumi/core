@@ -59,6 +59,8 @@ export interface IMainLayoutService {
   bottomExpanded: boolean;
   // @deprecated 提供小程序使用的额外位置控制
   setFloatSize(size: number): void;
+  // force reveal a view ignoring its when clause
+  revealView(viewId: string): void;
   getTabbarService(location: string, noAccordion?: boolean): TabbarService;
   getAccordionService(containerId: string, noRestore?: boolean): AccordionService;
   // 某一位置是否可见
@@ -75,6 +77,13 @@ export interface MainLayoutContribution {
 
   provideDefaultState?(): SideStateManager;
 
+}
+
+export interface ICustomView {
+  view: View;
+  props: {
+    [key: string]: any;
+  };
 }
 
 /**
