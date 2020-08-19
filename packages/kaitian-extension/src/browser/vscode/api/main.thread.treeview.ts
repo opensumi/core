@@ -1,24 +1,15 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { Injectable, Autowired, Optinal } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optinal } from '@ali/common-di';
 import { TreeViewItem, TreeViewBaseOptions } from '../../../common/vscode';
-import { TreeItemCollapsibleState, ICommand } from '../../../common/vscode/ext-types';
+import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { TreeNode, MenuPath, Emitter, DisposableStore, toDisposable, isUndefined } from '@ali/ide-core-browser';
+import { Emitter, DisposableStore, toDisposable, isUndefined } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { ExtensionTabbarTreeView } from '../../components';
+import { ExtensionTabBarTreeView } from '../../components';
 import { IIconService, IconType } from '@ali/ide-theme';
-import { SelectableTreeNode, ExpandableTreeNode, CompositeTreeNode } from '@ali/ide-core-browser';
-
-export const VIEW_ITEM_CONTEXT_MENU: MenuPath = ['view-item-context-menu'];
-export const VIEW_ITEM_INLINE_MNUE: MenuPath = ['view-item-inline-menu'];
-
-export interface CompositeTreeViewNode extends TreeViewNode, ExpandableTreeNode, CompositeTreeNode {
-}
-
-export interface TreeViewNode extends SelectableTreeNode {
-  contextValue?: string;
-  command?: ICommand;
-}
+import { ExtensionTreeViewModel } from './tree-view/tree-view.model.service';
+import { ExtensionCompositeTreeNode, ExtensionTreeRoot, ExtensionTreeNode } from './tree-view/tree-view.node.defined';
+import { Tree, ITreeNodeOrCompositeTreeNode } from '@ali/ide-components';
 
 @Injectable({multiple: true})
 export class MainThreadTreeView implements IMainThreadTreeView {
@@ -30,32 +21,40 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   @Autowired(IIconService)
   private readonly iconService: IIconService;
 
-  readonly dataProviders: Map<string, TreeViewDataProviderMain> = new Map<string, TreeViewDataProviderMain>();
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
+  // readonly dataProviders: Map<string, TreeViewDataProvider> = new Map<string, TreeViewDataProvider>();
+  readonly treeModels: Map<string, ExtensionTreeViewModel> = new Map<string, ExtensionTreeViewModel>();
 
   private disposableCollection: Map<string, DisposableStore> = new Map();
   private disposable: DisposableStore = new DisposableStore();
 
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTreeView);
-    this.disposable.add(toDisposable(() => this.dataProviders.clear()));
+    this.disposable.add(toDisposable(() => this.treeModels.clear()));
   }
 
   dispose() {
     this.disposable.dispose();
   }
 
+  createTreeModel(treeViewId: string, dataProvider: TreeViewDataProvider): ExtensionTreeViewModel {
+    return ExtensionTreeViewModel.createModel(this.injector, dataProvider, treeViewId);
+  }
+
   $registerTreeDataProvider(treeViewId: string, options: TreeViewBaseOptions): void {
-    if (!this.dataProviders.has(treeViewId)) {
+    if (!this.treeModels.has(treeViewId)) {
       const disposable = new DisposableStore();
-      const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy, this.iconService);
-      this.dataProviders.set(treeViewId, dataProvider);
-      disposable.add(toDisposable(() => this.dataProviders.delete(treeViewId)));
+      const dataProvider = new TreeViewDataProvider(treeViewId, this.proxy, this.iconService);
+      const model = this.createTreeModel(treeViewId, dataProvider);
+      this.treeModels.set(treeViewId, model);
+      disposable.add(toDisposable(() => this.treeModels.delete(treeViewId)));
       this.mainLayoutService.replaceViewComponent({
         id: treeViewId,
-        component: ExtensionTabbarTreeView,
+        component: ExtensionTabBarTreeView,
       }, {
-        dataProvider: this.dataProviders.get(treeViewId),
-        viewId: treeViewId,
+        model,
         options,
       });
       const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
@@ -80,76 +79,79 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   }
 
   $refresh(treeViewId: string, itemsToRefresh?: TreeViewItem) {
-    const dataProvider = this.dataProviders.get(treeViewId);
-    if (dataProvider) {
-      dataProvider.refresh(itemsToRefresh);
+    const treeModel = this.treeModels.get(treeViewId);
+    if (treeModel) {
+      treeModel.refresh(itemsToRefresh);
     }
   }
 
   async $reveal(treeViewId: string, treeItemId: string) {
-    const dataProvider = this.dataProviders.get(treeViewId);
-    if (dataProvider) {
-      dataProvider.reveal(treeItemId);
+    this.mainLayoutService.revealView(treeViewId);
+    const treeModel = this.treeModels.get(treeViewId);
+    if (treeModel) {
+      treeModel.reveal(treeItemId);
     }
   }
 }
 
-export class TreeViewDataProviderMain {
+export class TreeViewDataProvider extends Tree {
 
   private onTreeDataChangedEmitter = new Emitter<any>();
-  private onRevealEventEmitter = new Emitter<any>();
+  private onRevealChangedEmitter = new Emitter<any>();
+
+  private treeItemId2TreeNode: Map<string, ExtensionTreeNode | ExtensionCompositeTreeNode | ExtensionTreeRoot> = new Map();
+
+  constructor(
+    public readonly treeViewId: string,
+    private readonly proxy: IExtHostTreeView,
+    private readonly iconService: IIconService,
+  ) {
+    super();
+  }
 
   get onTreeDataChanged() {
     return this.onTreeDataChangedEmitter.event;
   }
 
-  get onRevealEvent() {
-    return this.onRevealEventEmitter.event;
+  get onRevealChanged() {
+    return this.onRevealChangedEmitter.event;
   }
 
-  constructor(
-    private treeViewId: string,
-    private proxy: IExtHostTreeView,
-    private iconService: IIconService,
-  ) { }
+  get root() {
+    return this._root;
+  }
 
-  async createFoldNode(item: TreeViewItem): Promise<CompositeTreeViewNode> {
+  async createFoldNode(item: TreeViewItem, parent: ExtensionCompositeTreeNode): Promise<ExtensionCompositeTreeNode> {
     const expanded = TreeItemCollapsibleState.Expanded === item.collapsibleState;
     const icon = await this.toIconClass(item);
-    return {
-      id: item.id,
-      parent: undefined,
-      name: item.label,
-      label: item.label,
+
+    return new ExtensionCompositeTreeNode(
+      this,
+      parent,
+      item.label,
+      item.description,
       icon,
-      description: item.description,
-      tooltip: item.tooltip,
-      visible: true,
-      selected: false,
+      item.tooltip,
+      item.command,
+      item.contextValue || '',
+      item.id,
       expanded,
-      children: [],
-      command: item.command,
-      contextValue: item.contextValue,
-      depth: 0,
-    };
+    );
   }
 
-  async createNormalNode(item: TreeViewItem): Promise<TreeViewNode> {
+  async createNormalNode(item: TreeViewItem, parent: ExtensionCompositeTreeNode): Promise<ExtensionTreeNode> {
     const icon = await this.toIconClass(item);
-    return {
-      id: item.id,
-      name: item.label,
-      label: item.label,
+    return new ExtensionTreeNode(
+      this,
+      parent,
+      item.label,
+      item.description,
       icon,
-      description: item.description,
-      tooltip: item.tooltip,
-      parent: undefined,
-      visible: true,
-      selected: false,
-      contextValue: item.contextValue,
-      command: item.command,
-      depth: 0,
-    };
+      item.tooltip,
+      item.command,
+      item.contextValue || '',
+      item.id,
+    );
   }
 
   async toIconClass(item: TreeViewItem): Promise<string | undefined> {
@@ -165,23 +167,54 @@ export class TreeViewDataProviderMain {
    *
    * @param item tree view item from the ext
    */
-  async createTreeNode(item: TreeViewItem): Promise<TreeNode> {
+  async createTreeNode(item: TreeViewItem, parent: ExtensionCompositeTreeNode): Promise<ExtensionCompositeTreeNode | ExtensionTreeNode> {
     if (!isUndefined(item.collapsibleState) && item.collapsibleState !== TreeItemCollapsibleState.None) {
-      return await this.createFoldNode(item);
+      return await this.createFoldNode(item, parent);
     }
-    return await this.createNormalNode(item);
+    return await this.createNormalNode(item, parent);
   }
 
-  async resolveChildren(itemId?: string): Promise<TreeNode[]> {
-    const nodes: TreeNode[] = [];
-    const children = await this.proxy.$getChildren(this.treeViewId, itemId);
-    if (children && Array.isArray(children)) {
-      for (const child of children) {
-        const node = await this.createTreeNode(child);
-        nodes.push(node);
+  async resolveChildren(parent?: ExtensionCompositeTreeNode): Promise<(ExtensionCompositeTreeNode | ExtensionTreeRoot | ExtensionTreeNode)[]> {
+    let nodes: (ExtensionCompositeTreeNode | ExtensionTreeRoot | ExtensionTreeNode)[] = [];
+    if (parent) {
+      let children: TreeViewItem[] | undefined;
+      if (ExtensionTreeRoot.is(parent)) {
+        children = await this.proxy.$getChildren(this.treeViewId);
+      } else {
+        children = await this.proxy.$getChildren(this.treeViewId, parent.treeItemId);
       }
+      if (children && Array.isArray(children)) {
+        for (const child of children) {
+          const node = await this.createTreeNode(child, parent);
+          nodes.push(node);
+        }
+      }
+    } else {
+      nodes = [new ExtensionTreeRoot(this as any, this.treeViewId)];
     }
+
     return nodes;
+  }
+
+  // 按照默认次序排序
+  sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
+    if (!a) {
+      return 1;
+    }
+    if (!b) {
+      return -1;
+    }
+    return 0;
+  }
+
+  getNodeByTreeItemId(treeItemId: string) {
+    return this.treeItemId2TreeNode.get(treeItemId);
+  }
+
+  cacheNodes(nodes: (ExtensionCompositeTreeNode | ExtensionTreeRoot | ExtensionTreeNode)[]) {
+    nodes.forEach((node) => {
+      this.treeItemId2TreeNode.set(node.treeItemId, node);
+    });
   }
 
   async refresh(itemsToRefresh?: TreeViewItem) {
@@ -189,7 +222,7 @@ export class TreeViewDataProviderMain {
   }
 
   async reveal(viewItemId?: any) {
-    await this.onRevealEventEmitter.fire(viewItemId);
+    await this.onRevealChangedEmitter.fire(viewItemId);
   }
 
   async setSelection(treeViewId: string, id: string[]) {
@@ -202,5 +235,10 @@ export class TreeViewDataProviderMain {
 
   async setVisible(treeViewId: string, visible: boolean) {
     this.proxy.$setVisible(treeViewId, visible);
+  }
+
+  dispose() {
+    super.dispose();
+    this.treeItemId2TreeNode.clear();
   }
 }
