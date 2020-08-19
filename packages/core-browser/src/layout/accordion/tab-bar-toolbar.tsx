@@ -33,7 +33,7 @@ export class ToolbarRegistry {
     }
     return this.menuRegistry.registerMenuItem(MenuId.ViewTitle, {
       ...item,
-      when: item.when || `view == ${item.viewId}`,
+      when: `${item.when ? item.when + ' && ' : ''}view == ${item.viewId}`,
       group: item.group || 'navigation',
     } as IMenuItem);
   }
