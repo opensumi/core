@@ -13,22 +13,18 @@
         border-radius: 50%;
       }
     }
+
     .comments-add {
-      &::before {
-        visibility: hidden;
-      }
+      margin-left: 2px;
     }
+
     .comments-thread {
-      &::before {
-        left: 4px;
-      }
+      left: 4px !important;
     }
-    .view-line:hover {
-      .comments-add {
-        &::before {
-          visibility: visible;
-        }
-      }
+
+    .cldr.insert-sign,
+    .cldr.delete-sign {
+      background-position: right;
     }
   }
 }

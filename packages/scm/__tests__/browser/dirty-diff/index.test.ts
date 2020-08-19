@@ -92,6 +92,8 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
               editorFeatureContributions.delete(contribution);
             });
           },
+          runContributions: jest.fn(),
+          runProvideEditorOptionsForUri: jest.fn(),
         },
       },
       {

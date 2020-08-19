@@ -363,6 +363,8 @@ describe('editor menu test', () => {
         contri.contribute(editor as any);
         return new Disposable();
       }),
+      runContributions: jest.fn(),
+      runProvideEditorOptionsForUri: jest.fn(),
     });
 
     editor.monacoEditor._onContextMenu.fire({

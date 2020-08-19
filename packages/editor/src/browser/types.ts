@@ -373,6 +373,21 @@ export interface IEditorFeatureRegistry {
    */
   registerEditorFeatureContribution(contribution: IEditorFeatureContribution): IDisposable;
 
+  /**
+   * 运行 contrbute
+   */
+  runContributions(editor: IEditor): void;
+
+  /**
+   * 运行 provideEditorOptionsForUri
+   */
+  runProvideEditorOptionsForUri(uri: URI): MaybePromise<monaco.editor.IEditorOptions>;
+}
+
+export interface IConvertedMonacoOptions {
+  editorOptions: Partial<monaco.editor.IEditorOptions>;
+  modelOptions: Partial<monaco.editor.ITextModelUpdateOptions>;
+  diffOptions: Partial<monaco.editor.IDiffEditorOptions>;
 }
 
 export interface IEditorFeatureContribution {
@@ -382,6 +397,12 @@ export interface IEditorFeatureContribution {
    * @param editor
    */
   contribute(editor: IEditor): IDisposable;
+
+  /**
+   * 用来对 uri 进行 options 的修改
+   * @param editor
+   */
+  provideEditorOptionsForUri?(uri: URI): MaybePromise<Partial<monaco.editor.IEditorOptions>>;
 
 }
 

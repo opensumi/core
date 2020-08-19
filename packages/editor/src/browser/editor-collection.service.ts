@@ -198,6 +198,9 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
+  @Autowired(IEditorFeatureRegistry)
+  private readonly editorFeatureRegistry: IEditorFeatureRegistry;
+
   private editorState: Map<string, monaco.editor.ICodeEditorViewState> = new Map();
 
   private readonly toDispose: monaco.IDisposable[] = [];
@@ -345,14 +348,18 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
       position: this.monacoEditor.getPosition(),
       selectionLength: 0,
     });
-    this.updateOptionsOnModelChange();
+    await this.updateOptionsOnModelChange();
   }
 
-  private updateOptionsOnModelChange() {
+  private async updateOptionsOnModelChange() {
     const uriStr = this.currentUri ? this.currentUri.toString() : undefined;
     const languageId = this.currentDocumentModel ? this.currentDocumentModel.languageId : undefined;
     const options = getConvertedMonacoOptions(this.preferenceService, uriStr, languageId, undefined);
-    this.updateOptions(options.editorOptions, options.modelOptions);
+    const providerEditorOptions = await this.editorFeatureRegistry.runProvideEditorOptionsForUri(this.currentUri!);
+    this.updateOptions({
+      ...options.editorOptions,
+      ...providerEditorOptions,
+    }, options.modelOptions);
   }
 
   updateReadonly() {
@@ -404,6 +411,9 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
 export class BrowserDiffEditor extends Disposable implements IDiffEditor {
   @Autowired(EditorCollectionService)
   private collectionService: EditorCollectionServiceImpl;
+
+  @Autowired(IEditorFeatureRegistry)
+  private readonly editorFeatureRegistry: IEditorFeatureRegistry;
 
   private originalDocModelRef: IEditorDocumentModelRef | null;
 
@@ -530,7 +540,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
         });
       }
     }
-    this.updateOptionsOnModelChange();
+    await this.updateOptionsOnModelChange();
     this.diffResourceKey.set(this.currentUri);
   }
 
@@ -549,11 +559,39 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
     });
   }
 
-  private updateOptionsOnModelChange() {
+  private async updateOptionsOnModelChange() {
+    await this.updateOriginalEditorOptionsOnModelChange();
+    await this.updateDiffEditorOptionsOnModelChange();
+  }
+
+  private async updateOriginalEditorOptionsOnModelChange() {
+    const uriStr = this.originalEditor.currentUri ? this.originalEditor.currentUri.toString() : undefined;
+    const languageId = this.originalEditor.currentDocumentModel ? this.originalEditor.currentDocumentModel.languageId : undefined;
+    const options = getConvertedMonacoOptions(this.preferenceService, uriStr, languageId);
+    const providerEditorOptions = await this.editorFeatureRegistry.runProvideEditorOptionsForUri(this.originalEditor.currentUri!);
+    this.updateOptions(this.originalEditor.monacoEditor, {
+      ...options.editorOptions,
+      ...providerEditorOptions,
+    });
+  }
+
+  private async updateDiffEditorOptionsOnModelChange() {
     const uriStr = this.modifiedEditor.currentUri ? this.modifiedEditor.currentUri.toString() : undefined;
     const languageId = this.modifiedEditor.currentDocumentModel ? this.modifiedEditor.currentDocumentModel.languageId : undefined;
     const options = getConvertedMonacoOptions(this.preferenceService, uriStr, languageId);
-    this.updateDiffOptions({...options.editorOptions, ...options.diffOptions});
+    const providerEditorOptions = await this.editorFeatureRegistry.runProvideEditorOptionsForUri(this.modifiedEditor.currentUri!);
+    this.updateOptions(this.modifiedEditor.monacoEditor, {
+      ...options.editorOptions,
+      ...providerEditorOptions,
+    });
+    this.updateDiffOptions(options.diffOptions);
+  }
+
+  private updateOptions(monacoEditor: monaco.editor.ICodeEditor, options: monaco.editor.IEditorOptions) {
+    monacoEditor.updateOptions({
+      ...options,
+      ...this.specialOptions,
+    });
   }
 
   updateDiffOptions(options: Partial<monaco.editor.IDiffEditorOptions>) {

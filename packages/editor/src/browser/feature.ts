@@ -1,6 +1,6 @@
 import { IEditorFeatureRegistry, IEditorFeatureContribution } from './types';
 import { Injectable, Autowired } from '@ali/common-di';
-import { IDisposable, addElement, ILogger, Emitter, Event } from '@ali/ide-core-browser';
+import { IDisposable, addElement, ILogger, Emitter, Event, URI } from '@ali/ide-core-browser';
 import { IEditor } from '../common';
 
 @Injectable()
@@ -26,6 +26,23 @@ export class EditorFeatureRegistryImpl implements IEditorFeatureRegistry {
     this.contributions.forEach((contribution) => {
       this.runOneContribution(editor, contribution);
     });
+  }
+
+  async runProvideEditorOptionsForUri(uri: URI) {
+    const result = await Promise.all(this.contributions.map((contribution) => {
+      if (contribution.provideEditorOptionsForUri) {
+        return contribution.provideEditorOptionsForUri(uri);
+      } else {
+        return {};
+      }
+    }));
+
+    return result.reduce((pre, current) => {
+      return {
+        ...pre,
+        ...current,
+      };
+    }, {});
   }
 
   runOneContribution(editor: IEditor, contribution: IEditorFeatureContribution) {
