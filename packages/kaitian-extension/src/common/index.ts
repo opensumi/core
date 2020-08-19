@@ -102,17 +102,6 @@ export abstract class ExtensionService {
   abstract getPortalShadowRoot(extensionId: string): ShadowRoot | undefined;
   abstract async initKaitianBrowserAPIDependency(extension: IExtension): Promise<void>;
 
-  /**
-   * 获取被作为依赖项的插件
-   * key: 插件名, value: 被谁依赖
-   */
-  abstract async getDependedExtMap(): Promise<Map<string, string[]>>;
-
-  /**
-   * 获取当前插件有哪些依赖
-   * key: 插件名, value: 有哪些依赖
-   */
-  abstract async getDependenciesExtMap(): Promise<Map<string, string[]>>;
   abstract getExtensionByExtId(dep: string): IExtension | undefined;
 
   onDidExtensionActivated: Event<IExtensionProps>;

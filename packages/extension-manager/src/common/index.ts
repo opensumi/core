@@ -152,6 +152,7 @@ export interface IExtensionManagerService  {
   getExtDeps(extensionId: string, version?: string): Promise<ExtensionDependencies>;
   dispose(): void;
   getEnabledDeps(): Promise<Map<string, string[]>>;
+  transformDepsDeclaration(raw: string | { [key: string]: string}): { id: string, version: string };
 }
 
 export const IExtensionManagerServer = Symbol('IExtensionManagerServer');

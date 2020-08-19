@@ -175,9 +175,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
     ) || [];
 
     const result: ExtensionDetail[] = await Promise.all(rawDependencies.map((dep) => {
-      // ['vscode.vim', 'vscode.eslint'] or [{ 'vscode.vim': '^1.0.0' }, { 'vscode.eslint': '1.9.x' }]
-      const id = typeof dep === 'string' ? dep : Object.keys(dep)[0];
-      const version = typeof dep === 'string' ? '*' : dep[id];
+      const { id, version } = extensionManagerService.transformDepsDeclaration(dep);
 
       return getExtDetail(id, version);
     }));
@@ -261,6 +259,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
           )}
           {tabs[tabIndex].key === 'dependencies' && (
             <ExtensionList
+              showExtraAction={false}
               list={dependencies}
             />
           )}

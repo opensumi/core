@@ -241,6 +241,32 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   }
 
   /**
+   * 将 (string | { [key: string]: string })[] 的格式转化为 { id: string, version: string }
+   */
+  public transformDepsDeclaration(raw: string | { [key: string]: string}): { id: string, version: string } {
+    let version = '*';
+    let id = raw;
+    if (!(typeof raw === 'string')) {
+      id = Object.keys(raw)[0];
+      version = raw[id];
+    }
+    return {
+      id: id as string,
+      version,
+    };
+  }
+
+  /**
+   * 有可能这里的 id 并非 marketplace 的 identify, 这里统一抹平
+   * 比如某个 vscode 的插件 A，依赖了 vscode 的插件 B，此时就应该在获取依赖时将这个 B id 转为 marketplace 认识的 id
+   * @param extensionId
+   * @param version
+   */
+  private async transform2identify(extensionId, version?): Promise<string> {
+    return this.extensionManagerServer.getExtensionFromMarketPlace(extensionId, version).then((res) => res?.data?.identifier);
+  }
+
+  /**
    * 获取这个插件的所有依赖
    * @param extensionId
    * @param version
@@ -249,7 +275,17 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   async getExtDeps(extensionId, version?): Promise<ExtensionDependencies> {
     try {
       const res = await this.extensionManagerServer.getExtensionDeps(extensionId, version);
-      return res?.data?.dependencies || [];
+
+      const identifies = await Promise.all(
+        res?.data?.dependencies?.map((dep) => {
+          const {
+            id, version,
+          } = this.transformDepsDeclaration(dep);
+          return this.transform2identify(id, version);
+        }) || [],
+      );
+
+      return identifies || [];
     } catch (e) {
       this.logger.error(e);
       return [];
@@ -275,12 +311,11 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   private async installExtensionDeps(extension: BaseExtension, version?: string): Promise<void> {
     const deps = await this.getExtDeps(extension.extensionId, version || extension.version);
     for (const dep of deps) {
-      let depVersion = '*';
-      let depId = dep;
-      if (!(typeof dep === 'string')) {
-        depId = Object.keys(dep)[0];
-        depVersion = dep[depId];
-      }
+
+      const {
+        id: depId,
+        version: depVersion,
+      } = this.transformDepsDeclaration(dep);
 
       if (this.installedIds.includes(depId as string)) {
         continue;
@@ -638,11 +673,16 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
       const detail = this.getRawExtensionById(installId);
       if (detail && detail.enable) {
         const extProp = await this.extensionService.getExtensionProps(detail.path);
-        extProp?.packageJSON?.extensionDependencies?.forEach((dep) => {
-          const depId = typeof dep === 'string' ? dep : Object.keys(dep)[0];
-          // key 插件，value：被哪个插件依赖
-          activeExtsDeps.set(depId, extProp.extensionId);
-        });
+
+        for (const dep of extProp?.packageJSON?.extensionDependencies || []) {
+
+          const { id } = this.transformDepsDeclaration(dep);
+
+          // 这里使用 marketplace 认识的 identifier
+          const identifier = await this.transform2identify(id);
+
+          activeExtsDeps.set(identifier, extProp?.extensionId);
+        }
       }
     }
     return activeExtsDeps;
@@ -655,7 +695,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
     // TODO fix cycle loop
     const extensionId = extension.extensionId;
 
-    const allExtsDependedMap = (await this.extensionService.getDependenciesExtMap());
+    const allExtsDependedMap = (await this.getDependenciesExtMap());
     const allExtsDependedList = allExtsDependedMap.get(extensionId) || [];
 
     for (const dependedExtId of allExtsDependedList) {
@@ -823,7 +863,8 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
 
   @action
   async uninstallExtension(extension: BaseExtension): Promise<boolean> {
-    const dependedExtsMap = await this.extensionService.getDependedExtMap();
+    const dependedExtsMap = await this.getDependedExtMap();
+
     const dependedExtIds = Array.from(dependedExtsMap.keys());
     const depended = dependedExtIds.find((depsId) => depsId === extension.extensionId);
 
@@ -988,6 +1029,38 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
     } else {
       return [];
     }
+  }
+
+  private async getDependedExtMap(): Promise<Map<string, string[]>> {
+    const depended = new Map();
+    const extensionProps = await this.extensionService.getAllExtensionJson();
+    for (const prop of extensionProps) {
+      for (const dep of prop?.packageJSON?.extensionDependencies || []) {
+        const { id } = this.transformDepsDeclaration(dep);
+        const depId = await this.transform2identify(id);
+        depended.set(
+          depId,
+          depended.has(depId) ? [...depended.get(depId), prop.extensionId] : [prop.extensionId],
+        );
+      }
+    }
+    return depended;
+  }
+
+  private async getDependenciesExtMap(): Promise<Map<string, string[]>> {
+    const dependencies = new Map();
+    const extensionProps = await this.extensionService.getAllExtensionJson();
+
+    for (const prop of extensionProps) {
+      for (const dep of prop?.packageJSON.extensionDependencies || []) {
+        const { id } = this.transformDepsDeclaration(dep);
+        const depId = await this.transform2identify(id);
+        dependencies.set(prop.extensionId,
+          dependencies.has(prop.extensionId) ? [...dependencies.get(prop.extensionId), depId] : [depId],
+        );
+      }
+    }
+    return dependencies;
   }
 
   @action
