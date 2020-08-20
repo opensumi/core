@@ -430,6 +430,26 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
   }
 
+  // 获取当前节点下所有折叠的节点路径
+  private getAllCollapsedNodePath() {
+    let paths: string[] = [];
+    if (!!this.children) {
+      for (const child of this.children) {
+        if (!CompositeTreeNode.is(child)) {
+          continue;
+        }
+        if ((child as CompositeTreeNode).isExpanded) {
+          paths = paths.concat((child as CompositeTreeNode).getAllCollapsedNodePath());
+        } else {
+          paths.push(child.path);
+        }
+      }
+      return paths;
+    } else {
+      return paths;
+    }
+  }
+
   // 静默刷新子节点, 即不触发分支更新事件
   public async forceReloadChildrenQuiet(expandedPaths: string[] = this.getAllExpandedNodePath(), needReload: boolean = true) {
     let forceLoadPath;
@@ -503,6 +523,26 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       }
       return;
     }
+  }
+
+  public async expandedAll(collapsedPaths: string[] = this.getAllCollapsedNodePath()) {
+    // 仅根节点使用
+    if (!CompositeTreeNode.isRoot(this)) {
+      return;
+    }
+    collapsedPaths = collapsedPaths.sort((a, b) => {
+      return Path.pathDepth(a) - Path.pathDepth(b);
+    });
+    let path;
+    while (collapsedPaths.length > 0) {
+      path = collapsedPaths.pop();
+      const item = await this.forceLoadTreeNodeAtPath(path);
+      if (item) {
+        await (item as CompositeTreeNode).setExpanded(false, true);
+      }
+    }
+    // 通知分支树已更新
+    this.watcher.notifyDidUpdateBranch();
   }
 
   public async collapsedAll(expandedPaths: string[] = this.getAllExpandedNodePath()) {
