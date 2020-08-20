@@ -234,4 +234,14 @@ declare module 'kaitian-browser' {
     */
     export function executeCommand<T>(command: string, ...rest: any[]): Promise<T | undefined>;
   }
+
+  export interface IReporterTimer {
+    timeEnd(msg?: string, extra?: any): number;
+  }
+
+  export namespace reporter {
+    export function time(name: string): IReporterTimer;
+    export function point(name: string, msg?: string, extra?: any): void;
+  }
+
 }
