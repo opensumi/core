@@ -81,6 +81,9 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
     onMouseEnter: (event) => {
       delegate.current && delegate.current._onMouseEnter.fire(event);
     },
+  };
+
+  const backgroundBindings = {
     style: {
       backgroundColor: styles.background,
     },
@@ -88,13 +91,13 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
   let buttonElement;
   if (props.inDropDown) {
     buttonElement = <div className={classnames({'kt-toolbar-action-btn': true,
-    'action-btn-in-dropdown': true})} {...bindings} ref={ref as any}>
+    'action-btn-in-dropdown': true})} {...bindings} {...backgroundBindings} ref={ref as any}>
       {iconContent}
       {titleContent}
     </div>;
   } else {
     if (styles.btnStyle === 'button' && styles.btnTitleStyle !== 'vertical') {
-      buttonElement = <Button type='default' size='small'  {...bindings} >
+      buttonElement = <Button type='default' size='small'  {...bindings} {...backgroundBindings} >
           {iconContent}
           {titleContent}
         </Button>;
@@ -106,7 +109,7 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
       'kt-toolbar-action-btn-vertical': styles.btnTitleStyle === 'vertical',
       'kt-toolbar-action-btn-horizontal': styles.btnTitleStyle !== 'vertical'})}
        {...bindings}>
-         <Button type='default' size='small'  {...bindings} >
+         <Button type='default' size='small' {...backgroundBindings}>
           {iconContent}
         </Button>
         {titleContent}
