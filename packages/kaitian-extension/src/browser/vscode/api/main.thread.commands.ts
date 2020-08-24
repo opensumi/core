@@ -97,12 +97,12 @@ export class MainThreadCommands implements IMainThreadCommands {
       },
     };
 
-    /**
-     * command 可能在 contribute/commands 通过贡献点已经贡献了 command desc
-     * 此时不用再注册，会被extensionService转发到这里来
-     */
     const command = this.commandRegistry.getCommand(id);
-    if (!command) {
+    if (command) {
+      // 如果已经有对应的命令则注册为 handler
+      // 后面注册的命令会覆盖前面注册的的命令
+      disposer.addDispose(this.commandRegistry.registerHandler(id, { execute }));
+    } else {
       disposer.addDispose(this.commandRegistry.registerCommand({ id }, { execute }));
     }
 

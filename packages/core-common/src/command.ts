@@ -349,6 +349,7 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
   /**
    * 给命令注册处理函数
    * 可以给命令加多个处理函数
+   * 默认后面注册的优先级更高
    * @param commandId 要添加的命令 id
    * @param handler 要添加的处理函数
    * @returns 销毁函数
@@ -358,7 +359,7 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
     if (!handlers) {
       this._handlers[commandId] = handlers = [];
     }
-    handlers.push(handler);
+    handlers.unshift(handler);
     return {
       dispose: () => {
         const idx = handlers.indexOf(handler);
