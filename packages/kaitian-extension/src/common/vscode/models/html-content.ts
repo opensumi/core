@@ -1,4 +1,5 @@
 import { UriComponents } from './uri';
+import { es5ClassCompat } from '@ali/ide-core-common';
 
 // TODO: edtior 中有相同interface，待统一
 export interface IMarkdownString {
@@ -7,6 +8,7 @@ export interface IMarkdownString {
   uris?: { [href: string]: UriComponents };
 }
 
+@es5ClassCompat
 export class MarkdownString implements IMarkdownString {
   private readonly _isTrusted: boolean;
   private readonly _supportThemeIcons: boolean;
