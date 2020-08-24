@@ -151,14 +151,21 @@ export async function initWorkerTheadAPIProxy(
   extensionService: VSCodeExtensionService,
 ) {
   const MainThreadCommandsAPI = injector.get(MainThreadCommands, [workerProtocol, true]);
+  const MainThreadStatusBarAPI = injector.get(MainThreadStatusBar, [workerProtocol]);
+  const MainThreadQuickOpenAPI = injector.get(MainThreadQuickOpen, [workerProtocol]);
+  const MainThreadExtensionDocumentDataAPI = injector.get(MainThreadExtensionDocumentData, [workerProtocol]);
+  const MainThreadEditorServiceAPI = injector.get(MainThreadEditorService, [workerProtocol, MainThreadExtensionDocumentDataAPI]);
   workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
   workerProtocol.set<IMainThreadLanguages>(MainThreadAPIIdentifier.MainThreadLanguages, injector.get(MainThreadLanguages, [workerProtocol]));
-  workerProtocol.set<MainThreadExtensionDocumentData>(MainThreadAPIIdentifier.MainThreadDocuments, injector.get(MainThreadExtensionDocumentData, [workerProtocol]));
+  workerProtocol.set<MainThreadExtensionDocumentData>(MainThreadAPIIdentifier.MainThreadDocuments, MainThreadExtensionDocumentDataAPI);
+  workerProtocol.set<MainThreadStatusBar>(MainThreadAPIIdentifier.MainThreadStatusBar, MainThreadStatusBarAPI);
+  workerProtocol.set<IMainThreadQuickOpen>(MainThreadAPIIdentifier.MainThreadQuickOpen, MainThreadQuickOpenAPI);
   workerProtocol.set(MainThreadAPIIdentifier.MainThreadWorkspace, injector.get(MainThreadWorkspace, [workerProtocol]));
   workerProtocol.set(MainThreadAPIIdentifier.MainThreadFileSystem, injector.get(MainThreadFileSystem, [workerProtocol]));
   workerProtocol.set(MainThreadAPIIdentifier.MainThreadPreference, injector.get(MainThreadPreference, [workerProtocol]));
   workerProtocol.set(MainThreadAPIIdentifier.MainThreadOutput, injector.get(MainThreadOutput)) as MainThreadOutput;
+  workerProtocol.set<MainThreadEditorService>(MainThreadAPIIdentifier.MainThreadEditors, MainThreadEditorServiceAPI);
   workerProtocol.set<IMainThreadMessage>(MainThreadAPIIdentifier.MainThreadMessages, injector.get(MainThreadMessage, [workerProtocol]));
   workerProtocol.set<IMainThreadExtensionLog>(MainThreadExtensionLogIdentifier, injector.get(MainThreadExtensionLog));
   workerProtocol.set<IMainThreadWebview>(MainThreadAPIIdentifier.MainThreadWebview, injector.get(MainThreadWebview, [workerProtocol]));
