@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { ContextKeyChangeEvent, Event, WithEventBus, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKey, IContextKeyService, ExtensionActivateEvent, AppConfig, ComponentRegistry, Logger } from '@ali/ide-core-browser';
-import { MainLayoutContribution, IMainLayoutService, ICustomView } from '../common';
+import { WithEventBus, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent, AppConfig, ComponentRegistry, Logger } from '@ali/ide-core-browser';
+import { MainLayoutContribution, IMainLayoutService } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
 import { IMenuRegistry, AbstractContextMenuService, MenuId, AbstractMenuService, IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
@@ -50,10 +50,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     size?: number;
   }} = {};
 
-  private viewWhenContextkeys = new Set<string>();
-  private customViewMap = new Map<string, ICustomView>();
-  private allViews = new Map<string, View>();
-  private forceRevealContextKeys = new Map<string, {when: string; key: IContextKey<boolean>}>();
+  private customViews = new Map<string, View>();
 
   @Autowired(AbstractMenuService)
   protected menuService: AbstractMenuService;
@@ -79,11 +76,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       }
     }
     this.restoreState();
-    this.addDispose(Event.debounce<ContextKeyChangeEvent, boolean>(
-      this.contextKeyService.onDidChangeContext,
-      (last, event) =>  last || event.payload.affectsSome(this.viewWhenContextkeys),
-      50,
-    )((e) => e && this.handleContextKeyChange(), this));
     this.viewReady.resolve();
   }
 
@@ -240,23 +232,14 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return options.containerId;
   }
 
-  collectViewComponent(view: View, containerId: string, props: any = {}): string {
-    this.allViews.set(view.id, view);
+  collectViewComponent(view: View, containerId: string, props: any = {}, isReplace?: boolean): string {
+    this.customViews.set(view.id, view);
     this.viewToContainerMap.set(view.id, containerId);
-    if (view.when) {
-      // 强制显示的contextKey
-      const forceRevealExpr = this.createRevealContextKey(view.id);
-      this.fillKeysInWhenExpr(this.viewWhenContextkeys, view.when);
-      this.customViewMap.set(view.id, {view, props});
-      if (!this.contextKeyService.match(view.when) && !this.contextKeyService.match(forceRevealExpr)) {
-        return containerId;
-      }
-    }
     const accordionService: AccordionService = this.getAccordionService(containerId);
     if (props) {
       view.initialProps = props;
     }
-    accordionService.appendView(view);
+    accordionService.appendView(view, isReplace);
     return containerId;
   }
 
@@ -267,12 +250,12 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       console.warn(`没有找到${view.id}对应的容器，请检查传入参数!`);
       return;
     }
-    const contributedView = this.allViews.get(view.id);
+    const contributedView = this.customViews.get(view.id);
     if (contributedView) {
       view = Object.assign(contributedView, view);
     }
 
-    this.collectViewComponent(view, containerId!, props);
+    this.collectViewComponent(view, containerId!, props, true);
   }
 
   disposeViewComponent(viewId: string) {
@@ -287,10 +270,14 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   }
 
   revealView(viewId: string) {
-    const target = this.forceRevealContextKeys.get(viewId);
-    if (target) {
-      target.key.set(true);
+    const containerId = this.viewToContainerMap.get(viewId);
+    if (!containerId) {
+      // tslint:disable-next-line no-console
+      console.warn(`没有找到${viewId}对应的容器，请检查传入参数!`);
+      return;
     }
+    const accordionService: AccordionService = this.getAccordionService(containerId);
+    accordionService.revealView(viewId);
   }
 
   disposeContainer(containerId: string) {
@@ -323,29 +310,4 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return tabbarService.isExpanded;
   }
 
-  private createRevealContextKey(viewId: string) {
-    const forceRevealKey = `forceShow.${viewId}`;
-    this.forceRevealContextKeys.set(viewId, {
-      when: `${forceRevealKey} == true`,
-      key: this.contextKeyService.createKey(forceRevealKey, false),
-    });
-    this.viewWhenContextkeys.add(forceRevealKey);
-    return `${forceRevealKey} == true`;
-  }
-
-  private handleContextKeyChange() {
-    Array.from(this.customViewMap.values()).forEach(({view, props}) => {
-      const targetContainerId = this.viewToContainerMap.get(view.id)!;
-      if (this.contextKeyService.match(view.when) || this.contextKeyService.match(this.forceRevealContextKeys.get(view.id)!.when)) {
-        this.collectViewComponent(view, targetContainerId, props);
-      }
-    });
-  }
-
-  private fillKeysInWhenExpr(set: Set<string>, when?: string) {
-    const keys = this.contextKeyService.getKeysInWhen(when);
-    keys.forEach((key) => {
-      set.add(key);
-    });
-  }
 }

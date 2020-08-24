@@ -79,13 +79,6 @@ export interface MainLayoutContribution {
 
 }
 
-export interface ICustomView {
-  view: View;
-  props: {
-    [key: string]: any;
-  };
-}
-
 /**
  * 当有新的TabBar被注册时发送的新事件
  */

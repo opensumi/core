@@ -42,7 +42,7 @@ export class TabBarHandler {
   }
 
   disposeView(viewId: string) {
-    this.accordionService.disposeView(viewId);
+    this.layoutService.disposeViewComponent(viewId);
   }
 
   activate() {
