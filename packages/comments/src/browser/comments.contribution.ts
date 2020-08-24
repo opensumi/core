@@ -116,6 +116,19 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
       contribute: (editor: IEditor) => {
         return this.commentsService.handleOnCreateEditor(editor);
       },
+      provideEditorOptionsForUri: async (uri) => {
+        const ranges = await this.commentsService.getContributionRanges(uri);
+
+        // 说明当前 uri 可以评论
+        if (ranges.length) {
+          return {
+            // 让编辑器的 lineDecorationsWidth 宽一点，以便放下评论 icon
+            lineDecorationsWidth: 25,
+          };
+        } else {
+          return {};
+        }
+      },
     });
   }
 

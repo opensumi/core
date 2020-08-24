@@ -1,10 +1,5 @@
 import { PreferenceService } from '@ali/ide-core-browser';
-
-export interface IConvertedMonacoOptions {
-  editorOptions: Partial<monaco.editor.IEditorOptions>;
-  modelOptions: Partial<monaco.editor.ITextModelUpdateOptions>;
-  diffOptions: Partial<monaco.editor.IDiffEditorOptions>;
-}
+import { IConvertedMonacoOptions } from '../types';
 
 /**
  * 计算由PreferenceService设置值带来的monaco编辑器的属性

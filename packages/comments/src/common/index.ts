@@ -591,6 +591,11 @@ export interface ICommentsService {
    */
   getProviderIdsByLine(line: number): string[];
   /**
+   * 获取指定 uri 可以评论的 range
+   * @param uri
+   */
+  getContributionRanges(uri: URI): Promise<IRange[]>;
+  /**
    * 销毁所有的 thread
    */
   dispose(): void;
