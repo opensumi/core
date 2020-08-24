@@ -224,7 +224,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
                 <span className={styles.subtitle_item}><i className={clx(commonStyles.icon, getIcon('download'))}></i>{downloadCount}</span>
               ) : null}
               <span className={styles.subtitle_item}>{extension.publisher}</span>
-              <span className={styles.subtitle_item}>V{extension.version}</span>
+              <span className={styles.subtitle_item}>v{extension.version}</span>
             </div>
             <div className={styles.description}>{extension.description}</div>
             <div className={styles.actions}>
