@@ -138,32 +138,44 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
   }
 
   private getExtendModuleProxy(extension: IExtensionProps) {
-    const extendProxy = {};
-    if (
+    /**
+     * @example
+     * "kaitianContributes": {
+     *  "viewsProxies": ["ViewComponentID"],
+     * }
+     */
+    if (extension.packageJSON.kaitianContributes &&
+      extension.packageJSON.kaitianContributes.viewsProxies
+    ) {
+      return this.getExtensionViewModuleProxy(extension, extension.packageJSON.kaitianContributes.viewsProxies);
+    } else if (
       extension.extendConfig &&
       extension.extendConfig.browser &&
       extension.extendConfig.browser.componentId
     ) {
-      const componentIdArr = extension.extendConfig.browser.componentId;
-      for (let i = 0, len = componentIdArr.length; i < len; i++) {
-        const id = componentIdArr[i];
-        extendProxy[id] = this.rpcProtocol.getProxy({
-          serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}:${id}`,
-        } as ProxyIdentifier<any>);
-
-        extendProxy[id] = new Proxy(extendProxy[id], {
-          get: (obj, prop) => {
-            if (typeof prop === 'symbol') {
-              return obj[prop];
-            }
-
-            return obj[`$${prop}`];
-          },
-        });
-      }
+      return this.getExtensionViewModuleProxy(extension, extension.extendConfig.browser.componentId);
+    } else {
+      return {};
     }
+  }
 
-    return extendProxy;
+  private getExtensionViewModuleProxy(extension: IExtensionProps, viewsProxies: string[]) {
+    return viewsProxies.reduce((proxies, viewId) => {
+      proxies[viewId] = this.rpcProtocol.getProxy({
+        serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}:${viewId}`,
+      } as ProxyIdentifier<any>);
+
+      proxies[viewId] = new Proxy(proxies[viewId], {
+        get: (obj, prop) => {
+          if (typeof prop === 'symbol') {
+            return obj[prop];
+          }
+
+          return obj[`$${prop}`];
+        },
+      });
+      return proxies;
+    }, {});
   }
 
   private registerExtendModuleService(exportsData, extension: IExtensionProps) {
