@@ -119,9 +119,10 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       }
 
       if (extension) {
-        this.reporterService.point(REPORT_NAME.RUNTIME_ERROR_EXTENSION, extension.name, {
+        this.reporterService.point(REPORT_NAME.RUNTIME_ERROR_EXTENSION, extension.id, {
           error: error && error.message,
           stackTraceMessage,
+          version: extension.packageJSON?.version,
         });
       }
       this.logger.error(`${error.name || 'Error'}: ${error.message || ''}${stackTraceMessage}`);
@@ -300,7 +301,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     if (extension.packageJSON.main) {
       const reportTimer = this.reporterService.time(REPORT_NAME.LOAD_EXTENSION_MAIN);
       extensionModule = getNodeRequire()(modulePath);
-      reportTimer.timeEnd(extension.extensionId);
+      reportTimer.timeEnd(extension.id);
 
       if (extensionModule.activate) {
         this.logger.debug(`try activate ${extension.name}`);
@@ -308,13 +309,15 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         try {
           const reportTimer = this.reporterService.time(REPORT_NAME.ACTIVE_EXTENSION);
           const extensionExports = await extensionModule.activate(context) || extensionModule;
-          reportTimer.timeEnd(extension.extensionId);
+          reportTimer.timeEnd(extension.id, {
+            version: extension.packageJSON.version,
+          });
           exportsData = extensionExports;
 
         } catch (e) {
           activationFailed = true;
           activationFailedError = e;
-          this.logger.error(`[Extension-Host][Activate Exception] ${extension.extensionId}: `, e);
+          this.logger.error(`[Extension-Host][Activate Exception] ${extension.id}: `, e);
         }
       }
     }
@@ -337,7 +340,11 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       } catch (e) {
         activationFailed = true;
         activationFailedError = e;
-        this.reporterService.point(REPORT_NAME.RUNTIME_ERROR_EXTENSION, extension.name);
+        this.reporterService.point(REPORT_NAME.RUNTIME_ERROR_EXTENSION, extension.id, {
+          error: e && e.message,
+          stackTraceMessage: e.stack || '',
+          version: extension.packageJSON?.version,
+        });
         this.logger.log('activateExtension extension.extendConfig error ');
         this.logger.log(e);
         getDebugLogger().error(`${extension.id}`);
