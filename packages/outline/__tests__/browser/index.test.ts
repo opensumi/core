@@ -1,27 +1,38 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { IContextKeyService, Uri, SymbolKind, IRange, IMarker, MarkerSeverity, StorageProvider, URI, STORAGE_SCHEMA, MarkerManager } from '@ali/ide-core-browser';
+import { IContextKeyService, Uri, SymbolKind, IRange, IMarker, MarkerSeverity, StorageProvider, URI, STORAGE_SCHEMA, MarkerManager, WithEventBus } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 import { IThemeService } from '@ali/ide-theme';
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
 import { OutLineService, OutlineSortOrder } from '@ali/ide-outline/lib/browser/outline.service';
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
 import { Injectable } from '@ali/common-di';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { IEditorDocumentModelService, EditorActiveResourceStateChangedEvent } from '@ali/ide-editor/lib/browser';
 import { EditorDocumentModelServiceImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
 import { INormalizedDocumentSymbol, DocumentSymbolStore } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
 const injector = createBrowserInjector([]);
 
 @Injectable()
-class MockEditorService {
+class MockEditorService extends WithEventBus {
   cb: ({ uri: Uri }) => void;
 
   onActiveResourceChange(cb) {
     this.cb = cb;
   }
 
-  fireActiveResourceChange(uri) {
-    this.cb({ uri });
+  fireActiveResourceChange(uri, isEditor: boolean = true) {
+    if (this.cb) {
+      this.cb({ uri });
+    }
+    if (isEditor) {
+      this.eventBus.fire(new EditorActiveResourceStateChangedEvent({
+        resource: {uri} as any,
+        editorUri: uri,
+        openType: {
+          type: 'code',
+        },
+      }));
+    }
   }
 
   currentEditorGroup = new MockEditorGroup();
