@@ -1,5 +1,5 @@
 
-import { URI, localize, getIcon } from '@ali/ide-core-browser';
+import { URI, localize, getIcon, IReporterService } from '@ali/ide-core-browser';
 import { Scroll } from '@ali/ide-editor/lib/browser/component/scroll/scroll';
 import { ResizeHandleHorizontal, ResizeHandleVertical } from '@ali/ide-core-browser/lib/components';
 import { PlainWebview } from '@ali/ide-webview';
@@ -23,6 +23,7 @@ export function createBrowserApi(injector: Injector, useProxy: boolean, extensio
 
   const commands = createBrowserCommandsApiFactory(injector, extension, rpcProtocol);
   const components = createBrowserComponents(injector, useProxy, extension);
+  const reporter = injector.get(IReporterService);
   return {
     // Components
     ...components,
@@ -56,5 +57,6 @@ export function createBrowserApi(injector: Injector, useProxy: boolean, extensio
 
     ToolBarPosition,
     EditorComponentRenderMode,
+    reporter,
   };
 }
