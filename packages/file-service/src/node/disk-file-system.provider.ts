@@ -1,4 +1,4 @@
-import * as fs from 'fs-extra';
+import * as fse from 'fs-extra';
 import * as trash from 'trash';
 import * as paths from 'path';
 import * as os from 'os';
@@ -113,11 +113,11 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
     const _uri = Uri.revive(uri);
     const result: [string, FileType][] = [];
     try {
-      const dirList = fs.readdirSync(_uri.fsPath);
+      const dirList = fse.readdirSync(_uri.fsPath);
 
       dirList.forEach((name) => {
         const filePath = paths.join(_uri.fsPath, name);
-        result.push([name, this.getFileStatType(fs.statSync(filePath))]);
+        result.push([name, this.getFileStatType(fse.statSync(filePath))]);
       });
       return result;
     } catch (e) {
@@ -134,7 +134,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
       }
       throw FileSystemError.FileExists(uri.path, 'Error occurred while creating the directory: path is a file.');
     }
-    await fs.mkdirs(FileUri.fsPath(new URI(_uri)));
+    await fse.ensureDir(FileUri.fsPath(new URI(_uri)));
     const newStat = await this.doGetStat(_uri, 1);
     if (newStat) {
       return newStat;
@@ -150,7 +150,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
     }
 
     try {
-      const buffer = await fs.readFile(FileUri.fsPath(new URI(_uri)));
+      const buffer = await fse.readFile(FileUri.fsPath(new URI(_uri)));
       return decode(buffer, encoding);
     } catch (error) {
       if (isErrnoException(error)) {
@@ -194,12 +194,12 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
       await writeFileAtomicSync(FileUri.fsPath(new URI(_uri)), buffer);
     } catch (e) {
       debugLog.warn('writeFileAtomicSync 出错，使用 fs', e);
-      fs.writeFileSync(FileUri.fsPath(new URI(_uri)), buffer);
+      fse.writeFileSync(FileUri.fsPath(new URI(_uri)), buffer);
     }
   }
 
   access(uri: UriComponents, mode: number = FileAccess.Constants.F_OK): Promise<boolean> {
-    return fs.access(FileUri.fsPath(URI.from(uri)), mode).then(() => true).catch(() => false);
+    return fse.access(FileUri.fsPath(URI.from(uri)), mode).then(() => true).catch(() => false);
   }
 
   async delete(uri: UriComponents, options: { recursive?: boolean, moveToTrash?: boolean }): Promise<void> {
@@ -223,7 +223,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
       const outputRootPath = paths.join(os.tmpdir(), v4());
       try {
         await new Promise<void>((resolve, reject) => {
-          fs.rename(filePath, outputRootPath, async (error) => {
+          fse.rename(filePath, outputRootPath, async (error) => {
             if (error) {
               return reject(error);
             }
@@ -233,9 +233,9 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
         // There is no reason for the promise returned by this function not to resolve
         // as soon as the move is complete.  Clearing up the temporary files can be
         // done in the background.
-        fs.remove(FileUri.fsPath(outputRootPath));
+        fse.remove(FileUri.fsPath(outputRootPath));
       } catch (error) {
-        return fs.remove(filePath);
+        return fse.remove(filePath);
       }
     }
   }
@@ -279,7 +279,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
     if (targetStat && targetStat.uri === sourceStat.uri) {
       throw FileSystemError.FileExists(targetUri.path, 'Cannot perform copy, source and destination are the same.');
     }
-    await fs.copy(FileUri.fsPath(_sourceUri.toString()), FileUri.fsPath(_targetUri.toString()), { overwrite, recursive });
+    await fse.copy(FileUri.fsPath(_sourceUri.toString()), FileUri.fsPath(_targetUri.toString()), { overwrite, recursive });
     const newStat = await this.doGetStat(_targetUri, 1);
     if (newStat) {
       return newStat;
@@ -339,9 +339,9 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
     const parentUri = new URI(_uri).parent;
     const parentStat = await this.doGetStat(parentUri.codeUri, 0);
     if (!parentStat) {
-      await fs.mkdirs(FileUri.fsPath(parentUri));
+      await fse.ensureDir(FileUri.fsPath(parentUri));
     }
-    await fs.writeFile(FileUri.fsPath(_uri.toString()), options.content);
+    await fse.writeFile(FileUri.fsPath(_uri.toString()), options.content);
     const newStat = await this.doGetStat(_uri, 1);
     if (newStat) {
       return newStat;
@@ -410,8 +410,8 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
       // The value should be a Unix timestamp in seconds.
       // For example, `Date.now()` returns milliseconds, so it should be divided by `1000` before passing it in.
       const now = Date.now() / 1000;
-      await fs.utimes(FileUri.fsPath(_targetUri.toString()), now, now);
-      await fs.rmdir(FileUri.fsPath(_sourceUri.toString()));
+      await fse.utimes(FileUri.fsPath(_targetUri.toString()), now, now);
+      await fse.rmdir(FileUri.fsPath(_sourceUri.toString()));
       const newStat = await this.doGetStat(_targetUri, 1);
       if (newStat) {
         return newStat;
@@ -437,18 +437,18 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
   protected async doGetStat(uri: Uri, depth: number): Promise<FileStat | undefined> {
     try {
       const filePath = uri.fsPath;
-      const lstat = await fs.lstat(filePath);
+      const lstat = await fse.lstat(filePath);
 
       if (lstat.isSymbolicLink()) {
         let realPath;
         try {
-          realPath = await fs.realpath(FileUri.fsPath(new URI(uri)));
+          realPath = await fse.realpath(FileUri.fsPath(new URI(uri)));
         } catch (e) {
           return undefined;
         }
-        const stat = await fs.stat(filePath);
+        const stat = await fse.stat(filePath);
         const realURI = FileUri.create(realPath);
-        const realStat = await fs.lstat(realPath);
+        const realStat = await fse.lstat(realPath);
 
         let realStatData;
         if (stat.isDirectory()) {
@@ -482,7 +482,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
     }
   }
 
-  protected async doCreateFileStat(uri: Uri, stat: fs.Stats): Promise<FileStat> {
+  protected async doCreateFileStat(uri: Uri, stat: fse.Stats): Promise<FileStat> {
     // Then stat the target and return that
     // const isLink = !!(stat && stat.isSymbolicLink());
     // if (isLink) {
@@ -500,7 +500,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
     };
   }
 
-  protected getFileStatType(stat: fs.Stats) {
+  protected getFileStatType(stat: fse.Stats) {
     if (stat.isDirectory()) {
       return FileType.Directory;
     }
@@ -513,7 +513,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
     return FileType.Unknown;
   }
 
-  protected async doCreateDirectoryStat(uri: Uri, stat: fs.Stats, depth: number): Promise<FileStat> {
+  protected async doCreateDirectoryStat(uri: Uri, stat: fse.Stats, depth: number): Promise<FileStat> {
     const children = depth > 0 ? await this.doGetChildren(uri, depth) : [];
     return {
       uri: uri.toString(),
@@ -527,7 +527,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
 
   protected async doGetChildren(uri: Uri, depth: number): Promise<FileStat[]> {
     const _uri = new URI(uri);
-    const files = await fs.readdir(FileUri.fsPath(_uri));
+    const files = await fse.readdir(FileUri.fsPath(_uri));
     const children = await Promise.all(files.map((fileName) => _uri.resolve(fileName)).map((childUri) => this.doGetStat(childUri.codeUri, depth - 1)));
     return children.filter(notEmpty);
   }
@@ -539,7 +539,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
         return this._getFileType('');
       }
       // const lstat = await fs.lstat(FileUri.fsPath(uri));
-      const stat = await fs.stat(FileUri.fsPath(uri));
+      const stat = await fse.stat(FileUri.fsPath(uri));
 
       let ext: string = '';
       if (!stat.isDirectory()) {
@@ -548,7 +548,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
 
         // }else {
         if (stat.size) {
-          const type = await fileType.stream(fs.createReadStream(FileUri.fsPath(uri)));
+          const type = await fileType.stream(fse.createReadStream(FileUri.fsPath(uri)));
           // 可以拿到 type.fileType 说明为二进制文件
           if (type.fileType) {
             ext = type.fileType.ext;
