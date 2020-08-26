@@ -256,13 +256,7 @@ export enum SplitDirection {
 }
 
 export interface IGridEditorGroup extends IEditorGroup {
-
   grid: EditorGrid;
-
-  codeEditor: ICodeEditor;
-
-  diffEditor: IDiffEditor;
-
 }
 
 export function splitDirectionMatches(split: SplitDirection, direction: Direction): boolean {

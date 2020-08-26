@@ -40,6 +40,7 @@ const fakeEditorGroup: IEditorGroup = {
   name: 'fakeEditorGroup',
   currentEditor: null,
   codeEditor: (() => {}) as any,
+  diffEditor: (() => {}) as any,
   currentFocusedEditor: undefined,
   resources: [],
   currentResource: null,

@@ -136,6 +136,8 @@ export interface IEditorGroup {
 
   codeEditor: ICodeEditor;
 
+  diffEditor: IDiffEditor;
+
   currentEditor: IEditor | null;
 
   /**
