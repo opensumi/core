@@ -184,12 +184,12 @@ export function Select<T = string>({
     [`kt-select-value-${size}`]: size,
   });
 
-  function Wrapper(node: React.ReactNode) {
+  function Wrapper(node: React.ReactNode, index: number) {
     if (typeof node === 'string' || typeof node === 'number') {
-      node = <Option value={node} label={String(node)}>{node}</Option>;
+      node = <Option value={node} label={String(node)} key={`${node}_${index}`}>{node}</Option>;
     }
     const disabled = (node as React.ReactElement).props?.disabled || false;
-    return <div key={(node as React.ReactElement).props.value} className={classNames({
+    return <div key={`${(node as React.ReactElement).props.value}_${index}`} className={classNames({
       ['kt-select-option-select']: value === (node as React.ReactElement).props.value,
     })} onClick={disabled ? noop : () => {
       setOpen(false);
@@ -293,7 +293,7 @@ export function Select<T = string>({
       // 下面这种使用 children 的方式不够标准化，待废弃
       <div className={optionsContainerClasses} style={{ maxHeight: `${maxHeight}px` }} ref={overlayRef}>
         {options && (options as React.ReactNode[]).map((v, i) => {
-          return Wrapper(v);
+          return Wrapper(v, i);
         })}
         {children && flatChildren(children, Wrapper)}
         <div className='kt-select-overlay' onClick={toggleOpen}></div>

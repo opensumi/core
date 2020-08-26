@@ -1,15 +1,102 @@
+.debug_console {
+  width: 100%;
+  height: 100%;
+  padding-bottom: 26px;
+}
 
-.debug_variables_node {
+.variable_repl_bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding-left: 20px;
+  border-top: 1px solid hsla(0, 0%, 50%, .35);
+  width: 100%;
+  overflow: hidden;
+  height: 24px;
+  background-color: var(--editor-background);
+
+  .variable_repl_editor {
+    height: 21px;
+    width: 100%;
+    z-index: 99;
+
+    :global(.margin) {
+      display: none;
+    }
+
+    :global(.monaco-editor .lines-content .cigr) {
+      box-shadow: none;
+    }
+
+    :global(.monaco-editor .lines-content .cigra) {
+      box-shadow: none;
+    }
+
+    :global(.scroll-decoration) {
+      display: none;
+    }
+  }
+
+  &:before {
+    left: 8px;
+    position: absolute;
+    content: "\276f";
+    line-height: 22px;
+  }
+}
+
+.variable_repl_text {
+  &.warn {
+    color: var(--debugConsole-warningForeground);
+  }
+
+  &.error {
+    color: var(--debugConsole-errorForeground);
+  }
+
+  &.info {
+    color: var(--debugConsole-infoForeground);
+  }
+
+  &.source {
+    color: var(--debugConsole-sourceForeground);
+  }
+}
+
+.debug_console_node {
   height: 22px;
   line-height: 22px;
   display: flex;
   flex-direction: column;
   position: relative;
   cursor: pointer;
+  user-select: none;
 
   &:hover {
     color: var(--kt-tree-hoverForeground);
     background: var(--kt-tree-hoverBackground);
+  }
+
+  .debug_console_node_prompt_box {
+    :global(input) {
+      &.validate-error {
+        color: var(--inputValidation-errorForeground);
+        background-color: var(--inputValidation-errorBackground);
+        border: 1px solid var(--inputValidation-errorBorder);
+      }
+
+      &.validate-info {
+        background-color: var(--inputValidation-infoBackground);
+        border: 1px solid var(--inputValidation-infoBorder);
+        color: var(--inputValidation-infoForeground);
+      }
+
+      &.validate-warning {
+        background-color: var(--inputValidation-warningBackground);
+        border: 1px solid var(--inputValidation-warningBorder);
+        color: var(--inputValidation-warningForeground);
+      }
+    }
   }
 
   &.mod_selected {
@@ -26,7 +113,7 @@
     .expansion_toggle {
       color: var(--kt-tree-activeSelectionForeground) !important;;
     }
-    .debug_variables_node_displayname {
+    .debug_console_node_displayname {
       .compact_name {
         &.active {
           text-decoration: underline;
@@ -41,7 +128,13 @@
 
 }
 
-.debug_variables_node_content {
+.debug_console_output {
+  :global(.kt-recycle-tree) {
+    width: 100% !important;
+  }
+}
+
+.debug_console_node_content {
   position: relative;
   display: flex;
   align-items: center;
@@ -52,20 +145,20 @@
   }
 }
 
-.debug_variables_node_status {
+.debug_console_node_status {
   opacity: .75;
   text-align: center;
   font-size: 12px;
   padding-right: 0;
 }
 
-.debug_variables_node_segment {
+.debug_console_node_segment {
   flex-grow: 0;
   white-space: nowrap;
   color: inherit;
 }
 
-.debug_variables_node_display_name {
+.debug_console_node_display_name {
   margin-right: 6px;
   display: inline;
   white-space:pre;
@@ -81,15 +174,18 @@
     margin: 0 2px;
     opacity: .5;
   }
+  &.info {
+    color: var(--debugConsole-infoForeground);
+  }
 }
 
-.debug_variables_node_description {
+.debug_console_node_description {
   display: inline;
   transform: scale(0.96);
   color: var(--descriptionForeground);
 }
 
-.debug_variables_node_overflow_wrap {
+.debug_console_node_overflow_wrap {
   flex: 1;
   flex-shrink: 0;
   overflow: hidden;
@@ -105,6 +201,8 @@
   flex-shrink: 0;
   font-size: 16px;
   color: var(--foreground);
+  position: absolute;
+  left: -20px;
   &.mod_collapsed {
     &:before {
       display: block;
@@ -119,7 +217,7 @@
   }
 }
 
-.debug_variables_node_tail {
+.debug_console_node_tail {
   text-align: center;
   margin-right: 10px;
   position: relative;
@@ -129,17 +227,17 @@
 }
 
 // variable
-.debug_variables_variable {
+.debug_console_variable {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   overflow: visible;
-  &.value {
-    color: var(--debugTokenExpression-value);
-  }
-
   &.name {
     color: var(--debugTokenExpression-name);
+  }
+
+  &.value {
+    color: var(--debugTokenExpression-value);
   }
 
   &.error {

@@ -3,7 +3,9 @@ import { DebugConfiguration } from './debug-configuration';
 export interface DebugSessionOptions {
   configuration: DebugConfiguration;
   workspaceFolderUri?: string;
+  index: number;
 }
+
 export interface InternalDebugSessionOptions extends DebugSessionOptions {
   id: number;
 }

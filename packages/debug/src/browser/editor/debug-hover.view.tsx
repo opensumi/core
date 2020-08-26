@@ -7,7 +7,7 @@ import { DebugHoverTreeModelService } from './debug-hover-tree.model.service';
 import { IRecycleTreeHandle, RecycleTree, INodeRendererWrapProps } from '@ali/ide-components';
 import { DebugHoverModel } from './debug-hover-model';
 import { ExpressionNode, ExpressionContainer, DebugHoverVariableRoot } from '../tree/debug-tree-node.define';
-import { DebugVariableNode, DEBUG_VARIABLE_TREE_NODE_HEIGHT } from '../view/variables/debug-variables.view';
+import { DebugVariableRenderedNode, DEBUG_VARIABLE_TREE_NODE_HEIGHT } from '../view/variables/debug-variables.view';
 
 export const DebugHoverView = observer(() => {
   const debugHoverTreeModelService: DebugHoverTreeModelService = useInjectable(DebugHoverTreeModelService);
@@ -18,7 +18,7 @@ export const DebugHoverView = observer(() => {
   React.useEffect(() => {
     debugHoverTreeModelService.onDidUpdateTreeModel(async (model: DebugHoverModel) => {
       if (model) {
-        await debugHoverTreeModelService.treeModel!.root.ensureLoaded();
+        await model!.root.ensureLoaded();
       }
       setModel(model);
     });
@@ -74,7 +74,7 @@ export const DebugHoverView = observer(() => {
       >
         {(props: INodeRendererWrapProps) => {
           const decorations = debugHoverTreeModelService.decorations.getDecorations(props.item as any);
-          return <DebugVariableNode
+          return <DebugVariableRenderedNode
             item={props.item}
             itemType={props.itemType}
             decorations={decorations}

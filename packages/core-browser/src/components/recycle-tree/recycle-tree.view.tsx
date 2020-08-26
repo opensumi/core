@@ -2,6 +2,7 @@ import * as React from 'react';
 import { TreeProps, TreeContainer, TreeNode, ExpandableTreeNode, TEMP_FILE_NAME } from '../tree';
 import { PerfectScrollbar } from '../scrollbar';
 import * as fuzzy from 'fuzzy';
+import { getDebugLogger } from '@ali/ide-core-common';
 
 export interface RecycleTreeProps extends TreeProps {
   /**
@@ -246,6 +247,10 @@ export const RecycleTree = (
     });
     setRenderNodes(renderedFileItems);
   }, [nodes, renderedStart, scrollContainerStyle]);
+
+  React.useEffect(() => {
+    getDebugLogger().error('[Deprecated warning]: The `RecycleTree` component in `@ali/ide-core-browser` was deprecated. Please use the new `RecycleTree` in `@ali/ide-component` instead');
+  }, []);
 
   React.useEffect(() => {
     if (scrollRef) {

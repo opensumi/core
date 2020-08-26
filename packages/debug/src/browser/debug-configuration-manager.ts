@@ -133,10 +133,11 @@ export class DebugConfigurationManager {
   protected getAll(): DebugSessionOptions[] {
     const debugSessionOptions: DebugSessionOptions[] = [];
     for (const model of this.models.values()) {
-      for (const configuration of model.configurations) {
+      for (let index = 0, len = model.configurations.length; index < len; index ++) {
         debugSessionOptions.push({
-          configuration,
+          configuration:  model.configurations[index],
           workspaceFolderUri: model.workspaceFolderUri,
+          index,
         });
       }
     }
@@ -173,7 +174,7 @@ export class DebugConfigurationManager {
 
   protected updateCurrent(options: DebugSessionOptions | undefined = this._currentOptions): void {
     this._currentOptions = options
-      && this.find(options.configuration.name, options.workspaceFolderUri);
+      && this.find(options.configuration.name, options.workspaceFolderUri, options.index);
     if (!this._currentOptions) {
       const { model } = this;
       if (model) {
@@ -182,6 +183,7 @@ export class DebugConfigurationManager {
           this._currentOptions = {
             configuration,
             workspaceFolderUri: model.workspaceFolderUri,
+            index: options?.index || 0,
           };
         }
       }
@@ -190,16 +192,16 @@ export class DebugConfigurationManager {
     this.onDidChangeEmitter.fire(undefined);
   }
 
-  find(name: string, workspaceFolderUri: string | undefined): DebugSessionOptions | undefined {
+  find(name: string, workspaceFolderUri: string | undefined, index: number): DebugSessionOptions | undefined {
     for (const model of this.models.values()) {
       if (model.workspaceFolderUri === workspaceFolderUri) {
-        for (const configuration of model.configurations) {
-          if (configuration.name === name) {
-            return {
-              configuration,
-              workspaceFolderUri,
-            };
-          }
+        const configuration = model.configurations[index];
+        if (configuration && configuration.name === name) {
+          return {
+            configuration,
+            workspaceFolderUri,
+            index,
+          };
         }
       }
     }
@@ -367,7 +369,7 @@ export class DebugConfigurationManager {
     const storage: IStorage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
     const data = storage.get<DebugConfigurationManager.Data>('configurations');
     if (data && data.current) {
-      this.current = this.find(data.current.name, data.current.workspaceFolderUri);
+      this.current = this.find(data.current.name, data.current.workspaceFolderUri, data.current.index);
     }
   }
 
@@ -379,6 +381,7 @@ export class DebugConfigurationManager {
       data.current = {
         name: current.configuration.name,
         workspaceFolderUri: current.workspaceFolderUri,
+        index: current.index,
       };
     }
     storage.set('configurations', data);
@@ -435,8 +438,9 @@ export class DebugConfigurationManager {
 export namespace DebugConfigurationManager {
   export interface Data {
     current?: {
-      name: string
-      workspaceFolderUri?: string,
+      name: string;
+      workspaceFolderUri?: string;
+      index: number;
     };
   }
 }

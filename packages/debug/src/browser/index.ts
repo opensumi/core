@@ -4,8 +4,6 @@ import { FolderPreferenceProvider } from '@ali/ide-preferences/lib/browser/folde
 
 import { DebugEditor, DebugModelFactory, DebugServerPath, IDebugServer, IDebugService, IDebugSessionManager } from '../common';
 import { BreakpointManager } from './breakpoint';
-import { DebugConsoleSession } from './console/debug-console-session';
-import { DebugConsoleContribution } from './console/debug-console.contribution';
 import { BreakpointWidgetInputFocus, DebugCallStackItemTypeKey } from './contextkeys';
 import { DebugConfigurationManager } from './debug-configuration-manager';
 import { DebugContribution } from './debug-contribution';
@@ -18,10 +16,13 @@ import { DebugExpressionProvider, DebugModel, DebugModelManager } from './editor
 import { DebugHoverSource } from './editor/debug-hover-source';
 import { LaunchFolderPreferenceProvider } from './preferences/launch-folder-preference-provider';
 import { LaunchPreferencesContribution } from './preferences/launch-preferences-contribution';
-import { DebugToolbarOverlayWidget } from './view/debug-toolbar.view';
+import { DebugToolbarOverlayWidget } from './view/configuration/debug-toolbar.view';
 import { VariablesPanelContribution } from './view/variables/debug-variables.contribution';
+import { DebugConsoleContribution } from './view/console/debug-console.contribution';
+import { WatchPanelContribution } from './view/watch/debug-watch.contribution';
 
 import './debug-style.less';
+import { DebugWatch } from './model';
 
 @Injectable()
 export class DebugModule extends BrowserModule {
@@ -37,6 +38,10 @@ export class DebugModule extends BrowserModule {
     {
       token: DebugSessionFactory,
       useClass: DefaultDebugSessionFactory,
+    },
+    {
+      token: DebugWatch,
+      useClass: DebugWatch,
     },
     {
       token: DebugModelManager,
@@ -80,16 +85,13 @@ export class DebugModule extends BrowserModule {
         injector.get(DebugServerPath);
       },
     },
-    {
-      token: DebugConsoleSession,
-      useClass: DebugConsoleSession,
-    },
     // contributions
     LaunchPreferencesContribution,
     DebugResourceResolverContribution,
     DebugContribution,
     DebugConsoleContribution,
     VariablesPanelContribution,
+    WatchPanelContribution,
     // contextkeys
     {
       token: DebugCallStackItemTypeKey,

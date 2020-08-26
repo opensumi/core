@@ -2,16 +2,19 @@ import * as React from 'react';
 import { useInjectable, getIcon } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { ViewState } from '@ali/ide-core-browser';
-import { INodeRendererProps, ClasslistComposite, IRecycleTreeHandle, TreeNodeType, RecycleTree, INodeRendererWrapProps, TreeModel, CompositeTreeNode } from '@ali/ide-components';
-import { ExpressionContainer, ExpressionNode, DebugVariableContainer, DebugVariable } from '../../tree/debug-tree-node.define';
-import { DebugVariablesModelService } from './debug-variables-tree.model.service';
-import * as styles from './debug-variables.module.less';
+import { INodeRendererProps, ClasslistComposite, IRecycleTreeHandle, TreeNodeType, RecycleTree, INodeRendererWrapProps, TreeModel, CompositeTreeNode, RecycleTreeAdaptiveDecorator, PromptHandle } from '@ali/ide-components';
+import { ExpressionContainer, ExpressionNode, DebugVariableContainer, DebugVariable, DebugWatchNode } from '../../tree/debug-tree-node.define';
+import { DebugWatchModelService } from './debug-watch-tree.model.service';
+import * as styles from './debug-watch.module.less';
 import * as cls from 'classnames';
 import { Loading } from '@ali/ide-core-browser/lib/components/loading';
 
-export const DEBUG_VARIABLE_TREE_FIELD_NAME = 'DEBUG_VARIABLE_TREE_FIELD';
+export const DEBUG_WATCH_TREE_FIELD_NAME = 'DEBUG_WATCH_TREE_FIELD';
 
-export const DebugVariableView = observer(({
+// AdaptiveTree 会根据Tree折叠展开状态自适应视图高度
+export const AdaptiveTree = RecycleTreeAdaptiveDecorator(RecycleTree);
+
+export const DebugWatchView = observer(({
   viewState,
 }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const DEBUG_VARIABLE_ITEM_HEIGHT = 22;
@@ -21,22 +24,31 @@ export const DebugVariableView = observer(({
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
   const [model, setModel] = React.useState<TreeModel>();
 
-  const debugVariablesModelService = useInjectable<DebugVariablesModelService>(DebugVariablesModelService);
+  const debugWatchModelService = useInjectable<DebugWatchModelService>(DebugWatchModelService);
 
   React.useEffect(() => {
-    debugVariablesModelService.onDidUpdateTreeModel(async (model: TreeModel) => {
+    initTreeModel();
+  }, []);
+
+  const initTreeModel = async () => {
+    const treeModel = debugWatchModelService.treeModel;
+    if (treeModel) {
+      await treeModel.root.ensureLoaded();
+      setModel(treeModel);
+    }
+    debugWatchModelService.onDidUpdateTreeModel(async (model: TreeModel) => {
       if (model) {
-        await debugVariablesModelService.treeModel!.root.ensureLoaded();
+        await model.root.ensureLoaded();
       }
       setModel(model);
     });
     return () => {
-      debugVariablesModelService.removeNodeDecoration();
+      debugWatchModelService.removeNodeDecoration();
     };
-  }, []);
+  };
 
   const handleTreeReady = (handle: IRecycleTreeHandle) => {
-    debugVariablesModelService.handleTreeHandler({
+    debugWatchModelService.handleTreeHandler({
       ...handle,
       getModel: () => model!,
       hasDirectFocus: () => wrapperRef.current === document.activeElement,
@@ -47,7 +59,7 @@ export const DebugVariableView = observer(({
     // 阻止点击事件冒泡
     ev.stopPropagation();
 
-    const { handleTwistierClick } = debugVariablesModelService;
+    const { handleTwistierClick } = debugWatchModelService;
     if (!item) {
       return;
     }
@@ -55,25 +67,25 @@ export const DebugVariableView = observer(({
   };
 
   const handlerContextMenu = (ev: React.MouseEvent, node: ExpressionNode | ExpressionContainer) => {
-    const { handleContextMenu } = debugVariablesModelService;
+    const { handleContextMenu } = debugWatchModelService;
     handleContextMenu(ev, node);
   };
 
   const handleOuterContextMenu = (ev: React.MouseEvent) => {
-    const { handleContextMenu } = debugVariablesModelService;
+    const { handleContextMenu } = debugWatchModelService;
     // 空白区域右键菜单
     handleContextMenu(ev);
   };
 
   const handleOuterClick = (ev: React.MouseEvent) => {
     // 空白区域点击，取消焦点状态
-    const { enactiveNodeDecoration } = debugVariablesModelService;
+    const { enactiveNodeDecoration } = debugWatchModelService;
     enactiveNodeDecoration();
   };
 
   const handleOuterBlur = (ev: React.FocusEvent) => {
     // 空白区域点击，取消焦点状态
-    const { enactiveNodeDecoration } = debugVariablesModelService;
+    const { enactiveNodeDecoration } = debugWatchModelService;
     enactiveNodeDecoration();
   };
 
@@ -81,7 +93,7 @@ export const DebugVariableView = observer(({
     if (!model) {
       return <span></span>;
     } else {
-      return <RecycleTree
+      return <AdaptiveTree
         height={height}
         width={width}
         itemHeight={DEBUG_VARIABLE_ITEM_HEIGHT}
@@ -92,30 +104,30 @@ export const DebugVariableView = observer(({
         }}
       >
         {(props: INodeRendererWrapProps) => {
-          const decorations = debugVariablesModelService.decorations.getDecorations(props.item as any);
-          return <DebugVariableRenderedNode
+          const decorations = debugWatchModelService.decorations.getDecorations(props.item as any);
+          return <DebugWatchRenderedNode
             item={props.item}
             itemType={props.itemType}
             decorations={decorations}
             onClick={handleTwistierClick}
             onTwistierClick={handleTwistierClick}
             onContextMenu={handlerContextMenu}
-            defaultLeftPadding={8}
+            defaultLeftPadding={12}
             leftPadding={8}
           />;
         }}
-      </RecycleTree>;
+      </AdaptiveTree>;
     }
   };
 
   return <div
-    className={styles.debug_variables_container}
+    className={styles.debug_watch_container}
     tabIndex={-1}
     ref={wrapperRef}
     onContextMenu={handleOuterContextMenu}
     onClick={handleOuterClick}
     onBlur={handleOuterBlur}
-    data-name={DEBUG_VARIABLE_TREE_FIELD_NAME}
+    data-name={DEBUG_WATCH_TREE_FIELD_NAME}
   >
     {renderContent()}
   </div>;
@@ -131,9 +143,9 @@ export interface IDebugVariableNodeProps {
   onContextMenu?: (ev: React.MouseEvent, item: ExpressionNode | ExpressionContainer, type: TreeNodeType) => void;
 }
 
-export type IDebugVariableNodeRenderedProps = IDebugVariableNodeProps & INodeRendererProps;
+export type IDebugWatchNodeRenderedProps = IDebugVariableNodeProps & INodeRendererProps;
 
-export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps> = ({
+export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
   item,
   decorations,
   defaultLeftPadding,
@@ -142,7 +154,11 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
   onTwistierClick,
   onContextMenu,
   itemType,
-}: IDebugVariableNodeRenderedProps) => {
+}: IDebugWatchNodeRenderedProps) => {
+
+  const isRenamePrompt = itemType === TreeNodeType.RenamePrompt;
+  const isNewPrompt = itemType === TreeNodeType.NewPrompt;
+  const isPrompt = isRenamePrompt || isNewPrompt;
 
   const handleClick = (ev: React.MouseEvent) => {
     onClick(ev, item, CompositeTreeNode.is(item) ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode);
@@ -157,17 +173,31 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
     }
   };
 
-  const paddingLeft = `${(defaultLeftPadding || 8) + (item.depth || 0) * (leftPadding || 0) + (ExpressionContainer.is(item) ? 0 : 16)}px`;
+  let paddingLeft;
+  if (isPrompt) {
+    paddingLeft = `${(defaultLeftPadding || 8) + (item.depth || 0) * (leftPadding || 0)}px`;
+  } else {
+    paddingLeft = `${(defaultLeftPadding || 8) + (item.depth || 0) * (leftPadding || 0)}px`;
+  }
 
   const editorNodeStyle = {
-    height: DEBUG_VARIABLE_TREE_NODE_HEIGHT,
-    lineHeight: `${DEBUG_VARIABLE_TREE_NODE_HEIGHT}px`,
+    height: DEBUG_WATCH_TREE_NODE_HEIGHT,
+    lineHeight: `${DEBUG_WATCH_TREE_NODE_HEIGHT}px`,
     paddingLeft,
   } as React.CSSProperties;
 
   const renderDisplayName = (node: ExpressionContainer | ExpressionNode) => {
+    if (isPrompt && node instanceof PromptHandle) {
+      return <div
+          className={cls(styles.debug_watch_node_segment, styles.debug_watch_node_inputbox)}
+        >
+          <div className={cls('input-box', styles.debug_watch_node_prompt_box)}>
+            <node.ProxiedInput  wrapperStyle={{height: DEBUG_WATCH_TREE_NODE_HEIGHT, padding: '0 5px'}}/>
+          </div>
+        </div>;
+    }
     return <div
-      className={cls(styles.debug_variables_node_segment, styles.debug_variables_node_display_name, styles.debug_variables_variable, (node as DebugVariable).description ? styles.name : '')}
+      className={cls(styles.debug_watch_node_segment, styles.debug_watch_node_display_name, styles.debug_watch_variable, (node as DebugVariable).description ? styles.name : '')}
     >
       {node.name}
       {(node as DebugVariable).description ? ':' : ''}
@@ -178,7 +208,10 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
     const booleanRegex = /^true|false$/i;
     const stringRegex = /^(['"]).*\1$/;
     const description = (node as DebugVariableContainer).description ? (node as DebugVariableContainer).description.replace('function', 'f') : '';
-    const addonClass = [styles.debug_variables_variable];
+    const addonClass = [styles.debug_watch_variable];
+    if (isPrompt) {
+      return null;
+    }
     if (item.variableType === 'number' || item.variableType === 'boolean' || item.variableType === 'string') {
       addonClass.push(styles[item.variableType]);
     } else if (!isNaN(+description)) {
@@ -188,19 +221,19 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
     } else if (stringRegex.test(description)) {
       addonClass.push(styles.string);
     }
-    return <div className={cls(styles.debug_variables_node_segment_grow, styles.debug_variables_node_description, ...addonClass)}>
+    return <div className={cls(styles.debug_watch_node_segment_grow, styles.debug_watch_node_description, ...addonClass)}>
       {description}
     </div>;
   };
 
   const renderStatusTail = () => {
-    return <div className={cls(styles.debug_variables_node_segment, styles.debug_variables_node_tail)}>
+    return <div className={cls(styles.debug_watch_node_segment, styles.debug_watch_node_tail)}>
       {renderBadge()}
     </div>;
   };
 
   const renderBadge = () => {
-    return <div className={styles.debug_variables_node_status}>
+    return <div className={styles.debug_watch_node_status}>
       {item.badge}
     </div>;
   };
@@ -215,14 +248,14 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
       clickHandler(ev, node, itemType);
     };
     if (decorations && decorations?.classlist.indexOf(styles.mod_loading) > -1) {
-      return <div className={cls(styles.debug_variables_node_segment, styles.expansion_toggle)}>
+      return <div className={cls(styles.debug_watch_node_segment, styles.expansion_toggle)}>
         <Loading />
       </div>;
     }
     return <div
       onClick={handleTwiceClick}
       className={cls(
-        styles.debug_variables_node_segment,
+        styles.debug_watch_node_segment,
         styles.expansion_toggle,
         getIcon('right'),
         { [`${styles.mod_collapsed}`]: !(node as ExpressionContainer).expanded },
@@ -232,8 +265,14 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
   };
 
   const renderTwice = (item) => {
-    if (CompositeTreeNode.is(item)) {
-      return renderToggle(item as ExpressionContainer, onTwistierClick);
+    if (DebugWatchNode.is(item)) {
+      if ((item as DebugWatchNode).available && (item as DebugWatchNode).variablesReference) {
+        return renderToggle(item as ExpressionContainer, onTwistierClick);
+      }
+    } else if (ExpressionContainer.is(item)) {
+      if ((item as ExpressionContainer).variablesReference) {
+        return renderToggle(item as ExpressionContainer, onTwistierClick);
+      }
     }
   };
 
@@ -244,16 +283,17 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
       onContextMenu={handleContextMenu}
       title={getItemTooltip()}
       className={cls(
-        styles.debug_variables_node,
+        styles.debug_watch_node,
         decorations ? decorations.classlist : null,
       )}
       style={editorNodeStyle}
       data-id={item.id}
     >
-      <div className={cls(styles.debug_variables_node_content)}>
+      <div className={cls(styles.debug_watch_node_content)}>
         {renderTwice(item)}
         <div
-          className={styles.debug_variables_node_overflow_wrap}
+          style={{ height: DEBUG_WATCH_TREE_NODE_HEIGHT}}
+          className={isPrompt ? styles.debug_watch_node_prompt_wrap : styles.debug_watch_node_overflow_wrap}
         >
           {renderDisplayName(item)}
           {renderDescription(item)}
@@ -264,4 +304,4 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
   );
 };
 
-export const DEBUG_VARIABLE_TREE_NODE_HEIGHT = 22;
+export const DEBUG_WATCH_TREE_NODE_HEIGHT = 22;

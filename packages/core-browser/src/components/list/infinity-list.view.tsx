@@ -59,6 +59,7 @@ interface InfinityListState {
   currentSliceIndex: number;
   topSpaces: any[];
   bottomSpaces: any[];
+  isScrolled: boolean;
 }
 
 const defaultInfinityListState = {
@@ -69,6 +70,7 @@ const defaultInfinityListState = {
   currentSliceIndex: 0,
   topSpaces: [],
   bottomSpaces: [],
+  isScrolled: false,
 };
 
 /**
@@ -80,10 +82,11 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
     placeholders: {},
     sliceSize: 30,
     sliceThreshold: 30,
+    isScrolled: false,
   };
 
   static getDerivedStateFromProps(props, state) {
-    const { prevProps } = state;
+    const { prevProps, isScrolled } = state;
     const { data, sliceSize, scrollBottomIfActive } = props;
     const { data: prevData } = prevProps;
 
@@ -108,7 +111,7 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
     }
     // 数据更新或被裁剪
     if (data.length !== prevData.length) {
-      if (scrollBottomIfActive) {
+      if (scrollBottomIfActive && !isScrolled) {
         return {
           slices,
           currentSliceIndex: slices.length - VISIBLE_SLICE_COUNT,
@@ -153,7 +156,7 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
     if (this.scrollBarEl && this.scrollBarEl.updateScroll) {
       this.scrollBarEl.updateScroll();
     }
-    this.containerEl.scrollTop = this.containerEl.scrollHeight;
+    this.containerEl.scrollTop = this.containerEl.children[0].offsetHeight;
   }, 500);
 
   componentDidMount() {
@@ -270,8 +273,13 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
     }
 
     const { sliceThreshold } = this.props;
-    const { slices, currentSliceIndex, topSpaces, bottomSpaces } = this.state;
+    const { slices, currentSliceIndex, topSpaces, bottomSpaces, isScrolled } = this.state;
 
+    if (!isScrolled) {
+      this.setState({
+        isScrolled: true,
+      });
+    }
     const topBoundaryLoc = this.topBoundary.getBoundingClientRect().top;
     const nextBoundaryLoc = this.nextBoundary.getBoundingClientRect().bottom;
 
@@ -301,6 +309,7 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
           {
             topSpaces: new Array(slices.length - VISIBLE_SLICE_COUNT).fill(sliceHeight),
             bottomSpaces: [],
+            isScrolled: false,
           },
           () => {
             this.bindBoundaryEls();

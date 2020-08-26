@@ -499,3 +499,29 @@ export interface IEditorDocumentModelContentChange {
   rangeLength: number;
   rangeOffset: number;
 }
+
+// 获取最基础的MonacoEditor配置
+export function getSimpleEditorOptions(): monaco.editor.IEditorOptions {
+  return {
+    wordWrap: 'on',
+    overviewRulerLanes: 0,
+    glyphMargin: false,
+    lineNumbers: 'off',
+    folding: false,
+    selectOnLineNumbers: false,
+    hideCursorInOverviewRuler: true,
+    selectionHighlight: false,
+    scrollbar: {
+      horizontal: 'hidden',
+    },
+    lineDecorationsWidth: 0,
+    overviewRulerBorder: false,
+    scrollBeyondLastLine: false,
+    renderLineHighlight: 'none',
+    fixedOverflowWidgets: true,
+    acceptSuggestionOnEnter: 'smart',
+    minimap: {
+      enabled: false,
+    },
+  };
+}

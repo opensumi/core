@@ -82,18 +82,46 @@ describe('DebugWatch Model', () => {
       done();
     });
 
-    it('execute method should be work', async (done) => {
-      await debugWatch.execute('test');
-      expect(session.evaluate).toBeCalledTimes(1);
+    it('addWatchExpression method should be work', async (done) => {
+      await debugWatch.addWatchExpression('a');
+      const root = await debugWatch.getRoot();
+      expect(root.branchSize).toBe(0);
+      expect(root.presetChildren.length).toBe(1);
       done();
     });
 
-    it('getChildren method should be work', async (done) => {
-      await debugWatch.execute('test');
-      expect(session.evaluate).toBeCalledTimes(1);
-      const children = await debugWatch.getChildren();
-      expect(children.length === 1).toBe(true);
-      expect(session.evaluate).toBeCalledTimes(2);
+    it('updateWatchExpressions method should be work', async (done) => {
+      await debugWatch.updateWatchExpressions(['a', 'b']);
+      const root = await debugWatch.getRoot();
+      expect(root.branchSize).toBe(0);
+      expect(root.presetChildren.length).toBe(2);
+      done();
+    });
+
+    it('renameWatchExpression method should be work', async (done) => {
+      await debugWatch.updateWatchExpressions(['a', 'b']);
+      await debugWatch.renameWatchExpression('a', 'a2');
+      const root = await debugWatch.getRoot();
+      expect(root.branchSize).toBe(0);
+      expect(root.presetChildren.length).toBe(2);
+      done();
+    });
+
+    it('removeWatchExpression method should be work', async (done) => {
+      await debugWatch.updateWatchExpressions(['a', 'b']);
+      await debugWatch.removeWatchExpression('b');
+      const root = await debugWatch.getRoot();
+      expect(root.branchSize).toBe(0);
+      expect(root.presetChildren.length).toBe(1);
+      done();
+    });
+
+    it('clear method should be work', async (done) => {
+      await debugWatch.updateWatchExpressions(['a', 'b']);
+      await debugWatch.clear();
+      const root = await debugWatch.getRoot();
+      expect(root.branchSize).toBe(0);
+      expect(root.presetChildren.length).toBe(0);
       done();
     });
 

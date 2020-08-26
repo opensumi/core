@@ -1,45 +1,53 @@
 import { Domain, ClientAppContribution, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution, CommandService } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser';
-import { DebugBreakpointView } from './view/debug-breakpoints.view';
+import { DebugBreakpointView } from './view/breakpoints/debug-breakpoints.view';
 import { DebugVariableView } from './view/variables/debug-variables.view';
-import { DebugCallStackView } from './view/debug-call-stack.view';
-import { DebugConfigurationView } from './view/debug-configuration.view';
+import { DebugCallStackView } from './view/frames/debug-call-stack.view';
+import { DebugConfigurationView } from './view/configuration/debug-configuration.view';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { Autowired } from '@ali/common-di';
 import { DebugModelManager } from './editor/debug-model-manager';
 import { BreakpointManager, SelectedBreakpoint } from './breakpoint';
 import { DebugConfigurationManager } from './debug-configuration-manager';
 import { launchSchema } from './debug-schema-updater';
-import { DebugWatchView } from './view/debug-watch.view';
+import { DebugWatchView } from './view/watch/debug-watch.view';
 
 import { getIcon } from '@ali/ide-core-browser';
 import { ToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
-import { DebugWatchService } from './view/debug-watch.service';
-import { DebugBreakpointsService } from './view/debug-breakpoints.service';
-import { DebugConfigurationService } from './view/debug-configuration.service';
+import { DebugBreakpointsService } from './view/breakpoints/debug-breakpoints.service';
+import { DebugConfigurationService } from './view/configuration/debug-configuration.service';
 import { DebugViewModel } from './view/debug-view-model';
 import { DebugSession } from './debug-session';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
 import { IDebugSessionManager, launchSchemaUri, DEBUG_CONTAINER_ID, DEBUG_WATCH_ID, DEBUG_VARIABLES_ID, DEBUG_STACK_ID, DEBUG_BREAKPOINTS_ID } from '../common';
-import { DebugConsoleService, DebugConsoleDocumentProvider } from './view/debug-console.service';
-import { DebugToolbarService } from './view/debug-toolbar.service';
+import { DebugConsoleService } from './view/console/debug-console.service';
+import { DebugToolbarService } from './view/configuration/debug-toolbar.service';
 import { NextMenuContribution, MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
-import { BrowserEditorContribution, IEditorFeatureRegistry, IEditorDocumentModelContentRegistry } from '@ali/ide-editor/lib/browser';
+import { BrowserEditorContribution, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
 import { EditorHoverContribution } from './editor/editor-hover-contribution';
 
 export namespace DEBUG_COMMANDS {
   export const ADD_WATCHER = {
-    id: 'debug.watch.add.handler',
+    id: 'debug.watch.add',
     iconClass: getIcon('plus'),
   };
   export const COLLAPSE_ALL_WATCHER = {
-    id: 'debug.watch.collapse.handler',
+    id: 'debug.watch.collapseAll',
     iconClass: getIcon('collapse-all'),
   };
   export const REMOVE_ALL_WATCHER = {
-    id: 'debug.watch.close.handler',
+    id: 'debug.watch.removeAll',
     iconClass: getIcon('close-all'),
+  };
+  export const REMOVE_WATCHER = {
+    id: 'debug.watch.remove',
+  };
+  export const EDIT_WATCHER = {
+    id: 'debug.watch.edit',
+  };
+  export const COPY_WATCHER_VALUE = {
+    id: 'debug.watch.copyValue',
   };
   export const REMOVE_ALL_BREAKPOINTS = {
     id: 'debug.breakpoints.remove.all',
@@ -133,9 +141,6 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   @Autowired(DebugModelManager)
   protected debugEditorController: DebugModelManager;
 
-  @Autowired(DebugWatchService)
-  protected debugWatchService: DebugWatchService;
-
   @Autowired(DebugBreakpointsService)
   protected debugBreakpointsService: DebugBreakpointsService;
 
@@ -160,11 +165,8 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   @Autowired(DebugToolbarService)
   protected readonly debugToolbarService: DebugToolbarService;
 
-  @Autowired()
+  @Autowired(EditorHoverContribution)
   private editorHoverContribution: EditorHoverContribution;
-
-  @Autowired()
-  private debugConsoleDocProvider: DebugConsoleDocumentProvider;
 
   private firstSessionStart: boolean = true;
 
@@ -248,9 +250,6 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
     this.breakpointManager.onDidChangeExceptionsBreakpoints(() => {
       this.breakpointManager.save();
     });
-    this.debugWatchService.onDidChange(() => {
-      this.debugWatchService.save();
-    });
   }
 
   openView() {
@@ -271,34 +270,6 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   }
 
   registerCommands(commands: CommandRegistry) {
-    commands.registerCommand(DEBUG_COMMANDS.ADD_WATCHER, {
-      execute: () => {
-        this.debugWatchService.addWatchHandler();
-      },
-      isVisible: () => {
-        const handler = this.mainlayoutService.getTabbarHandler(DEBUG_CONTAINER_ID);
-        return handler ? handler.isVisible : false;
-      },
-    });
-    commands.registerCommand(DEBUG_COMMANDS.COLLAPSE_ALL_WATCHER, {
-      execute: (data) => {
-        this.debugWatchService.collapseAll();
-      },
-      isVisible: () => {
-        const handler = this.mainlayoutService.getTabbarHandler(DEBUG_CONTAINER_ID);
-        return handler ? handler.isVisible : false;
-      },
-    });
-    commands.registerCommand(DEBUG_COMMANDS.REMOVE_ALL_WATCHER, {
-      execute: (data) => {
-        this.debugWatchService.removeAll();
-      },
-      isVisible: () => {
-        const handler = this.mainlayoutService.getTabbarHandler(DEBUG_CONTAINER_ID);
-        return handler ? handler.isVisible : false;
-      },
-    });
-
     commands.registerCommand(DEBUG_COMMANDS.REMOVE_ALL_BREAKPOINTS, {
       execute: (data) => {
         this.debugBreakpointsService.removeAllBreakpoints();
@@ -486,29 +457,6 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
 
   registerToolbarItems(registry: ToolbarRegistry) {
     /**
-     * Watch 面板菜单
-     */
-    registry.registerItem({
-      id: DEBUG_COMMANDS.REMOVE_ALL_WATCHER.id,
-      command: DEBUG_COMMANDS.REMOVE_ALL_WATCHER.id,
-      viewId: DEBUG_WATCH_ID,
-      tooltip: localize('debug.watch.removeAll'),
-    });
-
-    registry.registerItem({
-      id: DEBUG_COMMANDS.COLLAPSE_ALL_WATCHER.id,
-      command: DEBUG_COMMANDS.COLLAPSE_ALL_WATCHER.id,
-      viewId: DEBUG_WATCH_ID,
-      tooltip: localize('debug.watch.collapseAll'),
-    });
-
-    registry.registerItem({
-      id: DEBUG_COMMANDS.ADD_WATCHER.id,
-      command: DEBUG_COMMANDS.ADD_WATCHER.id,
-      viewId: DEBUG_WATCH_ID,
-      tooltip: localize('debug.watch.add'),
-    });
-    /**
      * end
      */
 
@@ -628,9 +576,5 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
 
   registerEditorFeature(registry: IEditorFeatureRegistry) {
     registry.registerEditorFeatureContribution(this.editorHoverContribution);
-  }
-
-  registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
-    registry.registerEditorDocumentModelContentProvider(this.debugConsoleDocProvider);
   }
 }

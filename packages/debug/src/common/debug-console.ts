@@ -1,13 +1,3 @@
-import { MaybePromise } from '@ali/ide-core-common';
-
-export const IDebugConsoleSession = Symbol('DebugConsoleSession');
-
-export interface IDebugConsoleSession {
-  getChildren(): MaybePromise<any[]>;
-  execute(value: string): MaybePromise<void>;
-  clear(): MaybePromise<void>;
-}
-
 // 继承至vscode-languageserver-types
 // TODO：后续自动补全能力可调整为monaco内的实例
 export declare namespace CompletionItemKind {

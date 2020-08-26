@@ -16,9 +16,9 @@ import { IActivationEventService } from '../../types';
 import { Breakpoint, WorkspaceFolder } from '../../../common/vscode/models';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { IDebugSessionManager } from '@ali/ide-debug/lib/common/debug-session';
-import { DebugConsoleSession } from '@ali/ide-debug/lib/browser/console/debug-console-session';
 import { ITerminalApiService } from '@ali/ide-terminal-next';
 import { OutputService } from '@ali/ide-output/lib/browser/output.service';
+import { DebugConsoleModelService } from '@ali/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
 
 @Injectable({ multiple: true })
 export class MainThreadDebug implements IMainThreadDebug {
@@ -68,7 +68,7 @@ export class MainThreadDebug implements IMainThreadDebug {
   protected readonly activationEventService: IActivationEventService;
 
   @Autowired(DebugSessionContributionRegistry)
-  sessionContributionRegistrator: ExtensionDebugSessionContributionRegistry;
+  protected readonly sessionContributionRegistry: ExtensionDebugSessionContributionRegistry;
 
   @Autowired(ILoggerManagerClient)
   protected readonly LoggerManager: ILoggerManagerClient;
@@ -77,8 +77,8 @@ export class MainThreadDebug implements IMainThreadDebug {
   @Autowired(ITerminalApiService)
   protected readonly terminalService: ITerminalApiService;
 
-  @Autowired(DebugConsoleSession)
-  debugConsoleSession: DebugConsoleSession;
+  @Autowired(DebugConsoleModelService)
+  protected readonly debugConsoleModelService: DebugConsoleModelService;
 
   @Autowired(OutputService)
   protected readonly outputService: OutputService;
@@ -144,11 +144,15 @@ export class MainThreadDebug implements IMainThreadDebug {
   }
 
   async $appendToDebugConsole(value: string): Promise<void> {
-    this.debugConsoleSession.append(value);
+    if (this.debugConsoleModelService.debugConsoleSession) {
+      this.debugConsoleModelService.debugConsoleSession.append(value);
+    }
   }
 
   async $appendLineToDebugConsole(value: string): Promise<void> {
-    this.debugConsoleSession.appendLine(value);
+    if (this.debugConsoleModelService.debugConsoleSession) {
+      this.debugConsoleModelService.debugConsoleSession.appendLine(value);
+    }
   }
 
   async $registerDebuggerContribution(description: DebuggerDescription): Promise<void> {
@@ -176,7 +180,7 @@ export class MainThreadDebug implements IMainThreadDebug {
       this.adapterContributionRegistrator.registerDebugAdapterContribution(
         new ExtensionDebugAdapterContribution(description, this.proxy, this.activationEventService),
       ),
-      this.sessionContributionRegistrator.registerDebugSessionContribution({
+      this.sessionContributionRegistry.registerDebugSessionContribution({
         debugType: description.type,
         debugSessionFactory: () => debugSessionFactory,
       }),
@@ -235,12 +239,14 @@ export class MainThreadDebug implements IMainThreadDebug {
 
   async $startDebugging(folder: WorkspaceFolder | undefined, nameOrConfiguration: string | DebugConfiguration ): Promise<boolean> {
     let configuration: DebugConfiguration | undefined;
-
+    let index = 0;
     if (typeof nameOrConfiguration === 'string') {
       for (const options of this.debugConfigurationManager.all) {
         if (options.configuration.name === nameOrConfiguration) {
           configuration = options.configuration;
+          break;
         }
+        index ++;
       }
     } else {
       configuration = nameOrConfiguration;
@@ -253,6 +259,7 @@ export class MainThreadDebug implements IMainThreadDebug {
     const session = await this.sessionManager.start({
       configuration,
       workspaceFolderUri: folder && Uri.revive(folder.uri).toString(),
+      index,
     });
 
     return !!session;

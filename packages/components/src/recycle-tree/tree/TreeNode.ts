@@ -607,10 +607,6 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * 直接调用此方法将不会触发onWillHandleWatchEvent和onDidHandleWatchEvent事件
    */
   public insertItem(item: ITreeNodeOrCompositeTreeNode) {
-    // 当插入时父节点已不存在界面上时，跳过插入操作
-    if (!this.isItemVisibleAtRootSurface(this)) {
-      return;
-    }
     if (item.parent !== this) {
       item.mv(this, item.name);
       return;
@@ -821,7 +817,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * 加载节点信息
    * @memberof CompositeTreeNode
    */
-  protected async hardReloadChildren(quiet?: boolean) {
+  public async hardReloadChildren(quiet?: boolean) {
     if (this.hardReloadPromise) {
       return this.hardReloadPromise;
     }

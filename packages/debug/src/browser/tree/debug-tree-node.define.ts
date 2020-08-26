@@ -1,8 +1,9 @@
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { DebugSession } from '../debug-session';
 import { MessageType, localize } from '@ali/ide-core-browser';
-import { TreeNode, CompositeTreeNode, ITree } from '@ali/ide-components';
+import { TreeNode, CompositeTreeNode, ITree, ITreeNodeOrCompositeTreeNode } from '@ali/ide-components';
 import { Path } from '@ali/ide-components/lib/utils';
+import { AnsiConsoleNode } from './debug-console-tree-node.define';
 
 export class ExpressionTreeService {
   constructor(
@@ -12,32 +13,38 @@ export class ExpressionTreeService {
 
   }
 
-  async resolveChildren(parent?: ExpressionContainer): Promise<(ExpressionContainer | DebugVirtualVariable)[]> {
-    if (DebugVariableRoot.is(parent) && !parent.variablesReference) {
+  async resolveChildren(parent?: ExpressionContainer): Promise<(ExpressionContainer | ExpressionNode | DebugVirtualVariable)[]> {
+    if (DebugVariableRoot.is(parent) && !parent.variablesReference && !parent.presetChildren) {
       return await this.session?.getScopes(parent) || [];
     }
     return await this.doResolve(parent);
   }
 
-  protected async doResolve(parent?: ExpressionContainer): Promise<(ExpressionContainer | DebugVirtualVariable)[]> {
+  protected async doResolve(parent?: ExpressionContainer): Promise<(ExpressionContainer | DebugVirtualVariable | ExpressionNode)[]> {
     const result: (ExpressionContainer | DebugVirtualVariable)[] = [];
     if (!parent) {
+      return result;
+    }
+    if (parent.presetChildren) {
+      return parent.presetChildren;
+    }
+    if (!this.session || this.session.terminated) {
       return result;
     }
     const { variablesReference, startOfVariables, indexedVariables } = parent;
     if (parent.namedVariables) {
       await this.fetch(result, variablesReference, 'named', parent);
     }
-    if (parent.indexedVariables) {
+    if (indexedVariables) {
       let chunkSize = ExpressionContainer.BASE_CHUNK_SIZE;
-      while (parent.indexedVariables > chunkSize * ExpressionContainer.BASE_CHUNK_SIZE) {
+      while (indexedVariables > chunkSize * ExpressionContainer.BASE_CHUNK_SIZE) {
         chunkSize *= ExpressionContainer.BASE_CHUNK_SIZE;
       }
-      if (parent.indexedVariables > chunkSize) {
-        const numberOfChunks = Math.ceil(parent.indexedVariables / chunkSize);
+      if (indexedVariables > chunkSize) {
+        const numberOfChunks = Math.ceil(indexedVariables / chunkSize);
         for (let i = 0; i < numberOfChunks; i++) {
           const start = parent.startOfVariables + i * chunkSize;
-          const count = Math.min(chunkSize, parent.indexedVariables - i * chunkSize);
+          const count = Math.min(chunkSize, indexedVariables - i * chunkSize);
           result.push(new DebugVirtualVariable({
             session: this.session,
             variablesReference: parent.variablesReference,
@@ -75,6 +82,31 @@ export class ExpressionTreeService {
       });
     }
   }
+
+  // 可折叠节点展示优先级默认较低
+  sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
+    if (a.constructor === b.constructor) {
+      return a.name > b.name ? 1
+        : a.name < b.name ? -1
+          : 0;
+    }
+    return CompositeTreeNode.is(a) ? 1
+      : CompositeTreeNode.is(b) ? -1
+        : 0;
+  }
+}
+
+export class DebugConsoleTreeService extends ExpressionTreeService {
+  // 按照默认次序排序
+  sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
+    if (!a) {
+      return 1;
+    }
+    if (!b) {
+      return -1;
+    }
+    return 0;
+  }
 }
 
 export class ExpressionNode extends TreeNode {
@@ -85,7 +117,7 @@ export class ExpressionNode extends TreeNode {
   protected indexedVariables: number | undefined;
 
   constructor(options: ExpressionNode.Options, parent?: ExpressionContainer) {
-    super(new ExpressionTreeService(options.session, options.source, options.line) as ITree, parent);
+    super(new ExpressionTreeService(options.session, options.source, options.line) as ITree, parent, undefined, { name: String(options.session?.id) });
     this.variablesReference = options.variablesReference || 0;
     this.namedVariables = options.namedVariables;
     this.indexedVariables = options.indexedVariables;
@@ -127,8 +159,10 @@ export class ExpressionContainer extends CompositeTreeNode {
   public source: DebugProtocol.Source | undefined;
   public line: number | string | undefined;
 
-  constructor(options: ExpressionContainer.Options, parent?: ExpressionContainer) {
-    super(new ExpressionTreeService(options.session, options.source, options.line) as ITree, parent);
+  public presetChildren: (ExpressionContainer | ExpressionNode)[];
+
+  constructor(options: ExpressionContainer.Options, parent?: ExpressionContainer, tree?: ITree) {
+    super(tree || new ExpressionTreeService(options.session, options.source, options.line) as ITree, parent, undefined, { name: String(options.session?.id) });
     this.session = options.session;
     this.variablesReference = options.variablesReference || 0;
     this.namedVariables = options.namedVariables;
@@ -213,7 +247,7 @@ export class DebugVariable extends ExpressionNode {
         }
       }
     }
-    return '';
+    return String(this.id);
   }
 
   get description(): string {
@@ -235,7 +269,7 @@ export class DebugVariable extends ExpressionNode {
   }
 
   async setValue(value: string): Promise<void> {
-    if (!this.session) {
+    if (!this.session || this.session.terminated) {
       return;
     }
     const { name, parent } = this as any;
@@ -261,7 +295,7 @@ export class DebugVariableContainer extends ExpressionContainer {
 
   constructor(
     public readonly session: DebugSession | undefined,
-    protected readonly variable: DebugProtocol.Variable,
+    public readonly variable: DebugProtocol.Variable,
     public parent: ExpressionContainer | undefined,
     source?: DebugProtocol.Source,
     line?: string | number,
@@ -291,7 +325,7 @@ export class DebugVariableContainer extends ExpressionContainer {
         }
       }
     }
-    return '';
+    return String(this.id);
   }
 
   get description(): string {
@@ -317,7 +351,7 @@ export class DebugVariableContainer extends ExpressionContainer {
   }
 
   async setValue(value: string): Promise<void> {
-    if (!this.session) {
+    if (!this.session || this.session.terminated) {
       return;
     }
     const { name, parent } = this as any;
@@ -381,6 +415,212 @@ export class DebugScope extends ExpressionContainer {
 
   get name(): string {
     return this.raw ? this.raw.name : '';
+  }
+}
+
+export class DebugWatchNode extends ExpressionContainer {
+
+  static notAvailable = localize('debug.watch.notAvailable');
+
+  static is(node?: any): node is DebugWatchNode {
+    return !!node && !!(node as DebugWatchNode).expression;
+  }
+
+  private _description: string;
+  private _available: boolean;
+
+  constructor(
+    public readonly session: DebugSession | undefined,
+    public readonly expression: string,
+    public parent: ExpressionContainer | undefined,
+  ) {
+    super({
+      session,
+    }, parent);
+    TreeNode.setTreeNode(this._uid, this.path, this);
+  }
+
+  get description() {
+    return this._available ? this._description : DebugWatchNode.notAvailable;
+  }
+
+  get available() {
+    return this._available;
+  }
+
+  async evaluate(context: string = 'watch'): Promise<void> {
+    if (this.session) {
+      try {
+        const { expression } = this;
+        const body = await this.session.evaluate(expression, context);
+        if (body) {
+          this.name = this.expression;
+          this._description = body.result;
+          this._available = true;
+          this.variablesReference = body.variablesReference;
+          this.namedVariables = body.namedVariables;
+          this.indexedVariables = body.indexedVariables;
+        }
+      } catch (err) {
+        this.name = this.expression;
+        this._description = err.message;
+      }
+    } else {
+      this.name = this.expression;
+      this._available = false;
+    }
+  }
+
+  async getClipboardValue() {
+    if (this.session && this.session.capabilities.supportsValueFormattingOptions) {
+      try {
+        const { expression } = this;
+        const body = await this.session.evaluate(expression, 'clipboard');
+        if (body) {
+          return body.result;
+        }
+      } catch (err) {
+        return '';
+      }
+    } else {
+      return this._description;
+    }
+  }
+
+}
+
+export class DebugConsoleVariableContainer extends DebugVariableContainer {
+  static is(node?: any): node is DebugConsoleVariableContainer {
+    return !!node && (node as DebugConsoleVariableContainer).uniqueID === DebugConsoleVariableContainer.uniqueID;
+  }
+
+  static uniqueID = 'DebugConsoleVariable';
+
+  get uniqueID() {
+    return DebugConsoleVariableContainer.uniqueID;
+  }
+
+  get name(): string {
+    return String(this.id);
+  }
+
+  get description() {
+    if (this.variable) {
+      return this.variable.value;
+    }
+    return '';
+  }
+
+  get tooltip() {
+    if (this.variable) {
+      return this.variable.value;
+    }
+    return '';
+  }
+}
+
+export class DebugConsoleNode extends ExpressionContainer {
+  static is(node?: any): node is DebugConsoleNode {
+    return !!node && !!(node as DebugConsoleNode).expression;
+  }
+
+  private _available: boolean;
+  private _description: string;
+
+  get available() {
+    return this._available;
+  }
+
+  constructor(
+    public readonly session: DebugSession | undefined,
+    public readonly expression: string,
+    public parent: ExpressionContainer | undefined,
+  ) {
+    super({
+      session,
+    }, parent);
+  }
+
+  get description() {
+    return this._description;
+  }
+
+  async evaluate(context: string = 'repl'): Promise<void> {
+    const { expression } = this;
+    if (this.session) {
+      try {
+        if (typeof expression === 'string') {
+          const body = await this.session.evaluate(expression, context);
+          if (body) {
+            this.name = expression;
+            this._description = body.result;
+            this.variablesReference = body.variablesReference;
+            this.namedVariables = body.namedVariables;
+            this.indexedVariables = body.indexedVariables;
+            this._available = true;
+          }
+        }
+      } catch (err) {
+        this._available = false;
+        this.name = expression;
+        this._description = err.message;
+      }
+    } else {
+      this._available = false;
+      this.name = expression;
+    }
+  }
+}
+
+export class DebugConsoleRoot extends ExpressionContainer {
+  static is(node?: ExpressionContainer): node is DebugConsoleRoot {
+    return !!node && !node.parent;
+  }
+
+  constructor(
+    public readonly session: DebugSession | undefined,
+    presets: DebugConsoleNode[] = [],
+  ) {
+    super({ session }, undefined, new DebugConsoleTreeService(session) as ITree);
+    this.presetChildren = presets;
+  }
+
+  get expanded() {
+    return true;
+  }
+
+  get name() {
+    return `consoleRoot_${this.id}`;
+  }
+
+  updatePresetChildren(presets: (AnsiConsoleNode | DebugConsoleNode | DebugVariableContainer)[]) {
+    this.presetChildren = presets as (ExpressionNode | ExpressionContainer)[];
+  }
+}
+
+export class DebugWatchRoot extends ExpressionContainer {
+  static is(node?: ExpressionContainer): node is DebugWatchRoot {
+    return !!node && !node.parent;
+  }
+
+  constructor(
+    public readonly session: DebugSession | undefined,
+    presets: DebugWatchNode[] = [],
+  ) {
+    super({ session }, undefined);
+    this.presetChildren = presets;
+  }
+
+  get expanded() {
+    return true;
+  }
+
+  get name() {
+    return `watchRoot_${this.id}`;
+  }
+
+  updatePresetChildren(presets: DebugWatchNode[]) {
+    this.presetChildren = presets;
   }
 }
 

@@ -177,7 +177,7 @@ export class DebugSessionManager {
     if (InternalDebugSessionOptions.is(options)) {
       return options;
     }
-    const { workspaceFolderUri } = options;
+    const { workspaceFolderUri, index } = options;
     const resolvedConfiguration = await this.resolveDebugConfiguration(options.configuration, workspaceFolderUri);
     const configuration = await this.variableResolver.resolve(resolvedConfiguration, {});
     const key = configuration.name + workspaceFolderUri;
@@ -187,6 +187,7 @@ export class DebugSessionManager {
       id,
       configuration,
       workspaceFolderUri,
+      index,
     };
   }
 
