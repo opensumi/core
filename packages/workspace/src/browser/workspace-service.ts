@@ -198,7 +198,7 @@ export class WorkspaceService implements IWorkspaceService {
 
   protected readonly toDisposeOnWorkspace = new DisposableCollection();
 
-  protected async setWorkspace(workspaceStat: FileStat | undefined): Promise<void> {
+  public async setWorkspace(workspaceStat: FileStat | undefined): Promise<void> {
     if (FileStat.equals(this._workspace, workspaceStat)) {
       return;
     }

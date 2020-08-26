@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ViewState, useInjectable, isOSX, URI } from '@ali/ide-core-browser';
-import { RecycleTreeFilterDecorator, RecycleTree, TreeNodeType, INodeRendererWrapProps, IRecycleTreeFilterHandle } from '@ali/ide-components';
+import { RecycleTreeFilterDecorator, RecycleTree, IRecycleTreeHandle, TreeNodeType, INodeRendererWrapProps, IRecycleTreeFilterHandle, TreeModel } from '@ali/ide-components';
 import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
@@ -21,6 +21,9 @@ export const FileTree = observer(({
 }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const [isReady, setIsReady] = React.useState<boolean>(false);
   const [outerDragOver, setOuterDragOver] = React.useState<boolean>(false);
+  const [filter, setFilter ] = React.useState<string>('');
+  const [preFilter, setPreFilter ] = React.useState<string>('');
+  const [model, setModel ] = React.useState<TreeModel>();
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   const { width, height } = viewState;
@@ -78,6 +81,21 @@ export const FileTree = observer(({
     toggleDirectory(item);
 
   };
+
+  React.useEffect(() => {
+    if (isReady) {
+      // 首次初始化完成时，设置当前TreeModel，同时监听后续变化，适配工作区变化事件
+      setModel(fileTreeModelService.treeModel);
+      // 监听工作区变化
+      fileTreeModelService.onFileTreeModelChange(async (treeModel) => {
+        if (!!treeModel) {
+          // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
+          await treeModel.root.ensureLoaded();
+        }
+        setModel(treeModel);
+      });
+    }
+  }, [isReady]);
 
   React.useEffect(() => {
     ensureIsReady();
@@ -165,13 +183,14 @@ export const FileTree = observer(({
 
   const renderFileTree = () => {
     if (isReady) {
-      if (!!fileTreeModelService.treeModel) {
+      if (!!model) {
         return <FilterableRecycleTree
           height={height}
           width={width}
           itemHeight={FILE_TREE_NODE_HEIGHT}
           onReady={handleTreeReady}
-          model={fileTreeModelService.treeModel}
+          model={model}
+          filter={filter}
           filterEnabled={filterMode}
           beforeFilterValueChange={beforeFilterValueChange}
           filterAfterClear={() => locationToCurrentFile()}

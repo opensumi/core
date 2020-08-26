@@ -95,6 +95,8 @@ export class FileTreeService extends Tree {
 
   private requestFlushEventSignalEmitter: Emitter<void> = new Emitter();
 
+  private readonly onWorkspaceChangeEmitter = new Emitter<Directory>();
+
   @observable
   // 筛选模式开关
   filterMode: boolean = false;
@@ -104,6 +106,10 @@ export class FileTreeService extends Tree {
 
   @observable
   indent: number;
+
+  get onWorkspaceChange() {
+    return this.onWorkspaceChangeEmitter.event;
+  }
 
   get flushEventQueuePromise() {
     return this.flushEventQueueDeferred && this.flushEventQueueDeferred.promise;
@@ -133,9 +139,13 @@ export class FileTreeService extends Tree {
     this.indent = this.corePreferences['explorer.fileTree.indent'] || 8;
     this._isCompactMode = this.corePreferences['explorer.compactFolders'] as boolean;
 
-    this.toDispose.push(this.workspaceService.onWorkspaceChanged(async () => {
-      this._roots = await this.workspaceService.roots;
+    this.toDispose.push(this.workspaceService.onWorkspaceChanged((roots) => {
+      this._roots = roots;
       // 切换工作区时更新文件树
+      const newRootUri = new URI(roots[0].uri);
+      const newRoot = new Directory(this, undefined, newRootUri, newRootUri.displayName, roots[0], this.fileTreeAPI.getReadableTooltip(newRootUri));
+      this._root = newRoot;
+      this.onWorkspaceChangeEmitter.fire(newRoot);
       this.refresh();
     }));
 
