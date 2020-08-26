@@ -10,8 +10,6 @@ import { EditorFile, EditorFileGroup } from './opened-editor-node.define';
 
 import * as styles from './index.module.less';
 
-export const OPENED_EDITOR_TREE_FIELD_NAME = 'OPENED_EDITOR_TREE_FIELD';
-
 export const ExplorerOpenEditorPanel = observer(({
   viewState,
 }: React.PropsWithChildren<{viewState: ViewState}>) => {
@@ -78,6 +76,17 @@ export const ExplorerOpenEditorPanel = observer(({
     };
   }, []);
 
+  React.useEffect(() => {
+    const handleBlur = () => {
+      openedEditorModelService.handleTreeBlur();
+    };
+    wrapperRef.current?.addEventListener('blur', handleBlur, true);
+    return () => {
+      wrapperRef.current?.removeEventListener('blur', handleBlur, true);
+      openedEditorModelService.handleTreeBlur();
+    };
+  }, [wrapperRef.current]);
+
   const renderContent = () => {
     if (!isReady) {
       return <span className={styles.opened_editor_empty_text}>{localize('opened.editors.empty')}</span>;
@@ -114,7 +123,6 @@ export const ExplorerOpenEditorPanel = observer(({
     ref={wrapperRef}
     onContextMenu={handleOuterContextMenu}
     onClick={handleOuterClick}
-    data-name={OPENED_EDITOR_TREE_FIELD_NAME}
   >
     { renderContent() }
   </div>;

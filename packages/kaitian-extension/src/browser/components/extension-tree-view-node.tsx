@@ -89,7 +89,7 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
     return <div
       className={cls(styles.tree_view_node_segment, styles.tree_view_node_displayname)}
     >
-      {node.name}
+      {node.displayName}
     </div>;
   };
 
@@ -134,6 +134,7 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
         styles.tree_view_node,
         decorations ? decorations.classlist : null,
       )}
+      data-id={item.id}
       style={fileTreeNodeStyle}
       draggable={itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode}
     >

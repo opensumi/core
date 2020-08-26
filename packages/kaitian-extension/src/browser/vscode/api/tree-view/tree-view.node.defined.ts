@@ -13,13 +13,16 @@ export class ExtensionTreeRoot extends CompositeTreeNode {
   constructor(
     private treeViewDataProvider: TreeViewDataProvider,
     public treeViewId: string = '',
-    id?: number,
   ) {
     super(treeViewDataProvider as ITree, undefined);
   }
 
   get treeItemId() {
-    return `Root_${this.treeViewId}`;
+    return `TreeViewRoot_${this.treeViewId}`;
+  }
+
+  get name() {
+    return `TreeViewRoot_${this.id}`;
   }
 
   get expanded() {
@@ -42,6 +45,7 @@ export class ExtensionTreeRoot extends CompositeTreeNode {
 export class ExtensionCompositeTreeNode extends CompositeTreeNode {
 
   private _displayName: string;
+  private _whenReady: Promise<void>;
 
   constructor(
     tree: TreeViewDataProvider,
@@ -54,15 +58,28 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
     public contextValue: string = '',
     public treeItemId: string = '',
     expanded?: boolean,
+    id?: number,
   ) {
-    super(tree as ITree, parent);
+    super(tree as ITree, parent, undefined, { name }, { disableCache: false });
     if (expanded) {
-      this.setExpanded();
+      this._whenReady = this.setExpanded();
+    }
+    this._uid = id || this._uid;
+    if (!!name) {
+      this._displayName = name;
+      TreeNode.setTreeNode(this._uid, this.path, this);
+    } else {
+      this.name = String(this._uid);
+      TreeNode.setTreeNode(this._uid, this.path, this);
     }
   }
 
   get displayName() {
-    return this._displayName || this.name;
+    return this._displayName;
+  }
+
+  get whenReady() {
+    return this._whenReady;
   }
 
   dispose() {
@@ -83,12 +100,21 @@ export class ExtensionTreeNode extends TreeNode {
     public command: ICommand | undefined,
     public contextValue: string = '',
     public treeItemId: string = '',
+    id?: number,
   ) {
-    super(tree as ITree, parent);
+    super(tree as ITree, parent, undefined, { name }, { disableCache: false });
+    this._uid = id || this._uid;
+    if (!!name) {
+      this._displayName = name;
+      TreeNode.setTreeNode(this._uid, this.path, this);
+    } else {
+      this.name = String(this._uid);
+      TreeNode.setTreeNode(this._uid, this.path, this);
+    }
   }
 
   get displayName() {
-    return this._displayName || this.name;
+    return this._displayName;
   }
 
   dispose() {

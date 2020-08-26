@@ -55,6 +55,9 @@ export class TreeNode implements ITreeNode {
   }
 
   public static setTreeNode(id: number, path: string, node: TreeNode) {
+    // if (!!TreeNode.getTreeNodeByPath(path)) {
+    //   return;
+    // }
     TreeNode.idToTreeNode[id] = [path, node];
   }
 
@@ -110,6 +113,11 @@ export class TreeNode implements ITreeNode {
 
   set parent(node: ICompositeTreeNode | undefined) {
     this._parent = node;
+  }
+
+  get whenReady() {
+    // 保障节点是否完成的标识位
+    return null;
   }
 
   get type() {
@@ -463,6 +471,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           break;
         }
         const child = TreeNode.getTreeNodeByPath(forceLoadPath);
+        if (child.whenReady) {
+          await child.whenReady;
+        }
         if (!child) {
           if (!this.children) {
             break;

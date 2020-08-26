@@ -11,7 +11,6 @@ import * as cls from 'classnames';
 import * as styles from './file-tree.module.less';
 
 export const FILTER_AREA_HEIGHT = 30;
-export const FILE_TREE_FIELD_NAME = 'FILE_TREE_FIELD';
 export const FILE_TREE_FILTER_DELAY = 500;
 
 const FilterableRecycleTree = RecycleTreeFilterDecorator(RecycleTree);
@@ -88,6 +87,17 @@ export const FileTree = observer(({
       fileTreeModelService.removeFileDecoration();
     };
   }, []);
+
+  React.useEffect(() => {
+    const handleBlur = () => {
+      fileTreeModelService.handleTreeBlur();
+    };
+    wrapperRef.current?.addEventListener('blur', handleBlur, true);
+    return () => {
+      wrapperRef.current?.removeEventListener('blur', handleBlur, true);
+      fileTreeModelService.handleTreeBlur();
+    };
+  }, [wrapperRef.current]);
 
   React.useEffect(() => {
     if (!filterMode) {
@@ -215,7 +225,6 @@ export const FileTree = observer(({
     onDragLeave={handleOuterDragLeave}
     onDragOver={handleOuterDragOver}
     onDrop={handleOuterDrop}
-    data-name={FILE_TREE_FIELD_NAME}
   >
     {renderFileTree()}
   </div>;
