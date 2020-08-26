@@ -86,6 +86,8 @@ describe('OpenedEditorModelService should be work', () => {
 
       codeEditor: (() => {}) as any,
 
+      diffEditor: (() => {}) as any,
+
       currentFocusedEditor: undefined,
 
       resources: [],

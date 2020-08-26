@@ -432,8 +432,12 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   forceUpdateDecoration(): void {
     // 默认适应当前 uri 去强刷 decoration
+    // 这个值为 core editor 或者 modified editor
     const uri = this.workbenchEditorService.currentEditor?.currentUri;
     uri && this.decorationChangeEmitter.fire(uri);
+    // diffeditor 的 originalUri 也需要更新 Decoration
+    const originalUri = this.workbenchEditorService.currentEditorGroup.diffEditor.originalEditor.currentUri;
+    originalUri && this.decorationChangeEmitter.fire(originalUri);
   }
 
   public getProviderIdsByLine(line: number): string[] {
