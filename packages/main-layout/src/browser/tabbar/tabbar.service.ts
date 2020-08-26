@@ -248,10 +248,14 @@ export class TabbarService extends WithEventBus {
       dispose: () => this.tabInMoreKeyMap.delete(containerId),
     });
     disposables.push(this.menuRegistry.registerMenuItem(this.moreMenuId, {
-      command: this.registerMoreToggleCommand(componentInfo),
+      command: {
+        id: this.registerMoreToggleCommand(componentInfo),
+        label: options.title || containerId,
+      },
       group: 'inline',
       when: `${this.getTabInMoreCtxKey(containerId)} == true`,
       toggledWhen: `${getTabbarCtxKey(this.location)} == ${containerId}`,
+      iconClass: options.iconClass,
     }));
     // 注册激活快捷键
     disposables.push(this.registerActivateKeyBinding(componentInfo, options.fromExtension));
@@ -462,12 +466,10 @@ export class TabbarService extends WithEventBus {
 
   private registerMoreToggleCommand(component: ComponentRegistryInfo): string {
     const { options } = component;
-    const { containerId, title, iconClass } = options!;
+    const { containerId } = options!;
     const commandId = `activity.bar.activate.more.${containerId}`;
     this.commandRegistry.registerCommand({
       id: commandId,
-      label: title || containerId,
-      iconClass,
     }, {
       execute: ({lastContainerId}: {lastContainerId?: string}) => {
         // 切换激活tab
