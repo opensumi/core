@@ -3,7 +3,7 @@ import URI from 'vscode-uri';
 import { illegalArgument } from './utils';
 import { FileOperationOptions } from './model.api';
 import { startsWithIgnoreCase, uuid, es5ClassCompat } from '@ali/ide-core-common';
-import { isMarkdownString } from './models/html-content';
+import { isMarkdownString, MarkdownString } from './models/html-content';
 export * from './models';
 export { URI as Uri };
 
@@ -526,37 +526,6 @@ export class Hover {
       this.contents = [contents];
     }
     this.range = range;
-  }
-}
-
-@es5ClassCompat
-export class MarkdownString {
-
-  value: string;
-  isTrusted?: boolean;
-
-  constructor(value?: string) {
-    this.value = value || '';
-  }
-
-  appendText(value: string): MarkdownString {
-    // escape markdown syntax tokens: http://daringfireball.net/projects/markdown/syntax#backslash
-    this.value += value.replace(/[\\`*_{}[\]()#+\-.!]/g, '\\$&');
-    return this;
-  }
-
-  appendMarkdown(value: string): MarkdownString {
-    this.value += value;
-    return this;
-  }
-
-  appendCodeblock(code: string, language: string = ''): MarkdownString {
-    this.value += '\n```';
-    this.value += language;
-    this.value += '\n';
-    this.value += code;
-    this.value += '\n```\n';
-    return this;
   }
 }
 
