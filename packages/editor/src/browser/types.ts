@@ -133,6 +133,13 @@ export class EditorGroupDisposeEvent extends BasicEvent<{group: IEditorGroup}> {
 
 export class EditorGroupChangeEvent extends BasicEvent<IEditorGroupChangePayload> {}
 
+export class EditorActiveResourceStateChangedEvent extends BasicEvent<{
+  resource: MaybeNull<IResource>,
+  openType: MaybeNull<IEditorOpenType>,
+  // 如果是编辑器，当前编辑器的 uri
+  editorUri?: MaybeNull<URI>,
+}> {}
+
 export interface IEditorGroupChangePayload {
 
   group: IEditorGroup;

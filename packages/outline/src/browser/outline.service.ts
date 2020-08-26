@@ -4,7 +4,7 @@ import { DocumentSymbolChangedEvent, DocumentSymbolStore, DocumentSymbol, INorma
 import { observable, action } from 'mobx';
 import { getSymbolIcon } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { EditorSelectionChangeEvent } from '@ali/ide-editor/lib/browser';
+import { EditorSelectionChangeEvent, EditorActiveResourceStateChangedEvent } from '@ali/ide-editor/lib/browser';
 import debounce = require('lodash.debounce');
 import { findCurrentDocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/default';
 import { binarySearch, coalesceInPlace } from '@ali/ide-core-common/lib/arrays';
@@ -74,21 +74,22 @@ export class OutLineService extends WithEventBus {
 
   constructor() {
     super();
-    this.editorService.onActiveResourceChange((e) => {
-      // 避免内存泄漏
-      this.statusMap.clear();
-      if (e && e.uri && e.uri.scheme === 'file') {
-        this.notifyUpdate(e.uri);
-      } else {
-        this.doUpdate(null);
-      }
-    });
     this.ctxKeyService.createKey('outlineSortType', OutlineSortOrder.ByPosition);
     this.markerManager.onMarkerChanged((resources) => {
       if (this.currentUri && resources.find((resource) => resource === this.currentUri!.toString())) {
         this.doUpdate(this.currentUri, undefined, true);
       }
     });
+  }
+
+  @OnEvent(EditorActiveResourceStateChangedEvent)
+  onEditorActiveResourceStateChangedEvent(e: EditorActiveResourceStateChangedEvent) {
+    this.statusMap.clear();
+    if (e.payload.editorUri) {
+      this.notifyUpdate(e.payload.editorUri);
+    } else {
+      this.doUpdate(null);
+    }
   }
 
   initializeSetting(state: IStorage) {
