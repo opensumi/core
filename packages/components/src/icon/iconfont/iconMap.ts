@@ -65,7 +65,7 @@ export const defaultIconfont = {
   'error': 'error',
   'execute': 'execute',
   'expand': 'expand',
-  'expandAll': 'expandAll',
+  'expand-all': 'expand-all',
   'explorer': 'explorer',
   'extension': 'extension',
   'eye': 'eye',
