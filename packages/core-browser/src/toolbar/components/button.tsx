@@ -59,18 +59,15 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
     }
     return () => disposer.dispose();
   }, [ref.current]);
-  const buttonContent = <React.Fragment>
-      { !props.inDropDown ? <div className={styles.iconClass + ' kt-toolbar-action-btn-icon'} title={styles.title} style={{
-          color: styles.iconForeground,
-          backgroundColor: styles.iconBackground,
-      }}></div> : null }
-      {
-        (styles.showTitle || props.inDropDown) ? <div className = 'kt-toolbar-action-btn-title' style={{
-          color: styles.titleForeground,
-          backgroundColor: styles.titleBackground,
-        }}>{styles.title}</div> : null
-      }
-  </React.Fragment>;
+  const iconContent = !props.inDropDown ? <div className={styles.iconClass + ' kt-toolbar-action-btn-icon'} title={styles.title} style={{
+    color: styles.iconForeground,
+    backgroundColor: styles.iconBackground,
+}}></div> : null;
+  const titleContent = (styles.showTitle || props.inDropDown) ? <div className = 'kt-toolbar-action-btn-title' style={{
+    color: styles.titleForeground,
+    backgroundColor: styles.titleBackground,
+  }}>{styles.title}</div> : null;
+
   const bindings = {
     onClick: (event) => {
       delegate.current && delegate.current._onClick.fire(event);
@@ -92,12 +89,14 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
   if (props.inDropDown) {
     buttonElement = <div className={classnames({'kt-toolbar-action-btn': true,
     'action-btn-in-dropdown': true})} {...bindings} ref={ref as any}>
-      {buttonContent}
+      {iconContent}
+      {titleContent}
     </div>;
   } else {
     if (styles.btnStyle === 'button' && styles.btnTitleStyle !== 'vertical') {
       buttonElement = <Button type='default' size='small'  {...bindings} >
-          {buttonContent}
+          {iconContent}
+          {titleContent}
         </Button>;
     } else {
       // BtnStyle == inline 或 btnTitleStyle === 'vertical' (类似小程序IDE工具栏） 的模式
@@ -107,7 +106,10 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
       'kt-toolbar-action-btn-vertical': styles.btnTitleStyle === 'vertical',
       'kt-toolbar-action-btn-horizontal': styles.btnTitleStyle !== 'vertical'})}
        {...bindings}>
-         {buttonContent}
+         <Button type='default' size='small'  {...bindings} >
+          {iconContent}
+        </Button>
+        {titleContent}
       </div>;
     }
   }

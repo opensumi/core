@@ -4,12 +4,12 @@ import { useInjectable } from '../react-hooks';
 import { IToolbarRegistry, ToolbarActionGroupsChangedEvent, IToolbarAction, ISize, ToolbarActionsChangedEvent, IToolbarLocationProps, IToolbarLocationPreference } from './types';
 import { IEventBus, Disposable, Emitter } from '@ali/ide-core-common';
 import { ConfigContext, ConfigProvider, AppConfig } from '../react-providers';
-import debounce = require('lodash.debounce');
 import { getIcon } from '../style/icon/icon';
 import { DomListener } from '../utils';
 import * as classnames from 'classnames';
 import { PreferenceService } from '../preferences';
 import { AbstractMenuService, MenuId, generateCtxMenu, ICtxMenuRenderer } from '../menu/next';
+import throttle = require('lodash.throttle');
 
 // TODO: use preference
 export const DEFAULT_TOOLBAR_ACTION_MARGIN = 5;
@@ -45,9 +45,9 @@ export const ToolbarLocation = (props: IToolbarLocationProps & React.HTMLAttribu
   React.useEffect(() => {
     if (container.current) {
       const disposer = new Disposable();
-      const debouncedUpdate = debounce(() => {
+      const debouncedUpdate = throttle(() => {
         updateNow();
-      }, 100, { maxWait: 500});
+      }, 200);
       const updateNow = () => {
         if (container.current) {
           setIgnoreActions((preferenceService.get<{[location: string]: string[]}>('toolbar.ignoreActions', {}) || {})[location] || []);

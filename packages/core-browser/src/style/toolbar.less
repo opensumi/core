@@ -36,24 +36,9 @@
     cursor: pointer;
     &.kt-toolbar-action-btn-vertical {
       flex-direction: column;
-      &.kt-toolbar-action-btn-button {
-        .kt-toolbar-action-btn-icon {
-            padding: 0px 5px;
-            border-radius: 3px;
-            color: var(--kt-defaultButton-foreground);
-            background: var(--kt-defaultButton-background);
-        }
-        &:hover {
-          .kt-toolbar-action-btn-icon {
-            background: var(--kt-defaultButton-hoverBackground);
-            color: var(--kt-defaultButton-hoverForeground);
-          }
-        }
-      }
-      &.kt-toolbar-action-btn-inline {
-        &:hover {
-          transform: scale(1.05);
-        }
+      font-size: 12px;
+      .kt-toolbar-action-btn-title {
+        line-height: 24px;
       }
     }
     &.kt-toolbar-action-btn-horizontal {
