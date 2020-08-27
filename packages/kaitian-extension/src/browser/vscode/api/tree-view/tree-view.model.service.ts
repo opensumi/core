@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, PromptValidateMessage, TreeNodeEvent, WatchEvent } from '@ali/ide-components';
+import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, PromptValidateMessage, TreeNodeEvent, WatchEvent, TreeNode } from '@ali/ide-components';
 import { DisposableCollection, Emitter, PreferenceService, IContextKeyService, Command, localize, getIcon, CommandRegistry, Deferred, ThrottledDelayer, CommandService } from '@ali/ide-core-browser';
 import { ExtensionCompositeTreeNode, ExtensionTreeNode, ExtensionTreeRoot } from './tree-view.node.defined';
 import * as styles from './tree-view-node.module.less';
@@ -199,7 +199,7 @@ export class ExtensionTreeViewModel {
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
   activeNodeDecoration = (target: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
-    if (target === this.treeModel.root) {
+    if (target === this.treeModel.root as TreeNode) {
       // 根节点不能选中
       return;
     }

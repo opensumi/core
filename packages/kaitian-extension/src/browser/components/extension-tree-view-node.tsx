@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as cls from 'classnames';
 import * as styles from '../vscode/api/tree-view/tree-view-node.module.less';
-import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType } from '@ali/ide-components';
+import { INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType } from '@ali/ide-components';
 import { getIcon } from '@ali/ide-core-browser';
 import { Loading } from '@ali/ide-core-browser/lib/components/loading';
 import { ExtensionTreeNode, ExtensionCompositeTreeNode } from '../vscode/api/tree-view/tree-view.node.defined';
@@ -11,9 +11,9 @@ export interface ITreeViewNodeProps {
   defaultLeftPadding?: number;
   leftPadding?: number;
   decorations?: ClasslistComposite;
-  onTwistierClick?: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
-  onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
-  onContextMenu?: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
+  onTwistierClick?: (ev: React.MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
+  onClick: (ev: React.MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
+  onContextMenu?: (ev: React.MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
   actions?: React.JSXElementConstructor<any>;
 }
 

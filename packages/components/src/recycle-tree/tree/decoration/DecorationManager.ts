@@ -2,7 +2,7 @@ import { IDisposable, DisposableCollection } from '../../../utils';
 import { TreeNode, CompositeTreeNode } from '../TreeNode';
 import { Decoration, IDecorationTargetChangeEventData } from './Decoration';
 import { CompositeDecoration, CompositeDecorationType, ClasslistComposite } from './CompositeDecoration';
-import { TreeNodeEvent } from '../../types';
+import { TreeNodeEvent, ITreeNodeOrCompositeTreeNode } from '../../types';
 
 interface IDecorationMeta {
   /**
@@ -18,7 +18,7 @@ interface IDecorationMeta {
 
 export class DecorationsManager implements IDisposable {
   private decorations: Map<Decoration, IDisposable> = new Map();
-  private decorationsMeta: WeakMap<TreeNode | CompositeTreeNode, IDecorationMeta> = new WeakMap();
+  private decorationsMeta: WeakMap<ITreeNodeOrCompositeTreeNode, IDecorationMeta> = new WeakMap();
   private disposables: DisposableCollection = new DisposableCollection();
   private disposed = false;
 
@@ -95,7 +95,7 @@ export class DecorationsManager implements IDisposable {
     this.decorations.delete(decoration);
   }
 
-  public getDecorations(item: TreeNode | CompositeTreeNode): ClasslistComposite | undefined {
+  public getDecorations(item: ITreeNodeOrCompositeTreeNode): ClasslistComposite | undefined {
     if (!item || (!TreeNode.is(item))) {
       return ;
     }
@@ -106,7 +106,7 @@ export class DecorationsManager implements IDisposable {
     return ;
   }
 
-  public getDecorationData(item: TreeNode | CompositeTreeNode): IDecorationMeta | undefined {
+  public getDecorationData(item: ITreeNodeOrCompositeTreeNode): IDecorationMeta | undefined {
     if (this.disposed) { return ; }
     const meta = this.decorationsMeta.get(item);
     if (meta) {
@@ -184,7 +184,7 @@ export class DecorationsManager implements IDisposable {
     }
   }
 
-  private switchParent = (target: TreeNode | CompositeTreeNode, prevParent: CompositeTreeNode, newParent: CompositeTreeNode): void => {
+  private switchParent = (target: ITreeNodeOrCompositeTreeNode, prevParent: CompositeTreeNode, newParent: CompositeTreeNode): void => {
     const ownMeta = this.decorationsMeta.get(target);
     if (!ownMeta) {
       return;

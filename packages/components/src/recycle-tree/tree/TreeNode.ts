@@ -55,9 +55,6 @@ export class TreeNode implements ITreeNode {
   }
 
   public static setTreeNode(id: number, path: string, node: TreeNode) {
-    // if (!!TreeNode.getTreeNodeByPath(path)) {
-    //   return;
-    // }
     TreeNode.idToTreeNode[id] = [path, node];
   }
 
@@ -117,7 +114,7 @@ export class TreeNode implements ITreeNode {
 
   get whenReady() {
     // 保障节点是否完成的标识位
-    return null;
+    return (async () => {})();
   }
 
   get type() {
