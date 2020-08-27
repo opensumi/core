@@ -15,6 +15,8 @@ export interface ITabbarHandler {
 
   onActivate: Event<void>;
 
+  isAttached(): Promise<boolean>;
+
 }
 
 export interface IMainThreadLayout {
@@ -25,6 +27,7 @@ export interface IMainThreadLayout {
   $activate(id: string): void;
   $deactivate(id: string): void;
   $setVisible(id: string, visible: boolean): Promise<void>;
+  $isAttached(id: string): Promise<boolean>;
 }
 
 export interface IExtHostLayout {

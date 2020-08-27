@@ -80,6 +80,11 @@ export class MainThreaLayout extends Disposable implements IMainThreadLayout {
     }
   }
 
+  // 视图可能未注册到layout上，此时调用该方法返回false
+  async $isAttached(id: string) {
+    return !!this.layoutService.getTabbarHandler(id);
+  }
+
   private bindHandleEvents(handle: TabBarHandler) {
     this.handlerMap.set(handle.containerId, handle);
     handle.onActivate(() => {

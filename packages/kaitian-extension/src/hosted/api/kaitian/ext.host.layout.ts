@@ -38,6 +38,10 @@ export class TabbarHandler implements ITabbarHandler {
     this.proxy.$setVisible(this.id, visible);
   }
 
+  isAttached(): Promise<boolean> {
+    return this.proxy.$isAttached(this.id);
+  }
+
 }
 
 export class KaitianExtHostLayout implements IExtHostLayout {
