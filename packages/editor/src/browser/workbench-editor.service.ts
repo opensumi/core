@@ -2,7 +2,7 @@ import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, action, reaction } from 'mobx';
 import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider, Emitter, formatLocalize } from '@ali/ide-core-common';
-import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution, ResourceOpenTypeChangedEvent, EditorComponentDisposeEvent } from './types';
+import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution, ResourceOpenTypeChangedEvent, EditorComponentDisposeEvent, EditorActiveResourceStateChangedEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { FILE_COMMANDS, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, MonacoService, IScopedContextKeyService, IContextKey, RecentFilesManager, PreferenceService, IOpenerService } from '@ali/ide-core-browser';
@@ -78,6 +78,22 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       }
       this._currentEditorGroup = editorGroup;
       this._onActiveResourceChange.fire(editorGroup.currentResource);
+      this.eventBus.fire(new EditorActiveResourceStateChangedEvent({
+        resource: editorGroup.currentResource,
+        openType: editorGroup.currentOpenType,
+        editorUri: this.currentEditor?.currentUri,
+      }));
+    }
+  }
+
+  @OnEvent(EditorGroupChangeEvent)
+  onEditorGroupChangeEvent(e: EditorGroupChangeEvent) {
+    if (e.payload.group === this.currentEditorGroup) {
+      this.eventBus.fire(new EditorActiveResourceStateChangedEvent({
+        resource: e.payload.newResource,
+        openType: e.payload.newOpenType,
+        editorUri: this.currentEditor?.currentUri,
+      }));
     }
   }
 
