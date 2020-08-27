@@ -1,6 +1,6 @@
 import { Decoration, TargetMatchMode, IDecorationEventData } from './Decoration';
-import { TreeNode, CompositeTreeNode } from '../TreeNode';
 import { DisposableCollection } from '../../../utils';
+import { ITreeNodeOrCompositeTreeNode } from '../../types';
 
 export class ClasslistComposite {
   public classlist: ReadonlyArray<string>;
@@ -34,13 +34,13 @@ export class CompositeDecoration {
   public parent: CompositeDecoration;
   public compositeCssClasslist: ClasslistComposite;
 
-  private target: TreeNode | CompositeTreeNode;
+  private target: ITreeNodeOrCompositeTreeNode;
   private type: CompositeDecorationType;
   private selfOwned: boolean;
   private linkedComposites: Set<CompositeDecoration>;
   private classlistChangeCallbacks: Set<() => void>;
 
-  constructor(target: TreeNode | CompositeTreeNode, type: CompositeDecorationType, parent?: CompositeDecoration) {
+  constructor(target: ITreeNodeOrCompositeTreeNode, type: CompositeDecorationType, parent?: CompositeDecoration) {
     this.target = target;
     this.type = type;
     this.linkedComposites = new Set();

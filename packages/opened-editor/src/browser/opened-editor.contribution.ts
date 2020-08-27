@@ -6,7 +6,7 @@ import { ToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browse
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { ClientAppContribution } from '@ali/ide-core-browser';
 import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
-import { ExplorerOpenEditorPanel, OPENED_EDITOR_TREE_FIELD_NAME } from './opened-editor';
+import { ExplorerOpenEditorPanel } from './opened-editor';
 import { OpenedEditorModelService } from './services/opened-editor-model.service';
 import { EditorFile, EditorFileGroup } from './opened-editor-node.define';
 
@@ -36,17 +36,6 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
       collapsed: true,
       component: ExplorerOpenEditorPanel,
     }, ExplorerContainerId);
-    this.attachEvents();
-  }
-
-  private detectBlur = (event) => {
-    if (event.type === 'blur' &&  event.target?.dataset && event.target.dataset['name'] === OPENED_EDITOR_TREE_FIELD_NAME) {
-      this.openedEditorModelService.handleTreeBlur();
-    }
-  }
-
-  private attachEvents() {
-    window.addEventListener('blur', this.detectBlur, true);
   }
 
   registerCommands(commands: CommandRegistry) {

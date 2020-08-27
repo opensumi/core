@@ -1,6 +1,6 @@
 import { TreeNode, CompositeTreeNode } from './TreeNode';
 import { Emitter, DisposableCollection } from '../../utils';
-import { ITreeNodeOrCompositeTreeNode, ITree } from '../types';
+import { ITreeNodeOrCompositeTreeNode, ITree, ICompositeTreeNode } from '../types';
 
 export abstract class Tree implements ITree {
   protected _root: CompositeTreeNode | undefined;
@@ -35,7 +35,7 @@ export abstract class Tree implements ITree {
     this.onChangedEmitter.fire(undefined);
   }
 
-  abstract async resolveChildren(parent?: CompositeTreeNode): Promise<(CompositeTreeNode | TreeNode)[] | null>;
+  abstract async resolveChildren(parent?: ICompositeTreeNode): Promise<ITreeNodeOrCompositeTreeNode[] | null>;
 
   sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
     if (a.constructor === b.constructor) {

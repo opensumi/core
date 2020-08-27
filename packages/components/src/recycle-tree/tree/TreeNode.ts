@@ -112,6 +112,11 @@ export class TreeNode implements ITreeNode {
     this._parent = node;
   }
 
+  get whenReady() {
+    // 保障节点是否完成的标识位
+    return (async () => {})();
+  }
+
   get type() {
     return TreeNodeType.TreeNode;
   }
@@ -463,6 +468,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           break;
         }
         const child = TreeNode.getTreeNodeByPath(forceLoadPath);
+        if (child.whenReady) {
+          await child.whenReady;
+        }
         if (!child) {
           if (!this.children) {
             break;

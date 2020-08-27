@@ -98,6 +98,18 @@ export const ExtensionTabBarTreeView = observer(({
     setIsReady(true);
   };
 
+  const handleOuterContextMenu = (ev: React.MouseEvent) => {
+    const { handleContextMenu } = model;
+    // 空白区域右键菜单
+    handleContextMenu(ev);
+  };
+
+  const handleOuterClick = (ev: React.MouseEvent) => {
+    // 空白区域点击，取消焦点状态
+    const { enactiveNodeDecoration } = model;
+    enactiveNodeDecoration();
+  };
+
   React.useEffect(() => {
     ensureIsReady();
     if (showCollapseAll) {
@@ -107,6 +119,17 @@ export const ExtensionTabBarTreeView = observer(({
       model && model.removeNodeDecoration();
     };
   }, [model]);
+
+  React.useEffect(() => {
+    const handleBlur = () => {
+      model.handleTreeBlur();
+    };
+    wrapperRef.current?.addEventListener('blur', handleBlur, true);
+    return () => {
+      wrapperRef.current?.removeEventListener('blur', handleBlur, true);
+      model.handleTreeBlur();
+    };
+  }, [wrapperRef.current]);
 
   const renderTreeView = () => {
     if (isReady) {
@@ -146,7 +169,13 @@ export const ExtensionTabBarTreeView = observer(({
     }
   };
 
-  return <div className={styles.kt_extension_view} ref={wrapperRef}>
+  return <div
+    className={styles.kt_extension_view}
+    tabIndex={-1}
+    ref={wrapperRef}
+    onContextMenu={handleOuterContextMenu}
+    onClick={handleOuterClick}
+  >
     {renderTreeView()}
   </div>;
 });

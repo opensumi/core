@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, PromptValidateMessage, TreeNodeEvent } from '@ali/ide-components';
+import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, PromptValidateMessage, TreeNodeEvent, WatchEvent, TreeNode } from '@ali/ide-components';
 import { DisposableCollection, Emitter, PreferenceService, IContextKeyService, Command, localize, getIcon, CommandRegistry, Deferred, ThrottledDelayer, CommandService } from '@ali/ide-core-browser';
 import { ExtensionCompositeTreeNode, ExtensionTreeNode, ExtensionTreeRoot } from './tree-view.node.defined';
 import * as styles from './tree-view-node.module.less';
@@ -26,6 +26,7 @@ const ITreeViewDataProvider  = Symbol('ITreeViewDataProvider');
 export class ExtensionTreeViewModel {
 
   static DEFAULT_REVEAL_DELAY = 500;
+  static DEFAULT_REFRESH_DELAY = 500;
 
   static createContainer(injector: Injector, tree: TreeViewDataProvider, treeViewId: string): Injector {
     const child = injector.createChild([
@@ -76,7 +77,7 @@ export class ExtensionTreeViewModel {
   @Autowired(IMenuRegistry)
   private readonly menuRegistry: IMenuRegistry;
 
-  private _treeModel: TreeModel;
+  private _treeModel: ExtensionTreeModel;
 
   private _whenReady: Promise<void>;
 
@@ -103,8 +104,10 @@ export class ExtensionTreeViewModel {
   private onDidSelectedNodeChangeEmitter: Emitter<number[]> = new Emitter();
 
   private _isMutiSelected: boolean = false;
+  private refreshDelayer = new ThrottledDelayer<void>(ExtensionTreeViewModel.DEFAULT_REFRESH_DELAY);
   private revealDelayer = new ThrottledDelayer<void>(ExtensionTreeViewModel.DEFAULT_REVEAL_DELAY);
   private revealDeferred: Deferred<void> | null;
+  private refreshDeferred: Deferred<void> | null;
 
   constructor() {
     this._whenReady = this.initTreeModel();
@@ -162,6 +165,14 @@ export class ExtensionTreeViewModel {
     this.disposableCollection.push(this.treeViewDataProvider.onRevealChanged((treeItemId: string) => {
       this.reveal(treeItemId);
     }));
+    this.disposableCollection.push(this.treeModel!.onWillUpdate(() => {
+      // 更新树前更新下选中节点
+      if (this.selectedNodes.length !== 0) {
+        // 仅处理一下单选情况
+        const node = this.treeModel?.root.getTreeNodeByPath(this.selectedNodes[0].path);
+        this.selectedDecoration.addTarget(node as ExtensionTreeNode);
+      }
+    }));
   }
 
   async updateTreeModel() {
@@ -188,7 +199,7 @@ export class ExtensionTreeViewModel {
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
   activeNodeDecoration = (target: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
-    if (target === this.treeModel.root) {
+    if (target === this.treeModel.root as TreeNode) {
       // 根节点不能选中
       return;
     }
@@ -506,24 +517,43 @@ export class ExtensionTreeViewModel {
 
   async refresh(item?: TreeViewItem) {
     await this.whenReady;
-    if (!item) {
-      this.treeModel.root.forceReloadChildrenQuiet();
+    if (!this.refreshDelayer.isTriggered()) {
+      this.refreshDelayer.cancel();
     } else {
-      const cache = (this.treeModel.root as ExtensionTreeRoot).getTreeNodeByTreeItemId(item.id);
-      if (!cache) {
-        return ;
-      }
-      if (ExtensionCompositeTreeNode.is(cache)) {
-        (cache as ExtensionCompositeTreeNode).forceReloadChildrenQuiet();
-      } else if (!!cache.parent) {
-        (cache.parent as ExtensionCompositeTreeNode).forceReloadChildrenQuiet();
+      if (this.refreshDeferred) {
+        await this.refreshDeferred.promise;
       }
     }
+    return this.refreshDelayer.trigger(async () => {
+      this.refreshDeferred = new Deferred();
+      if (!item) {
+        this.treeModel.root.forceReloadChildrenQuiet();
+      } else {
+        const cache = (this.treeModel.root as ExtensionTreeRoot).getTreeNodeByTreeItemId(item.id);
+        if (!cache) {
+          return ;
+        }
+        let path;
+        if (ExtensionCompositeTreeNode.is(cache)) {
+          path = (cache as ExtensionCompositeTreeNode).path;
+        } else if (!!cache.parent) {
+          path = (cache.parent as ExtensionCompositeTreeNode).path;
+        }
+        const watcher = this.treeModel.root?.watchEvents.get(path);
+        if (watcher && typeof watcher.callback === 'function') {
+          await watcher.callback({ type: WatchEvent.Changed, path });
+        }
+      }
+      this.refreshDeferred.resolve();
+      this.refreshDeferred = null;
+    });
   }
 
   async reveal(treeItemId: string) {
     await this.whenReady;
-    if (this.revealDeferred) {
+    if (!this.revealDelayer.isTriggered()) {
+      this.revealDelayer.cancel();
+    } else if (this.revealDeferred) {
       await this.revealDeferred.promise;
     }
     return this.revealDelayer.trigger(async () => {

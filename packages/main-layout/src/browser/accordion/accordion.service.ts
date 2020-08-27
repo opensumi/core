@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IContextKey, OnEvent, WithEventBus, ResizeEvent, DisposableCollection } from '@ali/ide-core-browser';
+import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IContextKey, OnEvent, WithEventBus, ResizeEvent, DisposableCollection, ContextKeyChangeEvent, Event } from '@ali/ide-core-browser';
 import { action, observable } from 'mobx';
 import { SplitPanelManager, SplitPanelService } from '@ali/ide-core-browser/lib/components/layout/split-panel.service';
 import { AbstractContextMenuService, AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -48,6 +48,15 @@ export class AccordionService extends WithEventBus {
 
   protected splitPanelService: SplitPanelService;
 
+  // 用于强制显示功能的contextKey
+  private forceRevealContextKeys = new Map<string, {when: string; key: IContextKey<boolean>}>();
+  // 所有View的when条件集合
+  private viewWhenContextkeys = new Set<string>();
+  // 带contextKey且已渲染的视图
+  private appendedViewSet = new Set<string>();
+  // 所有带contextKey视图
+  private viewsWithContextKey = new Set<View>();
+
   @observable.shallow views: View[] = [];
 
   @observable state: {[containerId: string]: SectionState} = {};
@@ -83,6 +92,11 @@ export class AccordionService extends WithEventBus {
         this.popViewKeyIfOnlyOneViewVisible();
       });
     });
+    this.addDispose(Event.debounce<ContextKeyChangeEvent, boolean>(
+      this.contextKeyService.onDidChangeContext,
+      (last, event) =>  last || event.payload.affectsSome(this.viewWhenContextkeys),
+      50,
+    )((e) => e && this.handleContextKeyChange(), this));
   }
 
   restoreState() {
@@ -129,7 +143,10 @@ export class AccordionService extends WithEventBus {
     return menu;
   }
 
-  appendView(view: View) {
+  appendView(view: View, replace?: boolean) {
+    if (this.appendedViewSet.has(view.id) && !replace) {
+      return;
+    }
     const disposables = new DisposableCollection();
     disposables.push(this.progressService.registerProgressIndicator(view.id));
     // 已存在的viewId直接替换
@@ -137,6 +154,17 @@ export class AccordionService extends WithEventBus {
     if (existIndex !== -1) {
       this.views[existIndex] = Object.assign({}, this.views[existIndex], view);
       return;
+    }
+    // 带contextKey视图需要先判断下
+    if (view.when) {
+      this.viewsWithContextKey.add(view);
+      // 强制显示的contextKey
+      const forceRevealExpr = this.createRevealContextKey(view.id);
+      this.fillKeysInWhenExpr(this.viewWhenContextkeys, view.when);
+      this.appendedViewSet.add(view.id);
+      if (!this.contextKeyService.match(view.when) && !this.contextKeyService.match(forceRevealExpr)) {
+        return;
+      }
     }
     const index = this.views.findIndex((value) => (value.priority || 0) < (view.priority || 0));
     this.views.splice(index === -1 ? this.views.length : index, 0, view);
@@ -162,7 +190,15 @@ export class AccordionService extends WithEventBus {
     if (disposable) {
       disposable.dispose();
     }
+    this.appendedViewSet.delete(viewId);
     this.popViewKeyIfOnlyOneViewVisible();
+  }
+
+  revealView(viewId: string) {
+    const target = this.forceRevealContextKeys.get(viewId);
+    if (target) {
+      target.key.set(true);
+    }
   }
 
   disposeAll() {
@@ -185,6 +221,16 @@ export class AccordionService extends WithEventBus {
         }
       }
     }
+  }
+
+  private createRevealContextKey(viewId: string) {
+    const forceRevealKey = `forceShow.${viewId}`;
+    this.forceRevealContextKeys.set(viewId, {
+      when: `${forceRevealKey} == true`,
+      key: this.contextKeyService.createKey(forceRevealKey, false),
+    });
+    this.viewWhenContextkeys.add(forceRevealKey);
+    return `${forceRevealKey} == true`;
   }
 
   protected storeState() {
@@ -379,6 +425,23 @@ export class AccordionService extends WithEventBus {
   protected getAvailableSize() {
     const fullHeight = this.splitPanelService.rootNode.clientHeight;
     return fullHeight - (this.visibleViews.length - 1) * this.headerSize;
+  }
+
+  private handleContextKeyChange() {
+    Array.from(this.viewsWithContextKey.values()).forEach((view) => {
+      if (this.contextKeyService.match(view.when) || this.contextKeyService.match(this.forceRevealContextKeys.get(view.id)!.when)) {
+        this.appendView(view);
+      } else {
+        this.disposeView(view.id);
+      }
+    });
+  }
+
+  private fillKeysInWhenExpr(set: Set<string>, when?: string) {
+    const keys = this.contextKeyService.getKeysInWhen(when);
+    keys.forEach((key) => {
+      set.add(key);
+    });
   }
 
 }

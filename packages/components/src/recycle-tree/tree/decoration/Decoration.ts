@@ -1,5 +1,6 @@
-import { TreeNode, CompositeTreeNode } from '../TreeNode';
+import { TreeNode } from '../TreeNode';
 import { IDisposable, Disposable, Emitter } from '../../../utils';
+import { ITreeNode, ICompositeTreeNode } from '../../types';
 
 export enum TargetMatchMode {
   None = 1,
@@ -18,19 +19,19 @@ export interface IDecorationEventData {
 
 export interface IDecorationTargetChangeEventData {
   decoration: Decoration;
-  target: TreeNode | CompositeTreeNode;
+  target: ITreeNode | ICompositeTreeNode;
 }
 
 export class Decoration {
 
   private _cssClassList: Set<string>;
-  private _appliedTargets: Map<TreeNode | CompositeTreeNode, TargetMatchMode> = new Map();
-  private _negatedTargets: Map<TreeNode | CompositeTreeNode, TargetMatchMode> = new Map();
+  private _appliedTargets: Map<ITreeNode | ICompositeTreeNode, TargetMatchMode> = new Map();
+  private _negatedTargets: Map<ITreeNode | ICompositeTreeNode, TargetMatchMode> = new Map();
 
   private _disabled = false;
 
-  private appliedTargetsDisposables: WeakMap<TreeNode | CompositeTreeNode, IDisposable> = new WeakMap();
-  private negatedTargetsDisposables: WeakMap<TreeNode | CompositeTreeNode, IDisposable> = new WeakMap();
+  private appliedTargetsDisposables: WeakMap<ITreeNode | ICompositeTreeNode, IDisposable> = new WeakMap();
+  private negatedTargetsDisposables: WeakMap<ITreeNode | ICompositeTreeNode, IDisposable> = new WeakMap();
 
   private onDidAddCSSClassnameEmitter: Emitter<IDecorationEventData> = new Emitter();
   private onDidRemoveCSSClassnameEmitter: Emitter<IDecorationEventData> = new Emitter();
@@ -126,7 +127,7 @@ export class Decoration {
    * 判断当前装饰器是否包含指定的对象绑定
    * @param target
    */
-  public hasTarget(target: TreeNode | CompositeTreeNode) {
+  public hasTarget(target: ITreeNode | ICompositeTreeNode) {
     const existingFlags = this._appliedTargets.get(target);
     return !!existingFlags;
   }
@@ -136,7 +137,7 @@ export class Decoration {
    * @param target
    * @param flags
    */
-  public addTarget(target: TreeNode | CompositeTreeNode, flags: TargetMatchMode = TargetMatchMode.Self): IDisposable | undefined {
+  public addTarget(target: ITreeNode | ICompositeTreeNode, flags: TargetMatchMode = TargetMatchMode.Self): IDisposable | undefined {
     const existingFlags = this._appliedTargets.get(target);
     if (existingFlags === flags) { return; }
     if (!(TreeNode.is(target))) { return; }
@@ -154,7 +155,7 @@ export class Decoration {
    * @param target
    * @param flags
    */
-  public removeTarget(target: TreeNode | CompositeTreeNode): void {
+  public removeTarget(target: ITreeNode | ICompositeTreeNode): void {
     if (this._appliedTargets.delete(target)) {
       const disposable = this.appliedTargetsDisposables.get(target);
       if (disposable) {
@@ -171,7 +172,7 @@ export class Decoration {
    * @param target
    * @param flags
    */
-  public negateTarget(target: TreeNode | CompositeTreeNode, flags: TargetMatchMode = TargetMatchMode.Self): IDisposable | undefined {
+  public negateTarget(target: ITreeNode | ICompositeTreeNode, flags: TargetMatchMode = TargetMatchMode.Self): IDisposable | undefined {
     const existingFlags =   this._negatedTargets.get(target);
     if (existingFlags === flags) { return; }
     if (!(TreeNode.is(target))) { return; }
@@ -188,7 +189,7 @@ export class Decoration {
    * 取消否定装饰器绑定
    * @param target
    */
-  public unNegateTarget(target: TreeNode | CompositeTreeNode): void {
+  public unNegateTarget(target: ITreeNode | ICompositeTreeNode): void {
     if ( this._negatedTargets.delete(target)) {
       const disposable =   this.negatedTargetsDisposables.get(target);
       if (disposable) {

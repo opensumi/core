@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as cls from 'classnames';
 import * as styles from '../vscode/api/tree-view/tree-view-node.module.less';
-import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType } from '@ali/ide-components';
+import { INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType } from '@ali/ide-components';
 import { getIcon } from '@ali/ide-core-browser';
 import { Loading } from '@ali/ide-core-browser/lib/components/loading';
 import { ExtensionTreeNode, ExtensionCompositeTreeNode } from '../vscode/api/tree-view/tree-view.node.defined';
@@ -11,9 +11,9 @@ export interface ITreeViewNodeProps {
   defaultLeftPadding?: number;
   leftPadding?: number;
   decorations?: ClasslistComposite;
-  onTwistierClick?: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
-  onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
-  onContextMenu?: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
+  onTwistierClick?: (ev: React.MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
+  onClick: (ev: React.MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
+  onContextMenu?: (ev: React.MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
   actions?: React.JSXElementConstructor<any>;
 }
 
@@ -89,7 +89,7 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
     return <div
       className={cls(styles.tree_view_node_segment, styles.tree_view_node_displayname)}
     >
-      {node.name}
+      {node.displayName}
     </div>;
   };
 
@@ -134,6 +134,7 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
         styles.tree_view_node,
         decorations ? decorations.classlist : null,
       )}
+      data-id={item.id}
       style={fileTreeNodeStyle}
       draggable={itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode}
     >

@@ -5,7 +5,7 @@ import { FileTreeService } from './file-tree.service';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
 import { KAITIAN_MUTI_WORKSPACE_EXT, IWorkspaceService, UNTITLED_WORKSPACE } from '@ali/ide-workspace';
-import { FileTree, FILE_TREE_FIELD_NAME } from './file-tree';
+import { FileTree } from './file-tree';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { NextMenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
@@ -85,21 +85,6 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         this.fileTreeModelService.performLocationOnHandleShow();
       });
     }
-    // Cause react's onBlur handle not firing during unmount.
-    // We should use native blur listener to make sure update contextKey correctly.
-    // https://github.com/facebook/react/issues/12363
-    // https://stackoverflow.com/questions/10035564/is-there-a-cross-browser-solution-for-monitoring-when-the-document-activeelement
-    this.attachEvents();
-  }
-
-  private detectBlur = (event) => {
-    if (event.type === 'blur' && event.target?.dataset && event.target.dataset['name'] === FILE_TREE_FIELD_NAME) {
-      this.fileTreeModelService.handleTreeBlur();
-    }
-  }
-
-  private attachEvents() {
-    window.addEventListener('blur', this.detectBlur, true);
   }
 
   getWorkspaceTitle() {
