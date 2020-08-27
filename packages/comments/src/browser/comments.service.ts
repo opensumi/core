@@ -201,9 +201,9 @@ export class CommentsService extends Disposable implements ICommentsService {
       }
     }, 10)));
 
-    disposer.addDispose(editor.monacoEditor.onMouseLeave(() => {
+    disposer.addDispose(editor.monacoEditor.onMouseLeave(debounce(() => {
       oldDecorations = editor.monacoEditor.deltaDecorations(oldDecorations, []);
-    }));
+    }, 10)));
 
     return disposer;
   }
