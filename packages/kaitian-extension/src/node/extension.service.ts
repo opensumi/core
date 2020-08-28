@@ -169,7 +169,17 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       this.logger.verbose('try get shell path for extension process');
       let shellPath: string | undefined;
       try {
-        shellPath = await getShellPath();
+        shellPath = await getShellPath() || '';
+        // 在某些机型上，可能存在由于权限问题导致的获取的 shell path 比当前给的 path 还少的情况，这种情况下对 PATH 做一下 merge
+        if (shellPath && process.env.PATH) {
+          const paths = shellPath.split(':');
+          process.env.PATH.split(':').forEach((path) => {
+            if (paths.indexOf(path) === -1) {
+              paths.push(path);
+            }
+          });
+          shellPath = paths.join(':');
+        }
         this.logger.verbose('shell path result: ' + shellPath);
       } catch (e) {
         this.logger.error('shell path error: ',  e);
