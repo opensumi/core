@@ -68,16 +68,16 @@ export class CompareEditorContribution implements NextMenuContribution, CommandC
 
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand({id: 'editor.diff.accept'}, {
-      execute: (resource) => {
-        if (resource && this.compareService.comparing.has(resource.uri.toString())) {
-          this.compareService.comparing.get(resource.uri.toString())!.resolve(CompareResult.accept);
+      execute: (uri: URI) => {
+        if (uri && this.compareService.comparing.has(uri.toString())) {
+          this.compareService.comparing.get(uri.toString())!.resolve(CompareResult.accept);
         }
       },
     });
     commands.registerCommand({id: 'editor.diff.revert'}, {
-      execute: (resource) => {
-        if (resource && this.compareService.comparing.has(resource.uri.toString())) {
-          this.compareService.comparing.get(resource.uri.toString())!.resolve(CompareResult.revert);
+      execute: (uri: URI) => {
+        if (uri && this.compareService.comparing.has(uri.toString())) {
+          this.compareService.comparing.get(uri.toString())!.resolve(CompareResult.revert);
         }
       },
     });

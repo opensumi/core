@@ -97,6 +97,27 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     }
   }
 
+  // editorTitle出现了参数不统一。。
+  private extractGroupAndUriFromArgs(args0: ResourceArgs | URI, args1?: EditorGroup): {
+    group?: EditorGroup,
+    uri?: URI,
+  } {
+    let group: EditorGroup;
+    let uri: URI;
+    if (args0 instanceof URI) {
+      group = args1 || this.workbenchEditorService.currentEditorGroup;
+      uri = args0 || (group && group.currentResource && group.currentResource.uri);
+    } else {
+      const resourceArgs = args0 || {};
+      group = resourceArgs.group || this.workbenchEditorService.currentEditorGroup;
+      uri = resourceArgs.uri || (group && group.currentResource && group.currentResource.uri);
+    }
+    return {
+      group,
+      uri,
+    };
+  }
+
   async onWillStopElectron() {
     for (const group of this.workbenchEditorService.editorGroups) {
       for (const resource of group.resources) {
@@ -274,11 +295,10 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP, {
-      execute: async (resource: ResourceArgs) => {
-        resource = resource || {};
+      execute: async (args0: ResourceArgs | URI, args1?: EditorGroup) => {
         const {
-          group = this.workbenchEditorService.currentEditorGroup,
-        } = resource;
+          group,
+        } = this.extractGroupAndUriFromArgs(args0, args1);
         if (group) {
           await group.closeAll();
         }
@@ -376,12 +396,9 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
 
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT, {
-      execute: async (resource: ResourceArgs) => {
-        resource = resource || {};
-        const {
-          group = this.workbenchEditorService.currentEditorGroup,
-          uri = group && group.currentResource && group.currentResource.uri,
-        } = resource;
+      execute: async (args0: ResourceArgs | URI, args1?: EditorGroup) => {
+        const { group, uri } = this.extractGroupAndUriFromArgs(args0, args1);
+
         if (group && uri) {
           await group.split(EditorGroupSplitAction.Right, uri, { focus: true });
         }
