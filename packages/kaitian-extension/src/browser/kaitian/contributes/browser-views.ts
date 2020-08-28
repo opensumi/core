@@ -40,22 +40,44 @@ export class KtViewContributionPoint extends VSCodeContributePoint<KtViewsContri
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
-  static tabBarLocation = ['left', 'right'];
+  // 不支持提前加载的视图
+  static unsupportLocation = ['bottom', 'editor', 'toolBar'];
 
   contribute() {
     this.mainlayoutService.viewReady.promise.then(() => {
-      // 只提前注册左右面板
-      const keys = Object.keys(this.json).filter((key) => KtViewContributionPoint.tabBarLocation.includes(key));
-      for (const location of keys) {
+      const keys = Object.keys(this.json).filter((key) => !KtViewContributionPoint.unsupportLocation.includes(key));
+      for (let location of keys) {
         const views = this.json[location].view.map((view) => {
           return {
             ...view,
             component: ExtensionLoadingView,
           };
         });
+        const type: 'add' | 'append' = this.json[location].type;
         for (const view of views) {
-          const { title, icon, iconPath, id, priority, component, expanded, noResize } = view;
+          const { title, icon, iconPath, id, priority, component, expanded, noResize, when } = view;
           const containerId = `${this.extension.id}:${id}`;
+          if (type === 'append') {
+            if (!this.mainlayoutService.getTabbarHandler(location)) {
+              // 若目标视图不存在，append将fallback到add模式添加到左侧边栏
+              location = 'left';
+            } else {
+              const handlerId = this.mainlayoutService.collectViewComponent({
+                id,
+                priority,
+                component,
+                name: title,
+                when,
+              }, location);
+              this.disposableCollection.push({
+                dispose: () => {
+                  const handler = this.mainlayoutService.getTabbarHandler(handlerId)!;
+                  handler.disposeView(id);
+                },
+              });
+              return;
+            }
+          }
           const handlerId = this.mainlayoutService.collectTabbarComponent([{
             id,
             priority,

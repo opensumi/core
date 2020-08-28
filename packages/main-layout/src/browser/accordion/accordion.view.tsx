@@ -20,7 +20,6 @@ export const AccordionContainer: React.FC<{
   React.useEffect(() => {
     // 解决视图在渲染前注册的问题
     if (!views.length) { return; }
-    accordionService.disposeAll();
     for (const view of views) {
       accordionService.appendView(view);
     }

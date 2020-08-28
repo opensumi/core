@@ -5,6 +5,8 @@ import { IMainLayoutService } from '@ali/ide-main-layout';
 import { getIcon } from '@ali/ide-core-browser';
 import { IIconService } from '@ali/ide-theme';
 
+const SUPPORT_LOCATION = [ 'left', 'right', 'bottom', 'editor', 'toolBar' ];
+
 @Injectable({multiple: true})
 export class TabbarBrowserContributionRunner extends AbstractKaitianBrowserContributionRunner {
 
@@ -18,27 +20,35 @@ export class TabbarBrowserContributionRunner extends AbstractKaitianBrowserContr
     const disposer = new Disposable();
     if (this.contribution.left) {
       this.contribution.left.view.forEach((view) => {
-        disposer.addDispose(this.registerTabBar(view, 'left', params, this.contribution.left?.type));
+        disposer.addDispose(this.registerTabBar(view, params, this.contribution.left?.type, 'left'));
       });
     }
 
     if (this.contribution.right) {
       this.contribution.right.view.forEach((view) => {
-        disposer.addDispose(this.registerTabBar(view, 'right', params, this.contribution.right?.type));
+        disposer.addDispose(this.registerTabBar(view, params, this.contribution.right?.type, 'right'));
       });
     }
 
     if (this.contribution.bottom) {
       this.contribution.bottom.view.forEach((view) => {
-        disposer.addDispose(this.registerTabBar(view, 'bottom', params, this.contribution.bottom?.type));
+        disposer.addDispose(this.registerTabBar(view, params, this.contribution.bottom?.type, 'bottom'));
       });
     }
+
+    Object.keys(this.contribution).forEach((location) => {
+      if (SUPPORT_LOCATION.indexOf(location) === -1) {
+        (this.contribution[location]?.view as ITabBarViewContribution[]).forEach((view) => {
+          disposer.addDispose(this.registerTabBar(view, params, 'replace'));
+        });
+      }
+    });
 
     return disposer;
 
   }
 
-  registerTabBar(view: ITabBarViewContribution, position: 'left' | 'right' | 'bottom', runtimeParams: IRunTimeParams, kind: 'add' | 'replace' = 'add'): IDisposable {
+  registerTabBar(view: ITabBarViewContribution, runtimeParams: IRunTimeParams, kind: 'add' | 'replace' = 'add', position?: 'left' | 'right' | 'bottom'): IDisposable {
     const { extendProtocol, extendService } = runtimeParams.getExtensionExtendService(this.extension, view.id);
     let componentId;
     const initialProps = {
@@ -60,7 +70,7 @@ export class TabbarBrowserContributionRunner extends AbstractKaitianBrowserContr
           initialProps,
           fromExtension: true,
         },
-        position,
+        position!,
       );
     } else {
       this.layoutService.replaceViewComponent(view, initialProps);

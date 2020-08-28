@@ -733,6 +733,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   /**
+   * TODO: 支持底部面板多视图展示
    * should replace view component
    */
   static tabBarLocation = ['left', 'right'];
