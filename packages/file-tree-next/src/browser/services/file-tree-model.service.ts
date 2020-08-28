@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle, PromptValidateMessage, PROMPT_VALIDATE_TYPE, TreeNodeEvent, IRecycleTreeError, TreeModel, IRecycleTreeFilterHandle } from '@ali/ide-components';
+import { DecorationsManager, Decoration, TreeNodeType, RenamePromptHandle, NewPromptHandle, PromptValidateMessage, PROMPT_VALIDATE_TYPE, TreeNodeEvent, IRecycleTreeError, TreeModel, IRecycleTreeFilterHandle } from '@ali/ide-components';
 import { FileTreeService } from '../file-tree.service';
 import { FileTreeModel } from '../file-tree-model';
 import { File, Directory } from '../file-tree-nodes';
@@ -715,19 +715,25 @@ export class FileTreeModelService {
       const confirm = await this.dialogService.warning(formatLocalize('file.confirm.delete', deleteFilesMessage), [cancel, ok]);
       if (confirm !== ok) {
         return;
+      } else {
+        let preUri: URI = new URI('');
+        for (const uri of uris) {
+          const effectNode = this.fileTreeService.getNodeByPathOrUri(uri);
+          this.loadingDecoration.addTarget(effectNode!);
+        }
+        // 通知视图更新
+        this.treeModel.dispatchChange();
+        // 移除文件
+        for (const uri of uris) {
+          if (!!preUri && preUri.isEqualOrParent(uri)) {
+            // 当下个删除文件为上个删除文件的子文件时，只需要忽略即可
+            continue;
+          }
+          await this.deleteFile(uri);
+          preUri = uri;
+        }
       }
     }
-
-    for (const uri of uris) {
-      const effectNode = this.fileTreeService.getNodeByPathOrUri(uri);
-      this.loadingDecoration.addTarget(effectNode!);
-    }
-    // 通知视图更新
-    this.treeModel.dispatchChange();
-    // 移除文件
-    uris.forEach(async (uri: URI) => {
-      await this.deleteFile(uri);
-    });
   }
 
   async deleteFile(uri: URI) {
