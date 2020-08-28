@@ -291,7 +291,10 @@ export class DebugSession implements IDisposable {
     this.settingBreakpoints = new Deferred();
     this.id2Breakpoint.clear();
 
-    await this.setBreakpoints(this.breakpoints.affected.map((str) => URI.parse(str)));
+    // 当配置为noDebug时，仅运行程序，不设置断点
+    if (!this.configuration.noDebug) {
+      await this.setBreakpoints(this.breakpoints.affected.map((str) => URI.parse(str)));
+    }
 
     this.settingBreakpoints.resolve();
     this.settingBreakpoints = null;

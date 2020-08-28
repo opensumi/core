@@ -44,13 +44,13 @@ export interface DebugConfiguration {
   preLaunchTask?: string;
 
   /**
-   * 打开调试视图时机
+   * 打开调试(左侧面板)视图时机
    * 默认值：neverOpen
    */
   openDebug?: 'neverOpen' | 'openOnSessionStart' | 'openOnFirstSessionStart' | 'openOnDebugBreak';
 
   /**
-   * 打开内置DebugConsole视图时机
+   * 打开内置DebugConsole（底部面板）视图时机
    * 默认值：neverOpen
    */
   internalConsoleOptions?: 'neverOpen' | 'openOnSessionStart' | 'openOnFirstSessionStart';
