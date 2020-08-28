@@ -37,6 +37,7 @@ export class MainThreadCommands implements IMainThreadCommands {
       this.proxy.$registerBuiltInCommands();
     }
 
+    this.proxy.$registerCommandConverter();
     this.registerUriArgProcessor();
   }
 

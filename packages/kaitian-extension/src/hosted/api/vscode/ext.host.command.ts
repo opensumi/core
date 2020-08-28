@@ -112,7 +112,7 @@ export class ExtHostCommands implements IExtHostCommands {
   }
 
   // 需要在 $registerBuiltInCommands 一起注册 避免插件进程启动但浏览器未启动时报错
-  private registerCommandConverter() {
+  public $registerCommandConverter() {
     this.converter = new CommandsConverter(this);
   }
 
@@ -126,7 +126,6 @@ export class ExtHostCommands implements IExtHostCommands {
       }
     }
 
-    this.registerCommandConverter();
     this.register('vscode.executeReferenceProvider', this.executeReferenceProvider, {
       description: 'Execute reference provider.',
       args: [
