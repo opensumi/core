@@ -468,9 +468,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           break;
         }
         const child = TreeNode.getTreeNodeByPath(forceLoadPath);
-        if (child.whenReady) {
-          await child.whenReady;
-        }
+
         if (!child) {
           if (!this.children) {
             break;
@@ -495,6 +493,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
             }
           }
         } else if (CompositeTreeNode.is(child)) {
+          if ((child as CompositeTreeNode).whenReady) {
+            await (child as CompositeTreeNode).whenReady;
+          }
           if ((child as CompositeTreeNode).isExpanded) {
             // 说明此时节点初始化时已默认展开，不需要进一步处理
             continue;
