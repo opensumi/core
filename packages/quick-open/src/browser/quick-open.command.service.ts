@@ -112,7 +112,6 @@ export class QuickCommandHandler implements QuickOpenHandler {
     const menuNodes = menus.getMenuNodes()
       .reduce((r, [, actions]) => [...r, ...actions], [] as MenuItemNode[])
       .filter((item) => item instanceof MenuItemNode && !item.disabled)
-      // FIXME: 因为 CommandPalette 会重复注册命令，但是目前没有接入 when，所以这里先做一次去重
       .filter((item, index, array) => {
         return array.findIndex((n) => n.id === item.id) === index;
       }) as MenuItemNode[];

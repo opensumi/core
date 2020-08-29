@@ -123,8 +123,7 @@ class Menu extends Disposable implements IMenu {
   }
 
   private _getActiveAction(item: IMenuItem | ISubmenuItem, options: IMenuNodeOptions) {
-    // FIXME: 由于缺失比较多的 context key, 因此 CommandPalette 跳过 when 匹配
-    if (this.id === MenuId.CommandPalette || this.contextKeyService.match(item.when, options.contextDom)) {
+    if (this.contextKeyService.match(item.when, options.contextDom)) {
       if (isIMenuItem(item)) {
         // 兼容现有的 Command#isVisible
         const { args = [] } = options;
