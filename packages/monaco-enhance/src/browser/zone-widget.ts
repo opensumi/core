@@ -70,6 +70,9 @@ export abstract class ZoneWidget extends Disposable {
   private _current: monaco.IRange;
   private _linesCount: number;
 
+  private _onDomNodeTop = new Emitter<number>();
+  protected onDomNodeTop = this._onDomNodeTop.event;
+
   constructor(
     protected readonly editor: monaco.editor.ICodeEditor,
   ) {
@@ -143,6 +146,7 @@ export abstract class ZoneWidget extends Disposable {
 
   protected _onViewZoneTop(top: number): void {
     this._container.style.top = `${top}px`;
+    this._onDomNodeTop.fire(top);
   }
 
   protected _onViewZoneHeight(height: number): void {
@@ -224,6 +228,10 @@ export abstract class ResizeZoneWidget extends ZoneWidget {
         }
       }
     }));
+    // 在第一次设置 container top 值的时候重置一下高度
+    Event.once(this.onDomNodeTop)(() => {
+      this.resizeZoneWidget();
+    });
   }
 
   protected observeContainer(dom: HTMLDivElement): IDisposable {
