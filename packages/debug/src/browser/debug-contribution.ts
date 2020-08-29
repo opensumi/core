@@ -216,11 +216,16 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
       this.debugModel.init(session);
     });
     this.sessionManager.onDidStartDebugSession((session: DebugSession) => {
-      const { noDebug, internalConsole } = session.configuration;
+      const { internalConsoleOptions } = session.configuration;
       const openDebug = session.configuration.openDebug || this.preferences['debug.openDebug'];
-      if (!noDebug && (openDebug === 'openOnSessionStart' || (openDebug === 'openOnFirstSessionStart' && this.firstSessionStart && (internalConsole === 'internalConsole' || !internalConsole)))) {
-        this.openView();
-        this.debugModel.init(session);
+      if (
+        openDebug === 'openOnSessionStart' || (openDebug === 'openOnFirstSessionStart' && this.firstSessionStart)
+      ) {
+        this.openDebugView();
+      }
+
+      if (internalConsoleOptions === 'openOnSessionStart' || (internalConsoleOptions === 'openOnFirstSessionStart' && this.firstSessionStart)) {
+        this.openDebugConsoleView();
       }
       this.firstSessionStart = false;
       this.commandService.tryExecuteCommand('statusbar.changeBackgroundColor', 'var(--statusBar-debuggingBackground)');
@@ -229,7 +234,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
     this.sessionManager.onDidStopDebugSession((session) => {
       const { openDebug } = session.configuration;
       if (openDebug === 'openOnDebugBreak') {
-        this.openView();
+        this.openDebugView();
       }
     });
     this.sessionManager.onDidDestroyDebugSession((session) => {
@@ -252,11 +257,16 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
     });
   }
 
-  openView() {
+  // 左侧调试面板
+  openDebugView() {
     const handler = this.mainlayoutService.getTabbarHandler(DEBUG_CONTAINER_ID);
     if (handler && !handler.isVisible) {
       handler.activate();
     }
+  }
+
+  // 底部调试控制台面板
+  openDebugConsoleView() {
     if (!this.debugConsole.isVisible) {
       this.debugConsole.activate();
     }
