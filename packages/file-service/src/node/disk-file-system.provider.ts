@@ -48,6 +48,12 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
   protected watchFileExcludes: string[] = [];
   protected watchFileExcludesMatcherList: ParsedPattern[] = [];
 
+  static H5VideoExtList = [
+    'mp4',
+    'ogg',
+    'webm',
+  ];
+
   @Autowired(AppConfig)
   appConfig: AppConfig;
 
@@ -100,7 +106,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
   stat(uri: UriComponents): Thenable<FileStat> {
     const _uri = Uri.revive(uri);
     return new Promise(async (resolve) => {
-       this.doGetStat(_uri, 1)
+      this.doGetStat(_uri, 1)
         .then((stat) => {
           // console.log(stat, 'provider stat bkend');
           resolve(stat);
@@ -573,6 +579,8 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
 
     if (['png', 'gif', 'jpg', 'jpeg', 'svg'].indexOf(ext) !== -1) {
       type = 'image';
+    } else if (DiskFileSystemProvider.H5VideoExtList.indexOf(ext) !== -1) {
+      type = 'video';
     } else if (ext && ['xml'].indexOf(ext) === -1) {
       type = 'binary';
     }

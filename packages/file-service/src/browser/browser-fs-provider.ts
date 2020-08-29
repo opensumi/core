@@ -14,6 +14,12 @@ export const BROWSER_HOME_DIR = FileUri.create('/home');
 // 利用storage来记录文件已加载的信息，dispose时记得清楚
 export class BrowserFsProvider implements IDiskFileProvider {
 
+  static H5VideoExtList = [
+    'mp4',
+    'ogg',
+    'webm',
+  ];
+
   static binaryExtList = [
     'aac',
     'avi',
@@ -33,7 +39,6 @@ export class BrowserFsProvider implements IDiskFileProvider {
     'mp2',
     'mp2a',
     'mp3',
-    'mp4',
     'mp4a',
     'mp4v',
     'mpe',
@@ -42,7 +47,6 @@ export class BrowserFsProvider implements IDiskFileProvider {
     'mpg4',
     'mpga',
     'oga',
-    'ogg',
     'ogv',
     'psd',
     'qt',
@@ -51,7 +55,6 @@ export class BrowserFsProvider implements IDiskFileProvider {
     'tif',
     'tiff',
     'wav',
-    'webm',
     'webp',
     'wma',
     'wmv',
@@ -363,6 +366,8 @@ export class BrowserFsProvider implements IDiskFileProvider {
 
     if (['png', 'gif', 'jpg', 'jpeg', 'svg'].indexOf(ext) > -1) {
       type = 'image';
+    } else if (BrowserFsProvider.H5VideoExtList.indexOf(ext) > -1) {
+      type = 'video';
     } else if (BrowserFsProvider.binaryExtList.indexOf(ext) > -1) {
       type = 'binary';
     }
