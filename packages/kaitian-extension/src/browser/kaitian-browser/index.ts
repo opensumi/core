@@ -19,11 +19,12 @@ import { RPCProtocol } from '@ali/ide-connection';
  * 1. browser只暴露getter，任何注册、调用等会产生副作用的行为全部放入逻辑层
  * @param injector
  */
-export function createBrowserApi(injector: Injector, useProxy: boolean, extension: IExtension, rpcProtocol?: RPCProtocol) {
+export function createBrowserApi(injector: Injector, extension: IExtension, rpcProtocol?: RPCProtocol) {
 
   const commands = createBrowserCommandsApiFactory(injector, extension, rpcProtocol);
-  const components = createBrowserComponents(injector, useProxy, extension);
+  const components = createBrowserComponents(injector, extension);
   const reporter = injector.get(IReporterService);
+
   return {
     // Components
     ...components,

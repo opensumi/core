@@ -28,8 +28,7 @@ export function getMockAmdLoader<T>(injector, extension: IExtension, rpcProtocol
     } else if (request === 'ReactDOM') {
       return ReactDOM;
     } else if (request === 'kaitian-browser') {
-      /** 使用代理过的 ide-components */
-      return createBrowserApi(injector, true, extension, rpcProtocol);
+      return createBrowserApi(injector, extension, rpcProtocol);
     }
   };
   return { _module, _exports, _require };

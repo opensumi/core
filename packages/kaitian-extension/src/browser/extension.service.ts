@@ -491,7 +491,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   public async initKaitianBrowserAPIDependency(extension: IExtension) {
     getAMDDefine()('kaitian-browser', [], () => {
-      return createBrowserApi(this.injector, false, extension, this.protocol);
+      return createBrowserApi(this.injector, extension, this.protocol);
     });
   }
 
@@ -779,7 +779,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       const browserModuleUri = await this.staticResourceService.resolveStaticResource(extUri);
       if (contributes.browserViews) {
         const { browserViews } = contributes;
-        this.registerPortalShadowRoot(extension.id);
+        if (this.appConfig.useExperimentalShadowDom) {
+          this.registerPortalShadowRoot(extension.id);
+        }
         const { moduleExports, proxiedHead } = await this.getExtensionModuleExports(browserModuleUri.toString(), extension);
         const viewsConfig = Object.keys(browserViews).reduce((config, location) => {
           config[location] = {
