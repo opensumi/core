@@ -7,7 +7,7 @@ import { ToolBarPosition } from '@ali/ide-toolbar/lib/browser';
 
 export interface IKaitianBrowserContributions {
   [containerId: string]: {
-    type?: 'replace' | 'add' | 'append',
+    type?: 'replace' | 'add',
     view: IEditorViewContribution[] | ITabBarViewContribution[];
   } | undefined;
   left?: {

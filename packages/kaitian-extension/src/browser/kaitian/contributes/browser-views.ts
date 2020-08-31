@@ -28,6 +28,8 @@ export interface KtViewItem {
 
 export type KtViewsSchema = Array<KtViewsContribution>;
 
+const SUPPORT_LOCATION = [ 'left', 'right', 'bottom', 'editor', 'toolBar' ];
+
 @Injectable()
 @Contributes('browserViews')
 export class KtViewContributionPoint extends VSCodeContributePoint<KtViewsContribution> {
@@ -53,15 +55,14 @@ export class KtViewContributionPoint extends VSCodeContributePoint<KtViewsContri
             component: ExtensionLoadingView,
           };
         });
-        const type: 'add' | 'append' = this.json[location].type;
-        for (const view of views) {
-          const { title, icon, iconPath, id, priority, component, expanded, noResize, when } = view;
-          const containerId = `${this.extension.id}:${id}`;
-          if (type === 'append') {
-            if (!this.mainlayoutService.getTabbarHandler(location)) {
-              // 若目标视图不存在，append将fallback到add模式添加到左侧边栏
-              location = 'left';
-            } else {
+        if (!SUPPORT_LOCATION.includes(location)) {
+          if (!this.mainlayoutService.getTabbarHandler(location)) {
+            // 若目标视图不存在，append将fallback到add模式添加到左侧边栏
+            location = 'left';
+          } else {
+            // 走append view逻辑
+            for (const view of views) {
+              const { title, id, priority, component, when } = view;
               const handlerId = this.mainlayoutService.collectViewComponent({
                 id,
                 priority,
@@ -75,13 +76,18 @@ export class KtViewContributionPoint extends VSCodeContributePoint<KtViewsContri
                   handler.disposeView(id);
                 },
               });
-              return;
             }
+            return;
           }
+        }
+        for (const view of views) {
+          const { title, icon, iconPath, id, priority, component, expanded, noResize, when } = view;
+          const containerId = `${this.extension.id}:${id}`;
           const handlerId = this.mainlayoutService.collectTabbarComponent([{
             id,
             priority,
             component,
+            when,
           }], {
             iconClass: iconPath ? this.iconService.fromIcon(this.extension.path, iconPath) : getIcon(icon!),
             title: title && this.getLocalizeFromNlsJSON(title),
