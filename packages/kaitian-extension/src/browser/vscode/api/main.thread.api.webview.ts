@@ -332,9 +332,12 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     if (!this.statePersister.has(viewType)) {
       this.statePersister.set(viewType, this.getStorage(new URI('extension-webview/' + viewType).withScheme(STORAGE_SCHEMA.SCOPE))
         .then((storage) => {
-          return throttle((state: any) => {
+          const func = throttle((state: any) => {
             return storage.set(id, state);
           }, 500);
+          return async (state: any) => {
+            await func(state);
+          };
       }));
     }
     (await this.statePersister.get(viewType)!)(state);
