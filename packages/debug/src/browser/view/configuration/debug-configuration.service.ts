@@ -3,7 +3,7 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { DebugConfigurationManager } from '../../debug-configuration-manager';
 import { observable, action } from 'mobx';
 import { DebugSessionOptions } from '../../../common';
-import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE, PreferenceService } from '@ali/ide-core-browser';
+import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE, PreferenceService, isUndefined } from '@ali/ide-core-browser';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugViewModel } from '../debug-view-model';
 import { IDebugSessionManager } from '../../../common/debug-session';
@@ -116,6 +116,13 @@ export class DebugConfigurationService {
   toValue({ configuration, workspaceFolderUri, index }: DebugSessionOptions) {
     if (!workspaceFolderUri) {
       return configuration.name;
+    }
+    if (isUndefined(index)) {
+      const options = this.debugConfigurationManager.find(configuration.name, workspaceFolderUri);
+      if (options && options.index) {
+        return this.toValue(options);
+      }
+      return this.currentValue;
     }
     return configuration.name + '__CONF__' + workspaceFolderUri + '__INDEX__' + index;
   }

@@ -192,16 +192,29 @@ export class DebugConfigurationManager {
     this.onDidChangeEmitter.fire(undefined);
   }
 
-  find(name: string, workspaceFolderUri: string | undefined, index: number): DebugSessionOptions | undefined {
+  find(name: string, workspaceFolderUri: string | undefined, index?: number): DebugSessionOptions | undefined {
     for (const model of this.models.values()) {
       if (model.workspaceFolderUri === workspaceFolderUri) {
-        const configuration = model.configurations[index];
-        if (configuration && configuration.name === name) {
-          return {
-            configuration,
-            workspaceFolderUri,
-            index,
-          };
+        if (!!index) {
+          const configuration = model.configurations[index];
+          if (configuration && configuration.name === name) {
+            return {
+              configuration,
+              workspaceFolderUri,
+              index,
+            };
+          }
+        } else {
+          // 兼容无index的查找逻辑
+          for (let index = 0, len = model.configurations.length; index < len; index ++) {
+            if (model.configurations[index].name === name) {
+              return {
+                configuration: model.configurations[index],
+                workspaceFolderUri,
+                index,
+              };
+            }
+          }
         }
       }
     }
