@@ -184,10 +184,13 @@ export const EditorActions = observer(({group, hasFocus}: {hasFocus: boolean, gr
   const editorActionRegistry = useInjectable<IEditorActionRegistry>(IEditorActionRegistry);
   const menu = editorActionRegistry.getMenu(group);
 
+  const args: [URI, IEditorGroup, MaybeNull<URI>] | undefined = group.currentResource ?
+   [ group.currentResource.uri, group, group.currentEditor?.currentUri] : undefined;
+  // 第三个参数是当前编辑器的URI（如果有）
   return <div className={styles.editor_actions}>
-    <InlineActionBar<URI, IEditorGroup>
+    <InlineActionBar<URI, IEditorGroup, MaybeNull<URI>>
       menus={menu}
-      context={group.currentResource?.uri && [ group.currentResource.uri, group]}
+      context={args as any /* 这个推断过不去.. */}
       // 不 focus 的时候只展示 more 菜单
       regroup={(nav, more) => hasFocus ? [nav, more] : [[], more]}/>
   </div>;
