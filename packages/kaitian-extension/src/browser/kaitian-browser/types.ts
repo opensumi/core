@@ -6,6 +6,10 @@ import { Path } from '@ali/ide-core-common/lib/path';
 import { ToolBarPosition } from '@ali/ide-toolbar/lib/browser';
 
 export interface IKaitianBrowserContributions {
+  [containerId: string]: {
+    type?: 'replace' | 'add',
+    view: IEditorViewContribution[] | ITabBarViewContribution[];
+  } | undefined;
   left?: {
     type: 'replace' | 'add',
     view: ITabBarViewContribution[],
