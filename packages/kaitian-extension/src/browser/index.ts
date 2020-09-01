@@ -1,6 +1,6 @@
-import { Provider, Injectable, Autowired } from '@ali/common-di';
-import { IContextKeyService, BrowserModule, ClientAppContribution, Domain, localize, IPreferenceSettingsService, CommandContribution, CommandRegistry, IClientApp, IEventBus, CommandService, IAsyncResult, MonacoContribution } from '@ali/ide-core-browser';
-import { ExtensionNodeServiceServerPath, ExtensionService, EMIT_EXT_HOST_EVENT} from '../common';
+import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { IContextKeyService, BrowserModule, ClientAppContribution, Domain, localize, IPreferenceSettingsService, CommandContribution, CommandRegistry, IClientApp, IEventBus, CommandService, IAsyncResult, MonacoContribution, QuickOpenService, QuickOpenItem, QuickOpenItemOptions, QuickOpenGroupItem, replaceLocalizePlaceholder, isElectronEnv, electronEnv, formatLocalize } from '@ali/ide-core-browser';
+import { ExtensionNodeServiceServerPath, ExtensionService, EMIT_EXT_HOST_EVENT, ExtensionHostType, ExtensionHostProfilerServicePath, IExtensionHostProfilerService} from '../common';
 import { ExtensionServiceImpl } from './extension.service';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { IDebugServer } from '@ali/ide-debug';
@@ -12,9 +12,28 @@ import { FileSearchServicePath } from '@ali/ide-file-search/lib/common';
 import { ActivationEventServiceImpl } from './activation.service';
 import { VSCodeCommands } from './vscode/commands';
 import { IWebviewService } from '@ali/ide-webview';
+import { ActivatedExtension } from '../common/activator';
+import { WSChannelHandler } from '@ali/ide-connection/lib/browser/ws-channel-handler';
+import { IWindowDialogService } from '@ali/ide-overlay';
+import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@ali/ide-core-browser/lib/services/status-bar-service';
 
 const RELOAD_WINDOW_COMMAND = {
   id: 'reload_window',
+};
+
+const SHOW_RUN_TIME_EXTENSION = {
+  id: 'workbench.action.showRuntimeExtensions',
+  label: 'Show Running Extensions',
+};
+
+const START_EXTENSION_HOST_PROFILER = {
+  id: 'workbench.action.extensionHostProfiler.start',
+  label: 'Start Extension Host Profile',
+};
+
+const STOP_EXTENSION_HOST_PROFILER = {
+  id: 'workbench.action.extensionHostProfiler.stop',
+  label: 'Stop Extension Host Profile',
 };
 
 @Injectable()
@@ -49,6 +68,9 @@ export class KaitianExtensionModule extends BrowserModule {
     {
       servicePath: FileSearchServicePath,
     },
+    {
+      servicePath: ExtensionHostProfilerServicePath,
+    },
   ];
 }
 
@@ -60,11 +82,26 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
 
+  @Autowired(INJECTOR_TOKEN)
+  private injector: Injector;
+
   @Autowired(IActivationEventService)
   activationEventService: IActivationEventService;
 
   @Autowired(IPreferenceSettingsService)
   preferenceSettingsService: IPreferenceSettingsService;
+
+  @Autowired(QuickOpenService)
+  protected readonly quickOpenService: QuickOpenService;
+
+  @Autowired(ExtensionHostProfilerServicePath)
+  private extensionProfiler: IExtensionHostProfilerService;
+
+  @Autowired(IStatusBarService)
+  protected readonly statusBar: IStatusBarService;
+
+  @Autowired(IWindowDialogService)
+  private readonly dialogService: IWindowDialogService;
 
   @Autowired(IClientApp)
   clientApp: IClientApp;
@@ -80,6 +117,8 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
 
   @Autowired(IWebviewService)
   webviewService: IWebviewService;
+
+  private cpuProfileStatus: StatusBarEntryAccessor | null;
 
   async initialize() {
     await this.extensionService.activate();
@@ -141,6 +180,85 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
         });
         return mergedResults;
       },
+    });
+
+    registry.registerCommand(SHOW_RUN_TIME_EXTENSION, {
+      execute: async () => {
+        const activated = await this.extensionService.getActivatedExtensions();
+        this.quickOpenService.open({
+          onType: (lookFor: string, acceptor) => acceptor(this.asQuickOpenItems(activated)),
+        }, { placeholder: '运行中的插件' });
+      },
+    });
+
+    registry.registerCommand(START_EXTENSION_HOST_PROFILER, {
+      execute: async () => {
+        let clientId: string;
+        if (isElectronEnv()) {
+          clientId = electronEnv.metadata.windowClientId;
+        } else {
+          const channelHandler = this.injector.get(WSChannelHandler);
+          clientId = channelHandler.clientId;
+        }
+        if (!this.cpuProfileStatus) {
+          this.cpuProfileStatus = this.statusBar.addElement('ExtensionHostProfile', {
+            tooltip: formatLocalize('extension.profiling.clickStop', 'Click to stop profiling.'),
+            text: `$(sync~spin) ${formatLocalize('extension.profilingExtensionHost', 'Profiling Extension Host')}`,
+            alignment: StatusBarAlignment.RIGHT,
+            command: STOP_EXTENSION_HOST_PROFILER.id,
+          });
+        }
+        await this.extensionProfiler.$startProfile(clientId);
+      },
+      isPermitted: () => false,
+    });
+
+    registry.registerCommand(STOP_EXTENSION_HOST_PROFILER, {
+      execute: async () => {
+        let clientId: string;
+        if (isElectronEnv()) {
+          clientId = electronEnv.metadata.windowClientId;
+        } else {
+          const channelHandler = this.injector.get(WSChannelHandler);
+          clientId = channelHandler.clientId;
+        }
+        const successful = await this.extensionProfiler.$stopProfile(clientId);
+
+        if (this.cpuProfileStatus) {
+          this.cpuProfileStatus.dispose();
+          this.cpuProfileStatus = null;
+        }
+
+        if (successful) {
+          const saveUri = await this.dialogService.showSaveDialog({
+            saveLabel: formatLocalize('extension.profile.save', 'Save Extension Host Profile'),
+            showNameInput: true,
+            defaultFileName: `CPU-${new Date().toISOString().replace(/[\-:]/g, '')}.cpuprofile`,
+          });
+          if (saveUri?.codeUri) {
+            await this.extensionProfiler.$saveLastProfile(saveUri?.codeUri.fsPath);
+          }
+        }
+      },
+      isPermitted: () => false,
+    });
+  }
+
+  asQuickOpenItems(activated: { node?: ActivatedExtension[] | undefined; worker?: ActivatedExtension[] | undefined; }): QuickOpenItem<QuickOpenItemOptions>[] {
+    const nodes = activated.node ? activated.node.map((e, i) => this.toQuickOpenItem(e, 'node', i === 0)) : [];
+    const workers = activated.worker ? activated.worker.map((e, i) => this.toQuickOpenItem(e, 'worker', i === 0)) : [];
+    return [
+      ...nodes,
+      ...workers,
+    ];
+  }
+
+  toQuickOpenItem(e: ActivatedExtension, host: ExtensionHostType, firstItem: boolean): QuickOpenItem<QuickOpenItemOptions> {
+    return new QuickOpenGroupItem({
+      groupLabel: firstItem ? host : undefined,
+      showBorder: !!firstItem,
+      label: replaceLocalizePlaceholder(e.displayName, e.id),
+      detail: replaceLocalizePlaceholder(e.description, e.id),
     });
   }
 }

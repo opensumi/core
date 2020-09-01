@@ -90,11 +90,28 @@ import { KtViewLocation } from './kaitian/contributes/browser-views';
 import { ExtensionNoExportsView } from './components';
 import { createBrowserApi } from './kaitian-browser';
 import { retargetEvents } from './retargetEvents';
+import { ActivatedExtension } from '../common/activator';
 
 const LOAD_FAILED_CODE = 'load';
 
 @Injectable()
 export class ExtensionServiceImpl extends WithEventBus implements ExtensionService {
+
+  async getActivatedExtensions(): Promise<{ [key in ExtensionHostType]?: ActivatedExtension[] }> {
+    const activated = {};
+    if (this.protocol) {
+      const proxy: IExtensionHostService = this.protocol.getProxy<IExtensionHostService>(ExtHostAPIIdentifier.ExtHostExtensionService);
+      const extensions = await proxy.$getActivatedExtensions();
+      activated['node'] = extensions;
+    }
+
+    if (this.workerProtocol) {
+      const workerProxy = this.workerProtocol.getProxy<IExtensionWorkerHost>(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
+      const extensions = await workerProxy.$getActivatedExtensions();
+      activated['worker'] = extensions;
+    }
+    return activated;
+  }
 
   private extensionScanDir: string[] = [];
   private extensionCandidate: string[] = [];
@@ -419,7 +436,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       if (this.workerProtocol) {
         await initWorkerTheadAPIProxy(this.workerProtocol, this.injector, this);
         this.mainThreadCommands.set('worker', this.workerProtocol.get(MainThreadAPIIdentifier.MainThreadCommands));
-        const workerProxy = this.workerProtocol.getProxy(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
+        const workerProxy = this.workerProtocol.getProxy<IExtensionWorkerHost>(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
         await workerProxy.$initExtensions();
       }
     }

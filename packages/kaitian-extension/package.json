@@ -62,7 +62,8 @@
     "lodash.clonedeep": "^4.5.0",
     "picomatch": "^2.2.1",
     "shell-path": "^2.1.0",
-    "tree-kill": "^1.2.2"
+    "tree-kill": "^1.2.2",
+    "v8-inspect-profiler": "^0.0.20"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "1.15.0",

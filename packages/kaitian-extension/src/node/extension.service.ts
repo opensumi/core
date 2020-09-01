@@ -5,6 +5,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { ExtensionScanner } from './extension.scanner';
 import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData, IExtensionNodeClientService, ProcessMessageType } from '../common';
 import { Deferred, isDevelopment, INodeLogger, AppConfig, isWindows, isElectronNode, ReporterProcessMessage, IReporter, IReporterService, REPORT_TYPE, PerformanceData, REPORT_NAME } from '@ali/ide-core-node';
+import { Event, Emitter, timeout, findFreePort } from '@ali/ide-core-common';
 import * as cp from 'child_process';
 import * as isRunning from 'is-running';
 import treeKill = require('tree-kill');
@@ -42,6 +43,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   reporter: IReporter;
 
   private clientExtProcessMap: Map<string, cp.ChildProcess> = new Map();
+  private clientExtProcessInspectPortMap: Map<string, number> = new Map();
   private clientExtProcessInitDeferredMap: Map<string, Deferred<void>> = new Map();
   private clientExtProcessExtConnection: Map<string, any> = new Map();
   private clientExtProcessExtConnectionServer: Map<string, net.Server> = new Map();
@@ -49,10 +51,14 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private clientExtProcessThresholdExitTimerMap: Map<string, NodeJS.Timeout> = new Map();
   private clientServiceMap: Map<string, IExtensionNodeClientService> = new Map();
 
-  private connectionDeffered: Deferred<void>;
+  private connectionDeferred: Deferred<void>;
   private initDeferred: Deferred<void>;
 
+  private inspectPort: number = 9889;
+
   private extensionScanner: ExtensionScanner;
+
+  private readonly onDidSetInspectPort = new Emitter<void>();
 
   public setConnectionServiceClient(clientId: string, serviceClient: IExtensionNodeClientService) {
     this.clientServiceMap.set(clientId, serviceClient);
@@ -91,8 +97,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   }
 
   public async resolveConnection() {
-    if (this.connectionDeffered) {
-      await this.connectionDeffered.promise;
+    if (this.connectionDeferred) {
+      await this.connectionDeferred.promise;
     } else {
       this.logger.log(`not found connectionDeferred`);
     }
@@ -173,7 +179,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     }
 
     let preloadPath;
-    let forkOptions: cp.ForkOptions;
+    let forkOptions: cp.ForkOptions = {
+      // 防止 childProcess.stdout 为 null
+      silent: true,
+    };
     // TODO: 软链模式下的路径兼容性存在问题
     if (isElectronNode()) {
       this.logger.verbose('try get shell path for extension process');
@@ -185,6 +194,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         this.logger.error('shell path error: ',  e);
       }
       forkOptions = {
+        ...forkOptions,
         env: {
           ...process.env,
           // 可能会有获取失败的情况
@@ -193,6 +203,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       };
     } else {
       forkOptions = {
+        ...forkOptions,
         env: {
           ...process.env,
          },
@@ -207,7 +218,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(clientId)}`);
     } else {
       preloadPath = process.env.EXT_MODE === 'js' ? path.join(__dirname, '../../lib/hosted/ext.host.js') : path.join(__dirname, '../hosted/ext.host' + path.extname(module.filename));
-      // ts-node模式
       if (process.env.EXT_MODE !== 'js' && module.filename.endsWith('.ts')) {
         forkOptions.execArgv = forkOptions.execArgv.concat(['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']);
       }
@@ -230,7 +240,14 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     })}`);
 
     if (isDevelopment()) {
-      forkOptions.execArgv.push('--inspect=9889');
+      //
+      // 开发模式下指定调试端口时，尝试从指定的端口开始寻找可用的空闲端口
+      // 避免打开多个窗口(多个插件进程)时端口被占用
+      //
+      const port = await findFreePort(this.inspectPort, 10, 5000);
+      forkOptions.execArgv.push('--nolazy');
+      forkOptions.execArgv.push(`--inspect=${port}`);
+      this.clientExtProcessInspectPortMap.set(clientId, port);
     }
 
     const forkTimer = this.reporterService.time(`${clientId} fork ext process`);
@@ -289,6 +306,84 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       extProcess.on('message', initHandler);
     });
 
+    this.addProcessInspectListener(clientId, extProcess);
+  }
+
+  /**
+   * 这里的作用是在**非开发模式下**(isDevelopment() === false), 通过 process._debugProcess 启动调试时，见 [this.tryEnableInspectPort](#tryEnableInspectPort)
+   * 监听 stdout 的输出获取调试端口
+   * @example
+   * ```ts
+   * process._debugProcess(<extHostProcess.pid>);
+   *
+   * // stdout:
+   * // Debugger listening on ws://127.0.0.1:<port>/f3f6f226-7dbc-4009-95fa-d516ba132fbd
+   * // For help see https://nodejs.org/en/docs/inspector
+   * ```
+   */
+  private addProcessInspectListener(clientId: string, extProcess: cp.ChildProcess) {
+    // Catch all output coming from the extension host process
+    interface Output { data: string; format: string[]; }
+    extProcess.stdout!.setEncoding('utf8');
+    extProcess.stderr!.setEncoding('utf8');
+    const onStdout = Event.fromNodeEventEmitter<string>(extProcess.stdout!, 'data');
+    const onStderr = Event.fromNodeEventEmitter<string>(extProcess.stderr!, 'data');
+    const onOutput = Event.any(
+      Event.map(onStdout, (o) => ({ data: `%c${o}`, format: [''] })),
+      Event.map(onStderr, (o) => ({ data: `%c${o}`, format: ['color: red'] })),
+    );
+
+    // Debounce all output, so we can render it in the Chrome console as a group
+    const onDebouncedOutput = Event.debounce<Output>(onOutput, (r, o) => {
+      return r
+        ? { data: r.data + o.data, format: [...r.format, ...o.format] }
+        : { data: o.data, format: o.format };
+    }, 100);
+
+    onDebouncedOutput((output) => {
+      const inspectorUrlMatch = output.data && output.data.match(/ws:\/\/([^\s]+:(\d+)\/[^\s]+)/);
+      if (inspectorUrlMatch) {
+        const port = Number(inspectorUrlMatch[2]);
+        this.onDidSetInspectPort.fire();
+        this.clientExtProcessInspectPortMap.set(clientId, port);
+      }
+    });
+  }
+
+  async tryEnableInspectPort(clientId: string): Promise<boolean> {
+    if (this.clientExtProcessInspectPortMap.has(clientId)) {
+      return true;
+    }
+    const extHostProcess = this.clientExtProcessMap.get(clientId);
+    if (!extHostProcess) {
+      return false;
+    }
+
+    interface ProcessExt {
+      _debugProcess?(n: number): any;
+    }
+
+    if (typeof (process as ProcessExt)._debugProcess === 'function') {
+      // use (undocumented) _debugProcess feature of node
+      (process as ProcessExt)._debugProcess!(extHostProcess.pid);
+      await Promise.race([Event.toPromise(this.onDidSetInspectPort.event), timeout(1000)]);
+      return typeof this.clientExtProcessInspectPortMap.get(clientId) === 'number';
+    } else if (!isWindows) {
+      // use KILL USR1 on non-windows platforms (fallback)
+      extHostProcess.kill('SIGUSR1');
+      await Promise.race([Event.toPromise(this.onDidSetInspectPort.event), timeout(1000)]);
+      return typeof this.clientExtProcessInspectPortMap.get(clientId) === 'number';
+    }
+
+    return false;
+  }
+
+  getProcessInspectPort(clientId: string): number | undefined {
+    const extHostProcess = this.clientExtProcessMap.get(clientId);
+    if (!extHostProcess || extHostProcess.killed) {
+      return;
+    }
+    return this.clientExtProcessInspectPortMap.get(clientId);
   }
 
   private async _setMainThreadConnection(handler) {

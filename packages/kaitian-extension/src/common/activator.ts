@@ -1,22 +1,16 @@
 import * as vscode from 'vscode';
 import { IDisposable } from '@ali/ide-core-common';
-// import { IExtensionProcessService } from '../common/';
+import { ExtensionHostType } from '.';
 
 export class ExtensionActivationTimes {
 
   public static readonly NONE = new ExtensionActivationTimes(false, -1, -1, -1);
 
-  public readonly startup: boolean;
-  public readonly codeLoadingTime: number;
-  public readonly activateCallTime: number;
-  public readonly activateResolvedTime: number;
-
-  constructor(startup: boolean, codeLoadingTime: number, activateCallTime: number, activateResolvedTime: number) {
-    this.startup = startup;
-    this.codeLoadingTime = codeLoadingTime;
-    this.activateCallTime = activateCallTime;
-    this.activateResolvedTime = activateResolvedTime;
-  }
+  constructor(
+    public readonly startup: boolean,
+    public readonly codeLoadingTime: number,
+    public readonly activateCallTime: number,
+    public readonly activateResolvedTime: number) {}
 }
 
 export interface IExtensionModule {
@@ -34,8 +28,20 @@ export interface IExtendExportAPI {
   //
 }
 
+export interface ActivatedExtensionJSON {
+  id: string;
+  host: ExtensionHostType;
+  activationFailed: boolean;
+  activationFailedError: Error | null;
+  activateCallTime?: number;
+}
+
 export class ActivatedExtension {
   constructor(
+    public readonly id: string,
+    public readonly displayName: string,
+    public readonly description: string,
+    public readonly host: ExtensionHostType,
     public readonly activationFailed: boolean,
     public readonly activationFailedError: Error | null,
     public readonly module: IExtensionModule,
@@ -45,15 +51,18 @@ export class ActivatedExtension {
     public readonly extendExports?: IExtendExportAPI,
     public readonly extendModule?: IExtensionModule,
   ) {
-    this.activationFailedError = activationFailedError;
-    this.module = module;
-    this.exports = exports;
-    this.subscriptions = subscriptions;
+  }
 
-    // TODO 支持 activationTimes 了吗?
-    if (activationTimes) {
-      this.activationTimes = activationTimes;
-    }
+  public toJSON() {
+    return {
+      id: this.id,
+      displayName: this.displayName,
+      description: this.description,
+      host: this.host,
+      activationFailed: this.activationFailed,
+      activationFailedError: this.activationFailedError,
+      activateCallTime: this.activationTimes?.activateCallTime,
+    };
   }
 }
 
@@ -75,6 +84,10 @@ export class ExtensionsActivator {
 
   get(id: string): ActivatedExtension | undefined {
     return this.activatedExtensions.get(id);
+  }
+
+  all(): ActivatedExtension[] {
+    return Array.from(this.activatedExtensions.values());
   }
 
   delete(id: string) {

@@ -35,3 +35,4 @@ export * from './problem-pattern';
 export * from './problem-matcher';
 export * from './task-definition';
 export * from './errors';
+export * from './node/port';
