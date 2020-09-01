@@ -5,7 +5,7 @@ import { getLanguageIdFromMonaco } from '@ali/ide-core-browser/lib/services';
 import { EditorComponentRegistry, BrowserEditorContribution, IEditorDocumentModelContentRegistry } from '@ali/ide-editor/lib/browser';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 
-import { ImagePreview } from './preview.view';
+import { ImagePreview, VideoPreview } from './preview.view';
 import { BinaryEditorComponent } from './external.view';
 import { FILE_SCHEME } from '../common';
 import { FileSchemeDocumentProvider, DebugSchemeDocumentProvider, VscodeSchemeDocumentProvider } from './file-doc';
@@ -13,6 +13,7 @@ import { UntitledSchemeResourceProvider, UntitledSchemeDocumentProvider } from '
 import { LargeFilePrevent } from './prevent.view';
 import { FileSystemResourceProvider, DebugResourceProvider } from './file-resource';
 
+const VIDEO_PREVIEW_COMPONENT_ID = 'video-preview';
 const IMAGE_PREVIEW_COMPONENT_ID = 'image-preview';
 const EXTERNAL_OPEN_COMPONENT_ID = 'external-file';
 const LARGE_FILE_PREVENT_COMPONENT_ID = 'large-file-prevent';
@@ -82,6 +83,12 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
     });
 
     editorComponentRegistry.registerEditorComponent({
+      component: VideoPreview,
+      uid: VIDEO_PREVIEW_COMPONENT_ID,
+      scheme: FILE_SCHEME,
+    });
+
+    editorComponentRegistry.registerEditorComponent({
       component: BinaryEditorComponent,
       uid: EXTERNAL_OPEN_COMPONENT_ID,
       scheme: FILE_SCHEME,
@@ -115,6 +122,13 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
         results.push({
           type: 'component',
           componentId: IMAGE_PREVIEW_COMPONENT_ID,
+        });
+      }
+
+      if (type === 'video') {
+        results.push({
+          type: 'component',
+          componentId: VIDEO_PREVIEW_COMPONENT_ID,
         });
       }
 

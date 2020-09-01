@@ -1,17 +1,37 @@
-import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
+import { ReactEditorComponent, IResource } from '@ali/ide-editor/lib/browser';
 import * as React from 'react';
 import * as styles from './style.module.less';
 import { useInjectable, Disposable, DomListener } from '@ali/ide-core-browser';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 
+const useResource = (resource: IResource) => {
+  const staticService = useInjectable<StaticResourceService>(StaticResourceService);
+
+  const src = React.useMemo(() => {
+    return staticService.resolveStaticResource(resource.uri).toString();
+  }, [ resource ]);
+
+  return {
+    src,
+  };
+};
+
+export const VideoPreview: ReactEditorComponent<null> = (props) => {
+  const { src } = useResource(props.resource);
+
+  return (
+    <div className={styles.kt_video_preview}>
+      <video autoPlay controls className={styles.kt_video} src={src}></video>
+    </div>
+  );
+};
+
 export const ImagePreview: ReactEditorComponent<null> = (props) => {
   const imgRef = React.useRef<HTMLImageElement>();
   const imgContainerRef = React.useRef<HTMLDivElement>();
-  const staticService = useInjectable(StaticResourceService) as StaticResourceService;
+  const { src } = useResource(props.resource);
 
   React.useEffect(() => {
-    const target = staticService.resolveStaticResource(props.resource.uri);
-    const src: string = target.toString();
     const disposer = new Disposable();
     if (imgRef.current) {
       imgRef.current.src = src;
