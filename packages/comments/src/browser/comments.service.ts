@@ -186,9 +186,10 @@ export class CommentsService extends Disposable implements ICommentsService {
     }));
     let oldDecorations: string[] = [];
     disposer.addDispose(editor.monacoEditor.onMouseMove(debounce(async (event) => {
-      const uri = editor.currentUri!;
+      const uri = editor.currentUri;
+
       const range = event.target.range;
-      if (range && await this.shouldShowHoverDecoration(uri, range)) {
+      if (uri && range && await this.shouldShowHoverDecoration(uri, range)) {
         oldDecorations = editor.monacoEditor.deltaDecorations(oldDecorations, [
           {
             range: positionToRange(range.startLineNumber),
