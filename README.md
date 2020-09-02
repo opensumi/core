@@ -25,6 +25,12 @@ npm run init
 
 # 下载插件, 可选
 npm run download-extension
+# 指定文件树 workspace dir 的加载路径
+git clone {your_repo_git_uri} tools/workspace
+# 启动标准版本的开发环境
+npm run start
+# 启动纯前端版本的开发环境
+npm run start:lite
 ```
 
 ### 创建模块
