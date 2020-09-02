@@ -56,7 +56,7 @@ export interface IEditor {
 
   setSelection(selection: IRange | ISelection);
 
-  updateOptions(editorOptions: monaco.editor.IEditorOptions, modelOptions: monaco.editor.ITextModelUpdateOptions);
+  updateOptions(editorOptions?: monaco.editor.IEditorOptions, modelOptions?: monaco.editor.ITextModelUpdateOptions);
 
   save(): Promise<void>;
 

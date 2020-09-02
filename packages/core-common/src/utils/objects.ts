@@ -84,3 +84,16 @@ export function deepClone<T>(obj: T): T {
 export function isPlainObject(obj: object) {
   return typeof obj === 'object' && obj.constructor === Object;
 }
+
+export function removeUndefined<T extends object = any>(obj: T): T {
+  if (!isPlainObject(obj)) {
+    return obj;
+  }
+  const keys = Object.keys(obj);
+  keys.forEach(key => {
+    if (obj[key] === undefined) {
+      delete obj[key];
+    }
+  })
+  return obj;
+}

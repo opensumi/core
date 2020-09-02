@@ -645,6 +645,10 @@ export const editorOptionsConverters: Map<KaitianPreferenceKey , NoConverter | I
      */
     ['editor.showUnused', { monaco: 'showUnused' }],
 
+    /**
+     * 是否强行readonly
+     */
+    ['editor.forceReadOnly', { monaco: 'readOnly' }],
 ]);
 
 export const textModelUpdateOptionsConverters: Map<KaitianPreferenceKey , NoConverter | IMonacoOptionsConverter> = new Map<string , NoConverter | IMonacoOptionsConverter>([
@@ -684,4 +688,8 @@ export const diffEditorOptionsConverters: Map<KaitianPreferenceKey , NoConverter
 
 export function isEditorOption(key: string) {
   return editorOptionsConverters.has(key) || textModelUpdateOptionsConverters.has(key) || diffEditorOptionsConverters.has(key);
+}
+
+export function isDiffEditorOption(key: string): boolean {
+  return diffEditorOptionsConverters.has(key);
 }
