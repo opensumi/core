@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import * as fs from 'fs-extra';
-import { IExtensionManagerServer, PREFIX, RequestHeaders, BaseExtension, IExtensionManager, IExtensionManagerRequester } from '../common';
+import { IExtensionManagerServer, PREFIX, RequestHeaders, BaseExtension, IExtensionManager, IExtensionManagerRequester, IMarketplaceExtensionInfo } from '../common';
 import * as urllib from 'urllib';
 import { AppConfig, URI, INodeLogger, isElectronEnv} from '@ali/ide-core-node';
 import * as pkg from '@ali/ide-core-node/package.json';
@@ -298,5 +298,26 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
 
   setHeaders(headers: RequestHeaders) {
     this.extensionManagerRequester.setHeaders(headers);
+  }
+
+  async getExtensionsInfo(idList: string[]): Promise<IMarketplaceExtensionInfo[]> {
+    if (idList.length === 0) {
+      return [];
+    }
+    try {
+      const res = await this.extensionManagerRequester.request(`extensions?id=${idList.join('&id=')}`, {
+        dataType: 'json',
+        timeout: 5000,
+      });
+      if (res.status === 200) {
+        return res.data.data;
+      } else {
+        this.logger.error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
+        return [];
+      }
+    } catch (err) {
+      this.logger.error(err);
+      return [];
+    }
   }
 }

@@ -220,10 +220,10 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
               {canUpdate ? (<span className={clx(commonStyles.tag, styles.green)}>{localize('marketplace.extension.canupdate')}</span>) : null}
             </div>
             <div className={styles.subtitle}>
+              <span className={styles.subtitle_item}>{extension.displayGroupName || extension.publisher}</span>
               {downloadCount > 0 ? (
                 <span className={styles.subtitle_item}><i className={clx(commonStyles.icon, getIcon('download'))}></i>{downloadCount}</span>
               ) : null}
-              <span className={styles.subtitle_item}>{extension.publisher}</span>
               <span className={styles.subtitle_item}>v{extension.version}</span>
             </div>
             <div className={styles.description}>{extension.description}</div>
