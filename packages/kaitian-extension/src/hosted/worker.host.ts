@@ -263,7 +263,7 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
       if (_module.exports && (_module.exports as any).activate) {
         const workerExtContext = this.loadContext(extension);
         try {
-          moduleExports = (_module.exports as any).activate(Object.freeze(workerExtContext));
+          moduleExports = await (_module.exports as any).activate(Object.freeze(workerExtContext));
         } catch (err) {
           extensionActivateFailed = err;
           this.logger.error(`[Worker-Host] failed to activate extension ${extension.id} \n\n ${err.message}`);
