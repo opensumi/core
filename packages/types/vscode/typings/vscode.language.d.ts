@@ -886,7 +886,7 @@ declare module 'vscode' {
 		 * *Note:* The range must be a [single line](#Range.isSingleLine) and it must
 		 * [contain](#Range.contains) the position at which completion has been [requested](#CompletionItemProvider.provideCompletionItems).
 		 */
-		range?: Range;
+    range?: Range;
 
 		/**
 		 * An optional set of characters that when pressed while this completion is active will accept it first and

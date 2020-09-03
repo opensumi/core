@@ -5,8 +5,8 @@ import { FileOperationOptions } from './model.api';
 import { startsWithIgnoreCase, uuid, es5ClassCompat } from '@ali/ide-core-common';
 import { isMarkdownString, MarkdownString } from './models/html-content';
 export * from './models';
-export { URI as Uri };
 
+export { URI as Uri };
 export enum ProgressLocation {
 
   /**

@@ -5,14 +5,15 @@ import { ExtensionMemento, ExtHostStorage } from './ext.host.storage';
 import { URI } from '@ali/ide-core-common/lib/uri';
 
 export interface IKTContextOptions {
+  extensionId: string;
+  extensionPath: string;
+  storageProxy: ExtHostStorage;
   extendProxy?: IExtendProxy;
   registerExtendModuleService?: (exportsData: any) => void;
 }
 
-export interface ExtensionContextOptions extends IKTContextOptions {
-  extensionId: string;
-  extensionPath: string;
-  storageProxy: ExtHostStorage;
+export interface IKTWorkerExtensionContextOptions extends IKTContextOptions {
+  staticServicePath: string;
 }
 
 export interface IKTExtensionContext {
@@ -38,19 +39,26 @@ export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
   private _extensionPath: string;
   readonly staticServicePath: string;
 
+  readonly workspaceState: ExtensionMemento;
+
+  readonly globalState: ExtensionMemento;
+
   public componentProxy: IExtendProxy | undefined;
+
   public registerExtendModuleService: ((moduleExports: any) => void) | undefined;
 
   private _storage: ExtHostStorage;
 
   constructor(
-    options: IKTContextOptions & { extensionPath: string; staticServicePath: string; storage: ExtHostStorage },
+    options: IKTWorkerExtensionContextOptions,
   ) {
-    const { extensionPath, staticServicePath, extendProxy, registerExtendModuleService, storage } = options;
+    const { extensionPath, staticServicePath, extendProxy, registerExtendModuleService, storageProxy, extensionId } = options;
     this._extensionPath = extensionPath;
-    this._storage = storage;
+    this._storage = storageProxy;
     this.staticServicePath = staticServicePath;
     this.componentProxy = extendProxy;
+    this.workspaceState = new ExtensionMemento(extensionId, false, storageProxy);
+    this.globalState = new ExtensionMemento(extensionId, true, storageProxy);
     this.registerExtendModuleService = registerExtendModuleService;
   }
 
@@ -92,9 +100,10 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
   private _storage: ExtHostStorage;
 
   public componentProxy: IExtendProxy | undefined;
+
   public registerExtendModuleService: ((exportsData: any) => void) | undefined;
 
-  constructor(options: ExtensionContextOptions) {
+  constructor(options: IKTContextOptions) {
     const {
       extensionId,
       extensionPath,

@@ -4,17 +4,17 @@ import * as vscode from 'vscode';
 
 import { Injector } from '@ali/common-di';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
-import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, ReporterProcessMessage, REPORT_NAME } from '@ali/ide-core-common';
-import { IExtension, EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy, getExtensionId } from '../common';
+import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, ReporterProcessMessage, REPORT_NAME, IExtensionProps } from '@ali/ide-core-common';
+import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy, getExtensionId } from '../common';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
 import { createAPIFactory as createKaitianAPIFactory } from './api/kaitian/ext.host.api.impl';
 import { MainThreadAPIIdentifier, VSCodeExtensionService } from '../common/vscode';
 import { ExtensionContext } from './api/vscode/ext.host.extensions';
-import { ExtensionsActivator, ActivatedExtension} from './ext.host.activator';
 import { KTExtension } from './vscode.extension';
 import { ExtensionReporterService } from './extension-reporter';
 import { AppConfig } from '@ali/ide-core-node';
+import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from '../common/activator';
 
 /**
  * 在Electron中，会将kaitian中的extension-host使用webpack打成一个，所以需要其他方法来获取原始的require
@@ -29,7 +29,7 @@ export function getNodeRequire() {
 
 export default class ExtensionHostServiceImpl implements IExtensionHostService {
   private logger: any; // ExtensionLogger;
-  private extensions: IExtension[];
+  private extensions: IExtensionProps[];
   private rpcProtocol: RPCProtocol;
 
   private vscodeAPIFactory: any;
@@ -75,7 +75,11 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     Error.stackTraceLimit = 100;
   }
 
-  public $getExtensions(): IExtension[] {
+  public async $getActivatedExtensions(): Promise<ActivatedExtensionJSON[]> {
+    return this.extensionsActivator.all().map((e) => e.toJSON());
+  }
+
+  public $getExtensions(): IExtensionProps[] {
     return this.extensions;
   }
 
@@ -104,7 +108,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     Error.stackTraceLimit = 100;
 
     Error.prepareStackTrace = (error: Error, stackTrace: any[]) => {
-      let extension: IExtension | undefined;
+      let extension: IExtensionProps | undefined;
       let stackTraceMessage = '';
       let fileName: string;
       for (const call of stackTrace) {
@@ -165,7 +169,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     return this.extensions.find((extension) => filePath.startsWith(fs.realpathSync(extension.path)));
   }
 
-  private lookup(extensionModule: NodeJS.Module, depth: number): IExtension | undefined {
+  private lookup(extensionModule: NodeJS.Module, depth: number): IExtensionProps | undefined {
     if (depth >= 3) {
       return undefined;
     }
@@ -252,7 +256,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     }
   }
 
-  private containsKaitianContributes(extension: IExtension): boolean {
+  private containsKaitianContributes(extension: IExtensionProps): boolean {
     if (extension.packageJSON.kaitianContributes) {
       return true;
     }
@@ -269,7 +273,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     // await this._ready
 
     // TODO: 处理没有 VSCode 插件的情况
-    const extension: IExtension | undefined = this.extensions.find((ext) => {
+    const extension: IExtensionProps | undefined = this.extensions.find((ext) => {
       return ext.id === id;
     });
 
@@ -354,6 +358,10 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       }
     }
     this.extensionsActivator.set(id, new ActivatedExtension(
+      id,
+      extension.packageJSON.displayName || extension.name,
+      extension.packageJSON.description || '',
+      'node',
       activationFailed,
       activationFailedError,
       extensionModule,
@@ -369,7 +377,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     }
   }
 
-  private getExtensionViewModuleProxy(extension: IExtension, viewsProxies: string[]) {
+  private getExtensionViewModuleProxy(extension: IExtensionProps, viewsProxies: string[]) {
     return viewsProxies.reduce((proxies, viewId) => {
       proxies[viewId] = this.rpcProtocol.getProxy({
         serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}:${viewId}`,
@@ -388,7 +396,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     }, {});
   }
 
-  private getExtendModuleProxy(extension: IExtension, isKaitianContributes: boolean) {
+  private getExtendModuleProxy(extension: IExtensionProps, isKaitianContributes: boolean) {
     /**
      * @example
      * "kaitianContributes": {
@@ -411,7 +419,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     }
   }
 
-  private registerExtendModuleService(exportsData, extension: IExtension) {
+  private registerExtendModuleService(exportsData, extension: IExtensionProps) {
     const service = {};
     for (const key in exportsData) {
       if (exportsData.hasOwnProperty(key)) {
@@ -429,7 +437,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     return this.activateExtension(id);
   }
 
-  private async loadExtensionContext(extension: IExtension, modulePath: string, storageProxy: ExtHostStorage, extendProxy: IExtendProxy) {
+  private async loadExtensionContext(extension: IExtensionProps, modulePath: string, storageProxy: ExtHostStorage, extendProxy: IExtendProxy) {
 
     const extensionId = extension.id;
     const registerExtendFn = (exportsData) => {

@@ -8,8 +8,8 @@ import { MainThreadAPIIdentifier, ExtHostAPIIdentifier, KTWorkerExtensionService
 import { ExtensionLogger } from './extension-log';
 import { KTWorkerExtension } from './vscode.extension';
 import { KTWorkerExtensionContext } from './api/vscode/ext.host.extensions';
-import { ActivatedExtension } from './ext.host.activator';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
+import { ActivatedExtension, ActivatedExtensionJSON } from '../common/activator';
 
 function initRPCProtocol() {
   const onMessageEmitter = new Emitter<string>();
@@ -56,6 +56,10 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
     this.logger = new ExtensionLogger(rpcProtocol);
     this.storage = new ExtHostStorage(rpcProtocol);
     rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, this.storage);
+  }
+
+  async $getActivatedExtensions(): Promise<ActivatedExtensionJSON[]> {
+    return Array.from(this.activatedExtensions.values()).map((e) => e.toJSON());
   }
 
   private async init() {
@@ -194,17 +198,25 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
     this.rpcProtocol.set({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}`} as ProxyIdentifier<any>, service);
   }
 
-  private loadContext(extension: IExtensionProps) {
+  private async loadContext(extension: IExtensionProps) {
     const componentProxy = this.getExtendModuleProxy(extension);
     const registerExtendFn = (exportsData) => {
       return this.registerExtendModuleService(exportsData, extension);
     };
-    return new KTWorkerExtensionContext({
+    const context = new KTWorkerExtensionContext({
+      extensionId: extension.id,
       extendProxy: componentProxy,
       registerExtendModuleService: registerExtendFn,
       extensionPath: extension.realPath,
       staticServicePath: this.staticServicePath,
-      storage: this.storage,
+      storageProxy: this.storage,
+    });
+
+    return Promise.all([
+      context.globalState.whenReady,
+      context.workspaceState.whenReady,
+    ]).then(() => {
+      return Object.freeze(context);
     });
   }
 
@@ -261,7 +273,7 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
       let extensionActivateFailed;
       let moduleExports;
       if (_module.exports && (_module.exports as any).activate) {
-        const workerExtContext = this.loadContext(extension);
+        const workerExtContext = await this.loadContext(extension);
         try {
           moduleExports = await (_module.exports as any).activate(Object.freeze(workerExtContext));
         } catch (err) {
@@ -269,6 +281,10 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
           this.logger.error(`[Worker-Host] failed to activate extension ${extension.id} \n\n ${err.message}`);
         }
         const activatedExtension = new ActivatedExtension(
+          id,
+          extension.packageJSON.displayName || extension.name,
+          extension.packageJSON.description || '',
+          'worker',
           !!extensionActivateFailed,
           extensionActivateFailed,
           _module.exports,

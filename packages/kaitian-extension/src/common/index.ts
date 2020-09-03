@@ -2,10 +2,10 @@ import { Disposable, IJSONSchema, IDisposable, ReporterProcessMessage, Deferred,
 import { createExtHostContextProxyIdentifier, ProxyIdentifier } from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { Extension } from '../hosted/vscode.extension';
-import { ExtensionsActivator } from '../hosted/ext.host.activator';
 import { Emitter, IExtensionProps } from '@ali/ide-core-common';
 import { IExtensionContributions } from './vscode';
 import { IKaitianExtensionContributions } from './kaitian/extension';
+import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from './activator';
 
 export { IExtensionProps } from '@ali/ide-core-common';
 
@@ -48,6 +48,9 @@ export interface IExtensionNodeService {
   getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
   setConnectionServiceClient(clientId: string, serviceClient: IExtensionNodeClientService);
   disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
+
+  tryEnableInspectPort(clientId: string): Promise<boolean>;
+  getProcessInspectPort(clientId: string): number | undefined;
 }
 
 export const IExtensionNodeClientService = Symbol('IExtensionNodeClientService');
@@ -83,7 +86,7 @@ export abstract class ExtensionService {
   abstract getExtensionCommand(command: string): ExtensionHostType | undefined;
   abstract async activate(): Promise<void>;
   abstract async activeExtension(extension: IExtension): Promise<void>;
-  abstract async getProxy<T>(identifier: ProxyIdentifier<T>): Promise<T>;
+  abstract async getProxy<T>(identifier: ProxyIdentifier): Promise<T>;
   abstract async getAllExtensions(): Promise<IExtensionMetaData[]>;
   abstract getExtensionProps(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionProps | undefined>;
   abstract getAllExtensionJson(): Promise<IExtensionProps[]>;
@@ -103,6 +106,8 @@ export abstract class ExtensionService {
   abstract async initKaitianBrowserAPIDependency(extension: IExtension): Promise<void>;
 
   abstract getExtensionByExtId(dep: string): IExtension | undefined;
+
+  abstract getActivatedExtensions(): Promise<{ [key in ExtensionHostType]?: ActivatedExtension[] }>;
 
   onDidExtensionActivated: Event<IExtensionProps>;
   eagerExtensionsActivated: Deferred<void>;
@@ -160,6 +165,8 @@ export const MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER = createExtHostContextProxyI
 export interface IExtensionHost {
   $activateExtension(id: string): Promise<void>;
   $initExtensions(): Promise<void>;
+  $getActivatedExtensions(): Promise<ActivatedExtensionJSON[]>;
+
   getExtensionExports(id: string): any;
   getExtensions(): Extension[];
   getExtension(extensionId: string): Extension<any, IExtensionHost> | undefined;
@@ -170,8 +177,9 @@ export interface IExtensionHost {
 }
 
 export interface IExtensionHostService extends IExtensionHost {
-  reporterEmitter: Emitter<ReporterProcessMessage>;
   $fireChangeEvent(): Promise<void>;
+
+  reporterEmitter: Emitter<ReporterProcessMessage>;
   getExtendExports(id: string): any;
   extensionsActivator: ExtensionsActivator;
 }
@@ -186,7 +194,7 @@ export interface IExtendProxy {
 }
 
 export const WorkerHostAPIIdentifier = {
-  ExtWorkerHostExtensionService: createExtHostContextProxyIdentifier<IExtensionWorkerHost>('ExtWorkerHostExtensionService'),
+  ExtWorkerHostExtensionService: createExtHostContextProxyIdentifier('ExtWorkerHostExtensionService'),
 };
 
 export enum ProcessMessageType {
@@ -210,4 +218,14 @@ export function getExtensionId(extensionId: string) {
 export enum ExtensionHostKind {
   NODE_HOST = 1,
   WORKER_HOST = 2,
+}
+
+export const ExtensionHostProfilerServicePath = 'ExtensionHostProfilerService';
+
+export const ExtensionHostProfilerServiceToken = Symbol('ExtensionHostProfilerService');
+
+export interface IExtensionHostProfilerService {
+  $startProfile(clientId: string): Promise<void>;
+  $stopProfile(clientId: string): Promise<boolean>;
+  $saveLastProfile(filePath: string): Promise<void>;
 }
