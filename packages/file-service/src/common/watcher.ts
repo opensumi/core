@@ -44,21 +44,3 @@ export namespace INsfw {
   }
 
 }
-
-export namespace IEfsw {
-
-  export interface ChangeEvent {
-    action: actions;
-    dir: string;
-    relative?: string;
-    oldRelative?: string;
-    old?: string;
-  }
-
-  export enum actions {
-    ADD = 'ADD',
-    DELETE = 'DELETE',
-    MODIFIED = 'MODIFIED',
-    MOVED = 'MOVED',
-  }
-}

@@ -3,7 +3,7 @@ import * as nsfw from 'nsfw';
 import * as paths from 'path';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 // import { IMinimatch, Minimatch } from 'minimatch';
-import { IDisposable, Disposable, DisposableCollection, isWindows, isLinux } from '@ali/ide-core-common';
+import { IDisposable, Disposable, DisposableCollection, isWindows } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import {
   FileChangeType,
@@ -12,10 +12,9 @@ import {
   WatchOptions,
 } from '..';
 import { FileChangeCollection } from './file-change-collection';
-import { INsfw, IEfsw } from '../common/watcher';
+import { INsfw } from '../common/watcher';
 import { setInterval, clearInterval } from 'timers';
 import debounce = require('lodash.debounce');
-import { Watcher } from 'efsw';
 
 export interface WatcherOptions {
   excludesPattern: ParsedPattern[];
@@ -26,7 +25,6 @@ export interface NsfwFileSystemWatcherOption {
   verbose?: boolean;
   info?: (message: string, ...args: any[]) => void;
   error?: (message: string, ...args: any[]) => void;
-  useExperimentalEfsw?: boolean;
 }
 
 export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
@@ -49,7 +47,6 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     info: (message: string, ...args: any[]) => void,
     // tslint:disable-next-line
     error: (message: string, ...args: any[]) => void,
-    useExperimentalEfsw?: boolean,
   };
 
   constructor(options?: NsfwFileSystemWatcherOption) {
@@ -166,62 +163,38 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
       excludes: [],
       ...rawOptions,
     };
-    let watcher: INsfw.NSFW | undefined | Watcher;
+    let watcher: INsfw.NSFW | undefined;
 
-    if (isLinux && this.options.useExperimentalEfsw) {
-      watcher = new Watcher(fs.realpathSync(basePath));
-      watcher.on('change', (filename: string, event: IEfsw.ChangeEvent) => {
-        if (event.action === IEfsw.actions.ADD) {
-          this.pushAdded(watcherId, this.resolvePath(event.dir, event.relative!));
+    watcher = await (nsfw as any)(fs.realpathSync(basePath), (events: INsfw.ChangeEvent[]) => {
+      events = this.trimChangeEvent(events);
+      for (const event of events) {
+        if (event.action === INsfw.actions.CREATED) {
+          this.pushAdded(watcherId, this.resolvePath(event.directory, event.file!));
         }
-        if (event.action === IEfsw.actions.DELETE) {
-          this.pushDeleted(watcherId, this.resolvePath(event.dir, event.relative!));
+        if (event.action === INsfw.actions.DELETED) {
+          this.pushDeleted(watcherId, this.resolvePath(event.directory, event.file!));
         }
-        if (event.action === IEfsw.actions.MODIFIED) {
-          this.pushUpdated(watcherId, this.resolvePath(event.dir, event.relative!));
+        if (event.action === INsfw.actions.MODIFIED) {
+          this.pushUpdated(watcherId, this.resolvePath(event.directory, event.file!));
         }
-        if (event.action === IEfsw.actions.MOVED) {
-          this.pushDeleted(watcherId, this.resolvePath(event.dir, event.oldRelative!));
-          this.pushAdded(watcherId, this.resolvePath(event.dir, event.relative!));
+        if (event.action === INsfw.actions.RENAMED) {
+          if (event.newDirectory) {
+            this.pushDeleted(watcherId, this.resolvePath(event.directory, event.oldFile!));
+            this.pushAdded(watcherId, this.resolvePath(event.newDirectory, event.newFile!));
+          } else {
+            this.pushDeleted(watcherId, this.resolvePath(event.directory, event.oldFile!));
+            this.pushAdded(watcherId, this.resolvePath(event.directory, event.newFile!));
+          }
         }
-      });
-      watcher.on('error', (error) => {
+      }
+    }, {
+      errorCallback: (error: any) => {
+        // see https://github.com/atom/github/issues/342
         // tslint:disable-next-line
         console.warn(`Failed to watch "${basePath}":`, error);
         this.unwatchFileChanges(watcherId);
-      });
-    } else {
-      watcher = await (nsfw as any)(fs.realpathSync(basePath), (events: INsfw.ChangeEvent[]) => {
-        events = this.trimChangeEvent(events);
-        for (const event of events) {
-          if (event.action === INsfw.actions.CREATED) {
-            this.pushAdded(watcherId, this.resolvePath(event.directory, event.file!));
-          }
-          if (event.action === INsfw.actions.DELETED) {
-            this.pushDeleted(watcherId, this.resolvePath(event.directory, event.file!));
-          }
-          if (event.action === INsfw.actions.MODIFIED) {
-            this.pushUpdated(watcherId, this.resolvePath(event.directory, event.file!));
-          }
-          if (event.action === INsfw.actions.RENAMED) {
-            if (event.newDirectory) {
-              this.pushDeleted(watcherId, this.resolvePath(event.directory, event.oldFile!));
-              this.pushAdded(watcherId, this.resolvePath(event.newDirectory, event.newFile!));
-            } else {
-              this.pushDeleted(watcherId, this.resolvePath(event.directory, event.oldFile!));
-              this.pushAdded(watcherId, this.resolvePath(event.directory, event.newFile!));
-            }
-          }
-        }
-      }, {
-          errorCallback: (error: any) => {
-            // see https://github.com/atom/github/issues/342
-            // tslint:disable-next-line
-            console.warn(`Failed to watch "${basePath}":`, error);
-            this.unwatchFileChanges(watcherId);
-          },
-        });
-    }
+      },
+    });
 
     await watcher!.start();
     // this.options.info('Started watching:', basePath);
