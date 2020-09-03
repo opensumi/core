@@ -138,9 +138,10 @@ export class Extension extends Disposable implements IExtension {
     this.extensionService.activeExtension(this).then(() => {
       this._activated = true;
       this.didActivated.fire(this.toJSON());
+      this._activating.resolve();
     }).catch((e) => {
       this.logger.error(e);
-    }).then(() => this._activating.resolve());
+    });
 
     return this._activating.promise;
   }

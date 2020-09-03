@@ -811,12 +811,12 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     // 因为可能存在即用了 kaitian.js 作为入口，又注册了 kaitianContributes 贡献点的插件
     if (extendConfig && !isEmptyObject(extendConfig)) {
       warning(false, '[Deprecated warning]: kaitian.js is deprecated, please use `package.json#kaitianContributes` instead');
-      this.activateExtensionByDeprecatedExtendConfig(extension);
+      await this.activateExtensionByDeprecatedExtendConfig(extension);
       return;
     }
 
     if (packageJSON.kaitianContributes) {
-      this.doActivateExtension(extension);
+      await this.doActivateExtension(extension);
     }
 
   }
