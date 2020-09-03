@@ -24,6 +24,7 @@ export interface KtViewItem {
   priority?: number;
   noResize?: boolean;
   expanded?: boolean;
+  weight?: number;
 }
 
 export type KtViewsSchema = Array<KtViewsContribution>;
@@ -62,13 +63,14 @@ export class KtViewContributionPoint extends VSCodeContributePoint<KtViewsContri
           } else {
             // 走append view逻辑
             for (const view of views) {
-              const { title, id, priority, component, when } = view;
+              const { title, id, priority, component, when, weight } = view;
               const handlerId = this.mainlayoutService.collectViewComponent({
                 id,
                 priority,
                 component,
                 name: title,
                 when,
+                weight,
               }, location);
               this.disposableCollection.push({
                 dispose: () => {
@@ -81,13 +83,14 @@ export class KtViewContributionPoint extends VSCodeContributePoint<KtViewsContri
           }
         }
         for (const view of views) {
-          const { title, icon, iconPath, id, priority, component, expanded, noResize, when } = view;
+          const { title, icon, iconPath, id, priority, component, expanded, noResize, when, weight } = view;
           const containerId = `${this.extension.id}:${id}`;
           const handlerId = this.mainlayoutService.collectTabbarComponent([{
             id,
             priority,
             component,
             when,
+            weight,
           }], {
             iconClass: iconPath ? this.iconService.fromIcon(this.extension.path, iconPath) : getIcon(icon!),
             title: title && this.getLocalizeFromNlsJSON(title),
