@@ -43,11 +43,13 @@ export interface IExtHostCommands {
   registerCommand(global: boolean, id: string, handler: Handler, thisArg?: any, description?: ICommandHandlerDescription): Disposable;
   registerCommand(global: boolean, id: string, handler: CommandHandler): Disposable;
   executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined>;
-  $executeCommandWithExtensionInfo<T>(id: string, extensionInfo: IExtensionInfo, ...args: any[]): Promise<T | undefined>;
-  $executeContributedCommand<T>(id: string, ...args: any[]): Promise<T>;
   getCommands(filterUnderscoreCommands: boolean): Promise<string[]>;
   registerArgumentProcessor(processor: ArgumentProcessor): void;
+
+  $executeContributedCommand<T>(id: string, ...args: any[]): Promise<T>;
+  $executeCommandWithExtensionInfo<T>(id: string, extensionInfo: IExtensionInfo, ...args: any[]): Promise<T | undefined>;
   $registerBuiltInCommands(): void;
+  $registerCommandConverter(): void;
 }
 
 export interface ICommandHandlerDescription {

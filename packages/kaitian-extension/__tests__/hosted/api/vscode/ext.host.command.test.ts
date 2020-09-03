@@ -203,6 +203,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts
 
     it('register builtin commands', async () => {
       extCommand.$registerBuiltInCommands();
+      extCommand.$registerCommandConverter();
       expect(extCommand.converter instanceof CommandsConverter).toBeTruthy();
       await extCommand.executeCommand('vscode.executeReferenceProvider', URI.parse(''), new types.Position(1, 1), []);
       // 说明已经注册成功，本地有命令的，所以远端不会执行
