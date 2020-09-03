@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Uri } from '@ali/ide-core-common/lib/uri';
+import { Uri, URI } from '@ali/ide-core-common/lib/uri';
 import { rtrim, escapeRegExpCharacters } from '@ali/ide-core-common/lib/utils/strings';
 import { format } from '@ali/ide-core-common/lib/utils/strings';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -78,7 +78,7 @@ class OutputLinkComputer {
       const resourceCreator: IResourceCreator = {
         toResource: (folderRelativePath: string): string | undefined => {
           if (typeof folderRelativePath === 'string') {
-            return Uri.file(join(folderUri, folderRelativePath)).toString();
+            return URI.parse(join(folderUri, folderRelativePath)).withScheme('file').toString();
           }
 
           return undefined;
