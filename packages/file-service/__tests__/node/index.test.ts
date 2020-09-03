@@ -3,24 +3,27 @@ import { FileServiceModule, FileService } from '../../src/node';
 import { IFileService, FileChangeType } from '../../src/common';
 import { URI, FileUri, AppConfig } from '@ali/ide-core-node';
 import { isWindows } from '../../../core-common';
-import * as temp from 'temp';
 import * as fs from 'fs-extra';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 // import { servicePath as FileTreeServicePath } from '@ali/ide-file-tree'
 // import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 // import { SUPPORTED_ENCODINGS } from '../../src/node/encoding';
+import * as fse from 'fs-extra';
+import * as os from 'os';
+import * as path from 'path';
 
 // tslint:disable:variable-name
-
-const track = temp.track();
-
 describe('FileService', () => {
   let root: URI;
   let fileService: IFileService;
   let injector: Injector;
+  let counter = 1;
 
-  beforeEach(() => {
-    root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
+  beforeEach(async () => {
+    // 换一个方式实现 temp dir
+    const testDir = path.join(os.tmpdir(), 'fs-test', 'describe-' + counter++);
+    await fse.ensureDir(testDir);
+    root = FileUri.create(testDir);
 
     injector = createNodeInjector([FileServiceModule], new Injector([{
       token: AppConfig,
@@ -34,8 +37,8 @@ describe('FileService', () => {
     fileService = injector.get(IFileService);
   });
 
-  afterEach(async () => {
-    track.cleanupSync();
+  afterAll(async () => {
+    await fse.unlink(path.join(os.tmpdir(), 'fs-test'));
   });
 
   describe('01 #getFileStat', () => {
@@ -681,11 +684,11 @@ describe('FileService', () => {
   });
 
   describe('getFileType', () => {
-    it ('Should return file type', async () => {
-      const uri = root.resolve('foo.txt');
-      fs.writeFileSync(FileUri.fsPath(uri), 'foo');
-
+    it('Should return file type', async (done) => {
+      const uri = root.resolve('foo1111.txt');
+      fs.writeFileSync(FileUri.fsPath(uri), 'getFileType', { encoding: 'utf8' });
       expect(await fileService.getFileType(uri.toString())).toEqual('text');
+      done();
     });
   });
 
