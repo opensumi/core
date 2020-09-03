@@ -191,6 +191,15 @@ describe('MainThreadEditor Test Suites', () => {
       uri: URI.file(path.join(__dirname, 'main.thread.output.test.ts')),
       icon: 'file',
     };
+    const disposer = extEditor.onDidChangeActiveTextEditor((e) => {
+      if (!!e) {
+        expect(extEditor.activeEditor?.textEditor).toBeDefined();
+        expect(extEditor.activeEditor?.textEditor.document.fileName).toBe(path.join(__dirname, 'main.thread.output.test.ts'));
+        expect(e).toBeDefined();
+        done();
+        disposer.dispose();
+      }
+    });
     await group.createEditor(document.createElement('div'));
     await group.codeEditor.open(await editorDocModelService.createModelReference(URI.file(path.join(__dirname, 'main.thread.output.test.ts'))));
     // group.codeEditor = editor;
@@ -200,10 +209,8 @@ describe('MainThreadEditor Test Suites', () => {
       title: 'test-file',
     };
     (workbenchEditorService as WorkbenchEditorServiceImpl).setCurrentGroup(group);
-    group.currentState = {
-      currentResource: resource,
-      currentOpenType: openType,
-    };
+    group._currentOpenType = openType;
+    group._currentResource = resource;
     eventBus.fire(new EditorGroupChangeEvent({
       group,
       newOpenType: group.currentOpenType,
@@ -211,15 +218,7 @@ describe('MainThreadEditor Test Suites', () => {
       oldOpenType: null,
       oldResource: null,
     }));
-
-    extEditor.onDidChangeActiveTextEditor((e) => {
-      if (!!e) {
-        expect(extEditor.activeEditor?.textEditor).toBeDefined();
-        expect(extEditor.activeEditor?.textEditor.document.fileName).toBe(path.join(__dirname, 'main.thread.output.test.ts'));
-        expect(e).toBeDefined();
-        done();
-      }
-    });
+    group._onDidEditorGroupBodyChanged.fire();
   });
 
   it('should be able to get visibleTextEditors', async () => {

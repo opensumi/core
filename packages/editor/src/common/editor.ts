@@ -151,7 +151,7 @@ export interface IEditorGroup {
 
   currentOpenType: MaybeNull<IEditorOpenType>;
 
-  open(uri: URI, options: IResourceOpenOptions): Promise<IOpenResourceResult>;
+  open(uri: URI, options?: IResourceOpenOptions): Promise<IOpenResourceResult>;
 
   pin(uri: URI): Promise<void>;
 
@@ -171,6 +171,16 @@ export abstract class WorkbenchEditorService {
   onActiveResourceChange: Event<MaybeNull<IResource>>;
 
   onCursorChange: Event<CursorStatus>;
+
+  /**
+   * 编辑器组发生改变时的事件
+   */
+  onDidEditorGroupsChanged: Event<void>;
+
+  /**
+   * 当前 editorGroup 发生改变的事件
+   */
+  onDidCurrentEditorGroupChanged: Event<IEditorGroup>;
 
   // TODO
   editorGroups: IEditorGroup[];

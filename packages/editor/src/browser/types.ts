@@ -341,6 +341,8 @@ export interface IBreadCrumbService {
 
   disposeCrumb(uri: URI): void;
 
+  onDidUpdateBreadCrumbResults: Event<{ editor: MaybeNull<IEditor>, uri: URI}>;
+
 }
 
 export const IBreadCrumbService = Symbol('IBreadScrumbService');

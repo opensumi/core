@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import * as styles from './editor.module.less';
@@ -7,14 +6,13 @@ import { WorkbenchEditorService, IResource, IEditorOpenType } from '../common';
 import classnames from 'classnames';
 import { IEditorComponent, EditorComponentRegistry, DragOverPosition, EditorGroupsResetSizeEvent, EditorComponentRenderMode, EditorGroupFileDropEvent, EditorSide } from './types';
 import { Tabs } from './tab.view';
-import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus, AppConfig, ErrorBoundary, ComponentRegistry, PreferenceService } from '@ali/ide-core-browser';
+import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus, AppConfig, ErrorBoundary, ComponentRegistry, PreferenceService, Disposable } from '@ali/ide-core-browser';
 import { EditorGrid, SplitDirection } from './grid/grid.service';
 import ReactDOM = require('react-dom');
 import { Scroll } from './component/scroll/scroll';
 import { EditorComponentRegistryImpl } from './component';
 import { NavigationBar } from './navigation.view';
 import { IResizeHandleDelegate, ResizeHandleVertical, ResizeHandleHorizontal } from '@ali/ide-core-browser/lib/components';
-import { TabTitleMenuService } from './menu/title-context.menu';
 
 export const EditorView = () => {
   const ref = React.useRef<HTMLElement | null>();
@@ -65,12 +63,14 @@ export const EditorView = () => {
 
 const cachedGroupView = {};
 
-export const EditorGridView = observer(({ grid }: { grid: EditorGrid }) => {
+export const EditorGridView = ({ grid }: { grid: EditorGrid }) => {
   let editorGroupContainer: HTMLDivElement;
   const context = React.useContext(ConfigContext);
 
   const eventBus = useInjectable(IEventBus) as IEventBus;
   const resizeDelegates: IResizeHandleDelegate[] = [];
+  const [, updateState] = React.useState();
+  const forceUpdate = React.useCallback(() => updateState({}), []);
 
   React.useEffect(() => {
     if (editorGroupContainer) {
@@ -85,17 +85,25 @@ export const EditorGridView = observer(({ grid }: { grid: EditorGrid }) => {
         ReactDOM.render(<ConfigProvider value={context}><EditorGroupView group={grid.editorGroup! as EditorGroup} /></ConfigProvider>, div);
       }
     }
-    const disposer = eventBus.on(EditorGroupsResetSizeEvent, () => {
+
+  });
+
+  React.useEffect(() => {
+    const disposer = new Disposable();
+    disposer.addDispose(eventBus.on(EditorGroupsResetSizeEvent, () => {
       if (grid.splitDirection && resizeDelegates.length > 0) {
         resizeDelegates.forEach((delegate) => {
           delegate.setSize(1 / grid.children.length, 1 / grid.children.length);
         });
       }
-    });
+    }));
+    disposer.addDispose(grid.onDidGridStateChange(() => {
+      forceUpdate();
+    }));
     return () => {
       disposer.dispose();
     };
-  });
+  }, []);
 
   if (grid.children.length === 0 && grid.editorGroup) {
     return <div style={{ height: '100%' }} ref={(el) => el && (editorGroupContainer = el)}>
@@ -139,23 +147,66 @@ export const EditorGridView = observer(({ grid }: { grid: EditorGrid }) => {
       {children}
     </div>;
   }
-});
+};
 
 const cachedEditor: { [key: string]: HTMLDivElement } = {};
 const cachedDiffEditor: { [key: string]: HTMLDivElement } = {};
 
-export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
+export const EditorGroupView = ({ group }: { group: EditorGroup }) => {
   const groupWrapperRef = React.useRef<HTMLElement | null>();
-  const codeEditorRef = React.useRef<HTMLElement | null>();
-  const diffEditorRef = React.useRef<HTMLElement | null>();
-  const editorBodyRef = React.useRef<HTMLElement | null>();
-  const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
-  const tabTitleMenuService = useInjectable(TabTitleMenuService) as TabTitleMenuService;
+
   const preferenceService = useInjectable(PreferenceService) as PreferenceService;
-  const eventBus = useInjectable(IEventBus) as IEventBus;
+  const [isEmpty, setIsEmpty] = React.useState(group.resources.length === 0);
 
   const appConfig = useInjectable(AppConfig);
   const { editorBackgroundImage } = appConfig;
+
+  React.useEffect(() => {
+    group.attachToDom(groupWrapperRef.current);
+  });
+
+  React.useEffect(() => {
+    const disposer = group.onDidEditorGroupTabChanged(() => {
+      setIsEmpty(group.resources.length === 0);
+    });
+    return disposer.dispose.bind(disposer);
+  }, []);
+
+  const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
+  const emptyComponentInfo = componentRegistry.getComponentRegistryInfo('editor-empty');
+  const EmptyComponent: React.Component | React.FunctionComponent<any> | undefined = emptyComponentInfo && emptyComponentInfo.views[0].component;
+
+  return (
+    <div ref={groupWrapperRef as any} className={styles.kt_editor_group} tabIndex={1} onFocus={(e) => {
+      group.gainFocus();
+    }}
+    >
+      {isEmpty && <div className={styles.kt_editor_background} style={{
+        backgroundImage: editorBackgroundImage ? `url(${editorBackgroundImage})` : 'none',
+      }}>
+        {EmptyComponent ? <ErrorBoundary><EmptyComponent></EmptyComponent></ErrorBoundary> : undefined}
+      </div>}
+      {(!isEmpty || !!preferenceService.get('editor.showActionWhenGroupEmpty')) &&
+        <div className={styles.editorGroupHeader}>
+          <Tabs
+            group={group}
+          />
+        </div>}
+      <EditorGroupBody group={group} />
+    </div>
+  );
+};
+
+export function EditorGroupBody({group}: {group: EditorGroup}) {
+  const editorBodyRef = React.useRef<HTMLElement | null>();
+  const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
+  const eventBus = useInjectable(IEventBus) as IEventBus;
+  const components: React.ReactNode[] = [];
+  const codeEditorRef = React.useRef<HTMLElement | null>();
+  const diffEditorRef = React.useRef<HTMLElement | null>();
+  const [, updateState] = React.useState();
+  const forceUpdate = React.useCallback(() => updateState({}), []);
+
   React.useEffect(() => {
     if (codeEditorRef.current) {
       if (cachedEditor[group.name]) {
@@ -182,10 +233,14 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   }, [codeEditorRef.current]);
 
   React.useEffect(() => {
-    group.attachToDom(groupWrapperRef.current);
-  });
-
-  const components: React.ReactNode[] = [];
+    const disposer = new Disposable();
+    disposer.addDispose(group.onDidEditorGroupBodyChanged(() => {
+      forceUpdate();
+    }));
+    return () => {
+      disposer.dispose();
+    };
+  }, []);
 
   group.activeComponents.forEach((resources, component) => {
     const initialProps = group.activateComponentsProps.get(component);
@@ -197,61 +252,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
       </div>);
   });
 
-  const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
-  const emptyComponentInfo = componentRegistry.getComponentRegistryInfo('editor-empty');
-  const EmptyComponent: React.Component | React.FunctionComponent<any> | undefined = emptyComponentInfo && emptyComponentInfo.views[0].component;
-
-  return (
-    <div ref={groupWrapperRef as any} className={styles.kt_editor_group} tabIndex={1} onFocus={(e) => {
-      group.gainFocus();
-    }}
-    >
-      {group.resources.length === 0 && <div className={styles.kt_editor_background} style={{
-        backgroundImage: editorBackgroundImage ? `url(${editorBackgroundImage})` : 'none',
-      }}>
-        {EmptyComponent ? <ErrorBoundary><EmptyComponent></EmptyComponent></ErrorBoundary> : undefined}
-      </div>}
-      {(group.resources.length > 0 || !!preferenceService.get('editor.showActionWhenGroupEmpty')) &&
-        <div className={styles.editorGroupHeader}>
-          <Tabs resources={group.resources}
-            onActivate={(resource: IResource) => group.open(resource.uri)}
-            currentResource={group.currentResource}
-            gridId={() => group.grid.uid}
-            previewUri={group.previewURI}
-            onClose={(resource: IResource) => group.close(resource.uri)}
-            hasFocus={editorService.currentEditorGroup === group}
-            onDragStart={(e, resource) => {
-              e.dataTransfer.setData('uri', resource.uri.toString());
-              e.dataTransfer.setData('uri-source-group', group.name);
-            }}
-            group={group}
-            onDrop={(e, index, target) => {
-              if (e.dataTransfer.getData('uri')) {
-                const uri = new URI(e.dataTransfer.getData('uri'));
-                let sourceGroup: EditorGroup | undefined;
-                if (e.dataTransfer.getData('uri-source-group')) {
-                  sourceGroup = editorService.getEditorGroup(e.dataTransfer.getData('uri-source-group'));
-                }
-                group.dropUri(uri, DragOverPosition.CENTER, sourceGroup, target);
-              }
-              if (e.dataTransfer.files.length > 0) {
-                eventBus.fire(new EditorGroupFileDropEvent({
-                  group,
-                  tabIndex: index,
-                  files: e.dataTransfer.files,
-                }));
-              }
-            }}
-            onContextMenu={(event, target) => {
-              tabTitleMenuService.show(event.nativeEvent.x, event.nativeEvent.y, target && target.uri, group);
-              event.preventDefault();
-            }}
-            onDbClick={(resource) => {
-              group.pinPreviewed(resource.uri);
-            }}
-          />
-        </div>}
-      <div className={styles.kt_editor_body}
+  return <div className={styles.kt_editor_body}
         onDragOver={(e) => {
           e.preventDefault();
           if (editorBodyRef.current) {
@@ -310,19 +311,17 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
           group.currentResource && <EditorSideView side={'bottom'} resource={group.currentResource}></EditorSideView>
         }
         <OpenTypeSwitcher options={group.availableOpenTypes} current={group.currentOpenType} group={group} />
-      </div>
+  </div>;
 
-    </div>
-  );
-});
+}
 
-export const ComponentsWrapper = observer(({ component, resources, current, ...other }: { component: IEditorComponent, resources: IResource[], current: MaybeNull<IResource> }) => {
+export const ComponentsWrapper = ({ component, resources, current, ...other }: { component: IEditorComponent, resources: IResource[], current: MaybeNull<IResource> }) => {
   return <div className={styles.kt_editor_component_wrapper}>
     {resources.map((resource) => {
       return <ComponentWrapper {...other} key={resource.toString()} component={component} resource={resource} hidden={!(current && current.uri.toString() === resource.uri.toString())} />;
     })}
   </div>;
-});
+};
 
 export const ComponentWrapper = ({ component, resource, hidden, ...other }) => {
   const componentService: EditorComponentRegistryImpl = useInjectable(EditorComponentRegistry);

@@ -1,4 +1,4 @@
-import { ResourceService, IResource, IResourceProvider, ResourceNeedUpdateEvent, ResourceDidUpdateEvent, IResourceDecoration, ResourceDecorationChangeEvent } from '../common';
+import { ResourceService, IResource, IResourceProvider, ResourceNeedUpdateEvent, ResourceDidUpdateEvent, IResourceDecoration, ResourceDecorationNeedChangeEvent, ResourceDecorationChangeEvent } from '../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { URI, IDisposable, WithEventBus, OnEvent } from '@ali/ide-core-browser';
 import { observable } from 'mobx';
@@ -45,10 +45,20 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
     }
   }
 
-  @OnEvent(ResourceDecorationChangeEvent)
-  onResourceDecorationChangeEvent(e: ResourceDecorationChangeEvent) {
+  @OnEvent(ResourceDecorationNeedChangeEvent)
+  onResourceDecorationChangeEvent(e: ResourceDecorationNeedChangeEvent) {
     this.getResourceDecoration(e.payload.uri); // ensure object
-    Object.assign(this.resourceDecoration.get(e.payload.uri.toString()), e.payload.decoration);
+    let changed = false;
+    const previous = this.resourceDecoration.get(e.payload.uri.toString()) || {};
+    new Set([...Object.keys(previous), ...Object.keys(e.payload.decoration)]).forEach((key) => {
+      if (previous[key] !== e.payload.decoration[key]) {
+        changed = true;
+      }
+    });
+    if (changed) {
+      Object.assign(this.resourceDecoration.get(e.payload.uri.toString()), e.payload.decoration);
+      this.eventBus.fire(new ResourceDecorationChangeEvent(e.payload));
+    }
   }
 
   async getResource(uri: URI): Promise<IResource<any> | null> {

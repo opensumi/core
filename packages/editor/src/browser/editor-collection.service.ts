@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ILineChange, URI, WithEventBus, OnEvent, Emitter as EventEmitter, ISelection, Disposable, removeUndefined } from '@ali/ide-core-common';
-import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus, IUndoStopOptions, IDecorationApplyOptions, EditorType, IResourceOpenOptions } from '../common';
+import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationNeedChangeEvent, CursorStatus, IUndoStopOptions, IDecorationApplyOptions, EditorType, IResourceOpenOptions } from '../common';
 import { IRange, MonacoService, PreferenceService, IContextKeyService } from '@ali/ide-core-browser';
 import { MonacoEditorDecorationApplier } from './decoration-applier';
 import { IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, IEditorDocumentModelService, IEditorDocumentModel } from './doc-model/types';
@@ -135,7 +135,7 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   // 将docModel的变更事件反映至resource的dirty装饰
   @OnEvent(EditorDocumentModelContentChangedEvent)
   onDocModelContentChangedEvent(e: EditorDocumentModelContentChangedEvent) {
-    this.eventBus.fire(new ResourceDecorationChangeEvent({
+    this.eventBus.fire(new ResourceDecorationNeedChangeEvent({
       uri: e.payload.uri,
       decoration: {
         dirty: !!e.payload.dirty,

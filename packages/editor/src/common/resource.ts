@@ -63,6 +63,8 @@ export class ResourceRemoveEvent extends BasicEvent<URI> {}
 
 export class ResourceDecorationChangeEvent extends BasicEvent<IResourceDecorationChangeEventPayload> {}
 
+export class ResourceDecorationNeedChangeEvent extends BasicEvent<IResourceDecorationChangeEventPayload> {}
+
 export type IResourceUpdateType = 'change' | 'remove';
 
 export interface IResourceDecoration {
