@@ -91,9 +91,9 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
             </span>)}
           </div>
           <div className={styles.extension_props}>
+            <span>{extension.displayGroupName || extension.publisher}</span>
             {extension.downloadCount ? (<span><i className={clx(commonStyles.icon, getIcon('download'))}></i> {extension.downloadCount}</span>) : null}
             <span>v{extension.version}</span>
-            <span>{extension.publisher}</span>
           </div>
           <div className={clx(styles.description, 'kt-extension-raw-description')}>{extension.description}</div>
         </div>

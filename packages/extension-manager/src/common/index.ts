@@ -54,6 +54,7 @@ export interface SearchExtension {
   version: string;
   downloadCount: number;
   publisher: string;
+  displayGroupName?: string;
 }
 
 // 最小单元的插件信息
@@ -84,6 +85,7 @@ export interface RawExtension extends BaseExtension {
     vscode: string,
     kaitian: string,
   };
+  displayGroupName?: string;
 }
 
 // 插件详情页显示
@@ -165,9 +167,18 @@ export interface IExtensionDependenciesResFromMarketPlace {
     extensionId: string;
   };
 }
+
+export interface IMarketplaceExtensionInfo {
+  extensionId: string;
+  identifier: string;
+  downloadCount?: number;
+  displayGroupName?: string;
+}
+
 export interface IExtensionManagerServer {
   search(query: string, ignoreId?: string[]): Promise<any>;
   getExtensionFromMarketPlace(extensionId: string, version?: string): Promise<any>;
+  getExtensionsInfo(idList: string[]): Promise<IMarketplaceExtensionInfo[]>;
   getHotExtensions(ignoreId: string[], queryIndex: number): Promise<any>;
   isShowBuiltinExtensions(): boolean;
   setHeaders(headers: RequestHeaders): void;

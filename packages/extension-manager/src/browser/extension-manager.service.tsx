@@ -1,5 +1,5 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, SearchExtension, RequestHeaders, BaseExtension, ExtensionMomentState, OpenExtensionOptions, ExtensionChangeEvent, ExtensionChangeType } from '../common';
+import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, SearchExtension, RequestHeaders, BaseExtension, ExtensionMomentState, OpenExtensionOptions, ExtensionChangeEvent, ExtensionChangeType, IMarketplaceExtensionInfo } from '../common';
 import { ExtensionService, IExtensionProps, EXTENSION_ENABLE, ExtensionDependencies } from '@ali/ide-kaitian-extension/lib/common';
 import { action, observable, computed, runInAction } from 'mobx';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -108,6 +108,8 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
 
   private hotPageIndex = 1;
 
+  private extensionInfo = new Map<string, IMarketplaceExtensionInfo>();
+
   constructor() {
     super();
     this.addDispose(this.extensionService.onDidExtensionActivated(async (e) => {
@@ -151,13 +153,17 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
     this.searchExtensionFromInstalled(query);
   }
 
+  private searchInstalledExtension(query: string) {
+    return this.showExtensions.filter((extension) => {
+      return extension.name.toLowerCase().includes(query.toLowerCase()) || (extension.displayName && extension.displayName.toLowerCase().includes(query.toLowerCase()));
+    });
+  }
+
   @action
   @debounce(300)
   private async searchExtensionFromMarketplace(query: string) {
     try {
-      const installedExtensions = this.showExtensions.filter((extension) => {
-        return extension.name.includes(query) || (extension.displayName && extension.displayName.includes(query));
-      });
+      const installedExtensions = this.searchInstalledExtension(query);
       this.searchMarketplaceResults = installedExtensions;
       // 排除掉已安装的插件
       const res = await this.extensionManagerServer.search(query, this.installedIds);
@@ -186,9 +192,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   @action
   @debounce(300)
   private searchExtensionFromInstalled(query: string) {
-    const data = this.showExtensions.filter((extension) => {
-      return extension.name.includes(query) || (extension.displayName && extension.displayName.includes(query));
-    });
+    const data = this.searchInstalledExtension(query);
     if (data.length > 0) {
       this.searchInstalledResults = data;
       this.searchInstalledState = SearchState.LOADED;
@@ -337,6 +341,21 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   }
 
   /**
+   * 安装插件时设置 info
+   */
+  private setExtensionInfoByExtensionId(extensionId: string) {
+    const extension = this.hotExtensions.find((extension) => extension.extensionId === extensionId) || this.searchMarketplaceResults.find((extension) => extension.extensionId === extensionId);
+    if (extension) {
+      this.extensionInfo.set(extension.extensionId, {
+        extensionId: extension.extensionId,
+        identifier: extension.extensionId,
+        downloadCount: extension.downloadCount,
+        displayGroupName: extension.displayGroupName,
+      });
+    }
+  }
+
+  /**
    * 安装插件，同时安装依赖插件
    * @param extension 插件基础信息
    * @param version 指定版本
@@ -348,6 +367,9 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
     this.extensionMomentState.set(extensionId, {
       isInstalling: true,
     });
+
+    // 设置 extensionInfo
+    this.setExtensionInfoByExtensionId(extension.extensionId);
 
     try {
       // 先安装插件的依赖
@@ -596,7 +618,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
     runInAction(() => {
       this.extensions = extensions;
     });
-    await this.loadHotExtensions();
+    await Promise.all([this.loadHotExtensions(), this.loadExtensionInfo()]);
     runInAction(() => {
       this.isInit = true;
     });
@@ -628,6 +650,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
     return this.extensions.map((extension) => {
       const { displayName, description } = this.getI18nInfo(extension);
       const [publisher, name] = extension.extensionId.split('.');
+      const extensionInfo = this.extensionInfo.get(extension.extensionId);
       return {
         id: extension.id,
         extensionId: extension.extensionId,
@@ -650,6 +673,8 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
           vscode: extension.packageJSON.engines?.vscode,
           kaitian: extension.packageJSON.engines?.kaitian,
         },
+        downloadCount: extensionInfo?.downloadCount,
+        displayGroupName: extensionInfo?.displayGroupName,
       };
     });
   }
@@ -808,6 +833,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
         version: res.data.version,
         description: res.data.description,
         publisher: res.data.publisher,
+        displayGroupName: res.data.displayGroupName,
         installed: false,
         icon: res.data.icon || DEFAULT_ICON_URL,
         path: '',
@@ -1018,6 +1044,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
         vscode: '',
         kaitian: '',
       },
+      displayGroupName: extension.displayGroupName,
     };
   }
 
@@ -1061,6 +1088,14 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
       }
     }
     return dependencies;
+  }
+
+  /**
+   * 加载已经安装插件的基础信息
+   */
+  private async loadExtensionInfo() {
+    const extensionInfo = await this.extensionManagerServer.getExtensionsInfo(this.installedIds);
+    this.extensionInfo = new Map(extensionInfo.map((extension) => [extension.identifier, extension]));
   }
 
   @action
