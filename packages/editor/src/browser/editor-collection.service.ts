@@ -590,7 +590,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
   }
 
   updateDiffOptions(options: Partial<monaco.editor.IDiffEditorOptions>) {
-    this.specialOptions = removeUndefined({...this.specialOptions, options});
+    this.specialOptions = removeUndefined({...this.specialOptions, ...options});
     this.doUpdateDiffOptions();
   }
 
