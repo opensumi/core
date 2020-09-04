@@ -444,7 +444,7 @@ export class DebugConfigurationManager {
   }
 
   getDebuggers(): IDebuggerContribution[] {
-    return this.debuggers;
+    return this.debuggers.filter((dbg) => !!dbg);
   }
 }
 
