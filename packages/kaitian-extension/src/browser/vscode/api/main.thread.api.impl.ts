@@ -155,6 +155,7 @@ export async function initWorkerTheadAPIProxy(
   const MainThreadQuickOpenAPI = injector.get(MainThreadQuickOpen, [workerProtocol]);
   const MainThreadExtensionDocumentDataAPI = injector.get(MainThreadExtensionDocumentData, [workerProtocol]);
   const MainThreadEditorServiceAPI = injector.get(MainThreadEditorService, [workerProtocol, MainThreadExtensionDocumentDataAPI]);
+  const MainThreadProgressAPI = injector.get(MainThreadProgress, [workerProtocol]);
   workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
   workerProtocol.set<IMainThreadLanguages>(MainThreadAPIIdentifier.MainThreadLanguages, injector.get(MainThreadLanguages, [workerProtocol]));
@@ -172,4 +173,5 @@ export async function initWorkerTheadAPIProxy(
   workerProtocol.set<IMainThreadStorage>(MainThreadAPIIdentifier.MainThreadStorage, injector.get(MainThreadStorage, [workerProtocol]));
   workerProtocol.set<IMainThreadUrls>(MainThreadAPIIdentifier.MainThreadUrls, injector.get(MainThreadUrls, [workerProtocol]));
   workerProtocol.set<IMainThreadComments>(MainThreadAPIIdentifier.MainThreadComments, injector.get(MainthreadComments, [workerProtocol, MainThreadCommandsAPI]));
+  workerProtocol.set<IMainThreadProgress>(MainThreadAPIIdentifier.MainThreadProgress, MainThreadProgressAPI);
 }
