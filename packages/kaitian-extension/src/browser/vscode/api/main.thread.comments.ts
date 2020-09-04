@@ -35,7 +35,7 @@ export class MainthreadComments implements IDisposable, IMainThreadComments {
   }
 
   private registerCommentThreadTemplateHander() {
-    return this.commentsService.onThreadsChanged(async (thread) => {
+    return this.commentsService.onThreadsCreated(async (thread) => {
       // 说明是点击左侧 decoration 创建的，需要在插件进程常见对应的临时评论
       // 插件主动创建的默认有 data
       if (isUndefined(thread.data)) {
@@ -283,22 +283,26 @@ export class MainThreadCommentThread implements CommentThread {
     public resource: string,
     private _range: IRange,
   ) {
-    // 查找当前位置是否已经有评论
-    // 如果则不创建
-    const thread = this.commentsService.commentsThreads.find((commentThread) => commentThread.uri.toString() === resource && commentThread.range.startLineNumber === _range.startLineNumber);
+    // 查找当前位置 的 threads
+    // 框架支持同一个位置多个 thread
+    const threads = this.commentsService.commentsThreads.filter((commentThread) => commentThread.uri.toString() === resource && commentThread.range.startLineNumber === _range.startLineNumber);
+    // 取最后一个 thread，因为新建的评论在最后一个位置
+    const [ thread ] = threads.slice(-1);
     // 在 data 字段保存 handle id
     const threadData = {
       commentControlHandle: controllerHandle,
       commentThreadHandle,
     };
 
-    if (thread) {
+    // 说明是点击 decoration 新建的 thread
+    if (thread && !thread.data) {
       thread.data = threadData;
+      this._thread = thread;
+    } else {
+      this._thread = this.commentsService.createThread(new URI(resource), positionToRange(_range.startLineNumber), {
+        data: threadData,
+      });
     }
-    // 参照 vscode，默认显示 startLineNumber 指定行号的
-    this._thread = thread || this.commentsService.createThread(new URI(resource), positionToRange(_range.startLineNumber), {
-      data: threadData,
-    });
     this._isDisposed = false;
   }
 
