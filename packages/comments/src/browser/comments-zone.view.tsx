@@ -3,7 +3,7 @@ import { INJECTOR_TOKEN, Injectable, Autowired } from '@ali/common-di';
 import * as ReactDOM from 'react-dom';
 import { observer } from 'mobx-react-lite';
 import * as styles from './comments.module.less';
-import { ConfigProvider, localize, AppConfig, useInjectable } from '@ali/ide-core-browser';
+import { ConfigProvider, localize, AppConfig, useInjectable, Event, Emitter } from '@ali/ide-core-browser';
 import { CommentItem } from './comments-item.view';
 import { CommentsTextArea } from './comments-textarea.view';
 import { ICommentReply, ICommentsZoneWidget, ICommentThreadTitle, ICommentsFeatureRegistry, ICommentsThread } from '../common';
@@ -115,6 +115,12 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
 
   private _editor: IEditor;
 
+  private _onShow = new Emitter<void>();
+  public onShow: Event<void> = this._onShow.event;
+
+  private _onHide = new Emitter<void>();
+  public onHide: Event<void> = this._onHide.event;
+
   constructor(editor: IEditor, thread: ICommentsThread) {
     super(editor.monacoEditor, thread.range);
     this._editor = editor;
@@ -145,11 +151,13 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
   public show() {
     super.show();
     this._isShow = true;
+    this._onShow.fire();
   }
 
   public hide() {
     super.dispose();
     this._isShow = false;
+    this._onHide.fire();
   }
 
   public toggle() {

@@ -154,9 +154,17 @@ export interface ICommentsZoneWidget {
    * 如果有此类操作则会触发该事件
    */
   onChangeZoneWidget: Event<IRange>;
+  /*
+    widget 展示的时候触发
+   */
+  onShow: Event<void>;
+  /**
+   * widget 隐藏的时候触发
+   */
+  onHide: Event<void>;
 }
 
-export interface ICommentThreadTitle  extends ICommentsMenuContext {
+export interface ICommentThreadTitle extends ICommentsMenuContext {
   /**
    * 当前 thread
    */
@@ -495,6 +503,10 @@ export interface ICommentsThread extends IDisposable {
    * @param editor
    */
   getWidgetByEditor(editor: IEditor): ICommentsZoneWidget | undefined;
+  /**
+   * dispise 时会执行
+   */
+  onDispose: Event<void>;
 }
 
 export interface ICommentsThreadOptions {
