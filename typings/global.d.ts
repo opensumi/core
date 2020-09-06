@@ -3,8 +3,6 @@ declare module "*.json" {
   export default value;
 }
 
-declare module "efsw" {}
-
 interface DOMRectReadOnly {
   readonly x: number;
   readonly y: number;

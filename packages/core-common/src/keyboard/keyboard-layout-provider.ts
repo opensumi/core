@@ -1,5 +1,5 @@
 
-import { IKeyboardLayoutInfo, IKeyboardMapping } from 'native-keymap';
+import { IKeyboardLayoutInfo, IKeyboardMapping } from './keymap.interface';
 import { Event } from '../event';
 
 export const keyboardPath = '/services/keyboard';
