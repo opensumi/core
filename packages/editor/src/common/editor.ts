@@ -128,6 +128,11 @@ export class CollectionEditorsUpdateEvent extends BasicEvent<IEditor[]> { }
  */
 export class DidChangeEditorGroupUriEvent extends BasicEvent<URI[][]> { }
 
+/**
+ * 当 Decoration Provider 收集完 monaco decoration option 并设置后
+ */
+export class DidApplyEditorDecorationFromProvider extends BasicEvent<{ key?: string; uri: URI }> {  }
+
 export interface IEditorGroup {
 
   index: number;

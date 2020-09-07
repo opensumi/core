@@ -372,7 +372,7 @@ export class CommentsService extends Disposable implements ICommentsService {
         schemes: [ ...this.shouldShowCommentsSchemes.values() ],
         key: 'comments',
         onDidDecorationChange: this.decorationChangeEmitter.event,
-        provideEditorDecoration: async (uri: URI) => {
+        provideEditorDecoration: (uri: URI) => {
           return this.commentsThreads.map((thread) => {
             if (thread.uri.isEqual(uri)) {
               // 恢复之前的现场
