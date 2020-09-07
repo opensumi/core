@@ -1,5 +1,5 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { ResourceService, IResourceProvider, ResourceDecorationChangeEvent, ResourceNeedUpdateEvent, ResourceDidUpdateEvent, WorkbenchEditorService } from '../../src';
+import { ResourceService, IResourceProvider, ResourceDecorationNeedChangeEvent, ResourceDecorationChangeEvent, ResourceNeedUpdateEvent, ResourceDidUpdateEvent, WorkbenchEditorService } from '../../src';
 import { ResourceServiceImpl } from '../../src/browser/resource.service';
 import { URI, IEventBus, Schemas, ILoggerManagerClient } from '@ali/ide-core-common';
 import { IEditorDocumentModelService, ICompareService } from '@ali/ide-editor/lib/browser';
@@ -130,7 +130,11 @@ describe('resource service tests', () => {
 
     const eventBus: IEventBus = injector.get(IEventBus);
 
-    eventBus.fire(new ResourceDecorationChangeEvent({
+    const changedListener = jest.fn();
+
+    const disposer2 = eventBus.on(ResourceDecorationChangeEvent, changedListener);
+
+    eventBus.fire(new ResourceDecorationNeedChangeEvent({
       uri: resUri,
       decoration: {
         dirty: true,
@@ -138,8 +142,10 @@ describe('resource service tests', () => {
     }));
 
     expect(service.getResourceDecoration(resUri).dirty).toBeTruthy();
+    expect(changedListener).toBeCalledWith(expect.objectContaining({payload: {uri: resUri, decoration: {dirty: true}}}));
 
-    eventBus.fire(new ResourceDecorationChangeEvent({
+    changedListener.mockClear();
+    eventBus.fire(new ResourceDecorationNeedChangeEvent({
       uri: resUri,
       decoration: {
         dirty: false,
@@ -147,8 +153,10 @@ describe('resource service tests', () => {
     }));
 
     expect(service.getResourceDecoration(resUri).dirty).toBeFalsy();
+    expect(changedListener).toBeCalledWith(expect.objectContaining({payload: {uri: resUri, decoration: {dirty: false}}}));
 
     disposer.dispose();
+    disposer2.dispose();
   });
 
   it('should be able to prevent resource close', async (done) => {

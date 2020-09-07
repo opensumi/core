@@ -1,20 +1,29 @@
 import * as React from 'react';
-import { useInjectable, DomListener, Disposable } from '@ali/ide-core-browser';
+import { useInjectable, DomListener, Disposable, useUpdateOnEvent } from '@ali/ide-core-browser';
 import { Icon } from '@ali/ide-components';
 import { getIcon } from '@ali/ide-core-browser';
 
 import * as styles from './navigation.module.less';
-import { IEditorGroup } from '../common';
 import { IBreadCrumbService, IBreadCrumbPart } from './types';
 import { Injectable } from '@ali/common-di';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Scroll, IScrollDelegate } from './component/scroll/scroll';
 import * as classnames from 'classnames';
+import { EditorGroup } from './workbench-editor.service';
+import { useUpdateOnGroupTabChange } from './view/react-hook';
 
-export const NavigationBar = observer(({ editorGroup }: { editorGroup: IEditorGroup }) => {
+export const NavigationBar = ({ editorGroup }: { editorGroup: EditorGroup }) => {
 
   const breadCrumbService = useInjectable(IBreadCrumbService) as IBreadCrumbService;
+
+  useUpdateOnGroupTabChange(editorGroup);
+
+  useUpdateOnEvent(breadCrumbService.onDidUpdateBreadCrumbResults, [], (e) => {
+    const editor = editorGroup.currentEditor && editorGroup.currentEditor.currentDocumentModel ? editorGroup.currentEditor : null;
+    const uri = editorGroup.currentEditor && editorGroup.currentEditor.currentDocumentModel ? editorGroup.currentEditor.currentDocumentModel!.uri : editorGroup.currentResource?.uri;
+    return !!uri && e.editor === editor && e.uri.isEqual(uri);
+  });
 
   if (editorGroup.resources.length === 0 || !editorGroup.currentResource) {
     return null;
@@ -40,7 +49,7 @@ export const NavigationBar = observer(({ editorGroup }: { editorGroup: IEditorGr
       })
     }
   </div>);
-});
+};
 export const NavigationItem = ({part}: {part: IBreadCrumbPart}) => {
 
   const viewService = useInjectable(NavigationBarViewService) as NavigationBarViewService;

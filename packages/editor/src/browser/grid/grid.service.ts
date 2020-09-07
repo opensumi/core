@@ -1,8 +1,7 @@
 import { IEditorGroup, IEditorGroupState, Direction } from '../../common';
-import { observable, runInAction } from 'mobx';
-import { IDisposable, IEventBus, MaybeNull } from '@ali/ide-core-browser';
+import { IDisposable, IEventBus, MaybeNull, Emitter } from '@ali/ide-core-browser';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
-import { GridResizeEvent, IDiffEditor, ICodeEditor } from '../types';
+import { GridResizeEvent } from '../types';
 
 export const editorGridUid = new Set();
 
@@ -10,9 +9,13 @@ export class EditorGrid implements IDisposable {
 
   public editorGroup: IGridEditorGroup | null = null;
 
-  @observable.shallow public children: EditorGrid[] = [];
+  public children: EditorGrid[] = [];
 
   public splitDirection: SplitDirection | undefined;
+
+  public readonly _onDidGridStateChange = new Emitter<void>();
+
+  public readonly onDidGridStateChange = this._onDidGridStateChange.event;
 
   public readonly uid: string;
 
@@ -43,6 +46,7 @@ export class EditorGrid implements IDisposable {
     } else {
       this.children = [originalChild, newGrid];
     }
+    this._onDidGridStateChange.fire();
   }
   // 新增 grid 与当前 grid 作为同一父 grid 的子元素
   private generateSplitSibling(editorGroup: IGridEditorGroup, before?: boolean) {
@@ -56,6 +60,7 @@ export class EditorGrid implements IDisposable {
       } else {
         this.parent.children.splice(index + 1, 0, newGrid);
       }
+      this.parent._onDidGridStateChange.fire();
     }
   }
   public split(direction: SplitDirection, editorGroup: IGridEditorGroup, before?: boolean) {
@@ -89,6 +94,7 @@ export class EditorGrid implements IDisposable {
       if (this.parent.children.length === 1) {
         this.parent.replaceBy(this.parent.children[0]);
       }
+      this.parent._onDidGridStateChange.fire();
     } else {
       // 应该不会落入这里
     }
@@ -103,6 +109,9 @@ export class EditorGrid implements IDisposable {
     this.children.forEach((grid) => {
       grid.parent = this;
     });
+    if (this.parent) {
+      this.parent._onDidGridStateChange.fire();
+    }
   }
 
   public emitResizeWithEventBus(eventBus: IEventBus) {
@@ -198,36 +207,32 @@ export class EditorGrid implements IDisposable {
         if (direction === Direction.LEFT) {
           const index = this.parent.children.indexOf(this);
           if (index > 0) {
-            runInAction(() => {
-              this.parent!.children.splice(index, 1);
-              this.parent!.children.splice(index - 1, 0, this);
-            });
+            this.parent!.children.splice(index, 1);
+            this.parent!.children.splice(index - 1, 0, this);
+            this.parent._onDidGridStateChange.fire();
           }
         } else if (direction === Direction.RIGHT) {
           const index = this.parent.children.indexOf(this);
           if (index < this.parent.children.length) {
-            runInAction(() => {
-              this.parent!.children.splice(index, 1);
-              this.parent!.children.splice(index + 1, 0, this);
-            });
+            this.parent!.children.splice(index, 1);
+            this.parent!.children.splice(index + 1, 0, this);
+            this.parent._onDidGridStateChange.fire();
           }
         }
       } else if (this.parent.splitDirection === SplitDirection.Vertical) {
         if (direction === Direction.UP) {
           const index = this.parent.children.indexOf(this);
           if (index > 0) {
-            runInAction(() => {
-              this.parent!.children.splice(index, 1);
-              this.parent!.children.splice(index - 1, 0, this);
-            });
+            this.parent!.children.splice(index, 1);
+            this.parent!.children.splice(index - 1, 0, this);
+            this.parent._onDidGridStateChange.fire();
           }
         } else if (direction === Direction.DOWN) {
           const index = this.parent.children.indexOf(this);
           if (index < this.parent.children.length) {
-            runInAction(() => {
-              this.parent!.children.splice(index, 1);
-              this.parent!.children.splice(index + 1, 0, this);
-            });
+            this.parent!.children.splice(index, 1);
+            this.parent!.children.splice(index + 1, 0, this);
+            this.parent._onDidGridStateChange.fire();
           }
         }
       }

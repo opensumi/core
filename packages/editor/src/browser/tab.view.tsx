@@ -1,45 +1,58 @@
 
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
-import { IResource, ResourceService, IEditorGroup } from '../common';
+import { IResource, ResourceService, IEditorGroup, WorkbenchEditorService } from '../common';
 import * as styles from './editor.module.less';
 import classnames from 'classnames';
-import { getIcon, MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent, URI } from '@ali/ide-core-browser';
+import { getIcon, MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent, URI, Disposable, DomListener } from '@ali/ide-core-browser';
 // TODO editor 不应该依赖main-layout
 import { Scroll } from './component/scroll/scroll';
-import { GridResizeEvent, IEditorActionRegistry } from './types';
+import { GridResizeEvent, IEditorActionRegistry, DragOverPosition, EditorGroupFileDropEvent } from './types';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
+import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
+import { TabTitleMenuService } from './menu/title-context.menu';
+import { useUpdateOnGroupTabChange } from './view/react-hook';
 
 const pkgName = require('../../package.json').name;
 
 export interface ITabsProps {
-  resources: IResource[];
-  currentResource: MaybeNull<IResource>;
-  onActivate: (resource: IResource) => void;
-  onDbClick: (resource: IResource, index: number) => void;
-  onClose: (resource: IResource) => void;
-  onDragStart?: (event: React.DragEvent, resource: IResource) => void;
-  onContextMenu: (event: React.MouseEvent, resource: IResource) => void;
-  onDrop?: (event: React.DragEvent, targetIndex: number, targetResource?: IResource ) => void; // targetResource为undefined表示扔在空白处
-  gridId: () => string;
-  hasFocus: boolean;
-  previewUri: URI | null;
-  group: IEditorGroup;
+  group: EditorGroup;
 }
 
-export const Tabs = observer(({resources, currentResource, onActivate, onClose, onDragStart, onDrop, onContextMenu, gridId, previewUri, onDbClick, hasFocus, group}: ITabsProps) => {
+export const Tabs = ({group}: ITabsProps) => {
   const tabContainer = React.useRef<HTMLDivElement | null>();
   const contentRef = React.useRef<HTMLDivElement>();
   const resourceService = useInjectable(ResourceService) as ResourceService;
   const eventBus = useInjectable(IEventBus) as IEventBus;
   const configContext = React.useContext(ConfigContext);
+  const editorService: WorkbenchEditorServiceImpl = useInjectable(WorkbenchEditorService);
+  const tabTitleMenuService = useInjectable(TabTitleMenuService) as TabTitleMenuService;
+
+  useUpdateOnGroupTabChange(group);
+
+  function onDrop(e: React.DragEvent, index: number, target?: IResource) {
+    if (e.dataTransfer.getData('uri')) {
+      const uri = new URI(e.dataTransfer.getData('uri'));
+      let sourceGroup: EditorGroup | undefined;
+      if (e.dataTransfer.getData('uri-source-group')) {
+        sourceGroup = editorService.getEditorGroup(e.dataTransfer.getData('uri-source-group'));
+      }
+      group.dropUri(uri, DragOverPosition.CENTER, sourceGroup, target);
+    }
+    if (e.dataTransfer.files.length > 0) {
+      eventBus.fire(new EditorGroupFileDropEvent({
+        group,
+        tabIndex: index,
+        files: e.dataTransfer.files,
+      }));
+    }
+  }
 
   function scrollToCurrent() {
     if (tabContainer.current) {
-      if (currentResource) {
+      if (group.currentResource) {
         try {
-          const currentTab = tabContainer.current.querySelector('.' + styles.kt_editor_tab + '[data-uri=\'' + currentResource.uri.toString() + '\']');
+          const currentTab = tabContainer.current.querySelector('.' + styles.kt_editor_tab + '[data-uri=\'' + group.currentResource.uri.toString() + '\']');
           if (currentTab) {
             scrollToTabEl(tabContainer.current, currentTab as HTMLDivElement);
           }
@@ -51,29 +64,28 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
   }
 
   React.useEffect(() => {
-    if (tabContainer.current) {
-      tabContainer.current.addEventListener('mousewheel', preventNavigation as any);
-    }
     scrollToCurrent();
-    const disposers = [
-        eventBus.on(ResizeEvent, (event) => {
-          if (event.payload.slotLocation === getSlotLocation(pkgName, configContext.layoutConfig)) {
-            scrollToCurrent();
-          }
-        }),
-        eventBus.on(GridResizeEvent, (event) => {
-        if (event.payload.gridId === gridId()) {
-          scrollToCurrent();
-        }
-      }),
-    ];
+  });
+
+  React.useEffect(() => {
+    const disposer = new Disposable();
+    if (tabContainer.current) {
+      disposer.addDispose(new DomListener(tabContainer.current, 'mousewheel', preventNavigation));
+    }
+    disposer.addDispose(eventBus.on(ResizeEvent, (event) => {
+      if (event.payload.slotLocation === getSlotLocation(pkgName, configContext.layoutConfig)) {
+        scrollToCurrent();
+      }
+    }));
+    disposer.addDispose(eventBus.on(GridResizeEvent, (event) => {
+      if (event.payload.gridId === group.grid.uid) {
+        scrollToCurrent();
+      }
+    }));
     return () => {
-      disposers.forEach((disposer) => {
-        disposer.dispose();
-      });
-      tabContainer.current!.removeEventListener('mousewheel', preventNavigation as any);
+      disposer.dispose();
     };
-  }, [currentResource, resources]);
+  }, []);
 
   return <div className={styles.kt_editor_tabs}>
     <div className={styles.kt_editor_tabs_scroll_wrapper} >
@@ -100,29 +112,30 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
         }
       }}
     >
-    {resources.map((resource, i) => {
+    {group.resources.map((resource, i) => {
       let ref: HTMLDivElement | null;
       const decoration = resourceService.getResourceDecoration(resource.uri);
-      const subname = resourceService.getResourceSubname(resource, resources);
+      const subname = resourceService.getResourceSubname(resource, group.resources);
       return <div draggable={true} className={classnames({
                     [styles.kt_editor_tab]: true,
-                    [styles.kt_editor_tab_current]: currentResource === resource,
-                    [styles.kt_editor_tab_preview]: previewUri && previewUri.isEqual(resource.uri),
+                    [styles.kt_editor_tab_current]: group.currentResource === resource,
+                    [styles.kt_editor_tab_preview]: group.previewURI && group.previewURI.isEqual(resource.uri),
                   })}
-                  onContextMenu={(e) => {
-                    onContextMenu(e, resource);
+                  onContextMenu={(event) => {
+                    tabTitleMenuService.show(event.nativeEvent.x, event.nativeEvent.y, resource && resource.uri, group);
+                    event.preventDefault();
                   }}
                   key={resource.uri.toString()}
                   onMouseUp={(e) => {
                     if (e.nativeEvent.which === 2) {
                       e.preventDefault();
                       e.stopPropagation();
-                      onClose(resource);
+                      group.close(resource.uri);
                     }
                   }}
                   onMouseDown={(e) => {
                     if (e.nativeEvent.which === 1) {
-                      onActivate(resource);
+                      group.open(resource.uri);
                     }
                   }}
                   onDragOver={(e) => {
@@ -146,12 +159,13 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
                       onDrop(e, i , resource);
                     }
                   }}
-                  onDoubleClick={(e) => onDbClick(resource, i)}
+                  onDoubleClick={(e) => {
+                    group.pinPreviewed(resource.uri);
+                  }}
                   ref= {(el) => ref = el}
                   onDragStart={(e) => {
-                    if (onDragStart) {
-                      onDragStart(e, resource);
-                    }
+                    e.dataTransfer.setData('uri', resource.uri.toString());
+                    e.dataTransfer.setData('uri-source-group', group.name);
                   }}>
         <div className={resource.icon}> </div>
         <div>{resource.name}</div>
@@ -165,7 +179,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
           }></div>
           <div className={styles.close_tab} onMouseDown={(e) => {
             e.stopPropagation();
-            onClose(resource);
+            group.close(resource.uri);
           }}>
             <div className={getIcon('close')} />
           </div>
@@ -175,14 +189,25 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
   </div>
   </Scroll>
   </div>
-    <EditorActions hasFocus={hasFocus} group={group}/>
+    <EditorActions group={group}/>
   <div></div>
   </div>;
-});
+};
 
-export const EditorActions = observer(({group, hasFocus}: {hasFocus: boolean, group: IEditorGroup}) => {
+export const EditorActions = ({group}: {group: IEditorGroup}) => {
   const editorActionRegistry = useInjectable<IEditorActionRegistry>(IEditorActionRegistry);
+  const editorService: WorkbenchEditorServiceImpl = useInjectable(WorkbenchEditorService);
   const menu = editorActionRegistry.getMenu(group);
+  const [hasFocus, setHasFocus] = React.useState<boolean>(editorService.currentEditorGroup === group);
+
+  React.useEffect(() => {
+    const disposer = editorService.onDidCurrentEditorGroupChanged(() => {
+      setHasFocus(editorService.currentEditorGroup === group);
+    });
+    return () => {
+      disposer.dispose();
+    };
+  }, []);
 
   const args: [URI, IEditorGroup, MaybeNull<URI>] | undefined = group.currentResource ?
    [ group.currentResource.uri, group, group.currentEditor?.currentUri] : undefined;
@@ -194,7 +219,7 @@ export const EditorActions = observer(({group, hasFocus}: {hasFocus: boolean, gr
       // 不 focus 的时候只展示 more 菜单
       regroup={(nav, more) => hasFocus ? [nav, more] : [[], more]}/>
   </div>;
-});
+};
 
 /**
    * 获取tab DOM在可视范围的位置

@@ -3,7 +3,7 @@ import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILang
 import { EditorCollectionServiceImpl } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { ResourceServiceImpl } from '@ali/ide-editor/lib/browser/resource.service';
-import { EditorComponentRegistry, IEditorDecorationCollectionService, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EmptyDocCacheImpl, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
+import { EditorComponentRegistry, IEditorDecorationCollectionService, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EmptyDocCacheImpl, IEditorFeatureRegistry, BrowserEditorContribution } from '@ali/ide-editor/lib/browser';
 import { IDocPersistentCacheProvider } from '@ali/ide-editor/lib/common';
 import { EditorComponentRegistryImpl } from '@ali/ide-editor/lib/browser/component';
 import { EditorDecorationCollectionService } from '@ali/ide-editor/lib/browser/editor.decoration.service';
@@ -11,11 +11,10 @@ import { EditorDocumentModelContentRegistryImpl, EditorDocumentModelServiceImpl,
 import { LanguageService } from '@ali/ide-editor/lib/browser/language/language.service';
 import { MonacoService } from '@ali/ide-monaco';
 import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
-import { URI, Disposable } from '@ali/ide-core-common';
+import { URI, Disposable, createContributionProvider } from '@ali/ide-core-common';
 import { TestResourceProvider, TestResourceResolver, TestEditorDocumentProvider, TestResourceResolver2, TestResourceComponent } from './test-providers';
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { reaction } from 'mobx';
 import { CorePreferences, IContextKeyService, PreferenceService } from '@ali/ide-core-browser';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { EditorFeatureRegistryImpl } from '@ali/ide-editor/lib/browser/feature';
@@ -93,6 +92,7 @@ injector.overrideProviders({
     onPreferencesChanged() { return new Disposable(); },
   },
 });
+createContributionProvider(injector, BrowserEditorContribution);
 
 describe('editor collection service tests', () => {
 
@@ -139,9 +139,7 @@ describe('workbench editor service tests', () => {
     disposer.addDispose(editorComponentRegistry.registerEditorComponentResolver('test', TestResourceResolver2));
     disposer.addDispose(editorDocModelRegistry.registerEditorDocumentModelContentProvider(TestEditorDocumentProvider));
     (editorService as any).contributionsReady.resolve();
-    reaction(() => {
-      return editorService.editorGroups.length;
-    }, () => {
+    editorService.onDidEditorGroupsChanged(() => {
       editorService.editorGroups.forEach((g) => {
         if (!g.codeEditor) {
           (g as EditorGroup).createEditor(document.createElement('div'));
@@ -154,20 +152,30 @@ describe('workbench editor service tests', () => {
   it('should be able to open uri', async (done) => {
 
     const testCodeUri = new URI('test://testUri1');
+    const listener = jest.fn();
+    const disposer = (editorService.currentEditorGroup as EditorGroup).onDidEditorGroupTabChanged(listener);
+
     await editorService.open(testCodeUri);
+
     expect(editorService.currentResource).toBeDefined();
     expect(editorService.currentResource!.uri.toString()).toBe(testCodeUri.toString());
+    expect(listener).toBeCalled();
 
     await editorService.closeAll();
+    disposer.dispose();
     done();
   });
 
   it('should be able to open component ', async (done) => {
 
     const testComponentUri = new URI('test://component');
+    const listener = jest.fn();
+    const disposer = (editorService.currentEditorGroup as EditorGroup).onDidEditorGroupBodyChanged(listener);
+
     await editorService.open(testComponentUri);
     expect(editorService.editorGroups[0].currentOpenType).toBeDefined();
     expect(editorService.editorGroups[0].currentOpenType!.type).toBe('component');
+    expect(listener).toBeCalled();
 
     await editorService.closeAll();
 
@@ -175,6 +183,7 @@ describe('workbench editor service tests', () => {
     expect(editorService.editorGroups[0].currentOpenType).toBeDefined();
     expect(editorService.editorGroups[0].currentOpenType!.type).toBe('code');
 
+    disposer.dispose();
     done();
   });
 

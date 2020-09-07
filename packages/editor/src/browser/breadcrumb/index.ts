@@ -1,7 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IBreadCrumbService, IBreadCrumbPart, IBreadCrumbProvider } from '../types';
-import { IDisposable, URI, addElement, MaybeNull } from '@ali/ide-core-browser';
-import { observable } from 'mobx';
+import { IDisposable, URI, addElement, MaybeNull, Emitter } from '@ali/ide-core-browser';
 import { DefaultBreadCrumbProvider } from './default';
 import { IEditor } from '../../common';
 
@@ -10,10 +9,11 @@ export class BreadCrumbServiceImpl implements IBreadCrumbService {
 
   private providers: IBreadCrumbProvider[] = [];
 
+  private _onDidUpdateBreadCrumbResults = new Emitter<{uri: URI, editor: MaybeNull<IEditor>}>();
+  public readonly onDidUpdateBreadCrumbResults = this._onDidUpdateBreadCrumbResults.event;
+
   // editor-id / uriString
-  private crumbResults: Map<MaybeNull<IEditor>, Map<string, IBreadCrumbPart[]>> = observable.map(undefined, {
-    deep: false,
-  });
+  private crumbResults: Map<MaybeNull<IEditor>, Map<string, IBreadCrumbPart[]>> = new Map();
 
   @Autowired()
   defaultBreadCrumbProvider: DefaultBreadCrumbProvider;
@@ -44,6 +44,7 @@ export class BreadCrumbServiceImpl implements IBreadCrumbService {
         const newCrumb = provider.provideBreadCrumbForUri(uri, editor);
         if (!isBreadCrumbArrayEqual(lastCrumb, newCrumb)) {
           editorCrumbResults.set(uri.toString(), newCrumb);
+          this._onDidUpdateBreadCrumbResults.fire({editor, uri});
         }
         break;
       }
@@ -53,9 +54,7 @@ export class BreadCrumbServiceImpl implements IBreadCrumbService {
 
   getEditorCrumbResults(editor: MaybeNull<IEditor>): Map<string, IBreadCrumbPart[]> {
     if (!this.crumbResults.has(editor)) {
-      this.crumbResults.set(editor, observable.map(undefined, {
-        deep: false,
-      }));
+      this.crumbResults.set(editor, new Map());
       if (editor) {
         // todo IEditor 应该也暴露 onDispose
         editor.monacoEditor.onDidDispose(() => {
