@@ -43,7 +43,6 @@ module.exports = {
           'oniguruma',
           'nsfw',
           'spdlog',
-          'efsw',
           '@ali/vscode-ripgrep',
           'canvas',
         ].indexOf(request) !== -1

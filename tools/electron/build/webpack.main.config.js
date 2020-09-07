@@ -39,7 +39,7 @@ module.exports = {
   },
   externals:[
     function(context, request, callback) {
-      if (['node-pty','oniguruma','nsfw', 'efsw', 'spdlog', 'electron'].indexOf(request) !== -1){
+      if (['node-pty','oniguruma','nsfw', 'spdlog', 'electron'].indexOf(request) !== -1){
         return callback(null, 'commonjs ' + request);
       }
       callback();

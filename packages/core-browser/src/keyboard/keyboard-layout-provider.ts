@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { IKeyboardLayoutInfo } from 'native-keymap';
+import { IKeyboardLayoutInfo } from '@ali/ide-core-common/lib/keyboard/keymap.interface';
 import { isOSX, Emitter, Deferred } from '@ali/ide-core-common';
 import { Logger } from '../logger';
 import { NativeKeyboardLayout, KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeyValidator, KeyValidationInput } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
