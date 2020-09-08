@@ -162,6 +162,10 @@ export interface ICommentsZoneWidget {
    * widget 隐藏的时候触发
    */
   onHide: Event<void>;
+  /**
+   * zone wiget 第一次显示的时候执行
+   */
+  onFirstDisplay: Event<number>;
 }
 
 export interface ICommentThreadTitle extends ICommentsMenuContext {
