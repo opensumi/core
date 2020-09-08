@@ -25,11 +25,10 @@ const FilterInput: React.FC<IInputBaseProps> = (props) => {
       <Input
         hasClear
         autoFocus
-        size='small'
-        onValueChange={props.onValueChange}
         className='kt-recycle-tree-filter-input'
-        afterClear={props.afterClear}
-        placeholder={localize('tree.filter.placeholder')}
+        size='small'
+        {...props}
+        placeholder={props.placeholder || localize('tree.filter.placeholder')}
         addonBefore={<Icon className='kt-recycle-tree-filter-icon' icon='retrieval' />} />
     </div>
   );
@@ -44,7 +43,8 @@ export interface IRecycleTreeFilterHandle  extends IRecycleTreeHandle {
  * @param recycleTreeComp RecycleTree 组件
  * 将原有的 RecycleTree 拓展增加三个新的 props
  *  * @param filterEnabled @optional 筛选模式控制开关
- *  * @param fitlerAfterClear @optional 清空筛选 input 输入时的回调
+ *  * @param filterAfterClear @optional 清空筛选 input 输入时的回调
+ *  * @param filterAutoFocus @optional 是否自动聚焦
  *  * @param filterPlaceholder @optional 筛选 input 的 placeholder
  */
 export const RecycleTreeFilterDecorator: FilterHoc<
@@ -55,13 +55,18 @@ export const RecycleTreeFilterDecorator: FilterHoc<
     beforeFilterValueChange?: (value: string) => Promise<void>;
     filterAfterClear?: IInputBaseProps['afterClear'],
     filterPlaceholder?: IInputBaseProps['placeholder'],
+    filterAutoFocus?: IInputBaseProps['autoFocus'],
   }
 > = (recycleTreeComp) => (props) => {
   const [value, setValue] = React.useState<string>('');
   // 引入多一个filter状态是为了在实际filter生效前不阻塞输入框值变化的过程
   const [filter, setFilter] = React.useState<string>('');
 
-  const { beforeFilterValueChange, filterEnabled, height, filterPlaceholder, filterAfterClear, onReady, ...recycleTreeProps } = props;
+  const {
+    beforeFilterValueChange, filterEnabled, height,
+    filterPlaceholder, filterAfterClear, onReady,
+    filterAutoFocus, ...recycleTreeProps
+  } = props;
 
   const handleFilterChange = throttle(async (value: string) => {
     if (beforeFilterValueChange) {
@@ -92,6 +97,7 @@ export const RecycleTreeFilterDecorator: FilterHoc<
             afterClear={filterAfterClear}
             placeholder={filterPlaceholder}
             value={value}
+            autoFocus={filterAutoFocus}
             onValueChange={handleFilterInputChange} />
         )
       }
