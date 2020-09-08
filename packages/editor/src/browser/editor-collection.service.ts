@@ -259,8 +259,11 @@ export abstract class BaseMonacoEditorWrapper extends Disposable implements IEdi
     const uriStr = this.currentUri ? this.currentUri.toString() : undefined;
     const languageId = this.currentDocumentModel ? this.currentDocumentModel.languageId : undefined;
     const options = getConvertedMonacoOptions(this.preferenceService, uriStr, languageId, undefined);
+    const basicEditorOptions: Partial<monaco.editor.IEditorOptions> = {
+      readOnly: this.currentDocumentModel?.readonly || false,
+    };
     return {
-      editorOptions: {...options.editorOptions, ...this._editorOptionsFromContribution, ...this._specialEditorOptions},
+      editorOptions: {...basicEditorOptions, ...options.editorOptions, ...this._editorOptionsFromContribution, ...this._specialEditorOptions},
       modelOptions: {...options.modelOptions, ...this._specialModelOptions},
     };
   }

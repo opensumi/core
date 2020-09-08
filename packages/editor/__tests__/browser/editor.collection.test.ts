@@ -44,7 +44,6 @@ describe('editor collection service test', () => {
     const emitter = new Emitter<PreferenceChange>();
     const emitter1 = new Emitter<PreferenceChanges>();
     const prefs = {
-      'editor.forceReadOnly': true,
       'editor.fontSize': 20,
     };
     const setPref = (key, value) => {
@@ -87,6 +86,7 @@ describe('editor collection service test', () => {
       get currentDocumentModel() {
         return (this.monacoEditor.getModel() ? {
           uri: new URI(this.monacoEditor.getModel()!.uri.toString()),
+          readonly: this.monacoEditor.getModel()!.uri.toString().endsWith('test2.js'),
         } : null) as any;
       }
     }
@@ -125,11 +125,14 @@ describe('editor collection service test', () => {
     testEditor.updateOptions({fontSize: 40});
 
     expect(options['fontSize']).toBe(40);
+    expect(options['readOnly']).toBeFalsy();
 
     open(new URI('file:///test/test2.js'));
 
     // 切换后仍然有这个option
     expect(options['fontSize']).toBe(40);
+
+    expect(options['readOnly']).toBeTruthy();
 
     testEditor.updateOptions({fontSize: undefined});
 
@@ -138,6 +141,12 @@ describe('editor collection service test', () => {
     setPref('editor.fontSize', 35);
 
     expect(options['fontSize']).toBe(35);
+
+    open(new URI('file:///test/test3.js'));
+    expect(options['readOnly']).toBeFalsy();
+
+    setPref('editor.forceReadOnly', true);
+    expect(options['readOnly']).toBeTruthy();
   });
 
 });
