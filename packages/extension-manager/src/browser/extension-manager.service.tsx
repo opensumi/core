@@ -642,7 +642,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
    */
   @computed
   get showExtensions() {
-    return this.rawExtension.filter((extension) => extension.isBuiltin ? extension.isBuiltin === this.isShowBuiltinExtensions : true);
+    return this.rawExtension.filter((extension) => extension.isBuiltin ? extension.isBuiltin === this.isShowBuiltinExtensions : true).sort((extension) => extension.isBuiltin ? 1 : -1);
   }
 
   @computed
