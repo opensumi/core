@@ -7,7 +7,6 @@ export {
   SignatureHelpTriggerKind,
   SignatureHelp,
   WorkspaceEdit,
-  Uri,
   DiagnosticRelatedInformation,
   Diagnostic,
   Color,
@@ -54,6 +53,8 @@ export {
   CommentMode,
   IndentAction,
   UIKind,
+  Uri,
+  ProgressLocation,
 } from '../../../common/vscode/ext-types';
 export {
   CancellationTokenSource,
