@@ -28,7 +28,7 @@ export class Storage implements IStorage {
 
   private storageName: string;
 
-  private _init: Promise<any>;
+  private _whenReady: Promise<any>;
 
   constructor(
     private readonly database: IStorageServer,
@@ -39,12 +39,14 @@ export class Storage implements IStorage {
   ) {
     this.storageName = storageName;
     this.toDisposableCollection.push(this._onDidChangeStorage);
+    this.toDisposableCollection.push(this.workspace.onWorkspaceChanged(() => {
+      this.setup(storageName);
+    }));
     this.flushDelayer = new ThrottledDelayer(Storage.DEFAULT_FLUSH_DELAY);
-    this._init = this.init(storageName);
   }
 
   get whenReady() {
-    return this._init;
+    return this._whenReady;
   }
 
   get items(): Map<string, string> {
@@ -56,22 +58,20 @@ export class Storage implements IStorage {
   }
 
   async init(storageName: string) {
-
-    this.state = StorageState.Initialized;
     await this.workspace.whenReady;
     const workspace = this.workspace.workspace;
     await this.database.init(this.appConfig.storageDirName, workspace && workspace.uri);
     const cache = await this.database.getItems(storageName);
     this.cache = this.jsonToMap(cache);
+    this.state = StorageState.Initialized;
+  }
+
+  setup(storageName: string) {
+    this._whenReady = this.init(storageName);
   }
 
   async reConnectInit() {
-    const storageName = this.storageName;
-    await this.workspace.whenReady;
-    const workspace = this.workspace.workspace;
-    await this.database.init(this.appConfig.storageDirName, workspace && workspace.uri);
-    const cache = await this.database.getItems(storageName);
-    this.cache = this.jsonToMap(cache);
+    this.setup(this.storageName);
   }
 
   private jsonToMap(json) {
