@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as cls from 'classnames';
-import { ViewState, getIcon, useInjectable } from '@ali/ide-core-browser';
+import { ViewState, getIcon, useInjectable, DisposableCollection } from '@ali/ide-core-browser';
 import { DebugSession } from '../../debug-session';
 import { DebugThread } from '../../model/debug-thread';
 import { DebugStackThreadView } from './debug-call-stack-thread.view';
@@ -25,9 +25,11 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
   React.useEffect(() => {
     setThreads(Array.from(session.threads));
 
-    const disposable = session.onDidChange(() => {
+    const disposable = new DisposableCollection();
+
+    disposable.push(session.onDidChange(() => {
       setThreads([...session.threads]);
-    });
+    }));
 
     return () => {
       disposable.dispose();

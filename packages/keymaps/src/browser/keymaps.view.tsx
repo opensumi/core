@@ -3,13 +3,13 @@ import { observer } from 'mobx-react-lite';
 import * as cls from 'classnames';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
 import * as styles from './keymaps.module.less';
-import { RecycleList } from '@ali/ide-core-browser/lib/components';
 import { Input, ValidateInput, VALIDATE_TYPE, ValidateMessage } from '@ali/ide-components';
 import { localize, useInjectable, KeybindingScope, NO_KEYBINDING_NAME, KeyCode, Key, formatLocalize } from '@ali/ide-core-browser';
 import { KeymapService } from './keymaps.service';
 import { IKeymapService, KeybindingItem } from '../common';
 import { getIcon } from '@ali/ide-core-browser';
 import { IMessageService } from '@ali/ide-overlay';
+import { RecycleList } from '@ali/ide-components';
 
 export const KeymapsView: ReactEditorComponent<null> = observer(() => {
 
@@ -240,24 +240,33 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
     </div>;
   };
 
-  const header = [
-    {
-      title: localize('keymaps.header.command.title'),
-      classname: styles.keybinding_header_item,
-    },
-    {
-      title: localize('keymaps.header.keybinding.title'),
-      classname: styles.keybinding_header_item,
-    },
-    {
-      title: localize('keymaps.header.when.title'),
-      classname: styles.keybinding_header_item,
-    },
-    {
-      title: localize('keymaps.header.source.title'),
-      classname: styles.keybinding_header_item,
-    },
-  ];
+  const header = () => {
+    const headers = [
+      {
+        title: localize('keymaps.header.command.title'),
+        classname: styles.keybinding_header_item,
+      },
+      {
+        title: localize('keymaps.header.keybinding.title'),
+        classname: styles.keybinding_header_item,
+      },
+      {
+        title: localize('keymaps.header.when.title'),
+        classname: styles.keybinding_header_item,
+      },
+      {
+        title: localize('keymaps.header.source.title'),
+        classname: styles.keybinding_header_item,
+      },
+    ];
+    return <div className={styles.keybinding_header}>
+      {
+        headers.map((h, index) => {
+          return <div className={h.classname} key={`${h.title}_${index}`}>{h.title}</div>;
+        })
+      }
+    </div>;
+  };
 
   const renderInputPlaceholder = () => {
     const activeKeyboard = () => {
@@ -330,6 +339,9 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       </div>
       <div className={styles.keybinding_body} >
         <RecycleList
+          width={500}
+          height={500}
+          itemHeight={20}
           header={header}
           data={keybindings}
           template={template}

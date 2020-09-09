@@ -1,9 +1,9 @@
 import * as React from 'react';
 import * as cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import { ViewState, isUndefined, useInjectable, localize } from '@ali/ide-core-browser';
+import { ViewState, isUndefined, useInjectable, localize, DisposableCollection } from '@ali/ide-core-browser';
 import { DebugThread } from '../../model/debug-thread';
-import { RecycleList } from '@ali/ide-core-browser/lib/components';
+import { RecycleList } from '@ali/ide-components';
 import { DebugStackFrame } from '../../model';
 import { IDebugSessionManager } from '../../../common';
 import { DebugSessionManager } from '../../debug-session-manager';
@@ -18,19 +18,35 @@ export interface DebugStackSessionViewProps {
 
 export const DebugStackFramesView = observer((props: DebugStackSessionViewProps) => {
   const { viewState, frames, thread, indent = 0 } = props;
-  const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
   const [selected, setSelected] = React.useState<number | undefined>();
-  const [isLoading] = React.useState<boolean>(false);
-  const containerStyle = {
-    width: viewState.width,
-  } as React.CSSProperties;
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [framesErrorMessage, setFramesErrorMessage] = React.useState<string>('');
+  const [canLoadMore, setCanLoadMore] = React.useState<boolean>(false);
+  const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
+
+  const loadMore = async () => {
+    if (!thread) {
+      return;
+    }
+    const frames = await thread.fetchFrames();
+    if (frames[0]) {
+      const frame = frames[0];
+      thread.currentFrame = frame;
+      setSelected(frame.raw.id);
+      if (frame && frame.source) {
+        frame.source.open({}, frame);
+      }
+    }
+  };
 
   React.useEffect(() => {
-    const disposable = manager.onDidChangeActiveDebugSession(({ previous }) => {
+    const disposable = new DisposableCollection();
+
+    disposable.push(manager.onDidChangeActiveDebugSession(({ previous }) => {
       if (previous && previous !== thread.session) {
         setSelected(undefined);
       }
-    });
+    }));
 
     return () => {
       disposable.dispose();
@@ -42,6 +58,24 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
       setSelected(manager.currentFrame.raw.id);
     }
   }, [manager.currentFrame]);
+
+  React.useEffect(() => {
+    if (thread) {
+      if (thread.stoppedDetails) {
+        const { framesErrorMessage, totalFrames } = thread.stoppedDetails;
+        setFramesErrorMessage(framesErrorMessage || '');
+        if (totalFrames && totalFrames > thread.frameCount) {
+          setCanLoadMore(true);
+        } else {
+          setCanLoadMore(false);
+        }
+      } else {
+        setCanLoadMore(false);
+      }
+    } else {
+      setCanLoadMore(false);
+    }
+  }, [frames]);
 
   const template = ({
     data,
@@ -87,9 +121,9 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
 
   const renderLoadMoreStackFrames = () => {
     const clickHandler = async () => {
-      // setIsLoading(true);
-      // await loadMore();
-      // setIsLoading(false);
+      setIsLoading(true);
+      await loadMore();
+      setIsLoading(false);
     };
     return <div className={ styles.debug_stack_frames_item } onClick={ clickHandler }>
       <span className={ styles.debug_stack_frames_load_more }>{ localize('debug.stack.loadMore') }</span>
@@ -97,35 +131,40 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
   };
 
   const renderLoading = () => {
-    return <div>loading...</div>;
+    return <div className={ styles.debug_stack_frames_item }>
+      <span className={ styles.debug_stack_frames_load_more }>{ localize('debug.stack.loading') }</span>
+    </div>;
   };
 
-  /*
   const renderFramesErrorMessage = (message: string) => {
     return <div className={ styles.debug_stack_frames_item }>
       <span className={ styles.debug_stack_frames_error_message } title={ message }>{ message }</span>
     </div>;
   };
-  */
 
-  /*
   if (framesErrorMessage) {
-    return <div className={ styles.debug_stack_frames } style={ containerStyle }>
+    return <div className={ styles.debug_stack_frames }>
       { renderFramesErrorMessage(framesErrorMessage) }
     </div>;
   }
-  */
+
+  const footer = () => {
+    if (isLoading) {
+      return renderLoading();
+    } else if (canLoadMore) {
+      return renderLoadMoreStackFrames();
+    }
+    return null;
+  };
 
   return (
     <RecycleList
       data={ frames }
       template={ template }
-      sliceSize={ 30 }
-      style={ containerStyle }
-      placeholders={
-        { drained: renderLoadMoreStackFrames(), loading: renderLoading() }
-      }
-      isLoading={ isLoading }
+      itemHeight={ 22 }
+      width = {viewState.width}
+      height = { (isLoading || canLoadMore) ? (frames.length + 1) * 22 : frames.length * 22 }
+      footer = { footer }
     />
   );
 });

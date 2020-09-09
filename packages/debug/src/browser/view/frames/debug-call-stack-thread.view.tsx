@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ViewState, getIcon, useInjectable, localize } from '@ali/ide-core-browser';
+import { ViewState, getIcon, useInjectable, localize, DisposableCollection } from '@ali/ide-core-browser';
 import { DebugThread } from '../../model/debug-thread';
 import { DebugStackFrame } from '../../model';
 import { DebugStackFramesView } from './debug-call-stack-frame.view';
@@ -27,14 +27,16 @@ export const DebugStackThreadView = (props: DebugStackThreadViewProps) => {
   React.useEffect(() => {
     setFrames([...thread.frames]);
 
-    const disposable = thread.onDidChanged(() => {
+    const disposable = new DisposableCollection();
+
+    disposable.push(thread.onDidChanged(() => {
       setFrames([...thread.frames]);
       if (thread.stopped && (manager.currentThread && manager.currentThread.id === thread.id)) {
         setUnfold(true);
       } else {
         setUnfold(false);
       }
-    });
+    }));
 
     return () => {
       disposable.dispose();

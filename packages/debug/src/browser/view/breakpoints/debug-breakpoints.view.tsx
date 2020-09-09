@@ -1,14 +1,13 @@
 import * as React from 'react';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { DebugBreakpointsService } from './debug-breakpoints.service';
-import { useInjectable, ViewState } from '@ali/ide-core-browser';
+import { useInjectable, ViewState, CommandService, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import * as styles from './debug-breakpoints.module.less';
 import * as cls from 'classnames';
 import { CheckBox } from '@ali/ide-components';
 import { observer } from 'mobx-react-lite';
-import { DebugBreakpoint, DebugExceptionBreakpoint, isDebugBreakpoint, isRuntimeBreakpoint, getStatus } from '../../breakpoint';
-import { RecycleList } from '@ali/ide-core-browser/lib/components';
-import { Badge } from '@ali/ide-components';
+import { DebugBreakpoint, DebugExceptionBreakpoint, isDebugBreakpoint, isRuntimeBreakpoint, getStatus, ISourceBreakpoint } from '../../breakpoint';
+import { Badge, RecycleList } from '@ali/ide-components';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { IDebugSessionManager } from '../../../common';
 
@@ -42,8 +41,8 @@ export const DebugBreakpointView = observer(({
   return <div className={ cls(styles.debug_breakpoints, !enable && styles.debug_breakpoints_disabled) }>
     <RecycleList
       data={ nodes }
+      itemHeight={22}
       template={ template }
-      sliceSize={ 15 }
       style={ containerStyle }
     />
   </div>;
@@ -60,6 +59,7 @@ export const BreakpointItem = ({
 }) => {
   const defaultValue = isDebugBreakpoint(data.breakpoint) ? data.breakpoint.enabled : !!(data.breakpoint.default);
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
+  const commandService = useInjectable<CommandService>(CommandService);
   const [enabled, setEnabled] = React.useState<boolean>(defaultValue);
   const [status, setStatus] = React.useState<DebugProtocol.Breakpoint | false | undefined>(undefined);
 
@@ -68,8 +68,13 @@ export const BreakpointItem = ({
     setEnabled(!enabled);
   };
 
-  const clickHandler = (event: React.MouseEvent) => {
-    // data.breakpoint.open({preview: true});
+  const clickHandler = () => {
+    if ((data.breakpoint as ISourceBreakpoint).uri) {
+      commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, (data.breakpoint as ISourceBreakpoint).uri, {
+        preview: true,
+        focus: true,
+      });
+    }
   };
 
   React.useEffect(() => {

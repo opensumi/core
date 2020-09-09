@@ -415,7 +415,7 @@ export class KeymapService implements IKeymapService {
     }
 
     // 获取排序后的列表
-    const sorted: KeybindingItem[] = items.sort((a: KeybindingItem, b: KeybindingItem) => this.compareItem(a.command, b.command));
+    const sorted: KeybindingItem[] = items.sort((a: KeybindingItem, b: KeybindingItem) => this.compareItem(a, b));
     // 获取定义了快捷键的列表
     const keyItems: KeybindingItem[] = sorted.filter((a: KeybindingItem) => !!a.keybinding);
 
@@ -425,9 +425,15 @@ export class KeymapService implements IKeymapService {
   }
 
   // 字典排序
-  protected compareItem(a: string | undefined, b: string | undefined): number {
+  protected compareItem(a: KeybindingItem, b: KeybindingItem): number {
     if (a && b) {
-      return (a.toLowerCase()).localeCompare(b.toLowerCase());
+      if (a.source === b.source) {
+        return (a.command.toLowerCase()).localeCompare(b.command.toLowerCase());
+      } else if (a.source === this.getScope(KeybindingScope.USER)) {
+        return -1;
+      } else {
+        return 1;
+      }
     }
     return 0;
   }
