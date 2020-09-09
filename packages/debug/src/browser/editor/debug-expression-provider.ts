@@ -10,6 +10,7 @@ export class DebugExpressionProvider {
     const { start, end } = this.getExactExpressionStartAndEnd(lineContent, selection.startColumn, selection.endColumn);
     return lineContent.substring(start - 1, end);
   }
+
   protected getExactExpressionStartAndEnd(lineContent: string, looseStart: number, looseEnd: number): { start: number, end: number } {
     let matchingExpression: string | undefined;
     let startOffset = 0;

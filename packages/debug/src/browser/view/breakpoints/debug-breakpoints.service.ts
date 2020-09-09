@@ -127,7 +127,7 @@ export class DebugBreakpointsService extends WithEventBus {
   }
 
   @action
-  updateBreakpoints() {
+  private updateBreakpoints() {
     this.nodes = this.extractNodes([ ...this.breakpoints.getExceptionBreakpoints(), ...this.breakpoints.getBreakpoints() ]);
   }
 

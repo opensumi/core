@@ -1,19 +1,9 @@
 import { localize } from '@ali/ide-core-browser';
-import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { DebugBreakpoint, isRuntimeBreakpoint } from './breakpoint-marker';
 
 export class DebugBreakpointDecoration {
   readonly className: string;
   readonly message: string[];
-}
-
-function isStatusVerified(status: Map<string, DebugProtocol.Breakpoint>) {
-  for (const b of status.values()) {
-    if (b.verified) {
-      return true;
-    }
-  }
-  return false;
 }
 
 export class DebugDecorator {
@@ -55,9 +45,6 @@ export class DebugDecorator {
   getDecoration(breakpoint: DebugBreakpoint, isDebugMode = false): DebugBreakpointDecoration {
     if (!breakpoint.enabled) {
       return this.getDisabledBreakpointDecoration(breakpoint);
-    }
-    if (isRuntimeBreakpoint(breakpoint) && !isStatusVerified(breakpoint.status)) {
-      return this.getUnverifiedBreakpointDecoration(breakpoint);
     }
     if (isDebugMode && !isRuntimeBreakpoint(breakpoint)) {
       return this.getUnverifiedBreakpointDecoration(breakpoint);

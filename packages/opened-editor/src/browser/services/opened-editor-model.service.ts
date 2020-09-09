@@ -169,6 +169,7 @@ export class OpenedEditorModelService {
     }));
 
     this.disposableCollection.push(this.openedEditorEventService.onDidDecorationChange((payload) => {
+      let shouldUpdate = false;
       if (!payload) {
         return;
       }
@@ -181,11 +182,14 @@ export class OpenedEditorModelService {
             } else {
               this.dirtyDecoration.removeTarget(node as EditorFile);
             }
+            shouldUpdate = true;
           }
         }
       }
-      this.setExplorerTabBarBadge();
-      this.treeModel.dispatchChange();
+      if (shouldUpdate) {
+        this.setExplorerTabBarBadge();
+        this.treeModel.dispatchChange();
+      }
     }));
 
     this.disposableCollection.push(this.onDidRefreshed(() => {

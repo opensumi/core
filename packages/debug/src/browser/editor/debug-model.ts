@@ -448,7 +448,7 @@ export class DebugModel implements IDebugModel {
     }
   }
 
-  protected onContextMenu(event: monaco.editor.IEditorMouseEvent) {
+  public onContextMenu(event: monaco.editor.IEditorMouseEvent) {
     if (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
       // 设置当前右键选中的断点
       const breakpoint = this.breakpointManager.getBreakpoint(this.uri, event.target.position!.lineNumber);
@@ -467,21 +467,23 @@ export class DebugModel implements IDebugModel {
     }
   }
 
-  protected onMouseDown(event: monaco.editor.IEditorMouseEvent): void {
+  public onMouseDown(event: monaco.editor.IEditorMouseEvent): void {
     if (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
       if (!event.event.rightButton) {
+        // 保证在DebugModelManager中准确获取当前焦点的编辑器
+        this.editor.focus();
         this.toggleBreakpoint(event.target.position!);
       }
     }
     this.hintBreakpoint(event);
   }
 
-  protected onMouseMove(event: monaco.editor.IEditorMouseEvent): void {
+  public onMouseMove(event: monaco.editor.IEditorMouseEvent): void {
     this.showHover(event);
     this.hintBreakpoint(event);
   }
 
-  protected onMouseLeave(event: monaco.editor.IPartialEditorMouseEvent): void {
+  public onMouseLeave(event: monaco.editor.IPartialEditorMouseEvent): void {
     this.hideHover(event);
     this.deltaHintDecorations([]);
   }

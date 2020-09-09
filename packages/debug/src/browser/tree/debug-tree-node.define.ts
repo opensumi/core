@@ -2,7 +2,6 @@ import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { DebugSession } from '../debug-session';
 import { MessageType, localize } from '@ali/ide-core-browser';
 import { TreeNode, CompositeTreeNode, ITree, ITreeNodeOrCompositeTreeNode } from '@ali/ide-components';
-import { Path } from '@ali/ide-components/lib/utils';
 import { AnsiConsoleNode } from './debug-console-tree-node.define';
 
 export class ExpressionTreeService {
@@ -112,9 +111,9 @@ export class DebugConsoleTreeService extends ExpressionTreeService {
 export class ExpressionNode extends TreeNode {
   public source: DebugProtocol.Source | undefined;
   public line: number | string | undefined;
-  protected variablesReference: number;
-  protected namedVariables: number | undefined;
-  protected indexedVariables: number | undefined;
+  public variablesReference: number;
+  public namedVariables: number | undefined;
+  public indexedVariables: number | undefined;
 
   constructor(options: ExpressionNode.Options, parent?: ExpressionContainer) {
     super(new ExpressionTreeService(options.session, options.source, options.line) as ITree, parent, undefined, { name: String(options.session?.id) });
@@ -127,10 +126,6 @@ export class ExpressionNode extends TreeNode {
 
   get badge() {
     return this.source ? `${this.source.name}:${this.line}` : '';
-  }
-
-  get tooltip() {
-    return '';
   }
 }
 
@@ -175,10 +170,6 @@ export class ExpressionContainer extends CompositeTreeNode {
 
   get badge() {
     return this.source ? `${this.source.name}:${this.line}` : '';
-  }
-
-  get tooltip() {
-    return '';
   }
 }
 
@@ -355,6 +346,9 @@ export class DebugVariableContainer extends ExpressionContainer {
       return;
     }
     const { name, parent } = this as any;
+    if (!parent) {
+      return;
+    }
     const variablesReference = parent.variablesReference;
     try {
       const response = await this.session.sendRequest('setVariable', { variablesReference, name, value });
@@ -367,34 +361,6 @@ export class DebugVariableContainer extends ExpressionContainer {
       throw error;
     }
   }
-
-  get supportCopyValue(): boolean {
-    return !!this.valueRef && document.queryCommandSupported('copy');
-  }
-
-  copyValue(): void {
-    const selection = document.getSelection();
-    if (this.valueRef && selection) {
-      selection.selectAllChildren(this.valueRef);
-      document.execCommand('copy');
-    }
-  }
-
-  protected valueRef: HTMLSpanElement | undefined;
-  protected setValueRef = (valueRef: HTMLSpanElement | null) => this.valueRef = valueRef || undefined;
-
-  get supportCopyAsExpression(): boolean {
-    return !!this.nameRef && document.queryCommandSupported('copy');
-  }
-  copyAsExpression(): void {
-    const selection = document.getSelection();
-    if (this.nameRef && selection) {
-      selection.selectAllChildren(this.nameRef);
-      document.execCommand('copy');
-    }
-  }
-  protected nameRef: HTMLSpanElement | undefined;
-  protected setNameRef = (nameRef: HTMLSpanElement | null) => this.nameRef = nameRef || undefined;
 }
 
 export class DebugScope extends ExpressionContainer {
@@ -524,6 +490,7 @@ export class DebugConsoleNode extends ExpressionContainer {
     return !!node && !!(node as DebugConsoleNode).expression;
   }
 
+  private _displayName: string;
   private _available: boolean;
   private _description: string;
 
@@ -552,7 +519,7 @@ export class DebugConsoleNode extends ExpressionContainer {
         if (typeof expression === 'string') {
           const body = await this.session.evaluate(expression, context);
           if (body) {
-            this.name = expression;
+            this._displayName = expression;
             this._description = body.result;
             this.variablesReference = body.variablesReference;
             this.namedVariables = body.namedVariables;
@@ -562,13 +529,21 @@ export class DebugConsoleNode extends ExpressionContainer {
         }
       } catch (err) {
         this._available = false;
-        this.name = expression;
+        this._displayName = expression;
         this._description = err.message;
       }
     } else {
       this._available = false;
-      this.name = expression;
+      this._displayName = expression;
     }
+  }
+
+  get displayName() {
+    return this._displayName || this.name;
+  }
+
+  get name() {
+    return `log_${this.id}`;
   }
 }
 
@@ -662,7 +637,7 @@ export class DebugHoverVariableRoot extends ExpressionContainer {
   }
 
   get path() {
-    return `${Path.separator}hoverRoot_${this.id}`;
+    return `hoverRoot_${this.id}`;
   }
 
   protected _available = false;

@@ -4,6 +4,7 @@ import { EditorCollectionService, ICodeEditor, WorkbenchEditorService } from '@a
 import { DebugModelFactory, IDebugModel } from '../../common';
 import { BreakpointManager, BreakpointsChangeEvent } from '../breakpoint';
 import { DebugConfigurationManager } from '../debug-configuration-manager';
+import { DebugSource } from '../model';
 
 export enum DebugModelSupportedEventType {
   down = 'Down',
@@ -21,7 +22,7 @@ export class DebugModelManager extends Disposable {
   private editorService: WorkbenchEditorService;
 
   @Autowired(EditorCollectionService)
-  private editorColletion: EditorCollectionService;
+  private editorCollection: EditorCollectionService;
 
   @Autowired(DebugModelFactory)
   private debugModelFactory: DebugModelFactory;
@@ -61,16 +62,14 @@ export class DebugModelManager extends Disposable {
   }
 
   init() {
-    this.editorColletion.onCodeEditorCreate((codeEditor: ICodeEditor) => this.push(codeEditor));
+    this.editorCollection.onCodeEditorCreate((codeEditor: ICodeEditor) => this.push(codeEditor));
 
     this.breakpointManager.onDidChangeBreakpoints((event) => {
       const { currentEditor } = this.editorService;
       const uri = currentEditor && currentEditor.currentUri;
-
       if (uri) {
         this.render(uri);
       }
-
       this.closeBreakpointIfAffected(event);
     });
   }
@@ -117,6 +116,10 @@ export class DebugModelManager extends Disposable {
   protected push(codeEditor: ICodeEditor): void {
     const monacoEditor = (codeEditor as any).monacoEditor as monaco.editor.ICodeEditor;
     codeEditor.onRefOpen((ref) => {
+      // 只处理
+      if (ref.instance.uri.scheme !== 'file' && ref.instance.uri.scheme !== DebugSource.SCHEME) {
+        return;
+      }
       const uriString = ref.instance.uri.toString();
       const debugModel = this.models.get(uriString) || [];
       let isRendered = false;

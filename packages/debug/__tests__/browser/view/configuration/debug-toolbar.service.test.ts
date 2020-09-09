@@ -1,0 +1,115 @@
+import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
+import { IEventBus, EventBusImpl } from '@ali/ide-core-common';
+import { DebugViewModel } from '@ali/ide-debug/lib/browser/view/debug-view-model';
+import { MockInjector } from '@ali/ide-dev-tool/src/mock-injector';
+import { DebugToolbarService } from '@ali/ide-debug/lib/browser/view/configuration/debug-toolbar.service';
+
+describe('Debug Configuration Service', () => {
+  const mockInjector = createBrowserInjector([], new MockInjector([
+    {
+      token: IEventBus,
+      useClass: EventBusImpl,
+    },
+  ]));
+  let debugToolbarService: DebugToolbarService;
+
+  const mockDebugViewModel = {
+    onDidChange: jest.fn(),
+    sessions: [],
+    currentSession: {
+      terminate: jest.fn(),
+    },
+    currentThread: {
+      continue: jest.fn(),
+      pause: jest.fn(),
+      stepOver: jest.fn(),
+      stepIn: jest.fn(),
+      stepOut: jest.fn(),
+    },
+    start: jest.fn(),
+    restart: jest.fn(),
+  };
+
+  beforeAll(async () => {
+    mockInjector.overrideProviders({
+      token: DebugToolbarService,
+      useClass: DebugToolbarService,
+    });
+    mockInjector.overrideProviders({
+      token: DebugViewModel,
+      useValue: mockDebugViewModel,
+    });
+    debugToolbarService = mockInjector.get(DebugToolbarService);
+  });
+
+  it('should have enough API', () => {
+    expect(typeof debugToolbarService.updateModel).toBe('function');
+    expect(typeof debugToolbarService.doStart).toBe('function');
+    expect(typeof debugToolbarService.doRestart).toBe('function');
+    expect(typeof debugToolbarService.doStop).toBe('function');
+    expect(typeof debugToolbarService.doContinue).toBe('function');
+    expect(typeof debugToolbarService.doPause).toBe('function');
+    expect(typeof debugToolbarService.doStepOver).toBe('function');
+    expect(typeof debugToolbarService.doStepIn).toBe('function');
+    expect(typeof debugToolbarService.doStepOut).toBe('function');
+    expect(typeof debugToolbarService.updateCurrentSession).toBe('function');
+    expect(Array.isArray(debugToolbarService.sessions)).toBeTruthy();
+    expect(debugToolbarService.currentSession).toBeUndefined;
+  });
+
+  it('should init success', () => {
+    expect(mockDebugViewModel.onDidChange).toBeCalledTimes(1);
+  });
+
+  it('onStart method should be work', () => {
+    debugToolbarService.doStart();
+    expect(mockDebugViewModel.start).toBeCalledTimes(1);
+  });
+
+  it('doRestart method should be work', () => {
+    debugToolbarService.doRestart();
+    expect(mockDebugViewModel.restart).toBeCalledTimes(1);
+  });
+
+  it('doStop method should be work', () => {
+    debugToolbarService.doStop();
+    expect(mockDebugViewModel.currentSession.terminate).toBeCalledTimes(1);
+  });
+
+  it('doContinue method should be work', () => {
+    debugToolbarService.doContinue();
+    expect(mockDebugViewModel.currentThread.continue).toBeCalledTimes(1);
+  });
+
+  it('doPause method should be work', () => {
+    debugToolbarService.doPause();
+    expect(mockDebugViewModel.currentThread.pause).toBeCalledTimes(1);
+  });
+
+  it('doStepIn method should be work', () => {
+    debugToolbarService.doStepIn();
+    expect(mockDebugViewModel.currentThread.stepIn).toBeCalledTimes(1);
+  });
+
+  it('doStepOver method should be work', () => {
+    debugToolbarService.doStepOver();
+    expect(mockDebugViewModel.currentThread.stepOver).toBeCalledTimes(1);
+  });
+
+  it('doStepOut method should be work', () => {
+    debugToolbarService.doStepOut();
+    expect(mockDebugViewModel.currentThread.stepOut).toBeCalledTimes(1);
+  });
+
+  it('updateCurrentSession method should be work', () => {
+    const session = {} as any;
+    debugToolbarService.updateCurrentSession(session);
+    debugToolbarService.updateModel();
+    expect(debugToolbarService.currentSession).toEqual(session);
+  });
+
+  it('updateModel method should be work', () => {
+    debugToolbarService.updateModel();
+    expect(debugToolbarService.sessionCount).toBe(0);
+  });
+});

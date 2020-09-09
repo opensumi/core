@@ -56,6 +56,10 @@ export class DebugHoverTreeModelService {
     });
   }
 
+  get onDidRefreshed(): Event<void> {
+    return this.onDidRefreshedEmitter.event;
+  }
+
   get onDidUpdateTreeModel(): Event<DebugHoverModel | void> {
     return this.onDidUpdateTreeModelEmitter.event;
   }
@@ -114,7 +118,6 @@ export class DebugHoverTreeModelService {
   }
 
   async initTreeModel(root: ExpressionVariable) {
-    // 根据是否为多工作区创建不同根节点
     if (!root) {
       return;
     }
@@ -130,14 +133,6 @@ export class DebugHoverTreeModelService {
     this._decorations.addDecoration(this.selectedDecoration);
     this._decorations.addDecoration(this.focusedDecoration);
     this._decorations.addDecoration(this.loadingDecoration);
-  }
-
-  // 清空所有节点选中态
-  clearFileSelectedDecoration = () => {
-    this._selectedNodes.forEach((file) => {
-      this.selectedDecoration.removeTarget(file);
-    });
-    this._selectedNodes = [];
   }
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
@@ -170,7 +165,7 @@ export class DebugHoverTreeModelService {
 
   // 清空其他焦点态节点，更新当前焦点节点，
   // removePreFocusedDecoration 表示更新焦点节点时如果此前已存在焦点节点，之前的节点装饰器将会被移除
-  activeFileFocusedDecoration = (target: ExpressionContainer | ExpressionNode, removePreFocusedDecoration: boolean = false) => {
+  activeNodeFocusedDecoration = (target: ExpressionContainer | ExpressionNode, removePreFocusedDecoration: boolean = false) => {
     if (this.focusedNode !== target) {
       if (removePreFocusedDecoration) {
         // 当存在上一次右键菜单激活的文件时，需要把焦点态的文件节点的装饰器全部移除
@@ -197,22 +192,6 @@ export class DebugHoverTreeModelService {
     this.treeModel.dispatchChange();
   }
 
-  // 选中当前指定节点，添加装饰器属性
-  activeFileSelectedDecoration = (target: ExpressionContainer | ExpressionNode) => {
-    if (this._selectedNodes.indexOf(target) > -1) {
-      return;
-    }
-    if (this.selectedNodes.length > 0) {
-      this.selectedNodes.forEach((file) => {
-        this.selectedDecoration.removeTarget(file);
-      });
-    }
-    this._selectedNodes = [target];
-    this.selectedDecoration.addTarget(target);
-    // 通知视图更新
-    this.treeModel.dispatchChange();
-  }
-
   // 取消选中节点焦点
   enactiveNodeDecoration = () => {
     if (this.focusedNode) {
@@ -228,21 +207,6 @@ export class DebugHoverTreeModelService {
     }
     this.decorations.removeDecoration(this.selectedDecoration);
     this.decorations.removeDecoration(this.focusedDecoration);
-  }
-
-  handleContextMenu = (ev: React.MouseEvent, file?: ExpressionContainer | ExpressionNode) => {
-    ev.stopPropagation();
-    ev.preventDefault();
-
-    if (file) {
-      this.activeFileFocusedDecoration(file, true);
-    } else {
-      this.enactiveNodeDecoration();
-    }
-
-    if (!file) {
-    } else {
-    }
   }
 
   handleTreeHandler(handle: IDebugVariablesHandle) {

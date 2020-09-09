@@ -31,7 +31,7 @@ export class DebugSource extends DebugSourceData {
   }
 
   async open(options: IResourceOpenOptions, frame?: DebugStackFrame) {
-    if (this.uri.scheme === 'debug') {
+    if (this.uri.scheme === DebugSource.SCHEME) {
       const content = await this.load();
       await this.fileSystem.setContent({
         uri: this.uri.toString(),

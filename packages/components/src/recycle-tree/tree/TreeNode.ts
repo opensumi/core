@@ -646,6 +646,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       return;
     }
     let relativeInsertionIndex = this._children!.indexOf(item);
+    let absInsertionIndex;
     const leadingSibling = this._children![relativeInsertionIndex - 1];
     if (leadingSibling) {
       const siblingIdx = master._flattenedBranch.indexOf(leadingSibling.id);
@@ -654,11 +655,17 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       relativeInsertionIndex = master._flattenedBranch.indexOf(this.id);
     }
     if (relativeInsertionIndex === -1) {
-      return;
+      if (this._branchSize === 1) {
+        // 在空Tree中插入节点时，相对插入位置为0
+        relativeInsertionIndex = 0;
+      } else {
+        return;
+      }
     }
-    // +1为了容纳自身节点位置，在插入节点下方插入新增节点
-    const absInsertionIndex = relativeInsertionIndex + 1;
-
+    if (this._branchSize !== 1) {
+      // 非空Tree情况下需要+1，为了容纳自身节点位置，在插入节点下方插入新增节点
+      absInsertionIndex = relativeInsertionIndex + 1;
+    }
     const branch = new Uint32Array(branchSizeIncrease);
     branch[0] = item.id;
     if (item instanceof CompositeTreeNode && item.expanded && item._flattenedBranch) {

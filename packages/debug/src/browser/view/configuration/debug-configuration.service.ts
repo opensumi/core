@@ -17,9 +17,6 @@ export class DebugConfigurationService {
   @Autowired(DebugConfigurationManager)
   protected debugConfigurationManager: DebugConfigurationManager;
 
-  @Autowired(DebugConsoleService)
-  protected debugConsole: DebugConsoleService;
-
   @Autowired(IDebugSessionManager)
   protected debugSessionManager: DebugSessionManager;
 
@@ -35,8 +32,10 @@ export class DebugConfigurationService {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
+  private _whenReady: Promise<void>;
+
   constructor() {
-    this.init();
+    this._whenReady = this.init();
   }
 
   @observable
@@ -48,11 +47,19 @@ export class DebugConfigurationService {
   @observable.shallow
   configurationOptions: DebugSessionOptions[] = this.debugConfigurationManager.all || [];
 
+  get whenReady() {
+    return this._whenReady;
+  }
+
   private async initCurrentConfiguration() {
     const preValue = await this.getCurrentConfiguration();
     const hasConfig = !!this.debugConfigurationManager.all.find((config) => this.toValue(config) === preValue);
-    if (hasConfig) {
-      this.updateCurrentValue(preValue);
+    if (!!preValue) {
+      if (hasConfig) {
+        this.updateCurrentValue(preValue);
+      }
+    } else if (this.debugConfigurationManager.current) {
+      this.updateCurrentValue(this.toValue(this.debugConfigurationManager.current));
     }
   }
 

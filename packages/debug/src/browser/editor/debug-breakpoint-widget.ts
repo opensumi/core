@@ -33,7 +33,7 @@ export class DebugBreakpointWidget extends Disposable {
   }
 
   get values() {
-    return this.zone.values;
+    return this.zone?.values;
   }
 
   show(position: monaco.Position, contexts?: DebugBreakpointWidgetContext, defaultContext: DebugBreakpointZoneWidget.Context = 'condition') {
@@ -59,6 +59,6 @@ export class DebugBreakpointWidget extends Disposable {
   }
 
   hide() {
-    this.zone.dispose();
+    this.zone?.dispose();
   }
 }

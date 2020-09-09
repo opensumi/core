@@ -148,7 +148,9 @@ export class DebugConsoleModelService {
       }
     }));
     this.debugConsoleDisposableCollection.push(this.manager.onDidChangeActiveDebugSession((state: DidChangeActiveDebugSession) => {
-      this.initTreeModel(state.current);
+      if (state.current) {
+        this.initTreeModel(state.current);
+      }
     }));
   }
 
@@ -268,33 +270,9 @@ export class DebugConsoleModelService {
     }
   }
 
-  // 清空其他选中/焦点态节点，更新当前选中节点
-  selectFileDecoration = (target: AnsiConsoleNode | DebugConsoleNode) => {
-    if (this.preContextMenuFocusedFile) {
-      this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
-      this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
-      this.preContextMenuFocusedFile = null;
-    }
-    if (target) {
-      if (this.selectedNodes.length > 0) {
-        this.selectedNodes.forEach((file) => {
-          this.selectedDecoration.removeTarget(file);
-        });
-      }
-      if (this.focusedNode) {
-        this.focusedDecoration.removeTarget(this.focusedNode);
-      }
-      this.selectedDecoration.addTarget(target);
-      this._selectedNodes = [target];
-
-      // 通知视图更新
-      this.treeModel?.dispatchChange();
-    }
-  }
-
   // 清空其他焦点态节点，更新当前焦点节点，
   // removePreFocusedDecoration 表示更新焦点节点时如果此前已存在焦点节点，之前的节点装饰器将会被移除
-  activeFileFocusedDecoration = (target: AnsiConsoleNode | DebugConsoleNode, removePreFocusedDecoration: boolean = false) => {
+  activeNodeFocusedDecoration = (target: AnsiConsoleNode | DebugConsoleNode, removePreFocusedDecoration: boolean = false) => {
     if (this.focusedNode !== target) {
       if (removePreFocusedDecoration) {
         // 当存在上一次右键菜单激活的文件时，需要把焦点态的文件节点的装饰器全部移除
@@ -317,22 +295,6 @@ export class DebugConsoleModelService {
         this._selectedNodes.push(target);
       }
     }
-    // 通知视图更新
-    this.treeModel?.dispatchChange();
-  }
-
-  // 选中当前指定节点，添加装饰器属性
-  activeFileSelectedDecoration = (target: AnsiConsoleNode | DebugConsoleNode) => {
-    if (this._selectedNodes.indexOf(target) > -1) {
-      return;
-    }
-    if (this.selectedNodes.length > 0) {
-      this.selectedNodes.forEach((file) => {
-        this.selectedDecoration.removeTarget(file);
-      });
-    }
-    this._selectedNodes = [target];
-    this.selectedDecoration.addTarget(target);
     // 通知视图更新
     this.treeModel?.dispatchChange();
   }
@@ -361,7 +323,7 @@ export class DebugConsoleModelService {
     const { x, y } = ev.nativeEvent;
 
     if (expression) {
-      this.activeFileFocusedDecoration(expression, true);
+      this.activeNodeFocusedDecoration(expression, true);
     } else {
       this.enactiveNodeDecoration();
     }
@@ -507,10 +469,11 @@ export class DebugConsoleModelService {
     }
     const parent: DebugConsoleRoot = this.treeModel.root as DebugConsoleRoot;
     const textNode = new AnsiConsoleNode(value, parent);
-    this.dispatchWatchEvent(parent, parent.path, { type: WatchEvent.Added, node: textNode, id: parent.id });
+    await this.dispatchWatchEvent(parent, parent.path, { type: WatchEvent.Added, node: textNode, id: parent.id });
     const expressionNode = new DebugConsoleNode(this.manager.currentSession, value, parent as ExpressionContainer);
     await expressionNode.evaluate();
-    this.dispatchWatchEvent(parent, parent.path, { type: WatchEvent.Added, node: expressionNode, id: parent.id });
+    await this.dispatchWatchEvent(parent, parent.path, { type: WatchEvent.Added, node: expressionNode, id: parent.id });
+    this.treeHandle.ensureVisible(expressionNode);
   }
 
 }
