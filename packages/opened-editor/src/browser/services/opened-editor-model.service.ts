@@ -168,6 +168,16 @@ export class OpenedEditorModelService {
       this.refresh();
     }));
 
+    this.disposableCollection.push(this.editorService.onDidEditorGroupsChanged(() => {
+      this._currentDirtyNodes = [];
+      this.refresh();
+    }));
+
+    this.disposableCollection.push(this.editorService.onDidCurrentEditorGroupChanged(() => {
+      this._currentDirtyNodes = [];
+      this.refresh();
+    }));
+
     this.disposableCollection.push(this.openedEditorEventService.onDidDecorationChange((payload) => {
       let shouldUpdate = false;
       if (!payload) {

@@ -2,12 +2,19 @@ import { WorkbenchEditorService, IResourceOpenOptions, IUntitledOptions, IOpenRe
 import { URI, Emitter, MaybeNull, Event } from '@ali/ide-core-common';
 import { Injectable } from '@ali/common-di';
 import { IResource } from '../resource';
+import { IEditorGroup } from '../../browser';
 
 @Injectable()
 export class MockWorkbenchEditorService extends WorkbenchEditorService {
 
   private readonly _onActiveResourceChange = new Emitter<MaybeNull<IResource>>();
   public readonly onActiveResourceChange: Event<MaybeNull<IResource>> = this._onActiveResourceChange.event;
+
+  private readonly _onDidEditorGroupsChanged = new Emitter<void>();
+  public readonly onDidEditorGroupsChanged: Event<void> = this._onDidEditorGroupsChanged.event;
+
+  private readonly _onDidCurrentEditorGroupChanged = new Emitter<IEditorGroup>();
+  public readonly onDidCurrentEditorGroupChanged: Event<IEditorGroup> = this._onDidCurrentEditorGroupChanged.event;
 
   async closeAll(uri?: URI, force?: boolean): Promise<void> {
     throw new Error('Method not implemented.');
