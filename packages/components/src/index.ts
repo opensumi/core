@@ -14,6 +14,7 @@ export * from './popover';
 export * from './message';
 export * from './tooltip';
 export * from './recycle-tree';
+export * from './recycle-list';
 export * from './common';
 
 export * from './locale-context-provider';

@@ -237,6 +237,7 @@ export const localizationBundle = {
     'debug.console.panel.title': 'DEBUG CONSOLE',
     'debug.console.panel.default': 'default',
     'debug.stack.loadMore': 'Load More Stack Frames',
+    'debug.stack.loading': 'Loading...',
     'debug.breakpoint.deactive': 'Deactivate Breakpoints',
     'debug.breakpoint.active': 'Activate Breakpoints',
     'debug.threads.title': 'THREADS',
