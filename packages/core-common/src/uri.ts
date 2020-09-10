@@ -251,7 +251,10 @@ export class URI {
   static stringifyQuery(query: {[key: string] : any}): string {
     const values: string[]= [];
     Object.keys(query).forEach((key) => {
-      values.push(encodeURIComponent(key) + '=' + encodeURIComponent(query[key]));
+      const value = encodeURIComponent(query[key]);
+      if (value !== undefined) {
+        values.push(encodeURIComponent(key) + '=' + value);
+      }
     })
     return values.join('&');
   }
