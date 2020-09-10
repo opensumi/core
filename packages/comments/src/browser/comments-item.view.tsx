@@ -97,10 +97,10 @@ const ReplyItem: React.FC<{
 
   // 判断是正常 Inline Text 还是 Markdown Text
   const isInlineText = React.useMemo(() => {
-    const lexer = marked.lexer(body);
-    const token = lexer[0] as marked.Tokens.Paragraph;
-    const isParagraph = token?.type === 'paragraph';
-    return isParagraph && !token?.text.includes('\n');
+    const parsedStr = marked(body);
+    // 解析出来非纯p标签的则为Markdown Text
+    const isInline = /^\<p\>[^<>]+\<\/p\>\n$/.test(parsedStr);
+    return isInline;
   }, [body]);
 
   return (
