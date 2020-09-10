@@ -273,10 +273,10 @@ export class KTNodeProcess {
    */
   async dispose() {
     const logger = getDebugLogger();
-    logger.log('KTNodeProcess dispose', this._process);
+    logger.log('KTNodeProcess dispose', this._process.pid);
     if (this._process) {
       return new Promise((resolve, reject) => {
-        treeKill(this._process.pid, (err) => {
+        treeKill(this._process.pid, 'SIGKILL', (err) => {
           if (err) {
             logger.error(`tree kill error" \n ${err.message}`);
             reject();
