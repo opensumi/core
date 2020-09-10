@@ -1,4 +1,4 @@
-import { PreferenceService } from '@ali/ide-core-browser';
+import { PreferenceService, removeUndefined } from '@ali/ide-core-browser';
 import { IConvertedMonacoOptions } from '../types';
 
 /**
@@ -53,7 +53,11 @@ export function getConvertedMonacoOptions(preferenceService: PreferenceService, 
     }
   });
 
-  return {editorOptions, modelOptions, diffOptions};
+  return {
+    editorOptions: removeUndefined(editorOptions),
+    modelOptions: removeUndefined(modelOptions),
+    diffOptions: removeUndefined(diffOptions),
+  };
 }
 
 type NoConverter = false;
@@ -648,7 +652,13 @@ export const editorOptionsConverters: Map<KaitianPreferenceKey , NoConverter | I
     /**
      * 是否强行readonly
      */
-    ['editor.forceReadOnly', { monaco: 'readOnly' }],
+    ['editor.forceReadOnly', { monaco: 'readOnly', convert: (value: boolean) => {
+      if (value) {
+        return true;
+      } else {
+        return undefined;
+      }
+    } }],
 ]);
 
 export const textModelUpdateOptionsConverters: Map<KaitianPreferenceKey , NoConverter | IMonacoOptionsConverter> = new Map<string , NoConverter | IMonacoOptionsConverter>([
