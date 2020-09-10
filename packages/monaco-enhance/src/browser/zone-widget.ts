@@ -211,7 +211,7 @@ export abstract class ResizeZoneWidget extends ZoneWidget {
   private wrap: HTMLDivElement;
   protected readonly _onChangeZoneWidget = new Emitter<IRange>();
   public readonly onChangeZoneWidget: Event<IRange> = this._onChangeZoneWidget.event;
-
+  public onFirstDisplay = Event.once(this.onDomNodeTop);
   protected _isShow = false;
 
   constructor(
