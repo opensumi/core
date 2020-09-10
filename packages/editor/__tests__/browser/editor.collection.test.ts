@@ -45,6 +45,7 @@ describe('editor collection service test', () => {
     const emitter1 = new Emitter<PreferenceChanges>();
     const prefs = {
       'editor.fontSize': 20,
+      'editor.forceReadonly': false,
     };
     const setPref = (key, value) => {
       prefs[key] = value;
