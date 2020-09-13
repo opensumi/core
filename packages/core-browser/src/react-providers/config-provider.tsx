@@ -67,6 +67,13 @@ export interface AppConfig {
    * 都被其包裹一层，以达到额外的 context 传递效果
    */
   extraContextProvider?: React.ComponentType<React.PropsWithChildren<any>>;
+
+  /**
+   * @ClientOption
+   * @default true
+   * 允许按照 workspace dir 去动态设置 document#title, 默认为 true
+   */
+  allowSetDocumentTitleFollowWorkspaceDir?: boolean;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
