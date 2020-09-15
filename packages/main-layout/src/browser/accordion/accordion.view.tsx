@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Layout } from '@ali/ide-core-browser/lib/components';
-import { SplitPanel } from '@ali/ide-core-browser/lib/components';
-import { AccordionSection } from './section.view';
 import { View, useInjectable } from '@ali/ide-core-browser';
+import { replaceLocalizePlaceholder } from '@ali/ide-core-common';
+import { Layout, SplitPanel } from '@ali/ide-core-browser/lib/components';
+
+import { AccordionSection } from './section.view';
 import { AccordionServiceFactory, AccordionService, SectionState } from './accordion.service';
 
 export const AccordionContainer: React.FC<{
@@ -49,7 +50,7 @@ export const AccordionContainer: React.FC<{
         onItemClick={() => accordionService.handleSectionClick(view.id, !collapsed, index)}
         onContextMenuHandler={accordionService.handleContextMenu}
         alignment={alignment as Layout.alignment}
-        header={view.name || view.id}
+        header={view.name && replaceLocalizePlaceholder(view.name) || view.id}
         viewId={view.id}
         key={view.id}
         expanded={!collapsed}
