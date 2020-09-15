@@ -105,10 +105,10 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
       });
     }
 
-    this.commentsService.onThreadsChanged(() => {
+    this.addDispose(Event.debounce(this.commentsService.onThreadsChanged, () => {}, 100)(() => {
       const handler = this.layoutService.getTabbarHandler(CommentPanelId);
       handler?.setBadge(this.panelBadge);
-    });
+    }, this));
   }
 
   registerEditorFeature(registry: IEditorFeatureRegistry) {
