@@ -3,7 +3,7 @@ import { FileStat } from '@ali/ide-file-service';
 import * as Ajv from 'ajv';
 import { StorageService } from '@ali/ide-core-browser/lib/services';
 
-export const KAITIAN_MUTI_WORKSPACE_EXT = 'kaitian-workspace';
+export const KAITIAN_MULTI_WORKSPACE_EXT = 'kaitian-workspace';
 export const WORKSPACE_USER_STORAGE_FOLDER_NAME = '.kaitian';
 export const WORKSPACE_RECENT_DATA_FILE = 'recentdata.json';
 export const UNTITLED_WORKSPACE = 'Untitled';

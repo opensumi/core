@@ -1,7 +1,7 @@
 
 import { Injectable, Autowired } from '@ali/common-di';
 import {
-  KAITIAN_MUTI_WORKSPACE_EXT,
+  KAITIAN_MULTI_WORKSPACE_EXT,
   IWorkspaceService,
   WorkspaceData,
   WorkspaceInput,
@@ -114,7 +114,7 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   protected getTemporaryWorkspaceFileUri(home: URI): URI {
-    return home.resolve(this.appConfig.storageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME).resolve(`${UNTITLED_WORKSPACE}.${KAITIAN_MUTI_WORKSPACE_EXT}`).withScheme('file');
+    return home.resolve(this.appConfig.storageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME).resolve(`${UNTITLED_WORKSPACE}.${KAITIAN_MULTI_WORKSPACE_EXT}`).withScheme('file');
   }
 
   protected async setFilesPreferences() {
@@ -302,12 +302,17 @@ export class WorkspaceService implements IWorkspaceService {
 
   // 更新页面Title
   protected updateTitle() {
+    // 是否允许按照 workspace dir 修改 document#title
+    if (!this.appConfig.allowSetDocumentTitleFollowWorkspaceDir) {
+      return;
+    }
+
     let title: string | undefined;
     if (this._workspace) {
       const uri = new URI(this._workspace.uri);
       const displayName = uri.displayName;
       if (!this._workspace.isDirectory &&
-        (displayName.endsWith(`.${KAITIAN_MUTI_WORKSPACE_EXT}`))) {
+        (displayName.endsWith(`.${KAITIAN_MULTI_WORKSPACE_EXT}`))) {
         title = displayName.slice(0, displayName.lastIndexOf('.'));
       } else {
         title = displayName;

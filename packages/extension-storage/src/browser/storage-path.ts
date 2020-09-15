@@ -2,7 +2,7 @@ import * as crypto from 'crypto';
 import { Injectable, Autowired } from '@ali/common-di';
 import { isWindows, URI, Deferred, StoragePaths } from '@ali/ide-core-common';
 import { IExtensionStoragePathServer } from '../common';
-import { KAITIAN_MUTI_WORKSPACE_EXT, WORKSPACE_USER_STORAGE_FOLDER_NAME, UNTITLED_WORKSPACE } from '@ali/ide-workspace';
+import { KAITIAN_MULTI_WORKSPACE_EXT, WORKSPACE_USER_STORAGE_FOLDER_NAME, UNTITLED_WORKSPACE } from '@ali/ide-workspace';
 import { IFileServiceClient, FileStat } from '@ali/ide-file-service';
 import { ILoggerManagerClient } from '@ali/ide-logs';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -110,7 +110,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
   async buildWorkspaceId(workspace: FileStat, roots: FileStat[], extensionStorageDirName: string): Promise<string> {
     const homeDir = await this.getUserHomeDir();
     const getTemporaryWorkspaceFileUri = (home: URI): URI => {
-      return home.resolve(extensionStorageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME).resolve(`${UNTITLED_WORKSPACE}.${KAITIAN_MUTI_WORKSPACE_EXT}`).withScheme('file');
+      return home.resolve(extensionStorageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME).resolve(`${UNTITLED_WORKSPACE}.${KAITIAN_MULTI_WORKSPACE_EXT}`).withScheme('file');
     };
     const untitledWorkspace = getTemporaryWorkspaceFileUri(new URI(homeDir));
 
@@ -124,7 +124,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
       const uri = new URI(workspace.uri);
       let displayName = uri.displayName;
 
-      if ((!workspace || !workspace.isDirectory) && (displayName.endsWith(`.${KAITIAN_MUTI_WORKSPACE_EXT}`) )) {
+      if ((!workspace || !workspace.isDirectory) && (displayName.endsWith(`.${KAITIAN_MULTI_WORKSPACE_EXT}`) )) {
         displayName = displayName.slice(0, displayName.lastIndexOf('.'));
       }
 
