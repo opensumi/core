@@ -30,7 +30,7 @@ export class WelcomeContribution implements BrowserEditorContribution, ClientApp
     });
   }
 
-  registerResource(service: ResourceService ) {
+  registerResource(service: ResourceService) {
     service.registerResourceProvider({
       scheme: 'welcome',
       provideResource: async (uri: URI): Promise<IResource<IWelcomeMetaData>> => {
