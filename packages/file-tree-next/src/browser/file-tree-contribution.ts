@@ -4,7 +4,7 @@ import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileTreeService } from './file-tree.service';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
-import { KAITIAN_MUTI_WORKSPACE_EXT, IWorkspaceService, UNTITLED_WORKSPACE } from '@ali/ide-workspace';
+import { KAITIAN_MULTI_WORKSPACE_EXT, IWorkspaceService, UNTITLED_WORKSPACE } from '@ali/ide-workspace';
 import { FileTree } from './file-tree';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
 import { IDecorationsService } from '@ali/ide-decoration';
@@ -94,7 +94,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       const uri = new URI(workspace.uri);
       resourceTitle = uri.displayName;
       if (!workspace.isDirectory &&
-        (resourceTitle.endsWith(`.${KAITIAN_MUTI_WORKSPACE_EXT}`))) {
+        (resourceTitle.endsWith(`.${KAITIAN_MULTI_WORKSPACE_EXT}`))) {
         resourceTitle = resourceTitle.slice(0, resourceTitle.lastIndexOf('.'));
         if (resourceTitle === UNTITLED_WORKSPACE) {
           return localize('file.workspace.defaultTip');

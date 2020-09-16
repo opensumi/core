@@ -40,7 +40,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
     this.listen();
   }
 
-  handlesUri(uri: URI) {
+  handlesUri(uri: URI): number {
     const scheme = uri.scheme;
     if (scheme === FILE_SCHEME || this.fileServiceClient.handlesScheme(scheme)) {
       return 10;

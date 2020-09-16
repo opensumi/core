@@ -124,6 +124,7 @@ export class ClientApp implements IClientApp {
       modules, contributions, modulesInstances,
       connectionPath, connectionProtocols, iconStyleSheets,
       useCdnIcon, editorBackgroudImage, defaultPreferences,
+      allowSetDocumentTitleFollowWorkspaceDir = true,
       ...restOpts // rest part 为 AppConfig
     } = opts;
 
@@ -143,6 +144,7 @@ export class ClientApp implements IClientApp {
       wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
       layoutConfig: opts.layoutConfig as LayoutConfig,
       editorBackgroundImage: opts.editorBackgroundImage || editorBackgroudImage,
+      allowSetDocumentTitleFollowWorkspaceDir,
     };
 
     if (isElectronEnv() && electronEnv.metadata.extensionDevelopmentHost) {

@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
+import { useInjectable, useUpdateOnEvent } from '@ali/ide-core-browser/lib/react-hooks';
 import { IResource, ResourceService, IEditorGroup, WorkbenchEditorService } from '../common';
 import * as styles from './editor.module.less';
 import classnames from 'classnames';
@@ -194,7 +194,7 @@ export const Tabs = ({group}: ITabsProps) => {
   </div>;
 };
 
-export const EditorActions = ({group}: {group: IEditorGroup}) => {
+export const EditorActions = ({group}: {group: EditorGroup}) => {
   const editorActionRegistry = useInjectable<IEditorActionRegistry>(IEditorActionRegistry);
   const editorService: WorkbenchEditorServiceImpl = useInjectable(WorkbenchEditorService);
   const menu = editorActionRegistry.getMenu(group);
@@ -208,6 +208,8 @@ export const EditorActions = ({group}: {group: IEditorGroup}) => {
       disposer.dispose();
     };
   }, []);
+
+  useUpdateOnEvent(group.onDidEditorGroupBodyChanged, [group], () => !!group.currentOpenType);
 
   const args: [URI, IEditorGroup, MaybeNull<URI>] | undefined = group.currentResource ?
    [ group.currentResource.uri, group, group.currentEditor?.currentUri] : undefined;

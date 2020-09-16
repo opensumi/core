@@ -9,6 +9,7 @@ export const TestResourceProvider: IResourceProvider = {
       uri,
       name: uri.path.toString(),
       icon: 'iconTest ' + uri.toString(),
+      supportsRevive: true,
     };
   },
 };

@@ -124,7 +124,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   }
 
   async start() {
-    this.clear();
+    await this.clear();
     try {
       await this.startNode();
       getDebugLogger().log('starting browser window with url: ', this.appConfig.browserUrl);
@@ -139,14 +139,13 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   }
 
   async startNode() {
-    if (this.node) {
-      this.clear();
-    }
+    await this.clear();
     this._nodeReady = new Deferred();
     this.node = new KTNodeProcess(this.appConfig.nodeEntry, this.appConfig.extensionEntry, this.windowClientId, this.appConfig.extensionDir);
     this.rpcListenPath = normalizedIpcHandlerPath('electron-window', true);
     await this.node.start(this.rpcListenPath!, (this.workspace || '').toString());
     this._nodeReady.resolve();
+    this.bindBrowserClose();
   }
 
   bindEvents() {
@@ -159,26 +158,39 @@ export class CodeWindow extends Disposable implements ICodeWindow {
             shell.openExternal(url);
           }
         }
-    });
+      });
   }
 
-  clear() {
+  async clear() {
     if (this.node) {
-      // TODO Dispose
-      this.node.dispose();
+      await this.node.dispose();
       this.node = null;
     }
+  }
+
+  bindBrowserClose() {
+    if (!this.node) {
+      return;
+    }
+    this.browser.once('close', async (e) => {
+      if (!this.node) {
+        return;
+      }
+      e.preventDefault();
+
+      await this.clear();
+      setTimeout(() => {
+        if (!this.browser.isDestroyed()) {
+          this.browser.close();
+        }
+      }, 0);
+    });
   }
 
   close() {
     if (this.browser) {
       this.browser.close();
     }
-  }
-
-  dispose() {
-    this.clear();
-    super.dispose();
   }
 
   getBrowserWindow() {
@@ -256,15 +268,23 @@ export class KTNodeProcess {
     return this._process;
   }
 
-  dispose() {
+  /**
+   * 注意：方法需要的时间较长，需要执行完成后再关闭窗口
+   */
+  async dispose() {
     const logger = getDebugLogger();
-    logger.log('KTNodeProcess dispose', this._process);
+    logger.log('KTNodeProcess dispose', this._process.pid);
     if (this._process) {
-      treeKill(this._process.pid, (err) => {
-        if (err) {
-          logger.error(`tree kill error" \n ${err.message}`);
-          return;
-        }
+      return new Promise((resolve, reject) => {
+        treeKill(this._process.pid, 'SIGKILL', (err) => {
+          if (err) {
+            logger.error(`tree kill error" \n ${err.message}`);
+            reject();
+          } else {
+            logger.log('kill fork process', this._process.pid);
+            resolve();
+          }
+        });
       });
     }
   }

@@ -1384,11 +1384,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   getState(): IEditorGroupState {
-    // TODO 此处为了避免 breaking change，仍然保留了对file的额外判断，等业务方不存在自定义file协议scheme后删除
-    // @伊北 cloudIDE 中自定义了 file 的provider
-    const allowRecoverSchemes = ['file'];
     const couldRevive = (r: IResource): boolean => {
-      return !!((r.supportsRevive || allowRecoverSchemes.indexOf(r.uri.scheme) !== -1) && !r.deleted);
+      return !!(r.supportsRevive && !r.deleted);
     };
 
     const uris = this.resources.filter(couldRevive).map((r) => r.uri.toString());
