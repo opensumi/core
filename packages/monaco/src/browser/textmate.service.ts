@@ -2,12 +2,12 @@ import { TextmateRegistry } from './textmate-registry';
 import { Injectable, Autowired } from '@ali/common-di';
 import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger, ExtensionActivateEvent, getDebugLogger, MonacoService } from '@ali/ide-core-browser';
 import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap, INITIAL } from 'vscode-textmate';
-import { loadWASM, OnigScanner, OnigString } from 'onigasm';
 import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { URI } from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IThemeData } from '@ali/ide-theme';
+import { OnigScanner, loadWASM, OnigString } from 'vscode-oniguruma';
 
 import { createTextmateTokenizer, TokenizerOption } from './textmate-tokenizer';
 import { getNodeRequire } from './monaco-loader';
@@ -550,13 +550,19 @@ export class TextmateService extends WithEventBus {
   }
 
   private async getOnigLib(): Promise<IOnigLib> {
+    //
+    // 这个还有用吗? @吭头
+    //
     if ((global as any).oniguruma) {
       return new OnigurumaLib((global as any).oniguruma);
     }
     if (isElectronEnv()) {
       return new OnigurumaLib(getNodeRequire()('oniguruma'));
     }
-    await loadWASM('https://g.alicdn.com/tb-theia-app/theia-assets/0.0.9/98efdb1150c6b8050818b3ea2552b15b.wasm');
+    const response = await fetch('https://g.alicdn.com/kaitian/vscode-oniguruma-wasm/0.0.1/onig.wasm');
+    await loadWASM({
+      data: response,
+    });
     return new OnigasmLib();
   }
 
