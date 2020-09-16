@@ -70,9 +70,9 @@ export class ElectronMainApiProxy extends Disposable {
     target.eventEmitter = {
       fire: (event: string, ...args: any[]) => {
         this.app.getCodeWindows().forEach((window) => {
-          const webContents = window.getBrowserWindow().webContents;
-          if (!webContents.isDestroyed()) {
-            webContents.send('event:' + name, event, ...args);
+          const browser = window.getBrowserWindow();
+          if (!browser.isDestroyed()) {
+            browser.webContents.send('event:' + name, event, ...args);
           }
         });
       },
