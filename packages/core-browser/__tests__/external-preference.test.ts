@@ -1,4 +1,5 @@
 import { registerExternalPreferenceProvider, getPreferenceLanguageId, PreferenceScope, getExternalPreferenceProvider, getPreferenceThemeId, getPreferenceIconThemeId, getExternalPreference, registerLocalStorageProvider } from '../src/preferences';
+import { IPreferences } from '../src';
 
 describe('external preference tests', () => {
 
@@ -67,8 +68,20 @@ describe('external preference tests', () => {
     getExternalPreferenceProvider('general.theme')!.set('testTheme', PreferenceScope.Workspace);
     expect(getPreferenceThemeId()).toBe('testTheme');
 
+    // 默认值为 zh-CN
+    expect(getPreferenceLanguageId()).toBe('zh-CN');
     getExternalPreferenceProvider('general.language')!.set('testLanguage', PreferenceScope.Workspace);
     expect(getPreferenceLanguageId()).toBe('testLanguage');
+
+    // getPreferenceLanguageId 可传参 defaultPreference
+    expect(getPreferenceLanguageId({
+      'general.language': 'en-US',
+    } as IPreferences)).toBe('en-US');
+
+    // 采用 getExternalPreference 中的值兜底
+    expect(getPreferenceLanguageId({
+      'general.theme': 'vscode-icon',
+    } as IPreferences)).toBe('testLanguage');
 
     getExternalPreferenceProvider('general.icon')!.set('testIcon', PreferenceScope.Workspace);
     expect(getPreferenceIconThemeId()).toBe('testIcon');

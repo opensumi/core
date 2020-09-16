@@ -129,7 +129,7 @@ export class ClientApp implements IClientApp {
     } = opts;
 
     this.initEarlyPreference(opts.workspaceDir || '');
-    setLanguageId(getPreferenceLanguageId());
+    setLanguageId(getPreferenceLanguageId(defaultPreferences));
     this.injector = opts.injector || new Injector();
     this.modules = modules;
     this.modules.forEach((m) => this.resolveModuleDeps(m));

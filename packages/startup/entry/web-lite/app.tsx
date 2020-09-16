@@ -61,6 +61,7 @@ renderApp({
     'application.confirmExit': 'never',
     'editor.quickSuggestionsDelay': 100,
     'editor.quickSuggestionsMaxCount': 50,
+    'general.language': 'en-US',
   },
   workspaceDir: '/ide-s/TypeScript-Node-Starter',
   extraContextProvider: (props) => <div id='#hi' style={{ width: '100%', height: '100%' }}>{props.children}</div>,
