@@ -11,7 +11,7 @@ import { EditorDocumentModelContentRegistryImpl, EditorDocumentModelServiceImpl,
 import { LanguageService } from '@ali/ide-editor/lib/browser/language/language.service';
 import { MonacoService } from '@ali/ide-monaco';
 import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
-import { URI, Disposable, createContributionProvider } from '@ali/ide-core-common';
+import { URI, Disposable, createContributionProvider, ILoggerManagerClient } from '@ali/ide-core-common';
 import { TestResourceProvider, TestResourceResolver, TestEditorDocumentProvider, TestResourceResolver2, TestResourceComponent } from './test-providers';
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -20,6 +20,7 @@ import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { EditorFeatureRegistryImpl } from '@ali/ide-editor/lib/browser/feature';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 import { isEditStack, isEOLStack } from '@ali/ide-editor/lib/browser/doc-model/editor-is-fn';
+import { IMessageService } from '@ali/ide-overlay';
 
 const injector = createBrowserInjector([]);
 
@@ -75,6 +76,14 @@ injector.addProviders(...[
   {
     token: IContextKeyService,
     useClass: MockContextKeyService,
+  },
+  {
+    token: ILoggerManagerClient,
+    useValue: jest.fn(),
+  },
+  {
+    token: IMessageService,
+    useValue: {},
   },
 ]);
 useMockStorage(injector);
@@ -179,9 +188,18 @@ describe('workbench editor service tests', () => {
 
     await editorService.closeAll();
 
-    await editorService.open(testComponentUri, { forceOpenType: { type: 'code' } });
+    await editorService.open(testComponentUri, { preview: false, forceOpenType: { type: 'code' } });
     expect(editorService.editorGroups[0].currentOpenType).toBeDefined();
     expect(editorService.editorGroups[0].currentOpenType!.type).toBe('code');
+
+    // 测试 getState 方法
+    expect(editorService.editorGroups[0].getState()).toEqual({
+      uris: ['test://component'],
+      current: 'test://component',
+      previewIndex: -1,
+    });
+
+    await editorService.closeAll();
 
     disposer.dispose();
     done();
