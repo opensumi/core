@@ -888,6 +888,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         } else {
           this.commands.tryExecuteCommand(FILE_COMMANDS.LOCATION.id, uri);
         }
+        this.notifyTabChanged();
         return {
           group: this,
           resource: this.currentResource,
@@ -912,12 +913,15 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           if (options && options.label) {
             resource.name = options.label;
           }
+          let replaceResource: IResource | null = null;
           if (options && options.index !== undefined && options.index < this.resources.length) {
+            replaceResource = this.resources[options.index];
             this.resources.splice(options.index, 0, resource);
           } else {
             if (this.currentResource) {
               const currentIndex = this.resources.indexOf(this.currentResource);
               this.resources.splice(currentIndex + 1, 0, resource);
+              replaceResource = this.currentResource;
             } else {
               this.resources.push(resource);
             }
@@ -927,6 +931,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
               await this.close(this.previewURI, { treatAsNotCurrent: true});
             }
             this.previewURI = resource.uri;
+          }
+          if (options.replace && replaceResource) {
+            await this.close(replaceResource.uri, { treatAsNotCurrent: true});
           }
         }
         if (options.backend) {
@@ -1272,7 +1279,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       for (const resource of resourcesToClose) {
         this.clearResourceOnClose(resource);
       }
-      this.open(uri);
+      await this.open(uri);
     }
   }
 

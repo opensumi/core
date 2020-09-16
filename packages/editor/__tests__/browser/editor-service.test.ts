@@ -12,7 +12,7 @@ import { LanguageService } from '@ali/ide-editor/lib/browser/language/language.s
 import { MonacoService } from '@ali/ide-monaco';
 import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
 import { URI, Disposable, createContributionProvider, ILoggerManagerClient } from '@ali/ide-core-common';
-import { TestResourceProvider, TestResourceResolver, TestEditorDocumentProvider, TestResourceResolver2, TestResourceComponent } from './test-providers';
+import { TestResourceProvider, TestResourceResolver, TestEditorDocumentProvider, TestResourceResolver2, TestResourceComponent, doNotClose } from './test-providers';
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { CorePreferences, IContextKeyService, PreferenceService } from '@ali/ide-core-browser';
@@ -235,6 +235,59 @@ describe('workbench editor service tests', () => {
     expect(editorService.editorGroups[0].resources.length).toBe(2);
 
     await editorService.closeAll();
+    done();
+  });
+
+  it('replace should work properly', async (done) => {
+    const testCodeUri = new URI('test://a/testUri1');
+    await editorService.open(testCodeUri, { preview: false });
+    const testCodeUri2 = new URI('test://a/testUri2');
+    await editorService.open(testCodeUri2, { preview: false });
+    const testCodeUri3 = new URI('test://a/testUri3');
+    await editorService.open(testCodeUri3, { preview: false });
+
+    await editorService.open(testCodeUri2, { preview: false });
+
+    const testCodeUri4 = new URI('test://a/testUri4');
+    await editorService.open(testCodeUri4, { preview: false, replace: true });
+
+    expect(editorService.currentEditorGroup.resources.map((r) => r.uri.toString())).toEqual(['test://a/testUri1', 'test://a/testUri4', 'test://a/testUri3']);
+
+    await editorService.open(testCodeUri2, { preview: false, replace: true, index: 0 });
+
+    expect(editorService.currentEditorGroup.resources.map((r) => r.uri.toString())).toEqual(['test://a/testUri2', 'test://a/testUri4', 'test://a/testUri3']);
+
+    // 不允许关闭的情况
+    doNotClose.push(testCodeUri4.toString());
+
+    const testCodeUri5 = new URI('test://a/testUri5');
+    await editorService.open(testCodeUri5, { preview: false, replace: true, index: 1 });
+
+    expect(editorService.currentEditorGroup.resources.map((r) => r.uri.toString())).toEqual(['test://a/testUri2', 'test://a/testUri5', 'test://a/testUri4', 'test://a/testUri3']);
+
+    doNotClose.splice(0, doNotClose.length);
+    await editorService.closeAll();
+    done();
+  });
+
+  it('closeOthers should notify tab changed', async (done) => {
+
+    const testCodeUri = new URI('test://a/testUri1');
+    await editorService.open(testCodeUri, { preview: false });
+    const testCodeUri2 = new URI('test://a/testUri2');
+    await editorService.open(testCodeUri2, { preview: false });
+    const testCodeUri3 = new URI('test://a/testUri3');
+    await editorService.open(testCodeUri3, { preview: false });
+
+    const listener = jest.fn();
+    const disposer = (editorService.currentEditorGroup as EditorGroup).onDidEditorGroupTabChanged(listener);
+
+    await (editorService.currentEditorGroup as EditorGroup).closeOthers(testCodeUri2);
+
+    expect(listener).toBeCalled();
+
+    await editorService.closeAll();
+    disposer.dispose();
     done();
   });
 
