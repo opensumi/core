@@ -6,6 +6,7 @@ export enum REPORT_NAME {
   RESOLVE_COMPLETION_ITEM = 'resolveCompletionItem',
   PROVIDE_DOCUMENT_FORMATTING_EDITS = 'provideDocumentFormattingEdits',
   PROVIDE_DOCUMENT_RANGE_FORMATTING_EDITS = 'provideDocumentRangeFormattingEdits',
+  EDITOR_REACTIVE = 'editorReactive',
   CHANNEL_RECONNECT = 'channelReconnect',
   MEASURE = 'measure',
   FORMAT_ON_SAVE_TIMEOUT_ERROR = 'formatOnSaveTimeoutError',
