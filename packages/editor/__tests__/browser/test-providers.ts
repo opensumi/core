@@ -2,6 +2,8 @@ import { IResourceProvider, IResource } from '@ali/ide-editor';
 import { URI, Emitter } from '@ali/ide-core-common';
 import { IEditorDocumentModelContentProvider, IEditorComponentResolver, IEditorComponent } from '@ali/ide-editor/lib/browser';
 
+export const doNotClose: string[] = [];
+
 export const TestResourceProvider: IResourceProvider = {
   scheme: 'test',
   provideResource: (uri: URI) => {
@@ -11,6 +13,9 @@ export const TestResourceProvider: IResourceProvider = {
       icon: 'iconTest ' + uri.toString(),
       supportsRevive: true,
     };
+  },
+  shouldCloseResource: (r, []) => {
+    return !doNotClose.includes(r.uri.toString());
   },
 };
 

@@ -271,6 +271,13 @@ export interface IResourceOpenOptions {
    * 'skip': 同 fail， 但不报错并直接跳过
    */
   deletedPolicy?: 'try' | 'fail' | 'skip';
+
+  /**
+   * 替换掉目标的 tab （通过index指定，或替换当前 tab)
+   * 如果当前没有 tab，则和正常打开效果一致
+   * 如果当前 tab 的关闭被阻止（比如shouldClose)，则不继续 replace 操作而是正常打开
+   */
+  replace?: boolean;
 }
 
 export interface Position {
