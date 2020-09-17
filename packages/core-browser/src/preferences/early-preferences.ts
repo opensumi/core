@@ -1,5 +1,6 @@
 import { PreferenceScope } from './preference-scope';
 import { PreferenceItem, Event } from '@ali/ide-core-common';
+import { IPreferences } from '../bootstrap';
 
 // 这些设置选项生效时间太早, 并且可能在app生命周期外生效，不能只由preference服务进行管理
 export interface IExternalPreferenceProvider<T = any> {
@@ -29,8 +30,10 @@ export function getPreferenceIconThemeId(): string {
   return getExternalPreference<string>('general.icon').value as string;
 }
 
-export function getPreferenceLanguageId(): string {
-  return getExternalPreference<string>('general.language').value || 'zh-CN';
+export function getPreferenceLanguageId(defaultPreferences?: IPreferences): string {
+  // 因为语言加载的时机比较早，因此会优先从 defaultPreferences 里面读取
+  const langFromDefaultPreferences = defaultPreferences && defaultPreferences['general.language'];
+  return langFromDefaultPreferences || getExternalPreference<string>('general.language').value || 'zh-CN';
 }
 
 // 默认使用localStorage
