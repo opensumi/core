@@ -43,6 +43,7 @@ export class Storage implements IStorage {
       this.setup(storageName);
     }));
     this.flushDelayer = new ThrottledDelayer(Storage.DEFAULT_FLUSH_DELAY);
+    this.setup(storageName);
   }
 
   get whenReady() {
