@@ -48,7 +48,6 @@ import { MainThreadFileSystemEvent } from './main.thread.file-system-event';
 import { MainThreadUrls } from './main.thread.urls';
 import { IMainThreadExtensionLog, MainThreadExtensionLogIdentifier } from '../../../common/extension-log';
 import { MainThreadExtensionLog } from '../../extension-log';
-import { AbstractExtensionService } from '../../../common/extension.service';
 
 export async function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -149,7 +148,7 @@ export async function createApiFactory(
 export async function initWorkerTheadAPIProxy(
   workerProtocol: IRPCProtocol,
   injector: Injector,
-  extensionService: AbstractExtensionService,
+  extensionService: VSCodeExtensionService,
 ) {
   const MainThreadCommandsAPI = injector.get(MainThreadCommands, [workerProtocol, true]);
   const MainThreadStatusBarAPI = injector.get(MainThreadStatusBar, [workerProtocol]);
@@ -157,7 +156,7 @@ export async function initWorkerTheadAPIProxy(
   const MainThreadExtensionDocumentDataAPI = injector.get(MainThreadExtensionDocumentData, [workerProtocol]);
   const MainThreadEditorServiceAPI = injector.get(MainThreadEditorService, [workerProtocol, MainThreadExtensionDocumentDataAPI]);
   const MainThreadProgressAPI = injector.get(MainThreadProgress, [workerProtocol]);
-  workerProtocol.set<AbstractExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
+  workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
   workerProtocol.set<IMainThreadLanguages>(MainThreadAPIIdentifier.MainThreadLanguages, injector.get(MainThreadLanguages, [workerProtocol]));
   workerProtocol.set<MainThreadExtensionDocumentData>(MainThreadAPIIdentifier.MainThreadDocuments, MainThreadExtensionDocumentDataAPI);

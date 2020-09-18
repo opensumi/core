@@ -9,8 +9,6 @@ import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from 
 
 export { IExtensionProps } from '@ali/ide-core-common';
 
-export * from './extension.service';
-
 export interface IExtensionMetaData {
   id: string;
   extensionId: string;
@@ -168,7 +166,6 @@ export interface IExtensionHost {
   $activateExtension(id: string): Promise<void>;
   $initExtensions(): Promise<void>;
   $getActivatedExtensions(): Promise<ActivatedExtensionJSON[]>;
-  $fireChangeEvent(): Promise<void>;
 
   getExtensionExports(id: string): any;
   getExtensions(): Extension[];
@@ -180,6 +177,7 @@ export interface IExtensionHost {
 }
 
 export interface IExtensionHostService extends IExtensionHost {
+  $fireChangeEvent(): Promise<void>;
 
   reporterEmitter: Emitter<ReporterProcessMessage>;
   getExtendExports(id: string): any;

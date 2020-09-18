@@ -51,14 +51,6 @@ export interface AppConfig {
    * 用于插件 UI 部分开启实验性 ShadowDOM
    */
   useExperimentalShadowDom?: boolean;
-
-  /**
-   * 加载 workerHost 时使用 iframe 包装
-   * 对于跨域的场景，加载 workerHost 时会使用 base64 编码后通过 importScripts 引入(importScripts 不受跨域限制)
-   * 但这会导致 workerHost 的 origin 为 null，使某些请求失败
-   */
-  useIframeWrapWorkerHost?: boolean;
-
   /**
    * 自定义客户端 id，是 websocket 服务的唯一标识
    * 也是传给声明了 backServices 的后端 Service 的唯一标识
