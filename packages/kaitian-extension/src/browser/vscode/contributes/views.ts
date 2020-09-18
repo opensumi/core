@@ -30,14 +30,15 @@ export class ViewsContributionPoint extends VSCodeContributePoint<ViewsSchema> {
       const views = this.json[location].map((view) => {
         return {
           ...view,
+          name: this.getLocalizeFromNlsJSON(view.name),
           component: ExtensionLoadingView,
         };
       });
       for (const view of views) {
-        const hanlderId = this.mainlayoutService.collectViewComponent(view, location);
+        const handlerId = this.mainlayoutService.collectViewComponent(view, location);
         this.disposableCollection.push({
           dispose: () => {
-            const handler = this.mainlayoutService.getTabbarHandler(hanlderId)!;
+            const handler = this.mainlayoutService.getTabbarHandler(handlerId)!;
             handler.disposeView(view.id);
           },
         });
