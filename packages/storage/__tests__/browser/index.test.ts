@@ -1,6 +1,6 @@
 import { Injectable, Injector } from '@ali/common-di';
 import { IStorageServer, IStoragePathServer, IUpdateRequest, IWorkspaceStorageServer, IGlobalStorageServer } from '../../src/common';
-import { URI, FileUri, AppConfig } from '@ali/ide-core-node';
+import { URI, FileUri, AppConfig, Disposable, STORAGE_SCHEMA, ILoggerManagerClient } from '@ali/ide-core-node';
 import * as temp from 'temp';
 import * as fs from 'fs-extra';
 import { IFileServiceClient, IDiskFileProvider } from '@ali/ide-file-service';
@@ -8,6 +8,9 @@ import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-servic
 import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { StorageModule } from '../../src/browser';
+import { IWorkspaceService } from '@ali/ide-workspace';
+import { DatabaseStorageContribution } from '@ali/ide-storage/lib/browser/storage.contribution';
+import { Storage } from '@ali/ide-storage/lib/browser/storage';
 
 const track = temp.track();
 let root: URI;
@@ -37,7 +40,18 @@ describe('WorkspaceStorage should be work', () => {
   let workspaceStorage: IStorageServer;
   let globalStorage: IStorageServer;
   let injector: Injector;
+  let databaseStorageContribution: DatabaseStorageContribution;
   const storageName = 'testStorage';
+  const MockWorkspaceService = {
+    onWorkspaceChanged: jest.fn(() => Disposable.create(() => {})),
+    workspace: {
+      uri: 'file://home',
+    },
+    whenReady: Promise.resolve(),
+  };
+  const MockLoggerManagerClient = {
+    getLogger: jest.fn(),
+  };
   beforeAll(() => {
     injector = createBrowserInjector([
       StorageModule,
@@ -57,11 +71,18 @@ describe('WorkspaceStorage should be work', () => {
     }, {
       token: IStoragePathServer,
       useClass: MockDatabaseStoragePathServer,
+    }, {
+      token: IWorkspaceService,
+      useValue: MockWorkspaceService,
+    }, {
+      token: ILoggerManagerClient,
+      useValue: MockLoggerManagerClient,
     });
     const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
     fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
     workspaceStorage = injector.get(IWorkspaceStorageServer);
     globalStorage = injector.get(IGlobalStorageServer);
+    databaseStorageContribution = injector.get(DatabaseStorageContribution);
   });
 
   afterAll(async () => {
@@ -162,5 +183,22 @@ describe('WorkspaceStorage should be work', () => {
       expect(res.id).toBe(undefined);
       expect(res.name).toBe(updateRequest.insert!.name);
     });
+  });
+
+  describe('04 #Storage', () => {
+    it('Should be init correctly', async (done) => {
+      const scopedStorageUri = new URI('scope').withScheme(STORAGE_SCHEMA.SCOPE);
+      const scopedStorage = await databaseStorageContribution.resolve(scopedStorageUri);
+      expect(scopedStorage).toBeDefined();
+      expect((scopedStorage as Storage).whenReady).toBeDefined();
+      expect(MockWorkspaceService.onWorkspaceChanged).toBeCalledTimes(1);
+      const globalStorageUri = new URI('global').withScheme(STORAGE_SCHEMA.GLOBAL);
+      const globalStorage = await databaseStorageContribution.resolve(globalStorageUri);
+      expect(globalStorage).toBeDefined();
+      expect((globalStorage as Storage).whenReady).toBeDefined();
+      expect(MockWorkspaceService.onWorkspaceChanged).toBeCalledTimes(2);
+      done();
+    });
+
   });
 });
