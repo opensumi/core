@@ -13,14 +13,20 @@ import { ActivatedExtension, ActivatedExtensionJSON } from '../common/activator'
 
 function initRPCProtocol() {
   const onMessageEmitter = new Emitter<string>();
-  const onMessage = onMessageEmitter.event;
-  self.onmessage = (e) => {
+  const channel = new MessageChannel();
+
+  self.postMessage(channel.port2, [channel.port2]);
+
+  channel.port1.onmessage = (e) => {
     onMessageEmitter.fire(e.data);
   };
+  const onMessage = onMessageEmitter.event;
 
   const extProtocol = new RPCProtocol({
     onMessage,
-    send: postMessage.bind(self),
+    send: (data) => {
+      channel.port1.postMessage(data);
+    },
   });
 
   return extProtocol;
@@ -56,6 +62,10 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
     this.logger = new ExtensionLogger(rpcProtocol);
     this.storage = new ExtHostStorage(rpcProtocol);
     rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, this.storage);
+  }
+
+  $fireChangeEvent(): Promise<void> {
+    return Promise.resolve();
   }
 
   async $getActivatedExtensions(): Promise<ActivatedExtensionJSON[]> {
