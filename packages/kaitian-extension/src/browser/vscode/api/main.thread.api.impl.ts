@@ -148,7 +148,7 @@ export async function createApiFactory(
 export async function initWorkerTheadAPIProxy(
   workerProtocol: IRPCProtocol,
   injector: Injector,
-  extensionService: VSCodeExtensionService,
+  extensionService,
 ) {
   const MainThreadCommandsAPI = injector.get(MainThreadCommands, [workerProtocol, true]);
   const MainThreadStatusBarAPI = injector.get(MainThreadStatusBar, [workerProtocol]);

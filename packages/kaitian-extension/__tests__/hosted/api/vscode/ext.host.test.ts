@@ -1,8 +1,8 @@
-import { Deferred  } from '@ali/ide-core-common/lib';
+import { Deferred, REPORT_NAME } from '@ali/ide-core-common/lib';
 import { Injector } from '@ali/common-di';
-import ExtensionHostServiceImpl from '@ali/ide-kaitian-extension/lib/hosted/ext.host';
+import ExtensionHostServiceImpl from '../../../../src/hosted/ext.host';
 
-import { mockExtensionProps } from '../../../__mock__/extensions';
+import { mockExtensionProps, mockExtensionProps2 } from '../../../__mock__/extensions';
 import { initMockRPCProtocol } from '../../../__mock__/initRPCProtocol';
 import { MainThreadExtensionService } from '../../../__mock__/api/mainthread.extension.service';
 import { MainThreadStorage } from '../../../__mock__/api/mathread.storage';
@@ -24,8 +24,9 @@ describe('Extension process test', () => {
     const injector: Injector = new Injector();
 
     beforeAll((done) => {
-      injector.addProviders({
-        token: AppConfig, useValue: {
+      injector.addProviders(...[{
+        token: AppConfig,
+        useValue: {
           builtinCommands: [
             {
               id: 'test:builtinCommand:test',
@@ -35,7 +36,8 @@ describe('Extension process test', () => {
             },
           ],
         },
-      });
+      },
+      ]);
       initMockRPCProtocol(mockClient)
         .then((value) => {
           extHostImpl = new ExtensionHostServiceImpl(value, mockLoggger, injector);
@@ -74,7 +76,7 @@ describe('Extension process test', () => {
       await extHostImpl.$initExtensions();
       const extensions = extHostImpl.$getExtensions();
       const ext = extHostImpl.getExtension(mockExtensionProps.id);
-      expect(extensions).toEqual([mockExtensionProps]);
+      expect(extensions).toEqual([mockExtensionProps, mockExtensionProps2]);
       expect(ext?.id).toBe(mockExtensionProps.id);
 
       done();
@@ -82,11 +84,28 @@ describe('Extension process test', () => {
 
     it('should activate extension', async (done) => {
       const id = mockExtensionProps.id;
-      await extHostImpl.$activateExtension(id);
+      try {
+        await extHostImpl.$activateExtension(id);
+      } catch (err) {
+        // expected error
+      }
       expect(extHostImpl.isActivated(id)).toBe(true);
       expect(extHostImpl.getExtendExports(id)).toEqual({});
       expect(extHostImpl.getExtensionExports(id)).toEqual({});
       done();
-    }, 5000);
+    });
+
+    it('should caught runtime error', async (done) => {
+      const id = mockExtensionProps2.id;
+      extHostImpl.reporterEmitter.event((e) => {
+        if (e.name === REPORT_NAME.RUNTIME_ERROR_EXTENSION) {
+          expect(typeof e.data.extra.error).toBeTruthy();
+          done();
+        }
+      });
+      await expect(async () => {
+        await extHostImpl.$activateExtension(id);
+      }).rejects.toThrow('Test caught exception');
+    });
   });
 });

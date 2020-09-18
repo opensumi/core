@@ -4,7 +4,7 @@ const fs = require('fs')
 const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), 'utf-8'))
 
 module.exports = {
-  entry: path.join(__dirname, './src/hosted/worker.host.ts'),
+  entry: path.join(__dirname, './src/hosted/worker.host-preload.ts'),
   node: {
     net: "empty"
   },
