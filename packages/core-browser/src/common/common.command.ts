@@ -241,6 +241,12 @@ export namespace EDITOR_COMMANDS {
     label: '%editor.redo%',
   };
 
+  export const SELECT_ALL: Command = {
+    id: 'editor.selectAll',
+    category: CATEGORY,
+    label: '%selection.all%',
+  };
+
   export const OPEN_RESOURCE: Command = {
     id: 'editor.openUri',
     category: CATEGORY,

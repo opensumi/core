@@ -3,7 +3,7 @@ import {
   PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, ISchemaRegistry, Disposable,
   CommandRegistry, IMimeService, CorePreferences, ClientAppContribution, CommandContribution, ContributionProvider,
   Domain, MonacoService, MonacoContribution, ServiceNames, KeybindingContribution, KeybindingRegistry, Keystroke,
-  KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService, IOpenerService,
+  KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService,
 } from '@ali/ide-core-browser';
 import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next';
 import { IThemeService } from '@ali/ide-theme';
@@ -131,7 +131,7 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     const menuRegistry = this.injector.get(IMenuRegistry) as IMenuRegistry;
     const monacoMenuRegistry = monaco.actions.MenuRegistry;
     monacoMenuRegistry.getMenuItems(7 /* EditorContext */).forEach((item) => {
-      menuRegistry.registerMenuItem(MenuId.EditorContext,  transformMonacoMenuItem(item));
+      menuRegistry.registerMenuItem(MenuId.EditorContext, transformMonacoMenuItem(item));
     });
     const originalAppendItem = monacoMenuRegistry.appendMenuItem;
     monacoMenuRegistry.appendMenuItem = (id, item) => {
@@ -201,16 +201,6 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
         keybindings.registerKeybinding(keybinding);
       }
     }
-
-    // `选择全部`需要手动添加
-    // const selectAllCommand = this.monacoCommandRegistry.validate(SELECT_ALL_COMMAND);
-    // if (selectAllCommand) {
-    //   keybindings.registerKeybinding({
-    //     command: selectAllCommand,
-    //     keybinding: 'ctrlcmd+a',
-    //
-    //   });
-    // }
   }
 
   protected keyCode(keybinding: monaco.keybindings.SimpleKeybinding): KeyCode {
@@ -261,7 +251,7 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
 function transformMonacoMenuItem(item: monaco.actions.IMenuItem): IMenuItem {
   return {
     command: {
-      id: MonacoCommandRegistry.MONACO_COMMAND_PREFIX + item.command.id,
+      id: item.command.id,
       label: item.command.title,
     },
     group: item.group,
