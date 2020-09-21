@@ -188,7 +188,6 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
 
     const patterns: ProblemPattern[] = [];
     if (matcher.pattern) {
-      console.log('matcher.pattern', matcher.pattern);
       if (typeof matcher.pattern === 'string') {
         await this.problemPattern.onReady();
         const registeredPattern = this.problemPattern.get(matcher.pattern);
@@ -239,7 +238,6 @@ export class ProblemMatchersRegistryImpl implements IProblemMatcherRegistry {
       severity,
       watching
     };
-    console.log('transformed problemMatcher', problemMatcher);
     return problemMatcher;
   }
 
