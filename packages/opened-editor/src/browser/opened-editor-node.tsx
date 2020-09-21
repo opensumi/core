@@ -6,6 +6,7 @@ import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { URI, OPEN_EDITORS_COMMANDS, localize, getIcon, CommandService } from '@ali/ide-core-browser';
 import { EditorFileGroup, EditorFile } from './opened-editor-node.define';
 import { OpenedEditorDecorationService } from './services/opened-editor-decoration.service';
+import { EDITOR_WEBVIEW_SCHEME } from '@ali/ide-webview';
 
 export interface IEditorNodeProps {
   item: any;
@@ -68,11 +69,23 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
     </div>;
   };
 
+  const getNodeName = (node: EditorFileGroup | EditorFile) => {
+    if (!EditorFileGroup.is(node)) {
+      if (node.uri.scheme === EDITOR_WEBVIEW_SCHEME) {
+        return node.name;
+      }
+
+      return labelService.getName(node.uri) || node.name;
+    }
+
+    return node.name;
+  };
+
   const renderDisplayName = (node: EditorFileGroup | EditorFile) => {
     return <div
       className={cls(styles.opened_editor_node_segment, styles.opened_editor_node_display_name)}
     >
-      {!EditorFileGroup.is(node) ? labelService.getName(node.uri) || node.name : node.name}
+     {getNodeName(node)}
     </div>;
   };
 

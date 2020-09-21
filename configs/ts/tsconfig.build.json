@@ -100,9 +100,6 @@
       "path": "./references/tsconfig.file-tree-next.json"
     },
     {
-      "path": "./references/tsconfig.opened-editor.json"
-    },
-    {
       "path": "./references/tsconfig.search.json"
     },
     {
@@ -116,6 +113,9 @@
     },
     {
       "path": "./references/tsconfig.webview.json"
+    },
+    {
+      "path": "./references/tsconfig.opened-editor.json"
     },
     {
       "path": "./references/tsconfig.markdown.json"
