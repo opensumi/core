@@ -179,7 +179,6 @@ export class ProblemMatchersContributionPoint extends VSCodeContributePoint<Prob
 
   contribute() {
     for (const matcher of this.json) {
-      console.log(`register problem matcher ${matcher.name}, ${matcher.label}`);
       this.addDispose(this.problemMatcher.register(matcher));
     }
   }
