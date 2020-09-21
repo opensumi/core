@@ -52,6 +52,7 @@ export class ExtensionServiceClientImpl extends RPCService implements IExtension
    */
   public async createProcess(clientId: string): Promise<void> {
     await this.extensionService.createProcess(clientId);
+    await this.extensionService.ensureProcessReady(clientId);
   }
 
   /**

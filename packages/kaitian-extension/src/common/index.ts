@@ -1,3 +1,4 @@
+import * as cp from 'child_process';
 import { Disposable, IJSONSchema, IDisposable, ReporterProcessMessage, Deferred, localize, Event, Uri } from '@ali/ide-core-common';
 import { createExtHostContextProxyIdentifier, ProxyIdentifier } from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
@@ -39,17 +40,17 @@ export interface ExtraMetaData {
 export const IExtensionNodeService = Symbol('IExtensionNodeService');
 export interface IExtensionNodeService {
   getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
-  createProcess(clientId: string): Promise<void>;
+  createProcess(clientId: string): Promise<cp.ChildProcess>;
+  ensureProcessReady(clientId: string): Promise<boolean>;
   getElectronMainThreadListenPath(clientId: string);
   getElectronMainThreadListenPath2(clientId: string);
   getExtServerListenPath(clientId: string);
-  resolveConnection();
-  resolveProcessInit();
+  setExtProcessConnectionForward(): Promise<void>;
   getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
   setConnectionServiceClient(clientId: string, serviceClient: IExtensionNodeClientService);
   disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
 
-  tryEnableInspectPort(clientId: string): Promise<boolean>;
+  tryEnableInspectPort(clientId: string, delay?: number): Promise<boolean>;
   getProcessInspectPort(clientId: string): number | undefined;
 }
 
