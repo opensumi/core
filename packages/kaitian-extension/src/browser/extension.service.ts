@@ -13,11 +13,9 @@ import {
   ExtraMetaData,
   IExtensionProps,
   IExtensionNodeClientService,
-  WorkerHostAPIIdentifier,
   ExtensionHostType,
   EXTENSION_ENABLE,
   IExtensionHostService,
-  IExtensionWorkerHost,
   ChangeExtensionOptions,
 } from '../common';
 import {
@@ -53,7 +51,7 @@ import { isEmptyObject } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { warning } from '@ali/ide-components/lib/utils/warning';
 import { Extension } from './extension';
-import { createApiFactory as createVSCodeAPIFactory, initWorkerTheadAPIProxy } from './vscode/api/main.thread.api.impl';
+import { createApiFactory as createVSCodeAPIFactory } from './vscode/api/main.thread.api.impl';
 import { createKaitianApiFactory } from './kaitian/main.thread.api.impl';
 
 import { WorkbenchEditorService, IResourceOpenOptions } from '@ali/ide-editor';
@@ -85,12 +83,13 @@ import { KaitianBrowserContributionRunner } from './kaitian-browser/contribution
 import { viewColumnToResourceOpenOptions, isLikelyVscodeRange, fromRange } from '../common/vscode/converter';
 import { getShadowRoot } from './shadowRoot';
 import { createProxiedWindow, createProxiedDocument } from './proxies';
-import { getAMDDefine, getMockAmdLoader, getWorkerBootstrapUrl } from './loader';
+import { getAMDDefine, getMockAmdLoader } from './loader';
 import { KtViewLocation } from './kaitian/contributes/browser-views';
 import { ExtensionNoExportsView } from './components';
 import { createBrowserApi } from './kaitian-browser';
 import { retargetEvents } from './retargetEvents';
 import { ActivatedExtension } from '../common/activator';
+import { WorkerExtensionService } from './extension.worker.service';
 
 const LOAD_FAILED_CODE = 'load';
 
@@ -105,11 +104,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       activated['node'] = extensions;
     }
 
-    if (this.workerProtocol) {
-      const workerProxy = this.workerProtocol.getProxy<IExtensionWorkerHost>(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
-      const extensions = await workerProxy.$getActivatedExtensions();
-      activated['worker'] = extensions;
-    }
+    activated['worker'] = await this.workerService.getActivatedExtensions();
     return activated;
   }
 
@@ -169,6 +164,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   @Autowired(CorePreferences)
   private readonly corePreferences: CorePreferences;
 
+  @Autowired(WorkerExtensionService)
+  protected readonly workerService: WorkerExtensionService;
+
   @Autowired()
   editorComponentRegistry: EditorComponentRegistry;
 
@@ -188,8 +186,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private extensionMetaDataArr: IExtensionMetaData[];
   private vscodeAPIFactoryDisposer: () => void;
   private kaitianAPIFactoryDisposer: () => void;
-
-  private workerProtocol: RPCProtocol | undefined;
 
   private _onDidExtensionActivated: Emitter<IExtensionProps> = new Emitter<IExtensionProps>();
   public onDidExtensionActivated: Event<IExtensionProps> = this._onDidExtensionActivated.event;
@@ -235,6 +231,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     await this.initCommonBrowserDependency();
 
     await this.startProcess(true);
+
+    await this.startWorkerHost(true);
   }
 
   public getExtensions() {
@@ -331,9 +329,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       proxy.$fireChangeEvent();
     }
 
-    if (this.workerProtocol) {
-      const proxy: IExtensionHostService = this.workerProtocol.getProxy<IExtensionHostService>(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
-      await proxy.$initExtensions();
+    if (this.appConfig.extWorkerHost) {
+      await this.workerService.initExtension(Array.from(this.extensionMap.values()));
     }
   }
 
@@ -430,17 +427,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       await proxy.$initExtensions();
     }
 
-    if (this.appConfig.extWorkerHost) {
-      const workerUrl = getWorkerBootstrapUrl(this.appConfig.extWorkerHost, 'extWorkerHost');
-      await this.initWorkerHost(workerUrl);
-      if (this.workerProtocol) {
-        await initWorkerTheadAPIProxy(this.workerProtocol, this.injector, this);
-        this.mainThreadCommands.set('worker', this.workerProtocol.get(MainThreadAPIIdentifier.MainThreadCommands));
-        const workerProxy = this.workerProtocol.getProxy<IExtensionWorkerHost>(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
-        await workerProxy.$initExtensions();
-      }
-    }
-
     if (init) {
       this.ready.resolve();
     }
@@ -457,6 +443,13 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     await this.activationEventService.fireEvent('*');
     this.eagerExtensionsActivated.resolve();
     this.eventBus.fire(new ExtensionApiReadyEvent());
+  }
+
+  public async startWorkerHost(init: boolean) {
+    if (this.appConfig.extWorkerHost) {
+      const protocol = await this.workerService.activate();
+      this.mainThreadCommands.set('worker', protocol.get(MainThreadAPIIdentifier.MainThreadCommands));
+    }
   }
 
   public async getAllExtensions(): Promise<IExtensionMetaData[]> {
@@ -554,6 +547,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       this.extensionMap.set(extensionMetaData.path, extension);
     }
 
+    this.workerService.initExtension(Array.from(this.extensionMap.values()));
   }
 
   private async enableAvailableExtensions() {
@@ -611,26 +605,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
     await this.initExtProtocol();
 
-  }
-
-  private async initWorkerHost(workerUrl: string) {
-    // @ts-ignore
-    this.logger.verbose('workerUrl', workerUrl);
-
-    const extendWorkerHost = new Worker(workerUrl, { name: 'KaitianWorkerExtensionHost' });
-    const onMessageEmitter = new Emitter<string>();
-    const onMessage = onMessageEmitter.event;
-
-    extendWorkerHost.onmessage = (e) => {
-      onMessageEmitter.fire(e.data);
-    };
-
-    const mainThreadWorkerProtocol = new RPCProtocol({
-      onMessage,
-      send: extendWorkerHost.postMessage.bind(extendWorkerHost),
-    }, this.logger);
-
-    this.workerProtocol = mainThreadWorkerProtocol;
   }
 
   private async initExtProtocol() {
@@ -717,12 +691,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private async activateExtensionByDeprecatedExtendConfig(extension: IExtension) {
     const { extendConfig } = extension;
     if (extendConfig.worker && extendConfig.worker.main) {
-      if (!this.workerProtocol) {
-        this.logger.warn('[Worker Host] extension worker host not yet initialized.');
-      } else {
-        const workerProxy = this.workerProtocol.getProxy<IExtensionWorkerHost>(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
-        await workerProxy.$activateExtension(extension.id);
-      }
+      this.workerService.activeExtension(extension);
     }
 
     // TODO: 存储插件与 component 的关系，用于 dispose
@@ -783,12 +752,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private async doActivateExtension(extension: IExtension) {
     const { contributes } = extension;
     if (contributes && contributes.workerMain) {
-      if (!this.workerProtocol) {
-        this.logger.warn('[Worker Host] extension worker host not yet initialized.');
-      } else {
-        const workerProxy = this.workerProtocol.getProxy<IExtensionWorkerHost>(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
-        await workerProxy.$activateExtension(extension.id);
-      }
+      this.workerService.activeExtension(extension);
     }
 
     if (contributes && contributes.browserMain) {
@@ -880,8 +844,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
               nodeProxy = this.createExtendProxy(this.protocol, extensionId);
             }
 
-            if (this.workerProtocol) {
-              workerProxy = this.createExtendProxy(this.workerProtocol, extensionId);
+            if (this.workerService.protocol) {
+              workerProxy = this.createExtendProxy(this.workerService.protocol, extensionId);
             }
 
             return {
@@ -902,9 +866,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
             }
 
             this.logger.log('componentProxyIdentifier', componentProxyIdentifier, 'service', service);
-
-            if (this.workerProtocol) {
-              this.workerProtocol.set(componentProxyIdentifier as ProxyIdentifier<any>, service);
+            if (this.workerService.protocol) {
+              this.workerService.protocol.set(componentProxyIdentifier as ProxyIdentifier<any>, service);
             }
             if (this.protocol) {
               return this.protocol.set(componentProxyIdentifier as ProxyIdentifier<any>, service);
@@ -1066,30 +1029,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     });
   }
 
-  private getWorkerExtensionProps(extension: IExtension, workerMain: string) {
-    const absolutePath = new Path(extension.path).join(workerMain).toString();
-    const extUri = new URI(absolutePath).scheme ? new URI(absolutePath) : URI.file(absolutePath);
-    const workerScriptURI = this.staticResourceService.resolveStaticResource(extUri);
-    const workerScriptPath = workerScriptURI.toString();
-
-    return Object.assign({}, extension.toJSON(), { workerScriptPath });
-  }
-
   // remote call
   public async $getExtensions(): Promise<IExtensionProps[]> {
-    return Array.from(this.extensionMap.values()).map((extension) => {
-      if (extension.contributes && extension.contributes.workerMain) {
-        return this.getWorkerExtensionProps(extension, extension.contributes.workerMain);
-      } else if (
-        extension.extendConfig &&
-        extension.extendConfig.worker &&
-        extension.extendConfig.worker.main
-      ) {
-        return this.getWorkerExtensionProps(extension, extension.extendConfig.worker.main);
-      } else {
-        return extension;
-      }
-    });
+    return Array.from(this.extensionMap.values());
   }
 
   public async $activateExtension(extensionPath: string): Promise<void> {

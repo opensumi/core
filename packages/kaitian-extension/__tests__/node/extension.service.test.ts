@@ -60,7 +60,7 @@ describe('Extension Serivce', () => {
       expect(extensions.length).toBe(dirs.length);
     });
 
-    it.skip('should return all extension and contains extraMetadata', async () => {
+    it('should return all extension and contains extraMetadata', async () => {
       const extension = await extensionService.getAllExtensions([extensionDir], [], 'zh_CN', { readme: './README.md' });
       const expectExtension = extension.find((e) => e.id = testExtId);
       expect(expectExtension?.extraMetadata.readme.trim()).toBe(testExtReadme);
@@ -80,7 +80,7 @@ describe('Extension Serivce', () => {
   });
 
   describe('createProcess2', () => {
-    it.skip('should create extension host process', async (done) => {
+    it('should create extension host process', async (done) => {
       const mockExtClientId = 'mock_id' + Math.random();
       const extProcess = extensionService.createProcess(mockExtClientId);
 

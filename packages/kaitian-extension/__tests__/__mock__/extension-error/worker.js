@@ -1,9 +1,7 @@
 
 const kaitian = require("kaitian");
 function activate(context) {
-  console.log('KAITIAN worker extension is activated')
-  return {
-    name: 'worker',
-  };
+  console.log('worker extension is activated2');
+  return {};
 }
 exports.activate = activate;

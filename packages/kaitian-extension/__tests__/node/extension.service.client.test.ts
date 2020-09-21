@@ -81,7 +81,7 @@ describe('Extension Client Serivce', () => {
       expect(extensions.length).toBe(dirs.length);
     });
 
-    it.skip('should get all extension and contains extraMetadata', async () => {
+    it('should get all extension and contains extraMetadata', async () => {
       const extension = await extensionNodeClient.getAllExtensions([extensionDir], [], 'zh_CN', { readme: './README.md' });
       const expectExtension = extension.find((e) => e.id = testExtId);
       console.log('id:' + expectExtension?.id + 'path:' + expectExtension?.path + 'readme:' + expectExtension?.extraMetadata.readme);

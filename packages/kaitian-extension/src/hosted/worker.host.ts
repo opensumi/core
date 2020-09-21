@@ -11,24 +11,28 @@ import { KTWorkerExtensionContext } from './api/vscode/ext.host.extensions';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { ActivatedExtension, ActivatedExtensionJSON } from '../common/activator';
 
-function initRPCProtocol() {
+export function initRPCProtocol() {
   const onMessageEmitter = new Emitter<string>();
-  const onMessage = onMessageEmitter.event;
-  self.onmessage = (e) => {
+  const channel = new MessageChannel();
+
+  self.postMessage(channel.port2, [channel.port2]);
+
+  channel.port1.onmessage = (e) => {
     onMessageEmitter.fire(e.data);
   };
+  const onMessage = onMessageEmitter.event;
 
   const extProtocol = new RPCProtocol({
     onMessage,
-    send: postMessage.bind(self),
+    send: (data) => {
+      channel.port1.postMessage(data);
+    },
   });
 
   return extProtocol;
 }
 
-const protocol = initRPCProtocol();
-
-class ExtensionWorkerHost implements IExtensionWorkerHost {
+export class ExtensionWorkerHost implements IExtensionWorkerHost {
   private extensions: IExtensionProps[];
   private rpcProtocol: RPCProtocol;
 
@@ -80,7 +84,6 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
       );
     })
     .filter((e) => !!e.workerScriptPath);
-
   }
 
   getExtension(extensionId: string) {
@@ -302,5 +305,3 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
     }
   }
 }
-
-new ExtensionWorkerHost(protocol);

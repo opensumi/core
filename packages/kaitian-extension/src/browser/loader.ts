@@ -34,7 +34,11 @@ export function getMockAmdLoader<T>(injector, extension: IExtension, rpcProtocol
   return { _module, _exports, _require };
 }
 
-export function getWorkerBootstrapUrl(scriptPath: string, label: string): string {
+export function getWorkerBootstrapUrl(scriptPath: string, label: string, ignoreCors?: boolean): string {
+  if (ignoreCors) {
+    return scriptPath;
+  }
+
   if (/^(http:)|(https:)|(file:)/.test(scriptPath)) {
     const currentUrl = String(window.location);
     const currentOrigin = currentUrl.substr(0, currentUrl.length - window.location.hash.length - window.location.search.length - window.location.pathname.length);
