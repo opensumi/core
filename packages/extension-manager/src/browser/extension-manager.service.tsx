@@ -1,5 +1,5 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, SearchExtension, RequestHeaders, BaseExtension, ExtensionMomentState, OpenExtensionOptions, ExtensionChangeEvent, ExtensionChangeType, IMarketplaceExtensionInfo } from '../common';
+import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, SearchExtension, RequestHeaders, BaseExtension, ExtensionMomentState, OpenExtensionOptions, ExtensionChangeEvent, ExtensionChangeType, IMarketplaceExtensionInfo, IExtensionVersion } from '../common';
 import { ExtensionService, IExtensionProps, EXTENSION_ENABLE, ExtensionDependencies } from '@ali/ide-kaitian-extension/lib/common';
 import { action, observable, computed, runInAction } from 'mobx';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -211,9 +211,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
       }
       const delayUpdate = localize('marketplace.extension.update.delay');
       const nowUpdate = localize('marketplace.extension.update.now');
-
-      const delayReload = localize('marketplace.extension.reload.delay');
-      const nowReload = localize('marketplace.extension.reload.now');
+      const reloadRequire = await this.computeReloadState(current.path);
       if (compareVersions(current.version, latest.version) === -1) {
         this.messageService.info(
           formatLocalize('marketplace.extension.findUpdate', latest.displayName || latest.name, latest.version), [delayUpdate, nowUpdate],
@@ -221,12 +219,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
         .then((message) => {
           if (message === nowUpdate) {
             this.updateExtension(current, latest.version)
-              .then(() => this.messageService.info(formatLocalize('marketplace.extension.needreload', latest.displayName || latest.name), [delayReload, nowReload]))
-              .then((value) => {
-                if (value === nowReload) {
-                  this.clientApp.fireOnReload();
-                }
-              });
+              .then(() => this.checkNeedReload(e.extensionId, reloadRequire));
           }
         });
       }
@@ -542,6 +535,10 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
     if (!reloadRequire) {
       await this.onUpdateExtension(extensionPath, oldExtensionPath);
     }
+    // 修改插件状态
+    this.extensionMomentState.set(extensionId, {
+      isUpdating: false,
+    });
     return extensionPath;
   }
 
@@ -1146,6 +1143,25 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
       this.workbenchEditorService.open(new URI(`extension://remote?${query}`), editorOptions);
     } else {
       this.workbenchEditorService.open(new URI(`extension://local?${query}`), editorOptions);
+    }
+  }
+
+  public async getExtensionVersions(extensionId: string): Promise<IExtensionVersion[]> {
+    return await this.extensionManagerServer.getExtensionVersions(extensionId);
+  }
+
+  public async checkNeedReload(extensionId: string, reloadRequire: boolean) {
+    const extension = this.getRawExtensionById(extensionId);
+    if (!extension) {
+      return;
+    }
+    const delayReload = localize('marketplace.extension.reload.delay');
+    const nowReload = localize('marketplace.extension.reload.now');
+    if (reloadRequire) {
+      const value = await this.messageService.info(formatLocalize('marketplace.extension.needreload', extension.displayName || extension.name), [delayReload, nowReload]);
+      if (value === nowReload) {
+        this.clientApp.fireOnReload();
+      }
     }
   }
 }

@@ -452,6 +452,8 @@ export const localizationBundle = {
     'marketplace.extension.changelog': '更改日志',
     'marketplace.extension.dependencies': '依赖项',
     'marketplace.extension.installed': '已安装',
+    'marketplace.extension.otherVersion': '安装其他版本',
+    'marketplace.extension.currentVersion': '当前版本',
     'marketplace.quickopen.install': '安装插件',
     'marketplace.quickopen.install.byReleaseId': '安装插件 (ReleaseId)',
     'marketplace.quickopen.install.releaseId': '扩展 ReleaseId',

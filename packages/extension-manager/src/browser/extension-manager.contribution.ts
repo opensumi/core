@@ -7,7 +7,7 @@ import { Autowired } from '@ali/common-di';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { ResourceService } from '@ali/ide-editor';
 import { ExtensionResourceProvider } from './extension-resource-provider';
-import { getIcon, IQuickInputService } from '@ali/ide-core-browser';
+import { getIcon, IQuickInputService, QuickPickService } from '@ali/ide-core-browser';
 import { MenuId, NextMenuContribution as MenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
 
 import ExtensionPanelView from './extension-panel.view';
@@ -52,28 +52,36 @@ namespace ExtensionCommands {
     category,
     label: '%marketplace.quickopen.install.byReleaseId%',
   };
+  export const INSTALL_OTHER_VERSION: Command = {
+    id: 'extension.install.otherVersion',
+    category,
+    label: '%marketplace.extension.otherVersion%',
+  };
 }
 
 @Domain(ComponentContribution, MainLayoutContribution, BrowserEditorContribution, MenuContribution, CommandContribution)
 export class ExtensionManagerContribution implements MainLayoutContribution, ComponentContribution, BrowserEditorContribution, MenuContribution, CommandContribution {
 
   @Autowired(IMainLayoutService)
-  mainLayoutService: IMainLayoutService;
+  private readonly mainLayoutService: IMainLayoutService;
 
   @Autowired(IExtensionManagerService)
-  extensionManagerService: IExtensionManagerService;
+  private readonly extensionManagerService: IExtensionManagerService;
 
   @Autowired()
-  resourceProvider: ExtensionResourceProvider;
+  private readonly resourceProvider: ExtensionResourceProvider;
 
   @Autowired(IQuickInputService)
-  quickInputService: IQuickInputService;
+  private readonly quickInputService: IQuickInputService;
+
+  @Autowired(QuickPickService)
+  private readonly quickPickService: QuickPickService;
 
   @Autowired(IMessageService)
-  messageService: IMessageService;
+  private readonly messageService: IMessageService;
 
   @Autowired(IStatusBarService)
-  statusBarService: IStatusBarService;
+  private readonly statusBarService: IStatusBarService;
 
   registerResource(resourceService: ResourceService) {
     resourceService.registerResourceProvider(this.resourceProvider);
@@ -232,6 +240,31 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
         }
       },
     });
+    commands.registerCommand(ExtensionCommands.INSTALL_OTHER_VERSION, {
+      execute: async (extension: RawExtension) => {
+        const versionsInfo = await this.extensionManagerService.getExtensionVersions(extension.extensionId);
+        const version = await this.quickPickService.show(versionsInfo.map((info) => {
+          const date = new Date(info.createdTime);
+          const label = info.version === extension.version ? `${info.version}(${localize('marketplace.extension.currentVersion')})` : info.version;
+          const description = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+          return {
+            value: info.version,
+            label,
+            description,
+          };
+        }));
+        if (version) {
+          const reloadRequire = await this.extensionManagerService.computeReloadState(extension.path);
+          // 更新插件
+          await this.extensionManagerService.updateExtension(extension, version);
+          // 检测是否需要重启
+          await this.extensionManagerService.checkNeedReload(extension.extensionId, reloadRequire);
+        }
+      },
+      isVisible: (extension: RawExtension) => {
+        return extension && extension.installed && !extension.isBuiltin;
+      },
+    });
   }
 
   registerNextMenus(menuRegistry: IMenuRegistry): void {
@@ -256,9 +289,14 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
       group: '2_disable',
     });
     menuRegistry.registerMenuItem(MenuId.ExtensionContext, {
+      command: ExtensionCommands.INSTALL_OTHER_VERSION.id,
+      order: 3,
+      group: '3_other_version',
+    });
+    menuRegistry.registerMenuItem(MenuId.ExtensionContext, {
       command: ExtensionCommands.UNINSTALL.id,
-      order: 5,
-      group: '3_unstall',
+      order: 4,
+      group: '4_unstall',
     });
   }
 

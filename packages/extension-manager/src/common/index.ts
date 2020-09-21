@@ -155,6 +155,8 @@ export interface IExtensionManagerService  {
   dispose(): void;
   getEnabledDeps(): Promise<Map<string, string[]>>;
   transformDepsDeclaration(raw: string | { [key: string]: string}): { id: string, version: string };
+  getExtensionVersions(extensionId: string): Promise<IExtensionVersion[]>;
+  checkNeedReload(extensionId: string, reloadRequire: boolean): Promise<void>;
 }
 
 export const IExtensionManagerServer = Symbol('IExtensionManagerServer');
@@ -187,6 +189,12 @@ export interface IExtensionManagerServer {
   updateExtension(extension: BaseExtension, version: string): Promise<string>;
   uninstallExtension(extension: BaseExtension): Promise<boolean>;
   getExtensionDeps(extensionId: string, version: string): Promise<IExtensionDependenciesResFromMarketPlace | undefined>;
+  getExtensionVersions(extensionId: string): Promise<IExtensionVersion[]>;
+}
+
+export interface IExtensionVersion {
+  version: string;
+  createdTime: string;
 }
 
 export interface RequestHeaders {
