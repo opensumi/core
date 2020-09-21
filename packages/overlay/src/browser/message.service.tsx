@@ -47,18 +47,18 @@ export class MessageService extends AbstractMessageService implements IMessageSe
    */
   open<T = string>(rawMessage: string | React.ReactNode, type: MessageType, buttons?: string[], closable: boolean = true, from?: string): Promise<T | undefined> {
     let message = rawMessage;
+    // 如果两秒内提示信息相同，则直接返回上一个提示
+    if (Date.now() - this.showTime < MessageService.SAME_MESSAGE_DURATION && typeof message === 'string' && this.preMessage === message) {
+      return Promise.resolve(undefined);
+    }
+    this.preMessage = typeof message === 'string' && message;
+    this.showTime = Date.now();
     if (typeof rawMessage === 'string' && rawMessage.length > MAX_MESSAGE_LENGTH) {
       message = `${rawMessage.substr(0, MAX_MESSAGE_LENGTH)}...`;
     }
     if (from && typeof from === 'string') {
       message = <OriginalMessage message={message} from={from} />;
     }
-    // 如果两秒内提示信息相同，则直接返回上一个提示
-    if (Date.now() - this.showTime < MessageService.SAME_MESSAGE_DURATION && this.preMessage === message) {
-      return Promise.resolve(undefined);
-    }
-    this.preMessage = message;
-    this.showTime = Date.now();
     const key = uuid();
     const promise = open<T>(message, type, closable, key, buttons);
     return promise || Promise.resolve(undefined);
