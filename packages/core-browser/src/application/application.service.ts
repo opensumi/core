@@ -1,9 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { OS, IApplicationService, CommonServerPath, ICommonServer, Domain, isElectronRenderer, Deferred } from '@ali/ide-core-common';
-import { ClientAppContribution } from '../common';
+import { OS, IApplicationService, CommonServerPath, ICommonServer, isElectronRenderer, Deferred } from '@ali/ide-core-common';
 
 @Injectable()
-@Domain(ClientAppContribution)
 export class ApplicationService implements IApplicationService {
 
   @Autowired(CommonServerPath)
@@ -13,7 +11,7 @@ export class ApplicationService implements IApplicationService {
 
   private _initialized = new Deferred();
 
-  async initialize() {
+  async initializeData() {
     this._backendOS = await this.commonServer.getBackendOS();
     this._initialized.resolve();
   }

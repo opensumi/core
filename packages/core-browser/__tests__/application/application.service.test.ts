@@ -3,7 +3,7 @@ import { ApplicationService } from '../../src/application/application.service';
 import { IApplicationService, CommonServerPath, OS } from '@ali/ide-core-common';
 
 describe('packages/core-browser/src/application/application.service.ts', () => {
-  let applicationService: IApplicationService & { initialize(): Promise<void> };
+  let applicationService: IApplicationService & { initializeData(): Promise<void> };
   const hostOSType = OS.type();
 
   beforeAll(() => {
@@ -38,7 +38,7 @@ describe('packages/core-browser/src/application/application.service.ts', () => {
     global.isElectronRenderer = true;
     expect(applicationService.backendOS).toBe(hostOSType);
     global.isElectronRenderer = false;
-    await applicationService.initialize();
+    await applicationService.initializeData();
     expect(applicationService.backendOS).toBe(hostOSType);
   });
 });
