@@ -31,6 +31,7 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
   const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
   const extensionMomentState = extensionManagerService.extensionMomentState.get(extension.extensionId);
   const isInstalling = extensionMomentState?.isInstalling;
+  const isDisable = extension.installed && !extension.enable;
 
   function handleInstall(e) {
     e.stopPropagation();
@@ -70,12 +71,16 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
   return (
     <div className={className} onContextMenu={handleCtxMenu}>
       <div onClick={handleClick} className={clx(styles.wrap, 'kt-extension-raw')}>
-        <div>
+        <div className={clx({
+          [styles.gray]: isDisable,
+        })}>
           <img className={styles.icon} src={extension.icon}></img>
         </div>
         <div className={styles.info_wrap}>
           <div className={styles.info_header}>
-            <div className={styles.name_wrapper}>
+            <div className={clx(styles.name_wrapper, {
+              [styles.gray]: isDisable,
+            })}>
               <div className={styles.name}>{extension.displayName || extension.name}</div>
               {extension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin')}</span>) : null}
               {extension.isDevelopment ? (<span className={clx(commonStyles.tag, commonStyles.developmentMode)}>{localize('marketplace.extension.development')}</span>) : null}
@@ -90,12 +95,16 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
                 ) : <Button size='small' type='primary' loading={isInstalling} onClick={handleInstall} ghost={true} style={{ flexShrink: 0 }}>{localize('marketplace.extension.install')}</Button>}
             </span>)}
           </div>
-          <div className={styles.extension_props}>
+          <div className={clx(styles.extension_props, {
+            [styles.gray]: isDisable,
+          })}>
             <span>{extension.displayGroupName || extension.publisher}</span>
             {extension.downloadCount ? (<span><i className={clx(commonStyles.icon, getIcon('download'))}></i>{extension.downloadCount}</span>) : null}
             <span>v{extension.version}</span>
           </div>
-          <div className={clx(styles.description, 'kt-extension-raw-description')}>{extension.description}</div>
+          <div  className={clx(styles.description, 'kt-extension-raw-description', {
+            [styles.gray]: isDisable,
+          })}>{extension.description}</div>
         </div>
       </div>
     </div>

@@ -56,7 +56,6 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
             {list.map((rawExtension, index) => {
               return (<RawExtensionView className={clx({
                 [styles.selected]: rawExtension.extensionId === selectExtensionId,
-                [styles.gray]: rawExtension.installed && !rawExtension.enable,
                 [styles.last_item]: index === list.length - 1,
               })}
               key={`${rawExtension.extensionId}_${rawExtension.version}`}
