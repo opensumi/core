@@ -226,23 +226,22 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
           return;
         }
         try {
-          this.statusBarService.addElement(ExtensionCommands.INSTALL_EXTENSION_BY_RELEASE_ID.id, {
-            text: `$(sync~spin) ${localize('marketplace.extension.installing')}`,
-            alignment: StatusBarAlignment.RIGHT,
-            priority: 10000,
-          });
+          this.showInstallLoading();
           await this.extensionManagerService.installExtensionByReleaseId(releaseId);
           this.messageService.info(localize('marketplace.extension.installed'));
         } catch (e) {
           this.messageService.error(`${localize('marketplace.quickopen.install.error')} : ${e.message}`);
         } finally {
-          this.statusBarService.removeElement(ExtensionCommands.INSTALL_EXTENSION_BY_RELEASE_ID.id);
+          this.hideInstallLoading();
         }
       },
     });
     commands.registerCommand(ExtensionCommands.INSTALL_OTHER_VERSION, {
       execute: async (extension: RawExtension) => {
         const versionsInfo = await this.extensionManagerService.getExtensionVersions(extension.extensionId);
+        if (versionsInfo.length === 0) {
+          return;
+        }
         const version = await this.quickPickService.show(versionsInfo.map((info) => {
           const date = new Date(info.createdTime);
           const label = info.version === extension.version ? `${info.version}(${localize('marketplace.extension.currentVersion')})` : info.version;
@@ -253,10 +252,12 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
             description,
           };
         }));
-        if (version) {
+        if (version && version !== extension.version) {
           const reloadRequire = await this.extensionManagerService.computeReloadState(extension.path);
+          this.showInstallLoading();
           // 更新插件
           await this.extensionManagerService.updateExtension(extension, version);
+          this.hideInstallLoading();
           // 检测是否需要重启
           await this.extensionManagerService.checkNeedReload(extension.extensionId, reloadRequire);
         }
@@ -308,5 +309,17 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
         this.extensionManagerService.init();
       });
     }
+  }
+
+  private showInstallLoading() {
+    this.statusBarService.addElement(ExtensionCommands.INSTALL_EXTENSION_BY_RELEASE_ID.id, {
+      text: `$(sync~spin) ${localize('marketplace.extension.installing')}`,
+      alignment: StatusBarAlignment.RIGHT,
+      priority: 10000,
+    });
+  }
+
+  private hideInstallLoading() {
+    this.statusBarService.removeElement(ExtensionCommands.INSTALL_EXTENSION_BY_RELEASE_ID.id);
   }
 }
