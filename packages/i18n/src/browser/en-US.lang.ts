@@ -533,6 +533,8 @@ export const localizationBundle = {
     'marketplace.extension.readme': 'Readme',
     'marketplace.extension.changelog': 'Changelog',
     'marketplace.extension.dependencies': 'Dependencies',
+    'marketplace.extension.otherVersion': 'Install Other Version',
+    'marketplace.extension.currentVersion': 'Current Version',
     'marketplace.extension.installed': 'Installed',
     'marketplace.quickopen.install': 'Install Extension',
     'marketplace.quickopen.install.byReleaseId': 'Install Extension (ReleaseId)',

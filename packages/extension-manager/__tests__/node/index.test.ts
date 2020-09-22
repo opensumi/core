@@ -178,6 +178,25 @@ describe('template test', () => {
     });
   });
 
+  describe('get extension other version', () => {
+    it('get extension other version', async (done) => {
+      injector.mock(IExtensionManagerRequester, 'request', () => {
+        return {
+          status: 200,
+          data: [{version: '1.0.0'}, {version: '1.0.1'}],
+        };
+      });
+      const extension = await createExtension();
+      const versionsInfo = await service.getExtensionVersions(extension.extensionId);
+
+      // 新插件已经下载
+      expect(versionsInfo.length === 2);
+      // 找不到之前的插件了
+      expect(versionsInfo[0].version === '1.0.0');
+      done();
+    });
+  });
+
   /**
    * 创建一个插件
    * @param extensionId 插件 id
