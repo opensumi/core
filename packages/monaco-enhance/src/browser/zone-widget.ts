@@ -230,7 +230,10 @@ export abstract class ResizeZoneWidget extends ZoneWidget {
     }));
     // 在第一次设置 container top 值的时候重置一下高度
     Event.once(this.onDomNodeTop)(() => {
-      this.resizeZoneWidget();
+      // 等待渲染帧以便获取到真实 warp 高度
+      window.requestAnimationFrame(() => {
+        this.resizeZoneWidget();
+      });
     });
   }
 
