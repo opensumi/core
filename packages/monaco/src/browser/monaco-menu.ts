@@ -1,4 +1,4 @@
-import { MAIN_MENU_BAR } from '@ali/ide-core-browser';
+import { MAIN_MENU_BAR, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 
 export interface MonacoActionGroup {
   id: string;
@@ -13,7 +13,7 @@ export namespace MonacoMenus {
   export const SELECTION_GROUP: MonacoActionGroup = {
       id: '1_selection_group',
       actions: [
-        SELECT_ALL_COMMAND,
+        EDITOR_COMMANDS.SELECT_ALL.id,
         'editor.action.smartSelect.grow',
         'editor.action.smartSelect.shrink',
       ],
@@ -22,10 +22,10 @@ export namespace MonacoMenus {
   export const SELECTION_MOVE_GROUP: MonacoActionGroup = {
       id: '2_copy_move_group',
       actions: [
-         'editor.action.copyLinesUpAction',
-         'editor.action.copyLinesDownAction',
-         'editor.action.moveLinesUpAction',
-         'editor.action.moveLinesDownAction',
+        'editor.action.copyLinesUpAction',
+        'editor.action.copyLinesDownAction',
+        'editor.action.moveLinesUpAction',
+        'editor.action.moveLinesDownAction',
       ],
   };
 

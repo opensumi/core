@@ -936,6 +936,7 @@ declare module monaco.editorExtensions {
 
     export module EditorExtensionsRegistry {
         export function getEditorActions(): EditorAction[];
+        export function getEditorCommand(id: string): any;
     }
 }
 declare module monaco.modes {

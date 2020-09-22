@@ -8,11 +8,13 @@ import { IContextKeyService, IContextKey } from '../context-key';
 import { trackFocus } from '../dom';
 import { AppConfig } from '../react-providers/config-provider';
 import { NextMenuContribution, IMenuRegistry, MenuId } from '../menu/next';
+import { KeybindingContribution, KeybindingRegistry } from '../keybinding';
 
 export const inputFocusedContextKey = 'inputFocus';
 
-@Domain(CommandContribution, ClientAppContribution, PreferenceContribution, NextMenuContribution)
-export class ClientCommonContribution implements CommandContribution, PreferenceContribution, ClientAppContribution, NextMenuContribution {
+@Domain(CommandContribution, ClientAppContribution, PreferenceContribution, NextMenuContribution, KeybindingContribution)
+export class ClientCommonContribution implements CommandContribution, PreferenceContribution, ClientAppContribution, NextMenuContribution, KeybindingContribution {
+
   @Autowired(CommandService)
   protected commandService: CommandService;
 
@@ -56,6 +58,7 @@ export class ClientCommonContribution implements CommandContribution, Preference
   registerCommands(command: CommandRegistry) {
     command.registerCommand(EDITOR_COMMANDS.UNDO);
     command.registerCommand(EDITOR_COMMANDS.REDO);
+    command.registerCommand(EDITOR_COMMANDS.SELECT_ALL);
     command.registerCommand(COMMON_COMMANDS.ABOUT_COMMAND, {
       execute: () => {
         alert(replaceLocalizePlaceholder(this.appConfig.appName) || 'KAITIAN IDE Framework'); // todo
@@ -177,5 +180,12 @@ export class ClientCommonContribution implements CommandContribution, Preference
         group: '0_about',
       });
     }
+  }
+
+  registerKeybindings(keybindings: KeybindingRegistry): void {
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.SELECT_ALL.id,
+      keybinding: 'ctrlcmd+a',
+    });
   }
 }
