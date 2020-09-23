@@ -328,7 +328,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
         timeout: 5000,
       });
       if (res.status === 200) {
-        return res.data;
+        return res.data.data;
       } else {
         this.logger.error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
         return [];
