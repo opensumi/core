@@ -68,20 +68,13 @@ export class ElectronMainApp {
 
   async init() {
     // TODO scheme start
-    if (!app.isReady()) {
-      await new Promise((resolve) => {
-        app.on('ready', () => {
-          this.onStartContribution();
-          resolve();
-        });
-      });
-    } else {
+    app.whenReady().then(() => {
       this.onStartContribution();
-    }
+    });
   }
 
   registerMainApis() {
-    for (const contribution of this.contributions ) {
+    for (const contribution of this.contributions) {
       if (contribution.registerMainApi) {
         contribution.registerMainApi(this.injector.get(ElectronMainApiRegistry));
       }
@@ -231,13 +224,21 @@ class ElectronMainLifeCycleApi implements IElectronMainApiProvider<void> {
     const window = BrowserWindow.fromId(windowId);
     if (window) {
       const codeWindow = this.app.getCodeWindowByElectronBrowserWindowId(windowId);
-      if (codeWindow && codeWindow.isReloading) {
+      if (!codeWindow) {
+        window.close();
+        return;
+      }
+
+      if (codeWindow.isReloading) {
         codeWindow.isReloading = false;
+        codeWindow.clear();
         codeWindow.startNode().then(() => {
           window.webContents.reload();
         });
       } else {
-        window.close();
+        codeWindow.clear().then(() => {
+          window.close();
+        });
       }
     }
   }

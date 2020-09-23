@@ -145,7 +145,6 @@ export class CodeWindow extends Disposable implements ICodeWindow {
     this.rpcListenPath = normalizedIpcHandlerPath('electron-window', true);
     await this.node.start(this.rpcListenPath!, (this.workspace || '').toString());
     this._nodeReady.resolve();
-    this.bindBrowserClose();
   }
 
   bindEvents() {
@@ -166,25 +165,6 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       await this.node.dispose();
       this.node = null;
     }
-  }
-
-  bindBrowserClose() {
-    if (!this.node) {
-      return;
-    }
-    this.browser.once('close', async (e) => {
-      if (!this.node) {
-        return;
-      }
-      e.preventDefault();
-
-      await this.clear();
-      setTimeout(() => {
-        if (!this.browser.isDestroyed()) {
-          this.browser.close();
-        }
-      }, 0);
-    });
   }
 
   close() {
