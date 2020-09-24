@@ -1,4 +1,4 @@
-import { Emitter, IFileServiceClient, URI, Uri, IEventBus, PreferenceScope, ILoggerManagerClient, FileUri, CommonServerPath, OS } from '@ali/ide-core-common';
+import { Emitter, IFileServiceClient, URI, Uri, IEventBus, PreferenceScope, ILoggerManagerClient, FileUri, CommonServerPath, OS, IApplicationService } from '@ali/ide-core-common';
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -183,7 +183,13 @@ describe('MainThreadWorkspace API Test Suite', () => {
     {
       token: CommonServerPath,
       useValue: {
-        getBackendOS: () => OS.Type.Linux,
+        getBackendOS: () => Promise.resolve(OS.type()),
+      },
+    },
+    {
+      token: IApplicationService,
+      useValue: {
+        getBackendOS: () => Promise.resolve(OS.type()),
       },
     },
   ]));

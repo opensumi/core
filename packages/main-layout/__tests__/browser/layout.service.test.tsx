@@ -13,6 +13,7 @@ import { LayoutService } from '@ali/ide-main-layout/lib/browser/layout.service';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { MainLayoutModuleContribution } from '@ali/ide-main-layout/lib/browser/main-layout.contribution';
 import { act } from 'react-dom/test-utils';
+import { CommonServerPath, OS } from '@ali/ide-core-common';
 
 const MockView = (props) => <div>Test view{props.message && <p id='test-unique-id'>has prop.message</p>}</div>;
 jest.useFakeTimers();
@@ -102,6 +103,14 @@ describe('main layout test', () => {
       {
         token: ILoggerManagerClient,
         useClass: MockLoggerManageClient,
+      },
+      {
+        token: CommonServerPath,
+        useValue: {
+          async getBackendOS() {
+            return Promise.resolve(OS.type());
+          },
+        },
       },
       MainLayoutModuleContribution,
     );

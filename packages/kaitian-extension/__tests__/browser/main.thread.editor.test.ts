@@ -1,4 +1,4 @@
-import { Emitter, IFileServiceClient, DefaultResourceProvider, IEventBus, CommonServerPath, OS } from '@ali/ide-core-common';
+import { Emitter, IFileServiceClient, DefaultResourceProvider, IEventBus, CommonServerPath, OS, IApplicationService } from '@ali/ide-core-common';
 import { URI, IContextKeyService } from '@ali/ide-core-browser';
 import { injectMockPreferences } from '@ali/ide-core-browser/src/mocks/preference';
 import * as path from 'path';
@@ -138,7 +138,7 @@ describe('MainThreadEditor Test Suites', () => {
       }, {
         token: CommonServerPath,
         useValue: {
-          getBackendOS: () => OS.Type.Linux,
+          getBackendOS: () => Promise.resolve(OS.type()),
         },
       }]);
     useMockStorage(injector);
@@ -146,7 +146,10 @@ describe('MainThreadEditor Test Suites', () => {
 
     injector.overrideProviders({
       token: CorePreferences,
-      useValue: {},
+      useValue: {
+        'files.encoding': 'utf8',
+        'files.eol': 'auto',
+      },
     });
     injector.overrideProviders({
       token: EditorPreferences,
@@ -174,6 +177,9 @@ describe('MainThreadEditor Test Suites', () => {
     extensionService.eagerExtensionsActivated.resolve();
     eventBus = injector.get(IEventBus);
     (workbenchEditorService as any).contributionsReady.resolve();
+
+    // IApplicationService 不知道从哪里引入的，没法 overrideProvider 一个 mock 的实现..
+    await injector.get(IApplicationService).initializeData();
     done();
   });
 
@@ -201,8 +207,8 @@ describe('MainThreadEditor Test Suites', () => {
       }
     });
     await group.createEditor(document.createElement('div'));
-    await group.codeEditor.open(await editorDocModelService.createModelReference(URI.file(path.join(__dirname, 'main.thread.output.test.ts'))));
-    // group.codeEditor = editor;
+    const ref = await editorDocModelService.createModelReference(URI.file(path.join(__dirname, 'main.thread.output.test.ts')));
+    await group.codeEditor.open(ref);
     const openType: IEditorOpenType = {
       type: 'code',
       componentId: 'test-v-component',
@@ -243,9 +249,14 @@ describe('MainThreadEditor Test Suites', () => {
   });
 
   it('should receive onDidChangeTextEditorVisibleRanges event when editor visible range has changed', async (done) => {
+    const resource: IResource = {
+      name: 'test-file',
+      uri: URI.file(path.join(__dirname, 'main.thread.output.test.ts')),
+      icon: 'file',
+    };
     eventBus.fire(new EditorVisibleChangeEvent({
       group: workbenchEditorService.currentEditorGroup,
-      resource: workbenchEditorService.currentResource as IResource,
+      resource: workbenchEditorService.currentResource as IResource || resource,
       visibleRanges: [
         new monaco.Range(1, 12, 1, 12),
       ],
