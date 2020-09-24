@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { OS, IApplicationService, CommonServerPath, ICommonServer } from '@ali/ide-core-common';
+import { OS, IApplicationService, CommonServerPath, ICommonServer, isElectronRenderer, Deferred } from '@ali/ide-core-common';
 
 @Injectable()
 export class ApplicationService implements IApplicationService {
@@ -9,10 +9,30 @@ export class ApplicationService implements IApplicationService {
 
   private _backendOS: OS.Type;
 
-  async getBackendOS() {
-    if (!this._backendOS) {
-      this._backendOS = await this.commonServer.getBackendOS();
+  private _initialized = new Deferred();
+
+  async initializeData() {
+    this._backendOS = await this.commonServer.getBackendOS();
+    this._initialized.resolve();
+  }
+
+  get frontendOS() {
+    return OS.type();
+  }
+
+  get backendOS() {
+    if (this._backendOS) {
+      return this._backendOS;
     }
+    // electron 作为 backend，可直接使用 frontend 的 os
+    if (isElectronRenderer()) {
+      return this.frontendOS;
+    }
+    throw new Error(`Can't get backend os type before initialize, if you want wait to get backend os, please use async method: getBackendOS`);
+  }
+
+  async getBackendOS() {
+    await this._initialized.promise;
     return this._backendOS;
   }
 }

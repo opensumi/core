@@ -26,6 +26,7 @@ import {
   isElectronEnv,
   IEventBus,
   asExtensionCandidate,
+  IApplicationService,
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
@@ -208,6 +209,8 @@ export class ClientApp implements IClientApp {
 
     this.logger = this.getLogger();
     this.stateService.state = 'client_connected';
+    // 在 connect 之后立即初始化数据，保证其它 module 能同步获取数据
+    await this.injector.get(IApplicationService).initializeData();
     await this.startContributions();
     this.stateService.state = 'started_contributions';
     this.registerEventListeners();
