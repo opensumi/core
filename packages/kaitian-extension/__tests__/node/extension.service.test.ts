@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
 import { Injector } from '@ali/common-di';
-import { AppConfig, INodeLogger } from '@ali/ide-core-node';
+import { AppConfig, INodeLogger, IReporterService } from '@ali/ide-core-node';
 
 import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -16,6 +16,7 @@ describe('Extension Serivce', () => {
   const testExtId = 'kaitian.ide-dark-theme';
   const testExtPath = 'kaitian.ide-dark-theme-1.13.1';
   const testExtReadme = '# IDE Dark Theme';
+  const extProcessHandler = jest.fn((_process) => _process);
 
   beforeAll(async (done) => {
     injector = createNodeInjector([]);
@@ -25,6 +26,24 @@ describe('Extension Serivce', () => {
         marketplace: {
           extensionDir,
           ignoreId: [],
+        },
+        onDidCreateExtensionHostProcess: extProcessHandler,
+      },
+    }, {
+      token: IReporterService,
+      useValue: {
+        point() {
+          //
+        },
+        performance() {
+          //
+        },
+        time() {
+          return {
+            timeEnd: () => {
+              //
+            },
+          };
         },
       },
     }, {
@@ -79,32 +98,69 @@ describe('Extension Serivce', () => {
     });
   });
 
-  describe('createProcess2', () => {
+  describe('extension host process', () => {
+
+    it('emit extension host process', async (done) => {
+      const mockClientId = 'mock_id' + Math.random();
+      await extensionService.createProcess(mockClientId);
+      expect(extProcessHandler).toBeCalled();
+      expect(extProcessHandler).toHaveReturned();
+      done();
+    });
+
     it('should create extension host process', async (done) => {
       const mockExtClientId = 'mock_id' + Math.random();
-      const extProcess = extensionService.createProcess(mockExtClientId);
-
-      expect(extProcess).toBeInstanceOf(Promise);
+      const extProcess = await extensionService.createProcess(mockExtClientId);
+      expect(extProcess).toBeDefined();
+      const port = extensionService.getProcessInspectPort(mockExtClientId);
+      expect(port).toBeUndefined();
       await extensionService.disposeClientExtProcess(mockExtClientId, true);
+      done();
+    });
+
+    it('enable extProcess inspect port', async (done) => {
+      (global as any).isDev = undefined;
+      const mockExtClientId = 'mock_id' + Math.random();
+      await extensionService.createProcess(mockExtClientId);
+
+      // 这里不知道 jest 什么原理，去掉 console.log 测试必挂...
+      // tslint:disable-next-line
+      console.log('enable extension host process port');
+      const res = await extensionService.tryEnableInspectPort(mockExtClientId, 2000);
+      expect(res).toBeTruthy();
+
+      const port = extensionService.getProcessInspectPort(mockExtClientId);
+      expect(typeof port).toBe('number');
+      await extensionService.disposeClientExtProcess(mockExtClientId, true);
+      done();
+    });
+
+    it('create extension host process with develop mode', async (done) => {
+      (global as any).isDev = 1;
+      const mockExtClientId = 'mock_id' + Math.random();
+      const extProcess = await extensionService.createProcess(mockExtClientId);
+      expect(extProcess).toBeDefined();
+      const port = extensionService.getProcessInspectPort(mockExtClientId);
+      expect(port).toBe(9889);
       done();
     });
   });
 
   describe('getElectronMainThreadListenPath', () => {
-    it('should create connect listenpath', () => {
+    it('should create connect listenPath', () => {
       const mockExtClientId = 'mock_id' + Math.random();
 
-      const listenpath = extensionService.getElectronMainThreadListenPath2(mockExtClientId);
-      expect(path.dirname(listenpath)).toBe(path.join(os.tmpdir(), 'kaitian-ipc'));
+      const listenPath = extensionService.getElectronMainThreadListenPath2(mockExtClientId);
+      expect(path.dirname(listenPath)).toBe(path.join(os.tmpdir(), 'kaitian-ipc'));
     });
   });
 
   describe('getExtServerListenPath', () => {
-    it('should create ext server listenpath', () => {
+    it('should create ext server listenPath', () => {
       const mockExtClientId = 'mock_id' + Math.random();
 
-      const listenpath = extensionService.getExtServerListenPath(mockExtClientId);
-      expect(path.dirname(listenpath)).toBe(path.join(os.tmpdir(), 'kaitian-ipc'));
+      const listenPath = extensionService.getExtServerListenPath(mockExtClientId);
+      expect(path.dirname(listenPath)).toBe(path.join(os.tmpdir(), 'kaitian-ipc'));
     });
   });
 });
