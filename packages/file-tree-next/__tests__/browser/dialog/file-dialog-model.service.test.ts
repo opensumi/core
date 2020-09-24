@@ -6,6 +6,8 @@ import { Directory } from '../../../src/browser/file-tree-nodes';
 import { TreeNodeType } from '@ali/ide-components';
 import { FileTreeDialogModel } from '../../../src/browser/dialog/file-dialog-model.service';
 import { FileTreeDecorationService } from '../../../src/browser/services/file-tree-decoration.service';
+import { File } from '../../../src/browser/file-tree-nodes';
+import * as styles from '../../../src/browser/file-tree-node.modules.less';
 
 class TempDirectory {}
 
@@ -17,6 +19,20 @@ describe('FileDialogModel should be work', () => {
     resolveChildren: jest.fn() as any,
     resolveRoot: jest.fn() as any,
     getDirectoryList: jest.fn() as any,
+  } as any;
+  const mockWatcher = {
+    callback: jest.fn(),
+  };
+  const mockRoot = {
+    watcher: {
+      on: jest.fn(() => Disposable.create(() => { })),
+      notifyDidChangeMetadata: jest.fn(),
+    },
+    watchEvents: {
+      get: jest.fn(() => mockWatcher),
+    },
+    path: 'testRoot',
+    uri: rootUri,
   } as any;
   const newDirectoryByName = (name) => {
     const directory = {
@@ -96,6 +112,94 @@ describe('FileDialogModel should be work', () => {
   it('getDirectoryList method should be work', () => {
     fileTreeDialogModel.getDirectoryList();
     expect(mockFileTreeDialogService.getDirectoryList).toBeCalledTimes(1);
+  });
+
+  it('activeFileDecoration method should be work', () => {
+    const mockFileTreeService = {
+      on: jest.fn(),
+    } as any;
+    fileTreeDialogModel.initDecorations(mockRoot);
+    const node = new File(mockFileTreeService, mockRoot, mockRoot.uri.resolve('test.js'), 'test.js', undefined, 'tooltip');
+    fileTreeDialogModel.activeFileDecoration(node);
+    const decoration = fileTreeDialogModel.decorations.getDecorations(node);
+    expect(decoration).toBeDefined();
+    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+  });
+
+  it('selectFileDecoration method should be work', () => {
+    const mockFileTreeService = {
+      on: jest.fn(),
+    } as any;
+    fileTreeDialogModel.initDecorations(mockRoot);
+    const node = new File(mockFileTreeService, mockRoot, mockRoot.uri.resolve('test.js'), 'test.js', undefined, 'tooltip');
+    fileTreeDialogModel.selectFileDecoration(node);
+    const decoration = fileTreeDialogModel.decorations.getDecorations(node);
+    expect(decoration).toBeDefined();
+    expect(decoration!.classlist).toEqual([styles.mod_selected]);
+  });
+
+  it('enactiveFileDecoration method should be work', () => {
+    const mockFileTreeService = {
+      on: jest.fn(),
+    } as any;
+    fileTreeDialogModel.initDecorations(mockRoot);
+    const node = new File(mockFileTreeService, mockRoot, mockRoot.uri.resolve('test.js'), 'test.js', undefined, 'tooltip');
+    fileTreeDialogModel.activeFileDecoration(node);
+    let decoration = fileTreeDialogModel.decorations.getDecorations(node);
+    expect(decoration).toBeDefined();
+    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+    fileTreeDialogModel.enactiveFileDecoration();
+    decoration = fileTreeDialogModel.decorations.getDecorations(node);
+    expect(decoration).toBeDefined();
+    expect(decoration!.classlist).toEqual([styles.mod_selected]);
+  });
+
+  it('removeFileDecoration method should be work', () => {
+    const mockFileTreeService = {
+      on: jest.fn(),
+    } as any;
+    fileTreeDialogModel.initDecorations(mockRoot);
+    const node = new File(mockFileTreeService, mockRoot, mockRoot.uri.resolve('test.js'), 'test.js', undefined, 'tooltip');
+    fileTreeDialogModel.activeFileDecoration(node);
+    let decoration = fileTreeDialogModel.decorations.getDecorations(node);
+    fileTreeDialogModel.removeFileDecoration();
+    decoration = fileTreeDialogModel.decorations.getDecorations(node);
+    expect(decoration).toBeDefined();
+    expect(decoration!.classlist).toEqual([]);
+  });
+
+  it('handleTreeHandler method should be work', () => {
+    const treeHandle = { ensureVisible: () => { } } as any;
+    fileTreeDialogModel.handleTreeHandler(treeHandle);
+    expect(fileTreeDialogModel.fileTreeHandle).toEqual(treeHandle);
+  });
+
+  it('handleTreeBlur method should be work', () => {
+    const mockFileTreeService = {
+      on: jest.fn(),
+    } as any;
+    fileTreeDialogModel.initDecorations(mockRoot);
+    const node = new File(mockFileTreeService, mockRoot, mockRoot.uri.resolve('test.js'), 'test.js', undefined, 'tooltip');
+    fileTreeDialogModel.initDecorations(mockRoot);
+    fileTreeDialogModel.activeFileDecoration(node);
+    let decoration = fileTreeDialogModel.decorations.getDecorations(node);
+    expect(decoration).toBeDefined();
+    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+    fileTreeDialogModel.handleTreeBlur();
+    decoration = fileTreeDialogModel.decorations.getDecorations(node);
+    expect(decoration).toBeDefined();
+    expect(decoration!.classlist).toEqual([styles.mod_selected]);
+  });
+
+  it('handleTwistierClick method should be work', () => {
+    const treeHandle = { collapseNode: jest.fn(), expandNode: jest.fn() } as any;
+    let mockNode = { expanded: false };
+    fileTreeDialogModel.handleTreeHandler(treeHandle);
+    fileTreeDialogModel.toggleDirectory(mockNode as any);
+    expect(treeHandle.expandNode).toBeCalledTimes(1);
+    mockNode = { expanded: true };
+    fileTreeDialogModel.toggleDirectory(mockNode as any);
+    expect(treeHandle.collapseNode).toBeCalledTimes(1);
   });
 
 });
