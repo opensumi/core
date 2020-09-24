@@ -1,8 +1,8 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, PromptValidateMessage, TreeNodeEvent, Tree } from '@ali/ide-components';
+import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, PromptValidateMessage, TreeNodeEvent, Tree } from '@ali/ide-components';
 import { FileTreeModel } from '../file-tree-model';
 import { File, Directory } from '../file-tree-nodes';
-import { URI, DisposableCollection, Emitter, CorePreferences } from '@ali/ide-core-browser';
+import { URI, DisposableCollection, Emitter, CorePreferences, Event } from '@ali/ide-core-browser';
 import { PasteTypes, IFileDialogTreeService, IFileDialogModel } from '../../common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { FileTreeDialogService } from './file-dialog.service';
@@ -57,7 +57,7 @@ export class FileTreeDialogModel {
   @Autowired(CorePreferences)
   private readonly corePreferences: CorePreferences;
 
-  private _treeModel: TreeModel;
+  private _treeModel: FileTreeModel;
 
   private _whenReady: Promise<void>;
 
@@ -87,11 +87,11 @@ export class FileTreeDialogModel {
     this._whenReady = this.initTreeModel();
   }
 
-  get onDidFocusedFileChange() {
+  get onDidFocusedFileChange(): Event<URI | void> {
     return this.onDidFocusedFileChangeEmitter.event;
   }
 
-  get onDidSelectedFileChange() {
+  get onDidSelectedFileChange(): Event<URI[]> {
     return this.onDidSelectedFileChangeEmitter.event;
   }
 
@@ -137,6 +137,18 @@ export class FileTreeDialogModel {
     this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
       this.loadingDecoration.removeTarget(target);
     }));
+    this.disposableCollection.push(this.treeModel!.onWillUpdate(() => {
+      // 更新树前更新下选中节点
+      if (!!this.focusedFile) {
+        const node = this.treeModel?.root.getTreeNodeByPath(this.focusedFile.path);
+        this.activeFileDecoration(node, false);
+
+      } else if (this.selectedFiles.length !== 0) {
+        // 仅处理一下单选情况
+        const node = this.treeModel?.root.getTreeNodeByPath(this.selectedFiles[0].path);
+        this.selectFileDecoration(node, false);
+      }
+    }));
   }
 
   async updateTreeModel(path: string) {
@@ -164,7 +176,7 @@ export class FileTreeDialogModel {
   }
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
-  activeFileDecoration = (target: File | Directory) => {
+  activeFileDecoration = (target: File | Directory, dispatchChange: boolean = true) => {
     if (target === this.treeModel.root) {
       // 根节点不能选中
       return;
@@ -192,7 +204,41 @@ export class FileTreeDialogModel {
       this.onDidFocusedFileChangeEmitter.fire(target.uri);
       this.onDidSelectedFileChangeEmitter.fire([target.uri]);
       // 通知视图更新
-      this.treeModel.dispatchChange();
+      if (dispatchChange) {
+        this.treeModel.dispatchChange();
+      }
+    }
+  }
+
+  // 清空其他选中/焦点态节点，更新当前选中节点
+  selectFileDecoration = (target: File | Directory, dispatchChange: boolean = true) => {
+    if (target === this.treeModel.root) {
+      // 根节点不能选中
+      return;
+    }
+
+    if (this.preContextMenuFocusedFile) {
+      this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
+      this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
+      this.preContextMenuFocusedFile = null;
+    }
+    if (target) {
+      if (this.selectedFiles.length > 0) {
+        this.selectedFiles.forEach((file) => {
+          this.selectedDecoration.removeTarget(file);
+        });
+      }
+      if (this.focusedFile) {
+        this.focusedDecoration.removeTarget(this.focusedFile);
+      }
+      this.selectedDecoration.addTarget(target);
+      this._selectedFiles = [target];
+      // 选中及焦点文件变化
+      this.onDidSelectedFileChangeEmitter.fire([target.uri]);
+      // 通知视图更新
+      if (dispatchChange) {
+        this.treeModel.dispatchChange();
+      }
     }
   }
 
