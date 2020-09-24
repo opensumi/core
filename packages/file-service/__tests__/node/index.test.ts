@@ -38,7 +38,7 @@ describe('FileService', () => {
   });
 
   afterAll(async () => {
-    await fse.unlink(path.join(os.tmpdir(), 'fs-test'));
+    await fse.remove(path.join(os.tmpdir(), 'fs-test'));
   });
 
   describe('01 #getFileStat', () => {
