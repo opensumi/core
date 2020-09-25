@@ -155,9 +155,12 @@ export class FileResourceResolver implements ResourceResolverContribution, Clien
   @Autowired(FsProviderContribution)
   contributionProvider: ContributionProvider<FsProviderContribution>;
 
-  async initialize() {
+  constructor() {
     this.fileSystem.registerProvider('file', this.diskFileServiceProvider);
     this.fileSystem.registerProvider('debug', this.shadowFileServiceProvider);
+  }
+
+  async initialize() {
     const fsProviderContributions = this.contributionProvider.getContributions();
     for (const contribution of fsProviderContributions) {
       contribution.registerProvider && await contribution.registerProvider(this.fileSystem);
