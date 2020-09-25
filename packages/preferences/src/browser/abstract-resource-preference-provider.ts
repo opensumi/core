@@ -49,6 +49,9 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
       .catch(() => this._ready.resolve());
 
     const resource = await this.resource;
+    if (resource.whenReady) {
+      await resource.whenReady;
+    }
     this.toDispose.push(resource);
     if (resource.onDidChangeContents) {
       // 配置文件改变时，重新读取配置

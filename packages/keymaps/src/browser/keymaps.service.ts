@@ -86,6 +86,9 @@ export class KeymapService implements IKeymapService {
 
   async init() {
     this.resource = await this.resourceProvider(new URI().withScheme(USER_STORAGE_SCHEME).withPath(KEYMAPS_FILE_NAME));
+    if (this.resource.whenReady) {
+      await this.resource.whenReady;
+    }
     await this.reconcile();
   }
 
@@ -333,9 +336,9 @@ export class KeymapService implements IKeymapService {
         case ContextKeyExprType.Defined:
           return when.key;
         case ContextKeyExprType.Equals:
-          return when.key + ' == \'' + when.getValue() + '\'';
+          return when.key + ' == \'' + (when.getValue ? when.getValue() : when.value) + '\'';
         case ContextKeyExprType.NotEquals:
-          return when.key + ' != \'' + when.getValue() + '\'';
+          return when.key + ' != \'' + (when.getValue ? when.getValue() : when.value) + '\'';
         case ContextKeyExprType.Not:
           return '!' + when.key;
         case ContextKeyExprType.Regex:

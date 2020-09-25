@@ -24,6 +24,7 @@ export interface Resource extends IDisposable {
   saveContentChanges?(changes: TextDocumentContentChangeEvent[], options?: { encoding?: string }): Promise<void>;
   getFsPath?(): Promise<string | undefined>;
   readonly onDidChangeContents?: Event<void>;
+  readonly whenReady?: Promise<void>;
 }
 export namespace Resource {
   export interface SaveContext {
