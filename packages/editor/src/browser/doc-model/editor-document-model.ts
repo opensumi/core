@@ -487,7 +487,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
               reject(err);
             }, formatOnSaveTimeout);
           }),
-          this.commandService.executeCommand('monaco.editor.action.formatDocument'),
+          this.commandService.executeCommand('editor.action.formatDocument'),
         ]);
       } catch (err) {
         if (err.name === 'FormatOnSaveTimeoutError') {
