@@ -68,7 +68,7 @@ export class ElectronMainApp {
 
   async init() {
     // TODO scheme start
-    app.whenReady().then(() => {
+    await app.whenReady().then(() => {
       this.onStartContribution();
     });
   }
