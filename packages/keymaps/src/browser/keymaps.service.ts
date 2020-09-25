@@ -318,7 +318,7 @@ export class KeymapService implements IKeymapService {
     return keybinding.when ? typeof keybinding.when === 'string' ? keybinding.when : this.serialize(keybinding.when) : '';
   }
 
-  serialize(when: any) {
+  private serialize(when: any) {
     let result: string[] = [];
     if (when.expr) {
       when = when as monaco.contextkey.ContextKeyAndExpr | monaco.contextkey.ContextKeyOrExpr;
@@ -331,7 +331,7 @@ export class KeymapService implements IKeymapService {
         | monaco.contextkey.ContextKeyOrExpr
         | monaco.contextkey.ContextKeyRegexExpr;
     }
-    if (!when.expr) {
+    if (!when.expr || (when.expr && when.expr.length > 0 && when.expr[0].serialize)) {
       switch (when.getType()) {
         case ContextKeyExprType.Defined:
           return when.key;
