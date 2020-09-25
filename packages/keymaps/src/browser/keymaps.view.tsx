@@ -339,8 +339,6 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       </div>
       <div className={styles.keybinding_body} >
         <RecycleList
-          width={500}
-          height={500}
           itemHeight={20}
           header={header}
           data={keybindings}

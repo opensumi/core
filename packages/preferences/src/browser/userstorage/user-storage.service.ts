@@ -12,7 +12,8 @@ export class UserStorageServiceImpl implements IUserStorageService {
 
   protected readonly toDispose = new DisposableCollection();
   protected readonly onUserStorageChangedEmitter = new Emitter<UserStorageChangeEvent>();
-  protected readonly userStorageFolder: Promise<URI | undefined>;
+  private userStorageFolder: URI;
+  private _whenReady: Promise<void>;
 
   @Autowired(IFileServiceClient)
   protected readonly fileServiceClient: IFileServiceClient;
@@ -22,42 +23,46 @@ export class UserStorageServiceImpl implements IUserStorageService {
   protected readonly appConfig: AppConfig;
 
   constructor() {
+    this._whenReady = this.init();
+  }
+
+  get whenReady() {
+    return this._whenReady;
+  }
+
+  async init() {
     // 请求用户路径并存储
-    this.userStorageFolder = this.fileServiceClient.getCurrentUserHome().then((home) => {
-      if (home) {
-        const userStorageFolderUri = new URI(home.uri).resolve(this.appConfig.preferenceDirName || DEFAULT_USER_STORAGE_FOLDER);
-        this.fileServiceClient.watchFileChanges(userStorageFolderUri, ['**/logs/**']).then((disposable) =>
-          this.toDispose.push(disposable),
-        );
-        this.toDispose.push(this.fileServiceClient.onFilesChanged((changes) => this.onDidFilesChanged(changes)));
-        return new URI(home.uri).resolve(this.appConfig.preferenceDirName || DEFAULT_USER_STORAGE_FOLDER);
-      }
-    });
-
+    const home = await this.fileServiceClient.getCurrentUserHome();
+    if (home) {
+      const userStorageFolderUri = new URI(home.uri).resolve(this.appConfig.preferenceDirName || DEFAULT_USER_STORAGE_FOLDER);
+      this.fileServiceClient.watchFileChanges(userStorageFolderUri, ['**/logs/**']).then((disposable) =>
+        this.toDispose.push(disposable),
+      );
+      this.toDispose.push(this.fileServiceClient.onFilesChanged((changes) => this.onDidFilesChanged(changes)));
+      this.userStorageFolder = new URI(home.uri).resolve(this.appConfig.preferenceDirName || DEFAULT_USER_STORAGE_FOLDER);
+    }
     this.toDispose.push(this.onUserStorageChangedEmitter);
-
   }
 
   dispose(): void {
     this.toDispose.dispose();
   }
 
-  protected onDidFilesChanged(event: FileChangeEvent): void {
+  protected async onDidFilesChanged(event: FileChangeEvent) {
+    await this.whenReady;
     const uris: URI[] = [];
-    this.userStorageFolder.then((folder) => {
-      if (folder) {
-        for (const change of event) {
-          const changeUri = new URI(change.uri);
-          if (folder.isEqualOrParent(changeUri)) {
-            const userStorageUri = UserStorageServiceImpl.toUserStorageUri(folder, changeUri);
-            uris.push(userStorageUri);
-          }
-        }
-        if (uris.length > 0) {
-          this.onUserStorageChangedEmitter.fire({ uris });
+    if (this.userStorageFolder) {
+      for (const change of event) {
+        const changeUri = new URI(change.uri);
+        if (this.userStorageFolder.isEqualOrParent(changeUri)) {
+          const userStorageUri = UserStorageServiceImpl.toUserStorageUri(this.userStorageFolder, changeUri);
+          uris.push(userStorageUri);
         }
       }
-    });
+      if (uris.length > 0) {
+        this.onUserStorageChangedEmitter.fire({ uris });
+      }
+    }
   }
 
   async readContents(uri: URI): Promise<string> {
