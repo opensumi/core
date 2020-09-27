@@ -1,3 +1,4 @@
+import { BrowserWindowConstructorOptions } from 'electron';
 import { ConstructorOf } from '@ali/ide-core-common';
 import { ElectronMainModule } from '../electron-main-module';
 import { IDisposable } from '@ali/ide-core-common/lib/disposable';
@@ -57,6 +58,12 @@ export interface ElectronAppConfig {
    * 额外插件目录
    */
   extensionCandidate: ExtensionCandiDate[];
+
+  /**
+   * 覆盖 browser 层的初始化值
+   */
+  overrideBrowserOptions?: BrowserWindowConstructorOptions;
+
   /**
    * 覆盖browser层的WebPreferences配置
    */

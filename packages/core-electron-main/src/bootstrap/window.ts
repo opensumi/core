@@ -62,7 +62,8 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       titleBarStyle: 'hidden',
       height: DEFAULT_WINDOW_HEIGHT,
       width: DEFAULT_WINDOW_WIDTH,
-      ...this.options,
+      ...this.appConfig.overrideBrowserOptions,
+      ...options,
     });
     if (this.options.extensionDir) {
       this.extensionDir = this.options.extensionDir;
