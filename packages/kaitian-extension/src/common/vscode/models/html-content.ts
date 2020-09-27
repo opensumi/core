@@ -8,48 +8,52 @@ export interface IMarkdownString {
   uris?: { [href: string]: UriComponents };
 }
 
+const escapeCodiconsRegex = /(\\)?\$\([a-z0-9\-]+?(?:~[a-z0-9\-]*?)?\)/gi;
+export function escapeCodicons(text: string): string {
+  return text.replace(escapeCodiconsRegex, (match, escaped) => escaped ? match : `\\${match}`);
+}
+
 @es5ClassCompat
-export class MarkdownString implements IMarkdownString {
-  private readonly _isTrusted: boolean;
-  private readonly _supportThemeIcons: boolean;
+export class MarkdownString {
 
-  constructor(
-    private _value: string = '',
-    isTrustedOrOptions: boolean | { isTrusted?: boolean, supportThemeIcons?: boolean } = false,
-  ) {
-    if (typeof isTrustedOrOptions === 'boolean') {
-      this._isTrusted = isTrustedOrOptions;
-      this._supportThemeIcons = false;
-    } else {
-      this._isTrusted = isTrustedOrOptions.isTrusted ?? false;
-      this._supportThemeIcons = isTrustedOrOptions.supportThemeIcons ?? false;
-    }
+  value: string;
+  isTrusted?: boolean;
+  readonly supportThemeIcons?: boolean;
 
+  constructor(value?: string, supportThemeIcons: boolean = false) {
+    this.value = value ?? '';
+    this.supportThemeIcons = supportThemeIcons;
   }
-
-  get value() { return this._value; }
-  get isTrusted() { return this._isTrusted; }
-  get supportThemeIcons() { return this._supportThemeIcons; }
 
   appendText(value: string): MarkdownString {
     // escape markdown syntax tokens: http://daringfireball.net/projects/markdown/syntax#backslash
-    this._value += value.replace(/[\\`*_{}[\]()#+\-.!]/g, '\\$&');
+    this.value += (this.supportThemeIcons ? escapeCodicons(value) : value)
+      .replace(/[\\`*_{}[\]()#+\-.!]/g, '\\$&')
+      .replace(/\n/, '\n\n');
+
     return this;
   }
 
   appendMarkdown(value: string): MarkdownString {
-    this._value += value;
+    this.value += value;
 
     return this;
   }
 
-  appendCodeblock(langId: string, code: string): MarkdownString {
-    this._value += '\n```';
-    this._value += langId;
-    this._value += '\n';
-    this._value += code;
-    this._value += '\n```\n';
+  appendCodeblock(code: string, language: string = ''): MarkdownString {
+    this.value += '\n```';
+    this.value += language;
+    this.value += '\n';
+    this.value += code;
+    this.value += '\n```\n';
     return this;
+  }
+
+  static isMarkdownString(thing: any): thing is MarkdownString {
+    if (thing instanceof MarkdownString) {
+      return true;
+    }
+    return thing && thing.appendCodeblock && thing.appendMarkdown && thing.appendText && (thing.value !== undefined);
   }
 }
 
