@@ -376,10 +376,10 @@ export class CommentsService extends Disposable implements ICommentsService {
           return this.commentsThreads.map((thread) => {
             if (thread.uri.isEqual(uri)) {
               // 恢复之前的现场
-              thread.show();
+              thread.showWidgetsIfShowed();
             } else {
-              // 设置为 dispose 方式消失，不会修改内部 isShow 变量，用这个变量来判断下次且回来后是否要恢复显示
-              thread.hideAll(true);
+              // 临时隐藏，当切回来时会恢复
+              thread.hideWidgetsByDispose();
             }
             return thread;
           })

@@ -2,25 +2,43 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { CommentsModule } from '../../src/browser';
 import { Injector } from '@ali/common-di';
 import { ICommentsService, CommentMode } from '../../src/common';
-import { URI, positionToRange } from '@ali/ide-core-common';
+import { URI, positionToRange, Disposable } from '@ali/ide-core-common';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { IIconService } from '@ali/ide-theme';
 import { IconService } from '@ali/ide-theme/lib/browser';
+import { IEditor, EditorCollectionService } from '@ali/ide-editor';
 
 describe('comment service test', () => {
   let injector: MockInjector;
   let commentsService: ICommentsService;
+  let currentEditor: IEditor;
   beforeAll(() => {
     (global as any).monaco = createMockedMonaco() as any;
+    const monacoEditor = mockService({
+      getConfiguration: () => ({
+        lineHeight: 20,
+      }),
+      onDidChangeConfiguration: () => Disposable.NULL,
+      getLayoutInfo: () => ({
+        minimapWidth: 10,
+        minimapLeft: 10,
+      }),
+    });
+    currentEditor = mockService({ monacoEditor });
     injector = createBrowserInjector([ CommentsModule ], new Injector([{
       token: IContextKeyService,
       useClass: MockContextKeyService,
     }, {
       token: IIconService,
       useClass: IconService,
+    }, {
+      token: EditorCollectionService,
+      useValue: mockService({
+        listEditors: () => [currentEditor],
+      }),
     }]));
 
   });
@@ -132,6 +150,53 @@ describe('comment service test', () => {
       }],
     });
     expect(threadsChangedListener.mock.calls.length).toBe(1);
+  });
+
+  it('调用 showWidgetsIfShowed 时已经被隐藏的 widget 不会被调用 show 方法', async () => {
+    const uri = URI.file('/test');
+    const [ thread ] = createTestThreads(uri);
+    currentEditor.currentUri = uri;
+    // 生成一个 widget
+    thread.show(currentEditor);
+    // 调用隐藏方法，此时 isShow 为 false
+    thread.hide();
+    const widget = thread.getWidgetByEditor(currentEditor);
+    expect(widget?.isShow).toBeFalsy();
+    const onShow = jest.fn();
+    widget?.onShow(onShow);
+    thread.showWidgetsIfShowed();
+    // 不会被调用 show 方法
+    expect(onShow).not.toBeCalled();
+    expect(widget?.isShow).toBeFalsy();
+  });
+
+  it('如果 isShow 为 true 才会调用 show 方法', async () => {
+    const uri = URI.file('/test');
+    const [ thread ] = createTestThreads(uri);
+    currentEditor.currentUri = uri;
+    // 生成一个 widget
+    thread.show(currentEditor);
+    // 先通过 dispose 方式隐藏，此时 isShow 仍为 true
+    thread.hideWidgetsByDispose();
+    const widget = thread.getWidgetByEditor(currentEditor);
+    expect(widget?.isShow).toBeTruthy();
+    const onShow = jest.fn();
+    widget?.onShow(onShow);
+    thread.showWidgetsIfShowed();
+    expect(onShow).toBeCalled();
+  });
+
+  it('通过 dispose 的方式隐藏 widget，不会影响 isShow', async () => {
+    const uri = URI.file('/test');
+    const [ thread ] = createTestThreads(uri);
+    currentEditor.currentUri = uri;
+    // 生成一个 widget
+    thread.show(currentEditor);
+    const widget = thread.getWidgetByEditor(currentEditor);
+    expect(widget?.isShow).toBeTruthy();
+    thread.hideWidgetsByDispose();
+    // 虽然隐藏了，但是 show 变量还是不变
+    expect(widget?.isShow).toBeTruthy();
   });
 
   function createTestThreads(uri: URI) {
