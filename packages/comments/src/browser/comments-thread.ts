@@ -193,6 +193,26 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     }
   }
 
+  public showWidgetsIfShowed() {
+    for (const editor of this.getEditorsByUri(this.uri)) {
+      let widget = this.widgets.get(editor);
+      // 说明是在新的 group 中打开
+      if (!widget) {
+        widget = this.addWidgetByEditor(editor);
+      }
+      // 如果标记之前是已经展示的 widget，则调用 show 方法
+      if (editor.currentUri?.isEqual(this.uri) && widget.isShow) {
+        widget.show();
+      }
+    }
+  }
+
+  public hideWidgetsByDispose(): void {
+    for (const [editor, widget] of this.widgets) {
+      !editor.currentUri?.isEqual(this.uri) && widget.dispose();
+    }
+  }
+
   public isShowWidget(editor?: IEditor) {
     if (editor) {
       const widget = this.widgets.get(editor);

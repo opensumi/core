@@ -475,6 +475,14 @@ export interface ICommentsThread extends IDisposable {
    */
   show(editor?: IEditor): void;
   /**
+   * 如果之前是显示的状态，则恢复显示
+   */
+  showWidgetsIfShowed(): void;
+  /**
+   * 临时隐藏 wiget，restoreShow 时恢复
+   */
+  hideWidgetsByDispose(): void;
+  /**
    * 切换 zone widget
    */
   toggle(editor: IEditor): void;
@@ -485,10 +493,12 @@ export interface ICommentsThread extends IDisposable {
   hide(editor?: IEditor): void;
   /**
    * 显示所有 zone widget
+   * @deprecated
    */
   showAll(): void;
   /**
    * 隐藏所有 widget
+   * @deprecated
    * @param isDispose dispose widget，此时不修改内部 _isShow 变量
    */
   hideAll(isDispose?: boolean): void;
