@@ -121,7 +121,13 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         return {
           suggestions: result.items,
           incomplete: result.isIncomplete,
-          dispose: () => this.proxy.$releaseCompletionItems(handle, (result as any)._id),
+          dispose: () => {
+            if (typeof (result as any)._id === 'number') {
+              setTimeout(() => {
+                this.proxy.$releaseCompletionItems(handle, (result as any)._id);
+              }, 0);
+            }
+          },
         } as monaco.languages.CompletionList;
       },
       resolveCompletionItem: supportsResolveDetails

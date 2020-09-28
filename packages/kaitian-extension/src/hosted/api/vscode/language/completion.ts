@@ -52,7 +52,7 @@ export class CompletionAdapter {
                 return {
                     pid: _id,
                     id,
-                    ...this.convertCompletionItem(item, pos, id, _id),
+                    ...resolved,
                 };
             }).filter((item) => !!item),
         };
