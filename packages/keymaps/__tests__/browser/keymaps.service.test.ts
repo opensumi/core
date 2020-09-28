@@ -12,7 +12,7 @@ describe('KeymapsService should be work', () => {
   let injector: MockInjector;
   const keybindingContent = JSON.stringify([{
     when: 'editorFocus && textInputFocus && !editorReadonly',
-    command: 'monaco.editor.action.deleteLines',
+    command: 'editor.action.deleteLines',
     keybinding: '⌘+⇧+L',
   }]);
 

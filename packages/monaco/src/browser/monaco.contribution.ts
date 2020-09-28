@@ -153,10 +153,6 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
   registerCommands(commands: CommandRegistry) {
     // 注册 monaco 所有的 action
     this.monacoActionRegistry.registerMonacoActions();
-    commands.registerCommand({
-      id: 'monaco.editor.action.quickCommand',
-      delegate: 'editor.action.quickCommand',
-    });
   }
 
   registerNextMenus(menuRegistry: IMenuRegistry) {
