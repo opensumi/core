@@ -30,8 +30,8 @@ import { LanguageService } from '@ali/ide-editor/lib/browser/language/language.s
 import { useMockStorage } from '../../../core-browser/lib/mocks/storage';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
-import { FileSystemResourceProvider } from '@ali/ide-file-scheme/lib/browser/file-resource';
-import { FileSchemeDocumentProvider } from '@ali/ide-file-scheme/lib/browser/file-doc';
+import { BaseFileSystemEditorDocumentProvider } from '@ali/ide-editor/lib/browser/fs-resource/fs-editor-doc';
+import { FileSystemResourceProvider } from '@ali/ide-editor/lib/browser/fs-resource/fs-resource';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
 import { FileResourceResolver } from '@ali/ide-file-service/lib/browser/file-service-contribution';
 import { TestEditorDocumentProvider, TestResourceResolver } from '../../../editor/__tests__/browser/test-providers';
@@ -124,8 +124,8 @@ describe('MainThreadEditor Test Suites', () => {
         token: EditorComponentRegistry,
         useClass: EditorComponentRegistryImpl,
       }, {
-        token: FileSchemeDocumentProvider,
-        useClass: FileSchemeDocumentProvider,
+        token: BaseFileSystemEditorDocumentProvider,
+        useClass: BaseFileSystemEditorDocumentProvider,
       }, {
         token: IFileServiceClient,
         useClass: MockFileServiceClient,
@@ -168,7 +168,7 @@ describe('MainThreadEditor Test Suites', () => {
     const modelContentRegistry: IEditorDocumentModelContentRegistry = injector.get(IEditorDocumentModelContentRegistry);
     modelContentRegistry.registerEditorDocumentModelContentProvider(TestEditorDocumentProvider);
     const componentRegistry: EditorComponentRegistry = injector.get(EditorComponentRegistry);
-    modelContentRegistry.registerEditorDocumentModelContentProvider(injector.get(FileSchemeDocumentProvider));
+    modelContentRegistry.registerEditorDocumentModelContentProvider(injector.get(BaseFileSystemEditorDocumentProvider));
     componentRegistry.registerEditorComponentResolver('file', TestResourceResolver);
     const resourceService: ResourceService = injector.get(ResourceService);
     resourceService.registerResourceProvider(injector.get(FileSystemResourceProvider));

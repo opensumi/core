@@ -24,6 +24,7 @@ import { MainLayoutContribution } from '@ali/ide-main-layout';
 import { EditorPreferenceContribution } from './preference/contribution';
 import { SaveParticipantsContribution } from './doc-model/saveParticipants';
 import { EditorPreferences, editorPreferenceSchema } from './preference/schema';
+import { FileSystemResourceContribution } from './fs-resource';
 export * from './preference/schema';
 export * from './types';
 export * from './doc-model/types';
@@ -102,6 +103,7 @@ export class EditorModule extends BrowserModule {
     EditorContextMenuBrowserEditorContribution,
     EditorAutoSaveEditorContribution,
     SaveParticipantsContribution,
+    FileSystemResourceContribution,
   ];
   contributionProvider = BrowserEditorContribution;
 

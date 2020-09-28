@@ -4,7 +4,6 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { DefaultUriLabelProvider } from '@ali/ide-core-browser/lib/services';
 import { Disposable, URI, localize, ISchemaRegistry, ISchemaStore} from '@ali/ide-core-browser';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks/file-service-client';
-import { FileSystemResourceProvider } from '@ali/ide-file-scheme/lib/browser/file-resource';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
 import { FileSchemeDocNodeServicePath } from '@ali/ide-file-scheme';
@@ -12,6 +11,7 @@ import md5 = require('md5');
 import { FileSchemeDocumentProvider, VscodeSchemeDocumentProvider } from '@ali/ide-file-scheme/lib/browser/file-doc';
 import { FileSchemeModule } from '../../src/browser';
 import { EditorPreferences } from '@ali/ide-editor/lib/browser';
+import { FileSystemResourceProvider } from '@ali/ide-editor/lib/browser/fs-resource/fs-resource';
 
 describe('file scheme tests', () => {
 
@@ -137,8 +137,8 @@ describe('file scheme tests', () => {
     expect(await documentProvider.provideEditorDocumentModelContent(new URI('file:///test.ts'), 'utf8')).toBe(docContentPrefix + 'file:///test.ts');
     expect(await documentProvider.provideEditorDocumentModelContentMd5(new URI('file:///test.ts'), 'utf8')).toBe(md5(docContentPrefix + 'file:///test.ts'));
 
-    expect(documentProvider.isReadonly(new URI('file:///a/b/c.readonly.js'))).toBeTruthy();
-    expect(documentProvider.isReadonly(new URI('file:///a/b/c.n.js'))).toBeFalsy();
+    expect(await documentProvider.isReadonly(new URI('file:///a/b/c.readonly.js'))).toBeTruthy();
+    expect(await documentProvider.isReadonly(new URI('file:///a/b/c.n.js'))).toBeFalsy();
 
     const vscodeDoc = injector.get(VscodeSchemeDocumentProvider);
 

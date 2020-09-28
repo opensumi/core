@@ -44,7 +44,7 @@ export class RangeFormattingAdapter {
       if (Array.isArray(value)) {
         if (value.length === 1) {
           const newText = value[0].newText;
-          const diff = createPatch('a', oldText, newText, null, null, { context: 0 }).slice(89);
+          const diff = createPatch('a', oldText, newText, undefined, undefined, { context: 0 }).slice(89);
           const delta = diff.length / newText.length;
           // diff 小于原始文字的 1/10 的时候，只传输 diff
           if (delta < 0.1) {

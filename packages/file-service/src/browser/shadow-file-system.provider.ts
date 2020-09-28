@@ -13,6 +13,9 @@ import { Injectable } from '@ali/common-di';
 
 @Injectable()
 export class ShadowFileSystemProvider implements FileSystemProvider {
+
+    readonly: boolean = true;
+
     shadowFiles: Map<string, string> = new Map<string, string>();
     private fileChangeEmitter = new Emitter<FileChangeEvent>();
     onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
