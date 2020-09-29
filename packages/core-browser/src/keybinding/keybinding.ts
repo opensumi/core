@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { isOSX, Emitter, Event, CommandRegistry, ContributionProvider, IDisposable, Disposable, formatLocalize, isWindows, CommandService } from '@ali/ide-core-common';
+import { isOSX, Emitter, Event, CommandRegistry, ContributionProvider, IDisposable, Disposable, formatLocalize, isWindows, CommandService, isUndefined } from '@ali/ide-core-common';
 import { KeyCode, KeySequence, Key } from '../keyboard/keys';
 import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
 import { Logger } from '../logger';
@@ -88,6 +88,9 @@ export interface Keybinding {
 
   // Command执行参数
   args?: any;
+
+  // 快捷键匹配的优先级
+  priority?: number;
 }
 
 export interface ResolvedKeybinding extends Keybinding {
@@ -561,10 +564,28 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
     for (let scope = KeybindingScope.END; --scope >= KeybindingScope.DEFAULT;) {
       const matches = this.getKeySequenceCollisions(this.keymaps[scope], keySequence);
 
-      matches.full = matches.full.filter(
-        (binding) => this.getKeybindingCollisions(result.full, binding).full.length === 0);
-      matches.partial = matches.partial.filter(
-        (binding) => this.getKeybindingCollisions(result.partial, binding).partial.length === 0);
+      matches.full = matches.full
+        .filter((binding) => this.getKeybindingCollisions(result.full, binding).full.length === 0)
+        .sort((a, b) => {
+          if (isUndefined(a.priority)) {
+            return 1;
+          } else if (isUndefined(b.priority)) {
+            return -1;
+          } else {
+            return b.priority - a.priority;
+          }
+        });
+      matches.partial = matches.partial
+        .filter((binding) => this.getKeybindingCollisions(result.partial, binding).partial.length === 0)
+        .sort((a, b) => {
+          if (isUndefined(a.priority)) {
+            return 1;
+          } else if (isUndefined(b.priority)) {
+            return -1;
+          } else {
+            return b.priority - a.priority;
+          }
+        });
 
       result.merge(matches);
     }

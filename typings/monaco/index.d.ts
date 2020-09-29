@@ -396,6 +396,8 @@ declare module monaco.keybindings {
         };
         command: string;
         when?: monaco.contextkey.ContextKeyExpr;
+        weight1?: number;
+        weight2?: number;
     }
 
     export enum ContextKeyExprType {
