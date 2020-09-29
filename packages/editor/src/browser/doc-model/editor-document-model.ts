@@ -332,12 +332,17 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   async initSave() {
     while (this.savingTasks.length > 0) {
-      const res = await this.savingTasks[0].run(this.service, this.baseContent, this.getChangesFromVersion(this._persistVersionId), this.encoding);
+      const changes = this.dirtyChanges;
+      this.dirtyChanges = [];
+      const res = await this.savingTasks[0].run(this.service, this.baseContent, changes, this.encoding, this.eol);
       if (res.state === 'success' && this.savingTasks[0]) {
         this.baseContent = this.savingTasks[0].content;
 
         this.eventBus.fire(new EditorDocumentModelSavedEvent(this.uri));
         this.setPersist(this.savingTasks[0].alternativeVersionId);
+      } else {
+        // 回滚 changes
+        this.dirtyChanges.unshift(...changes);
       }
       this.savingTasks.shift();
     }
@@ -390,19 +395,6 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       this.setPersist(this.monacoModel.getAlternativeVersionId());
       this.baseContent = content;
     }
-  }
-
-  getChangesFromVersion(versionId) {
-    for (let i = this.dirtyChanges.length - 1; i >= 0; i--) {
-      if (this.dirtyChanges[i].fromVersionId === versionId) {
-        return this.dirtyChanges.slice(i).map((d) => {
-          return {
-            changes: d.changes,
-          };
-        });
-      }
-    }
-    return [];
   }
 
   set baseContent(content: string) {
@@ -464,7 +456,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       },
       get changeMatrix() {
         // 计算从起始版本到现在所有的 change 内容，然后让缓存对象进行持久化
-        return self.getChangesFromVersion(self._persistVersionId)
+        return self.dirtyChanges
           .map(({ changes }) => changes);
       },
       encoding: this.encoding,

@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { IEditorDocumentModelContentProvider} from '@ali/ide-editor/lib/browser';
+import { IEditorDocumentModelContentProvider, EOL} from '@ali/ide-editor/lib/browser';
 import { FILE_SCHEME, FILE_SAVE_BY_CHANGE_THRESHOLD, IFileSchemeDocClient } from '../common';
 import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, CorePreferences, ISchemaStore, IDisposable, Disposable, ISchemaRegistry, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service';
@@ -42,13 +42,14 @@ export class FileSchemeDocumentProvider extends BaseFileSystemEditorDocumentProv
     return super.provideEncoding(uri);
   }
 
-  async saveDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding: string, ignoreDiff: boolean = false): Promise<IEditorDocumentModelSaveResult> {
+  async saveDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding: string, ignoreDiff: boolean = false, eol: EOL = EOL.LF): Promise<IEditorDocumentModelSaveResult> {
     // TODO
     const baseMd5 = md5(baseContent);
     if (content.length > FILE_SAVE_BY_CHANGE_THRESHOLD) {
       return this.fileSchemeDocClient.saveByChange(uri.toString(), {
         baseMd5,
         changes,
+        eol,
       }, encoding, ignoreDiff);
     } else {
       return await this.fileSchemeDocClient.saveByContent(uri.toString(), {

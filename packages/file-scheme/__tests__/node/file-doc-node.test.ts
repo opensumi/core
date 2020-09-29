@@ -5,6 +5,11 @@ import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-help
 import { FileSchemeNodeModule } from '../../src/node';
 import { IFileSchemeDocNodeService } from '../../src/common';
 import { FileSchemeDocNodeServiceImpl } from '../../src/node/file-scheme-doc.service';
+import { tmpdir } from 'os';
+import { join, dirname } from 'path';
+import { ensureDir, writeFile, readFile } from 'fs-extra';
+import { URI } from '@ali/ide-core-common';
+import { encode, decode } from '@ali/ide-file-service/lib/node/encoding';
 
 describe('node file doc service test', () => {
 
@@ -46,7 +51,6 @@ describe('node file doc service test', () => {
     }));
 
     injector.mock(IFileService, 'createFile', jest.fn());
-    injector.mock(IFileService, 'updateContent', jest.fn());
     injector.mock(IFileService, 'setContent', jest.fn());
 
     const fileDocNodeService: IFileSchemeDocNodeService = injector.get(FileSchemeDocNodeServiceImpl);
@@ -96,8 +100,11 @@ describe('node file doc service test', () => {
 
     expect(fileService.createFile).toBeCalledTimes(1);
 
-    const res5 = await fileDocNodeService.$saveByChange('file:///anyFile', {
-      baseMd5: currentMd5,
+    const file1 = await createFixtureFile();
+    await writeFile(file1, '\n\n2', 'utf8');
+
+    const res5 = await fileDocNodeService.$saveByChange(URI.file(file1).toString(), {
+      baseMd5: md5('\n\n2'),
       changes: [
         {
           changes: [
@@ -113,13 +120,14 @@ describe('node file doc service test', () => {
           ],
         },
       ],
+      eol: '\n',
     });
 
     expect(res5.state).toBe('success');
 
-    expect(fileService.updateContent).toBeCalledTimes(1);
+    expect(await readFile(file1, 'utf8')).toBe('test\n\n2');
 
-    const res6 = await fileDocNodeService.$saveByChange('file:///anyFile', {
+    const res6 = await fileDocNodeService.$saveByChange(URI.file(file1).toString(), {
       baseMd5: md5('old md5'),
       changes: [
         {
@@ -136,13 +144,46 @@ describe('node file doc service test', () => {
           ],
         },
       ],
+      eol: '\n',
     });
 
     expect(res6.state).toBe('diff');
 
-    expect(fileService.updateContent).toBeCalledTimes(1);
+    const file2 = await createFixtureFile();
+    await writeFile(file2, encode('\n\n测试', 'gbk'));
+
+    const res7 = await fileDocNodeService.$saveByChange(URI.file(file2).toString(), {
+      baseMd5: md5('\n\n测试'),
+      changes: [
+        {
+          changes: [
+            {
+              range: {
+                startColumn: 1,
+                startLineNumber: 1,
+                endColumn: 1,
+                endLineNumber: 1,
+              },
+              text: '测试',
+            },
+          ],
+        },
+      ],
+      eol: '\n',
+    }, 'gbk');
+
+    expect(res7.state).toBe('success');
+
+    expect(decode(await readFile(file2), 'gbk')).toBe('测试\n\n测试');
 
     done();
   });
 
 });
+
+async function createFixtureFile(): Promise<string> {
+  const fixtureFile = join(tmpdir(), `_test_/file-scheme-fixture-${new Date().getTime()}-${Math.floor(1000 * Math.random())}`, 'tempFile.js');
+  await ensureDir(dirname(fixtureFile));
+  return fixtureFile;
+
+}

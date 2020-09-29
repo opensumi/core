@@ -222,6 +222,10 @@ export interface IEditorDocumentEOLChange {
 
 export type IEditorDocumentChange = IEditorDocumentEditChange | IEditorDocumentEOLChange;
 
+export function isEditChange(change: IEditorDocumentChange): change is IEditorDocumentEditChange {
+  return !!(change as IEditorDocumentEditChange).changes;
+}
+
 export interface IEditorDocumentModelSaveResult {
 
   state: 'success' | 'error' | 'diff';

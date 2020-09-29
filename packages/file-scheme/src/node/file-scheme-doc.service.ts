@@ -1,41 +1,39 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { IEditorDocumentModelSaveResult, IEditorDocumentEditChange } from '@ali/ide-core-node';
+import { IEditorDocumentModelSaveResult, URI, IEditorDocumentChange, BasicTextLines, isEditChange } from '@ali/ide-core-node';
 import { IFileService } from '@ali/ide-file-service';
 import md5 = require('md5');
-import { TextDocumentContentChangeEvent, Range } from 'vscode-languageserver-types';
 
 import { IFileSchemeDocNodeService, ISavingContent, IContentChange } from '../common';
+import { existsSync, readFile, statSync, writeFile } from 'fs-extra';
+import { encode, decode } from '@ali/ide-file-service/lib/node/encoding';
 
 @Injectable()
 export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
   @Autowired(IFileService)
   private fileService: IFileService;
 
+  // 由于此处只处理file协议，为了简洁，不再使用 fileService,
+
   async $saveByChange(uri: string, change: IContentChange, encoding?: string | undefined, force: boolean = false): Promise<IEditorDocumentModelSaveResult> {
     try {
-      const stat = await this.fileService.getFileStat(uri);
-      if (stat) {
+      const fsPath = new URI(uri).codeUri.fsPath;
+      if (existsSync(fsPath)) {
+        const mtime = statSync(fsPath).mtime.getTime();
+        const contentBuffer = await readFile(fsPath);
+        const content = decode(contentBuffer, encoding ? encoding : 'utf8');
         if (!force) {
-          const res = await this.fileService.resolveContent(uri, {encoding});
-          if (change.baseMd5 !== md5(res.content)) {
+          const currentMd5 = md5(content);
+          if (change.baseMd5 !== currentMd5) {
             return {
               state: 'diff',
             };
           }
         }
-        const docChanges: TextDocumentContentChangeEvent[] = [];
-        change.changes!.forEach((c) => {
-          if ((c as IEditorDocumentEditChange).changes) {
-            (c as IEditorDocumentEditChange).changes.forEach((e) => {
-              const range = Range.create(e.range.startLineNumber - 1, e.range.startColumn - 1, e.range.endLineNumber - 1, e.range.endColumn - 1);
-              docChanges.push({
-                range,
-                text: e.text,
-              });
-            });
-          }
-        });
-        await this.fileService.updateContent(stat, docChanges, {encoding});
+        const contentRes = applyChanges(content, change.changes!, change.eol);
+        if (statSync(fsPath).mtime.getTime() !== mtime) {
+          throw new Error('File has been modified during saving, please retry');
+        }
+        await writeFile(fsPath, encode(contentRes, encoding ? encoding : 'utf8'));
         return {
           state: 'success',
         };
@@ -96,4 +94,26 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
     }
   }
 
+}
+
+/**
+ * 注意： 对于一个change来说，同时执行的多个 operation 对应的都是同一个原始 content;
+ * 常见例子: vscode 中 cmd+d 编辑
+ * @param content
+ * @param changes
+ */
+
+export function applyChanges(content: string, changes: IEditorDocumentChange[], eol: '\n' | '\r\n'): string {
+  const textLines = new BasicTextLines(content.split(eol), eol);
+  changes.forEach((change) => {
+    if (isEditChange(change)) {
+      change.changes.forEach((change) => {
+        // 这里从前端传过来的 changes 已经倒序排序过，所以可以安全的 apply
+        textLines.acceptChange(change);
+      });
+    } else {
+      textLines.acceptEol(change.eol);
+    }
+  });
+  return textLines.getContent();
 }

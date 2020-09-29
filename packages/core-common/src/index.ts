@@ -36,3 +36,4 @@ export * from './problem-matcher';
 export * from './task-definition';
 export * from './errors';
 export * from './node/port';
+export * from './line-text'
