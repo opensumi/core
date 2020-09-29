@@ -136,9 +136,11 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       this.startNode();
       getDebugLogger().log('starting browser window with url: ', this.appConfig.browserUrl);
 
-      const queryStriing = qs.stringify({ ...this.options.query, windowId: this.browser.id });
-      const browserUrl = URI.parse(this.appConfig.browserUrl).withQuery(queryStriing).toString();
+      const browserUrlParsed = URI.parse(this.appConfig.browserUrl);
+      const queryStriing = qs.stringify({ ...qs.parse(browserUrlParsed.query), ...this.options.query, windowId: this.browser.id });
+      const browserUrl = browserUrlParsed.withQuery(queryStriing).toString();
       this.browser.loadURL(browserUrl);
+
       this.browser.webContents.on('devtools-reload-page', () => {
         this.isReloading = true;
       });
