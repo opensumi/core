@@ -7,7 +7,7 @@ import { NewPromptHandle } from './prompt/NewPromptHandle';
 import { DisposableCollection, Emitter, Event, Disposable } from '../utils';
 import { INodeRendererProps, NodeRendererWrap, INodeRenderer } from './TreeNodeRendererWrap';
 import { TreeNodeType, TreeNodeEvent } from './types';
-import { Scrollbars } from 'react-custom-scrollbars';
+import { ScrollbarsVirtualList } from '../scrollbars';
 import * as cls from 'classnames';
 import * as fuzzy from 'fuzzy';
 import './recycle-tree.less';
@@ -113,59 +113,6 @@ interface IFilterNodeRendererProps {
   itemType: TreeNodeType;
   template?: React.JSXElementConstructor<any>;
 }
-
-interface ICustomScrollbarProps {
-  forwardedRef: any;
-  onScroll?: any;
-  style?: React.CSSProperties;
-  className?: string;
-  children?: React.ReactNode;
-}
-
-const CustomScrollbars = ({ onScroll, forwardedRef, style, children, className }: ICustomScrollbarProps) => {
-  const refSetter = React.useCallback((scrollbarsRef) => {
-    if (scrollbarsRef) {
-      forwardedRef(scrollbarsRef.view);
-    } else {
-      forwardedRef(null);
-    }
-  }, []);
-
-  let shadowTopRef: HTMLDivElement | null;
-
-  const handleUpdate = (values) => {
-    const { scrollTop } = values;
-    const shadowTopOpacity = 1 / 20 * Math.min(scrollTop, 20);
-    if (shadowTopRef) {
-      shadowTopRef.style.opacity = String(shadowTopOpacity);
-    }
-  };
-
-  return (
-    <Scrollbars
-      ref={refSetter}
-      style={{...style, overflow: 'hidden'}}
-      className={className}
-      onUpdate={handleUpdate}
-      onScroll={onScroll}
-      renderThumbVertical={({ style, ...props }) =>
-        <div {...props} className={'scrollbar-thumb-vertical'}/>
-      }
-      renderThumbHorizontal={({ style, ...props }) =>
-        <div {...props} className={'scrollbar-thumb-horizontal'}/>
-      }
-      >
-      <div
-        ref={(ref) => { shadowTopRef = ref; }}
-        className={'scrollbar-decoration'}/>
-      {children}
-    </Scrollbars>
-  );
-};
-
-const CustomScrollbarsVirtualList = React.forwardRef((props, ref) => (
-  <CustomScrollbars {...props} forwardedRef={ref} />
-));
 
 export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
@@ -716,7 +663,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         onScroll={this.handleListScroll}
         style={style}
         className={cls(className, 'kt-recycle-tree')}
-        outerElementType={CustomScrollbarsVirtualList}>
+        outerElementType={ScrollbarsVirtualList}>
         {this.renderItem}
       </FixedSizeList>);
   }

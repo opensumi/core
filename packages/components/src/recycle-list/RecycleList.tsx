@@ -1,61 +1,8 @@
 import * as React from 'react';
 import { FixedSizeList } from 'react-window';
-import { Scrollbars } from 'react-custom-scrollbars';
+import { ScrollbarsVirtualList } from '../scrollbars';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import * as cls from 'classnames';
-
-interface ICustomScrollbarProps {
-  forwardedRef: any;
-  onScroll?: any;
-  style?: React.CSSProperties;
-  className?: string;
-  children?: React.ReactNode;
-}
-
-const CustomScrollbars = ({ onScroll, forwardedRef, style, children, className }: ICustomScrollbarProps) => {
-  const refSetter = React.useCallback((scrollbarsRef) => {
-    if (scrollbarsRef) {
-      forwardedRef(scrollbarsRef.view);
-    } else {
-      forwardedRef(null);
-    }
-  }, []);
-
-  let shadowTopRef: HTMLDivElement | null;
-
-  const handleUpdate = (values) => {
-    const { scrollTop } = values;
-    const shadowTopOpacity = 1 / 20 * Math.min(scrollTop, 20);
-    if (shadowTopRef) {
-      shadowTopRef.style.opacity = String(shadowTopOpacity);
-    }
-  };
-
-  return (
-    <Scrollbars
-      ref={refSetter}
-      style={{...style, overflow: 'hidden'}}
-      className={className}
-      onUpdate={handleUpdate}
-      onScroll={onScroll}
-      renderThumbVertical={({ style, ...props }) =>
-        <div {...props} className={'scrollbar-thumb-vertical'}/>
-      }
-      renderThumbHorizontal={({ style, ...props }) =>
-        <div {...props} className={'scrollbar-thumb-horizontal'}/>
-      }
-      >
-      <div
-        ref={(ref) => { shadowTopRef = ref; }}
-        className={'scrollbar-decoration'}/>
-      {children}
-    </Scrollbars>
-  );
-};
-
-const CustomScrollbarsVirtualList = React.forwardRef((props, ref) => (
-  <CustomScrollbars {...props} forwardedRef={ref} />
-));
 
 export interface IRecycleListProps {
   /**
@@ -226,7 +173,7 @@ export class RecycleList extends React.Component<IRecycleListProps> {
         ref={this.listRef}
         style={style}
         className={cls(className, 'kt-recycle-list')}
-        outerElementType={CustomScrollbarsVirtualList}>
+        outerElementType={ScrollbarsVirtualList}>
         {this.renderItem}
       </FixedSizeList>);
     }
@@ -244,7 +191,7 @@ export class RecycleList extends React.Component<IRecycleListProps> {
           ref={this.listRef}
           style={style}
           className={cls(className, 'kt-recycle-list')}
-          outerElementType={CustomScrollbarsVirtualList}>
+          outerElementType={ScrollbarsVirtualList}>
           {this.renderItem}
         </FixedSizeList>
       )}

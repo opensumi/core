@@ -16,5 +16,6 @@ export * from './tooltip';
 export * from './recycle-tree';
 export * from './recycle-list';
 export * from './common';
+export * from './scrollbars';
 
 export * from './locale-context-provider';
