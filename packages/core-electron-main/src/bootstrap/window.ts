@@ -10,9 +10,14 @@ import { app } from 'electron';
 
 const DEFAULT_WINDOW_HEIGHT = 700;
 const DEFAULT_WINDOW_WIDTH = 1000;
+
 let windowClientCount = 0;
 
-@Injectable({multiple: true})
+const defaultWebPreferences = {
+  webviewTag: true,
+};
+
+@Injectable({ multiple: true })
 export class CodeWindow extends Disposable implements ICodeWindow {
 
   private _workspace: URI | undefined;
@@ -40,9 +45,6 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   constructor(workspace?: string, metadata?: any, options: BrowserWindowConstructorOptions & ICodeWindowOptions = {}) {
     super();
-    const defaultWebPreferences = {
-      webviewTag: true,
-    };
     this._workspace = new URI(workspace);
     this.metadata = metadata;
     this.windowClientId = 'CODE_WINDOW_CLIENT_ID:' + (++windowClientCount);
@@ -75,7 +77,6 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       this.dispose();
     });
     const metadataResponser = async (event, windowId) => {
-      await this._nodeReady.promise;
       if (windowId === this.browser.id) {
         event.returnValue = JSON.stringify({
           workspace: this.workspace ? FileUri.fsPath(this.workspace) : undefined,
@@ -87,20 +88,27 @@ export class CodeWindow extends Disposable implements ICodeWindow {
           extensionCandidate: this.appConfig.extensionCandidate.concat(this.extensionCandidate).filter(Boolean),
           ...this.metadata,
           windowClientId: this.windowClientId,
-          rpcListenPath: this.rpcListenPath,
           workerHostEntry: this.appConfig.extensionWorkerEntry,
           extensionDevelopmentHost: this.appConfig.extensionDevelopmentHost,
           appPath: app.getAppPath(),
         });
       }
     };
-    ipcMain.on('window-metadata',  metadataResponser);
+
+    const rpcListenPathResponser = async (event, windowId) => {
+      await this._nodeReady.promise;
+      if (windowId === this.browser.id) {
+        event.returnValue = this.rpcListenPath;
+      }
+    };
+    ipcMain.on('window-metadata', metadataResponser);
+    ipcMain.on('window-rpc-listen-path', rpcListenPathResponser);
     this.addDispose({
       dispose: () => {
         ipcMain.removeListener('window-metadata', metadataResponser);
+        ipcMain.removeListener('window-rpc-listen-path', rpcListenPathResponser);
       },
     });
-
   }
 
   get workspace() {
@@ -126,7 +134,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   async start() {
     await this.clear();
     try {
-      await this.startNode();
+      this.startNode();
       getDebugLogger().log('starting browser window with url: ', this.appConfig.browserUrl);
       this.browser.loadURL(this.appConfig.browserUrl);
       this.browser.webContents.on('devtools-reload-page', () => {
@@ -189,7 +197,7 @@ export class KTNodeProcess {
 
   private ready: Promise<void>;
 
-  constructor(private forkPath, private extensionEntry, private windowClientId: string, private extensionDir: string) {
+  constructor(private forkPath: string, private extensionEntry: string, private windowClientId: string, private extensionDir: string) {
 
   }
 

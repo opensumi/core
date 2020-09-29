@@ -7,9 +7,13 @@ const electronEnv = {};
 
 async function createRPCNetConnection(){
   return net.createConnection(electronEnv.rpcListenPath);
+
+async function createRPCNetConnection () {
+  const rpcListenPath = ipcRenderer.sendSync('window-rpc-listen-path', electronEnv.currentWindowId);
+  return net.createConnection(rpcListenPath);
 }
 
-function createNetConnection(connectPath) {
+function createNetConnection (connectPath) {
   return net.createConnection(connectPath);
 }
 
@@ -27,9 +31,9 @@ electronEnv.monacoPath = join (dirname(require.resolve('monaco-editor-core/packa
 electronEnv.appPath = require('electron').remote.app.getAppPath();
 
 const metaData = JSON.parse(ipcRenderer.sendSync('window-metadata', electronEnv.currentWindowId));
+
 electronEnv.metadata = metaData;
-electronEnv.rpcListenPath = metaData.rpcListenPath;
-process.env = Object.assign({}, process.env, metaData.env, {WORKSPACE_DIR: metaData.workspace});
+process.env = Object.assign({}, process.env, metaData.env, { WORKSPACE_DIR: metaData.workspace });
 
 electronEnv.env = Object.assign({}, process.env);
 electronEnv.webviewPreload = metaData.webview.webviewPreload;
@@ -44,7 +48,6 @@ if (metaData.preloads) {
     require(preload);
   });
 }
-
 
 electronEnv.isMaximized = () => { return browserWindow.isMaximized(); };
 
