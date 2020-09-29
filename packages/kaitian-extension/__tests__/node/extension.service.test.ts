@@ -118,7 +118,7 @@ describe('Extension Serivce', () => {
       done();
     });
 
-    it('enable extProcess inspect port', async (done) => {
+    it.skip('enable extProcess inspect port', async (done) => {
       (global as any).isDev = undefined;
       const mockExtClientId = 'mock_id' + Math.random();
       await extensionService.createProcess(mockExtClientId);
