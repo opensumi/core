@@ -497,7 +497,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         if (isDevelopment()) {
           this.pendingClientExtProcessDisposer = disposer;
         }
-      }, isDevelopment() ? 0 : (this.appConfig.processCloseExitThreshold || ExtensionNodeServiceImpl.ProcessCloseExitThreshold));
+      }, isDevelopment() ? 0 : (this.appConfig.processCloseExitThreshold ?? ExtensionNodeServiceImpl.ProcessCloseExitThreshold));
       this.clientExtProcessThresholdExitTimerMap.set(connectionClientId, timer);
     }
   }
