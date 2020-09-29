@@ -5,8 +5,8 @@ const { dirname, join } = require('path');
 
 const electronEnv = {};
 
-async function createRPCNetConnection(){
-  return net.createConnection(electronEnv.rpcListenPath);
+const urlParams = new URLSearchParams(decodeURIComponent(window.location.search));
+const windowId = Number(urlParams.get('windowId'));
 
 async function createRPCNetConnection () {
   const rpcListenPath = ipcRenderer.sendSync('window-rpc-listen-path', electronEnv.currentWindowId);
@@ -25,9 +25,9 @@ electronEnv.platform = require('os').platform();
 
 electronEnv.isElectronRenderer = true;
 electronEnv.BufferBridge = Buffer;
-electronEnv.currentWebContentsId = require('electron').remote.getCurrentWebContents().id;
-electronEnv.currentWindowId = require('electron').remote.getCurrentWindow().id;
-electronEnv.monacoPath = join (dirname(require.resolve('monaco-editor-core/package.json')));
+electronEnv.currentWebContentsId = windowId;
+electronEnv.currentWindowId = windowId;
+electronEnv.monacoPath = join(dirname(require.resolve('monaco-editor-core/package.json')));
 electronEnv.appPath = require('electron').remote.app.getAppPath();
 
 const metaData = JSON.parse(ipcRenderer.sendSync('window-metadata', electronEnv.currentWindowId));

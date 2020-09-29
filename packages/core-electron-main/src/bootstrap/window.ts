@@ -7,6 +7,7 @@ import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
 import { ExtensionCandiDate } from '@ali/ide-core-common';
 import treeKill = require('tree-kill');
 import { app } from 'electron';
+import * as qs from 'querystring';
 
 const DEFAULT_WINDOW_HEIGHT = 700;
 const DEFAULT_WINDOW_WIDTH = 1000;
@@ -43,7 +44,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   private rpcListenPath: string | undefined = undefined;
 
-  constructor(workspace?: string, metadata?: any, options: BrowserWindowConstructorOptions & ICodeWindowOptions = {}) {
+  constructor(workspace?: string, metadata?: any, private options: BrowserWindowConstructorOptions & ICodeWindowOptions = {}) {
     super();
     this._workspace = new URI(workspace);
     this.metadata = metadata;
@@ -61,16 +62,14 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       titleBarStyle: 'hidden',
       height: DEFAULT_WINDOW_HEIGHT,
       width: DEFAULT_WINDOW_WIDTH,
-      ...options,
+      ...this.options,
     });
-    if (options) {
-      if (options.extensionDir) {
-        this.extensionDir = options.extensionDir;
-      }
+    if (this.options.extensionDir) {
+      this.extensionDir = this.options.extensionDir;
+    }
 
-      if (options.extensionCandidate) {
-        this.extensionCandidate = options.extensionCandidate;
-      }
+    if (this.options.extensionCandidate) {
+      this.extensionCandidate = this.options.extensionCandidate;
     }
 
     this.browser.on('closed', () => {
@@ -136,7 +135,10 @@ export class CodeWindow extends Disposable implements ICodeWindow {
     try {
       this.startNode();
       getDebugLogger().log('starting browser window with url: ', this.appConfig.browserUrl);
-      this.browser.loadURL(this.appConfig.browserUrl);
+
+      const queryStriing = qs.stringify({ ...this.options.query, windowId: this.browser.id });
+      const browserUrl = URI.parse(this.appConfig.browserUrl).withQuery(queryStriing).toString();
+      this.browser.loadURL(browserUrl);
       this.browser.webContents.on('devtools-reload-page', () => {
         this.isReloading = true;
       });
@@ -208,7 +210,7 @@ export class KTNodeProcess {
         try {
           const forkOptions: ForkOptions = {
             env: {
-              ... process.env,
+              ...process.env,
               KTELECTRON: '1',
               ELECTRON_RUN_AS_NODE: '1',
               EXTENSION_HOST_ENTRY: this.extensionEntry,
@@ -234,14 +236,14 @@ export class KTNodeProcess {
             if (data.length > 500) {
               data = data.substr(500) + '...';
             }
-            process.stdout.write('[node]' + data );
+            process.stdout.write('[node]' + data);
           });
           this._process.stderr.on('data', (data) => {
             data = data.toString();
             if (data.length > 500) {
               data = data.substr(500) + '...';
             }
-            process.stdout.write('[node]' + data );
+            process.stdout.write('[node]' + data);
           });
         } catch (e) {
           reject(e);

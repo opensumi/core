@@ -119,6 +119,7 @@ export interface ICodeWindow {
 export interface ICodeWindowOptions {
   extensionDir?: string;
   extensionCandidate?: ExtensionCandiDate[];
+  query?: { [key: string]: string };
 }
 
 export interface IParsedArgs {
