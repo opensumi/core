@@ -44,7 +44,7 @@ export const ExtensionHotAccordion: React.FC<{
   return (
     <ExtensionList
       height={viewState.height}
-      onYReachEnd={() => extensionManagerService.loadHotExtensions()}
+      onReachBottom={() => extensionManagerService.loadHotExtensions()}
       loading={extensionManagerService.loading === SearchState.LOADING}
       list={extensionManagerService.hotExtensions}
       empty={extensionManagerService.loading === SearchState.NO_CONTENT ? localize('marketplace.extension.notfound') : ''}

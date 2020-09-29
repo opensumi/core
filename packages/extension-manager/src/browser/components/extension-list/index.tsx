@@ -1,18 +1,18 @@
 import * as React from 'react';
 import * as clx from 'classnames';
-import { PerfectScrollbar } from '@ali/ide-core-browser/lib/components';
 import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
 import { RawExtensionView } from '../raw-extension';
 import { RawExtension, IExtensionManagerService } from '../../../common';
 import * as styles from './index.module.less';
 import { useInjectable } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
+import { Scrollbars } from '@ali/ide-components';
 
 interface ExtensionListProps {
   height?: number;
   loading?: boolean;
   empty?: React.ReactNode | string;
-  onYReachEnd?: () => void;
+  onReachBottom?: () => void;
   list: RawExtension[];
   showExtraAction?: boolean;
 }
@@ -22,7 +22,7 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
   loading = false,
   list,
   empty,
-  onYReachEnd,
+  onReachBottom,
   showExtraAction = true,
 }) => {
   const [selectExtensionId, setSelectExtensionId] = React.useState('');
@@ -49,10 +49,11 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
     <div className={styles.wrap}>
       <ProgressBar loading={loading} />
       {list && list.length ? (
-        <PerfectScrollbar
-          onYReachEnd={onYReachEnd}
+        <Scrollbars
+          style={{ height: height ?? 'auto' }}
+          onReachBottom={onReachBottom}
         >
-          <div style={{ height: height ?? 'auto' }}>
+          <div>
             {list.map((rawExtension, index) => {
               return (<RawExtensionView className={clx({
                 [styles.selected]: rawExtension.extensionId === selectExtensionId,
@@ -66,7 +67,7 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
               />);
             })}
           </div>
-      </PerfectScrollbar>
+      </Scrollbars>
       ) : typeof empty === 'string' ? (<div className={styles.empty}>{empty}</div>) : empty}
     </div>
   );
