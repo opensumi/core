@@ -79,6 +79,9 @@ export class TabbarService extends WithEventBus {
   @Autowired(IProgressService)
   private progressService: IProgressService;
 
+  // 提供给Mobx强刷
+  @observable forceUpdate: number = 0;
+
   private accordionRestored: Set<string> = new Set();
 
   private readonly onCurrentChangeEmitter = new Emitter<{previousId: string; currentId: string}>();

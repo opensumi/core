@@ -65,11 +65,12 @@ export class TabBarHandler {
     this.tabbarService.getContainerState(this.containerId).hidden = true;
   }
 
-  setTitleComponent(Fc: React.FunctionComponent) {
-    this.logger.warn(`method setTitleComponent of TabBarHandler is deprecated!`);
+  setTitleComponent(Fc: React.FunctionComponent, props?: object) {
     const componentInfo = this.tabbarService.getContainer(this.containerId);
     if (componentInfo) {
+      componentInfo.options!.titleProps = props;
       componentInfo.options!.titleComponent = Fc;
+      this.tabbarService.forceUpdate ++;
     }
   }
 

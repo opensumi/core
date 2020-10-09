@@ -35,6 +35,9 @@ export const BaseTabPanelView: React.FC<{
     // panelSize = 384-1-48
     tabbarService.panelSize = customPanelSize || panelSize || 335;
   }, []);
+  // tslint:disable-next-line:no-unused-variable
+  const forceUpdate = tabbarService.forceUpdate;
+
   return (
     <div className={styles.tab_panel}>
       {tabbarService.visibleContainers.map((component) => {
@@ -84,7 +87,7 @@ const ContainerView: React.FC<{
         />
         {titleComponent && <div className={styles.panel_component}>
           <ConfigProvider value={configContext} >
-            <ComponentRenderer Component={titleComponent} />
+            <ComponentRenderer Component={titleComponent} initialProps={component.options?.titleProps} />
           </ConfigProvider>
         </div>}
       </div>}
@@ -109,7 +112,7 @@ const PanelView: React.FC<{
     <div className={styles.panel_container} ref={(ele) =>  contentRef.current = ele}>
       <div className={styles.float_container}>
         {titleComponent && <div className={styles.toolbar_container}>
-          <ComponentRenderer Component={titleComponent} />
+          <ComponentRenderer Component={titleComponent} initialProps={component.options?.titleProps} />
         </div>}
         <div className='toolbar_container'>
           {titleMenu && <InlineActionBar menus={titleMenu} />}
@@ -139,7 +142,7 @@ const NextPanelView: React.FC<{
       <div className={styles.panel_title_bar}>
         <h1>{component.options!.title}</h1>
         <div className={styles.title_component_container}>
-          {titleComponent && <ComponentRenderer Component={titleComponent} />}
+          {titleComponent && <ComponentRenderer Component={titleComponent} initialProps={component.options?.titleProps} />}
         </div>
         <div className={styles.panel_toolbar_container}>
           { titleMenu && <InlineActionBar menus={titleMenu} /> }

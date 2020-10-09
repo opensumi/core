@@ -50,15 +50,14 @@ export class TabbarBrowserContributionRunner extends AbstractKaitianBrowserContr
 
   registerTabBar(view: ITabBarViewContribution, runtimeParams: IRunTimeParams, kind: 'add' | 'replace' = 'add', position?: 'left' | 'right' | 'bottom'): IDisposable {
     const { extendProtocol, extendService } = runtimeParams.getExtensionExtendService(this.extension, view.id);
-    let componentId;
+    const containerId = `${this.extension.id}:${view.id}`;
     const initialProps = {
       kaitianExtendService: extendService,
       kaitianExtendSet: extendProtocol,
     };
     if (kind === 'add') {
-      const { component } = view;
-      const containerId = `${this.extension.id}:${view.id}`;
-      componentId = this.layoutService.collectTabbarComponent(
+      const { component, titleComponent } = view;
+      this.layoutService.collectTabbarComponent(
         [{
           id: containerId,
         }],
@@ -67,6 +66,8 @@ export class TabbarBrowserContributionRunner extends AbstractKaitianBrowserContr
           iconClass: view.icon ? getIcon(view.icon) : view.iconPath ? this.iconService.fromIcon(this.extension.path, view.iconPath) : '',
           containerId,
           component,
+          titleComponent,
+          titleProps: initialProps,
           initialProps,
           fromExtension: true,
         },
@@ -74,10 +75,11 @@ export class TabbarBrowserContributionRunner extends AbstractKaitianBrowserContr
       );
     } else {
       this.layoutService.replaceViewComponent(view, initialProps);
+      view.titleComponent && this.layoutService.getTabbarHandler(containerId)?.setTitleComponent(view.titleComponent, initialProps);
     }
     return {
       dispose: () => {
-        const componentHandler = this.layoutService.getTabbarHandler(componentId);
+        const componentHandler = this.layoutService.getTabbarHandler(containerId);
         if (componentHandler) {
           componentHandler.dispose();
         }
