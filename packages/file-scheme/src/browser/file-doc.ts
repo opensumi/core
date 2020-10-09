@@ -23,7 +23,7 @@ export class FileSchemeDocumentProvider extends BaseFileSystemEditorDocumentProv
     super();
   }
 
-  handlesUri(uri: URI) {
+  handlesUri(uri: URI): number {
     return uri.scheme === FILE_SCHEME ? 20 : -1;
   }
 
