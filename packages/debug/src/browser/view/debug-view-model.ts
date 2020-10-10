@@ -31,8 +31,8 @@ export class DebugViewModel implements IDisposable {
 
   protected readonly _sessions = new Set<DebugSession>();
 
-  get sessions(): DebugSession[] {
-    return Array.from(this._sessions);
+  get sessions(): IterableIterator<DebugSession> {
+    return this._sessions.values();
   }
 
   get sessionCount(): number {
@@ -56,7 +56,7 @@ export class DebugViewModel implements IDisposable {
   }
 
   get session(): DebugSession | undefined {
-    return this.sessions[0];
+    return this.sessions.next().value;
   }
 
   get id(): string {
@@ -134,13 +134,14 @@ export class DebugViewModel implements IDisposable {
   }
 
   async restart(): Promise<void> {
-    const session = this.manager.getSession(this.session?.id!);
-    if (!session) {
+    const { currentSession } = this;
+    if (!currentSession) {
       return;
     }
-    const newSession = await this.manager.restart(session);
-    if (newSession !== session) {
-      this._sessions.delete(session);
+
+    const newSession = await this.manager.restart(currentSession);
+    if (newSession !== currentSession) {
+      this._sessions.delete(currentSession);
       this._sessions.add(newSession);
     }
     this.fireDidChange();
