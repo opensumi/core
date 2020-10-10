@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { DebugBreakpointsService } from './debug-breakpoints.service';
-import { useInjectable, ViewState, CommandService, EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { useInjectable, ViewState, CommandService, EDITOR_COMMANDS, URI } from '@ali/ide-core-browser';
 import * as styles from './debug-breakpoints.module.less';
 import * as cls from 'classnames';
 import { CheckBox } from '@ali/ide-components';
@@ -91,7 +91,7 @@ export const BreakpointItem = ({
           endLineNumber: (data.breakpoint as DebugBreakpoint).raw.line,
         };
       }
-      commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, (data.breakpoint as ISourceBreakpoint).uri, options);
+      commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI((data.breakpoint as ISourceBreakpoint).uri), options);
     }
   };
 
