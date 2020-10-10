@@ -246,3 +246,18 @@ url("./octicons.svg?1b0f2a9535896866c74dd24eedeb4374#octicons") format("svg");
 .octicon-request-changes:before { content: "\f10b" }
 .octicon-smiley-outline:before { content: "\f10c" }
 .octicon-warning:before { content: "\f10d" }
+
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+@keyframes octicon-spin {
+  100% {
+    transform:rotate(360deg);
+  }
+}
+
+.octicon-animation-spin {
+  animation: octicon-spin 2s linear infinite;
+}
