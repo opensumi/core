@@ -327,6 +327,20 @@ declare module 'kaitian' {
      */
     setIcon(iconPath: string): void;
 
+    /**
+     * 修改 Tabbar 徽标文案
+     * @param badge 徽标文案
+     *
+     * ![badge](https://img.alicdn.com/tfs/TB1.UPih4vbeK8jSZPfXXariXXa-336-136.png)
+     *
+     * @example
+     * ```ts
+     *  const tabbar = kaitian.layout.getTabbarHandler('TabbarIconTest');
+     *  tabbar.setBadge('12');
+     * ```
+     */
+    setBadge(badge: string): void;
+
     activate(): void;
 
     deactivate(): void;

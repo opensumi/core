@@ -8,7 +8,7 @@ import { IEventBus, Disposable, ILogger } from '@ali/ide-core-browser';
 import { IconType, IconShape, IIconService } from '@ali/ide-theme';
 
 @Injectable({ multiple: true })
-export class MainThreaLayout extends Disposable implements IMainThreadLayout {
+export class MainThreadLayout extends Disposable implements IMainThreadLayout {
   @Autowired(IMainLayoutService)
   layoutService: IMainLayoutService;
 
@@ -49,6 +49,10 @@ export class MainThreaLayout extends Disposable implements IMainThreadLayout {
 
   $deactivate(id: string): void {
     this.getHandler(id).deactivate();
+  }
+
+  $setBadge(id: string, badge: string): void {
+    this.getHandler(id).setBadge(badge);
   }
 
   async $setVisible(id: string, visible: boolean) {

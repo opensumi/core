@@ -38,6 +38,10 @@ export class TabbarHandler implements ITabbarHandler {
     this.proxy.$setVisible(this.id, visible);
   }
 
+  setBadge(badge: string) {
+    this.proxy.$setBadge(this.id, badge);
+  }
+
   isAttached(): Promise<boolean> {
     return this.proxy.$isAttached(this.id);
   }
