@@ -246,15 +246,10 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
     this.debugEditorController.init();
     await this.configurations.load();
     await this.breakpointManager.load();
-    this.configurations.onDidChange(() => {
-      this.configurations.save();
-    });
-    this.breakpointManager.onDidChangeBreakpoints(() => {
-      this.breakpointManager.save();
-    });
-    this.breakpointManager.onDidChangeExceptionsBreakpoints(() => {
-      this.breakpointManager.save();
-    });
+    this.configurations.onDidChange(() => this.configurations.save());
+    this.breakpointManager.onDidChangeBreakpoints(() => this.breakpointManager.save());
+    this.breakpointManager.onDidChangeExceptionsBreakpoints(() => this.breakpointManager.save());
+    this.breakpointManager.onDidChangeMarkers(() => this.breakpointManager.save());
   }
 
   // 左侧调试面板

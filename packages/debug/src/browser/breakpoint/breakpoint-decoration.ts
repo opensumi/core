@@ -42,8 +42,8 @@ export class DebugDecorator {
     };
   }
 
-  getDecoration(breakpoint: DebugBreakpoint, isDebugMode = false): DebugBreakpointDecoration {
-    if (!breakpoint.enabled) {
+  getDecoration(breakpoint: DebugBreakpoint, isDebugMode: boolean = false, enabled: boolean = true): DebugBreakpointDecoration {
+    if (!breakpoint.enabled || !enabled) {
       return this.getDisabledBreakpointDecoration(breakpoint);
     }
     if (isDebugMode && !isRuntimeBreakpoint(breakpoint)) {

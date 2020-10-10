@@ -30,7 +30,7 @@ export const DebugBreakpointView = observer(({
   const template = ({ data }: {
     data: BreakpointItem,
   }) => {
-    return <BreakpointItem toggle={ () => toggleBreakpointEnable(data.breakpoint) } data={ data } isDebugMode={ inDebugMode }></BreakpointItem>;
+    return <BreakpointItem toggle={ () => toggleBreakpointEnable(data.breakpoint) } breakpointEnabled={enable} data={ data } isDebugMode={ inDebugMode }></BreakpointItem>;
   };
 
   const containerStyle = {
@@ -52,10 +52,12 @@ export const BreakpointItem = ({
   data,
   toggle,
   isDebugMode,
+  breakpointEnabled,
 }: {
   data: BreakpointItem,
   toggle: () => void,
   isDebugMode: boolean,
+  breakpointEnabled: boolean,
 }) => {
   const defaultValue = isDebugBreakpoint(data.breakpoint) ? data.breakpoint.enabled : !!(data.breakpoint.default);
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
@@ -63,17 +65,33 @@ export const BreakpointItem = ({
   const [enabled, setEnabled] = React.useState<boolean>(defaultValue);
   const [status, setStatus] = React.useState<DebugProtocol.Breakpoint | false | undefined>(undefined);
 
-  const changeHandler = () => {
+  const handleBreakpointChange = () => {
     toggle();
     setEnabled(!enabled);
   };
 
-  const clickHandler = () => {
+  const handleBreakpointClick = () => {
     if ((data.breakpoint as ISourceBreakpoint).uri) {
-      commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, (data.breakpoint as ISourceBreakpoint).uri, {
+      const options = {
         preview: true,
         focus: true,
-      });
+      };
+      if (!!status) {
+        options['range'] = {
+          startColumn: status.column,
+          endColumn: status.column,
+          startLineNumber: status.line,
+          endLineNumber: status.line,
+        };
+      } else {
+        options['range'] = {
+          startColumn: 0,
+          endColumn: 0,
+          startLineNumber: (data.breakpoint as DebugBreakpoint).raw.line,
+          endLineNumber: (data.breakpoint as DebugBreakpoint).raw.line,
+        };
+      }
+      commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, (data.breakpoint as ISourceBreakpoint).uri, options);
     }
   };
 
@@ -94,9 +112,9 @@ export const BreakpointItem = ({
   const verified = !isDebugMode ? true : (isDebugBreakpoint(data.breakpoint) && isRuntimeBreakpoint(data.breakpoint));
 
   return <div className={ cls(styles.debug_breakpoints_item) }>
-    <div className={ cls(isDebugBreakpoint(data.breakpoint) ? !verified ? 'kaitian-debug-breakpoint-unverified' : enabled ? 'kaitian-debug-breakpoint' : 'kaitian-debug-breakpoint-disabled' : '', styles.debug_breakpoints_icon) }></div>
-    <CheckBox id={ data.id } defaultChecked={ enabled } onChange={ changeHandler }></CheckBox>
-    <div className={ styles.debug_breakpoints_wrapper } onClick={ clickHandler }>
+    <div className={ cls(isDebugBreakpoint(data.breakpoint) ? !verified ? 'kaitian-debug-breakpoint-unverified' : enabled && breakpointEnabled ? 'kaitian-debug-breakpoint' : 'kaitian-debug-breakpoint-disabled' : '', styles.debug_breakpoints_icon) }></div>
+    <CheckBox id={ data.id } defaultChecked={ enabled } onChange={ handleBreakpointChange }></CheckBox>
+    <div className={ styles.debug_breakpoints_wrapper } onClick={ handleBreakpointClick }>
       <span className={ styles.debug_breakpoints_name }>{ data.name }</span>
       <span className={ styles.debug_breakpoints_description }>{ data.description }</span>
     </div>

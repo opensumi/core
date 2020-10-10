@@ -222,7 +222,7 @@ export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
 
   async save(): Promise<void> {
     const data: BreakpointManager.Data = {
-      breakpointsEnabled: this._breakpointsEnabled,
+      breakpointsEnabled: this.breakpointsEnabled,
       breakpoints: {},
       defaultExceptionFilter: this.defaultExceptionFilter,
     };

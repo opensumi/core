@@ -106,7 +106,9 @@ export class DebugSession implements IDisposable {
       this.on('capabilities', (event) => this.updateCapabilities(event.body.capabilities)),
       this.breakpoints.onDidChangeBreakpoints((event) => this.updateBreakpoint(event)),
       this.breakpoints.onDidChangeExceptionsBreakpoints((args) => {
-        this.sendExceptionBreakpoints(args);
+        if (this.breakpoints.breakpointsEnabled) {
+          this.setExceptionBreakpoints(args);
+        }
       }),
       {
         dispose: () => {
@@ -183,7 +185,7 @@ export class DebugSession implements IDisposable {
     await this.updateThreads(undefined);
   }
 
-  protected async sendExceptionBreakpoints(
+  protected async setExceptionBreakpoints(
     args: DebugProtocol.SetExceptionBreakpointsArguments,
   ): Promise<DebugProtocol.SetExceptionBreakpointsResponse> {
     return this.sendRequest('setExceptionBreakpoints', args);
@@ -231,6 +233,9 @@ export class DebugSession implements IDisposable {
 
   private async setBreakpoints(affected: URI[]) {
     const promises: Promise<void>[] = [];
+    if (!this.breakpoints.breakpointsEnabled) {
+      return;
+    }
     for (const uri of affected) {
       const source = await this.toSource(uri);
       const enabled = this.breakpoints.getBreakpoints(uri).filter((b) => b.enabled);
