@@ -3,39 +3,43 @@ import { useInjectable, localize } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import * as styles from './debug-hover.module.less';
 import * as cls from 'classnames';
-import { DebugHoverTreeModelService } from './debug-hover-tree.model.service';
+import { DebugHoverTreeModelService, IDebugHoverUpdateData } from './debug-hover-tree.model.service';
 import { IRecycleTreeHandle, RecycleTree, INodeRendererWrapProps } from '@ali/ide-components';
 import { DebugHoverModel } from './debug-hover-model';
-import { ExpressionNode, ExpressionContainer, DebugHoverVariableRoot } from '../tree/debug-tree-node.define';
+import { ExpressionNode, ExpressionContainer, DebugHoverVariableRoot, DebugVariable } from '../tree/debug-tree-node.define';
 import { DebugVariableRenderedNode, DEBUG_VARIABLE_TREE_NODE_HEIGHT } from '../view/variables/debug-variables.view';
 
 export const DebugHoverView = observer(() => {
   const debugHoverTreeModelService: DebugHoverTreeModelService = useInjectable(DebugHoverTreeModelService);
 
-  const [model, setModel] = React.useState<DebugHoverModel>();
+  const [model, setModel] = React.useState<{ treeModel?: DebugHoverModel, variable?: DebugVariable}>({});
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   React.useEffect(() => {
-    debugHoverTreeModelService.onDidUpdateTreeModel(async (model: DebugHoverModel) => {
-      if (model) {
-        await model!.root.ensureLoaded();
+    debugHoverTreeModelService.onDidUpdateTreeModelOrVariable(async (data: IDebugHoverUpdateData) => {
+      const { treeModel, variable } = data;
+      if (treeModel) {
+        await treeModel!.root.ensureLoaded();
       }
-      setModel(model);
+      setModel({treeModel, variable});
     });
-
-    debugHoverTreeModelService.treeModel!.root.ensureLoaded()
-      .then(() => {
-        setModel(debugHoverTreeModelService.treeModel);
-      });
+    ensureLoaded();
     return () => {
       debugHoverTreeModelService.removeNodeDecoration();
     };
   }, []);
 
+  const ensureLoaded = async () => {
+    if (debugHoverTreeModelService.treeModel) {
+      await debugHoverTreeModelService.treeModel!.root.ensureLoaded();
+      setModel({treeModel: debugHoverTreeModelService.treeModel});
+    }
+  };
+
   const handleTreeReady = (handle: IRecycleTreeHandle) => {
     debugHoverTreeModelService.handleTreeHandler({
       ...handle,
-      getModel: () => model!,
+      getModel: () => model?.treeModel!,
       hasDirectFocus: () => wrapperRef.current === document.activeElement,
     });
   };
@@ -51,7 +55,7 @@ export const DebugHoverView = observer(() => {
     handleTwistierClick(item);
   };
 
-  const shouldRenderVariableTree = !!model && !!(model.root as DebugHoverVariableRoot).variablesReference;
+  const shouldRenderVariableTree = !!model.treeModel && !!(model.treeModel.root as DebugHoverVariableRoot).variablesReference;
 
   const renderVariableTree = () => {
     if (!shouldRenderVariableTree) {
@@ -67,7 +71,7 @@ export const DebugHoverView = observer(() => {
         width={300}
         itemHeight={DEBUG_VARIABLE_TREE_NODE_HEIGHT}
         onReady={handleTreeReady}
-        model={model!}
+        model={model.treeModel!}
         placeholder={() => {
           return <span></span>;
         }}
@@ -91,9 +95,14 @@ export const DebugHoverView = observer(() => {
   return (
     <div className={ styles.debug_hover }>
       {
-        model ?
+        model.treeModel ?
         <div className={ cls(styles.debug_hover_title, shouldRenderVariableTree && styles.has_complex_value) }>
-          { model.root.name }
+          { model.treeModel.root.name }
+        </div>
+        :
+        model.variable ?
+        <div className={ cls(styles.debug_hover_title, shouldRenderVariableTree && styles.has_complex_value) }>
+          { model.variable.value }
         </div>
         :
         <div className={ styles.debug_hover_title }>
