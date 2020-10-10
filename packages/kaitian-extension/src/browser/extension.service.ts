@@ -230,9 +230,14 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
     await this.initCommonBrowserDependency();
 
-    await this.startProcess(true);
+    await Promise.all([
+      this.startProcess(true),
+      this.startWorkerHost(true),
+    ]);
 
-    await this.startWorkerHost(true);
+    await this.activationEventService.fireEvent('*');
+    this.eagerExtensionsActivated.resolve();
+    this.eventBus.fire(new ExtensionApiReadyEvent());
   }
 
   public getExtensions() {
@@ -406,7 +411,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     const clientId = this.clientId;
     await this.extensionNodeService.disposeClientExtProcess(clientId, false);
 
-    await this.startProcess(false);
+    await Promise.all([
+      this.startProcess(false),
+      this.startWorkerHost(false),
+    ]);
   }
 
   public async startProcess(init: boolean) {
@@ -440,9 +448,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       }
     }
 
-    await this.activationEventService.fireEvent('*');
-    this.eagerExtensionsActivated.resolve();
-    this.eventBus.fire(new ExtensionApiReadyEvent());
   }
 
   public async startWorkerHost(init: boolean) {
