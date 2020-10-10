@@ -1,9 +1,11 @@
 import { SymbolKind } from '@ali/ide-core-common';
 import { updateKaitianIconMap, getKaitianIcon } from '@ali/ide-components/lib/icon';
 
-import { IDE_ICONFONT_CN_CSS } from './ide-iconfont';
+import { IDE_ICONFONT_CN_CSS, IDE_OCTICONS_CN_CSS } from './ide-iconfont';
 
 export const DEFAULT_CDN_ICON = IDE_ICONFONT_CN_CSS;
+
+export { IDE_OCTICONS_CN_CSS };
 
 export const getIcon = getKaitianIcon;
 export const updateIconMap = updateKaitianIconMap;
