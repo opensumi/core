@@ -103,6 +103,8 @@ export enum FileType {
  */
 export interface FileSystemProvider {
 
+  // TODO: 对单个文件判断 readonly
+  readonly readonly?: boolean;
   /**
    * An event to signal that a resource has been created, changed, or deleted. This
    * event should fire for resources that are being [watched](#FileSystemProvider.watch)
@@ -201,6 +203,7 @@ export interface FileSystemProvider {
    * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
    */
   rename(oldstring: Uri, newstring: Uri, options: { overwrite: boolean }): void | Thenable<void | FileStat>;
+
 }
 
 export const enum FileSystemProviderCapabilities {

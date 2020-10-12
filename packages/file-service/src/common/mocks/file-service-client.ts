@@ -12,6 +12,10 @@ export class MockFileServiceClient implements IFileServiceClient {
     throw new Error('Method not implemented.');
   }
 
+  async isReadonly() {
+    return false;
+  }
+
   defaultMockFileStat: FileStat = {
     uri: '',
     isDirectory: false,

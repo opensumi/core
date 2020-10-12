@@ -7,6 +7,8 @@ function isNodeWindow() {
 
 /**
  * 对于 tree-like 的结构，希望父节点被删除/更新时，能影响到子节点
+ * FIXME: 这边前后端环境不一致的时候还是有坑，应该使用 uri
+ * TODO: 写点测试
  */
 export class FileTreeNode {
 

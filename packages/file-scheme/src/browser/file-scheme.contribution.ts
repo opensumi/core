@@ -8,10 +8,9 @@ import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { ImagePreview, VideoPreview } from './preview.view';
 import { BinaryEditorComponent } from './external.view';
 import { FILE_SCHEME } from '../common';
-import { FileSchemeDocumentProvider, DebugSchemeDocumentProvider, VscodeSchemeDocumentProvider } from './file-doc';
+import { FileSchemeDocumentProvider, VscodeSchemeDocumentProvider } from './file-doc';
 import { UntitledSchemeResourceProvider, UntitledSchemeDocumentProvider } from '@ali/ide-editor/lib/browser/untitled-resource';
 import { LargeFilePrevent } from './prevent.view';
-import { FileSystemResourceProvider, DebugResourceProvider } from './file-resource';
 
 const VIDEO_PREVIEW_COMPONENT_ID = 'video-preview';
 const IMAGE_PREVIEW_COMPONENT_ID = 'image-preview';
@@ -20,17 +19,9 @@ const LARGE_FILE_PREVENT_COMPONENT_ID = 'large-file-prevent';
 
 @Domain(BrowserEditorContribution)
 export class FileSystemEditorResourceContribution implements BrowserEditorContribution {
-  @Autowired()
-  private readonly fileSystemResourceProvider: FileSystemResourceProvider;
 
   @Autowired()
   private readonly fileSchemeDocumentProvider: FileSchemeDocumentProvider;
-
-  @Autowired()
-  private readonly debugSchemeResourceProvider: DebugResourceProvider;
-
-  @Autowired()
-  private readonly debugSchemeDocumentProvider: DebugSchemeDocumentProvider;
 
   @Autowired()
   private readonly vscodeSchemeDocumentProvider: VscodeSchemeDocumentProvider;
@@ -43,15 +34,12 @@ export class FileSystemEditorResourceContribution implements BrowserEditorContri
 
   registerResource(resourceService: ResourceService) {
     // 注册 provider 处理 file scheme 对应的 icon/meta 等信息
-    resourceService.registerResourceProvider(this.fileSystemResourceProvider);
-    resourceService.registerResourceProvider(this.debugSchemeResourceProvider);
     resourceService.registerResourceProvider(this.untitledResourceProvider);
   }
 
   registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
     // 注册 provider 提供 doc / 文档的内容和 meta 信息
     registry.registerEditorDocumentModelContentProvider(this.fileSchemeDocumentProvider);
-    registry.registerEditorDocumentModelContentProvider(this.debugSchemeDocumentProvider);
     registry.registerEditorDocumentModelContentProvider(this.vscodeSchemeDocumentProvider);
     registry.registerEditorDocumentModelContentProvider(this.untitledSchemeDocumentProvider);
   }

@@ -54,6 +54,9 @@ export class FileServiceClient implements IFileServiceClient {
   protected filesExcludes: string[] = [];
   protected workspaceRoots: string[] = [];
 
+  // 记录哪些 fsProviders 发生了变更
+  private _providerChanged: Set<string> = new Set();
+
   // TODO: 这个registry只记录了 scheme
   @Autowired(IBrowserFileSystemRegistry)
   private registry: BrowserFileSystemRegistryImpl;
@@ -319,6 +322,7 @@ export class FileServiceClient implements IFileServiceClient {
     this.toDisposable.push({
       dispose: () => {
         this.fsProviders.delete(scheme);
+        this._providerChanged.add(scheme);
       },
     });
     if (provider.onDidChangeFile) {
@@ -329,6 +333,7 @@ export class FileServiceClient implements IFileServiceClient {
         (this.watcherWithSchemaMap.get(scheme) || []).forEach((id) => this.unwatchFileChanges(id));
       },
     });
+    this._providerChanged.add(scheme);
     return this.toDisposable;
   }
 
@@ -392,7 +397,11 @@ export class FileServiceClient implements IFileServiceClient {
   private async getProvider<T extends string>(scheme: T): Promise<T extends 'file' ? IDiskFileProvider : FileSystemProvider>;
   private async getProvider(scheme: string): Promise<IDiskFileProvider | FileSystemProvider> {
 
-    this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onFileSystem', data: scheme }));
+    if (this._providerChanged.has(scheme)) {
+      // 让相关插件启动完成 (3秒超时), 此处防止每次都发，仅在相关scheme被影响时才尝试激活插件
+      await this.eventBus.fireAndAwait(new ExtensionActivateEvent({ topic: 'onFileSystem', data: scheme }), {timeout: 3000});
+      this._providerChanged.delete(scheme);
+    }
 
     const provider = this.fsProviders.get(scheme);
 
@@ -410,6 +419,17 @@ export class FileServiceClient implements IFileServiceClient {
     }
 
     return provider;
+  }
+
+  public async isReadonly(uriString: string): Promise<boolean> {
+    try {
+      const uri = new URI(uriString);
+      const provider = await this.getProvider(uri.scheme);
+      return !!provider.readonly;
+    } catch (e) {
+      // 考虑到非 readonly 变readonly 的情况，相对于 readonly 变不 readonly 来说更为严重
+      return false;
+    }
   }
 
   private isExclude(uriString: string) {

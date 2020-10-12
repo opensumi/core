@@ -1,14 +1,14 @@
-import { IResourceProvider, IResource, ResourceNeedUpdateEvent } from '@ali/ide-editor';
+import { IResourceProvider, IResource, ResourceNeedUpdateEvent } from '../../common';
 import { URI, MaybePromise, WithEventBus, localize, MessageType, LRUMap } from '@ali/ide-core-browser';
 import { Autowired, Injectable } from '@ali/common-di';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { IEditorDocumentModelService, DIFF_SCHEME } from '@ali/ide-editor/lib/browser';
-import { FILE_SCHEME } from '../common';
 import { IFileServiceClient, FileStat } from '@ali/ide-file-service/lib/common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { FileChangeType } from '@ali/ide-core-common';
 import { IDialogService } from '@ali/ide-overlay';
 import { FileTreeSet } from './file-tree-set';
+import { IEditorDocumentModelService } from '../doc-model/types';
+import { DIFF_SCHEME } from '../../common';
 
 enum AskSaveResult {
   REVERT = 1,
@@ -42,7 +42,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
 
   handlesUri(uri: URI): number {
     const scheme = uri.scheme;
-    if (scheme === FILE_SCHEME || this.fileServiceClient.handlesScheme(scheme)) {
+    if (this.fileServiceClient.handlesScheme(scheme)) {
       return 10;
     } else {
       return -1;
@@ -101,7 +101,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
   provideResourceSubname(resource: IResource, groupResources: IResource[]): string | null {
     const shouldDiff: URI[] = [];
     for (const res of groupResources) {
-      if (res.uri.scheme === FILE_SCHEME && res.uri.displayName === resource.uri.displayName && res !== resource) {
+      if (this.fileServiceClient.handlesScheme(res.uri.scheme) && res.uri.displayName === resource.uri.displayName && res !== resource) {
         // 存在file协议的相同名称的文件
         shouldDiff.push(res.uri);
       }
@@ -125,7 +125,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
         if (r.uri.scheme === DIFF_SCHEME && r.metadata && r.metadata.modified.toString() === resource.uri.toString()) {
           count ++;
         }
-        if (r.uri.scheme === FILE_SCHEME && r.uri.toString() === resource.uri.toString()) {
+        if (this.fileServiceClient.handlesScheme(r.uri.scheme) && r.uri.toString() === resource.uri.toString()) {
           count ++;
         }
         if (count > 1) {
@@ -163,30 +163,6 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
     } else {
       return true;
     }
-  }
-}
-
-@Injectable()
-export class DebugResourceProvider extends FileSystemResourceProvider {
-
-  listen() {
-    return; // 不继承 file 的监听逻辑
-  }
-
-  handlesUri(uri: URI) {
-    return uri.scheme === 'debug' ? 10 : -1;
-  }
-
-  provideResource(uri: URI): MaybePromise<IResource<any>> {
-    // 获取文件类型 getFileType: (path: string) => string
-    return Promise.all([this.labelService.getName(uri), this.labelService.getIcon(uri)]).then(([name, icon]) => {
-      return {
-        name,
-        icon,
-        uri,
-        metadata: null,
-      };
-    });
   }
 }
 

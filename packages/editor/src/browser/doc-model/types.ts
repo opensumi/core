@@ -118,7 +118,7 @@ export interface IEditorDocumentModelContentProvider {
    * @param baseContent dirty前的内容
    * @param ignoreDiff 无视diff错误, 强行覆盖保存
    */
-  saveDocumentModel?(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding?: string, ignoreDiff?: boolean): MaybePromise<IEditorDocumentModelSaveResult>;
+  saveDocumentModel?(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding?: string, ignoreDiff?: boolean, eol?: EOL): MaybePromise<IEditorDocumentModelSaveResult>;
 
   /**
    * 为一个uri提供喜好的语言id，返回undefined则交由编辑器自己去判断

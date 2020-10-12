@@ -193,8 +193,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private portalShadowRootMap: Map<string, ShadowRoot> = new Map();
 
   @OnEvent(ExtensionActivateEvent)
-  onActivateExtension(e) {
-    this.activationEventService.fireEvent(e.payload.topic, e.payload.data);
+  async onActivateExtension(e) {
+    await this.activationEventService.fireEvent(e.payload.topic, e.payload.data);
   }
 
   public async activate(): Promise<void> {

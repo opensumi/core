@@ -57,6 +57,8 @@ export interface IContentChange {
 
   baseMd5: string;
 
+  eol: '\n' | '\r\n';
+
   changes?: IEditorDocumentChange[]; // 通过monaco编辑行为跟踪而来
 
   rawChanges?: ISingleChange[]; // 通过jsdiff比较得来

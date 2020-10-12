@@ -1,9 +1,10 @@
 import { URI, Deferred, IEditorDocumentChange, IEditorDocumentModelSaveResult } from '@ali/ide-core-browser';
 import { IEditorDocumentModelService } from './types';
+import { EOL } from '../../common';
 
 export interface IEditorDocumentModelServiceImpl extends IEditorDocumentModelService {
 
-  saveEditorDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding?: string, ignoreDiff?: boolean): Promise<IEditorDocumentModelSaveResult>;
+  saveEditorDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding?: string, ignoreDiff?: boolean, eol?: EOL): Promise<IEditorDocumentModelSaveResult>;
 
 }
 
@@ -24,10 +25,10 @@ export class SaveTask {
 
   }
 
-  async run(service: IEditorDocumentModelServiceImpl, baseContent: string, changes: IEditorDocumentChange[], encoding?: string): Promise<IEditorDocumentModelSaveResult> {
+  async run(service: IEditorDocumentModelServiceImpl, baseContent: string, changes: IEditorDocumentChange[], encoding?: string, eol?: EOL): Promise<IEditorDocumentModelSaveResult> {
     this.started = true;
     try {
-      const res = await service.saveEditorDocumentModel(this.uri, this.content, baseContent, changes, encoding, this.ignoreDiff);
+      const res = await service.saveEditorDocumentModel(this.uri, this.content, baseContent, changes, encoding, this.ignoreDiff, eol);
       this.deferred.resolve(res);
       return res;
     } catch (e) {

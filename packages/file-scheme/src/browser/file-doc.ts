@@ -1,21 +1,14 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { EOL } from '@ali/ide-editor';
-import { IEditorDocumentModelContentProvider, EditorPreferences } from '@ali/ide-editor/lib/browser';
+import { IEditorDocumentModelContentProvider, EOL} from '@ali/ide-editor/lib/browser';
 import { FILE_SCHEME, FILE_SAVE_BY_CHANGE_THRESHOLD, IFileSchemeDocClient } from '../common';
 import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, CorePreferences, ISchemaStore, IDisposable, Disposable, ISchemaRegistry, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
-import { IFileServiceClient, FileChangeType } from '@ali/ide-file-service';
+import { IFileServiceClient } from '@ali/ide-file-service';
 import * as md5 from 'md5';
-import { IApplicationService, OS } from '@ali/ide-core-common';
+import { BaseFileSystemEditorDocumentProvider } from '@ali/ide-editor/lib/browser/fs-resource/fs-editor-doc';
 
 // TODO 这块其实应该放到file service当中
 @Injectable()
-export class FileSchemeDocumentProvider implements IEditorDocumentModelContentProvider {
-
-  private _onDidChangeContent: Emitter<URI> = new Emitter();
-
-  public onDidChangeContent: Event<URI> = this._onDidChangeContent.event;
-
-  private _fileContentMd5OnBrowserFs: Set<string> = new Set();
+export class FileSchemeDocumentProvider extends BaseFileSystemEditorDocumentProvider implements IEditorDocumentModelContentProvider {
 
   @Autowired(IFileServiceClient)
   protected readonly fileServiceClient: IFileServiceClient;
@@ -26,26 +19,16 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
   @Autowired(CorePreferences)
   protected readonly corePreferences: CorePreferences;
 
-  @Autowired(EditorPreferences)
-  protected readonly editorPreferences: EditorPreferences;
-
-  @Autowired(IApplicationService)
-  protected readonly applicationService: IApplicationService;
-
   constructor() {
-    this.fileServiceClient.onFilesChanged((changes) => {
-      changes.forEach((change) => {
-        if (this._fileContentMd5OnBrowserFs.has(change.uri)) {
-          if (change.type === FileChangeType.ADDED || change.type === FileChangeType.UPDATED) {
-            this._onDidChangeContent.fire(new URI(change.uri));
-          }
-        }
-      });
-    });
+    super();
   }
 
-  handlesScheme(scheme: string) {
-    return scheme === FILE_SCHEME || this.fileServiceClient.handlesScheme(scheme);
+  handlesUri(uri: URI): number {
+    return uri.scheme === FILE_SCHEME ? 20 : -1;
+  }
+
+  handlesScheme() {
+    return false; // dummy, 走handlesUri
   }
 
   async provideEncoding(uri: URI) {
@@ -56,50 +39,17 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
       }
     }
 
-    return await this.fileServiceClient.getEncoding(uri.toString());
+    return super.provideEncoding(uri);
   }
 
-  async provideEOL() {
-    const backendOS = await this.applicationService.getBackendOS();
-    const eol = this.corePreferences['files.eol'];
-
-    if (eol !== 'auto') {
-      return eol;
-    }
-    return backendOS === OS.Type.Windows ? EOL.CRLF : EOL.LF;
-  }
-
-  async provideEditorDocumentModelContent(uri: URI, encoding) {
-    const res = await this.fileServiceClient.resolveContent(uri.toString(), {
-      encoding,
-    });
-
-    // 记录表示这个文档被引用了
-    const content = res && res.content || '';
-    this._fileContentMd5OnBrowserFs.add(uri.toString());
-
-    return content;
-  }
-
-  isReadonly(uri: URI): boolean {
-    const readonlyFiles: string[] = this.editorPreferences['editor.readonlyFiles'];
-    if (readonlyFiles && readonlyFiles.length) {
-      for (const file of readonlyFiles) {
-        if (uri.isEqual(URI.file(file)) || uri.matchGlobPattern(file) || uri.toString().endsWith(file.replace('./', ''))) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  async saveDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding: string, ignoreDiff: boolean = false): Promise<IEditorDocumentModelSaveResult> {
+  async saveDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding: string, ignoreDiff: boolean = false, eol: EOL = EOL.LF): Promise<IEditorDocumentModelSaveResult> {
     // TODO
     const baseMd5 = md5(baseContent);
     if (content.length > FILE_SAVE_BY_CHANGE_THRESHOLD) {
       return this.fileSchemeDocClient.saveByChange(uri.toString(), {
         baseMd5,
         changes,
+        eol,
       }, encoding, ignoreDiff);
     } else {
       return await this.fileSchemeDocClient.saveByContent(uri.toString(), {
@@ -113,33 +63,11 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
     return this.fileSchemeDocClient.getMd5(uri.toString(), encoding);
   }
 
-  onDidDisposeModel(uri: URI) {
-    this._fileContentMd5OnBrowserFs.delete(uri.toString());
-  }
-
 }
 
-@Injectable()
-export class DebugSchemeDocumentProvider extends FileSchemeDocumentProvider implements IEditorDocumentModelContentProvider {
-  handlesScheme(scheme: string) {
-    return scheme === 'debug';
-  }
-
-  async provideEditorDocumentModelContent(uri: URI, encoding) {
-    const res = await this.fileServiceClient.resolveContent(uri.toString(), {
-      encoding,
-    });
-
-    // 记录表示这个文档被引用了
-    const content = res && res.content || '';
-    return content;
-  }
-
-  isReadonly(uri: URI): boolean {
-    return true;
-  }
-}
-
+/**
+ * TODO: 这个应该换个地方 @寻壑
+ */
 @Injectable()
 export class VscodeSchemeDocumentProvider implements IEditorDocumentModelContentProvider {
   isReadonly(uri: URI) {

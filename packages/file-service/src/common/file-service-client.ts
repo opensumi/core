@@ -76,6 +76,8 @@ export interface IFileServiceClient {
   setWorkspaceRoots(roots: string[]): Promise<void>;
 
   getEncoding(uri: string): Promise<string>;
+
+  isReadonly(uri: string): Promise<boolean>;
 }
 
 export interface IBrowserFileSystemRegistry {

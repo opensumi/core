@@ -5,6 +5,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelOptionExternalUpdatedEvent, EditorDocumentModelCreationEvent, IPreferredModelOptions } from './types';
 import { EditorDocumentModel } from './editor-document-model';
 import { mapToSerializable, serializableToMap } from '@ali/ide-core-common/lib/map';
+import { EOL } from '../../common';
 
 export const EDITOR_DOCUMENT_MODEL_STORAGE: URI = URI.from({scheme: STORAGE_SCHEMA.SCOPE, path: 'editor-doc'});
 export const EDITOR_DOC_OPTIONS_PREF_KEY = 'editor_doc_pref';
@@ -250,7 +251,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     return model;
   }
 
-  async saveEditorDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding?: string, ignoreDiff?: boolean): Promise<IEditorDocumentModelSaveResult> {
+  async saveEditorDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding?: string, ignoreDiff?: boolean, eol?: EOL): Promise<IEditorDocumentModelSaveResult> {
     const provider = await this.contentRegistry.getProvider(uri);
 
     if (!provider) {
@@ -260,7 +261,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       throw new Error(`${uri.toString()}的文档提供商不存在保存方法`);
     }
 
-    const result = await provider.saveDocumentModel(uri, content, baseContent, changes, encoding, ignoreDiff);
+    const result = await provider.saveDocumentModel(uri, content, baseContent, changes, encoding, ignoreDiff, eol);
     return result;
   }
 

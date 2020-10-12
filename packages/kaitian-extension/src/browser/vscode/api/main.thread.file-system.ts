@@ -158,9 +158,13 @@ class RemoteFileSystemProvider implements FileSystemProvider {
   private readonly _registration: IDisposable;
 
   readonly onDidChangeFile: Event<FileChange[]> = this._onDidChange.event;
-  // TODO: 根据不同的能力决定文件是否只读
+
   readonly capabilities: FileSystemProviderCapabilities;
   readonly onDidChangeCapabilities: Event<void> = Event.None;
+
+  get readonly() {
+    return !!(this.capabilities & FileSystemProviderCapabilities.Readonly);
+  }
 
   constructor(
     fileService: IFileServiceClient,
