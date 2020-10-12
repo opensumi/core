@@ -104,6 +104,9 @@
   }
   .kt_editor_tab_preview {
     font-style: italic;
+    :global(.file-icon) {
+      font-style: normal;
+    }
   }
   .kt_editor_tabs_content {
     height: @TAB_HEIGHT;
@@ -148,7 +151,7 @@
         display: block;
         position: absolute;
         font-size: 14px;
-        left: 13px;
+        left: 13.5px;
       }
       :global(.icon-label::before) {
         transition: transform .2s ease-in;
@@ -166,6 +169,7 @@
         flex-grow: 0;
         &::before{
           background-size: 14px;
+          background-position: 2px;
         }
       }
       div:nth-child(2) {
