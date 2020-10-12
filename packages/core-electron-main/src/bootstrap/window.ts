@@ -65,12 +65,14 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       ...this.appConfig.overrideBrowserOptions,
       ...options,
     });
-    if (this.options.extensionDir) {
-      this.extensionDir = this.options.extensionDir;
-    }
+    if (options) {
+      if (this.options.extensionDir) {
+        this.extensionDir = this.options.extensionDir;
+      }
 
-    if (this.options.extensionCandidate) {
-      this.extensionCandidate = this.options.extensionCandidate;
+      if (this.options.extensionCandidate) {
+        this.extensionCandidate = this.options.extensionCandidate;
+      }
     }
 
     this.browser.on('closed', () => {
