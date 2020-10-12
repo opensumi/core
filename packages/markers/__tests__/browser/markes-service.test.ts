@@ -3,8 +3,8 @@ import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { IThemeService } from '@ali/ide-theme';
 import { WorkbenchEditorService, IEditorGroup } from '@ali/ide-editor';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
-import { Uri, URI, MarkerManager } from '@ali/ide-core-common';
-import { EditorGroupCloseEvent } from '@ali/ide-editor/lib/browser';
+import { Uri, URI, MarkerManager, Emitter } from '@ali/ide-core-common';
+import { EditorGroupCloseEvent, IResource } from '@ali/ide-editor/lib/browser';
 import { MarkerService } from '../../src/browser/markers-service';
 import { MarkerSeverity } from '../../../core-common/src/types/markers/markers';
 
@@ -35,6 +35,7 @@ const fakeResource = {
   icon: 'fakeResourceIcon',
 };
 
+const mockLoadingEmitter = new Emitter<IResource>();
 const fakeEditorGroup: IEditorGroup = {
   index: 1,
   name: 'fakeEditorGroup',
@@ -52,6 +53,8 @@ const fakeEditorGroup: IEditorGroup = {
   restoreState: (() => {}) as any,
   saveAll: (() => {}) as any,
   closeAll: (() => {}) as any,
+  onDidEditorGroupContentLoading: mockLoadingEmitter.event,
+  resourceStatus: new Map(),
 };
 
 fakeEditorGroup.resources = [fakeResource];
