@@ -126,7 +126,7 @@ export interface ICodeWindow {
 export interface ICodeWindowOptions {
   extensionDir?: string;
   extensionCandidate?: ExtensionCandiDate[];
-  query?: { [key: string]: string };
+  query?: { [key: string]: string | string[]; };
 }
 
 export interface IParsedArgs {

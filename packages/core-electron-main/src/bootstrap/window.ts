@@ -30,6 +30,8 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   private extensionCandidate: ExtensionCandiDate[] = [];
 
+  private query: qs.ParsedUrlQuery;
+
   private browser: BrowserWindow;
 
   private node: KTNodeProcess | null = null;
@@ -44,7 +46,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   private rpcListenPath: string | undefined = undefined;
 
-  constructor(workspace?: string, metadata?: any, private options: BrowserWindowConstructorOptions & ICodeWindowOptions = {}) {
+  constructor(workspace?: string, metadata?: any, options: BrowserWindowConstructorOptions & ICodeWindowOptions = {}) {
     super();
     this._workspace = new URI(workspace);
     this.metadata = metadata;
@@ -66,12 +68,16 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       ...options,
     });
     if (options) {
-      if (this.options.extensionDir) {
-        this.extensionDir = this.options.extensionDir;
+      if (options.extensionDir) {
+        this.extensionDir = options.extensionDir;
       }
 
-      if (this.options.extensionCandidate) {
-        this.extensionCandidate = this.options.extensionCandidate;
+      if (options.extensionCandidate) {
+        this.extensionCandidate = options.extensionCandidate;
+      }
+
+      if (options.query) {
+        this.query = options.query;
       }
     }
 
@@ -140,7 +146,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       getDebugLogger().log('starting browser window with url: ', this.appConfig.browserUrl);
 
       const browserUrlParsed = URI.parse(this.appConfig.browserUrl);
-      const queryStriing = qs.stringify({ ...qs.parse(browserUrlParsed.query), ...this.options.query, windowId: this.browser.id });
+      const queryStriing = qs.stringify({ ...qs.parse(browserUrlParsed.query), ...this.query, windowId: this.browser.id });
       const browserUrl = browserUrlParsed.withQuery(queryStriing).toString();
       this.browser.loadURL(browserUrl);
 
