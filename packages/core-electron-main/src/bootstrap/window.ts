@@ -7,12 +7,18 @@ import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
 import { ExtensionCandiDate } from '@ali/ide-core-common';
 import treeKill = require('tree-kill');
 import { app } from 'electron';
+import * as qs from 'querystring';
 
 const DEFAULT_WINDOW_HEIGHT = 700;
 const DEFAULT_WINDOW_WIDTH = 1000;
+
 let windowClientCount = 0;
 
-@Injectable({multiple: true})
+const defaultWebPreferences = {
+  webviewTag: true,
+};
+
+@Injectable({ multiple: true })
 export class CodeWindow extends Disposable implements ICodeWindow {
 
   private _workspace: URI | undefined;
@@ -23,6 +29,8 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   private extensionDir: string = this.appConfig.extensionDir;
 
   private extensionCandidate: ExtensionCandiDate[] = [];
+
+  private query: qs.ParsedUrlQuery;
 
   private browser: BrowserWindow;
 
@@ -40,9 +48,6 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   constructor(workspace?: string, metadata?: any, options: BrowserWindowConstructorOptions & ICodeWindowOptions = {}) {
     super();
-    const defaultWebPreferences = {
-      webviewTag: true,
-    };
     this._workspace = new URI(workspace);
     this.metadata = metadata;
     this.windowClientId = 'CODE_WINDOW_CLIENT_ID:' + (++windowClientCount);
@@ -59,6 +64,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       titleBarStyle: 'hidden',
       height: DEFAULT_WINDOW_HEIGHT,
       width: DEFAULT_WINDOW_WIDTH,
+      ...this.appConfig.overrideBrowserOptions,
       ...options,
     });
     if (options) {
@@ -69,13 +75,16 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       if (options.extensionCandidate) {
         this.extensionCandidate = options.extensionCandidate;
       }
+
+      if (options.query) {
+        this.query = options.query;
+      }
     }
 
     this.browser.on('closed', () => {
       this.dispose();
     });
     const metadataResponser = async (event, windowId) => {
-      await this._nodeReady.promise;
       if (windowId === this.browser.id) {
         event.returnValue = JSON.stringify({
           workspace: this.workspace ? FileUri.fsPath(this.workspace) : undefined,
@@ -87,20 +96,27 @@ export class CodeWindow extends Disposable implements ICodeWindow {
           extensionCandidate: this.appConfig.extensionCandidate.concat(this.extensionCandidate).filter(Boolean),
           ...this.metadata,
           windowClientId: this.windowClientId,
-          rpcListenPath: this.rpcListenPath,
           workerHostEntry: this.appConfig.extensionWorkerEntry,
           extensionDevelopmentHost: this.appConfig.extensionDevelopmentHost,
           appPath: app.getAppPath(),
         });
       }
     };
-    ipcMain.on('window-metadata',  metadataResponser);
+
+    const rpcListenPathResponser = async (event, windowId) => {
+      await this._nodeReady.promise;
+      if (windowId === this.browser.id) {
+        event.returnValue = this.rpcListenPath;
+      }
+    };
+    ipcMain.on('window-metadata', metadataResponser);
+    ipcMain.on('window-rpc-listen-path', rpcListenPathResponser);
     this.addDispose({
       dispose: () => {
         ipcMain.removeListener('window-metadata', metadataResponser);
+        ipcMain.removeListener('window-rpc-listen-path', rpcListenPathResponser);
       },
     });
-
   }
 
   get workspace() {
@@ -126,9 +142,14 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   async start() {
     await this.clear();
     try {
-      await this.startNode();
+      this.startNode();
       getDebugLogger().log('starting browser window with url: ', this.appConfig.browserUrl);
-      this.browser.loadURL(this.appConfig.browserUrl);
+
+      const browserUrlParsed = URI.parse(this.appConfig.browserUrl);
+      const queryStriing = qs.stringify({ ...qs.parse(browserUrlParsed.query), ...this.query, windowId: this.browser.id, webContentsId: this.browser.webContents.id });
+      const browserUrl = browserUrlParsed.withQuery(queryStriing).toString();
+      this.browser.loadURL(browserUrl);
+
       this.browser.webContents.on('devtools-reload-page', () => {
         this.isReloading = true;
       });
@@ -189,7 +210,7 @@ export class KTNodeProcess {
 
   private ready: Promise<void>;
 
-  constructor(private forkPath, private extensionEntry, private windowClientId: string, private extensionDir: string) {
+  constructor(private forkPath: string, private extensionEntry: string, private windowClientId: string, private extensionDir: string) {
 
   }
 
@@ -200,7 +221,7 @@ export class KTNodeProcess {
         try {
           const forkOptions: ForkOptions = {
             env: {
-              ... process.env,
+              ...process.env,
               KTELECTRON: '1',
               ELECTRON_RUN_AS_NODE: '1',
               EXTENSION_HOST_ENTRY: this.extensionEntry,
@@ -226,14 +247,14 @@ export class KTNodeProcess {
             if (data.length > 500) {
               data = data.substr(500) + '...';
             }
-            process.stdout.write('[node]' + data );
+            process.stdout.write('[node]' + data);
           });
           this._process.stderr.on('data', (data) => {
             data = data.toString();
             if (data.length > 500) {
               data = data.substr(500) + '...';
             }
-            process.stdout.write('[node]' + data );
+            process.stdout.write('[node]' + data);
           });
         } catch (e) {
           reject(e);

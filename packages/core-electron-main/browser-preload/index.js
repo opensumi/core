@@ -5,11 +5,16 @@ const { dirname, join } = require('path');
 
 const electronEnv = {};
 
-async function createRPCNetConnection(){
-  return net.createConnection(electronEnv.rpcListenPath);
+const urlParams = new URLSearchParams(decodeURIComponent(window.location.search));
+const windowId = Number(urlParams.get('windowId'));
+const webContentsId = Number(urlParams.get('webContentsId'));
+
+async function createRPCNetConnection () {
+  const rpcListenPath = ipcRenderer.sendSync('window-rpc-listen-path', electronEnv.currentWindowId);
+  return net.createConnection(rpcListenPath);
 }
 
-function createNetConnection(connectPath) {
+function createNetConnection (connectPath) {
   return net.createConnection(connectPath);
 }
 
@@ -21,15 +26,15 @@ electronEnv.platform = require('os').platform();
 
 electronEnv.isElectronRenderer = true;
 electronEnv.BufferBridge = Buffer;
-electronEnv.currentWebContentsId = require('electron').remote.getCurrentWebContents().id;
-electronEnv.currentWindowId = require('electron').remote.getCurrentWindow().id;
-electronEnv.monacoPath = join (dirname(require.resolve('monaco-editor-core/package.json')));
+electronEnv.currentWindowId = windowId;
+electronEnv.currentWebContentsId = webContentsId;
+electronEnv.monacoPath = join(dirname(require.resolve('monaco-editor-core/package.json')));
 electronEnv.appPath = require('electron').remote.app.getAppPath();
 
 const metaData = JSON.parse(ipcRenderer.sendSync('window-metadata', electronEnv.currentWindowId));
+
 electronEnv.metadata = metaData;
-electronEnv.rpcListenPath = metaData.rpcListenPath;
-process.env = Object.assign({}, process.env, metaData.env, {WORKSPACE_DIR: metaData.workspace});
+process.env = Object.assign({}, process.env, metaData.env, { WORKSPACE_DIR: metaData.workspace });
 
 electronEnv.env = Object.assign({}, process.env);
 electronEnv.webviewPreload = metaData.webview.webviewPreload;
@@ -44,7 +49,6 @@ if (metaData.preloads) {
     require(preload);
   });
 }
-
 
 electronEnv.isMaximized = () => { return browserWindow.isMaximized(); };
 
