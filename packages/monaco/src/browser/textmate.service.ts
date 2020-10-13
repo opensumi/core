@@ -122,7 +122,7 @@ export class TextmateService extends WithEventBus {
     });
     let configuration: ILanguageConfiguration | undefined;
     if (typeof language.resolvedConfiguration === 'object') {
-      configuration = language.resolvedConfiguration;
+      configuration = await language.resolvedConfiguration;
     } else if (language.configuration) {
       // remove `./` prefix
       const langPath = language.configuration.replace(/^\.\//, '');
@@ -197,7 +197,7 @@ export class TextmateService extends WithEventBus {
         return {
           format: /\.json$/.test(grammar.path) ? 'json' : 'plist',
           location: grammar.location!,
-          content: grammar.resolvedConfiguration,
+          content: await grammar.resolvedConfiguration,
         };
       },
       getInjections: (scopeName: string) => {
