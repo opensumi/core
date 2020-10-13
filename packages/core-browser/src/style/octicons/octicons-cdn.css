@@ -1,20 +1,26 @@
+/**
+ * @file octicons.css 上传到 cdn 副本文件，与本地文件差异只在 font-face 字体文件使用的 cdn 资源
+ * 字体文件使用 basement 上传功能管理：https://basement.alipay.com/Kaitian/file/detail/5f8165dcbaf8f1f7fa6f4947
+ * css 文件使用 file sync 上传
+ */
+
 @font-face {
-    font-family: "octicons";
-    src: url("./octicons.ttf?1b0f2a9535896866c74dd24eedeb4374") format("truetype"),
-url("./octicons.svg?1b0f2a9535896866c74dd24eedeb4374#octicons") format("svg");
+  font-family: "octicons";
+  src: url("//gw.alipayobjects.com/os/bmw-prod/eff2d4d7-7dc0-43ca-baa8-b36494e19a91.ttf") format("truetype"),
+url("//gw.alipayobjects.com/zos/bmw-prod/967dad17-f9fc-44e8-a92f-4351b29122eb.svg") format("svg");
 }
 
 .octicon, .mega-octicon {
-    font: normal normal normal 16px/1 octicons;
-    display: inline-block;
-    text-decoration: none;
-    text-rendering: auto;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+  font: normal normal normal 16px/1 octicons;
+  display: inline-block;
+  text-decoration: none;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .mega-octicon { font-size: 32px; }
@@ -252,12 +258,12 @@ url("./octicons.svg?1b0f2a9535896866c74dd24eedeb4374#octicons") format("svg");
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-@keyframes octicon-spin {
-  100% {
-    transform:rotate(360deg);
-  }
+ @keyframes octicon-spin {
+	100% {
+		transform:rotate(360deg);
+	}
 }
 
 .octicon-animation-spin {
-  animation: octicon-spin 2s linear infinite;
+	animation: octicon-spin 2s linear infinite;
 }
