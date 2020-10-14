@@ -55,7 +55,7 @@ describe('Debug Hover Model', () => {
   it('should have enough API', () => {
     expect(typeof debugHoverTreeModelService.listenTreeViewChange).toBe('function');
     expect(typeof debugHoverTreeModelService.dispose).toBe('function');
-    expect(typeof debugHoverTreeModelService.onDidUpdateTreeModel).toBe('function');
+    expect(typeof debugHoverTreeModelService.onDidUpdateTreeModelOrVariable).toBe('function');
     expect(typeof debugHoverTreeModelService.initTreeModel).toBe('function');
     expect(typeof debugHoverTreeModelService.initDecorations).toBe('function');
     expect(typeof debugHoverTreeModelService.activeNodeDecoration).toBe('function');

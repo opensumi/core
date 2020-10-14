@@ -4,12 +4,17 @@ import { Emitter, Deferred, Event, DisposableCollection } from '@ali/ide-core-br
 import { DebugHoverModel } from './debug-hover-model';
 import { Path } from '@ali/ide-core-common/lib/path';
 import pSeries = require('p-series');
-import { ExpressionContainer, ExpressionNode } from '../tree/debug-tree-node.define';
+import { DebugVariable, ExpressionContainer, ExpressionNode } from '../tree/debug-tree-node.define';
 import { ExpressionVariable, DebugHoverSource } from './debug-hover-source';
 import * as styles from '../view/variables/debug-variables.module.less';
 
 export interface IDebugVariablesHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
+}
+
+export interface IDebugHoverUpdateData {
+  treeModel?: DebugHoverModel;
+  variable?: DebugVariable;
 }
 
 @Injectable()
@@ -45,14 +50,23 @@ export class DebugHoverTreeModelService {
   private preContextMenuFocusedNode: ExpressionContainer | ExpressionNode | null;
 
   private onDidRefreshedEmitter: Emitter<void> = new Emitter();
-  private onDidUpdateTreeModelEmitter: Emitter<DebugHoverModel | void> = new Emitter();
+  private onDidUpdateTreeModelOrVariableEmitter: Emitter<IDebugHoverUpdateData | void> = new Emitter();
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
   constructor() {
-    this.debugHoverSource.onDidChange(async (expression: ExpressionVariable) => {
-      await this.initTreeModel(expression);
-      this.onDidUpdateTreeModelEmitter.fire(this.treeModel);
+    this.debugHoverSource.onDidChange(async (expression: ExpressionVariable | DebugVariable) => {
+      if (expression instanceof DebugVariable) {
+        this.dispose();
+        this.onDidUpdateTreeModelOrVariableEmitter.fire({
+          variable: expression,
+        });
+      } else {
+        await this.initTreeModel(expression);
+        this.onDidUpdateTreeModelOrVariableEmitter.fire({
+          treeModel: this.treeModel,
+        });
+      }
     });
   }
 
@@ -60,8 +74,8 @@ export class DebugHoverTreeModelService {
     return this.onDidRefreshedEmitter.event;
   }
 
-  get onDidUpdateTreeModel(): Event<DebugHoverModel | void> {
-    return this.onDidUpdateTreeModelEmitter.event;
+  get onDidUpdateTreeModelOrVariable(): Event<IDebugHoverUpdateData | void> {
+    return this.onDidUpdateTreeModelOrVariableEmitter.event;
   }
 
   get flushEventQueuePromise() {

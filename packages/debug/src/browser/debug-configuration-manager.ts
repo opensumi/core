@@ -17,6 +17,8 @@ import {
   StorageProvider,
   STORAGE_NAMESPACE,
   IStorage,
+  ThrottledDelayer,
+  Deferred,
 } from '@ali/ide-core-browser';
 import { visit } from 'jsonc-parser';
 import { WorkspaceVariableContribution } from '@ali/ide-workspace/lib/browser/workspace-variable-contribution';
@@ -25,7 +27,6 @@ import { DebugSessionOptions } from '../common';
 import { FileSystemError } from '@ali/ide-file-service';
 import { DebugConfiguration } from '../common';
 import { WorkbenchEditorService, IOpenResourceResult } from '@ali/ide-editor';
-import debounce = require('lodash.debounce');
 import { DebugPreferences } from './debug-preferences';
 
 // tslint:disable-next-line:no-empty-interface
@@ -35,8 +36,18 @@ export interface WillProvideDebugConfiguration extends WaitUntilEvent {
 export interface WillInitialConfiguration extends WaitUntilEvent {
 }
 
+export interface IDebugConfigurationData {
+  current?: {
+    name: string;
+    workspaceFolderUri?: string;
+    index: number;
+  };
+}
+
 @Injectable()
 export class DebugConfigurationManager {
+
+  static DEFAULT_UPDATE_MODEL_TIMEOUT: number = 500;
 
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;
@@ -87,7 +98,8 @@ export class DebugConfigurationManager {
 
   protected debugConfigurationTypeKey: IContextKey<string>;
 
-  protected initialized: Promise<void>;
+  private _whenReadyDeferred: Deferred<void>;
+  protected updateModelDelayer: ThrottledDelayer<void> = new ThrottledDelayer(DebugConfigurationManager.DEFAULT_UPDATE_MODEL_TIMEOUT);
 
   constructor() {
     this.init();
@@ -95,36 +107,47 @@ export class DebugConfigurationManager {
 
   protected async init(): Promise<void> {
     this.debugConfigurationTypeKey = this.contextKeyService.createKey<string>('debugConfigurationType', undefined);
-    this.initialized = this.updateModels();
     this.preferences.onPreferenceChanged((e) => {
       if (e.preferenceName === 'launch') {
         this.updateModels();
       }
     });
+    this._whenReadyDeferred = new Deferred();
+    this.updateModels();
   }
 
   protected readonly models = new Map<string, DebugConfigurationModel>();
-  protected updateModels = debounce<any>(async () => {
-    const roots = await this.workspaceService.roots;
-    const toDelete = new Set(this.models.keys());
-    for (const rootStat of roots) {
-      const key = rootStat.uri;
-      toDelete.delete(key);
-      if (!this.models.has(key)) {
-        const model = new DebugConfigurationModel(key, this.preferences);
-        model.onDidChange(() => this.updateCurrent());
-        model.onDispose(() => this.models.delete(key));
-        this.models.set(key, model);
+
+  protected updateModels = () => {
+    return this.updateModelDelayer.trigger(async () => {
+      const roots = await this.workspaceService.roots;
+      const toDelete = new Set(this.models.keys());
+      for (const rootStat of roots) {
+        const key = rootStat.uri;
+        toDelete.delete(key);
+        if (!this.models.has(key)) {
+          const model = new DebugConfigurationModel(key, this.preferences);
+          model.onDidChange(() => this.updateCurrent());
+          model.onDispose(() => this.models.delete(key));
+          this.models.set(key, model);
+        }
       }
-    }
-    for (const uri of toDelete) {
-      const model = this.models.get(uri);
-      if (model) {
-        model.dispose();
+      for (const uri of toDelete) {
+        const model = this.models.get(uri);
+        if (model) {
+          model.dispose();
+        }
       }
-    }
-    this.updateCurrent();
-  }, 500);
+      this.updateCurrent();
+      if (this._whenReadyDeferred) {
+        this._whenReadyDeferred.resolve();
+      }
+    });
+  }
+
+  get whenReady() {
+    return this._whenReadyDeferred.promise;
+  }
 
   get all(): DebugSessionOptions[] {
     return this.getAll();
@@ -149,7 +172,7 @@ export class DebugConfigurationManager {
   }
 
   protected async getSupported(): Promise<DebugSessionOptions[]> {
-    await this.initialized;
+    await this.whenReady;
     const debugTypes = await this.debug.debugTypes();
     return this.doGetSupported(new Set(debugTypes));
   }
@@ -306,6 +329,7 @@ export class DebugConfigurationManager {
       disableNavigate: true,
     });
   }
+
   protected async doCreate(model: DebugConfigurationModel): Promise<URI> {
     // 设置launch初始值
     await this.preferences.set('launch', {});
@@ -343,6 +367,7 @@ export class DebugConfigurationManager {
     await this.fireWillProvideDebugConfiguration();
     return this.debug.provideDebugConfigurations(debugType, workspaceFolderUri);
   }
+
   protected async fireWillProvideDebugConfiguration(): Promise<void> {
     await WaitUntilEvent.fire(this.onWillProvideDebugConfigurationEmitter, {});
   }
@@ -378,16 +403,16 @@ export class DebugConfigurationManager {
   }
 
   async load(): Promise<void> {
-    await this.initialized;
+    await this.whenReady;
     const storage: IStorage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
-    const data = storage.get<DebugConfigurationManager.Data>('configurations');
+    const data = storage.get<IDebugConfigurationData>('configurations');
     if (data && data.current) {
       this.current = this.find(data.current.name, data.current.workspaceFolderUri, data.current.index);
     }
   }
 
   async save(): Promise<void> {
-    const data: DebugConfigurationManager.Data = {};
+    const data: IDebugConfigurationData = {};
     const { current } = this;
     const storage: IStorage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
     if (current) {
@@ -445,15 +470,5 @@ export class DebugConfigurationManager {
 
   getDebuggers(): IDebuggerContribution[] {
     return this.debuggers.filter((dbg) => !!dbg);
-  }
-}
-
-export namespace DebugConfigurationManager {
-  export interface Data {
-    current?: {
-      name: string;
-      workspaceFolderUri?: string;
-      index: number;
-    };
   }
 }

@@ -146,17 +146,17 @@ describe('Debug Model', () => {
       },
     };
     debugModel.focusStackFrame(mockFrame);
-    expect(mockEditor.deltaDecorations).toBeCalledTimes(3);
+    expect(mockEditor.deltaDecorations).toBeCalledTimes(1);
   });
 
   it('renderBreakpoints should be work', () => {
     debugModel.renderBreakpoints();
-    expect(mockEditor.deltaDecorations).toBeCalledTimes(5);
+    expect(mockEditor.deltaDecorations).toBeCalledTimes(3);
   });
 
   it('render should be work', () => {
     debugModel.render();
-    expect(mockEditor.deltaDecorations).toBeCalledTimes(7);
+    expect(mockEditor.deltaDecorations).toBeCalledTimes(5);
   });
 
   it('toggleBreakpoint should be work', () => {

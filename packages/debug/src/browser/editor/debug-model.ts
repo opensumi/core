@@ -96,6 +96,7 @@ export class DebugModel implements IDebugModel {
       this.editor.onKeyDown(() => this.debugHoverWidget.hide({ immediate: false })),
       this.debugSessionManager.onDidChange(() => this.renderFrames()),
       model.onDidChangeContent(() => this.onContentChanged()),
+      this.breakpointManager.onDidChangeMarkers(() => this.renderBreakpoints()),
     ]);
     this.render();
   }
@@ -334,7 +335,7 @@ export class DebugModel implements IDebugModel {
     const status = breakpoint.status.get(session && session.id || '');
     const lineNumber = (status && status.line) ? status.line : breakpoint.raw.line;
     const range = new monaco.Range(lineNumber, 1, lineNumber, 1);
-    const { className, message } = this.decorator.getDecoration(breakpoint, !!session);
+    const { className, message } = this.decorator.getDecoration(breakpoint, !!session, this.breakpointManager.breakpointsEnabled);
 
     return {
       range,

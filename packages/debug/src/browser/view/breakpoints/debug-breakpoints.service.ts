@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { observable, action } from 'mobx';
+import { observable, action, runInAction } from 'mobx';
 import { DebugViewModel } from '../debug-view-model';
 import { DebugBreakpoint, DebugExceptionBreakpoint, isDebugBreakpoint, isDebugExceptionBreakpoint, BreakpointManager } from '../../breakpoint';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -32,15 +32,15 @@ export class DebugBreakpointsService extends WithEventBus {
   protected readonly contextKeyService: IContextKeyService;
 
   @observable
-  nodes: BreakpointItem[] = [];
+  public nodes: BreakpointItem[] = [];
 
   @observable
-  enable: boolean = this.breakpoints.breakpointsEnabled;
+  public enable: boolean;
 
   @observable
-  inDebugMode: boolean = this.contextKeyService.getContextValue('inDebugMode') || false;
+  public inDebugMode: boolean;
 
-  roots: URI[];
+  public roots: URI[];
 
   constructor() {
     super();
@@ -49,10 +49,11 @@ export class DebugBreakpointsService extends WithEventBus {
 
   async init() {
     await this.updateRoots();
+    this.updateBreakpoints();
     this.workspaceService.onWorkspaceChanged(async () => {
       await this.updateRoots();
+      this.updateBreakpoints();
     });
-    this.updateBreakpoints();
     this.breakpoints.onDidChangeBreakpoints(() => {
       this.updateBreakpoints();
     });
@@ -61,7 +62,9 @@ export class DebugBreakpointsService extends WithEventBus {
     });
     this.contextKeyService.onDidChangeContext((e) => {
       if (e.payload.affectsSome(new Set(['inDebugMode']))) {
-        this.inDebugMode = this.contextKeyService.getContextValue('inDebugMode') || false;
+        runInAction(() => {
+          this.inDebugMode = this.contextKeyService.getContextValue('inDebugMode') || false;
+        });
       }
     });
   }
@@ -83,6 +86,8 @@ export class DebugBreakpointsService extends WithEventBus {
 
   @action
   async updateRoots() {
+    this.enable = this.breakpoints.breakpointsEnabled;
+    this.inDebugMode = this.contextKeyService.getContextValue('inDebugMode') || false;
     const roots = await this.workspaceService.roots;
     this.roots = roots.map((file) => new URI(file.uri));
   }
@@ -135,6 +140,7 @@ export class DebugBreakpointsService extends WithEventBus {
     this.breakpoints.clearBreakpoints();
   }
 
+  @action
   toggleBreakpoints() {
     this.breakpoints.breakpointsEnabled = !this.breakpoints.breakpointsEnabled;
     this.enable = this.breakpoints.breakpointsEnabled;
