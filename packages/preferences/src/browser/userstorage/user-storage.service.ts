@@ -34,12 +34,11 @@ export class UserStorageServiceImpl implements IUserStorageService {
     // 请求用户路径并存储
     const home = await this.fileServiceClient.getCurrentUserHome();
     if (home) {
-      const userStorageFolderUri = new URI(home.uri).resolve(this.appConfig.preferenceDirName || DEFAULT_USER_STORAGE_FOLDER);
-      this.fileServiceClient.watchFileChanges(userStorageFolderUri, ['**/logs/**']).then((disposable) =>
-        this.toDispose.push(disposable),
-      );
+      const userStorageFolderUri = new URI(home.uri).resolve(this.appConfig.userPreferenceDirName || this.appConfig.preferenceDirName || DEFAULT_USER_STORAGE_FOLDER);
+      const disposable = await this.fileServiceClient.watchFileChanges(userStorageFolderUri, ['**/logs/**']);
+      this.toDispose.push(disposable),
       this.toDispose.push(this.fileServiceClient.onFilesChanged((changes) => this.onDidFilesChanged(changes)));
-      this.userStorageFolder = new URI(home.uri).resolve(this.appConfig.preferenceDirName || DEFAULT_USER_STORAGE_FOLDER);
+      this.userStorageFolder = userStorageFolderUri;
     }
     this.toDispose.push(this.onUserStorageChangedEmitter);
   }
@@ -87,9 +86,9 @@ export class UserStorageServiceImpl implements IUserStorageService {
 
     const fileStat = await this.fileServiceClient.getFileStat(filesystemUri.toString());
     if (fileStat) {
-      this.fileServiceClient.setContent(fileStat, content).then(() => Promise.resolve());
+      await this.fileServiceClient.setContent(fileStat, content);
     } else {
-      this.fileServiceClient.createFile(filesystemUri.toString(), { content });
+      await this.fileServiceClient.createFile(filesystemUri.toString(), { content });
     }
   }
 
