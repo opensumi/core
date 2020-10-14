@@ -260,13 +260,16 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
 
   private _doSelectGroup(index: number) {
     this.currentGroupIndex = index;
-    this.currentGroupId = this.currentGroup && this.currentGroup.id;
+    const { currentGroup } = this;
+    this.currentGroupId = currentGroup && currentGroup.id;
+    if (currentGroup) {
+      currentGroup.activated = true;
+    }
   }
 
   selectGroup(index: number) {
     this._doSelectGroup(index);
     const group = this.getGroup(index);
-    group.activated = true;
     if (group.current) {
       this._onWidgetSelected.fire(group.current);
       this.resize();
