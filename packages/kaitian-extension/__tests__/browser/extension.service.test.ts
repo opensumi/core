@@ -70,21 +70,21 @@ const mockExtensionProps: IExtensionProps = {
     kaitianContributes: {
       browserViews: {
         left: {
-          type: "add",
+          type: 'add',
           view: [
             {
-              id: "KaitianViewContribute",
-              icon: "extension",
-              title: "KAIITAN 视图贡献点"
+              id: 'KaitianViewContribute',
+              icon: 'extension',
+              title: 'KAIITAN 视图贡献点',
             },
             {
-              "id": "KaitianViewContribute2",
-              "icon": "extension",
-              "title": "KAIITAN 视图贡献点2",
-              "titleComponent": "ViewTitle",
-            }
-          ]
-        }
+              id: 'KaitianViewContribute2',
+              icon: 'extension',
+              title: 'KAIITAN 视图贡献点2',
+              titleComponent: 'ViewTitle',
+            },
+          ],
+        },
       },
     },
     contributes: {
