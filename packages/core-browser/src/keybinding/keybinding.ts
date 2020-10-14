@@ -13,6 +13,16 @@ export enum KeybindingScope {
   END,
 }
 
+// ref: https://github.com/Microsoft/vscode/blob/97fc588e65bedcb1113baeddd2f67237e52c8c63/src/vs/platform/keybinding/common/keybindingsRegistry.ts#L56
+// 快捷键第一优先级，在开天中将对该值 * 100 作为快捷键的优先级参数 priority
+export enum KeybindingWeight {
+  EditorCore = 0,
+  EditorContrib = 100,
+  WorkbenchContrib = 200,
+  BuiltinExtension = 300,
+  ExternalExtension = 400,
+}
+
 export namespace KeybindingScope {
   export const length = KeybindingScope.END - KeybindingScope.DEFAULT;
 }
@@ -286,7 +296,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   protected doRegisterKeybinding(binding: Keybinding, scope: KeybindingScope = KeybindingScope.DEFAULT): IDisposable {
     try {
       this.resolveKeybinding(binding);
-      this.keymaps[scope].push(binding);
+      this.keymaps[scope].unshift(binding);
     } catch (error) {
       this.logger.warn(`Could not register keybinding:\n  ${Keybinding.stringify(binding)}\n${error}`);
     }

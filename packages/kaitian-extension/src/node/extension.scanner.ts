@@ -185,7 +185,7 @@ export class ExtensionScanner {
       realPath: await fs.realpath(extensionPath),
       uri: Uri.file(extensionPath),
     };
-    return extension;
+    return extension as IExtensionMetaData;
   }
 
   /**
