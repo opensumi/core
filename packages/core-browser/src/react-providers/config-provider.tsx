@@ -22,6 +22,18 @@ export interface AppConfig {
    */
   preferenceDirName?: string;
   /**
+   * 更精细的项目工作区配置存储位置
+   * 即当 preferenceDirName = '.kaitian' ， workspacePreferenceDirName = '.o2'时，
+   * 对应全局配置为 ~/.kaitian/settings.json , 工作区配置为 {workspaceDir}/.o2/settings.json
+   */
+  workspacePreferenceDirName?: string;
+   /**
+   * 更精细的项目用户配置存储位置
+   * 即当 preferenceDirName = '.kaitian' ， userPreferenceDirName = '.o2'时，
+   * 对应全局配置为 ~/.kaitian/settings.json , 工作区配置为 {userDir}/.o2/settings.json
+   */
+  userPreferenceDirName?: string;
+  /**
    * 全局插件数据存储目录名称，默认 .kaitian
    */
   extensionStorageDirName?: string;

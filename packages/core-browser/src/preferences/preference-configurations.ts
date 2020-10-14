@@ -27,7 +27,9 @@ export class PreferenceConfigurations {
   private readonly preferenceConfigurationProvider: ContributionProvider<PreferenceConfiguration>;
 
   getPaths(): string[] {
-    if (this.appConfig.preferenceDirName) {
+    if (this.appConfig.workspacePreferenceDirName) {
+      return [this.appConfig.workspacePreferenceDirName];
+    } else if (this.appConfig.preferenceDirName) {
       return [this.appConfig.preferenceDirName];
     }
     return [DEFAULT_WORKSPACE_STORAGE_DIR_NAME];
