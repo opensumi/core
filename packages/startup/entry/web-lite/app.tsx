@@ -61,6 +61,7 @@ renderApp({
     'application.confirmExit': 'never',
     'editor.quickSuggestionsDelay': 100,
     'editor.quickSuggestionsMaxCount': 50,
+    'editor.scrollBeyondLastLine': false,
     'general.language': 'en-US',
   },
   workspaceDir: '/ide-s/TypeScript-Node-Starter',
