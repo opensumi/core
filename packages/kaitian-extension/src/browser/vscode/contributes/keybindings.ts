@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 // import { VscodeContributionPoint, Contributes } from './common';
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { KeybindingRegistry, OS, Keybinding } from '@ali/ide-core-browser';
+import { KeybindingRegistry, OS, Keybinding, KeybindingWeight } from '@ali/ide-core-browser';
 
 export interface ContributedKeyBinding {
   command: string;
@@ -24,16 +24,16 @@ export class KeybindingContributionPoint extends VSCodeContributePoint<Keybindin
 
   contribute() {
     const keybindings: Keybinding[] = this.json.map((contributedKeyBinding: ContributedKeyBinding) => (
-      this.toKeybinding(contributedKeyBinding)),
+      this.toKeybinding(contributedKeyBinding, this.extension.isBuiltin)),
     );
 
     this.addDispose(this.keybindingRegistry.registerKeybindings(keybindings));
   }
 
-  protected toKeybinding(contributedKeyBinding: ContributedKeyBinding): Keybinding {
+  protected toKeybinding(contributedKeyBinding: ContributedKeyBinding, isBuiltin: boolean): Keybinding {
     const keybinding = this.toOSKeybinding(contributedKeyBinding);
     const { command, when } = contributedKeyBinding;
-    return { keybinding, command, when };
+    return { keybinding, command, when, priority: isBuiltin ? KeybindingWeight.BuiltinExtension * 100 : KeybindingWeight.ExternalExtension * 100 };
   }
 
   protected toOSKeybinding(ContributedKeyBinding: ContributedKeyBinding): string {

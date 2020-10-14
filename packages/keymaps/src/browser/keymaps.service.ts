@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { Disposable, IDisposable, ScopedKeybinding, KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeybindingService, ILogger, Event } from '@ali/ide-core-browser';
+import { Disposable, IDisposable, ScopedKeybinding, KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeybindingService, ILogger, Event, KeybindingWeight } from '@ali/ide-core-browser';
 import { KeymapsParser } from './keymaps-parser';
 import * as fuzzy from 'fuzzy';
 import { KEYMAPS_FILE_NAME, IKeymapService, KEYMAPS_SCHEME, KeybindingItem } from '../common';
@@ -222,7 +222,10 @@ export class KeymapService implements IKeymapService {
         updated = true;
         this.unregisterUserKeybinding(kb);
         kb.keybinding = keybinding.keybinding;
-        this.registerUserKeybinding(kb);
+        this.registerUserKeybinding({
+          ...kb,
+          priority: KeybindingWeight.WorkbenchContrib * 100,
+        });
       }
     }
     if (!updated) {
