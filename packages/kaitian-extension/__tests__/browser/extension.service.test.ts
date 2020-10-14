@@ -81,7 +81,7 @@ const mockExtensionProps: IExtensionProps = {
               id: 'KaitianViewContribute2',
               icon: 'extension',
               title: 'KAIITAN 视图贡献点2',
-              titleComponent: 'ViewTitle',
+              titleComponentId: 'ViewTitle',
             },
           ],
         },

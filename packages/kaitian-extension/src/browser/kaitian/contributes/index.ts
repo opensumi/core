@@ -49,7 +49,6 @@ export class KaitianContributesRunner extends Disposable {
   }
 
   public async run() {
-    console.log('run kaitian contributes');
     const contributes: KaitianContributesSchema = this.extension.packageJSON.kaitianContributes;
     if (!contributes) {
       return;
@@ -58,7 +57,6 @@ export class KaitianContributesRunner extends Disposable {
       const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);
       if (contributes[contributeName] !== undefined) {
         try {
-          console.log('init contributes', contributeName);
           const contributePoint = this.injector.get(contributeCls, [
             contributes[contributeName],
             contributes,
