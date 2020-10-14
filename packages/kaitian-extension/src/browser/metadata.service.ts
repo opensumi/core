@@ -36,8 +36,10 @@ export class ExtensionMetadataService extends Disposable {
       this.addDispose(runner);
       this.addDispose(ktRunner);
       this.eventBus.fire(new ExtensionEnabledEvent(extension.toJSON()));
-      await runner.run();
-      await ktRunner.run();
+      Promise.all([
+        runner.run(),
+        ktRunner.run(),
+      ]);
       await this.registerActivationEvent(extension);
       this.activateByWorkspaceContains(extension);
     } catch (e) {
