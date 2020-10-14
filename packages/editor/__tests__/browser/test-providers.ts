@@ -26,7 +26,12 @@ export const TestEditorDocumentProvider: IEditorDocumentModelContentProvider = {
     return scheme === 'test';
   },
   isReadonly: (uri: URI) => false,
-  provideEditorDocumentModelContent: (uri: URI, encoding) => {
+  provideEditorDocumentModelContent: async (uri: URI, encoding) => {
+    if (uri.path.toString() === '/loading') {
+      await new Promise((resolve) => setTimeout(() => {
+        resolve();
+      }, 500));
+    }
     return uri.toString();
   },
   onDidChangeContent: _onDidChangeTestContent.event,

@@ -1,12 +1,12 @@
 import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult, IEditorGroupState, ResourceDecorationChangeEvent, IUntitledOptions, SaveReason, getSplitActionFromDragDrop } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider, Emitter, formatLocalize } from '@ali/ide-core-common';
+import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider, Emitter, formatLocalize, IReporterService } from '@ali/ide-core-common';
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution, ResourceOpenTypeChangedEvent, EditorComponentDisposeEvent, EditorActiveResourceStateChangedEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { FILE_COMMANDS, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, MonacoService, IScopedContextKeyService, IContextKey, RecentFilesManager, PreferenceService, IOpenerService } from '@ali/ide-core-browser';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
-import { Schemas } from '@ali/ide-core-common';
+import { Schemas, REPORT_NAME, IReporterTimer } from '@ali/ide-core-common';
 import { isNullOrUndefined } from 'util';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 import { IMessageService } from '@ali/ide-overlay';
@@ -447,6 +447,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @Autowired(IMessageService)
   private messageService: IMessageService;
 
+  @Autowired(IReporterService)
+  private reporterService: IReporterService;
+
   @Autowired(AppConfig)
   config: AppConfig;
 
@@ -472,6 +475,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   onDidEditorGroupBodyChanged: Event<void> = this._onDidEditorGroupBodyChanged.event;
 
   /**
+   * 当编辑器有内容处于加载状态
+   */
+  _onDidEditorGroupContentLoading = new EventEmitter<IResource>();
+  onDidEditorGroupContentLoading: Event<IResource> = this._onDidEditorGroupContentLoading.event;
+
+  /**
    * 每个group只能有一个preview
    */
   public previewURI: URI | null = null;
@@ -481,6 +490,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
    */
   // @observable.shallow
   resources: IResource[] = [];
+
+  resourceStatus: Map<IResource, Promise<void>> = new Map();
 
   // @observable.ref
   _currentResource: IResource | null;
@@ -708,6 +719,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     this._onDidEditorGroupBodyChanged.fire();
   }
 
+  private notifyTabLoading(resource: IResource) {
+    this._onDidEditorGroupContentLoading.fire(resource);
+  }
+
   get currentEditor(): IEditor | null {
     if (this.currentOpenType) {
       if (this.currentOpenType.type === 'code') {
@@ -872,6 +887,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this.openerService.open(uri);
       return false;
     }
+    let resourceReady: Deferred<void> | undefined;
     try {
       const previewMode = this.preferenceService.get('editor.previewMode') && (isNullOrUndefined(options.preview) ? true : options.preview);
       if (this.currentResource && this.currentResource.uri.isEqual(uri)) {
@@ -939,16 +955,28 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         if (options.backend) {
           this.notifyTabChanged();
           return false;
-        } else {
-          if (oldResource && this.resourceOpenHistory[this.resourceOpenHistory.length - 1] !== oldResource.uri) {
-            this.resourceOpenHistory.push(oldResource.uri);
-          }
-          this._currentResource = resource;
-          this.notifyTabChanged();
-          this._currentOpenType = null;
-          this.notifyBodyChanged();
         }
+        if (oldResource && this.resourceOpenHistory[this.resourceOpenHistory.length - 1] !== oldResource.uri) {
+          this.resourceOpenHistory.push(oldResource.uri);
+        }
+        this._currentResource = resource;
+        this.notifyTabChanged();
+        this._currentOpenType = null;
+        this.notifyBodyChanged();
+
+        // 只有真正打开的文件才会走到这里，backend模式的只更新了tab，文件内容并未加载
+        const reportTimer = this.reporterService.time(REPORT_NAME.EDITOR_REACTIVE);
+        resourceReady = new Deferred<void>();
+        this.resourceStatus.set(resource, resourceReady.promise);
+        // 超过60ms loading时间的才展示加载
+        const delayTimer = setTimeout(() => {
+          this.notifyTabLoading(resource!);
+        }, 60);
         await this.displayResourceComponent(resource, options);
+        clearTimeout(delayTimer);
+        resourceReady.resolve();
+        reportTimer.timeEnd(resource.uri.toString());
+
         this.setContextKeys();
         this.eventBus.fire(new EditorGroupOpenEvent({
           group: this,
@@ -973,6 +1001,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
     } catch (e) {
       getDebugLogger().error(e);
+      resourceReady && resourceReady.reject();
       if (!isEditorError(e, EditorTabChangedError)) {
         this.messageService.error(formatLocalize('editor.failToOpen', uri.displayName, e.message), [], true);
       }

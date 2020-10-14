@@ -141,7 +141,7 @@ describe('workbench editor service tests', () => {
   const disposer = new Disposable();
   beforeAll(() => {
     injector.mockCommand('explorer.location');
-    (editorService as WorkbenchEditorServiceImpl).prepareContextKeyService(injector.get(IContextKeyService));
+    (editorService as unknown as WorkbenchEditorServiceImpl).prepareContextKeyService(injector.get(IContextKeyService));
     disposer.addDispose(resourceService.registerResourceProvider(TestResourceProvider));
     disposer.addDispose(editorComponentRegistry.registerEditorComponent(TestResourceComponent));
     disposer.addDispose(editorComponentRegistry.registerEditorComponentResolver('test', TestResourceResolver));
@@ -173,6 +173,27 @@ describe('workbench editor service tests', () => {
     await editorService.closeAll();
     disposer.dispose();
     done();
+  });
+
+  it('should be able to fire loading state for big resources', async (done) => {
+    const listener = jest.fn();
+    const testLoadingCodeUri = new URI('test://test/loading');
+    const testCodeUri = new URI('test://testUri1');
+
+    const disposer = editorService.currentEditorGroup.onDidEditorGroupContentLoading((resource) => {
+      listener();
+      const status = editorService.currentEditorGroup.resourceStatus.get(resource);
+      expect(status).toBeDefined();
+      status?.finally(async () => {
+        disposer.dispose();
+        await editorService.closeAll();
+        done();
+      });
+    });
+
+    await editorService.open(testCodeUri);
+    await editorService.open(testLoadingCodeUri);
+    expect(listener).toBeCalledTimes(1);
   });
 
   it('should be able to open component ', async (done) => {

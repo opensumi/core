@@ -156,6 +156,10 @@ export interface IEditorGroup {
 
   currentOpenType: MaybeNull<IEditorOpenType>;
 
+  onDidEditorGroupContentLoading: Event<IResource>;
+
+  resourceStatus: Map<IResource, Promise<void>>;
+
   open(uri: URI, options?: IResourceOpenOptions): Promise<IOpenResourceResult>;
 
   pin(uri: URI): Promise<void>;

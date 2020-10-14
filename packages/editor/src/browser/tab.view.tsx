@@ -12,6 +12,7 @@ import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { TabTitleMenuService } from './menu/title-context.menu';
 import { useUpdateOnGroupTabChange } from './view/react-hook';
+import { Icon } from '@ali/ide-components';
 
 const pkgName = require('../../package.json').name;
 
@@ -27,8 +28,26 @@ export const Tabs = ({group}: ITabsProps) => {
   const configContext = React.useContext(ConfigContext);
   const editorService: WorkbenchEditorServiceImpl = useInjectable(WorkbenchEditorService);
   const tabTitleMenuService = useInjectable(TabTitleMenuService) as TabTitleMenuService;
+  const [tabsLoadingMap, setTabsLoadingMap] = React.useState<{[resource: string]: boolean}>({});
 
   useUpdateOnGroupTabChange(group);
+
+  React.useEffect(() => {
+    const disposer = new Disposable();
+    disposer.addDispose(group.onDidEditorGroupContentLoading((resource) => {
+      group.resourceStatus.get(resource)?.finally(() => {
+        setTabsLoadingMap(Object.assign({}, tabsLoadingMap, {
+          [resource.uri.toString()]: false,
+        }));
+      });
+      setTabsLoadingMap(Object.assign({}, tabsLoadingMap, {
+        [resource.uri.toString()]: true,
+      }));
+    }));
+    return () => {
+      disposer.dispose();
+    };
+  }, [group]);
 
   function onDrop(e: React.DragEvent, index: number, target?: IResource) {
     if (e.dataTransfer.getData('uri')) {
@@ -167,7 +186,8 @@ export const Tabs = ({group}: ITabsProps) => {
                     e.dataTransfer.setData('uri', resource.uri.toString());
                     e.dataTransfer.setData('uri-source-group', group.name);
                   }}>
-        <div className={resource.icon}> </div>
+        <div className={classnames(resource.icon, {[styles.small]: tabsLoadingMap[resource.uri.toString()]})}> </div>
+        {tabsLoadingMap[resource.uri.toString()] && <Icon icon='refresh' loading={true} className={styles.tab_loading} />}
         <div>{resource.name}</div>
         { subname ? <div className={styles.subname}>{subname}</div> : null}
         <div className={styles.tab_right}>

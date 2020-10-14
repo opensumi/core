@@ -104,6 +104,9 @@
   }
   .kt_editor_tab_preview {
     font-style: italic;
+    :global(.file-icon) {
+      font-style: normal;
+    }
   }
   .kt_editor_tabs_content {
     height: @TAB_HEIGHT;
@@ -129,6 +132,7 @@
     }
     .kt_editor_tab {
       display: flex;
+      position: relative;
       align-items: center;
       flex-shrink: 0;
       padding: 0 12px;
@@ -143,6 +147,18 @@
       border-bottom: 1px solid var(--tab-border);
       border-top: 1px solid transparent;
       z-index: 1;
+      .tab_loading {
+        display: block;
+        position: absolute;
+        font-size: 14px;
+        left: 13.5px;
+      }
+      :global(.icon-label::before) {
+        transition: transform .2s ease-in;
+      }
+      .small::before {
+        transform: scale(.8);
+      }
       &:hover {
         background-color: var(--tab-hoverBackground);
         border-bottom-color: var(--tab-hoverBorder) !important;
@@ -153,6 +169,7 @@
         flex-grow: 0;
         &::before{
           background-size: 14px;
+          background-position: 2px;
         }
       }
       div:nth-child(2) {
