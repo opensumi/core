@@ -182,12 +182,6 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
       keybinding: 'ctrlcmd+k w',
-      when: 'editorTitleContext',
-    });
-    keybindings.registerKeybinding({
-      command: EDITOR_COMMANDS.CLOSE_ALL.id,
-      keybinding: isElectronEnv() ? 'ctrlcmd+k w' : 'alt+shift+p',
-      when: '!editorTitleContext',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.PIN_CURRENT.id,
