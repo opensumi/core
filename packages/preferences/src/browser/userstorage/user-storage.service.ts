@@ -65,7 +65,8 @@ export class UserStorageServiceImpl implements IUserStorageService {
   }
 
   async readContents(uri: URI): Promise<string> {
-    const folderUri = await this.userStorageFolder;
+    await this.whenReady;
+    const folderUri = this.userStorageFolder;
     if (folderUri) {
       const filesystemUri = UserStorageServiceImpl.toFilesystemURI(folderUri, uri);
       const exists = await this.fileServiceClient.access(filesystemUri.toString());
