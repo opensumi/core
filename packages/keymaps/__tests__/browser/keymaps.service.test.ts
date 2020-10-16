@@ -309,5 +309,13 @@ describe('KeymapsService should be work', () => {
       }, 'CMD+C');
       expect(detectKeybindings.length).toBe(1);
     });
+
+    it('filter monaco.editor from storeKeybindings ', () => {
+      keymapsService.storeKeybindings = [{
+        command: 'monaco.editor.action.quickCommand',
+        keybinding: 'cmd+c',
+      }];
+      expect(keymapsService.storeKeybindings[0].command === 'editor.action.quickCommand');
+    });
   });
 });
