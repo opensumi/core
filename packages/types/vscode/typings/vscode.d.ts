@@ -31,146 +31,146 @@ declare module 'vscode' {
 
   export interface WorkspaceConfiguration {
 
-		/**
-		 * Return a value from this configuration.
-		 *
-		 * @param section Configuration name, supports _dotted_ names.
-		 * @return The value `section` denotes or `undefined`.
-		 */
+    /**
+     * Return a value from this configuration.
+     *
+     * @param section Configuration name, supports _dotted_ names.
+     * @return The value `section` denotes or `undefined`.
+     */
     get<T>(section: string): T | undefined;
 
-		/**
-		 * Return a value from this configuration.
-		 *
-		 * @param section Configuration name, supports _dotted_ names.
-		 * @param defaultValue A value should be returned when no value could be found, is `undefined`.
-		 * @return The value `section` denotes or the default.
-		 */
+    /**
+     * Return a value from this configuration.
+     *
+     * @param section Configuration name, supports _dotted_ names.
+     * @param defaultValue A value should be returned when no value could be found, is `undefined`.
+     * @return The value `section` denotes or the default.
+     */
     get<T>(section: string, defaultValue: T): T;
 
-		/**
-		 * Check if this configuration has a certain value.
-		 *
-		 * @param section Configuration name, supports _dotted_ names.
-		 * @return `true` if the section doesn't resolve to `undefined`.
-		 */
+    /**
+     * Check if this configuration has a certain value.
+     *
+     * @param section Configuration name, supports _dotted_ names.
+     * @return `true` if the section doesn't resolve to `undefined`.
+     */
     has(section: string): boolean;
 
-		/**
-		 * Retrieve all information about a configuration setting. A configuration value
-		 * often consists of a *default* value, a global or installation-wide value,
-		 * a workspace-specific value and a folder-specific value.
-		 *
-		 * The *effective* value (returned by [`get`](#WorkspaceConfiguration.get))
-		 * is computed like this: `defaultValue` overwritten by `globalValue`,
-		 * `globalValue` overwritten by `workspaceValue`. `workspaceValue` overwritten by `workspaceFolderValue`.
-		 * Refer to [Settings Inheritance](https://code.visualstudio.com/docs/getstarted/settings)
-		 * for more information.
-		 *
-		 * *Note:* The configuration name must denote a leaf in the configuration tree
-		 * (`editor.fontSize` vs `editor`) otherwise no result is returned.
-		 *
-		 * @param section Configuration name, supports _dotted_ names.
-		 * @return Information about a configuration setting or `undefined`.
-		 */
+    /**
+     * Retrieve all information about a configuration setting. A configuration value
+     * often consists of a *default* value, a global or installation-wide value,
+     * a workspace-specific value and a folder-specific value.
+     *
+     * The *effective* value (returned by [`get`](#WorkspaceConfiguration.get))
+     * is computed like this: `defaultValue` overwritten by `globalValue`,
+     * `globalValue` overwritten by `workspaceValue`. `workspaceValue` overwritten by `workspaceFolderValue`.
+     * Refer to [Settings Inheritance](https://code.visualstudio.com/docs/getstarted/settings)
+     * for more information.
+     *
+     * *Note:* The configuration name must denote a leaf in the configuration tree
+     * (`editor.fontSize` vs `editor`) otherwise no result is returned.
+     *
+     * @param section Configuration name, supports _dotted_ names.
+     * @return Information about a configuration setting or `undefined`.
+     */
     inspect<T>(section: string): { key: string; defaultValue?: T; globalValue?: T; workspaceValue?: T, workspaceFolderValue?: T } | undefined;
 
-		/**
-		 * Update a configuration value. The updated configuration values are persisted.
-		 *
-		 * A value can be changed in
-		 *
-		 * - [Global configuration](#ConfigurationTarget.Global): Changes the value for all instances of the editor.
-		 * - [Workspace configuration](#ConfigurationTarget.Workspace): Changes the value for current workspace, if available.
-		 * - [Workspace folder configuration](#ConfigurationTarget.WorkspaceFolder): Changes the value for the
-		 * [Workspace folder](#workspace.workspaceFolders) to which the current [configuration](#WorkspaceConfiguration) is scoped to.
-		 *
-		 * *Note 1:* Setting a global value in the presence of a more specific workspace value
-		 * has no observable effect in that workspace, but in others. Setting a workspace value
-		 * in the presence of a more specific folder value has no observable effect for the resources
-		 * under respective [folder](#workspace.workspaceFolders), but in others. Refer to
-		 * [Settings Inheritance](https://code.visualstudio.com/docs/getstarted/settings) for more information.
-		 *
-		 * *Note 2:* To remove a configuration value use `undefined`, like so: `config.update('somekey', undefined)`
-		 *
-		 * Will throw error when
-		 * - Writing a configuration which is not registered.
-		 * - Writing a configuration to workspace or folder target when no workspace is opened
-		 * - Writing a configuration to folder target when there is no folder settings
-		 * - Writing to folder target without passing a resource when getting the configuration (`workspace.getConfiguration(section, resource)`)
-		 * - Writing a window configuration to folder target
-		 *
-		 * @param section Configuration name, supports _dotted_ names.
-		 * @param value The new value.
-		 * @param configurationTarget The [configuration target](#ConfigurationTarget) or a boolean value.
-		 *	- If `true` configuration target is `ConfigurationTarget.Global`.
-		 *	- If `false` configuration target is `ConfigurationTarget.Workspace`.
-		 *	- If `undefined` or `null` configuration target is
-		 *	`ConfigurationTarget.WorkspaceFolder` when configuration is resource specific
-		 *	`ConfigurationTarget.Workspace` otherwise.
-		 */
+    /**
+     * Update a configuration value. The updated configuration values are persisted.
+     *
+     * A value can be changed in
+     *
+     * - [Global configuration](#ConfigurationTarget.Global): Changes the value for all instances of the editor.
+     * - [Workspace configuration](#ConfigurationTarget.Workspace): Changes the value for current workspace, if available.
+     * - [Workspace folder configuration](#ConfigurationTarget.WorkspaceFolder): Changes the value for the
+     * [Workspace folder](#workspace.workspaceFolders) to which the current [configuration](#WorkspaceConfiguration) is scoped to.
+     *
+     * *Note 1:* Setting a global value in the presence of a more specific workspace value
+     * has no observable effect in that workspace, but in others. Setting a workspace value
+     * in the presence of a more specific folder value has no observable effect for the resources
+     * under respective [folder](#workspace.workspaceFolders), but in others. Refer to
+     * [Settings Inheritance](https://code.visualstudio.com/docs/getstarted/settings) for more information.
+     *
+     * *Note 2:* To remove a configuration value use `undefined`, like so: `config.update('somekey', undefined)`
+     *
+     * Will throw error when
+     * - Writing a configuration which is not registered.
+     * - Writing a configuration to workspace or folder target when no workspace is opened
+     * - Writing a configuration to folder target when there is no folder settings
+     * - Writing to folder target without passing a resource when getting the configuration (`workspace.getConfiguration(section, resource)`)
+     * - Writing a window configuration to folder target
+     *
+     * @param section Configuration name, supports _dotted_ names.
+     * @param value The new value.
+     * @param configurationTarget The [configuration target](#ConfigurationTarget) or a boolean value.
+     *  - If `true` configuration target is `ConfigurationTarget.Global`.
+     *  - If `false` configuration target is `ConfigurationTarget.Workspace`.
+     *  - If `undefined` or `null` configuration target is
+     *  `ConfigurationTarget.WorkspaceFolder` when configuration is resource specific
+     *  `ConfigurationTarget.Workspace` otherwise.
+     */
     update(section: string, value: any, configurationTarget?: ConfigurationTarget | boolean): Thenable<void>;
 
-		/**
-		 * Readable dictionary that backs this configuration.
-		 */
+    /**
+     * Readable dictionary that backs this configuration.
+     */
     readonly [key: string]: any;
   }
 
   export interface ConfigurationChangeEvent {
 
-		/**
-		 * Returns `true` if the given section for the given resource (if provided) is affected.
-		 *
-		 * @param section Configuration name, supports _dotted_ names.
-		 * @param resource A resource Uri.
-		 * @return `true` if the given section for the given resource (if provided) is affected.
-		 */
+    /**
+     * Returns `true` if the given section for the given resource (if provided) is affected.
+     *
+     * @param section Configuration name, supports _dotted_ names.
+     * @param resource A resource Uri.
+     * @return `true` if the given section for the given resource (if provided) is affected.
+     */
     affectsConfiguration(section: string, resource?: Uri): boolean;
   }
 
   /**
-	 * The configuration target
-	 */
+   * The configuration target
+   */
   export enum ConfigurationTarget {
-		/**
-		 * Global configuration
-		*/
+    /**
+     * Global configuration
+    */
     Global = 1,
 
-		/**
-		 * Workspace configuration
-		 */
+    /**
+     * Workspace configuration
+     */
     Workspace = 2,
 
-		/**
-		 * Workspace folder configuration
-		 */
+    /**
+     * Workspace folder configuration
+     */
     WorkspaceFolder = 3,
   }
   /**
-	 * A workspace folder is one of potentially many roots opened by the editor. All workspace folders
-	 * are equal which means there is no notion of an active or master workspace folder.
-	 */
+   * A workspace folder is one of potentially many roots opened by the editor. All workspace folders
+   * are equal which means there is no notion of an active or master workspace folder.
+   */
   export interface WorkspaceFolder {
 
-		/**
-		 * The associated uri for this workspace folder.
-		 *
-		 * *Note:* The [Uri](#Uri)-type was intentionally chosen such that future releases of the editor can support
-		 * workspace folders that are not stored on the local disk, e.g. `ftp://server/workspaces/foo`.
-		 */
+    /**
+     * The associated uri for this workspace folder.
+     *
+     * *Note:* The [Uri](#Uri)-type was intentionally chosen such that future releases of the editor can support
+     * workspace folders that are not stored on the local disk, e.g. `ftp://server/workspaces/foo`.
+     */
     readonly uri: Uri;
 
-		/**
-		 * The name of this workspace folder. Defaults to
-		 * the basename of its [uri-path](#Uri.path)
-		 */
+    /**
+     * The name of this workspace folder. Defaults to
+     * the basename of its [uri-path](#Uri.path)
+     */
     readonly name: string;
 
-		/**
-		 * The ordinal number of this workspace folder.
-		 */
+    /**
+     * The ordinal number of this workspace folder.
+     */
     readonly index: number;
   }
 
@@ -2588,6 +2588,21 @@ declare module 'vscode' {
     cancellable?: boolean;
   }
 
+  /**
+   * Possible kinds of UI that can use extensions.
+   */
+  export enum UIKind {
+
+    /**
+     * Extensions are accessed from a desktop application.
+     */
+    Desktop = 1,
+
+    /**
+     * Extensions are accessed from a web browser.
+     */
+    Web = 2
+  }
 }
 
 /**
