@@ -486,8 +486,17 @@ export class ClientApp implements IClientApp {
     window.addEventListener('resize', () => {
       // 浏览器resize事件
     });
+    // 处理中文输入回退时可能出现多个光标问题
+    // https://github.com/eclipse-theia/theia/pull/6673
+    let inComposition = false;
+    window.addEventListener('compositionstart', (event) => {
+      inComposition = true;
+    });
+    window.addEventListener('compositionend', (event) => {
+      inComposition = false;
+    });
     window.addEventListener('keydown', (event: any) => {
-      if (event && event.target!.name !== NO_KEYBINDING_NAME) {
+      if (event && event.target!.name !== NO_KEYBINDING_NAME && !inComposition) {
         this.keybindingService.run(event);
       }
     }, true);
