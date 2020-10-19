@@ -298,10 +298,8 @@ export class ProgressService implements IProgressService {
         }
       };
       progressBar = <ProgressBar progressModel={indicator.progressModel} />;
-      open(message, MessageType.Info, true, notificationKey, buttons, progressBar, 0, () => onVisibilityChange(false))?.then((btn) => {
-        if (btn === localize('ButtonCancel')) {
-          progressStateModel.cancel();
-        }
+      open(message, MessageType.Info, true, notificationKey, buttons, progressBar, 0, () => onVisibilityChange(false))?.then(() => {
+        progressStateModel.cancel();
       });
       if (typeof increment === 'number' && increment >= 0) {
         progressRunner = indicator.show(100);
