@@ -74,7 +74,10 @@ export class KeymapService implements IKeymapService {
   private _storeKeybindings: Keybinding[];
 
   get storeKeybindings() {
-    return this._storeKeybindings;
+    return this._storeKeybindings && this._storeKeybindings.map((keybinding) => ({
+      ...keybinding,
+      command: this.getValidateCommand(keybinding.command),
+    }));
   }
 
   set storeKeybindings(value: Keybinding[]) {
@@ -102,6 +105,14 @@ export class KeymapService implements IKeymapService {
   }
 
   /**
+   * 因为 monaco.edtior.* 替换为 editor.* 为了兼容在 storage 里存量的数据，需要兼容一下
+   * @param command
+   */
+  private getValidateCommand(command: string) {
+    return command.replace(/^monaco.editor/, 'editor');
+  }
+
+  /**
    * 重新加载并设置Keymap定义的快捷键
    * @param keybindings
    */
@@ -111,7 +122,7 @@ export class KeymapService implements IKeymapService {
       // 清洗存入keymap数据
       return {
         when: kb.when,
-        command: kb.command,
+        command: this.getValidateCommand(kb.command),
         keybinding: kb.keybinding,
       };
     });
