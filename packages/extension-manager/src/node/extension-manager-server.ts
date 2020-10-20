@@ -27,6 +27,8 @@ export class ExtensionManagerRequester implements IExtensionManagerRequester {
     this.logger.log(`marketplace request url: ${url}`);
     return await urllib.request<T>(url, {
       ...options,
+      dataType: 'json',
+      timeout: 10000,
       headers: {
         'x-framework-version': pkg.version,
         'x-account-id': this.appConfig.marketplace.accountId,
@@ -178,10 +180,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
   async search(query: string, ignoreId: string[] = []) {
     const ignoreIdList = [...ignoreId, ...this.appConfig.marketplace.ignoreId].map((id) => `&ignoreId=${id}`).join('');
     try {
-      const res = await this.extensionManagerRequester.request(`search?query=${query}${ignoreIdList}`, {
-        dataType: 'json',
-        timeout: 5000,
-      });
+      const res = await this.extensionManagerRequester.request(`search?query=${query}${ignoreIdList}`);
       if (res.status === 200) {
         return res.data;
       } else {
@@ -200,10 +199,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    */
   async getExtensionFromMarketPlace(extensionId: string, version?: string) {
     try {
-      const res = await this.extensionManagerRequester.request(`extension/${extensionId}${version ? `?version=${version}` : ''}`, {
-        dataType: 'json',
-        timeout: 5000,
-      });
+      const res = await this.extensionManagerRequester.request(`extension/${extensionId}${version ? `?version=${version}` : ''}`);
       if (res.status === 200) {
         return res.data;
       } else {
@@ -217,10 +213,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
 
   async getExtensionDeps(extensionId: string, version?: string) {
     try {
-      const res = await this.extensionManagerRequester.request(`dependencies/${extensionId}${version ? `?version=${version}` : '' }`, {
-        dataType: 'json',
-        timeout: 5000,
-      });
+      const res = await this.extensionManagerRequester.request(`dependencies/${extensionId}${version ? `?version=${version}` : '' }`);
       if (res.status === 200) {
         return res.data;
       } else {
@@ -238,10 +231,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
       pageIndex,
     };
     try {
-      const res = await this.extensionManagerRequester.request(`hot?${qs.stringify(query)}`, {
-        dataType: 'json',
-        timeout: 5000,
-      });
+      const res = await this.extensionManagerRequester.request(`hot?${qs.stringify(query)}`);
       if (res.status === 200) {
         return res.data;
       } else {
@@ -305,10 +295,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
       return [];
     }
     try {
-      const res = await this.extensionManagerRequester.request(`extensions?id=${idList.join('&id=')}`, {
-        dataType: 'json',
-        timeout: 5000,
-      });
+      const res = await this.extensionManagerRequester.request(`extensions?id=${idList.join('&id=')}`);
       if (res.status === 200) {
         return res.data.data;
       } else {
@@ -323,10 +310,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
 
   async getExtensionVersions(extensionId: string): Promise<IExtensionVersion[]> {
     try {
-      const res = await this.extensionManagerRequester.request(`extension/versions/${extensionId}`, {
-        dataType: 'json',
-        timeout: 5000,
-      });
+      const res = await this.extensionManagerRequester.request(`extension/versions/${extensionId}`);
       if (res.status === 200) {
         return res.data.data;
       } else {
