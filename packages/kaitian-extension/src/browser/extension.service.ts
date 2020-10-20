@@ -757,7 +757,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private async doActivateExtension(extension: IExtension) {
     const { contributes } = extension;
     if (contributes && contributes.workerMain) {
-      this.workerService.activeExtension(extension);
+      await this.workerService.activeExtension(extension);
     }
 
     if (contributes && contributes.browserMain) {
