@@ -55,7 +55,7 @@ import { createApiFactory as createVSCodeAPIFactory } from './vscode/api/main.th
 import { createKaitianApiFactory } from './kaitian/main.thread.api.impl';
 
 import { WorkbenchEditorService, IResourceOpenOptions } from '@ali/ide-editor';
-import { IActivationEventService, ExtensionApiReadyEvent } from './types';
+import { IActivationEventService, ExtensionApiReadyEvent, ExtensionBeforeActivateEvent } from './types';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
@@ -234,7 +234,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       this.startProcess(true),
       this.startWorkerHost(true),
     ]);
-
+    await this.eventBus.fireAndAwait(new ExtensionBeforeActivateEvent());
     await this.activationEventService.fireEvent('*');
     this.eagerExtensionsActivated.resolve();
     this.eventBus.fire(new ExtensionApiReadyEvent());

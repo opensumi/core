@@ -29,7 +29,7 @@ import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
 import { MonacoSnippetSuggestProvider } from '@ali/ide-monaco/lib/browser/monaco-snippet-suggest-provider';
 import { IToolbarRegistry } from '@ali/ide-core-browser/lib/toolbar';
 import { NextToolbarRegistryImpl } from '@ali/ide-core-browser/src/toolbar/toolbar.registry';
-import { IActivationEventService } from '@ali/ide-kaitian-extension/lib/browser/types';
+import { IActivationEventService, ExtensionBeforeActivateEvent } from '@ali/ide-kaitian-extension/lib/browser/types';
 import { ActivationEventServiceImpl } from '@ali/ide-kaitian-extension/lib/browser/activation.service';
 
 @Injectable()
@@ -385,6 +385,18 @@ describe('Extension service', () => {
       await extensionService.activate();
       done();
     });
+
+    it('emit event before activate', async () => {
+      const cb = jest.fn();
+
+      // @ts-ignore
+      extensionService.eventBus.on(ExtensionBeforeActivateEvent, cb);
+
+      // @ts-ignore
+      await extensionService.doActivate();
+      expect(cb).toBeCalled();
+    });
+
   });
 
   describe('get extension', () => {

@@ -24,3 +24,8 @@ export abstract class IActivationEventService {
 }
 
 export class ExtensionApiReadyEvent extends BasicEvent<void> {}
+
+/**
+ * 扩展被激活前的事件
+ */
+export class ExtensionBeforeActivateEvent extends BasicEvent<void> {}
