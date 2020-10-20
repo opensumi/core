@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { StartStopLineMatcher, WatchModeLineMatcher, AbstractLineMatcher } from './problem-line-matcher';
-import { ProblemMatcher, ProblemMatch } from '@ali/ide-core-node';
+import { ProblemMatcher, ProblemMatch } from '@ali/ide-core-common';
 
 export function isWatchModeWatcher(matcher: ProblemMatcher): boolean {
   return !!matcher.watching;
