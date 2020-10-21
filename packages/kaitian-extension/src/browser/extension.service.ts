@@ -452,8 +452,12 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   public async startWorkerHost(init: boolean) {
     if (this.appConfig.extWorkerHost) {
-      const protocol = await this.workerService.activate();
-      this.mainThreadCommands.set('worker', protocol.get(MainThreadAPIIdentifier.MainThreadCommands));
+      try {
+        const protocol = await this.workerService.activate();
+        this.mainThreadCommands.set('worker', protocol.get(MainThreadAPIIdentifier.MainThreadCommands));
+      } catch (err) {
+        this.logger.error(`Worker host activate fail, \n ${err.message}`);
+      }
     }
   }
 
@@ -757,7 +761,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private async doActivateExtension(extension: IExtension) {
     const { contributes } = extension;
     if (contributes && contributes.workerMain) {
-      this.workerService.activeExtension(extension);
+      await this.workerService.activeExtension(extension);
     }
 
     if (contributes && contributes.browserMain) {
