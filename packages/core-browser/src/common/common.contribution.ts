@@ -186,6 +186,7 @@ export class ClientCommonContribution implements CommandContribution, Preference
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.SELECT_ALL.id,
       keybinding: 'ctrlcmd+a',
+      when: 'editorFocus',
     });
   }
 }
