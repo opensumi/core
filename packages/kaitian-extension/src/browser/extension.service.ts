@@ -452,8 +452,12 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   public async startWorkerHost(init: boolean) {
     if (this.appConfig.extWorkerHost) {
-      const protocol = await this.workerService.activate();
-      this.mainThreadCommands.set('worker', protocol.get(MainThreadAPIIdentifier.MainThreadCommands));
+      try {
+        const protocol = await this.workerService.activate();
+        this.mainThreadCommands.set('worker', protocol.get(MainThreadAPIIdentifier.MainThreadCommands));
+      } catch (err) {
+        this.logger.error(`Worker host activate fail, \n ${err.message}`);
+      }
     }
   }
 
