@@ -116,6 +116,7 @@ export class WebviewPanelManager {
     const newFrame = document.createElement('iframe');
     newFrame.setAttribute('id', 'pending-frame');
     newFrame.setAttribute('frameborder', '0');
+    newFrame.setAttribute('allow', 'autoplay');
     newFrame.setAttribute('sandbox', options.allowScripts ? 'allow-scripts allow-forms allow-same-origin' : 'allow-scripts allow-same-origin');
     if (this.channel.fakeLoad) {
         // 使用service-worker时候
