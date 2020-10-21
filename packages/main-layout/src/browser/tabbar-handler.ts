@@ -89,6 +89,10 @@ export class TabBarHandler {
     return this.accordionService.getViewState(viewId).collapsed;
   }
 
+  setCollapsed(viewId: string, collapsed: boolean) {
+    this.accordionService.toggleOpen(viewId, collapsed);
+  }
+
   toggleViews(viewIds: string[], show: boolean) {
     for (const viewId of viewIds) {
       const viewState = this.accordionService.getViewState(viewId);

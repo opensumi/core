@@ -231,6 +231,8 @@ describe('main layout test', () => {
     handler.show();
     expect(tabbarService.getContainerState(testContainerId2).hidden).toEqual(false);
     expect(handler.isCollapsed('test-view-id5')).toBeFalsy();
+    handler.setCollapsed('test-view-id5', true);
+    expect(handler.isCollapsed('test-view-id5')).toBeTruthy();
     expect(mockCb).toBeCalledTimes(2);
     handler.setBadge('20');
     handler.updateTitle('gggggggg');
