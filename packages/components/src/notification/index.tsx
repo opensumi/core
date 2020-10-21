@@ -80,9 +80,9 @@ export function close(key: string) {
 export function update(key: string, message: string) {
   const args = cachedArgs.get(key)!;
   doOpenNotification(args[0], {
+    ...args[1],
     key,
     message,
-    ...args[1],
   });
 }
 
