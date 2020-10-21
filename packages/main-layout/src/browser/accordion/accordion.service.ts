@@ -317,6 +317,13 @@ export class AccordionService extends WithEventBus {
     });
   }
 
+  @action toggleOpen(viewId: string, collapsed: boolean) {
+    const index = this.visibleViews.findIndex((view) => view.id === viewId);
+    if (index > -1) {
+      this.doToggleOpen(viewId, collapsed, index, true);
+    }
+  }
+
   @action.bound handleSectionClick(viewId: string, collapsed: boolean, index: number) {
     this.doToggleOpen(viewId, collapsed, index);
   }

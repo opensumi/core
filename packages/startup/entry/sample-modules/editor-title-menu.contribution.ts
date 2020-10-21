@@ -4,6 +4,7 @@ import { Disposable, IEventBus } from '@ali/ide-core-common';
 import { ClientAppContribution, IContextKey, IContextKeyService, CommandRegistry, CommandContribution, Domain, getIcon } from '@ali/ide-core-browser';
 import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { EditorGroupChangeEvent } from '@ali/ide-editor/lib/browser';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 
 class WebSCMCommands {
   static Edit = {
@@ -24,6 +25,9 @@ export class EditorTitleMenuContribution extends Disposable implements CommandCo
 
   @Autowired(IEventBus)
   private readonly eventBus: IEventBus;
+
+  @Autowired(IMainLayoutService)
+  private readonly mainLayoutService: IMainLayoutService;
 
   private toggledCtxKey: IContextKey<boolean>;
   constructor() {
@@ -63,6 +67,15 @@ export class EditorTitleMenuContribution extends Disposable implements CommandCo
       group: 'navigation',
       toggledWhen: toggledCtx,
     });
+
+    menus.registerMenuItem(MenuId.EditorTitle, {
+      command: {
+        id: 'command.test.toggle.explorer',
+        label: '展开文件树',
+      },
+      iconClass: getIcon('git'),
+      group: 'navigation',
+    });
   }
 
   registerCommands(commands: CommandRegistry): void {
@@ -76,6 +89,17 @@ export class EditorTitleMenuContribution extends Disposable implements CommandCo
       execute: async (...args) => {
         console.log(args, 'args');
         this.toggledCtxKey.set(!this.toggledCtxKey.get());
+      },
+    });
+
+    commands.registerCommand({
+      id: 'command.test.toggle.explorer',
+    }, {
+      execute: async (...args) => {
+        const explorerRef = this.mainLayoutService.getTabbarHandler('explorer');
+        if (explorerRef) {
+          explorerRef.setCollapsed('file-explorer-next', !explorerRef.isCollapsed('file-explorer-next'));
+        }
       },
     });
   }
