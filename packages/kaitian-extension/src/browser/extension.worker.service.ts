@@ -2,7 +2,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { IRPCProtocol, RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { AppConfig, Deferred, Emitter, IExtensionProps, ILogger, URI } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { Event } from '@ali/ide-core-node';
+import { Event } from '@ali/ide-core-common';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { IExtension, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';
