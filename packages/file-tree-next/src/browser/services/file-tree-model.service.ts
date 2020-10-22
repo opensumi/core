@@ -874,7 +874,7 @@ export class FileTreeModelService {
         let from = target.uri;
         const isCompactNode = target.name.indexOf(Path.separator) > 0;
         // 无变化，直接返回
-        if (newName === target.name) {
+        if ((isCompactNode && this.activeUri?.displayName === newName) || (!isCompactNode && newName === target.name)) {
           return true;
         }
         promptHandle.addAddonAfter('loading_indicator');
