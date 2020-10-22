@@ -545,7 +545,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     let path;
     while (collapsedPaths.length > 0) {
       path = collapsedPaths.pop();
-      const item = await this.forceLoadTreeNodeAtPath(path);
+      const item = TreeNode.getTreeNodeByPath(path);
       if (item) {
         await (item as CompositeTreeNode).setExpanded(false, true);
       }
@@ -565,7 +565,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     let path;
     while (expandedPaths.length > 0) {
       path = expandedPaths.pop();
-      const item = await this.forceLoadTreeNodeAtPath(path);
+      const item = TreeNode.getTreeNodeByPath(path);
       if (item) {
         await (item as CompositeTreeNode).setCollapsed(true);
       }
