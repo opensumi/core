@@ -1,205 +1,323 @@
 declare module 'vscode' {
 
-  export interface OutputChannel {
+  /**
+   * Represents the alignment of status bar items.
+   */
+  export enum StatusBarAlignment {
 
-		/**
-		 * The human-readable name of this output channel.
-		 */
-    readonly name: string;
+    /**
+     * Aligned to the left side.
+     */
+    Left = 1,
 
-		/**
-		 * Append the given value to the channel.
-		 *
-		 * @param value A string, falsy values will not be printed.
-		 */
-    append(value: string): void;
+    /**
+     * Aligned to the right side.
+     */
+    Right = 2,
+  }
 
-		/**
-		 * Append the given value and a line feed character
-		 * to the channel.
-		 *
-		 * @param value A string, falsy values will be printed.
-		 */
-    appendLine(value: string): void;
+  /**
+   * A status bar item is a status bar contribution that can
+   * show text and icons and run a command on click.
+   */
+  export interface StatusBarItem {
 
-		/**
-		 * Removes all output from the channel.
-		 */
-    clear(): void;
+    /**
+     * The alignment of this item.
+     */
+    readonly alignment: StatusBarAlignment;
 
-		/**
-		 * Reveal this channel in the UI.
-		 *
-		 * @param preserveFocus When `true` the channel will not take focus.
-		 */
-    show(preserveFocus?: boolean): void;
+    /**
+     * The priority of this item. Higher value means the item should
+     * be shown more to the left.
+     */
+    readonly priority?: number;
 
-		/**
-		 * ~~Reveal this channel in the UI.~~
-		 *
-		 * @deprecated Use the overload with just one parameter (`show(preserveFocus?: boolean): void`).
-		 *
-		 * @param column This argument is **deprecated** and will be ignored.
-		 * @param preserveFocus When `true` the channel will not take focus.
-		 */
-    show(column?: ViewColumn, preserveFocus?: boolean): void;
+    /**
+     * The text to show for the entry. You can embed icons in the text by leveraging the syntax:
+     *
+     * `My text $(icon-name) contains icons like $(icon-name) this one.`
+     *
+     * Where the icon-name is taken from the [octicon](https://octicons.github.com) icon set, e.g.
+     * `light-bulb`, `thumbsup`, `zap` etc.
+     */
+    text: string;
 
-		/**
-		 * Hide this channel from the UI.
-		 */
+    /**
+     * The tooltip text when you hover over this entry.
+     */
+    tooltip: string | undefined;
+
+    /**
+     * The foreground color for this entry.
+     */
+    color: string | ThemeColor | undefined;
+
+    /**
+     * The identifier of a command to run on click. The command must be
+     * [known](#commands.getCommands).
+     */
+    command: string | undefined;
+
+    /**
+     * Shows the entry in the status bar.
+     */
+    show(): void;
+
+    /**
+     * Hide the entry in the status bar.
+     */
     hide(): void;
 
-		/**
-		 * Dispose and free associated resources.
-		 */
+    /**
+     * Dispose and free associated resources. Call
+     * [hide](#StatusBarItem.hide).
+     */
+    dispose(): void;
+  }
+
+  export interface OutputChannel {
+
+    /**
+     * The human-readable name of this output channel.
+     */
+    readonly name: string;
+
+    /**
+     * Append the given value to the channel.
+     *
+     * @param value A string, falsy values will not be printed.
+     */
+    append(value: string): void;
+
+    /**
+     * Append the given value and a line feed character
+     * to the channel.
+     *
+     * @param value A string, falsy values will be printed.
+     */
+    appendLine(value: string): void;
+
+    /**
+     * Removes all output from the channel.
+     */
+    clear(): void;
+
+    /**
+     * Reveal this channel in the UI.
+     *
+     * @param preserveFocus When `true` the channel will not take focus.
+     */
+    show(preserveFocus?: boolean): void;
+
+    /**
+     * ~~Reveal this channel in the UI.~~
+     *
+     * @deprecated Use the overload with just one parameter (`show(preserveFocus?: boolean): void`).
+     *
+     * @param column This argument is **deprecated** and will be ignored.
+     * @param preserveFocus When `true` the channel will not take focus.
+     */
+    show(column?: ViewColumn, preserveFocus?: boolean): void;
+
+    /**
+     * Hide this channel from the UI.
+     */
+    hide(): void;
+
+    /**
+     * Dispose and free associated resources.
+     */
     dispose(): void;
   }
 
   /**
-	 * Options to configure the behaviour of a file open dialog.
-	 *
-	 * * Note 1: A dialog can select files, folders, or both. This is not true for Windows
-	 * which enforces to open either files or folder, but *not both*.
-	 * * Note 2: Explicitly setting `canSelectFiles` and `canSelectFolders` to `false` is futile
-	 * and the editor then silently adjusts the options to select files.
-	 */
+   * Options to configure the behaviour of a file open dialog.
+   *
+   * * Note 1: A dialog can select files, folders, or both. This is not true for Windows
+   * which enforces to open either files or folder, but *not both*.
+   * * Note 2: Explicitly setting `canSelectFiles` and `canSelectFolders` to `false` is futile
+   * and the editor then silently adjusts the options to select files.
+   */
   export interface OpenDialogOptions {
-		/**
-		 * The resource the dialog shows when opened.
-		 */
+    /**
+     * The resource the dialog shows when opened.
+     */
     defaultUri?: Uri;
 
-		/**
-		 * A human-readable string for the open button.
-		 */
+    /**
+     * A human-readable string for the open button.
+     */
     openLabel?: string;
 
-		/**
-		 * Allow to select files, defaults to `true`.
-		 */
+    /**
+     * Allow to select files, defaults to `true`.
+     */
     canSelectFiles?: boolean;
 
-		/**
-		 * Allow to select folders, defaults to `false`.
-		 */
+    /**
+     * Allow to select folders, defaults to `false`.
+     */
     canSelectFolders?: boolean;
 
-		/**
-		 * Allow to select many files or folders.
-		 */
+    /**
+     * Allow to select many files or folders.
+     */
     canSelectMany?: boolean;
 
-		/**
-		 * A set of file filters that are used by the dialog. Each entry is a human readable label,
-		 * like "TypeScript", and an array of extensions, e.g.
-		 * ```ts
-		 * {
-		 * 	'Images': ['png', 'jpg']
-		 * 	'TypeScript': ['ts', 'tsx']
-		 * }
-		 * ```
-		 */
+    /**
+     * A set of file filters that are used by the dialog. Each entry is a human readable label,
+     * like "TypeScript", and an array of extensions, e.g.
+     * ```ts
+     * {
+     * 	'Images': ['png', 'jpg']
+     * 	'TypeScript': ['ts', 'tsx']
+     * }
+     * ```
+     */
     filters?: { [name: string]: string[] };
   }
 
-	/**
-	 * Options to configure the behaviour of a file save dialog.
-	 */
+  /**
+   * Options to configure the behaviour of a file save dialog.
+   */
   export interface SaveDialogOptions {
-		/**
-		 * The resource the dialog shows when opened.
-		 */
+    /**
+     * The resource the dialog shows when opened.
+     */
     defaultUri?: Uri;
 
-		/**
-		 * A human-readable string for the save button.
-		 */
+    /**
+     * A human-readable string for the save button.
+     */
     saveLabel?: string;
 
-		/**
-		 * A set of file filters that are used by the dialog. Each entry is a human readable label,
-		 * like "TypeScript", and an array of extensions, e.g.
-		 * ```ts
-		 * {
-		 * 	'Images': ['png', 'jpg']
-		 * 	'TypeScript': ['ts', 'tsx']
-		 * }
-		 * ```
-		 */
+    /**
+     * A set of file filters that are used by the dialog. Each entry is a human readable label,
+     * like "TypeScript", and an array of extensions, e.g.
+     * ```ts
+     * {
+     * 	'Images': ['png', 'jpg']
+     * 	'TypeScript': ['ts', 'tsx']
+     * }
+     * ```
+     */
     filters?: { [name: string]: string[] };
   }
   export namespace window {
 
-		/**
-		 * Creates a new [output channel](#OutputChannel) with the given name.
-		 *
-		 * @param name Human-readable string which will be used to represent the channel in the UI.
-		 */
+    /**
+     * Set a message to the status bar. This is a short hand for the more powerful
+     * status bar [items](#window.createStatusBarItem).
+     *
+     * @param text The message to show, supports icon substitution as in status bar [items](#StatusBarItem.text).
+     * @param hideAfterTimeout Timeout in milliseconds after which the message will be disposed.
+     * @return A disposable which hides the status bar message.
+     */
+    export function setStatusBarMessage(text: string, hideAfterTimeout: number): Disposable;
+
+    /**
+     * Set a message to the status bar. This is a short hand for the more powerful
+     * status bar [items](#window.createStatusBarItem).
+     *
+     * @param text The message to show, supports icon substitution as in status bar [items](#StatusBarItem.text).
+     * @param hideWhenDone Thenable on which completion (resolve or reject) the message will be disposed.
+     * @return A disposable which hides the status bar message.
+     */
+    export function setStatusBarMessage(text: string, hideWhenDone: Thenable<any>): Disposable;
+
+    /**
+     * Set a message to the status bar. This is a short hand for the more powerful
+     * status bar [items](#window.createStatusBarItem).
+     *
+     * *Note* that status bar messages stack and that they must be disposed when no
+     * longer used.
+     *
+     * @param text The message to show, supports icon substitution as in status bar [items](#StatusBarItem.text).
+     * @return A disposable which hides the status bar message.
+     */
+    export function setStatusBarMessage(text: string): Disposable;
+
+
+    /**
+     * Creates a status bar [item](#StatusBarItem).
+     *
+     * @param alignment The alignment of the item.
+     * @param priority The priority of the item. Higher values mean the item should be shown more to the left.
+     * @return A new status bar item.
+     */
+    export function createStatusBarItem(alignment?: StatusBarAlignment, priority?: number): StatusBarItem;
+
+    /**
+     * Creates a new [output channel](#OutputChannel) with the given name.
+     *
+     * @param name Human-readable string which will be used to represent the channel in the UI.
+     */
     export function createOutputChannel(name: string): OutputChannel;
 
-		/**
-		 * The currently opened terminals or an empty array.
-		 */
+    /**
+     * The currently opened terminals or an empty array.
+     */
     export const terminals: ReadonlyArray<Terminal>;
 
-		/**
-		 * The currently active terminal or `undefined`. The active terminal is the one that
-		 * currently has focus or most recently had focus.
-		 */
+    /**
+     * The currently active terminal or `undefined`. The active terminal is the one that
+     * currently has focus or most recently had focus.
+     */
     export const activeTerminal: Terminal | undefined;
 
-		/**
-		 * An [event](#Event) which fires when the [active terminal](#window.activeTerminal)
-		 * has changed. *Note* that the event also fires when the active terminal changes
-		 * to `undefined`.
-		 */
+    /**
+     * An [event](#Event) which fires when the [active terminal](#window.activeTerminal)
+     * has changed. *Note* that the event also fires when the active terminal changes
+     * to `undefined`.
+     */
     export const onDidChangeActiveTerminal: Event<Terminal | undefined>;
 
-		/**
-		 * An [event](#Event) which fires when a terminal has been created, either through the
-		 * [createTerminal](#window.createTerminal) API or commands.
-		 */
+    /**
+     * An [event](#Event) which fires when a terminal has been created, either through the
+     * [createTerminal](#window.createTerminal) API or commands.
+     */
     export const onDidOpenTerminal: Event<Terminal>;
 
-		/**
-		 * An [event](#Event) which fires when a terminal is disposed.
-		 */
+    /**
+     * An [event](#Event) which fires when a terminal is disposed.
+     */
     export const onDidCloseTerminal: Event<Terminal>;
 
 
-		/**
-		 * Represents the current window's state.
-		 */
+    /**
+     * Represents the current window's state.
+     */
     export const state: WindowState;
 
-		/**
-		 * An [event](#Event) which fires when the focus state of the current window
-		 * changes. The value of the event represents whether the window is focused.
-		 */
+    /**
+     * An [event](#Event) which fires when the focus state of the current window
+     * changes. The value of the event represents whether the window is focused.
+     */
     export const onDidChangeWindowState: Event<WindowState>;
 
-		/**
-		 * Creates a [Terminal](#Terminal). The cwd of the terminal will be the workspace directory
-		 * if it exists, regardless of whether an explicit customStartPath setting exists.
-		 *
-		 * @param name Optional human-readable string which will be used to represent the terminal in the UI.
-		 * @param shellPath Optional path to a custom shell executable to be used in the terminal.
-		 * @param shellArgs Optional args for the custom shell executable. A string can be used on Windows only which
-		 * allows specifying shell args in [command-line format](https://msdn.microsoft.com/en-au/08dfcab2-eb6e-49a4-80eb-87d4076c98c6).
-		 * @return A new Terminal.
-		 */
+    /**
+     * Creates a [Terminal](#Terminal). The cwd of the terminal will be the workspace directory
+     * if it exists, regardless of whether an explicit customStartPath setting exists.
+     *
+     * @param name Optional human-readable string which will be used to represent the terminal in the UI.
+     * @param shellPath Optional path to a custom shell executable to be used in the terminal.
+     * @param shellArgs Optional args for the custom shell executable. A string can be used on Windows only which
+     * allows specifying shell args in [command-line format](https://msdn.microsoft.com/en-au/08dfcab2-eb6e-49a4-80eb-87d4076c98c6).
+     * @return A new Terminal.
+     */
     export function createTerminal(name?: string, shellPath?: string, shellArgs?: string[] | string): Terminal;
 
-		/**
-		 * Create and show a new webview panel.
-		 *
-		 * @param viewType Identifies the type of the webview panel.
-		 * @param title Title of the panel.
-		 * @param showOptions Where to show the webview in the editor. If preserveFocus is set, the new webview will not take focus.
-		 * @param options Settings for the new panel.
-		 *
-		 * @return New webview panel.
-		 */
+    /**
+     * Create and show a new webview panel.
+     *
+     * @param viewType Identifies the type of the webview panel.
+     * @param title Title of the panel.
+     * @param showOptions Where to show the webview in the editor. If preserveFocus is set, the new webview will not take focus.
+     * @param options Settings for the new panel.
+     *
+     * @return New webview panel.
+     */
     export function createWebviewPanel(viewType: string, title: string, showOptions: ViewColumn | { viewColumn: ViewColumn, preserveFocus?: boolean }, options?: WebviewPanelOptions & WebviewOptions): WebviewPanel;
 
     /**
@@ -215,37 +333,37 @@ declare module 'vscode' {
      */
     export function registerWebviewPanelSerializer(viewType: string, serializer: WebviewPanelSerializer): Disposable;
 
-		/**
-		 * ~~Show progress in the Source Control viewlet while running the given callback and while
-		 * its returned promise isn't resolve or rejected.~~
-		 *
-		 * @deprecated Use `withProgress` instead.
-		 *
-		 * @param task A callback returning a promise. Progress increments can be reported with
-		 * the provided [progress](#Progress)-object.
-		 * @return The thenable the task did return.
-		 */
+    /**
+     * ~~Show progress in the Source Control viewlet while running the given callback and while
+     * its returned promise isn't resolve or rejected.~~
+     *
+     * @deprecated Use `withProgress` instead.
+     *
+     * @param task A callback returning a promise. Progress increments can be reported with
+     * the provided [progress](#Progress)-object.
+     * @return The thenable the task did return.
+     */
     export function withScmProgress<R>(task: (progress: Progress<number>) => Thenable<R>): Thenable<R>;
 
-		/**
-		 * Show progress in the editor. Progress is shown while running the given callback
-		 * and while the promise it returned isn't resolved nor rejected. The location at which
-		 * progress should show (and other details) is defined via the passed [`ProgressOptions`](#ProgressOptions).
-		 *
-		 * @param task A callback returning a promise. Progress state can be reported with
-		 * the provided [progress](#Progress)-object.
-		 *
-		 * To report discrete progress, use `increment` to indicate how much work has been completed. Each call with
-		 * a `increment` value will be summed up and reflected as overall progress until 100% is reached (a value of
-		 * e.g. `10` accounts for `10%` of work done).
-		 * Note that currently only `ProgressLocation.Notification` is capable of showing discrete progress.
-		 *
-		 * To monitor if the operation has been cancelled by the user, use the provided [`CancellationToken`](#CancellationToken).
-		 * Note that currently only `ProgressLocation.Notification` is supporting to show a cancel button to cancel the
-		 * long running operation.
-		 *
-		 * @return The thenable the task-callback returned.
-		 */
+    /**
+     * Show progress in the editor. Progress is shown while running the given callback
+     * and while the promise it returned isn't resolved nor rejected. The location at which
+     * progress should show (and other details) is defined via the passed [`ProgressOptions`](#ProgressOptions).
+     *
+     * @param task A callback returning a promise. Progress state can be reported with
+     * the provided [progress](#Progress)-object.
+     *
+     * To report discrete progress, use `increment` to indicate how much work has been completed. Each call with
+     * a `increment` value will be summed up and reflected as overall progress until 100% is reached (a value of
+     * e.g. `10` accounts for `10%` of work done).
+     * Note that currently only `ProgressLocation.Notification` is capable of showing discrete progress.
+     *
+     * To monitor if the operation has been cancelled by the user, use the provided [`CancellationToken`](#CancellationToken).
+     * Note that currently only `ProgressLocation.Notification` is supporting to show a cancel button to cancel the
+     * long running operation.
+     *
+     * @return The thenable the task-callback returned.
+     */
     export function withProgress<R>(options: ProgressOptions, task: (progress: Progress<{ message?: string; increment?: number }>, token: CancellationToken) => Thenable<R>): Thenable<R>;
 
     /**
@@ -259,76 +377,76 @@ declare module 'vscode' {
      */
     export function registerTreeDataProvider<T>(viewId: string, treeDataProvider: TreeDataProvider<T>): Disposable;
 
-		/**
-		 * Create a [TreeView](#TreeView) for the view contributed using the extension point `views`.
-		 * @param viewId Id of the view contributed using the extension point `views`.
-		 * @param options Options for creating the [TreeView](#TreeView)
-		 * @returns a [TreeView](#TreeView).
-		 */
+    /**
+     * Create a [TreeView](#TreeView) for the view contributed using the extension point `views`.
+     * @param viewId Id of the view contributed using the extension point `views`.
+     * @param options Options for creating the [TreeView](#TreeView)
+     * @returns a [TreeView](#TreeView).
+     */
     export function createTreeView<T>(viewId: string, options: TreeViewOptions<T>): TreeView<T>;
 
-		/**
-		 * Options for creating a [TreeView](#TreeView)
-		 */
+    /**
+     * Options for creating a [TreeView](#TreeView)
+     */
     export interface TreeViewOptions<T> {
 
-			/**
-			 * A data provider that provides tree data.
-			 */
+      /**
+       * A data provider that provides tree data.
+       */
       treeDataProvider: TreeDataProvider<T>;
 
-			/**
-			 * Whether to show collapse all action or not.
-			 */
+      /**
+       * Whether to show collapse all action or not.
+       */
       showCollapseAll?: boolean;
     }
     /**
-		 * Shows a file open dialog to the user which allows to select a file
-		 * for opening-purposes.
-		 *
-		 * @param options Options that control the dialog.
-		 * @returns A promise that resolves to the selected resources or `undefined`.
-		 */
+     * Shows a file open dialog to the user which allows to select a file
+     * for opening-purposes.
+     *
+     * @param options Options that control the dialog.
+     * @returns A promise that resolves to the selected resources or `undefined`.
+     */
     export function showOpenDialog(options: OpenDialogOptions): Thenable<Uri[] | undefined>;
 
-		/**
-		 * Shows a file save dialog to the user which allows to select a file
-		 * for saving-purposes.
-		 *
-		 * @param options Options that control the dialog.
-		 * @returns A promise that resolves to the selected resource or `undefined`.
-		 */
+    /**
+     * Shows a file save dialog to the user which allows to select a file
+     * for saving-purposes.
+     *
+     * @param options Options that control the dialog.
+     * @returns A promise that resolves to the selected resource or `undefined`.
+     */
     export function showSaveDialog(options: SaveDialogOptions): Thenable<Uri | undefined>;
     /**
-		 * Shows a selection list of [workspace folders](#workspace.workspaceFolders) to pick from.
-		 * Returns `undefined` if no folder is open.
-		 *
-		 * @param options Configures the behavior of the workspace folder list.
-		 * @return A promise that resolves to the workspace folder or `undefined`.
-		 */
+     * Shows a selection list of [workspace folders](#workspace.workspaceFolders) to pick from.
+     * Returns `undefined` if no folder is open.
+     *
+     * @param options Configures the behavior of the workspace folder list.
+     * @return A promise that resolves to the workspace folder or `undefined`.
+     */
     export function showWorkspaceFolderPick(options?: WorkspaceFolderPickOptions): Thenable<WorkspaceFolder | undefined>;
 
     /**
-		 * Registers a [uri handler](#UriHandler) capable of handling system-wide [uris](#Uri).
-		 * In case there are multiple windows open, the topmost window will handle the uri.
-		 * A uri handler is scoped to the extension it is contributed from; it will only
-		 * be able to handle uris which are directed to the extension itself. A uri must respect
-		 * the following rules:
-		 *
-		 * - The uri-scheme must be `vscode.env.uriScheme`;
-		 * - The uri-authority must be the extension id (e.g. `my.extension`);
-		 * - The uri-path, -query and -fragment parts are arbitrary.
-		 *
-		 * For example, if the `my.extension` extension registers a uri handler, it will only
-		 * be allowed to handle uris with the prefix `product-name://my.extension`.
-		 *
-		 * An extension can only register a single uri handler in its entire activation lifetime.
-		 *
-		 * * *Note:* There is an activation event `onUri` that fires when a uri directed for
-		 * the current extension is about to be handled.
-		 *
-		 * @param handler The uri handler to register for this extension.
-		 */
+     * Registers a [uri handler](#UriHandler) capable of handling system-wide [uris](#Uri).
+     * In case there are multiple windows open, the topmost window will handle the uri.
+     * A uri handler is scoped to the extension it is contributed from; it will only
+     * be able to handle uris which are directed to the extension itself. A uri must respect
+     * the following rules:
+     *
+     * - The uri-scheme must be `vscode.env.uriScheme`;
+     * - The uri-authority must be the extension id (e.g. `my.extension`);
+     * - The uri-path, -query and -fragment parts are arbitrary.
+     *
+     * For example, if the `my.extension` extension registers a uri handler, it will only
+     * be allowed to handle uris with the prefix `product-name://my.extension`.
+     *
+     * An extension can only register a single uri handler in its entire activation lifetime.
+     *
+     * * *Note:* There is an activation event `onUri` that fires when a uri directed for
+     * the current extension is about to be handled.
+     *
+     * @param handler The uri handler to register for this extension.
+     */
     export function registerUriHandler(handler: UriHandler): Disposable;
   }
 
@@ -336,80 +454,80 @@ declare module 'vscode' {
  * A panel that contains a webview.
  */
   interface WebviewPanel {
-		/**
-		 * Identifies the type of the webview panel, such as `'markdown.preview'`.
-		 */
+    /**
+     * Identifies the type of the webview panel, such as `'markdown.preview'`.
+     */
     readonly viewType: string;
 
-		/**
-		 * Title of the panel shown in UI.
-		 */
+    /**
+     * Title of the panel shown in UI.
+     */
     title: string;
 
-		/**
-		 * Icon for the panel shown in UI.
-		 */
+    /**
+     * Icon for the panel shown in UI.
+     */
     iconPath?: Uri | { light: Uri; dark: Uri };
 
-		/**
-		 * Webview belonging to the panel.
-		 */
+    /**
+     * Webview belonging to the panel.
+     */
     readonly webview: Webview;
 
-		/**
-		 * Content settings for the webview panel.
-		 */
+    /**
+     * Content settings for the webview panel.
+     */
     readonly options: WebviewPanelOptions;
 
-		/**
-		 * Editor position of the panel. This property is only set if the webview is in
-		 * one of the editor view columns.
-		 */
+    /**
+     * Editor position of the panel. This property is only set if the webview is in
+     * one of the editor view columns.
+     */
     readonly viewColumn?: ViewColumn;
 
-		/**
-		 * Whether the panel is active (focused by the user).
-		 */
+    /**
+     * Whether the panel is active (focused by the user).
+     */
     readonly active: boolean;
 
-		/**
-		 * Whether the panel is visible.
-		 */
+    /**
+     * Whether the panel is visible.
+     */
     readonly visible: boolean;
 
-		/**
-		 * Fired when the panel's view state changes.
-		 */
+    /**
+     * Fired when the panel's view state changes.
+     */
     readonly onDidChangeViewState: Event<WebviewPanelOnDidChangeViewStateEvent>;
 
-		/**
-		 * Fired when the panel is disposed.
-		 *
-		 * This may be because the user closed the panel or because `.dispose()` was
-		 * called on it.
-		 *
-		 * Trying to use the panel after it has been disposed throws an exception.
-		 */
+    /**
+     * Fired when the panel is disposed.
+     *
+     * This may be because the user closed the panel or because `.dispose()` was
+     * called on it.
+     *
+     * Trying to use the panel after it has been disposed throws an exception.
+     */
     readonly onDidDispose: Event<void>;
 
-		/**
-		 * Show the webview panel in a given column.
-		 *
-		 * A webview panel may only show in a single column at a time. If it is already showing, this
-		 * method moves it to a new column.
-		 *
-		 * @param viewColumn View column to show the panel in. Shows in the current `viewColumn` if undefined.
-		 * @param preserveFocus When `true`, the webview will not take focus.
-		 */
+    /**
+     * Show the webview panel in a given column.
+     *
+     * A webview panel may only show in a single column at a time. If it is already showing, this
+     * method moves it to a new column.
+     *
+     * @param viewColumn View column to show the panel in. Shows in the current `viewColumn` if undefined.
+     * @param preserveFocus When `true`, the webview will not take focus.
+     */
     reveal(viewColumn?: ViewColumn, preserveFocus?: boolean): void;
 
-		/**
-		 * Dispose of the webview panel.
-		 *
-		 * This closes the panel if it showing and disposes of the resources owned by the webview.
-		 * Webview panels are also disposed when the user closes the webview panel. Both cases
-		 * fire the `onDispose` event.
-		 */
+    /**
+     * Dispose of the webview panel.
+     *
+     * This closes the panel if it showing and disposes of the resources owned by the webview.
+     * Webview panels are also disposed when the user closes the webview panel. Both cases
+     * fire the `onDispose` event.
+     */
     dispose(): any;
   }
 
@@ -445,27 +563,27 @@ declare module 'vscode' {
    * The extension can then restore the old `WebviewPanel` from this state.
    */
   interface WebviewPanelSerializer {
-		/**
-		 * Restore a webview panel from its serialized `state`.
-		 *
-		 * Called when a serialized webview first becomes visible.
-		 *
-		 * @param webviewPanel Webview panel to restore. The serializer should take ownership of this panel. The
-		 * serializer must restore the webview's `.html` and hook up all webview events.
-		 * @param state Persisted state from the webview content.
-		 *
-		 * @return Thenable indicating that the webview has been fully restored.
-		 */
+    /**
+     * Restore a webview panel from its serialized `state`.
+     *
+     * Called when a serialized webview first becomes visible.
+     *
+     * @param webviewPanel Webview panel to restore. The serializer should take ownership of this panel. The
+     * serializer must restore the webview's `.html` and hook up all webview events.
+     * @param state Persisted state from the webview content.
+     *
+     * @return Thenable indicating that the webview has been fully restored.
+     */
     deserializeWebviewPanel(webviewPanel: WebviewPanel, state: any): Thenable<void>;
   }
 
-	/**
-	 * Event fired when a webview panel's view state changes.
-	 */
+  /**
+   * Event fired when a webview panel's view state changes.
+   */
   export interface WebviewPanelOnDidChangeViewStateEvent {
-		/**
-		 * Webview panel whose view state changed.
-		 */
+    /**
+     * Webview panel whose view state changed.
+     */
     readonly webviewPanel: WebviewPanel;
   }
 
