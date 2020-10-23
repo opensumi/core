@@ -582,3 +582,32 @@ export namespace SEARCH_COMMANDS {
     label: '%file.copy.path%',
   };
 }
+
+export namespace OUTLINE_COMMANDS {
+  const CATEGORY = 'outline';
+
+  export const OUTLINE_COLLAPSE_ALL: Command = {
+    id: 'outline.collapse.all',
+    category: CATEGORY,
+  };
+
+  export const OUTLINE_FOLLOW_CURSOR: Command = {
+    id: 'outline.follow.cursor',
+    category: CATEGORY,
+  };
+
+  export const OUTLINE_SORT_KIND: Command = {
+    id: 'outline.sort.kind',
+    category: CATEGORY,
+  };
+
+  export const OUTLINE_SORT_NAME: Command = {
+    id: 'outline.sort.name',
+    category: CATEGORY,
+  };
+
+  export const OUTLINE_SORT_POSITION: Command = {
+    id: 'outline.sort.position',
+    category: CATEGORY,
+  };
+}

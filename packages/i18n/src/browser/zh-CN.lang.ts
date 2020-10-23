@@ -568,6 +568,12 @@ export const localizationBundle = {
     'editor.compareAndSave.title': '{0} (在磁盘上) <=> {1} (编辑中) ',
 
     'outline.title': '大纲',
+    'outline.noinfo': '活动编辑器无法提供大纲信息',
+    'outline.collapse.all': '折叠全部',
+    'outline.sort.kind': '排序依据：类别',
+    'outline.sort.name': '排序依据：名称',
+    'outline.sort.position': '排序依据：位置',
+    'outline.follow.cursor': '跟随光标',
 
     'welcome.quckstart': '开始使用',
     'welcome.recent.workspace': '最近打开的工作区',

@@ -37,7 +37,7 @@ export abstract class Tree implements ITree {
 
   abstract async resolveChildren(parent?: ICompositeTreeNode): Promise<ITreeNodeOrCompositeTreeNode[] | null>;
 
-  sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
+  sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode): number {
     if (a.constructor === b.constructor) {
       return a.name > b.name ? 1
         : a.name < b.name ? -1
