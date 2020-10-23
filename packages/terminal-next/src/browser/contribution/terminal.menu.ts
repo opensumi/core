@@ -1,9 +1,8 @@
 import { Autowired } from '@ali/common-di';
 import { Domain, CommandService, isWindows, isElectronRenderer } from '@ali/ide-core-common';
 import { NextMenuContribution, IMenuRegistry, getTabbarCommonMenuId } from '@ali/ide-core-browser/lib/menu/next';
-import { localize, KeybindingContribution, KeybindingRegistry, PreferenceService, IPreferenceSettingsService, getSlotLocation, AppConfig, getTabbarCtxKey } from '@ali/ide-core-browser';
+import { localize, PreferenceService, IPreferenceSettingsService, getSlotLocation, AppConfig, getTabbarCtxKey } from '@ali/ide-core-browser';
 import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService, TerminalContainerId, TERMINAL_COMMANDS } from '../../common';
-import { IsTerminalFocused } from '@ali/ide-core-browser/lib/contextkey';
 import { MenuId } from '../../common/menu';
 
 export const group = 'panel_menu';
@@ -11,8 +10,8 @@ export const more1 = 'more_1';
 export const more1Sub = 'more_1_sub';
 export const more2 = 'more_2';
 
-@Domain(NextMenuContribution, KeybindingContribution)
-export class TerminalMenuContribution implements NextMenuContribution, KeybindingContribution {
+@Domain(NextMenuContribution)
+export class TerminalMenuContribution implements NextMenuContribution {
 
   @Autowired(ITerminalController)
   protected readonly terminalController: ITerminalController;
@@ -34,24 +33,6 @@ export class TerminalMenuContribution implements NextMenuContribution, Keybindin
 
   @Autowired(PreferenceService)
   protected readonly preference: PreferenceService;
-
-  registerKeybindings(registry: KeybindingRegistry) {
-    registry.registerKeybinding({
-      command: TERMINAL_COMMANDS.OPEN_SEARCH.id,
-      keybinding: 'ctrlcmd+f',
-      when: IsTerminalFocused.raw,
-    });
-    registry.registerKeybinding({
-      command: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
-      keybinding: 'ctrlcmd+k',
-      when: IsTerminalFocused.raw,
-    });
-    registry.registerKeybinding({
-      command: TERMINAL_COMMANDS.SEARCH_NEXT.id,
-      keybinding: 'ctrlcmd+g',
-      when: IsTerminalFocused.raw,
-    });
-  }
 
   registerNextMenus(menuRegistry: IMenuRegistry) {
     /** 终端 Tab 菜单 */

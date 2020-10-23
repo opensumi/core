@@ -10,7 +10,17 @@ const jsdom = new JSDOM(`<div id="main"></div>`, {
   url: 'http://localhost/?id=1',
 });
 global.document = jsdom.window.document;
-global.navigator = jsdom.window.navigator;
+let text = '';
+global.navigator = Object.assign(jsdom.window.navigator, {
+  clipboard: {
+    writeText(value) {
+      text = value;
+    },
+    readText() {
+      return text;
+    },
+  },
+});
 global.Element = jsdom.window.Element;
 global.HTMLDivElement = jsdom.window.HTMLDivElement;
 global.fetch = jsdom.window.fetch;
@@ -23,5 +33,7 @@ global.MutationObserver = jsdom.window.MutationObserver;
 global.requestAnimationFrame = fn => setTimeout(fn, 16);
 jsdom.window.requestAnimationFrame = fn => setTimeout(fn, 16);
 jsdom.window.cancelAnimationFrame = () => { };
+global.document.execCommand = () => { };
+global.HTMLElement = jsdom.window.HTMLElement;
 
 jest.mock(join(__dirname, 'packages/monaco/src/browser/monaco-loader'));

@@ -9,6 +9,8 @@ import {
   PreferenceService,
   CommandContribution,
   IPreferenceSettingsService,
+  ILogger,
+  IClipboardService,
 } from '@ali/ide-core-browser';
 import { Autowired } from '@ali/common-di';
 import {
@@ -53,6 +55,12 @@ export class TerminalCommandContribution implements CommandContribution {
 
   @Autowired()
   protected readonly terminalInput: TerminalKeyBoardInputService;
+
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
+
+  @Autowired(IClipboardService)
+  protected readonly clipboardService: IClipboardService;
 
   onReconnect() {
     this.terminalController.reconnect();
@@ -192,6 +200,36 @@ export class TerminalCommandContribution implements CommandContribution {
     registry.registerCommand(TERMINAL_COMMANDS.MORE_SETTINGS, {
       execute: async () => {
         this.commands.executeCommand(COMMON_COMMANDS.LOCATE_PREFERENCES.id, 'terminal');
+      },
+    });
+
+    registry.registerCommand(TERMINAL_COMMANDS.COPY, {
+      execute: async () => {
+        const current = this.view.currentWidgetId;
+        const client = this.terminalController.findClientFromWidgetId(current);
+        if (client) {
+          await this.clipboardService.writeText(client.getSelection());
+        }
+      },
+    });
+
+    registry.registerCommand(TERMINAL_COMMANDS.PASTE, {
+      execute: async () => {
+        const current = this.view.currentWidgetId;
+        const client = this.terminalController.findClientFromWidgetId(current);
+        if (client) {
+          client.paste(await this.clipboardService.readText());
+        }
+      },
+    });
+
+    registry.registerCommand(TERMINAL_COMMANDS.SELECT_ALL, {
+      execute: () => {
+        const current = this.view.currentWidgetId;
+        const client = this.terminalController.findClientFromWidgetId(current);
+        if (client) {
+          client.selectAll();
+        }
       },
     });
   }

@@ -35,3 +35,4 @@ export * from './style/icon/icon';
 
 export * from './window';
 export * from './opener';
+export * from './services';

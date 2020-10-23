@@ -24,6 +24,7 @@ import {
   TerminalMenuContribution,
   TerminalLifeCycleContribution,
   TerminalRenderContribution,
+  TerminalKeybindinngContribution,
 } from './contribution';
 import { TerminalController } from './terminal.controller';
 import { TerminalTheme } from './terminal.theme';
@@ -44,6 +45,7 @@ export class TerminalNextModule extends BrowserModule {
     TerminalRenderContribution,
     TerminalCommandContribution,
     TerminalMenuContribution,
+    TerminalKeybindinngContribution,
     {
       token: ITerminalApiService,
       useClass: TerminalApiService,

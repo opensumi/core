@@ -414,7 +414,7 @@ export class CommentsService extends Disposable implements ICommentsService {
       containerId: CommentPanelId,
       title: localize('comments').toUpperCase(),
       hidden: false,
-      activateKeyBinding: 'shift+ctrlcmd+c',
+      activateKeyBinding: 'ctrlcmd+shift+c',
       ...this.commentsFeatureRegistry.getCommentsPanelOptions(),
     }, 'bottom');
   }

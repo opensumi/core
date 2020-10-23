@@ -56,6 +56,7 @@ import { IOpenerService } from '../opener';
 import { OpenerService } from '../opener/opener.service';
 import { IWindowService } from '../window';
 import { WindowService } from '../window/window.service';
+import { IClipboardService, BrowserClipboardService } from '../services/clipboard.service';
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider
@@ -188,6 +189,10 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: IApplicationService,
       useClass: ApplicationService,
+    },
+    {
+      token: IClipboardService,
+      useClass: BrowserClipboardService,
     },
   ];
   injector.addProviders(...providers);
