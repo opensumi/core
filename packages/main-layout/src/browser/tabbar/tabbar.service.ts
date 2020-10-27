@@ -578,7 +578,7 @@ export class TabbarService extends WithEventBus {
   }
 
   private handleChange(currentId, previousId) {
-    const {getSize, setSize, lockSize, setMaxSize} = this.resizeHandle;
+    const {getSize, setSize, lockSize} = this.resizeHandle;
     this.onCurrentChangeEmitter.fire({previousId, currentId});
     const isCurrentExpanded = this.shouldExpand(currentId);
     if (this.shouldExpand(this.previousContainerId) || isCurrentExpanded) {
@@ -595,7 +595,6 @@ export class TabbarService extends WithEventBus {
         } else {
           lockSize(false);
         }
-        setMaxSize(false);
         if (!this.noAccordion) {
           this.tryRestoreAccordionSize(currentId);
         }
@@ -603,7 +602,6 @@ export class TabbarService extends WithEventBus {
       } else {
         setSize(this.barSize);
         lockSize(true);
-        setMaxSize(true);
       }
     }
   }
