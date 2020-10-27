@@ -7,7 +7,7 @@ import {
   RPCMessageConnection,
  } from '@ali/ide-connection';
 import { Injector, Provider } from '@ali/common-di';
-import { getDebugLogger, IReporterService, BasicModule, BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, IEventBus } from '@ali/ide-core-common';
+import { getDebugLogger, IReporterService, BasicModule, BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, BrowserConnectionErrorEvent, IEventBus } from '@ali/ide-core-common';
 import { BackService } from '@ali/ide-core-common/lib/module';
 
 import { ModuleConstructor } from './app';
@@ -32,9 +32,15 @@ export async function createClientConnection2(
   wsChannelHandler.connection.addEventListener('open', () => {
     eventBus.fire(new BrowserConnectionOpenEvent());
   });
+
   wsChannelHandler.connection.addEventListener('close', () => {
     eventBus.fire(new BrowserConnectionCloseEvent());
   });
+
+  wsChannelHandler.connection.addEventListener('error', (e) => {
+    eventBus.fire(new BrowserConnectionErrorEvent(e));
+  });
+
   await wsChannelHandler.initHandler();
 
   injector.addProviders({
