@@ -17,10 +17,6 @@ export class OutlineEventService extends WithEventBus {
   private _onDidSelectionChange: Emitter<URI | null> = new Emitter();
   private _onDidActiveChange: Emitter<URI | null> = new Emitter();
 
-  constructor() {
-    super();
-  }
-
   get onDidChange(): Event<URI | null> {
     return this._onDidChange.event;
   }

@@ -5,12 +5,13 @@ import { OutlineDecorationService } from './services/outline-decoration.service'
 import { OutlineEventService } from './services/outline-event.service';
 import { OutlineTreeService } from './services/outline-tree.service';
 import { OutlineModelService } from './services/outline-model.service';
+import { IOutlineDecorationService } from '../common';
 
 @Injectable()
 export class OutlineModule extends BrowserModule {
   providers: Provider[] = [
     {
-      token: OutlineDecorationService,
+      token: IOutlineDecorationService,
       useClass: OutlineDecorationService,
     },
     {

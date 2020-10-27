@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { URI, MarkerManager, IRange, MarkerSeverity } from '@ali/ide-core-browser';
 import { IThemeService, listErrorForeground, listWarningForeground } from '@ali/ide-theme';
-import { IOutlineMarker } from '../outline.service';
+import { IOutlineMarker } from '../../common';
 import { OutlineTreeNode } from '../outline-node.define';
 import { binarySearch, coalesceInPlace } from '@ali/ide-core-common/lib/arrays';
 

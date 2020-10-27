@@ -1,17 +1,16 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent } from '@ali/ide-components';
-import { URI, DisposableCollection, Emitter, IContextKeyService, CommandService, Deferred, Event, MaybeNull, MarkerManager, StorageProvider, STORAGE_NAMESPACE, IPosition, IRange } from '@ali/ide-core-browser';
-import pSeries = require('p-series');
-
+import { URI, DisposableCollection, Emitter, CommandService, Deferred, Event, MaybeNull, MarkerManager, IPosition, IRange } from '@ali/ide-core-browser';
 import * as styles from '../outline-node.module.less';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { OutlineEventService } from './outline-event.service';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/browser';
 import { OutlineTreeService } from './outline-tree.service';
-import { OutlineDecorationService } from './outline-decoration.service';
 import { OutlineTreeNode, OutlineCompositeTreeNode } from '../outline-node.define';
 import { OutlineTreeModel } from './outline-model';
 import { DocumentSymbolStore, INormalizedDocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { IOutlineDecorationService } from '../../common';
+import * as pSeries from 'p-series';
 
 export interface IEditorTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -24,20 +23,14 @@ export class OutlineModelService {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  @Autowired(IContextKeyService)
-  private readonly contextKeyService: IContextKeyService;
-
   @Autowired(OutlineTreeService)
   private readonly outlineTreeService: OutlineTreeService;
 
-  @Autowired()
+  @Autowired(MarkerManager)
   private markerManager: MarkerManager;
 
-  @Autowired()
-  public decorationService: OutlineDecorationService;
-
-  @Autowired(StorageProvider)
-  private storageProvider: StorageProvider;
+  @Autowired(IOutlineDecorationService)
+  public decorationService: IOutlineDecorationService;
 
   @Autowired(OutlineEventService)
   public readonly outlineEventService: OutlineEventService;
@@ -48,7 +41,7 @@ export class OutlineModelService {
   @Autowired(CommandService)
   public readonly commandService: CommandService;
 
-  @Autowired()
+  @Autowired(DocumentSymbolStore)
   private documentSymbolStore: DocumentSymbolStore;
 
   private _treeModel: OutlineTreeModel;
@@ -76,9 +69,6 @@ export class OutlineModelService {
 
   private onDidRefreshedEmitter: Emitter<void> = new Emitter();
 
-  // 右键菜单局部ContextKeyService
-  private _contextMenuContextKeyService: IContextKeyService;
-
   private _ignoreFollowCursorUpdateEventTimer: number = 0;
 
   constructor() {
@@ -87,13 +77,6 @@ export class OutlineModelService {
 
   get flushEventQueuePromise() {
     return this.flushEventQueueDeferred && this.flushEventQueueDeferred.promise;
-  }
-
-  get contextMenuContextKeyService() {
-    if (!this._contextMenuContextKeyService) {
-      this._contextMenuContextKeyService = this.contextKeyService.createScoped();
-    }
-    return this._contextMenuContextKeyService;
   }
 
   get outlineTreeHandle() {
@@ -468,7 +451,8 @@ export class OutlineModelService {
     await this.treeModel.root.collapsedAll();
   }
 
-  public openNode = () => {
+  dispose() {
+    this.disposableCollection.dispose();
   }
 
 }

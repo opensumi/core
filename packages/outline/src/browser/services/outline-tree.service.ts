@@ -9,10 +9,10 @@ import { OutlineContextKeyService } from './outline-contextkey.service';
 @Injectable()
 export class OutlineTreeService extends Tree {
 
-  @Autowired()
+  @Autowired(DocumentSymbolStore)
   private documentSymbolStore: DocumentSymbolStore;
 
-  @Autowired()
+  @Autowired(OutlineContextKeyService)
   private outlineContextKeyService: OutlineContextKeyService;
 
   @Autowired(StorageProvider)
@@ -67,6 +67,9 @@ export class OutlineTreeService extends Tree {
   }
 
   set followCursor(value: boolean) {
+    if (this._followCursor === value) {
+      return;
+    }
     this._followCursor = value;
     this.outlineContextKeyService.outlineFollowCursorContext.set(value);
     this._outlineStorage.set('followCursor', value);
@@ -78,6 +81,9 @@ export class OutlineTreeService extends Tree {
   }
 
   set sortType(type: OutlineSortOrder) {
+    if (this._sortType === type) {
+      return;
+    }
     this._sortType = type;
     this.outlineContextKeyService.outlineSortTypeContext.set(type);
     this._outlineStorage.set('sortType', type);

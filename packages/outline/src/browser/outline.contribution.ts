@@ -7,7 +7,6 @@ import { getIcon } from '@ali/ide-core-browser';
 import { OutlineSortTypeContext, OutlineFollowCursorContext } from '@ali/ide-core-browser/lib/contextkey';
 import { OutlineTreeService } from './services/outline-tree.service';
 import { OutlineModelService } from './services/outline-model.service';
-import { OutlineContextKeyService } from './services/outline-contextkey.service';
 import { OutlineSortOrder } from '../common';
 
 @Domain(MainLayoutContribution, TabBarToolbarContribution, CommandContribution)
@@ -20,9 +19,6 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
 
   @Autowired()
   private outlineTreeModelService: OutlineModelService;
-
-  @Autowired()
-  private outlineContextKeyService: OutlineContextKeyService;
 
   @Autowired(IContextKeyService)
   contextKey: IContextKeyService;

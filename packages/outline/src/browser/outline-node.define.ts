@@ -53,7 +53,7 @@ export class OutlineCompositeTreeNode extends CompositeTreeNode {
 export class OutlineTreeNode extends TreeNode {
   constructor(
     tree: OutlineTreeService,
-    parent: OutlineCompositeTreeNode | undefined,
+    parent: OutlineCompositeTreeNode | OutlineRoot,
     public readonly raw: INormalizedDocumentSymbol,
     public readonly icon: string,
     id?: number,

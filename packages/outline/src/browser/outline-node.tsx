@@ -3,14 +3,14 @@ import * as cls from 'classnames';
 import * as styles from './outline-node.module.less';
 import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, TreeNodeType } from '@ali/ide-components';
 import { URI, getIcon, CommandService } from '@ali/ide-core-browser';
-import { OutlineDecorationService } from './services/outline-decoration.service';
 import { OutlineCompositeTreeNode, OutlineTreeNode } from './outline-node.define';
+import { IOutlineDecorationService } from '../common';
 
 export interface IOutlineNodeProps {
   item: any;
   defaultLeftPadding?: number;
   leftPadding?: number;
-  decorationService: OutlineDecorationService;
+  decorationService: IOutlineDecorationService;
   commandService: CommandService;
   decorations?: ClasslistComposite;
   onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType, activeUri?: URI) => void;
