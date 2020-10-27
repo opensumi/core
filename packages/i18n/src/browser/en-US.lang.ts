@@ -566,6 +566,7 @@ export const localizationBundle = {
     'outline.sort.kind': 'Sort By SymbolKind',
     'outline.sort.name': 'Sort By SymbolName',
     'outline.sort.position': 'Sort By Position',
+    'outline.follow.cursor': 'Follow Cursor',
 
     'welcome.quckstart': 'Quick Start',
     'welcome.recent.workspace': 'Recent Workspaces',

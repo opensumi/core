@@ -220,7 +220,7 @@ export class TreeNode implements ITreeNode {
 
 export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
 
-  private static defaultSortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
+  private static defaultSortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode): number {
     if (a.constructor === b.constructor) {
       return a.name > b.name ? 1
         : a.name < b.name ? -1

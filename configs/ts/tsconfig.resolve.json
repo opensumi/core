@@ -21,6 +21,12 @@
       "@ali/ide-core-node/lib/*": [
         "../packages/core-node/src/*"
       ],
+      "@ali/ide-components": [
+        "../packages/components/src/index.ts"
+      ],
+      "@ali/ide-components/lib/*": [
+        "../packages/components/src/*"
+      ],
       "@ali/ide-logs": [
         "../packages/logs-core/src/index.ts"
       ],
@@ -314,12 +320,6 @@
       ],
       "@ali/ide-terminal-next/lib/*": [
         "../packages/terminal-next/src/*"
-      ],
-      "@ali/ide-components": [
-        "../packages/components/src/index.ts"
-      ],
-      "@ali/ide-components/lib/*": [
-        "../packages/components/src/*"
       ],
       "@ali/ide-addons": [
         "../packages/addons/src/index.ts"
