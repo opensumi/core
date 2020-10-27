@@ -1,5 +1,6 @@
 import { Injectable } from '@ali/common-di';
 import * as path from 'path';
+import * as fs from 'fs';
 import { ExtensionService, IExtensionNodeClientService, ExtraMetaData, IExtensionMetaData, IExtension, IExtensionProps, ExtensionNodeServiceServerPath } from '../../src/common';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -31,9 +32,8 @@ import { IToolbarRegistry } from '@ali/ide-core-browser/lib/toolbar';
 import { NextToolbarRegistryImpl } from '@ali/ide-core-browser/src/toolbar/toolbar.registry';
 import { IActivationEventService, ExtensionBeforeActivateEvent } from '@ali/ide-kaitian-extension/lib/browser/types';
 import { ActivationEventServiceImpl } from '@ali/ide-kaitian-extension/lib/browser/activation.service';
-import { Layout } from '@ali/ide-core-browser/src/components';
-import { ExtensionManagerContribution } from '@ali/ide-extension-manager/lib/browser/extension-manager.contribution';
 import { SchemaRegistry, SchemaStore } from '@ali/ide-monaco/lib/browser/schema-registry';
+import { TabbarService } from '@ali/ide-main-layout/lib/browser/tabbar/tabbar.service';
 
 @Injectable()
 class MockLoggerManagerClient {
@@ -68,6 +68,10 @@ const mockExtensionProps: IExtensionProps = {
     name: 'kaitian-extension',
     extensionDependencies: ['uuid-for-test-extension-deps'],
     kaitianContributes: {
+      viewsProxies: [
+        'Leftview',
+        'TitleView',
+      ],
       browserViews: {
         left: {
           type: 'add',
@@ -78,14 +82,15 @@ const mockExtensionProps: IExtensionProps = {
               title: 'KAIITAN 视图贡献点',
             },
             {
-              id: 'KaitianViewContribute2',
+              id: 'Leftview',
+              title: 'leftview',
               icon: 'extension',
-              title: 'KAIITAN 视图贡献点2',
-              titleComponentId: 'ViewTitle',
+              titleComponentId: 'TitleView',
             },
           ],
         },
       },
+      browserMain: path.join(__dirname, '../__mock__/extension/browser.js'),
     },
     contributes: {
       'actions': [
@@ -166,11 +171,7 @@ const mockExtensionProps: IExtensionProps = {
       ],
     },
   },
-  extendConfig: {
-    browser: {
-      main: 'browser.js',
-    },
-  },
+  extendConfig: {},
   extraMetadata: {},
   packageNlsJSON: {},
   defaultPkgNlsJSON: {},
@@ -192,7 +193,7 @@ class MockWorkbenchEditorService {
 
 const mockExtension = {
   ...mockExtensionProps,
-  contributes: mockExtensionProps.packageJSON.contributes,
+  contributes: Object.assign(mockExtensionProps.packageJSON.contributes, mockExtensionProps.packageJSON.kaitianContributes),
   activate: () => {
     return true;
   },
@@ -234,6 +235,10 @@ describe('Extension service', () => {
   let injector: MockInjector;
 
   beforeAll((done) => {
+    (global as any).fetch = jest.fn().mockResolvedValueOnce({
+      ok: true,
+      text: async () => fs.readFileSync(path.join(__dirname, '../__mock__/extension/browser-new.js'), 'utf8'),
+    });
     injector = createBrowserInjector([], new MockInjector([DatabaseStorageContribution, {
       token: AppConfig,
       useValue: {
@@ -463,6 +468,11 @@ describe('Extension service', () => {
   describe('activate extension', () => {
     it('should activate mock browser extension without ext process', async (done) => {
       await extensionService.activeExtension(mockExtensions[0]);
+      const layoutService: IMainLayoutService = injector.get(IMainLayoutService);
+      const tabbarService: TabbarService = layoutService.getTabbarService('left');
+      const containerInfo = tabbarService.getContainer('test.kaitian-extension:Leftview');
+      expect(containerInfo?.options?.titleComponent).toBeDefined();
+      expect(containerInfo?.options?.titleProps).toBeDefined();
       setTimeout(() => {
         done();
       }, 1000);
@@ -518,8 +528,8 @@ describe('Extension service', () => {
       done();
     });
 
-    it('should register browserView and titleComponent', (done) => {
-      const layoutService = injector.get(IMainLayoutService);
+    it('should register browserView', (done) => {
+      const layoutService: IMainLayoutService = injector.get(IMainLayoutService);
       const tabbar = layoutService.getTabbarHandler('test.kaitian-extension:KaitianViewContribute');
       expect(tabbar).toBeDefined();
       done();
