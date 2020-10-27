@@ -4,7 +4,6 @@ import * as classNames from 'classnames';
 
 import './style.less';
 import { Icon, getKaitianIcon } from '../icon';
-
 export interface IDataOption<T> {
   iconClass?: string;
   label?: string;
@@ -34,6 +33,22 @@ export interface ISelectProps<T = string> {
   headerComponent?: React.FC<any> | React.ComponentClass;
   footerComponent?: React.FC<any> | React.ComponentClass;
   setSelectHandle?: (handle: (v: T) => void) => void;
+  /**
+   * 点击时是否启用搜索
+   */
+  showSearch?: boolean;
+  /**
+   * 搜索 placeholder
+   */
+  searchPlaceholder?: string;
+  /**
+   * 搜索时，根据输入筛选, 如果showSearch为true，则默认使用 label 判断
+   */
+  filterOption?: (input: string, options: IDataOption<T>, group?: IDataOptionGroup<T> ) => boolean;
+  /**
+   * 列表为空时的展示组件
+   */
+  emptyComponent?: React.FC<any>;
 }
 
 export const Option: React.FC<React.PropsWithChildren<{
@@ -145,6 +160,21 @@ function defaultGroupTitleRenderer<T>({group, index}: {group: IDataOptionGroup<T
   </div>;
  }
 
+function defaultFilterOption<T>(input: string, option: IDataOption<T>) {
+  let strToSearch: any = option.label;
+  if (strToSearch === undefined) {
+    try {
+      strToSearch = (option.value as any).toString();
+    } catch (e) {
+      strToSearch = undefined;
+    }
+  }
+  if (typeof strToSearch === 'string') {
+    return strToSearch.indexOf(input) !== -1;
+  }
+  return false;
+}
+
 export function Select<T = string>({
   disabled,
   options,
@@ -163,14 +193,24 @@ export function Select<T = string>({
   footerComponent,
   headerComponent,
   setSelectHandle,
+  showSearch = false,
+  filterOption = defaultFilterOption,
+  searchPlaceholder = '',
+  emptyComponent,
 }: ISelectProps<T>) {
   const [open, setOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
 
   const selectRef = React.useRef<HTMLDivElement | null>(null);
   const overlayRef = React.useRef<HTMLDivElement | null>(null);
 
   function toggleOpen() {
-    setOpen(open ? false : true);
+    const target = open ? false : true;
+    setOpen(target);
+  }
+
+  if (!open && searchInput) {
+    setSearchInput('');
   }
 
   const optionsContainerClasses = classNames('kt-select-options', {
@@ -258,13 +298,49 @@ export function Select<T = string>({
     };
   }
 
-  const selected = getSelectedValue();
+  // 根据搜索输入过滤 options
+  if (searchInput) {
+    if (options && isDataOptions(options)) {
+      options = options.filter((o) => filterOption(searchInput, o));
+    } else if (options && isDataOptionGroups(options)) {
+      const result: Array<IDataOptionGroup<T>> = [];
+      for (const group of options) {
+        const filteredGroup: IDataOptionGroup<T>  = {
+          iconClass: group.iconClass,
+          groupName: group.groupName,
+          options: group.options.filter((o) => filterOption(searchInput, o, group)),
+        };
+        if (filteredGroup.options.length > 0) {
+          // 不显示空的group
+          result.push(filteredGroup);
+        }
+      }
+      options = result;
+    }
+  }
 
-  return (<div className={classNames('kt-select-container', className)} ref={selectRef}>
-    <p className={selectClasses} onClick={toggleOpen} style={style}>
+  const renderSelected = () => {
+    const selected = getSelectedValue();
+    return <React.Fragment >
       {selected.iconClass ? <span className={classNames(selected.iconClass, 'kt-select-option-icon')}></span> : undefined}
       <span className={'kt-select-option'}>{selected.label}</span>
       <Icon iconClass={getKaitianIcon('down')} />
+    </React.Fragment>;
+  };
+
+  const renderSearch = () => {
+    return <input
+            className={classNames('kt-select-search')}
+            onChange={(e) => {setSearchInput(e.target.value); }}
+            value={searchInput}
+            autoFocus
+            placeholder={searchPlaceholder || ''}
+            />;
+  };
+
+  return (<div className={classNames('kt-select-container', className)} ref={selectRef}>
+    <p className={selectClasses} onClick={toggleOpen} style={style}>
+      { showSearch && open ? renderSearch() : renderSelected() }
     </p>
 
     {
@@ -288,6 +364,7 @@ export function Select<T = string>({
         ref={overlayRef}
         footerComponent={footerComponent}
         headerComponent={headerComponent}
+        emptyComponent={emptyComponent}
       /> :
       // FIXME: to be deprecated
       // 下面这种使用 children 的方式不够标准化，待废弃
@@ -316,6 +393,7 @@ export interface ISelectOptionsListProps<T = string> {
   renderCheck?: boolean;
   headerComponent?: React.FC<any> | React.ComponentClass;
   footerComponent?: React.FC<any> | React.ComponentClass;
+  emptyComponent?: React.FC<any> | React.ComponentClass;
 }
 
 export const SelectOptionsList = React.forwardRef(<T, >(props: ISelectOptionsListProps<T>, ref) => {
@@ -333,6 +411,7 @@ export const SelectOptionsList = React.forwardRef(<T, >(props: ISelectOptionsLis
     renderCheck,
     headerComponent: HC,
     footerComponent: FC,
+    emptyComponent: EC,
   } = props;
 
   const optionsContainerClasses = classNames('kt-select-options', {
@@ -365,6 +444,12 @@ export const SelectOptionsList = React.forwardRef(<T, >(props: ISelectOptionsLis
 
     });
   }
+  let isEmpty: boolean;
+  if (isDataOptionGroups(options)) {
+    isEmpty = options.filter((group) => group.options.length > 0).length === 0;
+  } else {
+    isEmpty = options.length === 0;
+  }
 
   return <div className={optionsContainerClasses} style={style} ref={ref} onClick={
     (event) => {
@@ -373,7 +458,8 @@ export const SelectOptionsList = React.forwardRef(<T, >(props: ISelectOptionsLis
   }>
     { HC ?  <HC /> : null }
     {
-      (isDataOptionGroups(options)) ? renderWithGroup(options) : renderWithoutGroup(options)
+      isEmpty && EC ? <EC /> :
+      ((isDataOptionGroups(options)) ? renderWithGroup(options) : renderWithoutGroup(options)) || (EC && <EC />)
     }
     { FC ?  <FC /> : null }
   </div>;
