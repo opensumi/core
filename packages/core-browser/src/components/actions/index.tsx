@@ -106,7 +106,7 @@ export const MenuActionList: React.FC<{
       }
 
       return (
-        <Menu.Item key={menuNode.id} disabled={menuNode.disabled}>
+        <Menu.Item id={menuNode.id} key={menuNode.id} disabled={menuNode.disabled}>
           <MenuAction data={menuNode} disabled={menuNode.disabled} />
         </Menu.Item>
       );
@@ -317,6 +317,7 @@ export const TitleActionList: React.FC<{
       {
         primary.map((item) => (
           <InlineActionWidget
+            id={item.id}
             className={clsx({ [styles.selected]: item.checked })}
             type={type}
             key={item.id}
