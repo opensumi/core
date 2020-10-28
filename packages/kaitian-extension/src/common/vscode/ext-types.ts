@@ -1813,8 +1813,8 @@ export interface ShellQuotingOptions {
 }
 
 /**
-	 * Options for a shell execution
-	 */
+   * Options for a shell execution
+   */
 export interface ShellExecutionOptions {
   /**
    * The shell executable.
@@ -2419,3 +2419,19 @@ export enum CommentThreadCollapsibleState {
    */
   Expanded = 1,
 }
+
+//#region Theming
+
+@es5ClassCompat
+export class ColorTheme implements vscode.ColorTheme {
+  constructor(public readonly kind: ColorThemeKind) {
+  }
+}
+
+export enum ColorThemeKind {
+  Light = 1,
+  Dark = 2,
+  HighContrast = 3,
+}
+
+//#endregion Theming

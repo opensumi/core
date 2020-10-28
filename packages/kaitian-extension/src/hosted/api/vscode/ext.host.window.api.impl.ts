@@ -16,6 +16,7 @@ import { throwProposedApiError } from '../../../common/vscode/extension';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostProgress } from './ext.host.progress';
 import { QuickInputOptions } from '@ali/ide-quick-open';
+import { ExtHostTheming } from './ext.host.theming';
 
 export function createWindowApiFactory(
   extension: IExtension,
@@ -32,6 +33,7 @@ export function createWindowApiFactory(
   extHostWindow: ExtHostWindow,
   extHostProgress: ExtHostProgress,
   extHostUrls: IExtHostUrls,
+  extHostTheming: ExtHostTheming,
 ) {
   const extensionInfo: IExtensionInfo = {
     id: extension.id,
@@ -155,6 +157,14 @@ export function createWindowApiFactory(
     onDidOpenTerminal: extHostTerminal.onDidOpenTerminal,
 
     createTerminal: extHostTerminal.createTerminal,
+
+    get activeColorTheme(): vscode.ColorTheme {
+      return extHostTheming.activeColorTheme;
+    },
+
+    onDidChangeActiveColorTheme(listener, thisArg?, disposables?) {
+      return extHostTheming.onDidChangeActiveColorTheme(listener, thisArg, disposables);
+    },
   };
 }
 
