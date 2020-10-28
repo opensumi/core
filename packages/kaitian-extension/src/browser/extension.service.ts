@@ -234,10 +234,16 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       this.startProcess(true),
       this.startWorkerHost(true),
     ]);
-    await this.eventBus.fireAndAwait(new ExtensionBeforeActivateEvent());
-    await this.activationEventService.fireEvent('*');
-    this.eagerExtensionsActivated.resolve();
-    this.eventBus.fire(new ExtensionApiReadyEvent());
+
+    try {
+      await this.eventBus.fireAndAwait(new ExtensionBeforeActivateEvent());
+      await this.activationEventService.fireEvent('*');
+    } catch (err) {
+      this.logger.error(`[Extension Activate Error], \n ${err.message || err}`);
+    } finally {
+      this.eagerExtensionsActivated.resolve();
+      this.eventBus.fire(new ExtensionApiReadyEvent());
+    }
   }
 
   public getExtensions() {

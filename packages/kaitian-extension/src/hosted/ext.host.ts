@@ -306,8 +306,14 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
     if (extension.packageJSON.main) {
       const reportTimer = this.reporterService.time(REPORT_NAME.LOAD_EXTENSION_MAIN);
-      extensionModule = getNodeRequire()(modulePath);
-      reportTimer.timeEnd(extension.id);
+      try {
+        extensionModule = getNodeRequire()(modulePath);
+        reportTimer.timeEnd(extension.id);
+      } catch (err) {
+        activationFailed = true;
+        activationFailedError = err;
+        this.logger.error(`[Extension-Host][Activate Exception] ${extension.id}: `, err);
+      }
 
       if (extensionModule.activate) {
         this.logger.debug(`try activate ${extension.name}`);
@@ -329,9 +335,12 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     }
 
     if (extension.packageJSON.kaitianContributes && extension.packageJSON.kaitianContributes.nodeMain) {
-      extendModule = getNodeRequire()(path.join(extension.path, extension.packageJSON.kaitianContributes.nodeMain));
-      if (!extendModule) {
-        this.logger.warn(`Can not find extendModule ${extension.id}`);
+      try {
+        extendModule = getNodeRequire()(path.join(extension.path, extension.packageJSON.kaitianContributes.nodeMain));
+      } catch (err) {
+        activationFailed = true;
+        activationFailedError = err;
+        this.logger.error(`[Extension-Host][Activate Exception] ${extension.id}: `, err);
       }
     } else if (extension.extendConfig && extension.extendConfig.node && extension.extendConfig.node.main) {
       extendModule = getNodeRequire()(path.join(extension.path, extension.extendConfig.node.main));
@@ -339,6 +348,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         this.logger.warn(`Can not find extendModule ${extension.id}`);
       }
     }
+
     if (extendModule && extendModule.activate) {
       try {
         const extendModuleExportsData = await extendModule.activate(context);
