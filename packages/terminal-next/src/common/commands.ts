@@ -97,4 +97,16 @@ export namespace TERMINAL_COMMANDS {
     id: 'terminal.selectTypePowerShell',
     label: 'powershell',
   };
+
+  export const COPY = {
+    id: 'terminal.copy',
+  };
+
+  export const PASTE = {
+    id: 'terminal.paste',
+  };
+
+  export const SELECT_ALL = {
+    id: 'terminal.selectAll',
+  };
 }

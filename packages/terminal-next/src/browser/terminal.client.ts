@@ -4,7 +4,7 @@ import { FitAddon } from 'xterm-addon-fit';
 import { SearchAddon } from 'xterm-addon-search';
 import { WebLinksAddon } from 'xterm-addon-web-links';
 import { Injectable, Autowired, Injector } from '@ali/common-di';
-import { Disposable, Deferred, Emitter, Event, debounce } from '@ali/ide-core-common';
+import { Disposable, Deferred, Emitter, Event, debounce, ILogger } from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
@@ -72,6 +72,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   @Autowired(TerminalKeyBoardInputService)
   protected readonly keyboard: TerminalKeyBoardInputService;
+
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   private _onInput = new Emitter<ITerminalDataEvent>();
   onInput: Event<ITerminalDataEvent> = this._onInput.event;
@@ -376,9 +379,24 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     return this._term.selectAll();
   }
 
+  paste(text: string) {
+    this._checkReady();
+    return this._term.paste(text);
+  }
+
   findNext(text: string) {
     this._checkReady();
     return this._searchAddon.findNext(text);
+  }
+
+  getSelection() {
+    this._checkReady();
+    if (this._term.hasSelection()) {
+      return this._term.getSelection();
+    } else {
+      this.logger.warn('The terminal has no selection to copy');
+      return '';
+    }
   }
 
   updateTheme() {

@@ -49,18 +49,6 @@ describe('MainThreadEnvAPI Test Suites ', () => {
   const injector = createBrowserInjector([], new Injector([]));
   let extHostEnvAPI: ReturnType<typeof createEnvApiFactory>;
   beforeAll((done) => {
-    let text;
-    global.navigator = Object.assign({}, {
-      clipboard: {
-        writeText(value) {
-          text = value;
-        },
-        readText() {
-          return text;
-        },
-      },
-    });
-
     injector.addProviders(...[{
       token: ExtensionHostServiceImpl,
       useValue: {},

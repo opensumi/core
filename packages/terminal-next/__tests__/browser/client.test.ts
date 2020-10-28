@@ -73,6 +73,15 @@ describe('Terminal Client', () => {
       .toEqual(client.term.cols);
   });
 
+  it('Terminal getSelection', async () => {
+    await client.attached.promise;
+    client.sendText('pwd\r');
+    await delay(500);
+    client.selectAll();
+    const selection = client.getSelection();
+    expect(selection.includes('pwd')).toBeTruthy();
+  });
+
   it.skip('Terminal Send Text', async (done) => {
     await client.attached.promise;
     client.clear();

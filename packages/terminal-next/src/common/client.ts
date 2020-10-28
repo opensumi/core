@@ -88,7 +88,15 @@ export interface ITerminalClient extends Disposable {
    * 全选内容
    */
   selectAll(): void;
-
+  /**
+   * 获取选择的内容
+   */
+  getSelection(): string;
+  /**
+   * 粘贴文本
+   * @param text
+   */
+  paste(text: string): void;
   /**
    * 向下查找字符串
    *
