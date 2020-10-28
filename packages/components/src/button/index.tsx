@@ -98,8 +98,9 @@ export function Button<T>({
   const iconClesses = classNames(className, {
     ['kt-clickable-icon']: !!onClick,
   });
+
   if (type === 'icon') {
-    return <Icon tooltip={title} disabled={disabled} icon={icon} onClick={(loading || disabled) ? noop : onClick} className={iconClesses} iconClass={iconClass} />;
+    return <Icon tooltip={title} disabled={disabled} icon={icon} onClick={(loading || disabled) ? noop : onClick} className={iconClesses} iconClass={iconClass} {...otherProps} />;
   }
 
   const iconNode = iconClass ? <Icon iconClass={iconClass} disabled={disabled} /> : null;

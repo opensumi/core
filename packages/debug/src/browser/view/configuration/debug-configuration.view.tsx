@@ -74,9 +74,9 @@ export const DebugConfigurationView = observer(() => {
     <div className={ styles.debug_configuration_toolbar }>
       { renderConfigurationSelect() }
       <div className={ styles.kt_debug_actions }>
-        <DebugAction color={ '#62D99D' } icon={ 'rundebug' } label={ localize('debug.action.start') } run={ start }></DebugAction>
-        <DebugAction color={ 'var(--foreground)' } icon={ 'setting' } label={ localize('debug.action.open.configuration') } run={ openConfiguration }></DebugAction>
-        <DebugAction color={ 'var(--foreground)' } icon={ 'terminal' } label={ localize('debug.action.debug.console') } run={ openDebugConsole }></DebugAction>
+        <DebugAction id='debug.action.start' color={ '#62D99D' } icon={ 'rundebug' } label={ localize('debug.action.start') } run={ start }></DebugAction>
+        <DebugAction id='debug.action.open.configuration' color={ 'var(--foreground)' } icon={ 'setting' } label={ localize('debug.action.open.configuration') } run={ openConfiguration }></DebugAction>
+        <DebugAction id='debug.action.debug.console' color={ 'var(--foreground)' } icon={ 'terminal' } label={ localize('debug.action.debug.console') } run={ openDebugConsole }></DebugAction>
       </div>
     </div>
     { !float && <DebugToolbarView float={false} /> }
