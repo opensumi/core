@@ -450,15 +450,15 @@ declare module 'vscode' {
     export function registerUriHandler(handler: UriHandler): Disposable;
 
     /**
-		 * The currently active color theme as configured in the settings. The active
-		 * theme can be changed via the `workbench.colorTheme` setting.
-		 */
-		export let activeColorTheme: ColorTheme;
+     * The currently active color theme as configured in the settings. The active
+     * theme can be changed via the `workbench.colorTheme` setting.
+     */
+    export let activeColorTheme: ColorTheme;
 
-		/**
-		 * An [event](#Event) which fires when the active theme changes or one of it's colors chnage.
-		 */
-		export const onDidChangeActiveColorTheme: Event<ColorTheme>;
+    /**
+     * An [event](#Event) which fires when the active theme changes or one of it's colors chnage.
+     */
+    export const onDidChangeActiveColorTheme: Event<ColorTheme>;
   }
 
   /**
@@ -598,24 +598,24 @@ declare module 'vscode' {
     readonly webviewPanel: WebviewPanel;
   }
 
-	/**
-	 * Represents a color theme kind.
-	 */
-	export enum ColorThemeKind {
-		Light = 1,
-		Dark = 2,
-		HighContrast = 3
-	}
+  /**
+   * Represents a color theme kind.
+   */
+  export enum ColorThemeKind {
+    Light = 1,
+    Dark = 2,
+    HighContrast = 3
+  }
 
-	/**
-	 * Represents a color theme.
-	 */
-	export interface ColorTheme {
+  /**
+   * Represents a color theme.
+   */
+  export interface ColorTheme {
 
-		/**
-		 * The kind of this color theme: light, dark or high contrast.
-		 */
-		readonly kind: ColorThemeKind;
-	}
+    /**
+     * The kind of this color theme: light, dark or high contrast.
+     */
+    readonly kind: ColorThemeKind;
+  }
 
 }
