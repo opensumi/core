@@ -1,4 +1,5 @@
 import { Disposable, IDisposable, Event, Emitter, IRange } from '@ali/ide-core-common';
+import { DomListener } from '@ali/ide-core-browser';
 // import * as styles from './styles.module.less';
 
 export class ViewZoneDelegate implements monaco.editor.IViewZone {
@@ -239,7 +240,24 @@ export abstract class ResizeZoneWidget extends ZoneWidget {
 
   protected observeContainer(dom: HTMLDivElement): IDisposable {
     this.wrap = dom;
-    const mutationObserver = new MutationObserver((mutation) => {
+    const mutationObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+          if (mutation.type === 'childList') {
+            for (const child of Array.from(mutation.target.childNodes) as HTMLElement[]) {
+              // 处理图片加载的情况
+              const images = child.querySelectorAll('img');
+              if (images.length) {
+                images.forEach((image) => {
+                  const disposer = new DomListener(image, 'load', () => {
+                    this.resizeZoneWidget();
+                    disposer.dispose();
+                  });
+                  this.addDispose(disposer);
+                });
+              }
+            }
+          }
+      });
       this.resizeZoneWidget();
     });
     mutationObserver.observe(this.wrap, {childList: true, subtree: true});
