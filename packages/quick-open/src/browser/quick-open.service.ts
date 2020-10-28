@@ -84,12 +84,18 @@ export class MonacoQuickOpenService implements QuickOpenService {
   protected readonly contextKeyService: MonacoContextKeyService;
 
   constructor() {
+    const overlayContainer = document.querySelector('#ide-overlay');
+
+    if (!overlayContainer) {
+      throw new Error('ide-overlay is requried');
+    }
+
     const overlayWidgets = document.createElement('div');
     overlayWidgets.classList.add('quick-open-overlay');
-    document.body.appendChild(overlayWidgets);
+    overlayContainer.appendChild(overlayWidgets);
 
     const container = this.container = document.createElement('quick-open-container');
-    container.style.position = 'absolute';
+    container.style.position = 'fixed';
     container.style.top = '0px';
     container.style.right = '50%';
     container.style.zIndex = '1000000';
