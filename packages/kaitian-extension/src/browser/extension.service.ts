@@ -777,10 +777,11 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         const viewsConfig = Object.keys(browserViews).reduce((config, location) => {
           config[location] = {
             type: this.getRegisterViewKind(location as KtViewLocation),
-            view: browserViews[location].view.map(({ id, ...other }) => ({
+            view: browserViews[location].view.map(({ id, titleComponentId, ...other }) => ({
               ...other,
               id,
               component: this.getModuleExportsComponent(moduleExports, extension, id, proxiedHead),
+              titleComponent: titleComponentId && this.getModuleExportsComponent(moduleExports, extension, titleComponentId, proxiedHead),
             })),
           };
           return config;

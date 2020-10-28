@@ -1,10 +1,11 @@
 import { Injectable } from '@ali/common-di';
 import * as path from 'path';
+import * as fs from 'fs';
 import { ExtensionService, IExtensionNodeClientService, ExtraMetaData, IExtensionMetaData, IExtension, IExtensionProps, ExtensionNodeServiceServerPath } from '../../src/common';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { ExtensionServiceImpl } from '../../src/browser/extension.service';
-import { IContextKeyService, ILoggerManagerClient, StorageProvider, DefaultStorageProvider, createContributionProvider, StorageResolverContribution, PreferenceProvider, AppConfig, Uri, CommandRegistryImpl, CommandRegistry, IPreferenceSettingsService, PreferenceScope, KeybindingRegistryImpl, KeybindingRegistry, IFileServiceClient } from '@ali/ide-core-browser';
+import { IContextKeyService, ILoggerManagerClient, StorageProvider, DefaultStorageProvider, createContributionProvider, StorageResolverContribution, PreferenceProvider, AppConfig, Uri, CommandRegistryImpl, CommandRegistry, IPreferenceSettingsService, PreferenceScope, KeybindingRegistryImpl, KeybindingRegistry, IFileServiceClient, ISchemaRegistry, ISchemaStore } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 import { IThemeService, IIconService, getColorRegistry } from '@ali/ide-theme/lib/common';
 import { IconService } from '@ali/ide-theme/lib/browser';
@@ -21,7 +22,7 @@ import { FileSearchServicePath } from '@ali/ide-file-search/lib/common/file-sear
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { IMenuRegistry, MenuRegistryImpl, IMenuItem } from '@ali/ide-core-browser/src/menu/next';
 import { EditorActionRegistryImpl } from '@ali/ide-editor/lib/browser/menu/editor.menu';
-import { IMainLayoutService } from '@ali/ide-main-layout';
+import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 import { LayoutService } from '@ali/ide-main-layout/lib/browser/layout.service';
 import { PreferenceSettingsService } from '@ali/ide-preferences/lib/browser/preference.service';
 import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
@@ -31,6 +32,8 @@ import { IToolbarRegistry } from '@ali/ide-core-browser/lib/toolbar';
 import { NextToolbarRegistryImpl } from '@ali/ide-core-browser/src/toolbar/toolbar.registry';
 import { IActivationEventService, ExtensionBeforeActivateEvent } from '@ali/ide-kaitian-extension/lib/browser/types';
 import { ActivationEventServiceImpl } from '@ali/ide-kaitian-extension/lib/browser/activation.service';
+import { SchemaRegistry, SchemaStore } from '@ali/ide-monaco/lib/browser/schema-registry';
+import { TabbarService } from '@ali/ide-main-layout/lib/browser/tabbar/tabbar.service';
 
 @Injectable()
 class MockLoggerManagerClient {
@@ -40,7 +43,7 @@ class MockLoggerManagerClient {
       debug() { },
       error() { },
       verbose() { },
-      warn() {},
+      warn() { },
     };
   }
 }
@@ -64,6 +67,31 @@ const mockExtensionProps: IExtensionProps = {
   packageJSON: {
     name: 'kaitian-extension',
     extensionDependencies: ['uuid-for-test-extension-deps'],
+    kaitianContributes: {
+      viewsProxies: [
+        'Leftview',
+        'TitleView',
+      ],
+      browserViews: {
+        left: {
+          type: 'add',
+          view: [
+            {
+              id: 'KaitianViewContribute',
+              icon: 'extension',
+              title: 'KAIITAN 视图贡献点',
+            },
+            {
+              id: 'Leftview',
+              title: 'leftview',
+              icon: 'extension',
+              titleComponentId: 'TitleView',
+            },
+          ],
+        },
+      },
+      browserMain: path.join(__dirname, '../__mock__/extension/browser.js'),
+    },
     contributes: {
       'actions': [
         { type: 'action', title: 'test action' },
@@ -143,11 +171,7 @@ const mockExtensionProps: IExtensionProps = {
       ],
     },
   },
-  extendConfig: {
-    browser: {
-      main: 'browser.js',
-    },
-  },
+  extendConfig: {},
   extraMetadata: {},
   packageNlsJSON: {},
   defaultPkgNlsJSON: {},
@@ -169,7 +193,7 @@ class MockWorkbenchEditorService {
 
 const mockExtension = {
   ...mockExtensionProps,
-  contributes: mockExtensionProps.packageJSON.contributes,
+  contributes: Object.assign(mockExtensionProps.packageJSON.contributes, mockExtensionProps.packageJSON.kaitianContributes),
   activate: () => {
     return true;
   },
@@ -210,13 +234,19 @@ describe('Extension service', () => {
   let extensionService: ExtensionService;
   let injector: MockInjector;
 
-  beforeAll(() => {
-    injector = createBrowserInjector([], new MockInjector([DatabaseStorageContribution,  {
+  beforeAll((done) => {
+    (global as any).fetch = jest.fn().mockResolvedValueOnce({
+      ok: true,
+      text: async () => fs.readFileSync(path.join(__dirname, '../__mock__/extension/browser-new.js'), 'utf8'),
+    });
+    injector = createBrowserInjector([], new MockInjector([DatabaseStorageContribution, {
       token: AppConfig,
       useValue: {
         noExtHost: true,
       },
     }]));
+    createContributionProvider(injector, StorageResolverContribution);
+    createContributionProvider(injector, MainLayoutContribution);
     injector.addProviders(
       {
         token: ExtensionService,
@@ -372,12 +402,19 @@ describe('Extension service', () => {
         token: ExtensionNodeServiceServerPath,
         useClass: MockExtNodeClientService,
       },
+      {
+        token: ISchemaStore,
+        useClass: SchemaStore,
+      },
+      {
+        token: ISchemaRegistry,
+        useClass: SchemaRegistry,
+      },
     );
 
-    createContributionProvider(injector, StorageResolverContribution);
+    injector.get(IMainLayoutService).viewReady.resolve();
     extensionService = injector.get(ExtensionService);
-    // const nodeClient = new MockExtNodeClientService();
-    // injector.mock(ExtensionService, 'extensionNodeService', nodeClient);
+    done();
   });
 
   describe('activate', () => {
@@ -431,6 +468,11 @@ describe('Extension service', () => {
   describe('activate extension', () => {
     it('should activate mock browser extension without ext process', async (done) => {
       await extensionService.activeExtension(mockExtensions[0]);
+      const layoutService: IMainLayoutService = injector.get(IMainLayoutService);
+      const tabbarService: TabbarService = layoutService.getTabbarService('left');
+      const containerInfo = tabbarService.getContainer('test.kaitian-extension:Leftview');
+      expect(containerInfo?.options?.titleComponent).toBeDefined();
+      expect(containerInfo?.options?.titleProps).toBeDefined();
       setTimeout(() => {
         done();
       }, 1000);
@@ -443,7 +485,7 @@ describe('Extension service', () => {
       (toolbarRegistry as NextToolbarRegistryImpl).init();
       const groups = toolbarRegistry.getActionGroups('default');
       expect(groups!.length).toBe(1);
-      expect(toolbarRegistry.getToolbarActions({location: 'default', group: groups![0].id})!.actions!.length).toBe(1);
+      expect(toolbarRegistry.getToolbarActions({ location: 'default', group: groups![0].id })!.actions!.length).toBe(1);
     });
 
     it('should register shadow command via command contribution point', () => {
@@ -475,6 +517,21 @@ describe('Extension service', () => {
       const preferences = preferenceSettingsService.getSections('extension', PreferenceScope.Default);
       expect(preferences.length).toBe(1);
       expect(preferences[0].title).toBe('Mock Extension Config');
+      done();
+    });
+
+    it('should register browserView', (done) => {
+      const layoutService: LayoutService = injector.get(IMainLayoutService);
+      const tabbar = layoutService.getTabbarHandler('test.kaitian-extension:KaitianViewContribute');
+      expect(tabbar).toBeDefined();
+      expect(tabbar?.containerId).toBe('test.kaitian-extension:KaitianViewContribute');
+      done();
+    });
+
+    it('should register browserView', (done) => {
+      const layoutService: IMainLayoutService = injector.get(IMainLayoutService);
+      const tabbar = layoutService.getTabbarHandler('test.kaitian-extension:KaitianViewContribute');
+      expect(tabbar).toBeDefined();
       done();
     });
 

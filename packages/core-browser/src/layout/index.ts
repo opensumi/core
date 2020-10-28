@@ -1,6 +1,6 @@
 import { SlotLocation, AppConfig } from '../react-providers';
 import { Autowired, Injectable } from '@ali/common-di';
-import { BasicEvent, MaybeNull } from '@ali/ide-core-common';
+import { BasicEvent, getDebugLogger, MaybeNull } from '@ali/ide-core-common';
 import { IMenu } from '../menu/next';
 
 export class VisibleChangedPayload {
@@ -83,7 +83,10 @@ export interface ExtViewContainerOptions {
   component?: React.FunctionComponent;
   // 使用自定义组件时可以传入，否则请作为View的一部分传入
   initialProps?: object;
+  // 自定义标题组件
   titleComponent?: React.FunctionComponent;
+  // 自定义titleComponent时可选传入
+  titleProps?: object;
   noResize?: boolean;
   fromExtension?: boolean;
 }
@@ -128,7 +131,7 @@ export class ComponentRegistryImpl implements ComponentRegistry {
         this.config.layoutConfig[location] = targetLocation;
       }
       if (targetLocation.modules.indexOf(key) > -1) {
-        console.warn(`${location}位置已存在${key}模块`);
+        getDebugLogger().warn(`${location}位置已存在${key}模块`);
         return;
       }
       targetLocation.modules.push(key);

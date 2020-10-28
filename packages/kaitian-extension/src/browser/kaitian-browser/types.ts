@@ -64,6 +64,10 @@ export interface ITabBarViewContribution {
    * Tabbar组件主体
    */
   component: React.FC;
+  /**
+   * 自定义titleComponent组件，仅支持插件注册container
+   */
+  titleComponent?: React.FC;
 
   /**
    * 内置icon名称
@@ -84,6 +88,11 @@ export interface ITabBarViewContribution {
    * 名称
    */
   title: string;
+
+  /**
+   * 自定义标题组件id
+   */
+  titleComponentId?: string;
 
   /**
    * 排序权重

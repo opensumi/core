@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { VSCodeContributePoint, Contributes } from '../../../common';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { getIcon } from '@ali/ide-core-browser';
-import { DisposableCollection } from '@ali/ide-core-common';
+import { DisposableCollection, getDebugLogger } from '@ali/ide-core-common';
 import { ExtensionLoadingView } from '../../components';
 import { IIconService } from '@ali/ide-theme';
 
@@ -25,6 +25,7 @@ export interface KtViewItem {
   noResize?: boolean;
   expanded?: boolean;
   weight?: number;
+  titleComponentId?: string;
 }
 
 export type KtViewsSchema = Array<KtViewsContribution>;
@@ -63,6 +64,9 @@ export class KtViewContributionPoint extends VSCodeContributePoint<KtViewsContri
           } else {
             // 走append view逻辑
             for (const view of views) {
+              if (view.titleComponentId) {
+                getDebugLogger().warn(`custom title component '${view.titleComponentId}' is not allowed for built-in container ${location}!`);
+              }
               const { title, id, priority, component, when, weight } = view;
               const handlerId = this.mainlayoutService.collectViewComponent({
                 id,
