@@ -250,7 +250,6 @@ export class SearchContribution implements CommandContribution, KeybindingContri
       iconClass: getIcon('search'),
       title: localize('search.title'),
       priority: 9,
-      activateKeyBinding: 'shift+command+f',
     });
   }
 
