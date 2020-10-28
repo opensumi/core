@@ -15,6 +15,7 @@ import {
   IMainThreadTasks,
   IMainThreadComments,
   IMainThreadUrls,
+  IMainThreadTheming,
 } from '../../../common/vscode'; // '../../common';
 import { MainThreadCommands } from './main.thread.commands';
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
@@ -48,6 +49,7 @@ import { MainThreadFileSystemEvent } from './main.thread.file-system-event';
 import { MainThreadUrls } from './main.thread.urls';
 import { IMainThreadExtensionLog, MainThreadExtensionLogIdentifier } from '../../../common/extension-log';
 import { MainThreadExtensionLog } from '../../extension-log';
+import { MainThreadTheming } from './main.thread.theming';
 
 export async function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -82,6 +84,7 @@ export async function createApiFactory(
   const MainthreadTasksAPI = injector.get(MainthreadTasks, [rpcProtocol]);
   const MainthreadCommentsAPI = injector.get(MainthreadComments, [rpcProtocol, MainThreadCommandsAPI]);
   const MainthreadUrlsAPI = injector.get(MainThreadUrls, [rpcProtocol]);
+  const MainthreadThemingAPI = injector.get(MainThreadTheming, [rpcProtocol]);
 
   rpcProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   rpcProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
@@ -110,6 +113,7 @@ export async function createApiFactory(
   rpcProtocol.set<IMainThreadTasks>(MainThreadAPIIdentifier.MainThreadTasks, MainthreadTasksAPI);
   rpcProtocol.set<IMainThreadComments>(MainThreadAPIIdentifier.MainThreadComments, MainthreadCommentsAPI);
   rpcProtocol.set<IMainThreadUrls>(MainThreadAPIIdentifier.MainThreadUrls, MainthreadUrlsAPI);
+  rpcProtocol.set<IMainThreadTheming>(MainThreadAPIIdentifier.MainThreadTheming, MainthreadThemingAPI);
   rpcProtocol.set<IMainThreadExtensionLog>(MainThreadExtensionLogIdentifier, injector.get(MainThreadExtensionLog));
 
   await MainThreadWebviewAPI.init();
@@ -142,6 +146,7 @@ export async function createApiFactory(
     MainthreadTasksAPI.dispose();
     MainthreadCommentsAPI.dispose();
     MainthreadUrlsAPI.dispose();
+    MainthreadThemingAPI.dispose();
   };
 }
 
@@ -174,4 +179,5 @@ export async function initWorkerTheadAPIProxy(
   workerProtocol.set<IMainThreadUrls>(MainThreadAPIIdentifier.MainThreadUrls, injector.get(MainThreadUrls, [workerProtocol]));
   workerProtocol.set<IMainThreadComments>(MainThreadAPIIdentifier.MainThreadComments, injector.get(MainthreadComments, [workerProtocol, MainThreadCommandsAPI]));
   workerProtocol.set<IMainThreadProgress>(MainThreadAPIIdentifier.MainThreadProgress, MainThreadProgressAPI);
+  workerProtocol.set<IMainThreadTheming>(MainThreadAPIIdentifier.MainThreadTheming, injector.get(MainThreadTheming, [workerProtocol]));
 }

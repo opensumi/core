@@ -25,6 +25,7 @@ import { IExtHostTerminal, IMainThreadTerminal } from './terminal';
 import { IMainThreadFileSystemShape } from './file-system';
 import { IKaitianExtHostWebviews } from '../kaitian/webview';
 import { IExtHostProgress, IMainThreadProgress } from './progress';
+import { IExtHostTheming, IMainThreadTheming } from './theming';
 import { IExtHostTasks, IMainThreadTasks } from './tasks';
 import { IExtHostComments, IMainThreadComments } from './comments';
 import { ExtHostFileSystem } from '../../hosted/api/vscode/ext.host.file-system';
@@ -71,6 +72,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadTasks: createExtHostContextProxyIdentifier<IMainThreadTasks>('MainThreadTasks'),
   MainThreadComments: createExtHostContextProxyIdentifier<IMainThreadComments>('MainThreadComments'),
   MainThreadUrls: createExtHostContextProxyIdentifier<IMainThreadUrls>('MainThreadUrls'),
+  MainThreadTheming: createExtHostContextProxyIdentifier<IMainThreadTheming>('MainThreadTheming'),
 };
 
 export const ExtHostAPIIdentifier = {
@@ -100,6 +102,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostTerminal: createExtHostContextProxyIdentifier<IExtHostTerminal>('ExtHostTerminal'),
   ExtHostWindow: createExtHostContextProxyIdentifier<IExtHostWindow>('ExtHostWindow'),
   ExtHostProgress: createExtHostContextProxyIdentifier<IExtHostProgress>('ExtHostProgress'),
+  ExtHostTheming: createExtHostContextProxyIdentifier<IExtHostTheming>('ExtHostTheming'),
   ExtHostTasks: createExtHostContextProxyIdentifier<IExtHostTasks>('ExtHostTasks'),
   KaitianExtHostWebview: createExtHostContextProxyIdentifier<IKaitianExtHostWebviews>('KaitianExtHostWebview'),
   ExtHostComments: createExtHostContextProxyIdentifier<IExtHostComments>('ExtHostComments'),
@@ -147,3 +150,4 @@ export * from './progress';
 export * from './tasks';
 export * from './comments';
 export * from './urls';
+export * from './theming';
