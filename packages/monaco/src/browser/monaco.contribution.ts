@@ -182,7 +182,7 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
 
         // monaco keybindingRegistry中取出的keybinding缺少了editorFocus的when,
         // 当向开天的keybinding注册时需要加上editorFocus，避免焦点不在编辑器时响应到
-        let when = item.when;
+        let when: any = item.when;
         const editorFocus = monaco.contextkey.EditorContextKeys.focus;
         if (!when) {
           when = editorFocus as any;

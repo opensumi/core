@@ -1,4 +1,4 @@
-import { KeymapService, ContextKeyExprType } from '@ali/ide-keymaps/lib/browser/keymaps.service';
+import { KeymapService } from '@ali/ide-keymaps/lib/browser/keymaps.service';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { KeymapsParser } from '@ali/ide-keymaps/lib/browser/keymaps-parser';
@@ -36,6 +36,12 @@ describe('KeymapsService should be work', () => {
         command: 'test.command',
         keybindings: 'cmd+c',
       }];
+    }),
+    convertMonacoWhen: jest.fn((when: any) => {
+      if (typeof when === 'string') {
+        return when;
+      }
+      return '';
     }),
     unregisterKeybinding: jest.fn(),
     registerKeybinding: jest.fn(() => Disposable.create(() => {})),
@@ -173,115 +179,15 @@ describe('KeymapsService should be work', () => {
     });
 
     it('getWhen method should be work', () => {
-      let keybinding = {
+      const keybinding = {
         command: 'test.command',
         keybinding: 'cmd+c',
         when: 'focus' as any,
       };
-      let result =  keymapsService.getWhen(keybinding);
+      mockKeybindingRegistry.convertMonacoWhen.mockClear();
+      const result =  keymapsService.getWhen(keybinding);
       expect(result).toBe(keybinding.when);
-
-      const defined = {
-        getType: () => ContextKeyExprType.Defined,
-        key: 'definedKey',
-      };
-      keybinding = {
-        ...keybinding,
-        when: defined,
-      };
-      result =  keymapsService.getWhen(keybinding);
-      expect(result).toBe(defined.key);
-
-      const equals = {
-        getType: () => ContextKeyExprType.Equals,
-        getValue: () => 'true',
-        key: 'notEqualsKey',
-      };
-      keybinding = {
-        ...keybinding,
-        when: equals,
-      };
-      result =  keymapsService.getWhen(keybinding);
-      expect(result).toBe(`${equals.key} == 'true'`);
-
-      const notEquals = {
-        getType: () => ContextKeyExprType.NotEquals,
-        getValue: () => 'true',
-        key: 'equalsKey',
-      };
-      keybinding = {
-        ...keybinding,
-        when: notEquals,
-      };
-      result =  keymapsService.getWhen(keybinding);
-      expect(result).toBe(`${notEquals.key} != 'true'`);
-
-      const not = {
-        getType: () => ContextKeyExprType.Not,
-        key: 'notKey',
-      };
-      keybinding = {
-        ...keybinding,
-        when: not,
-      };
-      result =  keymapsService.getWhen(keybinding);
-      expect(result).toBe(`!${not.key}`);
-
-      const regex = {
-        getType: () => ContextKeyExprType.Regex,
-        regexp: {
-          source: 'regexKey',
-          ignoreCase: true,
-        },
-        key: 'regexKey',
-      };
-      keybinding = {
-        ...keybinding,
-        when: regex,
-      };
-      result =  keymapsService.getWhen(keybinding);
-      expect(result).toBe(`${regex.key} =~ /${regex.regexp.source}/${regex.regexp.ignoreCase ? 'i' : ''}`);
-
-      const and = {
-        getType: () => ContextKeyExprType.And,
-        expr: [{
-          serialize: () => 'a',
-        }, {
-          serialize: () => 'b',
-        }],
-      };
-      keybinding = {
-        ...keybinding,
-        when: and,
-      };
-      result =  keymapsService.getWhen(keybinding);
-      expect(result).toBe(`a && b`);
-
-      const or = {
-        getType: () => ContextKeyExprType.Or,
-        expr: [{
-          serialize: () => 'a',
-        }, {
-          serialize: () => 'b',
-        }],
-      };
-      keybinding = {
-        ...keybinding,
-        when: or,
-      };
-      result =  keymapsService.getWhen(keybinding);
-      expect(result).toBe(`a || b`);
-
-      const expr = {
-        getType: () => ContextKeyExprType.Or,
-        expr: [and],
-      };
-      keybinding = {
-        ...keybinding,
-        when: expr,
-      };
-      result =  keymapsService.getWhen(keybinding);
-      expect(result).toBe(`a && b`);
+      expect(mockKeybindingRegistry.convertMonacoWhen).toBeCalledTimes(1);
     });
 
     it('getScope method should be work', () => {
