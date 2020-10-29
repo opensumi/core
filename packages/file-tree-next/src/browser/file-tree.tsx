@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ViewState, useInjectable, isOSX, URI } from '@ali/ide-core-browser';
-import { RecycleTreeFilterDecorator, RecycleTree, IRecycleTreeHandle, TreeNodeType, INodeRendererWrapProps, IRecycleTreeFilterHandle, TreeModel } from '@ali/ide-components';
+import { RecycleTreeFilterDecorator, RecycleTree, TreeNodeType, INodeRendererWrapProps, IRecycleTreeFilterHandle, TreeModel } from '@ali/ide-components';
 import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
@@ -20,8 +20,7 @@ export const FileTree = observer(({
 }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const [isReady, setIsReady] = React.useState<boolean>(false);
   const [outerDragOver, setOuterDragOver] = React.useState<boolean>(false);
-  const [filter, setFilter ] = React.useState<string>('');
-  const [preFilter, setPreFilter ] = React.useState<string>('');
+  const [filter ] = React.useState<string>('');
   const [model, setModel ] = React.useState<TreeModel>();
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
@@ -125,7 +124,7 @@ export const FileTree = observer(({
     }
   }, [filterMode]);
 
-  const beforeFilterValueChange = async (filter: string) => {
+  const beforeFilterValueChange = async () => {
     const { expandAllCacheDirectory } = fileTreeModelService;
     await expandAllCacheDirectory();
   };
@@ -148,7 +147,7 @@ export const FileTree = observer(({
     });
   };
 
-  const handleOuterClick = (ev: React.MouseEvent) => {
+  const handleOuterClick = () => {
     // 空白区域点击，取消焦点状态
     const { enactiveFileDecoration } = fileTreeModelService;
     enactiveFileDecoration();
@@ -176,7 +175,7 @@ export const FileTree = observer(({
     setOuterDragOver(true);
   };
 
-  const handleOuterDragLeave = (ev: React.DragEvent) => {
+  const handleOuterDragLeave = () => {
     setOuterDragOver(false);
   };
 
@@ -204,6 +203,7 @@ export const FileTree = observer(({
           filterEnabled={filterMode}
           beforeFilterValueChange={beforeFilterValueChange}
           filterAfterClear={() => locationToCurrentFile()}
+          filterAutoFocus={true}
         >
           {(props: INodeRendererWrapProps) => <FileTreeNode
             item={props.item}
