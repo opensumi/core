@@ -6,18 +6,6 @@ import * as fuzzy from 'fuzzy';
 import { KEYMAPS_FILE_NAME, IKeymapService, KEYMAPS_SCHEME, KeybindingItem } from '../common';
 import { USER_STORAGE_SCHEME } from '@ali/ide-preferences';
 
-// monaco.contextkey.ContextKeyExprType 引入
-export const enum ContextKeyExprType {
-  Defined = 1,
-  Not = 2,
-  Equals = 3,
-  NotEquals = 4,
-  And = 5,
-  Regex = 6,
-  NotRegex = 7,
-  Or = 8,
-}
-
 @Injectable()
 export class KeymapService implements IKeymapService {
 
@@ -329,51 +317,7 @@ export class KeymapService implements IKeymapService {
     if (!keybinding) {
       return '';
     }
-    return keybinding.when ? typeof keybinding.when === 'string' ? keybinding.when : this.serialize(keybinding.when) : '';
-  }
-
-  private serialize(when: any) {
-    let result: string[] = [];
-    if (when.expr) {
-      when = when as monaco.contextkey.ContextKeyAndExpr | monaco.contextkey.ContextKeyOrExpr;
-    } else {
-      when = when as monaco.contextkey.ContextKeyDefinedExpr
-        | monaco.contextkey.ContextKeyEqualsExpr
-        | monaco.contextkey.ContextKeyNotEqualsExpr
-        | monaco.contextkey.ContextKeyNotExpr
-        | monaco.contextkey.ContextKeyNotRegexExpr
-        | monaco.contextkey.ContextKeyOrExpr
-        | monaco.contextkey.ContextKeyRegexExpr;
-    }
-    if (!when.expr || (when.expr && when.expr.length > 0 && when.expr[0].serialize)) {
-      switch (when.getType()) {
-        case ContextKeyExprType.Defined:
-          return when.key;
-        case ContextKeyExprType.Equals:
-          return when.key + ' == \'' + (when.getValue ? when.getValue() : when.value) + '\'';
-        case ContextKeyExprType.NotEquals:
-          return when.key + ' != \'' + (when.getValue ? when.getValue() : when.value) + '\'';
-        case ContextKeyExprType.Not:
-          return '!' + when.key;
-        case ContextKeyExprType.Regex:
-          const value = when.regexp
-            ? `/${when.regexp.source}/${when.regexp.ignoreCase ? 'i' : ''}`
-            : '/invalid/';
-          return `${when.key} =~ ${value}`;
-        case ContextKeyExprType.NotRegex:
-          return '-not regex-';
-        case ContextKeyExprType.And:
-          return when.expr.map((e) => e.serialize()).join(' && ');
-        case ContextKeyExprType.Or:
-          return when.expr.map((e) => e.serialize()).join(' || ');
-        default:
-          return when.key;
-      }
-    }
-    result = when.expr.map((contextKey: any) => {
-      return this.serialize(contextKey);
-    });
-    return result.join(' && ');
+    return this.keybindingRegistry.convertMonacoWhen(keybinding.when);
   }
 
   /**
@@ -613,7 +557,7 @@ export class KeymapService implements IKeymapService {
           return {
             id: command ? command.id : this.getRaw(binding.command),
             command: (command ? command.label || command.id : binding.command) || '',
-            when: typeof binding.when === 'string' ? binding.when : this.serialize(binding.when),
+            when: this.keybindingRegistry.convertMonacoWhen(binding.when),
             keybinding: this.getRaw(binding.keybinding),
             source: isUserKeybinding ? this.getScope(KeybindingScope.USER) : this.getScope(KeybindingScope.DEFAULT),
           };
