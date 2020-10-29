@@ -581,7 +581,6 @@ export class KeymapService implements IKeymapService {
       const binding = {
         command: keybindingItem.command,
         when: keybindingItem.when,
-        context: keybindingItem.context,
         keybinding,
       };
       if (keybindingItem.keybinding === keybinding) {

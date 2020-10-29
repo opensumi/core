@@ -295,7 +295,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    */
   protected doRegisterKeybinding(binding: Keybinding, scope: KeybindingScope = KeybindingScope.DEFAULT): IDisposable {
     try {
-      this.resolveKeybinding(binding);
+      this.resolveKeybinding(binding, true);
       this.keymaps[scope].unshift(binding);
     } catch (error) {
       this.logger.warn(`Could not register keybinding:\n  ${Keybinding.stringify(binding)}\n${error}`);
@@ -314,8 +314,8 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * 通过调用KeyboardLayoutService来设置给定的ResolvedKeybinding中的`resolved`属性。
    * @param binding
    */
-  public resolveKeybinding(binding: ResolvedKeybinding): KeyCode[] {
-    if (!binding.resolved) {
+  public resolveKeybinding(binding: ResolvedKeybinding, disableCache?: boolean): KeyCode[] {
+    if (!binding.resolved || disableCache) {
       const sequence = KeySequence.parse(binding.keybinding);
       binding.resolved = sequence.map((code) => this.keyboardLayoutService.resolveKeyCode(code));
     }
