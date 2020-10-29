@@ -96,7 +96,6 @@ export class DebugModel implements IDebugModel {
       this.editor.onKeyDown(() => this.debugHoverWidget.hide({ immediate: false })),
       this.debugSessionManager.onDidChange(() => this.renderFrames()),
       model.onDidChangeContent(() => this.onContentChanged()),
-      this.breakpointManager.onDidChangeMarkers(() => this.renderBreakpoints()),
     ]);
     this.render();
   }
@@ -504,7 +503,6 @@ export class DebugModel implements IDebugModel {
         next.push(b);
       }
     });
-
     this.breakpointManager.setBreakpoints(this.uri, next);
   }
 
