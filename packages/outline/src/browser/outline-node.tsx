@@ -29,7 +29,7 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
   decorationService,
   decorations,
 }: OutlineNodeRenderedProps) => {
-  const decoration = OutlineCompositeTreeNode.is(item) ? null : decorationService.getDecoration(item);
+  const decoration = OutlineTreeNode.is(item) ? decorationService.getDecoration(item) : null;
 
   const handleClick = (ev: React.MouseEvent) => {
     if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
@@ -107,8 +107,8 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
   };
 
   const getItemTooltip = () => {
-    let tooltip = item.tooltip;
-    if (decoration && decoration.badge) {
+    let tooltip = item.tooltip || item.name;
+    if (decoration && decoration.tooltip) {
       tooltip += ` • ${decoration.tooltip}`;
     }
     return tooltip;

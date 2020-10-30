@@ -111,7 +111,7 @@ export class OutlineTreeService extends Tree {
             return new OutlineCompositeTreeNode(this, parent, symbol, getSymbolIcon(symbol.kind) + ' outline-icon', cache?.id);
           }
           return new OutlineTreeNode(this, parent, symbol, getSymbolIcon(symbol.kind) + ' outline-icon', cache?.id);
-        }) || [];
+        }).filter((node) => !!node.name) || [];
       }
     }
     this.cacheNodes(children);

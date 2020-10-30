@@ -151,6 +151,16 @@ export class OutlineModelService {
     }));
 
     this.disposableCollection.push(this.treeModel.onWillUpdate(() => {
+      if (!!this.focusedNode) {
+        // 更新树前更新下选中节点
+        const node = this.treeModel?.root.getTreeNodeById(this.focusedNode.id);
+        this.activeNodeDecoration(node as OutlineTreeNode, false);
+      } else if (this.selectedNodes.length !== 0) {
+        // 仅处理一下单选情况
+        const node = this.treeModel?.root.getTreeNodeById(this.selectedNodes[0].id);
+        this.selectNodeDecoration(node as OutlineTreeNode, false);
+      }
+      // 先处理上次选择的节点选中态，再处理需要定位节点的情况
       if (this.outlineTreeService.followCursor && this.outlineTreeService.currentUri) {
         // 如果设置了跟随光标，此时查询一下当前焦点节点
         const symbols = this.documentSymbolStore.getDocumentSymbol(this.outlineTreeService.currentUri);
@@ -168,14 +178,6 @@ export class OutlineModelService {
           }
         }
 
-      } else if (!!this.focusedNode) {
-        // 更新树前更新下选中节点
-        const node = this.treeModel?.root.getTreeNodeById(this.focusedNode.id);
-        this.activeNodeDecoration(node as OutlineTreeNode, false);
-      } else if (this.selectedNodes.length !== 0) {
-        // 仅处理一下单选情况
-        const node = this.treeModel?.root.getTreeNodeById(this.selectedNodes[0].id);
-        this.selectNodeDecoration(node as OutlineTreeNode, false);
       }
     }));
   }

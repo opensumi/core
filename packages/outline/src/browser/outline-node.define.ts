@@ -36,9 +36,9 @@ export class OutlineCompositeTreeNode extends CompositeTreeNode {
     id?: number,
   ) {
     super(tree as ITree, parent, undefined, { name: raw.name }, { disableCache: false });
-    this._whenReady = this.setExpanded(false, true);
     this._uid = id || this._uid;
     TreeNode.setTreeNode(this._uid, this.path, this);
+    this._whenReady = this.setExpanded(false, true);
   }
 
   get displayName() {
@@ -51,6 +51,11 @@ export class OutlineCompositeTreeNode extends CompositeTreeNode {
 }
 
 export class OutlineTreeNode extends TreeNode {
+
+  static is(node: OutlineTreeNode): node is OutlineTreeNode {
+    return !!node && !!(node as OutlineTreeNode).raw;
+  }
+
   constructor(
     tree: OutlineTreeService,
     parent: OutlineCompositeTreeNode | OutlineRoot,

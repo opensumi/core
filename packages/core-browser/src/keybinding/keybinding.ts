@@ -826,9 +826,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
         this.statusBar.removeElement('keybinding-status');
       }, KeybindingRegistryImpl.KEYSEQUENCE_TIMEOUT);
     } else {
-      // 阻挡事件被捕获
-      event.stopPropagation();
-
       this.keySequence = [];
       this.statusBar.removeElement('keybinding-status');
     }
