@@ -13,6 +13,18 @@ export enum KeybindingScope {
   END,
 }
 
+// monaco.contextkey.ContextKeyExprType 引入
+export const enum ContextKeyExprType {
+  Defined = 1,
+  Not = 2,
+  Equals = 3,
+  NotEquals = 4,
+  And = 5,
+  Regex = 6,
+  NotRegex = 7,
+  Or = 8,
+}
+
 // ref: https://github.com/Microsoft/vscode/blob/97fc588e65bedcb1113baeddd2f67237e52c8c63/src/vs/platform/keybinding/common/keybindingsRegistry.ts#L56
 // 快捷键第一优先级，在开天中将对该值 * 100 作为快捷键的优先级参数 priority
 export enum KeybindingWeight {
@@ -94,7 +106,7 @@ export interface Keybinding {
   /**
    * https://code.visualstudio.com/docs/getstarted/keybindings#_when-clause-contexts
    */
-  when?: string | monaco.contextkey.ContextKeyExpr;
+  when?: string | monaco.contextkey.ContextKeyOrExpr;
 
   // Command执行参数
   args?: any;
@@ -142,6 +154,7 @@ export interface KeybindingRegistry {
   isEnabled(binding: Keybinding, event: KeyboardEvent): boolean;
   isPseudoCommand(commandId: string): boolean;
   resetKeybindings(): void;
+  convertMonacoWhen(when: any): string;
   onKeybindingsChanged: Event<{ affectsCommands: string[] }>;
 }
 
@@ -238,6 +251,62 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   }
 
   /**
+   * 用于转换monaco内置的RawContextKey
+   * @param when
+   */
+  public convertMonacoWhen(when: any) {
+    let result: string[] = [];
+    if (!when) {
+      return '';
+    } else if (typeof when === 'string') {
+      return when;
+    }
+    if (when.expr) {
+      when = when as monaco.contextkey.ContextKeyAndExpr | monaco.contextkey.ContextKeyOrExpr;
+    } else {
+      when = when as monaco.contextkey.ContextKeyDefinedExpr
+        | monaco.contextkey.ContextKeyEqualsExpr
+        | monaco.contextkey.ContextKeyNotEqualsExpr
+        | monaco.contextkey.ContextKeyNotExpr
+        | monaco.contextkey.ContextKeyNotRegexExpr
+        | monaco.contextkey.ContextKeyOrExpr
+        | monaco.contextkey.ContextKeyRegexExpr;
+    }
+    if (!when.expr || (when.expr && when.expr.length > 0 && when.expr[0].serialize)) {
+      if (!when.getType) {
+        return when;
+      }
+      switch (when.getType()) {
+        case ContextKeyExprType.Defined:
+          return when.key;
+        case ContextKeyExprType.Equals:
+          return when.key + ' == \'' + (when.getValue ? when.getValue() : when.value) + '\'';
+        case ContextKeyExprType.NotEquals:
+          return when.key + ' != \'' + (when.getValue ? when.getValue() : when.value) + '\'';
+        case ContextKeyExprType.Not:
+          return '!' + when.key;
+        case ContextKeyExprType.Regex:
+          const value = when.regexp
+            ? `/${when.regexp.source}/${when.regexp.ignoreCase ? 'i' : ''}`
+            : '/invalid/';
+          return `${when.key} =~ ${value}`;
+        case ContextKeyExprType.NotRegex:
+          return '-not regex-';
+        case ContextKeyExprType.And:
+          return when.expr.map((e) => e.serialize()).join(' && ');
+        case ContextKeyExprType.Or:
+          return when.expr.map((e) => e.serialize()).join(' || ');
+        default:
+          return when.key;
+      }
+    }
+    result = when.expr.map((contextKey: any) => {
+      return this.convertMonacoWhen(contextKey);
+    });
+    return result.join(' && ');
+  }
+
+  /**
    * 注销 Keybinding
    * @param binding
    */
@@ -250,7 +319,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
     let bindings;
     // 当传入的keybinding存在when条件时，严格匹配
     if (Keybinding.is(keyOrBinding) && !!keyOrBinding.when) {
-      bindings = keymap.filter((el) => this.isKeybindingEqual(el.keybinding, keyOrBinding.keybinding) && el.when === keyOrBinding.when);
+      bindings = keymap.filter((el) => this.isKeybindingEqual(el.keybinding, keyOrBinding.keybinding) && this.isKeybindingWhenEqual(el.when, keyOrBinding.when));
     } else {
       bindings = keymap.filter((el) => this.isKeybindingEqual(el.keybinding, key));
     }
@@ -260,6 +329,11 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
         keymap.splice(idx, 1);
       }
     });
+  }
+
+  // 判断两个when是否相等
+  private isKeybindingWhenEqual(when1?: string | monaco.contextkey.ContextKeyExpr, when2?: string | monaco.contextkey.ContextKeyExpr) {
+    return this.convertMonacoWhen(when1) === this.convertMonacoWhen(when2);
   }
 
   // 判断两个快捷键是否相等
@@ -295,7 +369,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    */
   protected doRegisterKeybinding(binding: Keybinding, scope: KeybindingScope = KeybindingScope.DEFAULT): IDisposable {
     try {
-      this.resolveKeybinding(binding);
+      this.resolveKeybinding(binding, true);
       this.keymaps[scope].unshift(binding);
     } catch (error) {
       this.logger.warn(`Could not register keybinding:\n  ${Keybinding.stringify(binding)}\n${error}`);
@@ -314,8 +388,8 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * 通过调用KeyboardLayoutService来设置给定的ResolvedKeybinding中的`resolved`属性。
    * @param binding
    */
-  public resolveKeybinding(binding: ResolvedKeybinding): KeyCode[] {
-    if (!binding.resolved) {
+  public resolveKeybinding(binding: ResolvedKeybinding, disableCache?: boolean): KeyCode[] {
+    if (!binding.resolved || disableCache) {
       const sequence = KeySequence.parse(binding.keybinding);
       binding.resolved = sequence.map((code) => this.keyboardLayoutService.resolveKeyCode(code));
     }

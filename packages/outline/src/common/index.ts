@@ -1,5 +1,5 @@
 import { MarkerSeverity, URI } from '@ali/ide-core-common';
-import { TreeNode } from '@ali/ide-components';
+import { ITreeNode } from '@ali/ide-components';
 
 export const enum OutlineSortOrder {
   ByPosition,
@@ -13,6 +13,7 @@ export interface IOutlineMarker {
   endLineNumber: number;
   endColumn: number;
   severity: MarkerSeverity;
+  message?: string;
 }
 
 export const IOutlineDecorationService = Symbol('IOutlineDecorationService');
@@ -24,6 +25,6 @@ export interface IOutlineDecoration {
 }
 
 export interface IOutlineDecorationService {
-  getDecoration(node: TreeNode): IOutlineDecoration;
+  getDecoration(node: ITreeNode): IOutlineDecoration;
   updateDiagnosisInfo(uri?: URI): void;
 }

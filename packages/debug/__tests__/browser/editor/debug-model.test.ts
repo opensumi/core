@@ -32,7 +32,7 @@ describe('Debug Model', () => {
     getPosition: jest.fn(() => ({lineNumber: 2, column: 1})),
     deltaDecorations: jest.fn(() => []),
     focus: jest.fn(),
-  } as any;
+  };
 
   const mockBreakpointManager = {
     onDidChange: jest.fn(() => Disposable.create(() => {})),
@@ -95,7 +95,7 @@ describe('Debug Model', () => {
       useValue: {},
     });
 
-    childInjector = DebugModel.createContainer(mockInjector, mockEditor);
+    childInjector = DebugModel.createContainer(mockInjector, mockEditor as any);
 
     childInjector.overrideProviders({
       token: DebugHoverWidget,
@@ -139,6 +139,7 @@ describe('Debug Model', () => {
   });
 
   it('focusStackFrame should be work', () => {
+    mockEditor.deltaDecorations.mockClear();
     const mockFrame = {
       raw: {
         line: 1,
@@ -150,13 +151,15 @@ describe('Debug Model', () => {
   });
 
   it('renderBreakpoints should be work', () => {
+    mockEditor.deltaDecorations.mockClear();
     debugModel.renderBreakpoints();
-    expect(mockEditor.deltaDecorations).toBeCalledTimes(3);
+    expect(mockEditor.deltaDecorations).toBeCalledTimes(2);
   });
 
   it('render should be work', () => {
+    mockEditor.deltaDecorations.mockClear();
     debugModel.render();
-    expect(mockEditor.deltaDecorations).toBeCalledTimes(5);
+    expect(mockEditor.deltaDecorations).toBeCalledTimes(2);
   });
 
   it('toggleBreakpoint should be work', () => {
