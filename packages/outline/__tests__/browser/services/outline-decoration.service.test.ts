@@ -11,13 +11,13 @@ describe('OutlineDecorationService', () => {
 
   const mockMarkerManager = {
     getMarkers: jest.fn(() => {
-      return {
+      return [{
         startLineNumber: 0,
         startColumn: 0,
         endLineNumber: 1,
         endColumn: 10,
-        severity: MarkerSeverity.Info,
-      };
+        severity: MarkerSeverity.Error,
+      }];
     }),
   };
 
