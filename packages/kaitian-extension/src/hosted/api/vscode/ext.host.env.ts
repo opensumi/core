@@ -42,18 +42,19 @@ export function createEnvApiFactory(
   extensionService: IExtensionHostService,
   envHost: IExtHostEnv,
   exthostTerminal: IExtHostTerminal,
-): vscode.env {
+): typeof vscode.env {
   const proxy: IMainThreadEnv = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadEnv);
-  const values: ExtHostEnvValues = envHost.getEnvValues();
+  const values = envHost.getEnvValues();
   const env = {
     appName: values.appName,
     uriScheme: values.uriScheme,
     language: values.language,
-    sessionId: values.sessionId || envValue.sessionId,
-    machineId: values.machineId || envValue.machineId,
+    sessionId: envValue.sessionId,
+    machineId: envValue.machineId,
     appRoot: 'appRoot',
     remoteName: 'remoteName',
     shell: exthostTerminal.shellPath,
+    uiKind: values.uiKind,
     clipboard: {
       readText(): Thenable<string> {
         return proxy.$clipboardReadText();
@@ -81,7 +82,7 @@ export function createEnvApiFactory(
 
 export class ExtHostEnv implements IExtHostEnv {
   private rpcProtocol: IRPCProtocol;
-  private values: ExtHostEnvValues = {};
+  private values: ExtHostEnvValues;
   protected readonly proxy: IMainThreadEnv;
 
   readonly logLevelChangeEmitter = new Emitter<LogLevel>();

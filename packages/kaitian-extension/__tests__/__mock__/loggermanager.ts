@@ -13,4 +13,6 @@ export class MockLoggerManagerClient {
   }
 
   getLogFolder = () => '';
+  onDidChangeLogLevel = () => {};
+  getGlobalLogLevel = () => {};
 }

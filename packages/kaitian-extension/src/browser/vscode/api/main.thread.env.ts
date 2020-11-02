@@ -3,8 +3,9 @@ import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ILoggerManagerClient } from '@ali/ide-logs/lib/browser';
 import { IMainThreadEnv, IExtHostEnv, ExtHostAPIIdentifier } from '../../../common/vscode';
+import { UIKind } from '../../../common/vscode/ext-types';
 import { ClientAppConfigProvider, IOpenerService, IClipboardService } from '@ali/ide-core-browser';
-import { getLanguageId, URI } from '@ali/ide-core-common';
+import { getLanguageId, URI, isElectronEnv } from '@ali/ide-core-common';
 import { HttpOpener } from '@ali/ide-core-browser/lib/opener/http-opener';
 
 @Injectable({multiple: true})
@@ -38,6 +39,7 @@ export class MainThreadEnv implements IMainThreadEnv {
       appName: ClientAppConfigProvider.get().applicationName,
       uriScheme: ClientAppConfigProvider.get().uriScheme,
       language: getLanguageId(),
+      uiKind: isElectronEnv() ? UIKind.Desktop : UIKind.Web,
     });
   }
 

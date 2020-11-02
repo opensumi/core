@@ -1,6 +1,6 @@
 import { LogLevel as KTLogLevel, Emitter } from '@ali/ide-core-common';
 import * as vscode from 'vscode';
-import { LogLevel } from './ext-types';
+import { LogLevel, UIKind } from './ext-types';
 
 export interface IMainThreadEnv {
   $clipboardReadText(): Thenable<string>;
@@ -10,7 +10,7 @@ export interface IMainThreadEnv {
 }
 
 export interface IExtHostEnv {
-  $setEnvValues(values: ExtHostEnvValues);
+  $setEnvValues(values: Partial<ExtHostEnvValues>);
   $fireChangeLogLevel(value: KTLogLevel);
   $setLogLevel(value: KTLogLevel);
   logLevel: LogLevel;
@@ -22,12 +22,8 @@ export interface IExtHostEnv {
 }
 
 export interface ExtHostEnvValues {
-  appName?: string;
-  appRoot?: string;
-  uriScheme?: string;
-  language?: string;
-  machineId?: string;
-  sessionId?: string;
-  remoteName?: string;
-  logLevel?: LogLevel;
+  appName: string;
+  uriScheme: string;
+  language: string;
+  uiKind: UIKind;
 }
