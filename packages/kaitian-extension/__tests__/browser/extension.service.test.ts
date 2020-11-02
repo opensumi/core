@@ -434,6 +434,15 @@ describe('Extension service', () => {
       expect(cb).toBeCalled();
     });
 
+    it('emit onStartupFinished activationEvent after activate', async () => {
+      const cb = jest.fn();
+      const activationEventService = injector.get<IActivationEventService>(IActivationEventService);
+      activationEventService.onEvent('onStartupFinished', cb);
+      // @ts-ignore
+      await extensionService.doActivate();
+      expect(cb).toBeCalled();
+    });
+
   });
 
   describe('get extension', () => {

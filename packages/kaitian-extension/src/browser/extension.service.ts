@@ -242,6 +242,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       this.logger.error(`[Extension Activate Error], \n ${err.message || err}`);
     } finally {
       this.eagerExtensionsActivated.resolve();
+      this.activationEventService.fireEvent('onStartupFinished');
       this.eventBus.fire(new ExtensionApiReadyEvent());
     }
   }
@@ -355,14 +356,19 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   private fireActivationEventsIfNeed(activationEvents: string[]) {
-    if (activationEvents.find((event) => event === '*')) {
-      this.activationEventService.fireEvent('*');
-    }
+    const startUpActivationEvents = ['*', 'onStartupFinished'];
 
     const _activationEvents = activationEvents.filter((event) => event !== '*');
     const shouldFireEvents = Array.from(
       this.activationEventService.activatedEventSet.values(),
     ).filter(({ topic, data }) => _activationEvents.find((_event) => _event === `${topic}:${data}`));
+
+    for (const event of startUpActivationEvents) {
+      if (activationEvents.includes(event)) {
+        this.logger.verbose(`Fire activation event ${event}`);
+        this.activationEventService.fireEvent(event);
+      }
+    }
 
     for (const event of shouldFireEvents) {
       this.logger.verbose(`Fire activation event ${event.topic}:${event.data}`);
