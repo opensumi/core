@@ -235,7 +235,7 @@ class ElectronMainLifeCycleApi implements IElectronMainApiProvider<void> {
           window.webContents.reload();
         });
       } else {
-        codeWindow.clear().then(() => {
+        codeWindow.clear().finally(() => {
           window.close();
         });
       }
