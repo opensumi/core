@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Disposable } from '@ali/ide-core-common';
 import { ConfigContext } from '../react-providers';
-import { Token } from '@ali/common-di';
+import { Token, Injector } from '@ali/common-di';
 
 function isDisposable(target: any): target is Disposable {
   return target && (target as any).dispose;
@@ -17,7 +17,12 @@ export function useInjectable<T = any>(Constructor: Token, args?: any): T  {
   React.useEffect(() => {
     return () => {
       // 如果这是多例模式，DI 中不会留有这个实例对象
-      if (!injector.hasInstance(instance)) {
+      // 由于实例可能存在在父 injector 中，需要做一下递归判断
+      let curr: Injector | undefined = injector;
+      while (curr && !curr.hasInstance(instance)) {
+        curr = (curr as any).parent;
+      }
+      if (!curr) {
         if (isDisposable(instance)) {
           instance.dispose();
         }
