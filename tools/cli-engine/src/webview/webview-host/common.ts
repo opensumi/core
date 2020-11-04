@@ -86,7 +86,7 @@ export function getVsCodeApiScript(state) {
           },
           setState: function(newState) {
             state = newState;
-            originalPostMessage({ command: 'do-update-state', data: newState }, targetOrigin);
+            originalPostMessage({ command: 'do-update-state', data: JSON.parse(JSON.stringify(newState)) }, targetOrigin);
             return newState;
           },
           getState: function() {
