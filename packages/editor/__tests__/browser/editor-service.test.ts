@@ -259,6 +259,18 @@ describe('workbench editor service tests', () => {
     done();
   });
 
+  it('pined uri should be empty after close all', async (done) => {
+    const testCodeUri = new URI('test://testUri1');
+    await editorService.open(testCodeUri, { preview: true });
+    await editorService.closeAll();
+    expect((editorService as WorkbenchEditorServiceImpl).currentEditorGroup.previewURI).toBeNull();
+    await editorService.open(testCodeUri, { preview: true });
+    expect(editorService.editorGroups[0].resources.length).toBe(1);
+
+    await editorService.closeAll();
+    done();
+  });
+
   it('replace should work properly', async (done) => {
     const testCodeUri = new URI('test://a/testUri1');
     await editorService.open(testCodeUri, { preview: false });

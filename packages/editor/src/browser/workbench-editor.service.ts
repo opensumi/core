@@ -1238,6 +1238,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     if (this.workbenchEditorService.editorGroups.length > 1) {
       this.dispose();
     }
+    this.previewURI = null;
     this.backToEmpty();
   }
 
