@@ -74,7 +74,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
   protected _widget: monaco.quickOpen.QuickOpenWidget | undefined;
   protected _widgetNode: HTMLElement;
   protected opts: MonacoQuickOpenControllerOpts;
-  protected readonly container: HTMLElement;
+  protected container: HTMLElement;
   protected previousActiveElement: Element | undefined;
 
   @Autowired(KeybindingRegistry)
@@ -83,7 +83,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
   @Autowired(MonacoContextKeyService)
   protected readonly contextKeyService: MonacoContextKeyService;
 
-  constructor() {
+  private appendQuickOpenContainer() {
     const overlayContainer = document.querySelector('#ide-overlay');
 
     if (!overlayContainer) {
@@ -112,6 +112,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
 
   internalOpen(opts: MonacoQuickOpenControllerOpts): void {
     this.opts = opts;
+    const widget = this.widget;
 
     const activeContext = window.document.activeElement || undefined;
 
@@ -122,7 +123,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
 
     this.hideDecoration();
 
-    this.widget.show(this.opts.prefix || '');
+    widget.show(this.opts.prefix || '');
 
     this.setPlaceHolder(opts.inputAriaLabel);
 
@@ -132,7 +133,6 @@ export class MonacoQuickOpenService implements QuickOpenService {
 
     this.setValueSelected(opts.inputAriaLabel, opts.valueSelection);
 
-    const widget = this.widget;
     if (widget.inputBox) {
       widget.inputBox.inputElement.tabIndex = 1;
     }
@@ -178,6 +178,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
     if (this._widget) {
       return this._widget;
     }
+    this.appendQuickOpenContainer();
     this._widget = new monaco.quickOpen.QuickOpenWidget(
       this.container,
       {
