@@ -139,7 +139,11 @@ export class OutlineModelService {
     }));
 
     this.disposableCollection.push(this.outlineEventService.onDidSelectionChange(() => {
-      this.refresh();
+      // 选取更改时不需要刷新Tree，仅需要定位选择位置即可
+      if (this.outlineTreeService.followCursor) {
+        // 如果设置了跟随光标，此时查询一下当前焦点节点
+        this.locateSelection(false);
+      }
     }));
 
     this.disposableCollection.push(this.outlineEventService.onDidChange(() => {
@@ -160,25 +164,6 @@ export class OutlineModelService {
         const node = this.treeModel?.root.getTreeNodeById(this.selectedNodes[0].id);
         this.selectNodeDecoration(node as OutlineTreeNode, false);
       }
-      // 先处理上次选择的节点选中态，再处理需要定位节点的情况
-      if (this.outlineTreeService.followCursor && this.outlineTreeService.currentUri) {
-        // 如果设置了跟随光标，此时查询一下当前焦点节点
-        const symbols = this.documentSymbolStore.getDocumentSymbol(this.outlineTreeService.currentUri);
-        if (symbols) {
-          const activeSymbols = this.findCurrentDocumentSymbol(symbols, this.editorService.currentEditorGroup.codeEditor.monacoEditor.getPosition());
-          const node = this.outlineTreeService.getTreeNodeBySymbol(activeSymbols[activeSymbols.length - 1]);
-          if (!!node) {
-            this.activeNodeDecoration(node as OutlineTreeNode, false);
-            if (this._ignoreFollowCursorUpdateEventTimer) {
-              this._ignoreFollowCursorUpdateEventTimer--;
-              return;
-            } else {
-              this.location(node as OutlineTreeNode);
-            }
-          }
-        }
-
-      }
     }));
   }
 
@@ -187,6 +172,26 @@ export class OutlineModelService {
     this._decorations.addDecoration(this.selectedDecoration);
     this._decorations.addDecoration(this.focusedDecoration);
     this._decorations.addDecoration(this.dirtyDecoration);
+  }
+
+  private locateSelection(quiet: boolean = true) {
+    if (!this.outlineTreeService.currentUri) {
+      return;
+    }
+    const symbols = this.documentSymbolStore.getDocumentSymbol(this.outlineTreeService.currentUri!);
+    if (symbols) {
+      const activeSymbols = this.findCurrentDocumentSymbol(symbols, this.editorService.currentEditorGroup.codeEditor.monacoEditor.getPosition());
+      const node = this.outlineTreeService.getTreeNodeBySymbol(activeSymbols[activeSymbols.length - 1]);
+      if (!!node) {
+        if (this._ignoreFollowCursorUpdateEventTimer) {
+          this._ignoreFollowCursorUpdateEventTimer--;
+          return;
+        } else {
+          this.location(node as OutlineTreeNode);
+        }
+        this.activeNodeDecoration(node as OutlineTreeNode, !quiet);
+      }
+    }
   }
 
   private findCurrentDocumentSymbol(documentSymbols: INormalizedDocumentSymbol[], position: MaybeNull<IPosition>): INormalizedDocumentSymbol[] {
@@ -363,7 +368,6 @@ export class OutlineModelService {
   }
 
   toggleDirectory = async (item: OutlineCompositeTreeNode) => {
-    this._ignoreFollowCursorUpdateEventTimer ++;
     if (item.expanded) {
       this.outlineTreeHandle.collapseNode(item);
     } else {
@@ -449,7 +453,6 @@ export class OutlineModelService {
   }
 
   public collapseAll = async () => {
-    this._ignoreFollowCursorUpdateEventTimer++;
     await this.treeModel.root.collapsedAll();
   }
 
