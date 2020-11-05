@@ -1,3 +1,4 @@
+import { URI } from '@ali/ide-core-common';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import btoa = require('btoa');
 import { Marker } from '../markers';
@@ -25,10 +26,10 @@ function generateId(uri: string, line: number, column: number = 1) {
 }
 
 export namespace DebugBreakpoint {
-  export function create(uri: string, data: DebugProtocol.SourceBreakpoint, enabled: boolean = true): DebugBreakpoint {
+  export function create(uri: URI, data: DebugProtocol.SourceBreakpoint, enabled: boolean = true): DebugBreakpoint {
     return {
-      id: generateId(uri, data.line, data.column),
-      uri,
+      id: generateId(uri.toString(), data.line, data.column),
+      uri: uri.toString(),
       enabled,
       status: new Map(),
       raw: {

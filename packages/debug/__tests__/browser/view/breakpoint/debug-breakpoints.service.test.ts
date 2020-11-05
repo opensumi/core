@@ -114,7 +114,7 @@ describe('Debug Breakpoints Service', () => {
 
   it('toggleBreakpointEnable method should be work', async (done) => {
     // DebugBreakpoint
-    const breakpoint = DebugBreakpoint.create(URI.file('test.js').toString(), {line: 1});
+    const breakpoint = DebugBreakpoint.create(URI.file('test.js'), {line: 1});
     mockBreakpointManager.getBreakpoint.mockReturnValueOnce(breakpoint as any);
     await debugBreakpointsService.toggleBreakpointEnable(breakpoint);
     expect(mockBreakpointManager.updateBreakpoint).toBeCalledTimes(1);
@@ -126,7 +126,7 @@ describe('Debug Breakpoints Service', () => {
   });
 
   it('extractNodes method should be work', () => {
-    const breakpoint = DebugBreakpoint.create(URI.file('test.js').toString(), {line: 1});
+    const breakpoint = DebugBreakpoint.create(URI.file('test.js'), {line: 1});
     const exceptionBreakpoint = { filter: 'test' };
     const items = [breakpoint, exceptionBreakpoint];
     const nodes = debugBreakpointsService.extractNodes(items as any);
