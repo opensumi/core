@@ -28,7 +28,8 @@ export const enum ContextKeyExprType {
 // ref: https://github.com/Microsoft/vscode/blob/97fc588e65bedcb1113baeddd2f67237e52c8c63/src/vs/platform/keybinding/common/keybindingsRegistry.ts#L56
 // 快捷键第一优先级，在开天中将对该值 * 100 作为快捷键的优先级参数 priority
 export enum KeybindingWeight {
-  EditorCore = 0,
+  Default = 0, // 不传入 priority 则默认为 0
+  EditorCore = 1,
   EditorContrib = 100,
   WorkbenchContrib = 200,
   BuiltinExtension = 300,
@@ -651,24 +652,16 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
       matches.full = matches.full
         .filter((binding) => this.getKeybindingCollisions(result.full, binding).full.length === 0)
         .sort((a, b) => {
-          if (isUndefined(a.priority)) {
-            return 1;
-          } else if (isUndefined(b.priority)) {
-            return -1;
-          } else {
-            return b.priority - a.priority;
-          }
+          const compA = isUndefined(a.priority) ? KeybindingWeight.Default : a.priority;
+          const compB = isUndefined(b.priority) ? KeybindingWeight.Default : b.priority;
+          return compB - compA;
         });
       matches.partial = matches.partial
         .filter((binding) => this.getKeybindingCollisions(result.partial, binding).partial.length === 0)
         .sort((a, b) => {
-          if (isUndefined(a.priority)) {
-            return 1;
-          } else if (isUndefined(b.priority)) {
-            return -1;
-          } else {
-            return b.priority - a.priority;
-          }
+          const compA = isUndefined(a.priority) ? KeybindingWeight.Default : a.priority;
+          const compB = isUndefined(b.priority) ? KeybindingWeight.Default : b.priority;
+          return compB - compA;
         });
 
       result.merge(matches);
