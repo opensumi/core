@@ -252,6 +252,7 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
           command: 'electron.' + role.name,
           keybinding: role.key,
           when: role.when,
+          priority: Number.MIN_SAFE_INTEGER, // 永远在最后被命中
         });
       }
     });
