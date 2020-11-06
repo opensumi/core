@@ -664,6 +664,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
     // 非空Tree情况下需要+1，为了容纳自身节点位置，在插入节点下方插入新增节点
     absInsertionIndex = relativeInsertionIndex + 1;
+    // 空 Tree 情况下需要重置为 0，避免设置 Uint32Array 时超出范围
+    if (master._flattenedBranch.length === 0) {
+      absInsertionIndex = 0;
+    }
     const branch = new Uint32Array(branchSizeIncrease);
     branch[0] = item.id;
     if (item instanceof CompositeTreeNode && item.expanded && item._flattenedBranch) {
