@@ -75,7 +75,7 @@ export class ExtensionsActivator {
   }
 
   has(id: string) {
-     return this.activatedExtensions.has(id);
+    return this.activatedExtensions.has(id);
   }
 
   set(id: string, extension: ActivatedExtension) {
@@ -94,16 +94,16 @@ export class ExtensionsActivator {
     return this.activatedExtensions.delete(id);
   }
 
-  private doDeactivate(extensionModule) {
+  private async doDeactivate(extensionModule) {
     try {
-      const promiseLike = (extensionModule as Required<IExtensionModule>).deactivate();
-      return Promise.resolve(promiseLike);
+      const promiseLike = await (extensionModule as Required<IExtensionModule>).deactivate();
+      return promiseLike;
     } catch (err) {
       this.logger.error(`
         [Extension-Host] deactivate extension module error ${err.message} \n\n
         Stack: ${err.stack && err.stack}
       `);
-      return Promise.resolve(err);
+      return err;
     }
   }
 
