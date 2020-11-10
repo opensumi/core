@@ -198,37 +198,46 @@ export class DebugSession implements IDisposable {
   protected id2Breakpoint = new Map<number, DebugBreakpoint>();
   /**
    * 运行时的断点修改
-   *
+   * TODO:// 待重构 @倾一
    * @param body
    */
-  protected async onUpdateBreakpoint(body: any): Promise<void> {
+  protected async onUpdateBreakpoint(body: DebugProtocol.BreakpointEvent['body']): Promise<void> {
     let breakpoint: DebugBreakpoint | undefined;
     if (this.settingBreakpoints) {
       await this.settingBreakpoints.promise;
     }
 
-    switch (body.reason) {
-      case 'new':
-        if (!this.id2Breakpoint.has(body.breakpoint.id)) {
-          this.breakpoints.addBreakpoint(body.breakpoint);
-        }
-        break;
-      case 'removed':
-        breakpoint = this.id2Breakpoint.get(body.breakpoint.id);
-        if (breakpoint) {
-          this.breakpoints.delBreakpoint(breakpoint);
-        }
-        break;
-      case 'changed':
-        breakpoint = this.id2Breakpoint.get(body.breakpoint.id);
-        if (breakpoint) {
-          (breakpoint as IRuntimeBreakpoint).status.set(this.id, body.breakpoint);
-          this.breakpoints.updateBreakpoint(breakpoint);
-        }
-        break;
-      default:
-        break;
-    }
+    try {
+      const raw = body.breakpoint;
+      switch (body.reason) {
+        case 'new':
+          if (raw.source && typeof raw.line === 'number' && raw.id && !this.id2Breakpoint.has(raw.id)) {
+            const uri = DebugSource.toUri(raw.source);
+            this.breakpoints.addBreakpoint(DebugBreakpoint.create(uri, { line: raw.line, column: raw.column }));
+          }
+          break;
+        case 'removed':
+          if (raw.id) {
+            breakpoint = this.id2Breakpoint.get(raw.id);
+            if (breakpoint) {
+              this.breakpoints.delBreakpoint(breakpoint);
+            }
+          }
+          break;
+        case 'changed':
+          if (raw.id) {
+            breakpoint = this.id2Breakpoint.get(raw.id);
+            if (breakpoint) {
+              (breakpoint as IRuntimeBreakpoint).status.set(this.id, raw);
+              this.breakpoints.updateBreakpoint(breakpoint);
+            }
+          }
+          break;
+        default:
+          break;
+      }
+    } finally { }
+
   }
 
   private async setBreakpoints(affected: URI[]) {

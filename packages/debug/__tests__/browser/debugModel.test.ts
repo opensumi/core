@@ -83,7 +83,9 @@ describe('Debug Model', () => {
     const deltaDecorationsFn = jest.fn(() => []);
     mockDebugEditor = {
       ...mockDebugEditor,
-      deltaDecorations: deltaDecorationsFn,
+      getModel: jest.fn(() => ({
+        deltaDecorations: deltaDecorationsFn,
+      })),
     };
     model = DebugModel.createModel(injector, mockDebugEditor) as DebugModel;
     model.render();
@@ -94,7 +96,9 @@ describe('Debug Model', () => {
     const deltaDecorationsFn = jest.fn(() => []);
     mockDebugEditor = {
       ...mockDebugEditor,
-      deltaDecorations: deltaDecorationsFn,
+      getModel: jest.fn(() => ({
+        deltaDecorations: deltaDecorationsFn,
+      })),
     };
     model = DebugModel.createModel(injector, mockDebugEditor) as DebugModel;
     const fakeSession = new DebugSession(

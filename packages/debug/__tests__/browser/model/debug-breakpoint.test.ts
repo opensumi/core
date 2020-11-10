@@ -22,7 +22,7 @@ describe('Debug Breakpoints', () => {
     let decorator: DebugDecorator;
 
     beforeEach(() => {
-      breakpoint = DebugBreakpoint.create(fileUri.toString(), customBreakpointSource);
+      breakpoint = DebugBreakpoint.create(fileUri, customBreakpointSource);
       decorator = new DebugDecorator();
     });
 
@@ -75,7 +75,7 @@ describe('Debug Breakpoints', () => {
         done();
       });
 
-      manager.addBreakpoint(DebugBreakpoint.create(fileUri.toString(), customBreakpointSource, true));
+      manager.addBreakpoint(DebugBreakpoint.create(fileUri, customBreakpointSource, true));
     });
 
     it('Update', (done) => {
@@ -107,9 +107,9 @@ describe('Debug Breakpoints', () => {
     });
 
     it('Set Mutiple Breakpoints', () => {
-      const bk1 = DebugBreakpoint.create(fileUri.toString(), { line: 1 });
-      const bk2 = DebugBreakpoint.create(fileUri.toString(), { line: 2 });
-      const bk3 = DebugBreakpoint.create(fileUri.toString(), { line: 3 });
+      const bk1 = DebugBreakpoint.create(fileUri, { line: 1 });
+      const bk2 = DebugBreakpoint.create(fileUri, { line: 2 });
+      const bk3 = DebugBreakpoint.create(fileUri, { line: 3 });
       manager.setBreakpoints(fileUri, [bk1, bk2, bk3]);
       expect(manager.getBreakpoints().length).toEqual(3);
     });
