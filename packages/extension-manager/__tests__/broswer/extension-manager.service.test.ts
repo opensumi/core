@@ -1,18 +1,20 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IExtensionManagerService  } from '../../src/common';
+import { EnableScope, IExtensionManagerService  } from '../../src/common';
 import { ExtensionManagerModule } from '../../src/browser';
 import { IContextKeyService, uuid } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 import { MockInjector } from '@ali/ide-dev-tool/src/mock-injector';
 import { ExtensionService } from '@ali/ide-kaitian-extension';
 import { ExtensionServiceImpl } from '@ali/ide-kaitian-extension/lib/browser/extension.service';
-import { Disposable } from '@ali/ide-core-common';
+import { Disposable, StorageProvider } from '@ali/ide-core-common';
 import { ExtensionManagerServerPath } from '../../lib';
 import { ExtensionManagerServer } from '../../lib/node/extension-manager-server';
 
 describe('extension manager service test', () => {
   let injector: MockInjector;
   let extensionManagerService: IExtensionManagerService;
+  const fakePostEnableExtension = jest.fn();
+  const fakePostDisableExtension = jest.fn();
 
   beforeEach(async (done) => {
     injector = await createBrowserInjector([ ExtensionManagerModule ]);
@@ -34,9 +36,19 @@ describe('extension manager service test', () => {
         return extensionManagerService.extensions.find((ext) => ext.path === path);
       },
       onDidExtensionActivated: () => Disposable.NULL,
+      postEnableExtension: fakePostEnableExtension,
+      postDisableExtension: fakePostDisableExtension,
+      getAllExtensionJson: () => {
+        // @ts-ignore
+        return extensionManagerService.extensions;
+      },
     });
 
     extensionManagerService = injector.get<IExtensionManagerService>(IExtensionManagerService);
+
+    injector.mockService(StorageProvider, () => {
+      return new Map();
+    });
 
     injector.mockService(ExtensionManagerServerPath, {
       'getExtensionFromMarketPlace': async (id) => {
@@ -67,11 +79,13 @@ describe('extension manager service test', () => {
       path: uuid(),
       id: uuid(),
       extensionId: uuid(),
+      extraMetadata: {},
+      publisher: uuid(),
+      version: '0.0.1',
       ...opts,
     };
 
     Object.assign(ext, { isUseEnable: ext.enable, realPath: ext.path });
-
     // @ts-ignore
     extensionManagerService.extensions.push(ext);
     return ext;
@@ -140,6 +154,28 @@ describe('extension manager service test', () => {
         [extA.extensionId]: extB.extensionId,
         [extD.extensionId]: extF.extensionId,
       })));
+  });
+
+  describe('Extension Pack', () => {
+    it('禁用/启用 Pack, Pack 中的 Ext 也会对应的禁用/启用', async () => {
+      createFakeExtension({ name: 'subA', publisher: 'group' });
+      createFakeExtension({ name: 'subB', publisher: 'group' });
+      const pack = createFakeExtension({ name: 'pack', packageJSON: {extensionPack: [
+        'group.subA',
+        'group.subB',
+      ] }});
+
+      // 启用
+      await extensionManagerService.toggleActiveExtension(pack, true, EnableScope.GLOBAL);
+
+      expect(fakePostEnableExtension.mock.calls.length === 3);
+
+      // 禁用
+      await extensionManagerService.toggleActiveExtension(pack, false, EnableScope.GLOBAL);
+
+      // disable pack 时，同时会 disable pack 中的 ext
+      expect(fakePostDisableExtension.mock.calls.length === 3);
+    });
   });
 
 });

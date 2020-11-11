@@ -1,6 +1,6 @@
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { BasicEvent } from '@ali/ide-core-common';
-import { ExtensionDependencies } from '@ali/ide-kaitian-extension/lib/common';
+import { ExtensionDependencies, ExtraMetaData } from '@ali/ide-kaitian-extension/lib/common';
 
 export const EXTENSION_DIR = 'extension/';
 
@@ -109,8 +109,8 @@ export const IExtensionManagerService = Symbol('IExtensionManagerService');
 
 export const IExtensionManager = Symbol('IExtensionManager');
 export interface IExtensionManager {
-  installExtension(extension: BaseExtension, version?: string): Promise<string>;
-  updateExtension(extension: BaseExtension, version: string): Promise<string>;
+  installExtension(extension: BaseExtension, version?: string): Promise<string | string[]>;
+  updateExtension(extension: BaseExtension, version: string): Promise<string | string[]>;
   uninstallExtension(extension: BaseExtension): Promise<boolean>;
 }
 export interface IExtensionManagerService  {
@@ -146,9 +146,9 @@ export interface IExtensionManagerService  {
   makeExtensionStatus(extensionId: string, state: Partial<RawExtension>): Promise<void>;
   setRequestHeaders(requestHeaders: RequestHeaders): Promise<void>;
   openExtensionDetail(options: OpenExtensionOptions): void;
-  installExtensionByReleaseId(releaseId: string): Promise<string>;
-  installExtension(extension: BaseExtension, version?: string): Promise<string | void>;
-  updateExtension(extension: BaseExtension, version: string): Promise<string>;
+  installExtensionByReleaseId(releaseId: string): Promise<string | string[]>;
+  installExtension(extension: BaseExtension, version?: string): Promise<string | void | string[]>;
+  updateExtension(extension: BaseExtension, version: string): Promise<string | string[]>;
   uninstallExtension(extension: BaseExtension): Promise<boolean>;
   loadHotExtensions(): Promise<void>;
   getExtDeps(extensionId: string, version?: string): Promise<ExtensionDependencies>;
@@ -157,6 +157,7 @@ export interface IExtensionManagerService  {
   transformDepsDeclaration(raw: string | { [key: string]: string}): { id: string, version: string };
   getExtensionVersions(extensionId: string): Promise<IExtensionVersion[]>;
   checkNeedReload(extensionId: string, reloadRequire: boolean): Promise<void>;
+  getExtensionsInPack(extensionId: string, version?: string): Promise<string[]>;
 }
 
 export const IExtensionManagerServer = Symbol('IExtensionManagerServer');
@@ -167,6 +168,16 @@ export interface IExtensionDependenciesResFromMarketPlace {
     version: string;
     id: string;
     extensionId: string;
+  };
+}
+
+export interface IExtensionsInPackResFromMarketPlace {
+  data: {
+    version: string;
+    id: string;
+    identifier: string;
+    extensionId: string;
+    extensionPack: ExtraMetaData[];
   };
 }
 
@@ -184,12 +195,13 @@ export interface IExtensionManagerServer {
   getHotExtensions(ignoreId: string[], queryIndex: number): Promise<any>;
   isShowBuiltinExtensions(): boolean;
   setHeaders(headers: RequestHeaders): void;
-  installExtensionByReleaseId(releaseId: string): Promise<string>;
-  installExtension(extension: BaseExtension, version?: string): Promise<string>;
-  updateExtension(extension: BaseExtension, version: string): Promise<string>;
+  installExtensionByReleaseId(releaseId: string): Promise<string | string[]>;
+  installExtension(extension: BaseExtension, version?: string): Promise<string | string[]>;
+  updateExtension(extension: BaseExtension, version: string): Promise<string | string[]>;
   uninstallExtension(extension: BaseExtension): Promise<boolean>;
   getExtensionDeps(extensionId: string, version: string): Promise<IExtensionDependenciesResFromMarketPlace | undefined>;
   getExtensionVersions(extensionId: string): Promise<IExtensionVersion[]>;
+  getExtensionsInPack(extensionId: string, version?: string): Promise<IExtensionsInPackResFromMarketPlace>;
 }
 
 export interface IExtensionVersion {

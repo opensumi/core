@@ -199,6 +199,58 @@ describe('template test', () => {
     });
   });
 
+  describe('Extension Pack', () => {
+    const createPackExtension = async (publisher = uuid(), name = uuid(), version = '0.0.1', pack: string[] = []) => {
+      await fs.mkdirp(extensionDir);
+      const extensionId = `${publisher}.${name}`;
+      const extensionDirName = `${extensionId}-${version}`;
+      const extensionPaths = [path.join(extensionDir, extensionDirName), ...pack.map((identifer) =>  path.join(extensionDir, `${identifer}-${version}`))];
+      injector.mock(IExtensionManager, 'installer', {
+        install: () => {
+          return extensionPaths;
+        },
+      });
+      return {
+        extensionId,
+        name,
+        publisher,
+        version,
+        path: path.join(extensionDir, extensionDirName),
+      };
+    };
+
+    it('Install pack extension, the sub extension which in the pack will be installed automatically', async () => {
+      const packExtension = await createPackExtension('pack', 'extension', '0.0.1', ['sub.a', 'sub.b', 'sub.c', 'sub.d']);
+      const paths = await service.installExtension(packExtension);
+
+      // 安装 pack 扩展时，返回 string[]，包含 pack 中的 path
+      expect(Array.isArray(paths) && paths.length === 5);
+
+      // 返回包含自身的安装路径
+      expect((paths as string[]).some((p) => new RegExp('pack.extension').test(p)));
+
+      // 返回包含 sub.a 的安装路径
+      expect((paths as string[]).some((p) => new RegExp('sub.a').test(p)));
+
+      // pack 中的每一个 sub 扩展都被安装
+      expect((paths as string[]).every((p) => fs.pathExistsSync(path.join(p, 'package.json'))));
+    });
+
+    it('Uninstall pack extension, the sub extension which in the pack will be uninstalled automatically', async () => {
+      const packExtension = await createPackExtension('pack', 'extension', '0.0.1', ['sub.a', 'sub.b', 'sub.c', 'sub.d']);
+      const paths = await service.installExtension(packExtension);
+
+      // pack 中的每一个 sub 扩展都被安装
+      expect((paths as string[]).every((p) => fs.pathExistsSync(path.join(p, 'package.json'))));
+
+      // 卸载 pack
+      await service.uninstallExtension(packExtension);
+
+      // pack 中的每一个 sub 扩展都被卸载, 自己也被卸载
+      expect((paths as string[]).every((p) => !fs.pathExistsSync(path.join(p, 'package.json'))));
+    });
+  });
+
   /**
    * 创建一个插件
    * @param extensionId 插件 id

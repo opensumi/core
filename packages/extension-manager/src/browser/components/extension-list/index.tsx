@@ -8,7 +8,7 @@ import { useInjectable } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { Scrollbars } from '@ali/ide-components';
 
-interface ExtensionListProps {
+export interface ExtensionListProps {
   height?: number;
   loading?: boolean;
   empty?: React.ReactNode | string;
