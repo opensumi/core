@@ -128,8 +128,10 @@ export class OutlineTreeService extends Tree {
   }
 
   getTreeNodeBySymbol(symbol: INormalizedDocumentSymbol) {
-    const cache = this.cacheOutlineNodes.get(symbol.id);
-    return cache;
+    if (!!symbol) {
+      const cache = this.cacheOutlineNodes.get(symbol.id);
+      return cache;
+    }
   }
 
   sortComparator = (a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) => {
