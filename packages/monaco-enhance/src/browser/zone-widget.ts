@@ -244,16 +244,19 @@ export abstract class ResizeZoneWidget extends ZoneWidget {
       mutations.forEach((mutation) => {
           if (mutation.type === 'childList') {
             for (const child of Array.from(mutation.target.childNodes) as HTMLElement[]) {
-              // 处理图片加载的情况
-              const images = child.querySelectorAll('img');
-              if (images.length) {
-                images.forEach((image) => {
-                  const disposer = new DomListener(image, 'load', () => {
-                    this.resizeZoneWidget();
-                    disposer.dispose();
+              // child 必须是 element 元素
+              if (child.nodeType === Node.ELEMENT_NODE && child.querySelectorAll) {
+                // 处理图片加载的情况
+                const images = child.querySelectorAll('img');
+                if (images.length) {
+                  images.forEach((image) => {
+                    const disposer = new DomListener(image, 'load', () => {
+                      this.resizeZoneWidget();
+                      disposer.dispose();
+                    });
+                    this.addDispose(disposer);
                   });
-                  this.addDispose(disposer);
-                });
+                }
               }
             }
           }
