@@ -123,10 +123,14 @@ export function reviveWorkspaceEditDto(data: WorkspaceEditDto | undefined): IWor
         ( edit as IResourceTextEdit).resource = URI.from(( edit as ResourceTextEditDto).resource);
         ( edit as IResourceTextEdit).options = { openDirtyInEditor: true };
       } else {
-        ( edit as IResourceFileEdit).newUri = ( edit as ResourceFileEditDto).newUri ? URI.from(( edit as ResourceFileEditDto).newUri!) : undefined;
-        ( edit as IResourceFileEdit).oldUri = ( edit as ResourceFileEditDto).oldUri ? URI.from(( edit as ResourceFileEditDto).oldUri!) : undefined;
+        const resourceFileEdit = edit as IResourceFileEdit;
+        resourceFileEdit.newUri = ( edit as ResourceFileEditDto).newUri ? URI.from(( edit as ResourceFileEditDto).newUri!) : undefined;
+        resourceFileEdit.oldUri = ( edit as ResourceFileEditDto).oldUri ? URI.from(( edit as ResourceFileEditDto).oldUri!) : undefined;
         // 似乎 vscode 的行为默认不会 showInEditor，参考来自 codeMe 插件
-        ( edit as IResourceFileEdit).options.showInEditor = false;
+        resourceFileEdit.options = {
+          ...resourceFileEdit.options,
+          showInEditor: false,
+        };
       }
     }
   }
