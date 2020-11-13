@@ -25,12 +25,12 @@ describe('Debug Model', () => {
         endLineNumber: 1,
         endColumn: 10,
       }),
+      deltaDecorations: jest.fn(() => []),
       onDidLayoutChange: jest.fn(() => Disposable.create(() => {})),
       onDidChangeContent: jest.fn(() => Disposable.create(() => {})),
     })),
     onKeyDown: jest.fn(() => Disposable.create(() => {})),
     getPosition: jest.fn(() => ({lineNumber: 2, column: 1})),
-    deltaDecorations: jest.fn(() => []),
     focus: jest.fn(),
   };
 
@@ -39,8 +39,8 @@ describe('Debug Model', () => {
     delBreakpoint: jest.fn(() => Disposable.create(() => {})),
     addBreakpoint: jest.fn(() => Disposable.create(() => {})),
     updateBreakpoint: jest.fn(() => Disposable.create(() => {})),
-    getBreakpoint: jest.fn(() => DebugBreakpoint.create(testFileUri.toString(), {line: 2})),
-    getBreakpoints: jest.fn(() => [DebugBreakpoint.create(testFileUri.toString(), {line: 2})]),
+    getBreakpoint: jest.fn(() => DebugBreakpoint.create(testFileUri, {line: 2})),
+    getBreakpoints: jest.fn(() => [DebugBreakpoint.create(testFileUri, {line: 2})]),
   };
 
   const mockBreakpointWidget = {
@@ -115,7 +115,7 @@ describe('Debug Model', () => {
 
   it('debugModel should be init success', () => {
     expect(mockEditor.onKeyDown).toBeCalledTimes(1);
-    expect(mockEditor.getModel).toBeCalledTimes(1);
+    expect(mockEditor.getModel).toBeCalledTimes(2);
     expect(mockBreakpointManager.onDidChange).toBeCalledTimes(1);
   });
 
@@ -139,7 +139,7 @@ describe('Debug Model', () => {
   });
 
   it('focusStackFrame should be work', () => {
-    mockEditor.deltaDecorations.mockClear();
+    mockEditor.getModel().deltaDecorations.mockClear();
     const mockFrame = {
       raw: {
         line: 1,
@@ -147,19 +147,19 @@ describe('Debug Model', () => {
       },
     };
     debugModel.focusStackFrame(mockFrame);
-    expect(mockEditor.deltaDecorations).toBeCalledTimes(1);
+    expect(mockEditor.getModel().deltaDecorations).toBeCalledTimes(0);
   });
 
   it('renderBreakpoints should be work', () => {
-    mockEditor.deltaDecorations.mockClear();
+    mockEditor.getModel().deltaDecorations.mockClear();
     debugModel.renderBreakpoints();
-    expect(mockEditor.deltaDecorations).toBeCalledTimes(2);
+    expect(mockEditor.getModel().deltaDecorations).toBeCalledTimes(0);
   });
 
   it('render should be work', () => {
-    mockEditor.deltaDecorations.mockClear();
+    mockEditor.getModel().deltaDecorations.mockClear();
     debugModel.render();
-    expect(mockEditor.deltaDecorations).toBeCalledTimes(2);
+    expect(mockEditor.getModel().deltaDecorations).toBeCalledTimes(0);
   });
 
   it('toggleBreakpoint should be work', () => {

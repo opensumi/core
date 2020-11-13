@@ -7,7 +7,7 @@ describe('Breakpoints Decoration', () => {
   describe('Get breakpoint decoration with debugMode', () => {
     const decoration: DebugDecorator = new DebugDecorator();
     it('when breakpoint is disabled', () => {
-      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(new URI('test.js').toString(), {
+      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(new URI('test.js'), {
         line: 1,
       }, false);
       const dec = decoration.getDecoration(breakpoint, true);
@@ -16,7 +16,7 @@ describe('Breakpoints Decoration', () => {
     });
 
     it('when breakpoint is unverified breakpoint', () => {
-      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(new URI('test.js').toString(), {
+      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(new URI('test.js'), {
         line: 1,
       }, true);
       breakpoint.status = new Map();
@@ -29,7 +29,7 @@ describe('Breakpoints Decoration', () => {
     });
 
     it('when breakpoint is logPoint', () => {
-      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(new URI('test.js').toString(), {
+      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(new URI('test.js'), {
         line: 1,
         logMessage: 'console',
       }, true);
@@ -42,7 +42,7 @@ describe('Breakpoints Decoration', () => {
     });
 
     it('when breakpoint is conditionPoint', () => {
-      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(new URI('test.js').toString(), {
+      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(new URI('test.js'), {
         line: 1,
         condition: 'console',
       }, true);
@@ -55,7 +55,7 @@ describe('Breakpoints Decoration', () => {
     });
 
     it('when breakpoint is normal breakpoint', () => {
-      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(new URI('test.js').toString(), {
+      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(new URI('test.js'), {
         line: 1,
       }, true);
       breakpoint.status = new Map();
@@ -71,7 +71,7 @@ describe('Breakpoints Decoration', () => {
     const decoration: DebugDecorator = new DebugDecorator();
 
     it('when breakpoint is unverified breakpoint', () => {
-      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(new URI('test.js').toString(), {
+      const breakpoint: DebugBreakpoint = DebugBreakpoint.create(new URI('test.js'), {
         line: 1,
       }, true);
       breakpoint.status = new Map();

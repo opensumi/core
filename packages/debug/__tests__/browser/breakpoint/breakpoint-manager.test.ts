@@ -9,9 +9,9 @@ describe('Breakpoints Manager', () => {
   let breakpointManager: BreakpointManager;
 
   const testUri = URI.file('test.js');
-  const lineOneBreakpoint = DebugBreakpoint.create(testUri.toString(), {line: 1}, true);
-  const lineTwoBreakpoint = DebugBreakpoint.create(testUri.toString(), {line: 2}, true);
-  const lineThreeBreakpoint = DebugBreakpoint.create(testUri.toString(), {line: 3}, false);
+  const lineOneBreakpoint = DebugBreakpoint.create(testUri, {line: 1}, true);
+  const lineTwoBreakpoint = DebugBreakpoint.create(testUri, {line: 2}, true);
+  const lineThreeBreakpoint = DebugBreakpoint.create(testUri, {line: 3}, false);
   const getFn = jest.fn(() => ({breakpointsEnabled: true}));
   const setFn = jest.fn();
 

@@ -15,7 +15,6 @@ import { ICtxMenuRenderer, generateMergedCtxMenu, IMenu, MenuId, AbstractMenuSer
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { DebugBreakpointWidgetContext, DebugBreakpointZoneWidget } from './debug-breakpoint-zone-widget';
 import { DebugDecorator } from '../breakpoint/breakpoint-decoration';
-import { sortedUniqBy } from 'lodash';
 
 @Injectable()
 export class DebugModel implements IDebugModel {
@@ -95,7 +94,7 @@ export class DebugModel implements IDebugModel {
       this.breakpointWidget,
       this.editor.onKeyDown(() => this.debugHoverWidget.hide({ immediate: false })),
       this.debugSessionManager.onDidChange(() => this.renderFrames()),
-      model.onDidChangeContent(() => this.onContentChanged()),
+      this.editor.getModel()!.onDidChangeDecorations(() => this.updateBreakpoints()),
     ]);
     this.render();
   }
@@ -190,7 +189,8 @@ export class DebugModel implements IDebugModel {
   protected deltaDecorations(oldDecorations: string[], newDecorations: monaco.editor.IModelDeltaDecoration[]): string[] {
     this.updatingDecorations = true;
     try {
-      return this.editor.deltaDecorations(oldDecorations, newDecorations);
+      const model = this.editor.getModel()!;
+      return model ? model.deltaDecorations(oldDecorations, newDecorations) : [];
     } finally {
       this.updatingDecorations = false;
     }
@@ -242,6 +242,27 @@ export class DebugModel implements IDebugModel {
     this.updateBreakpointRanges();
   }
 
+  protected updateBreakpoints(): void {
+    if (this.areBreakpointsAffected()) {
+      const breakpoints = this.createBreakpoints();
+      this.breakpointManager.setBreakpoints(this.uri, breakpoints);
+    }
+  }
+
+  protected areBreakpointsAffected(): boolean {
+    if (this.updatingDecorations || !this.editor.getModel()) {
+      return false;
+    }
+    for (const decoration of this.breakpointDecorations) {
+      const range = this.editor.getModel()!.getDecorationRange(decoration);
+      const oldRange = this.breakpointRanges.get(decoration)!;
+      if (!range || !range.equalsRange(oldRange)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * 创建断点
    * @protected
@@ -259,7 +280,7 @@ export class DebugModel implements IDebugModel {
         const oldRange = this.breakpointRanges.get(decoration);
         const oldBreakpoint = oldRange && this.breakpointManager.getBreakpoint(uri, oldRange.startLineNumber) || {} as any;
         const breakpoint = DebugBreakpoint.create(
-          uri.toString(),
+          uri,
           { ...(oldBreakpoint.raw || {}), line },
           oldBreakpoint.enabled,
         );
@@ -405,7 +426,7 @@ export class DebugModel implements IDebugModel {
       this.breakpointManager.delBreakpoint(breakpoint);
     } else {
       this.breakpointManager.addBreakpoint(DebugBreakpoint.create(
-        this.uri.toString(),
+        this.uri,
         {
           line: position.lineNumber,
         },
@@ -437,7 +458,7 @@ export class DebugModel implements IDebugModel {
         this.breakpointManager.updateBreakpoint(breakpoint);
       } else {
         this.breakpointManager.addBreakpoint(DebugBreakpoint.create(
-          this.uri.toString(),
+          this.uri,
           {
             line: position.lineNumber,
             ...values,
@@ -486,24 +507,6 @@ export class DebugModel implements IDebugModel {
   public onMouseLeave(event: monaco.editor.IPartialEditorMouseEvent): void {
     this.hideHover(event);
     this.deltaHintDecorations([]);
-  }
-
-  protected onContentChanged() {
-    this.updateBreakpointRanges();
-    const next: DebugBreakpoint[] = [];
-    const breakpoints = this.breakpointManager.getBreakpoints(this.uri);
-
-    const sorted = Array.from(this.breakpointRanges.values() || [])
-      .sort((a, b) => a.startLineNumber - b.startLineNumber);
-    const uniq = sortedUniqBy(sorted, (a) => a.startLineNumber);
-    uniq.forEach((range, index) => {
-      const b = breakpoints[index];
-      if (b) {
-        b.raw.line = range.startLineNumber;
-        next.push(b);
-      }
-    });
-    this.breakpointManager.setBreakpoints(this.uri, next);
   }
 
   protected hintDecorations: string[] = [];

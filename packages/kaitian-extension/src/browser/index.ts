@@ -1,5 +1,5 @@
 import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { IContextKeyService, BrowserModule, ClientAppContribution, Domain, localize, IPreferenceSettingsService, CommandContribution, CommandRegistry, IClientApp, IEventBus, CommandService, IAsyncResult, MonacoContribution, QuickOpenService, QuickOpenItem, QuickOpenItemOptions, QuickOpenGroupItem, replaceLocalizePlaceholder, isElectronEnv, electronEnv, formatLocalize } from '@ali/ide-core-browser';
+import { IContextKeyService, BrowserModule, ClientAppContribution, Domain, localize, IPreferenceSettingsService, CommandContribution, CommandRegistry, IClientApp, IEventBus, CommandService, IAsyncResult, MonacoContribution, QuickOpenService, QuickOpenItem, QuickOpenItemOptions, QuickOpenGroupItem, replaceLocalizePlaceholder, isElectronEnv, electronEnv, formatLocalize, Command } from '@ali/ide-core-browser';
 import { ExtensionNodeServiceServerPath, ExtensionService, EMIT_EXT_HOST_EVENT, ExtensionHostType, ExtensionHostProfilerServicePath, IExtensionHostProfilerService} from '../common';
 import { ExtensionServiceImpl } from './extension.service';
 import { IMainLayoutService } from '@ali/ide-main-layout';
@@ -19,6 +19,11 @@ import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@
 
 const RELOAD_WINDOW_COMMAND = {
   id: 'reload_window',
+};
+
+const RELOAD_WINDOW: Command = {
+  id: 'workbench.action.reloadWindow',
+  delegate: RELOAD_WINDOW_COMMAND.id,
 };
 
 const SHOW_RUN_TIME_EXTENSION = {
@@ -162,6 +167,7 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
         this.clientApp.fireOnReload();
       },
     });
+    registry.registerCommand(RELOAD_WINDOW);
     registry.registerCommand(EMIT_EXT_HOST_EVENT, {
       execute: async (eventName: string, ...eventArgs: Serializable[]) => {
         // activationEvent 添加 onEvent:xxx

@@ -78,8 +78,8 @@ export const BreakpointItem = ({
       };
       if (!!status) {
         options['range'] = {
-          startColumn: status.column,
-          endColumn: status.column,
+          startColumn: status.column || 0,
+          endColumn: status.column || 0,
           startLineNumber: status.line,
           endLineNumber: status.line,
         };

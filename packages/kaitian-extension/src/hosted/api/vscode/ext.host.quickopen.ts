@@ -59,13 +59,18 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
     });
 
     const value = await hookCancellationToken<number | undefined>(token, quickPickPromise);
-    let result: Item | undefined;
+    let result: Item[] | Item | undefined;
+
     if (typeof value === 'number') {
-      result = items[value];
+      if (options && options.canPickMany) {
+        result = Array.of(items[value]);
+      } else {
+        result = items[value];
+      }
     }
 
     if (result && options && typeof options.onDidSelectItem === 'function') {
-      options.onDidSelectItem(result);
+      options.onDidSelectItem(Array.isArray(result) ? result[0] : result);
     }
     return result;
   }
@@ -268,6 +273,7 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
     };
 
     this.quickOpen.showQuickPick(this.items.map((item) => item as T), {
+      canPickMany: this.canSelectMany,
       // tslint:disable-next-line:no-any
       onDidSelectItem(item: T | string): any {
         if (typeof item !== 'string') {
@@ -280,7 +286,7 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
       totalSteps: this.totalSteps,
       buttons: this.buttons,
       placeHolder: this.placeholder,
-    } as unknown as QuickPickOptions );
+    } as QuickPickOptions );
   }
 
 }

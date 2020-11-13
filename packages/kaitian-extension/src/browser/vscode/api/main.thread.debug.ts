@@ -2,8 +2,7 @@ import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IMainThreadDebug, ExtHostAPIIdentifier, IExtHostDebug, ExtensionWSChannel, IMainThreadConnectionService } from '../../../common/vscode';
 import { DisposableCollection, Uri, ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, URI } from '@ali/ide-core-browser';
 import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer, IDebuggerContribution } from '@ali/ide-debug';
-import { DebugSessionManager, BreakpointManager, DebugConfigurationManager, DebugPreferences, DebugSessionContributionRegistry, DebugModelManager } from '@ali/ide-debug/lib/browser';
-import { DebugBreakpoint } from '@ali/ide-debug/lib/browser/breakpoint/breakpoint-marker';
+import { DebugSessionManager, BreakpointManager, DebugConfigurationManager, DebugPreferences, DebugSessionContributionRegistry, DebugModelManager, DebugBreakpoint } from '@ali/ide-debug/lib/browser';
 import { IRPCProtocol, WSChannelHandler } from '@ali/ide-connection';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@ali/ide-file-service';
@@ -203,7 +202,7 @@ export class MainThreadDebug implements IMainThreadDebug {
       if (breakpoint.location) {
         const location = breakpoint.location;
         this.breakpointManager.addBreakpoint(DebugBreakpoint.create(
-          Uri.revive(location.uri).toString(),
+          Uri.revive(location.uri) as any,
           {
             line: breakpoint.location.range.startLineNumber + 1,
             column: 1,
