@@ -35,7 +35,7 @@ export class OutlineCompositeTreeNode extends CompositeTreeNode {
     public readonly icon: string,
     id?: number,
   ) {
-    super(tree as ITree, parent, undefined, { name: raw.name }, { disableCache: false });
+    super(tree as ITree, parent, undefined, { name: raw.name }, { disableCache: true });
     this._uid = id || this._uid;
     TreeNode.setTreeNode(this._uid, this.path, this);
     this._whenReady = this.setExpanded(false, true);
@@ -63,7 +63,7 @@ export class OutlineTreeNode extends TreeNode {
     public readonly icon: string,
     id?: number,
   ) {
-    super(tree as ITree, parent, undefined, { name: raw.name }, { disableCache: false });
+    super(tree as ITree, parent, undefined, { name: raw.name }, { disableCache: true });
     this._uid = id || this._uid;
     TreeNode.setTreeNode(this._uid, this.path, this);
   }
