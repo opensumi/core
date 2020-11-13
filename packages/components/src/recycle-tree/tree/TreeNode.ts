@@ -1,27 +1,18 @@
-import { ITreeNodeOrCompositeTreeNode, ITreeNode, ICompositeTreeNode, TreeNodeEvent, IWatcherEvent, MetadataChangeType, ITreeWatcher, IMetadataChange, ITree, WatchEvent, TreeNodeType, TopDownIteratorCallback  } from '../types';
+import { ITreeNodeOrCompositeTreeNode, ITreeNode, ICompositeTreeNode, TreeNodeEvent, IWatcherEvent, MetadataChangeType, ITreeWatcher, IMetadataChange, ITree, WatchEvent, TreeNodeType, TopDownIteratorCallback } from '../types';
 import { Event, Emitter, DisposableCollection, Path } from '../../utils';
 import { IWatcherCallback, IWatchTerminator, IWatcherInfo } from '../types';
 
 /**
- * 除了此方法不会抛出RangeError错误，其余表现与Array.prototype.splice一样，
- *
- * 性能与Array.prototype.splice大致相同，某些场景如safari下表现更好
+ * 裁剪数组
  *
  * @param arr 裁剪数组
  * @param start 起始位置
  * @param deleteCount 删除或替换位置
  * @param items 插入的数组
  */
-export function spliceTypedArray(arr: Uint32Array, start: number, deleteCount: number = 0, items?: Uint32Array | null) {
-  let a = new Uint32Array((arr.length - deleteCount) + (items ? items.length : 0));
-  a.set(arr.slice(0, start));
-  if (items) {
-    a.set(items, start);
-  }
-  a.set(arr.slice(start + deleteCount, arr.length), (start + (items ? items.length : 0)));
-  // 设置前做一下简单去重保护，Tree组件中每个节点都应该是唯一的
-  const arraySet = new Set(a);
-  a = Uint32Array.from(arraySet);
+export function spliceArray(arr: number[], start: number, deleteCount: number = 0, items?: number[] | null) {
+  const a = arr.slice(0);
+  a.splice(start, deleteCount, ...(items || []));
   return a;
 }
 
@@ -38,31 +29,26 @@ export class TreeNode implements ITreeNode {
   }
 
   public static getTreeNodeById(id: number) {
-    const pathAndNode = TreeNode.idToTreeNode[id];
-    return pathAndNode && pathAndNode[1];
+    return TreeNode.idToTreeNode.get(id);
   }
 
   public static getTreeNodeByPath(path: string) {
-    const ids = Object.keys(TreeNode.idToTreeNode);
-    for (let i = ids.length - 1; i >= 0; i --) {
-      const pathAndNode = TreeNode.idToTreeNode[ids[i]];
-      const [nodePath, node] = pathAndNode || [];
-      if (nodePath === path ) {
-        return node;
-      }
-    }
-    return ;
+    return TreeNode.pathToTreeNode.get(path);
   }
 
   public static setTreeNode(id: number, path: string, node: TreeNode) {
-    TreeNode.idToTreeNode[id] = [path, node];
+    TreeNode.idToTreeNode.set(id, node);
+    TreeNode.pathToTreeNode.set(path, node);
   }
 
-  public static removeTreeNode(id: number) {
-    delete TreeNode.idToTreeNode[id];
+  public static removeTreeNode(id: number, path: string) {
+    TreeNode.idToTreeNode.delete(id);
+    TreeNode.pathToTreeNode.delete(path);
   }
 
-  public static idToTreeNode: {[key: number]: [string, TreeNode]} = {};
+  public static idToTreeNode: Map<number, TreeNode> = new Map();
+  public static pathToTreeNode: Map<string, TreeNode> = new Map();
+
   protected _uid: number;
   protected _depth: number;
   private _parent: ICompositeTreeNode | undefined;
@@ -76,7 +62,7 @@ export class TreeNode implements ITreeNode {
 
   protected _tree: ITree;
 
-  protected constructor(tree: ITree, parent?: ICompositeTreeNode, watcher?: ITreeWatcher, optionalMetadata?: { [key: string]: any }, options?: {disableCache?: boolean}) {
+  protected constructor(tree: ITree, parent?: ICompositeTreeNode, watcher?: ITreeWatcher, optionalMetadata?: { [key: string]: any }, options?: { disableCache?: boolean }) {
     this._uid = TreeNode.nextId();
     this._parent = parent;
     this._tree = tree;
@@ -114,7 +100,7 @@ export class TreeNode implements ITreeNode {
 
   get whenReady() {
     // 保障节点是否完成的标识位
-    return (async () => {})();
+    return (async () => { })();
   }
 
   get type() {
@@ -212,9 +198,9 @@ export class TreeNode implements ITreeNode {
   protected dispose() {
     if (this._disposed) { return; }
     this._watcher.notifyWillDispose(this);
-    this._disposed = true;
-    TreeNode.removeTreeNode(this._uid);
+    TreeNode.removeTreeNode(this._uid, this.path);
     this._watcher.notifyDidDispose(this);
+    this._disposed = true;
   }
 }
 
@@ -227,7 +213,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           : 0;
     }
     return CompositeTreeNode.is(a) ? -1
-      : CompositeTreeNode.is(b)  ? 1
+      : CompositeTreeNode.is(b) ? 1
         : 0;
   }
 
@@ -242,7 +228,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   protected _children: ITreeNodeOrCompositeTreeNode[] | null = null;
   // 节点的分支数量
   protected _branchSize: number;
-  protected _flattenedBranch: Uint32Array | null;
+  protected _flattenedBranch: number[] | null;
   private isExpanded: boolean;
   private hardReloadPromise: Promise<void> | null;
   private hardReloadPResolver: (() => void) | null;
@@ -259,45 +245,45 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     };
     const watcher: ITreeWatcher = {
       notifyWillProcessWatchEvent: (target: ICompositeTreeNode, event: IWatcherEvent) => {
-        emitter.fire({type: TreeNodeEvent.WillProcessWatchEvent, args: [target, event]});
+        emitter.fire({ type: TreeNodeEvent.WillProcessWatchEvent, args: [target, event] });
       },
       notifyWillChangeParent: (target: ITreeNodeOrCompositeTreeNode, prevParent: ICompositeTreeNode, newParent: ICompositeTreeNode) => {
-        emitter.fire({type: TreeNodeEvent.WillChangeParent, args: [target, prevParent, newParent]});
+        emitter.fire({ type: TreeNodeEvent.WillChangeParent, args: [target, prevParent, newParent] });
       },
-      notifyDidChangeParent: (target: ITreeNodeOrCompositeTreeNode, prevParent: ICompositeTreeNode, newParent: ICompositeTreeNode)  => {
-        emitter.fire({type: TreeNodeEvent.DidChangeParent, args: [target, prevParent, newParent]});
+      notifyDidChangeParent: (target: ITreeNodeOrCompositeTreeNode, prevParent: ICompositeTreeNode, newParent: ICompositeTreeNode) => {
+        emitter.fire({ type: TreeNodeEvent.DidChangeParent, args: [target, prevParent, newParent] });
       },
-      notifyWillDispose: (target: ITreeNodeOrCompositeTreeNode)   => {
-        emitter.fire({type: TreeNodeEvent.DidChangeParent, args: [target]});
+      notifyWillDispose: (target: ITreeNodeOrCompositeTreeNode) => {
+        emitter.fire({ type: TreeNodeEvent.DidChangeParent, args: [target] });
       },
-      notifyDidDispose: (target: ITreeNodeOrCompositeTreeNode)  => {
-        emitter.fire({type: TreeNodeEvent.DidChangeParent, args: [target]});
+      notifyDidDispose: (target: ITreeNodeOrCompositeTreeNode) => {
+        emitter.fire({ type: TreeNodeEvent.DidChangeParent, args: [target] });
       },
-      notifyDidProcessWatchEvent: (target: ICompositeTreeNode, event: IWatcherEvent)  => {
-        emitter.fire({type: TreeNodeEvent.DidProcessWatchEvent, args: [target, event]});
+      notifyDidProcessWatchEvent: (target: ICompositeTreeNode, event: IWatcherEvent) => {
+        emitter.fire({ type: TreeNodeEvent.DidProcessWatchEvent, args: [target, event] });
       },
-      notifyDidChangePath: (target: ITreeNodeOrCompositeTreeNode)  => {
-        emitter.fire({type: TreeNodeEvent.DidChangePath, args: [target]});
+      notifyDidChangePath: (target: ITreeNodeOrCompositeTreeNode) => {
+        emitter.fire({ type: TreeNodeEvent.DidChangePath, args: [target] });
       },
-      notifyWillChangeExpansionState: (target: ICompositeTreeNode, nowExpanded: boolean)   => {
+      notifyWillChangeExpansionState: (target: ICompositeTreeNode, nowExpanded: boolean) => {
         const isVisible = this.isItemVisibleAtSurface(target);
-        emitter.fire({type: TreeNodeEvent.WillChangeExpansionState, args: [target, nowExpanded, isVisible]});
+        emitter.fire({ type: TreeNodeEvent.WillChangeExpansionState, args: [target, nowExpanded, isVisible] });
       },
-      notifyDidChangeExpansionState: (target: ICompositeTreeNode, nowExpanded: boolean)  => {
+      notifyDidChangeExpansionState: (target: ICompositeTreeNode, nowExpanded: boolean) => {
         const isVisible = this.isItemVisibleAtSurface(target);
-        emitter.fire({type: TreeNodeEvent.DidChangeExpansionState, args: [target, nowExpanded, isVisible]});
+        emitter.fire({ type: TreeNodeEvent.DidChangeExpansionState, args: [target, nowExpanded, isVisible] });
       },
-      notifyDidChangeMetadata: (target: ITreeNode | ICompositeTreeNode, change: IMetadataChange)  => {
-        emitter.fire({type: TreeNodeEvent.DidChangeMetadata, args: [target, change]});
+      notifyDidChangeMetadata: (target: ITreeNode | ICompositeTreeNode, change: IMetadataChange) => {
+        emitter.fire({ type: TreeNodeEvent.DidChangeMetadata, args: [target, change] });
       },
       notifyDidUpdateBranch: () => {
-        emitter.fire({type: TreeNodeEvent.BranchDidUpdate, args: []});
+        emitter.fire({ type: TreeNodeEvent.BranchDidUpdate, args: [] });
       },
       notifyWillResolveChildren: (target: ICompositeTreeNode, nowExpanded: boolean) => {
-        emitter.fire({type: TreeNodeEvent.WillResolveChildren, args: [target, nowExpanded]});
+        emitter.fire({ type: TreeNodeEvent.WillResolveChildren, args: [target, nowExpanded] });
       },
       notifyDidResolveChildren: (target: ICompositeTreeNode, nowExpanded: boolean) => {
-        emitter.fire({type: TreeNodeEvent.DidResolveChildren, args: [target, nowExpanded]});
+        emitter.fire({ type: TreeNodeEvent.DidResolveChildren, args: [target, nowExpanded] });
       },
       // 监听所有事件
       on: (event: TreeNodeEvent, callback: any) => {
@@ -321,7 +307,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   }
 
   // parent 为undefined即表示该节点为根节点
-  constructor(tree: ITree, parent: ICompositeTreeNode | undefined, watcher?: ITreeWatcher, optionalMetadata?: { [key: string]: any }, options?: { disableCache?: boolean}) {
+  constructor(tree: ITree, parent: ICompositeTreeNode | undefined, watcher?: ITreeWatcher, optionalMetadata?: { [key: string]: any }, options?: { disableCache?: boolean }) {
     super(tree, parent, watcher, optionalMetadata, options);
     this.isExpanded = !!parent ? false : true;
     this._branchSize = 0;
@@ -388,7 +374,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   }
 
   // 展开节点
-  public async setExpanded(ensureVisible = true, quiet = false) {
+  public async setExpanded(ensureVisible: boolean = true, quiet: boolean = false) {
     // 根节点不可折叠
     if (CompositeTreeNode.isRoot(this)) {
       return;
@@ -398,9 +384,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
     this.isExpanded = true;
     if (this._children === null) {
-      this._watcher.notifyWillResolveChildren(this, this.isExpanded);
+      !quiet && this._watcher.notifyWillResolveChildren(this, this.isExpanded);
       await this.hardReloadChildren();
-      this._watcher.notifyDidResolveChildren(this, this.isExpanded);
+      !quiet && this._watcher.notifyDidResolveChildren(this, this.isExpanded);
       // 检查其是否展开；可能同时执行了setCollapsed方法
       if (!this.isExpanded) {
         return;
@@ -412,10 +398,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
 
     if (this.isExpanded) {
-      this._watcher.notifyWillChangeExpansionState(this, true);
+      !quiet && this._watcher.notifyWillChangeExpansionState(this, true);
       // 与根节点合并分支
       this.expandBranch(this, quiet);
-      this._watcher.notifyDidChangeExpansionState(this, true);
+      !quiet && this._watcher.notifyDidChangeExpansionState(this, true);
     }
   }
 
@@ -584,13 +570,13 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       return;
     }
     if (this._children && this.parent) {
-      this._watcher.notifyWillChangeExpansionState(this, false);
+      !quiet && this._watcher.notifyWillChangeExpansionState(this, false);
       // 从根节点裁剪分支
       this.shrinkBranch(this, quiet);
     }
     this.isExpanded = false;
 
-    this._watcher.notifyDidChangeExpansionState(this, false);
+    !quiet && this._watcher.notifyDidChangeExpansionState(this, false);
   }
 
   public mv(to: ICompositeTreeNode, name: string = this.name) {
@@ -664,13 +650,16 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
     // 非空Tree情况下需要+1，为了容纳自身节点位置，在插入节点下方插入新增节点
     absInsertionIndex = relativeInsertionIndex + 1;
-    const branch = new Uint32Array(branchSizeIncrease);
-    branch[0] = item.id;
+    // 空 Tree 情况下需要重置为 0，避免设置 Uint32Array 时超出范围
+    if (master._flattenedBranch.length === 0) {
+      absInsertionIndex = 0;
+    }
+    let branch: number[] = [item.id];
     if (item instanceof CompositeTreeNode && item.expanded && item._flattenedBranch) {
-      branch.set(item._flattenedBranch, 1);
+      branch = branch.concat(item._flattenedBranch);
       item.setFlattenedBranch(null);
     }
-    master.setFlattenedBranch(spliceTypedArray(master._flattenedBranch, absInsertionIndex, 0, branch));
+    master.setFlattenedBranch(spliceArray(master._flattenedBranch, absInsertionIndex, 0, branch));
   }
 
   /**
@@ -710,10 +699,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       item.setFlattenedBranch(master._flattenedBranch.slice(removalBeginIdx + 1, removalBeginIdx + branchSizeDecrease));
     }
 
-    master.setFlattenedBranch(spliceTypedArray(
-      master._flattenedBranch,
-      removalBeginIdx,
-      branchSizeDecrease));
+    master.setFlattenedBranch(spliceArray(master._flattenedBranch, removalBeginIdx, branchSizeDecrease));
 
     if (!reparenting && item.parent === this) {
       item.mv(null);
@@ -767,7 +753,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   /**
    * 设置扁平化的分支信息
    */
-  protected setFlattenedBranch(leaves: Uint32Array | null, withoutNotify?: boolean) {
+  protected setFlattenedBranch(leaves: number[] | null, withoutNotify?: boolean) {
     this._flattenedBranch = leaves;
     // Root节点才通知更新
     if (CompositeTreeNode.isRoot(this) && !withoutNotify) {
@@ -795,7 +781,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         // 最终导致此处查询不到对应节点，下面的shrinkBranch同样可能有相同问题，如点击折叠全部功能时
         return;
       }
-      this.setFlattenedBranch(spliceTypedArray(this._flattenedBranch, injectionStartIdx, 0, branch._flattenedBranch), withoutNotify);
+      this.setFlattenedBranch(spliceArray(this._flattenedBranch, injectionStartIdx, 0, branch._flattenedBranch), withoutNotify);
       // 取消展开分支对于分支的所有权，即最终只会有顶部Root拥有所有分支信息
       branch.setFlattenedBranch(null, withoutNotify);
     } else if (this.parent) {
@@ -821,7 +807,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       }
       // 返回分支对于分支信息所有权，即将折叠的节点信息再次存储于折叠了的节点中
       branch.setFlattenedBranch(this._flattenedBranch.slice(removalStartIdx, removalStartIdx + branch._branchSize), withoutNotify);
-      this.setFlattenedBranch(spliceTypedArray(this._flattenedBranch, removalStartIdx, branch._flattenedBranch ? branch._flattenedBranch.length : 0), withoutNotify);
+      this.setFlattenedBranch(spliceArray(this._flattenedBranch, removalStartIdx, branch._flattenedBranch ? branch._flattenedBranch.length : 0), withoutNotify);
     } else if (this.parent) {
       (this.parent as CompositeTreeNode).shrinkBranch(branch, withoutNotify);
     }
@@ -848,7 +834,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       this.shrinkBranch(this, quiet);
     }
 
-    const flatTree = new Uint32Array(rawItems.length);
+    const flatTree = new Array(rawItems.length);
     this._children = Array(rawItems.length);
     for (let i = 0; i < rawItems.length; i++) {
       const child = rawItems[i];
@@ -863,7 +849,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     this._branchSize = flatTree.length;
     this.setFlattenedBranch(flatTree, quiet);
     // 清理上一次监听函数
-    if ( typeof this.watchTerminator === 'function') {
+    if (typeof this.watchTerminator === 'function') {
       this.watchTerminator(this.path);
     }
     this.watchTerminator = this.watcher.onWatchEvent(this.path, this.handleWatchEvent);
@@ -895,10 +881,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       this.insertItem(node);
     } else if (event.type === WatchEvent.Removed) {
       const { path } = event;
-      const pathObject  = new Path(path);
+      const pathObject = new Path(path);
       const dirName = pathObject.dir.toString();
       const name = pathObject.base.toString();
-      if (dirName === this.path && !! this.children) {
+      if (dirName === this.path && !!this.children) {
         const item = this.children.find((c) => c.name === name);
         if (item) {
           this.unlinkItem(item);
@@ -908,7 +894,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       // 预存展开目录
       const expandedPaths = this.getAllExpandedNodePath();
       //  Changed事件，表示节点有较多的变化时，重新更新当前Tree节点
-      if (!! this.children) {
+      if (!!this.children) {
         for (const child of this.children) {
           (child as CompositeTreeNode).dispose();
         }
@@ -976,7 +962,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       }
       if (CompositeTreeNode.is(item)) {
         if (!(item as CompositeTreeNode)._children) {
-          return ;
+          return;
         }
         next = (item as CompositeTreeNode)._children;
       }
@@ -1008,7 +994,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         const compactPath = splitPath(preItem!.name).slice(1);
         if (compactPath[0] === name) {
           compactPath.shift();
-          while (compactPath.length > 0 ) {
+          while (compactPath.length > 0) {
             if (compactPath[0] === pathFlag[0]) {
               compactPath.shift();
               pathFlag.shift();
@@ -1028,7 +1014,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         const isCompactName = item.name.indexOf(Path.separator) > 0;
         if (isCompactName) {
           const compactPath = splitPath(item.name).slice(1);
-          while (compactPath.length > 0 ) {
+          while (compactPath.length > 0) {
             if (compactPath[0] === pathFlag[0]) {
               compactPath.shift();
               pathFlag.shift();
@@ -1107,12 +1093,12 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     return TreeNode.getTreeNodeById(id);
   }
 
-    /**
-   * 根据节点路径获取节点
-   * @param {string} path
-   * @returns
-   * @memberof CompositeTreeNode
-   */
+  /**
+ * 根据节点路径获取节点
+ * @param {string} path
+ * @returns
+ * @memberof CompositeTreeNode
+ */
   public getTreeNodeByPath(path: string) {
     return TreeNode.getTreeNodeByPath(path);
   }

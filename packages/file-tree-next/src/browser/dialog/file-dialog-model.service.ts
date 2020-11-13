@@ -141,12 +141,15 @@ export class FileTreeDialogModel {
       // 更新树前更新下选中节点
       if (!!this.focusedFile) {
         const node = this.treeModel?.root.getTreeNodeByPath(this.focusedFile.path);
-        this.activeFileDecoration(node, false);
-
+        if (node) {
+          this.activeFileDecoration(node as File, false);
+        }
       } else if (this.selectedFiles.length !== 0) {
         // 仅处理一下单选情况
         const node = this.treeModel?.root.getTreeNodeByPath(this.selectedFiles[0].path);
-        this.selectFileDecoration(node, false);
+        if (node) {
+          this.selectFileDecoration(node as File, false);
+        }
       }
     }));
   }

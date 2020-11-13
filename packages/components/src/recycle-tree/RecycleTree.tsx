@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { FixedSizeList, Align } from 'react-window';
 import { TreeModel } from './tree/model/TreeModel';
-import { TreeNode, CompositeTreeNode, spliceTypedArray } from './tree';
+import { TreeNode, CompositeTreeNode, spliceArray } from './tree';
 import { RenamePromptHandle, PromptHandle } from './prompt';
 import { NewPromptHandle } from './prompt/NewPromptHandle';
 import { DisposableCollection, Emitter, Event, Disposable } from '../utils';
@@ -141,8 +141,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private promptTargetID: number;
 
   private idToFilterRendererPropsCache: Map<number, IFilterNodeRendererProps> = new Map();
-  private filterFlattenBranch: Uint32Array;
-  private filterFlattenBranchChildrenCache: Map<number, Uint32Array> = new Map();
+  private filterFlattenBranch: number[];
+  private filterFlattenBranchChildrenCache: Map<number, number[]> = new Map();
   private filterWatcherDisposeCollection = new DisposableCollection();
 
   private batchUpdatePromise: Promise<void> | null = null;
@@ -564,7 +564,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       });
     }
 
-    this.filterFlattenBranch = new Uint32Array(idSets.size);
+    this.filterFlattenBranch = new Array(idSets.size);
     for (let flatTreeIdx = 0, idx = 0; idx < root.branchSize; idx ++) {
       const node = root.getTreeNodeAtIndex(idx);
       if (node && idSets.has(node.id)) {
@@ -589,23 +589,21 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     this.filterWatcherDisposeCollection.push(root.watcher.on(TreeNodeEvent.DidChangeExpansionState, (target, nowExpanded) => {
       const expandItemIndex = this.filterFlattenBranch.indexOf(target.id);
       if (!nowExpanded) {
-        const spliceArray: number[] = [];
-        let spliceUint32Array: Uint32Array;
+        const collapesArray: number[] = [];
         for (let i = expandItemIndex + 1; i < this.filterFlattenBranch.length; i++) {
           const node = root.getTreeNodeById(this.filterFlattenBranch[i]);
           if (node && node.depth > target.depth) {
-            spliceArray.push(node.id);
+            collapesArray.push(node.id);
           } else {
             break;
           }
         }
-        spliceUint32Array = Uint32Array.from(spliceArray);
-        this.filterFlattenBranchChildrenCache.set(target.id, spliceUint32Array);
-        this.filterFlattenBranch = spliceTypedArray(this.filterFlattenBranch, expandItemIndex + 1, spliceUint32Array.length);
+        this.filterFlattenBranchChildrenCache.set(target.id, collapesArray);
+        this.filterFlattenBranch = spliceArray(this.filterFlattenBranch, expandItemIndex + 1, collapesArray.length);
       } else {
         const  spliceUint32Array = this.filterFlattenBranchChildrenCache.get(target.id);
         if (spliceUint32Array && spliceUint32Array.length > 0) {
-          this.filterFlattenBranch = spliceTypedArray(this.filterFlattenBranch, expandItemIndex + 1, 0, spliceUint32Array);
+          this.filterFlattenBranch = spliceArray(this.filterFlattenBranch, expandItemIndex + 1, 0, spliceUint32Array);
           this.filterFlattenBranchChildrenCache.delete(target.id);
         }
       }
