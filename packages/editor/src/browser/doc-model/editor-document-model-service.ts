@@ -74,13 +74,14 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
   }
 
   private _delete(uri: string | URI): void {
+    const modelDisposeDebounceTime = this.preferenceService.get<number>('editor.modelDisposeTime', 3000);
     // debounce
     this._modelsToDispose.add(uri.toString());
     setTimeout(() => {
       if (this._modelsToDispose.has(uri.toString())) {
         this._doDelete(uri.toString());
       }
-    }, 3000);
+    }, modelDisposeDebounceTime);
   }
 
   private _doDelete(uri: string) {

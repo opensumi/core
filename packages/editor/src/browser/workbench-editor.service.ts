@@ -1024,6 +1024,16 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   disposeDocumentRef(uri: URI) {
+    if (uri.scheme === 'diff') {
+      const query = uri.getParsedQuery();
+      this.doDisposeDocRef(new URI(query.original));
+      this.doDisposeDocRef(new URI(query.modified));
+    } else {
+      this.doDisposeDocRef(uri);
+    }
+  }
+
+  protected doDisposeDocRef(uri: URI) {
     if (this.holdDocumentModelRefs.has(uri.toString())) {
       this.holdDocumentModelRefs.get(uri.toString())!.dispose();
       this.holdDocumentModelRefs.delete(uri.toString());
