@@ -1224,6 +1224,10 @@ const customEditorSchema: PreferenceSchemaProperties = {
     type: 'integer',
     default: 0,
   },
+  'editor.modelDisposeTime': {
+    type: 'integer',
+    default: 3000,
+  },
   'diffEditor.renderSideBySide': {
     'type': 'boolean',
     'default': true,
