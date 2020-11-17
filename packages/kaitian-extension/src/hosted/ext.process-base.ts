@@ -1,3 +1,4 @@
+import { ConstructorOf } from '@ali/common-di';
 import { Emitter, ReporterProcessMessage, LogLevel } from '@ali/ide-core-common';
 import * as net from 'net';
 import * as Stream from 'stream';
@@ -38,7 +39,7 @@ export interface ExtHostAppConfig extends Partial<AppConfig> {
 }
 
 export interface ExtProcessConfig {
-  LogServiceClass?: ILogService;
+  LogServiceClass?: ConstructorOf<ILogService>;
   logDir?: string;
   logLevel?: LogLevel;
   builtinCommands: IBuiltInCommand[];
