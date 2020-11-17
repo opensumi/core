@@ -90,8 +90,8 @@ export const injector = new Injector([
   },
   {
     token: ITerminalClientFactory,
-    useFactory: (injector) => (widget: IWidget, options = {}, autofocus: boolean = false) => {
-      return TerminalClientFactory.createClient(injector, widget, options, autofocus);
+    useFactory: (injector) => (widget: IWidget, options = {}) => {
+      return TerminalClientFactory.createClient(injector, widget, options);
     },
   },
   {

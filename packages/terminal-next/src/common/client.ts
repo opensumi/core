@@ -25,11 +25,6 @@ export interface ITerminalClient extends Disposable {
   name: string;
 
   /**
-   * 自动聚焦
-   */
-  autofocus: boolean;
-
-  /**
    * 终端客户端创建所使用的后端选项
    */
   options: TerminalOptions;
@@ -142,7 +137,7 @@ export interface ITerminalClient extends Disposable {
 }
 
 export const ITerminalClientFactory = Symbol('ITerminalClientFactory');
-export type ITerminalClientFactory = (widget: IWidget, options?: TerminalOptions, autofocus?: boolean) => ITerminalClient;
+export type ITerminalClientFactory = (widget: IWidget, options?: TerminalOptions) => ITerminalClient;
 
 export interface ITerminalConnection {
   name: string;

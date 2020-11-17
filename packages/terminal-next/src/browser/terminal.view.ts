@@ -259,21 +259,22 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
   }
 
   private _doSelectGroup(index: number) {
+    const group = this.getGroup(index);
     this.currentGroupIndex = index;
-    const { currentGroup } = this;
-    this.currentGroupId = currentGroup && currentGroup.id;
-    if (currentGroup) {
-      currentGroup.activated = true;
+    this.currentGroupId = group.id;
+    group.activated = true;
+    // 恢复的 group.current 为空，手动选择第一个 widget
+    if (!group.current && group.first) {
+      group.selectWidget(group.first);
+    }
+    if (group.current) {
+      this._onWidgetSelected.fire(group.current);
+      this.resize();
     }
   }
 
   selectGroup(index: number) {
     this._doSelectGroup(index);
-    const group = this.getGroup(index);
-    if (group.current) {
-      this._onWidgetSelected.fire(group.current);
-      this.resize();
-    }
   }
 
   private _doCreateGroup(id?: string) {
