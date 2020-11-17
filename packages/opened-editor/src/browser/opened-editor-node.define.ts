@@ -15,10 +15,10 @@ export class EditorFileRoot extends CompositeTreeNode {
     tree: OpenedEditorService,
     id?: number,
   ) {
-    super(tree as ITree, undefined);
+    super(tree as ITree, undefined, undefined, undefined, { disableCache: true });
     // 根节点默认展开节点
     this._uid = id || this._uid;
-    TreeNode.idToTreeNode[this._uid] = [this.path, this];
+    TreeNode.setTreeNode(this._uid, this.path, this);
   }
 
   get expanded() {
@@ -48,10 +48,10 @@ export class EditorFileGroup extends CompositeTreeNode {
     parent: EditorFileRoot,
     id?: number,
   ) {
-    super(tree as ITree, parent);
+    super(tree as ITree, parent, undefined, undefined, { disableCache: true });
     this.groupIndex = this.group.index;
     this._uid = id || this._uid;
-    TreeNode.idToTreeNode[this._uid] = [this.path, this];
+    TreeNode.setTreeNode(this._uid, this.path, this);
     // 根节点默认展开节点
     this.setExpanded(false, true);
   }
@@ -74,12 +74,12 @@ export class EditorFile extends TreeNode {
     tree: OpenedEditorService,
     public readonly resource: IResource,
     public tooltip: string,
-    public readonly parent: CompositeTreeNode | undefined,
+    parent: EditorFileGroup | undefined,
     id?: number,
   ) {
-    super(tree as ITree, parent);
+    super(tree as ITree, parent, undefined, undefined, { disableCache: true });
     this._uid = id || this._uid;
-    TreeNode.idToTreeNode[this._uid] = [this.path, this];
+    TreeNode.setTreeNode(this._uid, this.path, this);
   }
 
   get name() {
