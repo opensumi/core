@@ -50,7 +50,7 @@ export class OpenedEditorService extends Tree {
         if (!(item as IEditorGroup).resources) {
           const cacheNode = this.getEditorNodeByUri((item as IResource), (parent as EditorFileGroup).group);
           const tooltip = await this.getReadableTooltip((item as IResource).uri);
-          children.push(new EditorFile(this, item as IResource, tooltip, parent, cacheNode && cacheNode.id));
+          children.push(new EditorFile(this, item as IResource, tooltip, parent as EditorFileGroup, cacheNode && cacheNode.id));
         } else {
           this.isGroupTree = true;
           const cacheNode = this.getEditorNodeByUri(undefined, item as IEditorGroup);
