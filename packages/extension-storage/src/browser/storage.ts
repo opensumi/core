@@ -1,15 +1,18 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Deferred, URI, ILogger, StoragePaths } from '@ali/ide-core-common';
+import { Deferred, URI, ILogger, StoragePaths, ThrottledDelayer } from '@ali/ide-core-common';
 import { IFileServiceClient, FileStat } from '@ali/ide-file-service';
 import { ExtensionStoragePath, IExtensionStoragePathServer, IExtensionStorageServer, KeysToAnyValues, KeysToKeysToAnyValue, DEFAULT_EXTENSION_STORAGE_DIR_NAME } from '../common/';
 import { Path } from '@ali/ide-core-common/lib/path';
 
 @Injectable()
 export class ExtensionStorageServer implements IExtensionStorageServer {
+  private static readonly DEFAULT_FLUSH_DELAY = 100;
+
   private workspaceDataDirPath: string | undefined;
   private globalDataPath: string | undefined;
 
   private deferredWorkspaceDataDirPath = new Deferred<string>();
+  private flushDelayer: ThrottledDelayer<void>;
 
   @Autowired(IExtensionStoragePathServer)
   private readonly extensionStoragePathsServer: IExtensionStoragePathServer;
@@ -21,6 +24,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
   protected readonly logger: ILogger;
 
   public async init(workspace: FileStat | undefined, roots: FileStat[], extensionStorageDirName?: string): Promise<ExtensionStoragePath> {
+    this.flushDelayer = new ThrottledDelayer(ExtensionStorageServer.DEFAULT_FLUSH_DELAY);
     return await this.setupDirectories(workspace, roots, extensionStorageDirName || DEFAULT_EXTENSION_STORAGE_DIR_NAME);
   }
 
@@ -45,22 +49,20 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
     };
   }
 
-  async set(key: string, value: KeysToAnyValues, isGlobal: boolean): Promise<boolean> {
+  async set(key: string, value: KeysToAnyValues, isGlobal: boolean): Promise<void> {
     const dataPath = await this.getDataPath(isGlobal);
     if (!dataPath) {
       throw new Error('Cannot save data: no opened workspace');
     }
-
     const data = await this.readFromFile(dataPath);
-
     if (value === undefined || value === {}) {
       delete data[key];
     } else {
       data[key] = value;
     }
-
-    await this.writeToFile(dataPath, data);
-    return true;
+    return this.flushDelayer.trigger(async () => {
+      await this.writeToFile(dataPath, data);
+    });
   }
 
   async get(key: string, isGlobal: boolean): Promise<KeysToAnyValues> {
