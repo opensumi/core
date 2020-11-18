@@ -248,10 +248,12 @@ export class TabbarService extends WithEventBus {
 
   registerSideEffects(componentInfo: ComponentRegistryInfo) {
     const disposables = new DisposableCollection();
-    // 注册切换tab显隐的菜单
-    disposables.push(this.registerHideMenu(componentInfo));
-    // 注册溢出后的菜单
-    disposables.push(this.registerMoreMenu(componentInfo));
+    if (!componentInfo.options?.hideTab) {
+      // 注册切换tab显隐的菜单
+      disposables.push(this.registerHideMenu(componentInfo));
+      // 注册溢出后的菜单
+      disposables.push(this.registerMoreMenu(componentInfo));
+    }
     // 注册激活快捷键
     disposables.push(this.registerActivateKeyBinding(componentInfo, componentInfo.options!.fromExtension));
     // 注册视图是否存在的contextKey

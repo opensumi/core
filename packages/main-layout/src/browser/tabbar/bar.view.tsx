@@ -44,7 +44,7 @@ export const TabbarViewBase: React.FC<{
     tabbarService.barSize = barSize + panelBorderSize;
   }, []);
   const { currentContainerId, handleTabClick } = tabbarService;
-  const [visibleContainers, hideContainers] = splitVisibleTabs(tabbarService.visibleContainers, tabSize, fullSize - (margin || 0));
+  const [visibleContainers, hideContainers] = splitVisibleTabs(tabbarService.visibleContainers.filter((container) => !container.options?.hideTab), tabSize, fullSize - (margin || 0));
   hideContainers.forEach((componentInfo) => {
     tabbarService.updateTabInMoreKey(componentInfo.options!.containerId, true);
   });
