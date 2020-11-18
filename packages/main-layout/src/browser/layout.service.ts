@@ -219,10 +219,19 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return activityHandler;
   }
 
+  private holdTabbarComponent = new Map<string, {views: View[], options: ViewContainerOptions, side: string}>();
+
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: any): string {
     if (Fc) {
       // tslint:disable-next-line no-console
       console.warn('collectTabbarComponent api warning: Please move react component into options.component!');
+    }
+    if (options.hideIfEmpty && !views.length && !options.component) {
+      this.holdTabbarComponent.set(options.containerId, { views, options, side });
+      if (this.tabbarUpdateSet.has(options.containerId)) {
+        this.tryUpdateTabbar(options.containerId);
+      }
+      return options.containerId;
     }
     const tabbarService = this.getTabbarService(side);
     tabbarService.registerContainer(options.containerId, {views, options});
@@ -240,7 +249,25 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       view.initialProps = props;
     }
     accordionService.appendView(view, isReplace);
+    // 如果之前没有views信息，且为hideIfEmpty类型视图则需要刷新
+    if (accordionService.views.length === 1) {
+      this.tabbarUpdateSet.add(containerId);
+      this.tryUpdateTabbar(containerId);
+    }
     return containerId;
+  }
+
+  private tabbarUpdateSet: Set<string> = new Set();
+
+  // 由于注册container和view的时序不能保障，注册时需要互相触发
+  private tryUpdateTabbar(containerId: string) {
+    const holdInfo = this.holdTabbarComponent.get(containerId);
+    if (holdInfo) {
+      const tabbarService = this.getTabbarService(holdInfo.side);
+      tabbarService.registerContainer(containerId, {views: holdInfo.views, options: holdInfo.options});
+      this.tabbarUpdateSet.delete(containerId);
+      this.holdTabbarComponent.delete(containerId);
+    }
   }
 
   replaceViewComponent(view: View, props?: any) {
