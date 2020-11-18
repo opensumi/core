@@ -46,8 +46,8 @@ export class TreeNode implements ITreeNode {
     TreeNode.pathToTreeNode.delete(path);
   }
 
-  public static idToTreeNode: Map<number, TreeNode> = new Map();
-  public static pathToTreeNode: Map<string, TreeNode> = new Map();
+  public static idToTreeNode: Map<number, ITreeNodeOrCompositeTreeNode> = new Map();
+  public static pathToTreeNode: Map<string, ITreeNodeOrCompositeTreeNode> = new Map();
 
   protected _uid: number;
   protected _depth: number;

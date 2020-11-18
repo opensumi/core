@@ -258,7 +258,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private async promptNew(pathOrTreeNode: string | CompositeTreeNode, type: TreeNodeType = TreeNodeType.TreeNode): Promise<NewPromptHandle> {
     const { root } = this.props.model;
     let node = typeof pathOrTreeNode === 'string'
-      ? await root.forceLoadTreeNodeAtPath(pathOrTreeNode)
+      ? await root.getTreeNodeByPath(pathOrTreeNode)
       : pathOrTreeNode;
 
     if (type !== TreeNodeType.TreeNode && type !== TreeNodeType.CompositeTreeNode) {
@@ -306,7 +306,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private promptRename = async (pathOrTreeNode: string | TreeNode, defaultName?: string): Promise<RenamePromptHandle> => {
     const { root } = this.props.model;
     const node = (typeof pathOrTreeNode === 'string'
-      ? await root.forceLoadTreeNodeAtPath(pathOrTreeNode)
+      ? await root.getTreeNodeByPath(pathOrTreeNode)
       : pathOrTreeNode) as (TreeNode | CompositeTreeNode);
 
     if (!TreeNode.is(node) || CompositeTreeNode.isRoot(node)) {
@@ -326,23 +326,23 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   private expandNode = async (pathOrCompositeTreeNode: string | CompositeTreeNode) => {
     const { root } = this.props.model;
-    const directory: CompositeTreeNode = typeof pathOrCompositeTreeNode === 'string'
-      ? await root.forceLoadTreeNodeAtPath(pathOrCompositeTreeNode) as CompositeTreeNode
-      : pathOrCompositeTreeNode;
+    const directory = typeof pathOrCompositeTreeNode === 'string'
+      ? await root.getTreeNodeByPath(pathOrCompositeTreeNode) as CompositeTreeNode
+      : await root.getTreeNodeByPath(pathOrCompositeTreeNode.path);
 
     if (directory && CompositeTreeNode.is(directory)) {
-      return directory.setExpanded(true);
+      return (directory as CompositeTreeNode).setExpanded(true);
     }
   }
 
   private collapseNode = async (pathOrCompositeTreeNode: string | CompositeTreeNode) => {
     const { root } = this.props.model;
-    const directory: CompositeTreeNode = typeof pathOrCompositeTreeNode === 'string'
-      ? await root.forceLoadTreeNodeAtPath(pathOrCompositeTreeNode) as CompositeTreeNode
-      : pathOrCompositeTreeNode;
+    const directory = typeof pathOrCompositeTreeNode === 'string'
+      ? await root.getTreeNodeByPath(pathOrCompositeTreeNode) as CompositeTreeNode
+      : root.getTreeNodeByPath(pathOrCompositeTreeNode.path);
 
     if (directory && CompositeTreeNode.is(directory)) {
-      return directory.setCollapsed();
+      return (directory as CompositeTreeNode).setCollapsed();
     }
   }
 
@@ -528,7 +528,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     const nodes: TreeNode[] = [];
     for (let idx = 0; idx < root.branchSize; idx ++) {
       const node = root.getTreeNodeAtIndex(idx)!;
-      nodes.push(node);
+      nodes.push(node as TreeNode);
     }
     if (isPathFilter) {
       nodes.forEach((node) => {
@@ -577,7 +577,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           });
         } else {
           this.idToFilterRendererPropsCache.set(node.id, {
-            item: node,
+            item: node as TreeNode,
             itemType: TreeNodeType.TreeNode,
             template: idToRenderTemplate.has(node.id) ? idToRenderTemplate.get(node.id) : undefined,
           });
