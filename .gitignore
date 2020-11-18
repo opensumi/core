@@ -109,3 +109,5 @@ releaselog.md
 
 # devcontainer
 .devcontainer
+.devcontainer.Dockerfile
+.devcontainer.yml
