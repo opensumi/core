@@ -87,6 +87,10 @@ export interface ExtViewContainerOptions {
   titleComponent?: React.FunctionComponent;
   // 自定义titleComponent时可选传入
   titleProps?: object;
+  // 若views为空，则不显示该container
+  hideIfEmpty?: boolean;
+  // 隐藏tab图标，仅挂载视图，视图切换交给其他逻辑控制
+  hideTab?: boolean;
   noResize?: boolean;
   fromExtension?: boolean;
 }

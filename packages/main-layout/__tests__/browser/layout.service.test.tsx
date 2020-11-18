@@ -263,6 +263,20 @@ describe('main layout test', () => {
     expect(testDom).toBeDefined();
   });
 
+  it('should`t render tab view with hideTab option', () => {
+    service.collectTabbarComponent([], {
+      containerId: 'containerWithTab',
+      component: MockView,
+    }, 'left');
+    expect(document.getElementById('containerWithTab')).toBeDefined();
+    service.collectTabbarComponent([], {
+      containerId: 'containerWithoutTab',
+      component: MockView,
+      hideTab: true,
+    }, 'left');
+    expect(document.getElementById('containerWithoutTab')).toBeNull();
+  });
+
   // view api test start
 
   it('should be able to collect view into existing container and replace & dispose existing view', async (done) => {
@@ -288,6 +302,15 @@ describe('main layout test', () => {
     act(() => { jest.advanceTimersByTime(10); });
     expect(accordionService.views.find((val) => val.id === tmpViewId)).toBeUndefined();
     done();
+  });
+
+  it('shouldn`t register empty tabbar component with hideIfEmpty option until valid view collected', () => {
+    const emptyContainerId = 'emptyContainerId';
+    service.collectTabbarComponent([], {hideIfEmpty: true, containerId: emptyContainerId}, 'left');
+    const tabbarService = service.getTabbarService('left');
+    expect(tabbarService.getContainer(emptyContainerId)).toBeUndefined();
+    service.collectViewComponent({id: 'testViewId', component: MockView}, emptyContainerId);
+    expect(tabbarService.getContainer(emptyContainerId)).toBeDefined();
   });
 
   // toggle / expand api test
