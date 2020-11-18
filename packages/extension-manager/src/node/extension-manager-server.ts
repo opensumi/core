@@ -106,11 +106,11 @@ class IDEExtensionInstaller implements IExtensionInstaller {
     });
   }
 
-  public install(extension: InstallerExtension): Promise<string> {
+  public install(extension: InstallerExtension): Promise<string | string[]> {
     return this.installer.install(extension);
   }
 
-  public installByRelease(release: InstallerExtensionRelease): Promise<string> {
+  public installByRelease(release: InstallerExtensionRelease): Promise<string | string[]> {
     return this.installer.installByRelease(release);
   }
 }
@@ -127,7 +127,7 @@ export class ExtensionManager implements IExtensionManager {
   @Autowired(IDEExtensionInstaller)
   private installer: IDEExtensionInstaller;
 
-  async installExtension(extension: BaseExtension, version?: string | undefined): Promise<string> {
+  async installExtension(extension: BaseExtension, version?: string | undefined): Promise<string | string[]> {
     const currentVersion = version || extension.version;
     const dist = await this.getUnpressExtensionDir(extension);
     return this.installer.install({
@@ -137,7 +137,7 @@ export class ExtensionManager implements IExtensionManager {
       dist,
     });
   }
-  async updateExtension(extension: BaseExtension, version: string): Promise<string> {
+  async updateExtension(extension: BaseExtension, version: string): Promise<string | string[]> {
     // 先下载插件
     const extensionDir = await this.installExtension(extension, version);
     // 卸载之前的插件
@@ -225,6 +225,25 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
     }
   }
 
+  /**
+   * 获取扩展的 pack 内容
+   * @param extensionId
+   * @param version
+   */
+  async getExtensionsInPack(extensionId: string, version?: string) {
+    try {
+      const res = await this.extensionManagerRequester.request(`pack/${extensionId}${version ? `?version=${version}` : '' }`);
+      if (res.status === 200) {
+        return res.data;
+      } else {
+        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
+      }
+    } catch (err) {
+      this.logger.error(err);
+      throw new Error(err.message);
+    }
+  }
+
   async getHotExtensions(ignoreId: string[] = [], pageIndex = 1) {
     const query = {
       ignoreId: [...ignoreId, ...this.appConfig.marketplace.ignoreId],
@@ -247,7 +266,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    * 通过插件 id 下载插件
    * @param extension 插件
    */
-  installExtension(extension: BaseExtension, version?: string): Promise<string> {
+  installExtension(extension: BaseExtension, version?: string): Promise<string | string[]> {
     return this.extensionManager.installExtension(extension, version);
   }
 
@@ -255,7 +274,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    * 通过插件 release id 下载插件
    * @param extension 插件
    */
-  installExtensionByReleaseId(releaseId: string): Promise<string> {
+  installExtensionByReleaseId(releaseId: string): Promise<string | string[]> {
     return this.installer.installByRelease({
       releaseId,
       dist: this.appConfig.marketplace.extensionDir,
@@ -267,7 +286,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    * @param extension 插件
    * @param version 要更新的版本
    */
-  updateExtension(extension: BaseExtension, version: string): Promise<string> {
+  updateExtension(extension: BaseExtension, version: string): Promise<string | string[]> {
     return this.extensionManager.updateExtension(extension, version);
   }
 

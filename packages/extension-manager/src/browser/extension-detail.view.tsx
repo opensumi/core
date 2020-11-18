@@ -14,6 +14,7 @@ import { Button } from '@ali/ide-components';
 import Menu from 'antd/lib/menu';
 import { Tabs } from '@ali/ide-components';
 import { ExtensionList } from './components/extension-list';
+import { ExtensionPack } from './components/extension-pack';
 import 'antd/lib/menu/style/index.css';
 
 const tabMap = [
@@ -39,6 +40,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const [latestExtension, setLatestExtension] = React.useState<ExtensionDetail | null>(null);
   const [updated, setUpdated] = React.useState(false);
   const [dependencies, setDependencies] = React.useState<ExtensionDetail[]>([]);
+  const [extensionPack, setExtensionPack] = React.useState<ExtensionDetail[]>([]);
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
   const dialogService = useInjectable<IDialogService>(IDialogService);
   const messageService = useInjectable<IMessageService>(IMessageService);
@@ -123,7 +125,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
     }
   }
 
-  async function getExtDetail(id: string, version: string): Promise<ExtensionDetail | void> {
+  async function getExtDetail(id: string, version?: string): Promise<ExtensionDetail | void> {
     // 已安装的读本地
     return getInstalledIds().includes(id) ? await extensionManagerService.getDetailById(id) : await extensionManagerService.getDetailFromMarketplace(id, version);
   }
@@ -162,6 +164,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
 
     if (!currentExtension) {
       setDependencies([]);
+      setExtensionPack([]);
       return;
     }
 
@@ -174,13 +177,24 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
         : await extensionManagerService.getExtDeps(currentExtension?.extensionId as string, currentExtension?.version)
     ) || [];
 
-    const result: ExtensionDetail[] = await Promise.all(rawDependencies.map((dep) => {
+    const rawExtensionPack = (
+      hasPackageJSON
+        ? currentExtension?.packageJSON?.extensionPack
+        : await extensionManagerService.getExtensionsInPack(currentExtension?.extensionId, currentExtension?.version)
+      );
+
+    const depsResult: ExtensionDetail[] = await Promise.all(rawDependencies.map((dep) => {
       const { id, version } = extensionManagerService.transformDepsDeclaration(dep);
 
       return getExtDetail(id, version);
     }));
 
-    setDependencies(result || []);
+    const packResult: ExtensionDetail[] = await Promise.all(rawExtensionPack.map((id) => {
+        return getExtDetail(id);
+    }));
+
+    setDependencies(depsResult || []);
+    setExtensionPack(packResult || []);
   }, [currentExtension]);
 
   React.useEffect(() => {
@@ -252,7 +266,15 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
         />
         <div className={styles.content}>
           {tabs[tabIndex].key === 'readme' && (
+            <>
+            { extensionPack.length > 0 && (
+              <ExtensionPack
+                showExtraAction={false}
+                list={extensionPack}
+              />
+            ) }
             <Markdown content={currentExtension.readme ? currentExtension.readme : `# ${currentExtension.displayName}\n${currentExtension.description}`} />
+            </>
           )}
           {tabs[tabIndex].key === 'changelog' && (
             <Markdown content={currentExtension.changelog ? currentExtension.changelog : 'no changelog'} />
@@ -261,6 +283,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
             <ExtensionList
               showExtraAction={false}
               list={dependencies}
+              height={500}
             />
           )}
         </div>
