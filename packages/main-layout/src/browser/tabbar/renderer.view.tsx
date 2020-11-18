@@ -37,8 +37,8 @@ export const TabRendererBase: React.FC<{
     components.forEach((component) => {
       tabbarService.registerContainer(component.options!.containerId, component);
     });
-    tabbarService.registerResizeHandle(resizeHandle);
     tabbarService.updatePanelVisibility(components.length > 0);
+    tabbarService.registerResizeHandle(resizeHandle);
   }, []);
   React.useEffect(() => {
     if (rootRef.current) {

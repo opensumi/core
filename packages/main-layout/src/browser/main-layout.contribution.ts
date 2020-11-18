@@ -116,14 +116,19 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
 
   async onStart() {
     this.registerSideToggleKey();
+    // vscode用于测试插件使用的默认container
+    this.mainLayoutService.collectTabbarComponent([], {
+      hideIfEmpty: true,
+      containerId: 'test',
+      title: 'Test',
+      iconClass: getIcon('extension'),
+    }, SlotLocation.left);
   }
 
   registerRenderer(registry: SlotRendererRegistry) {
-    registry.registerSlotRenderer('right', RightTabRenderer);
-    registry.registerSlotRenderer('left', LeftTabRenderer);
-    // TODO 支持配置切换
-    // registry.registerSlotRenderer('bottom', BottomTabRenderer);
-    registry.registerSlotRenderer('bottom', NextBottomTabRenderer);
+    registry.registerSlotRenderer(SlotLocation.right, RightTabRenderer);
+    registry.registerSlotRenderer(SlotLocation.left, LeftTabRenderer);
+    registry.registerSlotRenderer(SlotLocation.bottom, NextBottomTabRenderer);
   }
 
   registerCommands(commands: CommandRegistry): void {

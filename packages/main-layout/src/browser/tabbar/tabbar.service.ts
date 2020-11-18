@@ -236,15 +236,49 @@ export class TabbarService extends WithEventBus {
         this.state.set(info.options!.containerId, {hidden: prevState.hidden, priority: i});
       }
     }
+    this.registerSideEffects(componentInfo);
+    this.eventBus.fire(new TabBarRegistrationEvent({tabBarId: containerId}));
+    if (containerId === this.currentContainerId) {
+      // 需要重新触发currentChange副作用
+      this.handleChange(containerId, '');
+    }
+    this.viewContextKeyRegistry.registerContextKeyService(containerId, this.contextKeyService.createScoped()).createKey('view', containerId);
+    this.disposableMap.set(containerId, disposables);
+  }
+
+  registerSideEffects(componentInfo: ComponentRegistryInfo) {
+    const disposables = new DisposableCollection();
     // 注册切换tab显隐的菜单
-    disposables.push(this.menuRegistry.registerMenuItem(this.menuId, {
+    disposables.push(this.registerHideMenu(componentInfo));
+    // 注册溢出后的菜单
+    disposables.push(this.registerMoreMenu(componentInfo));
+    // 注册激活快捷键
+    disposables.push(this.registerActivateKeyBinding(componentInfo, componentInfo.options!.fromExtension));
+    // 注册视图是否存在的contextKey
+    const containerExistKey = this.contextKeyService.createKey(`workbench.${CONTAINER_NAME_MAP[this.location] || 'view'}.${componentInfo.options!.containerId}`, true);
+    disposables.push({
+      dispose: () => {
+        containerExistKey.set(false);
+      },
+    });
+    // 注册progressIndicator
+    disposables.push(this.progressService.registerProgressIndicator(componentInfo.options!.containerId));
+    return disposables;
+  }
+
+  protected registerHideMenu(componentInfo: ComponentRegistryInfo) {
+    return this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
-        id: this.registerVisibleToggleCommand(containerId),
+        id: this.registerVisibleToggleCommand(componentInfo.options!.containerId),
         label: componentInfo.options!.title || '',
       },
       group: '1_widgets',
-    }));
-    // 注册溢出后的菜单
+    });
+  }
+
+  protected registerMoreMenu(componentInfo: ComponentRegistryInfo) {
+    const disposables = new DisposableCollection();
+    const containerId = componentInfo.options!.containerId;
     const tabInMoreKey = this.scopedCtxKeyService.createKey(this.getTabInMoreCtxKey(containerId), false);
     this.tabInMoreKeyMap.set(containerId, tabInMoreKey);
     disposables.push({
@@ -253,32 +287,14 @@ export class TabbarService extends WithEventBus {
     disposables.push(this.menuRegistry.registerMenuItem(this.moreMenuId, {
       command: {
         id: this.registerMoreToggleCommand(componentInfo),
-        label: options.title || containerId,
+        label: componentInfo.options!.title || containerId,
       },
       group: 'inline',
       when: `${this.getTabInMoreCtxKey(containerId)} == true`,
       toggledWhen: `${getTabbarCtxKey(this.location)} == ${containerId}`,
-      iconClass: options.iconClass,
+      iconClass: componentInfo.options!.iconClass,
     }));
-    // 注册激活快捷键
-    disposables.push(this.registerActivateKeyBinding(componentInfo, options.fromExtension));
-    // 注册视图是否存在的contextKey
-    const containerExistKey = this.contextKeyService.createKey(`workbench.${CONTAINER_NAME_MAP[this.location] || 'view'}.${containerId}`, true);
-    disposables.push({
-      dispose: () => {
-        containerExistKey.set(false);
-      },
-    });
-    // 注册progressIndicator
-    disposables.push(this.progressService.registerProgressIndicator(containerId));
-
-    this.eventBus.fire(new TabBarRegistrationEvent({tabBarId: containerId}));
-    if (containerId === this.currentContainerId) {
-      // 需要重新触发currentChange副作用
-      this.handleChange(containerId, '');
-    }
-    this.viewContextKeyRegistry.registerContextKeyService(containerId, this.contextKeyService.createScoped()).createKey('view', containerId);
-    this.disposableMap.set(containerId, disposables);
+    return disposables;
   }
 
   @action

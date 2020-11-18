@@ -8,6 +8,7 @@ export const nodeLessExtensions: IExtensionMetaData[] = [
     extensionId: 'tao.themeDefaults',
     path: vscAuthority + '/theme-defaults',
     extraMetadata: {},
+    isBuiltin: false,
     realPath: vscAuthority + '/theme-defaults',
     extendConfig: {},
     defaultPkgNlsJSON: undefined,
@@ -40,6 +41,7 @@ export const nodeLessExtensions: IExtensionMetaData[] = [
   },
   {
     id: 'seti-icon',
+    isBuiltin: false,
     extensionId: 'tao.seti-icon',
     path: vscAuthority + '/theme-seti',
     extraMetadata: {},
@@ -61,6 +63,7 @@ export const nodeLessExtensions: IExtensionMetaData[] = [
   },
   {
     id: 'typescript-basic',
+    isBuiltin: false,
     extensionId: 'tao.typescript-basic',
     path: vscAuthority + '/typescript-basics',
     extraMetadata: {},
@@ -142,6 +145,7 @@ export const nodeLessExtensions: IExtensionMetaData[] = [
   {
     'id': 'kaitian-worker.volans-completions',
     'extensionId': 'extension',
+    isBuiltin: false,
     'path': 'kt-ext://dev.g.alicdn.com/tao-ide/ide-lite/0.0.1/extensions/completion',
     'packageJSON': {
       'activationEvents': [
