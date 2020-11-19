@@ -1,7 +1,7 @@
 import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, CommandService } from '@ali/ide-core-common/lib/command';
 import { Domain, IEventBus, ContributionProvider, localize, OnEvent, WithEventBus } from '@ali/ide-core-common';
-import { IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererContribution, SlotRendererRegistry, slotRendererRegistry, KeybindingRegistry } from '@ali/ide-core-browser';
+import { IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererContribution, SlotRendererRegistry, slotRendererRegistry, KeybindingRegistry, getOctIcon } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '../common';
 import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, ToolbarRegistry, RenderedEvent } from '@ali/ide-core-browser/lib/layout';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
@@ -120,8 +120,8 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
     this.mainLayoutService.collectTabbarComponent([], {
       hideIfEmpty: true,
       containerId: 'test',
-      title: 'Test',
-      iconClass: getIcon('extension'),
+      title: localize('workbench.testViewContainer').toUpperCase(),
+      iconClass: getOctIcon('breaker'),
     }, SlotLocation.left);
   }
 
