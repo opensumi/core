@@ -23,6 +23,7 @@ export interface KtViewItem {
   iconPath?: string;
   priority?: number;
   noResize?: boolean;
+  hideTab?: boolean;
   expanded?: boolean;
   weight?: number;
   titleComponentId?: string;
@@ -87,7 +88,7 @@ export class KtViewContributionPoint extends VSCodeContributePoint<KtViewsContri
           }
         }
         for (const view of views) {
-          const { title, icon, iconPath, id, priority, component, expanded, noResize, when, weight } = view;
+          const { title, icon, iconPath, id, priority, component, expanded, noResize, when, weight, hideTab } = view;
           const containerId = `${this.extension.id}:${id}`;
           const handlerId = this.mainlayoutService.collectTabbarComponent([{
             id,
@@ -103,6 +104,7 @@ export class KtViewContributionPoint extends VSCodeContributePoint<KtViewsContri
             containerId,
             noResize,
             fromExtension: true,
+            hideTab,
           }, location);
           this.disposableCollection.push({
             dispose: () => {
