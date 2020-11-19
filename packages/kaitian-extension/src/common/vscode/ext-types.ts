@@ -47,6 +47,7 @@ export enum IndentAction {
   Outdent = 3,
 }
 
+@es5ClassCompat
 export class CodeLens {
 
   range: Range;
@@ -1500,6 +1501,7 @@ export class ThemeIcon {
 ThemeIcon.File = new ThemeIcon('file');
 ThemeIcon.Folder = new ThemeIcon('folder');
 
+@es5ClassCompat
 export class TreeItem {
   label?: string | vscode.TreeItemLabel;
   resourceUri?: URI;
@@ -2027,6 +2029,7 @@ export enum TaskScope {
   Workspace = 2,
 }
 
+@es5ClassCompat
 export class CustomExecution2 implements vscode.CustomExecution2 {
   private _callback: () => Promise<vscode.Pseudoterminal>;
   constructor(callback: () => Promise<vscode.Pseudoterminal>) {
@@ -2045,6 +2048,7 @@ export class CustomExecution2 implements vscode.CustomExecution2 {
   }
 }
 
+@es5ClassCompat
 export class CustomExecution implements vscode.CustomExecution {
   private _callback: (args: vscode.TerminalRenderer, cancellationToken: vscode.CancellationToken) => Promise<number>;
 
