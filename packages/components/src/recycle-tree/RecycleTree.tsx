@@ -117,7 +117,6 @@ interface IFilterNodeRendererProps {
 export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   private static BATCHED_UPDATE_MAX_DEBOUNCE_MS: number = 4;
-  private static TRY_ENSURE_VISIBLE_MAX_TIMES: number = 5;
   private static FILTER_FUZZY_OPTIONS = {
     pre: '<match>',
     post: '</match>',
@@ -147,7 +146,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   private batchUpdatePromise: Promise<void> | null = null;
   private batchUpdateResolver: any;
-  private tryEnsureVisibleTimes: number = 0;
 
   // 批量更新Tree节点
   private batchUpdate = (() => {
@@ -163,7 +161,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         !this.promptHandle.destroyed
       ) {
         const idx = root.getIndexAtTreeNodeId(this.promptTargetID);
-        if (idx > -1 || this.promptHandle.parent === root ) {
+        if (idx > -1 || this.promptHandle.parent === root) {
           // 如果新建节点类型为普通节点，则在可折叠节点后插入
           if (this.promptHandle.type === TreeNodeType.TreeNode) {
             const parent = this.promptHandle.parent;
@@ -351,7 +349,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     const node = typeof pathOrTreeNode === 'string'
       ? await root.forceLoadTreeNodeAtPath(pathOrTreeNode)
       : pathOrTreeNode;
-
     if (!TreeNode.is(node) || CompositeTreeNode.isRoot(node)) {
       // 异常
       return;
@@ -363,28 +360,17 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       }
       parent = parent.parent;
     }
-    this.tryScrollIntoViewWhileStable(node as TreeNode, align);
+    this.tryScrollIntoView(node as TreeNode, align);
     return node as TreeNode;
   }
 
-  private tryScrollIntoViewWhileStable(node: TreeNode | CompositeTreeNode | PromptHandle, align: Align = 'auto') {
+  private tryScrollIntoView(node: TreeNode | CompositeTreeNode | PromptHandle, align: Align = 'auto') {
     const { root } = this.props.model;
-    if (this.tryEnsureVisibleTimes > RecycleTree.TRY_ENSURE_VISIBLE_MAX_TIMES) {
-      this.tryEnsureVisibleTimes = 0;
-      return;
+    if (node.constructor === NewPromptHandle && !(node as NewPromptHandle).destroyed) {
+      this.listRef.current?.scrollToItem(this.newPromptInsertionIndex);
+    } else if (root.isItemVisibleAtSurface(node as TreeNode | CompositeTreeNode)) {
+      this.listRef.current?.scrollToItem(root.getIndexAtTreeNode(node as TreeNode | CompositeTreeNode), align);
     }
-    Event.once(this.props.model.onChange)(async () => {
-      await this.batchUpdatePromise;
-      if (node.constructor === NewPromptHandle && !(node as NewPromptHandle).destroyed) {
-        this.listRef.current?.scrollToItem(this.newPromptInsertionIndex);
-      } else if (root.isItemVisibleAtSurface(node as TreeNode | CompositeTreeNode)) {
-        this.listRef.current?.scrollToItem(root.getIndexAtTreeNode(node as TreeNode | CompositeTreeNode), align);
-        this.tryEnsureVisibleTimes = 0;
-      } else {
-        this.tryEnsureVisibleTimes ++;
-        this.tryScrollIntoViewWhileStable(node, align);
-      }
-    });
   }
 
   public componentDidMount() {
@@ -459,11 +445,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         const item = root.getTreeNodeAtIndex(index);
         // 检查是否为重命名节点
         if (item &&
-            item.id === this.promptTargetID &&
-            this.promptHandle &&
-            this.promptHandle.constructor === RenamePromptHandle &&
-            !this.promptHandle.destroyed
-          ) {
+          item.id === this.promptTargetID &&
+          this.promptHandle &&
+          this.promptHandle.constructor === RenamePromptHandle &&
+          !this.promptHandle.destroyed
+        ) {
           cached = {
             itemType: TreeNodeType.RenamePrompt,
             item: this.promptHandle as RenamePromptHandle,
@@ -505,7 +491,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     if (node && node.item) {
       if (!node.item.id) {
         // FIXME: 不清楚啥时候能复现无Item情况
-        this.onErrorEmitter.fire({type: RenderErrorType.GET_RENDED_KEY, message: `Can\'t get item at index ${index}`});
+        this.onErrorEmitter.fire({ type: RenderErrorType.GET_RENDED_KEY, message: `Can\'t get item at index ${index}` });
         return index;
       }
       return node.item.id;
@@ -526,7 +512,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     const idSets: Set<number> = new Set();
     const idToRenderTemplate: Map<number, any> = new Map();
     const nodes: TreeNode[] = [];
-    for (let idx = 0; idx < root.branchSize; idx ++) {
+    for (let idx = 0; idx < root.branchSize; idx++) {
       const node = root.getTreeNodeAtIndex(idx)!;
       nodes.push(node as TreeNode);
     }
@@ -538,7 +524,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           // 不应包含根节点
           while (parent && !CompositeTreeNode.isRoot(parent)) {
             idSets.add(parent.id);
-            parent  = parent.parent;
+            parent = parent.parent;
           }
         }
       });
@@ -554,18 +540,18 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
-          }} dangerouslySetInnerHTML={{ __html: item.string || ''}}></div>;
+          }} dangerouslySetInnerHTML={{ __html: item.string || '' }}></div>;
         });
         // 不应包含根节点
         while (parent && !CompositeTreeNode.isRoot(parent)) {
           idSets.add(parent.id);
-          parent  = parent.parent;
+          parent = parent.parent;
         }
       });
     }
 
     this.filterFlattenBranch = new Array(idSets.size);
-    for (let flatTreeIdx = 0, idx = 0; idx < root.branchSize; idx ++) {
+    for (let flatTreeIdx = 0, idx = 0; idx < root.branchSize; idx++) {
       const node = root.getTreeNodeAtIndex(idx);
       if (node && idSets.has(node.id)) {
         this.filterFlattenBranch[flatTreeIdx] = node.id;
@@ -582,7 +568,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
             template: idToRenderTemplate.has(node.id) ? idToRenderTemplate.get(node.id) : undefined,
           });
         }
-        flatTreeIdx ++;
+        flatTreeIdx++;
       }
     }
     // 根据折叠情况变化裁剪filterFlattenBranch
@@ -601,7 +587,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         this.filterFlattenBranchChildrenCache.set(target.id, collapesArray);
         this.filterFlattenBranch = spliceArray(this.filterFlattenBranch, expandItemIndex + 1, collapesArray.length);
       } else {
-        const  spliceUint32Array = this.filterFlattenBranchChildrenCache.get(target.id);
+        const spliceUint32Array = this.filterFlattenBranchChildrenCache.get(target.id);
         if (spliceUint32Array && spliceUint32Array.length > 0) {
           this.filterFlattenBranch = spliceArray(this.filterFlattenBranch, expandItemIndex + 1, 0, spliceUint32Array);
           this.filterFlattenBranchChildrenCache.delete(target.id);
@@ -618,7 +604,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     const node = this.getItemAtIndex(index) as IFilterNodeRendererProps;
     const { item, itemType: type, template } = node;
     if (!item) {
-      this.onErrorEmitter.fire({type: RenderErrorType.RENDER_ITEM, message: `RenderItem error at index ${index}`});
+      this.onErrorEmitter.fire({ type: RenderErrorType.RENDER_ITEM, message: `RenderItem error at index ${index}` });
       return <div style={style}></div>;
     }
     return <div style={style}>
