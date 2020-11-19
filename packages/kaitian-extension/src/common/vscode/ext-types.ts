@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import URI from 'vscode-uri';
 import { illegalArgument } from './utils';
 import { FileOperationOptions } from './model.api';

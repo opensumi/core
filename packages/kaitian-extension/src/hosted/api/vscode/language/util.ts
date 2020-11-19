@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import * as types from '../../../../common/vscode/ext-types';
 import { Event } from '@ali/ide-core-common';
 import { LanguageSelector } from '../../../../common/vscode/model.api';

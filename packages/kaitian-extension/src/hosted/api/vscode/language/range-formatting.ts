@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { createPatch } from 'diff';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import URI from 'vscode-uri/lib/umd';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';

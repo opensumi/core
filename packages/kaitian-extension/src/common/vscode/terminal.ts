@@ -1,6 +1,6 @@
 import { Event } from 'vscode';
 import { ITerminalInfo } from '@ali/ide-terminal-next';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 
 export interface IMainThreadTerminal {
   $sendText(id: string, text: string, addNewLine?: boolean);

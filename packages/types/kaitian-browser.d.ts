@@ -15,7 +15,7 @@ interface IComponentProps<N, W = any> {
 declare module 'kaitian-browser' {
   export * from '@ali/ide-components';
 
-  import * as vscode from 'vscode';
+  import type * as vscode from 'vscode';
   import * as React from 'react';
 
   import { ROTATE_TYPE, ANIM_TYPE } from '@ali/ide-components';

@@ -1,7 +1,7 @@
 // 内置的api类型声明
 import { IRange } from '@ali/ide-core-common';
 import { ISingleEditOperation } from '@ali/ide-editor';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 import URI, { UriComponents } from 'vscode-uri';
 import { IndentAction, SymbolKind } from './ext-types';

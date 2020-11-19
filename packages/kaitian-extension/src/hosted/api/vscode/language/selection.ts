@@ -1,5 +1,5 @@
 import URI from 'vscode-uri/lib/umd';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { Position, SelectionRange } from '../../../../common/vscode/model.api';
 import * as Converter from '../../../../common/vscode/converter';
@@ -25,6 +25,7 @@ export class SelectionRangeAdapter {
       return [];
     }
     if (allProviderRanges.length !== zeroBasedPositions.length) {
+      // tslint:disable-next-line:no-console
       console.warn('BAD selection ranges, provider must return ranges for each position');
       return [];
     }

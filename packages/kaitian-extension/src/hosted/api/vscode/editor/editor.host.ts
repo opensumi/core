@@ -1,6 +1,6 @@
 import { IExtensionHostEditorService, ExtensionDocumentDataManager, MainThreadAPIIdentifier } from '../../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { Uri, Position, Range, Selection, TextEditorLineNumbersStyle} from '../../../../common/vscode/ext-types';
 import { ISelection, Emitter, Event, IRange, getDebugLogger, Disposable } from '@ali/ide-core-common';
 import { TypeConverts, fromRange, fromSelection, viewColumnToResourceOpenOptions } from '../../../../common/vscode/converter';

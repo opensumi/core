@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import {
   FileChangeType,

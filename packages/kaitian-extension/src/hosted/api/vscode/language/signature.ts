@@ -1,5 +1,5 @@
 import URI from 'vscode-uri/lib/umd';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { SignatureHelp, Position } from '../../../../common/vscode/model.api';
 import * as Converter from '../../../../common/vscode/converter';

@@ -2,7 +2,7 @@ import { IExtHostTreeView, IMainThreadTreeView, MainThreadAPIIdentifier } from '
 import { IRPCProtocol } from '@ali/ide-connection';
 import { TreeView, TreeViewItem, TreeViewSelection, TreeViewOptions } from '../../../common/vscode';
 import { IDisposable, Emitter, Disposable, Uri, DisposableStore, toDisposable } from '@ali/ide-core-common';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { ThemeIcon } from '../../../common/vscode/ext-types';
 import { isUndefined } from 'util';
 import { ExtHostCommands } from './ext.host.command';

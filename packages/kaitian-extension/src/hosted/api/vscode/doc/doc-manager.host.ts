@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import * as convert from '../../../../common/vscode/converter';
 import {
   Emitter as EventEmiiter, IDisposable,
@@ -38,6 +38,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     this._workspaceProxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadWorkspace);
     this._logService = {
       trace() {
+        // tslint:disable-next-line:no-console
         console.log.apply(console, arguments as any);
       },
     };

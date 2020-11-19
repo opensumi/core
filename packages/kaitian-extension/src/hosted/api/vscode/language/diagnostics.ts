@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { Emitter, Event, IMarkerData, MarkerSeverity } from '@ali/ide-core-common';
 import { IMainThreadLanguages } from '../../../../common/vscode';
 import {
@@ -263,6 +263,7 @@ export class Diagnostics {
         name = Diagnostics.GENERATED_DIAGNOSTIC_COLLECTION_NAME_PREFIX + this.getNextId();
       } while (this.diagnosticCollections.has(name));
     } else if (this.diagnosticCollections.has(name)) {
+      // tslint:disable-next-line:no-console
       console.warn(`Diagnostic collection with name '${name}' already exist.`);
     }
 

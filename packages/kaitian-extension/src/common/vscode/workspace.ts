@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { IDisposable, IRange, CancellationToken } from '@ali/ide-core-common';
 import { Uri, UriComponents} from './ext-types';
 import { FileStat } from '@ali/ide-file-service';
