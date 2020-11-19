@@ -395,9 +395,8 @@ export class OutlineModelService {
     // 单选操作默认先更新选中状态
     this.activeNodeDecoration(item);
 
-    if (type === TreeNodeType.TreeNode) {
-      this.revealRange(item.raw);
-    }
+    this.revealRange(item.raw);
+
     this._ignoreFollowCursorUpdateEventTimer ++;
   }
 
