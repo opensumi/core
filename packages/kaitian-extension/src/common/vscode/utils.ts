@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import * as types from './ext-types';
 import { SerializedIndentationRule, SerializedRegExp, SerializedOnEnterRule, ResourceTextEditDto, WorkspaceEditDto, ResourceFileEditDto } from './model.api';
 import URI from 'vscode-uri';

@@ -1,5 +1,5 @@
 import { URI, IChange } from '@ali/ide-core-common';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 
 // explorer/context
 // 资源管理器 ctxmenu
@@ -17,7 +17,7 @@ export type EditorContextCallback = (...args: [URI]) => void;
 type GroupId = number; // vscode.IEditorGroupView['id'];
 // editor/title
 // editor tab group 最右侧 ellipsis 图标点击 dropdown
-type EditorTitleCallback = (...args: [URI, { groupId: GroupId }]) => void;
+// type EditorTitleCallback = (...args: [URI, { groupId: GroupId }]) => void;
 
 // editor/title/context
 // editor tab ctxmenu

@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { MirrorTextModel } from './mirror';
 import { ensureValidWordDefinition, getWordAtText } from './wordHelper';
 import { Range, Position, EndOfLine, Schemas, Uri } from '../../../../common/vscode/ext-types';
@@ -242,6 +242,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
 
     } else if (regExpLeadsToEndlessLoop(regexp)) {
       // use default when custom-regexp is bad
+      // tslint:disable-next-line:no-console
       console.warn(`[getWordRangeAtPosition]: ignoring custom regexp '${regexp.source}' because it matches the empty string.`);
       regexp = getWordDefinitionFor(this._languageId);
     }

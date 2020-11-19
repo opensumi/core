@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { IDisposable } from '@ali/ide-core-common';
 import { ExtensionHostType } from '.';
 

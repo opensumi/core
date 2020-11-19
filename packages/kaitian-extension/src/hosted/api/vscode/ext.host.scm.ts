@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { CancellationToken } from '@ali/vscode-jsonrpc';
 import URI, { UriComponents } from 'vscode-uri';
 import {

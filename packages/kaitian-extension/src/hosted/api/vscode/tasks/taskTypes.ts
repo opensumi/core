@@ -1,5 +1,5 @@
 import * as types from '../../../../common/vscode/ext-types';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { Uri } from '../../../../common/vscode/ext-types';
 
 export interface TaskDto {

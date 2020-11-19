@@ -1,5 +1,5 @@
 import URI from 'vscode-uri/lib/umd';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as model from '../../../../common/vscode/model.api';
 import * as types from '../../../../common/vscode/ext-types';
@@ -78,6 +78,7 @@ export class RenameAdapter {
                 return undefined;
             }
             if (range.start.line > pos.line || range.end.line < pos.line) {
+                // tslint:disable-next-line:no-console
                 console.warn('INVALID rename location: position line must be within range start/end lines');
                 return undefined;
             }

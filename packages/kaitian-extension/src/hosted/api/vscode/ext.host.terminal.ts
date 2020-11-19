@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { Event, isObject, Emitter, getDebugLogger, isUndefined } from '@ali/ide-core-common';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ITerminalInfo } from '@ali/ide-terminal-next';

@@ -1,5 +1,5 @@
 import { Event, Emitter, Disposable, URI } from '@ali/ide-core-common';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { FileSystemEvents, IExtHostFileSystemEvent } from '../../../common/vscode/file-system';
 import { IRelativePattern, parse } from '../../../common/vscode/glob';
 

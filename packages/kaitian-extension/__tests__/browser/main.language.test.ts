@@ -2,7 +2,7 @@
 import { ExtHostLanguages } from '../../src/hosted/api/vscode/ext.host.language';
 import { MainThreadLanguages } from '../../src/browser/vscode/api/main.thread.language';
 import URI from 'vscode-uri';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import * as types from '../../src/common/vscode/ext-types';
 import * as modes from '../../src/common/vscode/model.api';
 

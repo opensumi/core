@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { IDisposable, Event } from '@ali/ide-core-common';
 import { Uri } from './ext-types';
 import { SaveReason, IEditorDocumentModelContentChange } from '@ali/ide-editor';

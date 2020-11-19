@@ -5,7 +5,7 @@ import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector'
 import { IExtensionInfo } from '@ali/ide-core-common';
 import URI from 'vscode-uri';
 import * as types from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 
 describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () => {
   let vscodeCommand: typeof vscode.commands;
