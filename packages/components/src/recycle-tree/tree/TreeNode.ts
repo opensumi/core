@@ -739,11 +739,14 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       if (watcher) {
         watcher.terminator();
       }
+      this.watchEvents.clear();
     }
     if (this._children) {
       // 移除后应该折叠，因为下次初始化默认值为折叠，否则将会导致下次插入异常
       this.isExpanded = false;
-      this._children.forEach((child) => (child as CompositeTreeNode).dispose());
+      this._children.forEach((child) => {
+        (child as CompositeTreeNode).dispose();
+      });
       this._children = null;
       this._flattenedBranch = null;
     }

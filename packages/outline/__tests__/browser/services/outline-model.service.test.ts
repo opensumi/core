@@ -222,7 +222,7 @@ describe('OutlineTreeModelService', () => {
       expect(mockOutlineDecorationService.updateDiagnosisInfo).toBeCalledTimes(1);
       done();
     });
-    outlineTreeModelService.refresh(outlineTreeModelService.treeModel?.root as any);
+    outlineTreeModelService.refresh();
   });
 
   it('collapseAll method should be work', async (done) => {
