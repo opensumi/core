@@ -121,7 +121,7 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
       hideIfEmpty: true,
       containerId: 'test',
       title: localize('workbench.testViewContainer').toUpperCase(),
-      iconClass: getOctIcon('breaker'),
+      iconClass: getOctIcon('beaker'),
     }, SlotLocation.left);
   }
 
