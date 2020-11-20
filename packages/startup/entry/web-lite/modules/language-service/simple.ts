@@ -1,5 +1,5 @@
 import { Autowired, Injectable, ConstructorOf } from '@ali/common-di';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { DocumentSelector, HoverProvider, CancellationToken, DefinitionProvider, ReferenceProvider } from 'vscode';
 import {
   SerializedDocumentFilter,

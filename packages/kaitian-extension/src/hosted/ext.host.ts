@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 
 import { Injector } from '@ali/common-di';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';

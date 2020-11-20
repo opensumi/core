@@ -1,5 +1,5 @@
 import URI from 'vscode-uri/lib/umd';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { Definition, DefinitionLink, Location, Position } from '../../../../common/vscode/model.api';
 import { isDefinitionLinkArray, isLocationArray } from '../../../../common/vscode/utils';

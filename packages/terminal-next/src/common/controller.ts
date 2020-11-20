@@ -22,6 +22,7 @@ export interface ITerminalController extends Disposable {
   ready: Deferred<void>;
   focused: boolean;
   clients: Map<string, ITerminalClient>;
+  activeClient?: ITerminalClient;
   themeBackground: string;
   firstInitialize(): void;
   recovery(history: ITerminalBrowserHistory): Promise<void>;

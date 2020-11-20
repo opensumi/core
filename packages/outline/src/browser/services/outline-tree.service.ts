@@ -93,10 +93,13 @@ export class OutlineTreeService extends Tree {
   async resolveChildren(parent?: OutlineCompositeTreeNode): Promise<(OutlineCompositeTreeNode | OutlineRoot | OutlineTreeNode)[]> {
     let children: (OutlineCompositeTreeNode | OutlineRoot | OutlineTreeNode)[] = [];
     if (!parent) {
-      children = [new OutlineRoot(this)];
+      children = [new OutlineRoot(this, this.currentUri)];
     } else if (parent) {
-      if (!OutlineCompositeTreeNode.is(parent) && this.currentUri) {
-        const symbols = this.documentSymbolStore.getDocumentSymbol(this.currentUri);
+      if (!OutlineCompositeTreeNode.is(parent)) {
+        if (!((parent as OutlineRoot).currentUri || this.currentUri)) {
+          return [];
+        }
+        const symbols = this.documentSymbolStore.getDocumentSymbol(((parent as OutlineRoot).currentUri || this.currentUri)!);
         children = symbols?.map((symbol: INormalizedDocumentSymbol) => {
           const cache = this.cacheOutlineNodes.get(symbol.id);
           if (!!symbol.children?.length) {

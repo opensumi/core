@@ -12,7 +12,7 @@ export class OutlineDecorationService {
   @Autowired(IThemeService)
   private themeService: IThemeService;
 
-  private _diagnosisInfo: IOutlineMarker[];
+  private _diagnosisInfo: IOutlineMarker[] = [];
 
   updateDiagnosisInfo(uri?: URI) {
     this._diagnosisInfo = uri ? this.markerManager.getMarkers({ resource: uri.toString(), opened: true }) : [];

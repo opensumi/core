@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import * as Converter from '../../../../common/vscode/converter';
 import URI from 'vscode-uri/lib/umd';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';

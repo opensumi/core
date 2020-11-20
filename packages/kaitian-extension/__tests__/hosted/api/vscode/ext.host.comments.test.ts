@@ -4,7 +4,7 @@ import { MainThreadAPIIdentifier, IMainThreadComments } from '@ali/ide-kaitian-e
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import URI from 'vscode-uri';
 import * as types from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

@@ -39,7 +39,7 @@ describe('Terminal Client', () => {
     const index = view.createGroup();
     const group = view.getGroup(index);
     widget = view.createWidget(group);
-    client = factory(widget, {}, false);
+    client = factory(widget, {});
     expect(client.ready).toBeFalsy();
   });
 

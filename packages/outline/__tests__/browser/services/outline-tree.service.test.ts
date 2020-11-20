@@ -21,7 +21,7 @@ describe('OutlineTreeService', () => {
     },
     set: jest.fn(),
   };
-  const root = new OutlineRoot({resolveChildren: () => ([])} as any);
+  const root = new OutlineRoot({resolveChildren: () => ([])} as any, null);
   const newTreeNode = (name: string, kind: number = 0, isComposite?: boolean) => {
     if (isComposite) {
       return new OutlineCompositeTreeNode({} as any, root as any, { name, kind } as any, '');

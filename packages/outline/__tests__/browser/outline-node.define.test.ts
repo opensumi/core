@@ -36,7 +36,7 @@ describe('OutlineCompositeTreeNode', () => {
   } as INormalizedDocumentSymbol;
 
   beforeAll(() => {
-    rootNode = new OutlineRoot(mockOutlineTreeService);
+    rootNode = new OutlineRoot(mockOutlineTreeService, null);
     node = new OutlineCompositeTreeNode(mockOutlineTreeService, rootNode, mockRaw, '');
   });
 
@@ -82,7 +82,7 @@ describe('OutlineTreeNode', () => {
   } as INormalizedDocumentSymbol;
 
   beforeAll(() => {
-    rootNode = new OutlineRoot(mockOutlineTreeService);
+    rootNode = new OutlineRoot(mockOutlineTreeService, null);
     node = new OutlineTreeNode(mockOutlineTreeService, rootNode, mockRaw, '');
   });
 

@@ -26,7 +26,7 @@ export class DebugSchemaUpdater {
     const items = (schema!.properties!.configurations.items as IJSONSchema);
     const configurations = debuggers.map((dbg) => {
       return {
-        attributes: Object.keys(dbg.configurationAttributes).map((request) => {
+        attributes: Object.keys(dbg.configurationAttributes || {}).map((request) => {
           const attributes: IJSONSchema = dbg.configurationAttributes[request];
           return attributes;
         }),

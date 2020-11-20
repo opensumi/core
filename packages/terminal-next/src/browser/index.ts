@@ -92,8 +92,8 @@ export class TerminalNextModule extends BrowserModule {
     },
     {
       token: ITerminalClientFactory,
-      useFactory: (injector) => (widget: IWidget, options?: TerminalOptions, autofocus: boolean = true) => {
-        return TerminalClientFactory.createClient(injector, widget, options, autofocus);
+      useFactory: (injector) => (widget: IWidget, options?: TerminalOptions) => {
+        return TerminalClientFactory.createClient(injector, widget, options);
       },
     },
   ];

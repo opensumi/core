@@ -23,7 +23,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private _term: Terminal;
   private _uid: string;
   private _options: TerminalOptions;
-  private _autofocus: boolean;
   private _widget: IWidget;
   /** end */
 
@@ -85,8 +84,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   @Autowired(IOpenerService)
   private readonly openerService: IOpenerService;
 
-  init(widget: IWidget, options: TerminalOptions = {}, autofocus: boolean = true) {
-    this._autofocus = autofocus;
+  init(widget: IWidget, options: TerminalOptions = {}) {
     this._uid = widget.id;
     this._options = options || {};
     this.name = this._options.name || '';
@@ -150,10 +148,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   get pid() {
     return this.service.getProcessId(this.id);
-  }
-
-  get autofocus() {
-    return this._autofocus;
   }
 
   get options() {
@@ -337,6 +331,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._term.open(this._container);
     await this.attached.promise;
     this._widget.name = this.name;
+    // 首次渲染且为当前选中的 client 时，聚焦
+    if (this.controller.activeClient?.id === this.id) {
+      this.focus();
+    }
   }
 
   @debounce(100)
@@ -426,7 +424,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 @Injectable()
 export class TerminalClientFactory {
 
-  static createClient(injector: Injector, widget: IWidget, options?: TerminalOptions, autofocus?: boolean) {
+  static createClient(injector: Injector, widget: IWidget, options?: TerminalOptions) {
     const child = injector.createChild([
       {
         token: TerminalClient,
@@ -434,7 +432,7 @@ export class TerminalClientFactory {
       },
     ]);
     const client = child.get(TerminalClient);
-    client.init(widget, options, autofocus);
+    client.init(widget, options);
     return client;
   }
 }

@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Disposable, Position, Range, Location, CodeLens, SymbolInformation } from '../../../common/vscode/ext-types';
 import * as extHostTypeConverter from '../../../common/vscode/converter';

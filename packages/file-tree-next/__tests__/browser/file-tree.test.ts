@@ -362,7 +362,7 @@ describe('FileTree should be work while on single workspace model', () => {
       const { location, decorations } = fileTreeModelService;
       mockTreeHandle.ensureVisible = jest.fn(() => fileNode);
       await location(fileNode.uri);
-      expect(mockTreeHandle.ensureVisible).toBeCalledWith(await fileTreeService.getFileTreeNodePathByUri(fileNode.uri));
+      expect(mockTreeHandle.ensureVisible).toBeCalledWith(await fileTreeService.getFileTreeNodePathByUri(fileNode.uri), 'center', true);
       const fileDecoration = decorations.getDecorations(fileNode);
       expect(fileDecoration?.classlist).toEqual([styles.mod_selected]);
       done();
@@ -376,7 +376,7 @@ describe('FileTree should be work while on single workspace model', () => {
       mockTreeHandle.ensureVisible = jest.fn(() => fileNode);
       locationOnShow(fileNode.uri);
       await performLocationOnHandleShow();
-      expect(mockTreeHandle.ensureVisible).toBeCalledWith(await fileTreeService.getFileTreeNodePathByUri(fileNode.uri));
+      expect(mockTreeHandle.ensureVisible).toBeCalledWith(await fileTreeService.getFileTreeNodePathByUri(fileNode.uri), 'center', true);
       const fileDecoration = decorations.getDecorations(fileNode);
       expect(fileDecoration?.classlist).toEqual([styles.mod_selected]);
       done();

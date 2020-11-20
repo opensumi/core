@@ -37,7 +37,7 @@ describe('OutlineTreeModelService', () => {
   const mockOutlineTreeService = {
     resolveChildren: jest.fn((parent?: any) => {
       if (!parent) {
-        return [new OutlineRoot(mockOutlineTreeService as any)];
+        return [new OutlineRoot(mockOutlineTreeService as any, mockWorkbenchEditorService.currentEditor.currentUri)];
       } else if (!parent.raw) {
         return [new OutlineCompositeTreeNode(mockOutlineTreeService as any, parent, mockRaw, '')];
       }
@@ -61,7 +61,9 @@ describe('OutlineTreeModelService', () => {
   };
 
   const mockWorkbenchEditorService = {
-    currentUri: new URI('test.js'),
+    currentEditor: {
+      currentUri: new URI('test.js'),
+    },
   };
 
   const mockMarkerManager = {
@@ -220,7 +222,7 @@ describe('OutlineTreeModelService', () => {
       expect(mockOutlineDecorationService.updateDiagnosisInfo).toBeCalledTimes(1);
       done();
     });
-    outlineTreeModelService.refresh(outlineTreeModelService.treeModel?.root as any);
+    outlineTreeModelService.refresh();
   });
 
   it('collapseAll method should be work', async (done) => {

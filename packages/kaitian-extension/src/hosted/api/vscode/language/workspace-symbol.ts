@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { SymbolInformation } from 'vscode-languageserver-types';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import * as Converter from '../../../../common/vscode/converter';
 
 export class WorkspaceSymbolAdapter {

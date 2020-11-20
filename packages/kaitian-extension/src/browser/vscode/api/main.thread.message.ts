@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { IMainThreadMessage, IExtHostMessage, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';

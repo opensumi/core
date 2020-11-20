@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import URI from 'vscode-uri/lib/umd';
 import { CodeActionKind } from '../../../../common/vscode/ext-types';
 import { Selection, Range } from '../../../../common/vscode/model.api';
@@ -75,9 +75,11 @@ export class CodeActionAdapter {
                     if (codeActionContext.only) {
                         if (!candidate.kind) {
                             /* tslint:disable-next-line:max-line-length */
+                            // tslint:disable-next-line:no-console
                             console.warn(`Code actions of kind '${codeActionContext.only.value}' requested but returned code action does not have a 'kind'. Code action will be dropped. Please set 'CodeAction.kind'.`);
                         } else if (!codeActionContext.only.contains(candidate.kind)) {
                             /* tslint:disable-next-line:max-line-length */
+                            // tslint:disable-next-line:no-console
                             console.warn(`Code actions of kind '${codeActionContext.only.value}' requested but returned code action is of kind '${candidate.kind.value}'. Code action will be dropped. Please check 'CodeActionContext.only' to only return requested code action.`);
                         }
                     }

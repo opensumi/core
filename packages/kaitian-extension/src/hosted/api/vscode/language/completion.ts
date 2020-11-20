@@ -1,7 +1,7 @@
 import URI from 'vscode-uri/lib/umd';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { CompletionContext, Position, CompletionItemInsertTextRule, CompletionItem } from '../../../../common/vscode/model.api';
 import { SnippetString } from '../../../../common/vscode/ext-types';
 import { mixin } from '../../../../common/vscode/utils';

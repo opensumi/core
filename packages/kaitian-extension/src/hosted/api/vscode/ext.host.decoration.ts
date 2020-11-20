@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import URI from 'vscode-uri';
 import { CancellationToken } from '@ali/ide-core-common';
 import { toDisposable, IDisposable } from '@ali/ide-core-common/lib/disposable';

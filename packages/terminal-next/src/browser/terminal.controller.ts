@@ -19,6 +19,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   protected _onDidCloseTerminal = new Emitter<string>();
   protected _onDidChangeActiveTerminal = new Emitter<string>();
   protected _ready = new Deferred<void>();
+  protected _activeClientId?: string;
 
   readonly onDidOpenTerminal: Event<ITerminalInfo> = this._onDidOpenTerminal.event;
   readonly onDidCloseTerminal: Event<string> = this._onDidCloseTerminal.event;
@@ -69,12 +70,18 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     return this._ready;
   }
 
-  private _createClient(widget: IWidget, options = {}, autofocus = true) {
+  get activeClient() {
+    if (this._activeClientId) {
+      return this._clients.get(this._activeClientId);
+    }
+  }
+
+  private _createClient(widget: IWidget, options = {}) {
     if (this._clients.has(widget.id)) {
       return;
     }
 
-    const client = this.clientFactory(widget, options, autofocus);
+    const client = this.clientFactory(widget, options);
     this._clients.set(client.id, client);
 
     client.addDispose({
@@ -148,7 +155,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
          */
         const widget = this.terminalView.createWidget(group,
           typeof sessionId === 'string' ? sessionId : sessionId.clientId);
-        const client = this.clientFactory(widget, {}, false);
+        const client = this.clientFactory(widget, {});
         this._clients.set(client.id, client);
 
         /**
@@ -185,7 +192,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this.terminalContextKey.isTerminalViewInitialized.set(true);
 
     this.addDispose(this.terminalView.onWidgetCreated((widget) => {
-      this._createClient(widget, {}, true);
+      this._createClient(widget, {});
     }));
 
     this.addDispose(this.terminalView.onWidgetDisposed((widget) => {
@@ -200,7 +207,15 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       const client = this.findClientFromWidgetId(widget.id);
       if (client) {
         this._onDidChangeActiveTerminal.fire(client.id);
+        if (client.ready) {
+          // 事件是同步触发的，事件发出时，界面可能还没更新完成，所以加个延迟
+          // 当前选中的 client 已经完成渲染，聚焦
+          setTimeout(() => {
+            client.focus();
+          });
+        }
       }
+      this._activeClientId = client?.id;
     }));
 
     this.addDispose(this.themeService.onThemeChange((_) => {
@@ -306,7 +321,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     // 这里是一个有点怪异的操作，主要是避免事件 onWidgetCreated 被触发，手动关联 widget 和 client
     this._clients.set(widgetId, {} as any);
     const widget = this.terminalView.createWidget(group, widgetId, !options.closeWhenExited);
-    const client = this.clientFactory(widget, options, false);
+    const client = this.clientFactory(widget, options);
     // 必须重新将 client 添加到缓存中，否则会导致后续的主题更新和 dispose 出现问题
     this._clients.set(widgetId, client);
     return client;
