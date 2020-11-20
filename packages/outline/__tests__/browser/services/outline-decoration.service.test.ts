@@ -25,7 +25,7 @@ describe('OutlineDecorationService', () => {
     getColor: jest.fn(),
   };
 
-  const root = new OutlineRoot({resolveChildren: () => ([])} as any);
+  const root = new OutlineRoot({resolveChildren: () => ([])} as any, null);
 
   beforeAll(() => {
     (global as any).monaco = createMockedMonaco() as any;

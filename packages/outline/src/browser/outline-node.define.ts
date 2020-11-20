@@ -1,17 +1,25 @@
 import { TreeNode, CompositeTreeNode, ITree } from '@ali/ide-components';
 import { INormalizedDocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { OutlineTreeService } from './services/outline-tree.service';
-
+import { MaybeNull, URI } from '@ali/ide-core-common';
 export class OutlineRoot extends CompositeTreeNode {
 
   static is(node: OutlineCompositeTreeNode | OutlineRoot): node is OutlineRoot {
     return !!node && !node.parent;
   }
 
+  private _currentUri: MaybeNull<URI>;
+
   constructor(
     tree: OutlineTreeService,
+    currentUri: MaybeNull<URI>,
   ) {
     super(tree as ITree, undefined);
+    this._currentUri = currentUri;
+  }
+
+  get currentUri() {
+    return this._currentUri;
   }
 
   get expanded() {

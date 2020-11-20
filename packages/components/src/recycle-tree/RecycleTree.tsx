@@ -83,28 +83,73 @@ export enum RenderErrorType {
 }
 
 export interface IRecycleTreeHandle {
-  // 新建节点, 相关API在调用前需确保节点无再发生变化，否则易出错
-  // 如：文件树中外部文件变化同步到Tree中事件还未处理结束，此时需等待事件处理结束
-  promptNewTreeNode(at: string | CompositeTreeNode): Promise<NewPromptHandle>;
-  // 新建可折叠节点
-  promptNewCompositeTreeNode(at: string | CompositeTreeNode): Promise<NewPromptHandle>;
-  // 重命名节点
+  /**
+   * 新建节点
+   *
+   * @param pathOrTreeNode 节点或者节点路径
+   */
+  promptNewTreeNode(pathOrTreeNode: string | CompositeTreeNode): Promise<NewPromptHandle>;
+  /**
+   * 新建可折叠节点
+   *
+   * @param pathOrTreeNode 节点或者节点路径
+   */
+  promptNewCompositeTreeNode(pathOrTreeNode: string | CompositeTreeNode): Promise<NewPromptHandle>;
+  /**
+   * 重命名节点
+   *
+   * @param pathOrTreeNode 节点或者节点路径
+   */
   promptRename(pathOrTreeNode: string | TreeNode | CompositeTreeNode, defaultName?: string): Promise<RenamePromptHandle>;
-  // 展开节点
+  /**
+   * 展开节点
+   *
+   * @param pathOrTreeNode 节点或者节点路径
+   */
   expandNode(pathOrTreeNode: string | CompositeTreeNode): Promise<void>;
-  // 折叠节点
+  /**
+   * 折叠节点
+   *
+   * @param pathOrTreeNode 节点或者节点路径
+   */
   collapseNode(pathOrTreeNode: string | CompositeTreeNode): Promise<void>;
-  // 定位节点位置，滚动条将会滚动到对应可视区域
-  ensureVisible(pathOrTreeNode: string | TreeNode | CompositeTreeNode, align?: Align): Promise<TreeNode | undefined>;
-  // 获取当前TreeModel
+  /**
+   * 定位节点位置，滚动条将会滚动到对应可视区域，需要手动控制是否稳定后再进行节点定位
+   *
+   * @param pathOrTreeNode 节点或者节点路径
+   * @param align Align
+   * @param untilStable 是否在节点稳定时再进行定位操作，部分Tree可能在定位过程中会有不断传入的变化，如文件树
+   */
+  ensureVisible(pathOrTreeNode: string | TreeNode | CompositeTreeNode, align?: Align, untilStable?: boolean): Promise<TreeNode | undefined>;
+  /**
+   * 获取当前TreeModel
+   *
+   * @param pathOrTreeNode 节点或者节点路径
+   */
   getModel(): TreeModel;
-  // TreeModel变更事件
+  /**
+   * TreeModel变更事件
+   *
+   * @param pathOrTreeNode 节点或者节点路径
+   */
   onDidChangeModel: Event<IModelChange>;
-  // Tree更新事件
+  /**
+   * Tree更新事件
+   *
+   * @param pathOrTreeNode 节点或者节点路径
+   */
   onDidUpdate: Event<void>;
-  // Tree更新事件, 仅触发一次
+  /**
+   * Tree更新事件, 仅触发一次
+   *
+   * @param pathOrTreeNode 节点或者节点路径
+   */
   onOnceDidUpdate: Event<void>;
-  // 监听渲染报错
+  /**
+   * 监听渲染报错
+   *
+   * @param pathOrTreeNode 节点或者节点路径
+   */
   onError: Event<IRecycleTreeError>;
 }
 
@@ -117,6 +162,7 @@ interface IFilterNodeRendererProps {
 export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   private static BATCHED_UPDATE_MAX_DEBOUNCE_MS: number = 4;
+  private static TRY_ENSURE_VISIBLE_MAX_TIMES: number = 5;
   private static FILTER_FUZZY_OPTIONS = {
     pre: '<match>',
     post: '</match>',
@@ -138,6 +184,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private newPromptInsertionIndex: number = -1;
   // 目标索引
   private promptTargetID: number;
+  // 尝试定位次数
+  private tryEnsureVisibleTimes: number;
 
   private idToFilterRendererPropsCache: Map<number, IFilterNodeRendererProps> = new Map();
   private filterFlattenBranch: number[];
@@ -344,7 +392,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
   }
 
-  private ensureVisible = async (pathOrTreeNode: string | TreeNode | CompositeTreeNode, align: Align = 'auto'): Promise<TreeNode | undefined> => {
+  private ensureVisible = async (pathOrTreeNode: string | TreeNode | CompositeTreeNode, align: Align = 'auto', untilStable: boolean = false): Promise<TreeNode | undefined> => {
     const { root } = this.props.model;
     const node = typeof pathOrTreeNode === 'string'
       ? await root.forceLoadTreeNodeAtPath(pathOrTreeNode)
@@ -360,7 +408,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       }
       parent = parent.parent;
     }
-    this.tryScrollIntoView(node as TreeNode, align);
+    if (untilStable) {
+      this.tryScrollIntoViewWhileStable(node as TreeNode, align);
+    } else {
+      this.tryScrollIntoView(node as TreeNode, align);
+    }
     return node as TreeNode;
   }
 
@@ -371,6 +423,26 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     } else if (root.isItemVisibleAtSurface(node as TreeNode | CompositeTreeNode)) {
       this.listRef.current?.scrollToItem(root.getIndexAtTreeNode(node as TreeNode | CompositeTreeNode), align);
     }
+  }
+
+  private tryScrollIntoViewWhileStable(node: TreeNode | CompositeTreeNode | PromptHandle, align: Align = 'auto') {
+    const { root } = this.props.model;
+    if (this.tryEnsureVisibleTimes > RecycleTree.TRY_ENSURE_VISIBLE_MAX_TIMES) {
+      this.tryEnsureVisibleTimes = 0;
+      return;
+    }
+    Event.once(this.props.model.onChange)(async () => {
+      await this.batchUpdatePromise;
+      if (node.constructor === NewPromptHandle && !(node as NewPromptHandle).destroyed) {
+        this.listRef.current?.scrollToItem(this.newPromptInsertionIndex);
+      } else if (root.isItemVisibleAtSurface(node as TreeNode | CompositeTreeNode)) {
+        this.listRef.current?.scrollToItem(root.getIndexAtTreeNode(node as TreeNode | CompositeTreeNode), align);
+        this.tryEnsureVisibleTimes = 0;
+      } else {
+        this.tryEnsureVisibleTimes ++;
+        this.tryScrollIntoViewWhileStable(node, align);
+      }
+    });
   }
 
   public componentDidMount() {
