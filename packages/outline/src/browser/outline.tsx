@@ -60,9 +60,6 @@ export const OutlinePanel = observer(({
 
   React.useEffect(() => {
     outlineModelService.onDidUpdateTreeModel(async (model: OutlineTreeModel) => {
-      if (model) {
-        await outlineModelService.treeModel!.root.ensureLoaded();
-      }
       setModel(model);
     });
   }, []);
