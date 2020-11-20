@@ -13,7 +13,7 @@ import { OutlineTreeModel } from './services/outline-model';
 export const OutlinePanel = observer(({
   viewState,
 }: React.PropsWithChildren<{viewState: ViewState}>) => {
-  const [model, setModel] = React.useState<OutlineTreeModel>();
+  const [model, setModel] = React.useState<OutlineTreeModel | undefined>();
 
   const { width, height } = viewState;
 
@@ -59,7 +59,7 @@ export const OutlinePanel = observer(({
   };
 
   React.useEffect(() => {
-    outlineModelService.onDidUpdateTreeModel(async (model: OutlineTreeModel) => {
+    outlineModelService.onDidUpdateTreeModel(async (model?: OutlineTreeModel) => {
       setModel(model);
     });
   }, []);
