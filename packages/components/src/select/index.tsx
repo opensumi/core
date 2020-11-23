@@ -32,7 +32,6 @@ export interface ISelectProps<T = string> {
   groupTitleRenderer?: React.FC<{ group: IDataOptionGroup<T>, index: number }>;
   headerComponent?: React.FC<any> | React.ComponentClass;
   footerComponent?: React.FC<any> | React.ComponentClass;
-  setSelectHandle?: (handle: (v: T) => void) => void;
   /**
    * 点击时是否启用搜索
    */
@@ -49,6 +48,10 @@ export interface ISelectProps<T = string> {
    * 列表为空时的展示组件
    */
   emptyComponent?: React.FC<any>;
+  /**
+   * 渲染选中项
+   */
+  selectedRenderer?: React.FC<{data: IDataOption<T>}> | React.ComponentClass<{data: IDataOption<T>}>;
 }
 
 export const Option: React.FC<React.PropsWithChildren<{
@@ -197,6 +200,7 @@ export function Select<T = string>({
   filterOption = defaultFilterOption,
   searchPlaceholder = '',
   emptyComponent,
+  selectedRenderer,
 }: ISelectProps<T>) {
   const [open, setOpen] = useState(false);
   const [searchInput, setSearchInput] = useState('');
@@ -263,12 +267,14 @@ export function Select<T = string>({
           return {
             iconClass: option.iconClass,
             label: option.label,
+            value: option.value,
           };
         }
       }
       return {
         iconClass: options[0]?.iconClass,
         label: options[0]?.label,
+        value: options[0]?.value,
       };
     } else if (options && isDataOptionGroups(options)) {
       for (const group of options) {
@@ -277,6 +283,7 @@ export function Select<T = string>({
             return {
               iconClass: option.iconClass,
               label: option.label,
+              value: option.value,
             };
           }
         }
@@ -284,17 +291,20 @@ export function Select<T = string>({
       return {
         iconClass: options[0]?.options[0]?.iconClass,
         label: options[0]?.options[0]?.label,
+        value: options[0]?.options[0]?.value,
       };
     } else {
       const text = children && getLabelWithChildrenProps<T>(value, children);
       if (text) {
         return {
           label: text,
+          value: text,
         };
       }
     }
     return {
       label: '',
+      value: '',
     };
   }
 
@@ -321,9 +331,15 @@ export function Select<T = string>({
 
   const renderSelected = () => {
     const selected = getSelectedValue();
+    const SC = selectedRenderer;
     return <React.Fragment >
-      {selected.iconClass ? <span className={classNames(selected.iconClass, 'kt-select-option-icon')}></span> : undefined}
-      <span className={'kt-select-option'}>{selected.label}</span>
+      {
+        SC ? <SC data={selected}/> :
+        <React.Fragment>
+          {selected.iconClass ? <span className={classNames(selected.iconClass, 'kt-select-option-icon')}></span> : undefined}
+          <span className={'kt-select-option'}>{selected.label}</span>
+        </React.Fragment>
+        }
       <Icon iconClass={getKaitianIcon('down')} />
     </React.Fragment>;
   };
