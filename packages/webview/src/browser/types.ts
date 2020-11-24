@@ -126,12 +126,17 @@ export interface IPlainWebviewWindow extends IDisposable {
 
   show(): Promise<void>;
 
+  hide(): Promise<void>;
+
   postMessage(message: any): Promise<void>;
 
   onMessage: Event<any>;
 
   onClosed: Event<void>;
 
+  setSize(size: {width?: number; height?: number; }): Promise<void>;
+
+  setAlwaysOnTop(flag: boolean): Promise<void>;
 }
 
 export const IWebviewService = Symbol('IWebviewService');

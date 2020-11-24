@@ -1,7 +1,7 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtensionHostService, IExtensionWorkerHost, IExtension, WorkerHostAPIIdentifier } from '../../../common';
 import { createLayoutAPIFactory, KaitianExtHostLayout } from './ext.host.layout';
-import { createWindowApiFactory } from './ext.host.window';
+import { createWindowApiFactory, ExtHostIDEWindow } from './ext.host.window';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { ExtensionReporterService } from '../../extension-reporter';
 import { Emitter, ReporterProcessMessage, REPORT_HOST } from '@ali/ide-core-common';
@@ -33,6 +33,7 @@ export function createAPIFactory(
   const kaitianExtHostTheme = rpcProtocol.set(ExtHostKaitianAPIIdentifier.ExtHostTheme, new ExtHostTheme(rpcProtocol)) as  ExtHostTheme;
   const kaitianExtHostCommon = rpcProtocol.set(ExtHostKaitianAPIIdentifier.ExtHostCommon, new ExtHostCommon(rpcProtocol)) as ExtHostCommon;
   const kaitianExtHostToolbar = rpcProtocol.set(ExtHostKaitianAPIIdentifier.ExtHostToolbar, new ExtHostToolbarActionService(extHostCommands, kaitianExtHostCommon, rpcProtocol)) as ExtHostToolbarActionService;
+  const kaitianExtHostWindow = rpcProtocol.set(ExtHostKaitianAPIIdentifier.ExtHostWindow, new ExtHostIDEWindow(rpcProtocol)) as ExtHostIDEWindow;
 
   return (extension: IExtension) => {
     const reporter = new ExtensionReporterService(reporterEmitter, {
@@ -42,7 +43,7 @@ export function createAPIFactory(
     });
     return {
       layout: createLayoutAPIFactory(extHostCommands, kaitianLayout, extension),
-      ideWindow: createWindowApiFactory(extHostCommands),
+      ideWindow: createWindowApiFactory(extHostCommands, kaitianExtHostWindow),
       webview: createKaitianWebviewApi(extension, kaitianExtHostWebview),
       lifecycle: createLifeCycleApi(extHostCommands, kaitianLifeCycle),
       theme: createThemeApi(kaitianExtHostTheme),

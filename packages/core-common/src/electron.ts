@@ -8,6 +8,10 @@ export interface IElectronMainApi<Events> {
 
 }
 
+export interface IElectronPlainWebviewWindowOptions extends Electron.BrowserWindowConstructorOptions {
+  // 后续可支持更多自定义字段
+}
+
 export interface IElectronMainUIServiceShape {
 
   openItem(path: string): void;
@@ -43,23 +47,44 @@ export interface IElectronMainUIServiceShape {
    * @param options
    * @returns windowId
    */
-  createBrowserWindow(options?: Electron.BrowserWindowConstructorOptions): Promise<number>;
+  createBrowserWindow(options?: IElectronPlainWebviewWindowOptions): Promise<number>;
 
   /**
-   * 显示指定的 url
-   * @param windowId 
+   * 显示指定的窗口
+   * @param windowId
    */
   showBrowserWindow(windowId: number): Promise<void>;
-  
+
+  /**
+   * 隐藏指定的窗口
+   * @param windowId
+   */
+  hideBrowserWindow(windowId: number): Promise<void>;
+
+  /**
+   * 设置窗口大小
+   * @param windowId
+   * @param size
+   */
+  setSize(windowId: number,  size: { width: number; height: number; }): Promise<void>;
+
+
+  /**
+   * 设置窗口是否始终置顶
+   * @param windowId
+   * @param flag
+   */
+  setAlwaysOnTop(windowId: number,  flag: boolean): Promise<void>;
+
   /**
    * 让一个指定的 browserWindow 加载一个url
-   * @param windowId 
-   * @param url 
+   * @param windowId
+   * @param url
    */
   browserWindowLoadUrl(windowId: number, url: string): Promise<void>;
   /**
    * 关闭一个browserWindow
-   * @param windowId 
+   * @param windowId
    */
   closeBrowserWindow(windowId: number): Promise<void>;
 
@@ -69,11 +94,11 @@ export interface IElectronMainUIServiceShape {
    * @param message: 消息体，需要能被序列化
    */
   postMessageToBrowserWindow(windowId: number, channel: string, message: any): Promise<void>;
-  
+
 }
 export interface IElectronMainUIService extends IElectronMainUIServiceShape, IElectronMainApi<'fullScreenStatusChange' | 'windowClosed'> {
 
-  
+
 }
 
 export const IElectronMainUIService = Symbol('IElectronMainUIService');

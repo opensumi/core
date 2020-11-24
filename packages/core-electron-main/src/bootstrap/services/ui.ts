@@ -7,7 +7,7 @@ import { dirname } from 'path';
 import { spawn } from 'child_process';
 import * as semver from 'semver';
 import { WindowCreatedEvent } from './events';
-import { IElectronMainUIServiceShape } from '@ali/ide-core-common/lib/electron';
+import { IElectronMainUIServiceShape, IElectronPlainWebviewWindowOptions } from '@ali/ide-core-common/lib/electron';
 
 @Injectable()
 export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenStatusChange' | 'windowClosed'> implements IElectronMainUIServiceShape {
@@ -127,7 +127,8 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
     });
   }
 
-  async createBrowserWindow(options?: Electron.BrowserWindowConstructorOptions | undefined): Promise<number> {
+  async createBrowserWindow(options?: IElectronPlainWebviewWindowOptions): Promise<number> {
+
     const window = new BrowserWindow(options);
     const windowId = window.id;
     window.once('closed', () => {
@@ -187,6 +188,29 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
     window.show();
   }
 
+  async hideBrowserWindow(windowId: number): Promise<void> {
+    const window = BrowserWindow.fromId(windowId);
+    if (!window) {
+      throw new Error('window with windowId ' + windowId + ' does not exist!');
+    }
+    window.hide();
+  }
+
+  async setSize(windowId: number, size: { width: number; height: number; }): Promise<void> {
+    const window = BrowserWindow.fromId(windowId);
+    if (!window) {
+      throw new Error('window with windowId ' + windowId + ' does not exist!');
+    }
+    window.setSize(size.width, size.height);
+  }
+
+  async setAlwaysOnTop(windowId: number, flag: boolean): Promise<void> {
+    const window = BrowserWindow.fromId(windowId);
+    if (!window) {
+      throw new Error('window with windowId ' + windowId + ' does not exist!');
+    }
+    window.setAlwaysOnTop(flag);
+  }
 }
 
 @Domain(ElectronMainContribution)

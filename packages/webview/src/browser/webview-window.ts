@@ -1,6 +1,6 @@
 import { IPlainWebviewWindow } from './types';
 import { Injectable, Autowired } from '@ali/common-di';
-import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
+import { IElectronMainUIService, IElectronPlainWebviewWindowOptions } from '@ali/ide-core-common/lib/electron';
 import { electronEnv } from '@ali/ide-core-browser/lib/utils/electron';
 import { Emitter, Event, Disposable, URI } from '@ali/ide-core-browser';
 
@@ -16,7 +16,7 @@ export class ElectronPlainWebviewWindow extends Disposable implements IPlainWebv
 
   private _closed: boolean = false;
 
-  constructor(options?: Electron.BrowserWindowConstructorOptions, env: {[key: string]: string} = {}) {
+  constructor(options?: IElectronPlainWebviewWindowOptions, env: {[key: string]: string} = {}) {
     super();
     this._ready = this.electronMainUIService.createBrowserWindow({
       webPreferences: {
@@ -75,11 +75,23 @@ export class ElectronPlainWebviewWindow extends Disposable implements IPlainWebv
     return this.electronMainUIService.browserWindowLoadUrl(this._windowId, url);
   }
 
-  show(): Promise<void> {
+  async show() {
     return this.electronMainUIService.showBrowserWindow(this._windowId);
   }
 
-  postMessage(message: any): Promise<void> {
+  async hide() {
+    return this.electronMainUIService.hideBrowserWindow(this._windowId);
+  }
+
+  async setSize(size: { width: number; height: number; }) {
+    return this.electronMainUIService.setSize(this._windowId, size);
+  }
+
+  async setAlwaysOnTop(flag: boolean) {
+    return this.electronMainUIService.setAlwaysOnTop(this._windowId, flag);
+  }
+
+  async postMessage(message: any) {
     return this.electronMainUIService.postMessageToBrowserWindow(this._windowId, 'webview-message', message);
   }
 
