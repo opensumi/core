@@ -183,15 +183,14 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
         : await extensionManagerService.getExtensionsInPack(currentExtension?.extensionId, currentExtension?.version)
       );
 
-    const depsResult: ExtensionDetail[] = await Promise.all(rawDependencies.map((dep) => {
+    const depsResult: ExtensionDetail[] = await Promise.all(rawDependencies?.map((dep) => {
       const { id, version } = extensionManagerService.transformDepsDeclaration(dep);
-
       return getExtDetail(id, version);
-    }));
+    }) || []);
 
-    const packResult: ExtensionDetail[] = await Promise.all(rawExtensionPack.map((id) => {
+    const packResult: ExtensionDetail[] = await Promise.all(rawExtensionPack?.map((id) => {
         return getExtDetail(id);
-    }));
+    }) || []);
 
     setDependencies(depsResult || []);
     setExtensionPack(packResult || []);
