@@ -36,7 +36,7 @@ export const ExtensionPack: React.FC<ExtensionPackProps> = (props) => {
     <div className={styles.wrap}>
       <h1 className={styles.head}>Extension Pack({props.list.length})</h1>
       <div>
-        {list?.map((rawExtension, index) => {
+        {list?.filter((ext) => !!ext)?.map((rawExtension, index) => {
           return (<RawExtensionView className={clx({
             [styles.selected]: rawExtension.extensionId === selectExtensionId,
             [styles.last_item]: index === list.length - 1,
