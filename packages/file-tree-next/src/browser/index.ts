@@ -1,5 +1,5 @@
 import { Provider } from '@ali/common-di';
-import { IFileTreeAPI } from '../common';
+import { IFileTreeAPI, IFileTreeService } from '../common';
 import { FileTreeAPI } from './services/file-tree-api.service';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeContribution } from './file-tree-contribution';
@@ -26,7 +26,7 @@ export class FileTreeNextModule extends BrowserModule {
       useClass: FileTreeDecorationService,
     },
     {
-      token: FileTreeService,
+      token: IFileTreeService,
       useClass: FileTreeService,
     },
     {

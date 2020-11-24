@@ -4,7 +4,7 @@ import * as styles from './file-tree-node.module.less';
 import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle } from '@ali/ide-components';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { getIcon, URI } from '@ali/ide-core-browser';
-import { Directory, File } from './file-tree-nodes';
+import { Directory, File } from '../common/file-tree-node.define';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 import { DragAndDropService } from './services/file-tree-dnd.service';
 import { Loading } from '@ali/ide-core-browser/lib/components/loading';

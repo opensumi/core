@@ -5,10 +5,11 @@ import { RecycleTreeFilterDecorator, RecycleTree, TreeNodeType, INodeRendererWra
 import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
-import { Directory, File } from './file-tree-nodes';
+import { Directory, File } from '../common/file-tree-node.define';
 import { EmptyTreeView } from './empty.view';
 import * as cls from 'classnames';
 import * as styles from './file-tree.module.less';
+import { IFileTreeService } from '../common';
 
 export const FILTER_AREA_HEIGHT = 30;
 export const FILE_TREE_FILTER_DELAY = 500;
@@ -25,7 +26,7 @@ export const FileTree = observer(({
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   const { width, height } = viewState;
-  const { decorationService, labelService, iconService, filterMode, locationToCurrentFile, indent, baseIndent } = useInjectable<FileTreeService>(FileTreeService);
+  const { decorationService, labelService, iconService, filterMode, locationToCurrentFile, indent, baseIndent } = useInjectable<FileTreeService>(IFileTreeService);
   const fileTreeModelService = useInjectable<FileTreeModelService>(FileTreeModelService);
 
   const [iconTheme, setIconTheme ] = React.useState<{

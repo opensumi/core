@@ -1,10 +1,15 @@
 import { URI, BasicEvent } from '@ali/ide-core-common';
 import { ITree, ITreeNode } from '@ali/ide-components';
 import { FileStat } from '@ali/ide-file-service';
-import { Directory, File } from '../browser/file-tree-nodes';
+import { Directory, File } from './file-tree-node.define';
 
 export const IFileTreeAPI = Symbol('IFileTreeAPI');
+export const IFileTreeService = Symbol('IFileTreeService');
 
+export interface IFileTreeService extends ITree {
+  removeNodeCacheByPath(path: string): void;
+  reCacheNode(parent: File | Directory, path: string): void;
+}
 export interface IFileTreeAPI {
   copyFile(from: URI, to: URI): Promise<FileStat | string | void>;
   createFile(newUri: URI): Promise<string | void>;
@@ -12,7 +17,7 @@ export interface IFileTreeAPI {
   delete(uri: URI): Promise<string | void>;
   mvFiles(oldUri: URI[], newUri: URI, isDirectory?: boolean): Promise<string[] | void>;
   mv(oldUri: URI , newUri: URI, isDirectory?: boolean): Promise<string | void>;
-  resolveChildren(tree: ITree, path: string | FileStat, parent?: Directory, compact?: boolean): Promise<{
+  resolveChildren(tree: IFileTreeService, path: string | FileStat, parent?: Directory, compact?: boolean): Promise<{
     children: (File | Directory)[],
     filestat: FileStat;
   }>;

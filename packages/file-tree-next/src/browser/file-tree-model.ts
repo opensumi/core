@@ -1,6 +1,6 @@
 import { TreeModel, IOptionalMetaData, TreeNodeEvent, CompositeTreeNode } from '@ali/ide-components';
 import { Injectable, Optional, Autowired} from '@ali/common-di';
-import { Directory } from './file-tree-nodes';
+import { Directory } from '../common/file-tree-node.define';
 import { URI, ThrottledDelayer,  Emitter, Event } from '@ali/ide-core-browser';
 import { FileStat } from '@ali/ide-file-service';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';

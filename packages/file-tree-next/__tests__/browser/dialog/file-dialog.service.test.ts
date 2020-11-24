@@ -5,7 +5,7 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 import { FileTreeDialogService } from '@ali/ide-file-tree-next/lib/browser/dialog/file-dialog.service';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { Directory, File } from '../../../src/browser/file-tree-nodes';
+import { Directory, File } from '../../../src/common/file-tree-node.define';
 import { IFileTreeAPI } from '../../../src/common';
 import { TreeNodeType } from '@ali/ide-components';
 

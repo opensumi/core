@@ -2,7 +2,7 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { FileUri, URI, IFileServiceClient, Disposable, StorageProvider } from '@ali/ide-core-common';
 import { FileTreeNextModule } from '../../src';
-import { IFileTreeAPI } from '../../src/common';
+import { IFileTreeAPI, IFileTreeService } from '../../src/common';
 import { FileTreeService } from '../../src/browser/file-tree.service';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -14,7 +14,7 @@ import { AppConfig, INodeLogger } from '@ali/ide-core-node';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 import { MockedStorageProvider } from '@ali/ide-core-browser/lib/mocks/storage';
-import { Directory, File } from '../../src/browser/file-tree-nodes';
+import { Directory, File } from '../../src/common/file-tree-node.define';
 import { TreeNodeType } from '@ali/ide-components';
 import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
@@ -195,7 +195,7 @@ describe('FileTree should be work while on single workspace model', () => {
     // make sure the root has been loaded
     await fileTreeModelService.treeModel.root.ensureLoaded();
 
-    fileTreeService = injector.get<FileTreeService>(FileTreeService);
+    fileTreeService = injector.get<FileTreeService>(IFileTreeService);
 
     done();
   });

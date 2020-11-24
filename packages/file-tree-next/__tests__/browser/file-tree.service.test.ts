@@ -11,9 +11,9 @@ import { IDecorationsService } from '@ali/ide-decoration';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IWindowDialogService, IDialogService, IMessageService } from '@ali/ide-overlay';
-import { IFileTreeAPI } from '../../src/common';
+import { IFileTreeAPI, IFileTreeService } from '../../src/common';
 import { IThemeService, IIconService } from '@ali/ide-theme';
-import { File, Directory } from '../../src/browser/file-tree-nodes';
+import { Directory, File } from '../../src/common/file-tree-node.define';
 import { TreeNodeType } from '@ali/ide-components';
 
 class TempDirectory {}
@@ -139,11 +139,11 @@ describe('FileTree Service should be work alone', () => {
         useValue: mockFileServiceClient,
       },
       {
-        token: FileTreeService,
+        token: IFileTreeService,
         useClass: FileTreeService,
       },
     );
-    fileTreeService = injector.get(FileTreeService);
+    fileTreeService = injector.get(IFileTreeService);
   });
 
   afterEach(() => {

@@ -2,11 +2,10 @@ import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { URI, CorePreferences, Disposable } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { Directory } from '../../../src/browser/file-tree-nodes';
+import { Directory, File } from '../../../src/common/file-tree-node.define';
 import { TreeNodeType } from '@ali/ide-components';
 import { FileTreeDialogModel } from '../../../src/browser/dialog/file-dialog-model.service';
 import { FileTreeDecorationService } from '../../../src/browser/services/file-tree-decoration.service';
-import { File } from '../../../src/browser/file-tree-nodes';
 import * as styles from '../../../src/browser/file-tree-node.modules.less';
 
 class TempDirectory {}

@@ -10,13 +10,13 @@ import { SymlinkDecorationsProvider } from './symlink-file-decoration';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { NextMenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
 import { FileTreeModelService } from './services/file-tree-model.service';
-import { Directory } from './file-tree-nodes';
+import { Directory } from '../common/file-tree-node.define';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import * as copy from 'copy-to-clipboard';
 import { IOpenDialogOptions, IWindowDialogService, ISaveDialogOptions } from '@ali/ide-overlay';
 import { FilesExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 import { FilesExplorerFocusedContext, FilesExplorerInputFocusedContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
-import { PasteTypes } from '../common';
+import { IFileTreeService, PasteTypes } from '../common';
 import { TERMINAL_COMMANDS } from '@ali/ide-terminal-next';
 
 export const ExplorerResourceViewId = 'file-explorer-next';
@@ -27,7 +27,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  @Autowired(FileTreeService)
+  @Autowired(IFileTreeService)
   private readonly fileTreeService: FileTreeService;
 
   @Autowired(IMainLayoutService)
