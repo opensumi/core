@@ -152,12 +152,75 @@ declare module 'kaitian' {
     export function isRightPanelVisible(): Promise<boolean>;
   }
 
+  export interface IIDEWindowWebviewOptions {
+    /**
+     * 窗口宽度，默认 `800`
+     */
+    width?: number;
+    /**
+     * 窗口高度，默认 `600`
+     */
+    height?: number;
+
+    [key: string]: any;
+  }
+
+  export interface IIDEWindowWebviewEnv {
+    /**
+     * 注入webview中的环境变量
+     */
+    [key: string]: any;
+  }
+
+  export interface IIDEWebviewWindow extends Disposable {
+    /**
+     * 加载webview窗口内的资源地址
+     * @param url
+     */
+    loadUrl(url: string): Promise<void>;
+    /**
+     * 隐藏webview窗口
+     */
+    hide(): Promise<void>;
+    /**
+     * 展示webview窗口
+     */
+    show(): Promise<void>;
+    /**
+     * 设置webview窗口大小
+     * @param size
+     */
+    setSize(size: {width: number; height: number}): Promise<void>;
+    /**
+     * 设置webview窗口是否置顶
+     * @param flag
+     */
+    setAlwaysOnTop(flag: boolean): Promise<void>;
+    /**
+     * 传递消息至webview窗口
+     * @param message
+     */
+    postMessage(message: any): Promise<void>;
+    /**
+     * 接收webview窗口回传消息事件
+     */
+    onMessage: Event<any>;
+    /**
+     * 接收webview窗口关闭事件
+     */
+    onClosed: Event<void>;
+  }
+
   export namespace ideWindow {
 
     /**
      * 刷新当前 IDE 窗口
      */
     export function reloadWindow(): void;
+    /**
+     * 打开新的窗口 仅支持 Electron 环境
+     */
+    export function createWebviewWindow(webviewId: string, options?: IIDEWindowWebviewOptions, env?: IIDEWindowWebviewEnv): Promise<IIDEWebviewWindow>;
   }
 
   export namespace lifecycle {

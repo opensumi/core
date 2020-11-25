@@ -4,6 +4,7 @@ import { IExtHostTheme, IMainThreadTheme } from './theme';
 import { IMainThreadLayout, IExtHostLayout } from './layout';
 import { IMainThreadCommon, IExtHostCommon } from './common';
 import { IMainThreadToolbar } from './toolbar';
+import { IExtHostIDEWindow, IMainThreadIDEWindow } from './window';
 
 export const MainThreadKaitianAPIIdentifier = {
   MainThreadLifecycle: createMainContextProxyIdentifier<IMainThreadLifeCycle>('MainThreadLifeCycle'),
@@ -11,6 +12,7 @@ export const MainThreadKaitianAPIIdentifier = {
   MainThreadLayout: createMainContextProxyIdentifier<IMainThreadLayout>('MainThreadLayout'),
   MainThreadCommon: createMainContextProxyIdentifier<IMainThreadCommon>('MainThreadCommon'),
   MainThreadToolbar: createMainContextProxyIdentifier<IMainThreadToolbar>('MainThreadToolbar'),
+  MainThreadWindow: createMainContextProxyIdentifier<IMainThreadIDEWindow>('MainThreadWindow'),
 };
 
 export const ExtHostKaitianAPIIdentifier = {
@@ -19,4 +21,5 @@ export const ExtHostKaitianAPIIdentifier = {
   ExtHostTheme: createExtHostContextProxyIdentifier<IExtHostTheme>('ExtHostTheme'),
   ExtHostCommon: createExtHostContextProxyIdentifier<IExtHostCommon>('ExtHostCommon'),
   ExtHostToolbar: createExtHostContextProxyIdentifier('ExtHostToolbar'),
+  ExtHostWindow: createExtHostContextProxyIdentifier<IExtHostIDEWindow>('ExtHostWindow'),
 };
