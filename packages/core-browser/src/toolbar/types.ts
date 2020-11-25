@@ -245,6 +245,9 @@ export interface IToolbarActionBtnStyle {
   // title 背景色
   titleBackground?: string;
 
+  // title 字体大小
+  titleSize?: string;
+
   // 整体背景色
   background?: string;
 

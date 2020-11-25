@@ -66,6 +66,7 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
   const titleContent = (styles.showTitle || props.inDropDown) ? <div className = 'kt-toolbar-action-btn-title' style={{
     color: styles.titleForeground,
     backgroundColor: styles.titleBackground,
+    fontSize: styles.titleSize,
   }}>{styles.title}</div> : null;
 
   const bindings = {
