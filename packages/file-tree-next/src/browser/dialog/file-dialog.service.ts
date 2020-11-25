@@ -2,15 +2,15 @@ import { Injectable, Autowired, Optional } from '@ali/common-di';
 import {
   URI,
 } from '@ali/ide-core-browser';
-import { IFileTreeAPI } from '../../common';
+import { IFileTreeAPI, IFileTreeService } from '../../common';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType, ITree } from '@ali/ide-components';
-import { Directory } from '../file-tree-nodes';
+import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@ali/ide-components';
+import { Directory } from '../../common/file-tree-node.define';
 import { FileStat } from '@ali/ide-file-service';
 
 @Injectable({multiple: true})
-export class FileTreeDialogService extends Tree {
+export class FileTreeDialogService extends Tree implements IFileTreeService {
 
   @Autowired(IFileTreeAPI)
   private fileTreeAPI: IFileTreeAPI;
@@ -55,14 +55,14 @@ export class FileTreeDialogService extends Tree {
       if (!this.workspaceRoot) {
         this.workspaceRoot = (await this.workspaceService.roots)[0];
       }
-      const { children } = await this.fileTreeAPI.resolveChildren(this as ITree, this.workspaceRoot);
+      const { children } = await this.fileTreeAPI.resolveChildren(this, this.workspaceRoot);
       this.cacheNodes(children as (File | Directory)[]);
       this.root = children[0] as Directory;
       return children;
     } else {
       // 加载子目录
       if (parent.uri) {
-        const { children } =  await this.fileTreeAPI.resolveChildren(this as ITree, parent.uri.toString(), parent);
+        const { children } =  await this.fileTreeAPI.resolveChildren(this, parent.uri.toString(), parent);
         this.cacheNodes(children as (File | Directory)[]);
         return children;
       }
@@ -78,7 +78,7 @@ export class FileTreeDialogService extends Tree {
     rootUri = URI.file(path);
     const rootFileStat = await this.fileTreeAPI.resolveFileStat(rootUri);
     if (rootFileStat) {
-      const { children } = await this.fileTreeAPI.resolveChildren(this as ITree, rootFileStat);
+      const { children } = await this.fileTreeAPI.resolveChildren(this, rootFileStat);
       this.root = children[0] as Directory;
       return children;
     }
@@ -117,6 +117,14 @@ export class FileTreeDialogService extends Tree {
       // node.path 不会重复，node.uri在软连接情况下可能会重复
       this._cacheNodesMap.set(node.path, node);
     });
+  }
+
+  public removeNodeCacheByPath(path: string) {
+    this._cacheNodesMap.delete(path);
+  }
+
+  public reCacheNode(parent: Directory, path: string) {
+    this._cacheNodesMap.set(path, parent);
   }
 
   dispose() {

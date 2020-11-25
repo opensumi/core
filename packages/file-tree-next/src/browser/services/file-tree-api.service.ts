@@ -3,8 +3,8 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { FileStat } from '@ali/ide-file-service';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { ITree } from '@ali/ide-components';
-import { Directory, File } from '../file-tree-nodes';
-import { IFileTreeAPI } from '../../common';
+import { Directory, File } from '../../common/file-tree-node.define';
+import { IFileTreeAPI, IFileTreeService } from '../../common';
 import { URI, localize, CommandService, formatLocalize } from '@ali/ide-core-common';
 import { IDialogService } from '@ali/ide-overlay';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
@@ -34,7 +34,7 @@ export class FileTreeAPI implements IFileTreeAPI {
 
   private userhomePath: URI;
 
-  async resolveChildren(tree: ITree, path: string | FileStat, parent?: Directory, compact?: boolean) {
+  async resolveChildren(tree: IFileTreeService, path: string | FileStat, parent?: Directory, compact?: boolean) {
     let file: FileStat | undefined;
     if (!this.userhomePath) {
       const userhome = await this.fileServiceClient.getCurrentUserHome();
@@ -50,6 +50,20 @@ export class FileTreeAPI implements IFileTreeAPI {
 
     if (file) {
       if (file.children?.length === 1 && file.children[0].isDirectory && compact) {
+        const parentURI = new URI(file.children[0].uri);
+        if (!!parent && parent.parent) {
+          const parentName = (parent.parent as Directory).uri.relative(parentURI)?.toString();
+          if (parentName && parentName !== parent.name) {
+            const prePath = parent.path;
+            tree.removeNodeCacheByPath(prePath);
+            parent.updateName(parentName);
+            parent.updateURI(parentURI);
+            parent.updateFileStat(file.children[0]);
+            parent.updateToolTip(this.getReadableTooltip(parentURI));
+            // Re-Cache Node
+            tree.reCacheNode(parent, prePath);
+          }
+        }
         return await this.resolveChildren(tree, file.children[0].uri, parent, compact);
       } else {
         // 为文件树节点新增isInSymbolicDirectory属性，用于探测节点是否处于软链接文件中

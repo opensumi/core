@@ -1,7 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, PromptValidateMessage, TreeNodeEvent, Tree } from '@ali/ide-components';
 import { FileTreeModel } from '../file-tree-model';
-import { File, Directory } from '../file-tree-nodes';
+import { Directory, File } from '../../common/file-tree-node.define';
 import { URI, DisposableCollection, Emitter, CorePreferences, Event } from '@ali/ide-core-browser';
 import { PasteTypes, IFileDialogTreeService, IFileDialogModel } from '../../common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';

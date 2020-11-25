@@ -1,23 +1,23 @@
 import { URI } from '@ali/ide-core-browser';
 import { FileStat } from '@ali/ide-file-service';
-import { TreeNode, CompositeTreeNode, ITree } from '@ali/ide-components';
-import { FileTreeService } from './file-tree.service';
+import { TreeNode, ICompositeTreeNode, CompositeTreeNode, ITree } from '@ali/ide-components';
+import { IFileTreeService } from './index';
 
 export class Directory extends CompositeTreeNode {
 
-  private fileTreeService: FileTreeService;
+  private fileTreeService: IFileTreeService;
   private _displayName: string;
 
   constructor(
-    tree: FileTreeService,
-    public readonly parent: CompositeTreeNode | undefined,
+    tree: IFileTreeService,
+    parent: ICompositeTreeNode | undefined,
     public uri: URI = new URI(''),
-    public name: string = '',
+    name: string = '',
     public filestat: FileStat = { children: [], isDirectory: false, uri: '', lastModification: 0 },
     public tooltip: string,
     id?: number,
   ) {
-    super(tree as ITree, parent, undefined, { name }, { disableCache: false });
+    super(tree as ITree, parent, undefined, { name }, { disableCache: true });
     if (!parent) {
       // 根节点默认展开节点
       this.setExpanded();
@@ -61,19 +61,19 @@ export class Directory extends CompositeTreeNode {
 }
 
 export class File extends TreeNode {
-  private fileTreeService: FileTreeService;
+  private fileTreeService: IFileTreeService;
   private _displayName: string;
 
   constructor(
-    tree: FileTreeService,
-    public readonly parent: CompositeTreeNode | undefined,
+    tree: IFileTreeService,
+    parent: CompositeTreeNode | undefined,
     public uri: URI = new URI(''),
-    public name: string = '',
+    name: string = '',
     public filestat: FileStat = { children: [], isDirectory: false, uri: '', lastModification: 0 },
     public tooltip: string,
     id?: number,
   ) {
-    super(tree as ITree, parent, undefined, { name }, { disableCache: false });
+    super(tree as ITree, parent, undefined, { name }, { disableCache: true });
     this.fileTreeService = tree;
     this._uid = id || this._uid;
     TreeNode.setTreeNode(this._uid, this.path, this);

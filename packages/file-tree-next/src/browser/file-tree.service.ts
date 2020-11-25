@@ -12,11 +12,11 @@ import {
   Emitter,
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
-import { IFileTreeAPI } from '../common';
+import { IFileTreeAPI, IFileTreeService } from '../common';
 import { FileChange, IFileServiceClient, FileChangeType, FileStat, IFileServiceWatcher } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { Tree, ITree, WatchEvent, ITreeNodeOrCompositeTreeNode, IWatcherEvent, TreeNodeType } from '@ali/ide-components';
-import { Directory, File } from './file-tree-nodes';
+import { Directory, File } from '../common/file-tree-node.define';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -32,7 +32,7 @@ export interface IMoveChange {
 }
 
 @Injectable()
-export class FileTreeService extends Tree {
+export class FileTreeService extends Tree implements IFileTreeService {
 
   private static DEFAULT_FLUSH_FILE_EVENT_DELAY = 500;
 
@@ -199,7 +199,7 @@ export class FileTreeService extends Tree {
         return [root];
       } else {
         if (this._roots.length > 0) {
-          children = await (await this.fileTreeAPI.resolveChildren(this as ITree, this._roots[0])).children;
+          children = await (await this.fileTreeAPI.resolveChildren(this, this._roots[0])).children;
           children.forEach((child) => {
             // 根据workspace更新Root名称
             const rootName = this.workspaceService.getWorkspaceName(child.uri);
@@ -230,7 +230,7 @@ export class FileTreeService extends Tree {
       if (parent.uri) {
         // 压缩节点模式需要在没有压缩节点焦点的情况下才启用
         const isCompressedFocused = this.contextKeyService.getContextValue('explorerViewletCompressedFocus');
-        const data = await this.fileTreeAPI.resolveChildren(this as ITree, parent.uri.toString(), parent, !isCompressedFocused && this.isCompactMode && !Directory.isRoot(parent));
+        const data = await this.fileTreeAPI.resolveChildren(this, parent.uri.toString(), parent, !isCompressedFocused && this.isCompactMode && !Directory.isRoot(parent));
         children = data.children;
         // 有概率获取不到Filestat，易发生在外部删除多文件情况下
         const childrenParentStat = data.filestat;

@@ -3,7 +3,7 @@ import { IDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@ali/ide
 import { useInjectable, localize, isOSX } from '@ali/ide-core-browser';
 import { Button, Input, Select, Option, RecycleTree, IRecycleTreeHandle, INodeRendererProps, TreeNodeType } from '@ali/ide-components';
 import { FileTreeDialogModel } from './file-dialog-model.service';
-import { Directory, File } from '../file-tree-nodes';
+import { Directory, File } from '../../common/file-tree-node.define';
 import { FileTreeDialogNode } from './file-dialog-node';
 import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
 import * as styles from './file-dialog.module.less';

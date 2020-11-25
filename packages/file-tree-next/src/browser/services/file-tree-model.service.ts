@@ -2,13 +2,13 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { DecorationsManager, Decoration, TreeNodeType, RenamePromptHandle, NewPromptHandle, PromptValidateMessage, PROMPT_VALIDATE_TYPE, TreeNodeEvent, IRecycleTreeError, TreeModel, IRecycleTreeFilterHandle } from '@ali/ide-components';
 import { FileTreeService } from '../file-tree.service';
 import { FileTreeModel } from '../file-tree-model';
-import { File, Directory } from '../file-tree-nodes';
+import { Directory, File } from '../../common/file-tree-node.define';
 import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, formatLocalize, isValidBasename, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IStorage, Event, ThrottledDelayer, Emitter, ILogger, Deferred } from '@ali/ide-core-browser';
 import { FileContextKey } from '../file-contextkey';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { IFileTreeAPI, PasteTypes } from '../../common';
+import { IFileTreeAPI, IFileTreeService, PasteTypes } from '../../common';
 import { DragAndDropService } from './file-tree-dnd.service';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -41,7 +41,7 @@ export class FileTreeModelService {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  @Autowired(FileTreeService)
+  @Autowired(IFileTreeService)
   private readonly fileTreeService: FileTreeService;
 
   @Autowired(CorePreferences)

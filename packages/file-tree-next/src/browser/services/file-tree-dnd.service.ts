@@ -1,8 +1,8 @@
 import { Injectable, Autowired, Optional } from '@ali/common-di';
 import { FileTreeModelService } from './file-tree-model.service';
-import { Directory, File } from '../file-tree-nodes';
+import { Directory, File } from '../../common/file-tree-node.define';
 import { DisposableCollection, Disposable, ILogger, WithEventBus, URI, ThrottledDelayer, FileStat } from '@ali/ide-core-browser';
-import { IFileTreeAPI } from '../../common';
+import { IFileTreeAPI, IFileTreeService } from '../../common';
 import { IMessageService } from '@ali/ide-overlay';
 import { Decoration, TargetMatchMode } from '@ali/ide-components';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -25,7 +25,7 @@ export class DragAndDropService extends WithEventBus {
   @Autowired(IMessageService)
   private readonly messageService: IMessageService;
 
-  @Autowired(FileTreeService)
+  @Autowired(IFileTreeService)
   private readonly fileTreeService: FileTreeService;
 
   private toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
