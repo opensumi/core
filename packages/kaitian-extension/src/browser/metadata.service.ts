@@ -36,11 +36,12 @@ export class ExtensionMetadataService extends Disposable {
       this.addDispose(runner);
       this.addDispose(ktRunner);
       this.eventBus.fire(new ExtensionEnabledEvent(extension.toJSON()));
-      Promise.all([
+      await Promise.all([
         runner.run(),
         ktRunner.run(),
       ]);
-      await this.registerActivationEvent(extension);
+
+      this.registerActivationEvent(extension);
       this.activateByWorkspaceContains(extension);
     } catch (e) {
       this.logger.error('vscode meta启用插件出错' + extension.name);
