@@ -112,11 +112,15 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       const restorePanel = defaultPanels && defaultPanels[service.location];
       if (defaultPanels && restorePanel !== undefined) {
         if (restorePanel) {
-          const componentInfo = this.componentRegistry.getComponentRegistryInfo(restorePanel);
-          if (componentInfo && ~this.appConfig.layoutConfig[service.location].modules.indexOf(restorePanel)) {
-            defaultContainer = componentInfo.options!.containerId;
+          if (service.containersMap.has(restorePanel)) {
+            defaultContainer = restorePanel;
           } else {
-            this.logger.warn(`[defaultPanels] 没有找到${restorePanel}对应的视图!`);
+            const componentInfo = this.componentRegistry.getComponentRegistryInfo(restorePanel);
+            if (componentInfo && this.appConfig.layoutConfig[service.location]?.modules && ~this.appConfig.layoutConfig[service.location].modules.indexOf(restorePanel)) {
+              defaultContainer = componentInfo.options!.containerId;
+            } else {
+              this.logger.warn(`[defaultPanels] 没有找到${restorePanel}对应的视图!`);
+            }
           }
         } else {
           defaultContainer = '';
