@@ -34,7 +34,7 @@ export const SlotLocation = {
 
 export function getSlotLocation(module: string, layoutConfig: LayoutConfig) {
   for (const location of Object.keys(layoutConfig)) {
-    if (layoutConfig[location].modules.indexOf(module) > -1) {
+    if (layoutConfig[location].modules && layoutConfig[location].modules.indexOf(module) > -1) {
       return location;
     }
   }
@@ -147,8 +147,8 @@ export const slotRendererRegistry = new SlotRendererRegistry();
 export function SlotRenderer({ slot, ...props }: any) {
   const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
   const layoutConfig = useInjectable<AppConfig>(AppConfig).layoutConfig;
-  const componentKeys = layoutConfig[slot].modules;
-  if (!componentKeys) {
+  const componentKeys = layoutConfig[slot]?.modules;
+  if (!componentKeys || !componentKeys.length) {
     getDebugLogger().warn(`${slot}位置未声明任何视图`);
   }
   const componentInfos: ComponentRegistryInfo[] = [];
