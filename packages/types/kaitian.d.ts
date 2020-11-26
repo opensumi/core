@@ -606,6 +606,13 @@ declare module 'kaitian' {
     }
 
     export interface IToolbarActionBtnStyle {
+      // 指定按钮宽度
+      // 不指定，则按默认8px左右边距
+      width?: number;
+
+      // 指定按钮高度
+      // 默认值为 22
+      height?: number;
 
       // 是否显示 Title
       showTitle?: boolean;
@@ -624,6 +631,9 @@ declare module 'kaitian' {
 
       // title 字体大小
       titleSize?: string;
+
+      // icon 图标大小
+      iconSize?: string;
 
       // 整体背景色
       background?: string;
