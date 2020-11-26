@@ -41,6 +41,8 @@ export class IconService implements IIconService {
 
   private iconMap: Map<string, string> = new Map();
 
+  private _regexFromString = /^\$\(([a-z-]+)(~[a-z]+)?\)$/i;
+
   private getPath(basePath: string, relativePath: string): URI {
     if (relativePath.startsWith('./')) {
       return URI.file(new Path(basePath).join(relativePath.replace(/^\.\//, '')).toString());
@@ -99,6 +101,22 @@ export class IconService implements IIconService {
   protected getBackgroundStyleSheetWithStaticService(path: URI, className: string, baseTheme?: string): string {
     const iconUrl = path.scheme === 'file' ? this.staticResourceService.resolveStaticResource(path).toString() : path.toString();
     return this.getBackgroundStyleSheet(iconUrl, className, baseTheme);
+  }
+
+  fromString(str: string): string | undefined {
+    if (typeof str !== 'string') {
+      return undefined;
+    }
+    const matched = str.match(this._regexFromString);
+    if (!matched) {
+      return undefined;
+    }
+    const [, name, modifier] = matched;
+    let className = `codicon codicon-${name}`;
+    if (modifier) {
+      className += ` codicon-animation-${modifier.slice(1)}`;
+    }
+    return className;
   }
 
   fromIcon(basePath: string = '', icon?: { [index in ThemeType]: string } | string, type: IconType = IconType.Mask, shape: IconShape = IconShape.Square): string | undefined {
