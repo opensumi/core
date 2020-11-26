@@ -172,9 +172,9 @@ export interface IToolbarAction {
 }
 
 // events
-export class ToolbarActionsChangedEvent extends BasicEvent<{position: IToolbarActionPosition }> { }
+export class ToolbarActionsChangedEvent extends BasicEvent<{ position: IToolbarActionPosition }> { }
 
-export class ToolbarActionGroupsChangedEvent extends BasicEvent<{location: string}> { }
+export class ToolbarActionGroupsChangedEvent extends BasicEvent<{ location: string }> { }
 
 export const ToolBarActionContribution = Symbol('ToolBarActionContribution');
 export interface ToolBarActionContribution {
@@ -224,10 +224,17 @@ export interface IToolbarActionBtnDelegate {
   // 渲染并展示 popover 元素
   showPopOver(): Promise<void>;
 
-  onChangeState: Event<{from: string, to: string}>;
+  onChangeState: Event<{ from: string, to: string }>;
 }
 
 export interface IToolbarActionBtnStyle {
+  // 指定按钮宽度
+  // 不指定，则按默认8px左右边距
+  width?: number;
+
+  // 指定按钮高度
+  // 默认值为 22
+  height?: number;
 
   // 是否显示 Title
   // 20200629改动 - 默认为 true
@@ -248,6 +255,9 @@ export interface IToolbarActionBtnStyle {
   // title 字体大小
   titleSize?: string;
 
+  // icon 大小
+  iconSize?: string;
+
   // 整体背景色
   background?: string;
 
@@ -267,7 +277,7 @@ export interface IToolbarActionBtnStyle {
 // Select
 export interface IToolbarActionSelectProps<T> {
   options: IDataOption<T>[] | IDataOptionGroup<T>[];
-  customOptionRenderer?: React.FC<{data: IDataOption<T>, isCurrent: boolean}>;
+  customOptionRenderer?: React.FC<{ data: IDataOption<T>, isCurrent: boolean }>;
   defaultValue?: T;
   styles?: {
     [key: string]: IToolbarSelectStyle,
@@ -288,7 +298,7 @@ export interface IToolbarActionSelectDelegate<T> {
     label?: string,
     value: T,
   }[]): void;
-  onChangeState: Event<{from: string, to: string}>;
+  onChangeState: Event<{ from: string, to: string }>;
   onSelect: Event<T>;
   getValue(): T | undefined;
 }
