@@ -1,9 +1,10 @@
-import { getCodIcon } from '../../../src/style/icon/icon';
+import { getExternalIcon } from '../../../src/style/icon/icon';
 
 describe('packages/core-browser/src/style/icon/icon.ts', () => {
   it('should get correct icon class', () => {
-    expect(getCodIcon('sync')).toBe('codicon codicon-sync');
-    expect(getCodIcon('smiley-outline')).toBe('octicon octicon-smiley-outline');
-    expect(getCodIcon('smiley-outline', false)).toBe('codicon codicon-smiley-outline');
+    expect(getExternalIcon('sync')).toBe('codicon codicon-sync');
+    expect(getExternalIcon('smiley-outline')).toBe('octicon octicon-smiley-outline');
+    expect(getExternalIcon('smiley-outline', 'codicon', false)).toBe('codicon codicon-smiley-outline');
+    expect(getExternalIcon('sync', 'octicon')).toBe('octicon octicon-sync');
   });
 });

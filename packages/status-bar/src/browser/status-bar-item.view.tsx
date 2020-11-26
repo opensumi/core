@@ -3,7 +3,7 @@ import * as styles from './status-bar.module.less';
 import { StatusBarEntry } from '@ali/ide-core-browser/lib/services';
 import { parseLabel, LabelPart, LabelIcon, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 import cls from 'classnames';
-import { getCodIcon } from '@ali/ide-core-browser';
+import { getExternalIcon } from '@ali/ide-core-browser';
 
 // todo: 移除 fa 的相关代码
 export function StatusBarItem(props: StatusBarEntry) {
@@ -30,7 +30,7 @@ export function StatusBarItem(props: StatusBarEntry) {
         if (!(typeof item === 'string') && LabelIcon.is(item)) {
           hasIcon = true;
           // TODO 支持内置的iconfont
-          return <span key={key} className={cls(styles.icon, getCodIcon(item.name), `${item.animation ? 'iconfont-anim-' + item.animation : ''}`)}></span>;
+          return <span key={key} className={cls(styles.icon, getExternalIcon(item.name), `${item.animation ? 'iconfont-anim-' + item.animation : ''}`)}></span>;
         } else {
           return <span style={{marginLeft: iconClass || hasIcon ? '2px' : 0}} key={key}>{replaceLocalizePlaceholder(item)}</span>;
         }

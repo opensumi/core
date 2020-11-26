@@ -1,4 +1,4 @@
-import { URI, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService, Emitter, Event, ILogger } from '@ali/ide-core-browser';
+import { URI, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService, Emitter, Event, ILogger, CODICON_OWNER } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { ThemeType, IIconService, ThemeContribution, getThemeId, IIconTheme, getThemeTypeSelector, IconType, IconShape, IconThemeInfo } from '../common';
@@ -41,7 +41,8 @@ export class IconService implements IIconService {
 
   private iconMap: Map<string, string> = new Map();
 
-  private _regexFromString = /^\$\(([a-z-]+)(~[a-z]+)?\)$/i;
+  // eg. $(codicon/sync~spin)
+  private _regexFromString = /^\$\(([a-z.]+\/)?([a-z-]+)(~[a-z]+)?\)$/i;
 
   private getPath(basePath: string, relativePath: string): URI {
     if (relativePath.startsWith('./')) {
@@ -111,10 +112,11 @@ export class IconService implements IIconService {
     if (!matched) {
       return undefined;
     }
-    const [, name, modifier] = matched;
-    let className = `codicon codicon-${name}`;
+    const [, owner, name, modifier] = matched;
+    const iconOwner = owner ? owner.slice(0, -1) : CODICON_OWNER;
+    let className = `${iconOwner} ${iconOwner}-${name}`;
     if (modifier) {
-      className += ` codicon-animation-${modifier.slice(1)}`;
+      className += ` ${modifier.slice(1)}`;
     }
     return className;
   }
