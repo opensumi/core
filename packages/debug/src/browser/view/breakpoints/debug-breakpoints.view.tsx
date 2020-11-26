@@ -62,6 +62,7 @@ export const BreakpointItem = ({
   const defaultValue = isDebugBreakpoint(data.breakpoint) ? data.breakpoint.enabled : !!(data.breakpoint.default);
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
   const commandService = useInjectable<CommandService>(CommandService);
+  const debugBreakpointsService = useInjectable<DebugBreakpointsService>(DebugBreakpointsService);
   const [enabled, setEnabled] = React.useState<boolean>(defaultValue);
   const [status, setStatus] = React.useState<DebugProtocol.Breakpoint | false | undefined>(undefined);
 
@@ -111,8 +112,25 @@ export const BreakpointItem = ({
 
   const verified = !isDebugMode ? true : (isDebugBreakpoint(data.breakpoint) && isRuntimeBreakpoint(data.breakpoint));
 
+  const getBreakpointIcon = () => {
+    const { className } = debugBreakpointsService.getBreakpointDecoration(data.breakpoint as DebugBreakpoint, isDebugMode, enabled);
+    return className;
+  };
+
+  const converBreakpointClsState = () => {
+    if (isDebugBreakpoint(data.breakpoint)) {
+      if (!verified) {
+        return 'kaitian-debug-breakpoint-unverified';
+      }
+
+      return getBreakpointIcon();
+    }
+
+    return '';
+  };
+
   return <div className={ cls(styles.debug_breakpoints_item) }>
-    <div className={ cls(isDebugBreakpoint(data.breakpoint) ? !verified ? 'kaitian-debug-breakpoint-unverified' : enabled && breakpointEnabled ? 'kaitian-debug-breakpoint' : 'kaitian-debug-breakpoint-disabled' : '', styles.debug_breakpoints_icon) }></div>
+    <div className={ cls(converBreakpointClsState(), styles.debug_breakpoints_icon) }></div>
     <CheckBox id={ data.id } defaultChecked={ enabled } onChange={ handleBreakpointChange }></CheckBox>
     <div className={ styles.debug_breakpoints_wrapper } onClick={ handleBreakpointClick }>
       <span className={ styles.debug_breakpoints_name }>{ data.name }</span>

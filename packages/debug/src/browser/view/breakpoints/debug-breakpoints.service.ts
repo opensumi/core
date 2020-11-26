@@ -1,3 +1,4 @@
+import { DebugDecorator } from '@ali/ide-debug/lib/browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action, runInAction } from 'mobx';
 import { DebugViewModel } from '../debug-view-model';
@@ -69,6 +70,10 @@ export class DebugBreakpointsService extends WithEventBus {
     });
   }
 
+  public getBreakpointDecoration(breakpoint: DebugBreakpoint, isDebugMode: boolean = false, enabled: boolean = true) {
+    return new DebugDecorator().getDecoration(breakpoint, isDebugMode, enabled);
+  }
+
   @OnEvent(WorkspaceEditDidRenameFileEvent)
   onRenameFile(e: WorkspaceEditDidRenameFileEvent) {
     this.removeBreakpoints(e.payload.oldUri);
@@ -133,7 +138,7 @@ export class DebugBreakpointsService extends WithEventBus {
 
   @action
   private updateBreakpoints() {
-    this.nodes = this.extractNodes([ ...this.breakpoints.getExceptionBreakpoints(), ...this.breakpoints.getBreakpoints() ]);
+    this.nodes = this.extractNodes([...this.breakpoints.getExceptionBreakpoints(), ...this.breakpoints.getBreakpoints()]);
   }
 
   removeAllBreakpoints() {
