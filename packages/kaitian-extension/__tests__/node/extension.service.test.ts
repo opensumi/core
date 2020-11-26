@@ -110,9 +110,8 @@ describe('Extension Serivce', () => {
 
     it('should create extension host process', async (done) => {
       const mockExtClientId = 'mock_id' + Math.random();
-      const extProcess = await extensionService.createProcess(mockExtClientId);
-      expect(extProcess).toBeDefined();
-      const port = extensionService.getProcessInspectPort(mockExtClientId);
+      await extensionService.createProcess(mockExtClientId);
+      const port = await extensionService.getProcessInspectPort(mockExtClientId);
       expect(port).toBeUndefined();
       await extensionService.disposeClientExtProcess(mockExtClientId, true);
       done();
@@ -129,7 +128,7 @@ describe('Extension Serivce', () => {
       const res = await extensionService.tryEnableInspectPort(mockExtClientId, 2000);
       expect(res).toBeTruthy();
 
-      const port = extensionService.getProcessInspectPort(mockExtClientId);
+      const port = await extensionService.getProcessInspectPort(mockExtClientId);
       expect(typeof port).toBe('number');
       await extensionService.disposeClientExtProcess(mockExtClientId, true);
       done();
@@ -138,9 +137,8 @@ describe('Extension Serivce', () => {
     it('create extension host process with develop mode', async (done) => {
       (global as any).isDev = 1;
       const mockExtClientId = 'mock_id' + Math.random();
-      const extProcess = await extensionService.createProcess(mockExtClientId);
-      expect(extProcess).toBeDefined();
-      const port = extensionService.getProcessInspectPort(mockExtClientId);
+      await extensionService.createProcess(mockExtClientId);
+      const port = await extensionService.getProcessInspectPort(mockExtClientId);
       expect(port).toBe(9889);
       done();
     });

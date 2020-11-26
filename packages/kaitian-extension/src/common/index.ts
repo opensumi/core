@@ -1,5 +1,4 @@
-import * as cp from 'child_process';
-import { Disposable, IJSONSchema, IDisposable, ReporterProcessMessage, Deferred, localize, Event, Uri } from '@ali/ide-core-common';
+import { Disposable, IJSONSchema, IDisposable, ReporterProcessMessage, Deferred, localize, Event, Uri, MaybePromise } from '@ali/ide-core-common';
 import { createExtHostContextProxyIdentifier, ProxyIdentifier } from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { Extension } from '../hosted/vscode.extension';
@@ -9,6 +8,8 @@ import { IKaitianExtensionContributions } from './kaitian/extension';
 import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from './activator';
 
 export { IExtensionProps } from '@ali/ide-core-common';
+
+export * from './ext.host.proxy';
 
 export interface IExtensionMetaData {
   id: string;
@@ -40,19 +41,19 @@ export interface ExtraMetaData {
 
 export const IExtensionNodeService = Symbol('IExtensionNodeService');
 export interface IExtensionNodeService {
+  initialize(): Promise<void>;
   getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
-  createProcess(clientId: string): Promise<cp.ChildProcess>;
+  createProcess(clientId: string): Promise<void>;
   ensureProcessReady(clientId: string): Promise<boolean>;
   getElectronMainThreadListenPath(clientId: string);
   getElectronMainThreadListenPath2(clientId: string);
   getExtServerListenPath(clientId: string);
-  setExtProcessConnectionForward(): Promise<void>;
   getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
   setConnectionServiceClient(clientId: string, serviceClient: IExtensionNodeClientService);
   disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
 
   tryEnableInspectPort(clientId: string, delay?: number): Promise<boolean>;
-  getProcessInspectPort(clientId: string): number | undefined;
+  getProcessInspectPort(clientId: string): Promise<number | undefined>;
 }
 
 export const IExtensionNodeClientService = Symbol('IExtensionNodeClientService');
@@ -232,4 +233,23 @@ export interface IExtensionHostProfilerService {
   $startProfile(clientId: string): Promise<void>;
   $stopProfile(clientId: string): Promise<boolean>;
   $saveLastProfile(filePath: string): Promise<void>;
+}
+
+export interface Output { data: string; format: string[]; }
+
+export const IExtensionHostManager = Symbol('IExtensionHostManager');
+
+export interface IExtensionHostManager {
+  init(): MaybePromise<void>;
+  fork(modulePath: string, ...args: any[]): MaybePromise<number>;
+  send(pid: number, message: string): MaybePromise<void>;
+  isRunning(pid: number): MaybePromise<boolean>;
+  treeKill(pid: number): MaybePromise<void>;
+  kill(pid: number, signal?: string): MaybePromise<void>;
+  isKilled(pid: number): MaybePromise<boolean>;
+  findDebugPort(startPort: number, giveUpAfter: number, timeout: number): Promise<number>;
+  onInspect(pid: number, listener: (output: Output) => void): MaybePromise<void>;
+  onExit(pid: number, listener: (code: number, signal: string) => void): MaybePromise<void>;
+  onMessage(pid: number, listener: (msg: any) => void): MaybePromise<void>;
+  disposeProcess(pid: number): MaybePromise<void>;
 }
