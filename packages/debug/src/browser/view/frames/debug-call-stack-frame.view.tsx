@@ -8,6 +8,7 @@ import { DebugStackFrame } from '../../model';
 import { IDebugSessionManager } from '../../../common';
 import { DebugSessionManager } from '../../debug-session-manager';
 import * as styles from './debug-call-stack.module.less';
+import { DebugCallStackService } from './debug-call-stack.service';
 
 export interface DebugStackSessionViewProps {
   frames: DebugStackFrame[];
@@ -23,6 +24,7 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
   const [framesErrorMessage, setFramesErrorMessage] = React.useState<string>('');
   const [canLoadMore, setCanLoadMore] = React.useState<boolean>(false);
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
+  const debugCallStackService = useInjectable<DebugCallStackService>(DebugCallStackService);
 
   const loadMore = async () => {
     if (!thread) {
@@ -88,6 +90,7 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
         return;
       }
       manager.currentSession = frame.session;
+
       frame.session.currentThread = frame.thread;
       setSelected(frame.raw.id);
       if (frame && frame.source) {
@@ -102,7 +105,8 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
         selected === frame.raw.id && styles.selected,
         !(frame.raw && frame.raw.source && frame.raw.source.name) && styles.debug_stack_frames_item_hidden,
       ) }
-      onClick={ clickHandler }>
+      onClick={ clickHandler }
+      onContextMenu={ (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => debugCallStackService.handleContextMenu(event, data)}>
       <span className={ cls(
         styles.debug_stack_frames_item_label,
         isLabel && styles.label,
