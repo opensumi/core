@@ -1,12 +1,13 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { IToolbarActionReactElement, IToolbarActionElementProps, IToolbarActionBtnStyle, IToolbarActionBtnProps, IToolbarActionBtnDelegate, IToolbarActionBtnState } from '../types';
+import { IToolbarActionReactElement, IToolbarActionElementProps, IToolbarActionBtnStyle, IToolbarActionBtnProps, IToolbarActionBtnDelegate, IToolbarActionBtnState, IToolbarPopoverStyle } from '../types';
 import { useInjectable } from '../../react-hooks';
-import { BasicEvent, Disposable, Emitter } from '@ali/ide-core-common';
+import { BasicEvent, Disposable, Emitter, IDisposable } from '@ali/ide-core-common';
 import * as classnames from 'classnames';
 import { AppConfig, ConfigProvider } from '../../react-providers';
 import { Button } from '@ali/ide-components';
 import { PreferenceService } from '../../preferences';
+import { DomListener } from '../../utils';
 
 export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionElementProps) => {
   const context = useInjectable<AppConfig>(AppConfig);
@@ -36,6 +37,10 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
   }
 
   const delegate = React.useRef<ToolbarBtnDelegate | undefined>();
+  const inDropDownRef = React.useRef<boolean>(props.inDropDown);
+  React.useEffect(() => {
+    inDropDownRef.current = props.inDropDown;
+  }, [props.inDropDown]);
 
   React.useEffect(() => {
     const disposer = new Disposable();
@@ -43,12 +48,14 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
       forceUpdate();
     }));
     if (ref.current && props.delegate) {
+      // 如果是在 dropdown 中，popover 元素将显示在 more 按钮上
+      const getPopoverParent = () => (inDropDownRef.current ? document.querySelector(`#toolbar-location-${props.location} .kt-toolbar-more`) : ref.current) as HTMLElement;
       delegate.current = new ToolbarBtnDelegate(ref.current, props.id, (state, title) => {
         setViewState(state);
         setTitle(title);
       }, () => {
         return viewState;
-      }, context, props.popoverComponent);
+      }, context,  getPopoverParent , props.popoverComponent, props.popoverStyle);
       props.delegate(delegate.current);
       disposer.addDispose(delegate.current);
       disposer.addDispose({
@@ -58,7 +65,7 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
       });
     }
     return () => disposer.dispose();
-  }, [ref.current]);
+  }, []);
   const iconContent = !props.inDropDown ? <div className={styles.iconClass + ' kt-toolbar-action-btn-icon'} title={styles.title} style={{
     color: styles.iconForeground,
     backgroundColor: styles.iconBackground,
@@ -159,6 +166,8 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
 
   private _popOverElement: Promise<HTMLDivElement> | undefined;
 
+  private _popOverClickOutsideDisposer: IDisposable | undefined;
+
   dispose() {
     this._onClick.dispose();
     this._onMouseEnter.dispose();
@@ -167,13 +176,16 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
       this.popOverContainer.remove();
       this.popOverContainer = undefined;
     }
+    if (this._popOverClickOutsideDisposer) {
+      this._popOverClickOutsideDisposer.dispose();
+    }
   }
 
-  constructor(private element: HTMLElement, private actionId: string,  private readonly _setState, private _getState, private context: AppConfig, private popoverComponent?: React.FC) {
+  constructor(private element: HTMLElement, private actionId: string,  private readonly _setState, private _getState, private context: AppConfig, private getPopoverParent: () => HTMLElement, private popoverComponent?: React.FC, private popoverStyle?: IToolbarPopoverStyle) {
     if (this.popoverComponent) {
       this._popOverElement = popOverMap.get(actionId);
       this.popOverContainer = document.createElement('div');
-      element.append(this.popOverContainer);
+      this.popOverContainer.classList.add('kt-toolbar-popover');
     }
   }
 
@@ -191,7 +203,7 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
     return this.popOverContainer;
   }
 
-  async showPopOver() {
+  async showPopOver(style?: IToolbarPopoverStyle) {
     if (!this.popOverContainer) {
       return;
     }
@@ -202,16 +214,65 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
         ReactDOM.render(<ConfigProvider value={this.context}>
           <C/>
         </ConfigProvider>, div, () => {
-          resolve();
+          resolve(div);
         });
       });
       popOverMap.set(this.actionId, this._popOverElement);
     }
+    const mergedStyle: IToolbarPopoverStyle = {
+      ...this.popoverStyle,
+      ...style,
+    };
+    if (mergedStyle.position === 'top') {
+      this.popOverContainer.classList.add('kt-toolbar-popover-top');
+      this.popOverContainer.classList.remove('kt-toolbar-popover-bottom');
+    } else {
+      this.popOverContainer.classList.remove('kt-toolbar-popover-top');
+      this.popOverContainer.classList.add('kt-toolbar-popover-bottom');
+    }
+
+    this.popOverContainer.remove();
+    const popoverParent = this.getPopoverParent() || this.element;
+    popoverParent.append(this.popOverContainer);
+    const popoverParentRect = popoverParent.getBoundingClientRect();
+    this.popOverContainer.style.setProperty('--button-width', popoverParentRect.width + 'px');
+
+    let offset = typeof mergedStyle.horizontalOffset === 'number' ? mergedStyle.horizontalOffset : 30;
+
+    // 如果父容器离右边距很近，防止视图突出去
+    offset = Math.min(offset, window.innerWidth - popoverParentRect.left - popoverParentRect.width - 2);
+    this.popOverContainer.style.setProperty('--offset-size', offset + 'px');
+    this.popOverContainer.classList.add('kt-toolbar-popover-visible');
+
     return this._popOverElement.then((ele) => {
-        if (this.popOverContainer && ele.parentElement !== this.popOverContainer) {
-          this.popOverContainer.append(ele);
-        }
+      if (this._popOverClickOutsideDisposer) {
+        this._popOverClickOutsideDisposer.dispose();
+        this._popOverClickOutsideDisposer = undefined;
+      }
+      if (this.popOverContainer && ele.parentElement !== this.popOverContainer) {
+        this.popOverContainer.append(ele);
+      }
+      if (mergedStyle.hideOnClickOutside !== false) {
+        setTimeout(() => {
+          const disposer = new Disposable();
+          disposer.addDispose(new DomListener(ele, 'click', (e: MouseEvent) => {
+            e.stopPropagation();
+          }));
+          disposer.addDispose(new DomListener(window, 'click', (e: MouseEvent) => {
+            this.hidePopOver();
+          }));
+          this._popOverClickOutsideDisposer = disposer;
+        });
+      }
     });
+  }
+
+  async hidePopOver() {
+    if (this._popOverElement) {
+      const ele = await this._popOverElement;
+      ele.remove();
+    }
+    this.popOverContainer && this.popOverContainer.classList.remove('kt-toolbar-popover-visible');
   }
 
 }

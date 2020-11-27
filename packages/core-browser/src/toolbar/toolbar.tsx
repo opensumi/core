@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { useInjectable } from '../react-hooks';
-import { IToolbarRegistry, ToolbarActionGroupsChangedEvent, IToolbarAction, ISize, ToolbarActionsChangedEvent, IToolbarLocationProps, IToolbarLocationPreference } from './types';
+import { IToolbarRegistry, ToolbarActionGroupsChangedEvent, IToolbarAction, ISize, ToolbarActionsChangedEvent, IToolbarLocationProps, IToolbarLocationPreference, IToolbarActionElementProps } from './types';
 import { IEventBus, Disposable, Emitter } from '@ali/ide-core-common';
 import { ConfigContext, ConfigProvider, AppConfig } from '../react-providers';
 import { getIcon } from '../style/icon/icon';
@@ -289,9 +289,12 @@ function renderToolbarLocation(container: HTMLDivElement, location: string, pref
 
   if (dropDownActionsOrSplits.length > 0) {
     const moreElement = document.createElement('div');
-    moreElement.classList.add('kt-toolbar-more', ...getIcon('more').split(' '));
+    moreElement.classList.add('kt-toolbar-more');
+    const moreLink = document.createElement('div');
+    moreLink.classList.add(...getIcon('more').split(' '));
+    moreElement.append(moreLink);
     locationContainer.append(moreElement);
-    moreElement.addEventListener('mousedown', () => {
+    moreLink.addEventListener('mousedown', () => {
       toggleDropdown(moreElement, location);
     });
   }
@@ -483,6 +486,7 @@ class ToolbarActionRenderer {
             closeDropdown={() => {
               dropDownShouldCloseEmitter.fire(location);
             }}
+            location={location}
           />, element, () => {
             if (canceled) {
               reject('canceled render toolbar');
@@ -510,7 +514,7 @@ class ToolbarActionRenderer {
 
 }
 
-export const ToolbarActionRenderWrapper = (props: {setInDropDownHandle: (setInDropDown: (inDropDown: boolean) => void ) => void, initialInDropDown: boolean, component: any, context: AppConfig, action: IToolbarAction, closeDropdown: () => void, preferences?: IToolbarLocationPreference}) => {
+export const ToolbarActionRenderWrapper = (props: {setInDropDownHandle: (setInDropDown: (inDropDown: boolean) => void ) => void, initialInDropDown: boolean, component: React.FC<IToolbarActionElementProps> | React.ComponentClass<IToolbarActionElementProps>, context: AppConfig, action: IToolbarAction, closeDropdown: () => void, preferences?: IToolbarLocationPreference, location: string}) => {
   const [inDropDown, setInDropDown] = React.useState<boolean>(props.initialInDropDown);
   const C = props.component;
   React.useEffect(() => {
@@ -519,6 +523,6 @@ export const ToolbarActionRenderWrapper = (props: {setInDropDownHandle: (setInDr
     });
   }, []);
   return <ConfigProvider value={props.context}>
-    <C inDropDown={inDropDown} action={props.action} preferences={props.preferences} closeDropDown={props.closeDropdown}/>
+    <C inDropDown={inDropDown} action={props.action} preferences={props.preferences} closeDropDown={props.closeDropdown} location={props.location}/>
   </ConfigProvider>;
 };

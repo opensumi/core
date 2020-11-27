@@ -108,6 +108,8 @@ export interface IToolbarActionElementProps {
   closeDropDown: () => void;
 
   preferences?: IToolbarLocationPreference;
+
+  location: string;
 }
 
 export type IToolbarActionReactElement = React.FunctionComponent<IToolbarActionElementProps> | React.ComponentClass<IToolbarActionElementProps>;
@@ -203,6 +205,8 @@ export interface IToolbarActionBtnProps {
    * 它会位于目标元素
    */
   popoverComponent?: React.FC;
+
+  popoverStyle?: IToolbarPopoverStyle;
 }
 
 export interface IToolbarActionBtnDelegate {
@@ -222,7 +226,12 @@ export interface IToolbarActionBtnDelegate {
   getPopOverContainer(): HTMLDivElement | undefined;
 
   // 渲染并展示 popover 元素
-  showPopOver(): Promise<void>;
+  showPopOver(style?: IToolbarPopoverStyle): Promise<void>;
+
+  /**
+   * 隐藏 popOver 元素
+   */
+  hidePopOver(): Promise<void>;
 
   onChangeState: Event<{ from: string, to: string }>;
 }
@@ -309,4 +318,30 @@ export interface IToolbarSelectStyle {
   iconForegroundColor?: string;
   width?: number;
   minWidth?: number;
+}
+
+export interface IToolbarPopoverStyle {
+
+  /**
+   * 在上方还是在下方, 默认下方
+   * // TODO: 暂时只支持 bottom;
+   */
+  position?: 'top' | 'bottom';
+
+  /**
+   * 距离右边的偏移量(px), 默认 30
+   *     [ button ]
+   *          /\  |<-offset->|
+   *  [------   -------------]
+   *  [                      ]
+   *  [      popover         ]
+   *  [                      ]
+   *  [______________________]
+   */
+  horizontalOffset?: number;
+
+  /**
+   * 点击组件外部时自动隐藏, 默认 true
+   */
+  hideOnClickOutside?: boolean;
 }

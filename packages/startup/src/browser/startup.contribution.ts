@@ -12,6 +12,7 @@ import { ISCMProvider } from '@ali/ide-scm';
 import { getIcon } from '@ali/ide-core-browser';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { ExampleEditorBottomWidget } from './editor-bottom-example';
+import { ExamplePopover } from './exmaple-popover';
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, ComponentContribution, ToolBarActionContribution, NextMenuContribution, BrowserEditorContribution)
 export class StartupContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, ComponentContribution, ToolBarActionContribution, NextMenuContribution, BrowserEditorContribution {
@@ -85,9 +86,13 @@ export class StartupContribution implements CommandContribution, KeybindingContr
             btnStyle: i > 3 ? 'button' : 'inline',
             background: i > 4 ? 'red' : undefined,
           },
+          popoverComponent: ExamplePopover,
           delegate: ((d) => {
             d?.onClick(() => {
               console.log('test ' + i + ' clicked');
+              d.showPopOver({
+                horizontalOffset: i * 10,
+              });
             });
           }),
         }),

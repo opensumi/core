@@ -6,6 +6,7 @@ import { Emitter, Disposable } from '@ali/ide-core-common';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadKaitianAPIIdentifier } from '../../../common/kaitian';
 import { IToolbarButtonContribution, IToolbarSelectContribution } from '../../../browser/kaitian/types';
+import { IToolbarPopoverStyle } from '@ali/ide-core-browser/lib/toolbar';
 
 export function createToolbarAPIFactory(
   extension: IExtension,
@@ -108,9 +109,8 @@ export class ToolbarBtnActionHandleController extends Disposable {
         setState: (state, title?: string) => {
           return this.extHostCommands.executeCommand<void>('kaitian-extension.toolbar.btn.setState', this.id, state, title);
         },
-        showPopover: async () => {
-          // TODO: popover能力
-          // return this.extHostCommands.executeCommand<void>('kaitian-extension.toolbar.showPopover', this.id);
+        showPopover: async (style?: IToolbarPopoverStyle) => {
+          return this.extHostCommands.executeCommand<void>('kaitian-extension.toolbar.showPopover', this.id, style);
         },
       };
     }
