@@ -1,8 +1,7 @@
-import { DebugDecorator } from '@ali/ide-debug/lib/browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action, runInAction } from 'mobx';
 import { DebugViewModel } from '../debug-view-model';
-import { DebugBreakpoint, DebugExceptionBreakpoint, isDebugBreakpoint, isDebugExceptionBreakpoint, BreakpointManager } from '../../breakpoint';
+import { DebugBreakpoint, DebugExceptionBreakpoint, isDebugBreakpoint, isDebugExceptionBreakpoint, BreakpointManager, DebugDecorator } from '../../breakpoint';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { URI, WithEventBus, OnEvent, IContextKeyService } from '@ali/ide-core-browser';
 import { BreakpointItem } from './debug-breakpoints.view';
