@@ -66,6 +66,12 @@ export interface IToolbarActionGroup {
    * 喜好的 location, 默认 default
    */
   preferredLocation?: string;
+
+  /**
+   * 元素紧贴在一起
+   */
+  compact?: boolean;
+
 }
 
 export interface ISize {
@@ -344,4 +350,9 @@ export interface IToolbarPopoverStyle {
    * 点击组件外部时自动隐藏, 默认 true
    */
   hideOnClickOutside?: boolean;
+
+  /**
+   * 不要带箭头，阴影，背景色等默认样式
+   */
+  noContainerStyle?: boolean;
 }

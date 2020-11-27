@@ -74,6 +74,11 @@ export class StartupContribution implements CommandContribution, KeybindingContr
 
   registerToolbarActions(registry: IToolbarRegistry) {
     registry.addLocation('menu-left');
+    registry.registerToolbarActionGroup({
+      id: 'test-compact',
+      compact: true,
+      preferredLocation: 'menu-right',
+    })
     for (let i = 0; i < 6; i ++ ) {
       registry.registerToolbarAction({
         id: 'test-' + i,
@@ -87,6 +92,9 @@ export class StartupContribution implements CommandContribution, KeybindingContr
             background: i > 4 ? 'red' : undefined,
           },
           popoverComponent: ExamplePopover,
+          popoverStyle: {
+            noContainerStyle: i % 2 === 0,
+          },
           delegate: ((d) => {
             d?.onClick(() => {
               console.log('test ' + i + ' clicked');
@@ -97,6 +105,10 @@ export class StartupContribution implements CommandContribution, KeybindingContr
           }),
         }),
         neverCollapse: i > 4,
+        preferredPosition: {
+          location: 'menu-right',
+          group: i === 1 || i === 2 || i === 3 ? 'test-compact' : undefined
+        }
       });
     }
     for (let i = 7; i < 10; i ++ ) {

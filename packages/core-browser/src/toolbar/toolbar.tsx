@@ -135,6 +135,20 @@ function isActionSplit(target: IToolbarAction | ActionSplit): target is ActionSp
   return (target as ActionSplit).type === 'split';
 }
 
+interface IResolvedToolbarAction {
+  action: IToolbarAction;
+  marginLeft: number;
+  extraClassNames?: string[];
+  noGroupSplit?: boolean;
+}
+
+interface IResolvedToolbarActionOrSplit {
+  action: IToolbarAction | ActionSplit;
+  marginLeft: number;
+  extraClassNames?: string[];
+  noGroupSplit?: boolean;
+}
+
 function renderToolbarLocation(container: HTMLDivElement, location: string, preference: IToolbarLocationPreference, registry: IToolbarRegistry, context: AppConfig, ignoreActions: string[]) {
   const TOOLBAR_ACTION_MARGIN = preference.actionMargin === undefined ? DEFAULT_TOOLBAR_ACTION_MARGIN : preference.actionMargin;
   const TOOLBAR_MORE_WIDTH = preference.moreActionWidth === undefined ? DEFAULT_TOOLBAR_MORE_WIDTH : preference.moreActionWidth;
@@ -168,21 +182,47 @@ function renderToolbarLocation(container: HTMLDivElement, location: string, pref
 
   const groups = ['_head', ...(registry.getActionGroups(location) || []).map((g) => g.id), '_tail'];
 
-  const visibleActionsOrSplits: Array<IToolbarAction | ActionSplit> = [];
-  const groupActions: IToolbarAction[][] = [];
+  const visibleActionsOrSplits: Array<IResolvedToolbarActionOrSplit> = [];
+  const groupActions: IResolvedToolbarAction[][] = [];
   const dropDownActionsOrSplits: Array<IToolbarAction | ActionSplit> = [];
 
   for (const group of groups) {
     const result = registry.getToolbarActions({location, group});
     const actions = result?.actions.filter( (a) => ignoreActions.indexOf(a.id) === -1);
     if (actions && actions.length > 0) {
-      if (visibleActionsOrSplits.length > 0) {
+      if (visibleActionsOrSplits.length > 0 && !visibleActionsOrSplits[visibleActionsOrSplits.length - 1].noGroupSplit) {
         visibleActionsOrSplits.push({
-          type: 'split',
+          action: {
+            type: 'split',
+          },
+          marginLeft: TOOLBAR_ACTION_MARGIN,
         });
       }
-      visibleActionsOrSplits.push(...actions);
-      groupActions.push(actions);
+      const resolved = actions.map((action, i) => {
+        const groupMargin = result!.group?.compact ? 0 : TOOLBAR_ACTION_MARGIN;
+        const extraClassNames: string[] = [];
+        if (result?.group?.compact) {
+          extraClassNames.push('kt-toolbar-action-wrapper-compact');
+          if (i === actions.length - 1) {
+            extraClassNames.push('kt-toolbar-action-wrapper-compact-tail');
+          }
+          if (i === 0) {
+            extraClassNames.push('kt-toolbar-action-wrapper-compact-head');
+          }
+          if (i !== 0 && i !== actions.length - 1) {
+            extraClassNames.push('kt-toolbar-action-wrapper-compact-middle');
+          }
+        }
+
+        return {
+          action,
+          marginLeft: i === 0 ? TOOLBAR_ACTION_MARGIN : groupMargin,
+          extraClassNames,
+          noGroupSplit: !!result!.group?.compact,
+        };
+      });
+      visibleActionsOrSplits.push(...resolved);
+      groupActions.push(resolved);
     }
   }
 
@@ -198,15 +238,15 @@ function renderToolbarLocation(container: HTMLDivElement, location: string, pref
     // 根据元素宽度计算哪些在外面，哪些在 dropdown
     for (let i = 0; i < visibleActionsOrSplits.length; i ++) {
       const actionOrSplit = visibleActionsOrSplits[i];
-      const elementWidth: number = getActionOrSplitWidth(actionOrSplit, false);
+      const elementWidth: number = getActionOrSplitWidth(actionOrSplit.action, false);
 
       if (!shouldCollapse) {
-        if (usedWidth + (i !== 0 ? TOOLBAR_ACTION_MARGIN : 0) + elementWidth + TOOLBAR_ACTION_MARGIN + TOOLBAR_MORE_WIDTH > totalWidth ) {
+        if (usedWidth + (i !== 0 ? actionOrSplit.marginLeft : 0) + elementWidth + TOOLBAR_ACTION_MARGIN + TOOLBAR_MORE_WIDTH > totalWidth ) {
           // 此时，剩余的空间已经不足以容纳当前 action + more 按钮了
           // 判断当前 action 开始到最后的大小，是否小于 more 按钮的宽度
           let restWidth = 0;
           for (let j = i; j < visibleActionsOrSplits.length ; j++ ) {
-            restWidth += (j !== 0 ? TOOLBAR_ACTION_MARGIN : 0) + getActionOrSplitWidth( visibleActionsOrSplits[j], false);
+            restWidth += (j !== 0 ? actionOrSplit.marginLeft : 0) + getActionOrSplitWidth( visibleActionsOrSplits[j].action, false);
           }
           if (restWidth < TOOLBAR_ACTION_MARGIN + TOOLBAR_MORE_WIDTH) {
             // 能容纳, 无需分组
@@ -217,7 +257,7 @@ function renderToolbarLocation(container: HTMLDivElement, location: string, pref
           }
         }
       }
-      usedWidth += (i !== 0 ? TOOLBAR_ACTION_MARGIN : 0) + elementWidth;
+      usedWidth += (i !== 0 ? actionOrSplit.marginLeft : 0) + elementWidth;
     }
   }
 
@@ -229,7 +269,7 @@ function renderToolbarLocation(container: HTMLDivElement, location: string, pref
     const dropdownGroupActions: IToolbarAction[][] = [];
     groupActions.forEach((group, gi) => {
       group.forEach((action, ai) => {
-        if (!action.neverCollapse) {
+        if (!action.action.neverCollapse) {
           collapsableElementIndexes.push([gi, ai]);
         }
       });
@@ -245,9 +285,9 @@ function renderToolbarLocation(container: HTMLDivElement, location: string, pref
       const nextElementIndex = collapsableElementIndexes.pop()!;
       // 虽然此处splice会改变index，但是由于我们是从后往前，所以问题不大
       const [action] = groupActions[nextElementIndex[0]].splice(nextElementIndex[1], 1);
-      dropdownGroupActions[nextElementIndex[0]]!.push(action) ;
+      dropdownGroupActions[nextElementIndex[0]]!.push(action.action) ;
       // 去掉一个元素的宽度
-      usedWidth -= TOOLBAR_ACTION_MARGIN + getActionOrSplitWidth(action, false);
+      usedWidth -= TOOLBAR_ACTION_MARGIN + getActionOrSplitWidth(action.action, false);
       // 弹出后，如果groupActions为空且groupActions的group数量大于1，再去掉一个actionSplit的宽度
       if (groupActions.length > 1 && groupActions[nextElementIndex[0]].length === 0) {
         usedWidth -= TOOLBAR_ACTION_MARGIN + 1;
@@ -255,10 +295,14 @@ function renderToolbarLocation(container: HTMLDivElement, location: string, pref
     }
     // 获得此时的visibleActions和dropdownActions
     visibleActionsOrSplits.splice(0);
-    groupActions.filter((g) => g.length > 0).map((g, gi) => {
-      if (gi !== 0) {
+    const nonEmpty = groupActions.filter((g) => g.length > 0);
+    nonEmpty.map((g, gi) => {
+      if (gi !== 0 && !nonEmpty[gi - 1][0].noGroupSplit) {
         visibleActionsOrSplits.push({
-          type: 'split',
+          action: {
+            type: 'split',
+          },
+          marginLeft: TOOLBAR_ACTION_MARGIN,
         });
       }
       visibleActionsOrSplits.push(...g);
@@ -278,12 +322,12 @@ function renderToolbarLocation(container: HTMLDivElement, location: string, pref
 
   // 开始渲染
   visibleActionsOrSplits.forEach((actionOrSplit) => {
-    if (isActionSplit(actionOrSplit)) {
+    if (isActionSplit(actionOrSplit.action)) {
       const splitElement = document.createElement('div');
       splitElement.classList.add('kt-toolbar-action-split');
       locationContainer.append(splitElement);
     } else {
-      appendActionToLocationContainer(locationContainer, actionOrSplit, context, false, location, preference);
+      appendActionToLocationContainer(locationContainer, (actionOrSplit as IResolvedToolbarAction), context, false, location, preference);
     }
   });
 
@@ -308,7 +352,7 @@ function renderToolbarLocation(container: HTMLDivElement, location: string, pref
       splitElement.classList.add('kt-toolbar-action-split');
       locationDropDownContainer.appendChild(splitElement);
     } else {
-      appendActionToLocationContainer(locationDropDownContainer, actionOrSplit, context, true, location, preference);
+      appendActionToLocationContainer(locationDropDownContainer, { action: actionOrSplit, marginLeft: 0 }, context, true, location, preference);
     }
   });
 
@@ -362,18 +406,18 @@ function getActionOrSplitWidth(actionOrSplit: IToolbarAction | ActionSplit, inDr
   }
 }
 
-async function appendActionToLocationContainer(container: HTMLDivElement, toolbarAction: IToolbarAction, context: AppConfig, inDropDown: boolean, location: string, preferences?: IToolbarLocationPreference): Promise<void> {
+async function appendActionToLocationContainer(container: HTMLDivElement, toolbarAction: IResolvedToolbarAction, context: AppConfig, inDropDown: boolean, location: string, preferences?: IToolbarLocationPreference): Promise<void> {
   const actionContainer = document.createElement('div');
   container.appendChild(actionContainer);
   return rendererToolbarActionComponent(toolbarAction, actionContainer, context, inDropDown, location, preferences);
 }
 
-async function rendererToolbarActionComponent(toolbarAction: IToolbarAction, container: HTMLDivElement, context: AppConfig, inDropDown: boolean, location: string, preferences?: IToolbarLocationPreference): Promise<void> {
+async function rendererToolbarActionComponent(toolbarAction: IResolvedToolbarAction, container: HTMLDivElement, context: AppConfig, inDropDown: boolean, location: string, preferences?: IToolbarLocationPreference): Promise<void> {
 
-  if (!renderedActions.has(toolbarAction.id)) {
-    renderedActions.set(toolbarAction.id, new ToolbarActionRenderer(toolbarAction, context));
+  if (!renderedActions.has(toolbarAction.action.id)) {
+    renderedActions.set(toolbarAction.action.id, new ToolbarActionRenderer(toolbarAction, context));
   }
-  return renderedActions.get(toolbarAction.id)!.attachTo(container, inDropDown, location, preferences);
+  return renderedActions.get(toolbarAction.action.id)!.attachTo(container, inDropDown, location, preferences);
 }
 
 function getContentWidth(element) {
@@ -405,8 +449,10 @@ class ToolbarActionRenderer {
     setInDropDown: (inDropDown: boolean) => void;
   };
 
-  constructor(private toolbarAction: IToolbarAction, private context: AppConfig) {
+  private toolbarAction: IToolbarAction;
 
+  constructor(private resolvedToolbarAction: IResolvedToolbarAction, private context: AppConfig) {
+    this.toolbarAction = resolvedToolbarAction.action;
   }
 
   render(inDropDown: boolean, location: string, preferences?: IToolbarLocationPreference): Promise<HTMLDivElement> {
@@ -475,6 +521,9 @@ class ToolbarActionRenderer {
         } else {
           const element = document.createElement('div');
           element.classList.add('kt-toolbar-action-wrapper');
+          if (this.resolvedToolbarAction.extraClassNames) {
+            element.classList.add(...this.resolvedToolbarAction.extraClassNames);
+          }
           let setInDropDown: (inDropDown: boolean) => void | undefined;
           ReactDOM.render(<ToolbarActionRenderWrapper
             initialInDropDown={inDropDown}

@@ -244,6 +244,12 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
     this.popOverContainer.style.setProperty('--offset-size', offset + 'px');
     this.popOverContainer.classList.add('kt-toolbar-popover-visible');
 
+    if (mergedStyle.noContainerStyle) {
+      this.popOverContainer.classList.remove('kt-toolbar-popover-default');
+    } else {
+      this.popOverContainer.classList.add('kt-toolbar-popover-default');
+    }
+
     return this._popOverElement.then((ele) => {
       if (this._popOverClickOutsideDisposer) {
         this._popOverClickOutsideDisposer.dispose();

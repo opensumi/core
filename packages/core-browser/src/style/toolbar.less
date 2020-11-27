@@ -23,6 +23,9 @@
         margin-left:0;
       }
     }
+    .kt-toolbar-action-wrapper-compact-middle, .kt-toolbar-action-wrapper-compact-tail {
+      margin-left: 0;
+    }
     .kt-toolbar-more {
       cursor: pointer;
       position: relative;
@@ -46,9 +49,7 @@
     &.kt-toolbar-action-btn-horizontal {
 
       &.kt-toolbar-action-btn-inline {
-        &:hover {
-          transform: scale(1.08);
-        }
+
       }
       &.kt-toolbar-action-btn-button {
         padding: 0px 5px;
@@ -68,6 +69,27 @@
       }
     }
   }
+
+  .kt-toolbar-action-wrapper-compact:not(.kt-toolbar-action-wrapper-compact-head) {
+    .kt-button{
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+  }
+
+  .kt-toolbar-action-wrapper-compact-middle,  .kt-toolbar-action-wrapper-compact-tail:not(.kt-toolbar-action-wrapper-compact-head){
+    .kt-button{
+      border-left: 1px solid var(--kt-actionbar-separatorBackground);
+    }
+  }
+
+  .kt-toolbar-action-wrapper-compact:not(.kt-toolbar-action-wrapper-compact-tail) {
+    .kt-button{
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+
   .kt-toolbar-action-split {
     border-right: 1px solid rgba(0,0,0,.25);
     height: 18px;
@@ -133,32 +155,39 @@
 }
 .kt-toolbar-popover {
   position: absolute;
-  margin-left: 0;
-  background: var(--kt-popover-background);
-  border-radius: 5px;
-  box-shadow: 1px solid;
   --offset-size: 30px;
   --button-width: 30px;
-  .overlay-shadow();
   right: calc(0px - var(--offset-size));
-  &.kt-toolbar-popover-visible {
-    &::before, &::after {
-      content: '';
-    }
-  }
-  &:before {
-    border-top: 0px solid transparent;
-    border-right: 5px solid transparent;
-    border-left: 5px solid transparent;
-    border-bottom: 5px solid var(--kt-popover-background);
-    position: absolute;
-    right: calc(var(--offset-size) + 0.5 * var(--button-width) - 7px);
-    top: -5px;
-  }
   &.kt-toolbar-popover-bottom {
-    top: calc(100% + 7px);
+    top: 100%;
   }
   &.kt-toolbar-popover-top {
-    bottom: calc(100% + 7px);
+    bottom: 100%;
+  }
+  &.kt-toolbar-popover-default {
+    .overlay-shadow();
+    box-shadow: 1px solid;
+    border-radius: 5px;
+    background: var(--kt-popover-background);
+    &:before {
+      border-top: 0px solid transparent;
+      border-right: 5px solid transparent;
+      border-left: 5px solid transparent;
+      border-bottom: 5px solid var(--kt-popover-background);
+      position: absolute;
+      right: calc(var(--offset-size) + 0.5 * var(--button-width) - 7px);
+      top: -5px;
+    }
+    &.kt-toolbar-popover-bottom {
+      top: calc(100% + 7px);
+    }
+    &.kt-toolbar-popover-top {
+      bottom: calc(100% + 7px);
+    }
+    &.kt-toolbar-popover-visible {
+      &::before, &::after {
+        content: '';
+      }
+    }
   }
 }
