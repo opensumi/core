@@ -1,7 +1,7 @@
-import { DebugStackFrame } from '@ali/ide-debug/lib/browser';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { DebugStackFrame } from '../../model';
 
 @Injectable()
 export class DebugCallStackService {
