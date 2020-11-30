@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action, runInAction } from 'mobx';
 import { DebugViewModel } from '../debug-view-model';
-import { DebugBreakpoint, DebugExceptionBreakpoint, isDebugBreakpoint, isDebugExceptionBreakpoint, BreakpointManager } from '../../breakpoint';
+import { DebugBreakpoint, DebugExceptionBreakpoint, isDebugBreakpoint, isDebugExceptionBreakpoint, BreakpointManager, DebugDecorator } from '../../breakpoint';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { URI, WithEventBus, OnEvent, IContextKeyService } from '@ali/ide-core-browser';
 import { BreakpointItem } from './debug-breakpoints.view';
@@ -69,6 +69,10 @@ export class DebugBreakpointsService extends WithEventBus {
     });
   }
 
+  public getBreakpointDecoration(breakpoint: DebugBreakpoint, isDebugMode: boolean = false, enabled: boolean = true) {
+    return new DebugDecorator().getDecoration(breakpoint, isDebugMode, enabled);
+  }
+
   @OnEvent(WorkspaceEditDidRenameFileEvent)
   onRenameFile(e: WorkspaceEditDidRenameFileEvent) {
     this.removeBreakpoints(e.payload.oldUri);
@@ -133,7 +137,7 @@ export class DebugBreakpointsService extends WithEventBus {
 
   @action
   private updateBreakpoints() {
-    this.nodes = this.extractNodes([ ...this.breakpoints.getExceptionBreakpoints(), ...this.breakpoints.getBreakpoints() ]);
+    this.nodes = this.extractNodes([...this.breakpoints.getExceptionBreakpoints(), ...this.breakpoints.getBreakpoints()]);
   }
 
   removeAllBreakpoints() {
