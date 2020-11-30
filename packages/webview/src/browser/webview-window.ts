@@ -48,13 +48,13 @@ export class ElectronPlainWebviewWindow extends Disposable implements IPlainWebv
         }
       }));
     });
+    this.addDispose(this._onMessage);
+    this.addDispose(this._onClosed);
     this.addDispose({
       dispose: () => {
         this._close();
       },
     });
-    this.addDispose(this._onMessage);
-    this.addDispose(this._onClosed);
   }
 
   _onMessage: Emitter<any> = new Emitter<any>();
