@@ -52,12 +52,16 @@ export async function renderApp(opts: IClientAppOpts) {
 
     ws.addEventListener('message', (e) => {
       if (e.data) {
-        const data = JSON.parse(e.data);
-        if (['change', 'rename'].includes(data.event)) {
-          console.log(`Receive ${data.event} event for ${data.filename}, reload window...`);
-          setTimeout(() => {
-            window.location.reload();
-          }, 3000);
+        try {
+          const data = JSON.parse(e.data);
+          if (['change', 'rename'].includes(data.event)) {
+            console.log(`Receive ${data.event} event for ${data.filename}, reload window...`);
+            setTimeout(() => {
+              window.location.reload();
+            }, 3000);
+          }
+        } catch (err) {
+          console.warn('parse event error \n', err);
         }
       }
     });
