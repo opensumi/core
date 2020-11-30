@@ -81,9 +81,9 @@ export interface IExtHostProxyRPCService {
    */
   $onExit(callId: number, pid: number): Promise<void>;
   /**
-   * 拿到 process._debugProcess 启动调试时监听 stdout 的输出获取调试端口
+   * 插件进程日志输出
    */
-  $onInspect(callId: number, pid: number): Promise<void>;
+  $onOutput(callId: number, pid: number): Promise<void>;
   /**
    * 消息事件回调
    */

@@ -40,8 +40,8 @@ class ExtHostProxyRPCService extends RPCService implements IExtHostProxyRPCServi
     this.extensionHostManager.onExit(pid, (code, signal) => this.extServerProxy.$callback(callId, code, signal));
   }
 
-  async $onInspect(callId: number, pid: number): Promise<void> {
-    this.extensionHostManager.onInspect(pid, (output) => this.extServerProxy.$callback(callId, output));
+  async $onOutput(callId: number, pid: number): Promise<void> {
+    this.extensionHostManager.onOutput(pid, (output) => this.extServerProxy.$callback(callId, output));
   }
 
   async $findDebugPort(startPort: number, giveUpAfter: number, timeout: number) {

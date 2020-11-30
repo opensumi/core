@@ -61,18 +61,7 @@ export class ExtensionHostManager implements IExtensionHostManager {
     return findFreePort(startPort, giveUpAfter, timeout);
   }
 
-  /**
-   * 这里的作用是在**非开发模式下**(isDevelopment() === false), 通过 process._debugProcess 启动调试时监听 stdout 的输出获取调试端口
-   * @example
-   * ```ts
-   * process._debugProcess(<extHostProcess.pid>);
-   *
-   * // stdout:
-   * // Debugger listening on ws://127.0.0.1:<port>/f3f6f226-7dbc-4009-95fa-d516ba132fbd
-   * // For help see https://nodejs.org/en/docs/inspector
-   * ```
-   */
-  onInspect(pid: number, listener: (output: Output) => void) {
+  onOutput(pid: number, listener: (output: Output) => void) {
     const extProcess = this.processMap.get(pid);
     assert(extProcess);
     extProcess.stdout.setEncoding('utf8');
@@ -80,14 +69,14 @@ export class ExtensionHostManager implements IExtensionHostManager {
     const onStdout = Event.fromNodeEventEmitter<string>(extProcess.stdout, 'data');
     const onStderr = Event.fromNodeEventEmitter<string>(extProcess.stderr, 'data');
     const onOutput = Event.any(
-      Event.map(onStdout, (o) => ({ data: `%c${o}`, format: [''] })),
-      Event.map(onStderr, (o) => ({ data: `%c${o}`, format: ['color: red'] })),
+      Event.map(onStdout, (o) => ({ type: 'stdout', data: `%c${o}`, format: [''] })),
+      Event.map(onStderr, (o) => ({ type: 'stderr', data: `%c${o}`, format: ['color: red'] })),
     );
 
     // Debounce all output, so we can render it in the Chrome console as a group
     const onDebouncedOutput = Event.debounce<Output>(onOutput, (r, o) => {
       return r
-        ? { data: r.data + o.data, format: [...r.format, ...o.format] }
+        ? { data: r.data + o.data, format: [...r.format, ...o.format], type: [ r.type, o.type ].includes('stderr') ? 'stderr' : 'stdout' }
         : { data: o.data, format: o.format };
     }, 100);
 

@@ -112,9 +112,9 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
   findDebugPort(startPort: number, giveUpAfter: number, timeout: number): Promise<number> {
     return this.extHostProxy.$findDebugPort(startPort, giveUpAfter, timeout);
   }
-  onInspect(pid: number, listener: (output: Output) => void): MaybePromise<void> {
+  onOutput(pid: number, listener: (output: Output) => void): MaybePromise<void> {
     const callId = this.addNewCallback(pid, listener);
-    return this.extHostProxy.$onInspect(callId, pid);
+    return this.extHostProxy.$onOutput(callId, pid);
   }
   onExit(pid: number, listener: (code: number, signal: string) => void): MaybePromise<void> {
     const callId = this.addNewCallback(pid, listener);

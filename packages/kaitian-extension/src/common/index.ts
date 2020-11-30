@@ -235,7 +235,7 @@ export interface IExtensionHostProfilerService {
   $saveLastProfile(filePath: string): Promise<void>;
 }
 
-export interface Output { data: string; format: string[]; }
+export interface Output { type: 'stdout' | 'stderr'; data: string; format: string[]; }
 
 export const IExtensionHostManager = Symbol('IExtensionHostManager');
 
@@ -248,7 +248,7 @@ export interface IExtensionHostManager {
   kill(pid: number, signal?: string): MaybePromise<void>;
   isKilled(pid: number): MaybePromise<boolean>;
   findDebugPort(startPort: number, giveUpAfter: number, timeout: number): Promise<number>;
-  onInspect(pid: number, listener: (output: Output) => void): MaybePromise<void>;
+  onOutput(pid: number, listener: (output: Output) => void): MaybePromise<void>;
   onExit(pid: number, listener: (code: number, signal: string) => void): MaybePromise<void>;
   onMessage(pid: number, listener: (msg: any) => void): MaybePromise<void>;
   disposeProcess(pid: number): MaybePromise<void>;
