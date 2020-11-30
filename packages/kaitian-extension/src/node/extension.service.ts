@@ -79,15 +79,19 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     return await ExtensionScanner.getExtension(extensionPath, localization, extraMetaData);
   }
 
+  private getIPCHandlerPath(name: string) {
+    return normalizedIpcHandlerPath(name, true, this.appConfig.extHostIPCSockPath);
+  }
+
   public getExtServerListenPath(clientId: string): string {
     if (!this.extServerListenPaths.has(clientId)) {
-      this.extServerListenPaths.set(clientId, normalizedIpcHandlerPath(`ext_process`, true));
+      this.extServerListenPaths.set(clientId, this.getIPCHandlerPath(`ext_process`));
     }
     return this.extServerListenPaths.get(clientId)!;
   }
   public getElectronMainThreadListenPath(clientId: string): string {
     if (!this.electronMainThreadListenPaths.has(clientId)) {
-      this.electronMainThreadListenPaths.set(clientId, normalizedIpcHandlerPath(`main_thread`, true));
+      this.electronMainThreadListenPaths.set(clientId, this.getIPCHandlerPath(`main_thread`));
     }
     return this.electronMainThreadListenPaths.get(clientId)!;
   }

@@ -100,6 +100,12 @@ interface Config {
    * 插件 Node 进程入口文件
    */
   extHost?: string;
+
+  /**
+   * 插件进程存放用于通信的 sock 地址
+   * 默认为 /tmp
+   */
+  extHostIPCSockPath?: string;
 }
 
 export interface AppConfig extends Partial<Config> {
@@ -188,6 +194,7 @@ export class ServerApp implements IServerApp {
       onDidCreateExtensionHostProcess: opts.onDidCreateExtensionHostProcess,
       extHost: process.env.EXTENSION_HOST_ENTRY || opts.extHost,
       blockPatterns: opts.blockPatterns,
+      extHostIPCSockPath: opts.extHostIPCSockPath,
     };
     this.bindProcessHandler();
     this.initBaseProvider(opts);
