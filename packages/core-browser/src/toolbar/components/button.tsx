@@ -261,10 +261,10 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
       if (mergedStyle.hideOnClickOutside !== false) {
         setTimeout(() => {
           const disposer = new Disposable();
-          disposer.addDispose(new DomListener(ele, 'click', (e: MouseEvent) => {
-            e.stopPropagation();
-          }));
           disposer.addDispose(new DomListener(window, 'click', (e: MouseEvent) => {
+            if (e.target && ele.contains(e.target as Node)) {
+              return;
+            }
             this.hidePopOver();
           }));
           this._popOverClickOutsideDisposer = disposer;
