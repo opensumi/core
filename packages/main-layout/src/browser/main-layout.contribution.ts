@@ -122,6 +122,7 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
       containerId: 'test',
       title: localize('workbench.testViewContainer').toUpperCase(),
       iconClass: getOctIcon('beaker'),
+      fromExtension: true,
     }, SlotLocation.left);
   }
 
