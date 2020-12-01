@@ -121,7 +121,7 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
       hideIfEmpty: true,
       containerId: 'test',
       title: localize('workbench.testViewContainer').toUpperCase(),
-      iconClass: getExternalIcon('beaker'),
+      iconClass: getExternalIcon('beaker'), // FIXME: 尽快移除，使用 kaitian 的 icon
       fromExtension: true,
     }, SlotLocation.left);
   }
