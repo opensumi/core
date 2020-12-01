@@ -132,6 +132,9 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
 
   return <div className={'kt-toolbar-action-btn-wrapper'} ref={ref as any}>
     { buttonElement }
+    {
+      props.popoverComponent && <div className={'kt-toolbar-popover'} data-toolbar-no-context={true}></div>
+    }
   </div>;
 };
 
@@ -184,8 +187,7 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
   constructor(private element: HTMLElement, private actionId: string,  private readonly _setState, private _getState, private context: AppConfig, private getPopoverParent: () => HTMLElement, private popoverComponent?: React.FC, private popoverStyle?: IToolbarPopoverStyle) {
     if (this.popoverComponent) {
       this._popOverElement = popOverMap.get(actionId);
-      this.popOverContainer = document.createElement('div');
-      this.popOverContainer.classList.add('kt-toolbar-popover');
+      this.popOverContainer = element.querySelector('.kt-toolbar-popover')! as HTMLDivElement;
     }
   }
 
@@ -211,7 +213,8 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
       this._popOverElement = new Promise((resolve) => {
         const div = document.createElement('div');
         const C = this.popoverComponent!;
-        ReactDOM.render(<ConfigProvider value={this.context}>
+        ReactDOM.render(
+        <ConfigProvider value={this.context}>
           <C/>
         </ConfigProvider>, div, () => {
           resolve(div);

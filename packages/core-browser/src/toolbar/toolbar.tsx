@@ -113,7 +113,10 @@ export const ToolbarLocation = (props: IToolbarLocationProps & React.HTMLAttribu
 
   return <div {...props} className={classnames('kt-toolbar-location', props.className)} id={'toolbar-location-' + location} ref={container as any}
             onContextMenu={
-              (event) => {
+              (event: React.MouseEvent<HTMLElement>) => {
+                if (event.nativeEvent.composedPath().find((e) => (e as any).getAttribute && (e as any).getAttribute('data-toolbar-no-context'))) {
+                  return;
+                }
                 event.preventDefault();
                 const menus = menuService.createMenu(MenuId.KTToolbarLocationContext);
                 const menuNodes = generateCtxMenu({ menus });
