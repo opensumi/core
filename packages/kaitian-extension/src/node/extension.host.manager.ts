@@ -1,6 +1,6 @@
 import { Injectable } from '@ali/common-di';
 import { MaybePromise, Event, findFreePort } from '@ali/ide-core-common';
-import { IExtensionHostManager, Output } from '../common';
+import { IExtensionHostManager, Output, OutputType } from '../common';
 import * as assert from 'assert';
 import * as cp from 'child_process';
 import * as isRunning from 'is-running';
@@ -69,15 +69,15 @@ export class ExtensionHostManager implements IExtensionHostManager {
     const onStdout = Event.fromNodeEventEmitter<string>(extProcess.stdout, 'data');
     const onStderr = Event.fromNodeEventEmitter<string>(extProcess.stderr, 'data');
     const onOutput = Event.any(
-      Event.map(onStdout, (o) => ({ type: 'stdout', data: `%c${o}`, format: [''] })),
-      Event.map(onStderr, (o) => ({ type: 'stderr', data: `%c${o}`, format: ['color: red'] })),
+      Event.map(onStdout, (o) => ({ type: OutputType.STDOUT, data: `%c${o}`, format: [''] })),
+      Event.map(onStderr, (o) => ({ type: OutputType.STDERR, data: `%c${o}`, format: ['color: red'] })),
     );
 
     // Debounce all output, so we can render it in the Chrome console as a group
     const onDebouncedOutput = Event.debounce<Output>(onOutput, (r, o) => {
       return r
-        ? { data: r.data + o.data, format: [...r.format, ...o.format], type: [ r.type, o.type ].includes('stderr') ? 'stderr' : 'stdout' }
-        : { data: o.data, format: o.format };
+        ? { data: r.data + o.data, format: [...r.format, ...o.format], type: [ r.type, o.type ].includes(OutputType.STDERR) ? OutputType.STDERR : OutputType.STDOUT }
+        : { data: o.data, format: o.format, type: o.type };
     }, 100);
 
     onDebouncedOutput(listener);

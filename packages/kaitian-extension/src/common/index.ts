@@ -235,7 +235,12 @@ export interface IExtensionHostProfilerService {
   $saveLastProfile(filePath: string): Promise<void>;
 }
 
-export interface Output { type: 'stdout' | 'stderr'; data: string; format: string[]; }
+export enum OutputType {
+  STDOUT,
+  STDERR,
+}
+
+export interface Output { type: OutputType; data: string; format: string[]; }
 
 export const IExtensionHostManager = Symbol('IExtensionHostManager');
 
