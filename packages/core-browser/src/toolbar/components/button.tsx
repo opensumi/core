@@ -265,6 +265,11 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
             if (e.target && ele.contains(e.target as Node)) {
               return;
             }
+            const rect = ele.getBoundingClientRect();
+            if (rect.x <= e.clientX && rect.x + rect.width >= e.clientX && rect.y <= e.clientY && rect.y + rect.height >= e.clientY) {
+              // 点击在区域内，这里防止点击 target 已经被移除导致误判
+              return;
+            }
             this.hidePopOver();
           }));
           this._popOverClickOutsideDisposer = disposer;
