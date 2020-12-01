@@ -1,8 +1,9 @@
 import { Provider, Injectable, Autowired } from '@ali/common-di';
 import { BrowserModule, Domain, MonacoContribution, MonacoService, ServiceNames } from '@ali/ide-core-browser';
-import { IWorkspaceEditService } from '../common';
+import { IWorkspaceEditService, IWorkspaceFileService } from '../common';
 import { WorkspaceEditServiceImpl } from './workspace-edit.service';
 import { MonacoBulkEditService } from './bulk-edit.service';
+import { WorkspaceFileService } from './workspace-file.service';
 
 @Injectable()
 export class WorkspaceEditModule extends BrowserModule {
@@ -10,6 +11,10 @@ export class WorkspaceEditModule extends BrowserModule {
     {
       token: IWorkspaceEditService,
       useClass: WorkspaceEditServiceImpl,
+    },
+    {
+      token: IWorkspaceFileService,
+      useClass: WorkspaceFileService,
     },
     WorkspaceEditContribution,
   ];

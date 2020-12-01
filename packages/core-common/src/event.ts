@@ -7,6 +7,7 @@ import { onUnexpectedError } from './errors';
 import { once as onceFn } from './functional';
 import { DisposableStore, combinedDisposable, Disposable, IDisposable, toDisposable } from './disposable';
 import { LinkedList } from './linked-list';
+import { CancellationToken } from './cancellation';
 
 /**
  * To an event a function with one or zero parameters
@@ -20,9 +21,9 @@ export namespace Event {
   const _disposable = { dispose() { } };
   export const None: Event<any> = function () { return _disposable; };
 
-	/**
-	 * Given an event, returns another event which only fires once.
-	 */
+  /**
+   * Given an event, returns another event which only fires once.
+   */
   export function once<T>(event: Event<T>): Event<T> {
     return (listener, thisArgs = null, disposables?) => {
       // we need this, in case the event fires during the listener call
@@ -48,51 +49,51 @@ export namespace Event {
     };
   }
 
-	/**
-	 * Given an event and a `map` function, returns another event which maps each element
-	 * throught the mapping function.
-	 */
+  /**
+   * Given an event and a `map` function, returns another event which maps each element
+   * throught the mapping function.
+   */
   export function map<I, O>(event: Event<I>, map: (i: I) => O): Event<O> {
     return snapshot((listener, thisArgs = null, disposables?) => event(i => listener.call(thisArgs, map(i)), null, disposables));
   }
 
-	/**
-	 * Given an event and an `each` function, returns another identical event and calls
-	 * the `each` function per each element.
-	 */
+  /**
+   * Given an event and an `each` function, returns another identical event and calls
+   * the `each` function per each element.
+   */
   export function forEach<I>(event: Event<I>, each: (i: I) => void): Event<I> {
     return snapshot((listener, thisArgs = null, disposables?) => event(i => { each(i); listener.call(thisArgs, i); }, null, disposables));
   }
 
-	/**
-	 * Given an event and a `filter` function, returns another event which emits those
-	 * elements for which the `filter` function returns `true`.
-	 */
+  /**
+   * Given an event and a `filter` function, returns another event which emits those
+   * elements for which the `filter` function returns `true`.
+   */
   export function filter<T>(event: Event<T>, filter: (e: T) => boolean): Event<T>;
   export function filter<T, R>(event: Event<T | R>, filter: (e: T | R) => e is R): Event<R>;
   export function filter<T>(event: Event<T>, filter: (e: T) => boolean): Event<T> {
     return snapshot((listener, thisArgs = null, disposables?) => event(e => filter(e) && listener.call(thisArgs, e), null, disposables));
   }
 
-	/**
-	 * Given an event, returns the same event but typed as `Event<void>`.
-	 */
+  /**
+   * Given an event, returns the same event but typed as `Event<void>`.
+   */
   export function signal<T>(event: Event<T>): Event<void> {
     return event as Event<any> as Event<void>;
   }
 
-	/**
-	 * Given a collection of events, returns a single event which emits
-	 * whenever any of the provided events emit.
-	 */
+  /**
+   * Given a collection of events, returns a single event which emits
+   * whenever any of the provided events emit.
+   */
   export function any<T>(...events: Event<T>[]): Event<T> {
     return (listener, thisArgs = null, disposables?) => combinedDisposable(events.map(event => event(e => listener.call(thisArgs, e), null, disposables)));
   }
 
-	/**
-	 * Given an event and a `merge` function, returns another event which maps each element
-	 * and the cummulative result throught the `merge` function. Similar to `map`, but with memory.
-	 */
+  /**
+   * Given an event and a `merge` function, returns another event which maps each element
+   * and the cummulative result throught the `merge` function. Similar to `map`, but with memory.
+   */
   export function reduce<I, O>(event: Event<I>, merge: (last: O | undefined, event: I) => O, initial?: O): Event<O> {
     let output: O | undefined = initial;
 
@@ -102,11 +103,11 @@ export namespace Event {
     });
   }
 
-	/**
-	 * Given a chain of event processing functions (filter, map, etc), each
-	 * function will be invoked per event & per listener. Snapshotting an event
-	 * chain allows each function to be invoked just once per event.
-	 */
+  /**
+   * Given a chain of event processing functions (filter, map, etc), each
+   * function will be invoked per event & per listener. Snapshotting an event
+   * chain allows each function to be invoked just once per event.
+   */
   export function snapshot<T>(event: Event<T>): Event<T> {
     let listener: IDisposable;
     const emitter = new Emitter<T>({
@@ -121,15 +122,15 @@ export namespace Event {
     return emitter.event;
   }
 
-	/**
-	 * Debounces the provided event, given a `merge` function.
-	 *
-	 * @param event The input event.
-	 * @param merge The reducing function.
-	 * @param delay The debouncing delay in millis.
-	 * @param leading Whether the event should fire in the leading phase of the timeout.
-	 * @param leakWarningThreshold The leak warning threshold override.
-	 */
+  /**
+   * Debounces the provided event, given a `merge` function.
+   *
+   * @param event The input event.
+   * @param merge The reducing function.
+   * @param delay The debouncing delay in millis.
+   * @param leading Whether the event should fire in the leading phase of the timeout.
+   * @param leakWarningThreshold The leak warning threshold override.
+   */
   export function debounce<T>(event: Event<T>, merge: (last: T | undefined, event: T) => T, delay?: number, leading?: boolean, leakWarningThreshold?: number): Event<T>;
   export function debounce<I, O>(event: Event<I>, merge: (last: O | undefined, event: I) => O, delay?: number, leading?: boolean, leakWarningThreshold?: number): Event<O>;
   export function debounce<I, O>(event: Event<I>, merge: (last: O | undefined, event: I) => O, delay: number = 100, leading = false, leakWarningThreshold?: number): Event<O> {
@@ -171,20 +172,20 @@ export namespace Event {
     return emitter.event;
   }
 
-	/**
-	 * Given an event, it returns another event which fires only once and as soon as
-	 * the input event emits. The event data is the number of millis it took for the
-	 * event to fire.
-	 */
+  /**
+   * Given an event, it returns another event which fires only once and as soon as
+   * the input event emits. The event data is the number of millis it took for the
+   * event to fire.
+   */
   export function stopwatch<T>(event: Event<T>): Event<number> {
     const start = new Date().getTime();
     return map(once(event), _ => new Date().getTime() - start);
   }
 
-	/**
-	 * Given an event, it returns another event which fires only when the event
-	 * element changes.
-	 */
+  /**
+   * Given an event, it returns another event which fires only when the event
+   * element changes.
+   */
   export function latch<T>(event: Event<T>): Event<T> {
     let firstCall = true;
     let cache: T;
@@ -197,28 +198,28 @@ export namespace Event {
     });
   }
 
-	/**
-	 * Buffers the provided event until a first listener comes
-	 * along, at which point fire all the events at once and
-	 * pipe the event from then on.
-	 *
-	 * ```typescript
-	 * const emitter = new Emitter<number>();
-	 * const event = emitter.event;
-	 * const bufferedEvent = buffer(event);
-	 *
-	 * emitter.fire(1);
-	 * emitter.fire(2);
-	 * emitter.fire(3);
-	 * // nothing...
-	 *
-	 * const listener = bufferedEvent(num => console.log(num));
-	 * // 1, 2, 3
-	 *
-	 * emitter.fire(4);
-	 * // 4
-	 * ```
-	 */
+  /**
+   * Buffers the provided event until a first listener comes
+   * along, at which point fire all the events at once and
+   * pipe the event from then on.
+   *
+   * ```typescript
+   * const emitter = new Emitter<number>();
+   * const event = emitter.event;
+   * const bufferedEvent = buffer(event);
+   *
+   * emitter.fire(1);
+   * emitter.fire(2);
+   * emitter.fire(3);
+   * // nothing...
+   *
+   * const listener = bufferedEvent(num => console.log(num));
+   * // 1, 2, 3
+   *
+   * emitter.fire(4);
+   * // 4
+   * ```
+   */
   export function buffer<T>(event: Event<T>, nextTick = false, _buffer: T[] = []): Event<T> {
     let buffer: T[] | null = _buffer.slice();
 
@@ -436,22 +437,22 @@ class LeakageMonitor {
  * The Emitter can be used to expose an Event to the public
  * to fire it from the insides.
  * Sample:
-	class Document {
+  class Document {
 
-		private _onDidChange = new Emitter<(value:string)=>any>();
+    private _onDidChange = new Emitter<(value:string)=>any>();
 
-		public onDidChange = this._onDidChange.event;
+    public onDidChange = this._onDidChange.event;
 
-		// getter-style
-		// get onDidChange(): Event<(value:string)=>any> {
-		// 	return this._onDidChange.event;
-		// }
+    // getter-style
+    // get onDidChange(): Event<(value:string)=>any> {
+    // 	return this._onDidChange.event;
+    // }
 
-		private _doIt() {
-			//...
-			this._onDidChange.fire(value);
-		}
-	}
+    private _doIt() {
+      //...
+      this._onDidChange.fire(value);
+    }
+  }
  */
 
 export interface IAsyncResult<T> {
@@ -698,57 +699,69 @@ export interface WaitUntilEvent {
 
 export namespace WaitUntilEvent {
   export async function fire<T extends WaitUntilEvent>(
-      emitter: Emitter<T>,
-      event: Pick<T, Exclude<keyof T, 'waitUntil'>>,
-      timeout: number | undefined = undefined
+    emitter: Emitter<T>,
+    event: Pick<T, Exclude<keyof T, 'waitUntil'>>,
+    timeout: number | undefined = undefined
   ): Promise<void> {
-      const waitables: Promise<void>[] = [];
-      const asyncEvent = Object.assign(event, {
-          waitUntil: (thenable: Promise<any>) => {
-              if (Object.isFrozen(waitables)) {
-                  throw new Error('waitUntil cannot be called asynchronously.');
-              }
-              waitables.push(thenable);
-          }
-      }) as T;
-      emitter.fire(asyncEvent);
-      // Asynchronous calls to `waitUntil` should fail.
-      Object.freeze(waitables);
-      delete asyncEvent['waitUntil'];
-      if (!waitables.length) {
-          return;
+    const waitables: Promise<void>[] = [];
+    const asyncEvent = Object.assign(event, {
+      waitUntil: (thenable: Promise<any>) => {
+        if (Object.isFrozen(waitables)) {
+          throw new Error('waitUntil cannot be called asynchronously.');
+        }
+        waitables.push(thenable);
       }
-      if (timeout !== undefined) {
-          await Promise.race([Promise.all(waitables), new Promise(resolve => setTimeout(resolve, timeout))]);
-      } else {
-          await Promise.all(waitables);
-      }
+    }) as T;
+    emitter.fire(asyncEvent);
+    // Asynchronous calls to `waitUntil` should fail.
+    Object.freeze(waitables);
+    delete asyncEvent['waitUntil'];
+    if (!waitables.length) {
+      return;
+    }
+    if (timeout !== undefined) {
+      await Promise.race([Promise.all(waitables), new Promise(resolve => setTimeout(resolve, timeout))]);
+    } else {
+      await Promise.all(waitables);
+    }
   }
 }
 
 export class AsyncEmitter<T extends WaitUntilEvent> extends Emitter<T> {
 
-  private _asyncDeliveryQueue: [Listener<T>, T, Promise<any>[]][];
+  private _asyncDeliveryQueue?: LinkedList<[Listener<T>, Omit<T, 'waitUntil'>]>;
 
-  async fireAsync(eventFn: (thenables: Promise<any>[], listener: Function) => T): Promise<void> {
+  async fireAsync(data: Omit<T, 'waitUntil'>, token: CancellationToken, promiseJoin?: (p: Promise<any>, listener: Function) => Promise<any>): Promise<void> {
     if (!this._listeners) {
       return;
     }
 
-    // put all [listener,event]-pairs into delivery queue
-    // then emit all event. an inner/nested event might be
-    // the driver of this
     if (!this._asyncDeliveryQueue) {
-      this._asyncDeliveryQueue = [];
+      this._asyncDeliveryQueue = new LinkedList();
     }
 
     for (let iter = this._listeners.iterator(), e = iter.next(); !e.done; e = iter.next()) {
-      const thenables: Promise<void>[] = [];
-      this._asyncDeliveryQueue.push([e.value, eventFn(thenables, typeof e.value === 'function' ? e.value : e.value[0]), thenables]);
+      this._asyncDeliveryQueue.push([e.value, data]);
     }
 
-    while (this._asyncDeliveryQueue.length > 0) {
-      const [listener, event, thenables] = this._asyncDeliveryQueue.shift()!;
+    while (this._asyncDeliveryQueue.size > 0 && !token.isCancellationRequested) {
+
+      const [listener, data] = this._asyncDeliveryQueue.shift()!;
+      const thenables: Promise<any>[] = [];
+
+      const event = <T>{
+        ...data,
+        waitUntil: (p: Promise<any>): void => {
+          if (Object.isFrozen(thenables)) {
+            throw new Error('waitUntil can NOT be called asynchronous');
+          }
+          if (promiseJoin) {
+            p = promiseJoin(p, typeof listener === 'function' ? listener : listener[0]);
+          }
+          thenables.push(p);
+        }
+      };
+
       try {
         if (typeof listener === 'function') {
           listener.call(undefined, event);
@@ -763,7 +776,7 @@ export class AsyncEmitter<T extends WaitUntilEvent> extends Emitter<T> {
       // freeze thenables-collection to enforce sync-calls to
       // wait until and then wait for all thenables to resolve
       Object.freeze(thenables);
-      await Promise.all(thenables);
+      await Promise.all(thenables).catch(e => onUnexpectedError(e));
     }
   }
 }

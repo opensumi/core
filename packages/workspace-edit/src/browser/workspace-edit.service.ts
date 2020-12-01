@@ -1,6 +1,6 @@
-import { IResourceTextEdit, ITextEdit, IWorkspaceEditService, IWorkspaceEdit, IResourceFileEdit, WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '../common';
+import { IResourceTextEdit, ITextEdit, IWorkspaceEditService, IWorkspaceEdit, IResourceFileEdit, WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent, IWorkspaceFileService } from '../common';
 import { URI, IEventBus, isWindows, isUndefined } from '@ali/ide-core-browser';
-import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+import { FileSystemError } from '@ali/ide-file-service/lib/common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EndOfLineSequence, WorkbenchEditorService, EOL } from '@ali/ide-editor';
 import { runInAction } from 'mobx';
@@ -18,8 +18,8 @@ export class WorkspaceEditServiceImpl implements IWorkspaceEditService {
   @Autowired(IEditorDocumentModelService)
   documentModelService: IEditorDocumentModelService;
 
-  @Autowired(IFileServiceClient)
-  fileSystemService: IFileServiceClient;
+  @Autowired(IWorkspaceFileService)
+  workspaceFileService: IWorkspaceFileService;
 
   @Autowired()
   editorService: WorkbenchEditorService;
@@ -32,7 +32,7 @@ export class WorkspaceEditServiceImpl implements IWorkspaceEditService {
     edit.edits.forEach((edit) => {
       bulkEdit.add(edit);
     });
-    await bulkEdit.apply(this.documentModelService, this.fileSystemService, this.editorService, this.eventBus);
+    await bulkEdit.apply(this.documentModelService, this.workspaceFileService, this.editorService, this.eventBus);
     this.editStack.push(bulkEdit);
   }
 
@@ -47,7 +47,7 @@ export class BulkEdit {
 
   private edits: WorkspaceEdit[] = [];
 
-  async apply(documentModelService: IEditorDocumentModelService, fileSystemService: IFileServiceClient, editorService: WorkbenchEditorService, eventBus: IEventBus) {
+  async apply(documentModelService: IEditorDocumentModelService, fileSystemService: IWorkspaceFileService, editorService: WorkbenchEditorService, eventBus: IEventBus) {
     for (const edit of this.edits) {
       if (edit instanceof ResourceFileEdit) {
         await edit.apply(editorService, fileSystemService, documentModelService, eventBus);
@@ -191,7 +191,6 @@ export class ResourceFileEdit implements IResourceFileEdit {
   options: {
     overwrite?: boolean | undefined;
     ignoreIfNotExists?: boolean | undefined;
-    ignoreIfExists?: boolean | undefined;
     recursive?: boolean | undefined;
     showInEditor?: boolean;
     isDirectory?: boolean;
@@ -260,21 +259,17 @@ export class ResourceFileEdit implements IResourceFileEdit {
     }
   }
 
-  async apply(editorService: WorkbenchEditorService, fileServiceClient: IFileServiceClient, documentModelService: IEditorDocumentModelService, eventBus: IEventBus) {
+  async apply(editorService: WorkbenchEditorService, fileServiceClient: IWorkspaceFileService, documentModelService: IEditorDocumentModelService, eventBus: IEventBus) {
     const options = this.options || {};
 
     if (this.newUri && this.oldUri) {
 
-      if (options.overwrite === undefined && options.ignoreIfExists && await fileServiceClient.access(this.newUri.toString())) {
-        return; // not overwriting, but ignoring, and the target file exists
-      }
-
       if (this.options.copy) {
-        await fileServiceClient.copy(this.oldUri.toString(), this.newUri.toString(), options);
+        await fileServiceClient.copy([{ source: this.oldUri.codeUri, target: this.newUri.codeUri}], options);
 
       } else {
         // rename
-        await fileServiceClient.move(this.oldUri.toString(), this.newUri.toString(), options);
+        await fileServiceClient.move([{ source: this.oldUri.codeUri, target: this.newUri.codeUri}], options);
 
         await this.notifyEditor(editorService, documentModelService);
 
@@ -288,21 +283,20 @@ export class ResourceFileEdit implements IResourceFileEdit {
 
     } else if (!this.newUri && this.oldUri) {
       // 删除文件
-      if (await fileServiceClient.access(this.oldUri.toString())) {
+      try {
+        // electron windows下moveToTrash大量文件会导致IDE卡死，如果检测到这个情况就不使用moveToTrash
+        await fileServiceClient.delete([this.oldUri], { useTrash: !(isWindows && this.oldUri.path.name === 'node_modules') });
         // 默认recursive
         await editorService.close(this.oldUri, true);
-        // electron windows下moveToTrash大量文件会导致IDE卡死，如果检测到这个情况就不使用moveToTrash
-        await fileServiceClient.delete(this.oldUri.toString(), { moveToTrash: !(isWindows && this.oldUri.path.name === 'node_modules') });
         eventBus.fire(new WorkspaceEditDidDeleteFileEvent({ oldUri: this.oldUri}));
-      } else if (!options.ignoreIfNotExists) {
-        throw new Error(`${this.oldUri} 不存在`);
+      } catch (err) {
+        if (!(FileSystemError.FileNotFound.is(err) && options.ignoreIfNotExists)) {
+          throw err;
+        }
       }
     } else if (this.newUri && !this.oldUri) {
       // 创建文件
-      if (options.overwrite === undefined && options.ignoreIfExists && await fileServiceClient.access(this.newUri.toString())) {
-        return; // not overwriting, but ignoring, and the target file exists
-      }
-      await fileServiceClient.createFile(this.newUri.toString(), { content: '', overwrite: options.overwrite });
+      await fileServiceClient.create(this.newUri, '', { overwrite: options.overwrite });
       if (options.showInEditor) {
         editorService.open(this.newUri);
       }

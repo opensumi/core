@@ -1,6 +1,6 @@
 import { IDisposable } from '.';
 
-export const enum ProgressLocation {
+export enum ProgressLocation {
   Explorer = 1,
   Scm = 3,
   Extensions = 5,

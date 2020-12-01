@@ -6,41 +6,41 @@ import { getDebugLogger } from './log';
 export type MaybePromise<T> = T | Promise<T> | PromiseLike<T>;
 
 export interface CancelablePromise<T> extends Promise<T> {
-	cancel(): void;
+  cancel(): void;
 }
 
 
 export function createCancelablePromise<T>(callback: (token: CancellationToken) => Promise<T>): CancelablePromise<T> {
-	const source = new CancellationTokenSource();
+  const source = new CancellationTokenSource();
 
-	const thenable = callback(source.token);
-	const promise = new Promise<T>((resolve, reject) => {
-		source.token.onCancellationRequested(() => {
-			reject(canceled());
-		});
-		Promise.resolve(thenable).then(value => {
-			source.dispose();
-			resolve(value);
-		}, err => {
-			source.dispose();
-			reject(err);
-		});
-	});
+  const thenable = callback(source.token);
+  const promise = new Promise<T>((resolve, reject) => {
+    source.token.onCancellationRequested(() => {
+      reject(canceled());
+    });
+    Promise.resolve(thenable).then(value => {
+      source.dispose();
+      resolve(value);
+    }, err => {
+      source.dispose();
+      reject(err);
+    });
+  });
 
-	return <CancelablePromise<T>>new class {
-		cancel() {
-			source.cancel();
-		}
-		then<TResult1 = T, TResult2 = never>(resolve?: ((value: T) => TResult1 | Promise<TResult1>) | undefined | null, reject?: ((reason: any) => TResult2 | Promise<TResult2>) | undefined | null): Promise<TResult1 | TResult2> {
-			return promise.then(resolve, reject);
-		}
-		catch<TResult = never>(reject?: ((reason: any) => TResult | Promise<TResult>) | undefined | null): Promise<T | TResult> {
-			return this.then(undefined, reject);
-		}
-		finally(onfinally?: (() => void) | undefined | null): Promise<T> {
-			return promise.finally(onfinally);
-		}
-	};
+  return <CancelablePromise<T>>new class {
+    cancel() {
+      source.cancel();
+    }
+    then<TResult1 = T, TResult2 = never>(resolve?: ((value: T) => TResult1 | Promise<TResult1>) | undefined | null, reject?: ((reason: any) => TResult2 | Promise<TResult2>) | undefined | null): Promise<TResult1 | TResult2> {
+      return promise.then(resolve, reject);
+    }
+    catch<TResult = never>(reject?: ((reason: any) => TResult | Promise<TResult>) | undefined | null): Promise<T | TResult> {
+      return this.then(undefined, reject);
+    }
+    finally(onfinally?: (() => void) | undefined | null): Promise<T> {
+      return promise.finally(onfinally);
+    }
+  };
 }
 
 export function hookCancellationToken<T>(token: CancellationToken, promise: Promise<T>): PromiseLike<T> {
@@ -274,25 +274,39 @@ export class ThrottledDelayer<T> {
 }
 
 export function isThenable<T>(obj: any): obj is Promise<T> {
-	return obj && typeof (<Promise<any>>obj).then === 'function';
+  return obj && typeof (<Promise<any>>obj).then === 'function';
+}
+
+export function raceTimeout<T>(promise: Promise<T>, timeout: number, onTimeout?: () => void): Promise<T | undefined> {
+  let promiseResolve: ((value: T | undefined) => void) | undefined = undefined;
+
+  const timer = setTimeout(() => {
+    promiseResolve?.(undefined);
+    onTimeout?.();
+  }, timeout);
+
+  return Promise.race([
+    promise.finally(() => clearTimeout(timer)),
+    new Promise<T | undefined>(resolve => promiseResolve = resolve)
+  ]);
 }
 
 export function asPromise<T>(callback: () => T | Thenable<T>): Promise<T> {
-	return new Promise<T>((resolve, reject) => {
-		const item = callback();
-		if (isThenable<T>(item)) {
-			item.then(resolve, reject);
-		} else {
-			resolve(item);
-		}
-	});
+  return new Promise<T>((resolve, reject) => {
+    const item = callback();
+    if (isThenable<T>(item)) {
+      item.then(resolve, reject);
+    } else {
+      resolve(item);
+    }
+  });
 }
 
 //#region -- run on idle tricks ------------
 
 export interface IdleDeadline {
-	readonly didTimeout: boolean;
-	timeRemaining(): DOMHighResTimeStamp;
+  readonly didTimeout: boolean;
+  timeRemaining(): DOMHighResTimeStamp;
 }
 /**
  * Execute the callback the next time the browser is idle
@@ -303,39 +317,39 @@ declare function requestIdleCallback(callback: (args: IdleDeadline) => void, opt
 declare function cancelIdleCallback(handle: number): void;
 
 (function () {
-	if (typeof requestIdleCallback !== 'function' || typeof cancelIdleCallback !== 'function') {
-		const dummyIdle: IdleDeadline = Object.freeze({
-			didTimeout: true,
-			timeRemaining() { return 15; }
-		});
-		runWhenIdle = (runner) => {
-			const handle = setTimeout(() => runner(dummyIdle));
-			let disposed = false;
-			return {
-				dispose() {
-					if (disposed) {
-						return;
-					}
-					disposed = true;
-					clearTimeout(handle);
-				}
-			};
-		};
-	} else {
-		runWhenIdle = (runner, timeout?) => {
-			const handle: number = requestIdleCallback(runner, typeof timeout === 'number' ? { timeout } : undefined);
-			let disposed = false;
-			return {
-				dispose() {
-					if (disposed) {
-						return;
-					}
-					disposed = true;
-					cancelIdleCallback(handle);
-				}
-			};
-		};
-	}
+  if (typeof requestIdleCallback !== 'function' || typeof cancelIdleCallback !== 'function') {
+    const dummyIdle: IdleDeadline = Object.freeze({
+      didTimeout: true,
+      timeRemaining() { return 15; }
+    });
+    runWhenIdle = (runner) => {
+      const handle = setTimeout(() => runner(dummyIdle));
+      let disposed = false;
+      return {
+        dispose() {
+          if (disposed) {
+            return;
+          }
+          disposed = true;
+          clearTimeout(handle);
+        }
+      };
+    };
+  } else {
+    runWhenIdle = (runner, timeout?) => {
+      const handle: number = requestIdleCallback(runner, typeof timeout === 'number' ? { timeout } : undefined);
+      let disposed = false;
+      return {
+        dispose() {
+          if (disposed) {
+            return;
+          }
+          disposed = true;
+          cancelIdleCallback(handle);
+        }
+      };
+    };
+  }
 })();
 
 /**
@@ -344,80 +358,80 @@ declare function cancelIdleCallback(handle: number): void;
  */
 export class IdleValue<T> {
 
-	private readonly _executor: () => void;
-	private readonly _handle: IDisposable;
+  private readonly _executor: () => void;
+  private readonly _handle: IDisposable;
 
-	private _didRun: boolean = false;
-	private _value?: T;
-	private _error: any;
+  private _didRun: boolean = false;
+  private _value?: T;
+  private _error: any;
 
-	constructor(executor: () => T) {
-		this._executor = () => {
-			try {
-				this._value = executor();
-			} catch (err) {
-				this._error = err;
-			} finally {
-				this._didRun = true;
-			}
-		};
-		this._handle = runWhenIdle(() => this._executor());
-	}
+  constructor(executor: () => T) {
+    this._executor = () => {
+      try {
+        this._value = executor();
+      } catch (err) {
+        this._error = err;
+      } finally {
+        this._didRun = true;
+      }
+    };
+    this._handle = runWhenIdle(() => this._executor());
+  }
 
-	dispose(): void {
-		this._handle.dispose();
-	}
+  dispose(): void {
+    this._handle.dispose();
+  }
 
-	getValue(): T {
-		if (!this._didRun) {
-			this._handle.dispose();
-			this._executor();
-		}
-		if (this._error) {
-			throw this._error;
-		}
-		return this._value!;
-	}
+  getValue(): T {
+    if (!this._didRun) {
+      this._handle.dispose();
+      this._executor();
+    }
+    if (this._error) {
+      throw this._error;
+    }
+    return this._value!;
+  }
 }
 
 export type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
 export function first<T>(promiseFactories: ITask<Promise<T>>[], shouldStop: (t: T) => boolean = t => !!t, defaultValue: T | null = null): Promise<T | null> {
-	let index = 0;
-	const len = promiseFactories.length;
+  let index = 0;
+  const len = promiseFactories.length;
 
-	const loop: () => Promise<T | null> = () => {
-		if (index >= len) {
-			return Promise.resolve(defaultValue);
-		}
+  const loop: () => Promise<T | null> = () => {
+    if (index >= len) {
+      return Promise.resolve(defaultValue);
+    }
 
-		const factory = promiseFactories[index++];
-		const promise = Promise.resolve(factory());
+    const factory = promiseFactories[index++];
+    const promise = Promise.resolve(factory());
 
-		return promise.then(result => {
-			if (shouldStop(result)) {
-				return Promise.resolve(result);
-			}
+    return promise.then(result => {
+      if (shouldStop(result)) {
+        return Promise.resolve(result);
+      }
 
-			return loop();
-		});
-	};
+      return loop();
+    });
+  };
 
-	return loop();
+  return loop();
 }
 
 export function timeout(millis: number): CancelablePromise<void>;
 export function timeout(millis: number, token: CancellationToken): Promise<void>;
 export function timeout(millis: number, token?: CancellationToken): CancelablePromise<void> | Promise<void> {
-	if (!token) {
-		return createCancelablePromise(token => timeout(millis, token));
-	}
+  if (!token) {
+    return createCancelablePromise(token => timeout(millis, token));
+  }
 
-	return new Promise((resolve, reject) => {
-		const handle = setTimeout(resolve, millis);
-		token.onCancellationRequested(() => {
-			clearTimeout(handle);
-			reject(canceled());
-		});
-	});
+  return new Promise((resolve, reject) => {
+    const handle = setTimeout(resolve, millis);
+    token.onCancellationRequested(() => {
+      clearTimeout(handle);
+      reject(canceled());
+    });
+  });
 }
