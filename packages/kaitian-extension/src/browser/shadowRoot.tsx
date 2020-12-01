@@ -101,7 +101,7 @@ const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, ex
           setThemeType(e.type);
         }
       }));
-      return disposables.dispose;
+      return disposables.dispose.bind(disposables);
     }
   }, []);
 

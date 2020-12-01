@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { IToolbarActionReactElement, IToolbarActionElementProps, IToolbarActionBtnStyle, IToolbarActionBtnProps, IToolbarActionBtnDelegate, IToolbarActionBtnState, IToolbarPopoverStyle } from '../types';
+import { Injectable, Autowired } from '@ali/common-di';
+import { IToolbarActionReactElement, IToolbarActionElementProps, IToolbarActionBtnProps, IToolbarActionBtnDelegate, IToolbarActionBtnState, IToolbarPopoverStyle, IToolbarPopoverRegistry } from '../types';
 import { useInjectable } from '../../react-hooks';
 import { BasicEvent, Disposable, Emitter, IDisposable } from '@ali/ide-core-common';
 import * as classnames from 'classnames';
@@ -50,12 +51,22 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
     if (ref.current && props.delegate) {
       // 如果是在 dropdown 中，popover 元素将显示在 more 按钮上
       const getPopoverParent = () => (inDropDownRef.current ? document.querySelector(`#toolbar-location-${props.location} .kt-toolbar-more`) : ref.current) as HTMLElement;
-      delegate.current = new ToolbarBtnDelegate(ref.current, props.id, (state, title) => {
-        setViewState(state);
-        setTitle(title);
-      }, () => {
-        return viewState;
-      }, context,  getPopoverParent , props.popoverComponent, props.popoverStyle);
+      delegate.current = context.injector.get(ToolbarBtnDelegate, [
+        ref.current,
+        props.id,
+        (state, title) => {
+          setViewState(state);
+          setTitle(title);
+        },
+        () => {
+          return viewState;
+        },
+        context,
+        getPopoverParent,
+        props.popoverComponent,
+        props.popoverStyle,
+        props.popoverId,
+      ]);
       props.delegate(delegate.current);
       disposer.addDispose(delegate.current);
       disposer.addDispose({
@@ -151,6 +162,30 @@ export class ToolbarActionBtnClickEvent extends BasicEvent<{
 
 const popOverMap = new Map<string, Promise<HTMLDivElement>>();
 
+const PopOverComponentWrapper: React.FC<{ delegate: IToolbarActionBtnDelegate }> = (props) => {
+  const [context, setContext] = React.useState();
+
+  React.useEffect(() => {
+    const disposable = props.delegate.onChangeContext((newValue) => {
+      setContext(newValue);
+    });
+    return () => {
+      disposable.dispose();
+    };
+  }, []);
+
+  const childrenWithProps = React.Children.map(
+    props.children,
+    (child) => React.isValidElement(child) ? React.cloneElement(child, {
+      context,
+    }) : null,
+  );
+  return (
+    <>{childrenWithProps}</>
+  );
+};
+
+@Injectable({ multiple: true })
 class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
 
   _onClick = new Emitter<React.MouseEvent<HTMLDivElement>>();
@@ -165,11 +200,17 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
   _onChangeState = new Emitter<{from: string, to: string}>();
   onChangeState = this._onChangeState.event;
 
+  private onChangeContextEvent = new Emitter<any>();
+  public onChangeContext = this.onChangeContextEvent.event;
+
   private popOverContainer: HTMLDivElement | undefined;
 
   private _popOverElement: Promise<HTMLDivElement> | undefined;
 
   private _popOverClickOutsideDisposer: IDisposable | undefined;
+
+  @Autowired(IToolbarPopoverRegistry)
+  protected readonly toolbarPopover: IToolbarPopoverRegistry;
 
   dispose() {
     this._onClick.dispose();
@@ -184,17 +225,41 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
     }
   }
 
-  constructor(private element: HTMLElement, private actionId: string,  private readonly _setState, private _getState, private context: AppConfig, private getPopoverParent: () => HTMLElement, private popoverComponent?: React.FC, private popoverStyle?: IToolbarPopoverStyle) {
+  constructor(
+    private element: HTMLElement,
+    private actionId: string,
+    private readonly _setState,
+    private _getState,
+    private context: AppConfig,
+    private getPopoverParent: () => HTMLElement,
+    private popoverComponent?: React.FC,
+    private popoverStyle?: IToolbarPopoverStyle,
+    private popoverId?: string,
+  ) {
     if (this.popoverComponent) {
       this._popOverElement = popOverMap.get(actionId);
       this.popOverContainer = element.querySelector('.kt-toolbar-popover')! as HTMLDivElement;
     }
+    this.toolbarPopover.onDidRegisterPopoverEvent((e) => {
+      if (e === this.popoverId) {
+        this.popoverComponent = this.toolbarPopover.getComponent(this.popoverId);
+        // 已经激活的状态下重新激活一次，如果没有激活过则不动
+        if (this._popOverElement) {
+          this.hidePopOver()
+            .then(() => this.showPopOver());
+        }
+      }
+    });
   }
 
   setState(to, title?) {
     const from = this._getState();
     this._setState(to, title);
     this._onChangeState.fire({from, to});
+  }
+
+  setContext(context: any) {
+    this.onChangeContextEvent.fire(context);
   }
 
   getRect() {
@@ -213,9 +278,10 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
       this._popOverElement = new Promise((resolve) => {
         const div = document.createElement('div');
         const C = this.popoverComponent!;
-        ReactDOM.render(
-        <ConfigProvider value={this.context}>
-          <C/>
+        ReactDOM.render(<ConfigProvider value={this.context}>
+          <PopOverComponentWrapper delegate={this}>
+            <C />
+          </PopOverComponentWrapper>
         </ConfigProvider>, div, () => {
           resolve(div);
         });
@@ -284,7 +350,9 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
   async hidePopOver() {
     if (this._popOverElement) {
       const ele = await this._popOverElement;
+      ReactDOM.unmountComponentAtNode(ele);
       ele.remove();
+      this._popOverElement = undefined;
     }
     this.popOverContainer && this.popOverContainer.classList.remove('kt-toolbar-popover-visible');
   }

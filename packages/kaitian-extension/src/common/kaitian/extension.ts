@@ -3,6 +3,7 @@ import { ThemeType } from '@ali/ide-theme';
 
 import { IExtensionContributions } from '../vscode/extension';
 import { ITabBarViewContribution } from '../../browser/kaitian-browser/types';
+import { IToolbarButtonContribution, IToolbarSelectContribution } from '../../browser/kaitian/types';
 
 export interface IContributeMenubarItem extends Omit<IMenubarItem, 'label'> {
   title: IMenubarItem['label'];
@@ -31,6 +32,9 @@ export interface IKaitianExtensionContributions extends IExtensionContributions 
       type: string;
       view: ITabBarViewContribution[];
     };
+  };
+  toolbar?: {
+    actions?: Array<IToolbarButtonContribution | IToolbarSelectContribution>;
   };
   viewsProxies?: string[];
   workerMain?: string;

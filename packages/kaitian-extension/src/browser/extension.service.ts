@@ -46,6 +46,7 @@ import {
   IDisposable,
   CorePreferences,
   ExtensionActivateEvent,
+  IToolbarPopoverRegistry,
 } from '@ali/ide-core-browser';
 import { isEmptyObject } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -112,6 +113,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private extensionCandidate: string[] = [];
   private extraMetadata: IExtraMetaData = {};
   private protocol: RPCProtocol;
+
+  @Autowired(IToolbarPopoverRegistry)
+  protected readonly toolbarPopover: IToolbarPopoverRegistry;
 
   @Autowired(ExtensionNodeServiceServerPath)
   private extensionNodeService: IExtensionNodeClientService;
@@ -780,12 +784,12 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       const absolutePath = new Path(extension.path).join(contributes.browserMain).toString();
       const extUri = new URI(absolutePath).scheme ? new URI(absolutePath) : URI.file(absolutePath);
       const browserModuleUri = await this.staticResourceService.resolveStaticResource(extUri);
+      const { moduleExports, proxiedHead } = await this.getExtensionModuleExports(browserModuleUri.toString(), extension);
       if (contributes.browserViews) {
         const { browserViews } = contributes;
         if (this.appConfig.useExperimentalShadowDom) {
           this.registerPortalShadowRoot(extension.id);
         }
-        const { moduleExports, proxiedHead } = await this.getExtensionModuleExports(browserModuleUri.toString(), extension);
         const viewsConfig = Object.keys(browserViews).reduce((config, location) => {
           config[location] = {
             type: this.getRegisterViewKind(location as KtViewLocation),
@@ -800,6 +804,25 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         }, {});
         this.registerBrowserComponent(viewsConfig, this.extensionMap.get(extension.path)!);
       }
+
+      if (contributes.toolbar && contributes.toolbar?.actions) {
+        for (const action of contributes.toolbar.actions) {
+          if (action.type === 'button' && action.popoverComponent) {
+            const popoverComponent = moduleExports[action.popoverComponent];
+            if (!popoverComponent) {
+              console.error(`Can not find CustomPopover from extension ${extension.id}, id: ${action.popoverComponent}`);
+              continue;
+            }
+            if (this.appConfig.useExperimentalShadowDom) {
+              const shadowComponent = (props) => getShadowRoot(popoverComponent, extension, props, action.popoverComponent, proxiedHead);
+              this.toolbarPopover.registerComponent(`${extension.id}:${action.popoverComponent}`, shadowComponent);
+            } else {
+              this.toolbarPopover.registerComponent(`${extension.id}:${action.popoverComponent}`, popoverComponent);
+            }
+          }
+        }
+      }
+
       return;
     }
   }

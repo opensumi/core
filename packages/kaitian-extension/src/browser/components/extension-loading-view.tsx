@@ -3,8 +3,8 @@ import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
 import { formatLocalize } from '@ali/ide-core-browser';
 import * as styles from './extension-tree-view.module.less';
 
-export const ExtensionLoadingView = () => {
-  return <div className={ styles.kt_extension_view }>
+export const ExtensionLoadingView = ({ style }: { style?: React.CSSProperties }) => {
+  return <div style={style || {}} className={ styles.kt_extension_view }>
     <ProgressBar loading />
   </div>;
 };

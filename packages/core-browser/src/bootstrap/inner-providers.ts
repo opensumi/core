@@ -50,13 +50,14 @@ import { ToolbarActionService, IToolbarActionService } from '../menu/next/toolba
 import { IProgressService } from '../progress';
 import { ProgressService } from '../progress/progress.service';
 import { NextToolbarRegistryImpl, ToolbarClientAppContribution } from '../toolbar/toolbar.registry';
-import { IToolbarRegistry, ToolBarActionContribution } from '../toolbar';
+import { IToolbarPopoverRegistry, IToolbarRegistry, ToolBarActionContribution } from '../toolbar';
 import { FsProviderContribution } from '../fs';
 import { IOpenerService } from '../opener';
 import { OpenerService } from '../opener/opener.service';
 import { IWindowService } from '../window';
 import { WindowService } from '../window/window.service';
 import { IClipboardService, BrowserClipboardService } from '../services/clipboard.service';
+import { ToolbarPopoverRegistry } from '../toolbar/toolbar.popover.registry';
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider
@@ -164,6 +165,10 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: IToolbarRegistry,
       useClass: NextToolbarRegistryImpl,
+    },
+    {
+      token: IToolbarPopoverRegistry,
+      useClass: ToolbarPopoverRegistry,
     },
     ToolbarClientAppContribution,
     {

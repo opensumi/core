@@ -10,6 +10,8 @@ export interface IToolbarButtonActionHandle {
   onStateChanged: Event<{from: string, to: string}>;
 
   showPopover(): Promise<void>;
+
+  setContext(context: any): void;
 }
 
 export interface IToolbarSelectActionHandle<T> {

@@ -1,10 +1,11 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { IToolbarActionBtnDelegate, IToolbarRegistry, createToolbarActionBtn, CommandService, CommandRegistry, IDisposable, IToolbarActionBtnState, IToolbarActionSelectDelegate, createToolbarActionSelect } from '@ali/ide-core-browser';
+import { IToolbarActionBtnDelegate, IToolbarRegistry, createToolbarActionBtn, CommandService, CommandRegistry, IDisposable, IToolbarActionBtnState, IToolbarActionSelectDelegate, createToolbarActionSelect, IEventBus, ExtensionActivateEvent, IToolbarPopoverRegistry } from '@ali/ide-core-browser';
 import { IToolbarButtonContribution, IToolbarSelectContribution } from './types';
 import { IIconService, IconType } from '@ali/ide-theme';
 import { EMIT_EXT_HOST_EVENT } from '../../common';
 import { Disposable } from '@ali/ide-core-browser';
 import { IMainThreadToolbar } from '../../common/kaitian/toolbar';
+import { ExtensionLoadingView } from '../components';
 
 @Injectable()
 export class KaitianExtensionToolbarService {
@@ -14,6 +15,12 @@ export class KaitianExtensionToolbarService {
   private selectDelegates = new Map<string, IToolbarActionSelectDelegate<any>>();
 
   private connected = new Set<string>();
+
+  @Autowired(IEventBus)
+  protected eventBus: IEventBus;
+
+  @Autowired(IToolbarPopoverRegistry)
+  protected readonly toolbarPopover: IToolbarPopoverRegistry;
 
   @Autowired(IToolbarRegistry)
   toolbarRegistry: IToolbarRegistry;
@@ -34,6 +41,19 @@ export class KaitianExtensionToolbarService {
       execute: (id: string, state: string, title?: string) => {
         if (this.btnDelegates.has(id)) {
           this.btnDelegates.get(id)!.setState(state, title);
+        }
+      },
+    });
+
+    this.commandRegistry.registerCommand({
+      id: 'kaitian-extension.toolbar.btn.setContext',
+    }, {
+      execute: (id: string, context: string) => {
+        if (this.btnDelegates.has(id)) {
+          const delegate = this.btnDelegates.get(id);
+          if (delegate) {
+            delegate.setContext(context);
+          }
         }
       },
     });
@@ -109,6 +129,15 @@ export class KaitianExtensionToolbarService {
     });
   }
 
+  getPopoverComponent(id: string, contribution: IToolbarButtonContribution): React.FC {
+    const PlaceHolderComponent = () => ExtensionLoadingView({
+    style: {
+      minHeight: contribution.popoverStyle?.minHeight ? Number(contribution.popoverStyle?.minHeight) : 200,
+      minWidth: contribution.popoverStyle?.minWidth ? Number(contribution.popoverStyle?.minWidth) : 300,
+    } });
+    return this.toolbarPopover.getComponent(id) || PlaceHolderComponent;
+  }
+
   registerToolbarButton(extensionId: string, extensionBasePath: string,  contribution: IToolbarButtonContribution): IDisposable {
     const id = extensionId + '.' + contribution.id;
     const styles: {[key: string]: IToolbarActionBtnState} = {};
@@ -123,25 +152,32 @@ export class KaitianExtensionToolbarService {
         }
       });
     }
+
     return this.toolbarRegistry.registerToolbarAction({
       id,
       preferredPosition: contribution.preferredPosition,
       strictPosition: contribution.strictPosition,
       description: contribution.description || contribution.title || id,
+      weight: contribution.weight,
       component: createToolbarActionBtn({
         id,
+        popoverId: `${extensionId}:${contribution.popoverComponent}`,
         title: contribution.title,
         styles,
         defaultState: contribution.defaultState,
         iconClass: this.iconService.fromIcon(extensionBasePath, contribution.iconPath, contribution.iconMaskMode ? IconType.Mask : IconType.Background)!,
-        // TODO: popoverComponent: getComponent(contribution.popoverComponentId)
-        // @柳千 这里要能够通过 id 获取对应组件 React.FC
-        popoverStyle: contribution.popoverStyle,
+        // 这里放一个 LoadingView 用于占位，因为 contributes 执行时插件还没有激活完成
+        popoverComponent: contribution.popoverComponent ? this.getPopoverComponent(`${extensionId}:${contribution.popoverComponent}`, contribution) : undefined,
+        popoverStyle: contribution.popoverStyle || {
+          noContainerStyle: false,
+        },
         delegate: (delegate) => {
           if (delegate) {
             this.btnDelegates.set(id, delegate);
             if (contribution.command) {
-              delegate.onClick(() => {
+              delegate.onClick(async () => {
+                delegate.showPopOver();
+                await this.eventBus.fireAndAwait(new ExtensionActivateEvent({ topic: 'onAction', data: contribution.id }));
                 this.commandService.executeCommand(contribution.command!);
               });
             }
