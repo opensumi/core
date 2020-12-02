@@ -61,7 +61,7 @@ export class MainthreadComments implements IDisposable, IMainThreadComments {
   private registerArgumentProcessor() {
     return this.mainThreadCommands.registerArgumentProcessor({
       processArgument: (arg: any) => {
-        if (!arg || !arg.menuId) {
+        if (!arg || !arg.menuId || !arg.thread || isUndefined(arg.thread.data)) {
           return arg;
         }
         switch (arg.menuId) {
