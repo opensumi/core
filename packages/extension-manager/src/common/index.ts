@@ -158,6 +158,8 @@ export interface IExtensionManagerService  {
   getExtensionVersions(extensionId: string): Promise<IExtensionVersion[]>;
   checkNeedReload(extensionId: string, reloadRequire: boolean): Promise<void>;
   getExtensionsInPack(extensionId: string, version?: string): Promise<string[]>;
+  enableAllExtensions(): Promise<void>;
+  disableAllExtensions(): Promise<void>;
 }
 
 export const IExtensionManagerServer = Symbol('IExtensionManagerServer');

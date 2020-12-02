@@ -27,6 +27,11 @@ namespace ExtensionCommands {
     category,
     label: '%marketplace.extension.enable.workspace%',
   };
+  export const ENABLE_ALL_EXTENSION: Command = {
+    id: 'extension.enable.all',
+    category,
+    label: '%marketplace.extension.enable.all%',
+  };
   export const DISABLE: Command = {
     id: 'extension.disable',
     category,
@@ -36,6 +41,11 @@ namespace ExtensionCommands {
     id: 'extension.disable.workspace',
     category,
     label: '%marketplace.extension.disable.workspace%',
+  };
+  export const DISABLE_ALL_EXTENSION: Command = {
+    id: 'extension.disable.all',
+    category,
+    label: '%marketplace.extension.disable.all%',
   };
   export const UNINSTALL: Command = {
     id: 'extension.uninstall',
@@ -264,6 +274,16 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
       },
       isVisible: (extension: RawExtension) => {
         return extension && extension.installed && !extension.isBuiltin;
+      },
+    });
+    commands.registerCommand(ExtensionCommands.ENABLE_ALL_EXTENSION, {
+      execute: async () => {
+        await this.extensionManagerService.enableAllExtensions();
+      },
+    });
+    commands.registerCommand(ExtensionCommands.DISABLE_ALL_EXTENSION, {
+      execute: async () => {
+        await this.extensionManagerService.disableAllExtensions();
       },
     });
   }

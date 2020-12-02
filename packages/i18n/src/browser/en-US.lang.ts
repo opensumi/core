@@ -509,6 +509,8 @@ export const localizationBundle = {
     'marketplace.extension.disable': 'Disable',
     'marketplace.extension.enable.workspace': 'Enable(workspace)',
     'marketplace.extension.disable.workspace': 'Disable(workspace)',
+    'marketplace.extension.enable.all': 'Enable All Extensions',
+    'marketplace.extension.disable.all': 'Disable All Extensions',
     'marketplace.extension.install': 'Install',
     'marketplace.extension.container': 'EXTENSIONS MARKET',
     'marketplace.extension.empty.disabled': 'No disabled extensions yet',

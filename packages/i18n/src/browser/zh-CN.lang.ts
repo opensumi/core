@@ -425,6 +425,8 @@ export const localizationBundle = {
     'marketplace.extension.disable': '禁用',
     'marketplace.extension.enable.workspace': '启用(工作空间)',
     'marketplace.extension.disable.workspace': '禁用(工作空间)',
+    'marketplace.extension.enable.all': '启用所有插件',
+    'marketplace.extension.disable.all': '禁用所有插件',
     'marketplace.extension.builtin': '内置',
     'marketplace.extension.development': '开发模式',
     'marketplace.extension.install': '安装',
