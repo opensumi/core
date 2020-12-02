@@ -20,6 +20,8 @@ export interface IElectronMainUIServiceShape {
 
   moveToTrash(path: string): Promise<void>;
 
+  isMaximized(windowId: number): Promise<boolean>;
+
   maximize(windowId: number): Promise<void>;
 
   isFullScreen(windowId: number): Promise<boolean>;
@@ -28,19 +30,19 @@ export interface IElectronMainUIServiceShape {
 
   showSaveDialog(windowId: number, options:Electron.SaveDialogOptions ): Promise<string | undefined>;
 
-  setZoomFactor(webContentsId: number, options: { value?: number, delta?: number; });
+  setZoomFactor(webContentsId: number, options: { value?: number, delta?: number; }): void;
 
   /**
    * 在资源管理器里打开文件
    * @param path 文件路径（不带file协议头)
    */
-  revealInFinder(path: string);
+  revealInFinder(path: string): Promise<void>;
 
   /**
    * 在系统终端中打开文件路径
    * @param path 文件路径（不带file协议头)
    */
-  revealInSystemTerminal(path: string);
+  revealInSystemTerminal(path: string): Promise<void>;
 
   /**
    * 创建一个browserWindow
@@ -96,7 +98,7 @@ export interface IElectronMainUIServiceShape {
   postMessageToBrowserWindow(windowId: number, channel: string, message: any): Promise<void>;
 
 }
-export interface IElectronMainUIService extends IElectronMainUIServiceShape, IElectronMainApi<'fullScreenStatusChange' | 'windowClosed'> {
+export interface IElectronMainUIService extends IElectronMainUIServiceShape, IElectronMainApi<'fullScreenStatusChange' | 'windowClosed' | 'maximizeStatusChange'> {
 
 
 }
