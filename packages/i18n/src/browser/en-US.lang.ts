@@ -374,7 +374,7 @@ export const localizationBundle = {
     'preference.editor.formatOnPaste': 'Format On Paste',
     'preference.files.eol': 'Files EOL',
     'keymaps.tab.name': 'Keyboard Shortcuts',
-
+    'preference.editor.preferredFormatter': 'Default Formatter',
     'preference.editor.previewMode': 'Preview Mode',
     'preference.editor.fontFamily': 'Font Family',
     'preference.editor.minimap': 'minimap',

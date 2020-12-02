@@ -248,6 +248,7 @@ export const defaultSettingSections: {
         {id: 'editor.cursorStyle', localized: 'preference.editor.cursorStyle'},
         {id: 'editor.wordWrap', localized: 'preference.editor.wordWrap'},
         {id: 'editor.readonlyFiles', localized: 'preference.editor.readonlyFiles'},
+        {id: 'editor.preferredFormatter', localized: 'preference.editor.preferredFormatter' },
         {id: 'editor.formatOnSave', localized: 'preference.editor.formatOnSave'},
         {id: 'editor.formatOnSaveTimeout', localized: 'preference.editor.formatOnSaveTimeout'},
         {id: 'editor.maxTokenizationLineLength', localized: 'preference.editor.maxTokenizationLineLength'},
