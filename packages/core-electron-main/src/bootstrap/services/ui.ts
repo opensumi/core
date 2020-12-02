@@ -10,7 +10,7 @@ import { WindowCreatedEvent } from './events';
 import { IElectronMainUIServiceShape, IElectronPlainWebviewWindowOptions } from '@ali/ide-core-common/lib/electron';
 
 @Injectable()
-export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenStatusChange' | 'windowClosed'> implements IElectronMainUIServiceShape {
+export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenStatusChange' | 'windowClosed' | 'maximizeStatusChange'> implements IElectronMainUIServiceShape {
 
   @Autowired(IEventBus)
   eventBus: IEventBus;
@@ -25,18 +25,32 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
       window.getBrowserWindow().on('leave-full-screen', () => {
         this.fireFullScreenChangedEvent(window.getBrowserWindow().id, false);
       });
+      window.getBrowserWindow().on('maximize', () => {
+        this.fireMaximizeChangedEvent(window.getBrowserWindow().id, true);
+      });
+      window.getBrowserWindow().on('unmaximize', () => {
+        this.fireMaximizeChangedEvent(window.getBrowserWindow().id, false);
+      });
     });
   }
 
-  fireFullScreenChangedEvent(windowId, isFullScreen) {
+  fireFullScreenChangedEvent(windowId: number, isFullScreen: boolean) {
     this.eventEmitter.fire('fullScreenStatusChange', windowId, isFullScreen);
   }
 
-  async isFullScreen(windowId) {
+  fireMaximizeChangedEvent(windowId: number, isMaximized: boolean) {
+    this.eventEmitter.fire('maximizeStatusChange', windowId, isMaximized);
+  }
+
+  async isFullScreen(windowId: number) {
     return BrowserWindow.fromId(windowId).isFullScreen();
   }
 
-  async maximize(windowId) {
+  async isMaximized(windowId: number) {
+    return BrowserWindow.fromId(windowId).isMaximized();
+  }
+
+  async maximize(windowId: number) {
     BrowserWindow.fromId(windowId).maximize();
   }
 
@@ -59,7 +73,7 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
   async revealInSystemTerminal(path: string) {
     const fileStat = await stat(path);
     let targetPath = path;
-    if ( !fileStat.isDirectory() ) {
+    if (!fileStat.isDirectory()) {
       targetPath = dirname(path);
     }
     openInTerminal(targetPath);
@@ -172,7 +186,7 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
     });
   }
 
-  async postMessageToBrowserWindow(windowId: number, channel: string , message: any): Promise<void> {
+  async postMessageToBrowserWindow(windowId: number, channel: string, message: any): Promise<void> {
     const window = BrowserWindow.fromId(windowId);
     if (!window) {
       throw new Error('window with windowId ' + windowId + ' does not exist!');

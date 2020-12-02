@@ -60,7 +60,6 @@ describe('electron basic contribution test', () => {
 
     beforeAll(() => {
       (global as any).electronEnv =  (global as any).electronEnv || {};
-      (global as any).electronEnv.isMaximized = jest.fn(() => false);
     });
 
     it('component resgiter', () => {

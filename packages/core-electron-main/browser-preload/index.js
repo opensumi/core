@@ -1,5 +1,4 @@
 const ipcRenderer = require('electron').ipcRenderer;
-const browserWindow = require('electron').remote.getCurrentWindow();
 const net = require('net');
 const { dirname, join } = require('path');
 
@@ -49,6 +48,3 @@ if (metaData.preloads) {
     require(preload);
   });
 }
-
-electronEnv.isMaximized = () => { return browserWindow.isMaximized(); };
-

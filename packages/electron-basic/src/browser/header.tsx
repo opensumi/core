@@ -1,23 +1,20 @@
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
+import { useState } from 'react';
 import * as styles from './header.module.less';
 import { useInjectable, MaybeNull, isWindows, ComponentRenderer, ComponentRegistry, Disposable, DomListener, AppConfig, replaceLocalizePlaceholder, electronEnv, isOSX, IWindowService } from '@ali/ide-core-browser';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { WorkbenchEditorService, IResource } from '@ali/ide-editor';
 import { getIcon } from '@ali/ide-core-browser';
 import { localize } from '@ali/ide-core-common';
-import { observable } from 'mobx';
 import { basename } from '@ali/ide-core-common/lib/utils/paths';
-
-const state = observable({
-  maximized: (global as any).electronEnv && (global as any).electronEnv.isMaximized(),
-});
 
 export const ElectronHeaderBar = observer(() => {
 
   const uiService = useInjectable(IElectronMainUIService) as IElectronMainUIService;
   const windowService: IWindowService = useInjectable(IWindowService);
   const componentRegistry: ComponentRegistry = useInjectable(ComponentRegistry);
+  const [maximized, setMaximized] = useState(false);
 
   const [isFullScreen, setFullScreen] = React.useState<boolean>(false);
 
@@ -30,8 +27,17 @@ export const ElectronHeaderBar = observer(() => {
         setFullScreen(res);
       }
     });
+    const maximizeListener = uiService.on('maximizeStatusChange', (windowId, isMaximized) => {
+      if (windowId === electronEnv.currentWindowId) {
+        setMaximized(isMaximized);
+      }
+    });
+    uiService.isMaximized(electronEnv.currentWindowId).then((maximized) => {
+      setMaximized(maximized);
+    });
     return () => {
       listener.dispose();
+      maximizeListener.dispose();
     };
   }, []);
   // 在 Mac 下，如果是全屏状态，隐藏顶部标题栏
@@ -39,8 +45,11 @@ export const ElectronHeaderBar = observer(() => {
     return <div><TitleInfo hidden={true}/></div>;
   }
   return <div className={styles.header} onDoubleClick={() => {
-    uiService.maximize((global as any).currentWindowId);
-    state.maximized = (global as any).electronEnv.isMaximized();
+    if (maximized) {
+      windowService.unmaximize();
+    } else {
+      windowService.maximize();
+    }
   }}>
     {
       (isWindows) ? <ComponentRenderer Component={componentRegistry.getComponentRegistryInfo('@ali/ide-menu-bar')!.views[0].component!}/> : null
@@ -52,12 +61,10 @@ export const ElectronHeaderBar = observer(() => {
           windowService.minimize();
         }} />
         {
-          !state.maximized ? <div className={getIcon('windows_fullscreen')} onClick= {() => {
+          !maximized ? <div className={getIcon('windows_fullscreen')} onClick= {() => {
             windowService.maximize();
-            state.maximized =  (global as any).electronEnv.isMaximized();
           }}/> : <div className={getIcon('windows_recover')} onClick= {() => {
             windowService.unmaximize();
-            state.maximized =  (global as any).electronEnv.isMaximized();
           }}/>
         }
         <div className={getIcon('windows_quit')} onClick= {() => {
