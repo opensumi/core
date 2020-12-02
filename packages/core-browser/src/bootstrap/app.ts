@@ -42,7 +42,7 @@ import { renderClientApp, IAppRenderer } from './app.view';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { electronEnv } from '../utils';
 import { MenuRegistryImpl, IMenuRegistry } from '../menu/next';
-import { DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
+import { DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
 import ResizeObserver from 'resize-observer-polyfill';
 import { RenderedEvent } from '../layout';
 
@@ -582,7 +582,7 @@ export class ClientApp implements IClientApp {
   }
 
   protected appendIconStyleSheets(iconInfos?: IconInfo[], useCdnIcon?: boolean) {
-    const iconPaths: string[] = useCdnIcon ? [DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS] : [];
+    const iconPaths: string[] = useCdnIcon ? [DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS] : [];
     if (iconInfos && iconInfos.length) {
       iconInfos.forEach((info) => {
         this.updateIconMap(info.prefix, info.iconMap);

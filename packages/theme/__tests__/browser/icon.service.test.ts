@@ -211,6 +211,17 @@ describe('icon theme test', () => {
     expect(iconThemeNode!.innerHTML.indexOf('file-icon')).toBeGreaterThan(-1);
   });
 
+  it('should be able to generate codicon by id', () => {
+    let icon = '$(sync)';
+    expect(service.fromString(icon)).toBe('codicon codicon-sync');
+    icon = '$(sync)abc';
+    expect(service.fromString(icon)).toBeUndefined();
+    const modifierIcon = '$(sync~spin)';
+    expect(service.fromString(modifierIcon)).toBe('codicon codicon-sync spin');
+    const customIcon = '$(kt/sync~spin)';
+    expect(service.fromString(customIcon)).toBe('kt kt-sync spin');
+  });
+
   it('should be able to generate iconClass from icon asset', () => {
     const iconClass = service.fromIcon('file:///mock/base/path', './testIcon.svg');
     expect(iconClass).toBeDefined();

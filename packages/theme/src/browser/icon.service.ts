@@ -1,4 +1,4 @@
-import { URI, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService, Emitter, Event, ILogger } from '@ali/ide-core-browser';
+import { URI, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService, Emitter, Event, ILogger, CODICON_OWNER } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { ThemeType, IIconService, ThemeContribution, getThemeId, IIconTheme, getThemeTypeSelector, IconType, IconShape, IconThemeInfo } from '../common';
@@ -40,6 +40,9 @@ export class IconService implements IIconService {
   protected extensionReady = false;
 
   private iconMap: Map<string, string> = new Map();
+
+  // eg. $(codicon/sync~spin)
+  private _regexFromString = /^\$\(([a-z.]+\/)?([a-z-]+)(~[a-z]+)?\)$/i;
 
   private getPath(basePath: string, relativePath: string): URI {
     if (relativePath.startsWith('./')) {
@@ -99,6 +102,23 @@ export class IconService implements IIconService {
   protected getBackgroundStyleSheetWithStaticService(path: URI, className: string, baseTheme?: string): string {
     const iconUrl = path.scheme === 'file' ? this.staticResourceService.resolveStaticResource(path).toString() : path.toString();
     return this.getBackgroundStyleSheet(iconUrl, className, baseTheme);
+  }
+
+  fromString(str: string): string | undefined {
+    if (typeof str !== 'string') {
+      return undefined;
+    }
+    const matched = str.match(this._regexFromString);
+    if (!matched) {
+      return undefined;
+    }
+    const [, owner, name, modifier] = matched;
+    const iconOwner = owner ? owner.slice(0, -1) : CODICON_OWNER;
+    let className = `${iconOwner} ${iconOwner}-${name}`;
+    if (modifier) {
+      className += ` ${modifier.slice(1)}`;
+    }
+    return className;
   }
 
   fromIcon(basePath: string = '', icon?: { [index in ThemeType]: string } | string, type: IconType = IconType.Mask, shape: IconShape = IconShape.Square): string | undefined {
