@@ -119,6 +119,16 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
       }
     }));
   }
+  async enableAllExtensions(): Promise<void> {
+    await Promise.all(this.rawExtension
+      .filter((extension) => !extension.enable)
+      .map((extension) => this.toggleActiveExtension(extension, true, EnableScope.GLOBAL)));
+  }
+  async disableAllExtensions(): Promise<void> {
+    await Promise.all(this.rawExtension
+      .filter((extension) => extension.enable)
+      .map((extension) => this.toggleActiveExtension(extension, false, EnableScope.GLOBAL)));
+  }
 
   @memoize
   get contextMenu(): IMenu {

@@ -156,6 +156,44 @@ describe('extension manager service test', () => {
       })));
   });
 
+  it('enable all extension', async () => {
+    createFakeExtension({
+      enable: false,
+      extensionId: 'a',
+    });
+
+    createFakeExtension({
+      enable: false,
+      extensionId: 'b',
+    });
+
+    await extensionManagerService.enableAllExtensions();
+
+    const extA = extensionManagerService.getRawExtensionById('a');
+    const extB = extensionManagerService.getRawExtensionById('b');
+    expect(extA?.enable).toBeTruthy();
+    expect(extB?.enable).toBeTruthy();
+  });
+
+  it('disable all extension', async () => {
+    createFakeExtension({
+      enable: true,
+      extensionId: 'a',
+    });
+
+    createFakeExtension({
+      enable: true,
+      extensionId: 'b',
+    });
+
+    await extensionManagerService.disableAllExtensions();
+
+    const extA = extensionManagerService.getRawExtensionById('a');
+    const extB = extensionManagerService.getRawExtensionById('b');
+    expect(extA?.enable).toBeFalsy();
+    expect(extB?.enable).toBeFalsy();
+  });
+
   describe('Extension Pack', () => {
     it('禁用/启用 Pack, Pack 中的 Ext 也会对应的禁用/启用', async () => {
       createFakeExtension({ name: 'subA', publisher: 'group' });
