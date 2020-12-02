@@ -33,8 +33,8 @@ export class WindowService implements IWindowService {
 
   close(): void {
     if (isElectronRenderer()) {
-      const electronMainLifecycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
-      electronMainLifecycle.closeWindow(electronEnv.currentWindowId);
+      // 防止 node 进程被先关闭掉，导致再也无法关闭
+      window.close();
     } else {
       throw new Error('Method not implemented.');
     }
