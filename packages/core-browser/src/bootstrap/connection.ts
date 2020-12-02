@@ -91,6 +91,10 @@ export async function bindConnectionService(injector: Injector, modules: ModuleC
   const clientCenter = new RPCServiceCenter();
   clientCenter.setConnection(connection);
 
+  connection.onClose(() => {
+    clientCenter.removeConnection(connection);
+  });
+
   const {
     getRPCService,
   } = initRPCService(clientCenter);
