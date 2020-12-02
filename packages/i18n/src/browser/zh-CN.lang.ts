@@ -358,7 +358,7 @@ export const localizationBundle = {
     'preference.editor.largeFile': '超大文件尺寸',
     'preference.files.eol': '文件行尾字符',
     'preference.editor.formatOnPaste': '粘贴时自动格式化',
-
+    'preference.editor.preferredFormatter': '默认格式化器',
     'preference.array.additem': '添加',
 
     'editor.configuration.fontFamily': '',
