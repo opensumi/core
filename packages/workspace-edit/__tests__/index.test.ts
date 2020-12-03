@@ -3,7 +3,7 @@ import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
 import { WorkbenchEditorService, IEditorGroup } from '@ali/ide-editor';
 import { URI } from '@ali/ide-core-browser';
-import { IWorkspaceEditService, IResourceFileEdit} from '../src/common';
+import { IWorkspaceEditService, IResourceFileEdit, IWorkspaceFileService} from '../src/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { WorkspaceEditModule } from '../src/browser';
 import { MonacoBulkEditService } from '../src/browser/bulk-edit.service';
@@ -144,6 +144,7 @@ describe('workspace edit tests', () => {
 
     const service: IWorkspaceEditService = injector.get(IWorkspaceEditService);
     const fileServiceClient = injector.get<IFileServiceClient>(IFileServiceClient);
+    const workspaceFileService: IWorkspaceFileService = injector.get(IWorkspaceFileService);
 
     editorGroups.splice(0, editorGroups.length);
     editorGroups.push({
@@ -183,6 +184,17 @@ describe('workspace edit tests', () => {
       return true;
     }));
 
+    const mockParticipant = jest.fn();
+    const mockWillCall = jest.fn();
+    const mockDidCall = jest.fn();
+    workspaceFileService.registerFileOperationParticipant({
+      participate: async (files, operation, progress, timeout, token) => {
+        mockParticipant();
+      },
+    });
+    workspaceFileService.onWillRunWorkspaceFileOperation(mockWillCall);
+    workspaceFileService.onDidRunWorkspaceFileOperation(mockDidCall);
+
     await service.apply({
       edits: [
         moveEdit,
@@ -201,6 +213,10 @@ describe('workspace edit tests', () => {
      }));
 
     expect(fileServiceClient.delete).toHaveBeenLastCalledWith(deleteEdit.oldUri!.toString(), expect.objectContaining({}));
+
+    expect(mockParticipant).toBeCalledTimes(3);
+    expect(mockWillCall).toBeCalledTimes(3);
+    expect(mockDidCall).toBeCalledTimes(3);
 
     done();
   });
