@@ -25,6 +25,7 @@ export class WorkspaceFileOperationParticipant extends Disposable {
     const cts = new CancellationTokenSource();
     return this.progressService.withProgress({
       location: ProgressLocation.Window,
+      title: this.getProgressLabel(operation),
     }, async (progress) => {
       for (const participant of this.participants) {
         if (cts.token.isCancellationRequested) {
