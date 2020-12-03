@@ -11,7 +11,7 @@ import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { DebugSessionContributionRegistry, DebugSessionFactory } from './debug-session-contribution';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { DebugModelManager } from './editor/debug-model-manager';
-import { ITaskService } from '@ali/ide-task';
+import { ITaskService } from '@ali/ide-task/lib/common';
 
 // tslint:disable-next-line:no-empty-interface
 export interface WillStartDebugSession extends WaitUntilEvent {
