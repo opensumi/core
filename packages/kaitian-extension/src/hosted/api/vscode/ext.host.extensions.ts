@@ -57,6 +57,8 @@ export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
 
   private _storage: ExtHostStorage;
 
+  private _resolveStaticResource: (uri: URI) => Promise<URI>;
+
   constructor(
     options: IKTWorkerExtensionContextOptions,
   ) {
@@ -68,6 +70,7 @@ export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
     this.workspaceState = new ExtensionMemento(extensionId, false, storageProxy);
     this.globalState = new ExtensionMemento(extensionId, true, storageProxy);
     this.registerExtendModuleService = registerExtendModuleService;
+    this._resolveStaticResource = options.resolveStaticResource;
   }
 
   get globalStoragePath() {
@@ -96,10 +99,13 @@ export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
   }
 
   async asHref(relativePath: string) {
-    const extensionUri = new URI(this._extensionPath);
+    let extensionUri = new URI(this._extensionPath);
+    if (!extensionUri.scheme) {
+      extensionUri = URI.file(this._extensionPath);
+    }
     relativePath = relativePath.replace(/^\.\//, '');
     const assetsUri = extensionUri.resolve(relativePath);
-    return assetsUri.toString();
+    return (await this._resolveStaticResource(assetsUri)).toString();
   }
 }
 
