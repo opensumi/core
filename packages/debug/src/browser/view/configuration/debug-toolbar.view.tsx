@@ -13,6 +13,7 @@ import { isExtensionHostDebugging } from '../../debugUtils';
 import { DebugConfigurationService } from './debug-configuration.service';
 import { DebugToolbarService } from './debug-toolbar.service';
 import * as styles from './debug-configuration.module.less';
+import { MenuNode } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable()
 class FloatController {
@@ -70,6 +71,8 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
   const {
     state,
     sessionCount,
+    currentToolBarMenu,
+    doRunToolBarMenu,
     doStop,
     doStepIn,
     doStepOut,
@@ -86,6 +89,18 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
 
   const currentSessionId = currentSession && currentSession.id;
 
+  const renderToolBar = (menus: MenuNode[] | undefined, sessionCount: number): React.ReactNode => {
+    if  (!menus) {
+      return null;
+    }
+
+    if (menus.length > 0) {
+      return menus.map((node) => {
+        return <DebugAction run={ () => doRunToolBarMenu(node) } enabled={ true } icon={ node.icon! } label={ node.label } key={ node.id }/>;
+      });
+    }
+    return null;
+  };
   const renderStop = (state: DebugState, sessionCount: number): React.ReactNode => {
     if (isAttach) {
       return <DebugAction run={ doStop } enabled={ typeof state === 'number' && state !== DebugState.Inactive } icon={ 'disconnect' } label={ localize('debug.action.disattach') } />;
@@ -154,6 +169,7 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
           <DebugAction run={ doStepOut } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step-out' } label={ localize('debug.action.step-out') } />
           <DebugAction run={ doRestart } enabled={ typeof state === 'number' && state !== DebugState.Inactive } icon={ 'reload' } label={ localize('debug.action.restart') } />
           { renderStop(state, sessionCount) }
+          { renderToolBar(currentToolBarMenu, sessionCount) }
         </div>
       </div>
     </React.Fragment>

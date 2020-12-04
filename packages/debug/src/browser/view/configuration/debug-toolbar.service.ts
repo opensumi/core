@@ -2,9 +2,21 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
 import { DebugViewModel } from '../debug-view-model';
 import { DebugState, DebugSession } from '../../debug-session';
+import { IContextKeyService, CommandService } from '@ali/ide-core-browser';
+import { AbstractContextMenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { MenuNode } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable()
 export class DebugToolbarService {
+
+  @Autowired(CommandService)
+  protected readonly commandService: CommandService;
+
+  @Autowired(IContextKeyService)
+  private readonly contextKeyService: IContextKeyService;
+
+  @Autowired(AbstractContextMenuService)
+  private readonly contextMenuService: AbstractContextMenuService;
 
   @Autowired(DebugViewModel)
   protected readonly model: DebugViewModel;
@@ -21,8 +33,14 @@ export class DebugToolbarService {
   @observable.shallow
   sessions: DebugSession[] = [];
 
+  @observable
+  currentToolBarMenu: MenuNode[];
+
+  private readonly toolBarMenuMap: Map<string, MenuNode[]> = new Map();
+
   constructor() {
     this.model.onDidChange(() => {
+      this.updateToolBarMenu();
       this.updateModel();
     });
   }
@@ -35,6 +53,19 @@ export class DebugToolbarService {
       return session && session.state > DebugState.Inactive;
     });
     this.sessionCount = this.sessions.length;
+    this.currentToolBarMenu = this.getToolBarMenu();
+  }
+
+  @action
+  updateToolBarMenu() {
+    if (this.currentSession && this.currentSession.id && !this.toolBarMenuMap.has(this.currentSession.id)) {
+      const contextMenu = this.contextMenuService.createMenu({ id: MenuId.DebugToolBar, contextKeyService: this.contextKeyService.createScoped() });
+      this.toolBarMenuMap.set(
+        this.currentSession.id,
+        contextMenu.getMergedMenuNodes(),
+      );
+      contextMenu.dispose();
+    }
   }
 
   doStart = () => {
@@ -62,6 +93,14 @@ export class DebugToolbarService {
   }
   doStepOut = () => {
     return this.model.currentThread && this.model.currentThread.stepOut();
+  }
+  doRunToolBarMenu = (menu: MenuNode) => {
+    const { id } = menu;
+    this.commandService.executeCommand(id);
+  }
+
+  getToolBarMenu = () => {
+    return this.toolBarMenuMap.get(this.currentSession?.id!) || [];
   }
 
   updateCurrentSession = (session: DebugSession) => {
