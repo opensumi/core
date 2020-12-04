@@ -14,6 +14,7 @@ export interface IKTContextOptions {
 
 export interface IKTWorkerExtensionContextOptions extends IKTContextOptions {
   staticServicePath: string;
+  resolveStaticResource(uri: URI): Promise<URI>;
 }
 
 export interface IKTExtensionContext {
@@ -32,6 +33,13 @@ export interface IKTWorkerExtensionContext extends IKTExtensionContext {
    * @return The absolute path of the resource.
    */
   asAbsolutePath(relativePath: string): string;
+
+  /**
+   * @param relativePath 相对路径
+   * @return 返回经过 static 转换后的 href
+   * asAbsolutePath 是同步的，因此这里额外加个异步 api
+   */
+  asHref(relativePath: string): Promise<string>;
 }
 
 export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
@@ -66,6 +74,7 @@ export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
     return this._storage.storagePath.globalStoragePath;
   }
 
+  // FIXME: 纯前端场景下，这个值不对
   get extensionPath() {
     const assetsUri = new URI(this.staticServicePath);
     const extensionAssetPath = assetsUri.withPath('assets').withQuery(URI.stringifyQuery({
@@ -84,6 +93,13 @@ export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
       path: path.join(this._extensionPath, relativePath),
     })).toString();
     return decodeURIComponent(assetSPath);
+  }
+
+  async asHref(relativePath: string) {
+    const extensionUri = new URI(this._extensionPath);
+    relativePath = relativePath.replace(/^\.\//, '');
+    const assetsUri = extensionUri.resolve(relativePath);
+    return assetsUri.toString();
   }
 }
 

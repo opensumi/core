@@ -1,4 +1,5 @@
 import type * as vscode from 'vscode';
+import { UriComponents } from 'vscode-uri';
 import { Emitter, IExtensionProps } from '@ali/ide-core-common';
 
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@ali/ide-connection';
@@ -42,6 +43,7 @@ export interface VSCodeExtensionService {
 
 export interface KTWorkerExtensionService extends VSCodeExtensionService {
   $getStaticServicePath(): Promise<string>;
+  $resolveStaticResource(uri: UriComponents): Promise<UriComponents>;
 }
 
 export const MainThreadAPIIdentifier = {
