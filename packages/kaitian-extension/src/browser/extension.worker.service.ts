@@ -137,7 +137,7 @@ export class WorkerExtensionService implements AbstractExtensionService {
   private getWorkerExtensionProps(extension: IExtension, workerMain: string) {
     let extUri = new URI(extension.path);
     if (!extUri.scheme) {
-      extUri = extUri.withScheme('file');
+      extUri = URI.file(extension.path);
     }
     workerMain = workerMain.replace(/^\.\//, '');
     const workerScriptURI = this.staticResourceService.resolveStaticResource(extUri.resolve(workerMain));
