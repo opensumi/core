@@ -547,9 +547,10 @@ declare module 'kaitian' {
 
       /**
        * 显示 button 元素对应的 popover 元素，需要在 kaitianContributes 中配置
-       * // TODO: 未完成
        */
       showPopover(): Promise<void>;
+
+      hidePopover(): Promise<void>;
     }
 
     export interface IToolbarSelectActionHandle<T> {

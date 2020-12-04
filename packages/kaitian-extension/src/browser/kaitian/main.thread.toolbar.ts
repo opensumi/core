@@ -127,6 +127,16 @@ export class KaitianExtensionToolbarService {
         }
       },
     });
+
+    this.commandRegistry.registerCommand({
+      id: 'kaitian-extension.toolbar.hidePopover',
+    }, {
+      execute: (id: string) => {
+        if (this.btnDelegates.has(id)) {
+          this.btnDelegates.get(id)!.hidePopOver();
+        }
+      },
+    });
   }
 
   getPopoverComponent(id: string, contribution: IToolbarButtonContribution): React.FC {

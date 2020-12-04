@@ -11,6 +11,8 @@ export interface IToolbarButtonActionHandle {
 
   showPopover(): Promise<void>;
 
+  hidePopover(): Promise<void>;
+
   setContext(context: any): void;
 }
 
