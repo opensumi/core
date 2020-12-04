@@ -6,6 +6,7 @@ import { AppConfig, URI, INodeLogger, isElectronEnv} from '@ali/ide-core-node';
 import * as pkg from '@ali/ide-core-node/package.json';
 import * as qs from 'querystring';
 import { ExtensionInstaller, IExtensionInstaller, Extension as InstallerExtension, ExtensionRelease as InstallerExtensionRelease } from '@ali/ide-extension-installer';
+import { join } from 'path';
 
 @Injectable()
 export class ExtensionManagerRequester implements IExtensionManagerRequester {
@@ -54,7 +55,7 @@ export class ExtensionManagerRequester implements IExtensionManagerRequester {
 
   private getApi(path: string) {
     const uri = new URI(this.appConfig.marketplace.endpoint);
-    return decodeURIComponent(uri.withPath(`${PREFIX}${path}`).toString());
+    return decodeURIComponent(uri.withPath(`${join(uri.path.toString(), PREFIX, path)}`).toString());
   }
 
   setHeaders(headers: RequestHeaders): void {

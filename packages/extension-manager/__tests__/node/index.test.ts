@@ -40,6 +40,38 @@ describe('template test', () => {
     done();
   });
 
+  afterEach(() => {
+    injector.disposeAll();
+  });
+
+  describe('endpoint path', () => {
+
+    beforeEach(() => {
+      injector.overrideProviders({
+        token: AppConfig,
+        useValue: {
+          marketplace: {
+            endpoint: 'https://marketplace.antfin-inc.com/proxy',
+            extensionDir,
+            ignoreId: [],
+          },
+        },
+      });
+    });
+
+    it('endpoint support add path', () => {
+      const requester = injector.get(IExtensionManagerRequester);
+
+      const api = requester.getApi('abc');
+
+      expect(api).toBe('https://marketplace.antfin-inc.com/proxy/openapi/ide/abc');
+
+      const apiWithPath = requester.getApi('/abc');
+
+      expect(apiWithPath).toBe('https://marketplace.antfin-inc.com/proxy/openapi/ide/abc');
+    });
+  });
+
   describe('search extension', () => {
     it('search for extension called es', async (done) => {
       injector.mock(IExtensionManagerRequester, 'request', () => {
