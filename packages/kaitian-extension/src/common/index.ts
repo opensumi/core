@@ -51,7 +51,7 @@ export interface IExtensionNodeService {
   getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
   setConnectionServiceClient(clientId: string, serviceClient: IExtensionNodeClientService);
   disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
-
+  disposeAllClientExtProcess(): Promise<void>;
   tryEnableInspectPort(clientId: string, delay?: number): Promise<boolean>;
   getProcessInspectPort(clientId: string): Promise<number | undefined>;
 }

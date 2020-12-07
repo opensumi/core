@@ -522,4 +522,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     this.clientExtProcessExtConnection.set(clientId, extConnection);
     return extConnection;
   }
+
+  public async disposeAllClientExtProcess(): Promise<void> {
+    await Promise.all([...this.clientExtProcessMap.keys()].map((clientId) => this.disposeClientExtProcess(clientId, true, true)));
+  }
 }
