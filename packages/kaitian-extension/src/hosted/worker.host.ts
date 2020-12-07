@@ -253,7 +253,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
       }
 
       // https://developer.mozilla.org/en-US/docs/Tools/Debugger/How_to/Debug_eval_sources
-      const initFn = new Function('module', 'exports', 'require', 'window', await response.text() + `//# sourceURL=${extension.workerScriptPath}`);
+      const initFn = new Function('module', 'exports', 'require', 'window', await response.text() + `\n//# sourceURL=${extension.workerScriptPath}`);
       const _exports = {};
 
       const _module = { exports: _exports };

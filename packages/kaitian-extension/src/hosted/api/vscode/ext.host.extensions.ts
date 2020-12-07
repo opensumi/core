@@ -77,13 +77,11 @@ export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
     return this._storage.storagePath.globalStoragePath;
   }
 
-  // FIXME: 纯前端场景下，这个值不对
+  // CARE: 保持和 node 的接口一致
+  // 这里的值对于前端获取意义不大，之前的实现有问题，不应该耦合 /assets?path= 的路径，实际集成测不一定是这种形式地址
+  // 如果需要 href，推荐使用 asHref
   get extensionPath() {
-    const assetsUri = new URI(this.staticServicePath);
-    const extensionAssetPath = assetsUri.withPath('assets').withQuery(URI.stringifyQuery({
-      path: this._extensionPath,
-    })).toString();
-    return extensionAssetPath;
+    return this._extensionPath;
   }
 
   asAbsolutePath(relativePath: string, scheme: 'http' | 'file' = 'http'): string {
@@ -105,7 +103,8 @@ export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
     }
     relativePath = relativePath.replace(/^\.\//, '');
     const assetsUri = extensionUri.resolve(relativePath);
-    return (await this._resolveStaticResource(assetsUri)).toString();
+    // CARE：这里防止 ?a=b 的 = 被编码，但是对于文件路径含有保留字符也可能会导致问题，框架中的 resolveStaticResource 这样实现的，看起来可能出问题概率不大
+    return (await this._resolveStaticResource(assetsUri)).toString(true);
   }
 }
 
