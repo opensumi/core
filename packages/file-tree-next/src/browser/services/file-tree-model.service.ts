@@ -683,6 +683,57 @@ export class FileTreeModelService {
     }, 200);
   }
 
+  public moveToNext() {
+    if (!this.focusedFile) {
+      // 当前没有焦点文件时，执行无效果
+      return;
+    }
+    const currentIndex = this.treeModel.root.getIndexAtTreeNode(this.focusedFile);
+    const nextFileNode = this.treeModel.root.getTreeNodeAtIndex(currentIndex + 1);
+    if (!!nextFileNode) {
+      this.activeFileFocusedDecoration(nextFileNode as File, true);
+    }
+  }
+
+  public moveToPrev() {
+    if (!this.focusedFile) {
+      // 当前没有焦点文件时，执行无效果
+      return;
+    }
+    const currentIndex = this.treeModel.root.getIndexAtTreeNode(this.focusedFile);
+    if (currentIndex === 0) {
+      return ;
+    }
+    const prevFileNode = this.treeModel.root.getTreeNodeAtIndex(currentIndex - 1);
+    if (!!prevFileNode) {
+      this.activeFileFocusedDecoration(prevFileNode as File, true);
+    }
+  }
+
+  public collapseCurrentFile() {
+    if (!this.focusedFile) {
+      // 当前没有焦点文件时，执行无效果
+      return;
+    }
+    if (Directory.is(this.focusedFile)) {
+      if (this.focusedFile.expanded) {
+        this.fileTreeHandle.collapseNode(this.focusedFile as Directory);
+      }
+    }
+  }
+
+  public expandCurrentFile() {
+    if (!this.focusedFile) {
+      // 当前没有焦点文件时，执行无效果
+      return;
+    }
+    if (Directory.is(this.focusedFile)) {
+      if (!this.focusedFile.expanded) {
+        this.fileTreeHandle.expandNode(this.focusedFile as Directory);
+      }
+    }
+  }
+
   // 命令调用
   async collapseAll() {
     await this.ensurePerformedEffect();
