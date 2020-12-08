@@ -1174,10 +1174,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           if (this.resources[i]) {
             this.open(this.resources[i].uri);
           } else {
-            this._currentResource = null;
-            this._currentOpenType = null;
-            this.notifyTabChanged();
-            this.notifyBodyChanged();
+            this.backToEmpty();
           }
         }
       } else {
@@ -1225,10 +1222,21 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   private backToEmpty() {
+    const oldOpenType =  this._currentOpenType;
+    const oldResource =  this._currentResource;
+
     this._currentResource = null;
     this._currentOpenType = null;
     this.notifyTabChanged();
     this.notifyBodyChanged();
+    // 关闭最后一个时，应该发送一个 EditorGroupChangeEvent
+    this.eventBus.fire(new EditorGroupChangeEvent({
+      group: this,
+      newOpenType: this.currentOpenType,
+      newResource: this.currentResource,
+      oldOpenType,
+      oldResource,
+    }));
   }
 
   /**

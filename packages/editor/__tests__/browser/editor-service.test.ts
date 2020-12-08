@@ -3,7 +3,7 @@ import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILang
 import { EditorCollectionServiceImpl } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { ResourceServiceImpl } from '@ali/ide-editor/lib/browser/resource.service';
-import { EditorComponentRegistry, IEditorDecorationCollectionService, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EmptyDocCacheImpl, IEditorFeatureRegistry, BrowserEditorContribution } from '@ali/ide-editor/lib/browser';
+import { EditorComponentRegistry, IEditorDecorationCollectionService, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EmptyDocCacheImpl, IEditorFeatureRegistry, BrowserEditorContribution, EditorGroupChangeEvent } from '@ali/ide-editor/lib/browser';
 import { IDocPersistentCacheProvider } from '@ali/ide-editor/lib/common';
 import { EditorComponentRegistryImpl } from '@ali/ide-editor/lib/browser/component';
 import { EditorDecorationCollectionService } from '@ali/ide-editor/lib/browser/editor.decoration.service';
@@ -11,7 +11,7 @@ import { EditorDocumentModelContentRegistryImpl, EditorDocumentModelServiceImpl,
 import { LanguageService } from '@ali/ide-editor/lib/browser/language/language.service';
 import { MonacoService } from '@ali/ide-monaco';
 import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
-import { URI, Disposable, createContributionProvider, ILoggerManagerClient } from '@ali/ide-core-common';
+import { URI, Disposable, createContributionProvider, ILoggerManagerClient, IEventBus } from '@ali/ide-core-common';
 import { TestResourceProvider, TestResourceResolver, TestEditorDocumentProvider, TestResourceResolver2, TestResourceComponent, doNotClose } from './test-providers';
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -320,6 +320,54 @@ describe('workbench editor service tests', () => {
     expect(listener).toBeCalled();
 
     await editorService.closeAll();
+    disposer.dispose();
+    done();
+  });
+
+  it('close all tabs should emit EditorGroupChangeEvent', async (done) => {
+
+    const testCodeUri = new URI('test://a/testUri1');
+    await editorService.open(testCodeUri, { preview: false });
+    const testCodeUri2 = new URI('test://a/testUri2');
+    await editorService.open(testCodeUri2, { preview: false });
+    const testCodeUri3 = new URI('test://a/testUri3');
+    await editorService.open(testCodeUri3, { preview: false });
+
+    const eventBus = injector.get(IEventBus);
+
+    const listener = jest.fn();
+    const disposer = eventBus.on(EditorGroupChangeEvent, listener);
+
+    await editorService.closeAll();
+
+    expect(listener).toBeCalledWith(expect.objectContaining({
+      payload: expect.objectContaining({
+        newResource: null,
+        oldResource: expect.anything(),
+      }),
+    }));
+    disposer.dispose();
+    done();
+  });
+
+  it('close last tabs should emit EditorGroupChangeEvent', async (done) => {
+
+    const testCodeUri = new URI('test://a/testUri1');
+    await editorService.open(testCodeUri, { preview: false });
+
+    const eventBus = injector.get(IEventBus);
+
+    const listener = jest.fn();
+    const disposer = eventBus.on(EditorGroupChangeEvent, listener);
+
+    await editorService.close(testCodeUri);
+
+    expect(listener).toBeCalledWith(expect.objectContaining({
+      payload: expect.objectContaining({
+        newResource: null,
+        oldResource: expect.anything(),
+      }),
+    }));
     disposer.dispose();
     done();
   });
