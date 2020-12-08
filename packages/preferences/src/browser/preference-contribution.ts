@@ -186,7 +186,7 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
 
   registerSettingSections() {
     Object.keys(this.settingSectionsWillRegister).forEach((key) => {
-      defaultSettingSections[key].forEach((section) => {
+      this.settingSectionsWillRegister[key].forEach((section) => {
         this.preferenceService.registerSettingSection(key, section);
       });
     });
