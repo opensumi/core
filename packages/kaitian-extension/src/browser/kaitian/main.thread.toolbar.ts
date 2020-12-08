@@ -97,6 +97,16 @@ export class KaitianExtensionToolbarService {
         }
       },
     });
+
+    this.commandRegistry.registerCommand({
+      id: 'kaitian-extension.toolbar.showPopover',
+    }, {
+      execute: (id: string, style) => {
+        if (this.btnDelegates.has(id)) {
+          this.btnDelegates.get(id)!.showPopOver(style);
+        }
+      },
+    });
   }
 
   registerToolbarButton(extensionId: string, extensionBasePath: string,  contribution: IToolbarButtonContribution): IDisposable {
@@ -124,6 +134,9 @@ export class KaitianExtensionToolbarService {
         styles,
         defaultState: contribution.defaultState,
         iconClass: this.iconService.fromIcon(extensionBasePath, contribution.iconPath, contribution.iconMaskMode ? IconType.Mask : IconType.Background)!,
+        // TODO: popoverComponent: getComponent(contribution.popoverComponentId)
+        // @柳千 这里要能够通过 id 获取对应组件 React.FC
+        popoverStyle: contribution.popoverStyle,
         delegate: (delegate) => {
           if (delegate) {
             this.btnDelegates.set(id, delegate);

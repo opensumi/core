@@ -12,6 +12,7 @@ import { ISCMProvider } from '@ali/ide-scm';
 import { getIcon } from '@ali/ide-core-browser';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { ExampleEditorBottomWidget } from './editor-bottom-example';
+import { ExamplePopover } from './exmaple-popover';
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, ComponentContribution, ToolBarActionContribution, NextMenuContribution, BrowserEditorContribution)
 export class StartupContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, ComponentContribution, ToolBarActionContribution, NextMenuContribution, BrowserEditorContribution {
@@ -73,6 +74,11 @@ export class StartupContribution implements CommandContribution, KeybindingContr
 
   registerToolbarActions(registry: IToolbarRegistry) {
     registry.addLocation('menu-left');
+    registry.registerToolbarActionGroup({
+      id: 'test-compact',
+      compact: true,
+      preferredLocation: 'menu-right',
+    })
     for (let i = 0; i < 6; i ++ ) {
       registry.registerToolbarAction({
         id: 'test-' + i,
@@ -85,13 +91,24 @@ export class StartupContribution implements CommandContribution, KeybindingContr
             btnStyle: i > 3 ? 'button' : 'inline',
             background: i > 4 ? 'red' : undefined,
           },
+          popoverComponent: ExamplePopover,
+          popoverStyle: {
+            noContainerStyle: i % 2 === 0,
+          },
           delegate: ((d) => {
             d?.onClick(() => {
               console.log('test ' + i + ' clicked');
+              d.showPopOver({
+                horizontalOffset: i * 10,
+              });
             });
           }),
         }),
         neverCollapse: i > 4,
+        preferredPosition: {
+          location: 'menu-right',
+          group: i === 1 || i === 2 || i === 3 ? 'test-compact' : undefined
+        }
       });
     }
     for (let i = 7; i < 10; i ++ ) {

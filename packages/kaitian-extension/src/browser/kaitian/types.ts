@@ -1,4 +1,4 @@
-import { IToolbarActionBtnStyle, IToolbarSelectStyle } from '@ali/ide-core-browser';
+import { IToolbarActionBtnStyle, IToolbarSelectStyle, IToolbarPopoverStyle } from '@ali/ide-core-browser';
 
 export interface IToolbarActionBasicContribution {
   id: string;
@@ -27,6 +27,10 @@ export interface IToolbarButtonContribution extends  IToolbarActionBasicContribu
     } & IToolbarActionBtnStyle,
   };
   defaultState?: string;
+  // popover 元素的 component id
+  popoverComponent?: string;
+
+  popoverStyle?: IToolbarPopoverStyle;
 }
 
 export interface IToolbarSelectContribution<T = any> extends IToolbarActionBasicContribution {
