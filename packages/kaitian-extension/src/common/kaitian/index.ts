@@ -12,7 +12,7 @@ export const MainThreadKaitianAPIIdentifier = {
   MainThreadLayout: createMainContextProxyIdentifier<IMainThreadLayout>('MainThreadLayout'),
   MainThreadCommon: createMainContextProxyIdentifier<IMainThreadCommon>('MainThreadCommon'),
   MainThreadToolbar: createMainContextProxyIdentifier<IMainThreadToolbar>('MainThreadToolbar'),
-  MainThreadWindow: createMainContextProxyIdentifier<IMainThreadIDEWindow>('MainThreadWindow'),
+  MainThreadIDEWindow: createMainContextProxyIdentifier<IMainThreadIDEWindow>('MainThreadIDEWindow'),
 };
 
 export const ExtHostKaitianAPIIdentifier = {
@@ -21,5 +21,5 @@ export const ExtHostKaitianAPIIdentifier = {
   ExtHostTheme: createExtHostContextProxyIdentifier<IExtHostTheme>('ExtHostTheme'),
   ExtHostCommon: createExtHostContextProxyIdentifier<IExtHostCommon>('ExtHostCommon'),
   ExtHostToolbar: createExtHostContextProxyIdentifier('ExtHostToolbar'),
-  ExtHostWindow: createExtHostContextProxyIdentifier<IExtHostIDEWindow>('ExtHostWindow'),
+  ExtHostIDEWindow: createExtHostContextProxyIdentifier<IExtHostIDEWindow>('ExtHostIDEWindow'),
 };

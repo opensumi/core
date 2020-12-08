@@ -47,12 +47,20 @@ export const FileDialog = (
 
   const hide = () => {
     const value: string[] = model.selectedFiles.map((file) => file.uri.withoutScheme().toString());
-    // 如果有文件名的，说明是保存文件的情况
+    // 如果有文件名的，说明肯定是保存文件的情况
     if (fileName && (options as ISaveDialogOptions).showNameInput && (value?.length === 1 || options.defaultUri)) {
       const filePath = value?.length === 1 ? value[0] : options.defaultUri!.path.toString();
       dialogService.hide([path.resolve(filePath!, fileName)]);
     } else {
-      dialogService.hide(value);
+      if (value.length > 0) {
+        dialogService.hide(value);
+      } else if (options.defaultUri) {
+        dialogService.hide([options.defaultUri!.path.toString()]);
+      } else if (model.treeModel && model.treeModel.root) {
+        dialogService.hide([(model.treeModel.root as Directory).uri.path.toString()]);
+      } else {
+        dialogService.hide([]);
+      }
     }
     setIsReady(false);
   };
@@ -183,7 +191,7 @@ export const FileDialog = (
   if (isOpenDialog) {
     return (
       <React.Fragment>
-        <div className={styles.file_dialog_directory_title}>{localize('dialog.file.title')}</div>
+        <div className={styles.file_dialog_directory_title}>{(options as IOpenDialogOptions).openLabel || localize('dialog.file.openLabel')}</div>
         <div className={styles.file_dialog_directory}>
           {renderDirectorySelection()}
         </div>

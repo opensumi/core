@@ -13,7 +13,7 @@ export class ExtHostIDEWindow implements IExtHostIDEWindow {
   constructor(
     private rpcProtocol: IRPCProtocol,
   ) {
-    this.proxy = this.rpcProtocol.getProxy(MainThreadKaitianAPIIdentifier.MainThreadWindow);
+    this.proxy = this.rpcProtocol.getProxy(MainThreadKaitianAPIIdentifier.MainThreadIDEWindow);
   }
 
   async createWebviewWindow(webviewId: string, options?: IIDEWindowWebviewOptions, env?: IIDEWindowWebviewEnv) {

@@ -18,7 +18,7 @@ export class MainThreadIDEWindow extends Disposable implements IMainThreadIDEWin
 
   constructor(private rpcProtocol: IRPCProtocol) {
     super();
-    this._proxy = this.rpcProtocol.getProxy(ExtHostKaitianAPIIdentifier.ExtHostWindow);
+    this._proxy = this.rpcProtocol.getProxy(ExtHostKaitianAPIIdentifier.ExtHostIDEWindow);
     // 这段逻辑主要是为了在窗口刷新前清理新建webview窗口带来的副作用，可能不是最佳方案
     // 尝试全局卸载过插件副作用，但如主题这类配置的清理，会导致在刷新前做多余的事情
     // 表现为，刷新时主题被重置，后刷新，与预期表现不符
