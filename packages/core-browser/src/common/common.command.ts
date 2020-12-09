@@ -132,6 +132,26 @@ export namespace FILE_COMMANDS {
     id: 'filetree.quitFilterMode',
     category: CATEGORY,
   };
+
+  export const NEXT: Command = {
+    id: 'filetree.next',
+    category: CATEGORY,
+  };
+
+  export const PREV: Command = {
+    id: 'filetree.prev',
+    category: CATEGORY,
+  };
+
+  export const COLLAPSE: Command = {
+    id: 'filetree.collapse',
+    category: CATEGORY,
+  };
+
+  export const EXPAND: Command = {
+    id: 'filetree.expand',
+    category: CATEGORY,
+  };
 }
 
 export namespace OPEN_EDITORS_COMMANDS {

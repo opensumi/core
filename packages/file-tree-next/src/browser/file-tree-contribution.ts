@@ -571,6 +571,30 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         }
       },
     });
+
+    commands.registerCommand(FILE_COMMANDS.NEXT, {
+      execute: () => {
+        this.fileTreeModelService.moveToNext();
+      },
+    });
+
+    commands.registerCommand(FILE_COMMANDS.PREV, {
+      execute: () => {
+        this.fileTreeModelService.moveToPrev();
+      },
+    });
+
+    commands.registerCommand(FILE_COMMANDS.COLLAPSE, {
+      execute: () => {
+        this.fileTreeModelService.collapseCurrentFile();
+      },
+    });
+
+    commands.registerCommand(FILE_COMMANDS.EXPAND, {
+      execute: () => {
+        this.fileTreeModelService.expandCurrentFile();
+      },
+    });
   }
 
   registerKeybindings(bindings: KeybindingRegistry) {
@@ -614,6 +638,30 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     bindings.registerKeybinding({
       command: FILE_COMMANDS.FILTER_CLOSE.id,
       keybinding: 'esc',
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus`,
+    });
+
+    bindings.registerKeybinding({
+      command: FILE_COMMANDS.NEXT.id,
+      keybinding: 'down',
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus`,
+    });
+
+    bindings.registerKeybinding({
+      command: FILE_COMMANDS.PREV.id,
+      keybinding: 'up',
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus`,
+    });
+
+    bindings.registerKeybinding({
+      command: FILE_COMMANDS.EXPAND.id,
+      keybinding: 'right',
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus`,
+    });
+
+    bindings.registerKeybinding({
+      command: FILE_COMMANDS.COLLAPSE.id,
+      keybinding: 'left',
       when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus`,
     });
   }

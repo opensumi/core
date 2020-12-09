@@ -15,7 +15,7 @@ import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 import { MockedStorageProvider } from '@ali/ide-core-browser/lib/mocks/storage';
 import { Directory, File } from '../../src/common/file-tree-node.define';
-import { TreeNodeType } from '@ali/ide-components';
+import { TreeNodeEvent, TreeNodeType } from '@ali/ide-components';
 import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { IContextKeyService, CorePreferences, EDITOR_COMMANDS, PreferenceService } from '@ali/ide-core-browser';
@@ -52,12 +52,16 @@ describe('FileTree should be work while on single workspace model', () => {
       promptNewTreeNode: jest.fn() as any,
       promptNewCompositeTreeNode: jest.fn() as any,
       promptRename: jest.fn() as any,
-      expandNode: (() => {}) as any,
-      collapseNode: (() => {}) as any,
+      expandNode: jest.fn() as any,
+      collapseNode: jest.fn() as any,
       ensureVisible: jest.fn() as any,
-      getModel: (() => {}) as any,
-      onDidChangeModel: (() => {}) as any,
-      onDidUpdate: (() => {}) as any,
+      getModel: (() => { }) as any,
+      onDidChangeModel: (() => { }) as any,
+      onDidUpdate: (() => { }) as any,
+      getCurrentSize: () => ({
+        width: 100,
+        height: 500,
+      }),
     };
     track = temp.track();
     root = FileUri.create(fs.realpathSync(temp.mkdirSync('file-tree-next-test')));
@@ -110,7 +114,7 @@ describe('FileTree should be work while on single workspace model', () => {
       {
         token: IMessageService,
         useValue: {
-          error: () => {},
+          error: () => { },
         },
       },
       {
@@ -120,7 +124,7 @@ describe('FileTree should be work while on single workspace model', () => {
       {
         token: INodeLogger,
         useValue: {
-          debug: () => {},
+          debug: () => { },
         },
       },
       {
@@ -134,13 +138,13 @@ describe('FileTree should be work while on single workspace model', () => {
       {
         token: IDialogService,
         useValue: {
-          warning: () => {},
+          warning: () => { },
         },
       },
       {
         token: IThemeService,
         useValue: {
-          onThemeChange: () => Disposable.create(() => {}),
+          onThemeChange: () => Disposable.create(() => { }),
         },
       },
       {
@@ -173,7 +177,7 @@ describe('FileTree should be work while on single workspace model', () => {
     });
 
     injector.mock(IContextKeyService, 'getContextValue', mockGetContextValue);
-    const fileService = injector.get(FileService, [ FileSystemNodeOptions.DEFAULT ]);
+    const fileService = injector.get(FileService, [FileSystemNodeOptions.DEFAULT]);
     injector.overrideProviders({
       token: FileServicePath,
       useValue: fileService,
@@ -255,7 +259,7 @@ describe('FileTree should be work while on single workspace model', () => {
       const decorationService = injector.get(IDecorationsService);
       // create symlink file
       await fs.ensureSymlink(filesMap[1].path, root.resolve('0_symbolic_file').withoutScheme().toString());
-      fileTreeService.onNodeRefreshed(async () => {
+      const dispose = fileTreeService.onNodeRefreshed(async () => {
         const rootNode = fileTreeModelService.treeModel.root;
         const symbolicNode = rootNode.children?.find((child: File) => child.filestat.isSymbolicLink) as File;
         const decoration = await decorationService.getDecoration(symbolicNode.uri, symbolicNode.filestat.isDirectory);
@@ -263,6 +267,7 @@ describe('FileTree should be work while on single workspace model', () => {
         expect(decoration.color).toBe('gitDecoration.ignoredResourceForeground');
         expect(decoration.badge).toBe('⤷');
         await fs.remove(root.resolve('0_symbolic_file').withoutScheme().toString());
+        dispose.dispose();
         done();
       });
       await fileTreeService.refresh();
@@ -380,6 +385,66 @@ describe('FileTree should be work while on single workspace model', () => {
       const fileDecoration = decorations.getDecorations(fileNode);
       expect(fileDecoration?.classlist).toEqual([styles.mod_selected]);
       done();
+    });
+
+    it('Move to next file node should be work', () => {
+      const treeModel = fileTreeModelService.treeModel;
+      const rootNode = treeModel.root;
+      const fileNode = rootNode.getTreeNodeAtIndex(1) as File;
+      const fileNode2 = rootNode.getTreeNodeAtIndex(2) as File;
+      fileTreeModelService.activeFileFocusedDecoration(fileNode);
+      expect(fileTreeModelService.focusedFile?.uri.toString()).toBe(fileNode.uri.toString());
+      fileTreeModelService.moveToNext();
+      expect(fileTreeModelService.focusedFile?.uri.toString()).toBe(fileNode2.uri.toString());
+    });
+
+    it('Move to prev file node should be work', () => {
+      const treeModel = fileTreeModelService.treeModel;
+      const rootNode = treeModel.root;
+      const fileNode = rootNode.getTreeNodeAtIndex(1) as File;
+      const fileNode2 = rootNode.getTreeNodeAtIndex(2) as File;
+      fileTreeModelService.activeFileFocusedDecoration(fileNode2);
+      expect(fileTreeModelService.focusedFile?.uri.toString()).toBe(fileNode2.uri.toString());
+      fileTreeModelService.moveToPrev();
+      expect(fileTreeModelService.focusedFile?.uri.toString()).toBe(fileNode.uri.toString());
+    });
+
+    it('Expand current file node should be work', async (done) => {
+      const treeModel = fileTreeModelService.treeModel;
+      const rootNode = treeModel.root;
+      const directoryNode = rootNode.getTreeNodeAtIndex(0) as Directory;
+      if (directoryNode.expanded) {
+        const dispose = directoryNode.watcher.on(TreeNodeEvent.DidChangeExpansionState, async () => {
+          fileTreeModelService.activeFileFocusedDecoration(directoryNode);
+          mockTreeHandle.expandNode.mockClear();
+          await fileTreeModelService.expandCurrentFile();
+          expect(mockTreeHandle.expandNode).toBeCalledTimes(1);
+          dispose.dispose();
+          done();
+        });
+        directoryNode.setCollapsed();
+      } else {
+        fileTreeModelService.activeFileFocusedDecoration(directoryNode);
+        mockTreeHandle.expandNode.mockClear();
+        await fileTreeModelService.expandCurrentFile();
+        expect(mockTreeHandle.expandNode).toBeCalledTimes(1);
+        done();
+      }
+    });
+
+    it('Collapse current file node should be work', async (done) => {
+      const treeModel = fileTreeModelService.treeModel;
+      const rootNode = treeModel.root;
+      const directoryNode = rootNode.getTreeNodeAtIndex(0) as Directory;
+      const dispose = directoryNode.watcher.on(TreeNodeEvent.DidChangeExpansionState, async () => {
+        fileTreeModelService.activeFileFocusedDecoration(directoryNode);
+        mockTreeHandle.collapseNode.mockClear();
+        await fileTreeModelService.collapseCurrentFile();
+        expect(mockTreeHandle.collapseNode).toBeCalledTimes(1);
+        dispose.dispose();
+        done();
+      });
+      directoryNode.setExpanded();
     });
 
     it('New File with root uri should be work', async (done) => {
@@ -549,12 +614,13 @@ describe('FileTree should be work while on single workspace model', () => {
       });
       fileTreeService.isCompactMode = true;
       fs.ensureDirSync(testFile);
-      fileTreeService.onNodeRefreshed(async () => {
+      const dispose = fileTreeService.onNodeRefreshed(async () => {
         const directoryNode = rootNode.getTreeNodeAtIndex(0) as Directory;
         expect(directoryNode.expanded).toBeTruthy();
         // cause the directory was compressed, branchSize will not increase
         expect(rootNode.branchSize).toBe(filesMap.length);
         expect(directoryNode.name).toBe(`${preNodeName}/a/b`);
+        dispose.dispose();
         done();
       });
       await fileTreeService.refresh();

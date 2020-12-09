@@ -17,6 +17,7 @@ import { FileStat, FileChangeType } from '@ali/ide-file-service';
 import { ISerializableState, TreeStateWatcher } from '@ali/ide-components/lib/recycle-tree/tree/model/treeState';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { isWindows } from '@ali/ide-components/lib/utils';
+import { FILE_TREE_NODE_HEIGHT } from '../file-tree-node';
 
 export interface IParseStore {
   files: (File | Directory)[];
@@ -681,6 +682,72 @@ export class FileTreeModelService {
       }
       this.clickTimes = 0;
     }, 200);
+  }
+
+  public moveToNext() {
+    if (!this.focusedFile) {
+      // 当前没有焦点文件时，执行无效果
+      return;
+    }
+    const currentIndex = this.treeModel.root.getIndexAtTreeNode(this.focusedFile);
+    const nextIndex = currentIndex + 1;
+    const nextFileNode = this.treeModel.root.getTreeNodeAtIndex(nextIndex);
+    const snapshot = this.explorerStorage.get<ISerializableState>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
+    const offsetHeight = (nextIndex + 1) * FILE_TREE_NODE_HEIGHT - (snapshot.scrollPosition || 0);
+    const { height } = this.fileTreeHandle.getCurrentSize();
+    if (!nextFileNode) {
+      return;
+    }
+    this.activeFileFocusedDecoration(nextFileNode as File, true);
+    if (offsetHeight > height) {
+      this.fileTreeHandle.ensureVisible(nextFileNode as File, 'end');
+    }
+  }
+
+  public moveToPrev() {
+    if (!this.focusedFile) {
+      // 当前没有焦点文件时，执行无效果
+      return;
+    }
+    const currentIndex = this.treeModel.root.getIndexAtTreeNode(this.focusedFile);
+    if (currentIndex === 0) {
+      return ;
+    }
+    const prevIndex = currentIndex - 1;
+    const prevFileNode = this.treeModel.root.getTreeNodeAtIndex(prevIndex);
+    if (!prevFileNode) {
+      return;
+    }
+    const snapshot = this.explorerStorage.get<ISerializableState>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
+    const offsetHeight = prevIndex * FILE_TREE_NODE_HEIGHT;
+    this.activeFileFocusedDecoration(prevFileNode as File, true);
+    if ((snapshot.scrollPosition || 0) > offsetHeight) {
+      this.fileTreeHandle.ensureVisible(prevFileNode as File, 'start');
+    }
+  }
+
+  public async collapseCurrentFile() {
+    if (!this.focusedFile) {
+      // 当前没有焦点文件时，执行无效果
+      return;
+    }
+    if (Directory.is(this.focusedFile)) {
+      if (this.focusedFile.expanded) {
+        await this.fileTreeHandle.collapseNode(this.focusedFile as Directory);
+      }
+    }
+  }
+
+  public async expandCurrentFile() {
+    if (!this.focusedFile) {
+      // 当前没有焦点文件时，执行无效果
+      return;
+    }
+    if (Directory.is(this.focusedFile)) {
+      if (!this.focusedFile.expanded) {
+        await this.fileTreeHandle.expandNode(this.focusedFile as Directory);
+      }
+    }
   }
 
   // 命令调用
