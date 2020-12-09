@@ -14,6 +14,7 @@ export interface IKTContextOptions {
 
 export interface IKTWorkerExtensionContextOptions extends IKTContextOptions {
   staticServicePath: string;
+  resolveStaticResource(uri: URI): Promise<URI>;
 }
 
 export interface IKTExtensionContext {
@@ -32,6 +33,13 @@ export interface IKTWorkerExtensionContext extends IKTExtensionContext {
    * @return The absolute path of the resource.
    */
   asAbsolutePath(relativePath: string): string;
+
+  /**
+   * @param relativePath 相对路径
+   * @return 返回经过 static 转换后的 href
+   * asAbsolutePath 是同步的，因此这里额外加个异步 api
+   */
+  asHref(relativePath: string): Promise<string>;
 }
 
 export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
@@ -49,6 +57,8 @@ export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
 
   private _storage: ExtHostStorage;
 
+  private _resolveStaticResource: (uri: URI) => Promise<URI>;
+
   constructor(
     options: IKTWorkerExtensionContextOptions,
   ) {
@@ -60,18 +70,18 @@ export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
     this.workspaceState = new ExtensionMemento(extensionId, false, storageProxy);
     this.globalState = new ExtensionMemento(extensionId, true, storageProxy);
     this.registerExtendModuleService = registerExtendModuleService;
+    this._resolveStaticResource = options.resolveStaticResource;
   }
 
   get globalStoragePath() {
     return this._storage.storagePath.globalStoragePath;
   }
 
+  // CARE: 保持和 node 的接口一致
+  // 这里的值对于前端获取意义不大，之前的实现有问题，不应该耦合 /assets?path= 的路径，实际集成测不一定是这种形式地址
+  // 如果需要 href，推荐使用 asHref
   get extensionPath() {
-    const assetsUri = new URI(this.staticServicePath);
-    const extensionAssetPath = assetsUri.withPath('assets').withQuery(URI.stringifyQuery({
-      path: this._extensionPath,
-    })).toString();
-    return extensionAssetPath;
+    return this._extensionPath;
   }
 
   asAbsolutePath(relativePath: string, scheme: 'http' | 'file' = 'http'): string {
@@ -84,6 +94,17 @@ export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
       path: path.join(this._extensionPath, relativePath),
     })).toString();
     return decodeURIComponent(assetSPath);
+  }
+
+  async asHref(relativePath: string) {
+    let extensionUri = new URI(this._extensionPath);
+    if (!extensionUri.scheme) {
+      extensionUri = URI.file(this._extensionPath);
+    }
+    relativePath = relativePath.replace(/^\.\//, '');
+    const assetsUri = extensionUri.resolve(relativePath);
+    // CARE：这里防止 ?a=b 的 = 被编码，但是对于文件路径含有保留字符也可能会导致问题，框架中的 resolveStaticResource 这样实现的，看起来可能出问题概率不大
+    return (await this._resolveStaticResource(assetsUri)).toString(true);
   }
 }
 

@@ -1,4 +1,4 @@
-import { Emitter, Deferred, IExtensionProps } from '@ali/ide-core-common';
+import { Emitter, Deferred, IExtensionProps, URI } from '@ali/ide-core-common';
 import {
   RPCProtocol, ProxyIdentifier,
 } from '@ali/ide-connection';
@@ -206,6 +206,11 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
     const registerExtendFn = (exportsData) => {
       return this.registerExtendModuleService(exportsData, extension);
     };
+    const resolveStaticResource = async (uri: URI) => {
+      const assetUriComponent = await this.mainThreadExtensionService.$resolveStaticResource(uri.codeUri);
+      return URI.from(assetUriComponent);
+    };
+
     const context = new KTWorkerExtensionContext({
       extensionId: extension.id,
       extendProxy: componentProxy,
@@ -213,6 +218,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
       extensionPath: extension.realPath,
       staticServicePath: this.staticServicePath,
       storageProxy: this.storage,
+      resolveStaticResource,
     });
 
     return Promise.all([
@@ -247,7 +253,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
       }
 
       // https://developer.mozilla.org/en-US/docs/Tools/Debugger/How_to/Debug_eval_sources
-      const initFn = new Function('module', 'exports', 'require', 'window', await response.text() + `//# sourceURL=${extension.workerScriptPath}`);
+      const initFn = new Function('module', 'exports', 'require', 'window', await response.text() + `\n//# sourceURL=${extension.workerScriptPath}`);
       const _exports = {};
 
       const _module = { exports: _exports };

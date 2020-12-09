@@ -6,7 +6,7 @@ import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-i
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { ExtensionServiceImpl } from '../../src/browser/extension.service';
 import { WorkerExtensionService } from '../../src/browser/extension.worker.service';
-import { IContextKeyService, ILoggerManagerClient, StorageProvider, DefaultStorageProvider, PreferenceProvider, AppConfig, Uri, CommandRegistryImpl, CommandRegistry, IPreferenceSettingsService, KeybindingRegistryImpl, KeybindingRegistry, IFileServiceClient } from '@ali/ide-core-browser';
+import { IContextKeyService, ILoggerManagerClient, StorageProvider, DefaultStorageProvider, PreferenceProvider, AppConfig, Uri, CommandRegistryImpl, CommandRegistry, IPreferenceSettingsService, KeybindingRegistryImpl, KeybindingRegistry, IFileServiceClient, URI } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 import { IThemeService, IIconService } from '@ali/ide-theme/lib/common';
 import { IconService } from '@ali/ide-theme/lib/browser';
@@ -308,5 +308,23 @@ describe('Extension Worker Service', () => {
     await workerService.activeExtension(mockExtension);
     const activated = await workerService.getActivatedExtensions();
     expect(activated.find((e) => e.id === mockExtension.id)).toBeTruthy();
+  });
+
+  it('should get correct worker script uri', async () => {
+    let extensionPath = '/__mock__/extension';
+    const workerMain = './worker.js';
+    const getWorkerURI = () => {
+      let extUri = new URI(extensionPath);
+      if (!extUri.scheme) {
+        extUri = URI.file(extensionPath);
+      }
+      const fixedWorkerMain = workerMain.replace(/^\.\//, '');
+      return extUri.resolve(fixedWorkerMain);
+    };
+
+    expect(getWorkerURI().toString()).toBe(`file://${extensionPath}/worker.js`);
+
+    extensionPath = 'kt-ext://host/__mock__/extension';
+    expect(getWorkerURI().toString()).toBe(`${extensionPath}/worker.js`);
   });
 });
