@@ -74,6 +74,24 @@ export function createWorkspaceApiFactory(
     createFileSystemWatcher: (pattern, ignoreCreate, ignoreChange, ignoreDelete): vscode.FileSystemWatcher => {
       return extHostFileSystemEvent.createFileSystemWatcher(fromGlobPattern(pattern), ignoreCreate, ignoreChange, ignoreDelete);
     },
+    onDidCreateFiles: (listener: (e: vscode.FileCreateEvent) => any, thisArg?: any, disposables?: vscode.Disposable[]) => {
+      return extHostFileSystemEvent.onDidCreateFile(listener, thisArg, disposables);
+    },
+    onDidDeleteFiles: (listener: (e: vscode.FileDeleteEvent) => any, thisArg?: any, disposables?: vscode.Disposable[]) => {
+      return extHostFileSystemEvent.onDidDeleteFile(listener, thisArg, disposables);
+    },
+    onDidRenameFiles: (listener: (e: vscode.FileRenameEvent) => any, thisArg?: any, disposables?: vscode.Disposable[]) => {
+      return extHostFileSystemEvent.onDidRenameFile(listener, thisArg, disposables);
+    },
+    onWillCreateFiles: (listener: (e: vscode.FileWillCreateEvent) => any, thisArg?: any, disposables?: vscode.Disposable[]) => {
+      return extHostFileSystemEvent.getOnWillCreateFileEvent(extension)(listener, thisArg, disposables);
+    },
+    onWillDeleteFiles: (listener: (e: vscode.FileWillDeleteEvent) => any, thisArg?: any, disposables?: vscode.Disposable[]) => {
+      return extHostFileSystemEvent.getOnWillDeleteFileEvent(extension)(listener, thisArg, disposables);
+    },
+    onWillRenameFiles: (listener: (e: vscode.FileWillRenameEvent) => any, thisArg?: any, disposables?: vscode.Disposable[]) => {
+      return extHostFileSystemEvent.getOnWillRenameFileEvent(extension)(listener, thisArg, disposables);
+    },
     onDidRenameFile: extHostWorkspace.onDidRenameFile,
     saveAll: () => {
       return extHostWorkspace.saveAll();

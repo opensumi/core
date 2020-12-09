@@ -1,4 +1,4 @@
-import { URI, IRange, BasicEvent } from '@ali/ide-core-common';
+import { Uri, URI, IRange, BasicEvent, FileStat, IProgress, IProgressStep, CancellationToken, WaitUntilEvent, IDisposable, Event } from '@ali/ide-core-common';
 import { EndOfLineSequence } from '@ali/ide-editor';
 
 // 对文件位置(添加，删除，移动, 复制)
@@ -46,6 +46,77 @@ export interface IWorkspaceEditService {
   // 回复最上层的文件变更
   revertTopFileEdit(): Promise<void>;
 
+}
+
+export const IWorkspaceFileService = Symbol('IWorkspaceFileService');
+
+export const enum FileOperation {
+  CREATE,
+  DELETE,
+  MOVE,
+  COPY,
+}
+
+export const FILE_OPERATION_TIMEOUT = 5000;
+
+export interface SourceTargetPair {
+
+  /**
+   * The source resource that is defined for move operations.
+   */
+  readonly source?: Uri;
+
+  /**
+   * The target resource the event is about.
+   */
+  readonly target: Uri;
+}
+
+export interface IWorkspaceFileOperationParticipant {
+
+  /**
+   * Participate in a file operation of working copies. Allows to
+   * change the working copies before they are being saved to disk.
+   */
+  participate(
+    files: SourceTargetPair[],
+    operation: FileOperation,
+    progress: IProgress<IProgressStep>,
+    timeout: number,
+    token: CancellationToken,
+  ): Promise<void>;
+}
+
+export interface WorkspaceFileEvent extends WaitUntilEvent {
+
+  /**
+   * An identifier to correlate the operation through the
+   * different event types (before, after, error).
+   */
+  readonly correlationId: number;
+
+  /**
+   * The file operation that is taking place.
+   */
+  readonly operation: FileOperation;
+
+  /**
+   * The array of source/target pair of files involved in given operation.
+   */
+  readonly files: SourceTargetPair[];
+}
+
+export interface IWorkspaceFileService {
+  readonly onWillRunWorkspaceFileOperation: Event<WorkspaceFileEvent>;
+  readonly onDidFailWorkspaceFileOperation: Event<WorkspaceFileEvent>;
+  readonly onDidRunWorkspaceFileOperation: Event<WorkspaceFileEvent>;
+
+  create(resource: URI, contents?: string, options?: { overwrite?: boolean }): Promise<FileStat>;
+  createFolder(resource: URI): Promise<FileStat>;
+  move(files: Required<SourceTargetPair>[], options?: { overwrite?: boolean }): Promise<FileStat[]>;
+  copy(files: Required<SourceTargetPair>[], options?: { overwrite?: boolean }): Promise<FileStat[]>;
+  delete(resources: URI[], options?: { useTrash?: boolean, recursive?: boolean }): Promise<void>;
+  registerFileOperationParticipant(participant: IWorkspaceFileOperationParticipant): IDisposable;
 }
 
 export class WorkspaceEditDidRenameFileEvent extends BasicEvent<{oldUri: URI, newUri: URI}> {}

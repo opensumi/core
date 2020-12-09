@@ -1,4 +1,4 @@
-import { Emitter, IFileServiceClient, URI, Uri, IEventBus, PreferenceScope, ILoggerManagerClient, FileUri, CommonServerPath, OS, IApplicationService } from '@ali/ide-core-common';
+import { Emitter, IFileServiceClient, URI, Uri, IEventBus, PreferenceScope, ILoggerManagerClient, FileUri, CommonServerPath, OS, IApplicationService, DisposableCollection } from '@ali/ide-core-common';
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -7,7 +7,7 @@ import * as util from 'util';
 import vscodeUri from 'vscode-uri';
 import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MainThreadWorkspace } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.workspace';
+import { MainThreadWorkspace } from '../../src/browser/vscode/api/main.thread.workspace';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from '../../src/hosted/api/vscode/ext.host.workspace';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@ali/ide-kaitian-extension/lib/common/vscode';
 import { ExtHostMessage } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.message';
@@ -52,6 +52,12 @@ import { ExtHostFileSystemEvent } from '@ali/ide-kaitian-extension/lib/hosted/ap
 import { MockLoggerManagerClient } from '../__mock__/loggermanager';
 import temp = require('temp');
 import { IWebviewService } from '@ali/ide-webview';
+import * as vscode from 'vscode';
+import { Position, WorkspaceEdit } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
+import { IWorkspaceEditService, IWorkspaceFileService } from '@ali/ide-workspace-edit';
+import { WorkspaceEditServiceImpl } from '@ali/ide-workspace-edit/lib/browser/workspace-edit.service';
+import { WorkspaceFileService } from '@ali/ide-workspace-edit/lib/browser/workspace-file.service';
+import { MainThreadFileSystemEvent } from '../../lib/browser/vscode/api/main.thread.file-system-event';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -87,11 +93,22 @@ describe('MainThreadWorkspace API Test Suite', () => {
   let workspaceService: MockWorkspaceService;
   let extHostDocs: ExtensionDocumentDataManagerImpl;
   let eventBus: IEventBus;
+  const disposables = new DisposableCollection();
+  const track = temp.track();
+  const testEventDir = FileUri.create(fs.realpathSync(temp.mkdirSync('workspace-api-test')));
 
   const injector = createBrowserInjector([ExtensionStorageModule], new MockInjector([
     {
       token: IWorkspaceService,
       useClass: MockWorkspaceService,
+    },
+    {
+      token: IWorkspaceEditService,
+      useClass: WorkspaceEditServiceImpl,
+    },
+    {
+      token: IWorkspaceFileService,
+      useClass: WorkspaceFileService,
     },
     {
       token: WorkbenchEditorService,
@@ -215,8 +232,9 @@ describe('MainThreadWorkspace API Test Suite', () => {
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadWebview, injector.get(MainThreadWebview, [rpcProtocolMain]));
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadDocuments, injector.get(MainThreadExtensionDocumentData, [rpcProtocolMain]));
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadFileSystem, injector.get(MainThreadFileSystem, [rpcProtocolMain]));
+    injector.get(MainThreadFileSystemEvent, [rpcProtocolMain]);
     const extHostFileSystem = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostFileSystem, new ExtHostFileSystem(rpcProtocolExt));
-    const extHostFileSystemEvent = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostFileSystemEvent, new ExtHostFileSystemEvent());
+    const extHostFileSystemEvent = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostFileSystemEvent, new ExtHostFileSystemEvent(rpcProtocolExt, extHostDocs));
     const extHostPreference = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostPreference, new ExtHostPreference(rpcProtocolExt, extHostWorkspace)) as ExtHostPreference;
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadPreference, injector.get(MainThreadPreference, [rpcProtocolMain]));
     extHostWorkspaceAPI = createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem, extHostFileSystemEvent, extHostTask, mockExtensions[0]);
@@ -226,6 +244,10 @@ describe('MainThreadWorkspace API Test Suite', () => {
     workspaceService = injector.get(IWorkspaceService);
     eventBus = injector.get(IEventBus);
     done();
+  });
+  afterAll(() => {
+    track.cleanupSync();
+    disposables.dispose();
   });
 
   describe('MainThreadWorkspace fs API Test Suite', () => {
@@ -273,7 +295,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
     // TODO more test case
   });
 
-  it('should able to updateWorkspaceFolders', async (done) => {
+  it('should be able to updateWorkspaceFolders', async (done) => {
     const rawUri = vscodeUri.file(path.join(__dirname));
     extHostWorkspaceAPI.updateWorkspaceFolders(0, 0, { uri: rawUri });
     setTimeout(() => {
@@ -284,7 +306,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
     });
   });
 
-  it('should able to openTextDocument', async (done) => {
+  it('should be able to openTextDocument', async (done) => {
     const filePath = path.join(__dirname, 'main.thread.output.test.ts');
     const disposeable = eventBus.on(EditorDocumentModelCreationEvent, (e) => {
       expect(e.payload.content).toBe(fs.readFileSync(filePath).toString());
@@ -295,17 +317,17 @@ describe('MainThreadWorkspace API Test Suite', () => {
     extHostWorkspaceAPI.openTextDocument(vscodeUri.file(filePath));
   });
 
-  it('should able to getConfiguration and use default value', async (done) => {
+  it('should be able to getConfiguration and use default value', async (done) => {
     const config = extHostWorkspaceAPI.getConfiguration('a.b', '', '');
     expect(config.get('mockobj.key', 'defaultvalue')).toBe('defaultvalue');
 
     done();
   });
 
-  it.skip('should able to registerTextDocumentContentProvider', async (done) => {
+  it('should be able to registerTextDocumentContentProvider', async (done) => {
     const emitter = new Emitter<any>();
     const testcase = 'testcontent';
-    const testuri = vscodeUri.file('test1://path/to/content');
+    const testuri = vscodeUri.file('/path/to/content').with({scheme: 'test1'});
     const disposeable = extHostWorkspaceAPI.registerTextDocumentContentProvider('test1', {
       onDidChange: emitter.event,
       provideTextDocumentContent: (uri, token) => {
@@ -328,6 +350,124 @@ describe('MainThreadWorkspace API Test Suite', () => {
       disposable.dispose();
     });
     extHostWorkspaceAPI.openTextDocument(vscodeUri.file(filePath));
+  });
+
+  it('should reveive onWillCreateFiles/onDidCreateFiles event', async (done) => {
+    const newUri = testEventDir.withPath(testEventDir.path.join('./test-create')).codeUri;
+    let onWillCreate: vscode.FileWillCreateEvent | undefined;
+    let onDidCreate: vscode.FileCreateEvent | undefined;
+    disposables.push(extHostWorkspaceAPI.onWillCreateFiles((e) => onWillCreate = e));
+    disposables.push(extHostWorkspaceAPI.onDidCreateFiles((e) => onDidCreate = e));
+
+    const edit = new WorkspaceEdit();
+    edit.createFile(newUri);
+
+    const success = await extHostWorkspaceAPI.applyEdit(edit);
+    expect(success).toBeTruthy();
+
+    expect(onWillCreate?.files.length).toEqual(1);
+    expect(onWillCreate?.files[0].toString()).toEqual(newUri.toString());
+
+    expect(onDidCreate?.files.length).toEqual(1);
+    expect(onDidCreate?.files[0].toString()).toEqual(newUri.toString());
+    done();
+  });
+
+  it.skip('should be able to make changes before file create', async (done) => {
+    const randomFile = path.join(testEventDir.codeUri.fsPath, Math.random().toString(18).slice(2, 5));
+    fs.writeFileSync(randomFile, '');
+    const doc = await extHostWorkspaceAPI.openTextDocument(randomFile);
+
+    const newUri = testEventDir.withPath(testEventDir.path.join('./test-create2')).codeUri;
+
+    disposables.push(extHostWorkspaceAPI.onWillCreateFiles((e) => {
+      const edit = new WorkspaceEdit();
+      // FIXME: insert并没有作用在document对象上 @吭头
+      edit.insert(Uri.file(randomFile), new Position(0, 0), 'HELLO');
+      e.waitUntil(Promise.resolve(edit));
+    }));
+
+    const edit2 = new WorkspaceEdit();
+    edit2.createFile(newUri);
+
+    const success = await extHostWorkspaceAPI.applyEdit(edit2);
+    expect(success).toBeTruthy();
+
+    expect(doc?.getText()).toEqual('HELLO');
+    done();
+  });
+
+  it('should reveive onWillDeleteFiles/onDidDeleteFiles event', async (done) => {
+    const newUri = testEventDir.withPath(testEventDir.path.join('./test-create3')).codeUri;
+    fs.writeFileSync(newUri.fsPath, '');
+    let onWillCreate: vscode.FileWillDeleteEvent | undefined;
+    let onDidCreate: vscode.FileDeleteEvent | undefined;
+    disposables.push(extHostWorkspaceAPI.onWillDeleteFiles((e) => onWillCreate = e));
+    disposables.push(extHostWorkspaceAPI.onDidDeleteFiles((e) => onDidCreate = e));
+
+    const edit = new WorkspaceEdit();
+    edit.deleteFile(newUri);
+
+    const success = await extHostWorkspaceAPI.applyEdit(edit);
+    expect(success).toBeTruthy();
+
+    expect(onWillCreate?.files.length).toEqual(1);
+    expect(onWillCreate?.files[0].toString()).toEqual(newUri.toString());
+
+    expect(onDidCreate?.files.length).toEqual(1);
+    expect(onDidCreate?.files[0].toString()).toEqual(newUri.toString());
+    done();
+  });
+
+  it('should be able to make changes before file delete', async (done) => {
+    const randomFile = path.join(testEventDir.codeUri.fsPath, Math.random().toString(18).slice(2, 5));
+    const randomFile2 = path.join(testEventDir.codeUri.fsPath, Math.random().toString(18).slice(2, 5));
+    fs.writeFileSync(randomFile, '');
+    fs.writeFileSync(randomFile2, '');
+
+    disposables.push(extHostWorkspaceAPI.onWillCreateFiles((e) => {
+      if (e.files[0].toString() === randomFile) {
+        const edit = new WorkspaceEdit();
+        edit.deleteFile(Uri.file(randomFile2));
+        e.waitUntil(Promise.resolve(edit));
+      }
+    }));
+
+    const edit2 = new WorkspaceEdit();
+    edit2.deleteFile(Uri.file(randomFile));
+
+    const success = await extHostWorkspaceAPI.applyEdit(edit2);
+    expect(success).toBeTruthy();
+    done();
+  });
+
+  it('should reveive onWillRenameFiles/onDidRenameFiles event', async (done) => {
+    const oldUri = Uri.file(path.join(testEventDir.codeUri.fsPath, Math.random().toString(18).slice(2, 5)));
+    const newUri = Uri.file(path.join(testEventDir.codeUri.fsPath, Math.random().toString(18).slice(2, 5)));
+    fs.writeFileSync(oldUri.fsPath, '');
+
+    let onWillRename: vscode.FileWillRenameEvent | undefined;
+    let onDidRename: vscode.FileRenameEvent | undefined;
+
+    disposables.push(extHostWorkspaceAPI.onWillRenameFiles((e) => onWillRename = e));
+    disposables.push(extHostWorkspaceAPI.onDidRenameFiles((e) => onDidRename = e));
+
+    const edit = new WorkspaceEdit();
+    edit.renameFile(oldUri, newUri);
+
+    const success = await extHostWorkspaceAPI.applyEdit(edit);
+    expect(success).toBeTruthy();
+
+    expect(onWillRename).toBeDefined();
+    expect(onWillRename?.files.length).toEqual(1);
+    expect(onWillRename?.files[0].oldUri.toString()).toEqual(oldUri.toString());
+    expect(onWillRename?.files[0].newUri.toString()).toEqual(newUri.toString());
+
+    expect(onDidRename).toBeDefined();
+    expect(onDidRename?.files.length).toEqual(1);
+    expect(onDidRename?.files[0].oldUri.toString()).toEqual(oldUri.toString());
+    expect(onDidRename?.files[0].newUri.toString()).toEqual(newUri.toString());
+    done();
   });
 
   it('should receive onDidChangeWorkspaceFolders when workspace folder has changed', async (done) => {

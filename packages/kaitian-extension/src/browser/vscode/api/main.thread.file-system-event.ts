@@ -1,6 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { DisposableStore, URI } from '@ali/ide-core-common';
 import { IFileServiceClient, FileChangeType } from '@ali/ide-file-service';
+import { IWorkspaceFileService } from '@ali/ide-workspace-edit';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtHostFileSystemEvent, FileSystemEvents } from '../../../common/vscode/file-system';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
@@ -9,6 +10,9 @@ import { ExtHostAPIIdentifier } from '../../../common/vscode';
 export class MainThreadFileSystemEvent {
   @Autowired(IFileServiceClient)
   fileService: IFileServiceClient;
+
+  @Autowired(IWorkspaceFileService)
+  workspaceFileService: IWorkspaceFileService;
 
   private readonly _listener = new DisposableStore();
 
@@ -44,7 +48,16 @@ export class MainThreadFileSystemEvent {
       events.changed.length = 0;
       events.deleted.length = 0;
     }));
-    // TODO: 部分不通过fs-client的文件读写也要发事件
+
+    // BEFORE file operation
+    this.workspaceFileService.registerFileOperationParticipant({
+      participate: (files, operation, progress, timeout, token) => {
+        return proxy.$onWillRunFileOperation(operation, files, timeout, token);
+      },
+    });
+
+    // AFTER file operation
+    this._listener.add(this.workspaceFileService.onDidRunWorkspaceFileOperation((e) => proxy.$onDidRunFileOperation(e.operation, e.files)));
   }
 
   dispose(): void {

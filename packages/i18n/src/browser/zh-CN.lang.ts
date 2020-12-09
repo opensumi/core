@@ -640,5 +640,9 @@ export const localizationBundle = {
     'variable.list.all': '所有已注册的变量',
     'variable.registered.variables': '已注册变量',
 
+    'fileOperation.create': '执行文件创建关联操作中……',
+    'fileOperation.delete': '执行文件删除关联操作中……',
+    'fileOperation.copy': '执行文件拷贝关联操作中……',
+    'fileOperation.move': '执行文件移动关联操作中……',
   },
 };

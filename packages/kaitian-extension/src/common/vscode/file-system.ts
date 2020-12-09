@@ -1,5 +1,6 @@
-import { Uri, Event, IDisposable } from '@ali/ide-core-common';
+import { Uri, Event, IDisposable, CancellationToken } from '@ali/ide-core-common';
 import { FileSystemProviderCapabilities, FileChange } from '@ali/ide-file-service';
+import { FileOperation } from '@ali/ide-workspace-edit';
 import { Disposable } from './ext-types';
 import { UriComponents } from './models';
 
@@ -89,11 +90,9 @@ export interface FileStat {
   size: number;
 }
 
-export const enum FileOperation {
-  CREATE,
-  DELETE,
-  MOVE,
-  COPY,
+export interface SourceTargetPair {
+  source?: UriComponents;
+  target: UriComponents;
 }
 
 export interface FileOverwriteOptions {
@@ -103,20 +102,20 @@ export interface FileOverwriteOptions {
 export interface FileReadStreamOptions {
 
   /**
-	 * Is an integer specifying where to begin reading from in the file. If position is undefined,
-	 * data will be read from the current file position.
-	 */
+   * Is an integer specifying where to begin reading from in the file. If position is undefined,
+   * data will be read from the current file position.
+   */
   readonly position?: number;
 
   /**
-	 * Is an integer specifying how many bytes to read from the file. By default, all bytes
-	 * will be read.
-	 */
+   * Is an integer specifying how many bytes to read from the file. By default, all bytes
+   * will be read.
+   */
   readonly length?: number;
 
   /**
-	 * If provided, the size of the file will be checked against the limits.
-	 */
+   * If provided, the size of the file will be checked against the limits.
+   */
   limits?: {
     readonly size?: number;
     readonly memory?: number;
@@ -372,7 +371,6 @@ export interface FileSystemEvents {
 
 export interface IExtHostFileSystemEvent {
   $onFileEvent(events: FileSystemEvents): void;
-  // TODO: api update
-  // $onWillRunFileOperation(operation: FileOperation, target: UriComponents, source: UriComponents | undefined, timeout: number, token: CancellationToken): Promise<any>;
-  // $onDidRunFileOperation(operation: FileOperation, target: UriComponents, source: UriComponents | undefined): void;
+  $onWillRunFileOperation(operation: FileOperation, files: SourceTargetPair[], timeout: number, token: CancellationToken): Promise<any>;
+  $onDidRunFileOperation(operation: FileOperation, files: SourceTargetPair[]): void;
 }
