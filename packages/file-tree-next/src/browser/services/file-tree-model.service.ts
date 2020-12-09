@@ -710,26 +710,26 @@ export class FileTreeModelService {
     }
   }
 
-  public collapseCurrentFile() {
+  public async collapseCurrentFile() {
     if (!this.focusedFile) {
       // 当前没有焦点文件时，执行无效果
       return;
     }
     if (Directory.is(this.focusedFile)) {
       if (this.focusedFile.expanded) {
-        this.fileTreeHandle.collapseNode(this.focusedFile as Directory);
+        await this.fileTreeHandle.collapseNode(this.focusedFile as Directory);
       }
     }
   }
 
-  public expandCurrentFile() {
+  public async expandCurrentFile() {
     if (!this.focusedFile) {
       // 当前没有焦点文件时，执行无效果
       return;
     }
     if (Directory.is(this.focusedFile)) {
       if (!this.focusedFile.expanded) {
-        this.fileTreeHandle.expandNode(this.focusedFile as Directory);
+        await this.fileTreeHandle.expandNode(this.focusedFile as Directory);
       }
     }
   }
