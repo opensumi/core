@@ -91,7 +91,7 @@ export function createApiFactory(
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem, extHostFileSystemEvent, extHostTasks, extension),
       env: createEnvApiFactory(rpcProtocol, extensionService, extHostEnv, extHostTerminal),
       debug: createDebugApiFactory(extHostDebug),
-      version: '1.37.0',
+      version: appConfig.customVSCodeEngineVersion || '1.37.0',
       comments: createCommentsApiFactory(extension, extHostComments),
       extensions: createExtensionsApiFactory(extensionService),
       tasks: createTaskApiFactory(rpcProtocol, extensionService, extHostTasks, extension),
