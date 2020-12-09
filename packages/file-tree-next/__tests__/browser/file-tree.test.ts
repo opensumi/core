@@ -58,6 +58,10 @@ describe('FileTree should be work while on single workspace model', () => {
       getModel: (() => { }) as any,
       onDidChangeModel: (() => { }) as any,
       onDidUpdate: (() => { }) as any,
+      getCurrentSize: () => ({
+        width: 100,
+        height: 500,
+      }),
     };
     track = temp.track();
     root = FileUri.create(fs.realpathSync(temp.mkdirSync('file-tree-next-test')));

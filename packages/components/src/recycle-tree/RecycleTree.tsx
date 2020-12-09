@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FixedSizeList, Align } from 'react-window';
+import { FixedSizeList } from 'react-window';
 import { TreeModel } from './tree/model/TreeModel';
 import { TreeNode, CompositeTreeNode, spliceArray } from './tree';
 import { RenamePromptHandle, PromptHandle } from './prompt';
@@ -12,9 +12,16 @@ import * as cls from 'classnames';
 import * as fuzzy from 'fuzzy';
 import './recycle-tree.less';
 
+export type IRecycleTreeAlign = 'start' | 'center' | 'end' | 'auto';
+
 export interface IModelChange {
   preModel: TreeModel;
   nextModel: TreeModel;
+}
+
+export interface IRecycleTreeSize {
+  width: number;
+  height: number;
 }
 
 export interface IRecycleTreeProps {
@@ -117,10 +124,17 @@ export interface IRecycleTreeHandle {
    * 定位节点位置，滚动条将会滚动到对应可视区域，需要手动控制是否稳定后再进行节点定位
    *
    * @param pathOrTreeNode 节点或者节点路径
-   * @param align Align
+   * @param align IRecycleTreeAlign
    * @param untilStable 是否在节点稳定时再进行定位操作，部分Tree可能在定位过程中会有不断传入的变化，如文件树
    */
-  ensureVisible(pathOrTreeNode: string | TreeNode | CompositeTreeNode, align?: Align, untilStable?: boolean): Promise<TreeNode | undefined>;
+  ensureVisible(pathOrTreeNode: string | TreeNode | CompositeTreeNode, align?: IRecycleTreeAlign, untilStable?: boolean): Promise<TreeNode | undefined>;
+  /**
+   * 获取当前Tree的宽高信息
+   *
+   * @returns {IRecycleTreeSize}
+   * @memberof IRecycleTreeHandle
+   */
+  getCurrentSize(): IRecycleTreeSize;
   /**
    * 获取当前TreeModel
    *
@@ -392,7 +406,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
   }
 
-  private ensureVisible = async (pathOrTreeNode: string | TreeNode | CompositeTreeNode, align: Align = 'auto', untilStable: boolean = false): Promise<TreeNode | undefined> => {
+  private ensureVisible = async (pathOrTreeNode: string | TreeNode | CompositeTreeNode, align: IRecycleTreeAlign = 'auto', untilStable: boolean = false): Promise<TreeNode | undefined> => {
     const { root } = this.props.model;
     const node = typeof pathOrTreeNode === 'string'
       ? await root.forceLoadTreeNodeAtPath(pathOrTreeNode)
@@ -416,7 +430,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     return node as TreeNode;
   }
 
-  private tryScrollIntoView(node: TreeNode | CompositeTreeNode | PromptHandle, align: Align = 'auto') {
+  private tryScrollIntoView(node: TreeNode | CompositeTreeNode | PromptHandle, align: IRecycleTreeAlign = 'auto') {
     const { root } = this.props.model;
     if (node.constructor === NewPromptHandle && !(node as NewPromptHandle).destroyed) {
       this.listRef.current?.scrollToItem(this.newPromptInsertionIndex);
@@ -425,7 +439,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
   }
 
-  private tryScrollIntoViewWhileStable(node: TreeNode | CompositeTreeNode | PromptHandle, align: Align = 'auto') {
+  private tryScrollIntoViewWhileStable(node: TreeNode | CompositeTreeNode | PromptHandle, align: IRecycleTreeAlign = 'auto') {
     const { root } = this.props.model;
     if (this.tryEnsureVisibleTimes > RecycleTree.TRY_ENSURE_VISIBLE_MAX_TIMES) {
       this.tryEnsureVisibleTimes = 0;
@@ -461,6 +475,10 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         collapseNode: this.collapseNode,
         ensureVisible: this.ensureVisible,
         getModel: () => this.props.model,
+        getCurrentSize: () => ({
+          width: this.props.width,
+          height: this.props.height,
+        }),
         onDidChangeModel: this.onDidModelChangeEmitter.event,
         onDidUpdate: this.onDidUpdateEmitter.event,
         onOnceDidUpdate: Event.once(this.onDidUpdateEmitter.event),
