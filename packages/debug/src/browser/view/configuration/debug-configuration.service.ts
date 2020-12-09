@@ -57,6 +57,21 @@ export class DebugConfigurationService {
     if (!!preValue) {
       if (hasConfig) {
         this.updateCurrentValue(preValue);
+      } else {
+        // 当找不到配置项时，根据下标顺序查找对应位置配置项
+        const valueIndex = preValue.indexOf('__CONF__');
+        const configurationName = preValue.slice(0, valueIndex);
+        let nextValue;
+        if (this.configurationOptions.length > 0) {
+          let configuration = this.configurationOptions.find((option) => option.configuration.name === configurationName);
+          if (!!configuration) {
+            configuration = this.configurationOptions[0];
+          }
+          nextValue  = this.toValue(configuration!);
+        } else {
+          nextValue = '__NO_CONF__';
+        }
+        this.updateCurrentValue(nextValue);
       }
     } else if (this.debugConfigurationManager.current) {
       this.updateCurrentValue(this.toValue(this.debugConfigurationManager.current));
