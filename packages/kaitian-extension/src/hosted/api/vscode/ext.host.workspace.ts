@@ -74,13 +74,13 @@ export function createWorkspaceApiFactory(
     createFileSystemWatcher: (pattern, ignoreCreate, ignoreChange, ignoreDelete): vscode.FileSystemWatcher => {
       return extHostFileSystemEvent.createFileSystemWatcher(fromGlobPattern(pattern), ignoreCreate, ignoreChange, ignoreDelete);
     },
-    onDidCreateFiles: (listener, thisArg, disposables) => {
+    onDidCreateFiles: (listener: (e: vscode.FileCreateEvent) => any, thisArg?: any, disposables?: vscode.Disposable[]) => {
       return extHostFileSystemEvent.onDidCreateFile(listener, thisArg, disposables);
     },
-    onDidDeleteFiles: (listener, thisArg, disposables) => {
+    onDidDeleteFiles: (listener: (e: vscode.FileDeleteEvent) => any, thisArg?: any, disposables?: vscode.Disposable[]) => {
       return extHostFileSystemEvent.onDidDeleteFile(listener, thisArg, disposables);
     },
-    onDidRenameFiles: (listener, thisArg, disposables) => {
+    onDidRenameFiles: (listener: (e: vscode.FileRenameEvent) => any, thisArg?: any, disposables?: vscode.Disposable[]) => {
       return extHostFileSystemEvent.onDidRenameFile(listener, thisArg, disposables);
     },
     onWillCreateFiles: (listener: (e: vscode.FileWillCreateEvent) => any, thisArg?: any, disposables?: vscode.Disposable[]) => {

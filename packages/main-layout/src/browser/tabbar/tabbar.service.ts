@@ -236,7 +236,7 @@ export class TabbarService extends WithEventBus {
         this.state.set(info.options!.containerId, {hidden: prevState.hidden, priority: i});
       }
     }
-    this.registerSideEffects(componentInfo);
+    disposables.push(this.registerSideEffects(componentInfo));
     this.eventBus.fire(new TabBarRegistrationEvent({tabBarId: containerId}));
     if (containerId === this.currentContainerId) {
       // 需要重新触发currentChange副作用
