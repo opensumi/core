@@ -2438,4 +2438,8 @@ export enum ColorThemeKind {
   HighContrast = 3,
 }
 
+export enum SymbolTag {
+  Deprecated = 1,
+}
+
 //#endregion Theming
