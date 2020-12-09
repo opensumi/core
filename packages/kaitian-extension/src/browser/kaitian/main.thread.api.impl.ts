@@ -36,7 +36,7 @@ export function createKaitianApiFactory(
   rpcProtocol.set(MainThreadKaitianAPIIdentifier.MainThreadLayout, layout);
   rpcProtocol.set(MainThreadKaitianAPIIdentifier.MainThreadCommon, common);
   rpcProtocol.set(MainThreadKaitianAPIIdentifier.MainThreadToolbar, toolbar);
-  rpcProtocol.set(MainThreadKaitianAPIIdentifier.MainThreadWindow, window);
+  rpcProtocol.set(MainThreadKaitianAPIIdentifier.MainThreadIDEWindow, window);
 
   return () => {
     disposer.dispose();

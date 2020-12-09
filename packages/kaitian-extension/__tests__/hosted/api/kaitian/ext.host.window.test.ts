@@ -42,7 +42,7 @@ describe('packages/kaitian-extension/__tests__/hosted/api/kaitian/ext.host.windo
   const injector = createBrowserInjector([]);
 
   beforeAll(() => {
-    rpcProtocol.set(MainThreadKaitianAPIIdentifier.MainThreadWindow, mockMainThreadIDEWindowProxy as any);
+    rpcProtocol.set(MainThreadKaitianAPIIdentifier.MainThreadIDEWindow, mockMainThreadIDEWindowProxy as any);
     rpcProtocol.set(MainThreadAPIIdentifier.MainThreadCommands, mockMainThreadCommandProxy as any);
 
     extHostIDEWindow = injector.get(ExtHostIDEWindow, [rpcProtocol]);

@@ -7,6 +7,7 @@ import { FileDialog } from './file-dialog.view';
 import { FileTreeDialogModel } from './file-dialog-model.service';
 import { FileTreeDialogService } from './file-dialog.service';
 import { isMacintosh } from '@ali/ide-core-common/lib/platform';
+import { IFileServiceClient } from '@ali/ide-file-service';
 
 @Injectable()
 export class WindowDialogServiceImpl implements IWindowDialogService {
@@ -17,8 +18,34 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
   @Autowired(IDialogService)
   private readonly dialogService: IDialogService;
 
+  @Autowired(IFileServiceClient)
+  private readonly fileServiceClient: IFileServiceClient;
+
+  private _userHome: URI;
+  private _whenReady: Promise<void>;
+
+  constructor() {
+    this._whenReady = this.init();
+  }
+
+  async init() {
+    const userHome = await this.fileServiceClient.getCurrentUserHome();
+    if (userHome) {
+      this._userHome = new URI(userHome.uri);
+    }
+  }
+
+  get userHome() {
+    return this._userHome;
+  }
+
+  get whenReady() {
+    return this._whenReady;
+  }
+
   // https://code.visualstudio.com/api/references/vscode-api#OpenDialogOptions
-  async showOpenDialog(options: IOpenDialogOptions): Promise<URI[] | undefined> {
+  async showOpenDialog(options: IOpenDialogOptions = {}): Promise<URI[] | undefined> {
+    await this.whenReady;
     const defaultOptions: IOpenDialogOptions = {
       canSelectFiles: true,
       canSelectFolders: false,
@@ -42,8 +69,9 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
         // macOS - Treat packages, such as .app folders, as a directory instead of a file.
         properties.push('treatPackageAsDirectory');
       }
+      const defaultUri = options.defaultUri || this.userHome;
       const res = await electronUi.showOpenDialog(electronEnv.currentWindowId, {
-        defaultPath: options.defaultUri ? options.defaultUri.codeUri.fsPath : 'undefined',
+        defaultPath: defaultUri.codeUri.fsPath,
         title: options.openLabel,
         properties,
       });
@@ -53,7 +81,7 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
         return undefined;
       }
     } else {
-      const defaultUri = options.defaultUri;
+      const defaultUri = options.defaultUri || this.userHome;
       let fileTreeDialogService: FileTreeDialogService;
       if (defaultUri) {
         fileTreeDialogService = this.injector.get(FileTreeDialogService, [defaultUri?.toString()]);
@@ -61,7 +89,7 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
         fileTreeDialogService = this.injector.get(FileTreeDialogService);
       }
       const model = FileTreeDialogModel.createModel(this.injector, fileTreeDialogService);
-      const res = await this.dialogService.open<string[]>(<FileDialog model={model} options={{ ...defaultOptions, ...options}} isOpenDialog={false}/>, MessageType.Empty);
+      const res = await this.dialogService.open<string[]>(<FileDialog model={model} options={{ ...defaultOptions, ...options}} isOpenDialog={true}/>, MessageType.Empty);
       if (res && res.length > 0) {
         return res.map((r) => URI.file(r));
       } else {
@@ -72,11 +100,13 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
 
   // https://code.visualstudio.com/api/references/vscode-api#SaveDialogOptions
   async showSaveDialog(options: ISaveDialogOptions = {}): Promise<URI | undefined> {
+    await this.whenReady;
     if (isElectronRenderer()) {
       // TODO 非file协议SaveDialog
+      const defaultUri = options.defaultUri || this.userHome;
       const electronUi = this.injector.get(IElectronMainUIService) as IElectronMainUIService;
       const res = await electronUi.showSaveDialog(electronEnv.currentWindowId, {
-        defaultPath: (options.defaultUri ? options.defaultUri.codeUri.fsPath : '') + '/' + (options.defaultFileName || ''),
+        defaultPath: defaultUri.resolve(options.defaultFileName || '').codeUri.fsPath,
         title: options.saveLabel,
         message: options.saveLabel,
       });
@@ -86,10 +116,10 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
         return undefined;
       }
     } else {
-      const defaultUri = options.defaultUri;
+      const defaultUri = options.defaultUri || this.userHome;
       let fileTreeDialogService: FileTreeDialogService;
       if (defaultUri) {
-        fileTreeDialogService = this.injector.get(FileTreeDialogService, [defaultUri?.path.toString()]);
+        fileTreeDialogService = this.injector.get(FileTreeDialogService, [defaultUri?.toString()]);
       } else {
         fileTreeDialogService = this.injector.get(FileTreeDialogService);
       }

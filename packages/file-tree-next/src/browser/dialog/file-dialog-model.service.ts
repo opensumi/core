@@ -157,11 +157,17 @@ export class FileTreeDialogModel {
   async updateTreeModel(path: string) {
     const children = await this.fileTreeDialogService.resolveRoot(path);
     if (children && children.length > 0) {
-      this._treeModel = this.injector.get<any>(FileTreeModel, [children[0]]);
+      const root = children[0];
+      this._treeModel = this.injector.get<any>(FileTreeModel, [root]);
+      this.clearFileSelectedDecoration();
+      this.initDecorations(root);
     }
   }
 
   initDecorations(root) {
+    if (!!this._decorations) {
+      this._decorations.dispose();
+    }
     this._decorations = new DecorationsManager(root as any);
     this._decorations.addDecoration(this.selectedDecoration);
     this._decorations.addDecoration(this.focusedDecoration);

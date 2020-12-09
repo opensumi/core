@@ -1,8 +1,8 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IMainThreadWindow, IExtHostWindow, IExtOpenDialogOptions, IExtSaveDialogOptions, IExtDialogOptions } from '../../../common/vscode';
+import { ExtHostAPIIdentifier, IMainThreadWindow, IExtHostWindow, IExtOpenDialogOptions, IExtSaveDialogOptions } from '../../../common/vscode';
 import { Optional, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { URI } from '@ali/ide-core-browser';
-import { IDialogService, IWindowDialogService, IOpenDialogOptions, ISaveDialogOptions, IDialogOptions } from '@ali/ide-overlay';
+import { IDialogService, IWindowDialogService, IOpenDialogOptions, ISaveDialogOptions } from '@ali/ide-overlay';
 
 @Injectable({multiple: true})
 export class MainThreadWindow implements IMainThreadWindow {
@@ -20,7 +20,6 @@ export class MainThreadWindow implements IMainThreadWindow {
 
   constructor(@Optional(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostWindow);
-
   }
 
   private getDefaultDialogOptions(options) {
