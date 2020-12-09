@@ -36,6 +36,13 @@ export interface CustomeChildProcessModule {
 export interface ExtHostAppConfig extends Partial<AppConfig> {
   builtinCommands?: IBuiltInCommand[];
   customDebugChildProcess?: CustomeChildProcessModule;
+  /**
+   * 集成方自定义 vscode.version 版本
+   * 设置该参数可能会导致插件运行异常
+   * @type {string} 插件版本号
+   * @memberof ExtHostAppConfig
+   */
+  customVSCodeEngineVersion?: string;
 }
 
 export interface ExtProcessConfig {
