@@ -520,15 +520,37 @@ declare module 'kaitian' {
       setState(state: string, title?: string): Promise<void>;
 
       /**
+       * 提供了自定义 Popover 组件的场景下，设置 Popover 组件 props 接收到的 context 状态
+       *
+       * @example
+       * ```ts
+       * // extension
+       * const action = await kaitian.toolbar.getToolbarButtonHandle(<action-id>);
+       * action.setContext({ name: 'World' });
+       *
+       * // CustomPopOverComponent
+       *
+       * const PopOver = (props) => {
+       *  return (
+       *    <div>Hello {props?.name}</div>
+       *  );
+       * };
+       * ```
+       * @param context {any}
+       */
+      setContext(context: any): void;
+
+      /**
        * State 改变时触发
        */
       onStateChanged: Event<{from: string, to: string}>;
 
       /**
        * 显示 button 元素对应的 popover 元素，需要在 kaitianContributes 中配置
-       * // TODO: 未完成
        */
       showPopover(): Promise<void>;
+
+      hidePopover(): Promise<void>;
     }
 
     export interface IToolbarSelectActionHandle<T> {
@@ -649,12 +671,56 @@ declare module 'kaitian' {
       btnTitleStyle?: 'vertical' | 'horizontal';
     }
 
+    export interface IToolbarPopoverStyle {
+
+      /**
+       * 在上方还是在下方, 默认下方
+       * // TODO: 暂时只支持 bottom;
+       */
+      position?: 'top' | 'bottom';
+
+      /**
+       * ```text
+       * 距离右边的偏移量(px), 默认 30
+       *     [ button ]
+       *          /\  |<-offset->|
+       *  [------   -------------]
+       *  [                      ]
+       *  [      popover         ]
+       *  [                      ]
+       *  [______________________]
+       * ```
+       */
+      horizontalOffset?: number;
+
+      /**
+       * 点击组件外部时自动隐藏, 默认 true
+       */
+      hideOnClickOutside?: boolean;
+
+      /**
+       * 不要带箭头，阴影，背景色等默认样式
+       */
+      noContainerStyle?: boolean;
+
+      /**
+       * 指定 popOver 的最小宽度
+       */
+      minWidth?: number;
+
+      /**
+       * 指定 popOver 的最小高度
+       */
+      minHeight?: number;
+    }
     export interface IToolbarButtonContribution extends  IToolbarActionBasicContribution {
       type: 'button';
       command?: string;
       title: string;
       iconPath: string;
       iconMaskMode?: boolean;
+      popoverComponent?: string;
+      popoverStyle?: IToolbarPopoverStyle;
       states?: {
         [key: string]: {
           title?: string,

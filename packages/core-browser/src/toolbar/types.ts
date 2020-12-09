@@ -211,6 +211,7 @@ export interface IToolbarActionBtnProps {
    * 它会位于目标元素
    */
   popoverComponent?: React.FC;
+  popoverId?: string;
 
   popoverStyle?: IToolbarPopoverStyle;
 }
@@ -223,7 +224,11 @@ export interface IToolbarActionBtnDelegate {
 
   onMouseLeave: Event<React.MouseEvent<HTMLDivElement>>;
 
+  onChangeContext: Event<any>;
+
   setState(state: string, title?: string): void;
+
+  setContext(context: any): void;
 
   // 获取当期组件的位置 rect
   getRect(): ClientRect;
@@ -335,6 +340,7 @@ export interface IToolbarPopoverStyle {
   position?: 'top' | 'bottom';
 
   /**
+   * ```text
    * 距离右边的偏移量(px), 默认 30
    *     [ button ]
    *          /\  |<-offset->|
@@ -343,6 +349,7 @@ export interface IToolbarPopoverStyle {
    *  [      popover         ]
    *  [                      ]
    *  [______________________]
+   * ```
    */
   horizontalOffset?: number;
 
@@ -355,4 +362,23 @@ export interface IToolbarPopoverStyle {
    * 不要带箭头，阴影，背景色等默认样式
    */
   noContainerStyle?: boolean;
+
+  /**
+   * 指定 popOver 的最小宽度
+   */
+  minWidth?: number;
+
+  /**
+   * 指定 popOver 的最小高度
+   */
+  minHeight?: number;
+}
+
+export const IToolbarPopoverRegistry = Symbol('IToolbarPopoverRegistry');
+
+export interface IToolbarPopoverRegistry {
+  registerComponent(id: string, component: React.FC): IDisposable;
+  getComponent(id: string): React.FC | undefined;
+
+  onDidRegisterPopoverEvent: Event<string>;
 }

@@ -2,6 +2,7 @@ import { IToolbarActionBtnStyle, IToolbarSelectStyle, IToolbarPopoverStyle } fro
 
 export interface IToolbarActionBasicContribution {
   id: string;
+  weight?: number;
   preferredPosition?: {
     location?: string,
     group?: string,

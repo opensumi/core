@@ -112,6 +112,17 @@ export class ToolbarBtnActionHandleController extends Disposable {
         showPopover: async (style?: IToolbarPopoverStyle) => {
           return this.extHostCommands.executeCommand<void>('kaitian-extension.toolbar.showPopover', this.id, style);
         },
+        hidePopover: async () => {
+          return this.extHostCommands.executeCommand<void>('kaitian-extension.toolbar.hidePopover', this.id);
+        },
+        /**
+         * 由插件 API 负责更新的 context 对象
+         * 在自定义 popover 场景下，该 context 对象会被序列化后从 popover 组件 props 传入
+         * @param context {T}
+         */
+        setContext: <T>(context: T) => {
+          return this.extHostCommands.executeCommand<void>('kaitian-extension.toolbar.btn.setContext', this.id, context);
+        },
       };
     }
     return this._handle;
