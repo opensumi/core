@@ -411,6 +411,76 @@ declare module 'vscode' {
      */
     export function saveAll(includeUntitled?: boolean): Thenable<boolean>;
 
+    /**
+     * An event that is emitted when files are being created.
+     *
+     * *Note 1:* This event is triggered by user gestures, like creating a file from the
+     * explorer, or from the [`workspace.applyEdit`](#workspace.applyEdit)-api. This event is *not* fired when
+     * files change on disk, e.g triggered by another application, or when using the
+     * [`workspace.fs`](#FileSystem)-api.
+     *
+     * *Note 2:* When this event is fired, edits to files that are are being created cannot be applied.
+     */
+    export const onWillCreateFiles: Event<FileWillCreateEvent>;
+
+    /**
+     * An event that is emitted when files have been created.
+     *
+     * *Note:* This event is triggered by user gestures, like creating a file from the
+     * explorer, or from the [`workspace.applyEdit`](#workspace.applyEdit)-api, but this event is *not* fired when
+     * files change on disk, e.g triggered by another application, or when using the
+     * [`workspace.fs`](#FileSystem)-api.
+     */
+    export const onDidCreateFiles: Event<FileCreateEvent>;
+
+    /**
+     * An event that is emitted when files are being deleted.
+     *
+     * *Note 1:* This event is triggered by user gestures, like deleting a file from the
+     * explorer, or from the [`workspace.applyEdit`](#workspace.applyEdit)-api, but this event is *not* fired when
+     * files change on disk, e.g triggered by another application, or when using the
+     * [`workspace.fs`](#FileSystem)-api.
+     *
+     * *Note 2:* When deleting a folder with children only one event is fired.
+     */
+    export const onWillDeleteFiles: Event<FileWillDeleteEvent>;
+
+    /**
+     * An event that is emitted when files have been deleted.
+     *
+     * *Note 1:* This event is triggered by user gestures, like deleting a file from the
+     * explorer, or from the [`workspace.applyEdit`](#workspace.applyEdit)-api, but this event is *not* fired when
+     * files change on disk, e.g triggered by another application, or when using the
+     * [`workspace.fs`](#FileSystem)-api.
+     *
+     * *Note 2:* When deleting a folder with children only one event is fired.
+     */
+    export const onDidDeleteFiles: Event<FileDeleteEvent>;
+
+    /**
+     * An event that is emitted when files are being renamed.
+     *
+     * *Note 1:* This event is triggered by user gestures, like renaming a file from the
+     * explorer, and from the [`workspace.applyEdit`](#workspace.applyEdit)-api, but this event is *not* fired when
+     * files change on disk, e.g triggered by another application, or when using the
+     * [`workspace.fs`](#FileSystem)-api.
+     *
+     * *Note 2:* When renaming a folder with children only one event is fired.
+     */
+    export const onWillRenameFiles: Event<FileWillRenameEvent>;
+
+    /**
+     * An event that is emitted when files have been renamed.
+     *
+     * *Note 1:* This event is triggered by user gestures, like renaming a file from the
+     * explorer, and from the [`workspace.applyEdit`](#workspace.applyEdit)-api, but this event is *not* fired when
+     * files change on disk, e.g triggered by another application, or when using the
+     * [`workspace.fs`](#FileSystem)-api.
+     *
+     * *Note 2:* When renaming a folder with children only one event is fired.
+     */
+    export const onDidRenameFiles: Event<FileRenameEvent>;
+
   }
 
   /**
