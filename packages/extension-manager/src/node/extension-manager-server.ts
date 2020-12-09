@@ -104,6 +104,7 @@ class IDEExtensionInstaller implements IExtensionInstaller {
           }
         },
       },
+      retry: 3,
     });
   }
 
