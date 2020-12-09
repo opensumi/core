@@ -8,20 +8,23 @@
   margin-bottom: 8px;
   justify-content: flex-start;
   pointer-events: all;
+  overflow: hidden;
 
   .kt_debug_actions {
     display: flex;
-    flex: 1;
     justify-content: space-between;
     align-items: center;
     min-width: 124px;
-    max-width: 144px;
+    & > *:not(:first-child) {
+      margin-left: 6px;
+    }
   }
 
   .debug_selection {
     width: 100%;
     min-width: 50px;
     margin-right: 10px;
+    max-width: 200px;
 
     :global(.kt-select-value) {
       & > option {
