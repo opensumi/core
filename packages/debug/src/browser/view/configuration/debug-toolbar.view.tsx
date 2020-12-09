@@ -13,6 +13,7 @@ import { isExtensionHostDebugging } from '../../debugUtils';
 import { DebugConfigurationService } from './debug-configuration.service';
 import { DebugToolbarService } from './debug-toolbar.service';
 import * as styles from './debug-configuration.module.less';
+import { InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
 
 @Injectable()
 class FloatController {
@@ -70,6 +71,7 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
   const {
     state,
     sessionCount,
+    toolBarMenuMap,
     doStop,
     doStepIn,
     doStepOut,
@@ -86,6 +88,12 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
 
   const currentSessionId = currentSession && currentSession.id;
 
+  const renderToolBar = (session: DebugSession | undefined): React.ReactNode => {
+    if (session && session.id && toolBarMenuMap.has(session.id)) {
+      return <InlineMenuBar menus={toolBarMenuMap.get(session.id)!} />;
+    }
+    return null;
+  };
   const renderStop = (state: DebugState, sessionCount: number): React.ReactNode => {
     if (isAttach) {
       return <DebugAction run={ doStop } enabled={ typeof state === 'number' && state !== DebugState.Inactive } icon={ 'disconnect' } label={ localize('debug.action.disattach') } />;
@@ -154,6 +162,7 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
           <DebugAction run={ doStepOut } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step-out' } label={ localize('debug.action.step-out') } />
           <DebugAction run={ doRestart } enabled={ typeof state === 'number' && state !== DebugState.Inactive } icon={ 'reload' } label={ localize('debug.action.restart') } />
           { renderStop(state, sessionCount) }
+          { renderToolBar(currentSession) }
         </div>
       </div>
     </React.Fragment>
