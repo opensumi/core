@@ -1,9 +1,10 @@
-import { IDebugSessionManager } from '../../common';
+import { IDebugSessionManager, DEBUG_REPORT_NAME } from '../../common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { DebugSessionManager } from '../debug-session-manager';
-import { DisposableCollection, Emitter, Event, ILogger } from '@ali/ide-core-browser';
+import { DisposableCollection, Emitter, Event, ILogger, IReporterService } from '@ali/ide-core-browser';
 import throttle = require('lodash.throttle');
 import { DebugWatchRoot, DebugWatchNode } from '../tree/debug-tree-node.define';
+import { DEBUG_COMMANDS } from '../debug-contribution';
 
 export class DebugWatchData {
   getRoot: () => Promise<DebugWatchRoot | void>;
@@ -20,6 +21,9 @@ export class DebugWatch implements DebugWatchData {
 
   @Autowired(IDebugSessionManager)
   protected readonly manager: DebugSessionManager;
+
+  @Autowired(IReporterService)
+  protected readonly reporterService: IReporterService;
 
   @Autowired(ILogger)
   logger: ILogger;
@@ -103,6 +107,7 @@ export class DebugWatch implements DebugWatchData {
   }
 
   addWatchExpression(value: string) {
+    this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_WATCH, DEBUG_COMMANDS.ADD_WATCHER.id, { value });
     const index = this._expressions.indexOf(value);
     if (index === -1) {
       this._expressions.push(value);

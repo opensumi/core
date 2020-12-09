@@ -31,3 +31,39 @@ export interface IDebuggerContribution extends IPlatformSpecificAdapterContribut
   configurationSnippets?: IJSONSchemaSnippet[];
   variables?: { [key: string]: string };
 }
+
+export enum DEBUG_REPORT_NAME {
+
+  /**
+   * 启动调试响应耗时
+   */
+  DEBUG_SESSION_START_TIME = 'debugSessionStartTime',
+  /**
+   * preLaunchTask 耗时
+   */
+  DEBUG_PRE_LAUNCH_TASK_TIME = 'debugPreLaunchTaskTime',
+  /**
+   * 工具栏各操作响应耗时
+   */
+  DEBUG_TOOLBAR_OPERATION_TIME = 'debugToolBarOperationTime',
+  /**
+   * 工具栏各操作点击
+   */
+  DEBUG_TOOLBAR_OPERATION = 'debugToolBarOperation',
+  /**
+   * 左侧所有面板展开收起点击
+   */
+  DEBUG_PANEL_OPERATION_FOLDEXPR = 'debugPanelOperationFoldexpr',
+  /**
+   * 监听
+   */
+  DEBUG_WATCH = 'debugWatch',
+  /**
+   * 变量
+   */
+  DEBUG_VARIABLES = 'debugVariables',
+  /**
+   * 断点
+   */
+  DEBUG_BREAKPOINT = 'debugBreakpoint',
+}

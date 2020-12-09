@@ -3,12 +3,13 @@ import { observable, action, runInAction } from 'mobx';
 import { DebugViewModel } from '../debug-view-model';
 import { DebugBreakpoint, DebugExceptionBreakpoint, isDebugBreakpoint, isDebugExceptionBreakpoint, BreakpointManager, DebugDecorator } from '../../breakpoint';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { URI, WithEventBus, OnEvent, IContextKeyService } from '@ali/ide-core-browser';
+import { URI, WithEventBus, OnEvent, IContextKeyService, IReporterService } from '@ali/ide-core-browser';
 import { BreakpointItem } from './debug-breakpoints.view';
 import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@ali/ide-workspace-edit';
 import { IDebugSessionManager } from '../../../common/debug-session';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { DEBUG_REPORT_NAME } from '../../../common';
 
 @Injectable()
 export class DebugBreakpointsService extends WithEventBus {
@@ -30,6 +31,9 @@ export class DebugBreakpointsService extends WithEventBus {
 
   @Autowired(IContextKeyService)
   protected readonly contextKeyService: IContextKeyService;
+
+  @Autowired(IReporterService)
+  protected readonly reporterService: IReporterService;
 
   @observable
   public nodes: BreakpointItem[] = [];
@@ -148,5 +152,11 @@ export class DebugBreakpointsService extends WithEventBus {
   toggleBreakpoints() {
     this.breakpoints.breakpointsEnabled = !this.breakpoints.breakpointsEnabled;
     this.enable = this.breakpoints.breakpointsEnabled;
+
+    if (this.enable) {
+      this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_BREAKPOINT, 'enabled');
+    } else {
+      this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_BREAKPOINT, 'unenabled');
+    }
   }
 }

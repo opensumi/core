@@ -45,6 +45,10 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     };
   }
 
+  get breakpointType(): DebugBreakpointZoneWidget.Context {
+    return this.context;
+  }
+
   constructor(
     editor: DebugEditor,
     contexts: DebugBreakpointWidgetContext = {},

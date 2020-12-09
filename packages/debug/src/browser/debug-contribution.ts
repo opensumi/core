@@ -1,4 +1,4 @@
-import { Domain, ClientAppContribution, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution, CommandService } from '@ali/ide-core-browser';
+import { Domain, ClientAppContribution, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution, CommandService, IReporterService } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser';
 import { DebugBreakpointView } from './view/breakpoints/debug-breakpoints.view';
 import { DebugVariableView } from './view/variables/debug-variables.view';
@@ -20,7 +20,7 @@ import { DebugViewModel } from './view/debug-view-model';
 import { DebugSession } from './debug-session';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
-import { IDebugSessionManager, launchSchemaUri, DEBUG_CONTAINER_ID, DEBUG_WATCH_ID, DEBUG_VARIABLES_ID, DEBUG_STACK_ID, DEBUG_BREAKPOINTS_ID, DEBUG_FLOATING_CLICK_WIDGET } from '../common';
+import { IDebugSessionManager, launchSchemaUri, DEBUG_CONTAINER_ID, DEBUG_WATCH_ID, DEBUG_VARIABLES_ID, DEBUG_STACK_ID, DEBUG_BREAKPOINTS_ID, DEBUG_FLOATING_CLICK_WIDGET, DEBUG_REPORT_NAME } from '../common';
 import { DebugConsoleService } from './view/console/debug-console.service';
 import { DebugToolbarService } from './view/configuration/debug-toolbar.service';
 import { NextMenuContribution, MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
@@ -174,6 +174,9 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
 
   @Autowired(PreferenceService)
   protected readonly preferences: PreferenceService;
+
+  @Autowired(IReporterService)
+  private readonly reporterService: IReporterService;
 
   private firstSessionStart: boolean = true;
 
@@ -351,6 +354,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
     });
     commands.registerCommand(DEBUG_COMMANDS.EDIT_BREAKPOINT, {
       execute: async (position: monaco.Position) => {
+        this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_BREAKPOINT, 'edit');
         const { selectedBreakpoint } = this;
         if (selectedBreakpoint) {
           const { openBreakpointView } = selectedBreakpoint.model;

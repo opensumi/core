@@ -1,10 +1,11 @@
 import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { Autowired } from '@ali/common-di';
-import { Domain, CommandContribution, CommandRegistry, localize, IQuickInputService } from '@ali/ide-core-browser';
+import { Domain, CommandContribution, CommandRegistry, localize, IQuickInputService, IReporterService } from '@ali/ide-core-browser';
 import { DebugVariable } from '../../tree/debug-tree-node.define';
 import { DebugVariablesModelService } from './debug-variables-tree.model.service';
 import { DEBUG_COMMANDS } from '../../debug-contribution';
 import { IMessageService } from '@ali/ide-overlay';
+import { DEBUG_REPORT_NAME } from '../../../common';
 
 @Domain(NextMenuContribution, CommandContribution)
 export class VariablesPanelContribution implements NextMenuContribution, CommandContribution {
@@ -17,9 +18,13 @@ export class VariablesPanelContribution implements NextMenuContribution, Command
   @Autowired(IMessageService)
   private readonly messageService: IMessageService;
 
+  @Autowired(IReporterService)
+  private readonly reporterService: IReporterService;
+
   registerCommands(registry: CommandRegistry) {
     registry.registerCommand(DEBUG_COMMANDS.SET_VARIABLE_VALUE, {
       execute: async (node: DebugVariable) => {
+        this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_VARIABLES, DEBUG_COMMANDS.SET_VARIABLE_VALUE.id);
         const param = await this.quickInputService.open({
           placeHolder: localize('deugger.menu.setValue.param'),
           value: node.description.replace(/^\"(.*)\"$/, '$1') as string,

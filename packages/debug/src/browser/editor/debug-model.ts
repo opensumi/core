@@ -10,9 +10,9 @@ import debounce = require('lodash.debounce');
 import * as options from './debug-styles';
 import { DebugStackFrame } from '../model';
 import { DebugBreakpoint, isDebugBreakpoint } from '../breakpoint';
-import { IDebugModel } from '../../common';
+import { IDebugModel, DEBUG_REPORT_NAME } from '../../common';
 import { ICtxMenuRenderer, generateMergedCtxMenu, IMenu, MenuId, AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next';
-import { IContextKeyService } from '@ali/ide-core-browser';
+import { IContextKeyService, IReporterService } from '@ali/ide-core-browser';
 import { DebugBreakpointWidgetContext, DebugBreakpointZoneWidget } from './debug-breakpoint-zone-widget';
 import { DebugDecorator } from '../breakpoint/breakpoint-decoration';
 
@@ -43,6 +43,9 @@ export class DebugModel implements IDebugModel {
 
   @Autowired(ICtxMenuRenderer)
   private readonly ctxMenuRenderer: ICtxMenuRenderer;
+
+  @Autowired(IReporterService)
+  private readonly reporterService: IReporterService;
 
   protected frameDecorations: string[] = [];
   protected topFrameRange: monaco.Range | undefined;
@@ -442,6 +445,7 @@ export class DebugModel implements IDebugModel {
 
   acceptBreakpoint = () => {
     const { position, values } = this.breakpointWidget;
+    this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_BREAKPOINT, this.breakpointWidget.breakpointType);
     if (position && values) {
       const breakpoint = this.getBreakpoint(position);
       if (breakpoint) {

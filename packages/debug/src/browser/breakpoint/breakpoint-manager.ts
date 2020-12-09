@@ -1,10 +1,11 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Emitter, Event, URI, isUndefined, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-browser';
+import { Emitter, Event, URI, isUndefined, StorageProvider, IStorage, STORAGE_NAMESPACE, IReporterService } from '@ali/ide-core-browser';
 import { IWorkspaceStorageService } from '@ali/ide-workspace';
 import { DebugBreakpoint, DebugExceptionBreakpoint, BREAKPOINT_KIND } from './breakpoint-marker';
 import { MarkerManager, Marker } from '../markers';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { DebugModel } from '../editor';
+import { DEBUG_REPORT_NAME } from '../../common';
 
 export interface BreakpointsChangeEvent {
   affected: URI[];
@@ -41,6 +42,9 @@ export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
 
   @Autowired(StorageProvider)
   private readonly storageProvider: StorageProvider;
+
+  @Autowired(IReporterService)
+  private readonly reporterService: IReporterService;
 
   getKind(): string {
     return BREAKPOINT_KIND;
@@ -113,6 +117,7 @@ export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
     const uri = new URI(breakpoint.uri);
     const breakpoints = this.getBreakpoints(uri);
     const newBreakpoints = breakpoints.filter(({ raw }) => raw.line !== breakpoint.raw.line);
+    this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_BREAKPOINT, 'add');
     if (breakpoints.length === newBreakpoints.length) {
       newBreakpoints.push(breakpoint);
       this.setBreakpoints(uri, newBreakpoints);

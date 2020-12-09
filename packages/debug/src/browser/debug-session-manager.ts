@@ -1,8 +1,8 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { DebugSession, DebugState } from './debug-session';
-import { WaitUntilEvent, Emitter, URI, Event, IContextKey, DisposableCollection, IContextKeyService, formatLocalize, Uri } from '@ali/ide-core-browser';
+import { WaitUntilEvent, Emitter, Event, URI, IContextKey, DisposableCollection, IContextKeyService, formatLocalize, Uri, IReporterService } from '@ali/ide-core-browser';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
-import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions } from '../common';
+import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions, DEBUG_REPORT_NAME } from '../common';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { IMessageService } from '@ali/ide-overlay';
 import { IVariableResolverService } from '@ali/ide-variable';
@@ -104,6 +104,9 @@ export class DebugSessionManager {
   @Autowired(ITaskService)
   protected readonly taskService: ITaskService;
 
+  @Autowired(IReporterService)
+  protected readonly reporterService: IReporterService;
+
   constructor() {
     this.init();
   }
@@ -135,6 +138,7 @@ export class DebugSessionManager {
   }
 
   async start(options: DebugSessionOptions): Promise<DebugSession | undefined> {
+    this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_BREAKPOINT, 'number', this.breakpoints.getBreakpoints().length);
     if (!options.configuration.__restart) {
       if (this.isExistedDebugSession(options)) {
         this.messageService.error(formatLocalize('debug.launch.existed', options.configuration.name));
@@ -142,18 +146,25 @@ export class DebugSessionManager {
       }
     }
     try {
+      const reporterStart = this.reporterService.time(DEBUG_REPORT_NAME?.DEBUG_SESSION_START_TIME);
       await this.fireWillStartDebugSession();
       const resolved = await this.resolveConfiguration(options);
       if (resolved.configuration.preLaunchTask) {
-        const task = await this.taskService.getTask(Uri.parse(resolved.workspaceFolderUri!), resolved.configuration.preLaunchTask);
+        const workspaceFolderUri = Uri.parse(resolved.workspaceFolderUri!);
+        const task = await this.taskService.getTask(workspaceFolderUri, resolved.configuration.preLaunchTask);
         if (task) {
+          const taskTimeReport = this.reporterService.time(DEBUG_REPORT_NAME?.DEBUG_PRE_LAUNCH_TASK_TIME);
           const result = await this.taskService.run(task);
           if (result.exitCode !== 0) {
             this.messageService.error(`The preLaunchTask ${resolved.configuration.preLaunchTask} exitCode is ${result.exitCode}`);
           }
+          taskTimeReport.timeEnd(workspaceFolderUri.toString(), {
+            exitCode: result.exitCode,
+          });
         }
       }
       const sessionId = await this.debug.createDebugSession(resolved.configuration);
+      reporterStart.timeEnd(resolved.configuration.type);
       return this.doStart(sessionId, resolved);
     } catch (e) {
       if (DebugError.NotFound.is(e)) {
