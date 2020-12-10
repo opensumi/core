@@ -20,12 +20,13 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
+    "@ali/ide-components": "1.27.0",
     "@ali/ide-connection": "1.27.0",
     "@ali/ide-core-common": "1.27.0",
     "@ali/ide-core-node": "1.27.0",
     "@ali/ide-process": "1.27.0",
-    "@ali/ide-components": "1.27.0",
     "@ali/ide-task": "1.27.0",
+    "ansi-to-react": "^5.0.0",
     "btoa": "^1.2.1"
   },
   "devDependencies": {
