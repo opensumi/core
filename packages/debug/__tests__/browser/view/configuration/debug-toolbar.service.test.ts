@@ -17,6 +17,7 @@ describe('Debug Configuration Service', () => {
     onDidChange: jest.fn(),
     sessions: [],
     currentSession: {
+      id: 'URBBRGROUN',
       terminate: jest.fn(),
     },
     currentThread: {
@@ -44,6 +45,7 @@ describe('Debug Configuration Service', () => {
 
   it('should have enough API', () => {
     expect(typeof debugToolbarService.updateModel).toBe('function');
+    expect(typeof debugToolbarService.updateToolBarMenu).toBe('function');
     expect(typeof debugToolbarService.doStart).toBe('function');
     expect(typeof debugToolbarService.doRestart).toBe('function');
     expect(typeof debugToolbarService.doStop).toBe('function');
@@ -53,8 +55,9 @@ describe('Debug Configuration Service', () => {
     expect(typeof debugToolbarService.doStepIn).toBe('function');
     expect(typeof debugToolbarService.doStepOut).toBe('function');
     expect(typeof debugToolbarService.updateCurrentSession).toBe('function');
+    expect(typeof debugToolbarService.toolBarMenuMap).toBe('object');
     expect(Array.isArray(debugToolbarService.sessions)).toBeTruthy();
-    expect(debugToolbarService.currentSession).toBeUndefined;
+    expect(debugToolbarService.currentSession).toBeUndefined();
   });
 
   it('should init success', () => {
@@ -111,5 +114,11 @@ describe('Debug Configuration Service', () => {
   it('updateModel method should be work', () => {
     debugToolbarService.updateModel();
     expect(debugToolbarService.sessionCount).toBe(0);
+  });
+
+  it('updateToolBarMenu method should be work', () => {
+    debugToolbarService.updateModel();
+    debugToolbarService.updateToolBarMenu();
+    expect(debugToolbarService.toolBarMenuMap.size).toBeGreaterThanOrEqual(0);
   });
 });
