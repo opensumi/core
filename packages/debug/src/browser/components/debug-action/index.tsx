@@ -25,5 +25,5 @@ export const DebugAction = ({
   const style = {
     color,
   };
-  return <div {...restProps} className={cls(styles.debug_action, styles[icon] || getIcon(icon) || icon, typeof enabled === 'boolean' && !enabled && styles.mod_disabled, className)} style={style} title={ label } onClick={ run || noop }></div>;
+  return <div {...restProps} className={cls(styles.debug_action, styles[icon], getIcon(icon) || icon, typeof enabled === 'boolean' && !enabled && styles.mod_disabled, className)} style={style} title={ label } onClick={ run || noop }></div>;
 };
