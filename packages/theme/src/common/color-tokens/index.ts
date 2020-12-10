@@ -28,5 +28,6 @@ export * from './title-bar';
 export * from './welcome-page';
 export * from './pick-view';
 export * from './debug';
+export * from './debugToolbar';
 
 export * from './custom';
