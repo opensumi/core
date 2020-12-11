@@ -15,9 +15,9 @@ export function createBrowserComponents(injector: Injector, extension: IExtensio
   return  new Proxy(Components, {
     get(target, prop) {
       if (prop === 'Dialog' || prop === 'Overlay') {
-        const portalRoot = extensionService.getPortalShadowRoot(extension.id);
         const OriginalComponent = Components[prop];
         const proxiedComponent = (props) => React.createElement(OriginalComponent, { ...props, getContainer: () => {
+          const portalRoot = extensionService.getPortalShadowRoot(extension.id);
           return portalRoot;
         } });
         return proxiedComponent;
