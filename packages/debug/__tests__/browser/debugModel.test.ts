@@ -10,7 +10,6 @@ import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-k
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IMessageService } from '@ali/ide-overlay';
-import * as options from '@ali/ide-debug/lib/browser/editor/debug-styles.ts';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { ITerminalApiService } from '@ali/ide-terminal-next';
@@ -83,9 +82,7 @@ describe('Debug Model', () => {
     const deltaDecorationsFn = jest.fn(() => []);
     mockDebugEditor = {
       ...mockDebugEditor,
-      getModel: jest.fn(() => ({
-        deltaDecorations: deltaDecorationsFn,
-      })),
+      deltaDecorations: deltaDecorationsFn,
     };
     model = DebugModel.createModel(injector, mockDebugEditor) as DebugModel;
     model.render();
@@ -96,9 +93,7 @@ describe('Debug Model', () => {
     const deltaDecorationsFn = jest.fn(() => []);
     mockDebugEditor = {
       ...mockDebugEditor,
-      getModel: jest.fn(() => ({
-        deltaDecorations: deltaDecorationsFn,
-      })),
+      deltaDecorations: deltaDecorationsFn,
     };
     model = DebugModel.createModel(injector, mockDebugEditor) as DebugModel;
     const fakeSession = new DebugSession(
@@ -127,13 +122,6 @@ describe('Debug Model', () => {
       },
     });
     model.focusStackFrame(frame);
-    expect(deltaDecorationsFn).toBeCalled();
-    expect(deltaDecorationsFn).toBeCalledWith([], [{
-      options: options.FOCUSED_STACK_FRAME_DECORATION,
-      range: {},
-    }, {
-      options: options.TOP_STACK_FRAME_MARGIN,
-      range: {},
-    }]);
+    expect(deltaDecorationsFn).toBeCalledTimes(0);
   });
 });
