@@ -16,6 +16,7 @@ import { ActivatedExtension } from '../common/activator';
 import { WSChannelHandler } from '@ali/ide-connection/lib/browser/ws-channel-handler';
 import { IWindowDialogService } from '@ali/ide-overlay';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@ali/ide-core-browser/lib/services/status-bar-service';
+import { TERMINAL_COMMANDS } from '@ali/ide-terminal-next';
 
 const RELOAD_WINDOW_COMMAND = {
   id: 'reload_window',
@@ -39,6 +40,11 @@ const START_EXTENSION_HOST_PROFILER = {
 const STOP_EXTENSION_HOST_PROFILER = {
   id: 'workbench.action.extensionHostProfiler.stop',
   label: 'Stop Extension Host Profile',
+};
+
+const CLEAR_TERMINAL = {
+  id: 'workbench.action.terminal.clear',
+  delegate: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
 };
 
 @Injectable()
@@ -248,6 +254,8 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
       },
       isPermitted: () => false,
     });
+
+    registry.registerCommand(CLEAR_TERMINAL);
   }
 
   asQuickOpenItems(activated: { node?: ActivatedExtension[] | undefined; worker?: ActivatedExtension[] | undefined; }): QuickOpenItem<QuickOpenItemOptions>[] {
