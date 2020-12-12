@@ -56,6 +56,7 @@ export class MainThreadTreeView implements IMainThreadTreeView {
       }, {
         model,
         options,
+        treeViewId,
       });
       const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
       if (handler) {
