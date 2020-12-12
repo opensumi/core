@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { DebugSession, DebugState } from './debug-session';
-import { WaitUntilEvent, Emitter, Event, URI, IContextKey, DisposableCollection, IContextKeyService, formatLocalize, Uri } from '@ali/ide-core-browser';
+import { WaitUntilEvent, Emitter, URI, Event, IContextKey, DisposableCollection, IContextKeyService, formatLocalize, Uri } from '@ali/ide-core-browser';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
 import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions } from '../common';
 import { DebugStackFrame } from './model/debug-stack-frame';

@@ -424,7 +424,7 @@ export const localizationBundle = {
     'opened.editors.copyRelativePath': 'Copy Relative Path',
     'opened.editors.copyPath': 'Copy Path',
 
-    'terminal.name': 'Terminal',
+    'terminal.name': 'TERMINAL',
     'terminal.disconnected': 'Terminal Already Disconnected',
     'terminal.can.not.reconnect': 'Terminal Unavailable, Please',
     'terminal.stop': 'Stop The Terminal',

@@ -86,14 +86,22 @@ export class DebugConfigurationService {
     });
     this.preferenceService.onPreferenceChanged((event) => {
       const { preferenceName, newValue } = event;
-      if (preferenceName === name) {
-        this.float = newValue;
+      if (preferenceName === 'debug.toolbar.float') {
+        if (this.float !== newValue) {
+          this.updateFloat(newValue);
+        }
       }
     });
-    this.float = !!this.preferenceService.get<boolean>('debug.toolbar.float');
+    this.updateFloat(!!this.preferenceService.get<boolean>('debug.toolbar.float'));
   }
 
-  @action updateCurrentValue(value: string) {
+  @action
+  updateFloat(value: boolean) {
+    this.float = value;
+  }
+
+  @action
+  updateCurrentValue(value: string) {
     this.currentValue = value;
   }
 

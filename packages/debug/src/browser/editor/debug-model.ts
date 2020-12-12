@@ -93,9 +93,11 @@ export class DebugModel implements IDebugModel {
     this.toDispose.pushAll([
       this.breakpointWidget,
       this.editor.onKeyDown(() => this.debugHoverWidget.hide({ immediate: false })),
+      this.editor.onDidChangeModelContent(() => this.renderFrames()),
       this.debugSessionManager.onDidChange(() => this.renderFrames()),
       this.editor.getModel()!.onDidChangeDecorations(() => this.updateBreakpoints()),
     ]);
+    this.renderFrames();
     this.render();
   }
 
@@ -125,6 +127,10 @@ export class DebugModel implements IDebugModel {
    * @memberof DebugModel
    */
   protected readonly renderFrames: any = debounce(() => {
+    if (this.toDispose.disposed) {
+      return;
+    }
+
     const decorations = this.createFrameDecorations();
     this.frameDecorations = this.deltaDecorations(this.frameDecorations, decorations);
   }, 100);
@@ -189,8 +195,7 @@ export class DebugModel implements IDebugModel {
   protected deltaDecorations(oldDecorations: string[], newDecorations: monaco.editor.IModelDeltaDecoration[]): string[] {
     this.updatingDecorations = true;
     try {
-      const model = this.editor.getModel()!;
-      return model ? model.deltaDecorations(oldDecorations, newDecorations) : [];
+      return this.editor.deltaDecorations(oldDecorations, newDecorations);
     } finally {
       this.updatingDecorations = false;
     }
@@ -202,19 +207,7 @@ export class DebugModel implements IDebugModel {
    * @memberof DebugModel
    */
   focusStackFrame(frame: DebugStackFrame) {
-    const decorations: monaco.editor.IModelDeltaDecoration[] = [];
-    // tslint:disable-next-line:no-bitwise
-    const columnUntilEOLRange = new monaco.Range(frame.raw.line, frame.raw.column, frame.raw.line, 1 << 30);
-    const range = new monaco.Range(frame.raw.line, frame.raw.column, frame.raw.line, frame.raw.column + 1);
-    decorations.push({
-      options: options.FOCUSED_STACK_FRAME_DECORATION,
-      range: columnUntilEOLRange,
-    });
-    decorations.push({
-      options: options.TOP_STACK_FRAME_MARGIN,
-      range,
-    });
-    this.frameDecorations = this.deltaDecorations(this.frameDecorations, decorations);
+    this.renderFrames();
   }
 
   render(): void {
