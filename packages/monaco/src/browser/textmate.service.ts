@@ -120,6 +120,12 @@ export class TextmateService extends WithEventBus {
       firstLine: language.firstLine,
       mimetypes: language.mimetypes,
     });
+
+    monaco.languages.onLanguage(language.id, () => {
+      this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onLanguage', data: language.id }));
+      this.activateLanguage(language.id);
+    });
+
     let configuration: ILanguageConfiguration | undefined;
     if (typeof language.resolvedConfiguration === 'object') {
       configuration = await language.resolvedConfiguration;
@@ -148,11 +154,6 @@ export class TextmateService extends WithEventBus {
         folding: this.convertFolding(configuration.folding),
         surroundingPairs: this.extractValidSurroundingPairs(language.id, configuration),
         indentationRules: this.convertIndentationRules(configuration.indentationRules as any),
-      });
-
-      monaco.languages.onLanguage(language.id, () => {
-        this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onLanguage', data: language.id }));
-        this.activateLanguage(language.id);
       });
     }
 
