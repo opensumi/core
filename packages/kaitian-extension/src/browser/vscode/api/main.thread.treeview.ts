@@ -63,7 +63,6 @@ export class MainThreadTreeView implements IMainThreadTreeView {
         component: ExtensionTabBarTreeView,
       }, {
         model,
-        options,
         treeViewId,
       });
 

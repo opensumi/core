@@ -6,7 +6,6 @@ import { observer } from 'mobx-react-lite';
 import { ViewState } from '@ali/ide-core-browser';
 import { TitleActionList } from '@ali/ide-core-browser/lib/components/actions';
 
-import { TreeViewBaseOptions } from '../../common/vscode';
 import { ExtensionTreeViewModel } from '../vscode/api/tree-view/tree-view.model.service';
 import { RecycleTree, INodeRendererProps, IRecycleTreeHandle, TreeNodeType } from '@ali/ide-components';
 import { TREE_VIEW_NODE_HEIGHT, TreeViewNode } from './extension-tree-view-node';
@@ -15,14 +14,12 @@ import { ExtensionLoadingView } from './extension-loading-view';
 
 export interface ExtensionTabBarTreeViewProps {
   injector: Injector;
-  options: TreeViewBaseOptions;
   viewState: ViewState;
   model: ExtensionTreeViewModel;
   treeViewId: string;
 }
 
 export const ExtensionTabBarTreeView = observer(({
-  options,
   viewState,
   model,
   treeViewId,
@@ -30,7 +27,7 @@ export const ExtensionTabBarTreeView = observer(({
   const [isReady, setIsReady] = React.useState<boolean>(false);
 
   const { width, height } = viewState;
-  const { canSelectMany } = options || {};
+  const { canSelectMany } = model.treeViewOptions || {};
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   const handleTreeReady = (handle: IRecycleTreeHandle) => {
