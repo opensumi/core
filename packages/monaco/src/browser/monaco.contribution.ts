@@ -169,6 +169,16 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
         }
       });
     }
+    // 注册 monaco 17 缺失的 editor.action.goToImplementation
+    // FIXME: monaco 20 需去掉
+    menuRegistry.registerMenuItem(MenuId.EditorContext, {
+      command: 'editor.action.goToImplementation',
+      group: 'navigation',
+      // 在查看类型定义下面
+      order: 1.4,
+      // from vscode
+      when: 'editorHasImplementationProvider && !isInEmbeddedEditor',
+    });
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
