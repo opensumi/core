@@ -18,12 +18,14 @@ export interface ExtensionTabBarTreeViewProps {
   options: TreeViewBaseOptions;
   viewState: ViewState;
   model: ExtensionTreeViewModel;
+  treeViewId: string;
 }
 
 export const ExtensionTabBarTreeView = observer(({
   options,
   viewState,
   model,
+  treeViewId,
 }: React.PropsWithChildren<ExtensionTabBarTreeViewProps>) => {
   const [isReady, setIsReady] = React.useState<boolean>(false);
 
@@ -112,13 +114,17 @@ export const ExtensionTabBarTreeView = observer(({
 
   React.useEffect(() => {
     ensureIsReady();
-    if (showCollapseAll) {
-      model.registerCollapseAllCommand();
-    }
     return () => {
       model && model.removeNodeDecoration();
     };
   }, [model]);
+
+  React.useEffect(() => {
+    // showCollapseAll 应该只跟 treeViewId 做绑定，且只注册一次
+    if (showCollapseAll) {
+      model.registerCollapseAllCommand();
+    }
+  }, [treeViewId]);
 
   React.useEffect(() => {
     const handleBlur = () => {
@@ -175,6 +181,7 @@ export const ExtensionTabBarTreeView = observer(({
     ref={wrapperRef}
     onContextMenu={handleOuterContextMenu}
     onClick={handleOuterClick}
+    data-tree-view-id={treeViewId}
   >
     {renderTreeView()}
   </div>;

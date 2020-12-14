@@ -83,6 +83,10 @@
       {
         "name": "kaitian-sample",
         "version": "0.0.2"
+      },
+      {
+        "name": "tree-view-sample",
+        "version": "0.0.2"
       }
     ],
     "kaitian": [
