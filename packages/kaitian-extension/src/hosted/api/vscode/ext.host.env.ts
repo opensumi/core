@@ -11,7 +11,7 @@ import {
 } from '../../../common/vscode';
 import { IExtensionHostService } from '../../../common';
 import { LogLevel } from '../../../common/vscode/ext-types';
-import { Event, Emitter, LogLevel as KTLogLevel } from '@ali/ide-core-common';
+import { Event, Emitter, LogLevel as KTLogLevel, Schemas, URI } from '@ali/ide-core-common';
 
 export class Env {
   private macMachineId: string;
@@ -66,6 +66,9 @@ export function createEnvApiFactory(
     openExternal(target: vscode.Uri): Thenable<boolean> {
       return proxy.$openExternal(target);
     },
+    asExternalUri(target: vscode.Uri): Thenable<vscode.Uri> {
+      return envHost.asExternalUri(target);
+    },
     // todo: implements
     get logLevel() {
       // checkProposedApiEnabled(extension);
@@ -103,6 +106,17 @@ export class ExtHostEnv implements IExtHostEnv {
 
   getEnvValues() {
     return this.values;
+  }
+
+  async asExternalUri(target: vscode.Uri): Promise<vscode.Uri> {
+    if (!target.scheme.trim().length) {
+      throw new Error('Invalid scheme - cannot be empty');
+    }
+    if (![Schemas.http, Schemas.https, this.values.uriScheme].includes(target.scheme)) {
+      throw new Error(`Invalid scheme '${target.scheme}'`);
+    }
+    const uri = await this.proxy.$asExternalUri(target);
+    return URI.revive(uri);
   }
 
   $fireChangeLogLevel(logLevel) {

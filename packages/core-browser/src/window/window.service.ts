@@ -1,8 +1,9 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { IWindowService, IOpenWorkspaceOption } from '.';
+import { IWindowService, IOpenWorkspaceOption, NewWindowOptions } from '.';
 import { isElectronRenderer, URI } from '@ali/ide-core-common';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { electronEnv } from '../utils/electron';
+import { IExternalUriService } from '../services';
 
 @Injectable()
 export class WindowService implements IWindowService {
@@ -10,7 +11,13 @@ export class WindowService implements IWindowService {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  openNewWindow(url: string): Window | undefined {
+  @Autowired(IExternalUriService)
+  private readonly externalUriService: IExternalUriService;
+
+  openNewWindow(url: string, options?: NewWindowOptions): Window | undefined {
+    if (options?.external) {
+      url = this.externalUriService.resolveExternalUri(new URI(url)).toString(true);
+    }
     const newWindow = window.open(url);
     if (newWindow === null) {
       throw new Error('Cannot open a new window for URL: ' + url);
