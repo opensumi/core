@@ -1,16 +1,18 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, PromptValidateMessage, TreeNodeEvent, WatchEvent, TreeNode } from '@ali/ide-components';
-import { DisposableCollection, Emitter, PreferenceService, IContextKeyService, Command, localize, getIcon, CommandRegistry, Deferred, ThrottledDelayer, CommandService } from '@ali/ide-core-browser';
+import { DisposableCollection, Emitter, PreferenceService, IContextKeyService, CommandRegistry, Deferred, ThrottledDelayer, CommandService } from '@ali/ide-core-browser';
 import { ExtensionCompositeTreeNode, ExtensionTreeNode, ExtensionTreeRoot } from './tree-view.node.defined';
 import * as styles from './tree-view-node.module.less';
 import { ExtensionTreeModel } from './tree-view.model';
-import { TreeViewItem } from '../../../../common/vscode';
+import { TreeViewBaseOptions, TreeViewItem } from '../../../../common/vscode';
 import { TreeViewDataProvider } from '../main.thread.treeview';
-import { AbstractMenuService, ICtxMenuRenderer, generateCtxMenu, MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, ICtxMenuRenderer, generateCtxMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { getTreeViewCollapseAllCommand } from './util';
 
 export const IExtensionTreeViewModel = Symbol('IExtensionTreeViewModel');
 
 export const ITreeViewId = Symbol('ITreeViewId');
+export const ITreeViewBaseOptions = Symbol('TreeViewBaseOptions');
 
 export interface IExtensionTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -28,7 +30,7 @@ export class ExtensionTreeViewModel {
   static DEFAULT_REVEAL_DELAY = 500;
   static DEFAULT_REFRESH_DELAY = 500;
 
-  static createContainer(injector: Injector, tree: TreeViewDataProvider, treeViewId: string): Injector {
+  static createContainer(injector: Injector, tree: TreeViewDataProvider, treeViewId: string, options: TreeViewBaseOptions): Injector {
     const child = injector.createChild([
       {
         token: ITreeViewDataProvider,
@@ -42,12 +44,16 @@ export class ExtensionTreeViewModel {
         token: ITreeViewId,
         useValue: treeViewId,
       },
+      {
+        token: ITreeViewBaseOptions,
+        useValue: options,
+      },
     ]);
     return child;
   }
 
-  static createModel(injector: Injector, tree: TreeViewDataProvider, treeViewId: string): ExtensionTreeViewModel {
-    return ExtensionTreeViewModel.createContainer(injector, tree, treeViewId).get(IExtensionTreeViewModel);
+  static createModel(injector: Injector, tree: TreeViewDataProvider, treeViewId: string, options: TreeViewBaseOptions): ExtensionTreeViewModel {
+    return ExtensionTreeViewModel.createContainer(injector, tree, treeViewId, options).get(IExtensionTreeViewModel);
   }
 
   @Autowired(INJECTOR_TOKEN)
@@ -62,6 +68,9 @@ export class ExtensionTreeViewModel {
   @Autowired(ITreeViewId)
   public readonly treeViewId: string;
 
+  @Autowired(ITreeViewBaseOptions)
+  public readonly treeViewOptions: TreeViewBaseOptions;
+
   @Autowired(AbstractMenuService)
   private readonly menuService: AbstractMenuService;
 
@@ -73,9 +82,6 @@ export class ExtensionTreeViewModel {
 
   @Autowired(CommandService)
   private readonly commandService: CommandService;
-
-  @Autowired(IMenuRegistry)
-  private readonly menuRegistry: IMenuRegistry;
 
   private _treeModel: ExtensionTreeModel;
 
@@ -111,6 +117,7 @@ export class ExtensionTreeViewModel {
 
   constructor() {
     this._whenReady = this.initTreeModel();
+    this.registerCollapseAllCommand();
   }
 
   get onDidFocusedNodeChange() {
@@ -488,27 +495,17 @@ export class ExtensionTreeViewModel {
   }
 
   registerCollapseAllCommand() {
-    const TREE_VIEW_COMMAND_PREFIX = 'TREE_VIEW';
-    const collapseCommand: Command = {
-      id: `${TREE_VIEW_COMMAND_PREFIX}_COLLAPSE_ALL_${this.treeViewId}`,
-      iconClass: getIcon('collapse-all'),
-    };
-    this.disposableCollection.pushAll([
-      this.commandRegistry.registerCommand(collapseCommand, {
-        execute: () => {
-          this.collapseAll();
-        },
-      }),
-      this.menuRegistry.registerMenuItem(MenuId.ViewTitle, {
-        command: {
-          id: collapseCommand.id,
-          label: localize('treeview.command.action.collapse'),
-        },
-        when: `view == ${this.treeViewId}`,
-        group: 'navigation',
-        order: 10000, // keep the last position
-      }),
-    ]);
+    if (this.treeViewOptions?.showCollapseAll) {
+      // 注册真实的 command handler
+      const treeViewCollapseAllCommand = getTreeViewCollapseAllCommand(this.treeViewId);
+      this.disposableCollection.push(
+        this.commandRegistry.registerCommand(treeViewCollapseAllCommand, {
+          execute: () => {
+            this.collapseAll();
+          },
+        }),
+      );
+    }
   }
 
   collapseAll() {

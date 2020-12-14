@@ -30,7 +30,7 @@ export const ExtensionTabBarTreeView = observer(({
   const [isReady, setIsReady] = React.useState<boolean>(false);
 
   const { width, height } = viewState;
-  const { canSelectMany, showCollapseAll } = options || {};
+  const { canSelectMany } = options || {};
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   const handleTreeReady = (handle: IRecycleTreeHandle) => {
@@ -118,13 +118,6 @@ export const ExtensionTabBarTreeView = observer(({
       model && model.removeNodeDecoration();
     };
   }, [model]);
-
-  React.useEffect(() => {
-    // showCollapseAll 应该只跟 treeViewId 做绑定，且只注册一次
-    if (showCollapseAll) {
-      model.registerCollapseAllCommand();
-    }
-  }, [treeViewId]);
 
   React.useEffect(() => {
     const handleBlur = () => {
