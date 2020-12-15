@@ -57,6 +57,7 @@ import { OpenerService } from '../opener/opener.service';
 import { IWindowService } from '../window';
 import { WindowService } from '../window/window.service';
 import { IClipboardService, BrowserClipboardService } from '../services/clipboard.service';
+import { IExternalUriService, ExternalUriService } from '../services/external-uri.service';
 import { ToolbarPopoverRegistry } from '../toolbar/toolbar.popover.registry';
 
 export function injectInnerProviders(injector: Injector) {
@@ -198,6 +199,10 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: IClipboardService,
       useClass: BrowserClipboardService,
+    },
+    {
+      token: IExternalUriService,
+      useClass: ExternalUriService,
     },
   ];
   injector.addProviders(...providers);

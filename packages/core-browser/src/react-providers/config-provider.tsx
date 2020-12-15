@@ -27,7 +27,7 @@ export interface AppConfig {
    * 对应全局配置为 ~/.kaitian/settings.json , 工作区配置为 {workspaceDir}/.o2/settings.json
    */
   workspacePreferenceDirName?: string;
-   /**
+  /**
    * 更精细的项目用户配置存储位置
    * 即当 preferenceDirName = '.kaitian' ， userPreferenceDirName = '.o2'时，
    * 对应全局配置为 ~/.kaitian/settings.json , 工作区配置为 {userDir}/.o2/settings.json
@@ -93,6 +93,12 @@ export interface AppConfig {
    * 允许按照 workspace dir 去动态设置 document#title, 默认为 true
    */
   allowSetDocumentTitleFollowWorkspaceDir?: boolean;
+  /**
+   * @ClientOption
+   * 远程访问地址，可以通过该地址访问当容器服务
+   * 默认为 window.location.hostname
+   */
+  remoteHostname?: string;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
