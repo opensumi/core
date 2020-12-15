@@ -3,13 +3,15 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optinal } from '@ali/c
 import { TreeViewItem, TreeViewBaseOptions } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { Emitter, DisposableStore, toDisposable, isUndefined } from '@ali/ide-core-browser';
+import { Emitter, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { ExtensionTabBarTreeView } from '../../components';
 import { IIconService, IconType } from '@ali/ide-theme';
 import { ExtensionTreeViewModel } from './tree-view/tree-view.model.service';
 import { ExtensionCompositeTreeNode, ExtensionTreeRoot, ExtensionTreeNode } from './tree-view/tree-view.node.defined';
 import { Tree, ITreeNodeOrCompositeTreeNode } from '@ali/ide-components';
+import { IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { getTreeViewCollapseAllCommand } from './tree-view/util';
 
 @Injectable({multiple: true})
 export class MainThreadTreeView implements IMainThreadTreeView {
@@ -20,6 +22,12 @@ export class MainThreadTreeView implements IMainThreadTreeView {
 
   @Autowired(IIconService)
   private readonly iconService: IIconService;
+
+  @Autowired(IMenuRegistry)
+  private readonly menuRegistry: IMenuRegistry;
+
+  @Autowired(CommandRegistry)
+  private readonly commandRegistry: CommandRegistry;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -39,15 +47,15 @@ export class MainThreadTreeView implements IMainThreadTreeView {
     this.disposable.dispose();
   }
 
-  createTreeModel(treeViewId: string, dataProvider: TreeViewDataProvider): ExtensionTreeViewModel {
-    return ExtensionTreeViewModel.createModel(this.injector, dataProvider, treeViewId);
+  createTreeModel(treeViewId: string, dataProvider: TreeViewDataProvider, options: TreeViewBaseOptions): ExtensionTreeViewModel {
+    return ExtensionTreeViewModel.createModel(this.injector, dataProvider, treeViewId, options || {});
   }
 
   $registerTreeDataProvider(treeViewId: string, options: TreeViewBaseOptions): void {
     if (!this.treeModels.has(treeViewId)) {
       const disposable = new DisposableStore();
       const dataProvider = new TreeViewDataProvider(treeViewId, this.proxy, this.iconService);
-      const model = this.createTreeModel(treeViewId, dataProvider);
+      const model = this.createTreeModel(treeViewId, dataProvider, options);
       this.treeModels.set(treeViewId, model);
       disposable.add(toDisposable(() => this.treeModels.delete(treeViewId)));
       this.mainLayoutService.replaceViewComponent({
@@ -55,9 +63,25 @@ export class MainThreadTreeView implements IMainThreadTreeView {
         component: ExtensionTabBarTreeView,
       }, {
         model,
-        options,
         treeViewId,
       });
+
+      const treeViewCollapseAllCommand = getTreeViewCollapseAllCommand(treeViewId);
+      disposable.add(
+        this.commandRegistry.registerCommand(treeViewCollapseAllCommand),
+      );
+      disposable.add(
+        this.menuRegistry.registerMenuItem(MenuId.ViewTitle, {
+          command: {
+            id: treeViewCollapseAllCommand.id,
+            label: localize('treeview.command.action.collapse'),
+          },
+          when: `view == ${treeViewId}`,
+          group: 'navigation',
+          order: 10000, // keep the last position
+        }),
+      );
+
       const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
       if (handler) {
         handler.onActivate(() => {
