@@ -524,6 +524,7 @@ class ToolbarActionRenderer {
         } else {
           const element = document.createElement('div');
           element.classList.add('kt-toolbar-action-wrapper');
+          element.setAttribute('data-toolbar-action-id', this.toolbarAction.id);
           if (this.resolvedToolbarAction.extraClassNames) {
             element.classList.add(...this.resolvedToolbarAction.extraClassNames);
           }
