@@ -106,8 +106,12 @@ export class ExtensionTreeViewModel {
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
-  private onDidFocusedNodeChangeEmitter: Emitter<number | void> = new Emitter();
-  private onDidSelectedNodeChangeEmitter: Emitter<number[]> = new Emitter();
+  private onDidFocusedNodeChangeEmitter: Emitter<string | void> = new Emitter();
+  private onDidSelectedNodeChangeEmitter: Emitter<string[]> = new Emitter();
+  private onDidChangeExpansionStateEmitter: Emitter<{
+    treeItemId: string,
+    expanded: boolean,
+  }> = new Emitter();
 
   private _isMutiSelected: boolean = false;
   private refreshDelayer = new ThrottledDelayer<void>(ExtensionTreeViewModel.DEFAULT_REFRESH_DELAY);
@@ -122,6 +126,10 @@ export class ExtensionTreeViewModel {
 
   get onDidFocusedNodeChange() {
     return this.onDidFocusedNodeChangeEmitter.event;
+  }
+
+  get onDidChangeExpansionState() {
+    return this.onDidChangeExpansionStateEmitter.event;
   }
 
   get onDidSelectedNodeChange() {
@@ -159,15 +167,24 @@ export class ExtensionTreeViewModel {
     this._treeModel = this.injector.get<any>(ExtensionTreeModel, [root]);
 
     this.initDecorations(root);
-
+    this.disposableCollection.push(this.treeViewDataProvider);
     this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
       this.loadingDecoration.addTarget(target);
     }));
     this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
       this.loadingDecoration.removeTarget(target);
     }));
+    this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.DidChangeExpansionState, (target: ExtensionTreeNode, nowExpanded) => {
+      this.onDidChangeExpansionStateEmitter.fire({
+        treeItemId: target.treeItemId,
+        expanded: nowExpanded,
+      });
+    }));
     this.disposableCollection.push(this.treeViewDataProvider.onTreeDataChanged((itemsToRefresh?: TreeViewItem) => {
       this.refresh(itemsToRefresh);
+    }));
+    this.disposableCollection.push(this.treeViewDataProvider.onRevealChanged((treeItemId: string) => {
+      this.reveal(treeItemId);
     }));
     this.disposableCollection.push(this.treeViewDataProvider.onRevealChanged((treeItemId: string) => {
       this.reveal(treeItemId);
@@ -230,8 +247,8 @@ export class ExtensionTreeViewModel {
       this._focusedNode = target;
       this._selectedNodes = [target];
       // 选中及焦点文件变化
-      this.onDidFocusedNodeChangeEmitter.fire(target.id);
-      this.onDidSelectedNodeChangeEmitter.fire([target.id]);
+      this.onDidFocusedNodeChangeEmitter.fire(target.treeItemId);
+      this.onDidSelectedNodeChangeEmitter.fire([target.treeItemId]);
       // 通知视图更新
       this.treeModel.dispatchChange();
     }
@@ -266,8 +283,8 @@ export class ExtensionTreeViewModel {
         this._focusedNode = target;
         this._selectedNodes.push(target);
         // 事件通知状态变化
-        this.onDidFocusedNodeChangeEmitter.fire(target.id);
-        this.onDidSelectedNodeChangeEmitter.fire(this._selectedNodes.map((node) => node.id));
+        this.onDidFocusedNodeChangeEmitter.fire(target.treeItemId);
+        this.onDidSelectedNodeChangeEmitter.fire(this._selectedNodes.map((node) => node.treeItemId));
       }
     }
     // 通知视图更新
@@ -298,7 +315,7 @@ export class ExtensionTreeViewModel {
       this.selectedDecoration.addTarget(target);
       this._selectedNodes = [target];
       // 选中及焦点文件变化
-      this.onDidSelectedNodeChangeEmitter.fire([target.id]);
+      this.onDidSelectedNodeChangeEmitter.fire([target.treeItemId]);
       // 通知视图更新
       if (dispatchChange) {
         this.treeModel.dispatchChange();
@@ -314,7 +331,7 @@ export class ExtensionTreeViewModel {
     this._selectedNodes.push(target);
     this.selectedDecoration.addTarget(target);
     // 选中状态变化
-    this.onDidSelectedNodeChangeEmitter.fire(this._selectedNodes.map((node) => node.id));
+    this.onDidSelectedNodeChangeEmitter.fire(this._selectedNodes.map((node) => node.treeItemId));
     // 通知视图更新
     this.treeModel.dispatchChange();
   }
@@ -331,7 +348,7 @@ export class ExtensionTreeViewModel {
       }
     }
     // 选中状态变化
-    this.onDidSelectedNodeChangeEmitter.fire(this._selectedNodes.map((node) => node.id));
+    this.onDidSelectedNodeChangeEmitter.fire(this._selectedNodes.map((node) => node.treeItemId));
     // 通知视图更新
     this.treeModel.dispatchChange();
   }
@@ -526,7 +543,11 @@ export class ExtensionTreeViewModel {
       if (!item) {
         this.treeModel.root.forceReloadChildrenQuiet();
       } else {
-        const cache = (this.treeModel.root as ExtensionTreeRoot).getTreeNodeByTreeItemId(item.id);
+        const id = this.treeViewDataProvider.getTreeNodeIdByTreeItemId(item.id);
+        if (!id) {
+          return;
+        }
+        const cache = (this.treeModel.root as ExtensionTreeRoot).getTreeNodeById(id);
         if (!cache) {
           return ;
         }
@@ -555,8 +576,11 @@ export class ExtensionTreeViewModel {
     }
     return this.revealDelayer.trigger(async () => {
       this.revealDeferred = new Deferred();
-
-      const cache = (this.treeModel.root as ExtensionTreeRoot).getTreeNodeByTreeItemId(treeItemId);
+      const id = this.treeViewDataProvider.getTreeNodeIdByTreeItemId(treeItemId);
+      if (!id) {
+        return;
+      }
+      const cache = (this.treeModel.root as ExtensionTreeRoot).getTreeNodeById(id);
       if (!cache) {
         return ;
       }
