@@ -3,7 +3,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import type * as vscode from 'vscode';
 import { Uri, Position, Range, Selection, TextEditorLineNumbersStyle} from '../../../../common/vscode/ext-types';
 import { ISelection, Emitter, Event, IRange, getDebugLogger, Disposable } from '@ali/ide-core-common';
-import { TypeConverts, fromRange, fromSelection, viewColumnToResourceOpenOptions } from '../../../../common/vscode/converter';
+import { TypeConverts, fromRange, fromSelection, viewColumnToResourceOpenOptions, fromPosition } from '../../../../common/vscode/converter';
 import { IEditorStatusChangeDTO, IEditorChangeDTO, TextEditorSelectionChangeKind, IEditorCreatedDTO, IResolvedTextEditorConfiguration, IMainThreadEditorsService, ITextEditorUpdateConfiguration, TextEditorCursorStyle } from '../../../../common/vscode/editor';
 import { TextEditorEdit } from './edit.builder';
 import { ISingleEditOperation, IDecorationApplyOptions, IResourceOpenOptions } from '@ali/ide-editor';
@@ -283,15 +283,25 @@ export class TextEditorData {
     });
   }
 
-  async insertSnippet(snippet: vscode.SnippetString, location?: vscode.Range | vscode.Position | readonly vscode.Position[] | readonly vscode.Range[] | undefined, options?: { undoStopBefore: boolean; undoStopAfter: boolean; } | undefined): Promise<boolean> {
+  async insertSnippet(snippet: vscode.SnippetString, location?: Range | Position | Position[] | Range[] | undefined, options?: { undoStopBefore: boolean; undoStopAfter: boolean; } | undefined): Promise<boolean> {
     try {
       let _location: IRange[] = [];
-      if (location) {
-        if (location instanceof Array) {
-          _location = location.map((l) => toIRange(l));
-        } else {
-          const l = location as (vscode.Range | vscode.Position);
-          _location = [toIRange(l)];
+      if (!location || (Array.isArray(location) && location.length === 0)) {
+        _location = this.selections.map((s) => fromRange(s));
+      } else if (location instanceof Position) {
+        const { lineNumber, column } = fromPosition(location);
+        _location = [{ startLineNumber: lineNumber, startColumn: column, endLineNumber: lineNumber, endColumn: column }];
+      } else if (location instanceof Range) {
+        _location = [fromRange(location)!];
+      } else {
+        _location = [];
+        for (const posOrRange of location) {
+          if (posOrRange instanceof Range) {
+            _location.push(fromRange(posOrRange)!);
+          } else {
+            const { lineNumber, column } = fromPosition(posOrRange);
+            _location.push({ startLineNumber: lineNumber, startColumn: column, endLineNumber: lineNumber, endColumn: column });
+          }
         }
       }
       this.editorService._proxy.$insertSnippet(this.id, snippet.value, _location, options);
