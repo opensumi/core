@@ -1,10 +1,9 @@
-import { Disposable, URI, Emitter, Event, DisposableCollection, Schemas } from '@ali/ide-core-common';
+import { Disposable, URI, Emitter, Event, DisposableCollection } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EditorCollectionService, ICodeEditor, WorkbenchEditorService } from '@ali/ide-editor';
 import { DebugModelFactory, IDebugModel } from '../../common';
 import { BreakpointManager, BreakpointsChangeEvent } from '../breakpoint';
 import { DebugConfigurationManager } from '../debug-configuration-manager';
-import { DebugSource } from '../model';
 
 export enum DebugModelSupportedEventType {
   down = 'Down',
@@ -45,8 +44,6 @@ export class DebugModelManager extends Disposable {
 
   private _onModelChanged = new Emitter<monaco.editor.IModelChangedEvent>();
   public onModelChanged: Event<monaco.editor.IModelChangedEvent> = this._onModelChanged.event;
-  // 只支持 file 协议和 debug 协议
-  private supportSchemes = new Set([Schemas.file, Schemas.debug]);
 
   constructor() {
     super();
@@ -116,10 +113,6 @@ export class DebugModelManager extends Disposable {
   protected push(codeEditor: ICodeEditor): void {
     const monacoEditor = (codeEditor as any).monacoEditor as monaco.editor.ICodeEditor;
     codeEditor.onRefOpen((ref) => {
-      // 只处理
-      if (ref.instance.uri.scheme !== 'file' && ref.instance.uri.scheme !== DebugSource.SCHEME) {
-        return;
-      }
       const uriString = ref.instance.uri.toString();
       const debugModel = this.models.get(uriString) || [];
       let isRendered = false;
@@ -174,9 +167,6 @@ export class DebugModelManager extends Disposable {
   }
 
   handleMouseEvent(uri: URI, type: DebugModelSupportedEventType, event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent, monacoEditor: monaco.editor.ICodeEditor) {
-    if (!this.supportSchemes.has(uri.scheme)) {
-      return;
-    }
     const debugModel = this.models.get(uri.toString());
     if (!debugModel) {
       return;
