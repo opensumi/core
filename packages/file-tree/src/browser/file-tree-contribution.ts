@@ -1,4 +1,4 @@
-import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, ToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, IElectronNativeDialogService, ILogger, SEARCH_COMMANDS, CommandService, isWindows, IWindowService } from '@ali/ide-core-browser';
+import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, ToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, IElectronNativeDialogService, ILogger, SEARCH_COMMANDS, CommandService, isWindows, IWindowService, IClipboardService } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileTreeService } from './file-tree.service';
@@ -9,7 +9,6 @@ import { ExplorerResourcePanel } from './resource-panel.view';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
 import { ExplorerResourceService } from './explorer-resource.service';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import * as copy from 'copy-to-clipboard';
 import { KAITIAN_MULTI_WORKSPACE_EXT, IWorkspaceService, UNTITLED_WORKSPACE } from '@ali/ide-workspace';
 import { NextMenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
 import { IWindowDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@ali/ide-overlay';
@@ -50,6 +49,9 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
 
   @Autowired(IWindowDialogService)
   private readonly windowDialogService: IWindowDialogService;
+
+  @Autowired(IClipboardService)
+  private readonly clipboardService: IClipboardService;
 
   private rendered = false;
 
@@ -404,7 +406,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
           if (isWindows) {
             pathStr = pathStr.slice(1);
           }
-          copy(decodeURIComponent(copyUri.withoutScheme().toString()));
+          this.clipboardService.writeText(decodeURIComponent(copyUri.withoutScheme().toString()));
         }
       },
       isVisible: () => {
@@ -416,7 +418,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         if (uris && uris.length) {
           const copyUri: URI = uris[0];
           if (this.filetreeService.root) {
-            copy(decodeURIComponent(this.filetreeService.root.relative(copyUri)!.toString()));
+            this.clipboardService.writeText(decodeURIComponent(this.filetreeService.root.relative(copyUri)!.toString()));
           }
         }
       },

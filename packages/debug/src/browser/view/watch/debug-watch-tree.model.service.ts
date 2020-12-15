@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNodeEvent, NewPromptHandle, IWatcherEvent, RenamePromptHandle } from '@ali/ide-components';
-import { Emitter, IContextKeyService, ThrottledDelayer, Deferred, Event, DisposableCollection, StorageProvider, STORAGE_NAMESPACE } from '@ali/ide-core-browser';
+import { Emitter, IContextKeyService, ThrottledDelayer, Deferred, Event, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IClipboardService } from '@ali/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { DebugWatchModel } from './debug-watch-model';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -8,7 +8,6 @@ import { ExpressionContainer, ExpressionNode, DebugWatchNode, DebugWatchRoot } f
 import { DebugViewModel } from '../debug-view-model';
 import { DebugWatch } from '../../model';
 import * as pSeries from 'p-series';
-import * as copy from 'copy-to-clipboard';
 import * as styles from './debug-watch.module.less';
 
 export interface IDebugWatchHandle extends IRecycleTreeHandle {
@@ -40,6 +39,9 @@ export class DebugWatchModelService {
 
   @Autowired(StorageProvider)
   private readonly storageProvider: StorageProvider;
+
+  @Autowired(IClipboardService)
+  private readonly clipboardService: IClipboardService;
 
   private _activeTreeModel: DebugWatchModel | undefined;
 
@@ -374,7 +376,7 @@ export class DebugWatchModelService {
   async copyValue(node: DebugWatchNode) {
     const value = await node.getClipboardValue();
     if (value) {
-      copy(value);
+      await this.clipboardService.writeText(value);
     }
   }
 
