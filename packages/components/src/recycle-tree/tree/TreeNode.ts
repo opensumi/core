@@ -393,7 +393,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       }
     }
 
-    if (ensureVisible && this.parent) {
+    if (ensureVisible && this.parent && CompositeTreeNode.is(this.parent)) {
       await (this.parent as CompositeTreeNode).setExpanded(true, !quiet);
     }
 
@@ -532,7 +532,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     while (collapsedPaths.length > 0) {
       path = collapsedPaths.pop();
       const item = TreeNode.getTreeNodeByPath(path);
-      if (item) {
+      if (CompositeTreeNode.is(item)) {
         await (item as CompositeTreeNode).setExpanded(false, true);
       }
     }
@@ -552,7 +552,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     while (expandedPaths.length > 0) {
       path = expandedPaths.pop();
       const item = TreeNode.getTreeNodeByPath(path);
-      if (item) {
+      if (CompositeTreeNode.is(item)) {
         await (item as CompositeTreeNode).setCollapsed(true);
       }
     }
@@ -1028,7 +1028,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         }
         if (!(item as CompositeTreeNode)._children) {
           preItemPath = item.path;
-          await (item as CompositeTreeNode).setExpanded(true, true);
+          if (CompositeTreeNode.is(item)) {
+            await (item as CompositeTreeNode).setExpanded(true, true);
+          }
         }
         if (item && pathFlag.length === 0) {
           return item;
