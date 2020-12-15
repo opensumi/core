@@ -13,9 +13,9 @@ export class LanguagesContributionPoint extends VSCodeContributePoint<LanguagesS
   @Autowired()
   private readonly textMateService: TextmateService;
 
-  contribute() {
+  async contribute() {
     for (const language of this.json) {
-      this.textMateService.registerLanguage(language, URI.from(this.extension.uri!));
+      await this.textMateService.registerLanguage(language, URI.from(this.extension.uri!));
     }
   }
 

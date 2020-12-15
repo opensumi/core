@@ -264,7 +264,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
 
     if (this.newUri && this.oldUri) {
 
-      if (this.options.copy) {
+      if (options.copy) {
         await fileServiceClient.copy([{ source: this.oldUri.codeUri, target: this.newUri.codeUri}], options);
 
       } else {
