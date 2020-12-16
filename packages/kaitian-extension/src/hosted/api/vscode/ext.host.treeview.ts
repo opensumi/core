@@ -379,17 +379,7 @@ class ExtHostTreeView<T> implements IDisposable {
   }
 
   setSelection(selectedItemIds: string[]): void {
-    const toDelete = new Set<string>(this.selectedItemIds);
-    for (const id of this.selectedItemIds) {
-      toDelete.delete(id);
-      if (!this.selectedItemIds.has(id)) {
-        this.doSetSelection(selectedItemIds);
-        return;
-      }
-    }
-    if (toDelete.size) {
-      this.doSetSelection(selectedItemIds);
-    }
+    this.doSetSelection(selectedItemIds);
   }
 
   protected doSetSelection(selectedItemIts: string[]): void {

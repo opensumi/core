@@ -11,7 +11,7 @@ export class ExtensionTreeRoot extends CompositeTreeNode {
   private _displayName: string;
 
   constructor(
-    private treeViewDataProvider: TreeViewDataProvider,
+    treeViewDataProvider: TreeViewDataProvider,
     public treeViewId: string = '',
   ) {
     super(treeViewDataProvider as ITree, undefined);
@@ -33,10 +33,6 @@ export class ExtensionTreeRoot extends CompositeTreeNode {
     return this._displayName || this.name;
   }
 
-  getTreeNodeByTreeItemId(treeItemId: string) {
-    return this.treeViewDataProvider.getNodeByTreeItemId(treeItemId);
-  }
-
   dispose() {
     super.dispose();
   }
@@ -49,8 +45,8 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
 
   constructor(
     tree: TreeViewDataProvider,
-    public readonly parent: ExtensionCompositeTreeNode | undefined,
-    public name: string = '',
+    parent: ExtensionCompositeTreeNode | undefined,
+    name: string = '',
     public description: string = '',
     public icon: string = '',
     public tooltip: string = '',
@@ -60,7 +56,7 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
     expanded?: boolean,
     id?: number,
   ) {
-    super(tree as ITree, parent, undefined, { name }, { disableCache: false });
+    super(tree as ITree, parent, undefined, { name }, { disableCache: true });
     if (expanded) {
       this._whenReady = this.setExpanded();
     }
@@ -92,8 +88,8 @@ export class ExtensionTreeNode extends TreeNode {
 
   constructor(
     tree: TreeViewDataProvider,
-    public readonly parent: ExtensionCompositeTreeNode | undefined,
-    public name: string = '',
+    parent: ExtensionCompositeTreeNode | undefined,
+    name: string = '',
     public description: string = '',
     public icon: string = '',
     public tooltip: string = '',
@@ -102,7 +98,7 @@ export class ExtensionTreeNode extends TreeNode {
     public treeItemId: string = '',
     id?: number,
   ) {
-    super(tree as ITree, parent, undefined, { name }, { disableCache: false });
+    super(tree as ITree, parent, undefined, { name }, { disableCache: true });
     this._uid = id || this._uid;
     if (!!name) {
       this._displayName = name;

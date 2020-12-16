@@ -81,16 +81,22 @@ export class MainThreadTreeView implements IMainThreadTreeView {
           order: 10000, // keep the last position
         }),
       );
-
+      disposable.add(model.onDidSelectedNodeChange((treeItemIds: string[]) => {
+        dataProvider.setSelection(treeViewId, treeItemIds);
+      }));
+      disposable.add(model.onDidChangeExpansionState((state: {treeItemId: string, expanded: boolean}) => {
+        const { treeItemId, expanded } = state;
+        dataProvider.setExpanded(treeViewId, treeItemId, expanded);
+      }));
       const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
       if (handler) {
-        handler.onActivate(() => {
+        disposable.add(handler.onActivate(() => {
           dataProvider.setVisible(treeViewId, true);
-        });
-        handler.onInActivate(() => {
+        }));
+        disposable.add(handler.onInActivate(() => {
           dataProvider.setVisible(treeViewId, false);
-        });
-        disposable.add(toDisposable(() => handler.disposeView(treeViewId)));
+        }));
+        disposable.add(disposable.add(toDisposable(() => handler.disposeView(treeViewId))));
       }
       this.disposableCollection.set(treeViewId, disposable);
     }
@@ -146,11 +152,14 @@ export class TreeViewDataProvider extends Tree {
     return this._root;
   }
 
+  public getTreeNodeIdByTreeItemId(treeItemId: string) {
+    return this.treeItemId2TreeNode.get(treeItemId)?.id;
+  }
+
   async createFoldNode(item: TreeViewItem, parent: ExtensionCompositeTreeNode): Promise<ExtensionCompositeTreeNode> {
     const expanded = TreeItemCollapsibleState.Expanded === item.collapsibleState;
     const icon = await this.toIconClass(item);
-
-    return new ExtensionCompositeTreeNode(
+    const node = new ExtensionCompositeTreeNode(
       this,
       parent,
       item.label,
@@ -162,11 +171,12 @@ export class TreeViewDataProvider extends Tree {
       item.id,
       expanded,
     );
+    return node;
   }
 
   async createNormalNode(item: TreeViewItem, parent: ExtensionCompositeTreeNode): Promise<ExtensionTreeNode> {
     const icon = await this.toIconClass(item);
-    return new ExtensionTreeNode(
+    const node = new ExtensionTreeNode(
       this,
       parent,
       item.label,
@@ -177,6 +187,7 @@ export class TreeViewDataProvider extends Tree {
       item.contextValue || '',
       item.id,
     );
+    return node;
   }
 
   async toIconClass(item: TreeViewItem): Promise<string | undefined> {
@@ -217,7 +228,7 @@ export class TreeViewDataProvider extends Tree {
     } else {
       nodes = [new ExtensionTreeRoot(this as any, this.treeViewId)];
     }
-
+    this.cacheNodes(nodes);
     return nodes;
   }
 
