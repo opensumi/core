@@ -464,6 +464,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
 
         return {
           ...realStatData,
+          type: FileType.SymbolicLink,
           isSymbolicLink: true,
           uri: uri.toString(),
         };
@@ -527,6 +528,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
       isDirectory: true,
       isSymbolicLink: stat.isSymbolicLink(),
       children,
+      type: FileType.Directory,
     };
   }
 
