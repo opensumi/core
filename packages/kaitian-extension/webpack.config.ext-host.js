@@ -43,7 +43,7 @@ module.exports = {
   externals: [
     function(context, request, callback) {
       if (
-        ["node-pty", "nsfw", "oniguruma", "spdlog", "electron"].indexOf(
+        ["node-pty", "nsfw", "spdlog", "electron"].indexOf(
           request
         ) !== -1
       ) {

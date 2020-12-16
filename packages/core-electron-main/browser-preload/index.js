@@ -20,7 +20,6 @@ function createNetConnection (connectPath) {
 electronEnv.ElectronIpcRenderer = ipcRenderer;
 electronEnv.createNetConnection = createNetConnection;
 electronEnv.createRPCNetConnection = createRPCNetConnection;
-electronEnv.oniguruma = require('oniguruma');
 electronEnv.platform = require('os').platform();
 
 electronEnv.isElectronRenderer = true;

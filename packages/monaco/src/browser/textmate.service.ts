@@ -30,20 +30,6 @@ class OnigasmLib implements IOnigLib {
   }
 }
 
-class OnigurumaLib implements IOnigLib {
-
-  constructor(private oniguruma) {
-
-  }
-
-  createOnigScanner(source: string[]) {
-    return new (this.oniguruma.OnigScanner)(source);
-  }
-  createOnigString(source: string) {
-    return new (this.oniguruma.OnigString)(source);
-  }
-}
-
 function isStringArr(something: string[] | null): something is string[] {
   if (!Array.isArray(something)) {
     return false;
@@ -551,19 +537,17 @@ export class TextmateService extends WithEventBus {
   }
 
   private async getOnigLib(): Promise<IOnigLib> {
-    //
-    // 这个还有用吗? @吭头
-    //
-    if ((global as any).oniguruma) {
-      return new OnigurumaLib((global as any).oniguruma);
-    }
+    let wasmUri: string;
     if (isElectronEnv()) {
-      return new OnigurumaLib(getNodeRequire()('oniguruma'));
+      const onigWasmPath = getNodeRequire().resolve('vscode-oniguruma/release/onig.wasm');
+      wasmUri = URI.file(onigWasmPath).codeUri.toString();
+    } else {
+      wasmUri = 'https://g.alicdn.com/kaitian/vscode-oniguruma-wasm/0.0.1/onig.wasm';
     }
-    const response = await fetch('https://g.alicdn.com/kaitian/vscode-oniguruma-wasm/0.0.1/onig.wasm');
-    await loadWASM({
-      data: response,
-    });
+
+    const response = await fetch(wasmUri);
+    const bytes = await response.arrayBuffer();
+    await loadWASM(bytes);
     return new OnigasmLib();
   }
 

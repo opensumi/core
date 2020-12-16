@@ -40,7 +40,6 @@ module.exports = {
       if (
         [
           'node-pty',
-          'oniguruma',
           'nsfw',
           'spdlog',
           '@ali/vscode-ripgrep',
