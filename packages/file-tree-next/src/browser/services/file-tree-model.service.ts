@@ -911,8 +911,8 @@ export class FileTreeModelService {
       parent = (promptHandle as NewPromptHandle).parent as Directory;
     }
 
-    const names = coalesce(name.split(/[\\/]/));
-    if (parent) {
+    // 压缩目录的情况下不需要判断同名文件
+    if (parent && !(((promptHandle as RenamePromptHandle).target as File).displayName.indexOf(Path.separator) > 0)) {
       // 不允许覆盖已存在的文件
       const child = parent.children?.find((child) => child.name === name);
       if (child) {
@@ -924,6 +924,7 @@ export class FileTreeModelService {
       }
     }
 
+    const names = coalesce(name.split(/[\\/]/));
     // 判断子路径是否合法
     if (names.some((folderName) => !isValidBasename(folderName))) {
       return {
@@ -947,20 +948,23 @@ export class FileTreeModelService {
       if (promptHandle instanceof RenamePromptHandle) {
         const target = promptHandle.target as (File | Directory);
         let from = target.uri;
+        let to = (target.parent as Directory).uri.resolve(newName);
         const isCompactNode = target.name.indexOf(Path.separator) > 0;
         // 无变化，直接返回
         if ((isCompactNode && this.activeUri?.displayName === newName) || (!isCompactNode && newName === target.name)) {
           return true;
         }
         promptHandle.addAddonAfter('loading_indicator');
-        if (isCompactNode) {
-          // 查找正确的来源节点路径
-          while (from.displayName !== promptHandle.originalFileName) {
-            from = from.parent;
-          }
+        if (isCompactNode && this.activeUri?.displayName) {
+          // 压缩目录情况下，需要计算下标进行重命名路径拼接
+          const nameFragments = (promptHandle.target as File).displayName.split(Path.separator);
+          const index = nameFragments.indexOf(this.activeUri?.displayName);
+          from = (target.parent as Directory).uri.resolve(nameFragments.slice(0, index + 1).join(Path.separator));
+          const newNameFragments = nameFragments.slice(0, index).concat(newName);
+          to = (target.parent as Directory).uri.resolve(newNameFragments.concat().join(Path.separator));
+          target.updateDisplayName(newNameFragments.concat(nameFragments.slice(index + 1)).join(Path.separator));
+          target.updateName(newNameFragments.concat(nameFragments.slice(index + 1)).join(Path.separator));
         }
-        // 压缩目录情况下，直接获取父节点的uri更稳妥
-        const to = (target.parent as Directory).uri.resolve(newName);
         const error = await this.fileTreeAPI.mv(from, to, target.type === TreeNodeType.CompositeTreeNode);
         promptHandle.removeAddonAfter();
         if (!!error) {
@@ -972,7 +976,11 @@ export class FileTreeModelService {
           promptHandle.addValidateMessage(this.validateMessage);
           return false;
         }
-        this.fileTreeService.moveNodeByPath(target.parent as Directory, target.path, new Path(target.parent!.path).join(newName).toString());
+        if (!isCompactNode) {
+          this.fileTreeService.moveNodeByPath(target.parent as Directory, target.path, new Path(target.parent!.path).join(newName).toString());
+        } else {
+          this.fileTreeService.ignoreFileEventOnce((target.parent as Directory).uri);
+        }
         // 由于节点移动时默认仅更新节点路径
         // 我们需要自己更新额外的参数，如uri, filestat等
         target.updateURI(to);
@@ -983,6 +991,9 @@ export class FileTreeModelService {
         target.updateToolTip(this.fileTreeAPI.getReadableTooltip(to));
         // 当重命名文件为文件夹时，刷新文件夹更新子文件路径
         if (Directory.is(target)) {
+          if (isCompactNode) {
+            this.treeModel.dispatchChange();
+          }
           this.fileTreeService.refresh(target as Directory);
         }
         locationFileWhileFileExist(target.path);
@@ -1175,13 +1186,15 @@ export class FileTreeModelService {
     }
   }
 
-  private async getPromptTarget(uri: URI) {
+  private async getPromptTarget(uri: URI, isCreatingFile?: boolean) {
     await this.ensurePerformedEffect();
     let targetNode: File | Directory;
     // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
     if (uri.isEqual((this.treeModel.root as Directory).uri)) {
       // 可能为空白区域点击, 即选中的对象为根目录
       targetNode = await this.fileTreeService.getNodeByPathOrUri(uri)!;
+    } else if (this.preContextMenuFocusedFile) {
+      targetNode = this.preContextMenuFocusedFile;
     } else if (this.selectedFiles.length > 0) {
       const selectedNode = this.selectedFiles[this.selectedFiles.length - 1];
       if (!this.treeModel.root.isItemVisibleAtSurface(selectedNode)) {
@@ -1199,17 +1212,24 @@ export class FileTreeModelService {
     const namePieces = Path.splitPath(targetNode.name);
     if (Directory.isRoot(targetNode)) {
       return targetNode;
-    } else if (targetNode.name !== uri.displayName && namePieces[namePieces.length - 1] !== uri.displayName) {
+    } else if (targetNode.name !== uri.displayName && namePieces[namePieces.length - 1] !== uri.displayName && isCreatingFile) {
       // 说明当前在压缩节点的非末尾路径上触发的新建事件， 如 a/b 上右键 a 产生的新建事件
-      const removePathName = uri.relative(targetNode.uri)?.toString();
+      const removePathName = uri.relative(targetNode.uri)!.toString();
       const relativeName = targetNode.name.replace(`${Path.separator}${removePathName}`, '');
       const newTargetUri = (targetNode.parent as Directory).uri.resolve(relativeName);
+      const tempFileName = removePathName.split(Path.separator)[0];
       if (!relativeName) {
         return;
       }
       const prePath = targetNode.path;
       // Re-cache TreeNode
       this.fileTreeService.removeNodeCacheByPath(prePath);
+      // 移除目录下的子节点
+      if (!!(targetNode as Directory).children) {
+        for (const node of (targetNode as Directory).children!) {
+          this.fileTreeService.deleteAffectedNodeByPath(node.path, true);
+        }
+      }
       // 更新目标节点信息
       targetNode.updateName(relativeName!.toString());
       targetNode.updateURI(newTargetUri);
@@ -1219,20 +1239,22 @@ export class FileTreeModelService {
         uri: newTargetUri.toString(),
       });
       this.fileTreeService.reCacheNode(targetNode, prePath);
-      await (targetNode as Directory).forceReloadChildrenQuiet();
+      this.fileTreeService.addNode(targetNode as Directory, tempFileName, TreeNodeType.CompositeTreeNode);
     }
     return targetNode;
   }
 
   async newFilePrompt(uri: URI) {
-    const targetNode = await this.getPromptTarget(uri);
+    await this.ensurePerformedEffect();
+    const targetNode = await this.getPromptTarget(uri, true);
     if (targetNode) {
       this.proxyPrompt(await this.fileTreeHandle.promptNewTreeNode(targetNode as Directory));
     }
   }
 
   async newDirectoryPrompt(uri: URI) {
-    const targetNode = await this.getPromptTarget(uri);
+    await this.ensurePerformedEffect();
+    const targetNode = await this.getPromptTarget(uri, true);
     if (targetNode) {
       this.proxyPrompt(await this.fileTreeHandle.promptNewCompositeTreeNode(targetNode as Directory));
     }
@@ -1240,15 +1262,7 @@ export class FileTreeModelService {
 
   async renamePrompt(uri: URI) {
     await this.ensurePerformedEffect();
-    let targetNode: File | Directory;
-    // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
-    if (this.focusedFile) {
-      targetNode = this.focusedFile;
-    } else if (this.selectedFiles.length > 0) {
-      targetNode = this.selectedFiles[this.selectedFiles.length - 1];
-    } else {
-      targetNode = await this.fileTreeService.getNodeByPathOrUri(uri)!;
-    }
+    const targetNode = await this.getPromptTarget(uri);
     if (targetNode) {
       this.proxyPrompt(await this.fileTreeHandle.promptRename(targetNode, uri.displayName));
     }

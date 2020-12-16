@@ -76,6 +76,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
   private _fileServiceWatchers: Map<string, IFileServiceWatcher> = new Map();
 
   private _cacheIgnoreFileEvent: Map<string, FileChangeType> = new Map();
+  private _cacheIgnoreFileEventOnce: URI | null;
 
   // 用于记录文件系统Change事件的定时器
   private _eventFlushTimeout: number;
@@ -228,15 +229,13 @@ export class FileTreeService extends Tree implements IFileTreeService {
       }
       // 加载子目录
       if (parent.uri) {
-        // 压缩节点模式需要在没有压缩节点焦点的情况下才启用
-        const isCompressedFocused = this.contextKeyService.getContextValue('explorerViewletCompressedFocus');
-        const data = await this.fileTreeAPI.resolveChildren(this, parent.uri.toString(), parent, !isCompressedFocused && this.isCompactMode && !Directory.isRoot(parent));
+        const data = await this.fileTreeAPI.resolveChildren(this, parent.uri.toString(), parent, this.isCompactMode && !Directory.isRoot(parent));
         children = data.children;
         // 有概率获取不到Filestat，易发生在外部删除多文件情况下
         const childrenParentStat = data.filestat;
         // 需要排除软连接下的直接空目录折叠，否则会导致路径计算错误
         // 但软连接目录下的其他目录不受影响
-        if (!!childrenParentStat && this.isCompactMode && !isCompressedFocused && !parent.filestat.isSymbolicLink && !Directory.isRoot(parent)) {
+        if (!!childrenParentStat && this.isCompactMode && !parent.filestat.isSymbolicLink && !Directory.isRoot(parent)) {
           const parentURI = new URI(childrenParentStat.uri);
           if (parent && parent.parent) {
             const parentName = (parent.parent as Directory).uri.relative(parentURI)?.toString();
@@ -306,6 +305,19 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   private async onFilesChanged(changes: FileChange[]) {
     // 过滤掉内置触发的事件
+    if (!!this._cacheIgnoreFileEventOnce) {
+      let filtered = false;
+      changes = changes.filter((change) => {
+        if (this._cacheIgnoreFileEventOnce!.isEqualOrParent(new URI(change.uri))) {
+          filtered = true;
+          return false;
+        }
+        return true;
+      });
+      if (filtered) {
+        this._cacheIgnoreFileEventOnce = null;
+      }
+    }
     changes = changes.filter((change) => {
       if (!this._cacheIgnoreFileEvent.has(change.uri)) {
         return true;
@@ -437,12 +449,12 @@ export class FileTreeService extends Tree implements IFileTreeService {
   }
 
   // 用于精准删除节点，软连接目录下的文件删除
-  public async deleteAffectedNodeByPath(path: string) {
+  public async deleteAffectedNodeByPath(path: string, notRefresh?: boolean) {
     const node = this.getNodeByPathOrUri(path);
     if (node && node.parent) {
       this.removeNodeCacheByPath(node.path);
       // 压缩模式下，刷新父节点目录即可
-      if (this.isCompactMode) {
+      if (this.isCompactMode && !notRefresh) {
         this.refresh(node.parent as Directory);
       } else {
         this._cacheIgnoreFileEvent.set(node.uri.toString(), FileChangeType.DELETED);
@@ -497,6 +509,10 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   ignoreFileEvent(uri: URI, type: FileChangeType) {
     this._cacheIgnoreFileEvent.set(uri.toString(), type);
+  }
+
+  ignoreFileEventOnce(uri: URI) {
+    this._cacheIgnoreFileEventOnce = uri;
   }
 
   cacheNodes(nodes: (File | Directory)[]) {
