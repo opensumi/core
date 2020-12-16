@@ -14,15 +14,13 @@ export class ExpressFileServerContribution implements StaticResourceContribution
       scheme: 'file',
       resolveStaticResource: (uri: URI) => {
         // file 协议统一走静态服务
-        // http://127.0.0.1:8000/assets?path=${path}
+        // http://127.0.0.1:8000/assets/${path}
         const assetsUri = new URI(this.appConfig.staticServicePath || EXPRESS_SERVER_PATH);
-        return assetsUri.withPath('assets').withQuery(decodeURIComponent(URI.stringifyQuery({
-          /**
-           * uri.path 在 Windows 下会被解析为  \c:\\Path\\to\file
-           * fsPath C:\\Path\\to\\file
-           */
-          path: uri.codeUri.fsPath,
-        })));
+        /**
+         * uri.path 在 Windows 下会被解析为  \c:\\Path\\to\file
+         * fsPath C:\\Path\\to\\file
+         */
+        return assetsUri.withPath(`assets${decodeURIComponent(uri.codeUri.fsPath)}`);
       },
       roots: [this.appConfig.staticServicePath || EXPRESS_SERVER_PATH],
     });

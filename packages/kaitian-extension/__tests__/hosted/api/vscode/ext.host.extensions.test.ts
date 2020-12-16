@@ -36,8 +36,7 @@ describe(`test ${__filename}`, () => {
     return _uri.scheme !== 'file'
       ? _uri.withScheme('http').codeUri
       : new URI(staticServicePath)
-          .withPath('assets')
-          .withQuery(`path=${_uri.codeUri.fsPath}`).codeUri;
+          .withPath(`assets${_uri.codeUri.fsPath}`).codeUri;
   };
   beforeAll(async () => {
     rpcProtocol = await initMockRPCProtocol(mockClient);
@@ -59,12 +58,12 @@ describe(`test ${__filename}`, () => {
     it('should get corrent href in normal scene', async () => {
       let filePath = './server.js';
       expect(await context.asHref(filePath)).toBe(
-        `${staticServicePath}/assets?path=${path.join(mockExtension.path, filePath)}`,
+        `${staticServicePath}/assets${path.join(mockExtension.path, filePath)}`,
       );
 
       filePath = 'server.js';
       expect(await context.asHref(filePath)).toBe(
-        `${staticServicePath}/assets?path=${path.join(mockExtension.path, filePath)}`,
+        `${staticServicePath}/assets${path.join(mockExtension.path, filePath)}`,
       );
     });
 
