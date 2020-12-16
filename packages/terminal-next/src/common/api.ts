@@ -19,4 +19,4 @@ export interface ITerminalApiService {
   removeTerm(id: string): void;
 
   createWidget(uniqName: string, widgetRenderFunc: (element: HTMLDivElement) => void): void;
-  }
+}

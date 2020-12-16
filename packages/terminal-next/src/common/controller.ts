@@ -1,4 +1,5 @@
 import { Event, Disposable, Deferred } from '@ali/ide-core-common';
+import { ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest } from './extension';
 import { IWidgetGroup, IWidget } from './resize';
 import { ITerminalClient } from './client';
 import { TerminalOptions, ITerminalInfo } from './pty';
@@ -40,6 +41,9 @@ export interface ITerminalController extends Disposable {
   onDidOpenTerminal: Event<ITerminalInfo>;
   onDidCloseTerminal: Event<string>;
   onDidChangeActiveTerminal: Event<string>;
+
+  requestStartExtensionTerminal(proxy: ITerminalProcessExtHostProxy, cols: number, rows: number): Promise<ITerminalLaunchError | undefined>;
+  readonly onInstanceRequestStartExtensionTerminal: Event<IStartExtensionTerminalRequest>;
 }
 
 export const ITerminalSearchService = Symbol('ITerminalSearchService');

@@ -10,5 +10,6 @@ export * from './theme';
 export * from './commands';
 export * from './utils';
 export * from './render';
+export * from './extension';
 
 export const TerminalContainerId = 'terminal';

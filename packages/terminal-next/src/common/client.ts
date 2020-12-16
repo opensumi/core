@@ -8,6 +8,11 @@ export interface ITerminalDataEvent {
   data: string | ArrayBuffer;
 }
 
+export interface ITerminalExitEvent {
+  id: string;
+  code?: number;
+}
+
 export interface ITerminalClient extends Disposable {
   /**
    * 标识终端客户端的唯一 id
@@ -134,6 +139,11 @@ export interface ITerminalClient extends Disposable {
    * stdin 输入事件
    */
   onInput: Event<ITerminalDataEvent>;
+
+  /**
+   * 退出事件
+   */
+  onExit: Event<ITerminalExitEvent>;
 }
 
 export const ITerminalClientFactory = Symbol('ITerminalClientFactory');
@@ -144,4 +154,5 @@ export interface ITerminalConnection {
   readonly: boolean;
   sendData(data: string | ArrayBuffer): void;
   onData: Event<string | ArrayBuffer>;
+  onExit?: Event<number | undefined>;
 }
