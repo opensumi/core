@@ -1,5 +1,5 @@
 import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { IContextKeyService, BrowserModule, ClientAppContribution, Domain, localize, IPreferenceSettingsService, CommandContribution, CommandRegistry, IClientApp, IEventBus, CommandService, IAsyncResult, MonacoContribution, QuickOpenService, QuickOpenItem, QuickOpenItemOptions, QuickOpenGroupItem, replaceLocalizePlaceholder, isElectronEnv, electronEnv, formatLocalize, Command } from '@ali/ide-core-browser';
+import { IContextKeyService, BrowserModule, ClientAppContribution, Domain, localize, IPreferenceSettingsService, CommandContribution, CommandRegistry, IClientApp, IEventBus, CommandService, IAsyncResult, MonacoContribution, QuickOpenService, QuickOpenItem, QuickOpenItemOptions, QuickOpenGroupItem, replaceLocalizePlaceholder, isElectronEnv, electronEnv, formatLocalize, FILE_COMMANDS, URI } from '@ali/ide-core-browser';
 import { ExtensionNodeServiceServerPath, ExtensionService, EMIT_EXT_HOST_EVENT, ExtensionHostType, ExtensionHostProfilerServicePath, IExtensionHostProfilerService} from '../common';
 import { ExtensionServiceImpl } from './extension.service';
 import { IMainLayoutService } from '@ali/ide-main-layout';
@@ -16,36 +16,8 @@ import { ActivatedExtension } from '../common/activator';
 import { WSChannelHandler } from '@ali/ide-connection/lib/browser/ws-channel-handler';
 import { IWindowDialogService } from '@ali/ide-overlay';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@ali/ide-core-browser/lib/services/status-bar-service';
-import { TERMINAL_COMMANDS } from '@ali/ide-terminal-next';
-
-const RELOAD_WINDOW_COMMAND = {
-  id: 'reload_window',
-};
-
-const RELOAD_WINDOW: Command = {
-  id: 'workbench.action.reloadWindow',
-  delegate: RELOAD_WINDOW_COMMAND.id,
-};
-
-const SHOW_RUN_TIME_EXTENSION = {
-  id: 'workbench.action.showRuntimeExtensions',
-  label: 'Show Running Extensions',
-};
-
-const START_EXTENSION_HOST_PROFILER = {
-  id: 'workbench.action.extensionHostProfiler.start',
-  label: 'Start Extension Host Profile',
-};
-
-const STOP_EXTENSION_HOST_PROFILER = {
-  id: 'workbench.action.extensionHostProfiler.stop',
-  label: 'Stop Extension Host Profile',
-};
-
-const CLEAR_TERMINAL = {
-  id: 'workbench.action.terminal.clear',
-  delegate: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
-};
+import * as BUILTIN_COMMANDS from './builtin-commands';
+import type * as vscode from 'vscode';
 
 @Injectable()
 export class KaitianExtensionModule extends BrowserModule {
@@ -168,12 +140,12 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
       },
     });
 
-    registry.registerCommand(RELOAD_WINDOW_COMMAND, {
+    registry.registerCommand(BUILTIN_COMMANDS.RELOAD_WINDOW_COMMAND, {
       execute: () => {
         this.clientApp.fireOnReload();
       },
     });
-    registry.registerCommand(RELOAD_WINDOW);
+    registry.registerCommand(BUILTIN_COMMANDS.RELOAD_WINDOW);
     registry.registerCommand(EMIT_EXT_HOST_EVENT, {
       execute: async (eventName: string, ...eventArgs: Serializable[]) => {
         // activationEvent 添加 onEvent:xxx
@@ -194,7 +166,7 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
       },
     });
 
-    registry.registerCommand(SHOW_RUN_TIME_EXTENSION, {
+    registry.registerCommand(BUILTIN_COMMANDS.SHOW_RUN_TIME_EXTENSION, {
       execute: async () => {
         const activated = await this.extensionService.getActivatedExtensions();
         this.quickOpenService.open({
@@ -203,7 +175,7 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
       },
     });
 
-    registry.registerCommand(START_EXTENSION_HOST_PROFILER, {
+    registry.registerCommand(BUILTIN_COMMANDS.START_EXTENSION_HOST_PROFILER, {
       execute: async () => {
         let clientId: string;
         if (isElectronEnv()) {
@@ -217,7 +189,7 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
             tooltip: formatLocalize('extension.profiling.clickStop', 'Click to stop profiling.'),
             text: `$(sync~spin) ${formatLocalize('extension.profilingExtensionHost', 'Profiling Extension Host')}`,
             alignment: StatusBarAlignment.RIGHT,
-            command: STOP_EXTENSION_HOST_PROFILER.id,
+            command: BUILTIN_COMMANDS.STOP_EXTENSION_HOST_PROFILER.id,
           });
         }
         await this.extensionProfiler.$startProfile(clientId);
@@ -225,7 +197,7 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
       isPermitted: () => false,
     });
 
-    registry.registerCommand(STOP_EXTENSION_HOST_PROFILER, {
+    registry.registerCommand(BUILTIN_COMMANDS.STOP_EXTENSION_HOST_PROFILER, {
       execute: async () => {
         let clientId: string;
         if (isElectronEnv()) {
@@ -255,7 +227,17 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
       isPermitted: () => false,
     });
 
-    registry.registerCommand(CLEAR_TERMINAL);
+    registry.registerCommand(BUILTIN_COMMANDS.CLEAR_TERMINAL);
+    registry.registerCommand(BUILTIN_COMMANDS.COPY_FILE_PATH, {
+      execute: async (uri: vscode.Uri) => {
+        await this.commandService.executeCommand(FILE_COMMANDS.COPY_PATH.id, URI.from(uri));
+      },
+    });
+    registry.registerCommand(BUILTIN_COMMANDS.COPY_RELATIVE_FILE_PATH, {
+      execute: async (uri: vscode.Uri) => {
+        await this.commandService.executeCommand(FILE_COMMANDS.COPY_RELATIVE_PATH.id, URI.from(uri));
+      },
+    });
   }
 
   asQuickOpenItems(activated: { node?: ActivatedExtension[] | undefined; worker?: ActivatedExtension[] | undefined; }): QuickOpenItem<QuickOpenItemOptions>[] {

@@ -1,4 +1,4 @@
-import { URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, isWindows, IElectronNativeDialogService, ToolbarRegistry, KeybindingRegistry, IWindowService } from '@ali/ide-core-browser';
+import { URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, isWindows, IElectronNativeDialogService, ToolbarRegistry, KeybindingRegistry, IWindowService, IClipboardService } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileTreeService } from './file-tree.service';
@@ -12,7 +12,6 @@ import { NextMenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } 
 import { FileTreeModelService } from './services/file-tree-model.service';
 import { Directory } from '../common/file-tree-node.define';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import * as copy from 'copy-to-clipboard';
 import { IOpenDialogOptions, IWindowDialogService, ISaveDialogOptions } from '@ali/ide-overlay';
 import { FilesExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 import { FilesExplorerFocusedContext, FilesExplorerInputFocusedContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
@@ -50,6 +49,9 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
 
   @Autowired(IWindowDialogService)
   private readonly windowDialogService: IWindowDialogService;
+
+  @Autowired(IClipboardService)
+  private readonly clipboardService: IClipboardService;
 
   private isRendered = false;
 
@@ -426,14 +428,14 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       },
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_PATH, {
-      execute: (uri) => {
+      execute: async (uri) => {
         const copyUri: URI = uri;
         let pathStr: string = decodeURIComponent(copyUri.withoutScheme().toString());
         // windows下移除路径前的 /
         if (isWindows) {
           pathStr = pathStr.slice(1);
         }
-        copy(decodeURIComponent(copyUri.withoutScheme().toString()));
+        await this.clipboardService.writeText(decodeURIComponent(copyUri.withoutScheme().toString()));
       },
       isVisible: () => {
         return this.fileTreeModelService.selectedFiles.length > 0;
@@ -447,19 +449,19 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
           for (const root of await this.workspaceService.roots) {
             rootUri = new URI(root.uri);
             if (rootUri.isEqual(uri)) {
-              return copy('./');
+              return await this.clipboardService.writeText('./');
             }
             if (rootUri.isEqualOrParent(uri)) {
-              return copy(decodeURIComponent(rootUri.relative(uri)!.toString()));
+              return await this.clipboardService.writeText(decodeURIComponent(rootUri.relative(uri)!.toString()));
             }
           }
         } else {
           if (this.workspaceService.workspace) {
             rootUri = new URI(this.workspaceService.workspace.uri);
             if (rootUri.isEqual(uri)) {
-              return copy('./');
+              return await this.clipboardService.writeText('./');
             }
-            return copy(decodeURIComponent(rootUri.relative(uri)!.toString()));
+            return await this.clipboardService.writeText(decodeURIComponent(rootUri.relative(uri)!.toString()));
           }
         }
       },

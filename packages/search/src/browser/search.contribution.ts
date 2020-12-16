@@ -1,7 +1,6 @@
-import * as copy from 'copy-to-clipboard';
 import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, DisposableCollection } from '@ali/ide-core-common';
-import { localize, PreferenceSchema, SEARCH_COMMANDS } from '@ali/ide-core-browser';
+import { localize, PreferenceSchema, SEARCH_COMMANDS, IClipboardService } from '@ali/ide-core-browser';
 import { KeybindingContribution, KeybindingRegistry, ClientAppContribution, ComponentRegistry, ComponentContribution, PreferenceContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
@@ -31,6 +30,9 @@ export class SearchContribution implements CommandContribution, KeybindingContri
 
   @Autowired(SearchContextKey)
   private readonly searchContextKey: SearchContextKey;
+
+  @Autowired(IClipboardService)
+  private readonly clipboardService: IClipboardService;
 
   schema: PreferenceSchema = searchPreferenceSchema;
 
@@ -143,7 +145,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
         const result: ContentSearchResult | undefined = data.searchResult;
 
         if (result) {
-          copy(`  ${result.line},${result.matchStart}:  ${result.lineText}`);
+          this.clipboardService.writeText(`  ${result.line},${result.matchStart}:  ${result.lineText}`);
         } else {
           let text = `\n ${data.uri!.withoutScheme().toString()} \n`;
 
@@ -152,7 +154,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
             text = text + `  ${result.line},${result.matchStart}:  ${result.lineText} \n`;
           });
 
-          copy(text);
+          this.clipboardService.writeText(text);
         }
       },
     });
@@ -174,13 +176,13 @@ export class SearchContribution implements CommandContribution, KeybindingContri
           copyText = copyText + text;
         });
 
-        copy(copyText);
+        this.clipboardService.writeText(copyText);
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_COPY_PATH, {
       execute: (e) => {
         if (e.path) {
-          copy(e.path);
+          this.clipboardService.writeText(e.path);
         }
       },
       isVisible: () => {

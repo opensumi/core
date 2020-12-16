@@ -1,9 +1,8 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { BrowserCodeEditor } from './editor-collection.service';
-import {  IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService } from '@ali/ide-core-browser';
+import {  IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService, IClipboardService } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { isElectronEnv, isWindows, PreferenceScope } from '@ali/ide-core-common';
-import * as copy from 'copy-to-clipboard';
 import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { SUPPORTED_ENCODINGS } from '@ali/ide-core-common/lib/const';
 
@@ -60,6 +59,9 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
 
   @Autowired()
   private editorOpener: EditorOpener;
+
+  @Autowired(IClipboardService)
+  private readonly clipboardService: IClipboardService;
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-editor', {
@@ -371,7 +373,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       execute: () => {
         const resource = this.workbenchEditorService.currentResource;
         if (resource && resource.uri.scheme === Schemas.file) {
-          copy(resource.uri.codeUri.fsPath);
+          this.clipboardService.writeText(resource.uri.codeUri.fsPath);
         }
       },
     });
