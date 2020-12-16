@@ -5,10 +5,14 @@ import { mockService, MockInjector } from '../../../../tools/dev-tool/src/mock-i
 import { FileTreeContribution } from '@ali/ide-file-tree-next/lib/browser/file-tree-contribution';
 import { IFileTreeService } from '@ali/ide-file-tree-next';
 import { IWorkspaceService } from '@ali/ide-workspace';
+import { ExtensionNodeServiceServerPath, IExtensionNodeClientService } from '../../src';
+import { WSChannelHandler } from '@ali/ide-connection';
+import { uuid } from '@ali/ide-core-common';
 
 describe(__filename, () => {
   let injector: MockInjector;
   let commandService: CommandService;
+  let kaitianExtensionClientAppContribution: KaitianExtensionClientAppContribution;
 
   beforeEach(() => {
     injector = createBrowserInjector([]);
@@ -42,9 +46,21 @@ describe(__filename, () => {
           },
         }),
       },
+      {
+        token: ExtensionNodeServiceServerPath,
+        useValue: mockService({
+          disposeClientExtProcess: jest.fn(),
+        }),
+      },
+      {
+        token: WSChannelHandler,
+        useValue: mockService({
+          clientId: uuid(),
+        }),
+      },
     );
     const commandRegistry = injector.get<CommandRegistry>(CommandRegistry);
-    const kaitianExtensionClientAppContribution = injector.get(KaitianExtensionClientAppContribution);
+    kaitianExtensionClientAppContribution = injector.get(KaitianExtensionClientAppContribution);
     const fileTreeContribution = injector.get(FileTreeContribution);
     kaitianExtensionClientAppContribution.registerCommands(commandRegistry);
     fileTreeContribution.registerCommands(commandRegistry);
@@ -73,5 +89,12 @@ describe(__filename, () => {
     await commandService.executeCommand('copyRelativeFilePath', Uri.file('/home/admin/workspace/a.ts'));
     expect(clipboardService.writeText).toBeCalled();
     expect(clipboardService.writeText).toBeCalledWith('a.ts');
+  });
+
+  it('close page expects disposeClientExtProcess to be called', () => {
+    const extensionNodeClientService = injector.get<IExtensionNodeClientService>(ExtensionNodeServiceServerPath);
+    // trigger close
+    kaitianExtensionClientAppContribution.onStop();
+    expect(extensionNodeClientService.disposeClientExtProcess).toBeCalled();
   });
 });

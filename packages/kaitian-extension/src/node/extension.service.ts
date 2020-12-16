@@ -48,7 +48,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private clientExtProcessExtConnection: Map<string, any> = new Map();
   private clientExtProcessExtConnectionServer: Map<string, net.Server> = new Map();
   private clientExtProcessFinishDeferredMap: Map<string, Deferred<void>> = new Map();
-  private clientExtProcessThresholdExitTimerMap: Map<string, NodeJS.Timeout> = new Map();
   private clientServiceMap: Map<string, IExtensionNodeClientService> = new Map();
 
   private inspectPort: number = 9889;
@@ -63,8 +62,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private extServerListenPaths: Map<string, string> = new Map();
 
   private electronMainThreadListenPaths: Map<string, string> = new Map();
-
-  private pendingClientExtProcessDisposer: Promise<void> | null;
 
   public async getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: { [key: string]: any } = {}): Promise<IExtensionMetaData[]> {
     // 扫描内置插件和插件市场的插件目录
@@ -130,11 +127,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         mainThreadConnection.writer.write(input);
       });
 
-      if (this.clientExtProcessThresholdExitTimerMap.has(clientId)) {
-        const timer = this.clientExtProcessThresholdExitTimerMap.get(clientId) as NodeJS.Timeout;
-        clearTimeout(timer);
-      }
-
       this.logger.log(`setExtProcessConnectionForward clientId ${clientId}`);
 
     });
@@ -144,11 +136,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   public async createProcess(clientId: string) {
     this.logger.log('createProcess', this.instanceId);
     this.logger.log('appconfig exthost', this.appConfig.extHost);
-    if (this.pendingClientExtProcessDisposer) {
-      this.logger.log('Waiting for disposer to complete.');
-      await this.pendingClientExtProcessDisposer;
-    }
-
     this.logger.log('createProcess clientId', clientId);
 
     const processClientIdArr = Array.from(this.clientExtProcessMap.keys());
@@ -440,6 +427,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
         connection.on('close', () => {
           this.logger.log('close disposeClientExtProcess clientId', clientId);
+          // electron 只要端口进程就杀死插件进程
           this.disposeClientExtProcess(clientId);
         });
 
@@ -473,10 +461,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
               if (extConnection.reader) {
                 extConnection.reader.dispose();
               }
-
             }
-
-            this.closeExtProcess(connectionClientId);
           });
 
         },
@@ -485,20 +470,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
           // this.disposeClientExtProcess(connectionClientId);
         },
       });
-    }
-  }
-
-  private closeExtProcess(connectionClientId: string) {
-
-    if (this.clientExtProcessMap.has(connectionClientId)) {
-      const timer = global.setTimeout(() => {
-        this.logger.log('close disposeClientExtProcess clientId', connectionClientId);
-        const disposer = this.disposeClientExtProcess(connectionClientId);
-        if (isDevelopment()) {
-          this.pendingClientExtProcessDisposer = disposer;
-        }
-      }, isDevelopment() ? 0 : (this.appConfig.processCloseExitThreshold ?? ExtensionNodeServiceImpl.ProcessCloseExitThreshold));
-      this.clientExtProcessThresholdExitTimerMap.set(connectionClientId, timer);
     }
   }
 
@@ -536,7 +507,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       this.clientExtProcessExtConnectionServer.delete(clientId);
       this.clientExtProcessFinishDeferredMap.delete(clientId);
       this.clientExtProcessInitDeferredMap.delete(clientId);
-      this.clientExtProcessThresholdExitTimerMap.delete(clientId);
       this.clientExtProcessMap.delete(clientId);
 
       if (killProcess) {
@@ -556,8 +526,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         this.infoProcessNotExist(clientId);
       }
       this.logger.log(`${clientId} extProcess dispose`);
-
-      this.pendingClientExtProcessDisposer = null;
 
     }
   }

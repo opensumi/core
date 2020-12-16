@@ -71,8 +71,8 @@ interface Config {
    */
   extLogServiceClassPath?: string;
   /**
-   * 插件进程关闭时间，默认断连后5秒退出
-   * 开发环境断连后立即关闭
+   * 插件进程关闭时间.
+   * @deprecated 自从 1.29.0 后，页面关闭或销毁即会销毁插件进程
    */
   processCloseExitThreshold?: number;
   /**
