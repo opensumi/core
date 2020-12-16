@@ -189,6 +189,9 @@ export class ClientApp implements IClientApp {
   }
 
   public async start(container: HTMLElement | IAppRenderer, type?: string, connection?: RPCMessageConnection): Promise<void> {
+    const reporterService: IReporterService = this.injector.get(IReporterService);
+    const measureReporter = reporterService.time(REPORT_NAME.MEASURE);
+
     if (connection) {
       await bindConnectionService(this.injector, this.modules, connection);
     } else {
@@ -206,16 +209,20 @@ export class ClientApp implements IClientApp {
         this.injector.get(WSChannelHandler).replaceLogger(this.logger);
       }
     }
+    measureReporter.timeEnd('ClientApp.createConnection');
 
     this.logger = this.getLogger();
     this.stateService.state = 'client_connected';
     // 在 connect 之后立即初始化数据，保证其它 module 能同步获取数据
     await this.injector.get(IApplicationService).initializeData();
-    await this.startContributions();
+    // 在 contributions 执行完 onStart 上报一次耗时
+    await this.measure('Contributions.start', () => this.startContributions());
     this.stateService.state = 'started_contributions';
     this.registerEventListeners();
-    await this.renderApp(container);
+    await this.measure('ClientApp.renderApp', () => this.renderApp(container));
     this.stateService.state = 'ready';
+
+    measureReporter.timeEnd('Framework.ready');
   }
 
   private getLogger() {
@@ -303,18 +310,29 @@ export class ClientApp implements IClientApp {
   }
 
   protected async startContributions() {
+    await this.measure('Contributions.initialize', () => this.initializeContributions());
+    await this.measure('Contributions.onStart', () => this.onStartContributions());
+  }
+
+  /**
+   * run contribution#initialize
+   */
+  private async initializeContributions() {
     this.logger.verbose('startContributions clientAppContributions', this.contributions);
 
-    // run contribution#initialize
     await this.runContributionsPhase(this.contributions, 'initialize');
 
     this.logger.verbose('contributions.initialize done');
+  }
 
+  /**
+   * run contribution#onStart
+   */
+  private async onStartContributions() {
     this.commandRegistry.onStart();
     this.keybindingRegistry.onStart();
     this.nextMenuRegistry.onStart();
 
-    // run contribution#onStart
     await this.runContributionsPhase(this.contributions, 'onStart');
   }
 
