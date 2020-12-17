@@ -94,6 +94,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
         itemHeight={DEBUG_CONSOLE_TREE_NODE_HEIGHT}
         onReady={handleTreeReady}
         model={model!.treeModel}
+        overflow={ 'auto' }
       >
         {(props: INodeRendererWrapProps) => {
           const decorations = tree.decorations.getDecorations(props.item as any);
