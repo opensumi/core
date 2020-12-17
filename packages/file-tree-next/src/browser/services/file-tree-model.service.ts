@@ -912,7 +912,7 @@ export class FileTreeModelService {
     }
 
     // 压缩目录的情况下不需要判断同名文件
-    if (parent && !(((promptHandle as RenamePromptHandle).target as File).displayName.indexOf(Path.separator) > 0)) {
+    if (parent && promptHandle instanceof RenamePromptHandle && !((promptHandle.target as File).displayName.indexOf(Path.separator) > 0)) {
       // 不允许覆盖已存在的文件
       const child = parent.children?.find((child) => child.name === name);
       if (child) {
