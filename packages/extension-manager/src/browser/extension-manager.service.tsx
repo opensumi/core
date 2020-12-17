@@ -421,7 +421,9 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
         isInstalling: false,
       });
       this.messageService.error(error.message);
-      this.reporterService.point(REPORT_NAME.INSTALL_EXTENSION_ERROR, extensionId);
+      this.reporterService.point(REPORT_NAME.INSTALL_EXTENSION_ERROR, extensionId, {
+        error: error.message,
+      });
       return '';
     }
 
