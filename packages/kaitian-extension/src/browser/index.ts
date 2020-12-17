@@ -1,6 +1,6 @@
 import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { IContextKeyService, BrowserModule, ClientAppContribution, Domain, localize, IPreferenceSettingsService, CommandContribution, CommandRegistry, IClientApp, IEventBus, CommandService, IAsyncResult, MonacoContribution, QuickOpenService, QuickOpenItem, QuickOpenItemOptions, QuickOpenGroupItem, replaceLocalizePlaceholder, isElectronEnv, electronEnv, formatLocalize, FILE_COMMANDS, URI } from '@ali/ide-core-browser';
-import { ExtensionNodeServiceServerPath, ExtensionService, EMIT_EXT_HOST_EVENT, ExtensionHostType, ExtensionHostProfilerServicePath, IExtensionHostProfilerService} from '../common';
+import { ExtensionNodeServiceServerPath, ExtensionService, EMIT_EXT_HOST_EVENT, ExtensionHostType, ExtensionHostProfilerServicePath, IExtensionHostProfilerService, IExtensionNodeClientService} from '../common';
 import { ExtensionServiceImpl } from './extension.service';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { IDebugServer } from '@ali/ide-debug';
@@ -101,6 +101,9 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
   @Autowired(IWebviewService)
   webviewService: IWebviewService;
 
+  @Autowired(ExtensionNodeServiceServerPath)
+  private readonly extensionNodeService: IExtensionNodeClientService;
+
   private cpuProfileStatus: StatusBarEntryAccessor | null;
 
   async initialize() {
@@ -124,6 +127,11 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
       title: localize('settings.group.extension'),
       iconClass: getIcon('extension'),
     });
+  }
+
+  onStop() {
+    // IDE 关闭或者重启时销毁插件进程
+    this.extensionNodeService.disposeClientExtProcess(this.clientId, false);
   }
 
   onContextKeyServiceReady(contextKeyService: IContextKeyService) {
@@ -177,13 +185,6 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
 
     registry.registerCommand(BUILTIN_COMMANDS.START_EXTENSION_HOST_PROFILER, {
       execute: async () => {
-        let clientId: string;
-        if (isElectronEnv()) {
-          clientId = electronEnv.metadata.windowClientId;
-        } else {
-          const channelHandler = this.injector.get(WSChannelHandler);
-          clientId = channelHandler.clientId;
-        }
         if (!this.cpuProfileStatus) {
           this.cpuProfileStatus = this.statusBar.addElement('ExtensionHostProfile', {
             tooltip: formatLocalize('extension.profiling.clickStop', 'Click to stop profiling.'),
@@ -192,21 +193,14 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
             command: BUILTIN_COMMANDS.STOP_EXTENSION_HOST_PROFILER.id,
           });
         }
-        await this.extensionProfiler.$startProfile(clientId);
+        await this.extensionProfiler.$startProfile(this.clientId);
       },
       isPermitted: () => false,
     });
 
     registry.registerCommand(BUILTIN_COMMANDS.STOP_EXTENSION_HOST_PROFILER, {
       execute: async () => {
-        let clientId: string;
-        if (isElectronEnv()) {
-          clientId = electronEnv.metadata.windowClientId;
-        } else {
-          const channelHandler = this.injector.get(WSChannelHandler);
-          clientId = channelHandler.clientId;
-        }
-        const successful = await this.extensionProfiler.$stopProfile(clientId);
+        const successful = await this.extensionProfiler.$stopProfile(this.clientId);
 
         if (this.cpuProfileStatus) {
           this.cpuProfileStatus.dispose();
@@ -256,5 +250,19 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
       label: replaceLocalizePlaceholder(e.displayName, e.id),
       detail: replaceLocalizePlaceholder(e.description, e.id),
     });
+  }
+
+  /**
+   * 当前客户端 id
+   */
+  private get clientId() {
+    let clientId: string;
+    if (isElectronEnv()) {
+      clientId = electronEnv.metadata.windowClientId;
+    } else {
+      const channelHandler = this.injector.get(WSChannelHandler);
+      clientId = channelHandler.clientId;
+    }
+    return clientId;
   }
 }
