@@ -84,10 +84,12 @@ export class File extends TreeNode {
   }
 
   updateName(name: string) {
-    this.name = name;
-    TreeNode.removeTreeNode(this._uid, this.path);
-    // 更新name后需要重设节点路径索引
-    TreeNode.setTreeNode(this._uid, this.path, this);
+    if (this.name !== name) {
+      TreeNode.removeTreeNode(this._uid, this.path);
+      this.name = name;
+      // 更新name后需要重设节点路径索引
+      TreeNode.setTreeNode(this._uid, this.path, this);
+    }
   }
 
   updateDisplayName(name: string) {
