@@ -34,6 +34,7 @@ export interface IExtServerProxyRPCService {
  */
 export interface IExtHostProxy {
   init(): void;
+  dispose(): void;
 }
 
 /**
@@ -93,6 +94,10 @@ export interface IExtHostProxyRPCService {
    * @param pid
    */
   $disposeProcess(pid: number): Promise<void>;
+  /**
+   * 销毁代理进程副作用
+   */
+  $dispose(): Promise<void>;
 }
 
 export interface IExtHostProxyOptions {

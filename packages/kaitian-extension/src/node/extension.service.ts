@@ -353,7 +353,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   async getProcessInspectPort(clientId: string) {
     const extHostProcessId = this.clientExtProcessMap.get(clientId);
-    if (!extHostProcessId || await this.extensionHostManager.isKilled(extHostProcessId)) {
+    if (!extHostProcessId || !(await this.extensionHostManager.isRunning(extHostProcessId))) {
       return;
     }
     return this.clientExtProcessInspectPortMap.get(clientId);
@@ -524,6 +524,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   }
 
   public async disposeAllClientExtProcess(): Promise<void> {
-    await Promise.all([...this.clientExtProcessMap.keys()].map((clientId) => this.disposeClientExtProcess(clientId, true, true)));
+    await this.extensionHostManager.dispose();
   }
 }

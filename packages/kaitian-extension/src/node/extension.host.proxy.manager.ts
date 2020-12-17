@@ -1,12 +1,12 @@
 import { Injectable, Optional, Autowired } from '@ali/common-di';
-import { MaybePromise, Emitter, IDisposable, toDisposable } from '@ali/ide-core-common';
+import { MaybePromise, Emitter, IDisposable, toDisposable, Disposable } from '@ali/ide-core-common';
 import { IExtensionHostManager, Output, EXT_HOST_PROXY_PROTOCOL, EXT_SERVER_IDENTIFIER, IExtHostProxyRPCService, EXT_HOST_PROXY_IDENTIFIER, EXT_HOST_PROXY_SERVER_PROT } from '../common';
 import * as net from 'net';
 import { RPCServiceCenter, INodeLogger } from '@ali/ide-core-node';
 import { createSocketConnection, getRPCService, RPCProtocol, IRPCProtocol } from '@ali/ide-connection';
 
 @Injectable()
-export class ExtensionHostProxyManager implements IExtensionHostManager {
+export class ExtensionHostProxyManager extends Disposable implements IExtensionHostManager {
 
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
@@ -25,7 +25,9 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
 
   constructor(@Optional() private listenOptions: net.ListenOptions = {
     port: EXT_HOST_PROXY_SERVER_PROT,
-  }) {}
+  }) {
+    super();
+  }
 
   async init() {
     await this.startProxyServer();
@@ -33,8 +35,12 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
   }
 
   private startProxyServer() {
-    return new Promise<net.Socket>((resolve) => {
+    return new Promise<net.Socket>((resolve, reject) => {
       const server = net.createServer();
+      this.addDispose(toDisposable(() => {
+        this.logger.warn('dispose server');
+        server.close();
+      }));
       server.on('connection', (connection) => {
         this.logger.log('there are new connections coming in');
         // 有新的连接时重新设置 RPCProtocol
@@ -52,6 +58,11 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
     connection.on('close', () => {
       this.extServiceProxyCenter.removeConnection(serverConnection);
     });
+    this.addDispose(toDisposable(() => {
+      if (!connection.destroyed) {
+        connection.destroy();
+      }
+    }));
   }
 
   private setExtHostProxyRPCProtocol() {
@@ -80,12 +91,19 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
     });
 
     this.extHostProxy = this.extHostProxyProtocol.getProxy(EXT_HOST_PROXY_IDENTIFIER);
+    this.addDispose(toDisposable(() => {
+      this.extHostProxy.$dispose();
+    }));
   }
 
   private addNewCallback(pid: number, callback: (...args: any[]) => void) {
     const callId = this.callId++;
     this.callbackMap.set(callId, callback);
     this.processDisposeMap.set(pid, toDisposable(() => {
+      this.callbackMap.delete(callId);
+    }));
+    this.addDispose(toDisposable(() => {
+      this.processDisposeMap.delete(pid);
       this.callbackMap.delete(callId);
     }));
     return callId;

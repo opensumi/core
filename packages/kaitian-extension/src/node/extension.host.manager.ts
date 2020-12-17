@@ -4,7 +4,7 @@ import { IExtensionHostManager, Output, OutputType } from '../common';
 import * as assert from 'assert';
 import * as cp from 'child_process';
 import * as isRunning from 'is-running';
-import treeKill = require('tree-kill');
+import * as treeKill from 'tree-kill';
 
 @Injectable()
 export class ExtensionHostManager implements IExtensionHostManager {
@@ -53,7 +53,9 @@ export class ExtensionHostManager implements IExtensionHostManager {
   }
   isKilled(pid: number) {
     const extProcess = this.processMap.get(pid);
-    assert(extProcess);
+    if (!extProcess) {
+      return true;
+    }
     return extProcess.killed;
   }
 
@@ -86,7 +88,7 @@ export class ExtensionHostManager implements IExtensionHostManager {
   onExit(pid: number, listener: (code: number, signal: string) => void) {
     const extProcess = this.processMap.get(pid);
     assert(extProcess);
-    extProcess.on('exit', listener);
+    extProcess.once('exit', listener);
   }
 
   onMessage(pid: number, listener: (msg: any) => void): MaybePromise<void> {
@@ -98,7 +100,18 @@ export class ExtensionHostManager implements IExtensionHostManager {
   disposeProcess(pid: number) {
     const extProcess = this.processMap.get(pid);
     if (extProcess) {
+      extProcess.kill();
       this.processMap.delete(pid);
     }
+  }
+
+  async dispose(): Promise<void> {
+    await Promise.all([...this.processMap.keys()].map(async (pid) => {
+      const isRunning = await this.isRunning(pid);
+      if (isRunning) {
+        await this.treeKill(pid);
+      }
+    }));
+    this.processMap.clear();
   }
 }

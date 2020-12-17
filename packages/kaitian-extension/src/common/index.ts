@@ -257,4 +257,5 @@ export interface IExtensionHostManager {
   onExit(pid: number, listener: (code: number, signal: string) => void): MaybePromise<void>;
   onMessage(pid: number, listener: (msg: any) => void): MaybePromise<void>;
   disposeProcess(pid: number): MaybePromise<void>;
+  dispose(): MaybePromise<void>;
 }

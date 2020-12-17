@@ -2,7 +2,7 @@
 import * as net from 'net';
 import { RPCService, RPCServiceCenter, createSocketConnection, getRPCService, IRPCProtocol, RPCProtocol } from '@ali/ide-connection';
 import { IExtHostProxyRPCService, IExtHostProxy, IExtHostProxyOptions, EXT_HOST_PROXY_PROTOCOL, EXT_HOST_PROXY_IDENTIFIER, IExtServerProxyRPCService, EXT_SERVER_IDENTIFIER, EXT_HOST_PROXY_SERVER_PROT } from '../common/ext.host.proxy';
-import { Emitter } from '@ali/ide-core-node';
+import { Emitter, Disposable, IDisposable } from '@ali/ide-core-node';
 import { ExtensionHostManager } from '../node/extension.host.manager';
 import { IExtensionHostManager } from '../common';
 
@@ -56,9 +56,13 @@ class ExtHostProxyRPCService extends RPCService implements IExtHostProxyRPCServi
     this.extensionHostManager.disposeProcess(pid);
   }
 
+  async $dispose(): Promise<void> {
+    await this.extensionHostManager.dispose();
+  }
+
 }
 
-export class ExtHostProxy implements IExtHostProxy {
+export class ExtHostProxy extends Disposable implements IExtHostProxy {
 
   private socket: net.Socket;
 
@@ -73,6 +77,7 @@ export class ExtHostProxy implements IExtHostProxy {
   private extServerProxy: IExtServerProxyRPCService;
 
   constructor(options?: IExtHostProxyOptions) {
+    super();
     this.options = {
       retryTime: 1000,
       socketConnectOpts: {
@@ -85,8 +90,8 @@ export class ExtHostProxy implements IExtHostProxy {
   }
 
   init() {
-    this.bindEvent();
-    this.connect();
+    this.addDispose(this.bindEvent());
+    this.addDispose(this.connect());
   }
 
   private setRPCMethods() {
@@ -103,7 +108,11 @@ export class ExtHostProxy implements IExtHostProxy {
       send,
     });
     this.extServerProxy = this.protocol.getProxy(EXT_SERVER_IDENTIFIER);
-    this.protocol.set(EXT_HOST_PROXY_IDENTIFIER, new ExtHostProxyRPCService(this.extServerProxy));
+    const extHostProxyRPCService = new ExtHostProxyRPCService(this.extServerProxy);
+    this.protocol.set(EXT_HOST_PROXY_IDENTIFIER, extHostProxyRPCService);
+    this.addDispose({
+      dispose: () => extHostProxyRPCService.$dispose(),
+    });
   }
 
   private reconnectOnEvent() {
@@ -121,14 +130,28 @@ export class ExtHostProxy implements IExtHostProxy {
     this.setRPCMethods();
   }
 
-  private bindEvent() {
+  private bindEvent(): IDisposable {
+    const connectOnEvent = this.connectOnEvent.bind(this);
+    const reconnectOnEvent = this.reconnectOnEvent.bind(this);
     // connect
-    this.socket.on('connect', this.connectOnEvent.bind(this));
+    this.socket.on('connect', connectOnEvent);
     // reconnect
-    this.socket.on('end', this.reconnectOnEvent.bind(this));
-    this.socket.on('error', this.reconnectOnEvent.bind(this));
-    this.socket.on('timeout', this.reconnectOnEvent.bind(this));
-    this.socket.on('close', this.reconnectOnEvent.bind(this));
+    this.socket.on('end', reconnectOnEvent);
+    this.socket.on('error', reconnectOnEvent);
+    this.socket.on('timeout', reconnectOnEvent);
+    this.socket.on('close', reconnectOnEvent);
+
+    return {
+      dispose: () => {
+        // connect
+        this.socket.off('connect', connectOnEvent);
+        // reconnect
+        this.socket.off('end', reconnectOnEvent);
+        this.socket.off('error', reconnectOnEvent);
+        this.socket.off('timeout', reconnectOnEvent);
+        this.socket.off('close', reconnectOnEvent);
+      },
+    };
   }
 
   private setConnection() {
@@ -139,8 +162,13 @@ export class ExtHostProxy implements IExtHostProxy {
     });
   }
 
-  private connect() {
+  private connect(): IDisposable {
     this.socket.connect(this.options.socketConnectOpts!);
+    return {
+      dispose: () => {
+        this.socket.destroy();
+      },
+    };
   }
 
 }

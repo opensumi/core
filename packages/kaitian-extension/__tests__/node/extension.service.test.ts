@@ -6,8 +6,9 @@ import { AppConfig, INodeLogger, IReporterService } from '@ali/ide-core-node';
 
 import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IExtensionNodeService, IExtensionNodeClientService } from '../../src/common';
+import { IExtensionNodeService, IExtensionNodeClientService, IExtensionHostManager } from '../../src/common';
 import { ExtensionServiceClientImpl } from '../../src/node/extension.service.client';
+import { ExtensionHostManager } from '../../src/node/extension.host.manager';
 
 describe('Extension Serivce', () => {
   let injector: Injector;
@@ -16,7 +17,6 @@ describe('Extension Serivce', () => {
   const testExtId = 'kaitian.ide-dark-theme';
   const testExtPath = 'kaitian.ide-dark-theme-1.13.1';
   const testExtReadme = '# IDE Dark Theme';
-  const extProcessHandler = jest.fn((_process) => _process);
 
   beforeAll(async (done) => {
     injector = createNodeInjector([]);
@@ -27,7 +27,6 @@ describe('Extension Serivce', () => {
           extensionDir,
           ignoreId: [],
         },
-        onDidCreateExtensionHostProcess: extProcessHandler,
       },
     }, {
       token: IReporterService,
@@ -63,10 +62,20 @@ describe('Extension Serivce', () => {
         token: IExtensionNodeClientService,
         useClass: ExtensionServiceClientImpl,
       },
+      {
+        token: IExtensionHostManager,
+        useClass: ExtensionHostManager,
+      },
     );
 
     extensionService = injector.get(IExtensionNodeService);
     done();
+  });
+
+  afterAll(async () => {
+    const extensionHostManager = injector.get(IExtensionHostManager);
+    await extensionHostManager.dispose();
+    injector.disposeAll();
   });
 
   describe('get all extensions', () => {
@@ -99,14 +108,6 @@ describe('Extension Serivce', () => {
   });
 
   describe('extension host process', () => {
-
-    it('emit extension host process', async (done) => {
-      const mockClientId = 'mock_id' + Math.random();
-      await extensionService.createProcess(mockClientId);
-      expect(extProcessHandler).toBeCalled();
-      expect(extProcessHandler).toHaveReturned();
-      done();
-    });
 
     it('should create extension host process', async (done) => {
       const mockExtClientId = 'mock_id' + Math.random();

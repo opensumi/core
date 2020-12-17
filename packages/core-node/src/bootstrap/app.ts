@@ -93,6 +93,7 @@ interface Config {
   blockPatterns?: string[];
   /**
    * 获取插件进程句柄方法
+   * @deprecated 自测 1.30.0 后，不在提供给 IDE 后端发送插件进程的方法
    */
   onDidCreateExtensionHostProcess?: (cp: cp.ChildProcess) => void;
 
