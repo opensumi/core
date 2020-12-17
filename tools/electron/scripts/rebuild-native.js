@@ -7,7 +7,6 @@ const fs = require('fs')
 
 const nativeModules = [
   join(__dirname, '../node_modules/node-pty'),
-  join(__dirname, '../node_modules/oniguruma'),
   join(__dirname, '../node_modules/nsfw'),
   join(__dirname, '../node_modules/spdlog')
 ]
