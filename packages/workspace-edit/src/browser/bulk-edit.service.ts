@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { URI } from '@ali/ide-core-common';
+import { URI, ILogger } from '@ali/ide-core-common';
 import { UriComponents } from '@ali/ide-editor';
 import { IWorkspaceEdit, IWorkspaceEditService, IResourceTextEdit, ITextEdit, IResourceFileEdit } from '../';
 
@@ -8,6 +8,9 @@ export class MonacoBulkEditService implements monaco.editor.IBulkEditService {
 
   @Autowired(IWorkspaceEditService)
   workspaceEditService: IWorkspaceEditService;
+
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
 
   protected getAriaSummary(totalEdits: number, totalFiles: number): string {
     if (totalEdits === 0) {
@@ -27,7 +30,9 @@ export class MonacoBulkEditService implements monaco.editor.IBulkEditService {
         ariaSummary: this.getAriaSummary(totalEdits, totalFiles),
       };
     } catch (err) {
-      return { ariaSummary: `Error applying workspace edits: ${err.toString()}` };
+      const errMsg = `Error applying workspace edits: ${err.toString()}`;
+      this.logger.error(errMsg);
+      return { ariaSummary: errMsg };
     }
   }
 
