@@ -65,11 +65,13 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
       this._whenReady = this.setExpanded();
     }
     this._uid = id || this._uid;
+    // 每个节点应该拥有自己独立的路径，不存在重复性
+    // displayName 作为展示用的字段
+    this.name = String(this._uid);
     if (!!name) {
       this._displayName = name;
       TreeNode.setTreeNode(this._uid, this.path, this);
     } else {
-      this.name = String(this._uid);
       TreeNode.setTreeNode(this._uid, this.path, this);
     }
   }
