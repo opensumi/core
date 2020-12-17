@@ -19,6 +19,8 @@ export interface IModelChange {
   nextModel: TreeModel;
 }
 
+export type IRecycleTreeOverflow = 'ellipsis' | 'auto';
+
 export interface IRecycleTreeSize {
   width: number;
   height: number;
@@ -77,6 +79,15 @@ export interface IRecycleTreeProps {
    * @memberof IRecycleTreeProps
    */
   placeholder?: React.JSXElementConstructor<any>;
+  /**
+   * 声明文件树单行超出时的处理行为：
+   * - ellipsis 展示省略号
+   * - auto 撑开容器，可能会有横向滚动条
+   * 默认为 ellipsis
+   * @type {IRecycleTreeOverflow}
+   * @memberof IRecycleTreeProps
+   */
+  overflow?: IRecycleTreeOverflow;
 }
 
 export interface IRecycleTreeError {
@@ -690,14 +701,15 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   }
 
   private renderItem = ({ index, style }): JSX.Element => {
-    const { children } = this.props;
+    const { children, overflow = 'ellipsis' } = this.props;
     const node = this.getItemAtIndex(index) as IFilterNodeRendererProps;
     const { item, itemType: type, template } = node;
     if (!item) {
       this.onErrorEmitter.fire({ type: RenderErrorType.RENDER_ITEM, message: `RenderItem error at index ${index}` });
       return <div style={style}></div>;
     }
-    return <div style={style}>
+    const itemStyle = overflow === 'ellipsis' ? style : { ...style, width: 'auto', minWidth: '100%' };
+    return <div style={ itemStyle }>
       <NodeRendererWrap
         item={item}
         depth={item.depth}
