@@ -95,7 +95,7 @@ export class DebugModel implements IDebugModel {
       this.editor.onKeyDown(() => this.debugHoverWidget.hide({ immediate: false })),
       this.editor.onDidChangeModelContent(() => this.renderFrames()),
       this.debugSessionManager.onDidChange(() => this.renderFrames()),
-      this.editor.getModel()!.onDidChangeDecorations(() => this.updateBreakpoints()),
+      this.editor.getModel()!.onDidChangeContent(() => this.updateBreakpoints()),
     ]);
     this.renderFrames();
     this.render();

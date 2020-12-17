@@ -429,11 +429,11 @@ export class DebugConfigurationManager {
    * 判断当前文档是否支持断点
    * @param model
    */
-  canSetBreakpointsIn(model?: any) {
+  canSetBreakpointsIn(model: monaco.editor.ITextModel) {
     if (!model) {
       return false;
     }
-    const modeId = model.getLanguageIdentifier().language;
+    const modeId = (model as any).getLanguageIdentifier().language;
     if (!modeId || modeId === 'jsonc' || modeId === 'log') {
       // 不允许在JSONC类型文件及log文件中断点
       return false;
