@@ -127,17 +127,12 @@ export class DebugVariablesModelService {
             if (this._activeTreeModel !== currentTreeModel) {
               // 当前TreeModel与激活态TreeModel不一致时，更新变量树model
               this._activeTreeModel = currentTreeModel;
-              this.onDidUpdateTreeModelEmitter.fire(this._activeTreeModel);
-            } else {
-              // 否则，刷新当前树状态即可
-              this.refresh();
             }
           } else {
             const currentTreeModel = await this.initTreeModel(this.viewModel.currentSession);
             if (this.viewModel.currentSession?.currentFrame && currentTreeModel) {
               this.allTreeModel.set(this.viewModel.currentSession?.currentFrame, currentTreeModel);
             }
-            this.onDidUpdateTreeModelEmitter.fire(this._activeTreeModel);
           }
         } else {
           // 进程退出时，默认移除对应堆栈下的TreeModel
@@ -145,8 +140,9 @@ export class DebugVariablesModelService {
             this.allTreeModel.delete(this.viewModel.currentSession?.currentFrame);
           }
           this._activeTreeModel = undefined;
-          this.onDidUpdateTreeModelEmitter.fire(this._activeTreeModel);
         }
+
+        this.onDidUpdateTreeModelEmitter.fire(this._activeTreeModel);
       });
     });
   }
