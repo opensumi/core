@@ -75,7 +75,15 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
       enableBreakpointsFor: debuggersContributionPoint.enableBreakpointsFor,
       variables: debuggersContributionPoint.variables,
       adapterExecutableCommand: debuggersContributionPoint.adapterExecutableCommand,
-      configurationSnippets: debuggersContributionPoint.configurationSnippets,
+      configurationSnippets: (debuggersContributionPoint.configurationSnippets || []).map((config: IJSONSchemaSnippet) => {
+        if (config.label) {
+          config.label = replaceLocalizePlaceholder(config.label, this.extension.id);
+        }
+        if (config.description) {
+          config.description = replaceLocalizePlaceholder(config.description, this.extension.id);
+        }
+        return config;
+      }),
       win: debuggersContributionPoint.win,
       winx86: debuggersContributionPoint.winx86,
       windows: debuggersContributionPoint.windows,

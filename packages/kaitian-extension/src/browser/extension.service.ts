@@ -593,6 +593,11 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     // 优先执行 languagePack 的 contribute
     await Promise.all(languagePackExtensions.map((languagePack) => languagePack.contributeIfEnabled()));
     await Promise.all(normalExtensions.map((extension) => extension.contributeIfEnabled()));
+
+    this.commandRegistry.beforeExecuteCommand(async (command, args) => {
+      await this.activationEventService.fireEvent('onCommand', command);
+      return args;
+    });
   }
 
   private async disposeExtensions() {
@@ -670,6 +675,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     if (!targetHost) {
       throw new Error('No Command with id "' + command + '" is declared by extensions');
     }
+    // 需要等待插件进程启动完成再执行指令
+    await this.ready.promise;
     return this.mainThreadCommands.get(targetHost)!.$executeExtensionCommand(command, ...args);
   }
   declareExtensionCommand(command: string, targetHost: 'node' | 'worker' = 'node'): IDisposable {
@@ -810,7 +817,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
           if (action.type === 'button' && action.popoverComponent) {
             const popoverComponent = moduleExports[action.popoverComponent];
             if (!popoverComponent) {
-              console.error(`Can not find CustomPopover from extension ${extension.id}, id: ${action.popoverComponent}`);
+              this.logger.error(`Can not find CustomPopover from extension ${extension.id}, id: ${action.popoverComponent}`);
               continue;
             }
             if (this.appConfig.useExperimentalShadowDom) {
@@ -1000,11 +1007,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     const workbenchEditorService: WorkbenchEditorService = this.injector.get(WorkbenchEditorService);
     const commandService: CommandService = this.injector.get(CommandService);
     const commandRegistry = this.commandRegistry;
-
-    commandRegistry.beforeExecuteCommand(async (command, args) => {
-      await this.activationEventService.fireEvent('onCommand', command);
-      return args;
-    });
 
     commandRegistry.registerCommand(VSCodeCommands.WORKBENCH_CLOSE_ACTIVE_EDITOR);
     commandRegistry.registerCommand(VSCodeCommands.REVERT_AND_CLOSE_ACTIVE_EDITOR);

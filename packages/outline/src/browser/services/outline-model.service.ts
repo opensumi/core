@@ -516,6 +516,9 @@ export class OutlineModelService {
     if (!node) {
       return;
     }
+    if (!this.outlineTreeHandle) {
+      return;
+    }
     node = await this.outlineTreeHandle.ensureVisible(node, 'center') as OutlineTreeNode;
   }
 
