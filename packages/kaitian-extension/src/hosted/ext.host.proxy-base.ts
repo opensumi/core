@@ -72,9 +72,11 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
 
   private options: IExtHostProxyOptions;
 
-  private reconnecting: number;
+  private reconnectingTimer: NodeJS.Timeout;
 
   private extServerProxy: IExtServerProxyRPCService;
+
+  private previouslyDisposer: IDisposable;
 
   constructor(options?: IExtHostProxyOptions) {
     super();
@@ -85,13 +87,24 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
       },
       ...options,
     },
-    this.socket = new net.Socket();
     this.clientCenter = new RPCServiceCenter();
   }
 
   init() {
-    this.addDispose(this.bindEvent());
-    this.addDispose(this.connect());
+    this.createSocket();
+  }
+
+  private createSocket() {
+    if (this.previouslyDisposer) {
+      this.previouslyDisposer.dispose();
+    }
+    const disposer = new Disposable();
+    // 每次断连后重新生成 Socket 实例，否则会触发两次 close
+    this.socket = new net.Socket();
+    disposer.addDispose(this.bindEvent());
+    disposer.addDispose(this.connect());
+    this.previouslyDisposer = disposer;
+    this.addDispose(this.previouslyDisposer);
   }
 
   private setRPCMethods() {
@@ -115,41 +128,41 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
     });
   }
 
-  private reconnectOnEvent() {
-    clearTimeout(this.reconnecting);
-    this.reconnecting = setTimeout(() => {
+  private reconnectOnEvent = () => {
+    global.clearTimeout(this.reconnectingTimer);
+    this.reconnectingTimer = global.setTimeout(() => {
       // tslint
       console.warn('reconnecting ext host server');
-      this.connect();
-    }, this.options.retryTime);
+      this.createSocket();
+    }, this.options.retryTime!);
   }
 
-  private connectOnEvent() {
+  private connectOnEvent = () => {
     console.info('connect success');
+    // this.previouslyConnected = true;
+    global.clearTimeout(this.reconnectingTimer);
     this.setConnection();
     this.setRPCMethods();
   }
 
   private bindEvent(): IDisposable {
-    const connectOnEvent = this.connectOnEvent.bind(this);
-    const reconnectOnEvent = this.reconnectOnEvent.bind(this);
     // connect
-    this.socket.on('connect', connectOnEvent);
+    this.socket.on('connect', this.connectOnEvent);
     // reconnect
-    this.socket.on('end', reconnectOnEvent);
-    this.socket.on('error', reconnectOnEvent);
-    this.socket.on('timeout', reconnectOnEvent);
-    this.socket.on('close', reconnectOnEvent);
+    this.socket.on('end', this.reconnectOnEvent);
+    this.socket.on('error', this.reconnectOnEvent);
+    this.socket.on('timeout', this.reconnectOnEvent);
+    this.socket.on('close', this.reconnectOnEvent);
 
     return {
       dispose: () => {
         // connect
-        this.socket.off('connect', connectOnEvent);
+        this.socket.off('connect', this.connectOnEvent);
         // reconnect
-        this.socket.off('end', reconnectOnEvent);
-        this.socket.off('error', reconnectOnEvent);
-        this.socket.off('timeout', reconnectOnEvent);
-        this.socket.off('close', reconnectOnEvent);
+        this.socket.off('end', this.reconnectOnEvent);
+        this.socket.off('error', this.reconnectOnEvent);
+        this.socket.off('timeout', this.reconnectOnEvent);
+        this.socket.off('close', this.reconnectOnEvent);
       },
     };
   }
@@ -158,11 +171,12 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
     const connection = createSocketConnection(this.socket);
     this.clientCenter.setConnection(connection);
     this.socket.once('close', () => {
+      connection.dispose();
       this.clientCenter.removeConnection(connection);
     });
   }
 
-  private connect(): IDisposable {
+  private connect = (): IDisposable => {
     this.socket.connect(this.options.socketConnectOpts!);
     return {
       dispose: () => {
