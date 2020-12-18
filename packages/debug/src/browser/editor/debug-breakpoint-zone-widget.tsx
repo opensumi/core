@@ -104,11 +104,23 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
       this.textInput.setAttribute('placeholder', this.placeholder);
       this.textInput.focus();
     }
-    ReactDOM.render(<Select value={this.context} onChange={this.selectContextHandler}>
-      {this.renderOption('condition', localize('debug.expression.condition'))}
-      {this.renderOption('hitCondition', localize('debug.expression.hitCondition'))}
-      {this.renderOption('logMessage', localize('debug.expression.logMessage'))}
+    ReactDOM.render(<Select value={this.context} selectedRenderer={() => {
+      return <span className='kt-select-option'>{this.getContextToLocalize(this.context)}</span>;
+    }} onChange={this.selectContextHandler}>
+      {this.renderOption('condition', this.getContextToLocalize('condition'))}
+      {this.renderOption('hitCondition', this.getContextToLocalize('hitCondition'))}
+      {this.renderOption('logMessage', this.getContextToLocalize('logMessage'))}
     </Select>, this._selection);
+  }
+
+  getContextToLocalize(ctx: DebugBreakpointZoneWidget.Context) {
+    if (ctx === 'logMessage') {
+      return localize('debug.expression.logMessage');
+    } else if (ctx === 'hitCondition') {
+      return localize('debug.expression.hitCondition');
+    } else {
+      return localize('debug.expression.condition');
+    }
   }
 
   get placeholder() {
