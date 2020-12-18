@@ -20,12 +20,16 @@ import { DebugViewModel } from './view/debug-view-model';
 import { DebugSession } from './debug-session';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
-import { IDebugSessionManager, launchSchemaUri, DEBUG_CONTAINER_ID, DEBUG_WATCH_ID, DEBUG_VARIABLES_ID, DEBUG_STACK_ID, DEBUG_BREAKPOINTS_ID } from '../common';
+import { IDebugSessionManager, launchSchemaUri, DEBUG_CONTAINER_ID, DEBUG_WATCH_ID, DEBUG_VARIABLES_ID, DEBUG_STACK_ID, DEBUG_BREAKPOINTS_ID, DEBUG_FLOATING_CLICK_WIDGET } from '../common';
 import { DebugConsoleService } from './view/console/debug-console.service';
 import { DebugToolbarService } from './view/configuration/debug-toolbar.service';
 import { NextMenuContribution, MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
-import { BrowserEditorContribution, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
+import { BrowserEditorContribution, IEditorFeatureRegistry, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { EditorHoverContribution } from './editor/editor-hover-contribution';
+import { FloatingClickWidget } from './components/floating-click-widget';
+import { PreferenceService } from '@ali/ide-core-browser';
+
+const LAUNCH_JSON_REGEX = /launch\.json$/;
 
 export namespace DEBUG_COMMANDS {
   export const ADD_WATCHER = {
@@ -148,7 +152,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   protected readonly debugModel: DebugViewModel;
 
   @Autowired(DebugPreferences)
-  protected readonly preferences: DebugPreferences;
+  protected readonly debugPreferences: DebugPreferences;
 
   @Autowired(DebugConsoleService)
   protected readonly debugConsole: DebugConsoleService;
@@ -168,11 +172,28 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   @Autowired(EditorHoverContribution)
   private editorHoverContribution: EditorHoverContribution;
 
+  @Autowired(PreferenceService)
+  protected readonly preferences: PreferenceService;
+
   private firstSessionStart: boolean = true;
 
   get selectedBreakpoint(): SelectedBreakpoint | undefined {
     const { selectedBreakpoint } = this.breakpointManager;
     return selectedBreakpoint;
+  }
+
+  registerEditorComponent(registry: EditorComponentRegistry) {
+    registry.registerEditorSideWidget({
+      id: DEBUG_FLOATING_CLICK_WIDGET,
+      component: FloatingClickWidget,
+      displaysOnResource: (r) => {
+        const { configUri } = this.preferences.resolve('launch');
+        if (!configUri) {
+          return false;
+        }
+        return configUri.isEqual(r.uri) && LAUNCH_JSON_REGEX.test(r.uri.toString());
+      },
+    });
   }
 
   registerComponent(registry: ComponentRegistry) {
@@ -217,7 +238,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
     });
     this.sessionManager.onDidStartDebugSession((session: DebugSession) => {
       const { internalConsoleOptions } = session.configuration;
-      const openDebug = session.configuration.openDebug || this.preferences['debug.openDebug'];
+      const openDebug = session.configuration.openDebug || this.debugPreferences['debug.openDebug'];
       if (
         openDebug === 'openOnSessionStart' || (openDebug === 'openOnFirstSessionStart' && this.firstSessionStart)
       ) {
