@@ -9,8 +9,10 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 interface IExtensionHostManagerTesterOptions {
   providers: Provider[];
-  beforeEach?: () => MaybePromise<void>;
-  afterEach?: () => MaybePromise<void>;
+  // 在 beforeEach 头部执行
+  beforeEachHead?: () => MaybePromise<void>;
+  // 在 afterEach 头部执行
+  afterEachHead?: () => MaybePromise<void>;
 }
 
 export const extensionHostManagerTester = (options: IExtensionHostManagerTesterOptions) => describe(__filename, () => {
@@ -18,15 +20,10 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
   let injector: MockInjector;
   const extHostPath = path.join(__dirname, '../__mock__/ext.host.js');
 
-  if (options.beforeEach) {
-    beforeEach(options.beforeEach);
-  }
-
-  if (options.afterEach) {
-    afterEach(options.afterEach);
-  }
-
   beforeEach(async () => {
+    if (options.beforeEachHead) {
+      await options.beforeEachHead();
+    }
     injector = createNodeInjector([]);
     injector.addProviders({
       token: INodeLogger,
@@ -40,9 +37,14 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
     }, ...options.providers);
     extensionHostManager = injector.get<IExtensionHostManager>(IExtensionHostManager);
     await extensionHostManager.init();
+    // 等待 connect 连接成功
+    await sleep(2000);
   });
 
   afterEach(async () => {
+    if (options.afterEachHead) {
+      await options.afterEachHead();
+    }
     await extensionHostManager.dispose();
     injector.disposeAll();
   });

@@ -12,13 +12,13 @@ extensionHostManagerTester({
       useClass: ExtensionHostProxyManager,
     },
   ],
-  beforeEach: () => {
+  beforeEachHead: () => {
     // 启动插件进程管理进程
     extHostProxy = new ExtHostProxy();
     // 监听插件进程后端服务
     extHostProxy.init();
   },
-  afterEach: () => {
+  afterEachHead: () => {
     extHostProxy.dispose();
   },
 });
