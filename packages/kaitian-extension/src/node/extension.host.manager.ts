@@ -100,9 +100,12 @@ export class ExtensionHostManager implements IExtensionHostManager {
   disposeProcess(pid: number) {
     const extProcess = this.processMap.get(pid);
     if (extProcess) {
-      extProcess.kill();
+      if (this.isRunning(pid)) {
+        extProcess.kill();
+      }
       this.processMap.delete(pid);
     }
+
   }
 
   async dispose(): Promise<void> {

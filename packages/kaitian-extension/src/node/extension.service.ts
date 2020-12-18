@@ -29,7 +29,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   static ProcessCloseExitThreshold: number = 1000 * 5;
 
   @Autowired(INodeLogger)
-  logger: INodeLogger;
+  private readonly logger: INodeLogger;
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;
@@ -243,9 +243,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         const port = Number(inspectorUrlMatch[2]);
         this.clientExtProcessInspectPortMap.set(clientId, port);
         this.onDidSetInspectPort.fire();
-      } else if (output.data) {
-        // 输出插件 console
-        this.logger.debug(output.data.replace(/^%c/, ''));
       }
     });
 
@@ -429,13 +426,16 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
               if (extConnection.reader) {
                 extConnection.reader.dispose();
               }
+              if (extConnection.connection) {
+                extConnection.connection.destroy();
+              }
             }
           });
 
         },
         dispose: (connection, connectionClientId) => {
-          // FIXME: 暂时先不杀掉
-          // this.disposeClientExtProcess(connectionClientId);
+          // Web 场景断连后不杀死插件进程
+          // https://yuque.antfin.com/ide-framework/topiclist/enpip1
         },
       });
     }
@@ -454,8 +454,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   }
 
   public async disposeClientExtProcess(clientId: string, info: boolean = true, killProcess: boolean = true) {
-
     const extProcessId = this.clientExtProcessMap.get(clientId);
+
     if (!isUndefined(extProcessId)) {
       if (await this.extensionHostManager.isRunning(extProcessId)) {
         await this.extensionHostManager.send(extProcessId, 'close');
@@ -468,7 +468,12 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
       // extServer 关闭
       if (this.clientExtProcessExtConnectionServer.has(clientId)) {
-        await (this.clientExtProcessExtConnectionServer.get(clientId) as net.Server).close();
+        this.clientExtProcessExtConnectionServer.get(clientId)!.close();
+      }
+      // connect 关闭
+      if (this.clientExtProcessExtConnection.has(clientId)) {
+        const connection = this.clientExtProcessExtConnection.get(clientId);
+        connection.connection.destroy();
       }
 
       this.clientExtProcessExtConnection.delete(clientId);
@@ -479,9 +484,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
       if (killProcess) {
         await this.extensionHostManager.treeKill(extProcessId);
+        await this.extensionHostManager.disposeProcess(extProcessId);
       }
-
-      await this.extensionHostManager.disposeProcess(extProcessId);
 
       if (info) {
         this.infoProcessNotExist(clientId);

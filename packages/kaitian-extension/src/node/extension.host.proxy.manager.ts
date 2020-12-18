@@ -35,12 +35,13 @@ export class ExtensionHostProxyManager extends Disposable implements IExtensionH
   }
 
   private startProxyServer() {
-    return new Promise<net.Socket>((resolve, reject) => {
+    return new Promise<net.Socket>((resolve) => {
       const server = net.createServer();
       this.addDispose(toDisposable(() => {
         this.logger.warn('dispose server');
         server.close();
       }));
+      this.logger.log('waiting ext-proxy connecting...');
       server.on('connection', (connection) => {
         this.logger.log('there are new connections coming in');
         // 有新的连接时重新设置 RPCProtocol
