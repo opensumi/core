@@ -836,7 +836,13 @@ declare module 'vscode' {
 		 * The kind of this completion item. Based on the kind
 		 * an icon is chosen by the editor.
 		 */
-		kind?: CompletionItemKind;
+    kind?: CompletionItemKind;
+
+    /**
+     * A modifier to the `kind` which affect how the item
+     * is rendered, e.g. Deprecated is rendered with a strikeout
+     */
+    tags?: ReadonlyArray<CompletionItemTag>;
 
 		/**
 		 * A human-readable string with additional information

@@ -157,6 +157,7 @@ export class ExtHostCommands implements IExtHostCommands {
       ],
       returns: 'A promise that resolves to an array of SymbolInformation and DocumentSymbol instances.',
     });
+    // TODO: vscode.executeCompletionItemProvider command
   }
 
   private register(id: string, commandHandler: CommandHandler | Handler, description?: ICommandHandlerDescription): Disposable {

@@ -937,6 +937,10 @@ declare module 'vscode' {
     TypeParameter = 24,
   }
 
+  export enum CompletionItemTag {
+    Deprecated = 1
+  }
+
   /**
    * A workspace edit is a collection of textual and files changes for
    * multiple resources and documents.

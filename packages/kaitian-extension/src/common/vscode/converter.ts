@@ -773,6 +773,21 @@ export function toCompletionItemKind(kind: model.CompletionItemKind): types.Comp
   return types.CompletionItemKind.Property;
 }
 
+export namespace CompletionItemTag {
+
+  export function from(kind: types.CompletionItemTag): model.CompletionItemTag {
+    switch (kind) {
+      case types.CompletionItemTag.Deprecated: return model.CompletionItemTag.Deprecated;
+    }
+  }
+
+  export function to(kind: model.CompletionItemTag): types.CompletionItemTag {
+    switch (kind) {
+      case model.CompletionItemTag.Deprecated: return types.CompletionItemTag.Deprecated;
+    }
+  }
+}
+
 export function viewColumnToResourceOpenOptions(viewColumn?: ViewColumn): { groupIndex?: number, relativeGroupIndex?: number } {
   const result: { groupIndex?: number, relativeGroupIndex?: number } = {};
   if (viewColumn) {

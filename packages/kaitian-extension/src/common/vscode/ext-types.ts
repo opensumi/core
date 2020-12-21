@@ -587,6 +587,18 @@ export class SnippetString {
     return this;
   }
 
+  appendChoice(values: string[], num: number = this._tabstop++): SnippetString {
+    const value = values.map((s) => s.replace(/\$|}|\\|,/g, '\\$&')).join(',');
+
+    this.value += '${';
+    this.value += num;
+    this.value += '|';
+    this.value += value;
+    this.value += '|}';
+
+    return this;
+  }
+
   appendVariable(name: string, defaultValue?: string | ((snippet: SnippetString) => void)): SnippetString {
 
     if (typeof defaultValue === 'function') {
@@ -736,6 +748,7 @@ export class CompletionItem implements vscode.CompletionItem {
 
   label: string;
   kind: CompletionItemKind | undefined;
+  tags?: CompletionItemTag[];
   detail?: string;
   documentation?: string | MarkdownString;
   sortText?: string;
