@@ -83,6 +83,16 @@ export class KeymapService implements IKeymapService {
     await this.reconcile();
   }
 
+  async openResource() {
+    if (!this.resource || !this.resource!.getFsPath) {
+      return;
+    }
+    const fsPath = await this.resource.getFsPath();
+    if (fsPath) {
+      this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(fsPath), { preview: false });
+    }
+  }
+
   dispose() {
     for (const [, value] of this.toUnregisterUserKeybindingMap) {
       value.dispose();

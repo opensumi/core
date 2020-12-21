@@ -549,6 +549,8 @@ export const localizationBundle = {
     'keymaps.action.reset': '重置快捷键',
     'keymaps.action.clear': '清空',
     'keymaps.edit.placeholder': '请按 Enter 键保存',
+    'keymaps.editorTitle.openSource': '打开键盘快捷方式(JSON)',
+    'keymaps.editorTitle.openKeymap': '打开键盘快捷方式(可视化)',
 
     'keybinding.combination.tip': '已按下({0}), 等待同时按下第二个键',
     'layout.tabbar.hide': '隐藏',

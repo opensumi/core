@@ -491,6 +491,8 @@ export const localizationBundle = {
     'keymaps.action.reset': 'Reset',
     'keymaps.action.clear': 'Clear',
     'keymaps.edit.placeholder': 'Press Enter to save',
+    'keymaps.editorTitle.openSource': 'Open Keymap ShortCut(JSON)',
+    'keymaps.editorTitle.openKeymap': 'Open Keymap ShortCut',
 
     'keybinding.combination.tip': '({0}) was pressed, waiting for more keys',
 
