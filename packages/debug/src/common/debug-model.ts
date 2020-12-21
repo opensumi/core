@@ -112,5 +112,10 @@ export type DebugModelFactory = (editor: DebugEditor) => IDebugModel;
 
 export const IDebugModel = Symbol('IDebugModel');
 export interface IDebugModel extends IDisposable {
+  onContextMenu: (event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent) => void;
+  onMouseDown: (event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent) => void;
+  onMouseMove: (event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent) => void;
+  onMouseLeave: (event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent) => void;
+  editor: DebugEditor;
   [key: string]: any;
 }

@@ -172,16 +172,26 @@ export class DebugModelManager extends Disposable {
       return;
     }
     // 同一个uri可能对应多个打开的monacoEditor，这里只需要验证其中一个即可
-    const canSetBreakpoints = this.debugConfigurationManager.canSetBreakpointsIn(debugModel[0].editor.getModel());
+    const canSetBreakpoints = this.debugConfigurationManager.canSetBreakpointsIn(debugModel[0].editor.getModel()!);
     if (!canSetBreakpoints) {
       return;
     }
     for (const model of debugModel) {
-      if ((model.editor as any)._id === (monacoEditor as any)._id) {
-        if (type === DebugModelSupportedEventType.contextMenu) {
-          model[`onContextMenu`](event);
-        } else {
-          model[`onMouse${type}`](event);
+      if (model.editor.getId() === monacoEditor.getId()) {
+        switch (type) {
+          case DebugModelSupportedEventType.contextMenu:
+            model.onContextMenu(event);
+            break;
+          case DebugModelSupportedEventType.down:
+            model.onMouseDown(event);
+            break;
+          case DebugModelSupportedEventType.leave:
+            model.onMouseLeave(event);
+            break;
+          case DebugModelSupportedEventType.move:
+            model.onMouseMove(event);
+            break;
+          default: break;
         }
         break;
       }
