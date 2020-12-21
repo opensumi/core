@@ -28,6 +28,7 @@ import { BrowserEditorContribution, IEditorFeatureRegistry, EditorComponentRegis
 import { EditorHoverContribution } from './editor/editor-hover-contribution';
 import { FloatingClickWidget } from './components/floating-click-widget';
 import { PreferenceService } from '@ali/ide-core-browser';
+import { DebugBreakpointZoneWidget } from './editor/debug-breakpoint-zone-widget';
 
 const LAUNCH_JSON_REGEX = /launch\.json$/;
 
@@ -354,7 +355,18 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
         const { selectedBreakpoint } = this;
         if (selectedBreakpoint) {
           const { openBreakpointView } = selectedBreakpoint.model;
-          openBreakpointView(position, selectedBreakpoint.breakpoint && selectedBreakpoint.breakpoint.raw);
+          let defaultContext: DebugBreakpointZoneWidget.Context = 'condition';
+          if (selectedBreakpoint.breakpoint) {
+            const raw = selectedBreakpoint.breakpoint.raw;
+            if (raw.condition) {
+              defaultContext = 'condition';
+            } else if (raw.hitCondition) {
+              defaultContext = 'hitCondition';
+            } else if (raw.logMessage) {
+              defaultContext = 'logMessage';
+            }
+          }
+          openBreakpointView(position, selectedBreakpoint.breakpoint && selectedBreakpoint.breakpoint.raw, defaultContext);
         }
       },
       isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
