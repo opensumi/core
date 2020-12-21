@@ -1340,6 +1340,7 @@ export class SymbolInformation {
   name: string;
   location: Location;
   kind: SymbolKind;
+  tags?: SymbolTag[];
   containerName: undefined | string;
   constructor(name: string, kind: SymbolKind, containerName: string, location: Location);
   constructor(name: string, kind: SymbolKind, range: Range, uri?: URI, containerName?: string);
@@ -1419,6 +1420,7 @@ export class DocumentSymbol {
   name: string;
   detail: string;
   kind: SymbolKind;
+  tags?: SymbolTag[];
   range: Range;
   selectionRange: Range;
   children: DocumentSymbol[];

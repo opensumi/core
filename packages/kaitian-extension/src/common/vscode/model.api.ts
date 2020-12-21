@@ -494,6 +494,7 @@ export interface DocumentSymbol {
   name: string;
   detail: string;
   kind: SymbolKind;
+  tags: ReadonlyArray<SymbolTag>;
   containerName?: string;
   range: Range;
   selectionRange: Range;
@@ -592,5 +593,9 @@ export enum CompletionItemKind {
 }
 
 export const enum CompletionItemTag {
+  Deprecated = 1,
+}
+
+export const enum SymbolTag {
   Deprecated = 1,
 }

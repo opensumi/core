@@ -112,6 +112,11 @@ export interface DocumentSymbol {
   range: IRange;
   selectionRange: IRange;
   children?: DocumentSymbol[];
+  tags?: SymbolTag[];
+}
+
+export enum SymbolTag {
+  Deprecated = 1,
 }
 
 export interface INormalizedDocumentSymbol extends DocumentSymbol {

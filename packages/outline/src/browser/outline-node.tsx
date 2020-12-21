@@ -5,6 +5,7 @@ import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, Tr
 import { URI, getIcon, CommandService } from '@ali/ide-core-browser';
 import { OutlineCompositeTreeNode, OutlineTreeNode } from './outline-node.define';
 import { IOutlineDecorationService } from '../common';
+import { SymbolTag } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
 
 export interface IOutlineNodeProps {
   item: any;
@@ -67,7 +68,7 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
 
   const renderDisplayName = (node: OutlineCompositeTreeNode | OutlineTreeNode) => {
     return <div
-      className={cls(styles.outline_node_segment, styles.outline_node_display_name)}
+      className={cls(styles.outline_node_segment, styles.outline_node_display_name, {[styles.deprecated]: node.raw.tags && node.raw.tags.indexOf(SymbolTag.Deprecated) >= 0})}
     >
       {getName(node)}
     </div>;

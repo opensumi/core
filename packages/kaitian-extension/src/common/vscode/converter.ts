@@ -665,6 +665,7 @@ export function fromDocumentSymbol(info: vscode.DocumentSymbol): model.DocumentS
     range: fromRange(info.range)!,
     selectionRange: fromRange(info.selectionRange)!,
     kind: SymbolKind.fromSymbolKind(info.kind),
+    tags: info.tags?.map(SymbolTag.from) ?? [],
   };
   if (info.children) {
     result.children = info.children.map(fromDocumentSymbol);
@@ -709,6 +710,21 @@ export function toSymbolInformation(symbolInformation: SymbolInformation): vscod
       range: symbolInformation.location.range,
     },
   } as vscode.SymbolInformation;
+}
+
+export namespace SymbolTag {
+
+  export function from(kind: types.SymbolTag): model.SymbolTag {
+    switch (kind) {
+      case types.SymbolTag.Deprecated: return model.SymbolTag.Deprecated;
+    }
+  }
+
+  export function to(kind: model.SymbolTag): types.SymbolTag {
+    switch (kind) {
+      case model.SymbolTag.Deprecated: return types.SymbolTag.Deprecated;
+    }
+  }
 }
 
 export function fromCompletionItemKind(kind: vscode.CompletionItemKind | undefined): model.CompletionItemKind {

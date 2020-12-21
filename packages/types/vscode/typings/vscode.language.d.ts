@@ -1987,6 +1987,11 @@ declare module 'vscode' {
 		kind: SymbolKind;
 
 		/**
+		 * Tags for this symbol.
+		 */
+    tags?: ReadonlyArray<SymbolTag>;
+
+		/**
 		 * The range enclosing this symbol not including leading/trailing whitespace but everything else, e.g. comments and code.
 		 */
 		range: Range;
