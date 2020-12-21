@@ -180,7 +180,9 @@ export interface IExtensionHost {
 
 export interface IExtensionHostService extends IExtensionHost {
   $fireChangeEvent(): Promise<void>;
-
+  init(): Promise<void>;
+  close(): Promise<void>;
+  onFireReporter: Event<ReporterProcessMessage>;
   reporterEmitter: Emitter<ReporterProcessMessage>;
   getExtendExports(id: string): any;
   extensionsActivator: ExtensionsActivator;

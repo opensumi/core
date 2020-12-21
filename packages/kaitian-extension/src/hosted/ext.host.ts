@@ -47,7 +47,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
   readonly reporterEmitter: Emitter<ReporterProcessMessage> = new Emitter<ReporterProcessMessage>();
 
-  readonly onFireReporter = this.reporterEmitter.event;
+  public readonly onFireReporter = this.reporterEmitter.event;
 
   constructor(rpcProtocol: RPCProtocol, logger, private injector: Injector) {
     this.rpcProtocol = rpcProtocol;
