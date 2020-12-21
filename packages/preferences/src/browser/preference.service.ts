@@ -8,6 +8,7 @@ import { getDebugLogger } from '@ali/ide-core-common';
 import { IDialogService } from '@ali/ide-overlay';
 
 import { toPreferenceReadableName } from '../common';
+import { IFileServiceClient } from '@ali/ide-file-service';
 
 @Injectable()
 export class PreferenceSettingsService implements IPreferenceSettingsService {
@@ -27,8 +28,11 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   @Autowired(IDialogService)
   protected readonly dialogService: IDialogService;
 
+  @Autowired(IFileServiceClient)
+  protected readonly fileServiceClient: IFileServiceClient;
+
   @Autowired(IClientApp)
-  clientApp: IClientApp;
+  protected readonly clientApp: IClientApp;
 
   @observable
   public currentGroup: string = '';
@@ -36,6 +40,8 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   private pendingSearch: string | undefined = undefined;
 
   private searchInput: HTMLInputElement | null = null;
+
+  private currentScope: PreferenceScope;
 
   public setCurrentGroup(groupId: string) {
     if (this.settingsGroups.find((n) => n.id === groupId)) {
@@ -74,6 +80,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   }
 
   getSettingGroups(scope: PreferenceScope, search?: string | undefined): ISettingGroup[] {
+    this.currentScope = scope;
     const groups = this.settingsGroups.slice();
     return groups.filter((g) => this.getSections(g.id, scope, search).length > 0);
   }
@@ -158,6 +165,21 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
     } else {
       return preferenceProvider.getConfigUri()?.toString();
     }
+  }
+
+  async getCurrentPreferenceUrl() {
+    const url =  await this.getPreferenceUrl(this.currentScope)!;
+    if (!url) {
+      return;
+    }
+    const exist = await this.fileServiceClient.access(url);
+    if (!exist) {
+      const fileStat = await this.fileServiceClient.createFile(url);
+      if (fileStat) {
+        await this.fileServiceClient.setContent(fileStat!, '{\n}');
+      }
+    }
+    return url;
   }
 
   search(value) {
