@@ -104,8 +104,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       const extensions = await proxy.$getActivatedExtensions();
       activated['node'] = extensions;
     }
+    if (this.workerService.protocol) {
+      activated['worker'] = await this.workerService.getActivatedExtensions();
+    }
 
-    activated['worker'] = await this.workerService.getActivatedExtensions();
     return activated;
   }
 
