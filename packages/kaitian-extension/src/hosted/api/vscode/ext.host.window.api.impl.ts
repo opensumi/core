@@ -156,7 +156,15 @@ export function createWindowApiFactory(
 
     onDidOpenTerminal: extHostTerminal.onDidOpenTerminal,
 
-    createTerminal: extHostTerminal.createTerminal,
+    createTerminal(nameOrOptions?: vscode.TerminalOptions | vscode.ExtensionTerminalOptions | string, shellPath?: string, shellArgs?: string[] | string): vscode.Terminal {
+      if (typeof nameOrOptions === 'object') {
+        if ('pty' in nameOrOptions) {
+          return extHostTerminal.createExtensionTerminal(nameOrOptions);
+        }
+        return extHostTerminal.createTerminalFromOptions(nameOrOptions);
+      }
+      return extHostTerminal.createTerminal(nameOrOptions, shellPath, shellArgs);
+    },
 
     get activeColorTheme(): vscode.ColorTheme {
       return extHostTheming.activeColorTheme;

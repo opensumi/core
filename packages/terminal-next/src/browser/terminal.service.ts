@@ -4,7 +4,8 @@ import { isElectronEnv, Emitter, ILogger, Event, isWindows } from '@ali/ide-core
 import { Emitter as Dispatcher } from 'event-kit';
 import { electronEnv, AppConfig } from '@ali/ide-core-browser';
 import { WSChannelHandler as IWSChanneHandler, RPCService } from '@ali/ide-connection';
-import { generate, ITerminalService, ITerminalInternalService, ITerminalError, ITerminalServiceClient, ITerminalServicePath, ITerminalConnection, IPtyExitEvent } from '../common';
+import { generate, ITerminalService, ITerminalInternalService, ITerminalError, ITerminalServiceClient, ITerminalServicePath, ITerminalConnection, IPtyExitEvent, TerminalOptions, ITerminalController } from '../common';
+import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 
 export interface EventMessage {
   data: string;
@@ -14,6 +15,11 @@ export interface EventMessage {
 export class TerminalInternalService implements ITerminalInternalService {
   @Autowired(ITerminalService)
   service: ITerminalService;
+
+  @Autowired(ITerminalController)
+  controller: ITerminalController;
+
+  private _processExtHostProxies = new Map<string, TerminalProcessExtHostProxy>();
 
   generateSessionId() {
     return this.service.generateSessionId ? this.service.generateSessionId() : generate();
@@ -27,23 +33,59 @@ export class TerminalInternalService implements ITerminalInternalService {
     return this.service.check ? this.service.check(sessionIds) : Promise.resolve(true);
   }
 
-  attach(sessionId: string, xterm: Terminal, rows: number, cols: number, options = {}, type: string) {
+  private _getExtHostProxy(id: string) {
+    return this._processExtHostProxies.get(id);
+  }
+
+  async attach(sessionId: string, xterm: Terminal, rows: number, cols: number, options: TerminalOptions = {}, type: string) {
+    if (options.isExtensionTerminal) {
+      const proxy = new TerminalProcessExtHostProxy(sessionId, cols, rows, this.controller);
+      proxy.start();
+      proxy.onProcessExit(() => {
+        this._processExtHostProxies.delete(sessionId);
+      });
+      this._processExtHostProxies.set(sessionId, proxy);
+      return {
+        name: options.name || '',
+        readonly: false,
+        onData: proxy.onProcessData.bind(proxy),
+        sendData: proxy.input.bind(proxy),
+        onExit: proxy.onProcessExit.bind(proxy),
+      };
+    }
     return this.service.attach(sessionId, xterm, rows, cols, options, type);
   }
 
-  sendText(id: string, message: string) {
-    return this.service.sendText(id, message);
+  async sendText(sessionId: string, message: string) {
+    const proxy = this._getExtHostProxy(sessionId);
+    if (proxy) {
+      return proxy.emitData(message);
+    }
+    return this.service.sendText(sessionId, message);
   }
 
-  resize(sessionId: string, cols: number, rows: number) {
+  async resize(sessionId: string, cols: number, rows: number) {
+    const proxy = this._getExtHostProxy(sessionId);
+    if (proxy) {
+      return proxy.resize(cols, rows);
+    }
     return this.service.resize(sessionId, cols, rows);
   }
 
   disposeById(sessionId: string) {
+    const proxy = this._getExtHostProxy(sessionId);
+    if (proxy) {
+      this._processExtHostProxies.delete(sessionId);
+      return proxy.dispose();
+    }
     return this.service.disposeById(sessionId);
   }
 
-  getProcessId(sessionId: string) {
+  async getProcessId(sessionId: string) {
+    const proxy = this._getExtHostProxy(sessionId);
+    if (proxy) {
+      return -1;
+    }
     return this.service.getProcessId(sessionId);
   }
 

@@ -91,6 +91,11 @@ export interface TerminalOptions {
   env?: { [key: string]: string | null };
 
   /**
+   * Whether an extension is controlling the terminal via a `vscode.Pseudoterminal`.
+   */
+  isExtensionTerminal?: boolean;
+
+  /**
    * Whether the terminal process environment should be exactly as provided in
    * `TerminalOptions.env`. When this is false (default), the environment will be based on the
    * window's environment and also apply configured platform settings like

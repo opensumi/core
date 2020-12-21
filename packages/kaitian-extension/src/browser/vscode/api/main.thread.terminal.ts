@@ -2,7 +2,7 @@ import type * as vscode from 'vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Disposable, PreferenceService } from '@ali/ide-core-browser';
-import { ITerminalApiService, ITerminalController, ITerminalInfo } from '@ali/ide-terminal-next';
+import { ITerminalApiService, ITerminalController, ITerminalInfo, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest, ITerminalDimensions, ITerminalDimensionsDto } from '@ali/ide-terminal-next';
 import { IMainThreadTerminal, IExtHostTerminal, ExtHostAPIIdentifier } from '../../../common/vscode';
 
 import { ILogger } from '@ali/ide-core-browser';
@@ -10,6 +10,7 @@ import { ILogger } from '@ali/ide-core-browser';
 @Injectable({multiple: true})
 export class MainThreadTerminal implements IMainThreadTerminal {
   private readonly proxy: IExtHostTerminal;
+  private readonly _terminalProcessProxies = new Map<string, ITerminalProcessExtHostProxy>();
 
   @Autowired(ITerminalApiService)
   private terminalApi: ITerminalApiService;
@@ -45,6 +46,7 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     this.disposable.addDispose(this.terminalApi.onDidOpenTerminal((info: ITerminalInfo) => {
       this.proxy.$onDidOpenTerminal(info);
     }));
+    this.disposable.addDispose(this.controller.onInstanceRequestStartExtensionTerminal((e) => this._onRequestStartExtensionTerminal(e)));
   }
 
   private initData() {
@@ -93,5 +95,64 @@ export class MainThreadTerminal implements IMainThreadTerminal {
       return this.logger.error('创建终端失败');
     }
     return terminal.id;
+  }
+
+  private _onRequestStartExtensionTerminal(request: IStartExtensionTerminalRequest): void {
+    const proxy = request.proxy;
+    this._terminalProcessProxies.set(proxy.terminalId, proxy);
+
+    // Note that onReisze is not being listened to here as it needs to fire when max dimensions
+    // change, excluding the dimension override
+    const initialDimensions: ITerminalDimensionsDto | undefined = request.cols && request.rows ? {
+      columns: request.cols,
+      rows: request.rows,
+    } : undefined;
+
+    this.proxy.$startExtensionTerminal(
+      proxy.terminalId,
+      initialDimensions,
+    ).then(request.callback);
+
+    proxy.onInput((data) => this.proxy.$acceptProcessInput(proxy.terminalId, data));
+    proxy.onShutdown((immediate) => this.proxy.$acceptProcessShutdown(proxy.terminalId, immediate));
+    proxy.onRequestCwd(() => this.proxy.$acceptProcessRequestCwd(proxy.terminalId));
+    proxy.onRequestInitialCwd(() => this.proxy.$acceptProcessRequestInitialCwd(proxy.terminalId));
+  }
+
+  private _getTerminalProcess(terminalId: string): ITerminalProcessExtHostProxy {
+    const terminal = this._terminalProcessProxies.get(terminalId);
+    if (!terminal) {
+      throw new Error(`Unknown terminal: ${terminalId}`);
+    }
+    return terminal;
+  }
+
+  public $sendProcessTitle(terminalId: string, title: string): void {
+    this._getTerminalProcess(terminalId).emitTitle(title);
+  }
+
+  public $sendProcessData(terminalId: string, data: string): void {
+    this._getTerminalProcess(terminalId).emitData(data);
+  }
+
+  public $sendProcessReady(terminalId: string, pid: number, cwd: string): void {
+    this._getTerminalProcess(terminalId).emitReady(pid, cwd);
+  }
+
+  public $sendProcessExit(terminalId: string, exitCode: number | undefined): void {
+    this._getTerminalProcess(terminalId).emitExit(exitCode);
+    this._terminalProcessProxies.delete(terminalId);
+  }
+
+  public $sendOverrideDimensions(terminalId: string, dimensions: ITerminalDimensions | undefined): void {
+    this._getTerminalProcess(terminalId).emitOverrideDimensions(dimensions);
+  }
+
+  public $sendProcessInitialCwd(terminalId: string, initialCwd: string): void {
+    this._getTerminalProcess(terminalId).emitInitialCwd(initialCwd);
+  }
+
+  public $sendProcessCwd(terminalId: string, cwd: string): void {
+    this._getTerminalProcess(terminalId).emitCwd(cwd);
   }
 }

@@ -5,7 +5,7 @@ import { IMainLayoutService } from '@ali/ide-main-layout';
 import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
 import { IThemeService } from '@ali/ide-theme';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { ITerminalController, ITerminalClient, ITerminalClientFactory, IWidget, ITerminalInfo, ITerminalBrowserHistory, ITerminalTheme, ITerminalGroupViewService, TerminalOptions, ITerminalErrorService, ITerminalInternalService, TerminalContainerId } from '../common';
+import { ITerminalController, ITerminalClient, ITerminalClientFactory, IWidget, ITerminalInfo, ITerminalBrowserHistory, ITerminalTheme, ITerminalGroupViewService, TerminalOptions, ITerminalErrorService, ITerminalInternalService, TerminalContainerId, ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest } from '../common';
 import { TerminalGroupViewService } from './terminal.view';
 import { TerminalContextKey } from './terminal.context-key';
 import { ResizeEvent, getSlotLocation, AppConfig } from '@ali/ide-core-browser';
@@ -24,6 +24,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   readonly onDidOpenTerminal: Event<ITerminalInfo> = this._onDidOpenTerminal.event;
   readonly onDidCloseTerminal: Event<string> = this._onDidCloseTerminal.event;
   readonly onDidChangeActiveTerminal: Event<string> = this._onDidChangeActiveTerminal.event;
+
+  private readonly _onInstanceRequestStartExtensionTerminal = new Emitter<IStartExtensionTerminalRequest>();
+  readonly onInstanceRequestStartExtensionTerminal: Event<IStartExtensionTerminalRequest> = this._onInstanceRequestStartExtensionTerminal.event;
 
   @Autowired(IMainLayoutService)
   protected readonly layoutService: IMainLayoutService;
@@ -76,11 +79,14 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
   }
 
-  private _createClient(widget: IWidget, options = {}) {
+  private _createClientOrIgnore(widget: IWidget, options = {}) {
     if (this._clients.has(widget.id)) {
       return;
     }
+    return this._createClient(widget, options);
+  }
 
+  private _createClient(widget: IWidget, options = {}) {
     const client = this.clientFactory(widget, options);
     this._clients.set(client.id, client);
 
@@ -192,7 +198,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this.terminalContextKey.isTerminalViewInitialized.set(true);
 
     this.addDispose(this.terminalView.onWidgetCreated((widget) => {
-      this._createClient(widget, {});
+      this._createClientOrIgnore(widget, {});
     }));
 
     this.addDispose(this.terminalView.onWidgetDisposed((widget) => {
@@ -318,13 +324,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   createClientWithWidget(options: TerminalOptions) {
     const widgetId = this.service.generateSessionId();
     const { group } = this._createOneGroup();
-    // 这里是一个有点怪异的操作，主要是避免事件 onWidgetCreated 被触发，手动关联 widget 和 client
-    this._clients.set(widgetId, {} as any);
-    const widget = this.terminalView.createWidget(group, widgetId, !options.closeWhenExited);
-    const client = this.clientFactory(widget, options);
-    // 必须重新将 client 添加到缓存中，否则会导致后续的主题更新和 dispose 出现问题
-    this._clients.set(widgetId, client);
-    return client;
+    const widget = this.terminalView.createWidget(group, widgetId, !options.closeWhenExited, true);
+    return this._createClient(widget, options);
   }
 
   clearCurrentGroup() {
@@ -354,5 +355,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     if (this._tabbarHandler && this._tabbarHandler.isActivated()) {
       this._tabbarHandler.deactivate();
     }
+  }
+
+  requestStartExtensionTerminal(proxy: ITerminalProcessExtHostProxy, cols: number, rows: number): Promise<ITerminalLaunchError | undefined> {
+    // The initial request came from the extension host, no need to wait for it
+    return new Promise<ITerminalLaunchError | undefined>((callback) => {
+      this._onInstanceRequestStartExtensionTerminal.fire({ proxy, cols, rows, callback });
+    });
   }
 }

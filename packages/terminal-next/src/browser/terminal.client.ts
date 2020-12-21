@@ -10,7 +10,7 @@ import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
 import { FilePathAddon, AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
 import { TerminalKeyBoardInputService } from './terminal.input';
-import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, ITerminalGroupViewService, ITerminalInternalService, IWidget, ITerminalDataEvent } from '../common';
+import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, ITerminalGroupViewService, ITerminalInternalService, IWidget, ITerminalDataEvent, ITerminalExitEvent } from '../common';
 import { ITerminalPreference } from '../common/preference';
 import { CorePreferences, IOpenerService } from '@ali/ide-core-browser';
 
@@ -80,6 +80,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private _onOutput = new Emitter<ITerminalDataEvent>();
   onOutput: Event<ITerminalDataEvent> = this._onOutput.event;
+
+  private _onExit = new Emitter<ITerminalExitEvent>();
+  onExit: Event<ITerminalExitEvent> = this._onExit.event;
 
   @Autowired(IOpenerService)
   private readonly openerService: IOpenerService;
@@ -258,6 +261,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this.addDispose(connection.onData((data) => {
       this._onOutput.fire({ id: this.id, data });
     }));
+    if (connection.onExit) {
+      this.addDispose(connection.onExit((code) => {
+        this._onExit.fire({ id: this.id, code });
+      }));
+    }
 
     this.name = (this.name || connection.name) || 'shell';
     this._ready = true;
