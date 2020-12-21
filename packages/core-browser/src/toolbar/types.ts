@@ -226,6 +226,8 @@ export interface IToolbarActionBtnDelegate {
 
   onChangeContext: Event<any>;
 
+  onDidChangePopoverVisibility: Event<boolean>;
+
   setState(state: string, title?: string): void;
 
   setContext(context: any): void;
