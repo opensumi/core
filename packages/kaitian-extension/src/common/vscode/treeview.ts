@@ -7,12 +7,17 @@ import { Event, IDisposable } from '@ali/ide-core-common';
 import { TreeItemCollapsibleState } from './ext-types';
 import { ThemeType } from '@ali/ide-theme';
 
+export interface ITreeViewRevealOptions {
+  select?: boolean;
+  focus?: boolean;
+  expand?: boolean | number;
+}
 export interface IMainThreadTreeView {
   $unregisterTreeDataProvider(treeViewId: string): void;
   $registerTreeDataProvider<T>(treeViewId: string, options: TreeViewBaseOptions): void;
   $refresh<T>(treeViewId: string, itemsToRefresh?: T | null): void;
   $refresh(treeViewId: string, itemsToRefresh?: TreeViewItem): void;
-  $reveal(treeViewId: string, treeItemId: string): Promise<any>;
+  $reveal(treeViewId: string, treeItemId: string, options?: ITreeViewRevealOptions): Promise<any>;
   // $setMessage(treeViewId: string, message: string | IMarkdownString): void;
 }
 

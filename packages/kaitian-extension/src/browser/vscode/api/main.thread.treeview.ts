@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optinal } from '@ali/common-di';
-import { TreeViewItem, TreeViewBaseOptions } from '../../../common/vscode';
+import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { Emitter, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize } from '@ali/ide-core-browser';
@@ -116,11 +116,11 @@ export class MainThreadTreeView implements IMainThreadTreeView {
     }
   }
 
-  async $reveal(treeViewId: string, treeItemId: string) {
+  async $reveal(treeViewId: string, treeItemId: string, options?: ITreeViewRevealOptions) {
     this.mainLayoutService.revealView(treeViewId);
     const treeModel = this.treeModels.get(treeViewId);
     if (treeModel) {
-      treeModel.reveal(treeItemId);
+      treeModel.reveal(treeItemId, options);
     }
   }
 }
