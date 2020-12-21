@@ -372,6 +372,9 @@ export class ExtensionTreeViewModel {
   }
 
   removeNodeDecoration() {
+    if (!this.decorations) {
+      return;
+    }
     this.decorations.removeDecoration(this.selectedDecoration);
     this.decorations.removeDecoration(this.focusedDecoration);
   }
