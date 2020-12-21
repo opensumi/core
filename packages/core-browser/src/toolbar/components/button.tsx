@@ -354,6 +354,10 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
       ele.remove();
       this._popOverElement = undefined;
     }
+    if (this._popOverClickOutsideDisposer) {
+      this._popOverClickOutsideDisposer.dispose();
+      this._popOverClickOutsideDisposer = undefined;
+    }
     this.popOverContainer && this.popOverContainer.classList.remove('kt-toolbar-popover-visible');
   }
 
