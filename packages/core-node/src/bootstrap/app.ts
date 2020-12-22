@@ -107,6 +107,11 @@ interface Config {
    * 默认为 /tmp
    */
   extHostIPCSockPath?: string;
+
+  /**
+   * 插件进程 fork options
+   */
+  extHostForkOptions?: Partial<cp.ForkOptions>;
 }
 
 export interface AppConfig extends Partial<Config> {
@@ -196,6 +201,7 @@ export class ServerApp implements IServerApp {
       extHost: process.env.EXTENSION_HOST_ENTRY || opts.extHost,
       blockPatterns: opts.blockPatterns,
       extHostIPCSockPath: opts.extHostIPCSockPath,
+      extHostForkOptions: opts.extHostForkOptions,
     };
     this.bindProcessHandler();
     this.initBaseProvider(opts);

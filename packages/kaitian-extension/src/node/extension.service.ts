@@ -235,7 +235,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     }
 
     const forkTimer = this.reporterService.time(`${clientId} fork ext process`);
-    const extProcessId = await this.extensionHostManager.fork(extProcessPath, forkArgs, forkOptions);
+    const extProcessId = await this.extensionHostManager.fork(extProcessPath, forkArgs, { ...forkOptions, ...this.appConfig.extHostForkOptions });
     // 监听进程输出，用于获取调试端口
     this.extensionHostManager.onOutput(extProcessId, (output) => {
       const inspectorUrlMatch = output.data && output.data.match(/ws:\/\/([^\s]+:(\d+)\/[^\s]+)/);
