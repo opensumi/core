@@ -9,7 +9,7 @@ import {
   RPCProtocol,
 } from '@ali/ide-connection';
 import { ExtensionLogger2 } from './extension-log2';
-import { ProcessMessageType } from '../common';
+import { ProcessMessageType, IExtensionHostService } from '../common';
 import { isPromiseCanceledError } from '@ali/ide-core-common/lib/errors';
 import { Injector } from '@ali/common-di';
 import { AppConfig, ILogService } from '@ali/ide-core-node';
@@ -78,6 +78,19 @@ async function initRPCProtocol(extInjector): Promise<any> {
   return {extProtocol, logger};
 }
 
+function patchProcess() {
+  process.exit = function(code?: number) {
+    const err = new Error(`An extension called process.exit(${code ?? ''}) and this was prevented.`);
+    getWarnLogger()(err.stack);
+  } as (code?: number) => never;
+
+  // override Electron's process.crash() method
+  process.crash = function() {
+    const err = new Error('An extension called process.crash() and this was prevented.');
+    getWarnLogger()(err.stack);
+  };
+}
+
 export async function extProcessInit(config?: ExtProcessConfig) {
   const extAppConfig = JSON.parse(argv['kt-app-config'] || '{}');
   const extInjector = new Injector();
@@ -85,15 +98,15 @@ export async function extProcessInit(config?: ExtProcessConfig) {
     token: AppConfig,
     useValue: { ...extAppConfig, ...config},
   });
-
+  patchProcess();
   const {extProtocol: protocol, logger} = await initRPCProtocol(extInjector);
   try {
-    let Preload: any = require('./ext.host');
+    let Preload = require('./ext.host');
     if (Preload.default) {
       Preload = Preload.default;
     }
 
-    const preload = new Preload(protocol, logger, extInjector);
+    const preload: IExtensionHostService = new Preload(protocol, logger, extInjector);
 
     preload.onFireReporter((reportMessage: ReporterProcessMessage) => {
       if (process && process.send) {
