@@ -121,7 +121,6 @@ export class ExtensionTreeViewModel {
 
   constructor() {
     this._whenReady = this.initTreeModel();
-    this.registerCollapseAllCommand();
   }
 
   get onDidFocusedNodeChange() {
@@ -197,6 +196,7 @@ export class ExtensionTreeViewModel {
         this.selectedDecoration.addTarget(node as ExtensionTreeNode);
       }
     }));
+    this.registerCollapseAllCommand();
   }
 
   async updateTreeModel() {
@@ -515,6 +515,11 @@ export class ExtensionTreeViewModel {
     if (this.treeViewOptions?.showCollapseAll) {
       // 注册真实的 command handler
       const treeViewCollapseAllCommand = getTreeViewCollapseAllCommand(this.treeViewId);
+      if (this.commandRegistry.getCommand(treeViewCollapseAllCommand.id)) {
+        // 当插件的折叠全部命令已经被注册过时，尝试卸载上个命令
+        // 因为此时生效的Model已经不是上个命令绑定的对象了
+        this.commandRegistry.unregisterCommand(treeViewCollapseAllCommand);
+      }
       this.disposableCollection.push(
         this.commandRegistry.registerCommand(treeViewCollapseAllCommand, {
           execute: () => {
