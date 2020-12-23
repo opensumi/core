@@ -1,5 +1,5 @@
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { IEventBus, EventBusImpl } from '@ali/ide-core-common';
+import { IEventBus, EventBusImpl, IReporterService } from '@ali/ide-core-common';
 import { DebugViewModel } from '@ali/ide-debug/lib/browser/view/debug-view-model';
 import { MockInjector } from '@ali/ide-dev-tool/src/mock-injector';
 import { DebugToolbarService } from '@ali/ide-debug/lib/browser/view/configuration/debug-toolbar.service';
@@ -12,6 +12,7 @@ describe('Debug Configuration Service', () => {
     },
   ]));
   let debugToolbarService: DebugToolbarService;
+  let reporterService: IReporterService;
 
   const mockDebugViewModel = {
     onDidChange: jest.fn(),
@@ -40,6 +41,7 @@ describe('Debug Configuration Service', () => {
       token: DebugViewModel,
       useValue: mockDebugViewModel,
     });
+    reporterService = mockInjector.get(IReporterService);
     debugToolbarService = mockInjector.get(DebugToolbarService);
   });
 
@@ -69,38 +71,38 @@ describe('Debug Configuration Service', () => {
     expect(mockDebugViewModel.start).toBeCalledTimes(1);
   });
 
-  it('doRestart method should be work', () => {
-    debugToolbarService.doRestart();
+  it('doRestart method should be work', async () => {
+    await debugToolbarService.doRestart();
     expect(mockDebugViewModel.restart).toBeCalledTimes(1);
   });
 
-  it('doStop method should be work', () => {
-    debugToolbarService.doStop();
+  it('doStop method should be work', async () => {
+    await debugToolbarService.doStop();
     expect(mockDebugViewModel.currentSession.terminate).toBeCalledTimes(1);
   });
 
-  it('doContinue method should be work', () => {
-    debugToolbarService.doContinue();
+  it('doContinue method should be work', async () => {
+    await debugToolbarService.doContinue();
     expect(mockDebugViewModel.currentThread.continue).toBeCalledTimes(1);
   });
 
-  it('doPause method should be work', () => {
-    debugToolbarService.doPause();
+  it('doPause method should be work', async () => {
+    await debugToolbarService.doPause();
     expect(mockDebugViewModel.currentThread.pause).toBeCalledTimes(1);
   });
 
-  it('doStepIn method should be work', () => {
-    debugToolbarService.doStepIn();
+  it('doStepIn method should be work', async () => {
+    await debugToolbarService.doStepIn();
     expect(mockDebugViewModel.currentThread.stepIn).toBeCalledTimes(1);
   });
 
-  it('doStepOver method should be work', () => {
-    debugToolbarService.doStepOver();
+  it('doStepOver method should be work', async () => {
+    await debugToolbarService.doStepOver();
     expect(mockDebugViewModel.currentThread.stepOver).toBeCalledTimes(1);
   });
 
-  it('doStepOut method should be work', () => {
-    debugToolbarService.doStepOut();
+  it('doStepOut method should be work', async () => {
+    await debugToolbarService.doStepOut();
     expect(mockDebugViewModel.currentThread.stepOut).toBeCalledTimes(1);
   });
 

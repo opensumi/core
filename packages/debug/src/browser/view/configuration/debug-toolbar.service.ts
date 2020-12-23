@@ -2,9 +2,11 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
 import { DebugViewModel } from '../debug-view-model';
 import { DebugState, DebugSession } from '../../debug-session';
-import { IContextKeyService } from '@ali/ide-core-browser';
+import { IContextKeyService, IReporterService } from '@ali/ide-core-browser';
 import { AbstractContextMenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { DEBUG_REPORT_NAME } from '../../../common';
+
 @Injectable()
 export class DebugToolbarService {
 
@@ -16,6 +18,9 @@ export class DebugToolbarService {
 
   @Autowired(DebugViewModel)
   protected readonly model: DebugViewModel;
+
+  @Autowired(IReporterService)
+  protected readonly reporterService: IReporterService;
 
   @observable
   state: DebugState;
@@ -63,31 +68,83 @@ export class DebugToolbarService {
     }
   }
 
+  private instrumentReporter(name: string): () => void {
+    const languageType = this.model.currentSession?.configuration?.type;
+    this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_TOOLBAR_OPERATION, name, {
+      type: languageType,
+    });
+    const reportTime = this.reporterService.time(DEBUG_REPORT_NAME?.DEBUG_TOOLBAR_OPERATION_TIME);
+    return () => {
+      reportTime.timeEnd(name, {
+        type: languageType,
+      });
+    };
+  }
+
   doStart = () => {
     return this.model.start();
   }
 
-  doRestart = () => {
-    return this.model.restart();
+  doRestart = async () => {
+    const reportTimeEnd = this.instrumentReporter('restart');
+    const terminated = await this.model.restart();
+    reportTimeEnd();
+    return terminated;
   }
 
-  doStop = () => {
-    return this.model.currentSession && this.model.currentSession.terminate();
+  doStop = async () => {
+    if (!this.model.currentSession) {
+      return;
+    }
+    const reportTimeEnd = this.instrumentReporter('stop');
+    const terminated = await this.model.currentSession.terminate();
+    reportTimeEnd();
+    return terminated;
   }
-  doContinue = () => {
-    return this.model.currentThread && this.model.currentThread.continue();
+  doContinue = async () => {
+    if (!this.model.currentThread) {
+      return;
+    }
+    const reportTimeEnd = this.instrumentReporter('continue');
+    const terminated = await this.model.currentThread.continue();
+    reportTimeEnd();
+    return terminated;
   }
-  doPause = () => {
-    return this.model.currentThread && this.model.currentThread.pause();
+  doPause = async () => {
+    if (!this.model.currentThread) {
+      return;
+    }
+    const reportTimeEnd = this.instrumentReporter('pause');
+    const terminated = await this.model.currentThread.pause();
+    reportTimeEnd();
+    return terminated;
   }
-  doStepOver = () => {
-    return this.model.currentThread && this.model.currentThread.stepOver();
+  doStepOver = async () => {
+    if (!this.model.currentThread) {
+      return;
+    }
+    const reportTimeEnd = this.instrumentReporter('stepOver');
+    const terminated = await this.model.currentThread.stepOver();
+    reportTimeEnd();
+    return terminated;
   }
-  doStepIn = () => {
-    return this.model.currentThread && this.model.currentThread.stepIn();
+  doStepIn = async () => {
+    if (!this.model.currentThread) {
+      return;
+    }
+    const reportTimeEnd = this.instrumentReporter('stepIn');
+    const terminated = await this.model.currentThread.stepIn();
+    reportTimeEnd();
+    return terminated;
   }
-  doStepOut = () => {
-    return this.model.currentThread && this.model.currentThread.stepOut();
+  doStepOut = async () => {
+    if (!this.model.currentThread) {
+      return;
+    }
+    const reportTimeEnd = this.instrumentReporter('stepOut');
+    const terminated = await this.model.currentThread.stepOut();
+    reportTimeEnd();
+    return terminated;
   }
 
   updateCurrentSession = (session: DebugSession) => {

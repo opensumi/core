@@ -1,9 +1,9 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Injectable, Autowired } from '@ali/common-di';
-import { DisposableCollection, Disposable, AppConfig, ConfigProvider } from '@ali/ide-core-browser';
+import { DisposableCollection, Disposable, AppConfig, ConfigProvider, IReporterService } from '@ali/ide-core-browser';
 import { DebugSessionManager } from '../debug-session-manager';
-import { DebugEditor, IDebugSessionManager } from '../../common';
+import { DebugEditor, IDebugSessionManager, DEBUG_REPORT_NAME } from '../../common';
 import { DebugExpressionProvider } from './debug-expression-provider';
 import { DebugHoverSource } from './debug-hover-source';
 import { DebugHoverView } from './debug-hover.view';
@@ -54,6 +54,9 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
 
   @Autowired(AppConfig)
   private configContext: AppConfig;
+
+  @Autowired(IReporterService)
+  protected readonly reporterService: IReporterService;
 
   protected readonly domNode = document.createElement('div');
 
@@ -158,6 +161,8 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
     if (!await this.hoverSource.evaluate(expression)) {
       return;
     }
+
+    this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_VARIABLES, 'hover', expression);
 
     this.editor.addContentWidget(this);
     // 展示变量面板时临时屏蔽滚轮事件
