@@ -244,11 +244,13 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
   }
 
   toQuickOpenItem(e: ActivatedExtension, host: ExtensionHostType, firstItem: boolean): QuickOpenItem<QuickOpenItemOptions> {
+    const extension = this.extensionService.getExtensionByExtId(e.id);
     return new QuickOpenGroupItem({
       groupLabel: firstItem ? host : undefined,
       showBorder: !!firstItem,
       label: replaceLocalizePlaceholder(e.displayName, e.id),
-      detail: replaceLocalizePlaceholder(e.description, e.id),
+      description: replaceLocalizePlaceholder(e.description, e.id),
+      detail: extension?.realPath,
     });
   }
 
