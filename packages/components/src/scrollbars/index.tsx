@@ -25,7 +25,7 @@ export const Scrollbars = ({ onScroll, onUpdate, forwardedRef, style, children, 
 
   let shadowTopRef: HTMLDivElement | null;
 
-  const handleReactBottom = React.useCallback(throttle((values) => {
+  const handleReachBottom = React.useCallback(throttle((values) => {
     const { scrollTop, scrollHeight, clientHeight } = values;
 
     if (scrollHeight === 0 && clientHeight === 0) {
@@ -46,7 +46,7 @@ export const Scrollbars = ({ onScroll, onUpdate, forwardedRef, style, children, 
       shadowTopRef.style.opacity = String(shadowTopOpacity);
     }
 
-    handleReactBottom(values);
+    handleReachBottom(values);
     onUpdate && onUpdate(values);
   };
 

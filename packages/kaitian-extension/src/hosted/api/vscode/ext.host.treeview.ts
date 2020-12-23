@@ -1,4 +1,4 @@
-import { IExtHostTreeView, IMainThreadTreeView, MainThreadAPIIdentifier } from '../../../common/vscode';
+import { IExtHostTreeView, IMainThreadTreeView, ITreeViewRevealOptions, MainThreadAPIIdentifier } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { TreeView, TreeViewItem, TreeViewSelection, TreeViewOptions } from '../../../common/vscode';
 import { IDisposable, Emitter, Disposable, Uri, DisposableStore, toDisposable } from '@ali/ide-core-common';
@@ -71,7 +71,7 @@ export class ExtHostTreeViews implements IExtHostTreeView {
         return treeView.onDidChangeVisibility;
       },
 
-      reveal: (element: T, selectionOptions: { select?: boolean }): Thenable<void> => treeView.reveal(element, selectionOptions),
+      reveal: (element: T, options: ITreeViewRevealOptions): Thenable<void> => treeView.reveal(element, options),
 
       dispose: () => {
         this.treeViews.delete(treeViewId);
@@ -205,7 +205,7 @@ class ExtHostTreeView<T> implements IDisposable {
     return this._visible;
   }
 
-  async reveal(element: T, selectionOptions?: { select?: boolean }): Promise<void> {
+  async reveal(element: T, options?: ITreeViewRevealOptions): Promise<void> {
     // 在缓存中查找对应节点
     let elementId;
     this.cache.forEach((el, id) => {
@@ -215,7 +215,7 @@ class ExtHostTreeView<T> implements IDisposable {
     });
 
     if (elementId) {
-      return this.proxy.$reveal(this.treeViewId, elementId);
+      return this.proxy.$reveal(this.treeViewId, elementId, options);
     }
   }
 

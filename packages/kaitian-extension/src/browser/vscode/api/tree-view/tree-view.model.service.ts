@@ -1,13 +1,14 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, PromptValidateMessage, TreeNodeEvent, WatchEvent, TreeNode } from '@ali/ide-components';
+import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, PromptValidateMessage, TreeNodeEvent, WatchEvent, TreeNode, CompositeTreeNode } from '@ali/ide-components';
 import { DisposableCollection, Emitter, PreferenceService, IContextKeyService, CommandRegistry, Deferred, ThrottledDelayer, CommandService } from '@ali/ide-core-browser';
 import { ExtensionCompositeTreeNode, ExtensionTreeNode, ExtensionTreeRoot } from './tree-view.node.defined';
 import * as styles from './tree-view-node.module.less';
 import { ExtensionTreeModel } from './tree-view.model';
-import { TreeViewBaseOptions, TreeViewItem } from '../../../../common/vscode';
+import { ITreeViewRevealOptions, TreeViewBaseOptions, TreeViewItem } from '../../../../common/vscode';
 import { TreeViewDataProvider } from '../main.thread.treeview';
 import { AbstractMenuService, ICtxMenuRenderer, generateCtxMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { getTreeViewCollapseAllCommand } from './util';
+import { isUndefinedOrNull, isNumber } from '@ali/ide-core-common';
 
 export const IExtensionTreeViewModel = Symbol('IExtensionTreeViewModel');
 
@@ -575,7 +576,7 @@ export class ExtensionTreeViewModel {
     });
   }
 
-  async reveal(treeItemId: string) {
+  async reveal(treeItemId: string, options: ITreeViewRevealOptions = {}) {
     await this.whenReady;
     if (!this.revealDelayer.isTriggered()) {
       this.revealDelayer.cancel();
@@ -584,6 +585,10 @@ export class ExtensionTreeViewModel {
     }
     return this.revealDelayer.trigger(async () => {
       this.revealDeferred = new Deferred();
+      if (this.treeModel.root.branchSize === 0) {
+        // 当Tree为空时，刷新一次Tree
+        await this.refresh();
+      }
       const id = this.treeViewDataProvider.getTreeNodeIdByTreeItemId(treeItemId);
       if (!id) {
         return;
@@ -593,10 +598,24 @@ export class ExtensionTreeViewModel {
         return ;
       }
 
-      const node = await this.extensionTreeHandle.ensureVisible(cache.path) as ExtensionTreeNode;
+      const select = isUndefinedOrNull(options.select) ? false : options.select;
+      const focus = isUndefinedOrNull(options.focus) ? false : options.focus;
+      // 递归展开几层节点，最多三层
+      let expand = Math.min(isNumber(options.expand) ? options.expand : options.expand === true ? 1 : 0, 3);
 
-      if (node) {
-        this.selectNodeDecoration(node);
+      let itemsToExpand = await this.extensionTreeHandle.ensureVisible(cache.path);
+      if (itemsToExpand) {
+        if (select) {
+          if (focus) {
+            this.activeNodeFocusedDecoration(itemsToExpand as ExtensionTreeNode);
+          } else {
+            this.selectNodeDecoration(itemsToExpand as ExtensionTreeNode);
+          }
+        }
+      }
+      for (; ExtensionCompositeTreeNode.is(itemsToExpand) && (itemsToExpand as ExtensionCompositeTreeNode).branchSize > 0 && expand > 0; expand --) {
+        await this.extensionTreeHandle.expandNode(itemsToExpand as CompositeTreeNode);
+        itemsToExpand = itemsToExpand?.children ? itemsToExpand?.children[0] as TreeNode : undefined;
       }
       this.revealDeferred.resolve();
       this.revealDeferred = null;

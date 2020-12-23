@@ -57,6 +57,7 @@ export class FileTreeAPI implements IFileTreeAPI {
             const prePath = parent.path;
             tree.removeNodeCacheByPath(prePath);
             parent.updateName(parentName);
+            parent.updateDisplayName(parentName);
             parent.updateURI(parentURI);
             parent.updateFileStat(file.children[0]);
             parent.updateToolTip(this.getReadableTooltip(parentURI));
