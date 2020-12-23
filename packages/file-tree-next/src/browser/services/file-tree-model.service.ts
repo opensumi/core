@@ -731,10 +731,17 @@ export class FileTreeModelService {
       // 当前没有焦点文件时，执行无效果
       return;
     }
-    if (Directory.is(this.focusedFile)) {
-      if (this.focusedFile.expanded) {
-        await this.fileTreeHandle.collapseNode(this.focusedFile as Directory);
-      }
+    let target: Directory;
+    if (Directory.is(this.focusedFile) && this.focusedFile.expanded) {
+      target = this.focusedFile as Directory;
+    } else if (this.focusedFile) {
+      target = this.focusedFile.parent as Directory;
+    } else {
+      return ;
+    }
+    if (target && target.expanded) {
+      await this.fileTreeHandle.collapseNode(target as Directory);
+      this.activeFileFocusedDecoration(target as Directory, true);
     }
   }
 
