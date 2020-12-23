@@ -893,6 +893,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if (this.currentResource && this.currentResource.uri.isEqual(uri)) {
         // 就是当前打开的resource
         if (options.focus && this.currentEditor) {
+          this._domNode?.focus();
           this.currentEditor.monacoEditor.focus();
         }
         if (options.range && this.currentEditor) {
@@ -1056,6 +1057,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         await this.codeEditorReady.promise;
         await this.codeEditor.open(await this.getDocumentModelRef(resource.uri), options.range ? new monaco.Range(options.range.startLineNumber!, options.range.startColumn!, options.range.startLineNumber!, options.range.startColumn!) : undefined);
         if (options.focus) {
+          this._domNode?.focus();
           this.codeEditor.focus();
         }
         // 可能在diff Editor中修改导致为脏
@@ -1068,6 +1070,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         const [original, modified] = await Promise.all([this.getDocumentModelRef(diffResource.metadata!.original), this.getDocumentModelRef(diffResource.metadata!.modified)]);
         await this.diffEditor.compare(original, modified, options, resource.uri);
         if (options.focus) {
+          this._domNode?.focus();
           this.diffEditor.focus();
         }
       } else if (activeOpenType.type === 'component') {
@@ -1366,15 +1369,15 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
    */
   public async dropUri(uri: URI, position: DragOverPosition, sourceGroup?: EditorGroup, targetResource?: IResource) {
     if (position !== DragOverPosition.CENTER) {
-      await this.split(getSplitActionFromDragDrop(position), uri, {preview: false});
+      await this.split(getSplitActionFromDragDrop(position), uri, {preview: false, focus: true});
     } else {
       // 扔在本体或者tab上
       if (!targetResource) {
-        await this.open(uri, {preview: false});
+        await this.open(uri, {preview: false, focus: true});
       } else {
         const targetIndex = this.resources.indexOf(targetResource);
         if (targetIndex === -1) {
-          await this.open(uri, {preview: false});
+          await this.open(uri, {preview: false, focus: true});
         } else {
           const sourceIndex = this.resources.findIndex((resource) => resource.uri.toString() === uri.toString());
           if (sourceIndex === -1) {
