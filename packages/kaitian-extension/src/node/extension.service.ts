@@ -243,6 +243,12 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         const port = Number(inspectorUrlMatch[2]);
         this.clientExtProcessInspectPortMap.set(clientId, port);
         this.onDidSetInspectPort.fire();
+      } else {
+        /* tslint:disable no-console */
+        console.group('Extension Host');
+        console.log(output.data, ...output.format);
+        console.groupEnd();
+        /* tslint:enable no-console */
       }
     });
 
