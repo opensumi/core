@@ -72,4 +72,11 @@ export interface IKeymapService {
    * @memberof IKeymapService
    */
   fixed(): Promise<void>;
+
+  /**
+   * 打开快捷键源文件 keymaps.json
+   * @returns {Promise<void>}
+   * @memberof IKeymapService
+   */
+  openResource(): Promise<void>;
 }

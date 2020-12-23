@@ -5,19 +5,20 @@ import {
   Domain,
   CommandContribution,
   CommandRegistry,
+  Command,
   COMMON_COMMANDS,
   KeybindingContribution,
   KeybindingRegistry,
   WithEventBus,
   MaybePromise,
   localize,
+  getIcon,
 } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { KEYMAPS_SCHEME, IKeymapService } from '../common';
 import { KeymapsView } from './keymaps.view';
-import { getIcon } from '@ali/ide-core-browser';
 import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 const KEYMAPS_PREVIEW_COMPONENT_ID = 'keymaps-preview';
@@ -53,6 +54,16 @@ export namespace KeymapsContextMenu {
   export const KEYMAPS = '2_keymaps';
 }
 
+export namespace KEYMAP_COMMANDS {
+  const CATEGORY = 'keymaps';
+
+  export const OPEN_SOURCE_FILE: Command = {
+    id: 'keymaps.open.source',
+    label: localize('keymaps.editorTitle.openSource'),
+    category: CATEGORY,
+  };
+}
+
 @Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, NextMenuContribution)
 export class KeymapsContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, NextMenuContribution {
 
@@ -72,12 +83,34 @@ export class KeymapsContribution implements CommandContribution, KeybindingContr
         await this.keymapService.open();
       },
     });
+    commands.registerCommand(KEYMAP_COMMANDS.OPEN_SOURCE_FILE, {
+      execute: async () => {
+        // open
+        this.keymapService.openResource();
+      },
+    });
   }
 
   registerNextMenus(menus: IMenuRegistry) {
     menus.registerMenuItem(MenuId.SettingsIconMenu, {
       command: COMMON_COMMANDS.OPEN_KEYMAPS.id,
       group: KeymapsContextMenu.KEYMAPS,
+    });
+
+    menus.registerMenuItem(MenuId.EditorTitle, {
+      command: KEYMAP_COMMANDS.OPEN_SOURCE_FILE.id,
+      iconClass: getIcon('open'),
+      group: 'navigation',
+      order: 4,
+      when: `resourceScheme == ${KEYMAPS_SCHEME}`,
+    });
+
+    menus.registerMenuItem(MenuId.EditorTitle, {
+      command: COMMON_COMMANDS.OPEN_KEYMAPS.id,
+      iconClass: getIcon('open'),
+      group: 'navigation',
+      order: 4,
+      when: `resourceFilename =~ /keymaps\.json/`,
     });
   }
 

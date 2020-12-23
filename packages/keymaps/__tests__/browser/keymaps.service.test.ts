@@ -23,6 +23,7 @@ describe('KeymapsService should be work', () => {
   const mockResource = {
     readContents: jest.fn(() => keybindingContent),
     saveContents: jest.fn(),
+    getFsPath: jest.fn(() => 'file://keymaps.json'),
     whenReady: Promise.resolve(),
   };
   const mockKeybindingService = {
@@ -117,6 +118,14 @@ describe('KeymapsService should be work', () => {
       injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, open);
       await keymapsService.open();
       expect(open).toBeCalledTimes(1);
+      done();
+    });
+
+    it('openResource method should be work', async (done) => {
+      const openResource = jest.fn();
+      injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, openResource);
+      await keymapsService.openResource();
+      expect(openResource).toBeCalledTimes(1);
       done();
     });
 

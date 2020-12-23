@@ -298,6 +298,8 @@ export const localizationBundle = {
     'preference.explorer.fileTree.baseIndent.title': '资源管理器 -> 文件树基础缩进',
     'preference.debug.toolbar.float.title': '运行与调试 -> 浮层模式',
     'preference.explorer.compactFolders': '资源管理器 -> 控制资源管理器是否应以紧凑形式呈现文件夹。在这种形式中，单个子文件夹将被压缩在组合的树元素中。例如，对 Java 包结构很有用。',
+    'preference.editorTitle.openSource': '打开设置（JSON）',
+    'preference.editorTitle.openPreference': '打开设置（可视化）',
     // 终端
     'preference.terminal.type': '默认终端类型',
     'preference.terminal.typeDesc': '改变打开终端所使用的默认 Shell 类型',
@@ -549,6 +551,8 @@ export const localizationBundle = {
     'keymaps.action.reset': '重置快捷键',
     'keymaps.action.clear': '清空',
     'keymaps.edit.placeholder': '请按 Enter 键保存',
+    'keymaps.editorTitle.openSource': '打开键盘快捷方式(JSON)',
+    'keymaps.editorTitle.openKeymap': '打开键盘快捷方式(可视化)',
 
     'keybinding.combination.tip': '已按下({0}), 等待同时按下第二个键',
     'layout.tabbar.hide': '隐藏',

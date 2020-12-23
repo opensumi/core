@@ -24,6 +24,8 @@ import {
   ISettingGroup,
   IDisposable,
   addElement,
+  Command,
+  ResourceProvider,
 } from '@ali/ide-core-browser';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
@@ -70,6 +72,16 @@ export namespace PreferenceContextMenu {
   export const OPEN = '1_open';
 }
 
+export namespace PREFERENCE_COMMANDS {
+  const CATEGORY = 'preference';
+
+  export const OPEN_SOURCE_FILE: Command = {
+    id: 'preference.open.source',
+    label: localize('preference.editorTitle.openSource'),
+    category: CATEGORY,
+  };
+}
+
 @Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, NextMenuContribution, JsonSchemaContribution)
 export class PreferenceContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, NextMenuContribution, JsonSchemaContribution {
 
@@ -83,16 +95,19 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   protected readonly filesystem: IFileServiceClient;
 
   @Autowired(PrefResourceProvider)
-  prefResourceProvider: PrefResourceProvider;
+  private readonly prefResourceProvider: PrefResourceProvider;
 
   @Autowired(CommandService)
-  commandService: CommandService;
+  private readonly commandService: CommandService;
 
   @Autowired(ISchemaRegistry)
-  schemaRegistry: ISchemaRegistry;
+  private readonly schemaRegistry: ISchemaRegistry;
 
   @Autowired(IPreferenceSettingsService)
-  preferenceService: PreferenceSettingsService;
+  private readonly preferenceService: PreferenceSettingsService;
+
+  @Autowired(ResourceProvider)
+  protected readonly resourceProvider: ResourceProvider;
 
   @Autowired(SettingContribution)
   private readonly contributions: ContributionProvider<SettingContribution>;
@@ -118,8 +133,8 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
 
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(COMMON_COMMANDS.OPEN_PREFERENCES, {
-      execute: async (searchString?) => {
-        await this.openPreferences(searchString);
+      execute: async () => {
+        await this.openPreferences();
       },
     });
 
@@ -129,12 +144,35 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
         return await this.preferenceService.setCurrentGroup(groupId);
       },
     });
+
+    commands.registerCommand(PREFERENCE_COMMANDS.OPEN_SOURCE_FILE, {
+      execute: async () => {
+        // open
+        this.openResource();
+      },
+    });
   }
 
   registerNextMenus(menus: IMenuRegistry) {
     menus.registerMenuItem(MenuId.SettingsIconMenu, {
       command: COMMON_COMMANDS.OPEN_PREFERENCES.id,
       group: PreferenceContextMenu.OPEN,
+    });
+
+    menus.registerMenuItem(MenuId.EditorTitle, {
+      command: PREFERENCE_COMMANDS.OPEN_SOURCE_FILE.id,
+      iconClass: getIcon('open'),
+      group: 'navigation',
+      order: 4,
+      when: `resourceScheme == ${PREF_SCHEME}`,
+    });
+
+    menus.registerMenuItem(MenuId.EditorTitle, {
+      command: COMMON_COMMANDS.OPEN_PREFERENCES.id,
+      iconClass: getIcon('open'),
+      group: 'navigation',
+      order: 4,
+      when: `resourceFilename =~ /settings\.json/`,
     });
   }
 
@@ -197,6 +235,11 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
     if (search) {
       this.preferenceService.search(search);
     }
+  }
+
+  async openResource() {
+    const url = await this.preferenceService.getCurrentPreferenceUrl();
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(url));
   }
 
   initialize() {
