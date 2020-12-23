@@ -203,7 +203,7 @@ describe('Debug Model', () => {
         browserEvent: {},
       },
     };
-    debugModel.onContextMenu(mockEvent);
+    debugModel.onContextMenu(mockEvent as monaco.editor.IEditorMouseEvent);
     expect(mockCtxMenuRenderer.show).toBeCalledTimes(1);
   });
 
@@ -219,7 +219,7 @@ describe('Debug Model', () => {
         browserEvent: {},
       },
     };
-    debugModel.onMouseDown(mockEvent);
+    debugModel.onMouseDown(mockEvent as monaco.editor.IEditorMouseEvent);
     expect(mockEditor.focus).toBeCalledTimes(1);
   });
 
@@ -231,7 +231,7 @@ describe('Debug Model', () => {
           lineNumber: 1,
         },
       },
-    });
+    } as monaco.editor.IEditorMouseEvent);
     expect(mockDebugHoverWidget.show).toBeCalledTimes(1);
     debugModel.onMouseMove({
       target: {
@@ -240,7 +240,7 @@ describe('Debug Model', () => {
           lineNumber: 1,
         },
       },
-    });
+    } as monaco.editor.IEditorMouseEvent);
     expect(mockDebugHoverWidget.hide).toBeCalledTimes(1);
   });
 
@@ -262,7 +262,7 @@ describe('Debug Model', () => {
     mockDebugHoverWidget.getDomNode.mockReturnValueOnce({
       getBoundingClientRect,
     });
-    debugModel.onMouseLeave(mockEvent);
+    debugModel.onMouseLeave(mockEvent as monaco.editor.IEditorMouseEvent);
     expect(getBoundingClientRect).toBeCalledTimes(1);
     expect(mockDebugHoverWidget.hide).toBeCalledTimes(2);
   });
