@@ -1,5 +1,4 @@
-import { URI, Event, IFileServiceClient as IFileServiceClientToken, IDisposable } from '@ali/ide-core-common';
-import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
+import { URI, Event, IFileServiceClient as IFileServiceClientToken, IDisposable, TextDocumentContentChangeEvent } from '@ali/ide-core-common';
 import { FileStat,
   FileMoveOptions,
   FileDeleteOptions,

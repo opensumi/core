@@ -1,8 +1,8 @@
 
 import { Injectable, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
 import { FileStat, FileDeleteOptions, FileMoveOptions, IBrowserFileSystemRegistry, IFileSystemProvider, FileSystemProvider, FileSystemError, FileAccess, IDiskFileProvider, containsExtraFileMethod } from '../common';
-import { TextDocumentContentChangeEvent, TextDocument } from 'vscode-languageserver-types';
-import { URI, Emitter, Event, isElectronRenderer, IEventBus, FileUri, DisposableCollection, IDisposable } from '@ali/ide-core-common';
+import { TextDocument } from 'vscode-languageserver-types';
+import { URI, Emitter, Event, isElectronRenderer, IEventBus, FileUri, DisposableCollection, IDisposable, TextDocumentContentChangeEvent } from '@ali/ide-core-common';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import Uri from 'vscode-uri';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';

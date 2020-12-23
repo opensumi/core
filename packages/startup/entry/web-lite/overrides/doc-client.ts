@@ -1,8 +1,8 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IFileSchemeDocClient, IContentChange, ISavingContent } from '@ali/ide-file-scheme';
-import { IEditorDocumentModelSaveResult, IEditorDocumentEditChange } from '@ali/ide-core-browser';
+import { IEditorDocumentModelSaveResult, IEditorDocumentEditChange, TextDocumentContentChangeEvent } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service';
-import { TextDocumentContentChangeEvent, Range } from 'vscode-languageserver-types';
+import { Range } from 'vscode-languageserver-types';
 import * as md5 from 'md5';
 
 /**

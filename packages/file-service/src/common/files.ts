@@ -1,5 +1,4 @@
-import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
-import { FileSystemWatcherServer, DidFilesChangedParams, WatchOptions } from '@ali/ide-core-common'
+import { FileSystemWatcherServer, DidFilesChangedParams, WatchOptions, TextDocumentContentChangeEvent } from '@ali/ide-core-common'
 import { ApplicationError, Event, IDisposable, Uri, URI, isUndefinedOrNull, hasProperty, isFunction, FileChangeEvent } from '@ali/ide-core-common';
 import { FileSystemProvider, FileStat } from '@ali/ide-core-common/lib/types/file';
 

@@ -116,6 +116,7 @@ export class CompletionAdapter {
             // FIXME range为空
             range: Converter.fromRange(item.range!),
             kind: Converter.fromCompletionItemKind(item.kind),
+            tags: item.tags && item.tags.map(Converter.CompletionItemTag.from),
             parentId,
             label: item.label,
             detail: item.detail,

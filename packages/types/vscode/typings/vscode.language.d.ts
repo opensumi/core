@@ -428,7 +428,27 @@ declare module 'vscode' {
 		 * Used to filter code actions.
 		 */
 		kind?: CodeActionKind;
-
+    /**
+		 * Marks that the code action cannot currently be applied.
+		 *
+		 * - Disabled code actions are not shown in automatic [lightbulb](https://code.visualstudio.com/docs/editor/editingevolved#_code-action)
+		 * code action menu.
+		 *
+		 * - Disabled actions are shown as faded out in the code action menu when the user request a more specific type
+		 * of code action, such as refactorings.
+		 *
+		 * - If the user has a [keybinding](https://code.visualstudio.com/docs/editor/refactoring#_keybindings-for-code-actions)
+		 * that auto applies a code action and only a disabled code actions are returned, VS Code will show the user an
+		 * error message with `reason` in the editor.
+		 */
+		disabled?: {
+			/**
+			 * Human readable description of why the code action is currently disabled.
+			 *
+			 * This is displayed in the code actions UI.
+			 */
+			readonly reason: string;
+		};
 		/**
 		 * Marks this as a preferred action. Preferred actions are used by the `auto fix` command and can be targeted
 		 * by keybindings.
@@ -836,7 +856,13 @@ declare module 'vscode' {
 		 * The kind of this completion item. Based on the kind
 		 * an icon is chosen by the editor.
 		 */
-		kind?: CompletionItemKind;
+    kind?: CompletionItemKind;
+
+    /**
+     * A modifier to the `kind` which affect how the item
+     * is rendered, e.g. Deprecated is rendered with a strikeout
+     */
+    tags?: ReadonlyArray<CompletionItemTag>;
 
 		/**
 		 * A human-readable string with additional information
@@ -1979,6 +2005,11 @@ declare module 'vscode' {
 		 * The kind of this symbol.
 		 */
 		kind: SymbolKind;
+
+		/**
+		 * Tags for this symbol.
+		 */
+    tags?: ReadonlyArray<SymbolTag>;
 
 		/**
 		 * The range enclosing this symbol not including leading/trailing whitespace but everything else, e.g. comments and code.

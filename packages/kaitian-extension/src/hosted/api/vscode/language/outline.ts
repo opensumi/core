@@ -51,6 +51,7 @@ export class OutlineAdapter {
                 name: info[i].name,
                 detail: '',
                 kind: Converter.SymbolKind.fromSymbolKind(info[i].kind),
+                tags: info[i].tags?.map(Converter.SymbolTag.from) || [],
                 containerName: info[i].containerName,
                 range: Converter.fromRange(info[i].location.range),
                 selectionRange: Converter.fromRange(info[i].location.range),

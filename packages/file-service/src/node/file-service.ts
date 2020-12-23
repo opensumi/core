@@ -5,7 +5,7 @@ import * as fs from 'fs-extra';
 import * as os from 'os';
 import * as fileType from 'file-type';
 import Uri from 'vscode-uri';
-import { TextDocumentContentChangeEvent, TextDocument } from 'vscode-languageserver-types';
+import { TextDocument } from 'vscode-languageserver-types';
 import {
   URI,
   Emitter,
@@ -15,6 +15,7 @@ import {
   DisposableCollection,
   isArray,
   isEmptyObject,
+  TextDocumentContentChangeEvent,
 } from '@ali/ide-core-common';
 import { FileUri, INodeLogger, AppConfig } from '@ali/ide-core-node';
 import { RPCService } from '@ali/ide-connection'
