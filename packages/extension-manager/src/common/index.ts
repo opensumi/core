@@ -1,8 +1,17 @@
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
-import { BasicEvent } from '@ali/ide-core-common';
+import { BasicEvent, IExtensionProps } from '@ali/ide-core-common';
 import { ExtensionDependencies, ExtraMetaData } from '@ali/ide-kaitian-extension/lib/common';
 
 export const EXTENSION_DIR = 'extension/';
+
+type Writeable<T> = { -readonly [P in keyof T]: T[P] };
+
+// IExtensionProps 属性为 readonly，改为 writeable
+export type IExtension = Writeable<IExtensionProps> & {
+  enableScope: EnableScope,
+  reloadRequire?: boolean;
+  installed: boolean;
+};
 
 export enum EnableScope {
   GLOBAL = 'GLOBAL',

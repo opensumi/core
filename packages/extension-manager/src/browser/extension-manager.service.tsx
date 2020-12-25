@@ -1,5 +1,5 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, SearchExtension, RequestHeaders, BaseExtension, ExtensionMomentState, OpenExtensionOptions, ExtensionChangeEvent, ExtensionChangeType, IMarketplaceExtensionInfo, IExtensionVersion } from '../common';
+import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, SearchExtension, RequestHeaders, BaseExtension, ExtensionMomentState, OpenExtensionOptions, ExtensionChangeEvent, ExtensionChangeType, IMarketplaceExtensionInfo, IExtensionVersion, IExtension } from '../common';
 import { ExtensionService, IExtensionProps, EXTENSION_ENABLE, ExtensionDependencies } from '@ali/ide-kaitian-extension/lib/common';
 import { action, observable, computed, runInAction } from 'mobx';
 import * as flatten from 'lodash.flatten';
@@ -13,15 +13,6 @@ import { IContextKeyService } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IMessageService } from '@ali/ide-overlay';
 import { EditorPreferences } from '@ali/ide-editor/lib/browser';
-
-type Writeable<T> = { -readonly [P in keyof T]: T[P] };
-
-// IExtensionProps 属性为 readonly，改为 writeable
-type IExtension = Writeable<IExtensionProps> & {
-  enableScope: EnableScope,
-  reloadRequire?: boolean;
-  installed: boolean;
-};
 
 @Injectable()
 export class ExtensionManagerService extends Disposable implements IExtensionManagerService {
@@ -117,6 +108,13 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
       if (!e.isBuiltin && !e.isDevelopment) {
         await this.checkExtensionUpdates(e);
       }
+    }));
+    this.addDispose(Disposable.create(() => {
+      this.extensionInfo.clear();
+      this.searchInstalledResults = [];
+      this.searchMarketplaceResults = [];
+      this.hotExtensions = [];
+      this.extensions = [];
     }));
   }
   async enableAllExtensions(): Promise<void> {
@@ -283,7 +281,6 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   async getExtDeps(extensionId, version?): Promise<ExtensionDependencies> {
     try {
       const res = await this.extensionManagerServer.getExtensionDeps(extensionId, version);
-
       const identifies = await Promise.all(
         res?.data?.dependencies?.map((dep) => {
           const {
@@ -335,7 +332,8 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
         version: depVersion,
       } = this.transformDepsDeclaration(dep);
 
-      if (this.installedIds.includes(depId as string)) {
+      // id 和 extensionId 都要判断
+      if (this.extensions.some((extension) => extension.id === depId) || this.installedIds.includes(depId)) {
         continue;
       }
       const subExtensionRes = await this.extensionManagerServer.getExtensionFromMarketPlace(depId as string, depVersion);
