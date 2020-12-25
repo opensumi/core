@@ -85,7 +85,6 @@ export class KeymapsContribution implements CommandContribution, KeybindingContr
     });
     commands.registerCommand(KEYMAP_COMMANDS.OPEN_SOURCE_FILE, {
       execute: async () => {
-        // open
         this.keymapService.openResource();
       },
     });

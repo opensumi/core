@@ -5,6 +5,7 @@ import { KeymapsParser } from './keymaps-parser';
 import * as fuzzy from 'fuzzy';
 import { KEYMAPS_FILE_NAME, IKeymapService, KEYMAPS_SCHEME, KeybindingItem } from '../common';
 import { USER_STORAGE_SCHEME } from '@ali/ide-preferences';
+import { IFileServiceClient } from '@ali/ide-file-service';
 
 @Injectable()
 export class KeymapService implements IKeymapService {
@@ -29,6 +30,9 @@ export class KeymapService implements IKeymapService {
 
   @Autowired(KeybindingService)
   protected readonly keybindingService: KeybindingService;
+
+  @Autowired(IFileServiceClient)
+  protected readonly filesystem: IFileServiceClient;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
@@ -88,6 +92,14 @@ export class KeymapService implements IKeymapService {
       return;
     }
     const fsPath = await this.resource.getFsPath();
+    if (!fsPath) {
+      return;
+    }
+    const exist = await this.filesystem.access(fsPath);
+    if (!exist) {
+      const fileStat = await this.filesystem.createFile(fsPath);
+      await this.filesystem.setContent(fileStat, '{\n}');
+    }
     if (fsPath) {
       this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(fsPath), { preview: false });
     }
