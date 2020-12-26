@@ -257,7 +257,7 @@ export class ExtensionTreeViewModel {
 
   // 清空其他焦点态节点，更新当前焦点节点，
   // removePreFocusedDecoration 表示更新焦点节点时如果此前已存在焦点节点，之前的节点装饰器将会被移除
-  activeNodeFocusedDecoration = (target: ExtensionTreeNode | ExtensionCompositeTreeNode, removePreFocusedDecoration: boolean = false, activeCurrent: boolean = true) => {
+  activeNodeFocusedDecoration = (target: ExtensionTreeNode | ExtensionCompositeTreeNode, removePreFocusedDecoration: boolean = false, clearSelection: boolean = false) => {
     if (target === this.treeModel.root) {
       // 根节点不能选中
       return;
@@ -279,11 +279,15 @@ export class ExtensionTreeViewModel {
         this.focusedDecoration.removeTarget(this.focusedNode);
       }
       if (target) {
-        if (activeCurrent) {
-          this.selectedDecoration.addTarget(target);
-          this._selectedNodes.push(target);
-          this.onDidSelectedNodeChangeEmitter.fire(this._selectedNodes.map((node) => node.treeItemId));
+        if (clearSelection) {
+          for (const node of this._selectedNodes) {
+            this.selectedDecoration.removeTarget(node);
+          }
+          this._selectedNodes = [];
         }
+        this.selectedDecoration.addTarget(target);
+        this._selectedNodes.push(target);
+        this.onDidSelectedNodeChangeEmitter.fire(this._selectedNodes.map((node) => node.treeItemId));
         this.focusedDecoration.addTarget(target);
         this._focusedNode = target;
         // 事件通知状态变化
@@ -612,8 +616,8 @@ export class ExtensionTreeViewModel {
           this.selectNodeDecoration(itemsToExpand as ExtensionTreeNode);
         }
         if (focus) {
-          // 给节点焦点样式但不移除选中态，相当于setFocused
-          this.activeNodeFocusedDecoration(itemsToExpand as ExtensionTreeNode, false, false);
+          // 给节点焦点样式并更新当前选中态
+          this.activeNodeFocusedDecoration(itemsToExpand as ExtensionTreeNode, false, true);
         }
       }
       for (; ExtensionCompositeTreeNode.is(itemsToExpand) && (itemsToExpand as ExtensionCompositeTreeNode).branchSize > 0 && expand > 0; expand --) {
