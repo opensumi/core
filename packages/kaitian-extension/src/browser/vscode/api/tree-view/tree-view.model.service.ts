@@ -1,13 +1,12 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, PromptValidateMessage, TreeNodeEvent, WatchEvent, TreeNode, CompositeTreeNode } from '@ali/ide-components';
-import { DisposableCollection, Emitter, PreferenceService, IContextKeyService, CommandRegistry, Deferred, ThrottledDelayer, CommandService } from '@ali/ide-core-browser';
+import { DisposableCollection, Emitter, PreferenceService, IContextKeyService, Deferred, ThrottledDelayer, CommandService } from '@ali/ide-core-browser';
 import { ExtensionCompositeTreeNode, ExtensionTreeNode, ExtensionTreeRoot } from './tree-view.node.defined';
 import * as styles from './tree-view-node.module.less';
 import { ExtensionTreeModel } from './tree-view.model';
 import { ITreeViewRevealOptions, TreeViewBaseOptions, TreeViewItem } from '../../../../common/vscode';
 import { TreeViewDataProvider } from '../main.thread.treeview';
 import { AbstractMenuService, ICtxMenuRenderer, generateCtxMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
-import { getTreeViewCollapseAllCommand } from './util';
 import { isUndefinedOrNull, isNumber } from '@ali/ide-core-common';
 
 export const IExtensionTreeViewModel = Symbol('IExtensionTreeViewModel');
@@ -78,9 +77,6 @@ export class ExtensionTreeViewModel {
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;
 
-  @Autowired(CommandRegistry)
-  private readonly commandRegistry: CommandRegistry;
-
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 
@@ -114,7 +110,7 @@ export class ExtensionTreeViewModel {
     expanded: boolean,
   }> = new Emitter();
 
-  private _isMutiSelected: boolean = false;
+  private _isMultiSelected: boolean = false;
   private refreshDelayer = new ThrottledDelayer<void>(ExtensionTreeViewModel.DEFAULT_REFRESH_DELAY);
   private revealDelayer = new ThrottledDelayer<void>(ExtensionTreeViewModel.DEFAULT_REVEAL_DELAY);
   private revealDeferred: Deferred<void> | null;
@@ -197,7 +193,6 @@ export class ExtensionTreeViewModel {
         this.selectedDecoration.addTarget(node as ExtensionTreeNode);
       }
     }));
-    this.registerCollapseAllCommand();
   }
 
   async updateTreeModel() {
@@ -399,7 +394,7 @@ export class ExtensionTreeViewModel {
     if (!this.focusedNode) {
       this.handleItemClick(item, type);
     } else if (this.focusedNode && this.focusedNode !== item) {
-      this._isMutiSelected = true;
+      this._isMultiSelected = true;
       const targetIndex = this.treeModel.root.getIndexAtTreeNode(item);
       const preFocusedNodeIndex = this.treeModel.root.getIndexAtTreeNode(this.focusedNode);
       if (preFocusedNodeIndex > targetIndex) {
@@ -411,7 +406,7 @@ export class ExtensionTreeViewModel {
   }
 
   handleItemToggleClick = (item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => {
-    this._isMutiSelected = true;
+    this._isMultiSelected = true;
     if (type !== TreeNodeType.CompositeTreeNode && type !== TreeNodeType.TreeNode) {
       return;
     }
@@ -429,7 +424,7 @@ export class ExtensionTreeViewModel {
   }
 
   handleItemClick = (item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => {
-    this._isMutiSelected = false;
+    this._isMultiSelected = false;
     // 单选操作默认先更新选中状态
     if (type === TreeNodeType.CompositeTreeNode || type === TreeNodeType.TreeNode) {
       this.activeNodeDecoration(item);
@@ -481,7 +476,7 @@ export class ExtensionTreeViewModel {
       node = this.treeModel.root as ExtensionCompositeTreeNode;
     } else {
       node = item;
-      nodes = this._isMutiSelected ? this.selectedNodes : [node];
+      nodes = this._isMultiSelected ? this.selectedNodes : [node];
     }
 
     const menuNodes = this.getCtxMenuNodes(node.contextValue);
@@ -506,7 +501,7 @@ export class ExtensionTreeViewModel {
 
     // viewItem
     const menus = this.menuService.createMenu(MenuId.ViewItemContext, viewContextKey);
-    const result = generateCtxMenu({ menus, separator: 'inline'  });
+    const result = generateCtxMenu({ menus, separator: 'inline' });
     menus.dispose();
     viewContextKey.dispose();
 
@@ -517,26 +512,7 @@ export class ExtensionTreeViewModel {
     return this.getMenuNodes(viewItemValue)[0];
   }
 
-  registerCollapseAllCommand() {
-    if (this.treeViewOptions?.showCollapseAll) {
-      // 注册真实的 command handler
-      const treeViewCollapseAllCommand = getTreeViewCollapseAllCommand(this.treeViewId);
-      if (this.commandRegistry.getCommand(treeViewCollapseAllCommand.id)) {
-        // 当插件的折叠全部命令已经被注册过时，尝试卸载上个命令
-        // 因为此时生效的Model已经不是上个命令绑定的对象了
-        this.commandRegistry.unregisterCommand(treeViewCollapseAllCommand);
-      }
-      this.disposableCollection.push(
-        this.commandRegistry.registerCommand(treeViewCollapseAllCommand, {
-          execute: () => {
-            this.collapseAll();
-          },
-        }),
-      );
-    }
-  }
-
-  collapseAll() {
+  public collapseAll() {
     this.treeModel.root.collapsedAll();
   }
 

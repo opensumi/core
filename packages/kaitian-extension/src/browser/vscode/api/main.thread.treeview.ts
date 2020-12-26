@@ -3,7 +3,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optinal } from '@ali/c
 import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { Emitter, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize } from '@ali/ide-core-browser';
+import { Emitter, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize, getIcon } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { ExtensionTabBarTreeView } from '../../components';
 import { IIconService, IconType } from '@ali/ide-theme';
@@ -11,10 +11,11 @@ import { ExtensionTreeViewModel } from './tree-view/tree-view.model.service';
 import { ExtensionCompositeTreeNode, ExtensionTreeRoot, ExtensionTreeNode } from './tree-view/tree-view.node.defined';
 import { Tree, ITreeNodeOrCompositeTreeNode } from '@ali/ide-components';
 import { IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
-import { getTreeViewCollapseAllCommand } from './tree-view/util';
 
 @Injectable({multiple: true})
 export class MainThreadTreeView implements IMainThreadTreeView {
+  static TREE_VIEW_COLLAPSE_ALL_COMMAND_ID = 'TREE_VIEW_COLLAPSE_ALL';
+
   private readonly proxy: IExtHostTreeView;
 
   @Autowired(IMainLayoutService)
@@ -41,6 +42,7 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTreeView);
     this.disposable.add(toDisposable(() => this.treeModels.clear()));
+    this._registerInternalCommands();
   }
 
   dispose() {
@@ -52,54 +54,56 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   }
 
   $registerTreeDataProvider(treeViewId: string, options: TreeViewBaseOptions): void {
-    if (!this.treeModels.has(treeViewId)) {
-      const disposable = new DisposableStore();
-      const dataProvider = new TreeViewDataProvider(treeViewId, this.proxy, this.iconService);
-      const model = this.createTreeModel(treeViewId, dataProvider, options);
-      this.treeModels.set(treeViewId, model);
-      disposable.add(toDisposable(() => this.treeModels.delete(treeViewId)));
-      this.mainLayoutService.replaceViewComponent({
-        id: treeViewId,
-        component: ExtensionTabBarTreeView,
-      }, {
-        model,
-        treeViewId,
-      });
+    if (this.treeModels.has(treeViewId)) {
+      return;
+    }
+    const disposable = new DisposableStore();
+    const dataProvider = new TreeViewDataProvider(treeViewId, this.proxy, this.iconService);
+    const model = this.createTreeModel(treeViewId, dataProvider, options);
+    this.treeModels.set(treeViewId, model);
+    disposable.add(toDisposable(() => this.treeModels.delete(treeViewId)));
+    this.mainLayoutService.replaceViewComponent({
+      id: treeViewId,
+      component: ExtensionTabBarTreeView,
+    }, {
+      model,
+      treeViewId,
+    });
 
-      const treeViewCollapseAllCommand = getTreeViewCollapseAllCommand(treeViewId);
-      disposable.add(
-        this.commandRegistry.registerCommand(treeViewCollapseAllCommand),
-      );
+    // const treeViewCollapseAllCommand = getTreeViewCollapseAllCommand(treeViewId);
+    if (options?.showCollapseAll) {
       disposable.add(
         this.menuRegistry.registerMenuItem(MenuId.ViewTitle, {
           command: {
-            id: treeViewCollapseAllCommand.id,
+            id: MainThreadTreeView.TREE_VIEW_COLLAPSE_ALL_COMMAND_ID,
             label: localize('treeview.command.action.collapse'),
           },
+          extraTailArgs: [treeViewId],
+          iconClass: getIcon('collapse-all'),
           when: `view == ${treeViewId}`,
           group: 'navigation',
           order: 10000, // keep the last position
         }),
       );
-      disposable.add(model.onDidSelectedNodeChange((treeItemIds: string[]) => {
-        dataProvider.setSelection(treeViewId, treeItemIds);
-      }));
-      disposable.add(model.onDidChangeExpansionState((state: {treeItemId: string, expanded: boolean}) => {
-        const { treeItemId, expanded } = state;
-        dataProvider.setExpanded(treeViewId, treeItemId, expanded);
-      }));
-      const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
-      if (handler) {
-        disposable.add(handler.onActivate(() => {
-          dataProvider.setVisible(treeViewId, true);
-        }));
-        disposable.add(handler.onInActivate(() => {
-          dataProvider.setVisible(treeViewId, false);
-        }));
-        disposable.add(disposable.add(toDisposable(() => handler.disposeView(treeViewId))));
-      }
-      this.disposableCollection.set(treeViewId, disposable);
     }
+    disposable.add(model.onDidSelectedNodeChange((treeItemIds: string[]) => {
+      dataProvider.setSelection(treeViewId, treeItemIds);
+    }));
+    disposable.add(model.onDidChangeExpansionState((state: {treeItemId: string, expanded: boolean}) => {
+      const { treeItemId, expanded } = state;
+      dataProvider.setExpanded(treeViewId, treeItemId, expanded);
+    }));
+    const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
+    if (handler) {
+      disposable.add(handler.onActivate(() => {
+        dataProvider.setVisible(treeViewId, true);
+      }));
+      disposable.add(handler.onInActivate(() => {
+        dataProvider.setVisible(treeViewId, false);
+      }));
+      disposable.add(disposable.add(toDisposable(() => handler.disposeView(treeViewId))));
+    }
+    this.disposableCollection.set(treeViewId, disposable);
   }
 
   $unregisterTreeDataProvider(treeViewId: string) {
@@ -122,6 +126,21 @@ export class MainThreadTreeView implements IMainThreadTreeView {
     if (treeModel) {
       treeModel.reveal(treeItemId, options);
     }
+  }
+
+  private _registerInternalCommands() {
+    this.disposable.add(
+      this.commandRegistry.registerCommand({
+        id: MainThreadTreeView.TREE_VIEW_COLLAPSE_ALL_COMMAND_ID,
+      }, {
+        execute: (treeViewId: string) => {
+          const treeModel = this.treeModels.get(treeViewId);
+          if (treeModel) {
+            treeModel.collapseAll();
+          }
+        },
+      }),
+    );
   }
 }
 
