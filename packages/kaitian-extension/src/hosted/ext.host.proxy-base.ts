@@ -78,6 +78,10 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
 
   private previouslyDisposer: IDisposable;
 
+  private connectedEmitter = new Emitter<void>();
+
+  public readonly onConnected = this.connectedEmitter.event;
+
   constructor(options?: IExtHostProxyOptions) {
     super();
     this.options = {
@@ -143,6 +147,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
     global.clearTimeout(this.reconnectingTimer);
     this.setConnection();
     this.setRPCMethods();
+    this.connectedEmitter.fire();
   }
 
   private bindEvent(): IDisposable {

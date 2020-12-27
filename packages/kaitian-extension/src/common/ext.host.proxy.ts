@@ -1,5 +1,6 @@
 import type * as net from 'net';
 import { ProxyIdentifier } from '@ali/ide-connection';
+import { Event } from '@ali/ide-core-common';
 
 /**
  * 代理服务监听的端口，可以通过 constructor 修改参数
@@ -33,8 +34,18 @@ export interface IExtServerProxyRPCService {
  * 插件进程代理进程
  */
 export interface IExtHostProxy {
+  /**
+   * 开始监听插件进程后端服务端口
+   */
   init(): void;
+  /**
+   * 销毁所有进程
+   */
   dispose(): void;
+  /**
+   * 连接成功的事件
+   */
+  onConnected: Event<void>;
 }
 
 /**

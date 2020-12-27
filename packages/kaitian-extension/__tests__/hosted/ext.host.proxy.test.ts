@@ -3,7 +3,7 @@ import { ExtHostProxy } from '../../src/hosted/ext.host.proxy-base';
 import { ExtensionHostProxyManager } from '../../src/node/extension.host.proxy.manager';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { INodeLogger } from '@ali/ide-core-node';
+import { INodeLogger, Event } from '@ali/ide-core-node';
 import * as path from 'path';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -32,7 +32,10 @@ describe(__filename, () => {
       extHostProxy = new ExtHostProxy();
       extHostProxy.init();
       extensionHostManager = injector.get<IExtensionHostManager>(IExtensionHostManager);
-      await extensionHostManager.init();
+      await Promise.all([
+        extensionHostManager.init(),
+        new Promise((resolve) => Event.once(extHostProxy.onConnected)(resolve)),
+      ]);
       // 等待 connect 连接成功
       await sleep(2000);
     });

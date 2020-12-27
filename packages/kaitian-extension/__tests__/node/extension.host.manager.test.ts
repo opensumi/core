@@ -9,4 +9,10 @@ extensionHostManagerTester({
       useClass: ExtensionHostManager,
     },
   ],
+  init: () => {
+    // noop
+  },
+  dispose: () => {
+    // noop
+  },
 });
