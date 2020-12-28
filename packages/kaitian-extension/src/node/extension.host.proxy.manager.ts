@@ -6,7 +6,7 @@ import { RPCServiceCenter, INodeLogger } from '@ali/ide-core-node';
 import { createSocketConnection, getRPCService, RPCProtocol, IRPCProtocol } from '@ali/ide-connection';
 
 @Injectable()
-export class ExtensionHostProxyManager extends Disposable implements IExtensionHostManager {
+export class ExtensionHostProxyManager implements IExtensionHostManager {
 
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
@@ -23,10 +23,11 @@ export class ExtensionHostProxyManager extends Disposable implements IExtensionH
 
   private processDisposeMap = new Map<number, IDisposable>();
 
+  private disposer = new Disposable();
+
   constructor(@Optional() private listenOptions: net.ListenOptions = {
     port: EXT_HOST_PROXY_SERVER_PROT,
   }) {
-    super();
   }
 
   async init() {
@@ -37,7 +38,7 @@ export class ExtensionHostProxyManager extends Disposable implements IExtensionH
   private startProxyServer() {
     return new Promise<net.Socket>((resolve) => {
       const server = net.createServer();
-      this.addDispose(toDisposable(() => {
+      this.disposer.addDispose(toDisposable(() => {
         this.logger.warn('dispose server');
         server.close();
       }));
@@ -59,7 +60,7 @@ export class ExtensionHostProxyManager extends Disposable implements IExtensionH
     connection.on('close', () => {
       this.extServiceProxyCenter.removeConnection(serverConnection);
     });
-    this.addDispose(toDisposable(() => {
+    this.disposer.addDispose(toDisposable(() => {
       if (!connection.destroyed) {
         connection.destroy();
       }
@@ -92,9 +93,6 @@ export class ExtensionHostProxyManager extends Disposable implements IExtensionH
     });
 
     this.extHostProxy = this.extHostProxyProtocol.getProxy(EXT_HOST_PROXY_IDENTIFIER);
-    this.addDispose(toDisposable(() => {
-      this.extHostProxy.$dispose();
-    }));
   }
 
   private addNewCallback(pid: number, callback: (...args: any[]) => void) {
@@ -103,7 +101,7 @@ export class ExtensionHostProxyManager extends Disposable implements IExtensionH
     this.processDisposeMap.set(pid, toDisposable(() => {
       this.callbackMap.delete(callId);
     }));
-    this.addDispose(toDisposable(() => {
+    this.disposer.addDispose(toDisposable(() => {
       this.processDisposeMap.delete(pid);
       this.callbackMap.delete(callId);
     }));
@@ -152,5 +150,10 @@ export class ExtensionHostProxyManager extends Disposable implements IExtensionH
       this.processDisposeMap.delete(pid);
     }
     return this.extHostProxy.$disposeProcess(pid);
+  }
+
+  async dispose() {
+    await this.extHostProxy.$dispose();
+    this.disposer.dispose();
   }
 }

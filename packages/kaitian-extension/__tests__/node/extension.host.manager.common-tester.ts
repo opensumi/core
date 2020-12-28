@@ -43,8 +43,8 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
   });
 
   afterEach(async () => {
-    await options.dispose();
     await extensionHostManager.dispose();
+    await options.dispose();
     injector.disposeAll();
   });
 
