@@ -51,6 +51,10 @@ export interface IMenuItem extends IBaseMenuItem {
   command: string | MenuCommandDesc;
   // 以下为 kaitian 拓展的属性
   /**
+   * 单个 menu 支持传入额外参数
+   */
+  extraTailArgs?: any[];
+  /**
    * 决定 toggled 状态
    * more-dropdown 中主要表现为文字左侧有一个 ✅
    * icon 则表现为 背景色选中 状态

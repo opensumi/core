@@ -45,6 +45,7 @@ export class MenuItemNode extends MenuNode {
     @Optional() checked: boolean,
     @Optional() type?: IMenuActionDisplayType,
     @Optional() nativeRole?: string,
+    @Optional() private extraTailArgs?: any[],
     @Optional() private argsTransformer?: (...args: any[]) => any[],
   ) {
     super({
@@ -74,6 +75,7 @@ export class MenuItemNode extends MenuNode {
     let runArgs = [
       ...(this._options.args || []),
       ...(args || []),
+      ...(this.extraTailArgs || []),
     ];
     // args 为 createMenu 时提供，同一个menu所有的都是同一 args
     // argsTransformer 每个 action 不同，所以先合并 args，然后再经过 transformer

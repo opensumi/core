@@ -157,7 +157,13 @@ class Menu extends Disposable implements IMenu {
           ? this.contextKeyService.match(item.toggledWhen, options.contextDom)
           : commandToggle;
 
-        const action = this.injector.get(MenuItemNode, [menuCommand, item.iconClass || command?.iconClass , options, disabled, checked, item.type, item.nativeRole, item.argsTransformer]);
+        const action = this.injector.get(
+          MenuItemNode,
+          [
+            menuCommand, item.iconClass || command?.iconClass, options,
+            disabled, checked, item.type, item.nativeRole,
+            item.extraTailArgs, item.argsTransformer,
+          ]);
         return action;
       } else {
         // 只有 label 存在值的时候才渲染
