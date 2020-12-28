@@ -6,6 +6,7 @@ import { ResourceProvider, KeybindingRegistry, KeybindingService, URI, EDITOR_CO
 import { KEYMAPS_FILE_NAME } from '@ali/ide-keymaps';
 import { USER_STORAGE_SCHEME } from '@ali/ide-preferences';
 import { KeymapsModule } from '@ali/ide-keymaps/lib/browser';
+import { IFileServiceClient } from '@ali/ide-file-service';
 
 describe('KeymapsService should be work', () => {
   let keymapsService: KeymapService;
@@ -49,6 +50,11 @@ describe('KeymapsService should be work', () => {
     acceleratorFor: jest.fn(() => (['CMD+C'])),
     validateKeybindingInScope: jest.fn(() => true),
   };
+  const mockFileServiceClient = {
+    access: jest.fn(() => false),
+    createFile: jest.fn(),
+    setContent: jest.fn(),
+  };
   let onKeybindingsChanged;
   beforeAll(() => {
     injector = createBrowserInjector([
@@ -72,6 +78,10 @@ describe('KeymapsService should be work', () => {
       {
         token: KeybindingRegistry,
         useValue: mockKeybindingRegistry,
+      },
+      {
+        token: IFileServiceClient,
+        useValue: mockFileServiceClient,
       },
     );
 

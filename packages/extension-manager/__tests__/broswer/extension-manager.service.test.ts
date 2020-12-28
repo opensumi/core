@@ -1,5 +1,5 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { EnableScope, IExtensionManagerService  } from '../../src/common';
+import { EnableScope, IExtensionManagerService, IExtension } from '../../src/common';
 import { ExtensionManagerModule } from '../../src/browser';
 import { IContextKeyService, uuid } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
@@ -13,11 +13,15 @@ import { ExtensionManagerServer } from '../../lib/node/extension-manager-server'
 describe('extension manager service test', () => {
   let injector: MockInjector;
   let extensionManagerService: IExtensionManagerService;
-  const fakePostEnableExtension = jest.fn();
-  const fakePostDisableExtension = jest.fn();
+  let fakePostEnableExtension;
+  let fakePostDisableExtension;
+  let fakeInstallExtension;
 
-  beforeEach(async (done) => {
-    injector = await createBrowserInjector([ ExtensionManagerModule ]);
+  beforeEach(() => {
+    fakePostEnableExtension = jest.fn();
+    fakePostDisableExtension = jest.fn();
+    fakeInstallExtension = jest.fn();
+    injector = createBrowserInjector([ ExtensionManagerModule ]);
 
     injector.addProviders({
       token: IContextKeyService,
@@ -51,41 +55,61 @@ describe('extension manager service test', () => {
     });
 
     injector.mockService(ExtensionManagerServerPath, {
-      'getExtensionFromMarketPlace': async (id) => {
+      installExtension: fakeInstallExtension,
+      getExtensionDeps: async (extensionId: string) => {
+         // @ts-ignore
+        const target: IExtension = extensionManagerService.extensions.find((ext) => ext.extensionId === extensionId);
+        if (target) {
+          return {
+            data: {
+              dependencies: target.packageJSON.extensionDependencies,
+            },
+          };
+        }
+      },
+      getExtensionFromMarketPlace: async (id) => {
         // @ts-ignore
         const target = extensionManagerService.extensions.find((ext) => ext.extensionId === id);
         return {
           data: {
             ...target,
-            identifier: target.extensionId,
+            identifier: target?.extensionId || id,
           },
         };
       },
     });
-
-    done();
   });
 
   afterEach(() => {
     extensionManagerService.dispose();
   });
 
-  const createFakeExtension = (opts = {}) => {
-    const ext = {
+  const createFakeExtension = (opts: Partial<IExtension>) => {
+    const enabled = opts.isUseEnable ?? opts.enabled ?? true;
+    const realPath = opts.realPath ?? opts.path ?? uuid();
+    const publisher = opts?.packageJSON?.publisher;
+    const name = opts?.packageJSON?.name;
+    const id = publisher && name ? `${publisher}.${name}` : uuid();
+    const ext: IExtension = {
+      id,
+      enableScope: EnableScope.GLOBAL,
+      isBuiltin: false,
       name: uuid(),
-      enable: true,
-      install: true,
+      isUseEnable: enabled,
+      enabled,
+      installed: true,
+      enableProposedApi: false,
       packageJSON: {},
-      path: uuid(),
-      id: uuid(),
+      extendConfig: {},
+      defaultPkgNlsJSON: {},
+      realPath,
+      packageNlsJSON: {},
+      path: realPath,
       extensionId: uuid(),
       extraMetadata: {},
-      publisher: uuid(),
-      version: '0.0.1',
+      activated: false,
       ...opts,
     };
-
-    Object.assign(ext, { isUseEnable: ext.enable, realPath: ext.path });
     // @ts-ignore
     extensionManagerService.extensions.push(ext);
     return ext;
@@ -94,12 +118,12 @@ describe('extension manager service test', () => {
   it('get enabled deps', async () => {
 
     const extA = createFakeExtension({
-      enable: true,
+      enabled: true,
       extensionId: 'a',
     });
 
     const extB = createFakeExtension({
-      enable: true,
+      enabled: true,
       extensionId: 'b',
       packageJSON: {
         extensionDependencies: [extA.extensionId],
@@ -107,12 +131,12 @@ describe('extension manager service test', () => {
     });
 
     const extC = createFakeExtension({
-      enable: true,
+      enabled: true,
       extensionId: 'c',
     });
 
     const extD = createFakeExtension({
-      enable: false,
+      enabled: false,
       extensionId: 'd',
       packageJSON: {
         extensionDependencies: [extC.extensionId],
@@ -120,7 +144,7 @@ describe('extension manager service test', () => {
     });
 
     createFakeExtension({
-      enable: true,
+      enabled: true,
       extensionId: 'e',
     });
 
@@ -142,7 +166,7 @@ describe('extension manager service test', () => {
      * 则此时的结果应该为 A - B, D - F
      */
     const extF = createFakeExtension({
-      enable: true,
+      enabled: true,
       extensionId: 'f',
       packageJSON: {
         extensionDependencies: [extD.extensionId],
@@ -158,12 +182,12 @@ describe('extension manager service test', () => {
 
   it('enable all extension', async () => {
     createFakeExtension({
-      enable: false,
+      enabled: false,
       extensionId: 'a',
     });
 
     createFakeExtension({
-      enable: false,
+      enabled: false,
       extensionId: 'b',
     });
 
@@ -177,12 +201,12 @@ describe('extension manager service test', () => {
 
   it('disable all extension', async () => {
     createFakeExtension({
-      enable: true,
+      enabled: true,
       extensionId: 'a',
     });
 
     createFakeExtension({
-      enable: true,
+      enabled: true,
       extensionId: 'b',
     });
 
@@ -196,23 +220,47 @@ describe('extension manager service test', () => {
 
   describe('Extension Pack', () => {
     it('禁用/启用 Pack, Pack 中的 Ext 也会对应的禁用/启用', async () => {
-      createFakeExtension({ name: 'subA', publisher: 'group' });
-      createFakeExtension({ name: 'subB', publisher: 'group' });
+      createFakeExtension({ name: 'subA', packageJSON: { publisher: 'group' } });
+      createFakeExtension({ name: 'subB', packageJSON: { publisher: 'group' } });
       const pack = createFakeExtension({ name: 'pack', packageJSON: {extensionPack: [
         'group.subA',
         'group.subB',
       ] }});
-
+      const packExtension = extensionManagerService.getRawExtensionById(pack.extensionId)!;
       // 启用
-      await extensionManagerService.toggleActiveExtension(pack, true, EnableScope.GLOBAL);
+      await extensionManagerService.toggleActiveExtension(packExtension, true, EnableScope.GLOBAL);
 
-      expect(fakePostEnableExtension.mock.calls.length === 3);
+      expect(fakePostEnableExtension).toBeCalledTimes(3);
 
       // 禁用
-      await extensionManagerService.toggleActiveExtension(pack, false, EnableScope.GLOBAL);
+      await extensionManagerService.toggleActiveExtension(packExtension, false, EnableScope.GLOBAL);
 
       // disable pack 时，同时会 disable pack 中的 ext
-      expect(fakePostDisableExtension.mock.calls.length === 3);
+      expect(fakePostDisableExtension).toBeCalledTimes(3);
+    });
+  });
+
+  describe('install extension', () => {
+    it('如果依赖插件已经存在则不下载', async () => {
+      // mock 一个 cloud-ide fork 的 java 插件
+      createFakeExtension({
+        extensionId: 'cloud-ide.java',
+        packageJSON: {
+          publisher: 'vscode',
+          name: 'java',
+        },
+      });
+      const { extensionId } = createFakeExtension({
+        installed: false,
+        extensionId: 'cloud-ide.debug',
+        packageJSON: {
+          extensionDependencies: ['vscode.java'],
+        },
+      });
+      const debugExtension = extensionManagerService.getRawExtensionById(extensionId)!;
+      await extensionManagerService.installExtension(debugExtension);
+      // 因为依赖的插件已经下载，所以最后下载只会触发一次
+      expect(fakeInstallExtension).toBeCalledTimes(1);
     });
   });
 

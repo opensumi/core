@@ -251,6 +251,7 @@ export class ExtHostDebug implements IExtHostDebugService {
     const debugAdapterSession = this.sessions.get(sessionId);
     if (debugAdapterSession) {
       await debugAdapterSession.stop();
+      this.onDidTerminateDebugSessionEmitter.fire(debugAdapterSession);
       this.sessions.delete(sessionId);
     }
   }
