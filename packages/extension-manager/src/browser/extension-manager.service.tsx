@@ -273,12 +273,30 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   }
 
   /**
+   * 获取插件缺失的依赖列表，该列表要重新安装
+   */
+  private async getMissExtDeps(extensionId: string, version?: string) {
+    // 获取原始的 package.json deps
+    const res = await this.extensionManagerServer.getExtensionDeps(extensionId, version);
+    const deps = res?.data?.dependencies?.map((dep) => this.transformDepsDeclaration(dep)) || [];
+    const marketplaceDeps = await Promise.all<{id: string; version: string}>(
+      // 先过滤掉 package.json 里 publisher 和 name 相同的插件
+      deps.filter((dep) => !this.extensions.some((extension) => extension.id === dep.id))
+      .map(async (dep) => ({
+        id: await this.transform2identify(dep.id, dep.version),
+        version: dep.version,
+      })),
+    );
+    return marketplaceDeps.filter((dep) => !this.installedIds.includes(dep.id));
+  }
+
+  /**
    * 获取这个插件的所有依赖
    * @param extensionId
    * @param version
    * dependencies: (string | { [key: string]: string })[]
    */
-  async getExtDeps(extensionId, version?): Promise<ExtensionDependencies> {
+  async getExtDeps(extensionId: string, version?: string): Promise<ExtensionDependencies> {
     try {
       const res = await this.extensionManagerServer.getExtensionDeps(extensionId, version);
       const identifies = await Promise.all(
@@ -324,19 +342,9 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
    * 安装某个插件的依赖插件
    */
   private async installExtensionDeps(extension: BaseExtension, version?: string): Promise<void> {
-    const deps = await this.getExtDeps(extension.extensionId, version || extension.version);
+    const deps = await this.getMissExtDeps(extension.extensionId, version || extension.version);
     for (const dep of deps) {
-
-      const {
-        id: depId,
-        version: depVersion,
-      } = this.transformDepsDeclaration(dep);
-
-      // id 和 extensionId 都要判断
-      if (this.extensions.some((extension) => extension.id === depId) || this.installedIds.includes(depId)) {
-        continue;
-      }
-      const subExtensionRes = await this.extensionManagerServer.getExtensionFromMarketPlace(depId as string, depVersion);
+      const subExtensionRes = await this.extensionManagerServer.getExtensionFromMarketPlace(dep.id, dep.version);
       const subExt = subExtensionRes?.data as BaseExtension;
 
       await this.installExtensionSingle({
