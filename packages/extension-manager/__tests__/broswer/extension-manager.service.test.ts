@@ -70,10 +70,15 @@ describe('extension manager service test', () => {
       getExtensionFromMarketPlace: async (id) => {
         // @ts-ignore
         const target = extensionManagerService.extensions.find((ext) => ext.extensionId === id);
+
+        if (!target) {
+          throw Error(`id: ${id} 404`);
+        }
+
         return {
           data: {
             ...target,
-            identifier: target?.extensionId || id,
+            identifier: target?.extensionId,
           },
         };
       },
@@ -243,6 +248,24 @@ describe('extension manager service test', () => {
   describe('install extension', () => {
     it('如果依赖插件已经存在则不下载', async () => {
       // mock 一个 cloud-ide fork 的 java 插件
+      const extensionManagerServer = injector.get(ExtensionManagerServerPath);
+      // override 默认 service
+      injector.mockService(ExtensionManagerServerPath, {
+        ...extensionManagerServer,
+        getExtensionFromMarketPlace: (id) => {
+          // mock vscode.java 可以在 vscode-extensions 里找到
+          if (id === 'vscode.java') {
+            return {
+              data: {
+                identifier: 'vscode-extensions.java',
+              },
+            };
+          } else {
+            return extensionManagerServer.getExtensionFromMarketPlace(id);
+          }
+        },
+      });
+
       createFakeExtension({
         extensionId: 'cloud-ide.java',
         packageJSON: {
@@ -259,7 +282,7 @@ describe('extension manager service test', () => {
       });
       const debugExtension = extensionManagerService.getRawExtensionById(extensionId)!;
       await extensionManagerService.installExtension(debugExtension);
-      // 因为依赖的插件已经下载，所以最后下载只会触发一次
+      // 因为依赖的插件(cloud-ide.java)已经下载，所以最后下载只会触发一次
       expect(fakeInstallExtension).toBeCalledTimes(1);
     });
   });

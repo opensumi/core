@@ -210,7 +210,7 @@ export interface IExtensionManagerServer {
   installExtension(extension: BaseExtension, version?: string): Promise<string | string[]>;
   updateExtension(extension: BaseExtension, version: string): Promise<string | string[]>;
   uninstallExtension(extension: BaseExtension): Promise<boolean>;
-  getExtensionDeps(extensionId: string, version: string): Promise<IExtensionDependenciesResFromMarketPlace | undefined>;
+  getExtensionDeps(extensionId: string, version?: string): Promise<IExtensionDependenciesResFromMarketPlace | undefined>;
   getExtensionVersions(extensionId: string): Promise<IExtensionVersion[]>;
   getExtensionsInPack(extensionId: string, version?: string): Promise<IExtensionsInPackResFromMarketPlace>;
 }
