@@ -1,4 +1,4 @@
-import { Event, Emitter, Disposable, URI, AsyncEmitter, WaitUntilEvent, CancellationToken, ILogger, getDebugLogger } from '@ali/ide-core-common';
+import { Event, Emitter, Disposable, URI, AsyncEmitter, WaitUntilEvent, CancellationToken, getDebugLogger } from '@ali/ide-core-common';
 import * as vscode from 'vscode';
 import { ExtensionDocumentDataManager, IMainThreadWorkspace, MainThreadAPIIdentifier, WorkspaceEditDto } from '../../../common/vscode';
 import { WorkspaceEdit } from '../../../common/vscode/ext-types';
@@ -111,7 +111,7 @@ export class ExtHostFileSystemEvent implements IExtHostFileSystemEvent {
   readonly onDidCreateFile: Event<vscode.FileCreateEvent> = this._onDidCreateFile.event;
   readonly onDidDeleteFile: Event<vscode.FileDeleteEvent> = this._onDidDeleteFile.event;
 
-  protected readonly logger: ILogger = getDebugLogger();
+  protected readonly logger = getDebugLogger();
 
   private readonly _proxy: IMainThreadWorkspace;
 

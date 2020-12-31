@@ -1,11 +1,12 @@
 import * as path from 'path';
 import * as net from 'net';
 import * as fs from 'fs-extra';
+import * as util from 'util';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ExtensionScanner } from './extension.scanner';
-import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData, IExtensionNodeClientService, ProcessMessageType, IExtensionHostManager } from '../common';
+import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData, IExtensionNodeClientService, ProcessMessageType, IExtensionHostManager, OutputType } from '../common';
 import { Deferred, isDevelopment, INodeLogger, AppConfig, isWindows, isElectronNode, ReporterProcessMessage, IReporter, IReporterService, REPORT_TYPE, PerformanceData, REPORT_NAME } from '@ali/ide-core-node';
-import { Event, Emitter, timeout, IReporterTimer, isUndefined } from '@ali/ide-core-common';
+import { Event, Emitter, timeout, IReporterTimer, isUndefined, SupportLogNamespace, getDebugLogger } from '@ali/ide-core-common';
 import type * as cp from 'child_process';
 
 import {
@@ -30,6 +31,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
+
+  private readonly extHostLogger = getDebugLogger(SupportLogNamespace.ExtensionHost);
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;
@@ -244,11 +247,12 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         this.clientExtProcessInspectPortMap.set(clientId, port);
         this.onDidSetInspectPort.fire();
       } else {
-        /* tslint:disable no-console */
-        console.group('Extension Host');
-        console.log(output.data, ...output.format);
-        console.groupEnd();
-        /* tslint:enable no-console */
+        // 输出插件进程日志
+        if (output.type === OutputType.STDERR) {
+          this.extHostLogger.error(util.format(output.data, ...output.format));
+        } else {
+          this.extHostLogger.log(util.format(output.data, ...output.format));
+        }
       }
     });
 

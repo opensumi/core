@@ -1,5 +1,5 @@
 import { IReporterService, ReporterMetadata, IReporter, PerformanceData, PointData, IReporterTimer, REPORT_NAME } from './types/reporter';
-import { ILogger, getDebugLogger } from './log';
+import { getDebugLogger } from './log';
 import { Injectable, Inject } from '@ali/common-di';
 import { IDisposable } from './disposable';
 
@@ -23,7 +23,7 @@ class ReporterTimer implements IReporterTimer {
 
 @Injectable()
 export class DefaultReporter implements IReporter {
-  private logger: ILogger = getDebugLogger();
+  private logger = getDebugLogger();
   performance (name: string, data: PerformanceData): void {
     this.logger.log(name, data)
   }

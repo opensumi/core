@@ -192,6 +192,7 @@ export interface ILoggerManagerClient {
  * DebugLog
  */
 export interface IDebugLog {
+  verbose(...args: any[]): void;
   log(...args: any[]): void;
   error(...args: any[]): void;
   warn(...args: any[]): void;
@@ -317,7 +318,7 @@ export interface ILogger extends ILogServiceClient {}
 /**
  * 只输出在控制台，不会落盘
  */
-export function getDebugLogger(namespace?: string): any {
+export function getDebugLogger(namespace?: string): IDebugLog {
   function showWarn() {
     // Do nothing
   }
