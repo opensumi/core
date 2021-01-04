@@ -215,8 +215,8 @@ export class TaskService extends Disposable implements ITaskService {
   private toQuickOpenItem = (task: Task | ConfiguringTask): QuickOpenItem => {
     return new QuickOpenItem({
       vlaue: task,
-      label: task._label,
-      detail: task instanceof ContributedTask ? `${task.command.name} ${task.command.args ? task.command.args?.join(' ') : ''}` : undefined,
+      label: task._label || '',
+      detail: task instanceof ContributedTask ? `${task.command.name || ''} ${task.command.args ? task.command.args?.join(' ') : ''}` : undefined,
       run: (mode: QuickOpenMode) => {
         if (mode === QuickOpenMode.OPEN) {
           this.runTask(task);

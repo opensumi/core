@@ -1,5 +1,6 @@
 import { Terminal as XTerm } from 'xterm';
 import Uri from 'vscode-uri';
+import { ITerminalClient } from './client';
 
 export const ITerminalServicePath = 'ITerminalServicePath';
 export const ITerminalNodeService = Symbol('ITerminalNodeService');
@@ -122,6 +123,8 @@ export interface TerminalOptions {
    * 自定义的参数，由上层集成方自行控制
    */
   args?: any;
+
+  beforeCreate?: (terminalId: string) => void;
 }
 
 export interface ITerminalNodeService {

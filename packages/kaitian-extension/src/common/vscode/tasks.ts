@@ -49,7 +49,7 @@ export interface IExtHostTasks {
 
   terminateTask(execution: vscode.TaskExecution): void;
 
-  $onDidStartTask(taskExecution: TaskExecutionDTO, terminalId: number): void;
+  $onDidStartTask(taskExecution: TaskExecutionDTO, terminalId: string): void;
 
   $onDidEndTask(execution: TaskExecutionDTO): void;
 
@@ -140,7 +140,7 @@ export interface TaskHandleDTO {
 export interface TaskDTO {
   _id: string;
   name?: string;
-  execution: ProcessExecutionDTO | ShellExecutionDTO | CustomExecutionDTO | CustomExecution2DTO | undefined;
+  execution: ProcessExecutionDTO | ShellExecutionDTO | CustomExecutionDTO | undefined;
   definition: TaskDefinitionDTO;
   isBackground?: boolean;
   source: TaskSourceDTO;

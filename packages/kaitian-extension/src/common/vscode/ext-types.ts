@@ -1936,7 +1936,7 @@ export class ProcessExecution implements vscode.ProcessExecution {
     return computeTaskExecutionId(props);
   }
 
-  public static is(value: ShellExecution | ProcessExecution): boolean {
+  public static is(value: ShellExecution | ProcessExecution | CustomExecution): boolean {
     const candidate = value as ProcessExecution;
     return candidate && !!candidate.process;
   }
@@ -2027,7 +2027,7 @@ export class ShellExecution implements vscode.ShellExecution {
     return computeTaskExecutionId(props);
   }
 
-  public static is(value: ShellExecution | ProcessExecution): boolean {
+  public static is(value: ShellExecution | ProcessExecution | CustomExecution): boolean {
     const candidate = value as ShellExecution;
     return candidate && (!!candidate.commandLine || !!candidate.command);
   }
@@ -2045,7 +2045,7 @@ export enum TaskScope {
 }
 
 @es5ClassCompat
-export class CustomExecution2 implements vscode.CustomExecution2 {
+export class CustomExecution2 implements vscode.CustomExecution {
   private _callback: () => Promise<vscode.Pseudoterminal>;
   constructor(callback: () => Promise<vscode.Pseudoterminal>) {
     this._callback = callback;
@@ -2065,9 +2065,8 @@ export class CustomExecution2 implements vscode.CustomExecution2 {
 
 @es5ClassCompat
 export class CustomExecution implements vscode.CustomExecution {
-  private _callback: (args: vscode.TerminalRenderer, cancellationToken: vscode.CancellationToken) => Promise<number>;
-
-  constructor(callback: (args: vscode.TerminalRenderer, cancellationToken: vscode.CancellationToken) => Promise<number>) {
+  private _callback: (resolvedDefinition?: vscode.TaskDefinition) => Thenable<vscode.Pseudoterminal>;
+  constructor(callback: (resolvedDefinition?: vscode.TaskDefinition) => Thenable<vscode.Pseudoterminal>) {
     this._callback = callback;
   }
 
@@ -2075,11 +2074,11 @@ export class CustomExecution implements vscode.CustomExecution {
     return 'customExecution' + uuid();
   }
 
-  public set callback(value: (args: vscode.TerminalRenderer, cancellationToken: vscode.CancellationToken) => Promise<number>) {
+  public set callback(value: (resolvedDefinition?: vscode.TaskDefinition) => Thenable<vscode.Pseudoterminal>) {
     this._callback = value;
   }
 
-  public get callback(): (args: vscode.TerminalRenderer, cancellationToken: vscode.CancellationToken) => Promise<number> {
+  public get callback(): ((resolvedDefinition?: vscode.TaskDefinition) => Thenable<vscode.Pseudoterminal>) {
     return this._callback;
   }
 }
@@ -2126,7 +2125,7 @@ export class Task implements vscode.Task2 {
   private _definition: TaskDefinition;
   private _scope: vscode.TaskScope.Global | vscode.TaskScope.Workspace | vscode.WorkspaceFolder | undefined;
   private _name: string;
-  private _execution: ProcessExecution | ShellExecution | CustomExecution | CustomExecution2 | undefined;
+  private _execution: ProcessExecution | ShellExecution | CustomExecution | undefined;
   private _problemMatchers: string[];
   private _hasDefinedMatchers: boolean;
   private _isBackground: boolean;
@@ -2134,9 +2133,10 @@ export class Task implements vscode.Task2 {
   private _group: TaskGroup | undefined;
   private _presentationOptions: vscode.TaskPresentationOptions;
   private _runOptions: vscode.RunOptions;
+  private _detail: string | undefined;
 
-  constructor(definition: TaskDefinition, name: string, source: string, execution?: ProcessExecution | ShellExecution | CustomExecution | vscode.CustomExecution2, problemMatchers?: string | string[]);
-  constructor(definition: TaskDefinition, scope: vscode.TaskScope.Global | vscode.TaskScope.Workspace | vscode.WorkspaceFolder, name: string, source: string, execution?: ProcessExecution | ShellExecution | CustomExecution | vscode.CustomExecution2, problemMatchers?: string | string[]);
+  constructor(definition: TaskDefinition, name: string, source: string, execution?: ProcessExecution | ShellExecution | CustomExecution | vscode.CustomExecution, problemMatchers?: string | string[]);
+  constructor(definition: TaskDefinition, scope: vscode.TaskScope.Global | vscode.TaskScope.Workspace | vscode.WorkspaceFolder, name: string, source: string, execution?: ProcessExecution | ShellExecution | CustomExecution | vscode.CustomExecution, problemMatchers?: string | string[]);
   constructor(definition: TaskDefinition, arg2: string | (vscode.TaskScope.Global | vscode.TaskScope.Workspace) | vscode.WorkspaceFolder, arg3: any, arg4?: any, arg5?: any, arg6?: any) {
     this.definition = definition;
     let problemMatchers: string | string[];
@@ -2247,19 +2247,19 @@ export class Task implements vscode.Task2 {
     this._name = value;
   }
 
-  get execution(): ProcessExecution | ShellExecution | undefined {
-    return ((this._execution instanceof CustomExecution) || (this._execution instanceof CustomExecution2)) ? undefined : this._execution;
-  }
-
-  set execution(value: ProcessExecution | ShellExecution | undefined) {
-    this.execution2 = value;
-  }
-
-  get execution2(): ProcessExecution | ShellExecution | CustomExecution | CustomExecution2 | undefined {
+  get execution(): ProcessExecution | ShellExecution | CustomExecution | undefined {
     return this._execution;
   }
 
-  set execution2(value: ProcessExecution | ShellExecution | CustomExecution | CustomExecution2 | undefined) {
+  set execution(value: ProcessExecution | ShellExecution | CustomExecution | undefined) {
+    this.execution2 = value;
+  }
+
+  get execution2(): ProcessExecution | ShellExecution | CustomExecution | undefined {
+    return this._execution;
+  }
+
+  set execution2(value: ProcessExecution | ShellExecution | CustomExecution | undefined) {
     if (value === null) {
       value = undefined;
     }
@@ -2326,6 +2326,17 @@ export class Task implements vscode.Task2 {
     }
     this.clear();
     this._group = value;
+  }
+
+  get detail(): string | undefined {
+    return this._detail;
+  }
+
+  set detail(value: string | undefined) {
+    if (value === null) {
+      value = undefined;
+    }
+    this._detail = value;
   }
 
   get presentationOptions(): vscode.TaskPresentationOptions {

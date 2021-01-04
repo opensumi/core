@@ -41,7 +41,7 @@ export class TerminalInternalService implements ITerminalInternalService {
     if (options.isExtensionTerminal) {
       const proxy = new TerminalProcessExtHostProxy(sessionId, cols, rows, this.controller);
       proxy.start();
-      proxy.onProcessExit(() => {
+      proxy.onProcessExit((code) => {
         this._processExtHostProxies.delete(sessionId);
       });
       this._processExtHostProxies.set(sessionId, proxy);
