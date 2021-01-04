@@ -329,6 +329,8 @@ export const localizationBundle = {
     'common.find': 'Find',
     'common.replace': 'Replace',
 
+    'component.message.origin': 'Origin',
+
     'preference.tab.user': 'Global Settings',
     'preference.tab.workspace': 'Workspace Settings',
 
