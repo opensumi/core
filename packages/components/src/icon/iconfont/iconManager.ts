@@ -22,6 +22,9 @@ const typoIconMap = {
   'terminate1': 'terminate',
   'stop1': 'stop',
   'add': 'plus',
+  // removed duplicated icons
+  'pause': 'stop',
+  'continue': 'start',
 };
 
 const _defaultIconMap = Object.assign({}, defaultIconfont, typoIconMap);
