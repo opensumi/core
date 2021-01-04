@@ -16,7 +16,7 @@ export class ExtensionLogger2 {
     this.injectLogService();
 
     this.loggerManager =  this.injector.get(LogServiceManager);
-    this.logger = this.loggerManager.getLogger(SupportLogNamespace.ExtensionHost);
+    this.logger = this.loggerManager.getLogger(SupportLogNamespace.ExtensionHost, this.config);
   }
 
   injectLogService() {

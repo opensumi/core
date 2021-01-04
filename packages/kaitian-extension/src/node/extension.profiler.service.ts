@@ -30,7 +30,7 @@ export class ExtensionProfilerService extends RPCService implements IExtensionHo
     this.logger.verbose(`Try enable inspect port for ${clientId}`);
     const enabled = await this.extensionService.tryEnableInspectPort(clientId);
     if (enabled) {
-      const inspectPort = this.extensionService.getProcessInspectPort(clientId);
+      const inspectPort = await this.extensionService.getProcessInspectPort(clientId);
       if (inspectPort && typeof inspectPort === 'number') {
         const session = await this.doStartProfiler(inspectPort);
         this.sessionMap.set(clientId, session);

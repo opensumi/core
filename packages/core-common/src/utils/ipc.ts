@@ -2,14 +2,12 @@ import { tmpdir } from 'os';
 import { isWindows } from '../platform';
 import { join, dirname } from 'path';
 import { uuid } from '../uuid';
-import { isOSX } from './os';
 import { ensureDirSync } from 'fs-extra';
 
-export function normalizedIpcHandlerPath(name: string, uuidSuffix: boolean = false) {
+export function normalizedIpcHandlerPath(name: string, uuidSuffix: boolean = false, ipcPath = tmpdir()) {
   let handler;
-  const temp = tmpdir();
   if (!isWindows) {
-    handler = join(temp, 'kaitian-ipc',
+    handler = join(ipcPath, 'kaitian-ipc',
       `kaitian-ipc-${name}${ uuidSuffix? uuid() : ''}.sock`);
     ensureDirSync(dirname(handler));
   } else {

@@ -6,8 +6,9 @@ import { AppConfig, INodeLogger, IReporterService } from '@ali/ide-core-node';
 
 import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IExtensionNodeService, IExtensionNodeClientService } from '../../src/common';
+import { IExtensionNodeService, IExtensionNodeClientService, IExtensionHostManager } from '../../src/common';
 import { ExtensionServiceClientImpl } from '../../src/node/extension.service.client';
+import { ExtensionHostManager } from '../../src/node/extension.host.manager';
 
 describe('Extension Serivce', () => {
   let injector: Injector;
@@ -16,7 +17,6 @@ describe('Extension Serivce', () => {
   const testExtId = 'kaitian.ide-dark-theme';
   const testExtPath = 'kaitian.ide-dark-theme-1.13.1';
   const testExtReadme = '# IDE Dark Theme';
-  const extProcessHandler = jest.fn((_process) => _process);
 
   beforeAll(async (done) => {
     injector = createNodeInjector([]);
@@ -27,7 +27,6 @@ describe('Extension Serivce', () => {
           extensionDir,
           ignoreId: [],
         },
-        onDidCreateExtensionHostProcess: extProcessHandler,
       },
     }, {
       token: IReporterService,
@@ -63,10 +62,20 @@ describe('Extension Serivce', () => {
         token: IExtensionNodeClientService,
         useClass: ExtensionServiceClientImpl,
       },
+      {
+        token: IExtensionHostManager,
+        useClass: ExtensionHostManager,
+      },
     );
 
     extensionService = injector.get(IExtensionNodeService);
     done();
+  });
+
+  afterAll(async () => {
+    const extensionHostManager = injector.get(IExtensionHostManager);
+    await extensionHostManager.dispose();
+    injector.disposeAll();
   });
 
   describe('get all extensions', () => {
@@ -100,22 +109,12 @@ describe('Extension Serivce', () => {
 
   describe('extension host process', () => {
 
-    it('emit extension host process', async (done) => {
-      const mockClientId = 'mock_id' + Math.random();
-      await extensionService.createProcess(mockClientId);
-      expect(extProcessHandler).toBeCalled();
-      expect(extProcessHandler).toHaveReturned();
-      done();
-    });
-
-    it('should create extension host process', async (done) => {
+    it('should create extension host process', async () => {
       const mockExtClientId = 'mock_id' + Math.random();
-      const extProcess = await extensionService.createProcess(mockExtClientId);
-      expect(extProcess).toBeDefined();
-      const port = extensionService.getProcessInspectPort(mockExtClientId);
+      await extensionService.createProcess(mockExtClientId);
+      const port = await extensionService.getProcessInspectPort(mockExtClientId);
       expect(port).toBeUndefined();
       await extensionService.disposeClientExtProcess(mockExtClientId, true);
-      done();
     });
 
     it.skip('enable extProcess inspect port', async (done) => {
@@ -129,20 +128,19 @@ describe('Extension Serivce', () => {
       const res = await extensionService.tryEnableInspectPort(mockExtClientId, 2000);
       expect(res).toBeTruthy();
 
-      const port = extensionService.getProcessInspectPort(mockExtClientId);
+      const port = await extensionService.getProcessInspectPort(mockExtClientId);
       expect(typeof port).toBe('number');
       await extensionService.disposeClientExtProcess(mockExtClientId, true);
       done();
     });
 
-    it('create extension host process with develop mode', async (done) => {
+    it('create extension host process with develop mode', async () => {
       (global as any).isDev = 1;
       const mockExtClientId = 'mock_id' + Math.random();
-      const extProcess = await extensionService.createProcess(mockExtClientId);
-      expect(extProcess).toBeDefined();
-      const port = extensionService.getProcessInspectPort(mockExtClientId);
-      expect(port).toBe(9889);
-      done();
+      await extensionService.createProcess(mockExtClientId);
+      const port = await extensionService.getProcessInspectPort(mockExtClientId);
+      expect(typeof port).toBe('number');
+      await extensionService.disposeClientExtProcess(mockExtClientId, false);
     });
   });
 

@@ -3,7 +3,7 @@ import { CancellationToken } from '@ali/vscode-jsonrpc';
 import URI, { UriComponents } from 'vscode-uri';
 import {
   asPromise, comparePaths, sortedDiff, debounce,
-  Event, Emitter, ILogger, getDebugLogger,
+  Event, Emitter, getDebugLogger,
   DisposableStore, MutableDisposable,
 } from '@ali/ide-core-common';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
@@ -531,7 +531,7 @@ class ExtHostSourceControl implements vscode.SourceControl {
 }
 
 export class ExtHostSCM implements IExtHostSCMShape {
-  protected readonly logger: ILogger = getDebugLogger();
+  protected readonly logger = getDebugLogger();
 
   private static _handlePool: number = 0;
 

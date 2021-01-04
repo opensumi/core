@@ -1,0 +1,67 @@
+import { IExtHostProxy, IExtensionHostManager, EXT_HOST_PROXY_SERVER_PROT } from '../../src/common';
+import { ExtHostProxy } from '../../src/hosted/ext.host.proxy-base';
+import { ExtensionHostProxyManager } from '../../src/node/extension.host.proxy.manager';
+import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { INodeLogger, Event } from '@ali/ide-core-node';
+import * as path from 'path';
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+describe(__filename, () => {
+  describe('extension host proxy', () => {
+    const extHostPath = path.join(__dirname, '../__mock__/ext.host.js');
+    let injector: MockInjector;
+    let extHostProxy: IExtHostProxy;
+    let extensionHostManager: IExtensionHostManager;
+    beforeEach(async () => {
+      injector = createNodeInjector([]);
+      injector.addProviders({
+        token: INodeLogger,
+        useValue: {
+          /* tslint:disable */
+          log: console.log,
+          error: console.error,
+          warn: console.warn,
+          /* tslint:enable */
+        },
+      }, {
+        token: IExtensionHostManager,
+        useClass: ExtensionHostProxyManager,
+      });
+      extHostProxy = new ExtHostProxy();
+      extHostProxy.init();
+      extensionHostManager = injector.get<IExtensionHostManager>(IExtensionHostManager);
+      await Promise.all([
+        extensionHostManager.init(),
+        new Promise((resolve) => Event.once(extHostProxy.onConnected)(resolve)),
+      ]);
+      // 等待 connect 连接成功
+      await sleep(2000);
+    });
+
+    afterEach(async () => {
+      await extensionHostManager.dispose();
+      extHostProxy.dispose();
+    });
+
+    it('retry connect if server close', async () => {
+      // 断开服务器
+      await extensionHostManager.dispose();
+      // 等待 3s 让插件进程管理进程持续重试
+      await sleep(3000);
+      // 重新启动 IDE 后端
+      // 传入构造函数参数，以便重新生成 di 实例
+      extensionHostManager = injector.get(ExtensionHostProxyManager, [{
+        port: EXT_HOST_PROXY_SERVER_PROT,
+      }]);
+      await extensionHostManager.init();
+      // 等待连接成功
+      await sleep(2000);
+      // // 还是可以正常 fork 插件进程
+      const pid = await extensionHostManager.fork(extHostPath);
+      expect(typeof pid).toBe('number');
+      expect(await extensionHostManager.isRunning(pid)).toBeTruthy();
+    }, 10000);
+  });
+});

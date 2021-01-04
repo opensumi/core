@@ -5,7 +5,7 @@ import * as extHostTypeConverter from '../../../common/vscode/converter';
 import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor, ICommandHandlerDescription, CommandHandler } from '../../../common/vscode';
 import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
 import { validateConstraint, isFunction } from '@ali/ide-core-common/lib/utils/types';
-import { ILogger, getDebugLogger, revive, toDisposable, DisposableStore, isNonEmptyArray, IExtensionInfo } from '@ali/ide-core-common';
+import { getDebugLogger, revive, toDisposable, DisposableStore, isNonEmptyArray, IExtensionInfo } from '@ali/ide-core-common';
 import { ExtensionHostEditorService } from './editor/editor.host';
 import { ObjectIdentifier } from './language/util';
 import { CommandDto } from '../../../common/vscode/scm';
@@ -76,7 +76,7 @@ export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extH
 export class ExtHostCommands implements IExtHostCommands {
   protected readonly proxy: IMainThreadCommands;
   protected readonly rpcProtocol: IRPCProtocol;
-  protected readonly logger: ILogger = getDebugLogger();
+  protected readonly logger = getDebugLogger();
   protected readonly commands = new Map<string, CommandHandler<any>>();
   protected readonly argumentProcessors: ArgumentProcessor[] = [];
   public converter: CommandsConverter;

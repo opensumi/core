@@ -1,9 +1,10 @@
 import { Provider, Injectable, Autowired } from '@ali/common-di';
 import { NodeModule, ServerAppContribution, Domain, INodeLogger } from '@ali/ide-core-node';
-import { IExtensionNodeService, ExtensionNodeServiceServerPath, IExtensionNodeClientService, ExtensionHostProfilerServicePath, ExtensionHostProfilerServiceToken } from '../common';
+import { IExtensionNodeService, ExtensionNodeServiceServerPath, IExtensionNodeClientService, ExtensionHostProfilerServicePath, ExtensionHostProfilerServiceToken, IExtensionHostManager } from '../common';
 import { ExtensionNodeServiceImpl } from './extension.service';
 import { ExtensionServiceClientImpl } from './extension.service.client';
 import { ExtensionProfilerService } from './extension.profiler.service';
+import { ExtensionHostManager } from './extension.host.manager';
 
 @Injectable()
 export class KaitianExtensionModule extends NodeModule {
@@ -19,6 +20,10 @@ export class KaitianExtensionModule extends NodeModule {
     {
       token: ExtensionHostProfilerServiceToken,
       useClass: ExtensionProfilerService,
+    },
+    {
+      token: IExtensionHostManager,
+      useClass: ExtensionHostManager,
     },
     KaitianExtensionContribution,
   ];
@@ -44,18 +49,12 @@ export class KaitianExtensionContribution implements ServerAppContribution {
   logger;
 
   async initialize() {
-    // await (this.extensionNodeService as any).preCreateProcess();
-    // console.log('kaitian ext pre create process');
-
-    await (this.extensionNodeService as any).setExtProcessConnectionForward();
-    this.logger.verbose('kaitian ext setExtProcessConnectionForward');
+    await this.extensionNodeService.initialize();
+    this.logger.verbose('kaitian ext initialize');
   }
 
   async onStop() {
-    if (process.env.KTELECTRON) {
-      const clientId = process.env.CODE_WINDOW_CLIENT_ID as string;
-      await this.extensionNodeService.disposeClientExtProcess(clientId, true);
-      this.logger.warn('kaitian extension exit by server stop');
-    }
+    await this.extensionNodeService.disposeAllClientExtProcess();
+    this.logger.warn('kaitian extension exit by server stop');
   }
 }
