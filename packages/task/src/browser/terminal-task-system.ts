@@ -160,6 +160,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
   public reset() {
     this.disposableCollection.dispose();
     this.taskStatus = TaskStatus.PROCESS_INIT;
+    this.exitDefer = new Deferred();
   }
 }
 
