@@ -35,6 +35,7 @@ export class MockExtNodeClientService implements IExtensionNodeClientService {
     throw new Error('Method not implemented.');
   }
   updateLanguagePack(languageId: string, languagePackPath: string): Promise<void> {
-    throw new Error('Method not implemented.');
+    process.env['TEST_KAITIAN_LANGUAGE_ID'] = languageId;
+    return Promise.resolve();
   }
 }
