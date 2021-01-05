@@ -4,7 +4,7 @@ import { IWorkspaceService, IWorkspaceStorageService } from '@ali/ide-workspace'
 import { URI } from '@ali/ide-core-common';
 import { WorkspaceModule } from '../../src/browser';
 import { FileStat } from '@ali/ide-file-service';
-import { LocalStorageService } from '@ali/ide-core-browser/lib/services';
+import { GlobalBrowserStorageService } from '@ali/ide-core-browser/lib/services';
 
 describe('WorkspaceStorageService should be work', () => {
   let workspaceStorageService: IWorkspaceStorageService;
@@ -29,7 +29,7 @@ describe('WorkspaceStorageService should be work', () => {
       WorkspaceModule,
     ]);
     injector.overrideProviders({
-      token: LocalStorageService,
+      token: GlobalBrowserStorageService,
       useValue: mockLocalStorageService,
     });
     injector.overrideProviders({

@@ -59,4 +59,5 @@ renderApp({
   //   },
   // ],
   // allowSetDocumentTitleFollowWorkspaceDir: true,
+  // preferenceDirName: '.vsc',
 });
