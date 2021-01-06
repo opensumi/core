@@ -2,11 +2,12 @@ import type * as vscode from 'vscode';
 import * as path from 'path';
 import { IExtendProxy, IExtensionHost } from '../../../common';
 import { ExtensionMemento, ExtHostStorage } from './ext.host.storage';
-import { URI } from '@ali/ide-core-common/lib/uri';
+import { URI, Uri } from '@ali/ide-core-common/lib/uri';
 
 export interface IKTContextOptions {
   extensionId: string;
   extensionPath: string;
+  extensionUri: Uri;
   storageProxy: ExtHostStorage;
   extendProxy?: IExtendProxy;
   registerExtendModuleService?: (exportsData: any) => void;
@@ -59,6 +60,8 @@ export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
 
   private _resolveStaticResource: (uri: URI) => Promise<URI>;
 
+  readonly extensionUri: Uri;
+
   constructor(
     options: IKTWorkerExtensionContextOptions,
   ) {
@@ -71,6 +74,7 @@ export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
     this.globalState = new ExtensionMemento(extensionId, true, storageProxy);
     this.registerExtendModuleService = registerExtendModuleService;
     this._resolveStaticResource = options.resolveStaticResource;
+    this.extensionUri = options.extensionUri;
   }
 
   get globalStoragePath() {

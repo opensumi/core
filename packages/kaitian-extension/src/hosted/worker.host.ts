@@ -1,4 +1,4 @@
-import { Emitter, Deferred, IExtensionProps, URI } from '@ali/ide-core-common';
+import { Emitter, Deferred, IExtensionProps, URI, Uri } from '@ali/ide-core-common';
 import {
   RPCProtocol, ProxyIdentifier,
 } from '@ali/ide-connection';
@@ -82,8 +82,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
         this.mainThreadExtensionService,
         this.getExtensionExports(ext.id),
       );
-    })
-    .filter((e) => !!e.workerScriptPath);
+    });
   }
 
   getExtension(extensionId: string) {
@@ -103,7 +102,11 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
   public async $initExtensions() {
     await this.init();
 
-    this.extensions = await this.mainThreadExtensionService.$getExtensions();
+    const extensions = await this.mainThreadExtensionService.$getExtensions();
+    this.extensions = extensions.map((ext) => ({
+      ...ext,
+      extensionLocation: Uri.from(ext.extensionLocation),
+    }));
     this.logger.verbose('worker $initExtensions', this.extensions.map((extension) => {
       return extension.packageJSON.name;
     }));
@@ -219,6 +222,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
       staticServicePath: this.staticServicePath,
       storageProxy: this.storage,
       resolveStaticResource,
+      extensionUri: extension.extensionLocation,
     });
 
     return Promise.all([

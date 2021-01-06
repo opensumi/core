@@ -6,7 +6,7 @@ import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.
 import { MockInjector } from '@ali/ide-dev-tool/src/mock-injector';
 import { ExtensionService } from '@ali/ide-kaitian-extension';
 import { ExtensionServiceImpl } from '@ali/ide-kaitian-extension/lib/browser/extension.service';
-import { Disposable, StorageProvider } from '@ali/ide-core-common';
+import { Disposable, StorageProvider, Uri } from '@ali/ide-core-common';
 import { ExtensionManagerServerPath } from '../../lib';
 import { ExtensionManagerServer } from '../../lib/node/extension-manager-server';
 
@@ -113,6 +113,7 @@ describe('extension manager service test', () => {
       extensionId: uuid(),
       extraMetadata: {},
       activated: false,
+      extensionLocation: Uri.file(realPath),
       ...opts,
     };
     // @ts-ignore

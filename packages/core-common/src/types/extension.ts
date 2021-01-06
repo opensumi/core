@@ -1,4 +1,5 @@
 import { BasicEvent } from '../event-bus';
+import { Uri } from '../uri'
 
 export class ExtensionCandiDate {
   path: string;
@@ -51,6 +52,7 @@ export interface IExtensionProps extends IExtensionInfo {
   readonly extendConfig: JSONType;
   readonly enableProposedApi: boolean;
   readonly isUseEnable: boolean;
+  readonly extensionLocation: Uri
   workerVarId?: string;
   workerScriptPath?: string;
 }
