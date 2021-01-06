@@ -4,7 +4,7 @@ import { ExtensionCandiDate } from './types';
 
 export interface IElectronMainApi<Events> {
 
-  on(event: Events, listener: (...args) => void) :IDisposable;
+  on(event: Events, listener: (...args) => void): IDisposable;
 
 }
 
@@ -14,7 +14,7 @@ export interface IElectronPlainWebviewWindowOptions extends Electron.BrowserWind
 
 export interface IElectronMainUIServiceShape {
 
-  openItem(path: string): void;
+  openPath(path: string): Promise<string>;
 
   openExternal(uri: string): void;
 
@@ -26,9 +26,9 @@ export interface IElectronMainUIServiceShape {
 
   isFullScreen(windowId: number): Promise<boolean>;
 
-  showOpenDialog(windowId: number, options:Electron.OpenDialogOptions ): Promise<string[] | undefined>;
+  showOpenDialog(windowId: number, options: Electron.OpenDialogOptions): Promise<string[] | undefined>;
 
-  showSaveDialog(windowId: number, options:Electron.SaveDialogOptions ): Promise<string | undefined>;
+  showSaveDialog(windowId: number, options: Electron.SaveDialogOptions): Promise<string | undefined>;
 
   setZoomFactor(webContentsId: number, options: { value?: number, delta?: number; }): void;
 
@@ -68,7 +68,7 @@ export interface IElectronMainUIServiceShape {
    * @param windowId
    * @param size
    */
-  setSize(windowId: number,  size: { width: number; height: number; }): Promise<void>;
+  setSize(windowId: number, size: { width: number; height: number; }): Promise<void>;
 
 
   /**
@@ -76,7 +76,7 @@ export interface IElectronMainUIServiceShape {
    * @param windowId
    * @param flag
    */
-  setAlwaysOnTop(windowId: number,  flag: boolean): Promise<void>;
+  setAlwaysOnTop(windowId: number, flag: boolean): Promise<void>;
 
   /**
    * 让一个指定的 browserWindow 加载一个url

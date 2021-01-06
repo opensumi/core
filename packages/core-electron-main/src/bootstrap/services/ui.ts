@@ -31,6 +31,9 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
       window.getBrowserWindow().on('unmaximize', () => {
         this.fireMaximizeChangedEvent(window.getBrowserWindow().id, false);
       });
+      window.getBrowserWindow().on('resized', () => {
+        this.fireMaximizeChangedEvent(window.getBrowserWindow().id, false);
+      });
     });
   }
 
@@ -43,19 +46,21 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
   }
 
   async isFullScreen(windowId: number) {
-    return BrowserWindow.fromId(windowId).isFullScreen();
+    const win = BrowserWindow.fromId(windowId);
+    return win ? win.isFullScreen() : false;
   }
 
   async isMaximized(windowId: number) {
-    return BrowserWindow.fromId(windowId).isMaximized();
+    const win = BrowserWindow.fromId(windowId);
+    return win ? win.isMaximized() : false;
   }
 
   async maximize(windowId: number) {
-    BrowserWindow.fromId(windowId).maximize();
+    BrowserWindow.fromId(windowId)?.maximize();
   }
 
-  async openItem(path: string) {
-    shell.openItem(path);
+  async openPath(path: string) {
+    return shell.openPath(path);
   }
 
   async openExternal(uri: string) {
@@ -106,7 +111,11 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
             resolve(paths);
           });
         } else {
-          dialog.showOpenDialog(BrowserWindow.fromId(windowId), options).then((value) => {
+          const win = BrowserWindow.fromId(windowId);
+          if (!win) {
+            return reject(new Error(`BrowserWindow ${windowId} not found`));
+          }
+          dialog.showOpenDialog(win, options).then((value) => {
             if (value.canceled) {
               resolve(undefined);
             } else {
@@ -127,7 +136,11 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
             resolve(path);
           });
         } else {
-          dialog.showSaveDialog(BrowserWindow.fromId(windowId), options).then((value) => {
+          const win = BrowserWindow.fromId(windowId);
+          if (!win) {
+            return reject(new Error(`BrowserWindow ${windowId} not found`));
+          }
+          dialog.showSaveDialog(win, options).then((value) => {
             if (value.canceled) {
               resolve(undefined);
             } else {
