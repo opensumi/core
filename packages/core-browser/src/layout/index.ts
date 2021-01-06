@@ -56,7 +56,7 @@ export interface View {
   priority?: number;
   collapsed?: boolean;
   hidden?: boolean;
-  component?: React.FunctionComponent<any>;
+  component?: React.ComponentType<any>;
   // 使用该参数时, view 的 toolbar 默认不渲染
   noToolbar?: boolean;
   initialProps?: any;
@@ -80,11 +80,11 @@ export interface ExtViewContainerOptions {
   hidden?: boolean;
   badge?: string;
   // 直接使用自定义的React组件，会失去一些对面板的控制能力
-  component?: React.FunctionComponent;
+  component?: React.ComponentType<any>;
   // 使用自定义组件时可以传入，否则请作为View的一部分传入
   initialProps?: object;
   // 自定义标题组件
-  titleComponent?: React.FunctionComponent;
+  titleComponent?: React.ComponentType<any>;
   // 自定义titleComponent时可选传入
   titleProps?: object;
   // 若views为空，则不显示该container
