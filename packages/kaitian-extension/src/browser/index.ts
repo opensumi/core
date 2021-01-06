@@ -232,6 +232,7 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
         await this.commandService.executeCommand(FILE_COMMANDS.COPY_RELATIVE_PATH.id, URI.from(uri));
       },
     });
+    registry.registerCommand(BUILTIN_COMMANDS.SETTINGS_COMMAND_OPEN_SETTINGS);
   }
 
   asQuickOpenItems(activated: { node?: ActivatedExtension[] | undefined; worker?: ActivatedExtension[] | undefined; }): QuickOpenItem<QuickOpenItemOptions>[] {

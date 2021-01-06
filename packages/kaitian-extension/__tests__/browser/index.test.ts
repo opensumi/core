@@ -8,6 +8,7 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { ExtensionNodeServiceServerPath, IExtensionNodeClientService } from '../../src';
 import { WSChannelHandler } from '@ali/ide-connection';
 import { uuid } from '@ali/ide-core-common';
+import { PreferenceContribution } from '@ali/ide-preferences/lib/browser/preference-contribution';
 
 describe(__filename, () => {
   let injector: MockInjector;
@@ -18,6 +19,7 @@ describe(__filename, () => {
     injector = createBrowserInjector([]);
     injector.overrideProviders(
       KaitianExtensionClientAppContribution,
+      PreferenceContribution,
       FileTreeContribution,
       {
         token: IClipboardService,
@@ -62,8 +64,11 @@ describe(__filename, () => {
     const commandRegistry = injector.get<CommandRegistry>(CommandRegistry);
     kaitianExtensionClientAppContribution = injector.get(KaitianExtensionClientAppContribution);
     const fileTreeContribution = injector.get(FileTreeContribution);
+    const preferenceContribution = injector.get(PreferenceContribution);
     kaitianExtensionClientAppContribution.registerCommands(commandRegistry);
     fileTreeContribution.registerCommands(commandRegistry);
+
+    preferenceContribution.registerCommands(commandRegistry);
     commandService = injector.get<CommandService>(CommandService);
   });
 
@@ -96,5 +101,15 @@ describe(__filename, () => {
     // trigger close
     kaitianExtensionClientAppContribution.onStop();
     expect(extensionNodeClientService.disposeClientExtProcess).toBeCalled();
+  });
+
+  it('workbench.action.openSettings', async (done) => {
+    const commandRegistry = injector.get<CommandRegistry>(CommandRegistry);
+    commandRegistry.beforeExecuteCommand((command, args) => {
+      expect(command).toBe('core.openpreference');
+      done();
+      return args;
+    });
+    commandService.executeCommand('workbench.action.openSettings');
   });
 });
