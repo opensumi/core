@@ -203,6 +203,9 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
   private onChangeContextEvent = new Emitter<any>();
   public onChangeContext = this.onChangeContextEvent.event;
 
+  private _onDidChangePopoverVisibility = new Emitter<boolean>();
+  public onDidChangePopoverVisibility = this._onDidChangePopoverVisibility.event;
+
   private popOverContainer: HTMLDivElement | undefined;
 
   private _popOverElement: Promise<HTMLDivElement> | undefined;
@@ -327,6 +330,7 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
       if (this.popOverContainer && ele.parentElement !== this.popOverContainer) {
         this.popOverContainer.append(ele);
       }
+      this._onDidChangePopoverVisibility.fire(true);
       if (mergedStyle.hideOnClickOutside !== false) {
         setTimeout(() => {
           const disposer = new Disposable();
@@ -354,7 +358,12 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
       ele.remove();
       this._popOverElement = undefined;
     }
+    if (this._popOverClickOutsideDisposer) {
+      this._popOverClickOutsideDisposer.dispose();
+      this._popOverClickOutsideDisposer = undefined;
+    }
     this.popOverContainer && this.popOverContainer.classList.remove('kt-toolbar-popover-visible');
+    this._onDidChangePopoverVisibility.fire(false);
   }
 
 }
