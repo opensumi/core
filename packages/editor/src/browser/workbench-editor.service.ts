@@ -1055,7 +1055,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
       if (activeOpenType.type === 'code') {
         await this.codeEditorReady.promise;
-        await this.codeEditor.open(await this.getDocumentModelRef(resource.uri), options.range ? new monaco.Range(options.range.startLineNumber!, options.range.startColumn!, options.range.startLineNumber!, options.range.startColumn!) : undefined);
+        await this.codeEditor.open(await this.getDocumentModelRef(resource.uri), options.range ? new monaco.Range(options.range.startLineNumber!, options.range.startColumn!, options.range.endLineNumber!, options.range.endColumn!) : undefined);
         if (options.focus) {
           this._domNode?.focus();
           this.codeEditor.focus();

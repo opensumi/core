@@ -347,6 +347,7 @@ export class SearchTreeService {
         new URI(result.fileUri),
         {
           preview: isPreview,
+          focus: !isPreview,
           range: {
             startLineNumber: result.line,
             startColumn: result.matchStart,
