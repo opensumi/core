@@ -2,21 +2,7 @@ import * as React from 'react';
 import { Injectable } from '@ali/common-di';
 import { IMessageService, AbstractMessageService, MAX_MESSAGE_LENGTH } from '../common';
 import { notification, open } from '@ali/ide-components';
-import { MessageType, uuid } from '@ali/ide-core-common';
-import * as styles from './message.module.less';
-
-const OriginalMessage = ({ message, from }: { message: string | React.ReactNode; from: string }) => {
-  return (
-    <>
-      <div className={styles.message_origin}>
-        {message}
-      </div>
-      <span className={styles.origin}>
-        来源: {from}
-      </span>
-    </>
-  );
-};
+import { MessageType, uuid, localize } from '@ali/ide-core-common';
 
 @Injectable()
 export class MessageService extends AbstractMessageService implements IMessageService {
@@ -39,7 +25,7 @@ export class MessageService extends AbstractMessageService implements IMessageSe
 
   /**
    *
-   * @param rawMessage messgae
+   * @param rawMessage message
    * @param type MessageType
    * @param buttons buttons
    * @param closable true | false
@@ -56,11 +42,9 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     if (typeof rawMessage === 'string' && rawMessage.length > MAX_MESSAGE_LENGTH) {
       message = `${rawMessage.substr(0, MAX_MESSAGE_LENGTH)}...`;
     }
-    if (from && typeof from === 'string') {
-      message = <OriginalMessage message={message} from={from} />;
-    }
+    const description = from && typeof from === 'string' ? `${localize('component.message.origin')}: ${from}` : '';
     const key = uuid();
-    const promise = open<T>(message, type, closable, key, buttons);
+    const promise = open<T>(message, type, closable, key, buttons, description);
     return promise || Promise.resolve(undefined);
   }
 

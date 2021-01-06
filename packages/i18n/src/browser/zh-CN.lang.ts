@@ -404,6 +404,8 @@ export const localizationBundle = {
     'common.find': '查找',
     'common.replace': '替换',
 
+    'component.message.origin': '来源',
+
     'preference.tab.user': '全局设置',
     'preference.tab.workspace': '工作区设置',
 
