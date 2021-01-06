@@ -1,11 +1,9 @@
-import { localize } from '@ali/ide-core-common';
-
 export namespace TERMINAL_COMMANDS {
-  const CATEGORY = localize('terminal.name');
+  const CATEGORY = '%terminal.name%';
 
   export const SPLIT = {
     id: 'terminal.split',
-    label: localize('terminal.split'),
+    label: '%terminal.split%',
     category: CATEGORY,
   };
 
@@ -23,19 +21,19 @@ export namespace TERMINAL_COMMANDS {
 
   export const CLEAR = {
     id: 'terminal.clear',
-    label: localize('terminal.clear'),
+    label: '%terminal.clear%',
     category: CATEGORY,
   };
 
   export const OPEN_SEARCH = {
     id: 'terminal.search',
-    label: localize('terminal.search'),
+    label: '%terminal.search%',
     category: CATEGORY,
   };
 
   export const SEARCH_NEXT = {
     id: 'terminal.search.next',
-    label: localize('terminal.search.next'),
+    label: '%terminal.search.next%',
     category: CATEGORY,
   };
 
@@ -47,13 +45,13 @@ export namespace TERMINAL_COMMANDS {
 
   export const CLEAR_CONTENT = {
     id: 'terminal.clearContent',
-    label: localize('terminal.menu.clearCurrentGroup'),
+    label: '%terminal.menu.clearCurrentGroup%',
     category: CATEGORY,
   };
 
   export const CLEAR_ALL_CONTENT = {
     id: 'terminal.clearAllContent',
-    label: localize('terminal.menu.clearAllGroups'),
+    label: '%terminal.menu.clearAllGroups%',
   };
 
   export const TAB_RENAME = {
@@ -66,7 +64,7 @@ export namespace TERMINAL_COMMANDS {
 
   export const MORE_SETTINGS = {
     id: 'terminal.moreSettings',
-    label: localize('terminal.menu.moreSettings'),
+    label: '%terminal.menu.moreSettings%',
   };
 
   export const SELECT_TYPE = {

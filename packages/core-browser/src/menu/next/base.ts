@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { ButtonType } from '@ali/ide-components';
-import { ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
+import { replaceLocalizePlaceholder, ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
 
 import { MenuId } from './menu-id';
 
@@ -338,7 +338,7 @@ export class MenuNode implements IMenuAction {
 
   constructor(props: IMenuAction) {
     this.id = props.id;
-    this.label = props.label;
+    this.label = replaceLocalizePlaceholder(props.label)!;
     this.className = props.className || '';
     this.icon = props.icon || '';
     this.keybinding = props.keybinding || '';
