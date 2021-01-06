@@ -5,7 +5,6 @@ import {
   CommandService,
   CommandRegistryImpl,
   CommandContribution,
-  MenuContribution,
   createContributionProvider,
   CommandServiceImpl,
   CommandRegistry,
@@ -67,7 +66,6 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, FsProviderContribution);
   createContributionProvider(injector, KeybindingContribution);
   createContributionProvider(injector, NextMenuContribution);
-  createContributionProvider(injector, MenuContribution);
   createContributionProvider(injector, ComponentContribution);
   createContributionProvider(injector, SlotRendererContribution);
   createContributionProvider(injector, PreferenceContribution);
