@@ -1,4 +1,4 @@
-import { AppConfig, ComponentRegistry, ConfigContext, ConfigProvider, ErrorBoundary, IEventBus, MaybeNull, PreferenceService, URI, useDisposable } from '@ali/ide-core-browser';
+import { AppConfig, ComponentRegistry, ConfigContext, ConfigProvider, ErrorBoundary, IEventBus, MaybeNull, PreferenceService, URI, useDisposable, View } from '@ali/ide-core-browser';
 import { IResizeHandleDelegate, ResizeHandleHorizontal, ResizeHandleVertical } from '@ali/ide-core-browser/lib/components';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import classnames from 'classnames';
@@ -9,12 +9,12 @@ import * as ReactDOM from 'react-dom';
 import { IEditorOpenType, IResource, WorkbenchEditorService } from '../common';
 import { EditorComponentRegistryImpl } from './component';
 import { Scroll } from './component/scroll/scroll';
-import * as styles from './editor.module.less';
 import { EditorGrid, SplitDirection } from './grid/grid.service';
 import { NavigationBar } from './navigation.view';
 import { Tabs } from './tab.view';
 import { DragOverPosition, EditorComponentRegistry, EditorComponentRenderMode, EditorGroupFileDropEvent, EditorGroupsResetSizeEvent, EditorSide, IEditorComponent } from './types';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
+import * as styles from './editor.module.less';
 
 export const EditorView = () => {
   const ref = React.useRef<HTMLElement | null>();
@@ -75,29 +75,22 @@ export const EditorGridView = ({ grid }: { grid: EditorGrid }) => {
   const forceUpdate = React.useCallback(() => updateState({}), []);
 
   React.useEffect(() => {
-    let editorGroupTargetDom: HTMLElement;
     if (editorGroupContainer) {
       if (cachedGroupView[grid.editorGroup!.name]) {
         editorGroupContainer.appendChild(cachedGroupView[grid.editorGroup!.name]);
         (grid.editorGroup! as EditorGroup).layoutEditors();
       } else {
-        editorGroupTargetDom = document.createElement('div');
-        cachedGroupView[grid.editorGroup!.name] = editorGroupTargetDom;
-        editorGroupTargetDom.style.height = '100%';
-        editorGroupContainer.appendChild(editorGroupTargetDom);
+        const div = document.createElement('div');
+        cachedGroupView[grid.editorGroup!.name] = div;
+        div.style.height = '100%';
+        editorGroupContainer.appendChild(div);
         ReactDOM.render((
           <ConfigProvider value={context}>
             <EditorGroupView group={grid.editorGroup! as EditorGroup} />
           </ConfigProvider>
-        ), editorGroupTargetDom);
+        ), div);
       }
     }
-    return () => {
-      // 卸载掉组件，主要为了消除掉自定义 Editor Component 中副作用避免内存泄露
-      if (editorGroupTargetDom) {
-        ReactDOM.unmountComponentAtNode(editorGroupTargetDom);
-      }
-    };
   });
 
   useDisposable(() => {
@@ -164,6 +157,24 @@ export const EditorGridView = ({ grid }: { grid: EditorGrid }) => {
 const cachedEditor: { [key: string]: HTMLDivElement } = {};
 const cachedDiffEditor: { [key: string]: HTMLDivElement } = {};
 
+/**
+ * 默认的 editor empty component
+ * 接受外部的 editorBackgroundImage 作为图片展示
+ */
+const EditorEmptyComponent: React.FC<{
+  editorBackgroundImage: string;
+}> = ({ editorBackgroundImage }) => {
+  if (!editorBackgroundImage) {
+    return null;
+  }
+
+  return (
+    <div className={styles.editorEmpty}>
+      <img className={styles.editorEmptyImg} src={editorBackgroundImage} />
+    </div>
+  );
+};
+
 export const EditorGroupView = ({ group }: { group: EditorGroup }) => {
   const groupWrapperRef = React.useRef<HTMLElement | null>();
 
@@ -203,7 +214,10 @@ export const EditorGroupView = ({ group }: { group: EditorGroup }) => {
   // TODO: 将图片转换成默认的 editor component
   const EmptyEditorViewConfig = React.useMemo(() => {
     const emptyComponentInfo = componentRegistry.getComponentRegistryInfo('editor-empty');
-    return emptyComponentInfo && emptyComponentInfo.views[0];
+    return emptyComponentInfo && emptyComponentInfo.views[0] || {
+      component: EditorEmptyComponent,
+      initialProps: { editorBackgroundImage },
+    } as View;
   }, []);
 
   return (
