@@ -1054,7 +1054,9 @@ export class FileTreeModelService {
                 const prePath = parent.path;
                 // Re-cache TreeNode
                 this.fileTreeService.removeNodeCacheByPath(prePath);
-                parent.updateName(`${parent.name}${Path.separator}${newName}`);
+                const newNodeName = [parent.name].concat(newName).join(Path.separator);
+                parent.updateName(newNodeName);
+                parent.updateDisplayName(newNodeName);
                 parent.updateURI(parent.uri.resolve(newName));
                 parent.updateFileStat({
                   ...parent.filestat,
@@ -1063,7 +1065,7 @@ export class FileTreeModelService {
                 parent.updateToolTip(this.fileTreeAPI.getReadableTooltip(parent.uri.resolve(newName)));
                 // Re-cache TreeNode
                 this.fileTreeService.reCacheNode(parent, prePath);
-                locationFileWhileFileExist(parent.uri.resolve(newName));
+                locationFileWhileFileExist(parent.path);
               } else {
                 const addNode = await this.fileTreeService.addNode(parent, newName, promptHandle.type);
                 // 文件夹首次创建需要将焦点设到新建的文件夹上
@@ -1077,7 +1079,9 @@ export class FileTreeModelService {
               // Remove TreeNode Cache
               this.fileTreeService.removeNodeCacheByPath(prePath);
               const parentUri = parent.uri.resolve(parentAddonPath);
-              parent.updateName(`${parent.name}${Path.separator}${parentAddonPath}`);
+              const newNodeName = [parent.name].concat(parentAddonPath).join(Path.separator);
+              parent.updateDisplayName(newNodeName);
+              parent.updateName(newNodeName);
               parent.updateURI(parentUri);
               parent.updateFileStat({
                 ...parent.filestat,
@@ -1097,7 +1101,9 @@ export class FileTreeModelService {
             const prePath = parent.path;
             this.fileTreeService.removeNodeCacheByPath(prePath);
             const parentUri = parent.uri.resolve(newName);
-            parent.updateName(`${parent.name}${Path.separator}${newName}`);
+            const newNodeName = [parent.name].concat(newName).join(Path.separator);
+            parent.updateName(newNodeName);
+            parent.updateDisplayName(newNodeName);
             parent.updateURI(parentUri);
             parent.updateFileStat({
               ...parent.filestat,
@@ -1106,7 +1112,7 @@ export class FileTreeModelService {
             parent.updateToolTip(this.fileTreeAPI.getReadableTooltip(parentUri));
             // Re-cache TreeNode
             this.fileTreeService.reCacheNode(parent, prePath);
-            locationFileWhileFileExist(parent.uri.resolve(newName));
+            locationFileWhileFileExist(parent.path);
           } else {
             await this.fileTreeService.addNode(parent, newName, promptHandle.type);
             locationFileWhileFileExist(parent.uri.resolve(newName));
@@ -1239,6 +1245,7 @@ export class FileTreeModelService {
       }
       // 更新目标节点信息
       targetNode.updateName(relativeName!.toString());
+      targetNode.updateDisplayName(relativeName!.toString());
       targetNode.updateURI(newTargetUri);
       targetNode.updateToolTip(this.fileTreeAPI.getReadableTooltip(newTargetUri));
       targetNode.updateFileStat({
