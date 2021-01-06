@@ -19,7 +19,7 @@ import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-edi
 import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { KEYMAPS_SCHEME, IKeymapService } from '../common';
 import { KeymapsView } from './keymaps.view';
-import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 const KEYMAPS_PREVIEW_COMPONENT_ID = 'keymaps-preview';
 
@@ -64,8 +64,8 @@ export namespace KEYMAP_COMMANDS {
   };
 }
 
-@Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, NextMenuContribution)
-export class KeymapsContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, NextMenuContribution {
+@Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution)
+export class KeymapsContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution {
 
   @Autowired(IFileServiceClient)
   protected readonly filesystem: IFileServiceClient;
@@ -90,7 +90,7 @@ export class KeymapsContribution implements CommandContribution, KeybindingContr
     });
   }
 
-  registerNextMenus(menus: IMenuRegistry) {
+  registerMenus(menus: IMenuRegistry) {
     menus.registerMenuItem(MenuId.SettingsIconMenu, {
       command: COMMON_COMMANDS.OPEN_KEYMAPS.id,
       group: KeymapsContextMenu.KEYMAPS,

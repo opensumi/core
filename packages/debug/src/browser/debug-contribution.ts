@@ -23,7 +23,7 @@ import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
 import { IDebugSessionManager, launchSchemaUri, DEBUG_CONTAINER_ID, DEBUG_WATCH_ID, DEBUG_VARIABLES_ID, DEBUG_STACK_ID, DEBUG_BREAKPOINTS_ID, DEBUG_FLOATING_CLICK_WIDGET, DEBUG_REPORT_NAME } from '../common';
 import { DebugConsoleService } from './view/console/debug-console.service';
 import { DebugToolbarService } from './view/configuration/debug-toolbar.service';
-import { NextMenuContribution, MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
+import { MenuContribution, MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
 import { BrowserEditorContribution, IEditorFeatureRegistry, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { EditorHoverContribution } from './editor/editor-hover-contribution';
 import { FloatingClickWidget } from './components/floating-click-widget';
@@ -130,8 +130,8 @@ export namespace DebugBreakpointWidgetCommands {
   };
 }
 
-@Domain(ClientAppContribution, ComponentContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution, NextMenuContribution, BrowserEditorContribution)
-export class DebugContribution implements ComponentContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution, NextMenuContribution, BrowserEditorContribution {
+@Domain(ClientAppContribution, ComponentContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution, MenuContribution, BrowserEditorContribution)
+export class DebugContribution implements ComponentContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution, MenuContribution, BrowserEditorContribution {
   schema: PreferenceSchema = debugPreferencesSchema;
 
   @Autowired(IMainLayoutService)
@@ -576,7 +576,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
     });
   }
 
-  registerNextMenus(menuRegistry: IMenuRegistry) {
+  registerMenus(menuRegistry: IMenuRegistry) {
     menuRegistry.registerMenuItem(MenuId.DebugBreakpointsContext, {
       command: DEBUG_COMMANDS.DELETE_BREAKPOINT.id,
       group: '1_has_breakpoint',

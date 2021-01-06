@@ -4,10 +4,10 @@ import { ICommentsService, CommentPanelId, CommentsContribution, ICommentsFeatur
 import { IEditor } from '@ali/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { IMenuRegistry, MenuId, NextMenuContribution } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, MenuId, MenuContribution } from '@ali/ide-core-browser/lib/menu/next';
 
-@Domain(ClientAppContribution, BrowserEditorContribution, CommandContribution, TabBarToolbarContribution, NextMenuContribution)
-export class CommentsBrowserContribution extends Disposable implements ClientAppContribution, BrowserEditorContribution, CommandContribution, TabBarToolbarContribution, NextMenuContribution {
+@Domain(ClientAppContribution, BrowserEditorContribution, CommandContribution, TabBarToolbarContribution, MenuContribution)
+export class CommentsBrowserContribution extends Disposable implements ClientAppContribution, BrowserEditorContribution, CommandContribution, TabBarToolbarContribution, MenuContribution {
 
   @Autowired(ICommentsService)
   private readonly commentsService: ICommentsService;
@@ -64,7 +64,7 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
     });
   }
 
-  registerNextMenus(registry: IMenuRegistry): void {
+  registerMenus(registry: IMenuRegistry): void {
     registry.registerMenuItem(MenuId.CommentsCommentThreadTitle, {
       command: CloseThreadId,
       group: 'inline',

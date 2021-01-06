@@ -7,13 +7,13 @@ import { ClientAppContribution } from './common.define';
 import { IContextKeyService, IContextKey } from '../context-key';
 import { trackFocus } from '../dom';
 import { AppConfig } from '../react-providers/config-provider';
-import { NextMenuContribution, IMenuRegistry, MenuId } from '../menu/next';
+import { MenuContribution, IMenuRegistry, MenuId } from '../menu/next';
 import { KeybindingContribution, KeybindingRegistry } from '../keybinding';
 
 export const inputFocusedContextKey = 'inputFocus';
 
-@Domain(CommandContribution, ClientAppContribution, PreferenceContribution, NextMenuContribution, KeybindingContribution)
-export class ClientCommonContribution implements CommandContribution, PreferenceContribution, ClientAppContribution, NextMenuContribution, KeybindingContribution {
+@Domain(CommandContribution, ClientAppContribution, PreferenceContribution, MenuContribution, KeybindingContribution)
+export class ClientCommonContribution implements CommandContribution, PreferenceContribution, ClientAppContribution, MenuContribution, KeybindingContribution {
 
   @Autowired(CommandService)
   protected commandService: CommandService;
@@ -66,7 +66,7 @@ export class ClientCommonContribution implements CommandContribution, Preference
     });
   }
 
-  registerNextMenus(menus: IMenuRegistry): void {
+  registerMenus(menus: IMenuRegistry): void {
     // 注册 Menubar
     if (isElectronRenderer()) {
       menus.registerMenubarItem(MenuId.MenubarAppMenu, { label: localize('app.name', 'KAITIAN Electron'), order: 0});

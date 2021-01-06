@@ -1,4 +1,4 @@
-import { NextMenuContribution } from '@ali/ide-core-browser/lib/menu/next';
+import { MenuContribution } from '@ali/ide-core-browser/lib/menu/next';
 import { Autowired } from '@ali/common-di';
 import { Domain, CommandContribution, CommandRegistry, TabBarToolbarContribution, localize, ToolbarRegistry, ClientAppContribution } from '@ali/ide-core-browser';
 import { DEBUG_COMMANDS } from '../../debug-contribution';
@@ -7,8 +7,8 @@ import { DebugWatchModelService } from './debug-watch-tree.model.service';
 import { MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
 import { DebugWatchNode } from '../../tree/debug-tree-node.define';
 
-@Domain(ClientAppContribution, NextMenuContribution, CommandContribution, TabBarToolbarContribution)
-export class WatchPanelContribution implements ClientAppContribution, NextMenuContribution, CommandContribution, TabBarToolbarContribution {
+@Domain(ClientAppContribution, MenuContribution, CommandContribution, TabBarToolbarContribution)
+export class WatchPanelContribution implements ClientAppContribution, MenuContribution, CommandContribution, TabBarToolbarContribution {
 
   @Autowired(DebugWatchModelService)
   private readonly debugWatchModelService: DebugWatchModelService;
@@ -74,7 +74,7 @@ export class WatchPanelContribution implements ClientAppContribution, NextMenuCo
     });
   }
 
-  registerNextMenus(registry: IMenuRegistry) {
+  registerMenus(registry: IMenuRegistry) {
     registry.registerMenuItem(MenuId.DebugWatchContext, {
       command: {
         id: DEBUG_COMMANDS.ADD_WATCHER.id,

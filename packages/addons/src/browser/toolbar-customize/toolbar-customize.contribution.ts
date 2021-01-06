@@ -1,10 +1,10 @@
 import { Domain, CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, AppConfig, SlotLocation, localize } from '@ali/ide-core-browser';
 import { Autowired } from '@ali/common-di';
 import { ToolbarCustomizeComponent, ToolbarCustomizeViewService } from './toolbar-customize';
-import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
-@Domain(CommandContribution, ComponentContribution, NextMenuContribution)
-export class ToolbarCustomizeContribution implements CommandContribution, ComponentContribution, NextMenuContribution {
+@Domain(CommandContribution, ComponentContribution, MenuContribution)
+export class ToolbarCustomizeContribution implements CommandContribution, ComponentContribution, MenuContribution {
 
   @Autowired(AppConfig)
   config: AppConfig;
@@ -36,7 +36,7 @@ export class ToolbarCustomizeContribution implements CommandContribution, Compon
     this.config.layoutConfig[SlotLocation.extra]!.modules.push('addon/toolbar-customize');
   }
 
-  registerNextMenus(registry: IMenuRegistry) {
+  registerMenus(registry: IMenuRegistry) {
     registry.registerMenuItem(MenuId.KTToolbarLocationContext, {
       command: {
         id: 'toolbar.showCustomizePanel',

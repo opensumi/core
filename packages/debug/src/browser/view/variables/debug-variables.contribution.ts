@@ -1,4 +1,4 @@
-import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { Autowired } from '@ali/common-di';
 import { Domain, CommandContribution, CommandRegistry, localize, IQuickInputService, IReporterService } from '@ali/ide-core-browser';
 import { DebugVariable } from '../../tree/debug-tree-node.define';
@@ -7,8 +7,8 @@ import { DEBUG_COMMANDS } from '../../debug-contribution';
 import { IMessageService } from '@ali/ide-overlay';
 import { DEBUG_REPORT_NAME } from '../../../common';
 
-@Domain(NextMenuContribution, CommandContribution)
-export class VariablesPanelContribution implements NextMenuContribution, CommandContribution {
+@Domain(MenuContribution, CommandContribution)
+export class VariablesPanelContribution implements MenuContribution, CommandContribution {
   @Autowired(IQuickInputService)
   private readonly quickInputService: IQuickInputService;
 
@@ -42,7 +42,7 @@ export class VariablesPanelContribution implements NextMenuContribution, Command
     });
   }
 
-  registerNextMenus(registry: IMenuRegistry) {
+  registerMenus(registry: IMenuRegistry) {
     registry.registerMenuItem(MenuId.DebugVariablesContext, {
       command: {
         id: DEBUG_COMMANDS.SET_VARIABLE_VALUE.id,

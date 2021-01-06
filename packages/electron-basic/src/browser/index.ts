@@ -4,7 +4,7 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/
 import { ElectronHeaderBar } from './header';
 import { WelcomeContribution } from './welcome/contribution';
 import { ElectronNativeDialogService } from './dialog';
-import { IMenuRegistry, NextMenuContribution, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, MenuContribution, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { IElectronMenuBarService } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/electron';
 import { IElectronMainLifeCycleService, IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { IMessageService } from '@ali/ide-overlay/lib/common';
@@ -62,8 +62,8 @@ const nativeRoles = [
   },
 ];
 
-@Domain(ComponentContribution, ClientAppContribution, NextMenuContribution, CommandContribution, KeybindingContribution)
-export class ElectronBasicContribution implements KeybindingContribution, CommandContribution, ComponentContribution, ClientAppContribution, NextMenuContribution {
+@Domain(ComponentContribution, ClientAppContribution, MenuContribution, CommandContribution, KeybindingContribution)
+export class ElectronBasicContribution implements KeybindingContribution, CommandContribution, ComponentContribution, ClientAppContribution, MenuContribution {
   @Autowired(AppConfig)
   config: AppConfig;
 
@@ -108,7 +108,7 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
     });
   }
 
-  registerNextMenus(menuRegistry: IMenuRegistry) {
+  registerMenus(menuRegistry: IMenuRegistry) {
     const menuId = MenuId.MenubarAppMenu;
 
     menuRegistry.registerMenuItem(menuId, {

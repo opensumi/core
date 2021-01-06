@@ -13,14 +13,14 @@ import { scmPreferenceSchema } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
 import { getIcon } from '@ali/ide-core-browser';
 import { WorkbenchEditorService, EditorCollectionService, IEditor } from '@ali/ide-editor/lib/common';
-import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 export const SCM_ACCEPT_INPUT: Command = {
   id: 'scm.acceptInput',
 };
 
-@Domain(ClientAppContribution, CommandContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, NextMenuContribution)
-export class SCMContribution implements CommandContribution, ClientAppContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, NextMenuContribution {
+@Domain(ClientAppContribution, CommandContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, MenuContribution)
+export class SCMContribution implements CommandContribution, ClientAppContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, MenuContribution {
 
   @Autowired(SCMBadgeController)
   private readonly statusUpdater: SCMBadgeController;
@@ -114,7 +114,7 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
     });
   }
 
-  registerNextMenus(menuRegistry: IMenuRegistry) {
+  registerMenus(menuRegistry: IMenuRegistry) {
     menuRegistry.registerMenuItem(MenuId.EditorTitle, {
       command: {
         id: GOTO_PREVIOUS_CHANGE.id,

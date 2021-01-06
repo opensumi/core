@@ -1,13 +1,27 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { ButtonType } from '@ali/ide-components';
 import { replaceLocalizePlaceholder, ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
+import { warning } from '@ali/ide-components/lib/utils';
 
 import { MenuId } from './menu-id';
 
-export const NextMenuContribution = Symbol('NextMenuContribution');
-export interface NextMenuContribution {
-  registerNextMenus(menus: IMenuRegistry): void;
+export const MenuContribution = Symbol('MenuContribution');
+export interface MenuContribution {
+  /**
+   * @deprecated 请使用 registerMenus
+   */
+  registerNextMenus?(menus: IMenuRegistry): void;
+  registerMenus?(menus: IMenuRegistry): void;
 }
+
+/**
+ * @deprecated 请使用 NextMenuContribution
+ */
+export const NextMenuContribution = MenuContribution;
+/**
+ * @deprecated 请使用 NextMenuContribution
+ */
+export type NextMenuContribution = MenuContribution;
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
@@ -114,8 +128,8 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
   // TODO: 考虑是否存到持久化数据中? @taian.lta
   private readonly _disabledMenuIds = new Set<string>();
 
-  @Autowired(NextMenuContribution)
-  protected readonly contributions: ContributionProvider<NextMenuContribution>;
+  @Autowired(MenuContribution)
+  protected readonly contributions: ContributionProvider<MenuContribution>;
 
   @Autowired(CommandRegistry)
   private readonly commandRegistry: CommandRegistry;
@@ -253,13 +267,17 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
 
 @Injectable()
 export class MenuRegistryImpl extends CoreMenuRegistryImpl {
-  @Autowired(NextMenuContribution)
-  protected readonly contributions: ContributionProvider<NextMenuContribution>;
+  @Autowired(MenuContribution)
+  protected readonly contributions: ContributionProvider<MenuContribution>;
 
   // MenuContribution
   onStart() {
     for (const contrib of this.contributions.getContributions()) {
-      contrib.registerNextMenus(this);
+      if (contrib.registerNextMenus) {
+        contrib.registerNextMenus(this);
+        warning(false, '`registerNextMenus` was deprecated in favor of `registerMenus`');
+      }
+      contrib.registerMenus && contrib.registerMenus(this);
     }
   }
 }
