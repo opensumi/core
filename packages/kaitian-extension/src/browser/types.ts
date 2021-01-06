@@ -1,5 +1,6 @@
 import { Injectable } from '@ali/common-di';
 import { BasicEvent, IDisposable } from '@ali/ide-core-browser';
+import { IExtension, IExtensionMetaData } from '../common';
 
 export type Serializable = any;
 
@@ -29,3 +30,7 @@ export class ExtensionApiReadyEvent extends BasicEvent<void> {}
  * 扩展被激活前的事件
  */
 export class ExtensionBeforeActivateEvent extends BasicEvent<void> {}
+
+export class ExtensionWillActivateEvent extends BasicEvent<IExtension> {}
+
+export class ExtensionWillContributeEvent extends BasicEvent<IExtensionMetaData> {}

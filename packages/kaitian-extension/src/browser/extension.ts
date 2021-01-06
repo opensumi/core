@@ -1,13 +1,14 @@
 import { Injectable, Optional, Autowired } from '@ali/common-di';
 import { JSONType, ExtensionService, IExtension, IExtensionProps, IExtensionMetaData } from '../common';
-import { getDebugLogger, Disposable, registerLocalizationBundle, getCurrentLanguageInfo, Emitter, Uri, Deferred } from '@ali/ide-core-common';
+import { getDebugLogger, registerLocalizationBundle, getCurrentLanguageInfo, Emitter, Uri, Deferred, WithEventBus } from '@ali/ide-core-common';
 import { ExtensionMetadataService } from './metadata.service';
+import { ExtensionWillActivateEvent } from './types';
 
 const metaDataSymbol = Symbol.for('metaDataSymbol');
 const extensionServiceSymbol = Symbol.for('extensionServiceSymbol');
 
 @Injectable({ multiple: true })
-export class Extension extends Disposable implements IExtension {
+export class Extension extends WithEventBus implements IExtension {
   public readonly id: string;
   public readonly extensionId: string;
   public readonly name: string;
@@ -126,6 +127,12 @@ export class Extension extends Disposable implements IExtension {
 
     if (this._activated) {
       return;
+    }
+
+    const skipActivate = await this.eventBus.fireAndAwait(new ExtensionWillActivateEvent(this));
+    if (skipActivate.length > 0 && skipActivate[0].result) {
+      this._activated = true;
+      return Promise.resolve();
     }
 
     if (this._activating) {

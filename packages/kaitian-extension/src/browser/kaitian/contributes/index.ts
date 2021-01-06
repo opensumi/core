@@ -1,6 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@ali/common-di';
-import { Disposable, ISchemaRegistry, localize, ILogger } from '@ali/ide-core-browser';
+import { Disposable, ISchemaRegistry, localize, ILogger, WithEventBus, IEventBus } from '@ali/ide-core-browser';
 import { IExtensionMetaData, CONTRIBUTE_NAME_KEY } from '../../../common';
+import { ExtensionWillContributeEvent } from '../../types';
 
 import { KtViewContributionPoint, KtViewsSchema } from './browser-views';
 import { KtMenubarsContributionPoint } from './menubar';
@@ -27,7 +28,7 @@ const schema = {
 };
 
 @Injectable({ multiple: true })
-export class KaitianContributesRunner extends Disposable {
+export class KaitianContributesRunner extends WithEventBus {
   static ContributePoints = [
     KtViewContributionPoint,
     KtMenubarsContributionPoint,
@@ -44,6 +45,9 @@ export class KaitianContributesRunner extends Disposable {
   @Autowired(ILogger)
   private logger: ILogger;
 
+  @Autowired(IEventBus)
+  protected eventBus: IEventBus;
+
   constructor(@Optional(CONTRIBUTES_SYMBOL) private extension: IExtensionMetaData) {
     super();
   }
@@ -53,6 +57,13 @@ export class KaitianContributesRunner extends Disposable {
     if (!contributes) {
       return;
     }
+
+    const skipContribute = await this.eventBus.fireAndAwait(new ExtensionWillContributeEvent(this.extension));
+
+    if (skipContribute.length > 0 && skipContribute[0]?.result) {
+      return;
+    }
+
     for (const contributeCls of KaitianContributesRunner.ContributePoints) {
       const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);
       if (contributes[contributeName] !== undefined) {

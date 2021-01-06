@@ -1,6 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@ali/common-di';
-import { Disposable, ConstructorOf, PreferenceSchema, PreferenceSchemaProperties, ISchemaRegistry, localize, ILogger } from '@ali/ide-core-browser';
+import { ConstructorOf, PreferenceSchema, PreferenceSchemaProperties, ISchemaRegistry, localize, ILogger, WithEventBus, IEventBus } from '@ali/ide-core-browser';
 import { IExtensionMetaData, VSCodeContributePoint, CONTRIBUTE_NAME_KEY } from '../../../common';
+import { ExtensionWillContributeEvent } from '../../types';
 
 import { CommandsSchema, CommandsContributionPoint } from './commands';
 import { ThemesSchema, ThemesContributionPoint } from './theme';
@@ -276,7 +277,7 @@ const CONTRIBUTES_SYMBOL = Symbol();
 const EXTENSION_JSON_URI = 'vscode://schemas/vscode-extensions';
 
 @Injectable({ multiple: true })
-export class VSCodeContributeRunner extends Disposable {
+export class VSCodeContributeRunner extends WithEventBus {
 
   static ContributePoints: ConstructorOf<VSCodeContributePoint>[] = [
     LocalizationsContributionPoint,
@@ -307,6 +308,9 @@ export class VSCodeContributeRunner extends Disposable {
   @Autowired(ISchemaRegistry)
   schemaRegistry: ISchemaRegistry;
 
+  @Autowired(IEventBus)
+  protected eventBus: IEventBus;
+
   @Autowired(ILogger)
   private logger: ILogger;
 
@@ -318,6 +322,12 @@ export class VSCodeContributeRunner extends Disposable {
     // superSet merge here
     const contributes: ContributesSchema = this.extension.packageJSON.contributes;
     if (!contributes) {
+      return;
+    }
+
+    const skipContribute = await this.eventBus.fireAndAwait(new ExtensionWillContributeEvent(this.extension));
+
+    if (skipContribute.length > 0 && skipContribute[0].result) {
       return;
     }
 
