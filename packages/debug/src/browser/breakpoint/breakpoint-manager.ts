@@ -1,6 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { Emitter, Event, URI, isUndefined, StorageProvider, IStorage, STORAGE_NAMESPACE, IReporterService } from '@ali/ide-core-browser';
-import { IWorkspaceStorageService } from '@ali/ide-workspace';
 import { DebugBreakpoint, DebugExceptionBreakpoint, BREAKPOINT_KIND } from './breakpoint-marker';
 import { MarkerManager, Marker } from '../markers';
 import { DebugProtocol } from 'vscode-debugprotocol';
@@ -36,9 +35,6 @@ export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
   private defaultExceptionFilter: DebugProtocol.ExceptionBreakpointsFilter[] = [];
   private exceptionFilterValue: { [key: string]: boolean } | undefined;
   private _affected = new Set<string>();
-
-  @Autowired(IWorkspaceStorageService)
-  protected readonly storage: IWorkspaceStorageService;
 
   @Autowired(StorageProvider)
   private readonly storageProvider: StorageProvider;

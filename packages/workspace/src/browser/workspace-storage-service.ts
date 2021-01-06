@@ -1,10 +1,11 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { LocalStorageService } from '@ali/ide-core-browser/lib/services';
+import { GlobalBrowserStorageService } from '@ali/ide-core-browser/lib/services';
 import { IWorkspaceService, IWorkspaceStorageService } from '../common';
 import { FileStat } from '@ali/ide-file-service';
 
 /*
- * 为存在LocalStorage的数据添加命名空间
+ * 为存在 Browser (LocalStorage) 的数据添加命名空间
+ * @Deprecated
  */
 @Injectable()
 export class WorkspaceStorageService implements IWorkspaceStorageService {
@@ -12,8 +13,8 @@ export class WorkspaceStorageService implements IWorkspaceStorageService {
   private prefix: string;
   private initialized: Promise<void>;
 
-  @Autowired(LocalStorageService)
-  protected localStorageService: LocalStorageService;
+  @Autowired(GlobalBrowserStorageService)
+  protected globalStorageService: GlobalBrowserStorageService;
 
   @Autowired(IWorkspaceService)
   protected workspaceService: IWorkspaceService;
@@ -34,13 +35,19 @@ export class WorkspaceStorageService implements IWorkspaceStorageService {
       await this.initialized;
     }
     const fullKey = this.prefixWorkspaceURI(key);
-    return this.localStorageService.setData(fullKey, data);
+    return this.globalStorageService.setData(fullKey, data);
   }
 
   async getData<T>(key: string, defaultValue?: T): Promise<T | undefined> {
     await this.initialized;
     const fullKey = this.prefixWorkspaceURI(key);
-    return this.localStorageService.getData(fullKey, defaultValue);
+    return this.globalStorageService.getData(fullKey, defaultValue);
+  }
+
+  async removeData(key: string): Promise<void> {
+    await this.initialized;
+    const fullKey = this.prefixWorkspaceURI(key);
+    return this.globalStorageService.removeData(fullKey);
   }
 
   protected prefixWorkspaceURI(originalKey: string): string {

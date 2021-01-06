@@ -15,9 +15,7 @@ import {
   COMMON_COMMANDS,
   RecentStorage,
 } from '@ali/ide-core-browser';
-import {
-  LocalStorageService,
-} from '@ali/ide-core-browser/lib/services/storage-service';
+import { GlobalBrowserStorageService } from '@ali/ide-core-browser/lib/services/storage-service';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import {
   IEditorDocumentModelService,
@@ -98,8 +96,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 
-  @Autowired(LocalStorageService)
-  private readonly storageService: LocalStorageService;
+  @Autowired(GlobalBrowserStorageService)
+  private readonly browserStorageService: GlobalBrowserStorageService;
 
   @Autowired(IDialogService)
   private readonly dialogService;
@@ -476,7 +474,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     }
     const newUIState = Object.assign({}, this.UIState, obj);
     this.UIState = newUIState;
-    this.storageService.setData('search.UIState', newUIState);
+    this.browserStorageService.setData('search.UIState', newUIState);
     if (!e) { return; }
     this.search(e, newUIState);
   }
@@ -541,7 +539,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
   }
 
   private async recoverUIState() {
-    const UIState = (await this.storageService.getData('search.UIState')) as IUIState | undefined;
+    const UIState = (await this.browserStorageService.getData('search.UIState')) as IUIState | undefined;
     this.updateUIState(UIState || {});
   }
 

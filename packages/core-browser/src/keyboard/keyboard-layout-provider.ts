@@ -3,7 +3,7 @@ import { IKeyboardLayoutInfo } from '@ali/ide-core-common/lib/keyboard/keymap.in
 import { isOSX, Emitter, Deferred } from '@ali/ide-core-common';
 import { Logger } from '../logger';
 import { NativeKeyboardLayout, KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeyValidator, KeyValidationInput } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
-import { LocalStorageService } from '../services';
+import { GlobalBrowserStorageService } from '../services';
 
 export type KeyboardLayoutSource = 'navigator.keyboard' | 'user-choice' | 'pressed-keys';
 
@@ -13,8 +13,8 @@ export class BrowserKeyboardLayoutImpl implements KeyboardNativeLayoutService, K
   @Autowired(Logger)
   protected readonly logger: Logger;
 
-  @Autowired(LocalStorageService)
-  protected readonly storageService: LocalStorageService;
+  @Autowired(GlobalBrowserStorageService)
+  private readonly browserStorageService: GlobalBrowserStorageService;
 
   protected readonly initialized = new Deferred();
   protected readonly nativeLayoutChanged = new Emitter<NativeKeyboardLayout>();
@@ -44,7 +44,7 @@ export class BrowserKeyboardLayoutImpl implements KeyboardNativeLayoutService, K
   }
 
   protected async initialize(): Promise<void> {
-    await this.loadState();
+    this.loadState();
     const keyboard = (navigator as NavigatorExtension).keyboard;
     if (keyboard && keyboard.addEventListener) {
       keyboard.addEventListener('layoutchange', async () => {
@@ -173,17 +173,18 @@ export class BrowserKeyboardLayoutImpl implements KeyboardNativeLayoutService, K
     return DEFAULT_LAYOUT_DATA;
   }
 
-  protected saveState(): Promise<void> {
+  protected saveState(): void {
     const data: LayoutProviderState = {
       tester: this.tester.getState(),
       source: this.source,
       currentLayout: this.currentLayout !== DEFAULT_LAYOUT_DATA ? getLayoutId(this.currentLayout) : undefined,
     };
-    return this.storageService.setData('keyboard', data);
+    // 全局只需要共用一份存储即可
+    return this.browserStorageService.setData('keyboard', data);
   }
 
-  protected async loadState(): Promise<void> {
-    const data = await this.storageService.getData<LayoutProviderState>('keyboard');
+  protected loadState(): void {
+    const data = this.browserStorageService.getData<LayoutProviderState>('keyboard');
     if (data) {
       this.tester.setState(data.tester || {});
       this.source = data.source || 'pressed-keys';

@@ -159,9 +159,4 @@ export interface IWorkspaceService {
 
 export const IWorkspaceStorageService = Symbol('IWorkspaceStorageService');
 
-export interface IWorkspaceStorageService extends StorageService {
-  // 设置数据
-  setData<T>(key: string, data: T): Promise<void>;
-  // 获取数据
-  getData<T>(key: string, defaultValue?: T): Promise<T | undefined>;
-}
+export type IWorkspaceStorageService = StorageService;
