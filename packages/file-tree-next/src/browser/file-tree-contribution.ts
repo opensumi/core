@@ -8,7 +8,7 @@ import { KAITIAN_MULTI_WORKSPACE_EXT, IWorkspaceService, UNTITLED_WORKSPACE } fr
 import { FileTree } from './file-tree';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
 import { IDecorationsService } from '@ali/ide-decoration';
-import { NextMenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
+import { MenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
 import { FileTreeModelService } from './services/file-tree-model.service';
 import { Directory } from '../common/file-tree-node.define';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -20,8 +20,8 @@ import { TERMINAL_COMMANDS } from '@ali/ide-terminal-next';
 
 export const ExplorerResourceViewId = 'file-explorer-next';
 
-@Domain(NextMenuContribution, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution)
-export class FileTreeContribution implements NextMenuContribution, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution {
+@Domain(MenuContribution, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution)
+export class FileTreeContribution implements MenuContribution, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution {
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -110,7 +110,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     this.fileTreeService.reWatch();
   }
 
-  registerNextMenus(menuRegistry: IMenuRegistry): void {
+  registerMenus(menuRegistry: IMenuRegistry): void {
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: {
         id: FILE_COMMANDS.NEW_FILE.id,

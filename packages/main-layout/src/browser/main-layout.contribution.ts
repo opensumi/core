@@ -7,7 +7,7 @@ import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, To
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { RightTabRenderer, LeftTabRenderer, NextBottomTabRenderer } from './tabbar/renderer.view';
 import { getIcon } from '@ali/ide-core-browser';
-import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, MenuContribution as MenuContribution, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 // NOTE 左右侧面板的展开、折叠命令请使用组合命令 activity-bar.left.toggle，layout命令仅做折叠展开，不处理tab激活逻辑
 export const HIDE_LEFT_PANEL_COMMAND: Command = {
@@ -247,7 +247,7 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
     });
   }
 
-  registerNextMenus(menus: IMenuRegistry) {
+  registerMenus(menus: IMenuRegistry) {
     menus.registerMenuItem(MenuId.ActivityBarExtra, {
       submenu: MenuId.SettingsIconMenu,
       iconClass: getIcon('setting'),

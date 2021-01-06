@@ -5,15 +5,15 @@ import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-cont
 import { ToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { ClientAppContribution } from '@ali/ide-core-browser';
-import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { ExplorerOpenEditorPanel } from './opened-editor';
 import { OpenedEditorModelService } from './services/opened-editor-model.service';
 import { EditorFile, EditorFileGroup } from './opened-editor-node.define';
 
 export const ExplorerOpenedEditorViewId = 'file-opened-editor';
 
-@Domain(ClientAppContribution, TabBarToolbarContribution, CommandContribution, NextMenuContribution)
-export class OpenedEditorContribution implements ClientAppContribution, TabBarToolbarContribution, CommandContribution, NextMenuContribution {
+@Domain(ClientAppContribution, TabBarToolbarContribution, CommandContribution, MenuContribution)
+export class OpenedEditorContribution implements ClientAppContribution, TabBarToolbarContribution, CommandContribution, MenuContribution {
 
   @Autowired(IMainLayoutService)
   private readonly mainLayoutService: IMainLayoutService;
@@ -130,7 +130,7 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
 
   }
 
-  registerNextMenus(menuRegistry: IMenuRegistry): void {
+  registerMenus(menuRegistry: IMenuRegistry): void {
     menuRegistry.registerMenuItem(MenuId.OpenEditorsContext, {
       command: {
         id: OPEN_EDITORS_COMMANDS.OPEN.id,

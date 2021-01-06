@@ -8,7 +8,7 @@ import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-edi
 import { ResourceService } from '@ali/ide-editor';
 import { ExtensionResourceProvider } from './extension-resource-provider';
 import { getIcon, IQuickInputService, QuickPickService } from '@ali/ide-core-browser';
-import { MenuId, NextMenuContribution as MenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
+import { MenuId, MenuContribution as MenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
 
 import ExtensionPanelView from './extension-panel.view';
 import { IMessageService } from '@ali/ide-overlay';
@@ -288,7 +288,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
     });
   }
 
-  registerNextMenus(menuRegistry: IMenuRegistry): void {
+  registerMenus(menuRegistry: IMenuRegistry): void {
     menuRegistry.registerMenuItem(MenuId.ExtensionContext, {
       command: ExtensionCommands.ENABLE.id,
       order: 0,

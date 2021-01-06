@@ -1,6 +1,6 @@
 import { Autowired } from '@ali/common-di';
 import { Domain, CommandService, isWindows, isElectronRenderer } from '@ali/ide-core-common';
-import { NextMenuContribution, IMenuRegistry, getTabbarCommonMenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { MenuContribution, IMenuRegistry, getTabbarCommonMenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { localize, PreferenceService, IPreferenceSettingsService, getSlotLocation, AppConfig, getTabbarCtxKey } from '@ali/ide-core-browser';
 import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService, TerminalContainerId, TERMINAL_COMMANDS } from '../../common';
 import { MenuId } from '../../common/menu';
@@ -10,8 +10,8 @@ export const more1 = 'more_1';
 export const more1Sub = 'more_1_sub';
 export const more2 = 'more_2';
 
-@Domain(NextMenuContribution)
-export class TerminalMenuContribution implements NextMenuContribution {
+@Domain(MenuContribution)
+export class TerminalMenuContribution implements MenuContribution {
 
   @Autowired(ITerminalController)
   protected readonly terminalController: ITerminalController;
@@ -34,7 +34,7 @@ export class TerminalMenuContribution implements NextMenuContribution {
   @Autowired(PreferenceService)
   protected readonly preference: PreferenceService;
 
-  registerNextMenus(menuRegistry: IMenuRegistry) {
+  registerMenus(menuRegistry: IMenuRegistry) {
     /** 终端 Tab 菜单 */
     menuRegistry.registerMenuItem(MenuId.TermTab, {
       command: {

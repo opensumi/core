@@ -10,15 +10,15 @@ import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-cont
 import { ExplorerResourceService } from './explorer-resource.service';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { KAITIAN_MULTI_WORKSPACE_EXT, IWorkspaceService, UNTITLED_WORKSPACE } from '@ali/ide-workspace';
-import { NextMenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
+import { MenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
 import { IWindowDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@ali/ide-overlay';
 import { ExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 import { TERMINAL_COMMANDS } from '@ali/ide-terminal-next';
 
 export const ExplorerResourceViewId = 'file-explorer';
 
-@Domain(NextMenuContribution, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution)
-export class FileTreeContribution implements NextMenuContribution, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution {
+@Domain(MenuContribution, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution)
+export class FileTreeContribution implements MenuContribution, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution {
 
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
@@ -100,7 +100,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     this.decorationsService.registerDecorationsProvider(symlinkDecorationsProvider);
   }
 
-  registerNextMenus(menuRegistry: IMenuRegistry): void {
+  registerMenus(menuRegistry: IMenuRegistry): void {
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: {
         id: FILE_COMMANDS.NEW_FILE.id,

@@ -1,7 +1,7 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Domain, CommandContribution, ContributionProvider, KeybindingContribution, CommandRegistry, Command, KeybindingRegistry, localize } from '@ali/ide-core-browser';
 import { ClientAppContribution, MonacoService, MonacoContribution } from '@ali/ide-core-browser';
-import { MenuId, NextMenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
+import { MenuId, MenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
 
 import { QuickOpenService, PrefixQuickOpenService } from './quick-open.model';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from './prefix-quick-open.service';
@@ -46,8 +46,8 @@ export class CoreQuickOpenContribution implements ClientAppContribution, MonacoC
 }
 
 // 作为 command platte 等相关功能的贡献点
-@Domain(CommandContribution, KeybindingContribution, NextMenuContribution, QuickOpenContribution)
-export class QuickOpenFeatureContribution implements CommandContribution, KeybindingContribution, NextMenuContribution, QuickOpenContribution {
+@Domain(CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution)
+export class QuickOpenFeatureContribution implements CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
@@ -73,7 +73,7 @@ export class QuickOpenFeatureContribution implements CommandContribution, Keybin
     });
   }
 
-  registerNextMenus(menus: IMenuRegistry): void {
+  registerMenus(menus: IMenuRegistry): void {
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
       command: {
         id: quickCommand.id,

@@ -88,7 +88,7 @@ describe('electron basic contribution test', () => {
         registerMenubarItem: jest.fn(),
       } as any;
 
-      contribution.registerNextMenus(registry);
+      contribution.registerMenus(registry);
 
       expect(registry.registerMenuItem).toBeCalled();
 

@@ -5,7 +5,7 @@ import {
   Domain, MonacoService, MonacoContribution, ServiceNames, KeybindingContribution, KeybindingRegistry, Keystroke,
   KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService,
 } from '@ali/ide-core-browser';
-import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, MenuContribution as MenuContribution, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next';
 import { IThemeService } from '@ali/ide-theme';
 import { getDebugLogger } from '@ali/ide-core-common';
 
@@ -155,7 +155,7 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     this.monacoActionRegistry.registerMonacoActions();
   }
 
-  registerNextMenus(menuRegistry: IMenuRegistry) {
+  registerMenus(menuRegistry: IMenuRegistry) {
     // 注册 Monaco 的选择命令
     for (const group of MonacoMenus.SELECTION_GROUPS) {
       group.actions.forEach((action, index) => {

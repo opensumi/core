@@ -1,13 +1,13 @@
 
 import { Autowired } from '@ali/common-di';
 import { COMMON_COMMANDS, FILE_COMMANDS, getIcon } from '@ali/ide-core-browser';
-import { IMenuRegistry, ISubmenuItem, MenuId, NextMenuContribution } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, ISubmenuItem, MenuId, MenuContribution } from '@ali/ide-core-browser/lib/menu/next';
 import { CommandContribution, CommandRegistry, CommandService } from '@ali/ide-core-common';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { ISCMProvider } from '@ali/ide-scm';
 
-@Domain(CommandContribution, NextMenuContribution)
-export class SelectMenuContribution implements CommandContribution, NextMenuContribution {
+@Domain(CommandContribution, MenuContribution)
+export class SelectMenuContribution implements CommandContribution, MenuContribution {
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 
@@ -29,7 +29,7 @@ export class SelectMenuContribution implements CommandContribution, NextMenuCont
     });
   }
 
-  registerNextMenus(menuRegistry: IMenuRegistry) {
+  registerMenus(menuRegistry: IMenuRegistry) {
     const testSubmenuId = 'test/select/menu';
     const testSubmenuDesc = {
       submenu: testSubmenuId,

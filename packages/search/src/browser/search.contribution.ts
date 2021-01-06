@@ -6,7 +6,7 @@ import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
 import { ToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
-import { MenuId, NextMenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
+import { MenuId, MenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
 import { getIcon } from '@ali/ide-core-browser';
 import { Search } from './search.view';
 import { ContentSearchClientService } from './search.service';
@@ -16,8 +16,8 @@ import { SearchTreeService } from './search-tree.service';
 import { ContentSearchResult, ISearchTreeItem, OpenSearchCmdOptions } from '../common';
 import { SearchContextKey, SearchInputFocused } from './search-contextkey';
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution, NextMenuContribution, ClientAppContribution)
-export class SearchContribution implements CommandContribution, KeybindingContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution, NextMenuContribution, ClientAppContribution {
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution, MenuContribution, ClientAppContribution)
+export class SearchContribution implements CommandContribution, KeybindingContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution, MenuContribution, ClientAppContribution {
 
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
@@ -191,7 +191,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
     });
   }
 
-  registerNextMenus(menuRegistry: IMenuRegistry): void {
+  registerMenus(menuRegistry: IMenuRegistry): void {
     menuRegistry.registerMenuItem(MenuId.SearchContext, {
       command: SEARCH_COMMANDS.MENU_REPLACE.id,
       order: 1,

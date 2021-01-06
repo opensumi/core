@@ -7,15 +7,15 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/
 // import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 import { IStatusBarService} from '@ali/ide-core-browser/lib/services';
 import { OutputService } from '@ali/ide-output/lib/browser/output.service';
-import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { ISCMProvider } from '@ali/ide-scm';
 import { getIcon } from '@ali/ide-core-browser';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { ExampleEditorBottomWidget } from './editor-bottom-example';
 import { ExamplePopover } from './exmaple-popover';
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, ComponentContribution, ToolBarActionContribution, NextMenuContribution, BrowserEditorContribution)
-export class StartupContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, ComponentContribution, ToolBarActionContribution, NextMenuContribution, BrowserEditorContribution {
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, ComponentContribution, ToolBarActionContribution, MenuContribution, BrowserEditorContribution)
+export class StartupContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, ComponentContribution, ToolBarActionContribution, MenuContribution, BrowserEditorContribution {
   @Autowired(IEventBus)
   eventBus: IEventBus;
 
@@ -217,7 +217,7 @@ export class StartupContribution implements CommandContribution, KeybindingContr
     });
   }
 
-  registerNextMenus(menuRegistry: IMenuRegistry) {
+  registerMenus(menuRegistry: IMenuRegistry) {
     menuRegistry.registerMenuItem(MenuId.SCMInput, {
       command: {
         id: 'gitCommitAndPush',

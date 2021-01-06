@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { ICompareService, CompareResult } from '../types';
 import { URI, Domain, localize, Deferred, CommandService, EDITOR_COMMANDS, CommandContribution, CommandRegistry } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser';
-import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable()
 export class CompareService implements ICompareService {
@@ -35,13 +35,13 @@ export class CompareService implements ICompareService {
   }
 }
 
-@Domain(NextMenuContribution, CommandContribution)
-export class CompareEditorContribution implements NextMenuContribution, CommandContribution {
+@Domain(MenuContribution, CommandContribution)
+export class CompareEditorContribution implements MenuContribution, CommandContribution {
 
   @Autowired(ICompareService)
   compareService: CompareService;
 
-  registerNextMenus(menu: IMenuRegistry) {
+  registerMenus(menu: IMenuRegistry) {
     menu.registerMenuItems(MenuId.EditorTitle, [
       {
         command: {
