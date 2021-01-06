@@ -1,6 +1,8 @@
 import { Injector } from '@ali/common-di';
 import { ClientApp, IClientAppOpts } from '@ali/ide-core-browser';
 import { ToolbarActionBasedLayout } from '@ali/ide-core-browser/lib/components';
+import { IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
+import { OverrideMenuRegistry } from '../sample-modules/icon-menu-bar.contribution';
 
 export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();
@@ -9,6 +11,12 @@ export async function renderApp(opts: IClientAppOpts) {
   opts.extensionDir = opts.extensionDir || process.env.EXTENSION_DIR;
   opts.injector = injector;
   opts.wsPath =  process.env.WS_PATH || 'ws://127.0.0.1:8000';  // 代理测试地址: ws://127.0.0.1:8001
+
+  // TODO: 放在sample里怎么更好插拔
+  injector.addProviders({
+    token: IMenuRegistry,
+    useClass: OverrideMenuRegistry,
+  });
 
   opts.extWorkerHost = opts.extWorkerHost || process.env.EXTENSION_WORKER_HOST; // `http://127.0.0.1:8080/kaitian/ext/worker-host.js`; // 访问 Host
   // 使用不一样的host名称
