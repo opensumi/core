@@ -133,8 +133,8 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
 
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(COMMON_COMMANDS.OPEN_PREFERENCES, {
-      execute: async () => {
-        await this.openPreferences();
+      execute: async (search?: string) => {
+        await this.openPreferences(search);
       },
     });
 
@@ -230,8 +230,8 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
     });
   }
 
-  openPreferences(search?: string) {
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI().withScheme(PREF_SCHEME));
+  async openPreferences(search?: string) {
+    await this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI().withScheme(PREF_SCHEME));
     if (search) {
       this.preferenceService.search(search);
     }

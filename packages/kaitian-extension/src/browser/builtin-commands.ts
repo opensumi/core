@@ -39,3 +39,8 @@ export const COPY_RELATIVE_FILE_PATH: Command = {
   id: 'copyRelativeFilePath',
   label: FILE_COMMANDS.COPY_RELATIVE_PATH.label,
 };
+
+export const SETTINGS_COMMAND_OPEN_SETTINGS: Command = {
+  id: 'workbench.action.openSettings',
+  delegate: 'core.openpreference',
+};
