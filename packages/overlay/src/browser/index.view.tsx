@@ -8,7 +8,7 @@ import './styles.module.less';
 
 export const Overlay = observer(() => {
   const componentRegistry: ComponentRegistry = useInjectable(ComponentRegistry);
-  const extraComponents: React.FunctionComponent[] = [];
+  const extraComponents: React.ComponentType[] = [];
   const appConfig: AppConfig = useInjectable(AppConfig);
   if (appConfig.layoutConfig[SlotLocation.extra]?.modules) {
     appConfig.layoutConfig[SlotLocation.extra].modules.forEach((name) => {

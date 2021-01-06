@@ -118,7 +118,7 @@ export interface IToolbarActionElementProps {
   location: string;
 }
 
-export type IToolbarActionReactElement = React.FunctionComponent<IToolbarActionElementProps> | React.ComponentClass<IToolbarActionElementProps>;
+export type IToolbarActionReactElement = React.ComponentType<IToolbarActionElementProps>;
 
 export interface IToolbarAction {
 

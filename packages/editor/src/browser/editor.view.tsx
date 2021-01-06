@@ -22,7 +22,7 @@ export const EditorView = () => {
   const workbenchEditorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
   const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
   const rightWidgetInfo = componentRegistry.getComponentRegistryInfo('editor-widget-right');
-  const RightWidget: React.Component | React.FunctionComponent<any> | undefined = rightWidgetInfo && rightWidgetInfo.views[0].component;
+  const RightWidget: React.ComponentType<any> | undefined = rightWidgetInfo && rightWidgetInfo.views[0].component;
   const [ready, setReady] = React.useState<boolean>(workbenchEditorService.gridReady);
 
   React.useEffect(() => {

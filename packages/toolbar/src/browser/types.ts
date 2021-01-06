@@ -55,7 +55,7 @@ export interface IToolBarComponent<InitialPropsType = any> extends IToolBarEleme
 
   type: 'component';
 
-  component: React.FunctionComponent<InitialPropsType> | React.ComponentClass<InitialPropsType>;
+  component: React.ComponentType<InitialPropsType>;
 
   initialProps?: InitialPropsType;
 

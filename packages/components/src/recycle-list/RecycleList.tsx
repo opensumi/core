@@ -48,24 +48,24 @@ export interface IRecycleListProps {
    * 默认传入参数为：(data, index) => {}
    * data 为 this.props.data中的子项
    * index 为当前下标
-   * @type {React.FunctionComponent<any>}
+   * @type {React.ComponentType<any>}
    * @memberof IRecycleListProps
    */
-  template: React.FunctionComponent<any>;
+  template: React.ComponentType<any>;
   /**
    * 头部组件渲染模板
    * 默认传入参数为：() => {}
-   * @type {React.FunctionComponent<any>}
+   * @type {React.ComponentType<any>}
    * @memberof IRecycleListProps
    */
-  header?: React.FunctionComponent<any>;
+  header?: React.ComponentType<any>;
   /**
    * 底部组件渲染模板
    * 默认传入参数为：() => {}
-   * @type {React.FunctionComponent<any>}
+   * @type {React.ComponentType<any>}
    * @memberof IRecycleListProps
    */
-  footer?: React.FunctionComponent<any>;
+  footer?: React.ComponentType<any>;
   /**
    * 处理 RecycleList API回调
    * @memberof IRecycleListProps

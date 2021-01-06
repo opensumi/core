@@ -35,7 +35,7 @@ export class ToolBarBrowserContributionRunner extends AbstractKaitianBrowserCont
         const { extendProtocol, extendService } = param.getExtensionExtendService(this.extension, view.id);
         const disposable = this.toolBarViewService.registerToolBarElement({
           type: 'component',
-          component: view.component as React.FunctionComponent | React.ComponentClass,
+          component: view.component as React.ComponentType,
           position: view.position || this.contribution.toolBar!.position || ToolBarPosition.LEFT,
           initialProps: {
             kaitianExtendService: extendService,

@@ -39,7 +39,7 @@ export interface ISettingSection {
 
   preferences: Array<string | {id: string, localized: string} >;
 
-  component?: React.ComponentClass<{scope: PreferenceScope}> | React.FunctionComponent <{scope: PreferenceScope}> ;
+  component?: React.ComponentType<{scope: PreferenceScope}>;
 
   hiddenInScope?: PreferenceScope[];
 }

@@ -5,7 +5,7 @@ import { IEditorDocumentModelContentRegistry } from './doc-model/types';
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
 export * from '../common';
 
-export type ReactEditorComponent<MetaData = any> = React.ComponentClass<{resource: IResource<MetaData>}> | React.FunctionComponent<{resource: IResource<MetaData>}>;
+export type ReactEditorComponent<MetaData = any> = React.ComponentType<{resource: IResource<MetaData>}>;
 
 export interface IEditorComponent<MetaData = any> {
 
