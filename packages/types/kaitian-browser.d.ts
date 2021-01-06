@@ -48,10 +48,10 @@ declare module 'kaitian-browser' {
   export interface IResizeHandleDelegate {
     setSize(prev: number, next: number): void;
   }
-  export const ResizeHandleHorizontal: React.FunctionComponent<ResizeHandleProps>;
-  export const ResizeHandleVertical: React.FunctionComponent<ResizeHandleProps>;
+  export const ResizeHandleHorizontal: React.ComponentType<ResizeHandleProps>;
+  export const ResizeHandleVertical: React.ComponentType<ResizeHandleProps>;
 
-  export const PlainWebview: React.FunctionComponent<{ id: string, appendToChild?: boolean, renderRoot?: HTMLElement}>;
+  export const PlainWebview: React.ComponentType<{ id: string, appendToChild?: boolean, renderRoot?: HTMLElement}>;
 
   // scope 目前不是必要的，可以直接从 extension 拿到 id
   // 为了兼容已经在使用的插件，暂时先保留声明

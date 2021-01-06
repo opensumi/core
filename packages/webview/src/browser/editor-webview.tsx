@@ -31,9 +31,8 @@ export const EditorWebviewComponentView: ReactEditorComponent<IEditorWebviewMeta
 
 /**
  * 同一个ID创建的webview会保存在内存以便重复使用，不要使用这个组件进行大量不同webview的创建
- * @param param0
  */
-export const PlainWebview: React.FunctionComponent<{id: string, renderRoot?: HTMLElement, appendToChild?: boolean }> = ({id, renderRoot = document.body, appendToChild}) => {
+export const PlainWebview: React.ComponentType<{id: string, renderRoot?: HTMLElement, appendToChild?: boolean }> = ({id, renderRoot = document.body, appendToChild}) => {
 
   let container: HTMLDivElement | null = null;
   const webviewService = useInjectable(IWebviewService) as IWebviewService;

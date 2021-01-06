@@ -12,8 +12,8 @@ import { localize } from '@ali/ide-core-common';
 
 export interface AppProps {
   app: IClientApp;
-  main: React.FunctionComponent;
-  overlays?: React.FunctionComponent[];
+  main: React.ComponentType;
+  overlays?: React.ComponentType[];
 }
 
 export function App(props: AppProps) {

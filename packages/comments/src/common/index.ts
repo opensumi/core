@@ -259,7 +259,7 @@ export interface CommentsPanelOptions {
   /**
    * title component
    */
-  titleComponent?: React.FunctionComponent;
+  titleComponent?: React.ComponentType<any>;
   initialProps?: object;
   /**
    * header component

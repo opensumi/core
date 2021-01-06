@@ -24,7 +24,7 @@ export function useDebounce(value, delay) {
   return denouncedValue;
 }
 
-export function useDisposable(callback: () => IDisposable[] | void, deps: DependencyList = []) {
+export function useDisposable(callback: () => IDisposable | IDisposable[], deps: DependencyList = []) {
   useEffect(() => {
     const disposableStore = new DisposableStore();
     const disposables = callback();
@@ -32,6 +32,8 @@ export function useDisposable(callback: () => IDisposable[] | void, deps: Depend
       disposables.forEach((disposable) => {
         disposableStore.add(disposable);
       });
+    } else {
+      disposableStore.add(disposables);
     }
 
     return () => {

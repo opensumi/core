@@ -65,7 +65,7 @@ export class TabBarHandler {
     this.tabbarService.getContainerState(this.containerId).hidden = true;
   }
 
-  setTitleComponent(Fc: React.FunctionComponent, props?: object) {
+  setTitleComponent(Fc: React.ComponentType, props?: object) {
     const componentInfo = this.tabbarService.getContainer(this.containerId);
     if (componentInfo) {
       componentInfo.options!.titleProps = props;

@@ -116,7 +116,7 @@ export const SlotDecorator: React.FC<{slot: string }> = ({slot, ...props}) => {
 };
 
 export interface RendererProps { components: ComponentRegistryInfo[]; }
-export type Renderer = React.FunctionComponent<RendererProps>;
+export type Renderer = React.ComponentType<RendererProps>;
 
 export class SlotRendererRegistry {
   static DefaultRenderer({ components }: RendererProps) {
@@ -174,7 +174,7 @@ export interface SlotRendererContribution {
 export const SlotRendererContribution = Symbol('SlotRendererContribution');
 
 export interface SlotRendererProps {
-  Component: React.FunctionComponent<any> | React.FunctionComponent<any>[];
+  Component: React.ComponentType<any> | React.ComponentType<any>[];
   initialProps?: object;
 }
 // @deprecated
