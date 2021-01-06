@@ -19,14 +19,15 @@ export class ElectronPlainWebviewWindow extends Disposable implements IPlainWebv
   constructor(options?: IElectronPlainWebviewWindowOptions, env: {[key: string]: string} = {}) {
     super();
     this._ready = this.electronMainUIService.createBrowserWindow({
+      ...options,
       webPreferences: {
         preload: new URI(electronEnv.plainWebviewPreload).codeUri.fsPath,
         additionalArguments: [
           '--additionalEnv=' + JSON.stringify(env),
           '--parentWindowWebContentsId=' + electronEnv.currentWebContentsId,
         ],
+        ...options?.webPreferences,
       },
-      ...options,
     }).then((id) => {
       this._windowId = id;
       const listener = (event, {from, message}: { from: number, message: any }) => {
