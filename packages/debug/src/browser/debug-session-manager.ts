@@ -190,7 +190,7 @@ export class DebugSessionManager {
     if (InternalDebugSessionOptions.is(options)) {
       return options;
     }
-    const { workspaceFolderUri, index } = options;
+    const { workspaceFolderUri, index, noDebug, parentSession, repl } = options;
     const resolvedConfiguration = await this.resolveDebugConfiguration(options.configuration, workspaceFolderUri);
     const configuration = await this.variableResolver.resolve(resolvedConfiguration, {});
     const key = configuration.name + workspaceFolderUri;
@@ -201,6 +201,9 @@ export class DebugSessionManager {
       configuration,
       workspaceFolderUri,
       index,
+      noDebug,
+      parentSession,
+      repl,
     };
   }
 
@@ -303,8 +306,11 @@ export class DebugSessionManager {
     return currentThread && currentThread.topFrame;
   }
 
-  getSession(sessionId: string): DebugSession | undefined {
-    return this._sessions.get(sessionId);
+  getSession(sessionId: string | undefined): DebugSession | undefined {
+    if (sessionId) {
+      return this._sessions.get(sessionId);
+    }
+    return undefined;
   }
 
   get sessions(): DebugSession[] {

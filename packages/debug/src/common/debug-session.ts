@@ -1,5 +1,15 @@
+import { IDisposable } from '@ali/ide-core-browser';
 import { DebugSessionOptions, InternalDebugSessionOptions } from './debug-session-options';
 import { DebugConfiguration } from './debug-configuration';
+import { DebugState, DebugEventTypes } from '../browser';
+
+export type IDebugSessionReplMode = 'separate' | 'mergeWithParent';
+
+export interface IDebugSessionOptions {
+  noDebug?: boolean;
+  parentSession?: IDebugSession;
+  repl?: IDebugSessionReplMode;
+}
 
 export const IDebugSession = Symbol('DebugSession');
 
@@ -11,4 +21,12 @@ export interface IDebugSessionManager {
   fireWillResolveDebugConfiguration(debugType: string): Promise<void> ;
 
   [key: string]: any;
+}
+
+export interface IDebugSession extends IDisposable {
+  state: DebugState;
+  parentSession: IDebugSession | undefined;
+  id: string;
+  hasSeparateRepl: () => boolean;
+  on: <K extends keyof DebugEventTypes>(kind: K, listener: (e: DebugEventTypes[K]) => any) => IDisposable;
 }

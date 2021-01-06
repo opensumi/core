@@ -1,5 +1,5 @@
 import { Injectable, Optinal, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { IMainThreadDebug, ExtHostAPIIdentifier, IExtHostDebug, ExtensionWSChannel, IMainThreadConnectionService } from '../../../common/vscode';
+import { IMainThreadDebug, ExtHostAPIIdentifier, IExtHostDebug, ExtensionWSChannel, IMainThreadConnectionService, IStartDebuggingOptions } from '../../../common/vscode';
 import { DisposableCollection, Uri, ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, URI } from '@ali/ide-core-browser';
 import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer, IDebuggerContribution, IDebugServiceContributionPoint } from '@ali/ide-debug';
 import { DebugSessionManager, BreakpointManager, DebugConfigurationManager, DebugPreferences, DebugSessionContributionRegistry, DebugModelManager, DebugBreakpoint } from '@ali/ide-debug/lib/browser';
@@ -14,7 +14,7 @@ import { ExtensionDebugAdapterContribution } from './debug/extension-debug-adapt
 import { IActivationEventService } from '../../types';
 import { Breakpoint, WorkspaceFolder } from '../../../common/vscode/models';
 import { DebugProtocol } from 'vscode-debugprotocol';
-import { IDebugSessionManager } from '@ali/ide-debug/lib/common/debug-session';
+import { IDebugSessionManager, IDebugSessionOptions } from '@ali/ide-debug/lib/common/debug-session';
 import { ITerminalApiService } from '@ali/ide-terminal-next';
 import { OutputService } from '@ali/ide-output/lib/browser/output.service';
 import { DebugConsoleModelService } from '@ali/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
@@ -273,7 +273,7 @@ export class MainThreadDebug implements IMainThreadDebug {
     throw new Error(`Debug session '${sessionId}' not found`);
   }
 
-  async $startDebugging(folder: WorkspaceFolder | undefined, nameOrConfiguration: string | DebugConfiguration ): Promise<boolean> {
+  async $startDebugging(folder: WorkspaceFolder | undefined, nameOrConfiguration: string | DebugConfiguration, options: IStartDebuggingOptions): Promise<boolean> {
     let configuration: DebugConfiguration | undefined;
     let index = 0;
     if (typeof nameOrConfiguration === 'string') {
@@ -292,10 +292,17 @@ export class MainThreadDebug implements IMainThreadDebug {
       throw new Error(`No configuration ${nameOrConfiguration}`);
     }
 
+    const debugOptions: IDebugSessionOptions = {
+      noDebug: false,
+      parentSession: this.sessionManager.getSession(options.parentSessionID),
+      repl: options.repl,
+    };
+
     const session = await this.sessionManager.start({
       configuration,
       workspaceFolderUri: folder && Uri.revive(folder.uri).toString(),
       index,
+      ...debugOptions,
     });
 
     return !!session;

@@ -9,7 +9,7 @@ import {
 } from '@ali/ide-core-browser';
 import debounce = require('lodash.debounce');
 import { DebugSessionConnection, DebugEventTypes, DebugRequestTypes } from './debug-session-connection';
-import { DebugSessionOptions, InternalDebugSessionOptions } from '../common';
+import { DebugSessionOptions, InternalDebugSessionOptions, IDebugSession } from '../common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { DebugProtocol } from 'vscode-debugprotocol';
@@ -23,6 +23,7 @@ import { DebugStackFrame } from './model/debug-stack-frame';
 import { DebugModelManager } from './editor/debug-model-manager';
 import { ITerminalApiService, TerminalOptions } from '@ali/ide-terminal-next';
 import { ExpressionContainer } from './tree/debug-tree-node.define';
+import { canceled } from '../../../core-common/lib';
 
 export enum DebugState {
   Inactive,
@@ -31,7 +32,7 @@ export enum DebugState {
   Stopped,
 }
 
-export class DebugSession implements IDisposable {
+export class DebugSession implements IDebugSession {
 
   protected readonly onDidChangeEmitter = new Emitter<void>();
   readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
@@ -123,6 +124,10 @@ export class DebugSession implements IDisposable {
     return this.options.configuration;
   }
 
+  get parentSession(): IDebugSession | undefined {
+    return this.options.parentSession;
+  }
+
   async start(): Promise<void> {
     await this.workbenchEditorService.saveAll();
     await this.initialize();
@@ -160,6 +165,10 @@ export class DebugSession implements IDisposable {
     this.updateCapabilities(response.body || {});
   }
   protected async launchOrAttach(): Promise<void> {
+    if (this.parentSession && this.parentSession.state === DebugState.Inactive) {
+      throw canceled();
+    }
+
     try {
       if (this.configuration.request === 'attach') {
         await this.sendRequest('attach', this.configuration);
@@ -616,4 +625,11 @@ export class DebugSession implements IDisposable {
     return this.connection.onDidCustomEvent;
   }
 
+  // REPL
+
+  hasSeparateRepl(): boolean {
+    return !this.parentSession || this.options.repl !== 'mergeWithParent';
+  }
+
+  // REPL end
 }

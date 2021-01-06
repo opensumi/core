@@ -1,6 +1,7 @@
 import { DebugConfiguration } from './debug-configuration';
+import { IDebugSessionOptions } from './debug-session';
 
-export interface DebugSessionOptions {
+export interface DebugSessionOptions extends IDebugSessionOptions {
   configuration: DebugConfiguration;
   workspaceFolderUri?: string;
   index: number;

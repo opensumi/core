@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useInjectable, ViewState } from '@ali/ide-core-browser';
 import { DebugStackSessionView } from './debug-call-stack-session.view';
 import { DebugSessionManager } from '../../debug-session-manager';
-import { IDebugSessionManager } from '../../../common';
+import { IDebugSessionManager, IDebugSession } from '../../../common';
 import { DebugSession } from '../../debug-session';
 
 export const DebugCallStackView = observer(({
@@ -33,9 +33,9 @@ export const DebugCallStackView = observer(({
   return (
     <div style={{ width: viewState.width }}>
       {
-        sessions.map((session) => {
+        sessions.filter((s: IDebugSession) => !s.parentSession).map((session) => {
           return (
-            <DebugStackSessionView key={session.id} viewState={ viewState } session={ session } />
+            <DebugStackSessionView key={session.id} viewState={ viewState } session={ session } indent={0} />
           );
         })
       }
