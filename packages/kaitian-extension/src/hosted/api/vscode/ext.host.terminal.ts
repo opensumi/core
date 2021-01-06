@@ -58,7 +58,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
     let terminal = this.terminalsMap.get(info.id);
 
     if (!terminal) {
-      terminal = new Terminal(info.name, this.proxy, info.id);
+      terminal = new Terminal(info.name, info, this.proxy, info.id);
       this.terminalsMap.set(info.id, terminal);
       const deferred = this._terminalDeferreds.get(info.id);
       deferred?.resolve(terminal);
@@ -83,7 +83,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
     shellPath?: string,
     shellArgs?: string[] | string,
   ): vscode.Terminal {
-    const terminal = new Terminal(name || '', this.proxy);
+    const terminal = new Terminal(name || '', { name, shellPath, shellArgs }, this.proxy);
     terminal.create({
       name,
       shellPath,
@@ -94,13 +94,13 @@ export class ExtHostTerminal implements IExtHostTerminal {
 
   createTerminalFromOptions(options: vscode.TerminalOptions) {
     // 插件API 同步提供 terminal 实例
-    const terminal = new Terminal(options.name, this.proxy);
+    const terminal = new Terminal(options.name, options, this.proxy);
     terminal.create(options);
     return terminal;
   }
 
   createExtensionTerminal(options: vscode.ExtensionTerminalOptions) {
-    const terminal = new ExtHostTerminalWrapper(options.name, this.proxy);
+    const terminal = new Terminal(options.name, options, this.proxy);
     const p = new ExtHostPseudoterminal(options.pty);
     terminal.createExtensionTerminal().then((id) => {
       const disposable = this._setupExtHostProcessListeners(id, p);
@@ -116,7 +116,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
       if (this.terminalsMap.get(info.id)) {
         return;
       }
-      const terminal =  new Terminal(info.name, this.proxy, info.id);
+      const terminal =  new Terminal(info.name, info, this.proxy, info.id);
       if (info.isActive) {
         this.activeTerminal = terminal;
       }
@@ -239,7 +239,12 @@ export class Terminal implements vscode.Terminal {
     this.createdPromiseResolve = resolve;
   });
 
-  constructor(public readonly name: string = '', protected proxy: IMainThreadTerminal, id?: string) {
+  constructor(
+    public readonly name: string = '',
+    private readonly _creationOptions: vscode.TerminalOptions | vscode.ExtensionTerminalOptions,
+    protected proxy: IMainThreadTerminal,
+    id?: string,
+  ) {
     if (!isUndefined(id)) {
       this.created(id);
     }
@@ -249,6 +254,10 @@ export class Terminal implements vscode.Terminal {
     return this.when.then(() => {
       return this.proxy.$getProcessId(this.id);
     });
+  }
+
+  public get creationOptions(): Readonly<vscode.TerminalOptions | vscode.ExtensionTerminalOptions> {
+    return this._creationOptions;
   }
 
   sendText(text: string, addNewLine?: boolean): void {
@@ -284,10 +293,8 @@ export class Terminal implements vscode.Terminal {
   dispose(): void {
     this.proxy.$dispose(this.id);
   }
-}
 
-export class ExtHostTerminalWrapper extends Terminal implements vscode.Terminal {
-  public async createExtensionTerminal(): Promise<string> {
+  async createExtensionTerminal(): Promise<string> {
     const id = await this.proxy.$createTerminal({ name: this.name, isExtensionTerminal: true });
     this.created(id);
     return id;
