@@ -87,16 +87,6 @@ export const ExtensionTabBarTreeView = observer(({
     handleContextMenu(ev, node);
   };
 
-  const ensureIsReady = async () => {
-    await model.whenReady;
-    if (!!model.treeModel) {
-      // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
-      // 这里需要重新取一下treeModel的值确保为最新的TreeModel
-      await model.treeModel.root.ensureLoaded();
-    }
-    setIsReady(true);
-  };
-
   const handleOuterContextMenu = (ev: React.MouseEvent) => {
     const { handleContextMenu } = model;
     // 空白区域右键菜单
@@ -110,7 +100,15 @@ export const ExtensionTabBarTreeView = observer(({
   };
 
   React.useEffect(() => {
-    ensureIsReady();
+    (async () => {
+      await model.whenReady;
+      if (!!model.treeModel) {
+        // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
+        // 这里需要重新取一下treeModel的值确保为最新的TreeModel
+        await model.treeModel.root.ensureLoaded();
+      }
+      setIsReady(true);
+    })();
     return () => {
       model && model.removeNodeDecoration();
     };
