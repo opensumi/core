@@ -3,7 +3,7 @@ import { RPCProtocol } from '@ali/ide-connection';
 import { ITerminalApiService, ITerminalController } from '@ali/ide-terminal-next';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
-import { ExtHostTerminal, ExtHostTerminalWrapper } from '../../../../src/hosted/api/vscode/ext.host.terminal';
+import { ExtHostTerminal, Terminal } from '../../../../src/hosted/api/vscode/ext.host.terminal';
 import { MainThreadTerminal } from '../../../../src/browser/vscode/api/main.thread.terminal';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 
@@ -81,7 +81,7 @@ describe(__filename, () => {
         close: () => {},
       },
     });
-    expect(terminal3).toBeInstanceOf(ExtHostTerminalWrapper);
+    expect(terminal3).toBeInstanceOf(Terminal);
     expect(terminal3.name).toBe('terminal-3');
   });
 });
