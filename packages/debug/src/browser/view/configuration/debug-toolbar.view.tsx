@@ -98,7 +98,7 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
     if (isAttach) {
       return <DebugAction run={ doStop } enabled={ typeof state === 'number' && state !== DebugState.Inactive } icon={ 'disconnect' } label={ localize('debug.action.disattach') } />;
     }
-    return <DebugAction run={ doStop } enabled={ typeof state === 'number' && state !== DebugState.Inactive } icon={ 'stop' } label={ localize('debug.action.stop') } />;
+    return <DebugAction run={ doStop } enabled={ typeof state === 'number' && state !== DebugState.Inactive } icon={ 'terminate' } label={ localize('debug.action.stop') } />;
   };
   const renderContinue = (state: DebugState): React.ReactNode => {
     if (state === DebugState.Stopped) {
