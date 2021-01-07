@@ -188,13 +188,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
           PATH: shellPath ? shellPath : process.env.PATH,
         },
       };
-    } else {
-      forkOptions = {
-        ...forkOptions,
-        env: {
-          ...process.env,
-        },
-      };
     }
     const forkArgs: string[] = [];
     let extProcessPath: string = '';
