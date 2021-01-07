@@ -192,8 +192,10 @@ describe('DebugScope', () => {
     indexedVariables: 0,
   } as any;
 
+  const root = new DebugVariableRoot(mockSession);
+
   beforeAll(() => {
-    scope = new DebugScope(mockScope, mockSession, undefined);
+    scope = new DebugScope(mockScope, mockSession, root);
   });
 
   it('should have correct property', () => {
@@ -201,7 +203,7 @@ describe('DebugScope', () => {
     expect(scope.variablesReference).toBe(mockScope.variablesReference);
     expect(scope.namedVariables).toBe(mockScope.namedVariables);
     expect(scope.indexedVariables).toBe(mockScope.indexedVariables);
-    expect(scope.parent).toBeUndefined();
+    expect(scope.parent).toBeDefined();
   });
 });
 

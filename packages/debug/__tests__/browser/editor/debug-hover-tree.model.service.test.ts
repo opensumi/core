@@ -84,7 +84,7 @@ describe('Debug Hover Model', () => {
 
   it('activeNodeDecoration method should be work', () => {
     const mockSession = jest.fn() as any;
-    const node = new ExpressionContainer({ session: mockSession }, mockRoot);
+    const node = new ExpressionContainer({ session: mockSession }, mockRoot, undefined, 'test');
     debugHoverTreeModelService.activeNodeDecoration(node);
     const decoration = debugHoverTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -93,7 +93,7 @@ describe('Debug Hover Model', () => {
 
   it('enactiveNodeDecoration method should be work', () => {
     const mockSession = jest.fn() as any;
-    const node = new ExpressionContainer({ session: mockSession }, mockRoot);
+    const node = new ExpressionContainer({ session: mockSession }, mockRoot, undefined, 'test');
     debugHoverTreeModelService.activeNodeDecoration(node);
     let decoration = debugHoverTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -106,7 +106,7 @@ describe('Debug Hover Model', () => {
 
   it('removeNodeDecoration method should be work', () => {
     const mockSession = jest.fn() as any;
-    const node = new ExpressionContainer({ session: mockSession }, mockRoot);
+    const node = new ExpressionContainer({ session: mockSession }, mockRoot, undefined, 'test');
     debugHoverTreeModelService.activeNodeDecoration(node);
     let decoration = debugHoverTreeModelService.decorations.getDecorations(node);
     debugHoverTreeModelService.removeNodeDecoration();
@@ -123,7 +123,7 @@ describe('Debug Hover Model', () => {
 
   it('handleTreeBlur method should be work', () => {
     const mockSession = jest.fn() as any;
-    const node = new ExpressionContainer({ session: mockSession }, mockRoot);
+    const node = new ExpressionContainer({ session: mockSession }, mockRoot, undefined, 'test');
     debugHoverTreeModelService.initDecorations(mockRoot);
     debugHoverTreeModelService.activeNodeDecoration(node);
     let decoration = debugHoverTreeModelService.decorations.getDecorations(node);
