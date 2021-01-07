@@ -1,4 +1,4 @@
-import { Emitter, IFileServiceClient, URI, Uri, IEventBus, PreferenceScope, ILoggerManagerClient, FileUri, CommonServerPath, OS, IApplicationService, DisposableCollection } from '@ali/ide-core-common';
+import { Emitter, IFileServiceClient, URI, Uri, IEventBus, PreferenceScope, ILoggerManagerClient, FileUri, CommonServerPath, OS, IApplicationService, DisposableCollection, Schemas } from '@ali/ide-core-common';
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -58,6 +58,7 @@ import { IWorkspaceEditService, IWorkspaceFileService } from '@ali/ide-workspace
 import { WorkspaceEditServiceImpl } from '@ali/ide-workspace-edit/lib/browser/workspace-edit.service';
 import { WorkspaceFileService } from '@ali/ide-workspace-edit/lib/browser/workspace-file.service';
 import { MainThreadFileSystemEvent } from '../../lib/browser/vscode/api/main.thread.file-system-event';
+import { EOL } from '@ali/ide-editor';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -479,5 +480,51 @@ describe('MainThreadWorkspace API Test Suite', () => {
     const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
     const roots = [await fileServiceClient.getFileStat(URI.file(path.join(__dirname)).toString())];
     workspaceService._onWorkspaceChanged.fire(roots as FileStat[]);
+  });
+
+  it('do emit fireModelOpenedEvent if uri is file scheme', (done) => {
+    const callback = jest.fn();
+    extHostDocs.onDidOpenTextDocument(callback);
+    const uri = URI.parse('test').withScheme(Schemas.file);
+    const mainThreadDocuments = rpcProtocolMain.get(MainThreadAPIIdentifier.MainThreadDocuments);
+    // 设置可以同步
+    (mainThreadDocuments as any).docSyncEnabled.set(uri.toString(), true);
+    eventBus.fire(new EditorDocumentModelCreationEvent({
+      uri,
+      languageId: '',
+      eol: EOL.LF,
+      encoding: '',
+      content: '',
+      readonly: true,
+      versionId: 1,
+    }));
+    // file 类型的 uri 会触发
+    setTimeout(() => {
+      expect(callback).toBeCalledTimes(1);
+      done();
+    });
+  });
+
+  it('do not emit fireModelOpenedEvent if uri is walkThroughSnippet scheme', (done) => {
+    const callback = jest.fn();
+    extHostDocs.onDidOpenTextDocument(callback);
+    const uri = URI.parse('test').withScheme(Schemas.walkThroughSnippet);
+    const mainThreadDocuments = rpcProtocolMain.get(MainThreadAPIIdentifier.MainThreadDocuments);
+    // 设置可以同步
+    (mainThreadDocuments as any).docSyncEnabled.set(uri.toString(), true);
+    eventBus.fire(new EditorDocumentModelCreationEvent({
+      uri,
+      languageId: '',
+      eol: EOL.LF,
+      encoding: '',
+      content: '',
+      readonly: true,
+      versionId: 1,
+    }));
+    // walkThroughSnippet 类型的 uri 不会触发
+    setTimeout(() => {
+      expect(callback).toBeCalledTimes(0);
+      done();
+    });
   });
 });
