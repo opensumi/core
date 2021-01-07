@@ -55,6 +55,7 @@ export {
   UIKind,
   Uri,
   ProgressLocation,
+  TextEditorRevealType,
 } from '../../../common/vscode/ext-types';
 export {
   CancellationTokenSource,
