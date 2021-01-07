@@ -1,7 +1,8 @@
-import { WithEventBus, OnEvent, Event, URI, IDisposable, Disposable, isUndefinedOrNull, Emitter, LRUMap, Schemas } from '@ali/ide-core-common';
+import { WithEventBus, OnEvent, Event, URI, IDisposable, Disposable, isUndefinedOrNull, Emitter, LRUMap } from '@ali/ide-core-common';
 import { ExtHostAPIIdentifier, IMainThreadDocumentsShape, IExtensionHostDocService } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Injectable, Optinal, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { Schemas } from '../../../common/vscode/ext-types';
 import { ResourceService } from '@ali/ide-editor';
 import { EditorComponentRegistry, IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, EditorDocumentModelCreationEvent, EditorDocumentModelRemovalEvent, EditorDocumentModelSavedEvent, IEditorDocumentModelContentProvider, EditorDocumentModelOptionChangedEvent, EditorDocumentModelWillSaveEvent } from '@ali/ide-editor/lib/browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -84,10 +85,6 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
 
   public isDocSyncEnabled(uri: URI | string): boolean {
     const uriString = uri.toString();
-    // 过滤掉输出面板的 model
-    if (URI.parse(uriString).scheme === Schemas.walkThroughSnippet) {
-      return false;
-    }
     if (!this.docSyncEnabled.has(uriString)) {
       const docRef =  this.docManager.getModelReference(new URI(uriString), 'mainthread doc size');
       if (docRef) {
