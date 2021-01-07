@@ -156,8 +156,8 @@ export class ExpressionContainer extends CompositeTreeNode {
 
   public presetChildren: (ExpressionContainer | ExpressionNode)[];
 
-  constructor(options: ExpressionContainer.Options, parent?: ExpressionContainer, tree?: ITree) {
-    super(tree || new ExpressionTreeService(options.session, options.source, options.line) as ITree, parent, undefined, { name: String(options.session?.id) });
+  constructor(options: ExpressionContainer.Options, parent?: ExpressionContainer, tree?: ITree, name?: string) {
+    super(tree || new ExpressionTreeService(options.session, options.source, options.line) as ITree, parent, undefined, { name: name || options.session?.id }, { disableCache: true });
     this.session = options.session;
     this.variablesReference = options.variablesReference || 0;
     this.namedVariables = options.namedVariables;
@@ -199,13 +199,8 @@ export class DebugVirtualVariable extends ExpressionContainer {
   private _name: string;
 
   constructor(options: DebugVirtualVariable.Options, parent?: ExpressionContainer) {
-    super(options, parent);
+    super(options, parent, undefined, options.name);
     this._name = options.name;
-    TreeNode.setTreeNode(this._uid, this.path, this);
-  }
-
-  get name() {
-    return this._name;
   }
 }
 
@@ -287,7 +282,7 @@ export class DebugVariableContainer extends ExpressionContainer {
   constructor(
     public readonly session: DebugSession | undefined,
     public readonly variable: DebugProtocol.Variable,
-    public parent: ExpressionContainer | undefined,
+    parent: ExpressionContainer | undefined,
     source?: DebugProtocol.Source,
     line?: string | number,
   ) {
@@ -298,8 +293,12 @@ export class DebugVariableContainer extends ExpressionContainer {
       indexedVariables: variable.indexedVariables,
       source,
       line,
-    }, parent);
-    TreeNode.setTreeNode(this._uid, this.path, this);
+    }, parent, undefined, variable?.name ||
+      (variable.evaluateName ?
+        (/\["(.+)"]/.exec(variable.evaluateName) ? (/\["(.+)"]/.exec(variable.evaluateName))![1] : variable.evaluateName.split('.')[variable.evaluateName.split('.').length - 1])
+        : ''
+      ),
+    );
   }
 
   get name(): string {
@@ -375,12 +374,7 @@ export class DebugScope extends ExpressionContainer {
       variablesReference: raw.variablesReference,
       namedVariables: raw.namedVariables,
       indexedVariables: raw.indexedVariables,
-    }, parent);
-    TreeNode.setTreeNode(this._uid, this.path, this);
-  }
-
-  get name(): string {
-    return this.raw ? this.raw.name : '';
+    }, parent, undefined, raw.name);
   }
 }
 
@@ -398,12 +392,11 @@ export class DebugWatchNode extends ExpressionContainer {
   constructor(
     public readonly session: DebugSession | undefined,
     public readonly expression: string,
-    public parent: ExpressionContainer | undefined,
+    parent: ExpressionContainer | undefined,
   ) {
     super({
       session,
-    }, parent);
-    TreeNode.setTreeNode(this._uid, this.path, this);
+    }, parent, undefined, expression);
   }
 
   get description() {
@@ -501,11 +494,11 @@ export class DebugConsoleNode extends ExpressionContainer {
   constructor(
     public readonly session: DebugSession | undefined,
     public readonly expression: string,
-    public parent: ExpressionContainer | undefined,
+    parent: ExpressionContainer | undefined,
   ) {
     super({
       session,
-    }, parent);
+    }, parent, undefined, expression);
   }
 
   get description() {
