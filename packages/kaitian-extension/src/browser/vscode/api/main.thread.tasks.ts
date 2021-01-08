@@ -355,8 +355,6 @@ namespace TaskDTO {
         command = ProcessExecutionDTO.to(task.execution);
       } else if (CustomExecutionDTO.is(task.execution)) {
         command = CustomExecutionDTO.to();
-      } else if (CustomExecution2DTO.is(task.execution)) {
-        command = CustomExecution2DTO.to();
       }
     }
 

@@ -1013,7 +1013,7 @@ export interface TaskEvent {
   group?: string;
   processId?: number;
   exitCode?: number;
-  terminalId?: number;
+  terminalId?: string;
   __task?: Task;
 }
 
@@ -1027,10 +1027,10 @@ export const enum TaskRunSource {
 export namespace TaskEvent {
   export function create(kind: TaskEventKind.ProcessStarted | TaskEventKind.ProcessEnded, task: Task, processIdOrExitCode?: number): TaskEvent;
   // tslint:disable-next-line: unified-signatures
-  export function create(kind: TaskEventKind.Start, task: Task, terminalId?: number): TaskEvent;
+  export function create(kind: TaskEventKind.Start, task: Task, terminalId?: string): TaskEvent;
   export function create(kind: TaskEventKind.DependsOnStarted | TaskEventKind.Start | TaskEventKind.Active | TaskEventKind.Inactive | TaskEventKind.Terminated | TaskEventKind.End, task: Task): TaskEvent;
   export function create(kind: TaskEventKind.Changed): TaskEvent;
-  export function create(kind: TaskEventKind, task?: Task, processIdOrExitCodeOrTerminalId?: number): TaskEvent {
+  export function create(kind: TaskEventKind, task?: Task, processIdOrExitCodeOrTerminalId?: number | string): TaskEvent {
     if (task) {
       const result: TaskEvent = {
         kind,
@@ -1040,15 +1040,15 @@ export namespace TaskEvent {
         group: task.configurationProperties.group,
         processId: undefined as number | undefined,
         exitCode: undefined as number | undefined,
-        terminalId: undefined as number | undefined,
+        terminalId: undefined as string | undefined,
         __task: task,
       };
       if (kind === TaskEventKind.Start) {
-        result.terminalId = processIdOrExitCodeOrTerminalId;
+        result.terminalId = processIdOrExitCodeOrTerminalId as string;
       } else if (kind === TaskEventKind.ProcessStarted) {
-        result.processId = processIdOrExitCodeOrTerminalId;
+        result.processId = processIdOrExitCodeOrTerminalId as number;
       } else if (kind === TaskEventKind.ProcessEnded) {
-        result.exitCode = processIdOrExitCodeOrTerminalId;
+        result.exitCode = processIdOrExitCodeOrTerminalId as number;
       }
       return Object.freeze(result);
     } else {

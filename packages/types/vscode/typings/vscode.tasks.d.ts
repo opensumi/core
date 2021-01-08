@@ -398,8 +398,22 @@ declare module 'vscode' {
 		 *  or '$eslint'. Problem matchers can be contributed by an extension using
 		 *  the `problemMatchers` extension point.
 		 */
-		constructor(taskDefinition: TaskDefinition, scope: WorkspaceFolder | TaskScope.Global | TaskScope.Workspace, name: string, source: string, execution?: ProcessExecution | ShellExecution, problemMatchers?: string | string[]);
+		constructor(taskDefinition: TaskDefinition, scope: WorkspaceFolder | TaskScope.Global | TaskScope.Workspace, name: string, source: string, execution?: ProcessExecution | ShellExecution | CustomExecution, problemMatchers?: string | string[]);
 
+		/**
+		 * ~~Creates a new task.~~
+		 *
+		 * @deprecated Use the new constructors that allow specifying a scope for the task.
+		 *
+		 * @param definition The task definition as defined in the taskDefinitions extension point.
+		 * @param name The task's name. Is presented in the user interface.
+		 * @param source The task's source (e.g. 'gulp', 'npm', ...). Is presented in the user interface.
+		 * @param execution The process or shell execution.
+		 * @param problemMatchers the names of problem matchers to use, like '$tsc'
+		 *  or '$eslint'. Problem matchers can be contributed by an extension using
+		 *  the `problemMatchers` extension point.
+		 */
+		constructor(taskDefinition: TaskDefinition, name: string, source: string, execution?: ProcessExecution | ShellExecution | CustomExecution, problemMatchers?: string | string[]);
 		/**
 		 * ~~Creates a new task.~~
 		 *
@@ -433,7 +447,7 @@ declare module 'vscode' {
 		/**
 		 * The task's execution engine
 		 */
-		execution?: ProcessExecution | ShellExecution;
+		execution?: ProcessExecution | ShellExecution | CustomExecution;
 
 		/**
 		 * Whether the task is a background task or not.

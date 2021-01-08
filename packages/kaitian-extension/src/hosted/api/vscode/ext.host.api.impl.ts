@@ -94,7 +94,7 @@ export function createApiFactory(
       version: appConfig.customVSCodeEngineVersion || '1.37.0',
       comments: createCommentsApiFactory(extension, extHostComments),
       extensions: createExtensionsApiFactory(extensionService),
-      tasks: createTaskApiFactory(rpcProtocol, extensionService, extHostTasks, extension),
+      tasks: createTaskApiFactory(extHostTasks, extension),
       scm: {
         get inputBox() {
           return extHostSCM.getLastInputBox(extension)!; // Strict null override - Deprecated api
@@ -106,6 +106,8 @@ export function createApiFactory(
       // 类型定义
       ...extTypes,
       ...fileSystemTypes,
+      // 参考 VS Code，目前到 1.44 版本为临时兼容，最新版(1.50+)已去除
+      Task2: extTypes.Task,
       CancellationTokenSource,
       EventEmitter: Emitter,
       Event,

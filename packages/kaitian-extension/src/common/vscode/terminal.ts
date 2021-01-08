@@ -33,6 +33,8 @@ export interface IExtHostTerminal {
   createTerminal(name?: string, shellPath?: string, shellArgs?: string[] | string): vscode.Terminal;
   createTerminalFromOptions(options: vscode.TerminalOptions): vscode.Terminal;
   createExtensionTerminal(options: vscode.ExtensionTerminalOptions): vscode.Terminal;
+  // 用于连接已经创建好的 extensionTerminal
+  attachPtyToTerminal(id: string, pty: vscode.Pseudoterminal): void;
 
   onDidChangeActiveTerminal: Event<vscode.Terminal | undefined>;
 

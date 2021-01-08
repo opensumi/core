@@ -8,11 +8,11 @@ const debugLog = getDebugLogger();
 
 export class ExtHostTerminal implements IExtHostTerminal {
   private proxy: IMainThreadTerminal;
-  private changeActiveTerminalEvent: Emitter<vscode.Terminal | undefined> = new Emitter();
-  private closeTerminalEvent: Emitter<vscode.Terminal> = new Emitter();
-  private openTerminalEvent: Emitter<vscode.Terminal> = new Emitter();
-  private terminalsMap: Map<string, vscode.Terminal> = new Map();
-  private _terminalDeferreds: Map<string, Deferred<vscode.Terminal>> = new Map();
+  private changeActiveTerminalEvent: Emitter<Terminal | undefined> = new Emitter();
+  private closeTerminalEvent: Emitter<Terminal> = new Emitter();
+  private openTerminalEvent: Emitter<Terminal> = new Emitter();
+  private terminalsMap: Map<string, Terminal> = new Map();
+  private _terminalDeferreds: Map<string, Deferred<Terminal>> = new Map();
 
   private _shellPath: string;
 
@@ -21,8 +21,8 @@ export class ExtHostTerminal implements IExtHostTerminal {
   protected _terminalProcessDisposables: { [id: number]: IDisposable } = {};
   protected _extensionTerminalAwaitingStart: { [id: number]: { initialDimensions: ITerminalDimensionsDto | undefined } | undefined } = {};
 
-  activeTerminal: vscode.Terminal | undefined;
-  get terminals(): vscode.Terminal[] {
+  activeTerminal: Terminal | undefined;
+  get terminals(): Terminal[] {
     return Array.from(this.terminalsMap.values());
   }
 
@@ -37,7 +37,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
     this.changeActiveTerminalEvent.fire(terminal);
   }
 
-  get onDidChangeActiveTerminal(): Event<vscode.Terminal | undefined>  {
+  get onDidChangeActiveTerminal(): Event<Terminal | undefined>  {
     return this.changeActiveTerminalEvent.event;
   }
 
@@ -50,7 +50,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
     this.closeTerminalEvent.fire(terminal);
   }
 
-  get onDidCloseTerminal(): Event<vscode.Terminal> {
+  get onDidCloseTerminal(): Event<Terminal> {
     return this.closeTerminalEvent.event;
   }
 
@@ -66,7 +66,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
     this.openTerminalEvent.fire(terminal);
   }
 
-  get onDidOpenTerminal(): Event<vscode.Terminal> {
+  get onDidOpenTerminal(): Event<Terminal> {
     return this.openTerminalEvent.event;
   }
 
@@ -109,6 +109,15 @@ export class ExtHostTerminal implements IExtHostTerminal {
     return terminal;
   }
 
+  public attachPtyToTerminal(id: string, pty: vscode.Pseudoterminal) {
+    const terminal = this._getTerminalByIdEventually(id);
+    if (!terminal) {
+      throw new Error(`Cannot resolve terminal with id ${id} for virtual process`);
+    }
+    const p = new ExtHostPseudoterminal(pty);
+    this._setupExtHostProcessListeners(id, p);
+  }
+
   $setTerminals(idList: ITerminalInfo[]) {
     this.terminalsMap.clear();
     this.activeTerminal = undefined;
@@ -136,10 +145,11 @@ export class ExtHostTerminal implements IExtHostTerminal {
   private async _getTerminalByIdEventually(id: string, timeout = 1000) {
     let terminal = this.terminalsMap.get(id);
     if (!terminal) {
-      const deferred = new Deferred<vscode.Terminal>();
+      const deferred = this._terminalDeferreds.get(id) || new Deferred<Terminal>();
       setTimeout(() => {
         deferred.resolve();
       }, timeout);
+
       this._terminalDeferreds.set(id, deferred);
       terminal = await deferred.promise;
       this._terminalDeferreds.delete(id);
@@ -156,7 +166,6 @@ export class ExtHostTerminal implements IExtHostTerminal {
     }
 
     // TerminalController::_createClient 会立即触发 onDidOpenTerminal，所以无需等待
-
     const terminalProcess = this._terminalProcesses.get(id);
     if (terminalProcess) {
       (terminalProcess as ExtHostPseudoterminal).startSendingEvents(initialDimensions);
