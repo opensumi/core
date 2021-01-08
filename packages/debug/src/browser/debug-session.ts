@@ -480,19 +480,16 @@ export class DebugSession implements IDisposable {
   }
 
   protected async updateFrames(): Promise<void> {
-    const promises = this.threads.map(async (thread) => {
-      if (!thread || thread.frameCount) {
+    const thread = this.currentThread;
+    if (!thread || thread.frameCount) {
         return;
-      }
-      if (this.capabilities.supportsDelayedStackTraceLoading) {
+    }
+    if (this.capabilities.supportsDelayedStackTraceLoading) {
         await thread.fetchFrames(1);
-        return await thread.fetchFrames(19);
-      } else {
-        return await thread.fetchFrames();
-      }
-    });
-
-    await Promise.all(promises);
+        await thread.fetchFrames(19);
+    } else {
+        await thread.fetchFrames();
+    }
 
     // set current frame from editor
     const editor = this.workbenchEditorService.currentEditor;
