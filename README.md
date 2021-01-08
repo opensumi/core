@@ -55,6 +55,15 @@ npm run add:node file-tree lodash
 npm run add:browser file-tree lodash
 ```
 
+### 检查依赖项
+
+```
+  // 运行整个项目的模块依赖检查
+  npm run check:dep
+  // 运行单个模块依赖检查
+  npm run check:dep -- --module=scm
+```
+
 ### 测试脚本
 `./node_modules/.bin/jest 'packages/connection/__test__/node/index.test.ts(测试脚本路径)'  --coverage --forceExit && ./node_modules/.bin/alicov-report`
 
