@@ -1,4 +1,4 @@
-import { Emitter, Deferred, IExtensionProps, URI, Uri } from '@ali/ide-core-common';
+import { Emitter, Deferred, IExtensionProps, Uri } from '@ali/ide-core-common';
 import {
   RPCProtocol, ProxyIdentifier,
 } from '@ali/ide-connection';
@@ -209,10 +209,6 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
     const registerExtendFn = (exportsData) => {
       return this.registerExtendModuleService(exportsData, extension);
     };
-    const resolveStaticResource = async (uri: URI) => {
-      const assetUriComponent = await this.mainThreadExtensionService.$resolveStaticResource(uri.codeUri);
-      return URI.from(assetUriComponent);
-    };
 
     const context = new KTWorkerExtensionContext({
       extensionId: extension.id,
@@ -221,8 +217,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
       extensionPath: extension.realPath,
       staticServicePath: this.staticServicePath,
       storageProxy: this.storage,
-      resolveStaticResource,
-      extensionUri: extension.extensionLocation,
+      extensionLocation: extension.extensionLocation,
     });
 
     return Promise.all([

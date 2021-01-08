@@ -4,7 +4,7 @@ import type * as vscode from 'vscode';
 
 import { Injector } from '@ali/common-di';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
-import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, ReporterProcessMessage, REPORT_NAME, IExtensionProps, Uri } from '@ali/ide-core-common';
+import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, ReporterProcessMessage, REPORT_NAME, IExtensionProps } from '@ali/ide-core-common';
 import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy, getExtensionId } from '../common';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
@@ -137,11 +137,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   }
 
   public async $initExtensions() {
-    const extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService).$getExtensions();
-    this.extensions = extensions.map((ext) => ({
-      ...ext,
-      extensionLocation: Uri.from(ext.extensionLocation),
-    }));
+    this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService).$getExtensions();
     this.logger.debug('kaitian extensions', this.extensions.map((extension) => {
       return extension.packageJSON.name;
     }));
@@ -461,7 +457,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     const context = new ExtensionContext({
       extensionId,
       extensionPath: modulePath,
-      extensionUri: extension.extensionLocation,
+      extensionLocation: extension.extensionLocation,
       storageProxy,
       extendProxy,
       registerExtendModuleService: registerExtendFn,
