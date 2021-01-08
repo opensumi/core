@@ -10,7 +10,7 @@ export const mockExtensionProps: IExtensionProps = {
   path: path.join(__dirname, 'extension'),
   realPath: '/home/.kaitian/extensions/test.kaitian-extension-1.0.0',
   extensionId: 'uuid-for-test-extension',
-  extensionLocation: Uri.file(path.join(__dirname, '../__mock__/extension')),
+  extensionLocation: Uri.file(path.join(__dirname, 'extension')),
   isUseEnable: true,
   enableProposedApi: false,
   isBuiltin: false,
@@ -41,6 +41,7 @@ export const mockExtensionProps2: IExtensionProps = {
   name: 'kaitian-extension-error',
   id: 'test.kaitian-extension-error',
   extensionId: 'uuid-for-test-extension-2',
+  extensionLocation: Uri.file(path.join(__dirname, 'extension-error')),
   workerScriptPath: 'http://some-host/__tests__/__mock__/extension-error/worker.error.js',
   packageJSON: {
     name: 'kaitian-extension-error',

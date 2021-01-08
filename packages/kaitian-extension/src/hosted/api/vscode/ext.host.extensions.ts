@@ -89,6 +89,8 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
 
   readonly extensionPath: string;
 
+  readonly _extensionLocation: Uri;
+
   readonly workspaceState: ExtensionMemento;
 
   readonly globalState: ExtensionMemento;
@@ -104,10 +106,12 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
       extensionId,
       extensionPath,
       storageProxy,
+      extensionLocation,
     } = options;
     this._storage = storageProxy;
 
     this.extensionPath = extensionPath;
+    this._extensionLocation = extensionLocation;
     this.workspaceState = new ExtensionMemento(extensionId, false, storageProxy);
     this.globalState = new ExtensionMemento(extensionId, true, storageProxy);
     this.componentProxy = options.extendProxy;
@@ -130,9 +134,8 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
     return path.join(this.extensionPath, relativePath);
   }
 
-  // node 层直接用 file scheme
   get extensionUri() {
-    return Uri.file(this.extensionPath);
+    return this._extensionLocation;
   }
 }
 

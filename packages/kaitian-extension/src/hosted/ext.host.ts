@@ -4,7 +4,7 @@ import type * as vscode from 'vscode';
 
 import { Injector } from '@ali/common-di';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
-import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, ReporterProcessMessage, REPORT_NAME, IExtensionProps } from '@ali/ide-core-common';
+import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, ReporterProcessMessage, REPORT_NAME, IExtensionProps, Uri } from '@ali/ide-core-common';
 import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy, getExtensionId } from '../common';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
@@ -137,7 +137,12 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   }
 
   public async $initExtensions() {
-    this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService).$getExtensions();
+    const extensions: IExtensionProps[] = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService).$getExtensions();
+    // node 层 extensionLocation 不使用 static 直接使用 file
+    this.extensions = extensions.map((item) => ({
+      ...item,
+      extensionLocation: Uri.file(item.path),
+    }));
     this.logger.debug('kaitian extensions', this.extensions.map((extension) => {
       return extension.packageJSON.name;
     }));
