@@ -2,6 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { ButtonType } from '@ali/ide-components';
 import { replaceLocalizePlaceholder, ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
 import { warning } from '@ali/ide-components/lib/utils';
+import * as ReactIs from 'react-is';
 
 import { MenuId } from './menu-id';
 
@@ -30,8 +31,7 @@ export interface MenuCommandDesc {
   label: string;
 }
 
-interface IBaseMenuItem {
-  group?: 'navigation' | string;
+interface ICoreMenuItem {
   order?: number;
   /**
    * 决定是否在视图层展示
@@ -42,6 +42,10 @@ interface IBaseMenuItem {
    * 单独变更此 menu action 的 args
    */
   argsTransformer?: ((...args: any[]) => any[]);
+}
+
+interface IBaseMenuItem extends ICoreMenuItem {
+  group?: 'navigation' | string;
   /**
    * 图标的名称
    * 当 menu 在 InlineActionBar 出现时，使用的 iconClass
@@ -59,6 +63,31 @@ interface IBaseMenuItem {
    * 默认值为 icon
    */
   type?: IMenuActionDisplayType;
+}
+
+export interface IComponentMenuItemProps {
+  getExecuteArgs: () => any[];
+}
+
+/**
+ * 有限开放，目前仅支持 navigation 的 group，也不支持 context 系列的位置
+ */
+interface IInternalComponentMenuItem extends ICoreMenuItem {
+   /**
+   * 单个 menu 支持传入额外参数
+   */
+  extraTailArgs?: any[];
+  /**
+   * 组件形式的 menu item
+   */
+  component: React.ComponentType<IComponentMenuItemProps>;
+}
+
+export interface IComponentMenuItem extends IInternalComponentMenuItem {
+  /**
+   * group 默认为 `navigation`
+   */
+  group: 'navigation';
 }
 
 export interface IMenuItem extends IBaseMenuItem {
@@ -99,10 +128,10 @@ export abstract class IMenuRegistry {
 
   readonly onDidChangeMenu: Event<string>;
   abstract getMenuCommand(command: string | MenuCommandDesc): PartialBy<MenuCommandDesc, 'label'>;
-  abstract registerMenuItem(menuId: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable;
-  abstract registerMenuItems(menuId: MenuId | string, items: Array<IMenuItem | ISubmenuItem>): IDisposable;
+  abstract registerMenuItem(menuId: MenuId | string, item: IMenuItem | ISubmenuItem | IInternalComponentMenuItem): IDisposable;
+  abstract registerMenuItems(menuId: MenuId | string, items: Array<IMenuItem | ISubmenuItem | IInternalComponentMenuItem>): IDisposable;
   abstract unregisterMenuId(menuId: string): IDisposable;
-  abstract getMenuItems(menuId: MenuId | string): Array<IMenuItem | ISubmenuItem>;
+  abstract getMenuItems(menuId: MenuId | string): Array<IMenuItem | ISubmenuItem | IComponentMenuItem>;
 }
 
 export interface IMenubarItem {
@@ -114,12 +143,17 @@ export interface IMenubarItem {
 
 @Injectable()
 export class CoreMenuRegistryImpl implements IMenuRegistry {
+  // 目前只支持 `EditorTitle` 开放 `ComponentMenuItem`
+  static EnableComponentMenuIds: Array<MenuId | string> = [
+    MenuId.EditorTitle,
+  ];
+
   private readonly _menubarItems = new Map<string, IMenubarItem>();
 
   private readonly _onDidChangeMenubar = new Emitter<string>();
   readonly onDidChangeMenubar: Event<string> = this._onDidChangeMenubar.event;
 
-  private readonly _menuItems = new Map<string, Array<IMenuItem | ISubmenuItem>>();
+  private readonly _menuItems = new Map<string, Array<IMenuItem | ISubmenuItem | IComponentMenuItem>>();
 
   private readonly _onDidChangeMenu = new Emitter<string>();
   readonly onDidChangeMenu: Event<string> = this._onDidChangeMenu.event;
@@ -225,13 +259,29 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
     };
   }
 
-  getMenuItems(id: MenuId | string): Array<IMenuItem | ISubmenuItem> {
+  getMenuItems(id: MenuId | string): Array<IMenuItem | ISubmenuItem | IComponentMenuItem> {
     // 将 disable 掉的 MenuId 返回为空
     if (this._disabledMenuIds.has(id)) {
       return [];
     }
 
-    const result = (this._menuItems.get(id) || []).slice(0);
+    const result = (this._menuItems.get(id) || [])
+      .slice(0)
+      .reduce((prev, cur) => {
+        if (isIComponentMenuItem(cur)) {
+          // 目前只支持 `EditorTitle` 开放 `ComponentMenuItem`
+          if (CoreMenuRegistryImpl.EnableComponentMenuIds.includes(id)) {
+            prev.push({
+              ...cur,
+              group: 'navigation',
+            });
+          }
+        } else {
+          prev.push(cur);
+        }
+
+        return prev;
+      }, [] as Array<IMenuItem | ISubmenuItem | IComponentMenuItem>);
 
     if (id === MenuId.CommandPalette) {
       // CommandPalette 特殊处理, 默认展示所有的 command
@@ -250,7 +300,7 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
     return command;
   }
 
-  private appendImplicitMenuItems(result: Array<IMenuItem | ISubmenuItem>) {
+  private appendImplicitMenuItems(result: Array<IMenuItem | ISubmenuItem | IComponentMenuItem>) {
     // 只保留 MenuItem
     const temp = result.filter((item) => isIMenuItem(item)) as IMenuItem[];
     const set = new Set<string>(temp.map((n) => this.getMenuCommand(n.command).id));
@@ -282,12 +332,16 @@ export class MenuRegistryImpl extends CoreMenuRegistryImpl {
   }
 }
 
-export function isIMenuItem(item: IMenuItem | ISubmenuItem): item is IMenuItem {
+export function isIMenuItem(item: IMenuItem | ISubmenuItem | IInternalComponentMenuItem): item is IMenuItem {
   return (item as IMenuItem).command !== undefined;
 }
 
-export function isISubmenuItem(item: IMenuItem | ISubmenuItem): item is ISubmenuItem {
+export function isISubmenuItem(item: IMenuItem | ISubmenuItem | IInternalComponentMenuItem): item is ISubmenuItem {
   return (item as ISubmenuItem).submenu !== undefined;
+}
+
+export function isIComponentMenuItem(item: IMenuItem | ISubmenuItem | IInternalComponentMenuItem): item is IInternalComponentMenuItem {
+  return ReactIs.isValidElementType((item as IInternalComponentMenuItem).component);
 }
 
 /**
@@ -338,6 +392,9 @@ export interface IMenuAction {
   type?: IMenuActionDisplayType;
 }
 
+/**
+ * base 类
+ */
 export class MenuNode implements IMenuAction {
   readonly id: string;
   label: string;
@@ -369,9 +426,14 @@ export class MenuNode implements IMenuAction {
     this._actionCallback = props.execute;
   }
 
+  getExecuteArgs(...args: any[]): any[] {
+    return args;
+  }
+
   execute(...args: any[]): any {
+    const runArgs = this.getExecuteArgs(args);
     if (this._actionCallback) {
-      return this._actionCallback(...args);
+      return this._actionCallback(...runArgs);
     }
 
     return Promise.resolve(true);

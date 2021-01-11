@@ -45,6 +45,10 @@ export class ContextMenu extends Disposable implements IContextMenu {
   private readonly config: IMenuConfig;
   private readonly contextKeyService: IContextKeyService;
 
+  public get menuId() {
+    return this._menuId;
+  }
+
   constructor(
     @Optional() payload: CreateMenuPayload,
   ) {

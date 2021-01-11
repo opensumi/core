@@ -4,7 +4,7 @@ import { Event } from '@ali/ide-core-common/lib/event';
 import { Autowired, Injectable, Optional } from '@ali/common-di';
 
 import { IContextKeyService } from '../../context-key';
-import { ISubmenuItem, MenuNode, IMenuActionDisplayType } from './base';
+import { ISubmenuItem, MenuNode, IMenuActionDisplayType, IComponentMenuItem, IComponentMenuItemProps } from './base';
 import { MenuId } from './menu-id';
 import { KeybindingRegistry } from '../../keybinding';
 import { ICtxMenuRenderer } from './renderer/ctxmenu/base';
@@ -70,20 +70,26 @@ export class MenuItemNode extends MenuNode {
     this.item = item;
   }
 
-  execute(args: any[] = []): Promise<any> {
-
+  getExecuteArgs(args: any[] = []): any[] {
     let runArgs = [
       ...(this._options.args || []),
       ...(args || []),
       ...(this.extraTailArgs || []),
     ];
-    // args 为 createMenu 时提供，同一个menu所有的都是同一 args
+    // args 为 createMenu 时提供，同一个 menu 所有的都是同一 args
     // argsTransformer 每个 action 不同，所以先合并 args，然后再经过 transformer
     if (this.argsTransformer) {
       runArgs = this.argsTransformer(...runArgs);
     }
 
-    return this.commandService.executeCommand(this.item.id, ...runArgs);
+    return runArgs;
+  }
+
+  execute(args: any[] = []): Promise<any> {
+    return this.commandService.executeCommand(
+      this.item.id,
+      ...this.getExecuteArgs(args),
+    );
   }
 
   private getShortcut(commandId: string) {
@@ -143,6 +149,45 @@ export class SubmenuItemNode extends MenuNode {
   }
 }
 
+@Injectable({ multiple: true })
+export class ComponentMenuItemNode extends MenuNode {
+  static readonly ID = 'menu.item.node.component';
+
+  readonly item: IComponentMenuItem;
+  private _options: IMenuNodeOptions;
+  readonly component: React.ComponentType<IComponentMenuItemProps>;
+
+  constructor(
+    @Optional() item: IComponentMenuItem,
+    @Optional() options: IMenuNodeOptions = {},
+    @Optional() private extraTailArgs?: any[],
+    @Optional() private argsTransformer?: (...args: any[]) => any[],
+  ) {
+    super({
+      id: ComponentMenuItemNode.ID,
+      label: '',
+    });
+    this.item = item;
+    this.component = item.component;
+    this._options = options;
+  }
+
+  getExecuteArgs(args: any[] = []): any[] {
+    let runArgs = [
+      ...(this._options.args || []),
+      ...(args || []),
+      ...(this.extraTailArgs || []),
+    ];
+    // args 为 createMenu 时提供，同一个 menu 所有的都是同一 args
+    // argsTransformer 每个 action 不同，所以先合并 args，然后再经过 transformer
+    if (this.argsTransformer) {
+      runArgs = this.argsTransformer(...runArgs);
+    }
+
+    return runArgs;
+  }
+}
+
 // 分隔符
 export class SeparatorMenuItemNode extends MenuNode {
   static readonly ID = 'menu.item.node.separator';
@@ -156,12 +201,20 @@ export class SeparatorMenuItemNode extends MenuNode {
 }
 
 export interface IMenu extends IDisposable {
+  /**
+   * menu-id
+   */
+  menuId: string | MenuId;
   readonly onDidChange: Event<IMenu | undefined>;
-  getMenuNodes(options?: IMenuNodeOptions): Array<[string, Array<MenuItemNode | SubmenuItemNode>]>;
+  getMenuNodes(options?: IMenuNodeOptions): Array<[string, Array<MenuItemNode | SubmenuItemNode | ComponentMenuItemNode>]>;
   onDispose: Event<void>;
 }
 
 export interface IContextMenu extends IDisposable {
+  /**
+   * menu-id
+   */
+  menuId: string | MenuId;
   /**
    * menu 重新生成后事件，监听即可拿到最新的 menu
    */
