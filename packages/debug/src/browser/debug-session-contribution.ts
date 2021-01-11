@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { ContributionProvider } from '@ali/ide-core-browser';
 import { DebugSession } from './debug-session';
 import { IFileServiceClient } from '@ali/ide-file-service';
@@ -89,15 +89,17 @@ export class DefaultDebugSessionFactory implements DebugSessionFactory {
   protected readonly terminalService: ITerminalApiService;
   @Autowired(OutputService)
   protected readonly outputService: OutputService;
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
 
   get(sessionId: string, options: DebugSessionOptions): DebugSession {
-    const connection = new DebugSessionConnection(
+    const connection = this.injector.get(DebugSessionConnection, [
       sessionId,
       (sessionId: string) => {
         return this.connectionProvider.openChannel(`${DebugAdapterPath}/${sessionId}`);
       },
       this.getTraceOutputChannel(),
-    );
+    ]);
     return new DebugSession(
       sessionId,
       options,
