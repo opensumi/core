@@ -13,6 +13,7 @@ import { IContextKeyService } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IMessageService } from '@ali/ide-overlay';
 import { EditorPreferences } from '@ali/ide-editor/lib/browser';
+import uniqBy = require('lodash.uniqby');
 
 @Injectable()
 export class ExtensionManagerService extends Disposable implements IExtensionManagerService {
@@ -651,7 +652,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
     // 是否要展示内置插件
     this.isShowBuiltinExtensions = await this.extensionManagerServer.isShowBuiltinExtensions();
     runInAction(() => {
-      this.extensions = extensions;
+      this.extensions = uniqBy([...this.extensions, ...extensions], 'extensionId');
     });
     await Promise.all([this.loadHotExtensions(), this.loadExtensionInfo()]);
     runInAction(() => {
