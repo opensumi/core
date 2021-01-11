@@ -139,6 +139,7 @@ export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
     const breakpoints = this.getBreakpoints();
     breakpoints.map((b) => affected.add(b.uri));
     this.cleanAllMarkers();
+    this._affected.clear();
     this.onDidChangeBreakpointsEmitter.fire({
       affected: Array.from(affected.values()).map((str) => URI.parse(str)),
       added: [],
