@@ -1,12 +1,13 @@
 import { CoreCommandRegistryImpl, CommandRegistry, DisposableStore } from '@ali/ide-core-common';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 import { Injector } from '@ali/common-di';
+import { Command } from '@ali/ide-core-common';
+import * as React from 'react';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
-import { AbstractMenuService, MenuRegistryImpl, MenuServiceImpl, IMenuRegistry, MenuId, isIMenuItem, generateMergedCtxMenu } from '../../../src/menu/next';
+import { SeparatorMenuItemNode, IComponentMenuItemProps, AbstractMenuService, MenuRegistryImpl, MenuServiceImpl, IMenuRegistry, MenuId, isIMenuItem, generateMergedCtxMenu, ComponentMenuItemNode } from '../../../src/menu/next';
 import { IContextKeyService } from '../../../src/context-key';
-import { Command } from '@ali/ide-core-common';
 
 // tslint:disable-next-line:new-parens
 const contextKeyService = new class extends MockContextKeyService {
@@ -23,6 +24,14 @@ const contextKeyService = new class extends MockContextKeyService {
 };
 
 jest.useFakeTimers();
+
+const CustomMenuItem: React.FC<IComponentMenuItemProps> = (props) => {
+  const handleClick = () => {
+    props.getExecuteArgs();
+  };
+
+  return <div style={{color: 'red'}} onClick={handleClick}>hello world</div>;
+};
 
 describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
   let injector: MockInjector;
@@ -446,7 +455,7 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
     expect(menuNodes2[0][1][0].label).toBe('a1');
   });
 
-  it('regiser menubar item', () => {
+  it('register menubar item', () => {
     disposables.add(menuRegistry.registerMenubarItem('testMenubarId1', {
       label: 'a1',
       order: 2,
@@ -496,5 +505,66 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
 
     menuNodes = generateMergedCtxMenu({ menus });
     expect(menuNodes.length).toBe(0);
+  });
+
+  describe('component menu item', () => {
+    it('works', () => {
+      disposables.add(menuRegistry.registerMenuItem(MenuId.EditorTitle, {
+        component: CustomMenuItem,
+        order: 100,
+      }));
+
+      disposables.add(menuRegistry.registerMenuItem(MenuId.EditorTitle, {
+        command: {
+          id: 'b',
+          label: 'b1',
+        },
+        group: 'navigation',
+        order: 3,
+      }));
+
+      const menus = menuService.createMenu(MenuId.EditorTitle, contextKeyService);
+      const menuNodes = generateMergedCtxMenu({ menus });
+      menus.dispose();
+      expect(menuNodes.length).toBe(2);
+      expect(menuNodes[0].label).toBe('b1');
+      expect((menuNodes[1] as ComponentMenuItemNode).component).toBe(CustomMenuItem);
+    });
+
+    it('works for different group', () => {
+      disposables.add(menuRegistry.registerMenuItem(MenuId.EditorTitle, {
+        component: CustomMenuItem,
+        order: 100,
+      }));
+
+      disposables.add(menuRegistry.registerMenuItem(MenuId.EditorTitle, {
+        command: {
+          id: 'b',
+          label: 'b1',
+        },
+        group: 'a3',
+      }));
+
+      const menus = menuService.createMenu(MenuId.EditorTitle, contextKeyService);
+      const menuNodes = generateMergedCtxMenu({ menus });
+      menus.dispose();
+      expect(menuNodes.length).toBe(3);
+      expect((menuNodes[0] as ComponentMenuItemNode).component).toBe(CustomMenuItem);
+      expect(menuNodes[1].id).toBe(SeparatorMenuItemNode.ID);
+      expect(menuNodes[2].label).toBe('b1');
+    });
+
+    it('only works for editor/title', () => {
+      // 目前只有 editor-title 开启了该选项
+      disposables.add(menuRegistry.registerMenuItem('test-xxx', {
+        component: CustomMenuItem,
+        order: 100,
+      }));
+
+      const menus1 = menuService.createMenu('test-xxx', contextKeyService);
+      const menuNodes1 = generateMergedCtxMenu({ menus: menus1 });
+      menus1.dispose();
+      expect(menuNodes1.length).toBe(0);
+    });
   });
 });

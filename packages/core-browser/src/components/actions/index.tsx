@@ -8,8 +8,8 @@ import 'antd/lib/menu/style/index.css';
 import { Button, CheckBox, Icon } from '@ali/ide-components';
 import {
   MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode,
-  IContextMenu, IMenu, IMenuSeparator,
-  SubmenuItemNode, IMenuAction,
+  IContextMenu, IMenu, IMenuSeparator, MenuId,
+  SubmenuItemNode, IMenuAction, ComponentMenuItemNode,
 } from '../../menu/next';
 import { useInjectable } from '../../react-hooks';
 import { useMenus, useContextMenus } from '../../utils';
@@ -223,6 +223,24 @@ const InlineActionWidget: React.FC<{
 
 InlineActionWidget.displayName = 'InlineAction';
 
+const CustomActionWidget: React.FC<{
+  data: ComponentMenuItemNode;
+  context?: any[];
+}> = ({
+  data,
+  context,
+}) => {
+  const getExecuteArgs = React.useCallback(() => {
+    return data.getExecuteArgs(context);
+  }, [data, context]);
+
+  return React.createElement(data.component, {
+    getExecuteArgs,
+  });
+};
+
+CustomActionWidget.displayName = 'CustomAction';
+
 type ActionListType = 'icon' | 'button';
 
 interface BaseActionListProps {
@@ -268,6 +286,7 @@ interface BaseActionListProps {
  * 目前仅给 tree view 使用，其不带 contextkey service change 事件监听
  */
 export const TitleActionList: React.FC<{
+  menuId: string | MenuId;
   nav: MenuNode[];
   more?: MenuNode[];
   className?: string;
@@ -284,6 +303,7 @@ export const TitleActionList: React.FC<{
   moreAtFirst = false,
   className,
   afterClick,
+  menuId,
   regroup = (...args: [MenuNode[], MenuNode[]]) => args,
 }) => {
   const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
@@ -312,19 +332,32 @@ export const TitleActionList: React.FC<{
     : null;
 
   return (
-    <div className={clsx([styles.titleActions, className])}>
+    <div
+      className={clsx([styles.titleActions, className])}
+      data-menu-id={menuId}>
       { moreAtFirst && moreAction }
       {
-        primary.map((item) => (
-          <InlineActionWidget
-            id={item.id}
-            className={clsx({ [styles.selected]: item.checked })}
-            type={type}
-            key={item.id}
-            data={item}
-            afterClick={afterClick}
-            context={context} />
-        ))
+        primary.map((item) => {
+          if (item.id === ComponentMenuItemNode.ID) {
+            return (
+              <CustomActionWidget
+                context={context}
+                data={item as ComponentMenuItemNode}
+              />
+            );
+          }
+
+          return (
+            <InlineActionWidget
+              id={item.id}
+              className={clsx({ [styles.selected]: item.checked })}
+              type={type}
+              key={item.id}
+              data={item}
+              afterClick={afterClick}
+              context={context} />
+          );
+        })
       }
       {
         Array.isArray(extraNavActions) && extraNavActions.length
@@ -374,6 +407,7 @@ export function InlineActionBar<T = undefined, U = undefined, K = undefined, M =
   // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
   return (
     <TitleActionList
+      menuId={menus.menuId}
       nav={navMenu}
       more={separator === 'inline' ? [] : moreMenu}
       {...restProps} />
@@ -400,6 +434,7 @@ export function InlineMenuBar<T = undefined, U = undefined, K = undefined, M = u
   // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
   return (
     <TitleActionList
+      menuId={menus.menuId}
       nav={navMenu}
       more={separator === 'inline' ? [] : moreMenu}
       {...restProps} />
