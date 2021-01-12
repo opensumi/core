@@ -1,4 +1,4 @@
-import { Injectable, Optinal, Autowired } from '@ali/common-di';
+import { Injectable, Optinal, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { IMainThreadDebug, ExtHostAPIIdentifier, IExtHostDebug, ExtensionWSChannel, IMainThreadConnectionService } from '../../../common/vscode';
 import { DisposableCollection, Uri, ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, URI } from '@ali/ide-core-browser';
 import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer, IDebuggerContribution } from '@ali/ide-debug';
@@ -84,6 +84,9 @@ export class MainThreadDebug implements IMainThreadDebug {
 
   @Autowired(IDebugService)
   debugService: IDebugService;
+
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
 
   constructor(
     @Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol,
@@ -174,6 +177,7 @@ export class MainThreadDebug implements IMainThreadDebug {
       terminalOptionsExt,
       this.debugPreferences,
       this.outputService,
+      this.injector,
     );
     disposable.pushAll([
       this.adapterContributionRegistrator.registerDebugAdapterContribution(

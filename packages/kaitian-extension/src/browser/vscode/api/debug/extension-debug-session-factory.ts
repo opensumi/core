@@ -1,3 +1,4 @@
+import { Injector } from '@ali/common-di';
 import { DebugSession, DebugSessionConnection, BreakpointManager, DebugSessionFactory, DebugPreferences, DebugModelManager } from '@ali/ide-debug/lib/browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@ali/ide-file-service';
@@ -47,11 +48,16 @@ export class ExtensionDebugSessionFactory implements DebugSessionFactory {
     protected readonly terminalOptionsExt: any,
     protected readonly debugPreference: DebugPreferences,
     protected readonly outputService: OutputService,
+    protected readonly injector: Injector,
   ) {
   }
 
   get(sessionId: string, options: DebugSessionOptions): DebugSession {
-    const connection = new DebugSessionConnection(sessionId, this.connectionFactory, this.getTraceOutputChannel());
+    const connection = this.injector.get(DebugSessionConnection, [
+      sessionId,
+      this.connectionFactory,
+      this.getTraceOutputChannel(),
+    ]);
 
     return new ExtensionDebugSession(
       sessionId,

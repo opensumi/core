@@ -1,3 +1,4 @@
+import { Injectable, Optional, Autowired } from '@ali/common-di';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import {
   Event,
@@ -6,9 +7,13 @@ import {
   Disposable,
   IDisposable,
   Deferred,
+  IReporterService,
+  ReporterService,
+  getDebugLogger,
 } from '@ali/ide-core-browser';
 import { IWebSocket } from '@ali/ide-connection';
 import { OutputChannel } from '@ali/ide-output/lib/browser/output.channel';
+import { DEBUG_REPORT_NAME } from '../common';
 
 export interface DebugExitEvent {
   code?: number;
@@ -84,7 +89,11 @@ const standardDebugEvents = new Set<string>([
   'thread',
 ]);
 
+@Injectable({multiple: true})
 export class DebugSessionConnection implements IDisposable {
+
+  @Autowired(ReporterService)
+  private readonly reporterService: IReporterService;
 
   private sequence = 1;
 
@@ -103,9 +112,9 @@ export class DebugSessionConnection implements IDisposable {
   );
 
   constructor(
-    readonly sessionId: string,
-    protected readonly connectionFactory: (sessionId: string) => Promise<IWebSocket>,
-    protected readonly traceOutputChannel: OutputChannel | undefined,
+    @Optional() readonly sessionId: string,
+    @Optional() protected readonly connectionFactory: (sessionId: string) => Promise<IWebSocket>,
+    @Optional() protected readonly traceOutputChannel: OutputChannel | undefined,
   ) {
     this.connection = this.createConnection();
   }
@@ -134,8 +143,21 @@ export class DebugSessionConnection implements IDisposable {
 
   protected allThreadsContinued = true;
 
+  protected sessionAdapterID: DebugProtocol.InitializeRequestArguments['adapterID'];
+
   async sendRequest<K extends keyof DebugRequestTypes>(command: K, args: DebugRequestTypes[K][0]): Promise<DebugRequestTypes[K][1]> {
+    /**
+     * 在接收到 initialize 请求的时候记录当前的 session 适配器类型
+     */
+    if (command === 'initialize') {
+      this.sessionAdapterID = (args as DebugProtocol.InitializeRequestArguments).adapterID;
+    }
+
+    const dapReporterTime = this.reporterService.time(DEBUG_REPORT_NAME.DEBUG_ADAPTER_PROTOCOL_TIME);
     const result = await this.doSendRequest(command, args);
+    dapReporterTime.timeEnd(command, {
+      adapterID: this.sessionAdapterID,
+    });
     if (command === 'next' || command === 'stepIn' ||
       command === 'stepOut' || command === 'stepBack' ||
       command === 'reverseContinue' || command === 'restartFrame') {
@@ -231,7 +253,7 @@ export class DebugSessionConnection implements IDisposable {
         response.message = error.message;
       }
     } else {
-      console.error('Unhandled request', request);
+      getDebugLogger().error('Unhandled request', request);
     }
     await this.send(response);
   }

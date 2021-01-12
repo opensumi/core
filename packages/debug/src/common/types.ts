@@ -66,4 +66,8 @@ export enum DEBUG_REPORT_NAME {
    * 断点
    */
   DEBUG_BREAKPOINT = 'debugBreakpoint',
+  /**
+   * DAP 请求和响应耗时
+   */
+  DEBUG_ADAPTER_PROTOCOL_TIME = 'debugAdapterProtocolTime',
 }
