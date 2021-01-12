@@ -2,7 +2,7 @@ import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di'
 import { Event, formatLocalize, IProblemMatcherRegistry, Disposable, Deferred, ProblemMatcher, isString, deepClone, removeAnsiEscapeCodes, Emitter, DisposableCollection } from '@ali/ide-core-common';
 
 import { ITaskSystem, ITaskExecuteResult, ITaskExecutor, TaskExecuteKind, IActivateTaskExecutorData, TaskTerminateResponse } from '../common';
-import { Task, ContributedTask, CommandString, CommandConfiguration, TaskEvent, TaskEventKind } from '../common/task';
+import { Task, ContributedTask, CommandString, CommandConfiguration, TaskEvent, TaskEventKind, RuntimeType } from '../common/task';
 import { TerminalOptions, ITerminalController, ITerminalGroupViewService, ITerminalClient, ITerminalService, ITerminalClientFactory } from '@ali/ide-terminal-next/lib/common';
 import { CustomTask } from '../common/task';
 import { IVariableResolverService } from '@ali/ide-variable';
@@ -31,15 +31,19 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
   @Autowired(ITerminalClientFactory)
   protected readonly clientFactory: ITerminalClientFactory;
 
-  private terminalClient: ITerminalClient;
+  private terminalClient: ITerminalClient | undefined;
 
   private pid: number | undefined;
 
   private exitDefer: Deferred<{ exitCode?: number }> = new Deferred();
 
+  private _onDidTerminalCreated: Emitter<string> = new Emitter();
+
   private _onDidTaskProcessExit: Emitter<number | undefined> = new Emitter();
 
   private _onDidTerminalWidgetRemove: Emitter<void> = new Emitter();
+
+  public onDidTerminalCreated: Event<string> = this._onDidTerminalCreated.event;
 
   public onDidTerminalWidgetRemove: Event<void> = this._onDidTerminalWidgetRemove.event;
 
@@ -77,7 +81,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
           resolve({ success: true });
         } else {
           this.terminalService.onExit((e) => {
-            if (e.sessionId === this.terminalClient.id) {
+            if (e.sessionId === this.terminalClient?.id) {
               this.terminalView.removeWidget(this.terminalClient.id);
               resolve({ success: true });
             }
@@ -90,7 +94,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
   }
 
   private onTaskExit(code?: number) {
-    const { term, id } = this.terminalClient;
+    const { term, id } = this.terminalClient!;
     term.setOption('disableStdin', true);
     term.writeln(formatLocalize('terminal.integrated.exitedWithCode', code));
     term.writeln(`\r\n\x1b[1m${formatLocalize('reuseTerminal')}\x1b[0m`);
@@ -101,20 +105,32 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
   }
 
   private createTerminal(reuse?: boolean) {
-    if (reuse) {
+    if (reuse && this.terminalClient) {
       this.terminalClient.updateOptions(this.terminalOptions);
       this.terminalClient.reset();
     } else {
-      this.terminalClient = this.terminalController.createClientWithWidget({ ...this.terminalOptions, closeWhenExited: false });
+      this.terminalClient = this.terminalController.createClientWithWidget({ ...this.terminalOptions, closeWhenExited: false, beforeCreate: (terminalId) => {
+        this._onDidTerminalCreated.fire(terminalId);
+      }});
     }
+
     this.terminalController.showTerminalPanel();
 
     this.addDispose(this.terminalClient.onOutput((e) => {
       this.collector.processLine(removeAnsiEscapeCodes(e.data.toString()));
     }));
 
+    this.disposableCollection.push(this.terminalClient.onExit(async (e) => {
+      if (e.id === this.terminalClient?.id) {
+        this.onTaskExit(e.code);
+        this.processExited = true;
+        this.taskStatus = TaskStatus.PROCESS_EXITED;
+        this.exitDefer.resolve({ exitCode: e.code });
+      }
+    }));
+
     this.disposableCollection.push(this.terminalService.onExit(async (e) => {
-      if (e.sessionId === this.terminalClient.id) {
+      if (e.sessionId === this.terminalClient?.id) {
         await this.processReady.promise;
         this.onTaskExit(e.code);
         this.processExited = true;
@@ -128,21 +144,29 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     this.taskStatus = TaskStatus.PROCESS_READY;
     this.createTerminal(reuse);
 
-    this.terminalClient.term.writeln(`\x1b[1m> Executing task: ${task._label} <\x1b[0m\n`);
+    this.terminalClient?.term.writeln(`\x1b[1m> Executing task: ${task._label} <\x1b[0m\n`);
     const { shellArgs } = this.terminalOptions;
-    this.terminalClient.term.writeln(`\x1b[1m> Command: ${typeof shellArgs === 'string' ? shellArgs : shellArgs![1]} <\x1b[0m\n`);
 
-    await this.terminalClient.attached.promise;
+    // extensionTerminal 由插件自身接管，不需要执行和输出 Command
+    if (!this.terminalOptions.isExtensionTerminal) {
+      this.terminalClient?.term.writeln(`\x1b[1m> Command: ${typeof shellArgs === 'string' ? shellArgs : shellArgs![1]} <\x1b[0m\n`);
+    }
+
+    await this.terminalClient?.attached.promise;
     this.taskStatus = TaskStatus.PROCESS_RUNNING;
-    this.pid = await this.terminalClient.pid;
+    this.pid = await this.terminalClient?.pid;
     this.processReady.resolve();
-    this.terminalView.selectWidget(this.terminalClient.id);
-    this.terminalClient.term.write('\n\x1b[G');
+    this.terminalView.selectWidget(this.terminalClient!.id);
+    this.terminalClient?.term.write('\n\x1b[G');
     return this.exitDefer.promise;
   }
 
   get processId(): number | undefined {
     return this.pid;
+  }
+
+  get terminalId(): string | undefined {
+    return this.terminalClient && this.terminalClient.id;
   }
 
   get widgetId(): string | undefined {
@@ -235,18 +259,21 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
   }
 
   private async executeTask(task: CustomTask | ContributedTask): Promise<ITaskExecuteResult> {
-    this._onDidStateChange.fire(TaskEvent.create(TaskEventKind.Start, task));
+    // CustomExecution
+    const isCustomExecution = task.command && task.command.runtime === RuntimeType.CustomExecution;
+
     const matchers = await this.resolveMatchers(task.configurationProperties.problemMatchers);
     const collector = new ProblemCollector(matchers);
     const { shellArgs } = await this.buildShellConfig(task.command);
+
     const terminalOptions: TerminalOptions = {
       name: this.createTerminalName(task),
       shellArgs,
+      isExtensionTerminal: isCustomExecution,
       env: task.command.options?.env || {},
       cwd: task.command.options?.cwd ? await this.resolveVariable(task.command.options?.cwd) : await this.resolveVariable('${workspaceFolder}'),
     };
 
-    this._onDidStateChange.fire(TaskEvent.create(TaskEventKind.Active, task));
     let executor: TerminalTaskExecutor | undefined = this.findAvaiableExecutor();
     let reuse = false;
     if (!executor) {
@@ -263,6 +290,19 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
       executor.reset();
     }
 
+    if (reuse) {
+      // 插件进程中 CustomExecution 会等待前台终端实例创建完成后进行 attach
+      // 重用终端的情况下，要再次发出事件确保 attach 成功 (ext.host.task.ts#$onDidStartTask)
+      this._onDidStateChange.fire(TaskEvent.create(TaskEventKind.Start, task, executor.terminalId));
+    } else {
+      this.addDispose(executor.onDidTerminalCreated((terminalId) => {
+        // 当 task 使用 CustomExecution 时，发出 TaskEventKind.Start 事件后，插件进程将尝试 attach 这个 Pseudoterminal (ext.host.task.ts#$onDidStartTask)
+        // attach 成功便会创建一个 ExtensionTerminal 实例
+        // 确保后续调用 $startExtensionTerminal 时已经建立了连接
+        this._onDidStateChange.fire(TaskEvent.create(TaskEventKind.Start, task, terminalId));
+      }));
+    }
+
     if (!reuse) {
       this.addDispose(executor.onDidTaskProcessExit((code) => {
         this._onDidStateChange.fire(TaskEvent.create(TaskEventKind.ProcessEnded, task, code));
@@ -274,8 +314,9 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
 
     const mapKey = task.getMapKey();
     this.activeTaskExecutors.set(mapKey, { promise: Promise.resolve(result), task, executor });
-
+    this._onDidStateChange.fire(TaskEvent.create(TaskEventKind.Active, task));
     await executor.processReady.promise;
+
     this._onDidStateChange.fire(TaskEvent.create(TaskEventKind.ProcessStarted, task, executor.processId));
     return {
       task,

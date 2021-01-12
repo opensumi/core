@@ -5,7 +5,7 @@ import { ExtensionService, IExtensionNodeClientService, ExtraMetaData, IExtensio
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { ExtensionServiceImpl } from '../../src/browser/extension.service';
-import { IContextKeyService, ILoggerManagerClient, StorageProvider, DefaultStorageProvider, createContributionProvider, StorageResolverContribution, PreferenceProvider, AppConfig, Uri, CommandRegistryImpl, CommandRegistry, IPreferenceSettingsService, PreferenceScope, KeybindingRegistryImpl, KeybindingRegistry, IFileServiceClient, ISchemaRegistry, ISchemaStore } from '@ali/ide-core-browser';
+import { IContextKeyService, ILoggerManagerClient, StorageProvider, DefaultStorageProvider, createContributionProvider, StorageResolverContribution, PreferenceProvider, AppConfig, Uri, CommandRegistryImpl, CommandRegistry, IPreferenceSettingsService, PreferenceScope, KeybindingRegistryImpl, KeybindingRegistry, IFileServiceClient, ISchemaRegistry, ISchemaStore, URI } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 import { IThemeService, IIconService, getColorRegistry } from '@ali/ide-theme/lib/common';
 import { IconService } from '@ali/ide-theme/lib/browser';
@@ -59,6 +59,7 @@ const mockExtensionProps: IExtensionProps = {
   enabled: true,
   path: path.join(__dirname, '../__mock__/extension'),
   realPath: path.join(__dirname, '../__mock__/extension'),
+  extensionLocation: Uri.file(path.join(__dirname, '../__mock__/extension')),
   extensionId: 'uuid-for-test-extension',
   isUseEnable: true,
   enableProposedApi: false,
@@ -255,8 +256,8 @@ describe('Extension service', () => {
       {
         token: StaticResourceService,
         useValue: {
-          resolveStaticResource(uri) {
-            return Uri.file(uri.path.raw).path;
+          resolveStaticResource(uri: URI) {
+            return uri.withScheme('file');
           },
         },
       },

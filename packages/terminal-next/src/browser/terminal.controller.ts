@@ -325,6 +325,11 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     const widgetId = this.service.generateSessionId();
     const { group } = this._createOneGroup();
     const widget = this.terminalView.createWidget(group, widgetId, !options.closeWhenExited, true);
+
+    if (options.beforeCreate && typeof options.beforeCreate === 'function') {
+      options.beforeCreate(widgetId);
+    }
+
     return this._createClient(widget, options);
   }
 

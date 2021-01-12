@@ -1,6 +1,7 @@
 import { Injectable, Optional, Autowired } from '@ali/common-di';
 import { JSONType, ExtensionService, IExtension, IExtensionProps, IExtensionMetaData } from '../common';
-import { getDebugLogger, registerLocalizationBundle, getCurrentLanguageInfo, Emitter, Uri, Deferred, WithEventBus } from '@ali/ide-core-common';
+import { getDebugLogger, registerLocalizationBundle, getCurrentLanguageInfo, Emitter, Uri, Deferred, URI, WithEventBus } from '@ali/ide-core-common';
+import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { ExtensionMetadataService } from './metadata.service';
 import { ExtensionWillActivateEvent } from './types';
 
@@ -20,6 +21,7 @@ export class Extension extends WithEventBus implements IExtension {
   public readonly realPath: string;
   public readonly extendConfig: JSONType;
   public readonly enableProposedApi: boolean;
+  public readonly extensionLocation: Uri;
   public readonly uri?: Uri;
 
   private _activated: boolean = false;
@@ -31,6 +33,9 @@ export class Extension extends WithEventBus implements IExtension {
 
   @Autowired(ExtensionMetadataService)
   extMetadataService: ExtensionMetadataService;
+
+  @Autowired()
+  private staticResourceService: StaticResourceService;
 
   constructor(
     @Optional(metaDataSymbol) private extensionData: IExtensionMetaData,
@@ -55,6 +60,7 @@ export class Extension extends WithEventBus implements IExtension {
     this.realPath = this.extensionData.realPath;
     this.extendConfig = this.extensionData.extendConfig || {};
     this.enableProposedApi = Boolean(this.extensionData.packageJSON.enableProposedApi);
+    this.extensionLocation = this.staticResourceService.resolveStaticResource(new URI(Uri.file(this.path))).codeUri;
   }
 
   get activated() {
@@ -175,6 +181,7 @@ export class Extension extends WithEventBus implements IExtension {
       extraMetadata: this.extraMetadata,
       isBuiltin: this.isBuiltin,
       isDevelopment: this.isDevelopment,
+      extensionLocation: this.extensionLocation,
     };
   }
 }

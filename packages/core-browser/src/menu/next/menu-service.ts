@@ -2,11 +2,11 @@ import { CommandRegistry, Disposable, Event, Emitter } from '@ali/ide-core-commo
 import { Autowired, Injectable, Optional, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 
 import { ContextKeyChangeEvent, IContextKeyService } from '../../context-key';
-import { IMenuItem, isIMenuItem, ISubmenuItem, IMenuRegistry } from './base';
+import { IMenuItem, isIMenuItem, ISubmenuItem, IComponentMenuItem, isIComponentMenuItem, IMenuRegistry } from './base';
 import { MenuId } from './menu-id';
-import { AbstractMenuService, IMenu, IMenuNodeOptions, SubmenuItemNode, MenuItemNode } from './menu.interface';
+import { AbstractMenuService, IMenu, IMenuNodeOptions, SubmenuItemNode, ComponentMenuItemNode, MenuItemNode } from './menu.interface';
 
-type MenuItemGroup = [string, Array<IMenuItem | ISubmenuItem>];
+type MenuItemGroup = [string, Array<IMenuItem | ISubmenuItem | IComponentMenuItem>];
 
 @Injectable()
 export class MenuServiceImpl implements AbstractMenuService {
@@ -16,7 +16,7 @@ export class MenuServiceImpl implements AbstractMenuService {
   @Autowired(IContextKeyService)
   globalCtxKeyService: IContextKeyService;
 
-  createMenu(id: MenuId, contextKeyService?: IContextKeyService): IMenu {
+  createMenu(id: MenuId | string, contextKeyService?: IContextKeyService): IMenu {
     return this.injector.get(Menu, [id, contextKeyService || this.globalCtxKeyService]);
   }
 }
@@ -40,8 +40,12 @@ class Menu extends Disposable implements IMenu {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
+  public get menuId() {
+    return this.id;
+  }
+
   constructor(
-    @Optional() private readonly id: MenuId,
+    @Optional() private readonly id: MenuId | string,
     @Optional() private readonly contextKeyService: IContextKeyService,
   ) {
     super();
@@ -104,11 +108,11 @@ class Menu extends Disposable implements IMenu {
     this._onDidChange.fire(this);
   }
 
-  getMenuNodes(config: IMenuNodeOptions = {}): Array<[string, Array<MenuItemNode | SubmenuItemNode>]> {
-    const result: [string, Array<MenuItemNode | SubmenuItemNode>][] = [];
+  getMenuNodes(config: IMenuNodeOptions = {}): Array<[MenuId | string, Array<MenuItemNode | SubmenuItemNode | ComponentMenuItemNode>]> {
+    const result: [MenuId | string, Array<MenuItemNode | SubmenuItemNode | ComponentMenuItemNode>][] = [];
     for (const group of this._menuGroups) {
       const [id, items] = group;
-      const activeActions: Array<MenuItemNode | SubmenuItemNode> = [];
+      const activeActions: Array<MenuItemNode | SubmenuItemNode | ComponentMenuItemNode> = [];
       for (const item of items) {
         const activeAction = this._getActiveAction(item, config);
         if (activeAction) {
@@ -122,7 +126,7 @@ class Menu extends Disposable implements IMenu {
     return result;
   }
 
-  private _getActiveAction(item: IMenuItem | ISubmenuItem, options: IMenuNodeOptions) {
+  private _getActiveAction(item: IMenuItem | ISubmenuItem | IComponentMenuItem, options: IMenuNodeOptions) {
     if (this.contextKeyService.match(item.when, options.contextDom)) {
       if (isIMenuItem(item)) {
         // 兼容现有的 Command#isVisible
@@ -164,6 +168,12 @@ class Menu extends Disposable implements IMenu {
             disabled, checked, item.type, item.nativeRole,
             item.extraTailArgs, item.argsTransformer,
           ]);
+        return action;
+      } else if (isIComponentMenuItem(item)) {
+        const action = this.injector.get(ComponentMenuItemNode, [
+          item, options,
+          item.extraTailArgs, item.argsTransformer,
+        ]);
         return action;
       } else {
         // 只有 label 存在值的时候才渲染

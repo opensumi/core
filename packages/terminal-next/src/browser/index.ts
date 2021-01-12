@@ -15,6 +15,7 @@ import {
   TerminalOptions,
   IWidget,
   ITerminalRenderProvider,
+  ITerminalClient,
 } from '../common';
 import {
   ITerminalPreference,

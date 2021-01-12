@@ -16,6 +16,8 @@ export abstract class Extension<T = any, S extends IExtensionHost = any> impleme
 
   readonly extendConfig: JSONType;
 
+  readonly extensionUri: vscode.Uri;
+
   private readonly _exports: T;
 
   constructor(
@@ -31,6 +33,7 @@ export abstract class Extension<T = any, S extends IExtensionHost = any> impleme
     this.packageJSON = packageJSON;
     this.extensionKind = packageJSON.extensionKind || undefined;
     this.extendConfig = extendConfig || undefined;
+    this.extensionUri = metadata.extensionLocation;
     if (exportsData) {
       this._exports = exportsData;
     }

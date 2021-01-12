@@ -213,7 +213,7 @@ describe('MainThreadTask Test Suite', () => {
     rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostStorage, new ExtHostStorage(rpcProtocolExt));
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadTasks, mainthreadTask);
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadWorkspace, injector.get(MainThreadWorkspace, [rpcProtocolMain]));
-    extHostTaskApi = createTaskApiFactory(rpcProtocolExt, injector.get(ExtensionService), extHostTask, mockExtensions[0]);
+    extHostTaskApi = createTaskApiFactory(extHostTask, mockExtensions[0]);
   });
 
   describe('ExtHostTask API should be work', () => {

@@ -12,6 +12,8 @@ export interface ViewItem {
   id: string;
   name: string;
   when: string;
+  weight?: number;
+  priority?: number;
 }
 
 export type ViewsSchema = Array<ViewsContribution>;
