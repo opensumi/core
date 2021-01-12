@@ -35,6 +35,9 @@ export class UserStorageServiceImpl implements IUserStorageService {
     const home = await this.fileServiceClient.getCurrentUserHome();
     if (home) {
       const userStorageFolderUri = new URI(home.uri).resolve(this.appConfig.userPreferenceDirName || this.appConfig.preferenceDirName || DEFAULT_USER_STORAGE_FOLDER);
+      if (!await this.fileServiceClient.access(userStorageFolderUri.toString())) {
+        await this.fileServiceClient.createFolder(userStorageFolderUri.toString());
+      }
       const disposable = await this.fileServiceClient.watchFileChanges(userStorageFolderUri, ['**/logs/**']);
       this.toDispose.push(disposable),
       this.toDispose.push(this.fileServiceClient.onFilesChanged((changes) => this.onDidFilesChanged(changes)));
