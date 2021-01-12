@@ -8,15 +8,16 @@ import { UserStorageServiceImpl, DEFAULT_USER_STORAGE_FOLDER } from '@ali/ide-pr
 describe('UserStorageService should be work', () => {
   let injector: MockInjector;
   let userStorageService: IUserStorageService;
-  const userHomeUri = 'file://userhome';
+  const userHomeUri = URI.file('userhome');
   const mockFileServiceClient = {
-    getCurrentUserHome: jest.fn(() => ({ uri: userHomeUri})),
+    getCurrentUserHome: jest.fn(() => ({ uri: userHomeUri.toString()})),
     watchFileChanges: jest.fn(async () => Disposable.create(() => {})),
     onFilesChanged: jest.fn(() => Disposable.create(() => {})),
     access: jest.fn(() => true),
     resolveContent: jest.fn(async () => ''),
     setContent: jest.fn(),
     createFile: jest.fn(),
+    createFolder: jest.fn(),
     getFileStat: jest.fn(async () => ({})),
   };
 
@@ -79,24 +80,24 @@ describe('UserStorageService should be work', () => {
       mockFileServiceClient.watchFileChanges.mockClear();
       mockAppConfig['userPreferenceDirName'] = '.user';
       await userStorageService.init();
-      expect(mockFileServiceClient.watchFileChanges).toBeCalledWith(new URI(userHomeUri).resolve(mockAppConfig.userPreferenceDirName), ['**/logs/**']);
+      expect(await userStorageService.getFsPath(new URI('test').withScheme(USER_STORAGE_SCHEME))).toBe(userHomeUri.resolve(mockAppConfig.userPreferenceDirName).resolve('test').toString());
       // while has not userPreferenceDirName config but preferenceDirName exist
       mockFileServiceClient.watchFileChanges.mockClear();
       mockAppConfig['preferenceDirName'] = '.test';
       await userStorageService.init();
-      expect(mockFileServiceClient.watchFileChanges).toBeCalledWith(new URI(userHomeUri).resolve(mockAppConfig.userPreferenceDirName), ['**/logs/**']);
+      expect(await userStorageService.getFsPath(new URI('test').withScheme(USER_STORAGE_SCHEME))).toBe(userHomeUri.resolve(mockAppConfig.userPreferenceDirName).resolve('test').toString());
       // while has not userPreferenceDirName and preferenceDirName
       mockFileServiceClient.watchFileChanges.mockClear();
       mockAppConfig['preferenceDirName'] = '';
       mockAppConfig['userPreferenceDirName'] = '';
       await userStorageService.init();
-      expect(mockFileServiceClient.watchFileChanges).toBeCalledWith(new URI(userHomeUri).resolve(DEFAULT_USER_STORAGE_FOLDER), ['**/logs/**']);
+      expect(await userStorageService.getFsPath(new URI('test').withScheme(USER_STORAGE_SCHEME))).toBe(userHomeUri.resolve(DEFAULT_USER_STORAGE_FOLDER).resolve('test').toString());
       done();
     });
 
     it('readContents method should be work', async (done) => {
       await userStorageService.readContents(new URI('setting.json').withQuery(USER_STORAGE_SCHEME));
-      expect(mockFileServiceClient.access).toBeCalledTimes(1);
+      mockFileServiceClient.access.mockClear();
       expect(mockFileServiceClient.resolveContent).toBeCalledTimes(1);
       done();
     });
@@ -116,7 +117,7 @@ describe('UserStorageService should be work', () => {
 
     it('getFsPath method should be work', async (done) => {
       const fsPath = await userStorageService.getFsPath(new URI('setting.json').withQuery(USER_STORAGE_SCHEME));
-      expect(fsPath).toBe(new URI(userHomeUri).resolve(DEFAULT_USER_STORAGE_FOLDER).resolve('setting.json').toString());
+      expect(fsPath).toBe(userHomeUri.resolve(DEFAULT_USER_STORAGE_FOLDER).resolve('setting.json').toString());
       done();
     });
   });
