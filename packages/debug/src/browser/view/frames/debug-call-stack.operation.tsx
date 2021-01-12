@@ -3,7 +3,7 @@ import { localize, useInjectable } from '@ali/ide-core-browser';
 import { DebugAction } from '../../components';
 import { DebugToolbarService } from '../configuration/debug-toolbar.service';
 import * as styles from './debug-call-stack.module.less';
-import { DebugState, DebugSession } from '../../debug-session';
+import { DebugSession } from '../../debug-session';
 import { DebugThread } from '../../model/debug-thread';
 
 export interface DebugStackOperationViewProps {
@@ -17,7 +17,6 @@ export const DebugStackOperationView = (props: DebugStackOperationViewProps) => 
     thread,
   } = props;
   const {
-    state,
     doStop,
     doStepIn,
     doStepOut,
@@ -43,24 +42,25 @@ export const DebugStackOperationView = (props: DebugStackOperationViewProps) => 
   }
 
   if (!session && thread) {
+    const { stopped } = thread;
     const selectThread = (callback: () => any) => {
       thread.session.currentThread = thread;
       callback();
     };
 
-    const renderContinue = (state: DebugState): React.ReactNode => {
-      if (state === DebugState.Stopped) {
+    const renderContinue = (isStop: boolean): React.ReactNode => {
+      if (isStop) {
         return <DebugAction run={ () => selectThread(doContinue) } icon={ 'continue' } label={ localize('debug.action.continue') } />;
       }
-      return <DebugAction run={ () => selectThread(doPause) } enabled={ typeof state === 'number' && state === DebugState.Running } icon={ 'pause' } label={ localize('debug.action.pause') } />;
+      return <DebugAction run={ () => selectThread(doPause) } enabled={ true } icon={ 'pause' } label={ localize('debug.action.pause') } />;
     };
 
     return (
       <div className={ styles.debug_stack_thread_operations }>
-        { renderContinue(state) }
-        <DebugAction run={ () => selectThread(doStepOver) } icon={ 'step' } label={ localize('debug.action.step-over') } />
-        <DebugAction run={ () => selectThread(doStepIn) } icon={ 'step-in' } label={ localize('debug.action.step-into') } />
-        <DebugAction run={ () => selectThread(doStepOut) } icon={ 'step-out' } label={ localize('debug.action.step-out') } />
+        { renderContinue(stopped) }
+        <DebugAction run={ () => selectThread(doStepOver) } enabled={ stopped } icon={ 'step' } label={ localize('debug.action.step-over') } />
+        <DebugAction run={ () => selectThread(doStepIn) } enabled={ stopped } icon={ 'step-in' } label={ localize('debug.action.step-into') } />
+        <DebugAction run={ () => selectThread(doStepOut) } enabled={ stopped } icon={ 'step-out' } label={ localize('debug.action.step-out') } />
       </div>
     );
   }
