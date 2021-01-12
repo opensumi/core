@@ -1,8 +1,8 @@
 import type * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { TaskProvider, Task, TaskExecution, TaskFilter } from 'vscode';
-import { Event, CancellationToken, asPromise, CancellationTokenSource, Emitter, DisposableStore, Uri, IDisposable } from '@ali/ide-core-common';
-import { IExtensionProps } from '../../../../common';
+import { getDebugLogger, Event, CancellationToken, asPromise, CancellationTokenSource, Emitter, DisposableStore, Uri, IDisposable } from '@ali/ide-core-common';
+import { IExtensionHostService, IExtensionProps } from '../../../../common';
 import { IExtHostTasks, TaskHandlerData, IMainThreadTasks, TaskSetDTO, TaskPresentationOptionsDTO, ProcessExecutionOptionsDTO, ShellExecutionDTO, ProcessExecutionDTO, CustomExecutionDTO, CustomExecution2DTO, ShellExecutionOptionsDTO, TaskFilterDTO, TaskDTO, TaskDefinitionDTO, TaskProcessStartedDTO, TaskExecutionDTO, TaskHandleDTO, TaskProcessEndedDTO } from '../../../../common/vscode/tasks';
 import { MainThreadAPIIdentifier, IExtHostTerminal, IExtHostWorkspace } from '../../../../common/vscode';
 import { Terminal } from '../ext.host.terminal';
@@ -554,8 +554,7 @@ export class ExtHostTasks implements IExtHostTasks {
         if (result) {
           for (const task of result) {
             if (!task.definition || !validTypes[task.definition.type]) {
-              // tslint:disable-next-line: no-console
-              console.warn(false, `The task [${task.source}, ${task.name}] uses an undefined task type. The task will be ignored in the future.`);
+              getDebugLogger().warn(false, `The task [${task.source}, ${task.name}] uses an undefined task type. The task will be ignored in the future.`);
             }
             const taskDTO: TaskDTO | undefined = TaskDTO.from(task, provider.extension);
             if (taskDTO) {
@@ -572,6 +571,12 @@ export class ExtHostTasks implements IExtHostTasks {
         }
         return {
           tasks: taskDTOs,
+          extension: provider.extension,
+        };
+      }).catch((err) => {
+        getDebugLogger().error(err, provider.extension);
+        return {
+          tasks: [],
           extension: provider.extension,
         };
       });
