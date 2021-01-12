@@ -33,6 +33,7 @@
     "@ali/ide-theme": "1.31.1",
     "compare-versions": "^3.5.1",
     "fs-extra": "^8.1.0",
+    "lodash.uniqby": "^4.7.0",
     "query-string": "^6.8.3",
     "urllib": "^2.34.1"
   },
