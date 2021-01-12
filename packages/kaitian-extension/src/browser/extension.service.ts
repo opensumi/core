@@ -633,7 +633,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       clientId = WSChanneHandler.clientId;
     }
 
-    await this.extensionNodeService.createProcess(clientId);
+    await this.extensionNodeService.createProcess(clientId, {
+      enableDebugExtensionHost: this.appConfig.enableDebugExtensionHost,
+    });
 
     await this.initExtProtocol();
 

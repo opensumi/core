@@ -39,11 +39,18 @@ export interface ExtraMetaData {
   [key: string]: any;
 }
 
+export interface ICreateProcessOptions {
+  /**
+   * 启用插件进程的 Debug 模式
+   */
+  enableDebugExtensionHost?: boolean;
+}
+
 export const IExtensionNodeService = Symbol('IExtensionNodeService');
 export interface IExtensionNodeService {
   initialize(): Promise<void>;
   getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
-  createProcess(clientId: string): Promise<void>;
+  createProcess(clientId: string, options?: ICreateProcessOptions): Promise<void>;
   ensureProcessReady(clientId: string): Promise<boolean>;
   getElectronMainThreadListenPath(clientId: string);
   getElectronMainThreadListenPath2(clientId: string);
@@ -60,7 +67,7 @@ export const IExtensionNodeClientService = Symbol('IExtensionNodeClientService')
 export interface IExtensionNodeClientService {
   getElectronMainThreadListenPath(clientId: string): Promise<string>;
   getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
-  createProcess(clientId: string): Promise<void>;
+  createProcess(clientId: string, options: ICreateProcessOptions): Promise<void>;
   getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
   infoProcessNotExist(): void;
   infoProcessCrash(): void;

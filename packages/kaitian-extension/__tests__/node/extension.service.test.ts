@@ -141,6 +141,18 @@ describe('Extension Serivce', () => {
       const port = await extensionService.getProcessInspectPort(mockExtClientId);
       expect(typeof port).toBe('number');
       await extensionService.disposeClientExtProcess(mockExtClientId, false);
+      (global as any).isDev = undefined;
+    });
+
+    it('create extension host process with enable extension host options', async () => {
+      (global as any).isDev = undefined;
+      const mockExtClientId = 'mock_id' + Math.random();
+      await extensionService.createProcess(mockExtClientId, {
+        enableDebugExtensionHost: true,
+      });
+      const port = await extensionService.getProcessInspectPort(mockExtClientId);
+      expect(typeof port).toBe('number');
+      await extensionService.disposeClientExtProcess(mockExtClientId, false);
     });
   });
 
