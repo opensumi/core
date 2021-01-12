@@ -50,7 +50,7 @@ class MockLoggerManagerClient {
 @Injectable()
 class MockStaticResourceService {
   resolveStaticResource(uri: ideCoreCommon.URI) {
-    return uri.toString();
+    return uri.withScheme('file');
   }
   resourceRoots: [] = [];
 }

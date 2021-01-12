@@ -1,10 +1,11 @@
 import * as path from 'path';
-import { UriComponents } from 'vscode-uri';
 import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { URI } from '@ali/ide-core-common';
 import { initMockRPCProtocol } from '../../../__mock__/initRPCProtocol';
 import { KTWorkerExtensionContext } from '../../../../src/hosted/api/vscode/ext.host.extensions';
 import { ExtHostStorage } from '../../../../src/hosted/api/vscode/ext.host.storage';
+
+const staticServicePath = 'http://localhost:9999';
 
 const mockExtension = {
   name: 'kaitian-extension',
@@ -12,6 +13,7 @@ const mockExtension = {
   path: path.join(__dirname, '../__mock__/extension'),
   realPath: path.join(__dirname, '../__mock__/extension'),
   extensionId: 'mock.kaitian-extension',
+  extensionLocation: new URI(`${staticServicePath}/assets${path.join(__dirname, '../__mock__/extension')}`).codeUri,
   packageJSON: {
     name: 'kaitian-extension',
     kaitianContributes: {
@@ -30,14 +32,6 @@ describe(`test ${__filename}`, () => {
     send: async (msg) => {},
     onMessage: (fn) => {},
   };
-  const staticServicePath = 'http://localhost:9999';
-  const resolveStaticResource = (uri: UriComponents): UriComponents => {
-    const _uri = URI.from(uri);
-    return _uri.scheme !== 'file'
-      ? _uri.withScheme('http').codeUri
-      : new URI(staticServicePath)
-          .withPath(`assets${_uri.codeUri.fsPath}`).codeUri;
-  };
   beforeAll(async () => {
     rpcProtocol = await initMockRPCProtocol(mockClient);
     context = new KTWorkerExtensionContext({
@@ -45,36 +39,24 @@ describe(`test ${__filename}`, () => {
       extendProxy: {},
       registerExtendModuleService: () => {},
       extensionPath: mockExtension.realPath,
+      extensionLocation: mockExtension.extensionLocation,
       staticServicePath,
       storageProxy: new ExtHostStorage(rpcProtocol),
-      async resolveStaticResource(uri: URI) {
-        const assetUriComponent = resolveStaticResource(uri.codeUri);
-        return URI.from(assetUriComponent);
-      },
     });
   });
 
-  describe('context.asHref', () => {
-    it('should get corrent href in normal scene', async () => {
-      let filePath = './server.js';
-      expect(await context.asHref(filePath)).toBe(
-        `${staticServicePath}/assets${path.join(mockExtension.path, filePath)}`,
-      );
-
-      filePath = 'server.js';
-      expect(await context.asHref(filePath)).toBe(
-        `${staticServicePath}/assets${path.join(mockExtension.path, filePath)}`,
-      );
+  describe('context', () => {
+    it('extensionUri', () => {
+      expect(context.extensionUri).toEqual(mockExtension.extensionLocation);
     });
 
-    it('should get href in normal scene', async () => {
-      const _extensionPath = (context as any)._extensionPath;
-      (context as any)._extensionPath = 'kt-ext://cdn.net/__mock__/extension';
+    it('extensionPath', () => {
+      expect(context.extensionPath).toBe(mockExtension.extensionLocation.fsPath);
+    });
+
+    it('asAbsolutePath', () => {
       const filePath = './server.js';
-      expect(await context.asHref(filePath)).toBe(
-        `http://cdn.net/__mock__/extension/server.js`,
-      );
-      (context as any)._extensionPath = _extensionPath;
+      expect(context.asAbsolutePath(filePath)).toBe(path.join(mockExtension.extensionLocation.fsPath, filePath));
     });
   });
 });

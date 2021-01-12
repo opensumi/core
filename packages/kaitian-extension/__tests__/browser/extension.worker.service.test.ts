@@ -77,6 +77,7 @@ const mockExtensionProps: IExtensionProps = {
   path: path.join(__dirname, '../__mock__/extension'),
   realPath: path.join(__dirname, '../__mock__/extension'),
   extensionId: 'uuid-for-test-extension',
+  extensionLocation: Uri.file(path.join(__dirname, '../__mock__/extension')),
   isUseEnable: true,
   enableProposedApi: false,
   isBuiltin: false,

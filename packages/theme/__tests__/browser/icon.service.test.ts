@@ -132,7 +132,7 @@ class MockFileServiceClient {
 @Injectable()
 class MockStaticResourceService {
   resolveStaticResource(uri: URI) {
-    return uri.toString();
+    return uri.withScheme('file');
   }
 }
 
