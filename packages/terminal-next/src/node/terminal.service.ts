@@ -70,9 +70,9 @@ export class TerminalServiceImpl extends RPCService implements ITerminalNodeServ
     }
   }
 
-  public create(id: string, rows: number, cols: number, options: TerminalOptions) {
+  public async create(id: string, rows: number, cols: number, options: TerminalOptions) {
     const clientId = id.split('|')[0];
-    const terminal = this.ptyService.create(rows, cols, options);
+    const terminal = await this.ptyService.create(rows, cols, options);
 
     this.terminalMap.set(id , terminal);
 
