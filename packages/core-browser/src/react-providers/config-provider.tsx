@@ -99,6 +99,10 @@ export interface AppConfig {
    * 默认为 window.location.hostname
    */
   remoteHostname?: string;
+  /**
+   * 开启插件进程的 Debug
+  */
+  enableDebugExtensionHost?: boolean;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({

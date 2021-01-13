@@ -4,7 +4,7 @@ import * as fs from 'fs-extra';
 import * as util from 'util';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ExtensionScanner } from './extension.scanner';
-import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData, IExtensionNodeClientService, ProcessMessageType, IExtensionHostManager, OutputType } from '../common';
+import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData, IExtensionNodeClientService, ProcessMessageType, IExtensionHostManager, OutputType, ICreateProcessOptions } from '../common';
 import { Deferred, isDevelopment, INodeLogger, AppConfig, isWindows, isElectronNode, ReporterProcessMessage, IReporter, IReporterService, REPORT_TYPE, PerformanceData, REPORT_NAME } from '@ali/ide-core-node';
 import { Event, Emitter, timeout, IReporterTimer, isUndefined, SupportLogNamespace, getDebugLogger } from '@ali/ide-core-common';
 import type * as cp from 'child_process';
@@ -142,7 +142,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   }
 
-  public async createProcess(clientId: string) {
+  public async createProcess(clientId: string, options?: ICreateProcessOptions) {
     this.logger.log('createProcess', this.instanceId);
     this.logger.log('appconfig exthost', this.appConfig.extHost);
     this.logger.log('createProcess clientId', clientId);
@@ -219,8 +219,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       extLogServiceClassPath: this.appConfig.extLogServiceClassPath,
     })}`);
 
-    if (isDevelopment()) {
-      //
+    if (options?.enableDebugExtensionHost || isDevelopment()) {
       // 开发模式下指定调试端口时，尝试从指定的端口开始寻找可用的空闲端口
       // 避免打开多个窗口(多个插件进程)时端口被占用
       //

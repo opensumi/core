@@ -4,7 +4,7 @@ import { uuid, INodeLogger, Uri } from '@ali/ide-core-node';
 import * as os from 'os';
 import { createHash } from 'crypto';
 
-import { ExtraMetaData, IExtensionMetaData, IExtensionNodeService, IExtensionNodeClientService } from '../common';
+import { ExtraMetaData, IExtensionMetaData, IExtensionNodeService, IExtensionNodeClientService, ICreateProcessOptions } from '../common';
 import { RPCService } from '@ali/ide-connection';
 import * as lp from './languagePack';
 import { IFileService } from '@ali/ide-file-service';
@@ -49,9 +49,10 @@ export class ExtensionServiceClientImpl extends RPCService implements IExtension
    * 创建插件进程
    *
    * @param clientId 客户端 id
+   * @param options 创建插件参数
    */
-  public async createProcess(clientId: string): Promise<void> {
-    await this.extensionService.createProcess(clientId);
+  public async createProcess(clientId: string, options: ICreateProcessOptions): Promise<void> {
+    await this.extensionService.createProcess(clientId, options);
     await this.extensionService.ensureProcessReady(clientId);
   }
 
