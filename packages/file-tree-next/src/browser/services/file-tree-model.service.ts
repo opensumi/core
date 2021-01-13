@@ -988,17 +988,17 @@ export class FileTreeModelService {
         } else {
           this.fileTreeService.ignoreFileEventOnce((target.parent as Directory).uri);
         }
-        // 由于节点移动时默认仅更新节点路径
-        // 我们需要自己更新额外的参数，如uri, filestat等
-        target.updateURI(to);
-        target.updateFileStat({
-          ...target.filestat,
-          uri: to.toString(),
-        });
-        target.updateToolTip(this.fileTreeAPI.getReadableTooltip(to));
         // 当重命名文件为文件夹时，刷新文件夹更新子文件路径
         if (Directory.is(target)) {
           if (isCompactNode) {
+            // 由于节点移动时默认仅更新节点路径
+            // 我们需要自己更新额外的参数，如uri, filestat等
+            target.updateURI(to);
+            target.updateFileStat({
+              ...target.filestat,
+              uri: to.toString(),
+            });
+            target.updateToolTip(this.fileTreeAPI.getReadableTooltip(to));
             this.treeModel.dispatchChange();
           }
           this.fileTreeService.refresh(target as Directory);

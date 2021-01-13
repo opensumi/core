@@ -320,6 +320,26 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
   }
 
+  // 重载 name 的 getter/setter，路径改变时需要重新监听文件节点变化
+  set name(name: string) {
+    const prevPath = this.path;
+    if (!CompositeTreeNode.isRoot(this) && typeof this.watchTerminator === 'function') {
+      this.watchTerminator(prevPath);
+      this.addMetadata('name', name);
+      this.watchTerminator = this.watcher.onWatchEvent(this.path, this.handleWatchEvent);
+    } else {
+      this.addMetadata('name', name);
+    }
+  }
+
+  get name() {
+    // 根节点保证路径不重复
+    if (!this.parent) {
+      return `root_${this._uid}`;
+    }
+    return this.getMetadata('name');
+  }
+
   // 作为根节点唯一的watcher需要在生成新节点的时候传入
   get watcher() {
     return this._watcher;
@@ -584,9 +604,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     super.mv(to, name);
     if (typeof this.watchTerminator === 'function') {
       this.watchTerminator(prevPath);
-      if (this._children) {
-        this.watchTerminator = this.watcher.onWatchEvent(this.path, this.handleWatchEvent);
-      }
+      this.watchTerminator = this.watcher.onWatchEvent(this.path, this.handleWatchEvent);
     }
     // 同时移动过子节点
     if (this.children) {
