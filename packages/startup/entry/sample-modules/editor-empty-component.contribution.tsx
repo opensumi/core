@@ -42,7 +42,7 @@ export class EditorEmptyComponentContribution implements ComponentContribution {
       id: 'editor-empty',
       component: EditorEmptyComponent,
       initialProps: {
-        list: ['上坡', '吭头', '柳千'],
+        list: ['上坡', '吭头'],
       },
     });
   }
