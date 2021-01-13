@@ -8,11 +8,24 @@
   &:hover {
     background:  var(--list-hoverBackground);
     color:  var(--list-hoverForeground);
+    .debug_threads_operation {
+      display: block;
+    }
+    .debug_threads_description {
+      display: none;
+    }
   }
   &.selected {
     background: var(--list-activeSelectionBackground);
     color: var(--list-activeSelectionForeground);
   }
+}
+
+.debug_threads_operation {
+  display: none;
+}
+.debug_threads_description {
+  display: block;
 }
 
 .debug_stack_item_label_title {
