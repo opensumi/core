@@ -27,7 +27,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   private instanceId = 'ExtensionNodeServiceImpl:' + new Date();
   static MaxExtProcessCount: number = 5;
-  static ProcessCloseExitThreshold: number = 1000 * 5;
+  // ws 断开 5 分钟后杀掉插件进程
+  static ProcessCloseExitThreshold: number = 5 * 60 * 1000;
 
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
@@ -52,6 +53,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private clientExtProcessExtConnection: Map<string, any> = new Map();
   private clientExtProcessExtConnectionServer: Map<string, net.Server> = new Map();
   private clientExtProcessFinishDeferredMap: Map<string, Deferred<void>> = new Map();
+  private clientExtProcessThresholdExitTimerMap: Map<string, NodeJS.Timeout> = new Map();
   private clientServiceMap: Map<string, IExtensionNodeClientService> = new Map();
 
   private inspectPort: number = 9889;
@@ -135,6 +137,11 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       extConnectionReader.listen((input) => {
         mainThreadConnection.writer.write(input);
       });
+      // 连接恢复后清除销毁的定时器
+      if (this.clientExtProcessThresholdExitTimerMap.has(clientId)) {
+        const timer = this.clientExtProcessThresholdExitTimerMap.get(clientId) as NodeJS.Timeout;
+        clearTimeout(timer);
+      }
 
       this.logger.log(`setExtProcessConnectionForward clientId ${clientId}`);
 
@@ -433,6 +440,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
                 extConnection.connection.destroy();
               }
             }
+            // 当连接关闭后启动定时器清除插件进程
+            this.closeExtProcessWhenConnectionClose(connectionClientId);
           });
 
         },
@@ -441,6 +450,21 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
           // https://yuque.antfin.com/ide-framework/topiclist/enpip1
         },
       });
+    }
+  }
+
+  /**
+   * 当连接断开后走定时器杀死插件进程
+   */
+  private closeExtProcessWhenConnectionClose(connectionClientId: string) {
+    if (this.clientExtProcessMap.has(connectionClientId)) {
+      const timer = global.setTimeout(() => {
+        this.logger.log('close disposeClientExtProcess clientId', connectionClientId);
+        this.disposeClientExtProcess(connectionClientId).catch((e) => {
+          this.logger.error('close extProcess when connection close throw error', e.message);
+        });
+      }, this.appConfig.processCloseExitThreshold ?? ExtensionNodeServiceImpl.ProcessCloseExitThreshold);
+      this.clientExtProcessThresholdExitTimerMap.set(connectionClientId, timer);
     }
   }
 
