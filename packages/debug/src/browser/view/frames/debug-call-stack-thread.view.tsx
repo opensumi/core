@@ -19,7 +19,6 @@ export const DebugStackThreadView = (props: DebugStackThreadViewProps) => {
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
   const [frames, setFrames] = React.useState<DebugStackFrame[]>([]);
   const [unfold, setUnfold] = React.useState<boolean>(false);
-  const [hover, setHover] = React.useState<boolean>(false);
 
   const mutipleS = manager.sessions.length > 1;
   const mutiple = manager.sessions.length > 1 || manager.sessions[0].threadCount > 1;
@@ -50,8 +49,6 @@ export const DebugStackThreadView = (props: DebugStackThreadViewProps) => {
         <div
           style={ { paddingLeft: `${indent}px` } }
           className={ styles.debug_stack_item_label }
-          onMouseEnter={ () => setHover(true) }
-          onMouseLeave={ () => setHover(false) }
         >
           {
             frames.length > 0 ?
@@ -62,18 +59,19 @@ export const DebugStackThreadView = (props: DebugStackThreadViewProps) => {
               <div style={ { width: 14 } }></div>
           }
           <div className={ styles.debug_threads_item }>{ thread.raw.name }</div>
-          {
-            hover ?
-              <DebugStackOperationView thread={ thread } /> :
-              <span className={ styles.debug_threads_item_description }>
+          <>
+            <div className={ styles.debug_threads_operation }>
+              <DebugStackOperationView thread={ thread } />
+            </div>
+            <span className={ styles.debug_threads_description }>
                 {
                   (thread.stopped && thread.stoppedDetails) ?
                     thread.raw.id === thread.stoppedDetails.threadId ? `${localize('debug.stack.frame.because')} ${thread.stoppedDetails.reason} ${localize('debug.stack.frame.stopped')}`
                       : localize('debug.stack.frame.stopped')
                     : localize('debug.stack.frame.running')
                 }
-              </span>
-          }
+            </span>
+          </>
         </div>
       }
       {
