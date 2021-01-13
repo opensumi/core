@@ -35,9 +35,13 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
       const frame = frames[0];
       thread.currentFrame = frame;
       setSelected(frame.raw.id);
-      if (frame && frame.source) {
-        frame.source.open({}, frame);
-      }
+      frameOpenSource(frame);
+    }
+  };
+
+  const frameOpenSource = (frame: DebugStackFrame) => {
+    if (frame && frame.source) {
+      frame.source.open({}, frame);
     }
   };
 
@@ -56,10 +60,14 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
   }, []);
 
   React.useEffect(() => {
-    if (manager.currentFrame) {
-      setSelected(manager.currentFrame.raw.id);
+    if (manager.currentThread) {
+      const hasSourceFrame = manager.currentThread.frames.find((e: DebugStackFrame) => !!e.source);
+      if (hasSourceFrame) {
+        setSelected(hasSourceFrame.raw.id);
+        frameOpenSource(hasSourceFrame);
+      }
     }
-  }, [manager.currentFrame]);
+  }, [manager.currentThread?.frameCount]);
 
   React.useEffect(() => {
     if (thread) {
@@ -93,9 +101,7 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
 
       frame.session.currentThread = frame.thread;
       setSelected(frame.raw.id);
-      if (frame && frame.source) {
-        frame.source.open({}, frame);
-      }
+      frameOpenSource(frame);
     };
 
     return <div
