@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable, getIcon } from '@ali/ide-core-browser';
 import ResizeView, { ResizeDirection } from './resize.view';
-import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService, IWidget, ITerminalErrorService } from '../../common';
+import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService, IWidget, ITerminalErrorService, ITerminalNetwork } from '../../common';
 import TerminalWidget from './terminal.widget';
 
 import 'xterm/css/xterm.css';
@@ -13,6 +13,7 @@ export default observer(() => {
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
   const search = useInjectable<ITerminalSearchService>(ITerminalSearchService);
   const errorService = useInjectable<ITerminalErrorService>(ITerminalErrorService);
+  const network = useInjectable<ITerminalNetwork>(ITerminalNetwork);
   const { errors } = errorService;
   const { groups, currentGroupIndex, currentGroupId } = view;
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -29,7 +30,7 @@ export default observer(() => {
 
   const renderWidget = (widget: IWidget, index: number) => {
     const client = controller.findClientFromWidgetId(widget.id);
-    const error = client && errors.get(client.id);
+    const error = client && !network.shouldReconnect(client.id) ? errors.get(client.id) : undefined;
     return (
       <TerminalWidget show={ currentGroupIndex === index } error={ error } widget={ widget } />
     );

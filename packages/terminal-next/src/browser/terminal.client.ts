@@ -10,7 +10,7 @@ import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
 import { FilePathAddon, AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
 import { TerminalKeyBoardInputService } from './terminal.input';
-import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, ITerminalGroupViewService, ITerminalInternalService, IWidget, ITerminalDataEvent, ITerminalExitEvent } from '../common';
+import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, ITerminalGroupViewService, ITerminalInternalService, IWidget, ITerminalDataEvent, ITerminalExitEvent, ITerminalConnection } from '../common';
 import { ITerminalPreference } from '../common/preference';
 import { CorePreferences, IOpenerService } from '@ali/ide-core-browser';
 
@@ -250,7 +250,12 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     };
 
     const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this._term;
-    const connection = await this.service.attach(sessionId, this._term, rows, cols, ptyOptions, type);
+    let connection: ITerminalConnection | undefined;
+    try {
+      connection = await this.service.attach(sessionId, this._term, rows, cols, ptyOptions, type);
+    } catch {
+      // noop
+    }
 
     if (!connection) {
       this._attached.resolve();

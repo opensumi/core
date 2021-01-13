@@ -29,17 +29,19 @@ export class TerminalErrorService implements ITerminalErrorService {
         }
       } catch { /** nothing */ }
     });
+
+    this.controller.onDidCloseTerminal((clientId: string) => {
+      this.errors.delete(clientId);
+    });
   }
 
-  fix(clientId: string) {
+  async fix(clientId: string) {
     const client = this.controller.findClientFromWidgetId(clientId);
     if (client) {
+      await 0; // 使后面的 delete 发生在下一个 microTask 中，避免在迭代过程中修改 this.errors
+      this.errors.delete(clientId);
       client.reset();
-      client.attached.promise.then(() => {
-        if (client.ready) {
-          this.errors.delete(clientId);
-        }
-      });
+      return client.attached.promise;
     }
   }
 }

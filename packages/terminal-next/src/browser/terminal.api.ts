@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { Event, Emitter } from '@ali/ide-core-common';
 import { capitalize } from 'lodash';
-import { ITerminalApiService, ITerminalGroupViewService, ITerminalController, ITerminalInfo, TerminalOptions, ITerminalExternalClient, ITerminalInternalService } from '../common';
+import { ITerminalApiService, ITerminalGroupViewService, ITerminalController, ITerminalInfo, TerminalOptions, ITerminalExternalClient, ITerminalInternalService, ITerminalNetwork } from '../common';
 
 @Injectable()
 export class TerminalApiService implements ITerminalApiService {
@@ -21,6 +21,9 @@ export class TerminalApiService implements ITerminalApiService {
 
   @Autowired(ITerminalInternalService)
   protected readonly service: ITerminalInternalService;
+
+  @Autowired(ITerminalNetwork)
+  protected readonly network: ITerminalNetwork;
 
   protected _entries = new Map<string, ITerminalExternalClient>();
 
@@ -134,5 +137,12 @@ export class TerminalApiService implements ITerminalApiService {
     });
 
     return widget;
+  }
+
+  /**
+   * 启动终端重连任务，可多次调用不会频繁触发，具体触发时机由底层控制
+   */
+  scheduleReconnection() {
+    return this.network.scheduleReconnection();
   }
 }
