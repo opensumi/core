@@ -1,4 +1,4 @@
-import { isOSX } from '@ali/ide-core-common';
+import { isWindows } from '@ali/ide-core-common';
 import { exec } from 'child_process';
 
 const ansiRegex = ({onlyFirst = false} = {}) => {
@@ -15,8 +15,7 @@ const stripAnsi = (str) => {
 };
 
 export async function getShellPath(): Promise<string | undefined> {
-  if (!isOSX) {
-    // 只需要在 mac 系统上获取
+  if (isWindows) {
     return;
   }
   const parseEnv = (env) => {
