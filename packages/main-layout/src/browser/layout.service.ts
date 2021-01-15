@@ -235,6 +235,21 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       if (this.tabbarUpdateSet.has(options.containerId)) {
         this.tryUpdateTabbar(options.containerId);
       }
+      const service = this.accordionServices.get(options.containerId);
+      if (service) {
+        // 如果 append view 时尝试注册 holdTabbarComponent
+        service.onBeforeAppendViewEvent(() => {
+          this.tryUpdateTabbar(options.containerId);
+        });
+        service.onAfterDisposeViewEvent(() => {
+          // 如果没有其他 view ，则 remove 掉 container
+          if (service.views.length === 0) {
+            this.disposeContainer(options.containerId);
+            // 重新注册到 holdTabbarComponent ,以便再次 append 时能注册传上去
+            this.holdTabbarComponent.set(options.containerId, { views, options, side });
+          }
+        });
+      }
       return options.containerId;
     }
     const tabbarService = this.getTabbarService(side);
