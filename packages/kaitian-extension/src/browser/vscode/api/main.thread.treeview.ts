@@ -3,7 +3,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optinal } from '@ali/c
 import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { Emitter, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize, getIcon } from '@ali/ide-core-browser';
+import { Emitter, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize, getIcon, getExternalIcon } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { ExtensionTabBarTreeView } from '../../components';
 import { IIconService, IconType } from '@ali/ide-theme';
@@ -212,6 +212,8 @@ export class TreeViewDataProvider extends Tree {
   async toIconClass(item: TreeViewItem): Promise<string | undefined> {
     if (item.iconUrl || item.icon) {
       return this.iconService.fromIcon('', item.iconUrl || item.icon, IconType.Background);
+    } else if (item.themeIcon) {
+      return getExternalIcon(item.themeIcon.id);
     } else {
       return '';
     }

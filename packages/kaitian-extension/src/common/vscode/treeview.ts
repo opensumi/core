@@ -4,7 +4,7 @@ import {
   ICommand,
 } from './models';
 import { Event, IDisposable } from '@ali/ide-core-common';
-import { TreeItemCollapsibleState } from './ext-types';
+import { TreeItemCollapsibleState, ThemeIcon } from './ext-types';
 import { ThemeType } from '@ali/ide-theme';
 
 export interface ITreeViewRevealOptions {
@@ -46,7 +46,7 @@ export class TreeViewItem {
 
   iconUrl?: IconUrl;
 
-  themeIconId?: 'folder' | 'file';
+  themeIcon?: ThemeIcon;
 
   resourceUri?: UriComponents;
 
