@@ -6,12 +6,25 @@ import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { TerminalKeyBoardInputService } from './terminal.input';
 import { ITerminalConnection } from '../common';
 
-const linuxFilePathRegex = /((\/$|(\/?[\w\.\@\-\_]+)?(\/[\w\.\@\~\-\_]+)+(:[0-9]*:[0-9]*)?)+)/;
-const windowsFilePathRegex = new RegExp('(?:[a-zA-Z]\:|\\\\[\w\.]+\\[\w.$]+)\\(?:[\w]+\\)*\w([\w.])+(:[0-9]*:[0-9]*)?');
+const segmentClause = '\\w\\.@_\\-';
+const posClause = [
+  ':\\d+(?::\\d+)?', // :1 | :1:2
+  '\\s*\\(\\d+(?:,\\s*\\d+)?\\)', // (1) | (1,2) | (1, 2)
+].join('|');
+const pathClause = [
+  // Unix
+  `[${segmentClause}]*(?:/[${segmentClause}]+)+`,
+  // Windows 应该只在 electron 场景用到
+  // Windows https://docs.microsoft.com/en-us/dotnet/standard/io/file-path-formats
+  // C:\xxx\xxx
+  // \\.\c:\xxx\xxx
+  // \\?\c:\xxx\xxx
+  `(?:(?:\\\\\\\\[.?]\\\\)?[a-zA-Z]:\\\\)?[${segmentClause}]+(?:\\\\[${segmentClause}]+)+`,
+].join('|');
+export const rePath = new RegExp(`(${pathClause})(${posClause})?`);
 
 export class FilePathAddon extends Disposable implements ITerminalAddon {
-  private _linuxLinkMatcherId: number | undefined;
-  private _windowsLinkMatchId: number | undefined;
+  private _linkMatcherId: number | undefined;
   private _terminal: Terminal | undefined;
 
   constructor(
@@ -22,8 +35,22 @@ export class FilePathAddon extends Disposable implements ITerminalAddon {
     private _options: ILinkMatcherOptions = {},
   ) {
     super();
-    this._options.matchIndex = 2;
+    this._options.matchIndex = 0;
     this._options.validationCallback = this._checkPathValid.bind(this);
+  }
+
+  private _parseUri(uri: string) {
+    const [, path, pos] = uri.match(rePath)!;
+    const posArr: number[] = [];
+    const reNum = /\d+/g;
+    if (pos) {
+      let res: string[] | null;
+      while ((res = reNum.exec(pos))) {
+        posArr.push(+res[0]);
+      }
+    }
+    const [row, col] = posArr;
+    return { path: this._absolutePath(path), row, col };
   }
 
   private _absolutePath(uri: string) {
@@ -42,10 +69,8 @@ export class FilePathAddon extends Disposable implements ITerminalAddon {
   }
 
   private _checkPathValid(uri: string, callback: (valid: boolean) => void) {
-    const uriArray = uri.split(':');
-
     try {
-      const absolute = this._absolutePath(uriArray[0]);
+      const absolute = this._parseUri(uri).path;
       this._fileService.getFileStat(URI.file(absolute).toString())
         .then((stat) => {
           if (stat) {
@@ -64,37 +89,31 @@ export class FilePathAddon extends Disposable implements ITerminalAddon {
       return;
     }
 
-    const uriArray = uri.split(':');
-    const absolute = this._absolutePath(uriArray[0]);
-
-    if (absolute) {
-      const fileUri = URI.file(absolute);
-      if (fileUri && fileUri.scheme === 'file') {
-        const stat = await this._fileService.getFileStat(fileUri.toString());
-        if (stat && !stat.isDirectory) {
-          this._editorService.open(new URI(stat.uri), (uriArray[1] && uriArray[2]) ? {
-            range: {
-              startLineNumber: parseInt(uriArray[1], 10),
-              endLineNumber: parseInt(uriArray[1], 10),
-              startColumn: parseInt(uriArray[2], 10) + 1,
-              endColumn: parseInt(uriArray[2], 10) + 1,
-            },
-          } : {});
-        }
+    const uriInfo = this._parseUri(uri);
+    const fileUri = URI.file(uriInfo.path);
+    if (fileUri && fileUri.scheme === 'file') {
+      const stat = await this._fileService.getFileStat(fileUri.toString());
+      if (stat && !stat.isDirectory) {
+        this._editorService.open(new URI(stat.uri), uriInfo.row && uriInfo.col ? {
+          range: {
+            startLineNumber: uriInfo.row,
+            endLineNumber: uriInfo.row,
+            startColumn: uriInfo.col,
+            endColumn: uriInfo.col,
+          },
+        } : {});
       }
     }
   }
 
   activate(terminal: Terminal): void {
     this._terminal = terminal;
-    this._linuxLinkMatcherId = this._terminal.registerLinkMatcher(linuxFilePathRegex, this._openFile.bind(this), this._options);
-    this._windowsLinkMatchId = this._terminal.registerLinkMatcher(windowsFilePathRegex, this._openFile.bind(this), this._options);
+    this._linkMatcherId = this._terminal.registerLinkMatcher(rePath, this._openFile.bind(this), this._options);
 
     this.addDispose({
       dispose: () => {
-        if (this._linuxLinkMatcherId !== undefined && this._windowsLinkMatchId && this._terminal !== undefined) {
-          this._terminal.deregisterLinkMatcher(this._linuxLinkMatcherId);
-          this._terminal.deregisterLinkMatcher(this._windowsLinkMatchId);
+        if (this._linkMatcherId !== undefined && this._terminal !== undefined) {
+          this._terminal.deregisterLinkMatcher(this._linkMatcherId);
         }
       },
     });
