@@ -29,5 +29,7 @@ export * from './welcome-page';
 export * from './pick-view';
 export * from './debug';
 export * from './debugToolbar';
+export * from './charts';
+export * from './minimap';
 
 export * from './custom';
