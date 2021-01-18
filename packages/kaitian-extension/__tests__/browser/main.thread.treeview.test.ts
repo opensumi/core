@@ -5,7 +5,7 @@ import { MainThreadTreeView } from '@ali/ide-kaitian-extension/lib/browser/vscod
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { IMenuRegistry } from '@ali/ide-core-browser/src/menu/next';
 import { IContextKeyService, PreferenceService } from '@ali/ide-core-browser/src';
-import { IIconService } from '@ali/ide-theme';
+import { IIconService, IThemeService } from '@ali/ide-theme';
 
 const mockExtThreadTreeViewProxy = {
   $postMessage: jest.fn(),
@@ -64,6 +64,10 @@ describe('MainThreadTreeView API Test Suite', () => {
         useValue: {
           fromIcon: () => '',
         },
+      },
+      {
+        token: IThemeService,
+        useValue: {},
       },
     ]));
 
