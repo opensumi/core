@@ -49,7 +49,7 @@ import {
   IToolbarPopoverRegistry,
 } from '@ali/ide-core-browser';
 import { isEmptyObject } from '@ali/ide-core-common';
-import { Path } from '@ali/ide-core-common/lib/path';
+import { Path, posix } from '@ali/ide-core-common/lib/path';
 import { warning } from '@ali/ide-components/lib/utils/warning';
 import { Extension } from './extension';
 import { createApiFactory as createVSCodeAPIFactory } from './vscode/api/main.thread.api.impl';
@@ -792,9 +792,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
 
     if (contributes && contributes.browserMain) {
-      const absolutePath = new Path(extension.path).join(contributes.browserMain).toString();
-      const extUri = new URI(absolutePath).scheme ? new URI(absolutePath) : URI.file(absolutePath);
-      const browserModuleUri = await this.staticResourceService.resolveStaticResource(extUri);
+      // 这里路径遵循 posix 方式，fsPath 会自动根据平台转换
+      const browserModuleUri = new URI(extension.extensionLocation.with({
+        path: posix.join(extension.extensionLocation.path, contributes.browserMain),
+      }));
       const { moduleExports, proxiedHead } = await this.getExtensionModuleExports(browserModuleUri.toString(), extension);
       if (contributes.browserViews) {
         const { browserViews } = contributes;

@@ -194,6 +194,7 @@ class MockWorkbenchEditorService {
 
 const mockExtension = {
   ...mockExtensionProps,
+  uri: Uri.file(mockExtensionProps.path),
   contributes: Object.assign(mockExtensionProps.packageJSON.contributes, mockExtensionProps.packageJSON.kaitianContributes),
   activate: () => {
     return true;

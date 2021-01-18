@@ -2,6 +2,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { IRPCProtocol, RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { AppConfig, Deferred, Emitter, IExtensionProps, ILogger, URI } from '@ali/ide-core-browser';
 import { Event } from '@ali/ide-core-common';
+import { posix } from '@ali/ide-core-common/lib/path';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { UriComponents } from 'vscode-uri';
 import { IExtension, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../common';
@@ -135,12 +136,10 @@ export class WorkerExtensionService implements AbstractExtensionService {
   }
 
   private getWorkerExtensionProps(extension: IExtension, workerMain: string) {
-    let extUri = new URI(extension.path);
-    if (!extUri.scheme) {
-      extUri = URI.file(extension.path);
-    }
-    workerMain = workerMain.replace(/^\.\//, '');
-    const workerScriptURI = this.staticResourceService.resolveStaticResource(extUri.resolve(workerMain));
+    // 这里路径遵循 posix 方式，fsPath 会自动根据平台转换
+    const workerScriptURI = new URI(extension.extensionLocation.with({
+      path: posix.join(extension.extensionLocation.path, workerMain),
+    }));
     return Object.assign({}, extension.toJSON(), { workerScriptPath: workerScriptURI.toString() });
   }
 
