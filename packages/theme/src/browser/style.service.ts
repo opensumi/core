@@ -12,7 +12,7 @@ export class CSSStyleService implements ICSSStyleService {
     this.styleSheet = style.sheet as CSSStyleSheet;
   }
 
-  addClass(classname: string, style: CSSStyleDeclaration) {
+  addClass(classname: string, style: Partial<CSSStyleDeclaration>) {
     const ruleContent = [`.${classname} {`, createStyleCssText(style as any), '}'].join(' ');
     this.styleSheet.insertRule(ruleContent);
     return {
