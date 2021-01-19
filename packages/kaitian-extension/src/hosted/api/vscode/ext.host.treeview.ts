@@ -268,12 +268,12 @@ class ExtHostTreeView<T> implements IDisposable {
         const { iconPath } = treeItem;
         let icon;
         let iconUrl;
-        let themeIconId;
+        let themeIcon;
 
         if (typeof iconPath === 'string' && iconPath.indexOf('fa-') !== -1) {
           icon = iconPath;
         } else if (iconPath instanceof ThemeIcon) {
-          themeIconId = iconPath.id;
+          themeIcon = iconPath;
         } else {
           const light = this.getLightIconPath(treeItem);
           const dark = this.getDarkIconPath(treeItem) || light;
@@ -290,7 +290,7 @@ class ExtHostTreeView<T> implements IDisposable {
           label,
           icon,
           iconUrl,
-          themeIconId,
+          themeIcon,
           description: treeItem.description,
           resourceUri: treeItem.resourceUri,
           tooltip: treeItem.tooltip,

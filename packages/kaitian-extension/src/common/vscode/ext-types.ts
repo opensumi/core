@@ -1508,9 +1508,11 @@ export class ThemeIcon {
   static Folder: ThemeIcon;
 
   readonly id: string;
+  readonly color?: ThemeColor;
 
-  constructor(id: string) {
+  constructor(id: string, color?: ThemeColor) {
     this.id = id;
+    this.color = color;
   }
 }
 ThemeIcon.File = new ThemeIcon('file');

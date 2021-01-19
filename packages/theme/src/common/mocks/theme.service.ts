@@ -45,4 +45,8 @@ export class MockThemeService implements IThemeService {
   registerColor(contribution: ExtColorContribution) {
     throw new Error('Method not implemented.');
   }
+
+  getColorClassNameByColorToken(colorId: string | IThemeColor): string {
+    throw new Error('Method not implemented.');
+  }
 }

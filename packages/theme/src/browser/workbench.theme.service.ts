@@ -1,5 +1,5 @@
 import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, getThemeId, getThemeTypeSelector, IColorCustomizations, ITokenColorizationRule, ITokenColorCustomizations } from '../common/theme.service';
-import { URI, WithEventBus, localize, Emitter, Event, isObject, DisposableCollection } from '@ali/ide-core-common';
+import { URI, WithEventBus, localize, Emitter, Event, isObject, DisposableCollection, uuid } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
 import { Color, IThemeColor } from '../common/color';
@@ -7,6 +7,7 @@ import { ThemeChangedEvent } from '../common/event';
 import { ThemeData } from './theme-data';
 import { ThemeStore } from './theme-store';
 import { Logger, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService } from '@ali/ide-core-browser';
+import { ICSSStyleService } from '../common';
 
 const DEFAULT_THEME_ID = 'ide-dark';
 // from vscode
@@ -30,6 +31,8 @@ const tokenGroupToScopesMap = {
 export class WorkbenchThemeService extends WithEventBus implements IThemeService {
 
   private colorRegistry = getColorRegistry();
+
+  private colorClassNameMap = new Map<string, string>();
 
   // TODO 初始化时读取本地存储配置
   public currentThemeId: string;
@@ -58,6 +61,9 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
   @Autowired(IPreferenceSettingsService)
   private preferenceSettings: IPreferenceSettingsService;
+
+  @Autowired(ICSSStyleService)
+  private readonly styleService: ICSSStyleService;
 
   constructor() {
     super();
@@ -176,6 +182,22 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     }
     const colorKey = colorId.id;
     return colorKey ? `var(--${colorKey.replace(/\./g, '-')})` : undefined;
+  }
+
+  public getColorClassNameByColorToken(colorId: string | IThemeColor): string | undefined {
+    if (!colorId) {
+      return undefined;
+    }
+    const id = typeof colorId === 'string' ? colorId : colorId.id;
+    if (this.colorClassNameMap.has(id)) {
+      return this.colorClassNameMap.get(id)!;
+    }
+    const className = `color-token-${uuid()}`;
+    this.styleService.addClass(className, {
+      color: this.getColorVar({ id })!,
+    });
+    this.colorClassNameMap.set(id, className);
+    return className;
   }
 
   public getAvailableThemeInfos(): ThemeInfo[] {

@@ -3,7 +3,6 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, IExtHostQuickOpen, IMainThreadQuickOpen, IExtHostWorkspace } from '../../../common/vscode';
 import { CancellationToken, hookCancellationToken, Event, Emitter, DisposableCollection, MaybePromise } from '@ali/ide-core-common';
 import { QuickPickItem, QuickPickOptions } from '@ali/ide-quick-open';
-import { QuickInputButton } from '../../../common/vscode/ext-types';
 
 type Item = string | vscode.QuickPickItem;
 
@@ -162,7 +161,7 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   private readonly onDidChangeActiveEmitter: Emitter<T[]>;
   private readonly onDidChangeSelectionEmitter: Emitter<T[]>;
   private readonly onDidChangeValueEmitter: Emitter<string>;
-  private readonly onDidTriggerButtonEmitter: Emitter<QuickInputButton>;
+  private readonly onDidTriggerButtonEmitter: Emitter<vscode.QuickInputButton>;
 
   private didShow = false;
 
@@ -239,7 +238,7 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
     this._buttons = buttons;
   }
 
-  get onDidTriggerButton(): Event<QuickInputButton> {
+  get onDidTriggerButton(): Event<vscode.QuickInputButton> {
     return this.onDidTriggerButtonEmitter.event;
   }
 
@@ -295,7 +294,7 @@ class QuickInputExt implements vscode.InputBox {
   value: string;
   placeholder: string | undefined;
   password: boolean;
-  buttons: readonly QuickInputButton[];
+  buttons: readonly vscode.QuickInputButton[];
   prompt: string | undefined;
   validationMessage: string | undefined;
   title: string | undefined;
@@ -309,7 +308,7 @@ class QuickInputExt implements vscode.InputBox {
 
   readonly quickInputIndex: number;
 
-  onDidTriggerButtonEmitter: Emitter<QuickInputButton>;
+  onDidTriggerButtonEmitter: Emitter<vscode.QuickInputButton>;
   onDidChangeValueEmitter: Emitter<string>;
   onDidAcceptEmitter: Emitter<void>;
   onDidHideEmitter: Emitter<void>;
@@ -340,7 +339,7 @@ class QuickInputExt implements vscode.InputBox {
     return this.onDidAcceptEmitter.event;
   }
 
-  get onDidTriggerButton(): Event<QuickInputButton> {
+  get onDidTriggerButton(): Event<vscode.QuickInputButton> {
     return this.onDidTriggerButtonEmitter.event;
   }
 

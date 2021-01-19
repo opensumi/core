@@ -3,10 +3,10 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optinal } from '@ali/c
 import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { Emitter, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize, getIcon } from '@ali/ide-core-browser';
+import { Emitter, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize, getIcon, getExternalIcon } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { ExtensionTabBarTreeView } from '../../components';
-import { IIconService, IconType } from '@ali/ide-theme';
+import { IIconService, IconType, IThemeService } from '@ali/ide-theme';
 import { ExtensionTreeViewModel } from './tree-view/tree-view.model.service';
 import { ExtensionCompositeTreeNode, ExtensionTreeRoot, ExtensionTreeNode } from './tree-view/tree-view.node.defined';
 import { Tree, ITreeNodeOrCompositeTreeNode } from '@ali/ide-components';
@@ -29,6 +29,9 @@ export class MainThreadTreeView implements IMainThreadTreeView {
 
   @Autowired(CommandRegistry)
   private readonly commandRegistry: CommandRegistry;
+
+  @Autowired(IThemeService)
+  private readonly themeService: IThemeService;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -58,7 +61,7 @@ export class MainThreadTreeView implements IMainThreadTreeView {
       return;
     }
     const disposable = new DisposableStore();
-    const dataProvider = new TreeViewDataProvider(treeViewId, this.proxy, this.iconService);
+    const dataProvider = new TreeViewDataProvider(treeViewId, this.proxy, this.iconService, this.themeService);
     const model = this.createTreeModel(treeViewId, dataProvider, options);
     this.treeModels.set(treeViewId, model);
     disposable.add(toDisposable(() => this.treeModels.delete(treeViewId)));
@@ -155,6 +158,7 @@ export class TreeViewDataProvider extends Tree {
     public readonly treeViewId: string,
     private readonly proxy: IExtHostTreeView,
     private readonly iconService: IIconService,
+    private readonly themeService: IThemeService,
   ) {
     super();
   }
@@ -212,6 +216,9 @@ export class TreeViewDataProvider extends Tree {
   async toIconClass(item: TreeViewItem): Promise<string | undefined> {
     if (item.iconUrl || item.icon) {
       return this.iconService.fromIcon('', item.iconUrl || item.icon, IconType.Background);
+    } else if (item.themeIcon) {
+      const theme = this.themeService.getColorClassNameByColorToken(item.themeIcon.color);
+      return `${getExternalIcon(item.themeIcon.id)} ${theme ?? '' }`;
     } else {
       return '';
     }

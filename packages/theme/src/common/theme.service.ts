@@ -80,6 +80,10 @@ export interface IThemeService {
   getCurrentThemeSync(): ITheme;
   getColor(id: string | IThemeColor | undefined): string | undefined;
   getColorVar(id: string | IThemeColor | undefined): string | undefined;
+  /**
+   * 获取指定 color token 的 className
+   */
+  getColorClassNameByColorToken(colorId: string | IThemeColor| undefined): string | undefined;
   registerColor(contribution: ExtColorContribution): void;
 }
 
