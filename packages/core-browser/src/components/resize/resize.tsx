@@ -254,6 +254,22 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     return prevElement.current!.clientWidth;
   };
 
+  const hideScrollBar = (element: HTMLElement)  => {
+    const elementClasses = element.classList;
+    const hiddenClass = styles['resize-overflow-hidden'];
+    if (!elementClasses?.contains(hiddenClass)) {
+      elementClasses.add(hiddenClass);
+    }
+  };
+
+  const restoreScrollBar = (element: HTMLElement)  => {
+    const elementClasses = element.classList;
+    const hiddenClass = styles['resize-overflow-hidden'];
+    if (elementClasses?.contains(hiddenClass)) {
+      elementClasses.remove(hiddenClass);
+    }
+  };
+
   const onMouseMove =  ((e) => {
     e.preventDefault();
     if (ref.current && ref.current.classList.contains('no-resize')) {
@@ -278,6 +294,9 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     resizing.current = false;
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
+    // 结束拖拽时恢复拖拽区域滚动条
+    restoreScrollBar(prevElement.current!);
+    restoreScrollBar(nextElement.current!);
     if (props.onFinished) {
       props.onFinished();
     }
@@ -290,8 +309,12 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     startX.current = e.pageX;
     startPrevWidth.current = prevElement.current!.offsetWidth;
     startNextWidth.current = nextElement.current!.offsetWidth;
+    // 开始拖拽时隐藏拖拽区域滚动条
+    hideScrollBar(prevElement.current!);
+    hideScrollBar(nextElement.current!);
     preventWebviewCatchMouseEvents();
   });
+
   React.useEffect(() => {
     if (ref.current) {
       ref.current.addEventListener('mousedown', onMouseDown);

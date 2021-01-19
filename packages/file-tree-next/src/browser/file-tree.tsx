@@ -26,6 +26,7 @@ export const FileTree = observer(({
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   const { width, height } = viewState;
+
   const { decorationService, labelService, iconService, filterMode, locationToCurrentFile, indent, baseIndent } = useInjectable<FileTreeService>(IFileTreeService);
   const fileTreeModelService = useInjectable<FileTreeModelService>(FileTreeModelService);
 
