@@ -2,7 +2,7 @@ import * as WebSocket from 'ws';
 import { Terminal } from 'xterm';
 import { uuid, URI, Emitter } from '@ali/ide-core-common';
 import { Disposable } from '@ali/ide-core-browser';
-import { ITerminalService, ITerminalConnection } from '../../src/common';
+import { ITerminalService, ITerminalConnection, ITerminalError } from '../../src/common';
 import { getPort, localhost, MessageMethod } from './proxy';
 import { delay } from './utils';
 
@@ -215,5 +215,13 @@ export class MockTerminalWidget {
   resize() {
     // todo
   }
+}
+/** End */
+
+/** Mock Error Service */
+export class MockErrorService {
+  errors = new Map<string, ITerminalError>();
+
+  async fix(_sessionId: string) {}
 }
 /** End */

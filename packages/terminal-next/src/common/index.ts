@@ -11,5 +11,6 @@ export * from './commands';
 export * from './utils';
 export * from './render';
 export * from './extension';
+export * from './network';
 
 export const TerminalContainerId = 'terminal';

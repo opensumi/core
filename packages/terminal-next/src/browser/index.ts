@@ -15,7 +15,7 @@ import {
   TerminalOptions,
   IWidget,
   ITerminalRenderProvider,
-  ITerminalClient,
+  ITerminalNetwork,
 } from '../common';
 import {
   ITerminalPreference,
@@ -26,6 +26,7 @@ import {
   TerminalLifeCycleContribution,
   TerminalRenderContribution,
   TerminalKeybindinngContribution,
+  TerminalNetworkContribution,
 } from './contribution';
 import { TerminalController } from './terminal.controller';
 import { TerminalTheme } from './terminal.theme';
@@ -38,6 +39,7 @@ import { TerminalGroupViewService } from './terminal.view';
 import { TerminalErrorService } from './terminal.error';
 import { TerminalPreference } from './terminal.preference';
 import { TerminalRenderProvider } from './terminal.render';
+import { TerminalNetworkService } from './terminal.network';
 
 @Injectable()
 export class TerminalNextModule extends BrowserModule {
@@ -47,6 +49,7 @@ export class TerminalNextModule extends BrowserModule {
     TerminalCommandContribution,
     TerminalMenuContribution,
     TerminalKeybindinngContribution,
+    TerminalNetworkContribution,
     {
       token: ITerminalApiService,
       useClass: TerminalApiService,
@@ -96,6 +99,10 @@ export class TerminalNextModule extends BrowserModule {
       useFactory: (injector) => (widget: IWidget, options?: TerminalOptions) => {
         return TerminalClientFactory.createClient(injector, widget, options);
       },
+    },
+    {
+      token: ITerminalNetwork,
+      useClass: TerminalNetworkService,
     },
   ];
   backServices = [

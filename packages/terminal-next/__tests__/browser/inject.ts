@@ -11,7 +11,8 @@ import { TerminalClientFactory } from '../../src/browser/terminal.client';
 import { TerminalGroupViewService } from '../../src/browser/terminal.view';
 import { TerminalInternalService } from '../../src/browser/terminal.service';
 import { TerminalPreference } from '../../src/browser/terminal.preference';
-import { ITerminalService, ITerminalTheme, ITerminalClientFactory, ITerminalController, ITerminalGroupViewService, ITerminalInternalService, IWidget } from '../../src/common';
+import { TerminalNetworkService } from '../../src/browser/terminal.network';
+import { ITerminalService, ITerminalTheme, ITerminalClientFactory, ITerminalController, ITerminalGroupViewService, ITerminalInternalService, IWidget, ITerminalNetwork, ITerminalErrorService } from '../../src/common';
 import { ITerminalPreference } from '../../src/common/preference';
 import {
   MockMainLayoutService,
@@ -22,6 +23,7 @@ import {
   MockFileService,
   MockEditorService,
   MockWorkspaceService,
+  MockErrorService,
 } from './mock.service';
 
 const mockPreferences = new Map();
@@ -105,5 +107,13 @@ export const injector = new Injector([
   {
     token: ILogger,
     useValue: {},
+  },
+  {
+    token: ITerminalNetwork,
+    useClass: TerminalNetworkService,
+  },
+  {
+    token: ITerminalErrorService,
+    useValue: new MockErrorService(),
   },
 ]);

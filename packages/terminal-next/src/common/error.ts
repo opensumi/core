@@ -8,17 +8,23 @@ export interface ITerminalError {
    */
   stopped: boolean;
   /**
-   * 是否可以重连
+   * 是否需要继续重连，默认为 true
    */
-  reconnected?: boolean;
+  shouldReconnect?: boolean;
   /**
    * 报错信息
    */
   message: string;
+  /**
+   * @deprecated 是否可以重连
+   *
+   * 这个字段语义不太正确，而且框架层并没有用到，后面尽量不要使用
+   */
+  reconnected?: boolean;
 }
 
 export const ITerminalErrorService = Symbol('ITerminalErrorService');
 export interface ITerminalErrorService {
   errors: Map<string, ITerminalError>;
-  fix(clientId: string): void;
+  fix(clientId: string): Promise<void>;
 }
