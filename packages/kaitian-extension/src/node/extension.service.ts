@@ -435,9 +435,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
               if (extConnection.reader) {
                 extConnection.reader.dispose();
               }
-              if (extConnection.connection) {
-                extConnection.connection.destroy();
-              }
             }
             // 当连接关闭后启动定时器清除插件进程
             this.closeExtProcessWhenConnectionClose(connectionClientId);
