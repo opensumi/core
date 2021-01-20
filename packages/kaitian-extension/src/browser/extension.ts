@@ -60,7 +60,12 @@ export class Extension extends WithEventBus implements IExtension {
     this.realPath = this.extensionData.realPath;
     this.extendConfig = this.extensionData.extendConfig || {};
     this.enableProposedApi = Boolean(this.extensionData.packageJSON.enableProposedApi);
-    this.extensionLocation = this.staticResourceService.resolveStaticResource(new URI(Uri.file(this.path))).codeUri;
+
+    // 这里还是直接用 this.uri，
+    // 如果用 path, window 下路径为 C:\a，此时直接 parse 会变成 scheme 为 C 的 uri，转换不太对
+    // 对于 node 层 extension.scanner 标准下 uri 为 file，纯前端下为自定义实现的 kt-ext，因此可直接使用
+    // 不太确定为啥这里的 uri 类型为可选
+    this.extensionLocation = this.staticResourceService.resolveStaticResource(URI.from(this.uri!)).codeUri;
   }
 
   get activated() {

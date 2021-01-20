@@ -2,13 +2,15 @@ import * as path from 'path';
 import { Uri } from '@ali/ide-core-common';
 import { IExtensionProps, IExtension } from '../../src/common';
 
-export const mockExtensionProps: IExtensionProps = {
+// 临时绕过
+export const mockExtensionProps: IExtensionProps & { uri?: Uri } = {
   name: 'kaitian-extension',
   id: 'test.kaitian-extension',
   activated: false,
   enabled: true,
   path: path.join(__dirname, 'extension'),
   realPath: '/home/.kaitian/extensions/test.kaitian-extension-1.0.0',
+  uri: Uri.file(path.join(__dirname, 'extension')).toJSON() as Uri,
   extensionId: 'uuid-for-test-extension',
   extensionLocation: Uri.file(path.join(__dirname, 'extension')),
   isUseEnable: true,
