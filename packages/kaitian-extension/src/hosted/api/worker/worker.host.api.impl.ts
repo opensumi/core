@@ -25,7 +25,7 @@ import { ExtHostTreeViews } from '../vscode/ext.host.treeview';
 import { ExtHostWindowState } from '../vscode/ext.host.window-state';
 import { ExtHostDecorations } from '../vscode/ext.host.decoration';
 import { ExtHostQuickOpen } from '../vscode/ext.host.quickopen';
-import { ExtHostStatusBar } from '../vscode/ext.statusbar.host';
+import { ExtHostStatusBar } from '../vscode/ext.host.statusbar';
 import { ExtHostProgress } from '../vscode/ext.host.progress';
 import { ExtHostUrls } from '../vscode/ext.host.urls';
 import { ExtHostComments, createCommentsApiFactory } from '../vscode/ext.host.comments';

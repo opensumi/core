@@ -36,7 +36,6 @@ export {
   CompletionItemTag,
   DiagnosticSeverity,
   DiagnosticTag,
-  StatusBarItem,
   ConfigurationTarget,
   Memento,
   OutputChannel,

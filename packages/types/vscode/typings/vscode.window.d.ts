@@ -57,7 +57,7 @@ declare module 'vscode' {
      * The identifier of a command to run on click. The command must be
      * [known](#commands.getCommands).
      */
-    command: string | undefined;
+    command: string | Command | undefined;
 
     /**
      * Shows the entry in the status bar.

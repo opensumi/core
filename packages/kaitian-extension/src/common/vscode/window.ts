@@ -104,15 +104,16 @@ export interface IMainThreadStatusBar {
               alignment: number,
               color: string | undefined,
               tooltip: string | undefined,
-              command: string | undefined): Promise<void>;
+              command: string | undefined,
+              commandArgs: any[] | undefined): Promise<void>;
 
 }
 
 export interface IExtHostStatusBar {
 
-  setStatusBarMessage(text: string, arg?: number | Thenable<any>): types.Disposable;
+  setStatusBarMessage(text: string, arg?: number | Thenable<any>): vscode.Disposable;
 
-  createStatusBarItem(alignment?: types.StatusBarAlignment, priority?: number): types.StatusBarItem;
+  createStatusBarItem(alignment?: types.StatusBarAlignment, priority?: number): vscode.StatusBarItem;
 
 }
 

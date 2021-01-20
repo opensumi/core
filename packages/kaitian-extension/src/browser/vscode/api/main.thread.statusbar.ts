@@ -1,5 +1,5 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar } from '../../../common/vscode';
+import { IMainThreadStatusBar } from '../../../common/vscode';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { ILogger, CommandService, Disposable } from '@ali/ide-core-browser';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@ali/ide-core-browser/lib/services';
@@ -10,7 +10,6 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
   private entries: Map<string, StatusBarEntry> = new Map();
 
   private disposable = new Disposable();
-  private readonly proxy: IExtHostStatusBar;
 
   @Autowired(CommandService)
   commandService: CommandService;
@@ -21,8 +20,7 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
   @Autowired(ILogger)
   logger: ILogger;
 
-  constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
-    this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostStatusBar);
+  constructor(@Optinal(Symbol()) rpcProtocol: IRPCProtocol) {
   }
 
   public dispose() {
@@ -59,14 +57,16 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
                     alignment: number,
                     color: string | undefined,
                     tooltip: string | undefined,
-                    command: string | undefined): Promise<void> {
-    const entry = {
+                    command: string | undefined,
+                    commandArgs: any[] | undefined): Promise<void> {
+    const entry: StatusBarEntry = {
         text: text || '',
         priority,
         alignment: alignment === types.StatusBarAlignment.Left ? StatusBarAlignment.LEFT : StatusBarAlignment.RIGHT,
         color,
         tooltip,
         command,
+        arguments: commandArgs,
     };
 
     this.entries.set(id, entry);
