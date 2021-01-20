@@ -299,6 +299,7 @@ export class DebugVariableContainer extends ExpressionContainer {
         : ''
       ),
     );
+    TreeNode.setTreeNode(this._uid, this.path, this);
   }
 
   get name(): string {
