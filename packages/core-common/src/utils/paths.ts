@@ -328,13 +328,13 @@ export function relative(from: string, to: string): string {
 }
 
 export function replaceAsarInPath(pathMayInAsar: string) {
-  const parts = pathMayInAsar.split(normalize('/'));
+  const parts = pathMayInAsar.split(normalize('/', true));
   parts.forEach((part, i) => {
     if (part.endsWith('.asar')) {
       parts[i] = part + '.unpacked';
     }
   });
-  return parts.join(normalize('/'));
+  return parts.join(normalize('/', true));
 }
 
 
