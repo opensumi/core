@@ -47,6 +47,8 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
             // 插件注册的视图默认在最后
             priority: 0,
             fromExtension: true,
+            // 插件注册的视图容器无view时默认都隐藏tab
+            hideIfEmpty: true,
           }, 'left');
           this.disposableCollection.push({
             dispose: () => {
