@@ -1,4 +1,4 @@
-import { IDisposable, IJSONSchema,  IJSONSchemaSnippet, ApplicationError} from '@ali/ide-core-common';
+import { IDisposable, IJSONSchema,  IJSONSchemaSnippet, ApplicationError, Event } from '@ali/ide-core-common';
 import { DebugConfiguration } from './debug-configuration';
 
 export interface DebuggerDescription {
@@ -6,11 +6,7 @@ export interface DebuggerDescription {
     label: string;
 }
 
-export const DebugServerPath = 'DebugServer';
-export const DebugAdapterPath = 'DebugAdaptorService';
-
-// Node DI Token
-export const DebugServer = Symbol('DebugServer');
+export const DebugAdapterPath = 'DebugAdaptor';
 
 // Browser DI Token
 export const IDebugServer = Symbol('DebugServer');
@@ -57,7 +53,7 @@ export interface DebugServer extends IDisposable {
    * @param config 传入配置
    * @returns DebugAdapterSession对应sessionId.
    */
-  createDebugSession(config: DebugConfiguration): Promise<string>;
+  createDebugSession(config: DebugConfiguration): Promise<string | void>;
 
   /**
    * 终止一个调试进程
@@ -69,9 +65,18 @@ export interface DebugServer extends IDisposable {
 export const IDebugService = Symbol('DebugService');
 
 export interface IDebugService {
+  onDidDebugContributionPointChange: Event<IDebugServiceContributionPoint>;
+  unregisterDebugContributionPoints(extensionFolder: string): void;
   registerDebugContributionPoints(extensionFolder: string, contributions: IJSONSchema[]): void;
   debugContributionPoints: Map<string, IJSONSchema[]>;
 }
+
+export interface IDebugServiceContributionPoint {
+  path: string;
+  contributions: IJSONSchema[];
+  removed?: boolean;
+}
+
 export namespace DebugError {
   export const NotFound = ApplicationError.declare(-41000, (type: string) => ({
       message: `'${type}' debugger type is not supported.`,

@@ -30,6 +30,7 @@ export interface IExtHostDebug {
   $terminateDebugSession(sessionId: string): Promise<void>;
   $getTerminalCreationOptions(debugType: string): Promise<any>;
   $registerDebuggerContributions(extensionFolder: string, contributions: IDebuggerContribution[]);
+  $unregisterDebuggerContributions(contributions: IDebuggerContribution[]);
 }
 
 export interface IExtHostDebugService extends IExtHostDebug {

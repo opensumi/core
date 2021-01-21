@@ -1,7 +1,7 @@
 import { Injectable, Optinal, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { IMainThreadDebug, ExtHostAPIIdentifier, IExtHostDebug, ExtensionWSChannel, IMainThreadConnectionService } from '../../../common/vscode';
 import { DisposableCollection, Uri, ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, URI } from '@ali/ide-core-browser';
-import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer, IDebuggerContribution } from '@ali/ide-debug';
+import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer, IDebuggerContribution, IDebugServiceContributionPoint } from '@ali/ide-debug';
 import { DebugSessionManager, BreakpointManager, DebugConfigurationManager, DebugPreferences, DebugSessionContributionRegistry, DebugModelManager, DebugBreakpoint } from '@ali/ide-debug/lib/browser';
 import { IRPCProtocol, WSChannelHandler } from '@ali/ide-connection';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -61,7 +61,7 @@ export class MainThreadDebug implements IMainThreadDebug {
   protected readonly connectionProvider: WSChannelHandler;
 
   @Autowired(IDebugServer)
-  protected readonly adapterContributionRegistrator: ExtensionDebugService;
+  protected readonly adapterContributionRegister: ExtensionDebugService;
 
   @Autowired(IActivationEventService)
   protected readonly activationEventService: IActivationEventService;
@@ -70,8 +70,8 @@ export class MainThreadDebug implements IMainThreadDebug {
   protected readonly sessionContributionRegistry: ExtensionDebugSessionContributionRegistry;
 
   @Autowired(ILoggerManagerClient)
-  protected readonly LoggerManager: ILoggerManagerClient;
-  protected readonly logger: ILogServiceClient = this.LoggerManager.getLogger(SupportLogNamespace.ExtensionHost);
+  protected readonly loggerManager: ILoggerManagerClient;
+  protected readonly logger: ILogServiceClient;
 
   @Autowired(ITerminalApiService)
   protected readonly terminalService: ITerminalApiService;
@@ -83,7 +83,7 @@ export class MainThreadDebug implements IMainThreadDebug {
   protected readonly outputService: OutputService;
 
   @Autowired(IDebugService)
-  debugService: IDebugService;
+  protected readonly debugService: IDebugService;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -92,22 +92,11 @@ export class MainThreadDebug implements IMainThreadDebug {
     @Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol,
     @Optinal(IMainThreadConnectionService) private mainThreadConnection: IMainThreadConnectionService,
   ) {
+    this.logger = this.loggerManager.getLogger(SupportLogNamespace.ExtensionHost);
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostDebug);
     this.listen();
-    const debugContributionPoints = this.debugService.debugContributionPoints;
-    // 需确保在贡献点注册完后执行
-    // 将ContributionPoints中的debuggers数据传递给插件
-    // 后续时序若发生调整，这块逻辑也需要调整
-    for (const [folder, contributions] of debugContributionPoints) {
-      this.proxy.$registerDebuggerContributions(folder, contributions as IDebuggerContribution[]);
-      contributions.forEach((contribution: any) => {
-        this.$registerDebuggerContribution({
-          type: contribution.type,
-          label: contribution.label || contribution.type,
-        });
-        this.logger.log(`Debugger contribution has been registered: ${contribution.type}`);
-      });
-    }
+    this.registerDebugContributions();
+
   }
 
   public dispose() {
@@ -119,7 +108,7 @@ export class MainThreadDebug implements IMainThreadDebug {
     this.listenerDispose.dispose();
   }
 
-  listen() {
+  private listen() {
     this.listenerDispose.pushAll([
       this.breakpointManager.onDidChangeBreakpoints(({ added, removed, changed }) => {
         const all = this.breakpointManager.getBreakpoints();
@@ -142,7 +131,46 @@ export class MainThreadDebug implements IMainThreadDebug {
       this.sessionManager.onDidReceiveDebugSessionCustomEvent((event) => {
         this.proxy.$onSessionCustomEvent(event.session.id, event.event, event.body);
       }),
+      this.debugService.onDidDebugContributionPointChange(({ path, contributions, removed}: IDebugServiceContributionPoint) => {
+        // 新增调试插件时注册对应调试能力
+        if (removed) {
+          this.proxy.$unregisterDebuggerContributions(contributions as IDebuggerContribution[]);
+          contributions.forEach((contribution: any) => {
+            this.$unregisterDebuggerContribution({
+              type: contribution.type,
+              label: contribution.label || contribution.type,
+            });
+            this.logger.log(`Debugger contribution has been unregistered: ${contribution.type}`);
+          });
+        } else {
+          this.proxy.$registerDebuggerContributions(path, contributions as IDebuggerContribution[]);
+          contributions.forEach((contribution: any) => {
+            this.$registerDebuggerContribution({
+              type: contribution.type,
+              label: contribution.label || contribution.type,
+            });
+            this.logger.log(`Debugger contribution has been registered: ${contribution.type}`);
+          });
+        }
+      }),
     ]);
+  }
+
+  private registerDebugContributions() {
+    const debugContributionPoints = this.debugService.debugContributionPoints;
+    // 需确保在贡献点注册完后执行
+    // 将ContributionPoints中的debuggers数据传递给插件
+    // 后续时序若发生调整，这块逻辑也需要调整
+    for (const [folder, contributions] of debugContributionPoints) {
+      this.proxy.$registerDebuggerContributions(folder, contributions as IDebuggerContribution[]);
+      contributions.forEach((contribution: any) => {
+        this.$registerDebuggerContribution({
+          type: contribution.type,
+          label: contribution.label || contribution.type,
+        });
+        this.logger.log(`Debugger contribution has been registered: ${contribution.type}`);
+      });
+    }
   }
 
   async $appendToDebugConsole(value: string): Promise<void> {
@@ -155,6 +183,11 @@ export class MainThreadDebug implements IMainThreadDebug {
     if (this.debugConsoleModelService.debugConsoleSession) {
       this.debugConsoleModelService.debugConsoleSession.appendLine(value);
     }
+  }
+
+  async $unregisterDebuggerContribution(description: DebuggerDescription) {
+    const disposable = this.toDispose.get(description.type);
+    disposable?.dispose();
   }
 
   async $registerDebuggerContribution(description: DebuggerDescription): Promise<void> {
@@ -180,7 +213,7 @@ export class MainThreadDebug implements IMainThreadDebug {
       this.injector,
     );
     disposable.pushAll([
-      this.adapterContributionRegistrator.registerDebugAdapterContribution(
+      this.adapterContributionRegister.registerDebugAdapterContribution(
         new ExtensionDebugAdapterContribution(description, this.proxy, this.activationEventService),
       ),
       this.sessionContributionRegistry.registerDebugSessionContribution({

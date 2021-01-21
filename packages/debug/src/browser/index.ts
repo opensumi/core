@@ -2,7 +2,7 @@ import { Injectable, Injector, Provider } from '@ali/common-di';
 import { BrowserModule, IContextKeyService } from '@ali/ide-core-browser';
 import { FolderPreferenceProvider } from '@ali/ide-preferences/lib/browser/folder-preference-provider';
 
-import { DebugEditor, DebugModelFactory, DebugServerPath, IDebugServer, IDebugService, IDebugSessionManager } from '../common';
+import { DebugEditor, DebugModelFactory, IDebugServer, IDebugService, IDebugSessionManager } from '../common';
 import { BreakpointManager } from './breakpoint';
 import { BreakpointWidgetInputFocus, DebugCallStackItemTypeKey } from './contextkeys';
 import { DebugConfigurationManager } from './debug-configuration-manager';
@@ -79,11 +79,12 @@ export class DebugModule extends BrowserModule {
       token: IDebugService,
       useClass: DebugService,
     },
+    // 这里原本的实现意图就是Debug作为单独模块执行时使用Node作为调试进程的启动及连接逻辑
+    // 在当前调试依赖插件进程的前提下，没必要引入这块冗余代码带来混淆
+    // packages/kaitian-extension/src/browser/index.ts#L30
     {
       token: IDebugServer,
-      useFactory: (injector: Injector) => {
-        injector.get(DebugServerPath);
-      },
+      useValue: {},
     },
     // contributions
     LaunchPreferencesContribution,
@@ -110,10 +111,6 @@ export class DebugModule extends BrowserModule {
   contributionProvider = DebugSessionContribution;
 
   preferences = injectDebugPreferences;
-
-  backServices = [{
-    servicePath: DebugServerPath,
-  }];
 
   isOverlay = true;
   component = DebugToolbarOverlayWidget;

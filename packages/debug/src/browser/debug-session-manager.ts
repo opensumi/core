@@ -165,6 +165,10 @@ export class DebugSessionManager {
       }
       const sessionId = await this.debug.createDebugSession(resolved.configuration);
       reporterStart.timeEnd(resolved.configuration.type);
+      if (!sessionId) {
+        this.messageService.error(`The debug session type "${resolved.configuration.type}" is not supported.`);
+        return;
+      }
       return this.doStart(sessionId, resolved);
     } catch (e) {
       if (DebugError.NotFound.is(e)) {
@@ -173,8 +177,6 @@ export class DebugSessionManager {
       }
 
       this.messageService.error('There was an error starting the debug session, check the logs for more details.');
-      // TODO
-      // console.error('Error starting the debug session', e);
       throw e;
     }
   }

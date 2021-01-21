@@ -128,7 +128,6 @@ export class ExtHostDebug implements IExtHostDebugService {
         type: contribution.type,
         label: contribution.label || contribution.type,
       });
-      // console.log(`Debugger contribution has been registered: ${contribution.type}`);
     });
   }
 
@@ -323,7 +322,13 @@ export class ExtHostDebug implements IExtHostDebugService {
     contributions.forEach((contribution: IDebuggerContribution) => {
       this.contributionPaths.set(contribution.type, extensionFolder);
       this.debuggersContributions.set(contribution.type, contribution);
-      // console.log(`Debugger contribution has been registered: ${contribution.type}`);
+    });
+  }
+
+  async $unregisterDebuggerContributions(contributions: IDebuggerContribution[]) {
+    contributions.forEach((contribution: IDebuggerContribution) => {
+      this.contributionPaths.delete(contribution.type);
+      this.debuggersContributions.delete(contribution.type);
     });
   }
 
