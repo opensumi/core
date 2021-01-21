@@ -26,7 +26,7 @@ import { IExtension } from '../../../common';
 import { ExtHostDecorations } from './ext.host.decoration';
 import { ExtHostQuickOpen } from './ext.host.quickopen';
 import { ExtHostOutput } from './ext.host.output';
-import { ExtHostStatusBar } from './ext.statusbar.host';
+import { ExtHostStatusBar } from './ext.host.statusbar';
 import { ExtHostDebug, createDebugApiFactory } from './debug';
 import { ExtHostConnection } from './ext.host.connection';
 import { ExtHostTerminal } from './ext.host.terminal';

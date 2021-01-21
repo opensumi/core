@@ -51,13 +51,13 @@ export function createWindowApiFactory(
       }
       return extHostProgress.withProgress(extension, options, task);
     },
-    createStatusBarItem(alignment?: types.StatusBarAlignment, priority?: number): types.StatusBarItem {
+    createStatusBarItem(alignment?: vscode.StatusBarAlignment, priority?: number): vscode.StatusBarItem {
       return extHostStatusBar.createStatusBarItem(alignment, priority);
     },
     createOutputChannel(name) {
       return extHostOutput.createOutputChannel(name);
     },
-    setStatusBarMessage(text: string, arg?: number | Thenable<any>): Disposable {
+    setStatusBarMessage(text: string, arg?: number | Thenable<any>): vscode.Disposable {
 
       // step2
       return extHostStatusBar.setStatusBarMessage(text, arg);

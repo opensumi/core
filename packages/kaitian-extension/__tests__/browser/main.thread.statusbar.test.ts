@@ -3,7 +3,7 @@ import { Emitter, CommandRegistry, CommandRegistryImpl, ILoggerManagerClient } f
 import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@ali/ide-kaitian-extension/lib/common/vscode';
-import { ExtHostStatusBar } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.statusbar.host';
+import { ExtHostStatusBar } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.statusbar';
 import { MainThreadStatusBar } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.statusbar';
 import { StatusBarAlignment } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
 import { IStatusBarService } from '@ali/ide-status-bar';

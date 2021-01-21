@@ -3,6 +3,7 @@ import { Disposable, ThemeColor } from '../../../common/vscode/ext-types';
 import { MainThreadAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar, ArgumentProcessor } from '../../../common/vscode';
 import { v4 } from 'uuid';
 import * as types from '../../../common/vscode/ext-types';
+import type * as vscode from 'vscode';
 
 export class ExtHostStatusBar implements IExtHostStatusBar {
   protected readonly proxy: IMainThreadStatusBar;
@@ -33,7 +34,7 @@ export class ExtHostStatusBar implements IExtHostStatusBar {
     });
   }
 
-  createStatusBarItem(alignment?: types.StatusBarAlignment, priority?: number): types.StatusBarItem {
+  createStatusBarItem(alignment?: vscode.StatusBarAlignment, priority?: number): vscode.StatusBarItem {
     const statusBarItem = new StatusBarItemImpl(this.rpcProtocol, alignment, priority);
     this.proxy.$createStatusBarItem(statusBarItem.id, statusBarItem.alignment, statusBarItem.priority);
 
@@ -42,17 +43,17 @@ export class ExtHostStatusBar implements IExtHostStatusBar {
 
 }
 
-export class StatusBarItemImpl implements types.StatusBarItem {
+export class StatusBarItemImpl implements vscode.StatusBarItem {
 
     public readonly id = StatusBarItemImpl.nextId();
 
-    private _alignment: types.StatusBarAlignment;
+    private _alignment: vscode.StatusBarAlignment;
     private _priority: number;
 
     private _text: string;
     private _tooltip: string;
     private _color: string | ThemeColor;
-    private _command: string;
+    private _command: string | vscode.Command | undefined;
 
     private _isVisible: boolean;
     private _timeoutHandle: NodeJS.Timer | undefined;
@@ -60,14 +61,14 @@ export class StatusBarItemImpl implements types.StatusBarItem {
     private _proxy: IMainThreadStatusBar;
     private _rpcProtocol: IRPCProtocol;
 
-    constructor(rpcProtocol: IRPCProtocol, alignment: types.StatusBarAlignment = types.StatusBarAlignment.Left, priority: number = 0) {
+    constructor(rpcProtocol: IRPCProtocol, alignment: vscode.StatusBarAlignment = types.StatusBarAlignment.Left, priority: number = 0) {
       this._rpcProtocol = rpcProtocol;
       this._proxy = this._rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadStatusBar);
       this._alignment = alignment;
       this._priority = priority;
     }
 
-    public get alignment(): types.StatusBarAlignment {
+    public get alignment(): vscode.StatusBarAlignment {
         return this._alignment;
     }
 
@@ -99,10 +100,10 @@ export class StatusBarItemImpl implements types.StatusBarItem {
         this.update();
     }
 
-    public get command(): string {
+    public get command(): string | vscode.Command | undefined {
         return this._command;
     }
-    public set command(command: string) {
+    public set command(command: string | vscode.Command | undefined) {
         this._command = command;
         this.update();
     }
@@ -130,14 +131,16 @@ export class StatusBarItemImpl implements types.StatusBarItem {
         // Defer the update so that multiple changes to setters don't cause a redraw each
         this._timeoutHandle = global.setTimeout(() => {
             this._timeoutHandle = undefined;
-
+            const commandId = typeof this.command === 'string' ? this.command : this.command?.command;
+            const commandArgs = typeof this.command === 'string' ? undefined : this.command?.arguments;
             // Set to status bar
             this._proxy.$setMessage(this.id, this.text,
                 this.priority,
                 this.alignment,
                 this.getColor(),
                 this.tooltip,
-                this.command);
+                commandId,
+                commandArgs);
         }, 0);
     }
 
