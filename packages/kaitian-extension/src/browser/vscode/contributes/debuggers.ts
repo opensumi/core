@@ -178,4 +178,8 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
       return attributes;
     });
   }
+
+  dispose() {
+    this.debugService.unregisterDebugContributionPoints(this.extension.path);
+  }
 }

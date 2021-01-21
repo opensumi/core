@@ -1,12 +1,12 @@
 import {
   DebugStreamConnection,
   DebugAdapterSession,
-} from '../common/debug-model';
+} from '@ali/ide-debug';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { DisposableCollection, Disposable } from '@ali/ide-core-node';
 import { IWebSocket } from '@ali/ide-connection';
 
-export class DebugAdapterSessionImpl implements DebugAdapterSession {
+export abstract class AbstractDebugAdapterSession implements DebugAdapterSession {
 
   private static TWO_CRLF = '\r\n\r\n';
   private static CONTENT_LENGTH = 'Content-Length';
@@ -38,7 +38,7 @@ export class DebugAdapterSessionImpl implements DebugAdapterSession {
     this.channel.onClose(() => this.channel = undefined);
 
     this.debugStreamConnection.output.on('data', (data: Buffer) => this.handleData(data));
-    this.debugStreamConnection.output.on('close', () => this.onDebugAdapterExit(1, undefined)); // FIXME pass a proper exit code
+    this.debugStreamConnection.output.on('close', () => this.onDebugAdapterExit(1, undefined));
     this.debugStreamConnection.output.on('error', (error) => this.onDebugAdapterError(error));
     this.debugStreamConnection.input.on('error', (error) => this.onDebugAdapterError(error));
   }
@@ -78,30 +78,26 @@ export class DebugAdapterSessionImpl implements DebugAdapterSession {
           if (message.length > 0) {
             this.send(message);
           }
-          continue;	// there may be more complete messages to process
+          continue;
         }
       } else {
-        let idx = this.buffer.indexOf(DebugAdapterSessionImpl.CONTENT_LENGTH);
+        let idx = this.buffer.indexOf(AbstractDebugAdapterSession.CONTENT_LENGTH);
         if (idx > 0) {
-          // log unrecognized output
-          // const output = this.buffer.slice(0, idx);
           this.buffer.slice(0, idx);
-          // console.log(output.toString('utf-8'));
-
           this.buffer = this.buffer.slice(idx);
         }
 
-        idx = this.buffer.indexOf(DebugAdapterSessionImpl.TWO_CRLF);
+        idx = this.buffer.indexOf(AbstractDebugAdapterSession.TWO_CRLF);
         if (idx !== -1) {
           const header = this.buffer.toString('utf8', 0, idx);
           const lines = header.split('\r\n');
           for (const line of lines) {
             const pair = line.split(/: +/);
-            if (pair[0] === DebugAdapterSessionImpl.CONTENT_LENGTH) {
+            if (pair[0] === AbstractDebugAdapterSession.CONTENT_LENGTH) {
               this.contentLength = +pair[1];
             }
           }
-          this.buffer = this.buffer.slice(idx + DebugAdapterSessionImpl.TWO_CRLF.length);
+          this.buffer = this.buffer.slice(idx + AbstractDebugAdapterSession.TWO_CRLF.length);
           continue;
         }
       }

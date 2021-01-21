@@ -1,9 +1,8 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { DebugServer, DebuggerDescription, DebugServerPath, IDebugSessionManager } from '@ali/ide-debug';
+import { DebugServer, DebuggerDescription, IDebugSessionManager } from '@ali/ide-debug';
 import { ExtensionDebugAdapterContribution } from './extension-debug-adapter-contribution';
 import { Disposable, IDisposable, DisposableCollection, IJSONSchema, IJSONSchemaSnippet, WaitUntilEvent } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { WSChannelHandler } from '@ali/ide-connection';
 import { ILoggerManagerClient, SupportLogNamespace, ILogServiceClient } from '@ali/ide-logs/lib/browser';
 import { DebugConfiguration } from '@ali/ide-debug/lib/common/debug-configuration';
 import { DebugConfigurationManager } from '@ali/ide-debug/lib/browser';
@@ -32,20 +31,13 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
 
   // sessionID到贡献点Map
   protected readonly sessionId2contrib = new Map<string, ExtensionDebugAdapterContribution>();
-  protected delegated: DebugServer;
-
-  @Autowired(WSChannelHandler)
-  protected readonly connectionProvider: WSChannelHandler;
 
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;
 
-  @Autowired(DebugServerPath)
-  protected readonly debugServer: DebugServer;
-
   @Autowired(ILoggerManagerClient)
-  protected readonly LoggerManager: ILoggerManagerClient;
-  protected readonly logger: ILogServiceClient = this.LoggerManager.getLogger(SupportLogNamespace.ExtensionHost);
+  protected readonly loggerManager: ILoggerManagerClient;
+  protected logger: ILogServiceClient;
 
   @Autowired(IDebugSessionManager)
   protected readonly debugSessionManager: IDebugSessionManager;
@@ -63,11 +55,11 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
   }
 
   protected init(): void {
+    this.logger = this.loggerManager.getLogger(SupportLogNamespace.ExtensionHost);
     this.debugSessionManager.onWillStartDebugSession((event) => this.ensureDebugActivation(event));
     this.debugSessionManager.onWillResolveDebugConfiguration((event) => this.ensureDebugActivation(event, 'onDebugResolve', event.debugType));
     this.debugConfigurationManager.onWillProvideDebugConfiguration((event) => this.ensureDebugActivation(event, 'onDebugInitialConfigurations'));
     this.toDispose.pushAll([
-      Disposable.create(() => this.debugServer.dispose()),
       Disposable.create(() => {
         for (const sessionId of this.sessionId2contrib.keys()) {
           const contrib = this.sessionId2contrib.get(sessionId)!;
@@ -110,8 +102,7 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
   }
 
   async debugTypes(): Promise<string[]> {
-    const debugTypes = await this.debugServer.debugTypes();
-    return debugTypes.concat(Array.from(this.contributors.keys()));
+    return Array.from(this.contributors.keys());
   }
 
   async provideDebugConfigurations(debugType: string, workspaceFolderUri: string | undefined): Promise<DebugConfiguration[]> {
@@ -119,7 +110,7 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
     if (contributor) {
       return contributor.provideDebugConfigurations && contributor.provideDebugConfigurations(workspaceFolderUri) || [];
     } else {
-      return this.debugServer.provideDebugConfigurations(debugType, workspaceFolderUri);
+      return [];
     }
   }
 
@@ -140,12 +131,11 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
         }
       }
     }
-
-    return this.debugServer.resolveDebugConfiguration(resolved, workspaceFolderUri);
+    return resolved;
   }
 
   async getDebuggersForLanguage(language: string): Promise<DebuggerDescription[]> {
-    const debuggers = await this.debugServer.getDebuggersForLanguage(language);
+    const debuggers: DebuggerDescription[] = [];
 
     for (const contributor of this.contributors.values()) {
       const languages = await contributor.languages;
@@ -163,12 +153,12 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
     if (contributor) {
       return contributor.getSchemaAttributes && contributor.getSchemaAttributes() || [];
     } else {
-      return this.debugServer.getSchemaAttributes(debugType);
+      return [];
     }
   }
 
   async getConfigurationSnippets(): Promise<IJSONSchemaSnippet[]> {
-    let snippets = await this.debugServer.getConfigurationSnippets();
+    let snippets: IJSONSchemaSnippet[] = [];
 
     for (const contributor of this.contributors.values()) {
       if (contributor.getConfigurationSnippets) {
@@ -179,14 +169,12 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
     return snippets;
   }
 
-  async createDebugSession(config: DebugConfiguration): Promise<string> {
+  async createDebugSession(config: DebugConfiguration): Promise<string | void> {
     const contributor = this.contributors.get(config.type);
     if (contributor) {
       const sessionId = await contributor.createDebugSession(config);
       this.sessionId2contrib.set(sessionId, contributor);
       return sessionId;
-    } else {
-      return this.debugServer.createDebugSession(config);
     }
   }
 
@@ -195,8 +183,6 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
     if (contributor) {
       this.sessionId2contrib.delete(sessionId);
       return contributor.terminateDebugSession(sessionId);
-    } else {
-      return this.debugServer.terminateDebugSession(sessionId);
     }
   }
 
