@@ -269,7 +269,6 @@ export const localizationBundle = {
     'debug.hover.not.available': '暂无值',
 
     'workspace.open-directory': '打开文件夹',
-    'welcome.title': '开始使用',
     'window.toggleDevTools': '切换开发人员工具',
     'window.reload': '重载窗口',
 
@@ -583,8 +582,10 @@ export const localizationBundle = {
     'outline.sort.position': '排序依据：位置',
     'outline.follow.cursor': '跟随光标',
 
+    'welcome.title': '开始使用',
     'welcome.quckstart': '开始使用',
     'welcome.recent.workspace': '最近打开的工作区',
+
     'markers.title': '问题',
     'markers.panel.content.empty': '目前尚未在工作区检测到问题。',
     'markers.panel.filter.errors': '错误',

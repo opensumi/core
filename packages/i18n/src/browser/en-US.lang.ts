@@ -575,8 +575,10 @@ export const localizationBundle = {
     'outline.sort.position': 'Sort By Position',
     'outline.follow.cursor': 'Follow Cursor',
 
+    'welcome.title': 'Welcome',
     'welcome.quckstart': 'Quick Start',
     'welcome.recent.workspace': 'Recent Workspaces',
+
     'markers.title': 'PROBLEMS',
     'markers.panel.content.empty': 'No problems have been detected in the workspace so far.',
     'markers.panel.filter.errors': 'errors',
