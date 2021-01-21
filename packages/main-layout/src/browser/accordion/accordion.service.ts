@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IContextKey, OnEvent, WithEventBus, ResizeEvent, DisposableCollection, ContextKeyChangeEvent, Event } from '@ali/ide-core-browser';
+import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IContextKey, OnEvent, WithEventBus, ResizeEvent, DisposableCollection, ContextKeyChangeEvent, Event, Emitter } from '@ali/ide-core-browser';
 import { action, observable } from 'mobx';
 import { SplitPanelManager, SplitPanelService } from '@ali/ide-core-browser/lib/components/layout/split-panel.service';
 import { AbstractContextMenuService, AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -73,6 +73,12 @@ export class AccordionService extends WithEventBus {
   private topViewKey: IContextKey<string>;
   private scopedCtxKeyService = this.contextKeyService.createScoped();
 
+  private beforeAppendViewEmitter = new Emitter<string>();
+  public onBeforeAppendViewEvent = this.beforeAppendViewEmitter.event;
+
+  private afterDisposeViewEmitter = new Emitter<string>();
+  public onAfterDisposeViewEvent = this.afterDisposeViewEmitter.event;
+
   constructor(public containerId: string, private noRestore?: boolean) {
     super();
     this.splitPanelService = this.splitPanelManager.getService(containerId);
@@ -144,6 +150,7 @@ export class AccordionService extends WithEventBus {
   }
 
   appendView(view: View, replace?: boolean) {
+    this.beforeAppendViewEmitter.fire(view.id);
     if (this.appendedViewSet.has(view.id) && !replace) {
       return;
     }
@@ -192,6 +199,7 @@ export class AccordionService extends WithEventBus {
     }
     this.appendedViewSet.delete(viewId);
     this.popViewKeyIfOnlyOneViewVisible();
+    this.afterDisposeViewEmitter.fire(viewId);
   }
 
   revealView(viewId: string) {
