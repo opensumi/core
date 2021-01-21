@@ -9,6 +9,8 @@ import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-help
 import { IExtensionNodeService, IExtensionNodeClientService, IExtensionHostManager } from '../../src/common';
 import { ExtensionServiceClientImpl } from '../../src/node/extension.service.client';
 import { ExtensionHostManager } from '../../src/node/extension.host.manager';
+import { IActivationEventService } from '@ali/ide-kaitian-extension/lib/browser/types';
+import { ActivationEventServiceImpl } from '@ali/ide-kaitian-extension/lib/browser/activation.service';
 
 describe('Extension Serivce', () => {
   let injector: Injector;
@@ -53,6 +55,10 @@ describe('Extension Serivce', () => {
         error: console.error,
         /* tslint:enable */
       },
+    },
+    {
+      token: IActivationEventService,
+      useClass: ActivationEventServiceImpl,
     },
       {
         token: IExtensionNodeService,
