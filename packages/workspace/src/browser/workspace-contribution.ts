@@ -8,14 +8,18 @@ import {
   PreferenceSchema,
   IContextKeyService,
   FsProviderContribution,
+  CommandContribution,
+  WORKSPACE_COMMANDS,
+  localize,
 } from '@ali/ide-core-browser';
 
-import { IWorkspaceService } from '../common';
+import { IWorkspaceService, KAITIAN_MULTI_WORKSPACE_EXT } from '../common';
 import { workspacePreferenceSchema } from './workspace-preferences';
 import { WorkspaceService } from './workspace-service';
+import { IWindowDialogService } from '@ali/ide-overlay';
 
-@Domain(ClientAppContribution, PreferenceContribution, FsProviderContribution)
-export class WorkspaceContribution implements ClientAppContribution, PreferenceContribution, FsProviderContribution {
+@Domain(ClientAppContribution, PreferenceContribution, FsProviderContribution, CommandContribution)
+export class WorkspaceContribution implements ClientAppContribution, PreferenceContribution, FsProviderContribution, CommandContribution {
 
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: WorkspaceService;
@@ -25,6 +29,9 @@ export class WorkspaceContribution implements ClientAppContribution, PreferenceC
 
   @Autowired(IContextKeyService)
   protected readonly contextKeyService: IContextKeyService;
+
+  @Autowired(IWindowDialogService)
+  protected readonly windowDialogService: IWindowDialogService;
 
   schema: PreferenceSchema = workspacePreferenceSchema;
 
@@ -42,9 +49,35 @@ export class WorkspaceContribution implements ClientAppContribution, PreferenceC
     this.initWorkspaceContextKeys();
   }
 
-  // 关闭前存储工作区
-  async onStop() {
-    // Do nothing
+  registerCommands(registry: CommandRegistry) {
+    registry.registerCommand(WORKSPACE_COMMANDS.ADD_WORKSPACE_FOLDER, {
+      execute: async () => {
+        const folder = await this.windowDialogService.showOpenDialog({
+          canSelectFiles: false,
+          canSelectFolders: true,
+          canSelectMany: false,
+        });
+        if (folder && folder.length > 0) {
+          await this.workspaceService.addRoot(folder[0]);
+        }
+      },
+    });
+
+    registry.registerCommand(WORKSPACE_COMMANDS.SAVE_WORKSPACE_AS_FILE, {
+      execute: async () => {
+        const folder = await this.windowDialogService.showSaveDialog({
+          saveLabel: localize('workspace.saveWorkspaceAsFile'),
+          showNameInput: true,
+          defaultFileName: `workspace.${KAITIAN_MULTI_WORKSPACE_EXT}`,
+        });
+        if (folder) {
+          await this.workspaceService.save(folder);
+        }
+      },
+      isEnabled: () => {
+        return this.workspaceService.isMultiRootWorkspaceOpened;
+      },
+    });
   }
 
   onFileServiceReady() {

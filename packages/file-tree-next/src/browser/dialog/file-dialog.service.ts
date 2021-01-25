@@ -37,11 +37,7 @@ export class FileTreeDialogService extends Tree implements IFileTreeService {
 
   async resolveWorkspaceRoot(path: string) {
     if (path) {
-      let rootUri: URI;
-      if (/^file:\/\//.test(path)) {
-        rootUri = new URI(path);
-      }
-      rootUri = URI.file(path);
+      const rootUri: URI = new URI(path).withScheme('file');
       const rootFileStat = await this.fileTreeAPI.resolveFileStat(rootUri);
       if (rootFileStat) {
         this.workspaceRoot = rootFileStat;
@@ -103,6 +99,13 @@ export class FileTreeDialogService extends Tree implements IFileTreeService {
 
   sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
     if (a.constructor === b.constructor) {
+      // 默认让弹窗的文件里面，.开头的文件后置展示
+      if (a.name.startsWith('.') && !b.name.startsWith('.')) {
+        return 1;
+      }
+      if (!a.name.startsWith('.') && b.name.startsWith('.')) {
+        return -1;
+      }
       // numeric 参数确保数字为第一排序优先级
       return a.name.localeCompare(b.name, 'kn', { numeric: true }) as any;
     }

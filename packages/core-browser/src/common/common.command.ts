@@ -631,3 +631,19 @@ export namespace OUTLINE_COMMANDS {
     category: CATEGORY,
   };
 }
+
+export namespace WORKSPACE_COMMANDS {
+  const CATEGORY = 'workspace';
+
+  export const ADD_WORKSPACE_FOLDER: Command = {
+    id: 'workspace.addWorkspaceFolder',
+    label: '%workspace.addFolderToWorkspace%',
+    category: CATEGORY,
+  };
+
+  export const SAVE_WORKSPACE_AS_FILE: Command = {
+    id: 'workspace.saveWorkspaceAsFile',
+    label: '%workspace.saveWorkspaceAsFile%',
+    category: CATEGORY,
+  };
+}

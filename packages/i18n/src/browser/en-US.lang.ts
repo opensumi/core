@@ -45,6 +45,7 @@ export const localizationBundle = {
     'file.empty.defaultTitle': 'No Open Folder',
     'file.empty.defaultMessage': 'The folder has not been opened yet',
     'file.workspace.defaultTip': 'Untitled (WORKSPACE)',
+    'file.workspace.defaultWorkspaceTip': '{0} (WORKSPACE)',
     'file.empty.openFolder': 'Open Folder',
     'file.collapse': 'Collapse All',
     'file.refresh': 'Refresh',
@@ -562,6 +563,10 @@ export const localizationBundle = {
     'doc.saveError.diff': '{0} cannot be saved because it has been modified by other editors.',
     'doc.saveError.diffAndSave': 'Compare...',
     'editor.compareAndSave.title': '{0} (on Disk) <=> {1} (Editing) ',
+
+    'workspace.openDirectory': 'Open Directory',
+    'workspace.addFolderToWorkspace': 'Add Folder Into Workspace ...',
+    'workspace.saveWorkspaceAsFile': 'Save Workspace As ...',
 
     'window.toggleDevTools': 'Toggle Developer Tools',
     'window.reload': 'Reload Window',

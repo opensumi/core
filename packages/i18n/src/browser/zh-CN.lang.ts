@@ -47,6 +47,7 @@ export const localizationBundle = {
     'file.empty.defaultTitle': '无打开的文件夹',
     'file.empty.defaultMessage': '尚未打开文件夹',
     'file.workspace.defaultTip': '无标题（工作区）',
+    'file.workspace.defaultWorkspaceTip': '{0}（工作区）',
     'file.empty.openFolder': '打开文件夹',
     'file.collapse': '全部折叠',
     'file.refresh': '刷新',
@@ -268,7 +269,10 @@ export const localizationBundle = {
     'debug.stack.frame.running': '正在运行',
     'debug.hover.not.available': '暂无值',
 
-    'workspace.open-directory': '打开文件夹',
+    'workspace.openDirectory': '打开文件夹',
+    'workspace.addFolderToWorkspace': '将文件夹添加到工作区...',
+    'workspace.saveWorkspaceAsFile': '将工作区另存为...',
+
     'window.toggleDevTools': '切换开发人员工具',
     'window.reload': '重载窗口',
 

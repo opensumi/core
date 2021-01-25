@@ -24,7 +24,7 @@ import {
   IClientApp,
   IWindowService,
 } from '@ali/ide-core-browser';
-import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE, localize } from '@ali/ide-core-common';
+import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE, localize, formatLocalize } from '@ali/ide-core-common';
 import { FileStat } from '@ali/ide-file-service';
 import { FileChangeEvent } from '@ali/ide-file-service/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
@@ -313,7 +313,7 @@ export class WorkspaceService implements IWorkspaceService {
       const displayName = uri.displayName;
       if (!this._workspace.isDirectory &&
         (displayName.endsWith(`.${KAITIAN_MULTI_WORKSPACE_EXT}`))) {
-        title = displayName.slice(0, displayName.lastIndexOf('.'));
+        title = formatLocalize('file.workspace.defaultWorkspaceTip', displayName.slice(0, displayName.lastIndexOf('.')));
       } else {
         title = displayName;
       }
@@ -580,7 +580,6 @@ export class WorkspaceService implements IWorkspaceService {
   protected openNewWindow(workspacePath: string): void {
     const url = new URL(window.location.href);
     url.hash = workspacePath;
-    // TODO: 改成 command
     this.windowService.openNewWindow(url.toString());
   }
 

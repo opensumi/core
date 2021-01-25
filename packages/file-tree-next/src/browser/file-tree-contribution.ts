@@ -66,7 +66,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       component: FileTree,
     }, ExplorerContainerId);
     // 监听工作区变化更新标题
-    this.workspaceService.onWorkspaceChanged(() => {
+    this.workspaceService.onWorkspaceLocationChanged(() => {
       const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
       if (handler) {
         handler.updateViewTitle(ExplorerResourceViewId, this.getWorkspaceTitle());
@@ -520,7 +520,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         const dialogService: IElectronNativeDialogService = this.injector.get(IElectronNativeDialogService);
         const windowService: IWindowService = this.injector.get(IWindowService);
         dialogService.showOpenDialog({
-          title: localize('workspace.open-directory'),
+          title: localize('workspace.openDirectory'),
           properties: [
             'openDirectory',
           ],
