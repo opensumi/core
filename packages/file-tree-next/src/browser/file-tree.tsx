@@ -2,6 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ViewState, useInjectable, isOSX, URI } from '@ali/ide-core-browser';
 import { RecycleTreeFilterDecorator, RecycleTree, TreeNodeType, INodeRendererWrapProps, IRecycleTreeFilterHandle, TreeModel } from '@ali/ide-components';
+import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
 import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
@@ -20,6 +21,7 @@ export const FileTree = observer(({
   viewState,
 }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const [isReady, setIsReady] = React.useState<boolean>(false);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [outerDragOver, setOuterDragOver] = React.useState<boolean>(false);
   const [filter ] = React.useState<string>('');
   const [model, setModel ] = React.useState<TreeModel>();
@@ -88,11 +90,13 @@ export const FileTree = observer(({
       setModel(fileTreeModelService.treeModel);
       // 监听工作区变化
       fileTreeModelService.onFileTreeModelChange(async (treeModel) => {
+        setIsLoading(true);
         if (!!treeModel) {
           // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
           await treeModel.root.ensureLoaded();
         }
         setModel(treeModel);
+        setIsLoading(false);
       });
     }
   }, [isReady]);
@@ -194,7 +198,9 @@ export const FileTree = observer(({
 
   const renderFileTree = () => {
     if (isReady) {
-      if (!!model) {
+      if (isLoading) {
+        return <ProgressBar loading />;
+      } else if (!!model) {
         return <FilterableRecycleTree
           height={height}
           width={width}
@@ -229,6 +235,8 @@ export const FileTree = observer(({
       } else {
         return <EmptyTreeView />;
       }
+    } else {
+      return <ProgressBar loading />;
     }
   };
 
