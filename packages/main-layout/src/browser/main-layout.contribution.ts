@@ -12,28 +12,36 @@ import { IMenuRegistry, MenuContribution as MenuContribution, MenuId } from '@al
 // NOTE 左右侧面板的展开、折叠命令请使用组合命令 activity-bar.left.toggle，layout命令仅做折叠展开，不处理tab激活逻辑
 export const HIDE_LEFT_PANEL_COMMAND: Command = {
   id: 'main-layout.left-panel.hide',
+  label: '%main-layout.left-panel.hide%',
 };
 export const SHOW_LEFT_PANEL_COMMAND: Command = {
   id: 'main-layout.left-panel.show',
+  label: '%main-layout.left-panel.show%',
 };
 export const TOGGLE_LEFT_PANEL_COMMAND: Command = {
   id: 'main-layout.left-panel.toggle',
+  label: '%main-layout.left-panel.toggle%',
 };
 export const HIDE_RIGHT_PANEL_COMMAND: Command = {
   id: 'main-layout.right-panel.hide',
+  label: '%main-layout.right-panel.hide%',
 };
 export const SHOW_RIGHT_PANEL_COMMAND: Command = {
   id: 'main-layout.right-panel.show',
+  label: '%main-layout.right-panel.show%',
 };
 export const TOGGLE_RIGHT_PANEL_COMMAND: Command = {
   id: 'main-layout.right-panel.toggle',
+  label: '%main-layout.right-panel.toggle%',
 };
 
 export const HIDE_BOTTOM_PANEL_COMMAND: Command = {
   id: 'main-layout.bottom-panel.hide',
+  label: '%main-layout.bottom-panel.hide%',
 };
 export const SHOW_BOTTOM_PANEL_COMMAND: Command = {
   id: 'main-layout.bottom-panel.show',
+  label: '%main-layout.bottom-panel.show%',
 };
 export const TOGGLE_BOTTOM_PANEL_COMMAND: Command = {
   id: 'main-layout.bottom-panel.toggle',

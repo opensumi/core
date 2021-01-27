@@ -651,5 +651,15 @@ export const localizationBundle = {
     'fileOperation.delete': '执行文件删除关联操作中……',
     'fileOperation.copy': '执行文件拷贝关联操作中……',
     'fileOperation.move': '执行文件移动关联操作中……',
+
+    'main-layout.left-panel.toggle': '切换左侧面板',
+    'main-layout.left-panel.show': '显示左侧面板',
+    'main-layout.left-panel.hide': '隐藏左侧面板',
+    'main-layout.right-panel.toggle': '切换右侧面板',
+    'main-layout.right-panel.show': '显示右侧面板',
+    'main-layout.right-panel.hide': '隐藏右侧面板',
+    'main-layout.bottom-panel.toggle': '切换底部面板',
+    'main-layout.bottom-panel.show': '显示底部面板',
+    'main-layout.bottom-panel.hide': '隐藏底部面板',
   },
 };
