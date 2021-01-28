@@ -86,21 +86,21 @@ export class FileServiceClient implements IFileServiceClient {
 
   // 直接先读文件，错误在后端抛出
   async resolveContent(uri: string, options?: FileSetContentOptions) {
-    const _uri = this.getUri(uri);
+    const _uri = this.convertUri(uri);
     const provider = await this.getProvider(_uri.scheme);
     const content = await provider.readFile(_uri.codeUri, options?.encoding);
     return { content };
   }
 
   async getFileStat(uri: string, withChildren: boolean = true) {
-    const _uri = this.getUri(uri);
+    const _uri = this.convertUri(uri);
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
     return this.filterStat(stat, withChildren);
   }
 
   async setContent(file: FileStat, content: string, options?: FileSetContentOptions) {
-    const _uri = this.getUri(file.uri);
+    const _uri = this.convertUri(file.uri);
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
 
@@ -122,7 +122,7 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   async updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: FileSetContentOptions): Promise<FileStat> {
-    const _uri = this.getUri(file.uri);
+    const _uri = this.convertUri(file.uri);
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
     if (!stat) {
@@ -148,7 +148,7 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   async createFile(uri: string, options?: FileCreateOptions) {
-    const _uri = this.getUri(uri);
+    const _uri = this.convertUri(uri);
     const provider = await this.getProvider(_uri.scheme);
 
     const content = await this.doGetContent(options);
@@ -165,7 +165,7 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   async createFolder(uri: string): Promise<FileStat> {
-    const _uri = this.getUri(uri);
+    const _uri = this.convertUri(uri);
     const provider = await this.getProvider(_uri.scheme);
 
     const result = await provider.createDirectory(_uri.codeUri);
@@ -178,8 +178,8 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   async move(sourceUri: string, targetUri: string, options?: FileMoveOptions): Promise<FileStat> {
-    const _sourceUri = this.getUri(sourceUri);
-    const _targetUri = this.getUri(targetUri);
+    const _sourceUri = this.convertUri(sourceUri);
+    const _targetUri = this.convertUri(targetUri);
 
     const provider = await this.getProvider(_sourceUri.scheme);
     const result: any = await provider.rename(_sourceUri.codeUri, _targetUri.codeUri, { overwrite: !!(options && options.overwrite) });
@@ -191,8 +191,8 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   async copy(sourceUri: string, targetUri: string, options?: FileCopyOptions): Promise<FileStat> {
-    const _sourceUri = this.getUri(sourceUri);
-    const _targetUri = this.getUri(targetUri);
+    const _sourceUri = this.convertUri(sourceUri);
+    const _targetUri = this.convertUri(targetUri);
     const provider = await this.getProvider(_sourceUri.scheme);
     const overwrite = await this.doGetOverwrite(options);
 
@@ -236,7 +236,7 @@ export class FileServiceClient implements IFileServiceClient {
   // 添加监听文件
   async watchFileChanges(uri: URI, excludes?: string[]): Promise<IFileServiceWatcher> {
     const id = this.watcherId++;
-    const _uri = this.getUri(uri.toString());
+    const _uri = this.convertUri(uri.toString());
     const provider = await this.getProvider(_uri.scheme);
     const schemaWatchIdList = this.watcherWithSchemaMap.get(_uri.scheme) || [];
 
@@ -298,7 +298,7 @@ export class FileServiceClient implements IFileServiceClient {
         return (this.injector.get(IElectronMainUIService) as IElectronMainUIService).moveToTrash(uri.codeUri.fsPath);
       }
     }
-    const _uri = this.getUri(uriString);
+    const _uri = this.convertUri(uriString);
     const provider = await this.getProvider(_uri.scheme);
 
     const stat = await provider.stat(_uri.codeUri);
@@ -338,7 +338,7 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   async access(uri: string, mode: number = FileAccess.Constants.F_OK): Promise<boolean> {
-    const _uri = this.getUri(uri);
+    const _uri = this.convertUri(uri);
     const provider = await this.getProvider(_uri.scheme);
 
     if (!containsExtraFileMethod(provider, 'access')) {
@@ -350,7 +350,7 @@ export class FileServiceClient implements IFileServiceClient {
 
   // 这里需要 try catch 了
   async getFileType(uri: string) {
-    const _uri = this.getUri(uri);
+    const _uri = this.convertUri(uri);
     const provider = await this.getProvider(_uri.scheme);
 
     if (!containsExtraFileMethod(provider, 'getFileType')) {
@@ -370,7 +370,10 @@ export class FileServiceClient implements IFileServiceClient {
     return `Scheme ${scheme} not support this function: ${funName}.`;
   }
 
-  private getUri(uri: string | Uri): URI {
+  /**
+   * Ant Codespaces 对该方法进行复写，对 IDE 容器读取不到的研发容器目录进行 scheme 替换，让插件提供提供的 fs-provider 去读取
+   */
+  protected convertUri(uri: string | Uri): URI {
     const _uri = new URI(uri);
 
     if (!_uri.scheme) {

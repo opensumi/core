@@ -119,7 +119,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
     const _uri = Uri.revive(uri);
     const result: [string, FileType][] = [];
     try {
-      const dirList = fse.readdirSync(_uri.fsPath);
+      const dirList = await fse.readdir(_uri.fsPath);
 
       dirList.forEach((name) => {
         const filePath = paths.join(_uri.fsPath, name);
@@ -200,7 +200,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
       await writeFileAtomicSync(FileUri.fsPath(new URI(_uri)), buffer);
     } catch (e) {
       debugLog.warn('writeFileAtomicSync 出错，使用 fs', e);
-      fse.writeFileSync(FileUri.fsPath(new URI(_uri)), buffer);
+      await fse.writeFile(FileUri.fsPath(new URI(_uri)), buffer);
     }
   }
 
