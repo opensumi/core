@@ -31,6 +31,7 @@ export const localizationBundle = {
     'file.action.new.folder': 'New Folder',
     'file.action.refresh': 'Refresh',
     'file.open.folder': 'Open Folder',
+    'file.open.workspace': 'Open Workspace',
     'file.action.collapse': 'Collapse',
     'file.confirm.delete': 'Are you sure you want to delete the following files?\n{0}',
     'file.confirm.delete.ok': 'Move to trash',
@@ -567,6 +568,8 @@ export const localizationBundle = {
     'workspace.openDirectory': 'Open Directory',
     'workspace.addFolderToWorkspace': 'Add Folder Into Workspace ...',
     'workspace.saveWorkspaceAsFile': 'Save Workspace As ...',
+    'workspace.openWorkspace': 'Open Workspace',
+    'workspace.openWorkspaceTitle': 'Workspace',
 
     'window.toggleDevTools': 'Toggle Developer Tools',
     'window.reload': 'Reload Window',

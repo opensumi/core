@@ -35,6 +35,7 @@ export const localizationBundle = {
     'file.action.collapse': '全部折叠',
     'file.location': '在文件树中定位',
     'file.open.folder': '打开文件夹',
+    'file.open.workspace': '打开工作区',
     'file.confirm.delete': '确定删除下面列的文件?\n{0}',
     'file.confirm.delete.ok': '移入回收站',
     'file.confirm.delete.cancel': '取消',
@@ -272,6 +273,8 @@ export const localizationBundle = {
     'workspace.openDirectory': '打开文件夹',
     'workspace.addFolderToWorkspace': '将文件夹添加到工作区...',
     'workspace.saveWorkspaceAsFile': '将工作区另存为...',
+    'workspace.openWorkspaceTitle': '工作区',
+    'workspace.openWorkspace': '打开工作区',
 
     'window.toggleDevTools': '切换开发人员工具',
     'window.reload': '重载窗口',

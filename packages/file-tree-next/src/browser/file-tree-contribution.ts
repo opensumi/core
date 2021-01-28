@@ -531,6 +531,26 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         });
       },
     });
+    commands.registerCommand(FILE_COMMANDS.OPEN_WORKSPACE, {
+      execute: (options: {newWindow: boolean}) => {
+        const dialogService: IElectronNativeDialogService = this.injector.get(IElectronNativeDialogService);
+        const windowService: IWindowService = this.injector.get(IWindowService);
+        dialogService.showOpenDialog({
+            title: localize('workspace.openWorkspace'),
+            properties: [
+              'openFile',
+            ],
+            filters: [{
+              name: localize('workspace.openWorkspaceTitle'),
+              extensions: [KAITIAN_MULTI_WORKSPACE_EXT],
+            }],
+          }).then((paths) => {
+            if (paths && paths.length > 0) {
+              windowService.openWorkspace(URI.file(paths[0]), options || {newWindow: true});
+            }
+          });
+      },
+    });
     commands.registerCommand(FILE_COMMANDS.FOCUS_FILES, {
       execute: () => {
         const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);

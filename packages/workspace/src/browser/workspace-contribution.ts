@@ -6,7 +6,6 @@ import {
   Domain,
   PreferenceContribution,
   PreferenceSchema,
-  IContextKeyService,
   FsProviderContribution,
   CommandContribution,
   WORKSPACE_COMMANDS,
@@ -17,6 +16,7 @@ import { IWorkspaceService, KAITIAN_MULTI_WORKSPACE_EXT } from '../common';
 import { workspacePreferenceSchema } from './workspace-preferences';
 import { WorkspaceService } from './workspace-service';
 import { IWindowDialogService } from '@ali/ide-overlay';
+import { WorkspaceContextKey } from './workspace-contextkey';
 
 @Domain(ClientAppContribution, PreferenceContribution, FsProviderContribution, CommandContribution)
 export class WorkspaceContribution implements ClientAppContribution, PreferenceContribution, FsProviderContribution, CommandContribution {
@@ -27,22 +27,23 @@ export class WorkspaceContribution implements ClientAppContribution, PreferenceC
   @Autowired(CommandRegistry)
   protected readonly commandRegistry: CommandRegistry;
 
-  @Autowired(IContextKeyService)
-  protected readonly contextKeyService: IContextKeyService;
+  @Autowired(WorkspaceContextKey)
+  protected readonly workspaceContextKey: WorkspaceContextKey;
 
   @Autowired(IWindowDialogService)
   protected readonly windowDialogService: IWindowDialogService;
 
   schema: PreferenceSchema = workspacePreferenceSchema;
 
-  protected initWorkspaceContextKeys(): void {
-    const workspaceStateKey = this.contextKeyService.createKey<string>('workbenchState', 'empty');
-    // TODO: 监听工作区变化
-    this.workspaceService.whenReady.then(() => workspaceStateKey.set(this.workspaceService.tryGetRoots().length > 1 ? 'workspace' : 'folder'));
-    const workspaceFolderCountKey = this.contextKeyService.createKey<number>('workspaceFolderCount', 0);
-    const updateWorkspaceFolderCountKey = () => workspaceFolderCountKey.set(this.workspaceService.tryGetRoots().length);
+  protected async initWorkspaceContextKeys() {
+    await this.workspaceService.whenReady;
+    const updateWorkspaceFolderCountKey = () => {
+      const roots = this.workspaceService.tryGetRoots();
+      this.workspaceContextKey.workbenchStateContextKey.set(roots.length > 1 ? 'workspace' : 'folder');
+      this.workspaceContextKey.workspaceFolderCountContextKey.set(roots.length);
+    };
     updateWorkspaceFolderCountKey();
-    this.workspaceService.onWorkspaceChanged(updateWorkspaceFolderCountKey);
+    this.workspaceService.onWorkspaceLocationChanged(updateWorkspaceFolderCountKey);
   }
 
   async onStart() {
@@ -65,6 +66,10 @@ export class WorkspaceContribution implements ClientAppContribution, PreferenceC
 
     registry.registerCommand(WORKSPACE_COMMANDS.SAVE_WORKSPACE_AS_FILE, {
       execute: async () => {
+        if (!this.workspaceService.isMultiRootWorkspaceOpened) {
+          // 非工作区模式下调用无效
+          return;
+        }
         const folder = await this.windowDialogService.showSaveDialog({
           saveLabel: localize('workspace.saveWorkspaceAsFile'),
           showNameInput: true,
@@ -73,9 +78,6 @@ export class WorkspaceContribution implements ClientAppContribution, PreferenceC
         if (folder) {
           await this.workspaceService.save(folder);
         }
-      },
-      isEnabled: () => {
-        return this.workspaceService.isMultiRootWorkspaceOpened;
       },
     });
   }

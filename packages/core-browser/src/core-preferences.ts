@@ -66,6 +66,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: isElectronRenderer(),
       description: 'Whether default open folder behavior is supported',
     },
+    'application.supportsOpenWorkspace': {
+      type: 'boolean',
+      default: isElectronRenderer(),
+      description: 'Whether default open workspace behavior is supported',
+    },
     'application.confirmExit': {
       type: 'string',
       enum: [

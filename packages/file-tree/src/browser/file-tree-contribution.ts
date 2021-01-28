@@ -485,7 +485,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         const dialogService: IElectronNativeDialogService = this.injector.get(IElectronNativeDialogService);
         const windowService: IWindowService = this.injector.get(IWindowService);
         dialogService.showOpenDialog({
-            title: localize('workspace.open-directory'),
+            title: localize('workspace.openDirectory'),
             properties: [
               'openDirectory',
             ],

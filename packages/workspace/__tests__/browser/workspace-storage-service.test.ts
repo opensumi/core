@@ -1,67 +1,78 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { IWorkspaceService, IWorkspaceStorageService } from '@ali/ide-workspace';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { URI } from '@ali/ide-core-common';
 import { WorkspaceModule } from '../../src/browser';
-import { FileStat } from '@ali/ide-file-service';
-import { GlobalBrowserStorageService } from '@ali/ide-core-browser/lib/services';
+import { IContextKeyService, CommandService } from '@ali/ide-core-browser';
+import { WorkspaceVariableContribution } from '@ali/ide-workspace/lib/browser/workspace-variable-contribution';
 
-describe('WorkspaceStorageService should be work', () => {
-  let workspaceStorageService: IWorkspaceStorageService;
-  const workspaceUri = new URI('file://userhome/');
-  const workspaceRoot = {
-    uri: workspaceUri.toString(),
-    lastModification: new Date().getTime(),
-    isDirectory: true,
-  } as FileStat;
+describe('WorkspaceContribution should be work', () => {
+  let workspaceVariableContribution: WorkspaceVariableContribution;
   let injector: MockInjector;
   const mockWorkspaceService = {
-    roots: Promise.resolve([workspaceRoot]),
-    workspace: workspaceRoot,
-    onWorkspaceLocationChanged: jest.fn(),
+    getWorkspaceRootUri: jest.fn(),
   };
-  const mockLocalStorageService = {
-    setData: jest.fn(),
-    getData: jest.fn(),
+  const mockContextKeyService = {
+    getContextValue: jest.fn(),
+  };
+  const mockCommandService = {
+    executeCommand: jest.fn(),
   };
   beforeEach(async (done) => {
     injector = createBrowserInjector([
       WorkspaceModule,
     ]);
     injector.overrideProviders({
-      token: GlobalBrowserStorageService,
-      useValue: mockLocalStorageService,
+      token: IContextKeyService,
+      useValue: mockContextKeyService,
+    });
+    injector.overrideProviders({
+      token: CommandService,
+      useValue: mockCommandService,
     });
     injector.overrideProviders({
       token: IWorkspaceService,
       useValue: mockWorkspaceService,
     });
 
-    workspaceStorageService = injector.get(IWorkspaceStorageService);
+    workspaceVariableContribution = injector.get(WorkspaceVariableContribution);
     done();
   });
 
   afterEach(() => {
     injector.disposeAll();
-    mockWorkspaceService.onWorkspaceLocationChanged.mockReset();
-    mockLocalStorageService.getData.mockReset();
-    mockLocalStorageService.setData.mockReset();
+    mockWorkspaceService.getWorkspaceRootUri.mockReset();
+    mockContextKeyService.getContextValue.mockReset();
   });
 
-  it('should have enough API', async (done) => {
-    expect(mockWorkspaceService.onWorkspaceLocationChanged).toBeCalled();
+  it('registerVariables contribution point should be work', async (done) => {
+    const variables = {
+      registerVariable: jest.fn((variable) => {
+        variable.resolve();
+      }),
+    };
+    workspaceVariableContribution.registerVariables(variables as any);
+    expect(variables.registerVariable).toBeCalledTimes(10);
     done();
   });
 
-  it('setData method should be work', async (done) => {
-    await workspaceStorageService.setData('hello', 'world');
-    expect(mockLocalStorageService.setData).toBeCalledWith(`${workspaceUri.toString()}:hello`, 'world');
+  it('getWorkspaceRootUri method should be work', async (done) => {
+    const workspaceUri = new URI('file://userhome/');
+    workspaceVariableContribution.getWorkspaceRootUri(workspaceUri);
+    expect(mockWorkspaceService.getWorkspaceRootUri).toBeCalledWith(workspaceUri);
     done();
   });
 
-  it('getData method should be work', async (done) => {
-    await workspaceStorageService.getData('hello', 'world');
-    expect(mockLocalStorageService.getData).toBeCalledWith(`${workspaceUri.toString()}:hello`, 'world');
+  it('getResourceUri method should be work', async (done) => {
+    await workspaceVariableContribution.getResourceUri();
+    expect(mockCommandService.executeCommand).toBeCalledWith('editor.getCurrentResource');
+    done();
+  });
+
+  it('getWorkspaceRelativePath method should be work', async (done) => {
+    const workspaceUri = new URI('file://userhome/');
+    workspaceVariableContribution.getWorkspaceRelativePath(workspaceUri);
+    expect(mockWorkspaceService.getWorkspaceRootUri).toBeCalledWith(workspaceUri);
     done();
   });
 });

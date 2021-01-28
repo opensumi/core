@@ -101,6 +101,12 @@ export namespace FILE_COMMANDS {
     label: '%file.open.folder%',
   };
 
+  export const OPEN_WORKSPACE: Command = {
+    id: 'filetree.open.workspace',
+    category: CATEGORY,
+    label: '%file.open.workspace%',
+  };
+
   export const SEARCH_ON_FOLDER: Command = {
     id: 'filetree.search.folder',
     category: CATEGORY,

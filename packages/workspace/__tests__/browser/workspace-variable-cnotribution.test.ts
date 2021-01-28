@@ -5,15 +5,13 @@ import { URI } from '@ali/ide-core-common';
 import { WorkspaceModule } from '../../src/browser';
 import { IContextKeyService, CommandService } from '@ali/ide-core-browser';
 import { WorkspaceVariableContribution } from '@ali/ide-workspace/lib/browser/workspace-variable-contribution';
+import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
 
 describe('WorkspaceVariableContribution should be work', () => {
   let workspaceVariableContribution: WorkspaceVariableContribution;
   let injector: MockInjector;
   const mockWorkspaceService = {
     getWorkspaceRootUri: jest.fn(),
-  };
-  const mockContextKeyService = {
-    getContextValue: jest.fn(),
   };
   const mockCommandSetvice = {
     executeCommand: jest.fn(),
@@ -24,7 +22,7 @@ describe('WorkspaceVariableContribution should be work', () => {
     ]);
     injector.overrideProviders({
       token: IContextKeyService,
-      useValue: mockContextKeyService,
+      useClass: MockContextKeyService,
     });
     injector.overrideProviders({
       token: CommandService,
@@ -42,7 +40,6 @@ describe('WorkspaceVariableContribution should be work', () => {
   afterEach(() => {
     injector.disposeAll();
     mockWorkspaceService.getWorkspaceRootUri.mockReset();
-    mockContextKeyService.getContextValue.mockReset();
   });
 
   it('registerVariables contribution point should be work', async (done) => {
