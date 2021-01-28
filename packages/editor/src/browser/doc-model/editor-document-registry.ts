@@ -73,7 +73,8 @@ export class EditorDocumentModelContentRegistryImpl implements IEditorDocumentMo
     return this.cachedProviders.get(uriStr)!;
   }
 
-  private async calculateProvider(uri: URI): Promise<IEditorDocumentModelContentProvider | undefined> {
+  // Ant Codespaces 需要使用该方法复写 getProvider，不使用缓存 provider
+  protected async calculateProvider(uri: URI): Promise<IEditorDocumentModelContentProvider | undefined> {
     let calculated: {
       provider: IEditorDocumentModelContentProvider | undefined,
       weight: number,
