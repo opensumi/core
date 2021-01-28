@@ -132,6 +132,11 @@ const mockExtensionProps: IExtensionProps = {
             'title': 'Package Explorer',
             'icon': 'icon.svg',
           },
+          {
+            'id': 'hold-container',
+            'title': 'Test Hold',
+            'icon': 'icon.svg',
+          },
         ],
       },
       'views': {
@@ -140,6 +145,12 @@ const mockExtensionProps: IExtensionProps = {
             'id': 'mockviews',
             'name': 'Mock Views',
             'when': 'workspaceHasPackageJSON',
+          },
+        ],
+        'package-explorer': [
+          {
+            'id': 'mockviews',
+            'name': 'Mock Views',
           },
         ],
       },
@@ -519,7 +530,8 @@ describe('Extension service', () => {
       const layoutService: LayoutService = injector.get(IMainLayoutService);
       const handler = layoutService.getTabbarHandler('package-explorer');
       expect(handler).toBeDefined();
-      expect(handler?.containerId).toBe('package-explorer');
+      const holdHandler = layoutService.getTabbarHandler('hold-container');
+      expect(holdHandler).toBeUndefined();
       done();
     });
 

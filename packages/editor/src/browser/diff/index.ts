@@ -50,7 +50,7 @@ export class DiffResourceProvider extends WithEventBus implements IResourceProvi
   }
 
   async shouldCloseResource(resource, openedResources): Promise<boolean> {
-    const { original, modified, name } = resource.uri.getParsedQuery();
+    const { modified } = resource.uri.getParsedQuery();
     const modifiedUri = new URI(modified);
     const modifiedResource = await this.resourceService.getResource(modifiedUri);
     if (modifiedResource) {
