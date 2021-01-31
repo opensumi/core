@@ -11,6 +11,11 @@ export interface ComponentCollection {
   options: ViewContainerOptions;
 }
 
+export interface ViewComponentOptions {
+  isReplace?: boolean;
+  fromExtension?: boolean;
+}
+
 export const IMainLayoutService = Symbol('IMainLayoutService');
 export interface IMainLayoutService {
   viewReady: Deferred<void>;
@@ -38,7 +43,7 @@ export interface IMainLayoutService {
    * @param containerId 子视图需要附加的容器id
    * @param props 初始prop
    */
-  collectViewComponent(view: View, containerId: string, props?: any): string;
+  collectViewComponent(view: View, containerId: string, props?: any, options?: ViewComponentOptions): string;
   /**
    * 替换一个已注册的视图
    * @param view 子视图信息

@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WithEventBus, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent, AppConfig, ComponentRegistry, Logger } from '@ali/ide-core-browser';
-import { MainLayoutContribution, IMainLayoutService } from '../common';
+import { WithEventBus, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent, AppConfig, ComponentRegistry, Logger, CommandRegistry, CommandService } from '@ali/ide-core-browser';
+import { MainLayoutContribution, IMainLayoutService, ViewComponentOptions } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
 import { IMenuRegistry, AbstractContextMenuService, MenuId, AbstractMenuService, IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
@@ -19,6 +19,12 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   @Autowired(IMenuRegistry)
   menus: IMenuRegistry;
+
+  @Autowired(CommandRegistry)
+  private readonly commandRegistry: CommandRegistry;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
 
   @Autowired()
   private layoutState: LayoutState;
@@ -235,21 +241,19 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       if (this.tabbarUpdateSet.has(options.containerId)) {
         this.tryUpdateTabbar(options.containerId);
       }
-      const service = this.accordionServices.get(options.containerId);
-      if (service) {
-        // 如果 append view 时尝试注册 holdTabbarComponent
-        service.onBeforeAppendViewEvent(() => {
-          this.tryUpdateTabbar(options.containerId);
-        });
-        service.onAfterDisposeViewEvent(() => {
-          // 如果没有其他 view ，则 remove 掉 container
-          if (service.views.length === 0) {
-            this.disposeContainer(options.containerId);
-            // 重新注册到 holdTabbarComponent ,以便再次 append 时能注册传上去
-            this.holdTabbarComponent.set(options.containerId, { views, options, side });
-          }
-        });
-      }
+      const service = this.getAccordionService(options.containerId);
+      // 如果 append view 时尝试注册 holdTabbarComponent
+      service.onBeforeAppendViewEvent(() => {
+        this.tryUpdateTabbar(options.containerId);
+      });
+      service.onAfterDisposeViewEvent(() => {
+        // 如果没有其他 view ，则 remove 掉 container
+        if (service.views.length === 0) {
+          this.disposeContainer(options.containerId);
+          // 重新注册到 holdTabbarComponent ,以便再次 append 时能注册传上去
+          this.holdTabbarComponent.set(options.containerId, { views, options, side });
+        }
+      });
       return options.containerId;
     }
     const tabbarService = this.getTabbarService(side);
@@ -260,19 +264,31 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return options.containerId;
   }
 
-  collectViewComponent(view: View, containerId: string, props: any = {}, isReplace?: boolean): string {
+  collectViewComponent(view: View, containerId: string, props: any = {}, options?: ViewComponentOptions): string {
     this.customViews.set(view.id, view);
     this.viewToContainerMap.set(view.id, containerId);
     const accordionService: AccordionService = this.getAccordionService(containerId);
     if (props) {
       view.initialProps = props;
     }
-    accordionService.appendView(view, isReplace);
+    accordionService.appendView(view, options?.isReplace);
     // 如果之前没有views信息，且为hideIfEmpty类型视图则需要刷新
     if (accordionService.views.length === 1) {
       this.tabbarUpdateSet.add(containerId);
       this.tryUpdateTabbar(containerId);
     }
+
+    if (options?.fromExtension) {
+      this.commandRegistry.registerCommand({
+        id: `${view.id}.focus`,
+      }, {
+        execute: () => {
+          // TODO: 目前 view 没有 focus 状态，先跳转到对应的 container 上 @寻壑
+          return this.commandService.executeCommand(`workbench.view.extension.${containerId}`, { forceShow: true });
+        },
+      });
+    }
+
     return containerId;
   }
 
@@ -301,7 +317,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       view = Object.assign(contributedView, view);
     }
 
-    this.collectViewComponent(view, containerId!, props, true);
+    this.collectViewComponent(view, containerId!, props, {
+      isReplace: true,
+    });
   }
 
   disposeViewComponent(viewId: string) {

@@ -168,10 +168,11 @@ export class AccordionService extends WithEventBus {
       // 强制显示的contextKey
       const forceRevealExpr = this.createRevealContextKey(view.id);
       this.fillKeysInWhenExpr(this.viewWhenContextkeys, view.when);
-      this.appendedViewSet.add(view.id);
+      // 如果不匹配则跳过
       if (!this.contextKeyService.match(view.when) && !this.contextKeyService.match(forceRevealExpr)) {
         return;
       }
+      this.appendedViewSet.add(view.id);
     }
     const index = this.views.findIndex((value) => (value.priority || 0) < (view.priority || 0));
     this.views.splice(index === -1 ? this.views.length : index, 0, view);
