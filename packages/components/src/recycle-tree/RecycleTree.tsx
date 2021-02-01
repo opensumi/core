@@ -88,6 +88,15 @@ export interface IRecycleTreeProps {
    * @memberof IRecycleTreeProps
    */
   overflow?: IRecycleTreeOverflow;
+  /**
+   * 声明Tree加载时预加载的节点内容
+   * 主要用于避免快速滚动时出现空白区域的情况
+   * 默认值为：Recycle.DEFAULT_OVER_SCAN_COUNT = 50
+   * @type {number}
+   * @memberof IRecycleTreeProps
+   */
+  overScanCount?: number;
+
 }
 
 export interface IRecycleTreeError {
@@ -195,6 +204,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       return node.name;
     },
   };
+  private static DEFAULT_OVER_SCAN_COUNT = 50;
 
   private _promptHandle: NewPromptHandle | RenamePromptHandle;
 
@@ -730,6 +740,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       style,
       className,
       placeholder,
+      overScanCount,
     } = this.props;
     if (placeholder && this.adjustedRowCount === 0) {
       const Placeholder = placeholder;
@@ -744,7 +755,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         itemSize={itemHeight}
         itemCount={this.adjustedRowCount}
         getItemKey={this.getItemKey}
-        overscanCount={10}
+        overscanCount={overScanCount || RecycleTree.DEFAULT_OVER_SCAN_COUNT}
         ref={this.listRef}
         onScroll={this.handleListScroll}
         style={style}
