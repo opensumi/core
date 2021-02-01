@@ -15,16 +15,16 @@ const typoIconMap = {
   'setting-editor': 'codelibrary-fill',
   'setting-file': 'file-text',
   'setting-extension': 'extension',
-  'run-debug': 'rundebug',
+  'run-debug': 'start',
   'toggle-breakpoints': 'deactivate-breakpoints',
   // new typos issue
   'withdraw': 'fallback',
-  'terminate1': 'terminate',
+  'terminate1': 'stop',
   'stop1': 'stop',
   'add': 'plus',
   // removed duplicated icons
-  'pause': 'stop',
-  'continue': 'start',
+  'rundebug': 'start',
+  'terminate': 'stop',
 };
 
 const _defaultIconMap = Object.assign({}, defaultIconfont, typoIconMap);
