@@ -1,14 +1,14 @@
 import { VSCodeContributePoint, Contributes } from '../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { replaceLocalizePlaceholder } from '@ali/ide-core-browser';
-import { IJSONSchema, IJSONSchemaSnippet, deepClone, localize } from '@ali/ide-core-common';
+import { IJSONSchema, IJSONSchemaSnippet, deepClone, localize, IJSONSchemaMap } from '@ali/ide-core-common';
 import { IDebugService, IDebuggerContribution } from '@ali/ide-debug';
 import { DebugConfigurationManager, DebugSchemaUpdater } from '@ali/ide-debug/lib/browser';
 
 const INTERNAL_CONSOLE_OPTIONS_SCHEMA = {
   enum: ['neverOpen', 'openOnSessionStart', 'openOnFirstSessionStart'],
   default: 'openOnFirstSessionStart',
-  description: localize('internalConsoleOptions', 'Controls when the internal debug console should open.'),
+  description: localize('preference.debug.internalConsoleOptions'),
 };
 
 export interface VSCodePlatformSpecificAdapterContribution {
@@ -102,6 +102,15 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
 
   protected resolveSchemaAttributes(type: string, configurationAttributes: { [request: string]: IJSONSchema }): IJSONSchema[] {
     const taskSchema = {};
+    const recursionPropertiesDescription = (prop: IJSONSchemaMap) => {
+      Object.keys(prop).forEach((name) => {
+        if (prop[name].properties) {
+          recursionPropertiesDescription(prop[name].properties!);
+        }
+        prop[name].description = replaceLocalizePlaceholder(prop[name].description, this.extension.id);
+      });
+    };
+
     return Object.keys(configurationAttributes).map((request) => {
       const attributes: IJSONSchema = deepClone(configurationAttributes[request]);
       const defaultRequired = ['name', 'type', 'request'];
@@ -114,26 +123,23 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
       const properties = attributes.properties;
       properties.type = {
         enum: [type],
-        description: localize('debugType', 'Type of configuration.'),
+        description: localize('debug.launch.configurations.debugType'),
         pattern: '^(?!node2)',
-        errorMessage: localize('debugTypeNotRecognised',
-          'The debug type is not recognized. Make sure that you have a corresponding debug extension installed and that it is enabled.'),
-        patternErrorMessage: localize('node2NotSupported',
-          '"node2" is no longer supported, use "node" instead and set the "protocol" attribute to "inspector".'),
+        errorMessage: localize('debug.launch.configurations.debugTypeNotRecognised'),
+        patternErrorMessage: localize('debug.launch.configurations.node2NotSupported'),
       };
       properties.name = {
         type: 'string',
-        description: localize('debugName', 'Name of configuration; appears in the launch configuration drop down menu.'),
+        description: localize('debug.launch.configurations.debugName'),
         default: 'Launch',
       };
       properties.request = {
         enum: [request],
-        description: localize('debugRequest', 'Request type of configuration. Can be "launch" or "attach".'),
+        description: localize('debug.launch.configurations.debugRequest'),
       };
       properties.debugServer = {
         type: 'number',
-        description: localize('debugServer',
-          'For debug extension development only: if a port is specified VS Code tries to connect to a debug adapter running in server mode'),
+        description: localize('debug.launch.configurations.debugServer'),
         default: 4711,
       };
       properties.preLaunchTask = {
@@ -141,31 +147,31 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
           type: ['string', 'null'],
         }],
         default: '',
-        description: localize('debugPrelaunchTask', 'Task to run before debug session starts.'),
+        description: localize('debug.launch.configurations.debugPrelaunchTask'),
       };
       properties.postDebugTask = {
         anyOf: [taskSchema, {
           type: ['string', 'null'],
         }],
         default: '',
-        description: localize('debugPostDebugTask', 'Task to run after debug session ends.'),
+        description: localize('debug.launch.configurations.debugPostDebugTask'),
       };
       properties.internalConsoleOptions = INTERNAL_CONSOLE_OPTIONS_SCHEMA;
 
       const osProperties = Object.assign({}, properties);
       properties.windows = {
         type: 'object',
-        description: localize('debugWindowsConfiguration', 'Windows specific launch configuration attributes.'),
+        description: localize('debug.launch.configurations.debugWindowsConfiguration'),
         properties: osProperties,
       };
       properties.osx = {
         type: 'object',
-        description: localize('debugOSXConfiguration', 'OS X specific launch configuration attributes.'),
+        description: localize('debug.launch.configurations.debugOSXConfiguration'),
         properties: osProperties,
       };
       properties.linux = {
         type: 'object',
-        description: localize('debugLinuxConfiguration', 'Linux specific launch configuration attributes.'),
+        description: localize('debug.launch.configurations.debugLinuxConfiguration'),
         properties: osProperties,
       };
       Object.keys(attributes.properties).forEach((name) => {
@@ -174,6 +180,8 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
         attributes!.properties![name].patternErrorMessage = attributes!.properties![name].patternErrorMessage ||
           localize('deprecatedVariables', "'env.', 'config.' and 'command.' are deprecated, use 'env:', 'config:' and 'command:' instead.");
       });
+
+      recursionPropertiesDescription(attributes.properties);
 
       return attributes;
     });
