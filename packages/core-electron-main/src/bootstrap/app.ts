@@ -31,7 +31,7 @@ export class ElectronMainApp {
   };
 
   constructor(private config: ElectronAppConfig) {
-    config.extensionDir =  this.parsedArgs.extensionDir ? this.parsedArgs.extensionDir : config.extensionDir || '';
+    config.extensionDir = this.parsedArgs.extensionDir ? this.parsedArgs.extensionDir : config.extensionDir || '';
     config.extensionCandidate = [
       ...config.extensionCandidate,
       ...this.parsedArgs.extensionCandidate.map((e) => asExtensionCandidate(e, false)),
@@ -40,8 +40,8 @@ export class ElectronMainApp {
     if (this.parsedArgs.extensionDevelopmentPath) {
       config.extensionCandidate = config.extensionCandidate.concat(
         Array.isArray(this.parsedArgs.extensionDevelopmentPath) ?
-        this.parsedArgs.extensionDevelopmentPath.map((e) => asExtensionCandidate(e, true)) :
-        [asExtensionCandidate(this.parsedArgs.extensionDevelopmentPath, true)]);
+          this.parsedArgs.extensionDevelopmentPath.map((e) => asExtensionCandidate(e, true)) :
+          [asExtensionCandidate(this.parsedArgs.extensionDevelopmentPath, true)]);
     }
 
     config.extensionDevelopmentHost = !!this.parsedArgs.extensionDevelopmentPath;
@@ -82,7 +82,7 @@ export class ElectronMainApp {
   }
 
   onStartContribution() {
-    for (const contribution of this.contributions ) {
+    for (const contribution of this.contributions) {
       if (contribution.onStart) {
         contribution.onStart();
       }
@@ -90,7 +90,7 @@ export class ElectronMainApp {
   }
 
   onBeforeReadyContribution() {
-    for (const contribution of this.contributions ) {
+    for (const contribution of this.contributions) {
       if (contribution.beforeAppReady) {
         contribution.beforeAppReady();
       }
@@ -138,8 +138,17 @@ export class ElectronMainApp {
 
   getCodeWindowByElectronBrowserWindowId(id: number) {
     for (const window of this.getCodeWindows()) {
-      if (window.getBrowserWindow() && window.getBrowserWindow().id === id ) {
+      if (window.getBrowserWindow() && window.getBrowserWindow().id === id) {
         return window;
+      }
+    }
+  }
+
+  getCodeWindowByWorkspace(workspace: string) {
+    const normalizeUri = URI.isUriString(workspace) ? URI.parse(workspace) : URI.file(workspace);
+    for (const codeWindow of this.getCodeWindows()) {
+      if (codeWindow.workspace && (codeWindow.workspace.toString() === normalizeUri.toString())) {
+        return codeWindow;
       }
     }
   }
