@@ -1,4 +1,4 @@
-import { URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, isWindows, IElectronNativeDialogService, ToolbarRegistry, KeybindingRegistry, IWindowService, IClipboardService } from '@ali/ide-core-browser';
+import { URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, isWindows, IElectronNativeDialogService, ToolbarRegistry, KeybindingRegistry, IWindowService, IClipboardService, PreferenceService } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileTreeService } from './file-tree.service';
@@ -52,6 +52,9 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
 
   @Autowired(IClipboardService)
   private readonly clipboardService: IClipboardService;
+
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
 
   private isRendered = false;
 
@@ -262,7 +265,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
           }
         }
         let searchPath: string;
-        if (this.fileTreeService.isMutiWorkspace) {
+        if (this.fileTreeService.isMultipleWorkspace) {
           // 多工作区额外处理
           for (const root of await this.workspaceService.roots) {
             const rootUri = new URI(root.uri);
@@ -367,7 +370,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
             this.fileTreeModelService.newFilePrompt(this.fileTreeModelService.selectedFiles[0].uri);
           } else {
             let rootUri: URI;
-            if (!this.fileTreeService.isMutiWorkspace) {
+            if (!this.fileTreeService.isMultipleWorkspace) {
               rootUri = new URI(this.workspaceService.workspace?.uri);
             } else {
               rootUri = new URI((await this.workspaceService.roots)[0].uri);
@@ -388,7 +391,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
             this.fileTreeModelService.newDirectoryPrompt(this.fileTreeModelService.selectedFiles[0].uri);
           } else {
             let rootUri: URI;
-            if (!this.fileTreeService.isMutiWorkspace) {
+            if (!this.fileTreeService.isMultipleWorkspace) {
               rootUri = new URI(this.workspaceService.workspace?.uri);
             } else {
               rootUri = new URI((await this.workspaceService.roots)[0].uri);
@@ -444,7 +447,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_RELATIVE_PATH, {
       execute: async (uri) => {
         let rootUri: URI;
-        if (this.fileTreeService.isMutiWorkspace) {
+        if (this.fileTreeService.isMultipleWorkspace) {
           // 多工作区额外处理
           for (const root of await this.workspaceService.roots) {
             rootUri = new URI(root.uri);
@@ -532,23 +535,27 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       },
     });
     commands.registerCommand(FILE_COMMANDS.OPEN_WORKSPACE, {
-      execute: (options: {newWindow: boolean}) => {
+      execute: (options: { newWindow: boolean }) => {
+        const supportsOpenWorkspace = this.preferenceService.get('application.supportsOpenWorkspace');
+        if (!supportsOpenWorkspace) {
+          return;
+        }
         const dialogService: IElectronNativeDialogService = this.injector.get(IElectronNativeDialogService);
         const windowService: IWindowService = this.injector.get(IWindowService);
         dialogService.showOpenDialog({
-            title: localize('workspace.openWorkspace'),
-            properties: [
-              'openFile',
-            ],
-            filters: [{
-              name: localize('workspace.openWorkspaceTitle'),
-              extensions: [KAITIAN_MULTI_WORKSPACE_EXT],
-            }],
-          }).then((paths) => {
-            if (paths && paths.length > 0) {
-              windowService.openWorkspace(URI.file(paths[0]), options || {newWindow: true});
-            }
-          });
+          title: localize('workspace.openWorkspace'),
+          properties: [
+            'openFile',
+          ],
+          filters: [{
+            name: localize('workspace.openWorkspaceTitle'),
+            extensions: [KAITIAN_MULTI_WORKSPACE_EXT],
+          }],
+        }).then((paths) => {
+          if (paths && paths.length > 0) {
+            windowService.openWorkspace(URI.file(paths[0]), options || { newWindow: true });
+          }
+        });
       },
     });
     commands.registerCommand(FILE_COMMANDS.FOCUS_FILES, {

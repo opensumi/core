@@ -3,7 +3,7 @@ import { FileTreeService } from '../../src/browser/file-tree.service';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IContextKeyService, CorePreferences, Disposable, URI, EDITOR_COMMANDS, FILE_COMMANDS, ILoggerManagerClient } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
-import { IWorkspaceService } from '@ali/ide-workspace';
+import { IWorkspaceService, KAITIAN_MULTI_WORKSPACE_EXT } from '@ali/ide-workspace';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { IFileServiceClient, FileChangeType } from '@ali/ide-file-service';
 import { FileTreeContribution } from '../../src/browser/file-tree-contribution';
@@ -246,5 +246,126 @@ describe('FileTree Service should be work alone', () => {
     res = fileTreeService.sortComparator(newDirectoryByName('a'), newDirectoryByName('a'));
     expect(res).toBe(0);
     res = fileTreeService.sortComparator(newFileByName('a'), newFileByName('a'));
+  });
+});
+
+describe('FileTree Service should be work alone on multiple workspace mode', () => {
+  let injector: MockInjector;
+  let fileTreeService: FileTreeService;
+  let onPreferenceChanged;
+  let mockFileServiceClient;
+  let fileChangeWatcher;
+  beforeEach(() => {
+    injector = createBrowserInjector([]);
+    onPreferenceChanged = jest.fn((valueChangeHandle) => {
+      valueChangeHandle({
+        preferenceName: 'explorer.fileTree.baseIndent',
+        newValue: 6,
+      });
+      valueChangeHandle({
+        preferenceName: 'explorer.fileTree.indent',
+        newValue: 6,
+      });
+      return Disposable.create(() => {});
+    });
+    fileChangeWatcher = {
+      onFilesChanged: jest.fn(() => Disposable.create(() => {})),
+      dispose: () => {},
+    };
+    mockFileServiceClient = {
+      watchFileChanges: jest.fn(() => fileChangeWatcher),
+      dispose: () => {},
+    };
+    injector.overrideProviders(
+      {
+        token: IDecorationsService,
+        useValue: {},
+      },
+      {
+        token: IMainLayoutService,
+        useValue: {},
+      },
+      {
+        token: WorkbenchEditorService,
+        useValue: {},
+      },
+      {
+        token: IWindowDialogService,
+        useValue: {},
+      },
+      {
+        token: IDialogService,
+        useValue: {},
+      },
+      {
+        token: IThemeService,
+        useValue: {},
+      },
+      {
+        token: IIconService,
+        useValue: {
+          hasFolderIcon: true,
+        },
+      },
+      {
+        token: ILoggerManagerClient,
+        useValue: {},
+      },
+      {
+        token: IFileTreeAPI,
+        useValue: {},
+      },
+      {
+        token: IMessageService,
+        useValue: {},
+      },
+      {
+        token: IContextKeyService,
+        useClass: MockContextKeyService,
+      },
+      {
+        token: IWorkspaceService,
+        useClass: MockWorkspaceService,
+      },
+      {
+        token: CorePreferences,
+        useValue: {
+          'explorer.fileTree.baseIndent': 8,
+          'explorer.fileTree.indent': 8,
+          onPreferenceChanged,
+        },
+      },
+      {
+        token: IFileServiceClient,
+        useValue: mockFileServiceClient,
+      },
+      {
+        token: IFileTreeService,
+        useClass: FileTreeService,
+      },
+    );
+    fileTreeService = injector.get(IFileTreeService);
+  });
+
+  afterEach(() => {
+    injector.disposeAll();
+    onPreferenceChanged.mockReset();
+    mockFileServiceClient.watchFileChanges.mockReset();
+    fileChangeWatcher.onFilesChanged.mockReset();
+  });
+
+  // 以下为工作区模式工具函数测试
+  it('getFileTreeNodePathByUri method should be work on multiple workspace mode', async (done) => {
+    const workspaceService = injector.get(IWorkspaceService);
+    workspaceService.isMultiRootWorkspaceOpened = true;
+    await workspaceService.setWorkspace({
+      isDirectory: false,
+      lastModification: 0,
+      uri: URI.file('folder1').resolve(`test.${KAITIAN_MULTI_WORKSPACE_EXT}`).toString(),
+    });
+    await workspaceService.spliceRoots(0, undefined, undefined, URI.file('folder1'), URI.file('folder2'));
+    const path = await fileTreeService.getFileTreeNodePathByUri(URI.file('folder1').resolve('test'));
+    expect(path).toBe('/folder1/test');
+    done();
   });
 });

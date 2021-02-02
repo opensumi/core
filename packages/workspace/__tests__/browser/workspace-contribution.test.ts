@@ -13,20 +13,22 @@ describe('WorkspaceContribution should be work', () => {
   let injector: MockInjector;
   const mockWorkspaceService = {
     getWorkspaceRootUri: jest.fn(),
-    whenReady: new Promise((res, rej) => {}),
+    whenReady: Promise.resolve(),
     onWorkspaceChanged: jest.fn(),
+    onWorkspaceLocationChanged: jest.fn(),
     save: jest.fn(),
     addRoot: jest.fn(),
     init: jest.fn(),
     tryGetRoots: jest.fn(() => []),
+    isMultiRootWorkspaceOpened: true,
   };
 
   const mockCommandService = {
     executeCommand: jest.fn(),
   };
   const mockWindowDialogService = {
-    showOpenDialog: jest.fn(() => [new URI('file:///userhome/folder')]),
-    showSaveDialog: jest.fn(() => new URI('file:///userhome/folder')),
+    showOpenDialog: jest.fn(() => [URI.file('/userhome/folder').toString()]),
+    showSaveDialog: jest.fn(() => URI.file('/userhome/folder').toString()),
   };
   beforeEach(async (done) => {
     injector = createBrowserInjector([
@@ -60,7 +62,7 @@ describe('WorkspaceContribution should be work', () => {
 
   it('ClientAppContribution should be work', async (done) => {
     await workspaceContribution.onStart();
-    expect(mockWorkspaceService.onWorkspaceChanged).toBeCalledTimes(1);
+    expect(mockWorkspaceService.onWorkspaceLocationChanged).toBeCalledTimes(1);
     done();
   });
 

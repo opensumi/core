@@ -97,6 +97,8 @@ export class MockWorkspaceService implements IWorkspaceService {
   }
   spliceRoots(start: number, deleteCount?: number | undefined, workspaceName?: {[key: string]: string}, ...rootsToAdd: URI[]): Promise<URI[]> {
     this._roots = rootsToAdd.map((root) => ({ isDirectory: true, uri: root.toString(), lastModification: 0 }));
+    this.deferredRoots = new Deferred();
+    this.deferredRoots.resolve(this._roots);
     return Promise.resolve(rootsToAdd);
   }
   asRelativePath(pathOrUri: string | URI, includeWorkspaceFolder?: boolean | undefined): Promise<string | undefined> {

@@ -183,7 +183,7 @@ describe('FileTree should be work while on single workspace model', () => {
       useValue: fileService,
     });
     // use root path as workspace path
-    injector.mock(IWorkspaceService, 'isMutiWorkspace', false);
+    injector.mock(IWorkspaceService, 'isMultipleWorkspace', false);
     const workspaceService = injector.get(IWorkspaceService);
 
     await workspaceService.setWorkspace({
