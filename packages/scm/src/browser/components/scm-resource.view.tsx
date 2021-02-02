@@ -160,6 +160,7 @@ export const SCMResouceList: React.FC<{
     <RecycleTree
       nodes={nodes}
       defaultLeftPadding={8}
+      prerenderNumber={50}
       onSelect={handleFileSelect}
       onContextMenu={onContextMenu}
       scrollContainerStyle={{ width: '100%', height }}
