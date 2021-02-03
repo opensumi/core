@@ -6,7 +6,7 @@ import { MenuId, IMenu, AbstractMenuService } from '@ali/ide-core-browser/lib/me
 import { EditorGroup } from '../workbench-editor.service';
 
 @Injectable()
-export class EditorActionRegistryImpl implements IEditorActionRegistry {
+export class EditorActionRegistryImpl extends Disposable implements IEditorActionRegistry {
 
   private _cachedMenus = new Map<string, IMenu>();
 
@@ -28,7 +28,7 @@ export class EditorActionRegistryImpl implements IEditorActionRegistry {
     const key = group.currentEditor ? ('editor-menu-' + group.currentEditor.getId()) : ('editor-group-menu-' + group.name);
     if (!this._cachedMenus.has(key)) {
       const contextKeyService = group.currentEditor ? this.contextKeyService.createScoped((group.currentEditor.monacoEditor as any)._contextKeyService) : (group as EditorGroup).contextKeyService;
-      const menus = this.menuService.createMenu(MenuId.EditorTitle, contextKeyService);
+      const menus = this.registerDispose(this.menuService.createMenu(MenuId.EditorTitle, contextKeyService));
       this._cachedMenus.set(key, menus);
       menus.onDispose(() => {
         if (this._cachedMenus.get(key) === menus) {
