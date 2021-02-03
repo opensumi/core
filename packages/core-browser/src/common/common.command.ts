@@ -101,6 +101,12 @@ export namespace FILE_COMMANDS {
     label: '%file.open.folder%',
   };
 
+  export const OPEN_WORKSPACE: Command = {
+    id: 'filetree.open.workspace',
+    category: CATEGORY,
+    label: '%file.open.workspace%',
+  };
+
   export const SEARCH_ON_FOLDER: Command = {
     id: 'filetree.search.folder',
     category: CATEGORY,
@@ -628,6 +634,22 @@ export namespace OUTLINE_COMMANDS {
 
   export const OUTLINE_SORT_POSITION: Command = {
     id: 'outline.sort.position',
+    category: CATEGORY,
+  };
+}
+
+export namespace WORKSPACE_COMMANDS {
+  const CATEGORY = 'workspace';
+
+  export const ADD_WORKSPACE_FOLDER: Command = {
+    id: 'workspace.addWorkspaceFolder',
+    label: '%workspace.addFolderToWorkspace%',
+    category: CATEGORY,
+  };
+
+  export const SAVE_WORKSPACE_AS_FILE: Command = {
+    id: 'workspace.saveWorkspaceAsFile',
+    label: '%workspace.saveWorkspaceAsFile%',
     category: CATEGORY,
   };
 }

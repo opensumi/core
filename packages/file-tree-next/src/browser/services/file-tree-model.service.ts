@@ -309,7 +309,7 @@ export class FileTreeModelService {
    * @param file 焦点节点
    */
   private setFileTreeContextKey(file: Directory | File) {
-    const isSingleFolder = !this.fileTreeService.isMutiWorkspace;
+    const isSingleFolder = !this.fileTreeService.isMultipleWorkspace;
     this.fileTreeContextKey.explorerFolder.set((isSingleFolder && !file) || !!file && Directory.is(file));
     this.currentContextUriContextKey.set(file.uri.toString());
     this.currentRelativeUriContextKey.set(((this.treeModel.root as Directory).uri.relative(file.uri) || '').toString());

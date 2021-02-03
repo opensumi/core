@@ -69,17 +69,45 @@ export namespace WorkspaceData {
     return data;
   }
 
+  /**
+   * 存储时需要将{workspace}.kaitian-workspace内容存储为相对路径存储
+   * 1. 如果可用相对路径表示，则存储为:
+   * {
+   *  "folders": [
+   *    {
+   *       "path": "folder1"
+   *     },
+   *     {
+   *       "path": "folder2"
+   *     }
+   *   ],
+   * }
+   *
+   * 2. 如果不可用相对路径表示，则存储绝对路径：
+   * {
+   *  "folders": [
+   *    {
+   *       "path": "file://abc/folder1"
+   *     },
+   *     {
+   *       "path": "file://cdf/folder2"
+   *     }
+   *   ],
+   * }
+   *
+   * @export
+   * @param {WorkspaceData} data
+   * @param {FileStat} [workspaceFile]
+   * @returns {WorkspaceData}
+   */
   export function transformToRelative(data: WorkspaceData, workspaceFile?: FileStat): WorkspaceData {
     const folderUris: string[] = [];
     const workspaceFileUri = new URI(workspaceFile ? workspaceFile.uri : '').withScheme('file');
     for (const { path } of data.folders) {
-      let folderUri = new URI(path);
-      if (!folderUri.scheme) {
-        folderUri = folderUri.withScheme('file');
-      }
+      const folderUri = new URI(path).withScheme('file');
       const rel = workspaceFileUri.parent.relative(folderUri);
       if (rel) {
-        folderUris.push(rel.toString());
+        folderUris.push(rel.toString() || '.');
       } else {
         folderUris.push(folderUri.toString());
       }
@@ -87,14 +115,28 @@ export namespace WorkspaceData {
     return buildWorkspaceData(folderUris, data.settings);
   }
 
+  /**
+   * 将{workspace}.kaitian-workspace中存储的相对路径转换为绝对路径
+   *
+   * @export
+   * @param {WorkspaceData} data
+   * @param {FileStat} [workspaceFile]
+   * @returns {WorkspaceData}
+   */
   export function transformToAbsolute(data: WorkspaceData, workspaceFile?: FileStat): WorkspaceData {
     if (workspaceFile) {
       const folders: string[] = [];
       for (const folder of data.folders) {
         const path = folder.path;
         const uri = new URI(path);
-        if (!!uri.scheme) {
+        if (uri.scheme) {
           folders.push(path);
+        } else {
+          if (path === '.') {
+            folders.push(new URI(workspaceFile.uri).parent.toString());
+          } else {
+            folders.push(new URI(workspaceFile.uri).parent.resolve(path).toString());
+          }
         }
       }
       return Object.assign(data, buildWorkspaceData(folders, data.settings));

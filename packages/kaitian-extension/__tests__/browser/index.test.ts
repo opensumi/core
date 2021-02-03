@@ -37,7 +37,7 @@ describe(__filename, () => {
       {
         token: IFileTreeService,
         useValue: mockService({
-          isMutiWorkspace: false,
+          isMultipleWorkspace: false,
         }),
       },
       {

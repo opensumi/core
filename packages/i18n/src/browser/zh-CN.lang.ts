@@ -35,6 +35,7 @@ export const localizationBundle = {
     'file.action.collapse': '全部折叠',
     'file.location': '在文件树中定位',
     'file.open.folder': '打开文件夹',
+    'file.open.workspace': '打开工作区',
     'file.confirm.delete': '确定删除下面列的文件?\n{0}',
     'file.confirm.delete.ok': '移入回收站',
     'file.confirm.delete.cancel': '取消',
@@ -47,6 +48,7 @@ export const localizationBundle = {
     'file.empty.defaultTitle': '无打开的文件夹',
     'file.empty.defaultMessage': '尚未打开文件夹',
     'file.workspace.defaultTip': '无标题（工作区）',
+    'file.workspace.defaultWorkspaceTip': '{0}（工作区）',
     'file.empty.openFolder': '打开文件夹',
     'file.collapse': '全部折叠',
     'file.refresh': '刷新',
@@ -279,7 +281,12 @@ export const localizationBundle = {
     'debug.launch.configurations.debugOSXConfiguration': '特定于 OS X 的启动配置属性。',
     'debug.launch.configurations.debugLinuxConfiguration': '特定于 Linux 的启动配置属性。',
 
-    'workspace.open-directory': '打开文件夹',
+    'workspace.openDirectory': '打开文件夹',
+    'workspace.addFolderToWorkspace': '将文件夹添加到工作区...',
+    'workspace.saveWorkspaceAsFile': '将工作区另存为...',
+    'workspace.openWorkspaceTitle': '工作区',
+    'workspace.openWorkspace': '打开工作区',
+
     'window.toggleDevTools': '切换开发人员工具',
     'window.reload': '重载窗口',
 

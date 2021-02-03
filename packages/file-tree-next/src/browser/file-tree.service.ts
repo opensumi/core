@@ -185,7 +185,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       if (!this._roots) {
         this._roots = await this.workspaceService.roots;
       }
-      if (this.isMutiWorkspace) {
+      if (this.isMultipleWorkspace) {
         const rootUri = new URI(this.workspaceService.workspace?.uri);
         let rootName = rootUri.displayName;
         rootName = rootName.slice(0, rootName.lastIndexOf('.'));
@@ -216,7 +216,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       }
     } else {
       // 根节点加载子节点
-      if (Directory.isRoot(parent) && this.isMutiWorkspace) {
+      if (Directory.isRoot(parent) && this.isMultipleWorkspace) {
         // 加载根目录
         const roots = await this.workspaceService.roots;
         for (const fileStat of roots) {
@@ -336,12 +336,19 @@ export class FileTreeService extends Tree implements IFileTreeService {
   }
 
   public async getFileTreeNodePathByUri(uri: URI) {
+    // 软链文件在这种情况下无法获取到相对路径
     if (!uri) {
       return;
     }
     let rootStr;
-    if (!this.isMutiWorkspace) {
+    if (!this.isMultipleWorkspace) {
       rootStr = this.workspaceService.workspace?.uri;
+      if (rootStr) {
+        const rootUri = new URI(rootStr);
+        if (rootUri.isEqualOrParent(uri)) {
+          return new Path(this.root?.path || '').join(rootUri.relative(uri)!.toString()).toString();
+        }
+      }
     } else {
       if (!this._roots) {
         this._roots = await this.workspaceService.roots;
@@ -349,13 +356,13 @@ export class FileTreeService extends Tree implements IFileTreeService {
       rootStr = this._roots.find((root) => {
         return new URI(root.uri).isEqualOrParent(uri);
       })?.uri;
-    }
-    if (rootStr && this.root) {
-      const rootUri = new URI(rootStr);
-      if (rootUri.isEqualOrParent(uri)) {
-        return new Path(this.root.path).join(rootUri.relative(uri)!.toString()).toString();
+      if (rootStr) {
+        const rootUri = new URI(rootStr);
+        if (rootUri.isEqualOrParent(uri)) {
+          // 多工作区模式下，路径需要拼接项目名称
+          return new Path(this.root?.path || '/').join(rootUri.displayName).join(rootUri.relative(uri)!.toString()).toString();
+        }
       }
-      // 可能为当前工作区外的文件
     }
   }
 
@@ -372,7 +379,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
   // 软链接目录下，文件节点路径不能通过uri去获取，存在偏差
   public async moveNodeByPath(node: File | Directory, oldPath?: string, newPath?: string, refreshParent?: boolean) {
     if (oldPath && newPath && newPath !== oldPath) {
-      if (!this.isMutiWorkspace) {
+      if (!this.isMultipleWorkspace) {
         this._cacheIgnoreFileEvent.set((this.root as Directory).uri.parent.resolve(oldPath.slice(1)).toString(), FileChangeType.DELETED);
         this._cacheIgnoreFileEvent.set((this.root as Directory).uri.parent.resolve(newPath.slice(1)).toString(), FileChangeType.ADDED);
       }
@@ -560,7 +567,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     }
     if (this.isFileURI(pathOrUri) && !!pathURI) {
       let rootStr;
-      if (!this.isMutiWorkspace) {
+      if (!this.isMultipleWorkspace) {
         rootStr = this.workspaceService.workspace?.uri;
       } else if (!!this._roots) {
         rootStr = this._roots.find((root) => {
@@ -632,7 +639,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     }
   }
 
-  get isMutiWorkspace(): boolean {
+  get isMultipleWorkspace(): boolean {
     return !!this.workspaceService.workspace && !this.workspaceService.workspace.isDirectory;
   }
 

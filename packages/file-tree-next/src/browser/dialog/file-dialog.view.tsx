@@ -26,17 +26,25 @@ export const FileDialog = (
 ) => {
   const dialogService = useInjectable<IDialogService>(IDialogService);
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
-  const [fileName, setFileName] = React.useState<string>((options as ISaveDialogOptions).defaultFileName || '');
+  const [fileName, setFileName] = React.useState<string>('');
   const [isReady, setIsReady] = React.useState<boolean>(false);
   const [selectPath, setSelectPath] = React.useState<string>('');
   const [directoryList, setDirectoryList] = React.useState<string[]>([]);
 
   React.useEffect(() => {
-    ensureIsReady();
-    return () => {
-      model.removeFileDecoration();
-    };
+    if (model) {
+      ensureIsReady();
+      return () => {
+        model.dispose();
+      };
+    }
   }, [model]);
+
+  React.useEffect(() => {
+    if ((options as ISaveDialogOptions).defaultFileName) {
+      setFileName((options as ISaveDialogOptions).defaultFileName!);
+    }
+  }, [options]);
 
   React.useEffect(() => {
     if (isReady) {
@@ -153,9 +161,9 @@ export const FileDialog = (
   const renderDialogTree = () => {
     if (!isReady) {
       return <ProgressBar loading />;
-    } else {
+    } else if (model.treeModel) {
       return <RecycleTree
-        width={425}
+        width={408}
         height={300}
         itemHeight={FILE_TREE_DIALOG_HEIGHT}
         onReady={handleTreeReady}
@@ -217,7 +225,7 @@ export const FileDialog = (
         {(options as ISaveDialogOptions).showNameInput && (
           <div className={styles.file_dialog_file_container}>
             <span className={styles.file_dialog_file_name}>{localize('dialog.file.name')}: </span>
-            <Input size='small' value={fileName} autoFocus={true} selection={{ start: 0, end: fileName.length }} onChange={(event) => setFileName(event.target.value)}></Input>
+            <Input size='small' value={fileName} autoFocus={true} selection={{ start: 0, end: fileName.indexOf('.') || fileName.length }} onChange={(event) => setFileName(event.target.value)}></Input>
           </div>
         )}
         <div className={styles.buttonWrap}>

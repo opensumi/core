@@ -1,4 +1,4 @@
-import { URI, BasicEvent } from '@ali/ide-core-common';
+import { URI, BasicEvent, IDisposable } from '@ali/ide-core-common';
 import { ITree, ITreeNode } from '@ali/ide-components';
 import { FileStat } from '@ali/ide-file-service';
 import { Directory, File } from './file-tree-node.define';
@@ -57,6 +57,10 @@ export enum PasteTypes {
 }
 
 export const IFileDialogModel = Symbol('IFileDialogModel');
+
+export interface IFileDialogModel extends IDisposable {
+  whenReady: Promise<void>;
+}
 
 export const IFileDialogTreeService = Symbol('IFileDialogTreeService');
 

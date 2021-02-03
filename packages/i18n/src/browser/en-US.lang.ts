@@ -31,6 +31,7 @@ export const localizationBundle = {
     'file.action.new.folder': 'New Folder',
     'file.action.refresh': 'Refresh',
     'file.open.folder': 'Open Folder',
+    'file.open.workspace': 'Open Workspace',
     'file.action.collapse': 'Collapse',
     'file.confirm.delete': 'Are you sure you want to delete the following files?\n{0}',
     'file.confirm.delete.ok': 'Move to trash',
@@ -45,6 +46,7 @@ export const localizationBundle = {
     'file.empty.defaultTitle': 'No Open Folder',
     'file.empty.defaultMessage': 'The folder has not been opened yet',
     'file.workspace.defaultTip': 'Untitled (WORKSPACE)',
+    'file.workspace.defaultWorkspaceTip': '{0} (WORKSPACE)',
     'file.empty.openFolder': 'Open Folder',
     'file.collapse': 'Collapse All',
     'file.refresh': 'Refresh',
@@ -573,6 +575,12 @@ export const localizationBundle = {
     'doc.saveError.diff': '{0} cannot be saved because it has been modified by other editors.',
     'doc.saveError.diffAndSave': 'Compare...',
     'editor.compareAndSave.title': '{0} (on Disk) <=> {1} (Editing) ',
+
+    'workspace.openDirectory': 'Open Directory',
+    'workspace.addFolderToWorkspace': 'Add Folder Into Workspace ...',
+    'workspace.saveWorkspaceAsFile': 'Save Workspace As ...',
+    'workspace.openWorkspace': 'Open Workspace',
+    'workspace.openWorkspaceTitle': 'Workspace',
 
     'window.toggleDevTools': 'Toggle Developer Tools',
     'window.reload': 'Reload Window',

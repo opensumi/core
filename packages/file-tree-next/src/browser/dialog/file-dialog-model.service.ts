@@ -22,7 +22,7 @@ export interface FileTreeValidateMessage extends PromptValidateMessage {
 }
 
 @Injectable()
-export class FileTreeDialogModel {
+export class FileTreeDialogModel implements IFileDialogModel {
 
   static FILE_TREE_SNAPSHOT_KEY = 'FILE_TREE_SNAPSHOT';
   static DEFAULT_LOCATION_FLUSH_DELAY = 500;
@@ -126,6 +126,8 @@ export class FileTreeDialogModel {
     this._treeModel = this.injector.get<any>(FileTreeModel, [root]);
 
     this.initDecorations(root);
+
+    this.disposableCollection.push(this._decorations);
 
     this.disposableCollection.push(this.labelService.onDidChange(() => {
       // 当labelService注册的对应节点图标变化时，通知视图更新
@@ -417,5 +419,9 @@ export class FileTreeDialogModel {
 
   getDirectoryList = () => {
     return this.fileTreeDialogService.getDirectoryList();
+  }
+
+  dispose() {
+    this.disposableCollection.dispose();
   }
 }
