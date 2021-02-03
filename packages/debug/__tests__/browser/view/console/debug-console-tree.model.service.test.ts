@@ -1,19 +1,35 @@
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { Disposable } from '@ali/ide-core-common';
+import { Disposable, IFileServiceClient } from '@ali/ide-core-common';
 import { DebugHoverSource } from '@ali/ide-debug/lib/browser/editor/debug-hover-source';
-import { IDebugSessionManager } from '@ali/ide-debug';
+import { IDebugSessionManager, IDebugSession, DebugSessionOptions, DebugModelFactory, IDebugServer } from '@ali/ide-debug';
 import { DebugConsoleNode } from '@ali/ide-debug/lib/browser/tree';
 import { ICtxMenuRenderer, AbstractContextMenuService } from '@ali/ide-core-browser/lib/menu/next';
 import * as styles from '../../../../src/browser/view/console/debug-console.module.less';
-import { DebugConsoleModelService } from '@ali/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
+import { DebugConsoleModelService, IDebugConsoleModel } from '@ali/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
 import { IContextKeyService } from '@ali/ide-core-browser';
+import { DebugSessionFactory, DefaultDebugSessionFactory, DebugPreferences, DebugSessionContributionRegistry } from '@ali/ide-debug/lib/browser';
+import { WorkbenchEditorService } from '@ali/ide-editor';
+import { IMessageService } from '@ali/ide-overlay';
+import { ITerminalApiService } from '@ali/ide-terminal-next';
+import { OutputService } from '@ali/ide-output/lib/browser/output.service';
+import { IWorkspaceService } from '@ali/ide-workspace';
+import { QuickPickService } from '@ali/ide-core-browser';
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { WSChannelHandler } from '@ali/ide-connection';
+import { IVariableResolverService } from '@ali/ide-variable';
+import { ITaskService } from '@ali/ide-task';
 
 describe('Debug Console Tree Model', () => {
   const mockInjector = createBrowserInjector([]);
   let debugConsoleModelService: DebugConsoleModelService;
+  let debugSessionFactory: DebugSessionFactory;
   const mockDebugHoverSource = {
     onDidChange: jest.fn(() => Disposable.create(() => { })),
   } as any;
+
+  const createMockSession = (sessionId: string, options: Partial<DebugSessionOptions>): IDebugSession => {
+    return debugSessionFactory.get(sessionId, options as any);
+  };
 
   const mockWatcher = {
     callback: jest.fn(),
@@ -31,7 +47,10 @@ describe('Debug Console Tree Model', () => {
   const mockDebugSessionManager = {
     onDidDestroyDebugSession: jest.fn(() => Disposable.create(() => { })),
     onDidChangeActiveDebugSession: jest.fn(() => Disposable.create(() => { })),
+    currentSession: IDebugSession,
+    updateCurrentSession: jest.fn((session: IDebugSession | undefined) => { }),
   };
+  // let mockDebugSessionManager: DebugSessionManager;
 
   const mockMenuService = {
     createMenu: jest.fn(() => ({
@@ -40,7 +59,7 @@ describe('Debug Console Tree Model', () => {
     })),
   };
 
-  const mockContextKeyService = {
+  let mockContextKeyService = {
     createScoped: jest.fn(),
   };
 
@@ -79,8 +98,77 @@ describe('Debug Console Tree Model', () => {
       token: IContextKeyService,
       useValue: mockContextKeyService,
     });
+    mockInjector.overrideProviders({
+      token: DebugSessionFactory,
+      useClass: DefaultDebugSessionFactory,
+    });
+
+    mockInjector.overrideProviders({
+      token: WorkbenchEditorService,
+      useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: IMessageService,
+      useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: DebugPreferences,
+      useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: IFileServiceClient,
+      useValue: {
+        onFilesChanged: jest.fn(),
+      },
+    });
+    mockInjector.overrideProviders({
+      token: ITerminalApiService,
+      useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: OutputService,
+      useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: DebugModelFactory,
+      useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: IWorkspaceService,
+      useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: IDebugServer,
+      useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: QuickPickService,
+      useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: IEditorDocumentModelService,
+      useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: WSChannelHandler,
+      useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: DebugSessionContributionRegistry,
+      useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: IVariableResolverService,
+      useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: ITaskService,
+      useValue: {},
+    });
 
     debugConsoleModelService = mockInjector.get(DebugConsoleModelService);
+    debugSessionFactory = mockInjector.get(DefaultDebugSessionFactory);
+    mockContextKeyService = mockInjector.get(IContextKeyService);
   });
 
   afterAll(() => {
@@ -119,8 +207,10 @@ describe('Debug Console Tree Model', () => {
   it('initTreeModel method should be work', () => {
     const mockSession = {
       on: jest.fn(),
-    } as any;
-    debugConsoleModelService.initTreeModel(mockSession);
+      hasSeparateRepl: () => true,
+      parentSession: undefined,
+    } as Partial<IDebugSession>;
+    debugConsoleModelService.initTreeModel(mockSession as any);
     expect(mockSession.on).toBeCalledTimes(1);
   });
 
@@ -222,5 +312,32 @@ describe('Debug Console Tree Model', () => {
       done();
     });
     debugConsoleModelService.refresh(debugConsoleModelService.treeModel?.root as any);
+  });
+
+  it('repl merging', async () => {
+    const treeHandle = { ensureVisible: () => { } } as any;
+    debugConsoleModelService.handleTreeHandler(treeHandle);
+    const getBranchSize = (repl: IDebugConsoleModel | undefined) => {
+      return repl ? repl.treeModel.root.branchSize : 0;
+    };
+    const parent = createMockSession('parent', { repl: 'mergeWithParent' });
+    createMockSession('child1', { parentSession: parent, repl: 'separate' });
+    const child2 = createMockSession('child2', { parentSession: parent, repl: 'mergeWithParent' });
+    createMockSession('grandChild', { parentSession: child2, repl: 'mergeWithParent' });
+    createMockSession('child3', { parentSession: parent });
+
+    const parentRepl = debugConsoleModelService.getConsoleModel('parent');
+    const child1Repl = debugConsoleModelService.getConsoleModel('child1');
+    const child2Repl = debugConsoleModelService.getConsoleModel('child2');
+    const grandChildRepl = debugConsoleModelService.getConsoleModel('grandChild');
+    const child3Repl = debugConsoleModelService.getConsoleModel('child3');
+
+    mockDebugSessionManager.currentSession = parent as any;
+    await debugConsoleModelService.execute('1\n');
+    expect(getBranchSize(parentRepl)).toBeGreaterThanOrEqual(0);
+    expect(getBranchSize(child1Repl)).toEqual(0);
+    expect(getBranchSize(child2Repl)).toBeGreaterThanOrEqual(0);
+    expect(getBranchSize(grandChildRepl)).toBeGreaterThanOrEqual(0);
+    expect(getBranchSize(child3Repl)).toEqual(0);
   });
 });

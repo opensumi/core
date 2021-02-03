@@ -123,6 +123,10 @@ export class DebugConsoleModelService {
     return this.onDidRefreshedEmitter.event;
   }
 
+  getConsoleModel(id: string): IDebugConsoleModel | undefined {
+    return this.debugSessionModelMap.get(id);
+  }
+
   dispose() {
     this.disposeTreeModel();
     this.disposeDebugConsole();
@@ -176,8 +180,11 @@ export class DebugConsoleModelService {
     if (!session) {
       return;
     }
-    if (this.debugSessionModelMap.has(session.id)) {
-      const model = this.debugSessionModelMap.get(session.id);
+    // 根据 IDebugSessionReplMode 判断子 session 是否要共享父 session 的 repl
+    const sessionId = session.hasSeparateRepl() ? session.id : session.parentSession!.id;
+
+    if (this.debugSessionModelMap.has(sessionId)) {
+      const model = this.debugSessionModelMap.get(sessionId);
       this._activeDebugSessionModel = model;
     } else {
        // 根据是否为多工作区创建不同根节点
@@ -219,7 +226,7 @@ export class DebugConsoleModelService {
         await this.treeHandle.ensureVisible(addNode);
         treeModel?.dispatchChange();
       });
-      this.debugSessionModelMap.set(session.id, this._activeDebugSessionModel);
+      this.debugSessionModelMap.set(sessionId, this._activeDebugSessionModel);
       this.initDecorations(root);
       this.listenTreeViewChange();
     }

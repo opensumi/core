@@ -1,7 +1,7 @@
 import type * as vscode from 'vscode';
 import { IExtHostCommands, IExtHostDebugService, IMainThreadDebug, ExtensionWSChannel, IExtHostConnectionService } from '../../../../common/vscode';
 import { Emitter, Event, uuid, IJSONSchema, IJSONSchemaSnippet } from '@ali/ide-core-common';
-import { Disposable, Uri } from '../../../../common/vscode/ext-types';
+import { Disposable, Uri, DebugConsoleMode } from '../../../../common/vscode/ext-types';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier } from '../../../../common/vscode/';
 import { ExtensionDebugAdapterSession } from './extension-debug-adapter-session';
@@ -152,8 +152,16 @@ export class ExtHostDebug implements IExtHostDebugService {
    * @param nameOrConfig
    * @param parentSession
    */
-  async startDebugging(folder: vscode.WorkspaceFolder | undefined, nameOrConfig: string | vscode.DebugConfiguration, parentSession?: vscode.DebugSession): Promise<boolean> {
-    return this.proxy.$startDebugging(folder, nameOrConfig);
+  async startDebugging(folder: vscode.WorkspaceFolder | undefined, nameOrConfig: string | vscode.DebugConfiguration, parentSessionOrOptions?: vscode.DebugSession | vscode.DebugSessionOptions): Promise<boolean> {
+    if (!parentSessionOrOptions || (typeof parentSessionOrOptions === 'object' && 'configuration' in parentSessionOrOptions)) {
+      return this.proxy.$startDebugging(folder, nameOrConfig, {
+        parentSessionID: parentSessionOrOptions ? parentSessionOrOptions.id : undefined,
+      });
+    }
+    return this.proxy.$startDebugging(folder, nameOrConfig, {
+      parentSessionID: parentSessionOrOptions.parentSession ? parentSessionOrOptions.parentSession.id : undefined,
+      repl: parentSessionOrOptions.consoleMode === DebugConsoleMode.MergeWithParent ? 'mergeWithParent' : 'separate',
+    });
   }
 
   registerDebugConfigurationProvider(type: string, provider: vscode.DebugConfigurationProvider): vscode.Disposable {
