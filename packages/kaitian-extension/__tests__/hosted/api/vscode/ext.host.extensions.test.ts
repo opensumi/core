@@ -4,6 +4,7 @@ import { URI } from '@ali/ide-core-common';
 import { initMockRPCProtocol } from '../../../__mock__/initRPCProtocol';
 import { KTWorkerExtensionContext } from '../../../../src/hosted/api/vscode/ext.host.extensions';
 import { ExtHostStorage } from '../../../../src/hosted/api/vscode/ext.host.storage';
+import { ExtensionMode } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
 
 const staticServicePath = 'http://localhost:9999';
 
@@ -35,6 +36,7 @@ describe(`test ${__filename}`, () => {
   beforeAll(async () => {
     rpcProtocol = await initMockRPCProtocol(mockClient);
     context = new KTWorkerExtensionContext({
+      isDevelopment: false,
       extensionId: mockExtension.extensionId,
       extendProxy: {},
       registerExtendModuleService: () => {},
@@ -57,6 +59,10 @@ describe(`test ${__filename}`, () => {
     it('asAbsolutePath', () => {
       const filePath = './server.js';
       expect(context.asAbsolutePath(filePath)).toBe(path.join(mockExtension.extensionLocation.fsPath, filePath));
+    });
+
+    it('extensionMode', () => {
+      expect(context.extensionMode).toBe(ExtensionMode.Production);
     });
   });
 });
