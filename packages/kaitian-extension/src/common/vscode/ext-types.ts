@@ -2410,4 +2410,25 @@ export enum SymbolTag {
   Deprecated = 1,
 }
 
+export enum ExtensionMode {
+  /**
+   * The extension is installed normally (for example, from the marketplace
+   * or VSIX) in VS Code.
+   */
+  Production = 1,
+
+  /**
+   * The extension is running from an `--extensionDevelopmentPath` provided
+   * when launching VS Code.
+   */
+  Development = 2,
+
+  /**
+   * The extension is running from an `--extensionDevelopmentPath` and
+   * the extension host is running unit tests.
+   */
+  // TODO: 暂未实现
+  Test = 3,
+}
+
 //#endregion Theming

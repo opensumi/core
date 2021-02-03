@@ -3,6 +3,7 @@ import * as path from 'path';
 import { IExtendProxy, IExtensionHost } from '../../../common';
 import { ExtensionMemento, ExtHostStorage } from './ext.host.storage';
 import { Uri } from '@ali/ide-core-common/lib/uri';
+import { ExtensionMode } from '../../../common/vscode/ext-types';
 
 export interface IKTContextOptions {
   extensionId: string;
@@ -10,6 +11,7 @@ export interface IKTContextOptions {
   extensionLocation: Uri;
   storageProxy: ExtHostStorage;
   extendProxy?: IExtendProxy;
+  isDevelopment?: boolean;
   registerExtendModuleService?: (exportsData: any) => void;
 }
 
@@ -52,10 +54,12 @@ export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
 
   private _extensionLocation: Uri;
 
+  private _isDevelopment: boolean;
+
   constructor(
     options: IKTWorkerExtensionContextOptions,
   ) {
-    const { extensionPath, staticServicePath, extendProxy, registerExtendModuleService, storageProxy, extensionId } = options;
+    const { extensionPath, staticServicePath, extendProxy, registerExtendModuleService, storageProxy, extensionId, isDevelopment } = options;
     this._extensionPath = extensionPath;
     this._storage = storageProxy;
     this.staticServicePath = staticServicePath;
@@ -64,6 +68,7 @@ export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
     this.globalState = new ExtensionMemento(extensionId, true, storageProxy);
     this.registerExtendModuleService = registerExtendModuleService;
     this._extensionLocation = options.extensionLocation;
+    this._isDevelopment = !!isDevelopment;
   }
 
   get globalStoragePath() {
@@ -81,6 +86,10 @@ export class KTWorkerExtensionContext implements IKTWorkerExtensionContext {
   asAbsolutePath(relativePath: string): string {
     return path.join(this._extensionLocation.fsPath, relativePath);
   }
+
+  get extensionMode() {
+    return this._isDevelopment ? ExtensionMode.Development : ExtensionMode.Production;
+  }
 }
 
 export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionContext {
@@ -90,6 +99,8 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
   readonly extensionPath: string;
 
   readonly _extensionLocation: Uri;
+
+  readonly _isDevelopment: boolean;
 
   readonly workspaceState: ExtensionMemento;
 
@@ -107,11 +118,13 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
       extensionPath,
       storageProxy,
       extensionLocation,
+      isDevelopment,
     } = options;
     this._storage = storageProxy;
 
     this.extensionPath = extensionPath;
     this._extensionLocation = extensionLocation;
+    this._isDevelopment = !!isDevelopment;
     this.workspaceState = new ExtensionMemento(extensionId, false, storageProxy);
     this.globalState = new ExtensionMemento(extensionId, true, storageProxy);
     this.componentProxy = options.extendProxy;
@@ -136,6 +149,10 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
 
   get extensionUri() {
     return this._extensionLocation;
+  }
+
+  get extensionMode() {
+    return this._isDevelopment ? ExtensionMode.Development : ExtensionMode.Production;
   }
 }
 

@@ -274,19 +274,19 @@ declare module 'vscode' {
   }
 
   /**
-	 * Class used to execute an extension callback as a task.
-	 */
-	export class CustomExecution {
-		/**
-		 * Constructs a CustomExecution task object. The callback will be executed the task is run, at which point the
-		 * extension should return the Pseudoterminal it will "run in". The task should wait to do further execution until
-		 * [Pseudoterminal.open](#Pseudoterminal.open) is called. Task cancellation should be handled using
-		 * [Pseudoterminal.close](#Pseudoterminal.close). When the task is complete fire
-		 * [Pseudoterminal.onDidClose](#Pseudoterminal.onDidClose).
-		 * @param process The [Pseudoterminal](#Pseudoterminal) to be used by the task to display output.
-		 * @param callback The callback that will be called when the task is started by a user.
-		 */
-		constructor(callback: () => Thenable<Pseudoterminal>);
+   * Class used to execute an extension callback as a task.
+   */
+  export class CustomExecution {
+    /**
+     * Constructs a CustomExecution task object. The callback will be executed the task is run, at which point the
+     * extension should return the Pseudoterminal it will "run in". The task should wait to do further execution until
+     * [Pseudoterminal.open](#Pseudoterminal.open) is called. Task cancellation should be handled using
+     * [Pseudoterminal.close](#Pseudoterminal.close). When the task is complete fire
+     * [Pseudoterminal.onDidClose](#Pseudoterminal.onDidClose).
+     * @param process The [Pseudoterminal](#Pseudoterminal) to be used by the task to display output.
+     * @param callback The callback that will be called when the task is started by a user.
+     */
+    constructor(callback: () => Thenable<Pseudoterminal>);
   }
 
   /**
@@ -2169,35 +2169,6 @@ declare module 'vscode' {
   }
 
   /**
-   * An extension context is a collection of utilities private to an
-   * extension.
-   *
-   * An instance of an `ExtensionContext` is provided as the first
-   * parameter to the `activate`-call of an extension.
-   */
-  export interface ExtensionContext {
-
-    /**
-     * An array to which disposables can be added. When this
-     * extension is deactivated the disposables will be disposed.
-     */
-    readonly subscriptions: { dispose(): any }[];
-
-    /**
-     * The absolute file path of the directory containing the extension.
-     */
-    readonly extensionPath: string;
-
-    /**
-     * Get the absolute path of a resource contained in the extension.
-     *
-     * @param relativePath A relative path to a resource contained in the extension.
-     * @return The absolute path of the resource.
-     */
-    asAbsolutePath(relativePath: string): string;
-  }
-
-  /**
    * A memento represents a storage utility. It can store and retrieve
    * values.
    */
@@ -2338,6 +2309,36 @@ declare module 'vscode' {
      * the parent directory is guaranteed to be existent.
      */
     readonly logPath: string;
+    /**
+     * The mode the extension is running in. This is specific to the current
+     * extension. One extension may be in `ExtensionMode.Development` while
+     * other extensions in the host run in `ExtensionMode.Release`.
+     */
+    readonly extensionMode: ExtensionMode;
+  }
+
+  /**
+   * The ExtensionMode is provided on the `ExtensionContext` and indicates the
+   * mode the specific extension is running in.
+   */
+  export enum ExtensionMode {
+    /**
+     * The extension is installed normally (for example, from the marketplace
+     * or VSIX) in VS Code.
+     */
+    Production = 1,
+
+    /**
+     * The extension is running from an `--extensionDevelopmentPath` provided
+     * when launching VS Code.
+     */
+    Development = 2,
+
+    /**
+     * The extension is running from an `--extensionTestsPath` and
+     * the extension host is running unit tests.
+     */
+    Test = 3,
   }
 
   /**
