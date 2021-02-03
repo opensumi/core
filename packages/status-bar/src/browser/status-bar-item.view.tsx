@@ -32,7 +32,8 @@ export function StatusBarItem(props: StatusBarEntry) {
           // TODO 支持内置的iconfont
           return <span key={key} className={cls(styles.icon, getExternalIcon(item.name), `${item.animation ? 'iconfont-anim-' + item.animation : ''}`)}></span>;
         } else {
-          return <span style={{marginLeft: iconClass || hasIcon ? '2px' : 0}} key={key}>{replaceLocalizePlaceholder(item)}</span>;
+          // 22px高度限制用于解决文本超长时文本折叠问题
+          return <span style={{marginLeft: iconClass || hasIcon ? '2px' : 0, height: '22px', lineHeight: '22px' }} key={key}>{replaceLocalizePlaceholder(item)}</span>;
         }
       })}
     </div>
