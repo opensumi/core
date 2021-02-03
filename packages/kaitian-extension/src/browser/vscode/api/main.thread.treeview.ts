@@ -3,7 +3,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optinal } from '@ali/c
 import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { Emitter, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize, getIcon, getExternalIcon } from '@ali/ide-core-browser';
+import { Emitter, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize, getIcon, getExternalIcon, LabelService, URI } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { ExtensionTabBarTreeView } from '../../components';
 import { IIconService, IconType, IThemeService } from '@ali/ide-theme';
@@ -33,6 +33,9 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   @Autowired(IThemeService)
   private readonly themeService: IThemeService;
 
+  @Autowired(LabelService)
+  private readonly labelService: LabelService;
+
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -61,7 +64,7 @@ export class MainThreadTreeView implements IMainThreadTreeView {
       return;
     }
     const disposable = new DisposableStore();
-    const dataProvider = new TreeViewDataProvider(treeViewId, this.proxy, this.iconService, this.themeService);
+    const dataProvider = new TreeViewDataProvider(treeViewId, this.proxy, this.iconService, this.themeService, this.labelService);
     const model = this.createTreeModel(treeViewId, dataProvider, options);
     this.treeModels.set(treeViewId, model);
     disposable.add(toDisposable(() => this.treeModels.delete(treeViewId)));
@@ -159,6 +162,7 @@ export class TreeViewDataProvider extends Tree {
     private readonly proxy: IExtHostTreeView,
     private readonly iconService: IIconService,
     private readonly themeService: IThemeService,
+    private readonly labelService: LabelService,
   ) {
     super();
   }
@@ -217,8 +221,18 @@ export class TreeViewDataProvider extends Tree {
     if (item.iconUrl || item.icon) {
       return this.iconService.fromIcon('', item.iconUrl || item.icon, IconType.Background);
     } else if (item.themeIcon) {
-      const theme = this.themeService.getColorClassNameByColorToken(item.themeIcon.color);
-      return `${getExternalIcon(item.themeIcon.id)} ${theme ?? '' }`;
+      let themeIconClass = getExternalIcon(item.themeIcon.id);
+      if (item.resourceUri) {
+        if (item.themeIcon.id === 'file') {
+          themeIconClass = this.labelService.getIcon(URI.from(item.resourceUri));
+        } else if (item.themeIcon.id === 'folder') {
+          themeIconClass = this.labelService.getIcon(URI.from(item.resourceUri), {
+            isDirectory: true,
+          });
+        }
+      }
+      const themeColorClass = this.themeService.getColorClassNameByColorToken(item.themeIcon.color);
+      return `${themeIconClass} ${themeColorClass ?? '' }`;
     } else {
       return '';
     }

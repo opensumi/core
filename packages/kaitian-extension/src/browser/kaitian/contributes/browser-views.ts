@@ -76,7 +76,9 @@ export class KtViewContributionPoint extends VSCodeContributePoint<KtViewsContri
                 name: title,
                 when,
                 weight,
-              }, location);
+              }, location, {}, {
+                fromExtension: true,
+              });
               this.disposableCollection.push({
                 dispose: () => {
                   const handler = this.mainlayoutService.getTabbarHandler(handlerId)!;
