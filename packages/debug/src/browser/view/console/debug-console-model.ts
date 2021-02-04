@@ -10,6 +10,7 @@ export class DebugConsoleTreeModel extends TreeModel {
 
   private flushDispatchChangeDelayer = new ThrottledDelayer<void>(DebugConsoleTreeModel.DEFAULT_FLUSH_DELAY);
   private onWillUpdateEmitter: Emitter<void> = new Emitter();
+  private _tempScrollOffset: number = 0;
 
   constructor(@Optional() root: ExpressionContainer) {
     super();
@@ -18,6 +19,15 @@ export class DebugConsoleTreeModel extends TreeModel {
 
   get onWillUpdate(): Event<void> {
     return this.onWillUpdateEmitter.event;
+  }
+
+  /**
+   * 判断是否滚动到了底部
+   * TODO: //临时处理 by @倾一
+   */
+  get isScrollBottom(): boolean {
+    this._tempScrollOffset = Math.max(this.state.scrollOffset, this._tempScrollOffset);
+    return this._tempScrollOffset === this.state.scrollOffset;
   }
 
   init(root: CompositeTreeNode) {

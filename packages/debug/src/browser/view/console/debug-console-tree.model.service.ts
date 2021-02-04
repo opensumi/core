@@ -223,7 +223,9 @@ export class DebugConsoleModelService {
             this.dispatchWatchEvent(treeModel.root, treeModel.root.path, { type: WatchEvent.Added, node: addNode, id: treeModel.root.id });
           }
         }
-        await this.treeHandle.ensureVisible(addNode);
+        if (treeModel.isScrollBottom) {
+          await this.treeHandle.ensureVisible(addNode);
+        }
         treeModel?.dispatchChange();
       });
       this.debugSessionModelMap.set(sessionId, this._activeDebugSessionModel);
@@ -480,7 +482,7 @@ export class DebugConsoleModelService {
     const expressionNode = new DebugConsoleNode(this.manager.currentSession, value, parent as ExpressionContainer);
     await expressionNode.evaluate();
     await this.dispatchWatchEvent(parent, parent.path, { type: WatchEvent.Added, node: expressionNode, id: parent.id });
-    this.treeHandle.ensureVisible(expressionNode);
+    this.treeHandle.ensureVisible(expressionNode, 'end', true);
   }
 
 }
