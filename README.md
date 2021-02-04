@@ -1,5 +1,3 @@
-> （2021-2-4）KAITIAN 相关项目仓库已全面迁移至 [code.alipay.com/kaitian/ide-framework](https://code.alipay.com/kaitian/ide-framework)
-
 # ide-framework
 
 一款通用好拓展，自定义能力强的 IDE 框架工具。
