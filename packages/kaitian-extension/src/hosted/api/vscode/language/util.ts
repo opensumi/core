@@ -113,3 +113,14 @@ export function score(selector: LanguageSelector | undefined, candidateUri: URI,
       return 0;
   }
 }
+
+// node 和 worker 不一样
+interface Performance {
+  now(): number;
+}
+
+let performance: Performance | null = null;
+export const setPerformance = (perf: Performance) => {
+  performance = perf;
+};
+export const getPerformance = () => performance;

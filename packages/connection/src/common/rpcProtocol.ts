@@ -103,6 +103,7 @@ export namespace ObjectTransfer {
           $type: 'VSCODE_COMPLETION_LIST',
           data: {
             _id: value._id,
+            _dur: value._dur,
             isIncomplete: value.isIncomplete,
             items: value.items.map((item) => {
               return {
@@ -138,6 +139,7 @@ export namespace ObjectTransfer {
       if (value.$type === 'VSCODE_COMPLETION_LIST') {
         return {
           _id: value.data._id,
+          _dur: value.data._dur,
           isIncomplete: value.data.isIncomplete,
           items: value.data.items ? value.data.items.map((item) => {
             return {

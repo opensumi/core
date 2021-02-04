@@ -7,6 +7,7 @@ import { SnippetString } from '../../../../common/vscode/ext-types';
 import { mixin } from '../../../../common/vscode/utils';
 import { CommandsConverter } from '../ext.host.command';
 import { DisposableStore } from '@ali/ide-core-common';
+import { getPerformance } from './util';
 
 export class CompletionAdapter {
     private cacheId = 0;
@@ -27,7 +28,10 @@ export class CompletionAdapter {
 
         const doc = document.document;
         const pos = Converter.toPosition(position);
+        const perf = getPerformance();
+        const startTime = perf ? perf.now() : 0;
         const result = await this.delegate.provideCompletionItems(doc, pos, token, context);
+        const duration = perf ? Math.round(perf.now() - startTime) : 0;
         if (!result) {
             return { isIncomplete: false, items: [] };
         }
@@ -42,6 +46,7 @@ export class CompletionAdapter {
             get $mid() { return -1; },
             get $type() { return 'CompletionList'; },
             _id,
+            _dur: duration,
             isIncomplete,
             items: originalItems.map((item) => {
                 const id = itemId++;

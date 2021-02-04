@@ -1,6 +1,8 @@
 import * as path from 'path';
 import { ExtensionWorkerHost, initRPCProtocol } from './worker.host';
+import { setPerformance } from './api/vscode/language/util';
 
+setPerformance(self.performance);
 // make sure Worker cors
 if (self.Worker) {
   const _Worker = self.Worker;

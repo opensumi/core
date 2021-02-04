@@ -97,7 +97,13 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined!;
         }
-        return this.proxy.$provideHover(handle, model.uri, position, token).then((v) => v!);
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_HOVER);
+        return this.proxy.$provideHover(handle, model.uri, position, token).then((v) => {
+          if (v) {
+            timer.timeEnd(extname(model.uri.fsPath));
+          }
+          return v!;
+        });
       },
     };
   }
@@ -120,7 +126,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
         if (result.items.length) {
-          timer.timeEnd(extname(model.uri.fsPath));
+          timer.timeEnd(extname(model.uri.fsPath), {
+            extDuration: (result as any)._dur,
+          });
         }
         return {
           suggestions: result.items,
@@ -210,10 +218,12 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined!;
         }
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_DEFINITION);
         const result = await this.proxy.$provideDefinition(handle, model.uri, position, token);
         if (!result) {
           return undefined!;
         }
+        timer.timeEnd(extname(model.uri.fsPath));
         if (Array.isArray(result)) {
           const definitionLinks: monaco.languages.LocationLink[] = [];
           for (const item of result) {
@@ -252,11 +262,12 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_TYPE_DEFINITION);
         return this.proxy.$provideTypeDefinition(handle, model.uri, position, token).then((result) => {
           if (!result) {
             return undefined!;
           }
-
+          timer.timeEnd(extname(model.uri.fsPath));
           if (Array.isArray(result)) {
             const definitionLinks: monaco.languages.Location[] = [];
             for (const item of result) {
@@ -296,7 +307,11 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_FOLDING_RANGES);
         return this.proxy.$provideFoldingRange(handle, model.uri, context, token).then((v) => {
+          if (v) {
+            timer.timeEnd(extname(model.uri.fsPath));
+          }
           return v!;
         });
       },
@@ -324,8 +339,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
-        return this.proxy.$provideDocumentColors(handle, model.uri, token).then((documentColors) =>
-          documentColors.map((documentColor) => {
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_DOCUMENT_COLORS);
+        return this.proxy.$provideDocumentColors(handle, model.uri, token).then((documentColors) => {
+          timer.timeEnd(extname(model.uri.fsPath));
+          return documentColors.map((documentColor) => {
             const [red, green, blue, alpha] = documentColor.color;
             const color = {
               red,
@@ -337,13 +354,14 @@ export class MainThreadLanguages implements IMainThreadLanguages {
               color,
               range: documentColor.range,
             };
-          }),
-        );
+          });
+        });
       },
       provideColorPresentations: (model, colorInfo, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined!;
         }
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_COLOR_PRESENTATIONS);
         return this.proxy.$provideColorPresentations(handle, model.uri, {
           color: [
             colorInfo.color.red,
@@ -352,7 +370,12 @@ export class MainThreadLanguages implements IMainThreadLanguages {
             colorInfo.color.alpha,
           ],
           range: colorInfo.range,
-        }, token);
+        }, token).then((v) => {
+          if (v) {
+            timer.timeEnd(extname(model.uri.fsPath));
+          }
+          return v;
+        });
       },
     };
   }
@@ -378,11 +401,13 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_DOCUMENT_HIGHLIGHTS);
         return this.proxy.$provideDocumentHighlights(handle, model.uri, position, token).then((result) => {
           if (!result) {
             return undefined!;
           }
           if (Array.isArray(result)) {
+            timer.timeEnd(extname(model.uri.fsPath));
             const highlights: monaco.languages.DocumentHighlight[] = [];
             for (const item of result) {
               highlights.push(
@@ -500,7 +525,13 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
-        return this.proxy.$provideOnTypeFormattingEdits(handle, model.uri, position, ch, options).then((v) => v!);
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_ON_TYPE_FORMATTING_EDITS);
+        return this.proxy.$provideOnTypeFormattingEdits(handle, model.uri, position, ch, options).then((v) => {
+          if (v) {
+            timer.timeEnd(extname(model.uri.fsPath));
+          }
+          return v!;
+        });
       },
     };
   }
@@ -530,12 +561,19 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined!;
         }
-        return this.proxy.$provideCodeLenses(handle, model.uri).then((v) => v!);
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_CODE_LENSES);
+        return this.proxy.$provideCodeLenses(handle, model.uri).then((v) => {
+          if (v) {
+            timer.timeEnd(extname(model.uri.fsPath));
+          }
+          return v!;
+        });
       },
       resolveCodeLens: (model, codeLens, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined!;
         }
+        this.reporter.point(REPORT_NAME.RESOLVE_CODE_LENS);
         return this.proxy.$resolveCodeLens(handle, model.uri, codeLens).then((v) => v!);
       },
     };
@@ -592,11 +630,12 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_IMPLEMENTATION);
         return this.proxy.$provideImplementation(handle, model.uri, position).then((result) => {
           if (!result) {
             return undefined!;
           }
-
+          timer.timeEnd(extname(model.uri.fsPath));
           if (Array.isArray(result)) {
             // using DefinitionLink because Location is mandatory part of DefinitionLink
             const definitionLinks: any[] = [];
@@ -637,7 +676,11 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
-        return this.proxy.$provideCodeActions(handle, model.uri, rangeOrSelection, monacoContext);
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_CODE_ACTIONS);
+        return this.proxy.$provideCodeActions(handle, model.uri, rangeOrSelection, monacoContext).then((v) => {
+          timer.timeEnd(extname(model.uri.fsPath));
+          return v;
+        });
       },
       providedCodeActionKinds, // 不在monaco.d.ts中
     } as monaco.languages.CodeActionProvider;
@@ -652,10 +695,12 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_LINKS);
         return this.proxy.$provideDocumentLinks(handle, model.uri, token).then((modelLinks) => {
           if (!modelLinks) {
             return undefined;
           }
+          timer.timeEnd(extname(model.uri.fsPath));
           const links = modelLinks.map((link) => this.reviveLink(link));
           return {
             links,
@@ -716,12 +761,14 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_REFERENCES);
         return this.proxy.$provideReferences(handle, model.uri, position, context, token).then((result) => {
           if (!result) {
             return undefined!;
           }
 
           if (Array.isArray(result)) {
+            timer.timeEnd(extname(model.uri.fsPath));
             const references: monaco.languages.Location[] = [];
             for (const item of result) {
               references.push({ ...item, uri: monaco.Uri.revive(item.uri) });
@@ -766,7 +813,13 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined!;
         }
-        return this.proxy.$provideDocumentSymbols(handle, model.uri, token).then((v) => v!);
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_DOCUMENT_SYMBOLS);
+        return this.proxy.$provideDocumentSymbols(handle, model.uri, token).then((v) => {
+          if (v) {
+            timer.timeEnd(extname(model.uri.fsPath));
+          }
+          return v!;
+        });
       },
     };
   }
@@ -794,7 +847,13 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
-        return this.proxy.$provideSignatureHelp(handle, model.uri, position, context, token).then((v) => v!);
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_SIGNATURE_HELP);
+        return this.proxy.$provideSignatureHelp(handle, model.uri, position, context, token).then((v) => {
+          if (v) {
+            timer.timeEnd(extname(model.uri.fsPath));
+          }
+          return v!;
+        });
       },
     };
   }
@@ -819,8 +878,14 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_RENAME_EDITS);
         return this.proxy.$provideRenameEdits(handle, model.uri, position, newName, token)
-          .then((v) => reviveWorkspaceEditDto(v!));
+          .then((v) => {
+            if (v) {
+              timer.timeEnd(extname(model.uri.fsPath));
+            }
+            return reviveWorkspaceEditDto(v!);
+          });
       },
       resolveRenameLocation: supportsResolveLocation
         ? (model, position, token) => {
@@ -845,7 +910,11 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined!;
         }
-        return this.proxy.$provideSelectionRanges(handle, model.uri, positions, token);
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_SELECTION_RANGES);
+        return this.proxy.$provideSelectionRanges(handle, model.uri, positions, token).then((v) => {
+          timer.timeEnd(extname(model.uri.fsPath));
+          return v;
+        });
       },
     }));
   }
