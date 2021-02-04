@@ -1,5 +1,5 @@
 import { Terminal } from 'xterm';
-import { Disposable, Event, Deferred } from '@ali/ide-core-common';
+import { IDisposable, Disposable, Event, Deferred } from '@ali/ide-core-common';
 import { TerminalOptions } from './pty';
 import { IWidget } from './resize';
 
@@ -147,7 +147,7 @@ export interface ITerminalClient extends Disposable {
 }
 
 export const ITerminalClientFactory = Symbol('ITerminalClientFactory');
-export type ITerminalClientFactory = (widget: IWidget, options?: TerminalOptions) => ITerminalClient;
+export type ITerminalClientFactory = (widget: IWidget, options?: TerminalOptions, disposable?: IDisposable) => ITerminalClient;
 
 export interface ITerminalConnection {
   name: string;

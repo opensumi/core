@@ -1,7 +1,6 @@
 import { Terminal, ILinkMatcherOptions, ITerminalAddon } from 'xterm';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { URI, Disposable, Deferred } from '@ali/ide-core-common';
-import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { TerminalKeyBoardInputService } from './terminal.input';
 import { ITerminalConnection } from '../common';
@@ -28,7 +27,7 @@ export class FilePathAddon extends Disposable implements ITerminalAddon {
   private _terminal: Terminal | undefined;
 
   constructor(
-    private _workspace: IWorkspaceService,
+    private _workspace: string,
     private _fileService: IFileServiceClient,
     private _editorService: WorkbenchEditorService,
     private _keyboardService: TerminalKeyBoardInputService,
@@ -56,9 +55,9 @@ export class FilePathAddon extends Disposable implements ITerminalAddon {
   private _absolutePath(uri: string) {
     let absolute: string | undefined;
     if (uri[0] !== '/') {
-      if (this._workspace.workspace) {
+      if (this._workspace) {
         // 一致处理为无 file scheme 的绝对地址
-        absolute = `${this._workspace.workspace.uri}/${uri}`.substring(7);
+        absolute = this._workspace;
       } else {
         throw new Error('not found workspace dir');
       }

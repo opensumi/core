@@ -534,7 +534,7 @@ export class ClientApp implements IClientApp {
         return provider;
       };
     };
-    injectPreferenceConfigurations(this.injector);
+    injectPreferenceConfigurations(injector);
 
     injectPreferenceSchemaProvider(injector);
 

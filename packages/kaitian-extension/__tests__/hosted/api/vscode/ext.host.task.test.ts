@@ -34,6 +34,7 @@ import { TerminalPreference } from '@ali/ide-terminal-next/lib/browser/terminal.
 import { ITerminalPreference } from '@ali/ide-terminal-next/lib/common/preference';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
 import { CustomBuildTaskProvider } from './__mock__/taskProvider';
+import { IDisposable } from 'kaitian';
 
 const extension = mockExtensionProps;
 
@@ -96,8 +97,8 @@ describe('ExtHostTask API', () => {
   },
   {
     token: ITerminalClientFactory,
-    useFactory: (injector) => (widget, options = {}) => {
-      return TerminalClientFactory.createClient(injector, widget, options);
+    useFactory: (injector) => (widget, options = {}, disposable: IDisposable) => {
+      return TerminalClientFactory.createClient(injector, widget, options, disposable);
     },
   },
   {
@@ -119,7 +120,6 @@ describe('ExtHostTask API', () => {
       tryGetRoots: () => ([{ uri: __dirname }]),
       getWorkspaceName: () => 'Test Workspace',
       getWorkspaceFolder: (uri) => {
-        console.log('getWorkspaceFolder');
         return { uri, name: 'Test Workspace' };
       },
     },

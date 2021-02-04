@@ -160,10 +160,6 @@ export class MockFileService {
   }
 }
 
-export class MockWorkspaceService {
-
-}
-
 /** Mock MainLayout Service */
 export const MainLayoutTabbarOnActivate = new Emitter<any>();
 export const MainLayoutTabbarOnInActivate = new Emitter<any>();

@@ -247,7 +247,11 @@ export abstract class PreferenceProvider implements IDisposable {
   }
 
   protected doResolve<T>(preferenceName: string, resourceUri?: string, language?: string): PreferenceResolveResult<T> {
-    const value = this.getPreferences(resourceUri, language)[preferenceName];
+    const preferences = this.getPreferences(resourceUri, language);
+    if (!preferences) {
+      return {};
+    }
+    const value = preferences[preferenceName];
     if (value !== undefined) {
       return {
         value,
@@ -257,9 +261,27 @@ export abstract class PreferenceProvider implements IDisposable {
     return {};
   }
 
-  public abstract getPreferences(resourceUri?: string, language?: string): { [p: string]: any };
+  /**
+   * 获取制定资源或语言的所有配置，当返回值为undefined时代表无应资源或语言配置
+   *
+   * @abstract
+   * @param {string} [resourceUri] 资源路径
+   * @param {string} [language] 语言标识符
+   * @returns {({ [p: string]: any } | undefined)}
+   * @memberof PreferenceProvider
+   */
+  public abstract getPreferences(resourceUri?: string, language?: string): { [p: string]: any } | undefined;
 
-  public abstract getLanguagePreferences(resourceUri?: string, language?: string): { [language: string]: {[p: string]: any} };
+  /**
+   * 获取制定资源或语言的所有语言配置，当返回值为undefined时代表无对应资源或语言配置
+   *
+   * @abstract
+   * @param {string} [resourceUri] 资源路径
+   * @param {string} [language] 语言标识符
+   * @returns {({ [language: string]: {[p: string]: any} } | undefined)}
+   * @memberof PreferenceProvider
+   */
+  public abstract getLanguagePreferences(resourceUri?: string, language?: string): { [language: string]: {[p: string]: any} } | undefined;
 
   public async setPreference(preferenceName: string, value: any, resourceUri?: string, language?: string): Promise<boolean> {
     if (PreferenceProvider.PreferenceDelegatesReverse[preferenceName]) {

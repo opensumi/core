@@ -8,6 +8,7 @@ import { MockInjector } from '@ali/ide-dev-tool/src/mock-injector';
 import { DebugConfigurationService } from '@ali/ide-debug/lib/browser/view/configuration/debug-configuration.service';
 import { DebugConsoleService } from '@ali/ide-debug/lib/browser/view/console/debug-console.service';
 import { DebugConfigurationManager } from '@ali/ide-debug/lib/browser/debug-configuration-manager';
+import { DEFAULT_CONFIGURATION_NAME_SEPARATOR } from '@ali/ide-debug';
 
 describe('Debug Configuration Service', () => {
   const mockInjector = createBrowserInjector([], new MockInjector([
@@ -32,6 +33,7 @@ describe('Debug Configuration Service', () => {
     roots: [],
     onWorkspaceChanged: jest.fn(),
     isMultiRootWorkspaceEnabled: true,
+    tryGetRoots: () => ([]),
   };
 
   const mockDebugConfigurationManager = {
@@ -111,7 +113,7 @@ describe('Debug Configuration Service', () => {
 
   it('should have enough API', () => {
     expect(typeof debugConfigurationService.init).toBe('function');
-    expect(debugConfigurationService.currentValue).toBe('test__CONF__file:///home/workspace__INDEX__0');
+    expect(debugConfigurationService.currentValue).toBe(`test${DEFAULT_CONFIGURATION_NAME_SEPARATOR}file:///home/workspace__INDEX__0`);
     expect(debugConfigurationService.float).toBeTruthy();
     expect(debugConfigurationService.configurationOptions).toEqual(mockDebugConfigurationManager.all);
     expect(typeof debugConfigurationService.updateCurrentValue).toBe('function');
@@ -141,7 +143,7 @@ describe('Debug Configuration Service', () => {
 
   it('updateConfigurationOptions method should be work', () => {
     debugConfigurationService.updateConfigurationOptions();
-    expect(debugConfigurationService.currentValue).toBe('test__CONF__file:///home/workspace__INDEX__0');
+    expect(debugConfigurationService.currentValue).toBe(`test${DEFAULT_CONFIGURATION_NAME_SEPARATOR}file:///home/workspace__INDEX__0`);
   });
 
   it('start method should be work', () => {
@@ -176,10 +178,10 @@ describe('Debug Configuration Service', () => {
 
   it('toValue method should be work', () => {
     let value = debugConfigurationService.toValue({configuration: {name: 'test'}, workspaceFolderUri: URI.file('home/workspace').toString(), index: 1} as any);
-    expect(value).toBe('test__CONF__file:///home/workspace__INDEX__1');
+    expect(value).toBe(`test${DEFAULT_CONFIGURATION_NAME_SEPARATOR}file:///home/workspace__INDEX__1`);
     value = debugConfigurationService.toValue({configuration: {name: 'test'}, workspaceFolderUri: URI.file('home/workspace').toString()} as any);
     expect(mockDebugConfigurationManager.find).toBeCalledTimes(1);
-    expect(value).toBe('test__CONF__file:///home/workspace__INDEX__0');
+    expect(value).toBe(`test${DEFAULT_CONFIGURATION_NAME_SEPARATOR}file:///home/workspace__INDEX__0`);
   });
 
   it('toName method should be work', () => {
@@ -189,13 +191,17 @@ describe('Debug Configuration Service', () => {
     expect(value).toBe('test');
   });
 
-  it('getCurrentConfiguration method should be work', () => {
-    debugConfigurationService.getCurrentConfiguration();
+  it('getCurrentConfiguration method should be work', async (done) => {
+    mockStorage.get.mockClear();
+    await debugConfigurationService.getCurrentConfiguration();
     expect(mockStorage.get).toBeCalledTimes(1);
+    done();
   });
 
-  it('setCurrentConfiguration method should be work', () => {
-    debugConfigurationService.setCurrentConfiguration('test');
+  it('setCurrentConfiguration method should be work', async (done) => {
+    mockStorage.set.mockClear();
+    await debugConfigurationService.setCurrentConfiguration('test');
     expect(mockStorage.set).toBeCalledTimes(1);
+    done();
   });
 });

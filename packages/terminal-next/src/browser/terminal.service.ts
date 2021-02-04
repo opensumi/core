@@ -2,7 +2,7 @@ import { Terminal } from 'xterm';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { isElectronEnv, Emitter, ILogger, Event, isWindows } from '@ali/ide-core-common';
 import { Emitter as Dispatcher } from 'event-kit';
-import { electronEnv, AppConfig } from '@ali/ide-core-browser';
+import { electronEnv } from '@ali/ide-core-browser';
 import { WSChannelHandler as IWSChanneHandler, RPCService } from '@ali/ide-connection';
 import { generate, ITerminalService, ITerminalInternalService, ITerminalError, ITerminalServiceClient, ITerminalServicePath, ITerminalConnection, IPtyExitEvent, TerminalOptions, ITerminalController } from '../common';
 import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
@@ -14,10 +14,10 @@ export interface EventMessage {
 @Injectable()
 export class TerminalInternalService implements ITerminalInternalService {
   @Autowired(ITerminalService)
-  service: ITerminalService;
+  protected readonly service: ITerminalService;
 
   @Autowired(ITerminalController)
-  controller: ITerminalController;
+  protected readonly controller: ITerminalController;
 
   private _processExtHostProxies = new Map<string, TerminalProcessExtHostProxy>();
 
@@ -104,16 +104,13 @@ export class NodePtyTerminalService extends RPCService implements ITerminalServi
   static countId = 1;
 
   @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
+  protected readonly injector: Injector;
 
   @Autowired(ILogger)
-  logger: ILogger;
-
-  @Autowired(AppConfig)
-  config: AppConfig;
+  protected readonly logger: ILogger;
 
   @Autowired(ITerminalServicePath)
-  service: ITerminalServiceClient;
+  protected readonly service: ITerminalServiceClient;
 
   private _onError = new Emitter<ITerminalError>();
   public onError: Event<ITerminalError> = this._onError.event;
@@ -167,7 +164,6 @@ export class NodePtyTerminalService extends RPCService implements ITerminalServi
       }
     }
     const { name, pid } = await this.service.create(sessionId, rows, cols, {
-      cwd: this.config.workspaceDir,
       shellPath,
       ...options,
     });

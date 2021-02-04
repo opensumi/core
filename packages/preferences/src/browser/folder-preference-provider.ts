@@ -30,8 +30,6 @@ export class FolderPreferenceProvider extends AbstractResourcePreferenceProvider
   // 缓存目录URI
   private _folderUri: URI;
 
-  private _isMainWorkspace: boolean = false;
-
   get folderUri(): URI {
     if (!this._folderUri) {
       this._folderUri = new URI(this.options.folder.uri);
@@ -43,12 +41,9 @@ export class FolderPreferenceProvider extends AbstractResourcePreferenceProvider
     return this.options.configUri;
   }
 
-  public setIsMain(isMain: boolean) {
-    this._isMainWorkspace = isMain;
-  }
-
   protected getScope(): PreferenceScope {
-    if (this._isMainWorkspace) {
+    // 当在非工作区场景下时，采用PreferenceScope.Workspace作为配置作用域
+    if (!this.workspaceService.isMultiRootWorkspaceOpened) {
       return PreferenceScope.Workspace;
     }
     return PreferenceScope.Folder;

@@ -244,15 +244,25 @@ export class DebugConfigurationManager {
     return undefined;
   }
 
-  async openConfiguration(): Promise<void> {
-    const { model } = this;
+  async openConfiguration(uri?: string): Promise<void> {
+    let model: DebugConfigurationModel | undefined;
+    if (uri) {
+      model = this.getModelByUri(uri);
+    } else {
+      model = this.model;
+    }
     if (model) {
       await this.doOpen(model);
     }
   }
 
-  async addConfiguration(): Promise<void> {
-    const { model } = this;
+  async addConfiguration(uri?: string): Promise<void> {
+    let model: DebugConfigurationModel | undefined;
+    if (uri) {
+      model = this.getModelByUri(uri);
+    } else {
+      model = this.model;
+    }
     if (!model) {
       return;
     }
@@ -306,6 +316,23 @@ export class DebugConfigurationManager {
     const workspaceFolderUri = this.workspaceVariables.getWorkspaceRootUri();
     if (workspaceFolderUri) {
       const key = workspaceFolderUri.toString();
+      for (const model of this.models.values()) {
+        if (model.workspaceFolderUri === key) {
+          return model;
+        }
+      }
+    }
+    for (const model of this.models.values()) {
+      if (model.uri) {
+        return model;
+      }
+    }
+    return this.models.values().next().value;
+  }
+
+  protected getModelByUri(uri: string): DebugConfigurationModel | undefined {
+    if (uri) {
+      const key = uri;
       for (const model of this.models.values()) {
         if (model.workspaceFolderUri === key) {
           return model;

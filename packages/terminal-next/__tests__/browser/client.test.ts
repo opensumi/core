@@ -3,6 +3,7 @@
  */
 import * as WebSocket from 'ws';
 import * as httpProxy from 'http-proxy';
+import { Disposable, FileUri, URI } from '@ali/ide-core-common';
 import { createProxyServer, createWsServer, resetPort } from './proxy';
 import {
   defaultName,
@@ -10,6 +11,10 @@ import {
 import { ITerminalClientFactory, ITerminalGroupViewService, ITerminalClient, IWidget } from '../../src/common';
 import { delay } from './utils';
 import { injector } from './inject';
+import { IWorkspaceService } from '@ali/ide-workspace';
+import * as os from 'os';
+import * as path from 'path';
+import * as fs from 'fs-extra';
 
 function createDOMContainer() {
   const div = document.createElement('div');
@@ -26,36 +31,48 @@ describe('Terminal Client', () => {
   let server: WebSocket.Server;
   let view: ITerminalGroupViewService;
   let factory: ITerminalClientFactory;
+  let workspaceService: IWorkspaceService;
+  let root: URI | null;
 
-  beforeAll(() => {
+  beforeAll(async (done) => {
+    root = FileUri.create(path.join(os.tmpdir(), 'preference-service-test'));
+
+    await fs.ensureDir(root.withoutScheme().toString());
+
+    workspaceService = injector.get(IWorkspaceService);
+
+    await workspaceService.setWorkspace({
+      uri: root.toString(),
+      lastModification: new Date().getTime(),
+      isDirectory: true,
+    });
     resetPort();
     factory = injector.get(ITerminalClientFactory);
     view = injector.get(ITerminalGroupViewService);
     server = createWsServer();
     proxy = createProxyServer();
-  });
-
-  it('Not Ready To Show it', () => {
     const index = view.createGroup();
     const group = view.getGroup(index);
     widget = view.createWidget(group);
-    client = factory(widget, {});
-    expect(client.ready).toBeFalsy();
-  });
-
-  it('Focus Terminal which is not ready', () => {
-    try {
-      client.focus();
-    } catch (e) {
-      expect(e).toBeInstanceOf(Error);
-    }
-  });
-
-  it('Render Terminal', async (done) => {
     widget.element = createDOMContainer();
+    client = factory(widget, {});
+    client.addDispose(Disposable.create(async () => {
+      if (root) {
+        await fs.remove(root.withoutScheme().toString());
+      }
+    }));
     await client.attached.promise;
-    expect(client.ready).toBeTruthy();
     done();
+  });
+
+  afterAll(() => {
+    client.dispose();
+    server.close();
+    proxy.close();
+  });
+
+  it('Render Terminal', () => {
+    expect(client.ready).toBeTruthy();
   });
 
   it('Terminal Pid And Name', () => {
@@ -82,7 +99,7 @@ describe('Terminal Client', () => {
     expect(selection.includes('pwd')).toBeTruthy();
   });
 
-  it.skip('Terminal Send Text', async (done) => {
+  it('Terminal Send Text', async (done) => {
     await client.attached.promise;
     client.clear();
     await client.sendText('pwd\r');
@@ -94,7 +111,7 @@ describe('Terminal Client', () => {
     done();
   });
 
-  it.skip('Terminal Find Next', async () => {
+  it('Terminal Find Next', async () => {
     const searched = 'pwd';
     client.findNext(searched);
     expect(client.term.getSelection()).toEqual(searched);
@@ -115,11 +132,5 @@ describe('Terminal Client', () => {
     client.updateTheme();
     client.clear();
     done();
-  });
-
-  afterAll(() => {
-    client.dispose();
-    server.close();
-    proxy.close();
   });
 });

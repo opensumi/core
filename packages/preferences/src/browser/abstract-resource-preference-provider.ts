@@ -87,12 +87,12 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     return domain.some((uri) => new URI(uri).path.relativity(resourcePath) >= 0);
   }
 
-  getPreferences(resourceUri?: string, language?: string): { [key: string]: any } {
-    return this.loaded && this.contains(resourceUri) ? this.getOnePreference(language) : {};
+  getPreferences(resourceUri?: string, language?: string) {
+    return this.loaded && this.contains(resourceUri) ? this.getOnePreference(language) : undefined;
   }
 
   getLanguagePreferences(resourceUri?: string) {
-    return this.loaded && this.contains(resourceUri) ? this.preferences.languageSpecific : {};
+    return this.loaded && this.contains(resourceUri) ? this.preferences.languageSpecific : undefined;
   }
 
   getOnePreference(language?: string): { [key: string]: any } {

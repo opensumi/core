@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { DebugConfigurationManager } from '../../debug-configuration-manager';
 import { observable, action } from 'mobx';
-import { DebugSessionOptions } from '../../../common';
+import { DebugSessionOptions, DEFAULT_ADD_CONFIGURATION_KEY, DEFAULT_CONFIGURATION_NAME_SEPARATOR, DEFAULT_CONFIGURATION_INDEX_SEPARATOR } from '../../../common';
 import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE, PreferenceService, isUndefined } from '@ali/ide-core-browser';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugViewModel } from '../debug-view-model';
@@ -39,13 +39,19 @@ export class DebugConfigurationService {
   }
 
   @observable
-  currentValue: string = '__NO_CONF__';
+  currentValue: string = DEFAULT_ADD_CONFIGURATION_KEY;
 
   @observable
   float: boolean = true;
 
+  @observable
+  isMultiRootWorkspace: boolean;
+
+  @observable
+  workspaceRoots: string[] = [];
+
   @observable.shallow
-  configurationOptions: DebugSessionOptions[] = this.debugConfigurationManager.all || [];
+  configurationOptions: DebugSessionOptions[];
 
   get whenReady() {
     return this._whenReady;
@@ -59,7 +65,7 @@ export class DebugConfigurationService {
         this.updateCurrentValue(preValue);
       } else {
         // 当找不到配置项时，根据下标顺序查找对应位置配置项
-        const valueIndex = preValue.indexOf('__CONF__');
+        const valueIndex = preValue.indexOf(DEFAULT_CONFIGURATION_NAME_SEPARATOR);
         const configurationName = preValue.slice(0, valueIndex);
         let nextValue;
         if (this.configurationOptions.length > 0) {
@@ -69,7 +75,7 @@ export class DebugConfigurationService {
           }
           nextValue  = this.toValue(configuration!);
         } else {
-          nextValue = '__NO_CONF__';
+          nextValue = DEFAULT_ADD_CONFIGURATION_KEY;
         }
         this.updateCurrentValue(nextValue);
       }
@@ -79,6 +85,7 @@ export class DebugConfigurationService {
   }
 
   async init() {
+    await this.updateConfigurationOptions();
     await this.initCurrentConfiguration();
     this.debugConfigurationManager.onDidChange(async () => {
       this.updateConfigurationOptions();
@@ -92,7 +99,19 @@ export class DebugConfigurationService {
         }
       }
     });
+    await this.updateWorkspaceState();
+    // onWorkspaceLocationChanged 事件不能满足实时更新workspaceRoots的需求
+    // onWorkspaceChanged 能获取到在工作区状态添加文件夹的节点变化
+    this.workspaceService.onWorkspaceChanged(async () => {
+      await this.updateWorkspaceState();
+    });
     this.updateFloat(!!this.preferenceService.get<boolean>('debug.toolbar.float'));
+  }
+
+  @action
+  async updateWorkspaceState() {
+    this.isMultiRootWorkspace = this.workspaceService.isMultiRootWorkspaceOpened;
+    this.workspaceRoots = (await this.workspaceService.tryGetRoots()).map((root) => root.uri);
   }
 
   @action
@@ -114,7 +133,7 @@ export class DebugConfigurationService {
       this.setCurrentConfiguration(currentValue);
       this.updateCurrentValue(currentValue);
     } else {
-      this.updateCurrentValue('__NO_CONF__');
+      this.updateCurrentValue(DEFAULT_ADD_CONFIGURATION_KEY);
     }
   }
 
@@ -128,15 +147,17 @@ export class DebugConfigurationService {
   }
 
   openConfiguration = () => {
-    this.debugConfigurationManager.openConfiguration();
+    const { current } = this.debugConfigurationManager;
+    const uri = current?.workspaceFolderUri;
+    this.debugConfigurationManager.openConfiguration(uri);
   }
 
   openDebugConsole = () => {
     this.debugConsoleService.activate();
   }
 
-  addConfiguration = () => {
-    this.debugConfigurationManager.addConfiguration();
+  addConfiguration = (eventOrUri?: React.MouseEvent<HTMLElement, MouseEvent> | string) => {
+    this.debugConfigurationManager.addConfiguration(typeof eventOrUri === 'string' ? eventOrUri : undefined);
   }
 
   updateConfiguration = (name: string, workspaceFolderUri: string, index: number) => {
@@ -154,7 +175,7 @@ export class DebugConfigurationService {
       }
       return this.currentValue;
     }
-    return configuration.name + '__CONF__' + workspaceFolderUri + '__INDEX__' + index;
+    return configuration.name + DEFAULT_CONFIGURATION_NAME_SEPARATOR + workspaceFolderUri + DEFAULT_CONFIGURATION_INDEX_SEPARATOR + index;
   }
 
   toName = ({ configuration, workspaceFolderUri }: DebugSessionOptions) => {

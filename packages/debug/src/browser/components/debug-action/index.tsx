@@ -17,13 +17,9 @@ export const DebugAction = ({
   label,
   run,
   enabled,
-  color,
   className,
   ...restProps
 }: DebugActionProps & React.HtmlHTMLAttributes<HTMLDivElement>) => {
   const noop = () => {};
-  const style = {
-    color,
-  };
-  return <div {...restProps} className={cls(styles.debug_action, styles[icon], getIcon(icon) || icon, typeof enabled === 'boolean' && !enabled && styles.mod_disabled, className)} style={style} title={ label } onClick={ run || noop }></div>;
+  return <div {...restProps} className={cls(styles.debug_action, styles[icon], getIcon(icon) || icon, typeof enabled === 'boolean' && !enabled && styles.mod_disabled, className)} title={ label } onClick={ run || noop }></div>;
 };

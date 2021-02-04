@@ -4,7 +4,7 @@ import { FitAddon } from 'xterm-addon-fit';
 import { SearchAddon } from 'xterm-addon-search';
 import { WebLinksAddon } from 'xterm-addon-web-links';
 import { Injectable, Autowired, Injector } from '@ali/common-di';
-import { Disposable, Deferred, Emitter, Event, debounce, ILogger } from '@ali/ide-core-common';
+import { Disposable, Deferred, Emitter, Event, debounce, ILogger, IDisposable} from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
@@ -12,18 +12,21 @@ import { FilePathAddon, AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal
 import { TerminalKeyBoardInputService } from './terminal.input';
 import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, ITerminalGroupViewService, ITerminalInternalService, IWidget, ITerminalDataEvent, ITerminalExitEvent, ITerminalConnection } from '../common';
 import { ITerminalPreference } from '../common/preference';
-import { CorePreferences, IOpenerService } from '@ali/ide-core-browser';
+import { CorePreferences, IOpenerService, QuickPickService } from '@ali/ide-core-browser';
 
 import * as styles from './component/terminal.module.less';
 
 @Injectable()
 export class TerminalClient extends Disposable implements ITerminalClient {
+  static WORKSPACE_PATH_CACHED: Map<string, string> = new Map();
+
   /** properties */
   private _container: HTMLDivElement;
   private _term: Terminal;
   private _uid: string;
   private _options: TerminalOptions;
   private _widget: IWidget;
+  private _workspacePath: string;
   /** end */
 
   /** addons */
@@ -40,6 +43,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private _firstStdout = new Deferred<void>();
   private _error = new Deferred<void>();
   private _show: Deferred<void> | null;
+  private _firstStart: boolean = true;
   /** end */
 
   @Autowired(ITerminalInternalService)
@@ -72,6 +76,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   @Autowired(TerminalKeyBoardInputService)
   protected readonly keyboard: TerminalKeyBoardInputService;
 
+  @Autowired(QuickPickService)
+  protected readonly quickPick: QuickPickService;
+
   @Autowired(ILogger)
   protected readonly logger: ILogger;
 
@@ -87,18 +94,31 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   @Autowired(IOpenerService)
   private readonly openerService: IOpenerService;
 
-  init(widget: IWidget, options: TerminalOptions = {}) {
+  async init(widget: IWidget, options: TerminalOptions = {}, disposable: IDisposable = Disposable.create(() => {})) {
     this._uid = widget.id;
     this._options = options || {};
     this.name = this._options.name || '';
     this._container = document.createElement('div');
     this._container.className = styles.terminalInstance;
+    if (TerminalClient.WORKSPACE_PATH_CACHED.has(widget.group.id)) {
+      this._workspacePath = TerminalClient.WORKSPACE_PATH_CACHED.get(widget.group.id)!;
+    } else {
+      const choose = await this._pickWorkspace();
+      if (!choose) {
+        disposable.dispose();
+        return;
+      }
+      this._workspacePath = choose;
+      TerminalClient.WORKSPACE_PATH_CACHED.set(widget.group.id, this._workspacePath);
+    }
     this._term = new Terminal({
       theme: this.theme.terminalTheme,
       ...this.preference.toJSON(),
       ...this.service.getOptions(),
     });
-
+    this.addDispose(Disposable.create(() => {
+      TerminalClient.WORKSPACE_PATH_CACHED.delete(widget.group.id);
+    }));
     this.addDispose(this.preference.onChange(({ name, value }) => {
       if (!widget.show) {
         if (!this._show) {
@@ -189,7 +209,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._attachAddon = new AttachAddon();
     this._searchAddon = new SearchAddon();
     this._fitAddon = new FitAddon();
-    this._filelinksAddon = new FilePathAddon(this.workspace, this.fileService, this.editorService, this.keyboard);
+    this._filelinksAddon = new FilePathAddon(this._workspacePath, this.fileService, this.editorService, this.keyboard);
     this._weblinksAddon = new WebLinksAddon((_, url) => {
       if (this.keyboard.isCommandOrCtrl) {
         this.openerService.open(url);
@@ -247,6 +267,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         ...(this._options.shellArgs || []),
         ...(linuxShellArgs || []),
       ],
+      cwd: this._workspacePath,
     };
 
     const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this._term;
@@ -301,6 +322,19 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     }
   }
 
+  private async _pickWorkspace() {
+    if (this.workspace.isMultiRootWorkspaceOpened) {
+      // 工作区模式下每次新建终端都需要用户手动进行一次路径选择
+      const roots = await this.workspace.tryGetRoots();
+      const choose = await this.quickPick.show(roots.map((file) => {
+        return file.uri.substring(7);
+      }));
+      return choose;
+    } else {
+      return this.workspace.workspace?.uri.substring(7);
+    }
+  }
+
   private async attach() {
     if (!this._ready) {
       return this._doAttach();
@@ -351,7 +385,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   @debounce(100)
-  private _debouceResize() {
+  private _debounceResize() {
     // 云环境下面，容器 resize 终端的宽高信息可能存在时间竞争，
     // 所以这里我们加一个等待首次 stdout 的 deferred，
     // 保证 resize 消息一定能够生效
@@ -366,7 +400,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     }));
 
     this.addDispose(widget.onResize(async () => {
-      this._debouceResize();
+      this._debounceResize();
     }));
 
     this._widget = widget;
@@ -437,7 +471,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 @Injectable()
 export class TerminalClientFactory {
 
-  static createClient(injector: Injector, widget: IWidget, options?: TerminalOptions) {
+  static createClient(injector: Injector, widget: IWidget, options?: TerminalOptions, disposable?: IDisposable) {
     const child = injector.createChild([
       {
         token: TerminalClient,
@@ -445,7 +479,7 @@ export class TerminalClientFactory {
       },
     ]);
     const client = child.get(TerminalClient);
-    client.init(widget, options);
+    client.init(widget, options, disposable);
     return client;
   }
 }

@@ -19,9 +19,11 @@ export function getPreferences(preferenceProviderProvider: PreferenceProviderPro
     } else {
       result[scope] = provider.getPreferences();
       const languagePreferences = provider.getLanguagePreferences();
-      Object.keys(languagePreferences).forEach((language) => {
-        result[scope][`[${language}]`] = languagePreferences[language];
-      });
+      if (languagePreferences) {
+        Object.keys(languagePreferences).forEach((language) => {
+          result[scope][`[${language}]`] = languagePreferences[language];
+        });
+      }
     }
     return result;
   }, {} as PreferenceData);

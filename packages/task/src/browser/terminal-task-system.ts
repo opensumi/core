@@ -3,7 +3,7 @@ import { Event, formatLocalize, IProblemMatcherRegistry, Disposable, Deferred, P
 
 import { ITaskSystem, ITaskExecuteResult, ITaskExecutor, TaskExecuteKind, IActivateTaskExecutorData, TaskTerminateResponse } from '../common';
 import { Task, ContributedTask, CommandString, CommandConfiguration, TaskEvent, TaskEventKind, RuntimeType } from '../common/task';
-import { TerminalOptions, ITerminalController, ITerminalGroupViewService, ITerminalClient, ITerminalService, ITerminalClientFactory } from '@ali/ide-terminal-next/lib/common';
+import { TerminalOptions, ITerminalController, ITerminalGroupViewService, ITerminalClient, ITerminalService } from '@ali/ide-terminal-next/lib/common';
 import { CustomTask } from '../common/task';
 import { IVariableResolverService } from '@ali/ide-variable';
 import { ProblemCollector } from './problem-collector';
@@ -27,9 +27,6 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
   @Autowired(ITerminalService)
   protected readonly terminalService: ITerminalService;
-
-  @Autowired(ITerminalClientFactory)
-  protected readonly clientFactory: ITerminalClientFactory;
 
   private terminalClient: ITerminalClient | undefined;
 

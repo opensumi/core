@@ -1,6 +1,6 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { WithEventBus, Emitter, Deferred, Event } from '@ali/ide-core-common';
+import { WithEventBus, Emitter, Deferred, Event, Disposable } from '@ali/ide-core-common';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
 import { IThemeService } from '@ali/ide-theme';
@@ -87,7 +87,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   private _createClient(widget: IWidget, options = {}) {
-    const client = this.clientFactory(widget, options);
+    const client = this.clientFactory(widget, options, Disposable.create(() => this.terminalView.removeWidget(widget.id)));
     this._clients.set(client.id, client);
 
     client.addDispose({
@@ -161,7 +161,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
          */
         const widget = this.terminalView.createWidget(group,
           typeof sessionId === 'string' ? sessionId : sessionId.clientId);
-        const client = this.clientFactory(widget, {});
+        const client = this.clientFactory(widget, {}, Disposable.create(() => this.terminalView.removeWidget(widget.id)));
         this._clients.set(client.id, client);
 
         /**

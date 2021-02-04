@@ -1,8 +1,8 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { URI, DisposableCollection } from '@ali/ide-core-browser';
-import { PreferenceScope, PreferenceProvider } from '@ali/ide-core-browser/lib/preferences';
+import { PreferenceScope, PreferenceProvider, PreferenceProviderDataChanges, PreferenceProviderDataChange } from '@ali/ide-core-browser/lib/preferences';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { FoldersPreferencesProvider, FolderPreferenceCollectionProvider } from './folders-preferences-provider';
+import { WorkspaceFilePreferenceProviderFactory } from './workspace-file-preference-provider';
 
 @Injectable()
 export class WorkspacePreferenceProvider extends PreferenceProvider {
@@ -12,8 +12,12 @@ export class WorkspacePreferenceProvider extends PreferenceProvider {
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;
 
+  @Autowired(WorkspaceFilePreferenceProviderFactory)
+  protected readonly workspaceFileProviderFactory: WorkspaceFilePreferenceProviderFactory;
+
+  // 该实例仅在工作区模式下才需要实例化
   @Autowired(PreferenceProvider, { tag: PreferenceScope.Folder })
-  protected readonly folderPreferenceProvider: FoldersPreferencesProvider;
+  protected readonly foldersPreferenceProvider: PreferenceProvider;
 
   constructor() {
     super();
@@ -31,8 +35,8 @@ export class WorkspacePreferenceProvider extends PreferenceProvider {
     return delegate && delegate.getConfigUri(resourceUri);
   }
 
-  protected _delegate: FolderPreferenceCollectionProvider | undefined;
-  protected get delegate(): FolderPreferenceCollectionProvider | undefined {
+  protected _delegate: PreferenceProvider | undefined;
+  protected get delegate(): PreferenceProvider | undefined {
     if (!this._delegate) {
       this.ensureDelegateUpToDate();
     }
@@ -50,43 +54,62 @@ export class WorkspacePreferenceProvider extends PreferenceProvider {
 
       if (delegate) {
         this.toDisposeOnEnsureDelegateUpToDate.pushAll([
-          delegate.onDidPreferencesChanged((changes) => this.emitPreferencesChangedEvent(changes)),
+          delegate,
+          delegate.onDidPreferencesChanged((changes) => {
+            this.emitPreferencesChangedEvent(changes);
+          }),
         ]);
       }
     }
   }
 
-  protected createDelegate(): FolderPreferenceCollectionProvider  | undefined {
+  protected createDelegate(): PreferenceProvider | undefined {
     const workspace = this.workspaceService.workspace;
     if (!workspace) {
       return undefined;
     }
-    // TODO: vscode中，在多workspace下，workspace scope 的 preference 会由单独的workspace.json
-    // 加上一段更为复杂的逻辑来提供。
-    // 此处我们不这么认为，永远取 folderPreferenceProvider 中和当前 workspace 相同的作为 delegate
+    // 如果不是在多工作区模式下，返回foldersPreferenceProvider
+    if (!this.workspaceService.isMultiRootWorkspaceOpened) {
+      return this.foldersPreferenceProvider;
+    }
+    // 工作区模式下需要额外读取一次工作区对应的配置文件内容进行配置合并
+    // PreferenceScope.Folder 为默认优先级最高的配置
+    return this.workspaceFileProviderFactory({
+      workspaceUri: new URI(workspace.uri),
+    });
+  }
 
-    return this.folderPreferenceProvider.getDefaultFolderProvider();
+  protected emitPreferencesChangedEvent(changes: PreferenceProviderDataChanges | PreferenceProviderDataChange[], noFilterExternal?: boolean): void {
+    // 仅在非工作区模式下才透出配置变化
+    if (this.workspaceService.isMultiRootWorkspaceOpened) {
+      super.emitPreferencesChangedEvent(changes, noFilterExternal);
+    }
+  }
+
+  doGet<T>(preferenceName: string, resourceUri: string | undefined = this.ensureResourceUri(), language?: string): T | undefined {
+    const delegate = this.delegate;
+    return delegate ? delegate.get<T>(preferenceName, resourceUri, language) : undefined;
   }
 
   doResolve<T>(preferenceName: string, resourceUri: string | undefined = this.ensureResourceUri(), language?: string): { value?: T, configUri?: URI } {
     const delegate = this.delegate;
-    return delegate ? delegate.doResolve<T>(preferenceName, resourceUri, language) : {};
+    return delegate ? delegate.resolve<T>(preferenceName, resourceUri, language) : {};
   }
 
-  getPreferences(resourceUri: string | undefined = this.ensureResourceUri(), language?: string): { [p: string]: any } {
+  getPreferences(resourceUri: string | undefined = this.ensureResourceUri(), language?: string) {
     const delegate = this.delegate;
-    return delegate ? delegate.getPreferences(language) : {};
+    return delegate ? delegate.getPreferences(resourceUri, language) : undefined;
   }
 
   getLanguagePreferences(resourceUri: string | undefined = this.ensureResourceUri()) {
     const delegate = this.delegate;
-    return delegate ? delegate.getLanguagePreferences() : {};
+    return delegate ? delegate.getLanguagePreferences(resourceUri) : undefined;
   }
 
   async doSetPreference(preferenceName: string, value: any, resourceUri: string | undefined = this.ensureResourceUri(), language?: string): Promise<boolean> {
     const delegate = this.delegate;
     if (delegate) {
-      return delegate.doSetPreference(preferenceName, value, resourceUri, language);
+      return delegate.setPreference(preferenceName, value, resourceUri, language);
     }
     return false;
   }

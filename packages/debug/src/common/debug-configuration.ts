@@ -61,3 +61,8 @@ export namespace DebugConfiguration {
       return !!arg && typeof arg === 'object' && 'type' in arg && 'name' in arg && 'request' in arg;
   }
 }
+
+export const DEFAULT_ADD_CONFIGURATION_KEY: string = '__ADD_CONF__';
+export const DEFAULT_NO_CONFIGURATION_KEY: string = '__NO_CONF__';
+export const DEFAULT_CONFIGURATION_NAME_SEPARATOR: string = '__CONF__';
+export const DEFAULT_CONFIGURATION_INDEX_SEPARATOR: string = '__INDEX__';

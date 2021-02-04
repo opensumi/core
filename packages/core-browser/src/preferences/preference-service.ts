@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 
-import { Deferred, Event, Emitter, DisposableCollection, IDisposable, Disposable, URI, isUndefined, LRUMap, deepClone } from '@ali/ide-core-common';
+import { Deferred, Event, Emitter, DisposableCollection, IDisposable, Disposable, URI, isUndefined, isEmptyObject, LRUMap, deepClone } from '@ali/ide-core-common';
 import { PreferenceProvider, PreferenceProviderDataChange, PreferenceProviderDataChanges, PreferenceResolveResult } from './preference-provider';
 import { PreferenceSchemaProvider } from './preference-contribution';
 import { PreferenceScope } from './preference-scope';
@@ -44,16 +44,6 @@ export interface PreferenceChanges {
 }
 export const PreferenceService = Symbol('PreferenceService');
 
-/**
- * `defaultValue`
- * `globalValue` (if defined)
- * `workspaceValue` (if defined)
- * `workspaceFolderValue` (if defined)
- * `defaultLanguageValue` (if defined)
- * `globalLanguageValue` (if defined)
- * `workspaceLanguageValue` (if defined)
- * `workspaceFolderLanguageValue` (if defined)
- */
 export interface PreferenceService extends IDisposable {
 
   readonly ready: Promise<void>;
@@ -180,9 +170,10 @@ export class PreferenceServiceImpl implements PreferenceService {
       for (const scope of scopes) {
         const provider = this.providerProvider(scope);
         this.preferenceProviders.set(scope, provider);
-        this.toDispose.push(provider.onDidPreferencesChanged((changes) =>
-          this.reconcilePreferences(changes),
-        ));
+        // 获得每个Scope下的PreferenceProvider后，监听配置变化进行变更合并
+        this.toDispose.push(provider.onDidPreferencesChanged((changes) => {
+          this.reconcilePreferences(changes);
+        }));
         await provider.ready;
       }
       this._ready.resolve();
@@ -212,9 +203,10 @@ export class PreferenceServiceImpl implements PreferenceService {
       }
     };
 
-    // 获得改变
+    // 尝试获取Preference变更带来的配置修改
     this.tryAcceptChanges(changes.default, acceptChange);
     Object.keys(changes.languageSpecific).forEach((language) => {
+      // 尝试获取Preference变更带来的语言配置修改
       this.tryAcceptChanges(changes.languageSpecific[language], acceptChange, language);
     });
 
@@ -237,9 +229,19 @@ export class PreferenceServiceImpl implements PreferenceService {
     });
   }
 
+  /**
+   * 尝试处理配置修改带来的配置变化
+   *
+   * @private
+   * @param {{[preferenceName: string]: PreferenceProviderDataChange}} changes
+   * @param {(change: PreferenceProviderDataChange, language?: string) => void} acceptChange
+   * @param {string} [language]
+   * @memberof PreferenceServiceImpl
+   */
   private tryAcceptChanges(changes: {[preferenceName: string]: PreferenceProviderDataChange}, acceptChange: (change: PreferenceProviderDataChange, language?: string) => void, language?: string) {
     for (const preferenceName of Object.keys(changes)) {
       let change = changes[preferenceName];
+
       if (this.schema.isValidInScope(preferenceName, PreferenceScope.Folder)) {
         acceptChange(change, language);
         continue;
@@ -250,14 +252,14 @@ export class PreferenceServiceImpl implements PreferenceService {
           if (provider) {
             const value = provider.get(preferenceName, change.domain ? change.domain[0] : undefined, language);
             if (scope > change.scope && value !== undefined) {
-              // preference defined in a more specific scope
+              // 配置项已在更高的作用域下被定义，无法处理当前作用域的变化
               break;
             } else if (scope === change.scope && change.newValue !== undefined) {
-              // preference is changed into something other than `undefined`
+              // 配置项修改为了非 `undefined` 的值
               acceptChange(change, language);
               break;
             } else if (scope < change.scope && change.newValue === undefined && value !== undefined) {
-              // preference is changed to `undefined`, use the value from a more general scope
+              // 对应配置项已经改为 `undefined`, 使用低一级作用域下的配置值
               change = {
                 ...change,
                 newValue: value,
@@ -357,6 +359,7 @@ export class PreferenceServiceImpl implements PreferenceService {
   }
 
   public async set(preferenceName: string, value: any, scope: PreferenceScope | undefined, resourceUri?: string): Promise<void> {
+    await this.ready;
     const resolvedScope = !isUndefined(scope) ? scope : (!resourceUri ? PreferenceScope.Workspace : PreferenceScope.Folder);
     // TODO: 错误日志错误码机制
     if (resolvedScope === PreferenceScope.User && this.configurations.isSectionName(preferenceName.split('.', 1)[0])) {
@@ -444,6 +447,19 @@ export class PreferenceServiceImpl implements PreferenceService {
     return this.doResolve(preferenceName, defaultValue, resourceUri).value;
   }
 
+  /**
+   * 获取配置值
+   *
+   * @protected
+   * @template T
+   * @param {string} preferenceName 配置项名称
+   * @param {T} [defaultValue] 默认值
+   * @param {string} [resourceUri] 资源路径
+   * @param {PreferenceScope} [untilScope] 最高作用域
+   * @param {string} [language] 语言标识符
+   * @returns {PreferenceResolveResult<T>}
+   * @memberof PreferenceServiceImpl
+   */
   protected doResolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string, untilScope?: PreferenceScope, language?: string): PreferenceResolveResult<T> {
 
     if (!this.cachedPreference.has(preferenceName)) {
@@ -469,8 +485,10 @@ export class PreferenceServiceImpl implements PreferenceService {
         const provider = this.getProvider(scope);
         if (provider) {
           const { configUri, value } = provider.resolve<T>(preferenceName, resourceUri);
-          if (value !== undefined) {
+          // 这里配置值为空对象时，我们也视为非有效值
+          if (!isUndefined(value) && !isEmptyObject(value)) {
             result.configUri = configUri;
+            // 按作用域逐级合并配置值
             result.value = PreferenceProvider.merge(result.value as any, value as any) as any;
             result.scope = scope;
           }
@@ -498,7 +516,7 @@ export class PreferenceServiceImpl implements PreferenceService {
 
     return {
       configUri: result.configUri,
-      value: result.value !== undefined ? deepClone(result.value) : undefined,
+      value: !isUndefined(result.value) ? deepClone(result.value) : undefined,
       scope: result.scope || PreferenceScope.Default,
       languageSpecific: result.languageSpecific,
     };
@@ -506,5 +524,5 @@ export class PreferenceServiceImpl implements PreferenceService {
 }
 
 function cacheHash(language?: string, untilScope?: PreferenceScope, resourceUri?: string) {
-  return `${language}:::${untilScope}:::${resourceUri}`;
+  return `${language ? `${language}:::` : ''}${untilScope ? `${untilScope}:::` : ''}${resourceUri}` || 'default';
 }
