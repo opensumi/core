@@ -6,6 +6,7 @@ import {
   Deferred,
   IDisposable,
   Mutable,
+  canceled,
 } from '@ali/ide-core-browser';
 import debounce = require('lodash.debounce');
 import { DebugSessionConnection, DebugEventTypes, DebugRequestTypes } from './debug-session-connection';
@@ -23,7 +24,6 @@ import { DebugStackFrame } from './model/debug-stack-frame';
 import { DebugModelManager } from './editor/debug-model-manager';
 import { ITerminalApiService, TerminalOptions } from '@ali/ide-terminal-next';
 import { ExpressionContainer } from './tree/debug-tree-node.define';
-import { canceled } from '../../../core-common/lib';
 
 export enum DebugState {
   Inactive,
