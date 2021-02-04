@@ -1,5 +1,6 @@
-const { pathsToModuleNameMapper } = require('ts-jest/utils')
-const tsconfig = require('./configs/ts/tsconfig.resolve.json')
+const { pathsToModuleNameMapper } = require('ts-jest/utils');
+const tsconfig = require('./configs/ts/tsconfig.resolve.json');
+const os = require('os');
 
 const tsModuleNameMapper = pathsToModuleNameMapper(
   tsconfig.compilerOptions.paths,
@@ -9,6 +10,8 @@ const tsModuleNameMapper = pathsToModuleNameMapper(
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
+  coverageProvider: process.env.JEST_COVERAGE_PROVIDER || 'babel',
+  maxWorkers: process.env.SIGMA_MAX_PROCESSORS_LIMIT || os.cpus().length,
   setupFiles: [
     "./jest.setup.js"
   ],
