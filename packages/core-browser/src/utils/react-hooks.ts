@@ -1,4 +1,4 @@
-import { useState, useEffect, DependencyList, useCallback } from 'react';
+import { useState, useEffect, DependencyList } from 'react';
 import { DisposableStore, IDisposable } from '@ali/ide-core-common';
 
 import { MenuNode } from '../menu/next/base';
@@ -64,7 +64,6 @@ export function useMenus(
     }
 
     return [
-      menus,
       menus.onDidChange(() => {
         updateMenuConfig(menus, args);
       }),
@@ -75,19 +74,10 @@ export function useMenus(
 }
 
 export function useContextMenus(
-  menuInitializer: IContextMenu | (() => IContextMenu),
+  menus: IContextMenu,
 ) {
   const [menuConfig, setMenuConfig] = useState<[MenuNode[], MenuNode[]]>([[], []]);
-
-  const initializer = useCallback(() => {
-    return typeof menuInitializer === 'function'
-      ? menuInitializer()
-      : menuInitializer;
-  }, []);
-
   useDisposable(() => {
-    // initialize
-    const menus = initializer();
     updateMenuConfig(menus);
 
     function updateMenuConfig(menuArg: IContextMenu) {
@@ -96,12 +86,11 @@ export function useContextMenus(
     }
 
     return [
-      menus,
       menus.onDidChange(() => {
         updateMenuConfig(menus);
       }),
     ];
-  }, [ initializer ]);
+  }, [ menus ]);
 
   return menuConfig;
 }
