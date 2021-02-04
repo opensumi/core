@@ -7,6 +7,7 @@ export const ILanguageService = Symbol('ILanguageService');
 
 export interface ILanguageService {
   languages: Language[];
+  workspaceSymbolProviders: WorkspaceSymbolProvider[];
   getLanguage(languageId: string): Language | undefined;
   registerWorkspaceSymbolProvider(provider: WorkspaceSymbolProvider): IDisposable;
 }

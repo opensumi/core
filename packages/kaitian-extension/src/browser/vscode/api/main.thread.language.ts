@@ -9,6 +9,7 @@ import { ExtHostAPIIdentifier, IExtHostLanguages, IMainThreadLanguages, MonacoMo
 import { fromLanguageSelector } from '../../../common/vscode/converter';
 import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider } from '../../../common/vscode/model.api';
 import { reviveIndentationRule, reviveOnEnterRules, reviveRegExp, reviveWorkspaceEditDto } from '../../../common/vscode/utils';
+import { ILanguageService } from '@ali/ide-editor';
 
 const PATCH_PREFIX = 'Index: a\n===================================================================\n--- a\n+++ a';
 
@@ -25,6 +26,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   @Autowired(IReporterService)
   reporter: IReporterService;
+
+  @Autowired(ILanguageService)
+  private readonly languageService: ILanguageService;
 
   private languageFeatureEnabled = new LRUMap<string, boolean>(200, 100);
 
@@ -732,9 +736,8 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   }
 
   $registerWorkspaceSymbolProvider(handle: number): void {
-    const disposable = new DisposableCollection();
-    // console.log('TODO registerWorkspaceSymbolProvider');
-    this.disposables.set(handle, disposable);
+    const workspaceSymbolProvider = this.createWorkspaceSymbolProvider(handle);
+    this.disposables.set(handle, this.languageService.registerWorkspaceSymbolProvider(workspaceSymbolProvider));
   }
 
   protected createWorkspaceSymbolProvider(handle: number): WorkspaceSymbolProvider {

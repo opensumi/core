@@ -479,4 +479,41 @@ export interface QuickTitleButton {
   side: QuickTitleButtonSide;
 }
 
+export const QuickOpenContribution = Symbol('QuickOpenContribution');
+
+export interface QuickOpenContribution {
+  registerQuickOpenHandlers(handlers: IQuickOpenHandlerRegistry): void;
+}
+
+export interface QuickOpenHandler {
+  /** 是否是默认的面板处理函数 */
+  default?: boolean;
+  /**
+   * 命令面板中的处理函数
+   */
+  prefix: string;
+  /**
+   * 在帮助面板中显示的描述
+   */
+  description: string;
+  /**
+   * 初始化函数，一般做展示数据的收集
+   */
+  init?(): MaybePromise<void>;
+  /**
+   * 获取 QuickOpenModel，用于提供 Items
+   */
+  getModel(): QuickOpenModel;
+  /**
+   * 获取面板的参数，用于额外设置 QuickOpen
+   */
+  getOptions(): QuickOpenOptions;
+  /** quick-open 内部切换不会执行，最终关闭才会执行 */
+  onClose?: (canceled: boolean) => void;
+}
+
+export interface IQuickOpenHandlerRegistry {
+  registerHandler(handler: QuickOpenHandler): IDisposable;
+}
+
 export * from './recent-files';

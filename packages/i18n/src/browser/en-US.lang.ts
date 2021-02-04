@@ -416,6 +416,11 @@ export const localizationBundle = {
     'editor.largeFile.prevent': 'The file is too large, continuing to open it may cause it to jam or crash.',
     'editor.largeFile.prevent.stillOpen': 'Still open it.',
 
+    'editor.workspaceSymbol.quickopen': 'Search Workspace Symbol',
+    'editor.workspaceSymbol.description': 'Go to Symbol in Workspace',
+    'editor.workspaceSymbol.search': 'Type to search for symbols',
+    'editor.workspaceSymbol.notfound': 'No symbols matching',
+
     'preference.diffEditor.renderSideBySide': 'Render Side By Side',
     'preference.diffEditor.ignoreTrimWhitespace': 'Ignore Trim Whitespace',
     'diffEditor.configuration.renderSideBySide': 'Controls whether the diff editor shows the diff side by side or inline.',

@@ -27,6 +27,7 @@
     "@ali/ide-file-service": "1.34.0",
     "@ali/ide-components": "1.34.0",
     "@ali/ide-main-layout": "1.34.0",
+    "lodash.flattendeep": "^4.4.0",
     "md5": "^2.2.1"
   },
   "devDependencies": {

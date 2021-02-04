@@ -62,7 +62,7 @@ export const getSymbolIcon = (() => {
   _fromMapping[SymbolKind.Operator] = 'operator';
   _fromMapping[SymbolKind.TypeParameter] = 'type-parameter';
 
-  return function toCssClassName(kind: SymbolKind, inline?: boolean): string {
-    return `symbol-icon ${inline ? 'inline' : 'block'} ${_fromMapping[kind] || 'property'}`;
+  return function toCssClassName(kind: SymbolKind): string {
+    return getExternalIcon(`symbol-${_fromMapping[kind] || 'property'}`);
   };
 })();

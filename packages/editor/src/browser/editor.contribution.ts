@@ -1,6 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { BrowserCodeEditor } from './editor-collection.service';
-import {  IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService, IClipboardService } from '@ali/ide-core-browser';
+import {  IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService, IClipboardService, QuickOpenContribution, IQuickOpenHandlerRegistry, PrefixQuickOpenService } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { isElectronEnv, isWindows, PreferenceScope } from '@ali/ide-core-common';
 import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -18,14 +18,15 @@ import { FormattingSelector } from './format/formatterSelect';
 import { EditorTopPaddingContribution } from './view/topPadding';
 import { EditorSuggestWidgetContribution } from './view/suggest-widget';
 import { EditorOpener } from './editor-opener';
+import { WorkspaceSymbolQuickOpenHandler } from './language/workspace-symbol-quickopen';
 
 interface ResourceArgs {
   group: EditorGroup;
   uri: URI;
 }
 
-@Domain(CommandContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, MenuContribution, OpenerContribution)
-export class EditorContribution implements CommandContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, MenuContribution, OpenerContribution {
+@Domain(CommandContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, MenuContribution, OpenerContribution, QuickOpenContribution)
+export class EditorContribution implements CommandContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, MenuContribution, OpenerContribution, QuickOpenContribution {
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -62,6 +63,12 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
 
   @Autowired(IClipboardService)
   private readonly clipboardService: IClipboardService;
+
+  @Autowired()
+  private readonly workspaceSymbolQuickOpenHandler: WorkspaceSymbolQuickOpenHandler;
+
+  @Autowired(PrefixQuickOpenService)
+  private readonly prefixQuickOpenService: PrefixQuickOpenService;
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-editor', {
@@ -200,6 +207,10 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.NEW_UNTITLED_FILE.id,
       keybinding: isElectronEnv() ? 'ctrlcmd+n' : 'alt+n',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL.id,
+      keybinding: isElectronEnv() ? 'ctrlcmd+t' : 'ctrlcmd+o',
     });
     for (let i = 1; i < 10; i++) {
       keybindings.registerKeybinding({
@@ -768,6 +779,10 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         }
       },
     });
+
+    commands.registerCommand(EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL, {
+      execute: () => this.prefixQuickOpenService.open('#'),
+    });
   }
 
   registerMenus(menus: IMenuRegistry) {
@@ -834,6 +849,10 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
 
   registerOpener(regisry: IOpenerService) {
     regisry.registerOpener(this.editorOpener);
+  }
+
+  registerQuickOpenHandlers(handlers: IQuickOpenHandlerRegistry): void {
+    handlers.registerHandler(this.workspaceSymbolQuickOpenHandler);
   }
 
 }

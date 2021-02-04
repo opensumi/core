@@ -530,6 +530,12 @@ export namespace EDITOR_COMMANDS {
     id: 'editor.focusActiveEditorGroup',
     category: CATEGORY,
   };
+
+  export const SEARCH_WORKSPACE_SYMBOL: Command = {
+    id: 'editor.workspaceSymbol.quickopen',
+    label: '%editor.workspaceSymbol.quickopen%',
+    category: CATEGORY,
+  };
 }
 
 export namespace SEARCH_COMMANDS {

@@ -102,6 +102,11 @@ export const localizationBundle = {
     'editor.cannotSaveWithoutDirectory': '请选择要保存的路径',
     'editor.failToOpen': '打开文件 {0} 失败, 请确认文件是否存在。详细错误信息: {1}',
 
+    'editor.workspaceSymbol.quickopen': '搜索工作区符号',
+    'editor.workspaceSymbol.description': '跳转工作区符号',
+    'editor.workspaceSymbol.search': '请输入要搜索的符号',
+    'editor.workspaceSymbol.notfound': '没有匹配的工作区符号',
+
     'edit.cut': '剪切',
     'edit.copy': '复制',
     'edit.paste': '粘贴',
