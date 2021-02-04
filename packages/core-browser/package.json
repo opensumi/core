@@ -9,7 +9,7 @@
   "typings": "lib/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
+    "url": "git@code.alipay.com:kaitian/ide-framework.git"
   },
   "publishConfig": {
     "registry": "http://registry.npm.alibaba-inc.com"

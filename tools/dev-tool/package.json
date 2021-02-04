@@ -4,7 +4,7 @@
   "description": "@ali/ide-dev-tool",
   "repository": {
     "type": "git",
-    "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
+    "url": "git@code.alipay.com:kaitian/ide-framework.git"
   },
   "dependencies": {
     "@types/koa": "^2.0.48",
