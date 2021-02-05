@@ -5,7 +5,7 @@ import { app } from 'electron';
 // import { ElectronMainWorkspaceModule } from '@ali/ide-workspace/lib/electron-main';
 
 const electronApp = new ElectronMainApp({
-  browserNodeIntegrated: false,
+  browserNodeIntegrated: true,
   browserUrl: URI.file(join(__dirname, '../browser/index.html')).toString(),
   modules: [
     // ElectronMainWorkspaceModule,
@@ -18,9 +18,7 @@ const electronApp = new ElectronMainApp({
   browserPreload: join(__dirname, '../browser/preload.js'),
   extensionDir: join(__dirname, '../../../../extensions'), // 相对于app/dist的路径
   extensionCandidate: [],
-  overrideWebPreferences: {
-    enableRemoteModule: true,
-  },
+  overrideWebPreferences: {},
 });
 
 electronApp.init().then(() => {

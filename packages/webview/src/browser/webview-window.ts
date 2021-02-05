@@ -4,7 +4,7 @@ import { IElectronMainUIService, IElectronPlainWebviewWindowOptions } from '@ali
 import { electronEnv } from '@ali/ide-core-browser/lib/utils/electron';
 import { Emitter, Event, Disposable, URI } from '@ali/ide-core-browser';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class ElectronPlainWebviewWindow extends Disposable implements IPlainWebviewWindow {
 
   @Autowired(IElectronMainUIService)
@@ -16,7 +16,7 @@ export class ElectronPlainWebviewWindow extends Disposable implements IPlainWebv
 
   private _closed: boolean = false;
 
-  constructor(options?: IElectronPlainWebviewWindowOptions, env: {[key: string]: string} = {}) {
+  constructor(options?: IElectronPlainWebviewWindowOptions, env: { [key: string]: string } = {}) {
     super();
     this._ready = this.electronMainUIService.createBrowserWindow({
       ...options,
@@ -30,7 +30,7 @@ export class ElectronPlainWebviewWindow extends Disposable implements IPlainWebv
       },
     }).then((id) => {
       this._windowId = id;
-      const listener = (event, {from, message}: { from: number, message: any }) => {
+      const listener = (event: any, { from, message }: { from: number, message: any }) => {
         if (from === this._windowId) {
           this._onMessage.fire(message);
         }

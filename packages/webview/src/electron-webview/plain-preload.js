@@ -3,6 +3,9 @@ const { ipcRenderer } = require('electron');
 
 const argv = process.argv;
 
+const urlParams = new URLSearchParams(decodeURIComponent(window.location.search));
+window.id = Number(urlParams.get('windowId'));
+
 let parentWindowWebContentsId;
 let additionalEnv;
 
@@ -14,13 +17,13 @@ argv.forEach((arg) => {
     additionalEnv = JSON.parse(arg.substr('--additionalEnv='.length))
   }
 })
+
 let postMessage = undefined;
 
 if (parentWindowWebContentsId) {
-  let currentWindowId = require('electron').remote.getCurrentWindow().id;
   postMessage = (message) => {
     ipcRenderer.sendTo(parentWindowWebContentsId, 'cross-window-webview-message', {
-      from: currentWindowId,
+      from: window.id,
       message
     });
   }

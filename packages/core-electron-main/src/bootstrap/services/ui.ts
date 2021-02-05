@@ -1,11 +1,12 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ElectronMainApiProvider, ElectronMainContribution, ElectronMainApiRegistry } from '../types';
 import { BrowserWindow, dialog, shell, webContents } from 'electron';
-import { Domain, isWindows, IEventBus } from '@ali/ide-core-common';
+import { Domain, isWindows, IEventBus, URI } from '@ali/ide-core-common';
 import { stat } from 'fs-extra';
 import { dirname } from 'path';
 import { spawn } from 'child_process';
 import * as semver from 'semver';
+import * as qs from 'querystring';
 import { WindowCreatedEvent } from './events';
 import { IElectronMainUIServiceShape, IElectronPlainWebviewWindowOptions } from '@ali/ide-core-common/lib/electron';
 
@@ -155,7 +156,6 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
   }
 
   async createBrowserWindow(options?: IElectronPlainWebviewWindowOptions): Promise<number> {
-
     const window = new BrowserWindow(options);
     const windowId = window.id;
     window.once('closed', () => {
@@ -169,7 +169,12 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
     if (!window) {
       throw new Error('window with windowId ' + windowId + ' does not exist!');
     }
-    window.loadURL(url);
+    const urlParsed = URI.parse(url);
+    const queryStriing = qs.stringify({
+      ...qs.parse(urlParsed.query),
+      windowId,
+    });
+    window.loadURL(urlParsed.withQuery(queryStriing).toString(true));
     return new Promise((resolve, reject) => {
       const resolved = () => {
         resolve();

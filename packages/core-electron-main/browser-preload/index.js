@@ -1,11 +1,12 @@
-const ipcRenderer = require('electron').ipcRenderer;
 const net = require('net');
+const os = require('os');
+const { ipcRenderer } = require('electron');
 const { dirname, join } = require('path');
 
 const electronEnv = {};
 
 const urlParams = new URLSearchParams(decodeURIComponent(window.location.search));
-const windowId = Number(urlParams.get('windowId'));
+window.id = Number(urlParams.get('windowId'));
 const webContentsId = Number(urlParams.get('webContentsId'));
 
 async function createRPCNetConnection () {
@@ -20,20 +21,20 @@ function createNetConnection (connectPath) {
 electronEnv.ElectronIpcRenderer = ipcRenderer;
 electronEnv.createNetConnection = createNetConnection;
 electronEnv.createRPCNetConnection = createRPCNetConnection;
-electronEnv.platform = require('os').platform();
+electronEnv.platform = os.platform();
 
 electronEnv.isElectronRenderer = true;
 electronEnv.BufferBridge = Buffer;
-electronEnv.currentWindowId = windowId;
+electronEnv.currentWindowId = window.id;
 electronEnv.currentWebContentsId = webContentsId;
 electronEnv.monacoPath = join(dirname(require.resolve('monaco-editor-core/package.json')));
-electronEnv.appPath = require('electron').remote.app.getAppPath();
 
 const metaData = JSON.parse(ipcRenderer.sendSync('window-metadata', electronEnv.currentWindowId));
 
 electronEnv.metadata = metaData;
 process.env = Object.assign({}, process.env, metaData.env, { WORKSPACE_DIR: metaData.workspace });
 
+electronEnv.appPath = metaData.appPath;
 electronEnv.env = Object.assign({}, process.env);
 electronEnv.webviewPreload = metaData.webview.webviewPreload;
 electronEnv.plainWebviewPreload = metaData.webview.plainWebviewPreload;
