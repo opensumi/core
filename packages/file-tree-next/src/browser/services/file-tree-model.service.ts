@@ -658,21 +658,24 @@ export class FileTreeModelService {
     }
     // 如果为文件夹需展开
     // 如果为文件，则需要打开文件
-    if (type === TreeNodeType.CompositeTreeNode) {
-      if (this.corePreferences['workbench.list.openMode'] === 'singleClick') {
+    if (this.corePreferences['workbench.list.openMode'] === 'singleClick') {
+      if (type === TreeNodeType.CompositeTreeNode) {
         this.toggleDirectory(item as Directory);
+      } else if (type === TreeNodeType.TreeNode) {
+        // 对于文件的单击事件，走 openFile 去执行 editor.previewMode 配置项
+        this.fileTreeService.openFile(item.uri);
       }
-    } else if (type === TreeNodeType.TreeNode) {
-      this.fileTreeService.openFile(item.uri);
     }
     if (this.clickTimer) {
       clearTimeout(this.clickTimer);
     }
+
     this.clickTimer = setTimeout(() => {
       // 单击事件
       // 200ms内多次点击默认为双击事件
       if (this.clickTimes > 1) {
         if (type === TreeNodeType.TreeNode) {
+          // 双击的时候，不管 workbench.list.openMode 为单击还是双击，都以非预览模式打开文件
           this.fileTreeService.openAndFixedFile(item.uri);
         } else {
           if (this.corePreferences['workbench.list.openMode'] === 'doubleClick') {
