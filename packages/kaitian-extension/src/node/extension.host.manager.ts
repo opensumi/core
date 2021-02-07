@@ -14,8 +14,14 @@ export class ExtensionHostManager implements IExtensionHostManager {
   init() {
     // noop
   }
-  fork(modulePath: string, ...args: any[]) {
-    const extProcess = cp.fork(modulePath, ...args);
+  fork(modulePath: string, args: ReadonlyArray<string> = [], options: cp.ForkOptions = {}) {
+    const extProcess = cp.fork(modulePath, args, {
+      ...options,
+      env: {
+        ...options.env,
+        ...process.env,
+      },
+    });
     this.processMap.set(extProcess.pid, extProcess);
     return extProcess.pid;
   }
