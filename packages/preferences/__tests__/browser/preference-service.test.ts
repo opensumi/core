@@ -43,6 +43,14 @@ export class EditorPreferenceContribution implements PreferenceContribution {
         'default': 12,
         'description': 'Controls the font size in pixels.',
       },
+      'java.config.xxx': {
+        'type': 'boolean',
+        'description': '',
+      },
+      'java.config.yyy': {
+        'type': 'boolean',
+        'description': '',
+      },
     },
   } as any;
 }
@@ -134,11 +142,13 @@ describe('PreferenceService should be work', () => {
       await fs.remove(root.withoutScheme().toString());
     }
     root = null;
+    injector.disposeAll();
   });
 
   describe('01 #Init', () => {
 
     it('should have enough API', async () => {
+      expect(typeof preferenceService.ready).toBe('object');
       expect(typeof preferenceService.dispose).toBe('function');
       expect(typeof preferenceService.get).toBe('function');
       expect(typeof preferenceService.getProvider).toBe('function');
@@ -155,13 +165,74 @@ describe('PreferenceService should be work', () => {
     it('preferenceChanged event should emit once while setting preference', async (done) => {
       const testPreferenceName = 'editor.fontSize';
       await preferenceService.ready;
-      preferenceService.onPreferenceChanged((change) => {
+      const dispose = preferenceService.onPreferenceChanged((change) => {
         // 在文件夹目录情况下，设置配置仅会触发一次工作区配置变化事件
         if (change.preferenceName === testPreferenceName && change.scope === PreferenceScope.Workspace) {
+          dispose.dispose();
           done();
         }
       });
-      preferenceService.set(testPreferenceName, 28);
+      await preferenceService.set(testPreferenceName, 28);
+    });
+
+    it('onPreferencesChanged/onSpecificPreferenceChange event should be worked', async (done) => {
+      const testPreferenceName = 'editor.fontSize';
+      await preferenceService.ready;
+      const dispose1 = preferenceService.onPreferencesChanged((changes) => {
+        for (const preferenceName of Object.keys(changes)) {
+          if (preferenceName === testPreferenceName && changes[preferenceName].scope === PreferenceScope.Workspace) {
+            dispose1.dispose();
+            done();
+          }
+        }
+      });
+      const dispose2 = preferenceService.onSpecificPreferenceChange(testPreferenceName, (change) => {
+        // 在文件夹目录情况下，设置配置仅会触发一次工作区配置变化事件
+        if (change.newValue === 30) {
+          dispose2.dispose();
+          done();
+        }
+      });
+      await preferenceService.set(testPreferenceName, 30, PreferenceScope.Workspace);
+    });
+
+    it('setting multiple value once should be worked', async (done) => {
+      const preferences = {
+        'java.config.xxx': false,
+        'java.config.yyy': true,
+      };
+      for (const key of Object.keys(preferences)) {
+        await preferenceService.set(key, preferences[key]);
+        const value = preferenceService.get(key);
+        expect(value).toBe(preferences[key]);
+      }
+      done();
+    });
+
+    it('inspect preference with preferenceName should be worked', async (done) => {
+      const testPreferenceName = 'editor.fontSize';
+      await preferenceService.set(testPreferenceName, 12, PreferenceScope.User);
+      await preferenceService.set(testPreferenceName, 14, PreferenceScope.Workspace);
+      const value = preferenceService.inspect(testPreferenceName);
+      expect(value?.preferenceName).toBe(testPreferenceName);
+      expect(value?.globalValue).toBe(12);
+      expect(value?.workspaceValue).toBe(14);
+      done();
+    });
+
+    it('getProvider method should be worked', () => {
+      expect(preferenceService.getProvider(PreferenceScope.User)).toBeDefined();
+      expect(preferenceService.getProvider(PreferenceScope.Workspace)).toBeDefined();
+    });
+
+    it('resolve method should be work', async (done) => {
+      const testPreferenceName = 'editor.fontSize';
+      await preferenceService.set(testPreferenceName, 20, PreferenceScope.Workspace);
+      const unknownPreferenceName = 'editor.unknown';
+      expect(preferenceService.resolve(testPreferenceName).value).toBe(20);
+      expect(preferenceService.resolve(unknownPreferenceName).value).toBeUndefined();
+      expect(preferenceService.resolve(unknownPreferenceName, 'default').value).toBe('default');
+      done();
     });
   });
 });

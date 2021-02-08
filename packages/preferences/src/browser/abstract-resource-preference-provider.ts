@@ -1,6 +1,6 @@
 import * as jsoncparser from 'jsonc-parser';
 import { Injectable, Autowired } from '@ali/common-di';
-import { JSONUtils, URI, ResourceProvider, Disposable, isUndefined, PreferenceProviderDataChanges, ILogger, IResolvedPreferences } from '@ali/ide-core-browser';
+import { Deferred, JSONUtils, URI, ResourceProvider, Disposable, isUndefined, PreferenceProviderDataChanges, ILogger, IResolvedPreferences } from '@ali/ide-core-browser';
 import {
   PreferenceProvider,
   PreferenceSchemaProvider,
@@ -34,6 +34,8 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
 
   @Autowired(ILogger)
   private logger: ILogger;
+
+  private doSetPreferenceDeferred: Deferred<void> | null;
 
   constructor() {
     super();
@@ -111,6 +113,10 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     if (!path) {
       return false;
     }
+    if (this.doSetPreferenceDeferred) {
+      await this.doSetPreferenceDeferred.promise;
+    }
+    this.doSetPreferenceDeferred = new Deferred();
     const resource = await this.resource;
     if (!resource.saveContents) {
       return false;
@@ -128,11 +134,15 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
       }
       await resource.saveContents(newContent);
     } catch (e) {
+      this.doSetPreferenceDeferred.reject();
+      this.doSetPreferenceDeferred = null;
       const message = `Failed to update the value of ${key}.`;
       this.logger.error(`${message} ${e.toString()}`);
       return false;
     }
     await this.readPreferences();
+    this.doSetPreferenceDeferred.resolve();
+    this.doSetPreferenceDeferred = null;
     return true;
   }
 
