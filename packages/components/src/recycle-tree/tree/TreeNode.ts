@@ -350,7 +350,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   }
 
   get children() {
-    return this._children ? this._children.slice() : null;
+    return this._children;
   }
 
   get expanded() {
