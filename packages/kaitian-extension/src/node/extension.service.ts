@@ -195,14 +195,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
           PATH: shellPath ? shellPath : process.env.PATH,
         },
       };
-    } else {
-      forkOptions = {
-        ...forkOptions,
-        env: {
-          // 设置当前 IDE 容器的环境变量，如果是双容器模式，会覆盖这里相同 key 的 env
-          ...process.env,
-        },
-      };
     }
     const forkArgs: string[] = [];
     let extProcessPath: string = '';
