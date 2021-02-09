@@ -83,40 +83,29 @@ npm run add:browser file-tree lodash
 ### 发布流程
 代码的整体研发和版本管理分三个阶段
 
-#### 1. 功能研发
+#### 1. 测试版本
 在开发阶段，大家的代码都向 develop 分支发起代码合并，主要是开发新的功能。在 develop 分支上的代码，为了能够每日看到代码结果，会每天从 develop 分支进行日常版本构建和发布。
 
 日常构建版本使用 snapshot 作为 dist-tag，脚本代码如下，根据实际情况更改版本号：
 
-```
-npm run publish:daily -- --targetVersion=1.1.1-snapshot.`Date +%Y%m%d%H%M%S`
-```
-
-#### 2. 测试阶段
-完成了一个阶段的功能研发之后，会进行一次功能封板，从 develop 切出版本分支比如 `v1.2.x`，然后从这个分支发布出测试版本。
-
-**Alpha 版本**: 从版本分支发布的内部测试版，一般不向外部发布，会有很多Bug。一般只有测试人员使用。
-
-```
-npm run publish -- --tag=alpha --targetVersion=1.2.0-alpha.0
+```shell
+npm install
+npm run init
+npm run publish:snapshot
 ```
 
-**Beta 版本**: 从版本分支发布的测试版，这个阶段的版本会一直加入新的功能。在 Alpha 版之后推出，可能对外发布，用户选择性使用的版本。
-
-```
-npm run publish -- --tag=beta --targetVersion=1.2.0-beta.0
-```
-
+#### 2. 正式版本阶段
 > 关于版本分支的版本号，需要遵守 semver 规范，严格进行版本控制。
 
-#### 3. 正式版本阶段
-
-测试阶段结束之后，版本分支的代码会被合并到 master 分支，然后进行正式版本的发布。
+* 每次发正式版本 `v1.aa.0` 会从 develop 切出 `v1.aa.x` 分支, 然后进行正式版本的发布, 再由 `v1.aa.x` 向 develop 分支 PR 做代码回源
+* `v1.aa.x` 分支用于 `v1.aa.0` 稳定版本上的 bugfix
+* 每次发正式版本 `v1.aa.(1+)` 会继续从 `v1.aa.x` 分支, 然后进行正式版本的发布, 再由 `v1.aa.x` 向 develop 分支 PR 做代码回源
 
 ```
+npm install
+npm run init
 npm run publish
 ```
-
 
 ### 发布之后
 如果发布之后想要修改或者查看 owner 信息的话，可以按照下面的命令执行
@@ -129,13 +118,32 @@ tnpm owner ls @ali/ide-file-tree
 ## 更多文档
 - 研发规范: https://yuque.antfin-inc.com/zymuwz/tk8q9r/ltgiyp
 - git 分支和提交管理: https://yuque.antfin-inc.com/zymuwz/stxo68/asp0ag
-- merge request 模块: [链接](/merge_request_template.md)
-- [changelog 文档](https://yuque.antfin-inc.com/zymuwz/ezg0nz)
+- merge request 模块: [链接](/.antcode/PULL_REQUEST_TEMPLATE.md)
+- [changelog 文档](https://yuque.antfin-inc.com/ide-framework/integration/changelog)
 
+### Electron 版本运行步骤
 
-### Electron环境
+```shell
+  cd tools/electron
+  tnpm i
+  tnpm run link-local
+  tnpm run build
+  tnpm run rebuild-native -- --force-rebuild=true
+  tnpm run start
+```
 
-由于Lerna管理的包不能平铺依赖，需要先手动link
+### IDE Superman
+
+通过环境变量 `SCM_PLATFORM` 指定启动的 SCM 代码托管平台，目前已支持 antcode (aone 支持中)
+通过环境变量 `LSIF_HOST` 指定请求的 lsif 服务
+
+```
+SCM_PLATFORM=antcode LSIF_HOST=${your_lsif_host} yarn start:lite
+```
+
+### Deprecated: Electron环境
+
+由于 Lerna 管理的包不能平铺依赖，需要先手动link
 
 ````
 npm run link:electron
@@ -152,12 +160,3 @@ npm run build:electron
 ````
 npm run start:electron
 ````
-
-### IDE Superman
-
-通过环境变量 `SCM_PLATFORM` 指定启动的 SCM 代码托管平台，目前已支持 antcode (aone 支持中)
-通过环境变量 `LSIF_HOST` 指定请求的 lsif 服务
-
-```
-SCM_PLATFORM=antcode LSIF_HOST=${your_lsif_host} yarn start:lite
-```
