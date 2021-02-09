@@ -5,6 +5,7 @@ import { IExtHostProxyRPCService, IExtHostProxy, IExtHostProxyOptions, EXT_HOST_
 import { Emitter, Disposable, IDisposable } from '@ali/ide-core-node';
 import { ExtensionHostManager } from '../node/extension.host.manager';
 import { IExtensionHostManager } from '../common';
+import type { ForkOptions } from 'child_process';
 
 class ExtHostProxyRPCService extends RPCService implements IExtHostProxyRPCService {
 
@@ -32,8 +33,16 @@ class ExtHostProxyRPCService extends RPCService implements IExtHostProxyRPCServi
     return this.extensionHostManager.isKilled(pid);
   }
 
-  async $fork(modulePath: string, ...args: any[]) {
-    return this.extensionHostManager.fork(modulePath, ...args);
+  async $fork(modulePath: string, args: string[] = [], options: ForkOptions = {}) {
+    // 需要 merge ide server 的环境变量和插件运行的环境变量
+    const forkOptions = {
+      ...options,
+      env: {
+        ...options.env,
+        ...process.env,
+      },
+    };
+    return this.extensionHostManager.fork(modulePath, args, forkOptions);
   }
 
   async $onExit(callId: number, pid: number): Promise<void> {

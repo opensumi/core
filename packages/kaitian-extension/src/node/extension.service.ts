@@ -166,6 +166,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     let forkOptions: cp.ForkOptions = {
       // 防止 childProcess.stdout 为 null
       silent: true,
+      env: {
+        // 显式设置 env，因为需要和插件运行环境的 env merge
+        ...process.env,
+      },
     };
     // TODO: 软链模式下的路径兼容性存在问题
     if (isElectronNode()) {
@@ -190,7 +194,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       forkOptions = {
         ...forkOptions,
         env: {
-          ...process.env,
+          ...forkOptions.env,
           // 可能会有获取失败的情况
           PATH: shellPath ? shellPath : process.env.PATH,
         },
