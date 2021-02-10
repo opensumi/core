@@ -1,0 +1,101 @@
+import React, { useState, useEffect } from '@alipay/bigfish/react';
+import { PageContainer } from '@alipay/tech-ui';
+import { Table, Card, Button } from '@alipay/bigfish/antd';
+import Tool from '@/util/Tool';
+import { useRequest } from '@umijs/hooks';
+import Services from '@/service/baas-midway';
+import useUser from '@/container/user';
+import Exception403 from '@/page/exception403';
+import ApplyBizKey from './ApplyBizKeyForm';
+import styles from './style.less';
+
+interface queryParams {
+  pageNo: Number;
+  pageSize: Number;
+}
+
+const BizKeyList: React.FC = () => {
+  const { user } = useUser();
+
+  if (user.authorityInfo && !user.authorityInfo['hsmManagement-applyBizKey']) {
+    return <Exception403 />;
+  }
+
+  const [queryParam, setQueryParam] = useState<queryParams>({
+    pageNo: 1,
+    pageSize: 10,
+  });
+  const { data: applyDetailData = [], loading, run } = useRequest((query = queryParam) =>
+    Services.HSMController.getBizKeysHistory({ ...query })
+      .then((res) => {
+        return res?.data;
+      })
+      .catch((err) => {
+        console.warn(err);
+        return [];
+      }),
+  );
+
+  useEffect(() => {
+
+  }, [queryParam.pageNo]);
+
+  const initiateApply = () => {
+    const dialog = Tool.pageDialog({
+      title: '发起申请',
+      content: (
+        <ApplyBizKey
+          onSuccess={() => {
+            dialog.destroy();
+            run();
+          }}
+        />
+      ),
+      width: 504,
+    });
+  };
+
+  const columns = [
+    {
+      title: '链名称',
+      dataIndex: 'bcName',
+    },
+    {
+      title: '申请时间',
+      dataIndex: 'createTime',
+      render: (createTime: number) => (
+        <span>{Tool.formatTime(createTime, 'YYYY-MM-DD HH:mm:ss')}</span>
+      ),
+    },
+  ];
+
+  return (
+    <div className={styles.container}>
+      <PageContainer
+        header={{
+          title: '业务公钥申请',
+        }}
+        loading={loading}
+      >
+        <Card
+          bordered={false}
+          title={<span className={styles.containerTitle}>申请历史</span>}
+          extra={
+            <Button type="primary" onClick={initiateApply}>
+              发起申请
+            </Button>
+          }
+        >
+          <Table
+            columns={columns}
+            rowKey={(record, index) => `${index}`}
+            dataSource={applyDetailData}
+            pagination={false}
+          />
+        </Card>
+      </PageContainer>
+    </div>
+  );
+};
+
+export default BizKeyList;

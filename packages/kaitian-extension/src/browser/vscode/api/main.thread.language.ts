@@ -11,7 +11,7 @@ import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, Lan
 import { reviveIndentationRule, reviveOnEnterRules, reviveRegExp, reviveWorkspaceEditDto } from '../../../common/vscode/utils';
 import { ILanguageService } from '@ali/ide-editor';
 
-const PATCH_PREFIX = 'Index: a\n===================================================================\n--- a\n+++ a';
+const PATCH_PREFIX = 'Index: a\n===================================================================\n--- a\n+++ a\n';
 
 @Injectable({multiple: true})
 export class MainThreadLanguages implements IMainThreadLanguages {
