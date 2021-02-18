@@ -21,7 +21,7 @@ import { Adapter } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.ho
 
 import { ExtHostDocumentData } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/doc/ext-data.host';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
-import { DocumentFilter } from 'vscode-languageserver-protocol/lib/main';
+import { DocumentFilter } from 'vscode-languageserver-protocol';
 import { fromLanguageSelector } from '@ali/ide-kaitian-extension/lib/common/vscode/converter';
 import { MonacoModelIdentifier, testGlob } from '@ali/ide-kaitian-extension/lib/common/vscode';
 import { LanguageSelector } from '@ali/ide-kaitian-extension/lib/common/vscode/model.api';
