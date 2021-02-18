@@ -4,7 +4,7 @@ import { IReporterService, PreferenceService } from '@ali/ide-core-browser';
 import { DisposableCollection, Emitter, IMarkerData, LRUMap, MarkerManager, REPORT_NAME, URI } from '@ali/ide-core-common';
 import { extname } from '@ali/ide-core-common/lib/path';
 import { applyPatch } from 'diff';
-import { DocumentFilter } from 'vscode-languageserver-protocol/lib/main';
+import { DocumentFilter } from 'vscode-languageserver-protocol';
 import { ExtHostAPIIdentifier, IExtHostLanguages, IMainThreadLanguages, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
 import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider } from '../../../common/vscode/model.api';
