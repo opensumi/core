@@ -1477,6 +1477,11 @@ export class TreeItem {
   }
 }
 
+@es5ClassCompat
+export class TreeItem2 extends TreeItem {
+  // 该类已经标准化为 TreeItem，但是还有存量插件在使用
+}
+
 export enum LogLevel {
   Trace = 1,
   Debug = 2,
