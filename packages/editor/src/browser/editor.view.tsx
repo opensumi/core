@@ -189,6 +189,8 @@ export const EditorGroupView = ({ group }: { group: EditorGroup }) => {
   });
 
   React.useEffect(() => {
+    // 由于当前可能已经发生改变，因此需要再检查一次
+    setIsEmpty(group.resources.length === 0);
     const disposer = group.onDidEditorGroupTabChanged(() => {
       setIsEmpty(group.resources.length === 0);
     });
@@ -460,18 +462,30 @@ function getDragOverPosition(e: DragEvent, element: HTMLElement): DragOverPositi
   return DragOverPosition.CENTER;
 }
 
+function addClass(element: HTMLElement, className: string) {
+  if (!element.classList.contains(className)) {
+    element.classList.add(className);
+  }
+}
+
+function removeClass(element: HTMLElement, className: string) {
+  if (element.classList.contains(className)) {
+    element.classList.remove(className);
+  }
+}
+
 function decorateDragOverElement(element: HTMLElement, position: DragOverPosition) {
-  element.classList.add(styles.kt_on_drag_over);
-  [DragOverPosition.LEFT, DragOverPosition.RIGHT, DragOverPosition.TOP, DragOverPosition.BOTTOM].forEach((pos) => {
-    element.classList.remove(styles['kt_on_drag_over_' + pos]);
+  addClass(element, styles.kt_on_drag_over);
+  [DragOverPosition.LEFT, DragOverPosition.RIGHT, DragOverPosition.TOP, DragOverPosition.BOTTOM].filter((pos) => pos !== position).forEach((pos) => {
+    removeClass(element, styles['kt_on_drag_over_' + pos]);
   });
-  element.classList.add(styles['kt_on_drag_over_' + position]);
+  addClass(element, styles['kt_on_drag_over_' + position]);
 }
 
 function removeDecorationDragOverElement(element: HTMLElement) {
-  element.classList.remove(styles.kt_on_drag_over);
+  removeClass(element, styles.kt_on_drag_over);
   [DragOverPosition.LEFT, DragOverPosition.RIGHT, DragOverPosition.TOP, DragOverPosition.BOTTOM].forEach((pos) => {
-    element.classList.remove(styles['kt_on_drag_over_' + pos]);
+    removeClass(element, styles['kt_on_drag_over_' + pos]);
   });
 }
 
