@@ -352,9 +352,11 @@ export class FileTreeModelService {
     }
     if (target) {
       if (this.selectedFiles.length > 0) {
-        this.selectedFiles.forEach((file) => {
-          this.selectedDecoration.removeTarget(file);
-        });
+        // 因为选择装饰器可能通过其他方式添加而不能及时在selectedFiles上更新
+        // 故这里遍历所有选中装饰器的节点进行一次统一清理
+        for (const target of this.selectedDecoration.appliedTargets.keys()) {
+          this.selectedDecoration.removeTarget(target);
+        }
       }
       if (this.focusedFile) {
         this.focusedDecoration.removeTarget(this.focusedFile);

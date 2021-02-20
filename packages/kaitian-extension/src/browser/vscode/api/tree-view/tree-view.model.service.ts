@@ -231,9 +231,11 @@ export class ExtensionTreeViewModel {
     }
     if (target) {
       if (this.selectedNodes.length > 0) {
-        this.selectedNodes.forEach((node) => {
-          this.selectedDecoration.removeTarget(node);
-        });
+        // 因为选择装饰器可能通过其他方式添加而不能及时在selectedNodes上更新
+        // 故这里遍历所有选中装饰器的节点进行一次统一清理
+        for (const target of this.selectedDecoration.appliedTargets.keys()) {
+          this.selectedDecoration.removeTarget(target);
+        }
       }
       if (this.focusedNode) {
         this.focusedDecoration.removeTarget(this.focusedNode);
