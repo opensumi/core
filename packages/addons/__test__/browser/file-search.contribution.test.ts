@@ -7,7 +7,7 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 import { ClientAddonModule } from '../../src/browser';
-import { FileSearchContribution, quickFileOpen, FileSearchQuickCommandHandler, matchLineReg } from '../../src/browser/file-search.contribution';
+import { FileSearchContribution, quickFileOpen, FileSearchQuickCommandHandler, matchLineReg, getValidateInput } from '../../src/browser/file-search.contribution';
 
 describe('test for browser/file-search.contribution.ts', () => {
   let injector: MockInjector;
@@ -106,5 +106,10 @@ describe('test for browser/file-search.contribution.ts', () => {
     const match5 = '/some/file.js:73'.match(matchLineReg)!;
     expect(match5[1]).toBe('/some/file.js');
     expect(match5[2]).toBe('73');
+  });
+
+  it('get validate input', () => {
+    const validate = getValidateInput('package.json(1,1)');
+    expect(validate).toBe('package.json');
   });
 });

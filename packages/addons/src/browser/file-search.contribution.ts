@@ -44,7 +44,7 @@ export const quickFileOpen: Command = {
 // support /some/file.js#L73
 // support /some/file.js:73
 // support /some/file.js:73:84
-export const matchLineReg = /^([^:#\(]*)[:#\(]?L?(\d+)?[:,]?(\d+)?/;
+export const matchLineReg = /^([^:#\(]*)[:#\(]?L?(\d+)?[:,]?(\d+)?\)?/;
 
 function getRangeByInput(input: string = ''): monaco.Range | undefined {
   const matchList = input.match(matchLineReg) || [];
@@ -66,7 +66,7 @@ function getRangeByInput(input: string = ''): monaco.Range | undefined {
   );
 }
 
-function getValidateInput(input: string) {
+export function getValidateInput(input: string) {
   return input.replace(matchLineReg, '$1');
 }
 
