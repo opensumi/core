@@ -480,10 +480,10 @@ export class DebugConsoleModelService {
     }
     const parent: DebugConsoleRoot = this.treeModel.root as DebugConsoleRoot;
     const textNode = new AnsiConsoleNode(value, parent);
-    await this.dispatchWatchEvent(parent, parent.path, { type: WatchEvent.Added, node: textNode, id: parent.id });
+    this.dispatchWatchEvent(parent, parent.path, { type: WatchEvent.Added, node: textNode, id: parent.id });
     const expressionNode = new DebugConsoleNode(this.manager.currentSession, value, parent as ExpressionContainer);
     await expressionNode.evaluate();
-    await this.dispatchWatchEvent(parent, parent.path, { type: WatchEvent.Added, node: expressionNode, id: parent.id });
+    this.dispatchWatchEvent(parent, parent.path, { type: WatchEvent.Added, node: expressionNode, id: parent.id });
     this.treeHandle.ensureVisible(expressionNode, 'end', true);
   }
 

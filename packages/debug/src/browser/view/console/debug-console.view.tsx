@@ -4,17 +4,20 @@ import { observer } from 'mobx-react-lite';
 import * as styles from './debug-console.module.less';
 import { useInjectable, ViewState, getIcon } from '@ali/ide-core-browser';
 import { DebugConsoleService } from './debug-console.service';
-import { RecycleTree, IRecycleTreeHandle, TreeNodeType, INodeRendererWrapProps, ClasslistComposite, INodeRendererProps, CompositeTreeNode } from '@ali/ide-components';
+import { RecycleTree, IRecycleTreeHandle, TreeNodeType, INodeRendererWrapProps, ClasslistComposite, INodeRendererProps, CompositeTreeNode, TreeNode } from '@ali/ide-components';
 import { IDebugConsoleModel } from './debug-console-tree.model.service';
-import { DebugConsoleNode, AnsiConsoleNode, DebugConsoleVariableContainer } from '../../tree';
+import { DebugConsoleNode, AnsiConsoleNode, DebugConsoleVariableContainer, DebugVariableContainer } from '../../tree';
 import { Loading } from '@ali/ide-core-browser/lib/components/loading';
+import { DebugConsoleFilterService } from './debug-console-filter.service';
 
 export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState }) => {
   const debugConsoleService = useInjectable<DebugConsoleService>(DebugConsoleService);
+  const debugConsoleFilterService = useInjectable<DebugConsoleFilterService>(DebugConsoleFilterService);
   const { tree } = debugConsoleService;
   const debugInputRef = React.createRef<HTMLDivElement>();
   const { height, width } = viewState;
   const [model, setModel] = React.useState<IDebugConsoleModel>();
+  const [filterValue, setFilterValue] = React.useState<string>('');
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   React.useEffect(() => {
@@ -28,8 +31,12 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
       }
       setModel(model);
     });
+    const filterDispose = debugConsoleFilterService.onDidValueChange((value: string) => {
+      setFilterValue(value);
+    });
     return () => {
       tree.removeNodeDecoration();
+      filterDispose.dispose();
     };
   }, []);
 
@@ -75,6 +82,16 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
     enactiveNodeDecoration();
   };
 
+  const fuzzyOptions = () => {
+    return {
+      pre: '<match>',
+      post: '</match>',
+      extract: (node: DebugConsoleNode | AnsiConsoleNode | DebugVariableContainer) => {
+        return node.description ? node.description : node.name;
+      },
+    };
+  };
+
   const renderOutputContent = () => {
     if (!model) {
       return null;
@@ -93,6 +110,8 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
         width={width}
         itemHeight={DEBUG_CONSOLE_TREE_NODE_HEIGHT}
         onReady={handleTreeReady}
+        filter={filterValue}
+        filterProvider={{ fuzzyOptions }}
         model={model!.treeModel}
         overflow={ 'auto' }
       >
@@ -122,13 +141,13 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
 });
 
 export interface IDebugConsoleNodeProps {
-  item: any;
+  item: any ;
   defaultLeftPadding?: number;
   leftPadding?: number;
   decorations?: ClasslistComposite;
-  onClick: (ev: React.MouseEvent, item: AnsiConsoleNode | DebugConsoleNode, type: TreeNodeType) => void;
-  onTwistierClick: (ev: React.MouseEvent, item: AnsiConsoleNode | DebugConsoleNode, type: TreeNodeType) => void;
-  onContextMenu?: (ev: React.MouseEvent, item: AnsiConsoleNode | DebugConsoleNode, type: TreeNodeType) => void;
+  onClick: (ev: React.MouseEvent, item: AnsiConsoleNode | DebugConsoleNode | TreeNode, type: TreeNodeType) => void;
+  onTwistierClick: (ev: React.MouseEvent, item: AnsiConsoleNode | DebugConsoleNode | TreeNode, type: TreeNodeType) => void;
+  onContextMenu?: (ev: React.MouseEvent, item: AnsiConsoleNode | DebugConsoleNode | TreeNode, type: TreeNodeType) => void;
 }
 
 export type IDebugConsoleNodeRenderedProps = IDebugConsoleNodeProps & INodeRendererProps;
@@ -143,6 +162,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
   onContextMenu,
   itemType,
 }: IDebugConsoleNodeRenderedProps) => {
+
   const handleClick = (ev: React.MouseEvent) => {
     onClick(ev, item, CompositeTreeNode.is(item) ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode);
   };
@@ -166,11 +186,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
 
   const renderDisplayName = (node: DebugConsoleNode | AnsiConsoleNode) => {
     if (AnsiConsoleNode.is(node)) {
-     return <div
-      className={cls(styles.debug_console_node_segment, styles.debug_console_node_display_name)}
-     >
-      {(node as AnsiConsoleNode).template()}
-     </div>;
+      return null;
     }
     return <div
       className={cls(styles.debug_console_node_segment, !DebugConsoleNode.is(node) && styles.debug_console_node_display_name, styles.debug_console_variable, !DebugConsoleVariableContainer.is(node) && (item as DebugConsoleNode).description ? styles.name : styles.info)}
@@ -185,6 +201,13 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     const stringRegex = /^(['"]).*\1$/;
     const description = (node as DebugConsoleNode).description ? (node as DebugConsoleNode).description.replace('function', 'f') : '';
     const addonClass = [styles.debug_console_variable];
+    if (AnsiConsoleNode.is(node)) {
+      return <div
+       className={cls(styles.debug_console_node_segment, styles.debug_console_node_display_name)}
+      >
+       {(node as AnsiConsoleNode).template()}
+      </div>;
+    }
     if (DebugConsoleVariableContainer.is(node)) {
       return null;
     }

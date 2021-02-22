@@ -26,8 +26,8 @@ export interface IRecycleTreeSize {
   height: number;
 }
 
-export interface IRecycleTreeProps {
-  model: TreeModel;
+export interface IRecycleTreeProps<T = TreeModel> {
+  model: T;
   /**
    * 容器高度
    * height 计算出可视区域渲染数量
@@ -73,6 +73,12 @@ export interface IRecycleTreeProps {
    * @memberof IRecycleTreeProps
    */
   filter?: string;
+  /**
+   * 筛选器
+   */
+  filterProvider?: {
+    fuzzyOptions: () => fuzzy.FilterOptions<any>;
+  };
   /**
    * 空白时的占位元素
    * @type {React.ReactNode}
@@ -613,7 +619,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   // 过滤Root节点展示
   private filterItems = (filter: string) => {
-    const { root } = this.props.model;
+    const { model: { root }, filterProvider } = this.props;
     this.filterWatcherDisposeCollection.dispose();
     this.idToFilterRendererPropsCache.clear();
     if (!filter) {
@@ -640,7 +646,13 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         }
       });
     } else {
-      const fuzzyLists = fuzzy.filter(filter, nodes, RecycleTree.FILTER_FUZZY_OPTIONS);
+      let fuzzyLists: fuzzy.FilterResult<TreeNode>[] = [];
+      if (filterProvider) {
+        fuzzyLists = fuzzy.filter(filter, nodes, filterProvider.fuzzyOptions());
+      } else {
+        fuzzyLists = fuzzy.filter(filter, nodes, RecycleTree.FILTER_FUZZY_OPTIONS);
+      }
+
       fuzzyLists.forEach((item) => {
         const node = (item as any).original as TreeNode;
         idSets.add(node.id);
@@ -713,6 +725,9 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private renderItem = ({ index, style }): JSX.Element => {
     const { children, overflow = 'ellipsis' } = this.props;
     const node = this.getItemAtIndex(index) as IFilterNodeRendererProps;
+    if (!node) {
+      return <></>;
+    }
     const { item, itemType: type, template } = node;
     if (!item) {
       this.onErrorEmitter.fire({ type: RenderErrorType.RENDER_ITEM, message: `RenderItem error at index ${index}` });

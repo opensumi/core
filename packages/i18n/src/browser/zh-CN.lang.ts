@@ -213,6 +213,7 @@ export const localizationBundle = {
     'debug.action.continue': '下一步',
     'debug.console.panel.title': '调试控制台',
     'debug.console.panel.default': '默认',
+    'debug.console.filter.placeholder': '筛选器(例如 text、!exclude)',
 
     'output.tabbar.title': '输出',
     'output.channel.none': '<还没有任何输出>',

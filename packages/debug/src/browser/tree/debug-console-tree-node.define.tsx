@@ -12,7 +12,7 @@ export class AnsiConsoleNode extends TreeNode {
   }
 
   constructor(
-    public readonly content: string,
+    public readonly description: string,
     // 该节点默认只存在于根节点下
     parent: CompositeTreeNode,
     public readonly severity?: MessageType,
@@ -44,7 +44,7 @@ export class AnsiConsoleNode extends TreeNode {
 
   get template(): any {
     return () => {
-      return <Ansi className={this.getColor(this.severity)} linkify={false}>{this.content}</Ansi>;
+      return <Ansi className={this.getColor(this.severity)} linkify={false}>{this.description}</Ansi>;
     };
   }
 }

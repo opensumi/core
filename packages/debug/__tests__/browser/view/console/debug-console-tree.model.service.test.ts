@@ -18,10 +18,12 @@ import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { WSChannelHandler } from '@ali/ide-connection';
 import { IVariableResolverService } from '@ali/ide-variable';
 import { ITaskService } from '@ali/ide-task';
+import { DebugConsoleFilterService } from '@ali/ide-debug/lib/browser/view/console/debug-console-filter.service';
 
 describe('Debug Console Tree Model', () => {
   const mockInjector = createBrowserInjector([]);
   let debugConsoleModelService: DebugConsoleModelService;
+  let debugConsoleFilterService: DebugConsoleFilterService;
   let debugSessionFactory: DebugSessionFactory;
   const mockDebugHoverSource = {
     onDidChange: jest.fn(() => Disposable.create(() => { })),
@@ -168,6 +170,7 @@ describe('Debug Console Tree Model', () => {
 
     debugConsoleModelService = mockInjector.get(DebugConsoleModelService);
     debugSessionFactory = mockInjector.get(DefaultDebugSessionFactory);
+    debugConsoleFilterService = mockInjector.get(DebugConsoleFilterService);
     mockContextKeyService = mockInjector.get(IContextKeyService);
   });
 
@@ -197,6 +200,7 @@ describe('Debug Console Tree Model', () => {
     expect(debugConsoleModelService.treeModel).toBeUndefined();
     expect(debugConsoleModelService.focusedNode).toBeUndefined();
     expect(Array.isArray(debugConsoleModelService.selectedNodes)).toBeTruthy();
+    expect(typeof debugConsoleFilterService.onDidValueChange).toBe('function');
   });
 
   it('should init success', () => {
@@ -314,7 +318,7 @@ describe('Debug Console Tree Model', () => {
     debugConsoleModelService.refresh(debugConsoleModelService.treeModel?.root as any);
   });
 
-  it('repl merging', async () => {
+  it('repl merging', async (done) => {
     const treeHandle = { ensureVisible: () => { } } as any;
     debugConsoleModelService.handleTreeHandler(treeHandle);
     const getBranchSize = (repl: IDebugConsoleModel | undefined) => {
@@ -339,5 +343,15 @@ describe('Debug Console Tree Model', () => {
     expect(getBranchSize(child2Repl)).toBeGreaterThanOrEqual(0);
     expect(getBranchSize(grandChildRepl)).toBeGreaterThanOrEqual(0);
     expect(getBranchSize(child3Repl)).toEqual(0);
+
+    done();
+  });
+
+  it('repl filter service', () => {
+    debugConsoleFilterService.setFilterText('KTTQL');
+    expect(debugConsoleFilterService.filter({ description: 'KATATAQALA' } as any)).toEqual(false);
+    expect(debugConsoleFilterService.filter({ description: 'KTTQLLLLLL' } as any)).toEqual(true);
+    expect(debugConsoleFilterService.filter({ description: '🐜' } as any)).toEqual(false);
+    expect(debugConsoleFilterService.filter({ description: '早上好我的工友们 KTTQL' } as any)).toEqual(true);
   });
 });

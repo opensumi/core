@@ -238,6 +238,8 @@ export const localizationBundle = {
     'debug.action.continue': 'Continue',
     'debug.console.panel.title': 'DEBUG CONSOLE',
     'debug.console.panel.default': 'default',
+    'debug.console.filter.placeholder': 'Filter (e.g. text, !exclude)',
+
     'debug.stack.loadMore': 'Load More Stack Frames',
     'debug.stack.loading': 'Loading...',
     'debug.breakpoint.deactive': 'Deactivate Breakpoints',

@@ -10,3 +10,4 @@ export * from './comparers';
 export * from './decorators';
 export * from './file-uri';
 export * from './paths';
+export * from './ansi';

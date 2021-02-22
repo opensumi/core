@@ -89,7 +89,7 @@ export class DebugConsoleSession {
     }
 
     const lastItem = this.nodes.slice(-1)[0];
-    if (lastItem instanceof AnsiConsoleNode && lastItem.content === this.uncompletedItemContent) {
+    if (lastItem instanceof AnsiConsoleNode && lastItem.description === this.uncompletedItemContent) {
       this.nodes.pop();
       this.uncompletedItemContent += value;
     } else {

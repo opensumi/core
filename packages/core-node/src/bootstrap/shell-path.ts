@@ -1,18 +1,5 @@
-import { isWindows } from '@ali/ide-core-common';
+import { isWindows, stripAnsi } from '@ali/ide-core-common';
 import { exec } from 'child_process';
-
-const ansiRegex = ({onlyFirst = false} = {}) => {
-  const pattern = [
-    '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)',
-    '(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-ntqry=><~]))',
-  ].join('|');
-
-  return new RegExp(pattern, onlyFirst ? undefined : 'g');
-};
-
-const stripAnsi = (str) => {
-  return typeof str === 'string' ? str.replace(ansiRegex(), '') : str;
-};
 
 export async function getShellPath(): Promise<string | undefined> {
   if (isWindows) {

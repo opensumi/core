@@ -61,12 +61,14 @@ export class TreeNode implements ITreeNode {
   protected _watcher: ITreeWatcher;
 
   protected _tree: ITree;
+  protected _visible: boolean;
 
   protected constructor(tree: ITree, parent?: ICompositeTreeNode, watcher?: ITreeWatcher, optionalMetadata?: { [key: string]: any }, options?: { disableCache?: boolean }) {
     this._uid = TreeNode.nextId();
     this._parent = parent;
     this._tree = tree;
     this._disposed = false;
+    this._visible = true;
     this._metadata = { ...(optionalMetadata || {}) };
     this._depth = parent ? parent.depth + 1 : 0;
     if (watcher) {
@@ -193,6 +195,15 @@ export class TreeNode implements ITreeNode {
     if (this.path !== prevPath) {
       this._watcher.notifyDidChangePath(this);
     }
+  }
+
+  public get visible(): boolean {
+    return this._visible;
+  }
+
+  public setVisible(b: boolean): this {
+    this._visible = b;
+    return this;
   }
 
   protected dispose() {

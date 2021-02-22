@@ -36,6 +36,10 @@ export interface ITreeNode {
    * 移动函数
    */
   mv: (to: ICompositeTreeNode | null, name?: string) => void;
+  /**
+   * 设置是否可见，这里的可见表示的是否在展示数据内，并不是代表是否在用户视窗范围内
+   */
+  setVisible: (b: boolean) => this;
 }
 
 export interface ICompositeTreeNode extends ITreeNode {

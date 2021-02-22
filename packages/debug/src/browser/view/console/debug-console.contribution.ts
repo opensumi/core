@@ -7,6 +7,7 @@ import { DEBUG_CONSOLE_CONTAINER_ID } from '../../../common';
 import { DebugConsoleView } from './debug-console.view';
 import { DebugConsoleInputDocumentProvider } from './debug-console.service';
 import { BrowserEditorContribution, IEditorDocumentModelContentRegistry } from '@ali/ide-editor/lib/browser';
+import { DebugConsoleFilterView } from './debug-console-filter.view';
 
 export const DEBUG_CONSOLE_VIEW_ID = 'debug-console-view';
 
@@ -31,6 +32,7 @@ export class DebugConsoleContribution implements ComponentContribution, BrowserE
       priority: 8,
       containerId: DEBUG_CONSOLE_CONTAINER_ID,
       iconClass: getIcon('debug'),
+      titleComponent: DebugConsoleFilterView,
     });
   }
 
