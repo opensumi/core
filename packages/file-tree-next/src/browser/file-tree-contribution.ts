@@ -438,7 +438,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         if (isWindows) {
           pathStr = pathStr.slice(1);
         }
-        await this.clipboardService.writeText(decodeURIComponent(copyUri.withoutScheme().toString()));
+        await this.clipboardService.writeText(pathStr);
       },
       isVisible: () => {
         return this.fileTreeModelService.selectedFiles.length > 0;
