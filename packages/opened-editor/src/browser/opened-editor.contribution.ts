@@ -97,19 +97,19 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
 
     commands.registerCommand(OPEN_EDITORS_COMMANDS.COMPARE_SELECTED, {
       execute: (node: EditorFile) => {
-        this.commandService.executeCommand(FILE_COMMANDS.COMPARE_SELECTED.id, '', [node.uri]);
+        this.commandService.executeCommand(FILE_COMMANDS.COMPARE_SELECTED.id, node.uri, [node.uri]);
       },
     });
 
     commands.registerCommand(OPEN_EDITORS_COMMANDS.COPY_PATH, {
       execute: (node: EditorFile) => {
-        this.commandService.executeCommand(FILE_COMMANDS.COPY_PATH.id, '', [node.uri]);
+        this.commandService.executeCommand(FILE_COMMANDS.COPY_PATH.id, node.uri, [node.uri]);
       },
     });
 
     commands.registerCommand(OPEN_EDITORS_COMMANDS.COPY_RELATIVE_PATH, {
       execute: (node: EditorFile) => {
-        this.commandService.executeCommand(FILE_COMMANDS.COPY_RELATIVE_PATH.id, '', [node.uri]);
+        this.commandService.executeCommand(FILE_COMMANDS.COPY_RELATIVE_PATH.id, node.uri, [node.uri]);
       },
     });
   }
