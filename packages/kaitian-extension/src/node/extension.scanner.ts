@@ -194,17 +194,18 @@ export class ExtensionScanner {
    *  1. ${publisher}.${name}-${version} (推荐)
    *  2. ${extensionId}-${name}-${version}
    *  以上两种
-   * @param folderName
+   * @param extensionPath
    * @param version 可能有用户使用非 semver 的规范，所以传进来
    */
   static getExtensionIdByExtensionPath(extensionPath: string, version?: string) {
     const regExp = version ? new RegExp(`^(.+?)\\.(.+?)-(${version})$`) : /^(.+?)\.(.+?)-(\d+\.\d+\.\d+)$/;
-    const dirName = path.basename(extensionPath);
-    const match = regExp.exec(dirName);
+    const baseName = path.basename(extensionPath);
+    const nameStr = baseName.endsWith('.asar') ? baseName.split('.asar').shift()! : baseName;
+    const match = regExp.exec(nameStr);
 
     if (match == null) {
       // 按照第二种方式返回
-      return dirName.split('-')[0];
+      return nameStr.split('-')[0];
     }
 
     const [, publisher, name] = match;
