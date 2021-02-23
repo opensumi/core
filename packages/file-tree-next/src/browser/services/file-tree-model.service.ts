@@ -959,6 +959,9 @@ export class FileTreeModelService {
       this.validateMessage = undefined;
       if (promptHandle instanceof RenamePromptHandle) {
         const target = promptHandle.target as (File | Directory);
+        const nameFragments = (promptHandle.target as File).displayName.split(Path.separator);
+        const index = this.activeUri?.displayName ? nameFragments.indexOf(this.activeUri?.displayName) : -1;
+        const newNameFragments = index === -1 ? [] : nameFragments.slice(0, index).concat(newName);
         let from = target.uri;
         let to = (target.parent as Directory).uri.resolve(newName);
         const isCompactNode = target.name.indexOf(Path.separator) > 0;
@@ -967,15 +970,10 @@ export class FileTreeModelService {
           return true;
         }
         promptHandle.addAddonAfter('loading_indicator');
-        if (isCompactNode && this.activeUri?.displayName) {
+        if (isCompactNode && newNameFragments.length > 0) {
           // 压缩目录情况下，需要计算下标进行重命名路径拼接
-          const nameFragments = (promptHandle.target as File).displayName.split(Path.separator);
-          const index = nameFragments.indexOf(this.activeUri?.displayName);
           from = (target.parent as Directory).uri.resolve(nameFragments.slice(0, index + 1).join(Path.separator));
-          const newNameFragments = nameFragments.slice(0, index).concat(newName);
           to = (target.parent as Directory).uri.resolve(newNameFragments.concat().join(Path.separator));
-          target.updateDisplayName(newNameFragments.concat(nameFragments.slice(index + 1)).join(Path.separator));
-          target.updateName(newNameFragments.concat(nameFragments.slice(index + 1)).join(Path.separator));
         }
         const error = await this.fileTreeAPI.mv(from, to, target.type === TreeNodeType.CompositeTreeNode);
         promptHandle.removeAddonAfter();
@@ -990,23 +988,35 @@ export class FileTreeModelService {
         }
         if (!isCompactNode) {
           this.fileTreeService.moveNodeByPath(target.parent as Directory, target.path, new Path(target.parent!.path).join(newName).toString());
-        } else {
-          this.fileTreeService.ignoreFileEventOnce((target.parent as Directory).uri);
-        }
-        // 当重命名文件为文件夹时，刷新文件夹更新子文件路径
-        if (Directory.is(target)) {
-          if (isCompactNode) {
-            // 由于节点移动时默认仅更新节点路径
-            // 我们需要自己更新额外的参数，如uri, filestat等
-            target.updateURI(to);
-            target.updateFileStat({
-              ...target.filestat,
-              uri: to.toString(),
-            });
-            target.updateToolTip(this.fileTreeAPI.getReadableTooltip(to));
-            this.treeModel.dispatchChange();
+          // 普通节点重命名后，如果该节点为文件夹节点，需刷新该节点的父节点
+          if (Directory.is(target)) {
+            // 在部分Linux机器下，文件夹重命名可能不会发送对应的文件夹更新事件，这里手动触发一次刷新文件树操作
+            this.fileTreeService.refresh(target.parent as Directory);
           }
-          this.fileTreeService.refresh(target as Directory);
+        } else {
+          // 更新压缩目录展示名称
+          target.updateDisplayName(newNameFragments.concat(nameFragments.slice(index + 1)).join(Path.separator));
+          target.updateName(newNameFragments.concat(nameFragments.slice(index + 1)).join(Path.separator));
+          // 由于节点移动时默认仅更新节点路径
+          // 我们需要自己更新额外的参数，如uri, filestat等
+          target.updateURI(to);
+          target.updateFileStat({
+            ...target.filestat,
+            uri: to.toString(),
+          });
+          target.updateToolTip(this.fileTreeAPI.getReadableTooltip(to));
+          this.treeModel.dispatchChange();
+          this.fileTreeService.ignoreFileEventOnce((target.parent as Directory).uri);
+          if ((target.parent as Directory).children?.find((child) => target.path.indexOf(child.path) >= 0)) {
+            // 当重命名后的压缩节点在父节点中存在子集节点时，刷新父节点
+            // 如：
+            // 压缩节点 001/002 修改为 003/002 时
+            // 同时父节点下存在 003 空节点
+            this.fileTreeService.refresh(target.parent as Directory);
+          } else {
+            // 压缩节点重命名时，刷新文件夹更新子文件路径
+            this.fileTreeService.refresh(target as Directory);
+          }
         }
         locationFileWhileFileExist(target.path);
       } else if (promptHandle instanceof NewPromptHandle) {
