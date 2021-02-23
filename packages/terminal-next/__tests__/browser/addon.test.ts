@@ -5,6 +5,7 @@ describe('Match paths', () => {
     expect(rePath.test('abc')).toBeFalsy();
     expect(rePath.test('abc/def')).toBeTruthy();
     expect(rePath.test('/abc/def')).toBeTruthy();
+    expect(rePath.test('~/abc/def')).toBeTruthy();
   });
 
   it('match unix paths with positions', () => {

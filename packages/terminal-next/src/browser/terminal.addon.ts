@@ -5,7 +5,7 @@ import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { TerminalKeyBoardInputService } from './terminal.input';
 import { ITerminalConnection } from '../common';
 
-const segmentClause = '\\w\\.@_\\-';
+const segmentClause = '\\~\\w\\.@_\\-';
 const posClause = [
   ':\\d+(?::\\d+)?', // :1 | :1:2
   '\\s*\\(\\d+(?:,\\s*\\d+)?\\)', // (1) | (1,2) | (1, 2)
