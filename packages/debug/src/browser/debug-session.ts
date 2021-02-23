@@ -140,11 +140,21 @@ export class DebugSession implements IDebugSession {
   }
 
   protected async doRunInTerminal(options: TerminalOptions, command?: string): Promise<DebugProtocol.RunInTerminalResponse['body']> {
-    const terminal = await this.terminalService.createTerminal(options);
-    terminal.show();
-    const processId = await this.terminalService.getProcessId(terminal.id);
-    if (command) {
-      this.terminalService.sendText(terminal.id, command);
+    const activeTerminal = this.terminalService.terminals.find((terminal) => terminal.name === options.name && terminal.isActive);
+    let processId: number | undefined;
+    // 当存在同名终端并且处于激活状态时，复用该终端
+    if (activeTerminal) {
+      if (command) {
+        this.terminalService.sendText(activeTerminal.id, command);
+      }
+      processId = await this.terminalService.getProcessId(activeTerminal.id);
+    } else {
+      const terminal = await this.terminalService.createTerminal(options);
+      terminal.show();
+      if (command) {
+        this.terminalService.sendText(terminal.id, command);
+        processId = await this.terminalService.getProcessId(terminal.id);
+      }
     }
     return { processId };
   }

@@ -75,6 +75,7 @@ export const DebugHoverView = observer(() => {
         placeholder={() => {
           return <span></span>;
         }}
+        overflow={ 'auto' }
       >
         {(props: INodeRendererWrapProps) => {
           const decorations = debugHoverTreeModelService.decorations.getDecorations(props.item as any);

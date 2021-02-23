@@ -90,6 +90,7 @@ export const DebugVariableView = observer(({
         placeholder={() => {
           return <span></span>;
         }}
+        overflow={ 'auto' }
       >
         {(props: INodeRendererWrapProps) => {
           const decorations = debugVariablesModelService.decorations.getDecorations(props.item as any);
