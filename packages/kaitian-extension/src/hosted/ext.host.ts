@@ -123,12 +123,9 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       }
 
       if (extension) {
-        this.reporterService.point(REPORT_NAME.RUNTIME_ERROR_EXTENSION, extension.id, {
-          error: error && error.message,
-          stackTraceMessage,
-          version: extension.packageJSON?.version,
-        });
+        this.reportRuntimeError(error, extension, stackTraceMessage);
       }
+
       const traceMassage = `${error.name || 'Error'}: ${error.message || ''}${stackTraceMessage}`;
       this.logger.error(traceMassage);
       return traceMassage;
@@ -272,6 +269,21 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     return this.extensionsActivator.has(extensionId);
   }
 
+  private reportRuntimeError(err: Error, extension: IExtensionProps, stackTraceMessage: string) {
+    /**
+     * 可能存在一些第三方库会主动抛出空的 Error ，例如 https://github.com/BrunoCesarAngst/daoo/blob/32e85c7799f9929685be299f07011fe4afa72f9d/aula13/node_modules/bluebird/js/release/async.js#L3
+     * 这会导致上报的异常信息干扰非常大，无法正常基于堆栈排查问题
+     * 所以这里过滤掉 message 为空的 Error
+     */
+    if (err && err.message) {
+      this.reporterService.point(REPORT_NAME.RUNTIME_ERROR_EXTENSION, extension.id, {
+        stackTraceMessage,
+        error: err.message,
+        version: extension.packageJSON?.version,
+      });
+    }
+  }
+
   // TODO: 插件销毁流程
   public async activateExtension(id: string) {
     this.logger.debug('kaitian exthost $activateExtension', id);
@@ -345,6 +357,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       } catch (err) {
         activationFailed = true;
         activationFailedError = err;
+        this.reportRuntimeError(err, extension, err.stack);
         this.logger.error(`[Extension-Host][Activate Exception] ${extension.id}: `, err);
       }
     } else if (extension.extendConfig && extension.extendConfig.node && extension.extendConfig.node.main) {
@@ -361,11 +374,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       } catch (e) {
         activationFailed = true;
         activationFailedError = e;
-        this.reporterService.point(REPORT_NAME.RUNTIME_ERROR_EXTENSION, extension.id, {
-          error: e && e.message,
-          stackTraceMessage: e.stack || '',
-          version: extension.packageJSON?.version,
-        });
+        this.reportRuntimeError(e, extension, e.stack);
         this.logger.log('activateExtension extension.extendConfig error ');
         this.logger.log(e);
         getDebugLogger().error(`${extension.id}`);
