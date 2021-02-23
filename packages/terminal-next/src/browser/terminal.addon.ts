@@ -1,5 +1,5 @@
 import { Terminal, ILinkMatcherOptions, ITerminalAddon } from 'xterm';
-import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+import { IFileServiceClient, FileStat } from '@ali/ide-file-service/lib/common';
 import { URI, Disposable, Deferred } from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { TerminalKeyBoardInputService } from './terminal.input';
@@ -38,7 +38,42 @@ export class FilePathAddon extends Disposable implements ITerminalAddon {
     this._options.validationCallback = this._checkPathValid.bind(this);
   }
 
-  private _parseUri(uri: string) {
+  private _checkPathValid(uri: string, callback: (valid: boolean) => void) {
+    const [, path] = uri.match(rePath)!;
+    if (path) {
+      callback(true);
+    } else {
+      callback(false);
+    }
+  }
+
+  private _mayAbsolutePath(uri: string) {
+    // 同时校验相对路径和绝对路径
+    // 单纯从链接层面无法区分
+    // 只能够全部交给 file api 去判断
+    // 两个同时匹配的时候，优先取相对路径
+    return [
+      // 这里无须使用 join，前置的 match 来保证
+      this._workspace + (uri[0] === '/' ? '' : '/') + uri,
+      uri,
+    ];
+  }
+
+  private async filterAvailablePaths(paths: string[]) {
+    try {
+      const promises: Promise<FileStat | undefined>[] = [];
+      paths.map((absolute) => promises
+        .push(this._fileService.getFileStat(URI.file(absolute).toString())));
+      const stats = await Promise.all(promises);
+      return stats
+        .filter((s) => !!s && !s.isDirectory && (new URI(s!.uri).scheme === 'file'))
+        .map((s) => (new URI(s!.uri)).codeUri.fsPath);
+    } catch {
+      return [];
+    }
+  }
+
+  private async _parseUri(uri: string) {
     const [, path, pos] = uri.match(rePath)!;
     const posArr: number[] = [];
     const reNum = /\d+/g;
@@ -49,38 +84,11 @@ export class FilePathAddon extends Disposable implements ITerminalAddon {
       }
     }
     const [row, col] = posArr;
-    return { path: this._absolutePath(path), row, col };
-  }
-
-  private _absolutePath(uri: string) {
-    let absolute: string | undefined;
-    if (uri[0] !== '/') {
-      if (this._workspace) {
-        // 一致处理为无 file scheme 的绝对地址
-        absolute = this._workspace;
-      } else {
-        throw new Error('not found workspace dir');
-      }
-    } else {
-      absolute = uri;
-    }
-    return absolute;
-  }
-
-  private _checkPathValid(uri: string, callback: (valid: boolean) => void) {
-    try {
-      const absolute = this._parseUri(uri).path;
-      this._fileService.getFileStat(URI.file(absolute).toString())
-        .then((stat) => {
-          if (stat) {
-            callback(true);
-          } else {
-            callback(false);
-          }
-        });
-    } catch {
-      callback(false);
-    }
+    return {
+      paths: await this.filterAvailablePaths(this._mayAbsolutePath(path)),
+      row,
+      col,
+    };
   }
 
   private async _openFile(_, uri: string) {
@@ -88,20 +96,19 @@ export class FilePathAddon extends Disposable implements ITerminalAddon {
       return;
     }
 
-    const uriInfo = this._parseUri(uri);
-    const fileUri = URI.file(uriInfo.path);
-    if (fileUri && fileUri.scheme === 'file') {
-      const stat = await this._fileService.getFileStat(fileUri.toString());
-      if (stat && !stat.isDirectory) {
-        this._editorService.open(new URI(stat.uri), uriInfo.row && uriInfo.col ? {
-          range: {
-            startLineNumber: uriInfo.row,
-            endLineNumber: uriInfo.row,
-            startColumn: uriInfo.col,
-            endColumn: uriInfo.col,
-          },
-        } : {});
-      }
+    const uriInfo = await this._parseUri(uri);
+
+    for (const path of uriInfo.paths) {
+      const fileUri = URI.file(path);
+      this._editorService.open(fileUri, uriInfo.row && uriInfo.col ? {
+        range: {
+          startLineNumber: uriInfo.row,
+          endLineNumber: uriInfo.row,
+          startColumn: uriInfo.col,
+          endColumn: uriInfo.col,
+        },
+      } : {});
+      break;
     }
   }
 
