@@ -49,6 +49,13 @@ export interface DebugServer extends IDisposable {
   resolveDebugConfiguration(config: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration>;
 
   /**
+   * 进一步处理调试配置，通过补全缺省值的方式
+   * 具体实现通过插件进行二次实现
+   * @param {DebugConfiguration} 处理的配置
+   * @param {(string | undefined)} 工作区路径
+   */
+  resolveDebugConfigurationWithSubstitutedVariables(config: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration>;
+  /**
    * 创建一个新的DebugAdapterSession进程
    * @param config 传入配置
    * @returns DebugAdapterSession对应sessionId.

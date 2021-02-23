@@ -60,6 +60,9 @@ export function createDebugApiFactory(
     removeBreakpoints(breakpoints: vscode.Breakpoint[]) {
       return extHostDebugService.removeBreakpoints(breakpoints);
     },
+    asDebugSourceUri(source: vscode.DebugProtocolSource, session?: vscode.DebugSession) {
+      return extHostDebugService.asDebugSourceUri(source, session);
+    },
   };
 
   return debug;
@@ -144,6 +147,36 @@ export class ExtHostDebug implements IExtHostDebugService {
    */
   async removeBreakpoints(breakpoints: vscode.Breakpoint[]): Promise<void> {
     this.proxy.$removeBreakpoints(breakpoints);
+  }
+
+  /**
+   * 将调试资源转换为可访问的Uri
+   * @param {vscode.DebugProtocolSource} source
+   * @param {vscode.DebugSession} [session]
+   */
+  asDebugSourceUri(src: vscode.DebugProtocolSource, session?: vscode.DebugSession): vscode.Uri {
+    const source = src as any;
+
+    if (typeof source.sourceReference === 'number') {
+      // src 可以通过 DAP 的 source 请求 转化为对应路径
+
+      let debug = `debug:${encodeURIComponent(source.path || '')}`;
+      let sep = '?';
+
+      if (session) {
+        debug += `${sep}session=${encodeURIComponent(session.id)}`;
+        sep = '&';
+      }
+
+      debug += `${sep}ref=${source.sourceReference}`;
+
+      return Uri.parse(debug);
+    } else if (source.path) {
+      // src 就是一个本地路径
+      return Uri.file(source.path);
+    } else {
+      throw new Error(`cannot create uri from DAP 'source' object; properties 'path' and 'sourceReference' are both missing.`);
+    }
   }
 
   /**
@@ -286,14 +319,14 @@ export class ExtHostDebug implements IExtHostDebugService {
     return undefined;
   }
 
-  async $provideDebugConfigurations(debugType: string, workspaceFolderUri: string | undefined): Promise<vscode.DebugConfiguration[]> {
+  async $provideDebugConfigurations(debugType: string, workspaceFolderUri: string | undefined, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration[]> {
     let result: DebugConfiguration[] = [];
 
     const providers = this.configurationProviders.get(debugType);
     if (providers) {
       for (const provider of providers) {
         if (provider.provideDebugConfigurations) {
-          result = result.concat(await provider.provideDebugConfigurations(this.toWorkspaceFolder(workspaceFolderUri)) || []);
+          result = result.concat(await provider.provideDebugConfigurations(this.toWorkspaceFolder(workspaceFolderUri), token) || []);
         }
       }
     }
@@ -301,7 +334,7 @@ export class ExtHostDebug implements IExtHostDebugService {
     return result;
   }
 
-  async $resolveDebugConfigurations(debugConfiguration: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<vscode.DebugConfiguration | undefined> {
+  async $resolveDebugConfigurations(debugConfiguration: DebugConfiguration, workspaceFolderUri: string | undefined, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration | undefined> {
     let current = debugConfiguration;
 
     for (const providers of [this.configurationProviders.get(debugConfiguration.type), this.configurationProviders.get('*')]) {
@@ -309,7 +342,32 @@ export class ExtHostDebug implements IExtHostDebugService {
         for (const provider of providers) {
           if (provider.resolveDebugConfiguration) {
             try {
-              const next = await provider.resolveDebugConfiguration(this.toWorkspaceFolder(workspaceFolderUri), current);
+              const next = await provider.resolveDebugConfiguration(this.toWorkspaceFolder(workspaceFolderUri), current, token);
+              if (next) {
+                current = next;
+              } else {
+                return current;
+              }
+            } catch (e) {
+              // console.error(e);
+            }
+          }
+        }
+      }
+    }
+
+    return current;
+  }
+
+  async $resolveDebugConfigurationWithSubstitutedVariables(debugConfiguration: DebugConfiguration, workspaceFolderUri: string | undefined, token?: vscode.CancellationToken) {
+    let current = debugConfiguration;
+
+    for (const providers of [this.configurationProviders.get(debugConfiguration.type), this.configurationProviders.get('*')]) {
+      if (providers) {
+        for (const provider of providers) {
+          if (provider.resolveDebugConfigurationWithSubstitutedVariables) {
+            try {
+              const next = await provider.resolveDebugConfigurationWithSubstitutedVariables(this.toWorkspaceFolder(workspaceFolderUri), current, token);
               if (next) {
                 current = next;
               } else {

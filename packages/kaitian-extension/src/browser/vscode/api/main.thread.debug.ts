@@ -3,7 +3,7 @@ import { IMainThreadDebug, ExtHostAPIIdentifier, IExtHostDebug, ExtensionWSChann
 import { DisposableCollection, Uri, ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, URI } from '@ali/ide-core-browser';
 import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer, IDebuggerContribution, IDebugServiceContributionPoint } from '@ali/ide-debug';
 import { DebugSessionManager, BreakpointManager, DebugConfigurationManager, DebugPreferences, DebugSessionContributionRegistry, DebugModelManager, DebugBreakpoint } from '@ali/ide-debug/lib/browser';
-import { IRPCProtocol, WSChannelHandler } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ali/ide-connection';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -45,9 +45,6 @@ export class MainThreadDebug implements IMainThreadDebug {
   @Autowired(DebugPreferences)
   protected readonly debugPreferences: DebugPreferences;
 
-  @Autowired(IFileServiceClient)
-  protected readonly fileServiceClient: IFileServiceClient;
-
   @Autowired(WorkbenchEditorService)
   protected readonly editorService: WorkbenchEditorService;
 
@@ -55,10 +52,7 @@ export class MainThreadDebug implements IMainThreadDebug {
   protected readonly messageService: IMessageService;
 
   @Autowired(IFileServiceClient)
-  fileSystem: IFileServiceClient;
-
-  @Autowired(WSChannelHandler)
-  protected readonly connectionProvider: WSChannelHandler;
+  protected readonly fileService: IFileServiceClient;
 
   @Autowired(IDebugServer)
   protected readonly adapterContributionRegister: ExtensionDebugService;
@@ -206,7 +200,7 @@ export class MainThreadDebug implements IMainThreadDebug {
         const connection = await this.mainThreadConnection.ensureConnection(sessionId);
         return new ExtensionWSChannel(connection);
       },
-      this.fileSystem,
+      this.fileService,
       terminalOptionsExt,
       this.debugPreferences,
       this.outputService,

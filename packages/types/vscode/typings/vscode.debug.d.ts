@@ -118,6 +118,25 @@ declare module "vscode" {
       debugConfiguration: DebugConfiguration,
       token?: CancellationToken
     ): ProviderResult<DebugConfiguration>;
+
+    /**
+     * This hook is directly called after 'resolveDebugConfiguration' but with all variables substituted.
+     * It can be used to resolve or verify a [debug configuration](#DebugConfiguration) by filling in missing values or by adding/changing/removing attributes.
+     * If more than one debug configuration provider is registered for the same type, the 'resolveDebugConfigurationWithSubstitutedVariables' calls are chained
+     * in arbitrary order and the initial debug configuration is piped through the chain.
+     * Returning the value 'undefined' prevents the debug session from starting.
+     * Returning the value 'null' prevents the debug session from starting and opens the underlying debug configuration instead.
+     *
+     * @param folder The workspace folder from which the configuration originates from or `undefined` for a folderless setup.
+     * @param debugConfiguration The [debug configuration](#DebugConfiguration) to resolve.
+     * @param token A cancellation token.
+     * @return The resolved debug configuration or undefined or null.
+     */
+    resolveDebugConfigurationWithSubstitutedVariables?(
+      folder: WorkspaceFolder | undefined,
+      debugConfiguration: DebugConfiguration,
+      token?: CancellationToken
+    ): ProviderResult<DebugConfiguration>;
   }
 
   /**
@@ -536,5 +555,18 @@ declare module "vscode" {
      * @param breakpoints The breakpoints to remove.
      */
     export function removeBreakpoints(breakpoints: Breakpoint[]): void;
+
+    /**
+     * Converts a "Source" descriptor object received via the Debug Adapter Protocol into a Uri that can be used to load its contents.
+     * If the source descriptor is based on a path, a file Uri is returned.
+     * If the source descriptor uses a reference number, a specific debug Uri (scheme 'debug') is constructed that requires a corresponding VS Code ContentProvider and a running debug session
+     *
+     * If the "Source" descriptor has insufficient information for creating the Uri, an error is thrown.
+     *
+     * @param source An object conforming to the [Source](https://microsoft.github.io/debug-adapter-protocol/specification#Types_Source) type defined in the Debug Adapter Protocol.
+     * @param session An optional debug session that will be used when the source descriptor uses a reference number to load the contents from an active debug session.
+     * @return A uri that can be used to load the contents of the source.
+     */
+    export function asDebugSourceUri(source: DebugProtocolSource, session?: DebugSession): Uri;
   }
 }

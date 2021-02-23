@@ -134,6 +134,26 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
     return resolved;
   }
 
+  async resolveDebugConfigurationWithSubstitutedVariables(config: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration> {
+    let resolved = config;
+    // 处理请求类型为 `*` 的情况
+    for (const contributor of this.contributors.values()) {
+      if (contributor) {
+        try {
+          const next = await contributor.resolveDebugConfigurationWithSubstitutedVariables(resolved, workspaceFolderUri);
+          if (next) {
+            resolved = next;
+          } else {
+            return resolved;
+          }
+        } catch (e) {
+          this.logger.error(e);
+        }
+      }
+    }
+    return resolved;
+  }
+
   async getDebuggersForLanguage(language: string): Promise<DebuggerDescription[]> {
     const debuggers: DebuggerDescription[] = [];
 

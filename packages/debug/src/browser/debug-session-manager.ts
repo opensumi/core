@@ -191,8 +191,10 @@ export class DebugSessionManager {
       return options;
     }
     const { workspaceFolderUri, index, noDebug, parentSession, repl } = options;
+    // TODO：当前调试配置均通过配置全量透传的方式进行解析，更合理的方式应该通过一个configProviderHandle来进行provider的匹配
     const resolvedConfiguration = await this.resolveDebugConfiguration(options.configuration, workspaceFolderUri);
-    const configuration = await this.variableResolver.resolve(resolvedConfiguration, {});
+    let configuration = await this.variableResolver.resolve(resolvedConfiguration, {});
+    configuration = await this.resolveDebugConfigurationWithSubstitutedVariables(configuration, workspaceFolderUri);
     const key = configuration.name + workspaceFolderUri;
     const id = this.configurationIds.has(key) ? this.configurationIds.get(key)! + 1 : 0;
     this.configurationIds.set(key, id);
@@ -210,6 +212,11 @@ export class DebugSessionManager {
   protected async resolveDebugConfiguration(configuration: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration> {
     await this.fireWillResolveDebugConfiguration(configuration.type);
     return this.debug.resolveDebugConfiguration(configuration, workspaceFolderUri);
+  }
+
+  protected async resolveDebugConfigurationWithSubstitutedVariables(configuration: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration> {
+    await this.fireWillResolveDebugConfiguration(configuration.type);
+    return this.debug.resolveDebugConfigurationWithSubstitutedVariables(configuration, workspaceFolderUri);
   }
 
   protected async fireWillResolveDebugConfiguration(debugType: string): Promise<void> {
