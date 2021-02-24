@@ -1,7 +1,10 @@
-import type * as vscode from 'vscode';
+import type { OnEnterRule, IndentationRule } from '@ali/monaco-editor-core/esm/vs/editor/common/modes/languageConfiguration';
+import type { WorkspaceEdit } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+
+import * as vscode from 'vscode';
 import * as types from './ext-types';
 import { SerializedIndentationRule, SerializedRegExp, SerializedOnEnterRule, ResourceTextEditDto, WorkspaceEditDto, ResourceFileEditDto } from './model.api';
-import URI from 'vscode-uri';
+import { Uri } from '@ali/ide-core-common';
 
 /**
  * Returns `true` if the parameter has type "object" and not null, an array, a regexp, a date.
@@ -64,7 +67,7 @@ export function reviveRegExp(regExp?: SerializedRegExp): RegExp | undefined {
     return new RegExp(regExp.pattern, regExp.flags);
 }
 
-export function reviveIndentationRule(indentationRule?: SerializedIndentationRule): monaco.languages.IndentationRule | undefined {
+export function reviveIndentationRule(indentationRule?: SerializedIndentationRule): IndentationRule | undefined {
     if (typeof indentationRule === 'undefined' || indentationRule === null) {
         return undefined;
     }
@@ -76,7 +79,7 @@ export function reviveIndentationRule(indentationRule?: SerializedIndentationRul
     };
 }
 
-export function reviveOnEnterRule(onEnterRule: SerializedOnEnterRule): monaco.languages.OnEnterRule {
+export function reviveOnEnterRule(onEnterRule: SerializedOnEnterRule): OnEnterRule {
     return {
         beforeText: reviveRegExp(onEnterRule.beforeText)!,
         afterText: reviveRegExp(onEnterRule.afterText),
@@ -84,25 +87,25 @@ export function reviveOnEnterRule(onEnterRule: SerializedOnEnterRule): monaco.la
     };
 }
 
-export function reviveOnEnterRules(onEnterRules?: SerializedOnEnterRule[]): monaco.languages.OnEnterRule[] | undefined {
+export function reviveOnEnterRules(onEnterRules?: SerializedOnEnterRule[]): OnEnterRule[] | undefined {
     if (typeof onEnterRules === 'undefined' || onEnterRules === null) {
         return undefined;
     }
     return onEnterRules.map(reviveOnEnterRule);
 }
 
-export function reviveWorkspaceEditDto(data: WorkspaceEditDto): monaco.languages.WorkspaceEdit {
+export function reviveWorkspaceEditDto(data: WorkspaceEditDto): WorkspaceEdit {
     if (data && data.edits) {
         for (const edit of data.edits) {
             if (typeof ( edit as ResourceTextEditDto).resource === 'object') {
-                ( edit as ResourceTextEditDto).resource = URI.revive(( edit as ResourceTextEditDto).resource);
+                ( edit as ResourceTextEditDto).resource = Uri.revive(( edit as ResourceTextEditDto).resource);
             } else {
-                ( edit as ResourceFileEditDto).newUri = URI.revive(( edit as ResourceFileEditDto).newUri);
-                ( edit as ResourceFileEditDto).oldUri = URI.revive(( edit as ResourceFileEditDto).oldUri);
+                ( edit as ResourceFileEditDto).newUri = Uri.revive(( edit as ResourceFileEditDto).newUri);
+                ( edit as ResourceFileEditDto).oldUri = Uri.revive(( edit as ResourceFileEditDto).oldUri);
             }
         }
     }
-    return  data as monaco.languages.WorkspaceEdit;
+    return  data as WorkspaceEdit;
 }
 
 export function serializeEnterRules(rules?: vscode.OnEnterRule[]): SerializedOnEnterRule[] | undefined {

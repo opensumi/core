@@ -2,7 +2,7 @@ import type * as vscode from 'vscode';
 import * as types from '../../../../common/vscode/ext-types';
 import { Event } from '@ali/ide-core-common';
 import { LanguageSelector } from '../../../../common/vscode/model.api';
-import URI from 'vscode-uri';
+import { Uri } from '@ali/ide-core-common';
 import { match as matchGlobPattern } from '../../../../common/vscode/glob';
 
 // tslint:disable-next-line:no-any
@@ -41,7 +41,7 @@ export function isDefinitionLinkArray(array: any): array is vscode.DefinitionLin
     return Array.isArray(array) && array.length > 0 && array[0].hasOwnProperty('targetUri') && array[0].hasOwnProperty('targetRange');
 }
 
-export function score(selector: LanguageSelector | undefined, candidateUri: URI, candidateLanguage: string, candidateIsSynchronized: boolean): number {
+export function score(selector: LanguageSelector | undefined, candidateUri: Uri, candidateLanguage: string, candidateIsSynchronized: boolean): number {
 
   if (Array.isArray(selector)) {
       let ret = 0;

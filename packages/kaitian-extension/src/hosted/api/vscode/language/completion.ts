@@ -1,4 +1,4 @@
-import URI from 'vscode-uri/lib/umd';
+import { Uri as URI } from '@ali/ide-core-common';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
 import type * as vscode from 'vscode';

@@ -1,4 +1,6 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import * as md5 from 'md5';
+import { isWindows, isMacintosh, isLinux } from '@ali/monaco-editor-core/esm/vs/base/common/platform';
 import { uniqueId } from 'lodash';
 import { URI, IEventBus } from '@ali/ide-core-browser';
 
@@ -36,7 +38,7 @@ describe('EditorDocumentModel', () => {
     let chagneFn: jest.Mock;
 
     beforeEach(() => {
-      uri = new URI('test://testUri1');
+      uri = new URI(`test://testUri${Math.random()}`);
       content = uniqueId('content');
       eventBus = injector.get(IEventBus);
 
@@ -54,18 +56,33 @@ describe('EditorDocumentModel', () => {
       expect(docModel.encoding).toBe('utf8');
       expect(docModel.readonly).toBe(false);
       expect(docModel.savable).toBe(false);
-      expect(docModel.eol).toBe(EOL.LF);
-      expect(docModel.languageId).toBeUndefined();
+      /**
+       * 这里 VS Code 获取默认 EOL 的逻辑是根据 platform 来判断的
+       * platform 的逻辑是如果有 navigator 对象，则看 UA 是否有 Macintosh、Linux、Windows 等字符
+       * 但单测 JSDOM 环境下 UA 是 Mozilla/5.0 ([darwin/linux/windows]) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/15.2.1
+       * 会导致 isWindow/isLinux/isMacintosh 全部为 false
+       * 因为只会在单测的情况下出现判断错误，所以这里沿用 VS Code 的 platform 判断逻辑，保证表现一致
+       */
+      expect(docModel.eol).toBe((isMacintosh || isLinux) ? EOL.LF : EOL.CRLF);
+      // Monaco 20 开始，没有指定 languageId 会 fallback 到 plaintext
+      expect(docModel.languageId).toBe('plaintext');
 
       expect(optionChangeFn).toBeCalledTimes(0);
       expect(chagneFn).toBeCalledTimes(0);
     });
 
     it('create EditorDocumentModel with Options', () => {
+      const languageId = uniqueId('languageId');
+      // Monaco 20 开始，不能创建没有注册过语言的 textModel
+      monaco.languages.register({
+        id: languageId,
+        aliases: ['Test languageId'],
+        extensions: ['.test'],
+      });
       const opts: EditorDocumentModelConstructionOptions = {
         eol: EOL.LF,
         encoding: uniqueId('encoding'),
-        languageId: uniqueId('languageId'),
+        languageId,
         readonly: true,
         savable: true,
       };

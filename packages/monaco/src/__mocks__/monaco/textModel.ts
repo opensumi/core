@@ -1,8 +1,11 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import * as textModel from 'monaco-editor-core/esm/vs/editor/common/model/textModel';
+
 // copied from https://github.com/microsoft/vscode/blob/master/src/vs/editor/common/model/textModel.ts
 
 import { partialMock } from './common/util';
 
-export function createMockedMonacoTextModelApi(): typeof monaco.textModel {
+export function createMockedMonacoTextModelApi(): typeof textModel {
   class ModelDecorationOptions implements monaco.editor.IModelDecorationOptions {
 
     public static EMPTY: ModelDecorationOptions;

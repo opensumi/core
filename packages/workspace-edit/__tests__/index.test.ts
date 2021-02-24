@@ -85,45 +85,39 @@ describe('workspace edit tests', () => {
       edits: [
         {
           resource: new URI('file:///test.ts'),
-          edits: [
-            {
-              range: {
-                startColumn: 1,
-                endColumn: 1,
-                startLineNumber: 1,
-                endLineNumber: 1,
-              },
-              text: 'test',
+          edit: {
+            range: {
+              startColumn: 1,
+              endColumn: 1,
+              startLineNumber: 1,
+              endLineNumber: 1,
             },
-          ],
+            text: 'test',
+          },
         },
         {
           resource: new URI('file:///test.ts'),
-          edits: [
-            {
-              range: {
-                startColumn: 1,
-                endColumn: 1,
-                startLineNumber: 1,
-                endLineNumber: 1,
-              },
-              text: 'test2',
+          edit: {
+            range: {
+              startColumn: 1,
+              endColumn: 1,
+              startLineNumber: 1,
+              endLineNumber: 1,
             },
-          ],
+            text: 'test2',
+          },
         },
         {
           resource: new URI('file:///test2.ts'),
-          edits: [
-            {
-              range: {
-                startColumn: 1,
-                endColumn: 1,
-                startLineNumber: 1,
-                endLineNumber: 1,
-              },
-              text: 'test2',
+          edit: {
+            range: {
+              startColumn: 1,
+              endColumn: 1,
+              startLineNumber: 1,
+              endLineNumber: 1,
             },
-          ],
+            text: 'test2',
+          },
           options: {
             openDirtyInEditor: true,
           },
@@ -210,7 +204,7 @@ describe('workspace edit tests', () => {
     expect(fileServiceClient.createFile).toHaveBeenLastCalledWith(createEdit.newUri!.toString(), expect.objectContaining({
       content: '',
       overwrite: true,
-     }));
+    }));
 
     expect(fileServiceClient.delete).toHaveBeenLastCalledWith(deleteEdit.oldUri!.toString(), expect.objectContaining({}));
 
@@ -230,17 +224,15 @@ describe('workspace edit tests', () => {
       edits: [
         {
           resource: monaco.Uri!.parse('file:///monaco-test.ts'),
-          edits: [
-            {
-              range: {
-                startColumn: 1,
-                endColumn: 1,
-                startLineNumber: 1,
-                endLineNumber: 1,
-              },
-              text: 'test',
+          edit: {
+            range: {
+              startColumn: 1,
+              endColumn: 1,
+              startLineNumber: 1,
+              endLineNumber: 1,
             },
-          ],
+            text: 'test',
+          },
         },
         {
           newUri: monaco.Uri!.parse('file:///monaco.newTest.ts'),

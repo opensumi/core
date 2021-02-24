@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import * as React from 'react';
 import { action } from 'mobx';
 import { URI, Schemas, Emitter, formatLocalize, dispose, IDisposable, DisposableStore, IRange, localize, MessageType } from '@ali/ide-core-common';

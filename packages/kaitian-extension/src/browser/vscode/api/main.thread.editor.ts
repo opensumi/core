@@ -1,5 +1,8 @@
+import { RenderLineNumbersType } from '@ali/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
-import { IMainThreadEditorsService, IExtensionHostEditorService, ExtHostAPIIdentifier, IEditorChangeDTO, IResolvedTextEditorConfiguration, TextEditorRevealType, ITextEditorUpdateConfiguration, RenderLineNumbersType, TextEditorCursorStyle } from '../../../common/vscode';
+import { IMainThreadEditorsService, IExtensionHostEditorService, ExtHostAPIIdentifier, IEditorChangeDTO, IResolvedTextEditorConfiguration, TextEditorRevealType, ITextEditorUpdateConfiguration, TextEditorCursorStyle } from '../../../common/vscode';
 import { WorkbenchEditorService, IEditorGroup, IResource, IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions, EditorCollectionService, IDecorationRenderOptions, IThemeDecorationRenderOptions } from '@ali/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { WithEventBus, MaybeNull, IRange, ILineChange, URI, ISelection } from '@ali/ide-core-common';
@@ -270,7 +273,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
         }
         const transformedEdits = edits.map((edit): monaco.editor.IIdentifiedSingleEditOperation => {
           return {
-            range: monaco.Range.lift(edit.range),
+            range: monaco.Range.lift(edit.range)!,
             text: edit.text,
             forceMoveMarkers: edit.forceMoveMarkers,
           };
@@ -324,7 +327,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     if (newConfiguration.cursorStyle) {
       const newCursorStyle = cursorStyleToString(newConfiguration.cursorStyle);
       codeEditor.updateOptions({
-        cursorStyle: newCursorStyle,
+        cursorStyle: newCursorStyle as any,
       });
     }
 
@@ -377,7 +380,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
   }
 
   private _setIndentConfiguration(model: monaco.editor.ITextModel, newConfiguration: ITextEditorUpdateConfiguration): void {
-    const creationOpts = monaco.services.StaticServices.modelService.get().getCreationOptions((model as any).getLanguageIdentifier().language, model.uri, (model as any).isForSimpleWidget);
+    const creationOpts = StaticServices.modelService.get().getCreationOptions((model as any).getLanguageIdentifier().language, model.uri, (model as any).isForSimpleWidget);
 
     if (newConfiguration.tabSize === 'auto' || newConfiguration.insertSpaces === 'auto') {
       // one of the options was set to 'auto' => detect indentation
@@ -428,8 +431,11 @@ function getEditorOption(editor: monaco.editor.ICodeEditor): IResolvedTextEditor
     tabSize: modelOptions.tabSize,
     indentSize: modelOptions.indentSize,
     insertSpaces: modelOptions.insertSpaces,
-    cursorStyle: editor.getConfiguration().viewInfo.cursorStyle,
-    lineNumbers: editor.getConfiguration().viewInfo.renderLineNumbers as any,
+    cursorStyle: editor.getOption(monaco.editor.EditorOption.cursorStyle),
+    // 这里之前取 lineNumbers 配置项的值，现在改成取 renderType，是为了跟之前保持返回值一致
+    // FIXME RenderLineNumbersType 类型冲突了
+    // @ts-ignore
+    lineNumbers: editor.getOption(monaco.editor.EditorOption.lineNumbers).renderType,
   };
 }
 

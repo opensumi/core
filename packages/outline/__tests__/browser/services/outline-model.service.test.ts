@@ -32,7 +32,7 @@ describe('OutlineTreeModelService', () => {
       startLineNumber: 2,
       endLineNumber: 2,
     },
-  } as INormalizedDocumentSymbol;
+  } as unknown as INormalizedDocumentSymbol;
 
   const mockOutlineTreeService = {
     resolveChildren: jest.fn((parent?: any) => {

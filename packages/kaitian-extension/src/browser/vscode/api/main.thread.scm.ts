@@ -1,13 +1,13 @@
 import { CancellationToken } from '@ali/vscode-jsonrpc';
 import { Injectable, Optional, Autowired } from '@ali/common-di';
-import { Event, Emitter, IDisposable, DisposableStore } from '@ali/ide-core-common';
+import { UriComponents, Uri as URI, Event, Emitter, IDisposable, Disposable } from '@ali/ide-core-common';
 import { Sequence, ISplice } from '@ali/ide-core-common/lib/sequence';
 import { IRPCProtocol } from '@ali/ide-connection';
-import URI, { UriComponents } from 'vscode-uri';
 import {
   ISCMRepository, ISCMProvider, ISCMResource, ISCMResourceGroup,
-  ISCMResourceDecorations, IInputValidation, ISCMService, SCMService,
+  ISCMResourceDecorations, IInputValidation, SCMService,
 } from '@ali/ide-scm/lib/common';
+import { ILogger } from '@ali/ide-core-browser';
 
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import {
@@ -15,7 +15,7 @@ import {
   SCMRawResourceSplices, IMainThreadSCMShape,
 } from '../../../common/vscode/scm';
 
-import { Command as VSComand } from '../../../common/vscode/model.api';
+import { VSCommand } from '../../../common/vscode/model.api';
 
 class MainThreadSCMResourceGroup implements ISCMResourceGroup {
 
@@ -116,21 +116,24 @@ class MainThreadSCMProvider implements ISCMProvider {
   get contextValue(): string { return this._contextValue; }
 
   get commitTemplate(): string | undefined { return this.features.commitTemplate; }
-  get acceptInputCommand(): VSComand | undefined { return this.features.acceptInputCommand; }
-  get statusBarCommands(): VSComand[] | undefined { return this.features.statusBarCommands; }
+  get acceptInputCommand(): VSCommand | undefined { return this.features.acceptInputCommand; }
+  get statusBarCommands(): VSCommand[] | undefined { return this.features.statusBarCommands; }
   get count(): number | undefined { return this.features.count; }
 
   private _onDidChangeCommitTemplate = new Emitter<string>();
   readonly onDidChangeCommitTemplate: Event<string> = this._onDidChangeCommitTemplate.event;
 
-  private _onDidChangeStatusBarCommands = new Emitter<VSComand[]>();
-  get onDidChangeStatusBarCommands(): Event<VSComand[]> { return this._onDidChangeStatusBarCommands.event; }
+  private _onDidChangeStatusBarCommands = new Emitter<VSCommand[]>();
+  get onDidChangeStatusBarCommands(): Event<VSCommand[]> { return this._onDidChangeStatusBarCommands.event; }
 
   private _onDidChange = new Emitter<void>();
   readonly onDidChange: Event<void> = this._onDidChange.event;
 
   @Autowired(SCMService)
   protected scmService: SCMService;
+
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
 
   constructor(
     private readonly proxy: IExtHostSCMShape,
@@ -192,7 +195,7 @@ class MainThreadSCMProvider implements ISCMProvider {
       const group = this._groupsByHandle[groupHandle];
 
       if (!group) {
-        console.warn(`SCM group ${groupHandle} not found in provider ${this.label}`);
+        this.logger.warn(`SCM group ${groupHandle} not found in provider ${this.label}`);
         continue;
       }
 
@@ -266,23 +269,23 @@ class MainThreadSCMProvider implements ISCMProvider {
 }
 
 @Injectable({multiple: true})
-export class MainThreadSCM implements IMainThreadSCMShape {
+export class MainThreadSCM extends Disposable implements IMainThreadSCMShape {
   @Autowired(SCMService)
   protected scmService: SCMService;
 
   private readonly _proxy: IExtHostSCMShape;
   private _repositories = new Map<number, ISCMRepository>();
   private _inputDisposables = new Map<number, IDisposable>();
-  private readonly _disposables = new DisposableStore();
 
   constructor(@Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
+    super();
     this._proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostSCM);
 
     Event.debounce(
       this.scmService.onDidChangeSelectedRepositories,
       (_, e) => e,
       100,
-    )(this.onDidChangeSelectedRepositories, this, this._disposables);
+    )(this.onDidChangeSelectedRepositories, this, this.disposables);
   }
 
   dispose(): void {
@@ -292,7 +295,7 @@ export class MainThreadSCM implements IMainThreadSCMShape {
     this._inputDisposables.forEach((d) => d.dispose());
     this._inputDisposables.clear();
 
-    this._disposables.dispose();
+    super.dispose();
   }
 
   $registerSourceControl(handle: number, id: string, label: string, rootUri: UriComponents | undefined): void {

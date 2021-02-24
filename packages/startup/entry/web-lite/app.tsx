@@ -1,6 +1,5 @@
 import '@ali/ide-i18n/lib/browser';
 import { SlotLocation } from '@ali/ide-core-browser';
-import { loadMonaco } from '@ali/ide-monaco/lib/browser/monaco-loader';
 import * as React from 'react';
 
 import { CommonBrowserModules } from './common-modules';
@@ -40,10 +39,6 @@ const layoutConfig = {
     modules: [],
   },
 };
-
-loadMonaco({
-  monacoCDNBase: 'https://g.alicdn.com/tb-ide/monaco-editor-core/0.17.0/',
-});
 
 // optional for sw registration
 serviceWorker.register();

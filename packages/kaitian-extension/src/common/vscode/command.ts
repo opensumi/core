@@ -1,6 +1,6 @@
 
 import { Disposable, Position } from './ext-types';
-import URI from 'vscode-uri';
+import { Uri } from '@ali/ide-core-common';
 import { IExtensionInfo, IDisposable } from '@ali/ide-core-common';
 
 export interface IMainThreadCommands {
@@ -16,10 +16,10 @@ export interface IMainThreadCommands {
    */
   $executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined>;
   $executeCommandWithExtensionInfo<T>(id: string, extensionInfo: IExtensionInfo, ...args: any[]): Promise<T | undefined>;
-  $executeReferenceProvider(arg: {resource: URI, position: Position}): Promise<any | undefined>;
-  $executeImplementationProvider(arg: {resource: URI, position: Position}): Promise<any | undefined>;
-  $executeCodeLensProvider(arg: {resource: URI, itemResolveCount: number}): Promise<any | undefined>;
-  $executeDocumentSymbolProvider(arg: {resource: URI}): Promise<any>;
+  $executeReferenceProvider(arg: {resource: Uri, position: Position}): Promise<any | undefined>;
+  $executeImplementationProvider(arg: {resource: Uri, position: Position}): Promise<any | undefined>;
+  $executeCodeLensProvider(arg: {resource: Uri, itemResolveCount: number}): Promise<any | undefined>;
+  $executeDocumentSymbolProvider(arg: {resource: Uri}): Promise<any>;
   registerArgumentProcessor(processor: ArgumentProcessor): IDisposable;
 }
 

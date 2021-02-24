@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Autowired, Injectable } from '@ali/common-di';
 import { IEditorDecorationCollectionService, IDynamicModelDecorationProperty, IThemedCssStyle, EditorDecorationChangeEvent, EditorDecorationTypeRemovedEvent, DidApplyEditorDecorationFromProvider } from './types';
 import { IDecorationRenderOptions, IDecorationApplyOptions, IMarkdownString } from '../common';
@@ -154,6 +155,7 @@ function assignModelDecorationOptions(target: monaco.editor.IModelDecorationOpti
     if (!target.overviewRuler) {
       target.overviewRuler = {
         color: null as any,
+        range: null as any,
         position: property.overviewRulerLane,
       };
     } else {

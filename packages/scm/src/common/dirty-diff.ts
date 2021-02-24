@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { IChange, Command } from '@ali/ide-core-common';
 
 export interface IDirtyDiffModel {

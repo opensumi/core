@@ -37,7 +37,8 @@ module.exports = {
             target: 'es6'
           }
         }
-      }
+      },
+      { test: /\.css$/, loader: 'null-loader' },
     ]
   },
   externals: [

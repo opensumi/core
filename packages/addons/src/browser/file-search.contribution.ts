@@ -1,3 +1,5 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { Mode } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/common/quickOpen';
 /**
  * 用于快速打开，检索文件
  */
@@ -24,7 +26,7 @@ import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { KeybindingContribution, KeybindingRegistry, ILogger } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
-import { QuickOpenGroupItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService, QuickOpenBaseAction } from '@ali/ide-quick-open';
+import { QuickOpenGroupItem, QuickOpenModel, QuickOpenOptions, PrefixQuickOpenService, QuickOpenBaseAction } from '@ali/ide-quick-open';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { EditorGroupSplitAction } from '@ali/ide-editor';
 import { getIcon } from '@ali/ide-core-browser';
@@ -304,8 +306,8 @@ export class FileSearchQuickCommandHandler {
         description,
         groupLabel: index === 0 ? options.groupLabel : '',
         showBorder: (uriList.length > 0 && index === 0) ? options.showBorder : false,
-        run: (mode: QuickOpenMode) => {
-          if (mode !== QuickOpenMode.OPEN) {
+        run: (mode: Mode) => {
+          if (mode !== Mode.OPEN) {
             return false;
           }
           this.openFile(uri);

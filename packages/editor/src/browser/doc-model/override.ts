@@ -1,10 +1,19 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { ITextModelService, ITextModelContentProvider } from '@ali/monaco-editor-core/esm/vs/editor/common/services/resolverService';
 /* istanbul ignore file */
 import { Autowired, Injectable } from '@ali/common-di';
 import { URI } from '@ali/ide-core-browser';
 import { IEditorDocumentModelService } from './types';
 
 @Injectable()
-export class MonacoTextModelService implements monaco.editor.ITextModelService {
+export class MonacoTextModelService implements ITextModelService {
+
+  hasTextModelContentProvider(scheme: string): boolean {
+    throw new Error('Method not implemented.');
+  }
+
+  _serviceBrand: undefined;
+
   @Autowired(IEditorDocumentModelService)
   documentModelManager: IEditorDocumentModelService;
 
@@ -23,7 +32,7 @@ export class MonacoTextModelService implements monaco.editor.ITextModelService {
     }
   }
 
-  registerTextModelContentProvider(scheme: string, provider: monaco.editor.ITextModelContentProvider): monaco.IDisposable {
+  registerTextModelContentProvider(scheme: string, provider: ITextModelContentProvider): monaco.IDisposable {
     return {
       dispose(): void {
         // no-op

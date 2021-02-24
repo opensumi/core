@@ -10,7 +10,7 @@ import { ExtensionHostEditorService } from './editor/editor.host';
 import { ObjectIdentifier } from './language/util';
 import { CommandDto } from '../../../common/vscode/scm';
 import * as modes from '../../../common/vscode/model.api';
-import Uri from 'vscode-uri';
+import { Uri } from '@ali/ide-core-common';
 import { IExtension } from '../../../common';
 import { IBuiltInCommand } from '../../ext.process-base';
 
@@ -445,7 +445,7 @@ export class CommandsConverter {
     return result;
   }
 
-  fromInternal(command: modes.Command): vscode.Command | undefined {
+  fromInternal(command: modes.VSCommand): vscode.Command | undefined {
 
     const id = ObjectIdentifier.of(command);
     if (typeof id === 'number') {

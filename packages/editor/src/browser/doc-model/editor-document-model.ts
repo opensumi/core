@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Autowired, Injectable } from '@ali/common-di';
 import { CommandService, Disposable, formatLocalize, IEventBus, ILogger, IRange, IReporterService, isThenable, isUndefinedOrNull, localize, PreferenceService, REPORT_NAME, URI } from '@ali/ide-core-browser';
 import { IMessageService } from '@ali/ide-overlay';

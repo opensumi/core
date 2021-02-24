@@ -1,3 +1,10 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import type { ICodeEditor as IMonacoCodeEditor } from '@ali/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { CodeEditorServiceImpl } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/codeEditorServiceImpl';
+import { SimpleLayoutService } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
+import { ContextViewService } from '@ali/monaco-editor-core/esm/vs/platform/contextview/browser/contextViewService';
+
 /* istanbul ignore file */
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { WorkbenchEditorService } from '../common';
@@ -6,19 +13,22 @@ import { Autowired, Injectable } from '@ali/common-di';
 import { IMonacoImplEditor, BrowserCodeEditor } from './editor-collection.service';
 
 @Injectable()
-export class MonacoCodeService extends monaco.services.CodeEditorServiceImpl {
+export class MonacoCodeService extends CodeEditorServiceImpl {
 
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
 
   constructor() {
-    super(monaco.services.StaticServices.standaloneThemeService.get());
+    super(StaticServices.standaloneThemeService.get());
   }
 
-  getActiveCodeEditor(): monaco.editor.ICodeEditor | undefined {
+  // FIXME - Monaco 20 - ESM
+  getActiveCodeEditor(): IMonacoCodeEditor | null {
     if (this.workbenchEditorService.currentEditor) {
-      return (this.workbenchEditorService.currentEditor as IMonacoImplEditor).monacoEditor;
+      // Note: 这里 monaco.editor.ICodeEditor 与 CodeEditorServiceImpl 中引用的 ICodeEditor 类型冲突，所以使用 assertion
+      return (this.workbenchEditorService.currentEditor as IMonacoImplEditor).monacoEditor as unknown as IMonacoCodeEditor;
     }
+    return null;
   }
 
   /**
@@ -30,7 +40,7 @@ export class MonacoCodeService extends monaco.services.CodeEditorServiceImpl {
    */
   // @ts-ignore
   async openCodeEditor(input: monaco.editor.IResourceInput, source?: monaco.editor.ICodeEditor,
-                       sideBySide?: boolean): Promise<monaco.editor.CommonCodeEditor | undefined> {
+                       sideBySide?: boolean): Promise<monaco.editor.IStandaloneCodeEditor | undefined> {
     const resourceUri = new URI(input.resource.toString());
     let editorGroup = this.workbenchEditorService.currentEditorGroup;
     let index: number | undefined;
@@ -57,14 +67,12 @@ export class MonacoCodeService extends monaco.services.CodeEditorServiceImpl {
 }
 
 @Injectable()
-export class MonacoContextViewService extends monaco.services.ContextViewService {
+export class MonacoContextViewService extends ContextViewService {
 
   private menuContainer: HTMLDivElement;
 
-  private contextView: any;
-
   constructor() {
-    super(new monaco.services.SimpleLayoutService(document.body));
+    super(new SimpleLayoutService(document.body));
   }
 
   setContainer(container) {
@@ -77,6 +85,6 @@ export class MonacoContextViewService extends monaco.services.ContextViewService
       this.menuContainer.style.zIndex = '10';
       document.body.append(this.menuContainer);
     }
-    this.contextView.setContainer(this.menuContainer);
+    super.setContainer(this.menuContainer);
   }
 }

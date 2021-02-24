@@ -1,12 +1,12 @@
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { FileUri, URI, IFileServiceClient, Disposable, StorageProvider } from '@ali/ide-core-common';
+import { FileUri, URI, Disposable, StorageProvider } from '@ali/ide-core-common';
 import { FileTreeNextModule } from '../../src';
 import { IFileTreeAPI, IFileTreeService } from '../../src/common';
 import { FileTreeService } from '../../src/browser/file-tree.service';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { FileStat, FileServicePath, IDiskFileProvider } from '@ali/ide-file-service';
+import { FileStat, FileServicePath, IDiskFileProvider, IFileServiceClient } from '@ali/ide-file-service';
 import { FileTreeModelService } from '../../src/browser/services/file-tree-model.service';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { FileSystemNodeOptions, FileService } from '@ali/ide-file-service/lib/node';
@@ -25,6 +25,7 @@ import { PasteTypes } from '../../src';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import * as temp from 'temp';
 import * as fs from 'fs-extra';
+import * as path from 'path';
 import * as styles from '../../src/browser/file-tree-node.module.less';
 import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
 
@@ -67,15 +68,15 @@ describe('FileTree should be work while on single workspace model', () => {
     root = FileUri.create(fs.realpathSync(temp.mkdirSync('file-tree-next-test')));
     filesMap = [
       {
-        path: root.resolve('1_test.ts').withoutScheme().toString(),
+        path: path.join(root.path.toString(), '1_test.ts'),
         type: 'file',
       },
       {
-        path: root.resolve('test').withoutScheme().toString(),
+        path: path.join(root.path.toString(), 'test'),
         type: 'directory',
       },
       {
-        path: root.resolve('0_test.ts').withoutScheme().toString(),
+        path: path.join(root.path.toString(), '0_test.ts'),
         type: 'file',
       },
     ];
@@ -208,7 +209,7 @@ describe('FileTree should be work while on single workspace model', () => {
     done();
   });
   afterAll(() => {
-    track.cleanupSync();
+    // track.cleanupSync();
     mockTreeHandle.promptNewTreeNode.mockReset();
     mockTreeHandle.promptNewCompositeTreeNode.mockReset();
     mockTreeHandle.promptRename.mockReset();
@@ -239,7 +240,7 @@ describe('FileTree should be work while on single workspace model', () => {
       const treeModel = fileTreeModelService.treeModel;
       const rootNode = treeModel.root;
       const directoryNode = rootNode.getTreeNodeAtIndex(0) as Directory;
-      fs.ensureDirSync(directoryNode.uri.resolve('child_file').withoutScheme().toString());
+      fs.ensureDirSync(path.join(directoryNode.uri.path.toString(), 'child_file'));
       await directoryNode.setExpanded(true);
       expect(directoryNode.expanded).toBeTruthy();
       expect(rootNode.branchSize).toBe(filesMap.length + 1);
@@ -247,7 +248,7 @@ describe('FileTree should be work while on single workspace model', () => {
       expect(directoryNode.expanded).toBeFalsy();
       expect(rootNode.branchSize).toBe(filesMap.length);
       // clean effect
-      await fs.remove(directoryNode.uri.resolve('child_file').withoutScheme().toString());
+      await fs.remove(path.join(directoryNode.uri.path.toString(), 'child_file'));
       done();
     });
 
@@ -258,7 +259,7 @@ describe('FileTree should be work while on single workspace model', () => {
       await fileTreeContribution.onDidStart();
       const decorationService = injector.get(IDecorationsService);
       // create symlink file
-      await fs.ensureSymlink(filesMap[1].path, root.resolve('0_symbolic_file').withoutScheme().toString());
+      await fs.ensureSymlink(filesMap[1].path, path.join(root.path.toString(), '0_symbolic_file'));
       const dispose = fileTreeService.onNodeRefreshed(async () => {
         const rootNode = fileTreeModelService.treeModel.root;
         const symbolicNode = rootNode.children?.find((child: File) => child.filestat.isSymbolicLink) as File;
@@ -266,7 +267,7 @@ describe('FileTree should be work while on single workspace model', () => {
         expect(rootNode.branchSize).toBe(filesMap.length + 1);
         expect(decoration.color).toBe('gitDecoration.ignoredResourceForeground');
         expect(decoration.badge).toBe('⤷');
-        await fs.remove(root.resolve('0_symbolic_file').withoutScheme().toString());
+        await fs.remove(path.join(root.path.toString(), '0_symbolic_file'));
         dispose.dispose();
         done();
       });
@@ -604,7 +605,7 @@ describe('FileTree should be work while on single workspace model', () => {
       const treeModel = fileTreeModelService.treeModel;
       const rootNode = treeModel.root;
       const directoryNode = rootNode.getTreeNodeAtIndex(0) as Directory;
-      const testFile = directoryNode.uri.resolve('a/b').withoutScheme().toString();
+      const testFile = path.join(directoryNode.uri.path.toString(), 'a/b');
       const preNodeName = directoryNode.name;
       mockGetContextValue.mockImplementation((key) => {
         if (key === 'explorerViewletCompressedFocus') {

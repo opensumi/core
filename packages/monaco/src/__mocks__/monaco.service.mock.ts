@@ -1,3 +1,5 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+
 import { Deferred, Emitter } from '@ali/ide-core-common';
 import { createMockedMonaco } from './monaco';
 import { Injectable } from '@ali/common-di';

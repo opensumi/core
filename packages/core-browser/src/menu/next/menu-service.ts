@@ -1,3 +1,4 @@
+import { ContextKeyExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { CommandRegistry, Disposable, Event, Emitter } from '@ali/ide-core-common';
 import { Autowired, Injectable, Optional, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 
@@ -185,7 +186,7 @@ class Menu extends Disposable implements IMenu {
     }
   }
 
-  private fillKeysInWhenExpr(set: Set<string>, when?: string | monaco.contextkey.ContextKeyExpr) {
+  private fillKeysInWhenExpr(set: Set<string>, when?: string | ContextKeyExpr) {
     const keys = this.contextKeyService.getKeysInWhen(when);
     keys.forEach((key) => {
       set.add(key);

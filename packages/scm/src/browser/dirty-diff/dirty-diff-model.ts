@@ -1,3 +1,6 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { IEditorWorkerService } from '@ali/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
 import { Autowired, Injectable, Optional } from '@ali/common-di';
 import { Emitter, Event, sortedDiff, ThrottledDelayer, IChange, positionToRange } from '@ali/ide-core-common';
 import { Uri, URI } from '@ali/ide-core-common/lib/uri';
@@ -46,8 +49,8 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   // TODO: dynamic
   static heightInLines = 18;
 
-  private get editorWorkerService(): monaco.commons.IEditorWorkerService {
-    return monaco.services.StaticServices.editorWorkerService.get();
+  private get editorWorkerService(): IEditorWorkerService {
+    return StaticServices.editorWorkerService.get();
   }
 
   constructor(
@@ -121,8 +124,15 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
 
       // 复用 monaco 内部的 computeDiff 跟 computeDirtyDiff 参数不一致
       // 主要是 shouldComputeCharChanges#false, shouldPostProcessCharChanges#false
-      return this.editorWorkerService.computeDiff(originalURI as monaco.Uri, this._editorModel.uri, false)
-        .then((ret) => ret && ret.changes);
+      return this.editorWorkerService.computeDiff(
+        originalURI as monaco.Uri,
+        this._editorModel.uri,
+        false,
+        // FIXME - Monaco 20 - ESM
+        // 新版本多了一个 maxComputationTime 参数，参考 VS Code 默认值设置为 1000
+        1000,
+      )
+      .then((ret) => ret && ret.changes);
     });
   }
 

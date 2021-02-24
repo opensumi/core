@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { MockedStandaloneCodeEditor } from './code-editor';
 import { Disposable, Event } from '@ali/ide-core-common';
 
@@ -14,6 +15,25 @@ export class MockedDiffEditor extends Disposable implements monaco.editor.IStand
     this.originalEditor = new MockedStandaloneCodeEditor(dom, options, override);
     this.modifiedEditor = new MockedStandaloneCodeEditor(dom, options, override);
     this.onDidDispose = this.onDispose;
+  }
+  ignoreTrimWhitespace: boolean;
+  renderSideBySide: boolean;
+  renderIndicators: boolean;
+  maxComputationTime: number;
+  getDiffComputationResult() {
+    throw new Error('Method not implemented.');
+  }
+  onVisible(): void {
+    throw new Error('Method not implemented.');
+  }
+  onHide(): void {
+    throw new Error('Method not implemented.');
+  }
+  getStatusbarColumn(position: monaco.IPosition): number {
+    throw new Error('Method not implemented.');
+  }
+  changeDecorations(callback: (changeAccessor: monaco.editor.IModelDecorationsChangeAccessor) => any) {
+    throw new Error('Method not implemented.');
   }
 
   addCommand(keybinding: number, handler: monaco.editor.ICommandHandler, context?: string | undefined): string | null {
@@ -143,7 +163,18 @@ export class MockedDiffEditor extends Disposable implements monaco.editor.IStand
   trigger(source: string, handlerId: string, payload: any): void {
     throw new Error('Method not implemented.');
   }
-
+  getOptions() {
+    return this.originalEditor.getOptions();
+  }
+  getOption(key: any) {
+    return this.getOption(key);
+  }
+  getContentWidth() {
+    return this.originalEditor.getContentWidth();
+  }
+  getContainerDomNode() {
+    return this.originalEditor.getContainerDomNode();
+  }
 }
 
 export class MockedDiffNavigator implements monaco.editor.IDiffNavigator {
@@ -167,7 +198,10 @@ export class MockedDiffNavigator implements monaco.editor.IDiffNavigator {
   dispose(): void {
     throw new Error('Method not implemented.');
   }
-  ranges: monaco.editor.IDiffRange[];
+
+  // FIXME - Monaco 20 - ESM
+  // 之前是 IDiffRange，但新版本没有这个类型，暂时改成 IRange
+  ranges: monaco.IRange[];
   nextIdx: number;
   revealFirst: boolean;
 

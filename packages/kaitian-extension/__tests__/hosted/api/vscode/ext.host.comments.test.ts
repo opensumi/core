@@ -2,7 +2,7 @@ import { ExtHostComments, createCommentsApiFactory } from '@ali/ide-kaitian-exte
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, IMainThreadComments } from '@ali/ide-kaitian-extension/lib/common/vscode';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import URI from 'vscode-uri';
+import { Uri } from '@ali/ide-core-common';
 import * as types from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
 import type * as vscode from 'vscode';
 
@@ -65,7 +65,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.comments.test.t
     const author = '蛋总';
     const controller = vscodeComments.createCommentController(id, label);
 
-    const thread = controller.createCommentThread(URI.file('test'),  new types.Range(1, 1, 1, 1), [{
+    const thread = controller.createCommentThread(Uri.file('test'),  new types.Range(1, 1, 1, 1), [{
       body,
       author: {
         name: author,
@@ -87,7 +87,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.comments.test.t
     const author = '蛋总';
     const controller = vscodeComments.createCommentController(id, label);
 
-    const thread = controller.createCommentThread(URI.file('test'),  new types.Range(1, 1, 1, 1), [{
+    const thread = controller.createCommentThread(Uri.file('test'),  new types.Range(1, 1, 1, 1), [{
       body,
       author: {
         name: author,
@@ -129,7 +129,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.comments.test.t
       },
     };
 
-    controller.createCommentThread(URI.file('test'),  new types.Range(1, 1, 1, 1), [{
+    controller.createCommentThread(Uri.file('test'),  new types.Range(1, 1, 1, 1), [{
       body: 'body',
       author: {
         name: '蛋总',

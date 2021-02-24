@@ -3,7 +3,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, IMainThreadCommands, CommandHandler } from '@ali/ide-kaitian-extension/lib/common/vscode';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { IExtensionInfo } from '@ali/ide-core-common';
-import URI from 'vscode-uri';
+import { Uri } from '@ali/ide-core-common';
 import * as types from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
 import type * as vscode from 'vscode';
 
@@ -70,7 +70,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts
       }),
       $executeCommand: jest.fn(() => Promise.resolve()),
       $executeReferenceProvider: jest.fn(() => Promise.resolve({
-        uri: URI.parse(''),
+        uri: Uri.parse(''),
         range: new types.Range(1, 1, 1, 1),
       })),
     });
@@ -205,7 +205,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts
       extCommand.$registerBuiltInCommands();
       extCommand.$registerCommandConverter();
       expect(extCommand.converter instanceof CommandsConverter).toBeTruthy();
-      await extCommand.executeCommand('vscode.executeReferenceProvider', URI.parse(''), new types.Position(1, 1), []);
+      await extCommand.executeCommand('vscode.executeReferenceProvider', Uri.parse(''), new types.Position(1, 1), []);
       // 说明已经注册成功，本地有命令的，所以远端不会执行
       expect(mainService.$executeCommand).toBeCalledTimes(0);
     });

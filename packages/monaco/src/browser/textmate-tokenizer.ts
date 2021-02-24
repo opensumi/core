@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 /********************************************************************************
  * Copyright (C) 2018 Ericsson and others.
  *

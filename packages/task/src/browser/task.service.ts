@@ -1,7 +1,8 @@
 import { Autowired, Injectable } from '@ali/common-di';
+import { Mode } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/common/quickOpen';
 import { ITaskDefinitionRegistry, IProblemMatcherRegistry, Event, IProblemPatternRegistry, Emitter } from '@ali/ide-core-common';
-import { Disposable, Uri, PreferenceService, localize, IDisposable, QuickOpenItem, QuickOpenGroupItem, QuickOpenMode, QuickOpenService, formatLocalize, getIcon, IStringDictionary, isString } from '@ali/ide-core-browser';
-import { ITaskService, WorkspaceFolderTaskResult, ITaskProvider, TaskDefinition, ITaskSystem, ITaskSummary } from '../common';
+import { Disposable, Uri, PreferenceService, localize, IDisposable, QuickOpenItem, QuickOpenGroupItem, QuickOpenService, formatLocalize, getIcon, IStringDictionary, isString } from '@ali/ide-core-browser';
+import { ITaskService, WorkspaceFolderTaskResult, ITaskProvider, ITaskSystem, ITaskSummary } from '../common';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { OutputService } from '@ali/ide-output/lib/browser/output.service';
 import { OutputChannel } from '@ali/ide-output/lib/browser/output.channel';
@@ -217,8 +218,8 @@ export class TaskService extends Disposable implements ITaskService {
       vlaue: task,
       label: task._label || '',
       detail: task instanceof ContributedTask ? `${task.command.name || ''} ${task.command.args ? task.command.args?.join(' ') : ''}` : undefined,
-      run: (mode: QuickOpenMode) => {
-        if (mode === QuickOpenMode.OPEN) {
+      run: (mode: Mode) => {
+        if (mode === Mode.OPEN) {
           this.runTask(task);
           return true;
         }
@@ -236,14 +237,14 @@ export class TaskService extends Disposable implements ITaskService {
     const workspace: QuickOpenItem[] = [];
     let showBorder: boolean = true;
     for (const taskSet of contributedTaskSet) {
-      const run = (mode: QuickOpenMode) => {
-        if (mode === QuickOpenMode.OPEN) {
+      const run = (mode: Mode) => {
+        if (mode === Mode.OPEN) {
           this.quickOpenService.open({
             onType: (lookFor, acceptor) => {
               if (taskSet.tasks.length === 0) {
                 return acceptor([new QuickOpenItem({
-                  value: 'none', label: `未找到 ${taskSet.type} 的任务，按回车键返回`, run: (mode: QuickOpenMode) => {
-                    if (mode === QuickOpenMode.OPEN) {
+                  value: 'none', label: `未找到 ${taskSet.type} 的任务，按回车键返回`, run: (mode: Mode) => {
+                    if (mode === Mode.OPEN) {
                       return true;
                     }
                     return false;

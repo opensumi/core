@@ -1,4 +1,5 @@
-import { Emitter, Disposable } from '@ali/ide-core-common';
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { Emitter, Event, Disposable, IDisposable } from '@ali/ide-core-common';
 
 export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeEditor {
   static ID = 0;
@@ -9,24 +10,114 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
 
   id: number;
 
-  constructor(public dom, public options, public override) {
+  constructor(public dom: any, public options: any, public override: any) {
     super();
     this.id = (++MockedCodeEditor.ID);
   }
+  isSimpleWidget: boolean;
+  onWillType(listener: (text: string) => void): monaco.IDisposable {
+    throw new Error('Method not implemented.');
+  }
+  getConfiguration(): any {
+  }
+  onDidType(listener: (text: string) => void): monaco.IDisposable {
+    throw new Error('Method not implemented.');
+  }
+  onDidAttemptReadOnlyEdit(listener: () => void): monaco.IDisposable {
+    throw new Error('Method not implemented.');
+  }
+  onMouseDrag(listener: (e: monaco.editor.IEditorMouseEvent) => void): monaco.IDisposable {
+    throw new Error('Method not implemented.');
+  }
+  onMouseDrop(listener: (e: monaco.editor.IPartialEditorMouseEvent) => void): monaco.IDisposable {
+    throw new Error('Method not implemented.');
+  }
+  onMouseWheel(listener: (e: any) => void): monaco.IDisposable {
+    throw new Error('Method not implemented.');
+  }
+  invokeWithinContext<T>(fn: (accessor: any) => T): T {
+    throw new Error('Method not implemented.');
+  }
+  _getCursors() {
+    throw new Error('Method not implemented.');
+  }
+  setDecorations(decorationTypeKey: string, ranges: monaco.editor.IDecorationOptions[]): void {
+    throw new Error('Method not implemented.');
+  }
+  setDecorationsFast(decorationTypeKey: string, ranges: monaco.IRange[]): void {
+    throw new Error('Method not implemented.');
+  }
+  removeDecorations(decorationTypeKey: string): void {
+    throw new Error('Method not implemented.');
+  }
+  getWhitespaces(): monaco.editor.IEditorWhitespace[] {
+    throw new Error('Method not implemented.');
+  }
+  setHiddenAreas(ranges: monaco.IRange[]): void {
+    throw new Error('Method not implemented.');
+  }
+  setAriaOptions(options: monaco.editor.IEditorAriaOptions): void {
+    throw new Error('Method not implemented.');
+  }
+  getTelemetryData(): { [key: string]: any; } | undefined {
+    throw new Error('Method not implemented.');
+  }
+  hasModel(): this is monaco.editor.IActiveCodeEditor {
+    throw new Error('Method not implemented.');
+  }
+  onVisible(): void {
+    throw new Error('Method not implemented.');
+  }
+  onHide(): void {
+    throw new Error('Method not implemented.');
+  }
+  getStatusbarColumn(position: monaco.IPosition): number {
+    throw new Error('Method not implemented.');
+  }
+  changeDecorations(callback: (changeAccessor: monaco.editor.IModelDecorationsChangeAccessor) => any) {
+    throw new Error('Method not implemented.');
+  }
+  onDidCompositionStart(listener: () => void): monaco.IDisposable {
+    throw new Error('Method not implemented.');
+  }
+  onDidCompositionEnd(listener: () => void): monaco.IDisposable {
+    throw new Error('Method not implemented.');
+  }
+  onDidPaste(listener: (e: monaco.editor.IPasteEvent) => void): monaco.IDisposable {
+    throw new Error('Method not implemented.');
+  }
+  onDidContentSizeChange(listener: (e: monaco.editor.IContentSizeChangedEvent) => void): monaco.IDisposable {
+    throw new Error('Method not implemented.');
+  }
+  getOptions(): monaco.editor.IComputedEditorOptions {
+    throw new Error('Method not implemented.');
+  }
+  getOption(_: any): any {
+    throw new Error('Method not implemented.');
+  }
+  getContentWidth(): number {
+    throw new Error('Method not implemented.');
+  }
+  getContentHeight(): number {
+    throw new Error('Method not implemented.');
+  }
+  getContainerDomNode(): HTMLElement {
+    return this.dom;
+  }
 
   _onDidChangeModelContent = new Emitter<monaco.editor.IModelContentChangedEvent>();
-  onDidChangeModelContent = this._onDidChangeModelContent.event;
+  onDidChangeModelContent: Event<monaco.editor.IModelContentChangedEvent> = this._onDidChangeModelContent.event;
 
   _onDidChangeModelLanguage = new Emitter<monaco.editor.IModelLanguageChangedEvent>();
-  onDidChangeModelLanguage = this._onDidChangeModelLanguage.event;
+  onDidChangeModelLanguage: Event<monaco.editor.IModelLanguageChangedEvent> = this._onDidChangeModelLanguage.event;
 
   _onDidChangeModelLanguageConfiguration = new Emitter<monaco.editor.IModelLanguageConfigurationChangedEvent>();
-  onDidChangeModelLanguageConfiguration = this._onDidChangeModelLanguageConfiguration.event;
+  onDidChangeModelLanguageConfiguration: Event<monaco.editor.IModelLanguageConfigurationChangedEvent> = this._onDidChangeModelLanguageConfiguration.event;
 
   _onDidChangeModelOptions = new Emitter<monaco.editor.IModelOptionsChangedEvent>();
   onDidChangeModelOptions = this._onDidChangeModelOptions.event;
 
-  _onDidChangeConfiguration = new Emitter<monaco.editor.IConfigurationChangedEvent>();
+  _onDidChangeConfiguration = new Emitter<monaco.editor.ConfigurationChangedEvent>();
   onDidChangeConfiguration = this._onDidChangeConfiguration.event;
 
   _onDidChangeCursorPosition = new Emitter<monaco.editor.ICursorPositionChangedEvent>();
@@ -104,12 +195,10 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   setModel(model: monaco.editor.ITextModel | null): void {
     this.model = model;
   }
-  getConfiguration(): monaco.editor.InternalEditorOptions {
+  getRawOptions(): monaco.editor.IEditorOptions {
     return {
-      viewInfo: {
-        renderLineHighlight: 'line',
-        renderLineNumbers: 1,
-      },
+      renderLineHighlight: 'line',
+      renderLineNumbers: 1,
     } as any;
   }
   getValue(options?: { preserveBOM: boolean; lineEnding: string; } | undefined): string {
@@ -172,17 +261,13 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
     return {
       height: 0,
       width: 0,
-      glyphMarginHeight: 0,
       glyphMarginLeft: 0,
       glyphMarginWidth: 0,
-      contentHeight: 0,
       contentLeft: 0,
       contentWidth: 0,
-      lineNumbersHeight: 0,
       lineNumbersLeft: 0,
       lineNumbersWidth: 0,
       decorationsLeft: 0,
-      decorationsHeight: 0,
       decorationsWidth: 0,
       minimapLeft: 0,
       minimapWidth: 0,
@@ -247,10 +332,6 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
     return;
   }
 
-  _commandService: monaco.commands.ICommandService;
-
-  cursor: monaco.editor.ICursor;
-
   _onDidDispose = new Emitter<void>();
   onDidDispose = this._onDidDispose.event;
 
@@ -265,12 +346,13 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
 
   updateOptions = jest.fn((newOptions) => {
     this.options = newOptions;
-    this._onDidChangeConfiguration.fire(newOptions as monaco.editor.IConfigurationChangedEvent);
+    // FIXME LATER
+    // this._onDidChangeConfiguration.fire(newOptions as monaco.editor.IConfigurationChangedEvent);
   });
   layout(dimension?: monaco.editor.IDimension | undefined): void {
     return;
   }
-  focus =  jest.fn();
+  focus = jest.fn();
   hasTextFocus(): boolean {
     return false;
   }
@@ -319,9 +401,12 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
       secondarySelections: [],
       reason: 0,
       source: 'api',
+      modelVersionId: 1,
+      oldSelections: [],
+      oldModelVersionId: 0,
     });
   });
-  setSelections =  jest.fn((selections: monaco.ISelection[]) => {
+  setSelections = jest.fn((selections: monaco.ISelection[]) => {
     this.selections = selections;
   });
 
@@ -382,9 +467,25 @@ export class MockedStandaloneCodeEditor extends MockedCodeEditor implements mona
     // tslint:disable-next-line:no-console
     console.log('setPosition called');
   }
-
-  _instantiationService: monaco.instantiation.IInstantiationService;
-
-  _contributions: { 'editor.controller.quickOpenController': monaco.quickOpen.QuickOpenController; 'editor.contrib.referencesController': monaco.referenceSearch.ReferencesController; };
+  onDidCompositionStart(): IDisposable {
+    // tslint:disable-next-line:no-console
+    console.log('onDidCompositionStart called');
+    return new Disposable();
+  }
+  onDidCompositionEnd(): IDisposable {
+    // tslint:disable-next-line:no-console
+    console.log('onDidCompositionEnd called');
+    return new Disposable();
+  }
+  onDidPaste(): IDisposable {
+    // tslint:disable-next-line:no-console
+    console.log('onDidPaste called');
+    return new Disposable();
+  }
+  onDidContentSizeChange(): IDisposable {
+    // tslint:disable-next-line:no-console
+    console.log('onDidContentSizeChange called');
+    return new Disposable();
+  }
 
 }

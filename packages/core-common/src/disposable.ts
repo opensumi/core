@@ -15,6 +15,54 @@
  ********************************************************************************/
 import { Event, Emitter } from './event';
 
+// DisposableStore 是从 vscode lifecycle 中复制而来
+export class DisposableStore implements IDisposable {
+  private toDispose = new Set<IDisposable>();
+  private _isDisposed = false;
+
+  /**
+   * Dispose of all registered disposables and mark this object as disposed.
+   *
+   * Any future disposables added to this object will be disposed of on `add`.
+   */
+  public dispose(): void {
+    if (this._isDisposed) {
+      return;
+    }
+
+    markTracked(this);
+    this._isDisposed = true;
+    this.clear();
+  }
+
+  /**
+   * Dispose of all registered disposables but do not mark this object as disposed.
+   */
+  public clear(): void {
+    this.toDispose.forEach(item => item.dispose());
+    this.toDispose.clear();
+  }
+
+  public add<T extends IDisposable>(t: T): T {
+    if (!t) {
+      return t;
+    }
+    if ((t as any as DisposableStore) === this) {
+      throw new Error('Cannot register a disposable on itself!');
+    }
+
+    markTracked(t);
+    if (this._isDisposed) {
+      console.warn(new Error('Registering disposable on object that has already been disposed of').stack);
+      t.dispose();
+    } else {
+      this.toDispose.add(t);
+    }
+
+    return t;
+  }
+}
+
 export interface IDisposable {
   /**
    * Dispose this object.
@@ -253,53 +301,6 @@ function trackDisposable<T extends IDisposable>(x: T): T {
 		}
 	}, 3000);
 	return x;
-}
-
-export class DisposableStore implements IDisposable {
-	private _toDispose = new Set<IDisposable>();
-	private _isDisposed = false;
-
-	/**
-	 * Dispose of all registered disposables and mark this object as disposed.
-	 *
-	 * Any future disposables added to this object will be disposed of on `add`.
-	 */
-	public dispose(): void {
-		if (this._isDisposed) {
-			return;
-		}
-
-		markTracked(this);
-		this._isDisposed = true;
-		this.clear();
-	}
-
-	/**
-	 * Dispose of all registered disposables but do not mark this object as disposed.
-	 */
-	public clear(): void {
-		this._toDispose.forEach(item => item.dispose());
-		this._toDispose.clear();
-	}
-
-	public add<T extends IDisposable>(t: T): T {
-		if (!t) {
-			return t;
-		}
-		if ((t as any as DisposableStore) === this) {
-			throw new Error('Cannot register a disposable on itself!');
-		}
-
-		markTracked(t);
-		if (this._isDisposed) {
-			console.warn(new Error('Registering disposable on object that has already been disposed of').stack);
-			t.dispose();
-		} else {
-			this._toDispose.add(t);
-		}
-
-		return t;
-	}
 }
 
 /**

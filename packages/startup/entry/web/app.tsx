@@ -1,3 +1,8 @@
+import { setLocale } from '@ali/ide-monaco/lib/browser/monaco-localize';
+// 这里建议传实际 preferences 的设置项
+// 如果不传则默认会根据 PreferenceScope 的优先级从 LocalStorage 取值
+setLocale('zh-CN');
+
 import '@ali/ide-i18n/lib/browser';
 import { defaultConfig } from '@ali/ide-main-layout/lib/browser/default-config';
 import { renderApp } from './render-app';
@@ -12,8 +17,6 @@ import { ExpressFileServerModule } from '@ali/ide-express-file-server/lib/browse
 import { SlotLocation } from '@ali/ide-core-browser';
 
 import '../styles.less';
-
-// require('@ali/ide-monaco/lib/browser/monaco-loader').loadMonaco();
 
 import { SampleModule } from '../sample-modules';
 

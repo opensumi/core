@@ -7,7 +7,7 @@ import { SymbolKind } from '@ali/ide-core-common';
 import { IWorkspaceService } from '@ali/ide-workspace';
 
 class MockWorkspaceSymbolProvider implements WorkspaceSymbolProvider {
-  provideWorkspaceSymbols(params: WorkspaceSymbolParams, token: monaco.CancellationToken): Thenable<SymbolInformation[]> {
+  provideWorkspaceSymbols(params: WorkspaceSymbolParams, token): Thenable<SymbolInformation[]> {
     return Promise.resolve([{
       name: 'test',
       kind: SymbolKind.Function,
@@ -17,7 +17,7 @@ class MockWorkspaceSymbolProvider implements WorkspaceSymbolProvider {
       }),
     }]);
   }
-  resolveWorkspaceSymbol(symbol: SymbolInformation, token: monaco.CancellationToken): Thenable<SymbolInformation> {
+  resolveWorkspaceSymbol(symbol: SymbolInformation, token): Thenable<SymbolInformation> {
     return Promise.resolve({
       name: 'test',
       kind: SymbolKind.Function,

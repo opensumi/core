@@ -1,5 +1,7 @@
 
 'use strict';
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+
 import { isWindows } from '@ali/ide-core-common/lib/utils/os';
 
 // 这里copy了vscode-uri源码作为mock的monaco uri使用

@@ -1,7 +1,6 @@
 import type * as vscode from 'vscode';
-import URI from 'vscode-uri';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { toDisposable, onUnexpectedError } from '@ali/ide-core-common';
+import { Uri, toDisposable, onUnexpectedError } from '@ali/ide-core-common';
 import { IExtHostUrls, IMainThreadUrls, MainThreadAPIIdentifier } from '../../../common/vscode';
 import { UriComponents } from '../../../common/vscode/ext-types';
 
@@ -40,7 +39,7 @@ export class ExtHostUrls implements IExtHostUrls {
       return Promise.resolve(undefined);
     }
     try {
-      handler.handleUri(URI.revive(uri));
+      handler.handleUri(Uri.revive(uri));
     } catch (err) {
       onUnexpectedError(err);
     }

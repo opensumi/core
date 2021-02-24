@@ -1,10 +1,16 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { ContextMenuController } from '@ali/monaco-editor-core/esm/vs/editor/contrib/contextmenu/contextmenu';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Disposable, Domain, IContextKeyService } from '@ali/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
+import { EditorOption } from '@ali/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { IAnchor } from '@ali/monaco-editor-core/esm/vs/base/browser/ui/contextview/contextview';
+import * as dom from '@ali/monaco-editor-core/esm/vs/base/browser/dom';
+
 import { IEditor } from '../../common';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '../types';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class EditorContextMenuController extends Disposable {
 
   @Autowired(AbstractContextMenuService)
@@ -18,70 +24,104 @@ export class EditorContextMenuController extends Disposable {
 
   private readonly contextKeyService: IContextKeyService;
 
-  constructor(private editor: IEditor) {
+  constructor(private _editor: IEditor) {
     super();
-    this.addDispose(editor.monacoEditor.onContextMenu((e) => {
-      this.onContextMenu(e);
-    }));
-
-    this.contextKeyService = this.registerDispose(this.globalContextKeyService.createScoped((this.editor.monacoEditor as any)._contextKeyService));
+    this.contextKeyService = this.registerDispose(this.globalContextKeyService.createScoped((this._editor.monacoEditor as any)._contextKeyService));
+    this.overrideContextmenuContribution(_editor);
   }
 
-  private onContextMenu(e) {
-    // 这段判断来自monacoEditor
-    if (!this.editor.currentDocumentModel) {
+  overrideContextmenuContribution(editor: IEditor) {
+    // https://github.com/Microsoft/monaco-editor/issues/1058#issuecomment-468681208
+    const contextmenu = editor.monacoEditor.getContribution(ContextMenuController.ID);
+
+    const _this = this;
+    const originMethod = contextmenu['showContextMenu'];
+    // https://github.com/microsoft/vscode/blob/master/src/vs/editor/contrib/contextmenu/contextmenu.ts#L124
+    contextmenu['showContextMenu'] = function(anchor?: IAnchor | null): void {
+      if (!this['_editor'].getOption(EditorOption.contextmenu)) {
+        return; // Context menu is turned off through configuration
+      }
+      if (!this['_editor'].hasModel()) {
+        return;
+      }
+
+      if (!this['_contextMenuService']) {
+        this['_editor'].focus();
+        return;	// We need the context menu service to function
+      }
+
+      // Find actions available for menu
+      const menuNodes = _this.getMenuNodes();
+      // Show menu if we have actions to show
+      if (menuNodes.length > 0) {
+        _this._doShowContextMenu(menuNodes, anchor);
+      }
+    };
+
+    this.addDispose({
+      dispose: () => {
+        contextmenu['_onContextMenu'] = function() {
+          originMethod.apply(contextmenu, arguments);
+        };
+      },
+    });
+  }
+
+  private _doShowContextMenu(menuNodes: any[], anchor?: IAnchor | null) {
+    const editor = this._editor.monacoEditor;
+    // https://github.com/microsoft/vscode/blob/master/src/vs/editor/contrib/contextmenu/contextmenu.ts#L196
+    if (!editor.hasModel()) {
       return;
     }
-    if (!this.editor.monacoEditor.getConfiguration().contribInfo.contextmenu) {
-        this.editor.monacoEditor.focus();
-        // Ensure the cursor is at the position of the mouse click
-        if (e.target.position && this.editor.monacoEditor.getSelection() && !this.editor.monacoEditor.getSelection()!.containsPosition(e.target.position)) {
-            this.editor.monacoEditor.setPosition(e.target.position);
-        }
-        return; // Context menu is turned off through configuration
+
+    // Disable hover
+    const oldHoverSetting = this._editor.monacoEditor.getOption(monaco.editor.EditorOption.hover);
+    this._editor.monacoEditor.updateOptions({
+      hover: {
+        enabled: false,
+      },
+    });
+
+    if (!anchor) {
+      // Ensure selection is visible
+      editor.revealPosition(editor.getPosition(), monaco.editor.ScrollType.Immediate);
+
+      editor.render();
+      const cursorCoords = editor.getScrolledVisiblePosition(editor.getPosition());
+
+      // Translate to absolute editor position
+      const editorCoords = dom.getDomNodePagePosition(editor.getDomNode());
+      const posx = editorCoords.left + cursorCoords.left;
+      const posy = editorCoords.top + cursorCoords.top + cursorCoords.height;
+
+      anchor = { x: posx, y: posy };
     }
-    if (e.target.type === 12 /* OVERLAY_WIDGET */) {
-        return; // allow native menu on widgets to support right click on input field for example in find
-    }
-    e.event.preventDefault();
-    if (e.target.type !== 6 /* CONTENT_TEXT */ && e.target.type !== 7 /* CONTENT_EMPTY */ && e.target.type !== 1 /* TEXTAREA */) {
-        return; // only support mouse click into text or native context menu key for now
-    }
-    // Ensure the editor gets focus if it hasn't, so the right events are being sent to other contributions
-    this.editor.monacoEditor.focus();
-    // Ensure the cursor is at the position of the mouse click
-    if (e.target.position && this.editor.monacoEditor.getSelection() && !this.editor.monacoEditor.getSelection()!.containsPosition(e.target.position)) {
-        this.editor.monacoEditor.setPosition(e.target.position);
-    }
-    // Unless the user triggerd the context menu through Shift+F10, use the mouse position as menu position
-    let anchor: {x: number, y: number } | undefined;
-    if (e.target.type !== 1 /* TEXTAREA */) {
-        anchor = { x: e.event.posx - 1, y: e.event.posy - 1 };
-    }
+
     // Show the context menu
-    this.showContextMenu(anchor);
+    this.contextMenuRenderer.show({
+      anchor,
+      menuNodes,
+      args: [this._editor.currentUri],
+      onHide: (canceled) => {
+        if (!canceled) {
+          this._editor.monacoEditor.focus();
+          this._editor.monacoEditor.updateOptions({
+            hover: oldHoverSetting,
+          });
+        }
+      },
+    });
   }
 
-  private showContextMenu(anchor: {x: number, y: number } = {x: 0, y: 0}) {
+  private getMenuNodes() {
     const contextMenu = this.contextMenuService.createMenu({
       id: MenuId.EditorContext,
       contextKeyService: this.contextKeyService,
     });
     const menuNodes = contextMenu.getMergedMenuNodes();
     contextMenu.dispose();
-
-    this.contextMenuRenderer.show({
-      anchor,
-      menuNodes,
-      args: [ this.editor.currentUri ],
-      onHide: (canceled) => {
-        if (!canceled) {
-          this.editor.monacoEditor.focus();
-        }
-      },
-    });
+    return menuNodes;
   }
-
 }
 
 @Domain(BrowserEditorContribution)

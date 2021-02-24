@@ -1,4 +1,4 @@
-import Uri from 'vscode-uri';
+import { Uri } from '@ali/ide-core-common';
 import {
   Event,
   Emitter,

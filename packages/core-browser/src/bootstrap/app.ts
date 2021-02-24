@@ -1,3 +1,8 @@
+/**
+ * editor.main 包含了所有 monaco 自带的编辑器相关核心功能以及 contributes
+ * 并且 editor.main 也包含对 editor.all 的导入
+ */
+import '@ali/monaco-editor-core/esm/vs/editor/editor.main';
 import { Injector, ConstructorOf } from '@ali/common-di';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { AppConfig } from '../react-providers';

@@ -1,30 +1,50 @@
+import { ContextKeyExpr, IContextKeyServiceTarget } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { ContextKeyService } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
+import { KeybindingResolver } from '@ali/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingResolver';
+import { ConfigurationTarget, IConfigurationChangeEvent, IConfigurationService, IConfigurationOverrides, IConfigurationData, IConfigurationValue } from '@ali/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
+
+import { Emitter as EventEmitter } from '@ali/monaco-editor-core/esm/vs/base/common/event';
 import {
   IContextKey, IContextKeyService, Event,
   ContextKeyChangeEvent, getDebugLogger, Emitter,
-  IScopedContextKeyService, PreferenceService, PreferenceChanges, PreferenceScope,
+  IScopedContextKeyService, PreferenceService, PreferenceChanges, PreferenceScope, PreferenceSchemaProvider, createPreferenceProxy,
 } from '@ali/ide-core-browser';
-import { Disposable } from '@ali/ide-core-common';
+import { Disposable, ILogger } from '@ali/ide-core-common';
 import { Optional, Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di';
+import { IWorkspaceFolder } from '@ali/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
 
-import { ContextKeyService } from '@reexport/vsc-modules/lib/contextkey';
-import { Emitter as EventEmitter } from '@reexport/vsc-modules/lib/base/common/event';
-import { ContextKeyExpr } from '@reexport/vsc-modules/lib/contextkey/common/contextkey';
-import { KeybindingResolver } from '@reexport/vsc-modules/lib/contextkey/keybindingResolver';
-import { IConfigurationChangeEvent, IConfigurationService, DEFAULT_CONFIG_LEVEL } from '@reexport/vsc-modules/lib/contextkey/common/configuration';
-
-const KEYBINDING_CONTEXT_ATTR = KeybindingResolver.KEYBINDING_CONTEXT_ATTR;
+// 新版本这个 magic string 没有导出了
+const KEYBINDING_CONTEXT_ATTR = 'data-keybinding-context';
 
 @Injectable()
 export class ConfigurationService extends Disposable implements IConfigurationService {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
+  @Autowired(PreferenceSchemaProvider)
+  private readonly preferenceSchemaProvider: PreferenceSchemaProvider;
+
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
+
   private readonly _onDidChangeConfiguration = new EventEmitter<IConfigurationChangeEvent>();
   public readonly onDidChangeConfiguration = this._onDidChangeConfiguration.event;
+  public _serviceBrand: undefined;
 
   constructor() {
     super();
     this.preferenceService.onPreferencesChanged(this.triggerPreferencesChanged, this, this.disposables);
+  }
+
+  public keys() {
+    this.logger.error('MonacoConfigurationService#keys not implement');
+    return {
+      default: [],
+      user: [],
+      workspace: [],
+      workspaceFolder: [],
+      memory: [],
+    };
   }
 
   // hack duck types for ContextKeyService
@@ -33,26 +53,180 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
   protected triggerPreferencesChanged(changesToEmit: PreferenceChanges) {
     const changes = Object.values(changesToEmit);
     const defaultScopeChanges = changes.filter((change) => change.scope === PreferenceScope.Default);
-    const otherScopeChanges = changes.filter((change) => change.scope !== PreferenceScope.Default);
+    const userScopeChanges = changes.filter((change) => change.scope === PreferenceScope.User);
+    const workspaceScopeChanges = changes.filter((change) => change.scope === PreferenceScope.Workspace);
+    const workspaceFolderScopeChanges = changes.filter((change) => change.scope === PreferenceScope.Folder);
 
     // 在 monaco-editor 内部，default scope 变化时需要刷新内置所有的 config 打头的对应的值
     if (defaultScopeChanges.length) {
       this._onDidChangeConfiguration.fire({
         affectedKeys: defaultScopeChanges.map((n) => n.preferenceName),
-        source: DEFAULT_CONFIG_LEVEL,
+        source: ConfigurationTarget.DEFAULT,
+        change: {
+          keys: [],
+          overrides: [],
+        },
+        // 判定配置是否生效
+        affectsConfiguration(configuration: string) {
+          return true;
+        },
+        sourceConfig: {},
       });
     }
 
-    if (otherScopeChanges.length) {
+    if (userScopeChanges.length) {
       this._onDidChangeConfiguration.fire({
-        affectedKeys: otherScopeChanges.map((n) => n.preferenceName),
-        source: '',
+        affectedKeys: userScopeChanges.map((n) => n.preferenceName),
+        source: ConfigurationTarget.USER,
+        change: {
+          keys: [],
+          overrides: [],
+        },
+        affectsConfiguration(configuration: string) {
+          return true;
+        },
+        sourceConfig: {},
+      });
+    }
+
+    if (workspaceScopeChanges.length) {
+      this._onDidChangeConfiguration.fire({
+        affectedKeys: userScopeChanges.map((n) => n.preferenceName),
+        source: ConfigurationTarget.WORKSPACE,
+        change: {
+          keys: [],
+          overrides: [],
+        },
+        affectsConfiguration(configuration: string) {
+          return true;
+        },
+        sourceConfig: {},
+      });
+    }
+
+    if (workspaceFolderScopeChanges.length) {
+      this._onDidChangeConfiguration.fire({
+        affectedKeys: userScopeChanges.map((n) => n.preferenceName),
+        source: ConfigurationTarget.WORKSPACE_FOLDER,
+        change: {
+          keys: [],
+          overrides: [],
+        },
+        affectsConfiguration(configuration: string) {
+          return true;
+        },
+        sourceConfig: {},
       });
     }
   }
 
-  public getValue<T>(preferenceName: string): T {
-    return this.preferenceService.resolve<T>(preferenceName).value as T;
+  public getValue<T>(section?: string): T;
+  public getValue<T>(overrides: IConfigurationOverrides): T;
+  public getValue<T>(sectionOrOverrides?: string | IConfigurationOverrides, overrides?: IConfigurationOverrides): T {
+    let section;
+    if (typeof sectionOrOverrides !== 'string') {
+      overrides = sectionOrOverrides;
+      section = undefined;
+    } else {
+      section = sectionOrOverrides;
+    }
+    const overrideIdentifier = overrides && 'overrideIdentifier' in overrides && overrides['overrideIdentifier'] as string || undefined;
+    const resourceUri = overrides && 'resource' in overrides && !!overrides['resource'] && overrides['resource'].toString();
+    const proxy = createPreferenceProxy<{ [key: string]: any }>(this.preferenceService, this.preferenceSchemaProvider.getCombinedSchema(), {
+      resourceUri: (resourceUri || undefined), overrideIdentifier, style: 'both',
+    });
+    if (section) {
+      return proxy[section] as T;
+    }
+    return proxy as any;
+  }
+
+  public async updateValue(key: string, value: any): Promise<void>;
+  public async updateValue(key: string, value: any, targetOrOverrides?: ConfigurationTarget | IConfigurationOverrides, target?: ConfigurationTarget, donotNotifyError?: boolean): Promise<void> {
+    let scope: PreferenceScope = PreferenceScope.Default;
+    if (typeof target === 'number') {
+      scope = this.getPreferenceScope(target);
+    } else if (typeof targetOrOverrides === 'number') {
+      scope = this.getPreferenceScope(targetOrOverrides);
+    }
+    const overrideIdentifier = typeof targetOrOverrides === 'object' && 'overrideIdentifier' in targetOrOverrides && targetOrOverrides['overrideIdentifier'] as string || undefined;
+    const resourceUri = typeof targetOrOverrides === 'object' && 'resource' in targetOrOverrides && !!targetOrOverrides['resource'] && targetOrOverrides['resource'].toString();
+
+    this.preferenceService.set(key, value, scope, resourceUri || '', overrideIdentifier);
+  }
+
+  public inspect<T>(key: string, overrides?: IConfigurationOverrides): IConfigurationValue<T> {
+    const overrideIdentifier = typeof overrides === 'object' && 'overrideIdentifier' in overrides && overrides['overrideIdentifier'] as string || undefined;
+    const resourceUri = typeof overrides === 'object' && 'resource' in overrides && !!overrides['resource'] && overrides['resource'].toString();
+    const value = this.preferenceService.inspect(key, resourceUri || '', overrideIdentifier);
+    const effectValue = typeof value?.workspaceFolderValue !== 'undefined' ? value?.workspaceFolderValue :
+    typeof value?.workspaceValue !== 'undefined' ? value?.workspaceValue :
+    typeof value?.globalValue !== 'undefined' ? value?.globalValue :
+    typeof value?.defaultValue !== 'undefined' ? value?.defaultValue : undefined;
+
+    return {
+      defaultValue: value?.defaultValue as T,
+      userValue: value?.globalValue as T,
+      userLocalValue: value?.globalValue as T,
+      userRemoteValue: value?.globalValue as T,
+      workspaceValue: value?.workspaceValue as T,
+      workspaceFolderValue: value?.workspaceFolderValue as T,
+      memoryValue: undefined,
+      value: effectValue as T,
+      default: {
+        value: value?.defaultValue as T,
+        override: overrideIdentifier ? value?.defaultValue as T : undefined,
+      },
+      user: {
+        value: value?.globalValue as T,
+        override: overrideIdentifier ? value?.globalValue as T : undefined,
+      },
+      userLocal: {
+        value: value?.globalValue as T,
+        override: overrideIdentifier ? value?.globalValue as T : undefined,
+      },
+      userRemote: {
+        value: value?.globalValue as T,
+        override: overrideIdentifier ? value?.globalValue as T : undefined,
+      },
+      workspace: {
+        value: value?.workspaceValue as T,
+        override: overrideIdentifier ? value?.workspaceValue as T : undefined,
+      },
+      workspaceFolder: {
+        value: value?.workspaceFolderValue as T,
+        override: overrideIdentifier ? value?.workspaceFolderValue as T : undefined,
+      },
+      overrideIdentifiers: overrideIdentifier ? [overrideIdentifier] : undefined,
+    };
+  }
+
+  public async reloadConfiguration(folder?: IWorkspaceFolder): Promise<void> {
+    throw new Error('MonacoContextKeyService#reloadConfiguration method not implement');
+  }
+
+  private getPreferenceScope(target: ConfigurationTarget) {
+    let scope: PreferenceScope;
+    if (target === ConfigurationTarget.DEFAULT) {
+      scope = PreferenceScope.Default;
+    } else if (
+      target === ConfigurationTarget.USER ||
+      target === ConfigurationTarget.USER_LOCAL ||
+      target === ConfigurationTarget.USER_REMOTE
+    ) {
+      scope = PreferenceScope.User;
+    } else if (target === ConfigurationTarget.WORKSPACE) {
+      scope = PreferenceScope.Workspace;
+    } else if (target === ConfigurationTarget.WORKSPACE_FOLDER) {
+      scope = PreferenceScope.Folder;
+    } else {
+      scope = PreferenceScope.Default;
+    }
+    return scope;
+  }
+
+  getConfigurationData(): IConfigurationData | null {
+    throw new Error('MonacoContextKeyService#getConfigurationData method not implement');
   }
 }
 
@@ -88,8 +262,8 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
     return this.contextKeyService.createKey(key, defaultValue);
   }
 
-  getKeysInWhen(when: string | monaco.contextkey.ContextKeyExpr | undefined) {
-    let expr: monaco.contextkey.ContextKeyExpr | undefined;
+  getKeysInWhen(when: string | ContextKeyExpr | undefined) {
+    let expr: ContextKeyExpr | undefined;
     if (typeof when === 'string') {
       expr = this.parse(when);
     }
@@ -100,19 +274,19 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
     return this.contextKeyService.getContextKeyValue(key);
   }
 
-  createScoped(target: monaco.contextkey.IContextKeyServiceTarget | monaco.contextKeyService.ContextKeyService): IScopedContextKeyService {
+  createScoped(target: IContextKeyServiceTarget | ContextKeyService): IScopedContextKeyService {
     if (target && isContextKeyService(target)) {
       return this.injector.get(ScopedContextKeyService, [target]);
     } else {
-      const scopedContextKeyService = this.contextKeyService.createScoped(target as monaco.contextkey.IContextKeyServiceTarget);
+      const scopedContextKeyService = this.contextKeyService.createScoped(target as IContextKeyServiceTarget);
       return this.injector.get(ScopedContextKeyService, [scopedContextKeyService as ContextKeyService]);
     }
   }
 
   // cache expressions
-  protected expressions = new Map<string, monaco.contextkey.ContextKeyExpr | undefined>();
+  protected expressions = new Map<string, ContextKeyExpr | undefined>();
   // internal used
-  parse(when: string | undefined): monaco.contextkey.ContextKeyExpr | undefined {
+  parse(when: string | undefined): ContextKeyExpr | undefined {
     if (!when) {
       return undefined;
     }
@@ -120,7 +294,7 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
     let expression = this.expressions.get(when);
     if (!expression) {
       const parsedExpr = ContextKeyExpr.deserialize(when) as unknown;
-      expression = parsedExpr ? parsedExpr as monaco.contextkey.ContextKeyExpr : undefined;
+      expression = parsedExpr ? parsedExpr as ContextKeyExpr : undefined;
       this.expressions.set(when, expression);
     }
     return expression;
@@ -130,7 +304,7 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
     this.contextKeyService.dispose();
   }
 
-  abstract match(expression: string | monaco.contextkey.ContextKeyExpr, context?: HTMLElement | null): boolean;
+  abstract match(expression: string | ContextKeyExpr, context?: HTMLElement | null): boolean;
 }
 
 @Injectable()
@@ -143,12 +317,12 @@ export class MonacoContextKeyService extends BaseContextKeyService implements IC
     this.listenToContextChanges();
   }
 
-  match(expression: string | monaco.contextkey.ContextKeyExpr | undefined, context?: HTMLElement): boolean {
+  match(expression: string | ContextKeyExpr | undefined, context?: HTMLElement): boolean {
     try {
       // keybinding 将 html target 传递过来完成激活区域的 context 获取和匹配
       // thiea 中是通过 activeElement 来搞 quickopen 的上下文的, 见 thiea/packages/monaco/src/browser/monaco-quick-open-service.ts
       const ctx = context || this.activeContext || (window.document.activeElement instanceof HTMLElement ? window.document.activeElement : undefined);
-      let parsed: monaco.contextkey.ContextKeyExpr | undefined;
+      let parsed: ContextKeyExpr | undefined;
       if (typeof expression === 'string') {
         parsed = this.parse(expression);
       } else {
@@ -184,9 +358,9 @@ class ScopedContextKeyService extends BaseContextKeyService implements IScopedCo
     this.listenToContextChanges();
   }
 
-  match(expression: string | monaco.contextkey.ContextKeyExpr | undefined): boolean {
+  match(expression: string | ContextKeyExpr | undefined): boolean {
     try {
-      let parsed: monaco.contextkey.ContextKeyExpr | undefined;
+      let parsed: ContextKeyExpr | undefined;
       if (typeof expression === 'string') {
         parsed = this.parse(expression);
       } else {

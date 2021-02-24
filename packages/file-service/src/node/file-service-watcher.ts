@@ -53,9 +53,9 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     this.options = {
       verbose: false,
       // tslint:disable-next-line
-      info: (message, ...args) => console.info(message, ...args),
+      info: (message, ...args) => {},
       // tslint:disable-next-line
-      error: (message, ...args) => console.error(message, ...args),
+      error: (message, ...args) => {},
       ...options,
     };
   }

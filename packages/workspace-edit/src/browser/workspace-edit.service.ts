@@ -1,5 +1,6 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { IResourceTextEdit, ITextEdit, IWorkspaceEditService, IWorkspaceEdit, IResourceFileEdit, WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent, IWorkspaceFileService } from '../common';
-import { URI, IEventBus, isWindows, isUndefined } from '@ali/ide-core-browser';
+import { URI, IEventBus, isWindows, isUndefined, IRange } from '@ali/ide-core-browser';
 import { FileSystemError } from '@ali/ide-file-service/lib/common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EndOfLineSequence, WorkbenchEditorService, EOL } from '@ali/ide-editor';
@@ -7,6 +8,7 @@ import { runInAction } from 'mobx';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import { EditorGroup } from '@ali/ide-editor/lib/browser/workbench-editor.service';
+import { Range } from '@ali/monaco-editor-core/esm/vs/editor/common/core/range';
 
 type WorkspaceEdit = ResourceTextEdit | ResourceFileEdit;
 
@@ -61,29 +63,6 @@ export class BulkEdit {
     if (isResourceFileEdit(edit)) {
       this.edits.push(new ResourceFileEdit(edit));
     } else {
-      const last = this.edits[this.edits.length - 1];
-      const textEdit = edit as IResourceTextEdit;
-      if (last && !isResourceFileEdit(last)) {
-        // 合并连续同目标的edits
-        if (last.resource.toString() === textEdit.resource.toString()) {
-          let shouldMerge = false;
-          if (last.modelVersionId) {
-            if (textEdit.modelVersionId) {
-              shouldMerge = textEdit.modelVersionId === last.modelVersionId;
-            } else {
-              shouldMerge = true;
-            }
-          } else {
-            if (!textEdit.modelVersionId) {
-              shouldMerge = true;
-            }
-          }
-          if (shouldMerge) {
-            (last as IResourceTextEdit).edits = (last as IResourceTextEdit).edits.concat(textEdit.edits);
-            return;
-          }
-        }
-      }
       this.edits.push(new ResourceTextEdit(edit as IResourceTextEdit));
     }
   }
@@ -98,7 +77,7 @@ export class ResourceTextEdit implements IResourceTextEdit {
 
   resource: URI;
   modelVersionId: number | undefined;
-  edits: ITextEdit[];
+  edit: ITextEdit;
   options: {
     openDirtyInEditor?: boolean
     dirtyIfInEditor?: boolean,
@@ -107,7 +86,7 @@ export class ResourceTextEdit implements IResourceTextEdit {
   constructor(edit: IResourceTextEdit) {
     this.resource = edit.resource;
     this.modelVersionId = edit.modelVersionId,
-    this.edits = edit.edits;
+    this.edit = edit.edit;
     this.options = edit.options || {};
   }
 
@@ -121,21 +100,27 @@ export class ResourceTextEdit implements IResourceTextEdit {
       }
     }
     const edits: monaco.editor.IIdentifiedSingleEditOperation[] = [];
+    const { edit } = this;
     let newEOL: EndOfLineSequence | null = null;
-    for (const edit of this.edits) {
-      if (!isUndefined(edit.eol)) {
-        newEOL = edit.eol;
-      }
+    if (!isUndefined(edit.eol)) {
+      newEOL = edit.eol;
+    }
+    const range = edit.range || monacoModel.getFullModelRange();
+
+    if (range && Range.isEmpty(range) || edit.text) {
       edits.push({
-        range: monaco.Range.lift(edit.range),
+        forceMoveMarkers: true,
+        range: Range.lift(range),
         text: edit.text,
       });
     }
+
     if (edits.length > 0) {
       monacoModel.pushStackElement();
       monacoModel.pushEditOperations([], edits, () => []);
       monacoModel.pushStackElement();
     }
+
     if (!isUndefined(newEOL)) {
       monacoModel.pushStackElement();
       documentModel.eol = newEOL === EndOfLineSequence.CRLF ? EOL.CRLF : EOL.LF;

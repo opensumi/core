@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { positionToRange, URI, CommandService } from '@ali/ide-core-common';
 import { IDocPersistentCacheProvider } from '@ali/ide-editor';

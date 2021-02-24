@@ -1,3 +1,6 @@
+import { editor } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import type { ITextModelUpdateOptions } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
+import type { IEditorOptions } from '@ali/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { Injectable } from '@ali/common-di';
 import { URI, Event, BasicEvent, IDisposable, MaybeNull, IRange, ISelection, ILineChange, IPosition } from '@ali/ide-core-common';
 import { IResource } from './resource';
@@ -56,11 +59,11 @@ export interface IEditor {
 
   setSelection(selection: IRange | ISelection);
 
-  updateOptions(editorOptions?: monaco.editor.IEditorOptions, modelOptions?: monaco.editor.ITextModelUpdateOptions);
+  updateOptions(editorOptions?: IEditorOptions, modelOptions?: ITextModelUpdateOptions);
 
   save(): Promise<void>;
 
-  monacoEditor: monaco.editor.ICodeEditor;
+  monacoEditor: editor.ICodeEditor;
 
   onDispose: Event<void>;
 }
@@ -527,7 +530,7 @@ export interface IEditorDocumentModelContentChange {
 }
 
 // 获取最基础的MonacoEditor配置
-export function getSimpleEditorOptions(): monaco.editor.IEditorOptions {
+export function getSimpleEditorOptions(): IEditorOptions {
   return {
     wordWrap: 'on',
     overviewRulerLanes: 0,

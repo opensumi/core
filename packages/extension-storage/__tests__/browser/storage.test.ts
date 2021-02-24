@@ -66,15 +66,15 @@ describe('Extension Storage Server -- Setup directory should be worked', () => {
     } as FileStat;
     const extensionStorageDirName = '.extensionStorageDirName';
     injector.mock(ILoggerManagerClient, 'getLogFolder', () => {
-      return root.withoutScheme().toString();
+      return root.path.toString();
     });
     injector.mock(IExtensionStoragePathServer, 'getUserHomeDir', async () => {
-      return root.withoutScheme().toString();
+      return root.path.toString();
     });
     await extensionStorage.init(rootFileStat, [rootFileStat], extensionStorageDirName);
-    expect(fs.existsSync(path.join(root.withoutScheme().toString(), extensionStorageDirName))).toBeTruthy();
-    expect(fs.existsSync(path.join(root.withoutScheme().toString(), extensionStorageDirName, StoragePaths.EXTENSIONS_GLOBAL_STORAGE_DIR))).toBeTruthy();
-    expect(fs.existsSync(path.join(root.withoutScheme().toString(), extensionStorageDirName, StoragePaths.EXTENSIONS_WORKSPACE_STORAGE_DIR))).toBeTruthy();
+    expect(fs.existsSync(path.join(root.path.toString(), extensionStorageDirName))).toBeTruthy();
+    expect(fs.existsSync(path.join(root.path.toString(), extensionStorageDirName, StoragePaths.EXTENSIONS_GLOBAL_STORAGE_DIR))).toBeTruthy();
+    expect(fs.existsSync(path.join(root.path.toString(), extensionStorageDirName, StoragePaths.EXTENSIONS_WORKSPACE_STORAGE_DIR))).toBeTruthy();
     done();
   });
 
@@ -124,10 +124,10 @@ describe('Extension Storage Server -- Data operation should be worked', () => {
     } as FileStat;
     const extensionStorageDirName = '.extensionStorageDirName';
     injector.mock(ILoggerManagerClient, 'getLogFolder', () => {
-      return root.withoutScheme().toString();
+      return root.path.toString();
     });
     injector.mock(IExtensionStoragePathServer, 'getUserHomeDir', async () => {
-      return root.withoutScheme().toString();
+      return root.path.toString();
     });
     await extensionStorage.init(rootFileStat, [rootFileStat], extensionStorageDirName);
   });

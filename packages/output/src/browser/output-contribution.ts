@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Autowired } from '@ali/common-di';
 import { Disposable, CommandContribution, CommandRegistry, Command, localize, PreferenceSchema } from '@ali/ide-core-common';
 import { getIcon, PreferenceContribution, MonacoContribution } from '@ali/ide-core-browser';

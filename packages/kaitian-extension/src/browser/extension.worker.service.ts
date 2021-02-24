@@ -1,10 +1,9 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { IRPCProtocol, RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { AppConfig, Deferred, Emitter, IExtensionProps, ILogger, URI } from '@ali/ide-core-browser';
-import { Event } from '@ali/ide-core-common';
+import { UriComponents, Event } from '@ali/ide-core-common';
 import { posix } from '@ali/ide-core-common/lib/path';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { UriComponents } from 'vscode-uri';
 import { IExtension, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';
 import { AbstractExtensionService, IExtensionChangeEvent } from '../common/extension.service';

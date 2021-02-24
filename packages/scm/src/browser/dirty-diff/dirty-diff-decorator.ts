@@ -1,3 +1,6 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import * as textModel from '@ali/monaco-editor-core/esm/vs/editor/common/model/textModel';
+import * as model from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 import { Autowired, Injectable, Optional } from '@ali/common-di';
 import { OverviewRulerLane } from '@ali/ide-editor';
 import { IChange } from '@ali/ide-core-common';
@@ -25,12 +28,23 @@ function getChangeType(change: IChange): ChangeType {
 
 @Injectable({ multiple: true })
 export class DirtyDiffDecorator extends Disposable {
+  /**
+   * -------------------------------- IMPORTANT --------------------------------
+   * 需要注意区分 model.IModelDecorationOptions 与 monaco.editor.IModelDecorationOptions 两个类型
+   * 将 model.IModelDecorationOptions 类型的对象传给签名为 monaco.editor.IModelDecorationOptions 的方法时需要做 Type Assertion
+   * 这是因为 monaco.d.ts 与 vs/editor/common/model 分别导出了枚举 TrackedRangeStickiness
+   * 这种情况下两个枚举的类型是不兼容的，即使他们是同一段代码的编译产物
+   * -------------------------------- IMPORTANT --------------------------------
+   * @param className
+   * @param foregroundColor
+   * @param options
+   */
   static createDecoration(
     className: string,
     foregroundColor: string,
     options: { gutter: boolean, overview: boolean, isWholeLine: boolean },
-  ): monaco.textModel.ModelDecorationOptions {
-    const decorationOptions: monaco.editor.IModelDecorationOptions = {
+  ): textModel.ModelDecorationOptions {
+    const decorationOptions: Partial<model.IModelDecorationOptions> = {
       isWholeLine: options.isWholeLine,
     };
 
@@ -40,17 +54,20 @@ export class DirtyDiffDecorator extends Disposable {
 
     if (options.overview) {
       decorationOptions.overviewRuler = {
+        // FIXME - Monaco 20 - ESM
+        // 这里没有 range
+        // range: null as any,
         color: themeColorFromId(foregroundColor),
         position: OverviewRulerLane.Left,
       };
     }
 
-    return monaco.textModel.ModelDecorationOptions.createDynamic(decorationOptions);
+    return textModel.ModelDecorationOptions.createDynamic(decorationOptions);
   }
 
-  private modifiedOptions: monaco.textModel.ModelDecorationOptions;
-  private addedOptions: monaco.textModel.ModelDecorationOptions;
-  private deletedOptions: monaco.textModel.ModelDecorationOptions;
+  private modifiedOptions: textModel.ModelDecorationOptions;
+  private addedOptions: textModel.ModelDecorationOptions;
+  private deletedOptions: textModel.ModelDecorationOptions;
   private decorations: string[] = [];
   private editorModel: monaco.editor.ITextModel | null;
 
@@ -112,7 +129,7 @@ export class DirtyDiffDecorator extends Disposable {
       }
     });
 
-    this.decorations = this.editorModel.deltaDecorations(this.decorations, decorations);
+    this.decorations = this.editorModel.deltaDecorations(this.decorations, decorations as unknown as monaco.editor.IModelDeltaDecoration[]);
   }
 
   dispose(): void {

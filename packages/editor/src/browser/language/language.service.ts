@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Autowired, Injectable } from '@ali/common-di';
 import { MonacoDiagnosticCollection } from './diagnostic-collection';
 import { URI, IDisposable, Disposable, MarkerManager, IMarkerData, IRelatedInformation, MarkerSeverity } from '@ali/ide-core-common';

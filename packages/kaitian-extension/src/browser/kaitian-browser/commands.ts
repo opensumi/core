@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired, Injector } from '@ali/common-di';
 import { MonacoCommandService } from '@ali/ide-monaco/lib/browser/monaco.command.service';
 import { ILogger, CommandRegistry, IExtensionInfo } from '@ali/ide-core-common';

@@ -1,3 +1,5 @@
+import { Range } from '@ali/monaco-editor-core/esm/vs/editor/common/core/range';
+import type { IModelContentChange } from '@ali/monaco-editor-core/esm/vs/editor/common/model/textModelEvents';
 import { URI, MaybePromise } from '@ali/ide-core-common';
 
 interface IDocBasicCacheData {
@@ -42,7 +44,7 @@ export interface IDocStatus {
   /**
    * 从文档开始的 MD5 内容到现在的所有变化内容
    */
-  changeMatrix: monaco.editor.IModelContentChange[][];
+  changeMatrix: IModelContentChange[][];
 
   /**
    * 文档的编码格式
@@ -93,7 +95,7 @@ export function isDocChangesCache(cache: IDocCache): cache is IDocChangesCache {
   return cache.hasOwnProperty('changeMatrix');
 }
 
-export function parseCacheValueFrom(change: monaco.editor.IModelContentChange): IDocCacheValue {
+export function parseCacheValueFrom(change: IModelContentChange): IDocCacheValue {
   const text = change.text;
   const startLineNumber = change.range.startLineNumber;
   const startColumn = change.range.startColumn;
@@ -109,7 +111,7 @@ export function parseCacheValueFrom(change: monaco.editor.IModelContentChange): 
   ];
 }
 
-export function parseRangeFrom(cacheValue: IDocCacheValue): monaco.Range {
+export function parseRangeFrom(cacheValue: IDocCacheValue): Range {
   const [
     _text,
     startLineNumber,
@@ -118,7 +120,7 @@ export function parseRangeFrom(cacheValue: IDocCacheValue): monaco.Range {
     endColumn,
   ] = cacheValue;
 
-  return monaco.Range.lift({
+  return Range.lift({
     startLineNumber,
     startColumn,
     endLineNumber,

@@ -1,3 +1,5 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import * as mime from '@ali/monaco-editor-core/esm/vs/base/common/mime';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IMimeService, CorePreferences, MimeAssociation } from '@ali/ide-core-browser';
 
@@ -10,7 +12,7 @@ export class MonacoMimeService implements IMimeService {
   updateMime(): void {
     for (const association of this.getPreferenceFileAssociations()) {
       const mimetype = this.getMimeForMode(association.id) || `text/x-${association.id}`;
-      monaco.mime.registerTextMime({ id: association.id, mime: mimetype, filepattern: association.filePattern, userConfigured: true }, true);
+      mime.registerTextMime({ id: association.id, mime: mimetype, filepattern: association.filePattern, userConfigured: true }, true);
     }
   }
 

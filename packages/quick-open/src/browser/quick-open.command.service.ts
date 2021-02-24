@@ -1,7 +1,8 @@
+import { Mode } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/common/quickOpen';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { localize, IContextKeyService, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { CommandRegistry, Command, CommandService, Deferred } from '@ali/ide-core-common';
-import { QuickOpenModel, QuickOpenItem, QuickOpenMode, QuickOpenGroupItemOptions, QuickOpenGroupItem, QuickOpenItemOptions } from './quick-open.model';
+import { QuickOpenModel, QuickOpenItem, QuickOpenGroupItemOptions, QuickOpenGroupItem, QuickOpenItemOptions } from './quick-open.model';
 import { KeybindingRegistry, Keybinding } from '@ali/ide-core-browser';
 import { QuickOpenHandler } from './prefix-quick-open.service';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -201,8 +202,8 @@ export class CommandQuickOpenItem extends QuickOpenGroupItem {
     return bindings ? bindings[0] : undefined;
   }
 
-  run(mode: QuickOpenMode): boolean {
-    if (mode !== QuickOpenMode.OPEN) {
+  run(mode: Mode): boolean {
+    if (mode !== Mode.OPEN) {
       return false;
     }
     setTimeout(() => {

@@ -16,7 +16,7 @@
 
 import type * as vscode from 'vscode';
 import * as Converter from '../../../../common/vscode/converter';
-import URI from 'vscode-uri/lib/umd';
+import { Uri as URI } from '@ali/ide-core-common';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { FormattingOptions, SingleEditOperation, Position } from '../../../../common/vscode/model.api';
 import { createToken } from './util';

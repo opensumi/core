@@ -1,8 +1,8 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-browser';
 import { Deferred, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 
-import { loadMonaco } from './monaco-loader';
 import { MonacoService, ServiceNames } from '../common';
 import { TextmateService } from './textmate.service';
 
@@ -77,15 +77,13 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   }
 
   /**
-   * 加载monaco代码，加载过程只会执行一次
+   * 加载monaco代码，这里只保留空实现
    */
   public async loadMonaco() {
     if (!this.loadingPromise) {
-      this.loadingPromise = loadMonaco().then(() => {
-        // TODO 改成eventbus
-        this._onMonacoLoaded.fire(true);
-        this._monacoLoaded.resolve();
-      });
+      this.loadingPromise = Promise.resolve();
+      this._onMonacoLoaded.fire(true);
+      this._monacoLoaded.resolve();
     }
     return this.loadingPromise;
   }

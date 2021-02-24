@@ -1,3 +1,4 @@
+import { editor } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { IResource, ResourceService, IEditorGroup, IDecorationRenderOptions, ITextEditorDecorationType, TrackedRangeStickiness, OverviewRulerLane, IEditorOpenType, IEditor, DragOverPosition } from '../common';
 import { MaybePromise, IDisposable, BasicEvent, IRange, MaybeNull, ISelection, URI, Event } from '@ali/ide-core-browser';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
@@ -178,7 +179,7 @@ export interface IEditorDecorationCollectionService {
   createTextEditorDecorationType(options: IDecorationRenderOptions, key?: string): IBrowserTextEditorDecorationType;
   getTextEditorDecorationType(key): IBrowserTextEditorDecorationType | undefined;
   registerDecorationProvider(provider: IEditorDecorationProvider): IDisposable;
-  getDecorationFromProvider(uri: URI, key?: string): Promise<{[key: string]: monaco.editor.IModelDeltaDecoration[]}>;
+  getDecorationFromProvider(uri: URI, key?: string): Promise<{[key: string]: editor.IModelDeltaDecoration[]}>;
 }
 
 export interface IBrowserTextEditorDecorationType extends ITextEditorDecorationType {
@@ -267,7 +268,7 @@ export interface IEditorDecorationProvider {
   key: string;
 
   // 提供decoration
-  provideEditorDecoration(uri: URI): MaybePromise<monaco.editor.IModelDeltaDecoration[] | undefined>;
+  provideEditorDecoration(uri: URI): MaybePromise<editor.IModelDeltaDecoration[] | undefined>;
 
   // decorationChange事件
   onDidDecorationChange: Event<URI>;
@@ -390,13 +391,13 @@ export interface IEditorFeatureRegistry {
   /**
    * 运行 provideEditorOptionsForUri
    */
-  runProvideEditorOptionsForUri(uri: URI): MaybePromise<monaco.editor.IEditorOptions>;
+  runProvideEditorOptionsForUri(uri: URI): MaybePromise<editor.IEditorOptions>;
 }
 
 export interface IConvertedMonacoOptions {
-  editorOptions: Partial<monaco.editor.IEditorOptions>;
-  modelOptions: Partial<monaco.editor.ITextModelUpdateOptions>;
-  diffOptions: Partial<monaco.editor.IDiffEditorOptions>;
+  editorOptions: Partial<editor.IEditorOptions>;
+  modelOptions: Partial<editor.ITextModelUpdateOptions>;
+  diffOptions: Partial<editor.IDiffEditorOptions>;
 }
 
 export interface IEditorFeatureContribution {
@@ -411,7 +412,7 @@ export interface IEditorFeatureContribution {
    * 用来对 uri 进行 options 的修改
    * @param editor
    */
-  provideEditorOptionsForUri?(uri: URI): MaybePromise<Partial<monaco.editor.IEditorOptions>>;
+  provideEditorOptionsForUri?(uri: URI): MaybePromise<Partial<editor.IEditorOptions>>;
 
 }
 

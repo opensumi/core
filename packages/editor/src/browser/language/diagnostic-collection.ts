@@ -1,4 +1,4 @@
-
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import IModel = monaco.editor.IModel;
 import IMarkerData = monaco.editor.IMarkerData;
 import { DiagnosticCollection, Diagnostic, asDiagnostics } from '../../common';

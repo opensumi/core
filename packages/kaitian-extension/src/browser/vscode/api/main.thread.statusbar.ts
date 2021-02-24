@@ -1,7 +1,7 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IMainThreadStatusBar } from '../../../common/vscode';
-import { Injectable, Autowired, Optinal } from '@ali/common-di';
-import { ILogger, CommandService, Disposable } from '@ali/ide-core-browser';
+import { ExtHostAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar } from '../../../common/vscode';
+import { Injectable, Autowired, Optional } from '@ali/common-di';
+import { CommandService, Disposable } from '@ali/ide-core-browser';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@ali/ide-core-browser/lib/services';
 import * as types from '../../../common/vscode/ext-types';
 
@@ -10,6 +10,7 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
   private entries: Map<string, StatusBarEntry> = new Map();
 
   private disposable = new Disposable();
+  protected readonly proxy: IExtHostStatusBar;
 
   @Autowired(CommandService)
   commandService: CommandService;
@@ -17,10 +18,8 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
   @Autowired(IStatusBarService)
   statusBar: IStatusBarService;
 
-  @Autowired(ILogger)
-  logger: ILogger;
-
-  constructor(@Optinal(Symbol()) rpcProtocol: IRPCProtocol) {
+  constructor(@Optional(Symbol()) private rpcProtocol: IRPCProtocol) {
+    this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostStatusBar);
   }
 
   public dispose() {

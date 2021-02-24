@@ -1,4 +1,4 @@
-import { SymbolKind } from '@ali/ide-core-common';
+import { SymbolKind as SymbolKindEnum } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { updateKaitianIconMap, getKaitianIcon } from '@ali/ide-components/lib/icon';
 
 import { IDE_ICONFONT_CN_CSS, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS } from './ide-iconfont';
@@ -33,36 +33,35 @@ export function getExternalIcon(iconKey: string, iconOwner = CODICON_OWNER, fall
  * @internal
  */
 export const getSymbolIcon = (() => {
-
   const _fromMapping: { [n: number]: string } = Object.create(null);
-  _fromMapping[SymbolKind.File] = 'file';
-  _fromMapping[SymbolKind.Module] = 'module';
-  _fromMapping[SymbolKind.Namespace] = 'namespace';
-  _fromMapping[SymbolKind.Package] = 'package';
-  _fromMapping[SymbolKind.Class] = 'class';
-  _fromMapping[SymbolKind.Method] = 'method';
-  _fromMapping[SymbolKind.Property] = 'property';
-  _fromMapping[SymbolKind.Field] = 'field';
-  _fromMapping[SymbolKind.Constructor] = 'constructor';
-  _fromMapping[SymbolKind.Enum] = 'enum';
-  _fromMapping[SymbolKind.Interface] = 'interface';
-  _fromMapping[SymbolKind.Function] = 'function';
-  _fromMapping[SymbolKind.Variable] = 'variable';
-  _fromMapping[SymbolKind.Constant] = 'constant';
-  _fromMapping[SymbolKind.String] = 'string';
-  _fromMapping[SymbolKind.Number] = 'number';
-  _fromMapping[SymbolKind.Boolean] = 'boolean';
-  _fromMapping[SymbolKind.Array] = 'array';
-  _fromMapping[SymbolKind.Object] = 'object';
-  _fromMapping[SymbolKind.Key] = 'key';
-  _fromMapping[SymbolKind.Null] = 'null';
-  _fromMapping[SymbolKind.EnumMember] = 'enum-member';
-  _fromMapping[SymbolKind.Struct] = 'struct';
-  _fromMapping[SymbolKind.Event] = 'event';
-  _fromMapping[SymbolKind.Operator] = 'operator';
-  _fromMapping[SymbolKind.TypeParameter] = 'type-parameter';
+  _fromMapping[SymbolKindEnum.File] = 'file';
+  _fromMapping[SymbolKindEnum.Module] = 'module';
+  _fromMapping[SymbolKindEnum.Namespace] = 'namespace';
+  _fromMapping[SymbolKindEnum.Package] = 'package';
+  _fromMapping[SymbolKindEnum.Class] = 'class';
+  _fromMapping[SymbolKindEnum.Method] = 'method';
+  _fromMapping[SymbolKindEnum.Property] = 'property';
+  _fromMapping[SymbolKindEnum.Field] = 'field';
+  _fromMapping[SymbolKindEnum.Constructor] = 'constructor';
+  _fromMapping[SymbolKindEnum.Enum] = 'enum';
+  _fromMapping[SymbolKindEnum.Interface] = 'interface';
+  _fromMapping[SymbolKindEnum.Function] = 'function';
+  _fromMapping[SymbolKindEnum.Variable] = 'variable';
+  _fromMapping[SymbolKindEnum.Constant] = 'constant';
+  _fromMapping[SymbolKindEnum.String] = 'string';
+  _fromMapping[SymbolKindEnum.Number] = 'number';
+  _fromMapping[SymbolKindEnum.Boolean] = 'boolean';
+  _fromMapping[SymbolKindEnum.Array] = 'array';
+  _fromMapping[SymbolKindEnum.Object] = 'object';
+  _fromMapping[SymbolKindEnum.Key] = 'key';
+  _fromMapping[SymbolKindEnum.Null] = 'null';
+  _fromMapping[SymbolKindEnum.EnumMember] = 'enum-member';
+  _fromMapping[SymbolKindEnum.Struct] = 'struct';
+  _fromMapping[SymbolKindEnum.Event] = 'event';
+  _fromMapping[SymbolKindEnum.Operator] = 'operator';
+  _fromMapping[SymbolKindEnum.TypeParameter] = 'type-parameter';
 
-  return function toCssClassName(kind: SymbolKind): string {
+  return function toCssClassName(kind: SymbolKindEnum, inline?: boolean): string {
     return getExternalIcon(`symbol-${_fromMapping[kind] || 'property'}`);
   };
 })();

@@ -1,9 +1,11 @@
+import type { EndOfLineSequence } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
+import { CancellationToken } from '@ali/monaco-editor-core/esm/vs/base/common/cancellation';
+
 // 内置的api类型声明
-import { IRange } from '@ali/ide-core-common';
+import { Uri as URI, IRange, IDisposable, UriComponents } from '@ali/ide-core-common';
 import { ISingleEditOperation } from '@ali/ide-editor';
 import type * as vscode from 'vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
-import URI, { UriComponents } from 'vscode-uri';
 import { IndentAction, SymbolKind } from './ext-types';
 
 /**
@@ -184,6 +186,25 @@ export type CompletionType = 'method'
   | 'folder'
   | 'type-parameter';
 
+export interface CompletionItemLabel {
+  /**
+   * The function or variable. Rendered leftmost.
+   */
+  name: string;
+  /**
+   * The signature without the return type. Render after `name`.
+   */
+  signature?: string;
+  /**
+   * The fully qualified name, like package name or file path. Rendered after `signature`.
+   */
+  qualifier?: string;
+  /**
+   * The return-type of a function or type of a property/variable. Rendered rightmost.
+   */
+  type?: string;
+}
+
 /**
  * A completion item represents a text snippet that is
  * proposed to complete text that is being typed.
@@ -194,7 +215,7 @@ export interface CompletionItem {
    * this is also the text that is inserted when selecting
    * this completion.
    */
-  label: string;
+  label: string | CompletionItemLabel;
   /**
    * The kind of this completion item. Based on the kind
    * an icon is chosen by the editor.
@@ -252,7 +273,11 @@ export interface CompletionItem {
    * *Note:* The range must be a [single line](#Range.isSingleLine) and it must
    * [contain](#Range.contains) the position at which completion has been [requested](#CompletionItemProvider.provideCompletionItems).
    */
-  range: IRange;
+  range: IRange | {
+    insert: IRange;
+    replace: IRange;
+  };
+
   /**
    * An optional set of characters that when pressed while this completion is active will accept it first and
    * then type that character. *Note* that all commit characters should have `length=1` and that superfluous
@@ -268,7 +293,7 @@ export interface CompletionItem {
   /**
    * A command that should be run upon acceptance of this item.
    */
-  command?: Command;
+  command?: VSCommand;
 
   /**
    * @internal
@@ -298,7 +323,7 @@ export interface SingleEditOperation {
 
 export type SnippetType = 'internal' | 'textmate';
 
-export interface Command {
+export interface VSCommand {
   id: string;
   title: string;
   tooltip?: string;
@@ -404,7 +429,7 @@ export interface ColorInformation {
 export interface TextEdit {
   range: Range;
   text: string;
-  eol?: monaco.editor.EndOfLineSequence;
+  eol?: EndOfLineSequence;
 }
 
 // TODO 放在正确位置 start
@@ -432,10 +457,15 @@ export interface FormattingOptions {
   insertSpaces: boolean;
 }
 
-export interface CodeLensSymbol {
-  range: Range;
+export interface CodeLens {
+  range: IRange;
   id?: string;
-  command?: Command;
+  command?: VSCommand;
+}
+
+export interface CodeLensList {
+  lenses: CodeLens[];
+  dispose(): void;
 }
 
 export interface WorkspaceEditDto {
@@ -459,7 +489,7 @@ export interface ResourceFileEditDto {
 export interface ResourceTextEditDto {
   resource: UriComponents;
   modelVersionId?: number;
-  edits: TextEdit[];
+  edit: TextEdit;
 }
 
 export interface DocumentLink {
@@ -490,6 +520,10 @@ export interface ILinksList {
   dispose?(): void;
 }
 
+export enum SymbolTag {
+  Deprecated = 1,
+}
+
 export interface DocumentSymbol {
   name: string;
   detail: string;
@@ -502,8 +536,8 @@ export interface DocumentSymbol {
 }
 
 export interface WorkspaceSymbolProvider {
-  provideWorkspaceSymbols(params: WorkspaceSymbolParams, token: monaco.CancellationToken): Thenable<SymbolInformation[]>;
-  resolveWorkspaceSymbol(symbol: SymbolInformation, token: monaco.CancellationToken): Thenable<SymbolInformation>;
+  provideWorkspaceSymbols(params: WorkspaceSymbolParams, token: CancellationToken): Thenable<SymbolInformation[]>;
+  resolveWorkspaceSymbol(symbol: SymbolInformation, token: CancellationToken): Thenable<SymbolInformation>;
 }
 
 export interface WorkspaceSymbolParams {
@@ -525,6 +559,10 @@ export interface SignatureHelp {
   signatures: SignatureInformation[];
   activeSignature: number;
   activeParameter: number;
+}
+
+export interface SignatureHelpResult extends IDisposable {
+  value: SignatureHelp;
 }
 
 export interface RenameLocation {
@@ -592,10 +630,6 @@ export enum CompletionItemKind {
   Snippet = 25,
 }
 
-export const enum CompletionItemTag {
-  Deprecated = 1,
-}
-
-export const enum SymbolTag {
+export enum CompletionItemTag {
   Deprecated = 1,
 }

@@ -1,8 +1,9 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { SnippetParser } from '@ali/monaco-editor-core/esm/vs/editor/contrib/snippet/snippetParser';
 import * as jsoncparser from 'jsonc-parser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import URI from 'vscode-uri';
-import { IRange, Uri, localize } from '@ali/ide-core-common';
+import { IRange, Uri, localize, ILogger } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { isPatternInWord } from '@ali/ide-core-common/lib/filters';
 
@@ -11,6 +12,9 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
 
   @Autowired(IFileServiceClient)
   protected readonly filesystem: IFileServiceClient;
+
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
 
   protected readonly snippets = new Map<string, Snippet[]>();
   protected readonly pendingSnippets = new Map<string, Promise<void>[]>();
@@ -129,13 +133,13 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
   /**
    * should NOT throw to prevent load erros on suggest
    */
-  protected async loadURI(uri: string | URI, options: SnippetLoadOptions): Promise<void> {
+  protected async loadURI(uri: string | Uri, options: SnippetLoadOptions): Promise<void> {
     try {
       const { content } = await this.filesystem.resolveContent(uri.toString(), { encoding: 'utf-8' });
       const snippets = content && jsoncparser.parse(content, undefined, { disallowComments: false });
       this.fromJSON(snippets, options);
     } catch (e) {
-      console.error(e);
+      this.logger.error(e);
     }
   }
 
@@ -261,7 +265,7 @@ export class MonacoSnippetSuggestion implements monaco.languages.CompletionItem 
   protected resolved = false;
   resolve(): MonacoSnippetSuggestion {
     if (!this.resolved) {
-      const codeSnippet = new monaco.snippetParser.SnippetParser().parse(this.snippet.body).toString();
+      const codeSnippet = new SnippetParser().parse(this.snippet.body).toString();
       this.documentation = { value: '```\n' + codeSnippet + '```' };
       this.resolved = true;
     }

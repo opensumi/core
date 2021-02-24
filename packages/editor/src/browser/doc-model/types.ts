@@ -1,3 +1,5 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+
 import { URI, MaybePromise, IRef, IDisposable, Event, IRange, BasicEvent, IEditOperation, IEditorDocumentChange, IEditorDocumentModelSaveResult} from '@ali/ide-core-browser';
 import { EOL, EndOfLineSequence, IEditorDocumentModelContentChange, SaveReason } from '../../common';
 /**

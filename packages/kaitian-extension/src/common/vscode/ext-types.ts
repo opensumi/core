@@ -1,12 +1,12 @@
 import type * as vscode from 'vscode';
-import URI from 'vscode-uri';
+import { Uri } from '@ali/ide-core-common';
 import { illegalArgument } from './utils';
 import { FileOperationOptions } from './model.api';
 import { startsWithIgnoreCase, uuid, es5ClassCompat } from '@ali/ide-core-common';
 import { isMarkdownString, MarkdownString } from './models/html-content';
 export * from './models';
 
-export { URI as Uri };
+export { Uri };
 export enum ProgressLocation {
 
   /**
@@ -404,7 +404,7 @@ export class RelativePattern {
 
   constructor(base: vscode.WorkspaceFolder | string, public pattern: string) {
     if (typeof base !== 'string') {
-      if (!base || !URI.isUri(base.uri)) {
+      if (!base || !Uri.isUri(base.uri)) {
         throw new Error('illegalArgument: base');
       }
     }
@@ -432,13 +432,13 @@ export class Location {
       return false;
     }
     return Range.isRange((thing as Location).range)
-      && URI.isUri((thing as Location).uri);
+      && Uri.isUri((thing as Location).uri);
   }
 
-  uri: URI;
+  uri: Uri;
   range: Range;
 
-  constructor(uri: URI, rangeOrPosition: Range | Position) {
+  constructor(uri: Uri, rangeOrPosition: Range | Position) {
     this.uri = uri;
 
     if (!rangeOrPosition) {
@@ -1055,21 +1055,21 @@ export class Selection extends Range {
 
 export interface FileOperation {
   _type: 1;
-  from: URI | undefined;
-  to: URI | undefined;
+  from: Uri | undefined;
+  to: Uri | undefined;
   options?: FileOperationOptions;
 }
 
 export interface FileTextEdit {
   _type: 2;
-  uri: URI;
+  uri: Uri;
   edit: TextEdit;
 }
 
 @es5ClassCompat
 export class WorkspaceEdit implements vscode.WorkspaceEdit {
 
-  private _edits = new Array<FileOperation | FileTextEdit | undefined>();
+  private _edits = new Array<FileOperation | FileTextEdit>();
 
   renameFile(from: vscode.Uri, to: vscode.Uri, options?: { overwrite?: boolean, ignoreIfExists?: boolean }): void {
     this._edits.push({ _type: 1, from, to, options });
@@ -1083,19 +1083,19 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
     this._edits.push({ _type: 1, from: uri, to: undefined, options });
   }
 
-  replace(uri: URI, range: Range, newText: string): void {
+  replace(uri: Uri, range: Range, newText: string): void {
     this._edits.push({ _type: 2, uri, edit: new TextEdit(range, newText) });
   }
 
-  insert(resource: URI, position: Position, newText: string): void {
+  insert(resource: Uri, position: Position, newText: string): void {
     this.replace(resource, new Range(position, position), newText);
   }
 
-  delete(resource: URI, range: Range): void {
+  delete(resource: Uri, range: Range): void {
     this.replace(resource, range, '');
   }
 
-  has(uri: URI): boolean {
+  has(uri: Uri): boolean {
     for (const edit of this._edits) {
       if (edit && edit._type === 2 && edit.uri.toString() === uri.toString()) {
         return true;
@@ -1104,13 +1104,13 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
     return false;
   }
 
-  set(uri: URI, edits: TextEdit[]): void {
+  set(uri: Uri, edits: TextEdit[]): void {
     if (!edits) {
       // remove all text edits for `uri`
       for (let i = 0; i < this._edits.length; i++) {
         const element = this._edits[i];
         if (element && element._type === 2 && element.uri.toString() === uri.toString()) {
-          this._edits[i] = undefined;
+          this._edits[i] = undefined!;
         }
       }
       this._edits = this._edits.filter((e) => !!e);
@@ -1124,7 +1124,7 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
     }
   }
 
-  get(uri: URI): TextEdit[] {
+  get(uri: Uri): TextEdit[] {
     const res: TextEdit[] = [];
     for (const candidate of this._edits) {
       if (candidate && candidate._type === 2 && candidate.uri.toString() === uri.toString()) {
@@ -1137,8 +1137,8 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
     return res;
   }
 
-  entries(): [URI, TextEdit[]][] {
-    const textEdits = new Map<string, [URI, TextEdit[]]>();
+  entries(): [Uri, TextEdit[]][] {
+    const textEdits = new Map<string, [Uri, TextEdit[]]>();
     for (const candidate of this._edits) {
       if (candidate && candidate._type === 2) {
         let textEdit = textEdits.get(candidate.uri.toString());
@@ -1149,24 +1149,11 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
         textEdit[1].push(candidate.edit);
       }
     }
-    const result: [URI, TextEdit[]][] = [];
-    textEdits.forEach((v) => result.push(v));
-    return result;
+    return [...textEdits.values()];
   }
 
-  _allEntries(): ([URI, TextEdit[]] | [URI, URI, FileOperationOptions])[] {
-    const res: ([URI, TextEdit[]] | [URI, URI, FileOperationOptions])[] = [];
-    for (const edit of this._edits) {
-      if (!edit) {
-        continue;
-      }
-      if (edit._type === 1) {
-        res.push([edit.from!, edit.to!, edit.options!]);
-      } else {
-        res.push([edit.uri, [edit.edit]]);
-      }
-    }
-    return res;
+  allEntries(): ReadonlyArray<FileOperation | FileTextEdit> {
+    return this._edits;
   }
 
   get size(): number {
@@ -1182,11 +1169,11 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
 @es5ClassCompat
 export class DocumentLink {
   range: Range;
-  target: URI;
+  target: Uri;
   tooltip?: string;
 
-  constructor(range: Range, target: URI) {
-    if (target && !(target instanceof URI)) {
+  constructor(range: Range, target: Uri) {
+    if (target && !(target instanceof Uri)) {
       throw illegalArgument('target');
     }
     if (!Range.isRange(range) || range.isEmpty) {
@@ -1283,8 +1270,8 @@ export class SymbolInformation {
   tags?: SymbolTag[];
   containerName: undefined | string;
   constructor(name: string, kind: SymbolKind, containerName: string, location: Location);
-  constructor(name: string, kind: SymbolKind, range: Range, uri?: URI, containerName?: string);
-  constructor(name: string, kind: SymbolKind, rangeOrContainer: string | Range, locationOrUri?: Location | URI, containerName?: string) {
+  constructor(name: string, kind: SymbolKind, range: Range, uri?: Uri, containerName?: string);
+  constructor(name: string, kind: SymbolKind, rangeOrContainer: string | Range, locationOrUri?: Location | Uri, containerName?: string) {
     this.name = name;
     this.kind = kind;
     this.containerName = containerName;
@@ -1461,15 +1448,15 @@ ThemeIcon.Folder = new ThemeIcon('folder');
 @es5ClassCompat
 export class TreeItem {
   label?: string | vscode.TreeItemLabel;
-  resourceUri?: URI;
-  iconPath?: string | URI | { light: string | URI; dark: string | URI };
+  resourceUri?: Uri;
+  iconPath?: string | Uri | { light: string | Uri; dark: string | Uri };
   command?: vscode.Command;
   contextValue?: string;
   tooltip?: string;
 
   constructor(label: string | vscode.TreeItemLabel, collapsibleState?: vscode.TreeItemCollapsibleState)
-  constructor(arg1: string | vscode.TreeItemLabel | URI, public collapsibleState: vscode.TreeItemCollapsibleState = TreeItemCollapsibleState.None) {
-    if (arg1 instanceof URI) {
+  constructor(arg1: string | vscode.TreeItemLabel | Uri, public collapsibleState: vscode.TreeItemCollapsibleState = TreeItemCollapsibleState.None) {
+    if (arg1 instanceof Uri) {
       this.resourceUri = arg1;
     } else {
       this.label = arg1;
@@ -1652,7 +1639,7 @@ export class FunctionBreakpoint extends Breakpoint {
 }
 
 export interface QuickInputButton {
-  readonly iconPath: URI | { light: string | URI; dark: string | URI } | ThemeIcon;
+  readonly iconPath: Uri | { light: string | Uri; dark: string | Uri } | ThemeIcon;
   readonly tooltip?: string | undefined;
 }
 

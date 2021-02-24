@@ -1,16 +1,21 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { IBulkEditPreviewHandler, IBulkEditResult, IBulkEditService } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 import { Injectable, Autowired } from '@ali/common-di';
 import { URI, ILogger } from '@ali/ide-core-common';
 import { UriComponents } from '@ali/ide-editor';
 import { IWorkspaceEdit, IWorkspaceEditService, IResourceTextEdit, ITextEdit, IResourceFileEdit } from '../';
 
 @Injectable()
-export class MonacoBulkEditService implements monaco.editor.IBulkEditService {
+export class MonacoBulkEditService implements IBulkEditService {
+  _serviceBrand: undefined;
 
   @Autowired(IWorkspaceEditService)
   workspaceEditService: IWorkspaceEditService;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
+
+  private _previewHandler?: IBulkEditPreviewHandler;
 
   protected getAriaSummary(totalEdits: number, totalFiles: number): string {
     if (totalEdits === 0) {
@@ -22,18 +27,40 @@ export class MonacoBulkEditService implements monaco.editor.IBulkEditService {
     return `Made ${totalEdits} text edits in one file`;
   }
 
-  async apply(edit: monaco.languages.WorkspaceEdit): Promise<monaco.editor.IBulkEditResult> {
+  async apply(edit: monaco.languages.WorkspaceEdit): Promise<IBulkEditResult & { success: boolean }> {
     try {
       const { workspaceEdit, totalEdits, totalFiles } = this.convertWorkspaceEdit(edit);
       await this.workspaceEditService.apply(workspaceEdit);
       return {
         ariaSummary: this.getAriaSummary(totalEdits, totalFiles),
+        success: true,
       };
     } catch (err) {
       const errMsg = `Error applying workspace edits: ${err.toString()}`;
       this.logger.error(errMsg);
-      return { ariaSummary: errMsg };
+      return { ariaSummary: errMsg, success: false };
     }
+  }
+
+  // TODO: implement in monaco20
+  hasPreviewHandler(): boolean {
+    return Boolean(this._previewHandler);
+  }
+
+  setPreviewHandler(handler: IBulkEditPreviewHandler): monaco.IDisposable {
+    this._previewHandler = handler;
+
+    const disposePreviewHandler = () => {
+      if (this._previewHandler === handler) {
+        this._previewHandler = undefined;
+      }
+    };
+
+    return {
+      dispose(): void {
+        disposePreviewHandler();
+      },
+    };
   }
 
   private convertWorkspaceEdit(edit: monaco.languages.WorkspaceEdit): { workspaceEdit: IWorkspaceEdit, totalEdits: number, totalFiles: number } {
@@ -41,12 +68,12 @@ export class MonacoBulkEditService implements monaco.editor.IBulkEditService {
     let totalEdits = 0;
     let totalFiles = 0;
     for (const resourceEdit of edit.edits) {
-      if ((resourceEdit as monaco.languages.ResourceTextEdit).resource) {
-        const resourceTextEdit = resourceEdit as monaco.languages.ResourceTextEdit;
+      if ((resourceEdit as monaco.languages.WorkspaceTextEdit).resource) {
+        const resourceTextEdit = resourceEdit as monaco.languages.WorkspaceTextEdit;
         const tmp: IResourceTextEdit = {
           // TODO 类型定义有问题，拿到的是URIComponents并不是monaco.Uri
           resource: URI.from(resourceTextEdit.resource as UriComponents),
-          edits: resourceTextEdit.edits as ITextEdit[],
+          edit: resourceTextEdit.edit as ITextEdit,
           options: {
             dirtyIfInEditor: true,
           },
@@ -54,8 +81,8 @@ export class MonacoBulkEditService implements monaco.editor.IBulkEditService {
         workspaceEdit.edits.push(tmp);
         totalEdits += 1;
       } else {
-        const resourceFileEdit = resourceEdit as monaco.languages.ResourceFileEdit;
-        const { oldUri, newUri, options } = resourceFileEdit;
+        const resourceFileEdit = resourceEdit as monaco.languages.WorkspaceFileEdit;
+        const { oldUri, newUri, options = {} } = resourceFileEdit;
         const tmp: IResourceFileEdit = {
           oldUri: oldUri ? URI.from(oldUri as UriComponents) : undefined,
           newUri: newUri ? URI.from(newUri as UriComponents) : undefined,

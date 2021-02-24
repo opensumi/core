@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Disposable, positionToRange } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { DebugEditor } from '../../common';

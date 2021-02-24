@@ -1,9 +1,13 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { ICommandEvent, ICommandService } from '@ali/monaco-editor-core/esm/vs/platform/commands/common/commands';
+import { EditorExtensionsRegistry } from '@ali/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
+import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { CommandsRegistry } from '@ali/monaco-editor-core/esm/vs/platform/commands/common/commands';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Command, Emitter, CommandRegistry, CommandHandler, ILogger, EDITOR_COMMANDS, CommandService, isElectronRenderer, IReporterService, REPORT_NAME, MonacoService, ServiceNames, memoize } from '@ali/ide-core-browser';
 
-import ICommandEvent = monaco.commands.ICommandEvent;
-import ICommandService = monaco.commands.ICommandService;
 import { WorkbenchEditorService, EditorCollectionService } from '@ali/ide-editor';
+import { Event } from '@ali/monaco-editor-core/esm/vs/base/common/event';
 
 /**
  * vscode 会有一些别名 command，如果直接执行这些别名 command 会报错，做一个转换
@@ -39,6 +43,11 @@ export interface MonacoEditorCommandHandler {
 
 @Injectable()
 export class MonacoCommandService implements ICommandService {
+  _serviceBrand: undefined;
+
+  // TODO - Monaco 20 - ESM
+  onDidExecuteCommand: Event<ICommandEvent>;
+
   private delegate: ICommandService;
   /**
    * 事件触发器，在执行命令的时候会触发
@@ -77,9 +86,9 @@ export class MonacoCommandService implements ICommandService {
    * @param commandId
    * @param args
    */
-  executeCommand(commandId: string, ...args: any[]) {
+  executeCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined> {
     this.logger.debug('command: ' + commandId);
-    this._onWillExecuteCommand.fire({ commandId });
+    this._onWillExecuteCommand.fire({ commandId, args });
     const handler = this.commandRegistry.getActiveHandler(commandId, ...args);
     if (handler) {
       try {
@@ -232,7 +241,7 @@ export class MonacoActionRegistry {
     const codeEditorService = this.monacoService.getOverride(ServiceNames.CODE_EDITOR_SERVICE);
     const textModelService = this.monacoService.getOverride(ServiceNames.TEXT_MODEL_SERVICE);
     const contextKeyService = this.monacoService.getOverride(ServiceNames.CONTEXT_KEY_SERVICE);
-    const [, globalInstantiationService] = monaco.services.StaticServices.init({
+    const [, globalInstantiationService] = StaticServices.init({
       codeEditorService,
       textModelService,
       contextKeyService,
@@ -242,19 +251,17 @@ export class MonacoActionRegistry {
 
   @memoize
   get monacoEditorRegistry() {
-    return monaco.editorExtensions.EditorExtensionsRegistry;
+    return EditorExtensionsRegistry;
   }
 
   @memoize
   get monacoCommands() {
-    // TODO: 找不到 monaco.command 的 namespace
-    return (monaco as any).commands.CommandsRegistry.getCommands();
+    return CommandsRegistry.getCommands();
   }
 
   registerMonacoActions() {
     const editorActions = new Map(this.monacoEditorRegistry.getEditorActions().map(({ id, label }) => [id, label]));
-
-    for (const id of Object.keys(this.monacoCommands)) {
+    for (const id of this.monacoCommands.keys()) {
       if (MonacoActionRegistry.EXCLUDE_ACTIONS.includes(id)) {
         continue;
       }
@@ -287,7 +294,7 @@ export class MonacoActionRegistry {
           return;
         }
         return instantiationService.invokeFunction(
-          this.monacoCommands[commandId].handler,
+          this.monacoCommands.get(commandId)?.handler,
           ...args,
         );
       },
@@ -311,7 +318,7 @@ export class MonacoActionRegistry {
 
       isEnabled: (editor) => {
         const action = editor.getAction(id);
-        return !!action && action.isSupported();
+        return !!action;
       },
     };
   }
@@ -324,7 +331,7 @@ export class MonacoActionRegistry {
   protected runAction(id: string, editor: monaco.editor.ICodeEditor): Promise<void> {
     if (editor) {
       const action = editor.getAction(id);
-      if (action && action.isSupported()) {
+      if (action) {
         return action.run();
       }
     }

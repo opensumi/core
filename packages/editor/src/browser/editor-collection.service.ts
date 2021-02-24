@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ILineChange, URI, WithEventBus, OnEvent, Emitter as EventEmitter, ISelection, Disposable, removeUndefined } from '@ali/ide-core-common';
 import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationNeedChangeEvent, CursorStatus, IUndoStopOptions, IDecorationApplyOptions, EditorType, IResourceOpenOptions } from '../common';

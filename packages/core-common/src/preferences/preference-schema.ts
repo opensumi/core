@@ -4,6 +4,7 @@ export interface PreferenceSchema {
     [name: string]: any,
     scope?: 'application' | 'window' | 'resource' | PreferenceScope,
     overridable?: boolean;
+    overrideIdentifier?: string;
     properties: PreferenceSchemaProperties
 }
 export namespace PreferenceSchema {

@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 export enum TrackedRangeStickiness {
   AlwaysGrowsWhenTypingAtEdges = 0,
   NeverGrowsWhenTypingAtEdges = 1,

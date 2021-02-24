@@ -234,6 +234,14 @@ export interface IEditorDocumentModelSaveResult {
 
 }
 
+/**
+ * 该类型与 modes.SymbolKind 无法兼容
+ * 请使用 `modes.SymbolKind` 替代
+ * ```ts
+ * import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+ * ```
+ * @deprecated
+ */
 export enum SymbolKind {
   File = 0,
   Module = 1,

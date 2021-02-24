@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { DebugServer, IDebugServer, IDebuggerContribution, launchSchemaUri } from '../common';
@@ -275,6 +276,9 @@ export class DebugConfigurationManager {
     if (!editor) {
       return;
     }
+    // FIEME - Monaco 20 - ESM
+    // 类型中没有这个属性
+    // @ts-ignore
     const { _commandService: commandService } = editor;
     let position: monaco.Position | undefined;
     let depthInArray = 0;

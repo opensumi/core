@@ -3,10 +3,11 @@ import { IDisposable, IRange, CancellationToken } from '@ali/ide-core-common';
 import { Uri, UriComponents} from './ext-types';
 import { FileStat } from '@ali/ide-file-service';
 import { EndOfLineSequence } from '@ali/ide-editor/lib/common';
+import type * as model from './model.api';
 
 export interface IMainThreadWorkspace extends IDisposable {
   $saveAll(): Promise<boolean>;
-  $tryApplyWorkspaceEdit(dto: WorkspaceEditDto): Promise<boolean>;
+  $tryApplyWorkspaceEdit(dto: model.WorkspaceEditDto): Promise<boolean>;
   $updateWorkspaceFolders(start: number, deleteCount?: number, workspaceToName?: {[key: string]: string}, ...rootsToAdd: string[]): Promise<void>;
   $startFileSearch(includePattern: string, options: { cwd?: string; absolute: boolean }, excludePatternOrDisregardExcludes: string | false | undefined, maxResult: number | undefined, token: CancellationToken): Promise<string[]>;
 }
@@ -151,7 +152,7 @@ export interface ResourceFileEditDto {
 export interface ResourceTextEditDto {
   resource: UriComponents;
   modelVersionId?: number;
-  edits: ITextEdit[];
+  edit: ITextEdit;
 }
 
 export interface ITextEdit { range: IRange; text: string; eol?: EndOfLineSequence; }

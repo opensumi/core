@@ -1,10 +1,11 @@
-import { Disposable, IDisposable, Event, Emitter, IRange } from '@ali/ide-core-common';
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { Disposable, IDisposable, Event, Emitter, IRange, uuid } from '@ali/ide-core-common';
 import { DomListener } from '@ali/ide-core-browser';
 // import * as styles from './styles.module.less';
 
 export class ViewZoneDelegate implements monaco.editor.IViewZone {
   public domNode: HTMLElement;
-  public id: number = 0; // A valid zone id should be greater than 0
+  public id: string = uuid(); // A valid zone id should be greater than 0
   public afterLineNumber: number;
   public afterColumn: number;
   public heightInLines: number;
@@ -220,10 +221,10 @@ export abstract class ResizeZoneWidget extends ZoneWidget {
     private range: monaco.IRange,
   ) {
     super(editor);
-    this.lineHeight = this.editor.getConfiguration().lineHeight;
-    this.addDispose(this.editor.onDidChangeConfiguration((e) => {
-      if (e.lineHeight) {
-        this.lineHeight = this.editor.getConfiguration().lineHeight;
+    this.lineHeight = this.editor.getOption(monaco.editor.EditorOption.lineHeight);
+    this.addDispose(this.editor.onDidChangeConfiguration(({ hasChanged }) => {
+      if (hasChanged(monaco.editor.EditorOption.lineHeight)) {
+        this.lineHeight = this.editor.getOption(monaco.editor.EditorOption.lineHeight);
         if (this.wrap) {
           this.resizeZoneWidget();
         }
@@ -263,7 +264,7 @@ export abstract class ResizeZoneWidget extends ZoneWidget {
       });
       this.resizeZoneWidget();
     });
-    mutationObserver.observe(this.wrap, {childList: true, subtree: true});
+    mutationObserver.observe(this.wrap, { childList: true, subtree: true });
     return {
       dispose() {
         mutationObserver.disconnect();

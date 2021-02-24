@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Uri, URI } from '@ali/ide-core-common/lib/uri';
 import { rtrim, escapeRegExpCharacters } from '@ali/ide-core-common/lib/utils/strings';

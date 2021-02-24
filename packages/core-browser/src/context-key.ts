@@ -1,3 +1,5 @@
+import { ContextKeyExpr, IContextKeyServiceTarget } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { ContextKeyService } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
 import { Event, BasicEvent } from '@ali/ide-core-common';
 
 export interface IContextKey<T> {
@@ -12,13 +14,13 @@ export interface IContextKeyService {
   onDidChangeContext: Event<ContextKeyChangeEvent>;
 
   createKey<T>(key: string, defaultValue: T | undefined): IContextKey<T>;
-  match(expression: string | monaco.contextkey.ContextKeyExpr | undefined, context?: HTMLElement | null): boolean;
-  getKeysInWhen(when: string | monaco.contextkey.ContextKeyExpr | undefined): string[];
+  match(expression: string | ContextKeyExpr | undefined, context?: HTMLElement | null): boolean;
+  getKeysInWhen(when: string | ContextKeyExpr | undefined): string[];
   getContextValue<T>(key: string): T | undefined;
 
-  createScoped(target?: monaco.contextkey.IContextKeyServiceTarget | monaco.contextKeyService.ContextKeyService): IScopedContextKeyService;
+  createScoped(target?: IContextKeyServiceTarget | ContextKeyService): IScopedContextKeyService;
 
-  parse(when: string | undefined): monaco.contextkey.ContextKeyExpr | undefined;
+  parse(when: string | undefined): ContextKeyExpr | undefined;
   dispose(): void;
 }
 

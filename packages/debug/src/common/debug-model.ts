@@ -1,4 +1,5 @@
 import * as stream from 'stream';
+import type { editor } from '@ali/monaco-editor-core';
 import { DebugConfiguration } from './debug-configuration';
 import { IDisposable, MaybePromise, IJSONSchema, IJSONSchemaSnippet } from '@ali/ide-core-common';
 import { DebugEditor } from './debug-editor';
@@ -112,10 +113,10 @@ export type DebugModelFactory = (editor: DebugEditor) => IDebugModel;
 
 export const IDebugModel = Symbol('IDebugModel');
 export interface IDebugModel extends IDisposable {
-  onContextMenu: (event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent) => void;
-  onMouseDown: (event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent) => void;
-  onMouseMove: (event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent) => void;
-  onMouseLeave: (event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent) => void;
+  onContextMenu: (event: editor.IEditorMouseEvent | editor.IPartialEditorMouseEvent) => void;
+  onMouseDown: (event: editor.IEditorMouseEvent | editor.IPartialEditorMouseEvent) => void;
+  onMouseMove: (event: editor.IEditorMouseEvent | editor.IPartialEditorMouseEvent) => void;
+  onMouseLeave: (event: editor.IEditorMouseEvent | editor.IPartialEditorMouseEvent) => void;
   editor: DebugEditor;
   [key: string]: any;
 }

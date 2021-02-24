@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { EditorGroupChangeEvent, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { Event, IEventBus, CommandService, positionToRange } from '@ali/ide-core-common';

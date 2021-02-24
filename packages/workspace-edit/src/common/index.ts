@@ -20,7 +20,7 @@ export interface IResourceFileEdit {
 export interface IResourceTextEdit {
   resource: URI;
   modelVersionId?: number; // monaco's version id
-  edits: ITextEdit[];
+  edit: ITextEdit;
   options?: {
     openDirtyInEditor?: boolean
     dirtyIfInEditor?: boolean,

@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { ZoneWidget } from '@ali/ide-monaco-enhance/lib/browser';
 import { basename } from '@ali/ide-core-common/lib/utils/paths';
 import { IDirtyDiffModel, OPEN_DIRTY_DIFF_WIDGET } from '../../common';

@@ -1,5 +1,6 @@
+import { Mode } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/common/quickOpen';
 import { Autowired, Injectable } from '@ali/common-di';
-import { QuickOpenService, QuickOpenModel, QuickOpenItem, QuickOpenMode } from '@ali/ide-quick-open';
+import { QuickOpenService, QuickOpenModel, QuickOpenItem } from '@ali/ide-quick-open';
 import { VariableRegistry, localize } from '@ali/ide-core-browser';
 
 @Injectable()
@@ -49,7 +50,7 @@ export class VariableQuickOpenItem extends QuickOpenItem {
     return this.description || '';
   }
 
-  run(mode: QuickOpenMode): boolean {
+  run(mode: Mode): boolean {
     return false;
   }
 }

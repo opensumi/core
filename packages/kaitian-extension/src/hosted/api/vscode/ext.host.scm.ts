@@ -1,10 +1,9 @@
 import type * as vscode from 'vscode';
 import { CancellationToken } from '@ali/vscode-jsonrpc';
-import URI, { UriComponents } from 'vscode-uri';
 import {
   asPromise, comparePaths, sortedDiff, debounce,
-  Event, Emitter, getDebugLogger,
-  DisposableStore, MutableDisposable,
+  Event, Emitter, getDebugLogger, DisposableStore,
+  MutableDisposable, Uri as URI, UriComponents,
 } from '@ali/ide-core-common';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import { IRPCProtocol } from '@ali/ide-connection';

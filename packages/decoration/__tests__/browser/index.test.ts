@@ -1,6 +1,5 @@
 // tslint:disable:new-parens
-import URI from 'vscode-uri';
-import { DisposableCollection, Event, Emitter, CancellationToken } from '@ali/ide-core-common';
+import { Uri, DisposableCollection, Event, Emitter, CancellationToken } from '@ali/ide-core-common';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -22,18 +21,18 @@ describe('DecorationsService', () => {
   afterEach(() => toTearDown.dispose());
 
   it('empty result', () => {
-    const uri = URI.parse('/workspace/test');
+    const uri = Uri.parse('/workspace/test');
     expect(service.getDecoration(uri, false)).toBe(undefined);
   });
 
   it('Async provider, async/evented result', () => {
-    const uri = URI.parse('foo:bar');
+    const uri = Uri.parse('foo:bar');
     let callCounter = 0;
 
     service.registerDecorationsProvider(new class implements IDecorationsProvider {
       readonly label: string = 'Test';
-      readonly onDidChange: Event<URI[]> = Event.None;
-      provideDecorations(_uri: URI) {
+      readonly onDidChange: Event<Uri[]> = Event.None;
+      provideDecorations(_uri: Uri) {
         callCounter += 1;
         return new Promise<IDecorationData>((resolve) => {
           setTimeout(() => resolve({
@@ -61,13 +60,13 @@ describe('DecorationsService', () => {
   });
 
   it('Sync provider, sync result', () => {
-    const uri = URI.parse('foo:bar');
+    const uri = Uri.parse('foo:bar');
     let callCounter = 0;
 
     service.registerDecorationsProvider(new class implements IDecorationsProvider {
       readonly label: string = 'Test';
-      readonly onDidChange: Event<URI[]> = Event.None;
-      provideDecorations(_uri: URI) {
+      readonly onDidChange: Event<Uri[]> = Event.None;
+      provideDecorations(_uri: Uri) {
         callCounter += 1;
         return { color: 'someBlue', tooltip: 'Z' };
       }
@@ -79,13 +78,13 @@ describe('DecorationsService', () => {
   });
 
   it('Clear decorations on provider dispose', async () => {
-    const uri = URI.parse('foo:bar');
+    const uri = Uri.parse('foo:bar');
     let callCounter = 0;
 
     const reg = service.registerDecorationsProvider(new class implements IDecorationsProvider {
       readonly label: string = 'Test';
-      readonly onDidChange: Event<URI[]> = Event.None;
-      provideDecorations(_uri: URI) {
+      readonly onDidChange: Event<Uri[]> = Event.None;
+      provideDecorations(_uri: Uri) {
         callCounter += 1;
         return { color: 'someBlue', tooltip: 'J' };
       }
@@ -115,14 +114,14 @@ describe('DecorationsService', () => {
     let reg = service.registerDecorationsProvider({
       label: 'Test',
       onDidChange: Event.None,
-      provideDecorations(uri: URI) {
+      provideDecorations(uri: Uri) {
         return uri.path.match(/\.txt/)
           ? { tooltip: '.txt', weight: 17 }
           : undefined;
       },
     });
 
-    const childUri = URI.parse('file:///some/path/some/file.txt');
+    const childUri = Uri.parse('file:///some/path/some/file.txt');
 
     let deco = service.getDecoration(childUri, false)!;
     expect(deco.tooltip).toBe('.txt');
@@ -135,7 +134,7 @@ describe('DecorationsService', () => {
     reg = service.registerDecorationsProvider({
       label: 'Test',
       onDidChange: Event.None,
-      provideDecorations(uri: URI) {
+      provideDecorations(uri: Uri) {
         return uri.path.match(/\.txt/)
           ? { tooltip: '.txt.bubble', weight: 71, bubble: true }
           : undefined;
@@ -154,12 +153,12 @@ describe('DecorationsService', () => {
     let callCount = 0;
 
     const provider = new class implements IDecorationsProvider {
-      _onDidChange = new Emitter<URI[]>();
-      onDidChange: Event<URI[]> = this._onDidChange.event;
+      _onDidChange = new Emitter<Uri[]>();
+      onDidChange: Event<Uri[]> = this._onDidChange.event;
 
       label: string = 'foo';
 
-      provideDecorations(_uri: URI, token: CancellationToken): Promise<IDecorationData> {
+      provideDecorations(_uri: Uri, token: CancellationToken): Promise<IDecorationData> {
 
         token.onCancellationRequested(() => {
           cancelCount += 1;
@@ -176,7 +175,7 @@ describe('DecorationsService', () => {
 
     const reg = service.registerDecorationsProvider(provider);
 
-    const uri = URI.parse('foo://bar');
+    const uri = Uri.parse('foo://bar');
     service.getDecoration(uri, false);
 
     provider._onDidChange.fire([uri]);
@@ -193,7 +192,7 @@ describe('DecorationsService', () => {
     const reg = service.registerDecorationsProvider({
       label: 'Test',
       onDidChange: Event.None,
-      provideDecorations(uri: URI) {
+      provideDecorations(uri: Uri) {
         if (uri.path.match(/hello$/)) {
           return { tooltip: 'FOO', weight: 17, bubble: true };
         } else {
@@ -202,13 +201,13 @@ describe('DecorationsService', () => {
       },
     });
 
-    const data1 = service.getDecoration(URI.parse('a:b/'), true);
+    const data1 = service.getDecoration(Uri.parse('a:b/'), true);
     expect(!data1).not.toBeUndefined();
 
-    const data2 = service.getDecoration(URI.parse('a:b/c.hello'), false)!;
+    const data2 = service.getDecoration(Uri.parse('a:b/c.hello'), false)!;
     expect(data2.tooltip).not.toBeUndefined();
 
-    const data3 = service.getDecoration(URI.parse('a:b/'), true);
+    const data3 = service.getDecoration(Uri.parse('a:b/'), true);
     expect(data3).not.toBeUndefined();
 
     reg.dispose();
@@ -216,12 +215,12 @@ describe('DecorationsService', () => {
 
   it('Folder decorations don\'t go away when file with problems is deleted #61919 (part1)', () => {
 
-    const emitter = new Emitter<URI[]>();
+    const emitter = new Emitter<Uri[]>();
     let gone = false;
     const reg = service.registerDecorationsProvider({
       label: 'Test',
       onDidChange: emitter.event,
-      provideDecorations(uri: URI) {
+      provideDecorations(uri: Uri) {
         if (!gone && uri.path.match(/file.ts$/)) {
           return { tooltip: 'FOO', weight: 17, bubble: true };
         }
@@ -229,8 +228,8 @@ describe('DecorationsService', () => {
       },
     });
 
-    const uri = URI.parse('foo:/folder/file.ts');
-    const uri2 = URI.parse('foo:/folder/');
+    const uri = Uri.parse('foo:/folder/file.ts');
+    const uri2 = Uri.parse('foo:/folder/');
     let data = service.getDecoration(uri, true)!;
     expect(data.tooltip).toBe('FOO');
 
@@ -251,12 +250,12 @@ describe('DecorationsService', () => {
 
   it('Folder decorations don\'t go away when file with problems is deleted #61919 (part2)', () => {
 
-    const emitter = new Emitter<URI[]>();
+    const emitter = new Emitter<Uri[]>();
     let gone = false;
     const reg = service.registerDecorationsProvider({
       label: 'Test',
       onDidChange: emitter.event,
-      provideDecorations(uri: URI) {
+      provideDecorations(uri: Uri) {
         if (!gone && uri.path.match(/file.ts$/)) {
           return { tooltip: 'FOO', weight: 17, bubble: true };
         }
@@ -264,8 +263,8 @@ describe('DecorationsService', () => {
       },
     });
 
-    const uri = URI.parse('foo:/folder/file.ts');
-    const uri2 = URI.parse('foo:/folder/');
+    const uri = Uri.parse('foo:/folder/file.ts');
+    const uri2 = Uri.parse('foo:/folder/');
     let data = service.getDecoration(uri, true)!;
     expect(data.tooltip).toBe('FOO');
 
@@ -294,12 +293,12 @@ describe('DecorationsService', () => {
     let callCount = 0;
 
     const provider = new class implements IDecorationsProvider {
-      _onDidChange = new Emitter<URI[]>();
-      onDidChange: Event<URI[]> = this._onDidChange.event;
+      _onDidChange = new Emitter<Uri[]>();
+      onDidChange: Event<Uri[]> = this._onDidChange.event;
 
       label: string = 'foo';
 
-      provideDecorations(_uri: URI): IDecorationData {
+      provideDecorations(_uri: Uri): IDecorationData {
         callCount += 1;
         return {
           letter: 'foo',
@@ -307,7 +306,7 @@ describe('DecorationsService', () => {
       }
     };
 
-    const uri = URI.file('/test/workspace');
+    const uri = Uri.file('/test/workspace');
     service.getDecoration(uri, false);
 
     const reg = service.registerDecorationsProvider(provider);
@@ -316,7 +315,7 @@ describe('DecorationsService', () => {
     const event1 = service.onDidChangeDecorations((e) => {
       event1.dispose();
       expect(e.affectsResource(uri)).toBeTruthy();
-      expect(e.affectsResource(URI.parse('git://aa.ts'))).toBeTruthy();
+      expect(e.affectsResource(Uri.parse('git://aa.ts'))).toBeTruthy();
       expect(e.affectsResource(undefined as any)).toBeTruthy();
     });
 
@@ -329,7 +328,7 @@ describe('DecorationsService', () => {
     const event2 = service.onDidChangeDecorations((e) => {
       event2.dispose();
       expect(e.affectsResource(uri)).toBeTruthy();
-      expect(e.affectsResource(URI.parse('git://aa.ts'))).toBeTruthy();
+      expect(e.affectsResource(Uri.parse('git://aa.ts'))).toBeTruthy();
       expect(e.affectsResource(undefined as any)).toBeTruthy();
       reg.dispose();
     });
@@ -339,14 +338,14 @@ describe('DecorationsService', () => {
   });
 
   it('Multi decorations', async () => {
-    const uri = URI.parse('foo:bar');
+    const uri = Uri.parse('foo:bar');
     let callCounter = 0;
 
     toTearDown.push(
       service.registerDecorationsProvider(new class implements IDecorationsProvider {
         readonly label: string = 'TestSync';
-        readonly onDidChange: Event<URI[]> = Event.None;
-        provideDecorations(_uri: URI) {
+        readonly onDidChange: Event<Uri[]> = Event.None;
+        provideDecorations(_uri: Uri) {
           callCounter += 1;
           return {
             color: 'someBlue',
@@ -366,8 +365,8 @@ describe('DecorationsService', () => {
     toTearDown.push(
       service.registerDecorationsProvider(new class implements IDecorationsProvider {
         readonly label: string = 'TestSync1';
-        readonly onDidChange: Event<URI[]> = Event.None;
-        provideDecorations(_uri: URI) {
+        readonly onDidChange: Event<Uri[]> = Event.None;
+        provideDecorations(_uri: Uri) {
           callCounter += 1;
           return {
             color: 'someGreen',

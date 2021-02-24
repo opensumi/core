@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Disposable, uuid, URI, localize, Deferred, IEventBus, removeAnsiEscapeCodes } from '@ali/ide-core-common';
 import { Optional, Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';

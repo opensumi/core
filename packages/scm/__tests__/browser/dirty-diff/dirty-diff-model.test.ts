@@ -1,3 +1,6 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import type { IDiffComputationResult } from '@ali/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { toDisposable, Event, CommandService, positionToRange, URI } from '@ali/ide-core-common';
 import { IDocPersistentCacheProvider } from '@ali/ide-editor';
@@ -20,13 +23,17 @@ class MockEditorDocumentModelService {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  async createModelReference(uri: URI) {
-    const instance = this.injector.get(EditorDocumentModel, [
-      uri,
-      'test-content',
-    ]);
+  private readonly instances: Map<string, EditorDocumentModel> = new Map();
 
-    return { instance };
+  async createModelReference(uri: URI) {
+    if (!this.instances.has(uri.toString())) {
+      const instance = this.injector.get(EditorDocumentModel, [
+        uri,
+        'test-content',
+      ]);
+      this.instances.set(uri.toString(), instance);
+    }
+    return { instance: this.instances.get(uri.toString()) };
   }
 }
 
@@ -50,19 +57,32 @@ jest.mock('@ali/ide-core-common/src/async', () => ({
 describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
   describe('test for DirtyDiffDecorator', () => {
     let injector: MockInjector;
-    let fileTextModel: monaco.editor.ITextModel;
-    let gitTextModel: monaco.editor.ITextModel;
     let scmService: SCMService;
     let repo: ISCMRepository;
     let commandService: CommandService;
     let provider: MockSCMProvider;
     let codeEditor: monaco.editor.ICodeEditor;
 
-    let computeDiffRet: monaco.commons.IDiffComputationResult | null = null;
+    async function createModel(filePath: string) {
+      const modelManager = injector.get(IEditorDocumentModelService);
+      const fileTextModel = await modelManager.createModelReference(URI.file(filePath));
+      const gitTextModel = await modelManager.createModelReference(URI.from({
+        scheme: 'git',
+        path: filePath,
+        query: 'ref=""',
+      }));
+
+      return {
+        fileTextModel: fileTextModel.instance.getMonacoModel(),
+        gitTextModel: gitTextModel.instance.getMonacoModel(),
+      };
+    }
+
+    let computeDiffRet: IDiffComputationResult | null = null;
     const mockComputeDiff = jest.fn();
 
     beforeEach(() => {
-      mockedMonaco.services!.StaticServices.editorWorkerService.get = (() => {
+      StaticServices.editorWorkerService.get = (() => {
         return {
           canComputeDiff: (): boolean => true,
           computeDiff: async () => computeDiffRet,
@@ -91,37 +111,23 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
         SCMService,
       ]));
 
-      fileTextModel = injector.get(EditorDocumentModel, [
-        URI.file('/test/workspace/abc.ts'),
-        'test',
-      ]).getMonacoModel();
-
-      gitTextModel = injector.get(EditorDocumentModel, [
-        URI.from({
-          scheme: 'git',
-          path: 'test/workspace/abc.ts',
-          query: 'ref=""',
-        }),
-        'test',
-      ]).getMonacoModel();
-
       scmService = injector.get(SCMService);
       provider = new MockSCMProvider(1);
       repo = scmService.registerSCMProvider(provider);
       commandService = injector.get(CommandService);
-
       codeEditor = mockedMonaco.editor!.create(document.createElement('div'));
-      codeEditor.setModel(fileTextModel);
     });
 
     afterEach(() => {
       codeEditor.setModel(null);
-      codeEditor.dispose();
-      fileTextModel.dispose();
+      codeEditor?.dispose();
       mockComputeDiff.mockRestore();
     });
 
-    it('ok: check basic property', () => {
+    it('ok: check basic property', async () => {
+
+      const { fileTextModel } = await createModel('/test/workspace/abc1.ts');
+      codeEditor.setModel(fileTextModel);
       const dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
       expect(dirtyDiffModel.modified).toEqual(fileTextModel);
       expect(dirtyDiffModel.original).toBeUndefined();
@@ -131,9 +137,12 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
       const editorWorkerServiceMethods = Object.keys(dirtyDiffModel['editorWorkerService']);
       expect(editorWorkerServiceMethods).toContain('canComputeDiff');
       expect(editorWorkerServiceMethods).toContain('computeDiff');
+      fileTextModel.dispose();
     });
 
-    it('ok for one repo', () => {
+    it('ok for one repo', async () => {
+      const { fileTextModel, gitTextModel } = await createModel('/test/workspace/abc2.ts');
+      codeEditor.setModel(fileTextModel);
       const dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
       expect(dirtyDiffModel.modified).toEqual(fileTextModel);
 
@@ -149,6 +158,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
         charChanges: [],
       };
       computeDiffRet = {
+        quitEarly: false,
         identical: false,
         changes: [change0],
       };
@@ -164,7 +174,9 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
       });
     });
 
-    it('ok when repo#onDidChange', () => {
+    it('ok when repo#onDidChange', async () => {
+      const { fileTextModel, gitTextModel } = await createModel('/test/workspace/abc3.ts');
+
       const dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
       dirtyDiffModel['_originalModel'] = gitTextModel;
 
@@ -178,6 +190,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
       };
 
       computeDiffRet = {
+        quitEarly: false,
         identical: false,
         changes: [change0],
       };
@@ -193,7 +206,9 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
       });
     });
 
-    it('ok when repo#onDidChangeResources', () => {
+    it('ok when repo#onDidChangeResources', async () => {
+      const { fileTextModel, gitTextModel } = await createModel('/test/workspace/abc4.ts');
+
       const dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
       dirtyDiffModel['_originalModel'] = gitTextModel;
 
@@ -207,6 +222,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
       };
 
       computeDiffRet = {
+        quitEarly: false,
         identical: false,
         changes: [change0],
       };
@@ -222,7 +238,9 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
       });
     });
 
-    it('ok for no repo', () => {
+    it('ok for no repo', async () => {
+      const { fileTextModel, gitTextModel } = await createModel('/test/workspace/abc5.ts');
+
       repo.dispose();
       const dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
       dirtyDiffModel['_originalModel'] = gitTextModel;
@@ -242,7 +260,9 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
       triggerDiffSpy.mockReset();
     });
 
-    it('find changes', () => {
+    it('find changes', async () => {
+      const { fileTextModel, gitTextModel } = await createModel('/test/workspace/abc6.ts');
+
       const dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
       dirtyDiffModel['_originalModel'] = gitTextModel;
       const change0 = {
@@ -310,14 +330,16 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
       });
     });
 
-    it('dispose', () => {
+    it('dispose', async () => {
+      const { fileTextModel, gitTextModel } = await createModel('/test/workspace/abc7.ts');
+
       const dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
       dirtyDiffModel['_originalModel'] = gitTextModel;
 
       dirtyDiffModel['_originalModel'] = injector.get(EditorDocumentModel, [
         URI.from({
           scheme: 'git',
-          path: 'test/workspace/abc.ts',
+          path: 'test/workspace/abc71.ts',
           query: 'ref=""',
         }),
         'test',
@@ -344,8 +366,21 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
       let originalMonacoEditor: monaco.editor.ICodeEditor;
       let modifiedMonacoEditor: monaco.editor.ICodeEditor;
 
-      let dirtyDiffModel: DirtyDiffModel;
-      let dirtyDiffWidget: DirtyDiffWidget;
+      function createDirtyDiffModel(fileTextModel, gitTextModel) {
+        const dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
+        dirtyDiffModel['_originalModel'] = gitTextModel;
+        return dirtyDiffModel;
+      }
+
+      async function createDirtyDiffWidget(filePath: string) {
+        const { fileTextModel, gitTextModel } = await createModel(filePath);
+        const dirtyDiffModel = createDirtyDiffModel(fileTextModel, gitTextModel);
+        const dirtyDiffWidget = injector.get(DirtyDiffWidget, [codeEditor, dirtyDiffModel, commandService]);
+        return {
+          dirtyDiffModel,
+          dirtyDiffWidget,
+        };
+      }
 
       beforeEach(() => {
         const diffEditor = mockedMonaco.editor!.createDiffEditor(document.createElement('div'));
@@ -367,13 +402,10 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
         });
 
         DirtyDiffModel.prototype['triggerDiff'] = jest.fn(); // avoid `changes` changed
-        dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
-        dirtyDiffModel['_originalModel'] = gitTextModel;
-        // dirtyDiffModel['triggerDiff'] = jest.fn(); // avoid `changes` changed
-        dirtyDiffWidget = injector.get(DirtyDiffWidget, [codeEditor, dirtyDiffModel, commandService]);
       });
 
-      it('basic check', () => {
+      it('basic check', async () => {
+        const { dirtyDiffModel, dirtyDiffWidget } = await createDirtyDiffWidget('/test/workspace/abc9.ts');
         const range = positionToRange(10);
         const spy = jest.spyOn(dirtyDiffWidget, 'dispose');
         dirtyDiffModel['_widget'] = null;
@@ -390,9 +422,12 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
         expect(dirtyDiffModel['_widget']).toEqual(newDirtyDiffWidget);
 
         spy.mockReset();
+        dirtyDiffModel.dispose();
       });
 
       it('dirty editor in zone widget', async () => {
+        const { dirtyDiffModel, dirtyDiffWidget } = await createDirtyDiffWidget('/test/workspace/abc11.ts');
+        codeEditor.setModel(dirtyDiffModel.modified);
         const change0 = {
           originalStartLineNumber: 11,
           originalEndLineNumber: 11,

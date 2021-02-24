@@ -1,5 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { QuickOpenMode, QuickOpenService, QuickOpenItem, QuickOpenGroupItem, QuickOpenItemOptions, QuickPickService, QuickPickOptions, QuickPickItem, HideReason } from '@ali/ide-core-browser/lib/quick-open';
+import { Mode } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/common/quickOpen';
+import { QuickOpenService, QuickOpenItem, QuickOpenGroupItem, QuickOpenItemOptions, QuickPickService, QuickPickOptions, QuickPickItem, HideReason } from '@ali/ide-core-browser/lib/quick-open';
 import { getIcon, getIconClass, getExternalIcon } from '@ali/ide-core-browser';
 import { QuickTitleBar } from './quick-title-bar';
 import { Emitter, Event } from '@ali/ide-core-common';
@@ -79,7 +80,7 @@ export class QuickPickServiceImpl implements QuickPickService {
       detail,
       iconClass,
       run: (mode) => {
-        if (mode !== QuickOpenMode.OPEN) {
+        if (mode !== Mode.OPEN) {
           return false;
         }
         resolve(value);

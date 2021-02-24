@@ -1,3 +1,5 @@
+import { SuggestWidget } from '@ali/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestWidget';
+import { SuggestController } from '@ali/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestController';
 import { Autowired, Injectable } from '@ali/common-di';
 import { IEventBus } from '@ali/ide-core-common';
 import { SuggestEvent, DisposableCollection } from '@ali/ide-core-browser';
@@ -12,9 +14,9 @@ export class EditorSuggestWidgetContribution implements IEditorFeatureContributi
 
   contribute(editor: IEditor) {
     const disposable = new DisposableCollection();
-    const suggestController = editor.monacoEditor.getContribution('editor.contrib.suggestController') as monaco.suggestController.SuggestController;
+    const suggestController = editor.monacoEditor.getContribution<SuggestController>('editor.contrib.suggestController');
     if (suggestController && suggestController['_widget']) {
-      const suggestWidget = (suggestController['_widget'] as any).getValue() as monaco.suggestController.SuggestWidget;
+      const suggestWidget = (suggestController['_widget'] as any).getValue() as SuggestWidget;
       // FIXME: @寻壑 仅通过鼠标选中会走onDidSelect事件，键盘会过acceptSelectedSuggestionOnEnter这个command
       disposable.push(
         suggestWidget.onDidSelect((e) => {

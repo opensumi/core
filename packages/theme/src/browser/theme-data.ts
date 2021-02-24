@@ -1,6 +1,6 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Autowired, Injectable } from '@ali/common-di';
 import { IRawThemeSetting } from 'vscode-textmate';
-import { Path } from '@ali/ide-core-common/lib/path';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { URI, localize, parseWithComments, ILogger, IReporterService, REPORT_NAME } from '@ali/ide-core-common';
 

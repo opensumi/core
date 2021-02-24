@@ -1,5 +1,4 @@
-import URI, { UriComponents } from 'vscode-uri';
-import { Emitter, CancellationToken } from '@ali/ide-core-common';
+import { UriComponents, Uri as URI, Emitter, CancellationToken } from '@ali/ide-core-common';
 import { IDisposable, dispose } from '@ali/ide-core-common/lib/disposable';
 import { Injectable, Optional, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';

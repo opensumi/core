@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { MessageType, URI } from '@ali/ide-core-common';
 import { localize } from '@ali/ide-core-browser';
@@ -68,22 +69,20 @@ export async function replace(
 ) {
 
   await workspaceEditService.apply({
-    edits: [{
+    edits: results.map((result) => ({
       options: {
         dirtyIfInEditor: true,
       },
-      resource: new URI(results[0].fileUri),
-      edits: results.map((result) => {
-        return {
-          range: new monaco.Range(
-            result.line,
-            result.matchStart,
-            result.line,
-            result.matchStart + result.matchLength,
-          ),
-          text: replaceText,
-        };
-      }),
-    }],
+      resource: new URI(result.fileUri),
+      edit: {
+        range: new monaco.Range(
+          result.line,
+          result.matchStart,
+          result.line,
+          result.matchStart + result.matchLength,
+        ),
+        text: replaceText,
+      },
+    })),
   });
 }

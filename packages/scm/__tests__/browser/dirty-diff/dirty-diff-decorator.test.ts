@@ -1,9 +1,9 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable } from '@ali/common-di';
 import { URI } from '@ali/ide-core-common';
 import { OverviewRulerLane, IDocPersistentCacheProvider } from '@ali/ide-editor';
 import { EditorDocumentModel } from '@ali/ide-editor/src/browser/doc-model/main';
 import { EmptyDocCacheImpl } from '@ali/ide-editor/src/browser';
-import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
@@ -11,8 +11,6 @@ import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { SCMPreferences } from '../../../src/browser/scm-preference';
 import { DirtyDiffDecorator } from '../../../src/browser/dirty-diff/dirty-diff-decorator';
 import { DirtyDiffModel } from '../../../src/browser/dirty-diff/dirty-diff-model';
-
-(global as any).monaco = createMockedMonaco();
 
 const fakeScmDiffDecorationsGetter = jest.fn();
 
@@ -43,7 +41,7 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
       fakeScmDiffDecorationsGetter.mockReturnValue('all');
 
       editorModel = injector.get(EditorDocumentModel, [
-        URI.file('/test/workspace/abc.ts'),
+        URI.file(`/test/workspace/abcde${Math.random()}.ts`),
         'test',
       ]).getMonacoModel();
     });

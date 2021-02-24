@@ -66,13 +66,13 @@ describe('PreferenceService should be work', () => {
 
     root = FileUri.create(path.join(os.tmpdir(), 'preference-service-test'));
 
-    await fs.ensureDir(root.withoutScheme().toString());
-    await fs.ensureDir(path.join(root.withoutScheme().toString(), '.kaitian'));
-    await fs.writeJSON(path.join(root.withoutScheme().toString(), '.kaitian', 'settings.json'), {
+    await fs.ensureDir(root.path.toString());
+    await fs.ensureDir(path.join(root.path.toString(), '.kaitian'));
+    await fs.writeJSON(path.join(root.path.toString(), '.kaitian', 'settings.json'), {
       'editor.fontSize': 16,
     });
-    await fs.ensureDir(path.join(root.withoutScheme().toString(), 'userhome', '.kaitian'));
-    await fs.writeJSON(path.join(root.withoutScheme().toString(), 'userhome', '.kaitian', 'settings.json'), {
+    await fs.ensureDir(path.join(root.path.toString(), 'userhome', '.kaitian'));
+    await fs.writeJSON(path.join(root.path.toString(), 'userhome', '.kaitian', 'settings.json'), {
       'editor.fontSize': 20,
     });
 
@@ -139,7 +139,7 @@ describe('PreferenceService should be work', () => {
 
   afterAll(async () => {
     if (root) {
-      await fs.remove(root.withoutScheme().toString());
+      await fs.remove(root.path.toString());
     }
     root = null;
     injector.disposeAll();

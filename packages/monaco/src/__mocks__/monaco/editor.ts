@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { quickEvent, quickFireEvent, partialMock } from './common/util';
 import { MockedStandaloneCodeEditor } from './editor/code-editor';
 import { MockedDiffEditor, MockedDiffNavigator } from './editor/diff-editor';
@@ -52,10 +53,10 @@ export function createMockedMonacoEditorApi(): typeof monaco.editor {
     createModel: (value, language, uri) => {
       const model = new MockedMonacoModel(value, language, uri);
       models.set(uri ? uri.toString() : ('model_' + Math.random() * 1000), model);
-      return model;
+      return model as unknown as monaco.editor.ITextModel;
     },
     setModelLanguage: (model, languageId) => {
-      (model as MockedMonacoModel).language = languageId;
+      (model as unknown as MockedMonacoModel).language = languageId;
     },
     setModelMarkers: () => {
 
@@ -64,7 +65,7 @@ export function createMockedMonacoEditorApi(): typeof monaco.editor {
       return [];
     },
     getModel: (uri) => {
-      return models.get(uri.toString()) || null;
+      return models.get(uri.toString()) as unknown as monaco.editor.ITextModel || null;
     },
     getModels: () => {
       return [];

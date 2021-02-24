@@ -1,5 +1,5 @@
 import type * as vscode from 'vscode';
-import URI from 'vscode-uri';
+import { Uri } from '@ali/ide-core-common';
 import * as Converter from '../../../../common/vscode/converter';
 import { IPosition } from '@ali/ide-core-common';
 import { Range } from '../../../../common/vscode/ext-types';
@@ -12,7 +12,7 @@ export class HoverAdapter {
     private readonly documents: ExtensionDocumentDataManager,
   ) {}
 
-  provideHover(resource: URI, position: IPosition, token: vscode.CancellationToken) {
+  provideHover(resource: Uri, position: IPosition, token: vscode.CancellationToken) {
     const documentData = this.documents.getDocumentData(resource.toString());
     if (!documentData) {
       return Promise.reject(new Error(`There are no document for ${resource}`));

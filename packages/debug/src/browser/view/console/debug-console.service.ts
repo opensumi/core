@@ -1,3 +1,5 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { URI, CommandRegistry, Emitter, Event } from '@ali/ide-core-common';
@@ -49,7 +51,7 @@ export class DebugConsoleService {
   protected _isCommandOrCtrl: boolean = false;
   protected _consoleInputElement: HTMLDivElement | null = null;
   protected _updateDisposable: monaco.IDisposable | null = null;
-  protected _consoleModel: monaco.editor.ITextModel;
+  protected _consoleModel: ITextModel;
 
   private inputEditor?: ICodeEditor;
 
@@ -130,7 +132,8 @@ export class DebugConsoleService {
       }
       this._onConsoleInputValueChange.fire(this.consoleInputUri);
     });
-    this._consoleModel = model;
+    // Note: 这里 monaco.editor.ITextModel 与 ITextModel 类型冲突，所以使用了 assertion
+    this._consoleModel = model as unknown as ITextModel;
     this.inputEditor.monacoEditor.setModel(model);
 
     setTimeout(() => {

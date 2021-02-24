@@ -1,3 +1,5 @@
+import * as suggest from '@ali/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestWidget';
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Event, IJSONSchema, IContextKeyService, IDisposable, BasicEvent } from '..';
 
 export enum ServiceNames {
@@ -92,6 +94,6 @@ export interface IMimeService {
 
 export interface SuggestEventPayload {
   eventType: 'onDidSelect' | 'onDidHide' | 'onDidShow' | 'onDidFocus';
-  data: monaco.suggestController.ISelectedSuggestion | monaco.suggestController.SuggestWidget;
+  data: suggest.ISelectedSuggestion | suggest.SuggestWidget;
 }
 export class SuggestEvent extends BasicEvent<SuggestEventPayload> {}

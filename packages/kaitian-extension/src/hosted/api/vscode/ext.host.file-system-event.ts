@@ -1,6 +1,6 @@
 import { Event, Emitter, Disposable, URI, AsyncEmitter, WaitUntilEvent, CancellationToken, getDebugLogger } from '@ali/ide-core-common';
 import * as vscode from 'vscode';
-import { ExtensionDocumentDataManager, IMainThreadWorkspace, MainThreadAPIIdentifier, WorkspaceEditDto } from '../../../common/vscode';
+import { ExtensionDocumentDataManager, IMainThreadWorkspace, MainThreadAPIIdentifier } from '../../../common/vscode';
 import { WorkspaceEdit } from '../../../common/vscode/ext-types';
 import { FileSystemEvents, IExtHostFileSystemEvent, SourceTargetPair } from '../../../common/vscode/file-system';
 import { IRelativePattern, parse } from '../../../common/vscode/glob';
@@ -8,6 +8,7 @@ import { TypeConverts } from '../../../common/vscode/converter';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtension } from '../../..';
 import { FileOperation } from '@ali/ide-workspace-edit';
+import * as model from '../../../common/vscode/model.api';
 
 class FileSystemWatcher implements vscode.FileSystemWatcher {
 
@@ -206,7 +207,7 @@ export class ExtHostFileSystemEvent implements IExtHostFileSystemEvent {
 
     if (edits.length > 0) {
       // concat all WorkspaceEdits collected via waitUntil-call and apply them in one go.
-      const dto: WorkspaceEditDto = { edits: [] };
+      const dto: model.WorkspaceEditDto = { edits: [] };
       for (const edit of edits) {
         const { edits } = TypeConverts.WorkspaceEdit.from(edit, this._extHostDocumentsAndEditors);
         dto.edits = dto.edits.concat(edits);

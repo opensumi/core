@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 /* istanbul ignore file */
 // 文件没有使用
 import { Disposable } from '@ali/ide-core-common/lib/disposable';

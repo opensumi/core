@@ -1,3 +1,4 @@
+import { ContextKeyExpr, IContextKeyServiceTarget } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ButtonType } from '@ali/ide-components';
 import { replaceLocalizePlaceholder, ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
@@ -36,7 +37,7 @@ interface ICoreMenuItem {
   /**
    * 决定是否在视图层展示
    */
-  when?: string | monaco.contextkey.ContextKeyExpr;
+  when?: string | ContextKeyExpr;
   // 以下为 kaitian 拓展的属性
   /**
    * 单独变更此 menu action 的 args
@@ -102,11 +103,11 @@ export interface IMenuItem extends IBaseMenuItem {
    * more-dropdown 中主要表现为文字左侧有一个 ✅
    * icon 则表现为 背景色选中 状态
    */
-  toggledWhen?: string | monaco.contextkey.ContextKeyExpr;
+  toggledWhen?: string | ContextKeyExpr;
   /**
    * 决定 disabled 状态，主要表现为 menu item 颜色变灰
    */
-  enabledWhen?: string | monaco.contextkey.ContextKeyExpr;
+  enabledWhen?: string | ContextKeyExpr;
 }
 
 export interface ISubmenuItem extends IBaseMenuItem {

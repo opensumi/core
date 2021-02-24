@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Disposable, URI, Emitter, Event, DisposableCollection } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EditorCollectionService, ICodeEditor, WorkbenchEditorService } from '@ali/ide-editor';

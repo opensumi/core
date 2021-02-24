@@ -4,10 +4,11 @@ import {
   Emitter as EventEmiiter, IDisposable,
   CancellationTokenSource,
 } from '@ali/ide-core-common';
-import { ExtensionDocumentDataManager, IMainThreadDocumentsShape, MainThreadAPIIdentifier, IExtensionDocumentModelChangedEvent, IExtensionDocumentModelOpenedEvent, IExtensionDocumentModelRemovedEvent, IExtensionDocumentModelSavedEvent, IExtensionDocumentModelOptionsChangedEvent, IExtensionDocumentModelWillSaveEvent, IMainThreadWorkspace, ITextEdit, WorkspaceEditDto } from '../../../../common/vscode';
+import { ExtensionDocumentDataManager, IMainThreadDocumentsShape, MainThreadAPIIdentifier, IExtensionDocumentModelChangedEvent, IExtensionDocumentModelOpenedEvent, IExtensionDocumentModelRemovedEvent, IExtensionDocumentModelSavedEvent, IExtensionDocumentModelOptionsChangedEvent, IExtensionDocumentModelWillSaveEvent, IMainThreadWorkspace, ITextEdit } from '../../../../common/vscode';
 import { ExtHostDocumentData, setWordDefinitionFor } from './ext-data.host';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Uri, TextEdit } from '../../../../common/vscode/ext-types';
+import type * as model from '../../../../common/vscode/model.api';
 
 const OPEN_TEXT_DOCUMENT_TIMEOUT = 5000;
 
@@ -242,7 +243,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
   async createWaitUntil(uri: Uri, promise: Promise<TextEdit[] | void>): Promise<void> {
     const res = await promise;
     if (res instanceof Array && res[0] && res[0] instanceof TextEdit) {
-      await this.applyEdit(uri, res.map(convert.TypeConverts.TextEdit.from));
+      await this.applyEdit(uri, res.map(convert.TypeConverts.TextEdit.from)[0]);
     }
   }
 
@@ -250,13 +251,12 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     setWordDefinitionFor(modeId, wordDefinition);
   }
 
-  applyEdit(uri: Uri, edits: ITextEdit[]): Promise<boolean> {
-    const dto: WorkspaceEditDto =  {
-      edits: [{
-        resource: uri,
-        edits,
-      }],
-    };
+  applyEdit(uri: Uri, edit: ITextEdit): Promise<boolean> {
+    const dto: model.WorkspaceEditDto = { edits: [{
+      resource: uri,
+      // TODO: eol 类型需要强转下，值其实是一样的
+      edit: edit as model.TextEdit,
+    }]};
     return this._workspaceProxy.$tryApplyWorkspaceEdit(dto);
   }
 }

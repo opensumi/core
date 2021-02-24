@@ -159,7 +159,8 @@ export class Path {
     if (!relativePath) {
       return this;
     }
-    if (this.raw.endsWith(Path.separator)) {
+
+    if (this.raw.endsWith(Path.separator) || relativePath.startsWith(Path.separator)) {
       return new Path(this.raw + relativePath);
     }
     return new Path(this.raw + Path.separator + relativePath);

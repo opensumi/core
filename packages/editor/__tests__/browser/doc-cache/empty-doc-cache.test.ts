@@ -6,7 +6,6 @@ import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { IDocPersistentCacheProvider } from '../../../src/common';
 import { EditorDocumentModel } from '../../../src/browser/doc-model/main';
-import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
 import { EmptyDocCacheImpl } from '@ali/ide-editor/lib/browser/doc-cache';
 
 describe('EmptyDocCacheImpl', () => {
@@ -22,14 +21,9 @@ describe('EmptyDocCacheImpl', () => {
         useClass: EmptyDocCacheImpl,
       },
     );
-    (global as any).monaco = createMockedMonaco() as any;
 
-    uri = new URI('test://testUri1');
+    uri = new URI(`test://testUri${Math.random()}`);
     content = uniqueId('content');
-  });
-
-  afterEach(() => {
-    delete (global as any).monaco;
   });
 
   it('call hasCache during DocumentModel constructing', () => {
@@ -68,14 +62,14 @@ describe('EmptyDocCacheImpl', () => {
       changeMatrix: [
         [{
           range: {
-            endColumn: 8,
-            endLineNumber: 0,
-            startColumn: 8,
-            startLineNumber: 0,
+            endColumn: 9,
+            endLineNumber: 1,
+            startColumn: 1,
+            startLineNumber: 1,
           },
-          rangeLength: 0,
-          rangeOffset: 8,
-          text: '',
+          rangeLength: 8,
+          rangeOffset: 0,
+          text: newContent,
         }],
       ],
       content: newContent,

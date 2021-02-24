@@ -1,10 +1,11 @@
+import type { editor } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import type { CodeActionContext, CodeActionList, SignatureHelpContext, SignatureHelpResult } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { DocumentSelector, CompletionItemProvider, CancellationToken, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider, DocumentRangeFormattingEditProvider, DocumentFormattingEditProvider } from 'vscode';
-import { SerializedDocumentFilter, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, CodeLensSymbol, SerializedLanguageConfiguration, ReferenceContext, Location, ILink, DocumentSymbol, SignatureHelp, WorkspaceEditDto, RenameLocation, Selection, ISerializedSignatureHelpProviderMetadata, SelectionRange, CompletionItem } from './model.api';
+import { SerializedDocumentFilter, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, SerializedLanguageConfiguration, ReferenceContext, Location, ILink, DocumentSymbol, WorkspaceEditDto, RenameLocation, Selection, ISerializedSignatureHelpProviderMetadata, SelectionRange, CompletionItem, CodeLensList, CodeLens } from './model.api';
 import { Disposable } from './ext-types';
-import { UriComponents } from 'vscode-uri';
 import { SymbolInformation } from 'vscode-languageserver-types';
 import globToRegExp = require('glob-to-regexp');
-import { IMarkerData } from '@ali/ide-core-common';
+import { IMarkerData, Uri, UriComponents } from '@ali/ide-core-common';
 import { CompletionContext } from './model.api';
 
 export interface IMainThreadLanguages {
@@ -71,8 +72,8 @@ export interface IExtHostLanguages {
 
   $provideOnTypeFormattingEdits(handle: number, resource: UriComponents, position: Position, ch: string, options: FormattingOptions): Promise<SingleEditOperation[] | undefined>;
 
-  $provideCodeLenses(handle: number, resource: UriComponents): Promise<CodeLensSymbol[] | undefined>;
-  $resolveCodeLens(handle: number, resource: UriComponents, symbol: CodeLensSymbol): Promise<CodeLensSymbol | undefined>;
+  $provideCodeLenses(handle: number, resource: UriComponents): Promise<CodeLensList | undefined>;
+  $resolveCodeLens(handle: number, resource: UriComponents, codeLens: CodeLens): Promise<CodeLens | undefined>;
 
   $provideImplementation(handle: number, resource: UriComponents, position: Position): Promise<Definition | DefinitionLink[] | undefined>;
 
@@ -80,8 +81,8 @@ export interface IExtHostLanguages {
     handle: number,
     resource: UriComponents,
     rangeOrSelection: Range | Selection,
-    context: monaco.languages.CodeActionContext,
-  ): Promise<monaco.languages.CodeAction[]>;
+    context: CodeActionContext,
+  ): Promise<CodeActionList | undefined>;
 
   $provideDocumentLinks(handle: number, resource: UriComponents, token: CancellationToken): Promise<ILink[] | undefined>;
   $resolveDocumentLink(handle: number, link: ILink, token: CancellationToken): Promise<ILink | undefined>;
@@ -93,7 +94,7 @@ export interface IExtHostLanguages {
   $provideWorkspaceSymbols(handle: number, query: string, token: CancellationToken): PromiseLike<SymbolInformation[]>;
   $resolveWorkspaceSymbol(handle: number, symbol: SymbolInformation, token: CancellationToken): PromiseLike<SymbolInformation>;
 
-  $provideSignatureHelp(handle: number, resource: UriComponents, position: Position, context, token: CancellationToken): Promise<SignatureHelp | undefined | null>;
+  $provideSignatureHelp(handle: number, resource: UriComponents, position: Position, context: SignatureHelpContext, token: CancellationToken): Promise<SignatureHelpResult | undefined | null>;
 
   $provideRenameEdits(handle: number, resource: UriComponents, position: Position, newName: string, token: CancellationToken): PromiseLike<WorkspaceEditDto | undefined>;
   $resolveRenameLocation(handle: number, resource: UriComponents, position: Position, token: CancellationToken): PromiseLike<RenameLocation | undefined>;
@@ -121,18 +122,18 @@ export namespace DocumentIdentifier {
 }
 
 export interface MonacoModelIdentifier {
-  uri: monaco.Uri;
+  uri: Uri;
   languageId: string;
 }
 
 export namespace MonacoModelIdentifier {
   export function fromDocument(document: DocumentIdentifier): MonacoModelIdentifier {
     return {
-      uri: monaco.Uri.parse(document.uri),
+      uri: Uri.parse(document.uri),
       languageId: document.languageId,
     };
   }
-  export function fromModel(model: monaco.editor.IReadOnlyModel): MonacoModelIdentifier {
+  export function fromModel(model: editor.IReadOnlyModel): MonacoModelIdentifier {
     return {
       uri: model.uri,
       languageId: model.getModeId(),

@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Autowired, Injectable } from '@ali/common-di';
 import { ICSSStyleService } from '@ali/ide-theme/lib/common/style';
 import { IThemeDecorationRenderOptions, IDecorationRenderOptions, IContentDecorationRenderOptions } from '../common';

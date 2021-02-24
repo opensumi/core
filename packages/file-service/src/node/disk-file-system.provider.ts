@@ -4,9 +4,10 @@ import * as paths from 'path';
 import * as os from 'os';
 import * as mv from 'mv';
 import { v4 } from 'uuid';
-import Uri, { UriComponents } from 'vscode-uri';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import {
+  UriComponents,
+  Uri,
   Event,
   IDisposable,
   URI,

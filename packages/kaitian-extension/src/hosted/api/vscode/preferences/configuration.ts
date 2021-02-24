@@ -1,7 +1,6 @@
 import { IExtHostWorkspace } from '../../../../common/vscode';
-import { isObject } from '@ali/ide-core-common';
+import { Uri, isObject } from '@ali/ide-core-common';
 import cloneDeep = require('lodash.clonedeep');
-import URI from 'vscode-uri';
 
 export class Configuration {
 
@@ -15,11 +14,11 @@ export class Configuration {
     private folderConfigurations: { [resource: string]: ConfigurationModel } = {},
   ) { }
 
-  getValue(section: string | undefined, workspace: IExtHostWorkspace, resource?: URI): any {
+  getValue(section: string | undefined, workspace: IExtHostWorkspace, resource?: Uri): any {
     return this.getCombinedResourceConfig(workspace, resource).getValue(section);
   }
 
-  inspect<C>(key: string, workspace: IExtHostWorkspace, resource?: URI): {
+  inspect<C>(key: string, workspace: IExtHostWorkspace, resource?: Uri): {
     default: C,
     user: C,
     workspace: C | undefined,
@@ -37,7 +36,7 @@ export class Configuration {
     };
   }
 
-  private getCombinedResourceConfig(workspace: IExtHostWorkspace, resource?: URI): ConfigurationModel {
+  private getCombinedResourceConfig(workspace: IExtHostWorkspace, resource?: Uri): ConfigurationModel {
     const combinedConfig = this.getCombinedConfig();
     if (!workspace || !resource) {
       return combinedConfig;
@@ -75,7 +74,7 @@ export class Configuration {
     return folderCombinedConfig;
   }
 
-  private getFolderResourceConfig(workspace: IExtHostWorkspace, resource?: URI): ConfigurationModel | undefined {
+  private getFolderResourceConfig(workspace: IExtHostWorkspace, resource?: Uri): ConfigurationModel | undefined {
     if (!workspace || !resource) {
       return;
     }
@@ -152,5 +151,5 @@ export interface ConfigurationChangeEvent {
    * @param resource 资源路径
    * @return 当给定的资源文件修改了，返回true
    */
-  affectsConfiguration(section: string, resource?: URI): boolean;
+  affectsConfiguration(section: string, resource?: Uri): boolean;
 }

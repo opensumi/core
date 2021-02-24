@@ -1,6 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
+import { Mode } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/common/quickOpen';
 import { QuickOpenHandler, QuickOpenHandlerRegistry } from './prefix-quick-open.service';
-import { QuickOpenItem, PrefixQuickOpenService, QuickOpenMode, QuickOpenModel, QuickOpenOptions } from './quick-open.model';
+import { QuickOpenItem, PrefixQuickOpenService, QuickOpenModel } from './quick-open.model';
 import { CommandService, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 
 @Injectable()
@@ -26,8 +27,8 @@ export class HelpQuickOpenHandler implements QuickOpenHandler {
       .map((handler) => new QuickOpenItem({
         label: handler.prefix,
         description: handler.description,
-        run: (mode: QuickOpenMode) => {
-          if (mode !== QuickOpenMode.OPEN) {
+        run: (mode: Mode) => {
+          if (mode !== Mode.OPEN) {
             return false;
           }
           this.quickOpenService.open(handler.prefix);

@@ -1,6 +1,5 @@
 import type * as vscode from 'vscode';
-import { UriComponents } from 'vscode-uri';
-import { Emitter, IExtensionProps } from '@ali/ide-core-common';
+import { UriComponents, Emitter, IExtensionProps } from '@ali/ide-core-common';
 
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@ali/ide-connection';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';

@@ -1,5 +1,4 @@
 const { JSDOM } = require('jsdom');
-const { join } = require('path');
 
 const jsdom = new JSDOM(`<div id="main"></div>`, {
   // https://github.com/jsdom/jsdom#basic-options
@@ -33,10 +32,11 @@ global.MutationObserver = jsdom.window.MutationObserver;
 global.requestAnimationFrame = fn => setTimeout(fn, 16);
 jsdom.window.requestAnimationFrame = fn => setTimeout(fn, 16);
 jsdom.window.cancelAnimationFrame = () => { };
+global.document.queryCommandSupported = () => { };
 global.document.execCommand = () => { };
 global.HTMLElement = jsdom.window.HTMLElement;
+global.self = global;
 
-jest.mock(join(__dirname, 'packages/monaco/src/browser/monaco-loader'));
 
 class MockLocalStorage {
   constructor() {

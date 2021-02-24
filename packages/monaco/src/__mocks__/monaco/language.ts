@@ -1,3 +1,5 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+
 import { partialMock } from './common/util';
 
 export type TokensProvider = monaco.languages.TokensProvider;

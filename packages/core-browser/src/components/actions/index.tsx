@@ -91,13 +91,19 @@ export const MenuActionList: React.FC<{
   const recursiveRender = React.useCallback((dataSource: MenuNode[]) => {
     return dataSource.map((menuNode, index) => {
       if (menuNode.id === SeparatorMenuItemNode.ID) {
-        return <Menu.Divider key={`divider-${index}`} />;
+        return <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} />;
       }
 
       if (menuNode.id === SubmenuItemNode.ID) {
+        // 子菜单项为空时不渲染
+        if (!Array.isArray(menuNode.children) || !menuNode.children.length) {
+          return null;
+        }
+
         return (
           <Menu.SubMenu
             key={`${menuNode.id}-${index}`}
+            className={styles.submenuItem}
             popupClassName='kt-menu'
             title={<MenuAction hasSubmenu data={menuNode} />}>
             {recursiveRender(menuNode.children)}
@@ -106,7 +112,11 @@ export const MenuActionList: React.FC<{
       }
 
       return (
-        <Menu.Item id={menuNode.id} key={menuNode.id} disabled={menuNode.disabled}>
+        <Menu.Item
+          id={menuNode.id}
+          key={menuNode.id}
+          className={styles.menuItem}
+          disabled={menuNode.disabled}>
           <MenuAction data={menuNode} disabled={menuNode.disabled} />
         </Menu.Item>
       );

@@ -1,5 +1,6 @@
+import { Mode } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/common/quickOpen';
 import { Injectable, Autowired } from '@ali/common-di';
-import { QuickInputOptions, IQuickInputService, QuickOpenItem, QuickOpenMode, QuickOpenService } from '@ali/ide-core-browser/lib/quick-open';
+import { QuickInputOptions, IQuickInputService, QuickOpenItem, QuickOpenService } from '@ali/ide-core-browser/lib/quick-open';
 import { QuickTitleBar } from './quick-title-bar';
 import { Deferred, MessageType, localize, Emitter, Event } from '@ali/ide-core-common';
 
@@ -36,7 +37,7 @@ export class QuickInputService implements IQuickInputService {
         acceptor([new QuickOpenItem({
           label,
           run: (mode) => {
-            if (!error && mode === QuickOpenMode.OPEN) {
+            if (!error && mode === Mode.OPEN) {
               result.resolve(currentText);
               this.onDidAcceptEmitter.fire(undefined);
               this.quickTitleBar.hide();

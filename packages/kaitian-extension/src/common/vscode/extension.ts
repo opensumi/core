@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { equalsIgnoreCase } from '@ali/ide-core-common';
-import URI from 'vscode-uri';
+import type { Uri } from '@ali/ide-core-common';
 import { IExtension } from '..';
 
 export const MANIFEST_CACHE_FOLDER = 'CachedExtensions';
@@ -200,7 +200,7 @@ export interface IExtensionDescription extends IExtensionManifest {
   readonly uuid?: string;
   readonly isBuiltin: boolean;
   readonly isUnderDevelopment: boolean;
-  readonly extensionLocation: URI;
+  readonly extensionLocation: Uri;
   enableProposedApi?: boolean;
 }
 

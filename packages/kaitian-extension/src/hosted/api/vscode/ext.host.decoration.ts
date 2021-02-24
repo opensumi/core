@@ -1,5 +1,5 @@
 import type * as vscode from 'vscode';
-import URI from 'vscode-uri';
+import { Uri } from '@ali/ide-core-common';
 import { CancellationToken } from '@ali/ide-core-common';
 import { toDisposable, IDisposable } from '@ali/ide-core-common/lib/disposable';
 import { asArray } from '@ali/ide-core-common/lib/utils/arrays';
@@ -56,7 +56,7 @@ export class ExtHostDecorations implements IExtHostDecorationsShape {
         return undefined;
       }
       const { provider, extensionId } = entry;
-      return Promise.resolve(provider.provideDecoration(URI.revive(uri), token)).then((data) => {
+      return Promise.resolve(provider.provideDecoration(Uri.revive(uri), token)).then((data) => {
         if (data && data.letter && data.letter.length !== 1) {
           getDebugLogger().warn(`INVALID decoration from extension '${extensionId}'. The 'letter' must be set and be one character, not '${data.letter}'.`);
         }

@@ -1,4 +1,5 @@
-import { Domain, CommandContribution, CommandRegistry, Command, localize, PreferenceService, replaceLocalizePlaceholder, PreferenceScope, QuickOpenService, QuickOpenGroupItem, QuickOpenMode, QuickOpenOptions, QuickOpenItem } from '@ali/ide-core-browser';
+import { Mode } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/common/quickOpen';
+import { Domain, CommandContribution, CommandRegistry, Command, localize, PreferenceService, replaceLocalizePlaceholder, PreferenceScope, QuickOpenService, QuickOpenGroupItem, QuickOpenOptions, QuickOpenItem } from '@ali/ide-core-browser';
 import { IThemeService, IIconService, BuiltinThemeComparator, getThemeTypeName, BuiltinTheme } from '../common';
 import { Autowired } from '@ali/common-di';
 import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -116,12 +117,12 @@ export class ThemeContribution implements MenuContribution, CommandContribution 
       pickItems.forEach((item, index) => {
         const baseOption = {
           label: item.label,
-          run: (mode: QuickOpenMode) => {
-            if (mode === QuickOpenMode.PREVIEW) {
+          run: (mode: Mode) => {
+            if (mode === Mode.PREVIEW) {
               onFocusChange(item.value);
               return true;
             }
-            if (mode === QuickOpenMode.OPEN) {
+            if (mode === Mode.OPEN) {
               resolve(item.value);
               return true;
             }

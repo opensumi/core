@@ -10,9 +10,29 @@ export interface PreferenceChangeEvent<T> {
 }
 
 export interface PreferenceProxyOptions {
+  /**
+   * 所有配置的默认前缀
+   */
   prefix?: string;
+  /**
+   * 获取或设置配置的默认资源路径
+   */
   resourceUri?: string;
-  language?: string;
+  /**
+   * 对齐VSCode实现，overrideIdentifier主要用于实现针对不同编辑器设置不同配置的能力
+   * 与原有的language设定一致
+   *
+   * 如 [markdown].editor.autoIndent、[json].editor.autoIndent 及 editor.autoIndent 等
+   */
+  overrideIdentifier?: string;
+  /**
+   * 用来指代获取一个配置时是否为“平面含义”上的获取
+   *
+   * 如：
+   * a.b.c 在flat模式下为单个配置的值
+   * deep模式下则可以为 a 配置下的 b 配置下的 c 的值
+   * both指代同时在两种配置模式下检索值
+   */
   style?: 'flat' | 'deep' | 'both';
 }
 
@@ -44,7 +64,7 @@ export function createPreferenceProxy<T>(preferences: PreferenceService, schema:
           if (schema.properties[preferenceName]) {
             if (opts.resourceUri) {
               if (e.affects(opts.resourceUri)) {
-                if (opts.language && !preferences.hasLanguageSpecific(preferenceName, opts.language, opts.resourceUri)) {
+                if (opts.overrideIdentifier && !preferences.hasLanguageSpecific(preferenceName, opts.overrideIdentifier, opts.resourceUri)) {
                   continue;
                 }
                 listener(e as any);
@@ -57,9 +77,9 @@ export function createPreferenceProxy<T>(preferences: PreferenceService, schema:
       }
     }, thisArgs, disposables));
     // 添加语言相关 changes 变更
-    if (opts.language) {
+    if (opts.overrideIdentifier) {
       disposer.addDispose(preferences.onLanguagePreferencesChanged((event) => {
-        if (event.language === opts.language) {
+        if (event.overrideIdentifier === opts.overrideIdentifier) {
           for (const key of Object.keys(event.changes)) {
             const e = event.changes[key];
             const preferenceName: any = e.preferenceName ;
@@ -85,8 +105,8 @@ export function createPreferenceProxy<T>(preferences: PreferenceService, schema:
     throw new Error('Unsupported operation');
   };
 
-  const getValue: PreferenceRetrieval<any>['get'] = (preferenceName: any, defaultValue, resourceUri, language?: string) => {
-    return preferences.get(preferenceName, defaultValue, resourceUri || opts.resourceUri, language || opts.language);
+  const getValue: PreferenceRetrieval<any>['get'] = (preferenceName: any, defaultValue, resourceUri, overrideIdentifier?: string) => {
+    return preferences.get(preferenceName, defaultValue, resourceUri || opts.resourceUri, overrideIdentifier || opts.overrideIdentifier);
   };
 
   const ownKeys: () => string[] = () => {
@@ -127,7 +147,7 @@ export function createPreferenceProxy<T>(preferences: PreferenceService, schema:
         const subProxy: { [k: string]: any } = createPreferenceProxy(preferences, schema, {
           prefix: newPrefix,
           resourceUri: opts.resourceUri,
-          language: opts.language,
+          overrideIdentifier: opts.overrideIdentifier,
           style,
         });
         for (const k of Object.keys(value)) {
@@ -145,7 +165,7 @@ export function createPreferenceProxy<T>(preferences: PreferenceService, schema:
     const fullProperty = prefix ? prefix + property : property;
     if (isFlat || property.indexOf('.') === -1) {
       if (schema.properties[fullProperty]) {
-        return preferences.get(fullProperty, undefined, opts.resourceUri, opts.language);
+        return preferences.get(fullProperty, undefined, opts.resourceUri, opts.overrideIdentifier);
       }
     }
     if (property === 'onPreferenceChanged') {
@@ -167,7 +187,7 @@ export function createPreferenceProxy<T>(preferences: PreferenceService, schema:
       const newPrefix = fullProperty + '.';
       for (const p of Object.keys(schema.properties)) {
         if (p.startsWith(newPrefix)) {
-          return createPreferenceProxy(preferences, schema, { prefix: newPrefix, resourceUri: opts.resourceUri, language: opts.language, style });
+          return createPreferenceProxy(preferences, schema, { prefix: newPrefix, resourceUri: opts.resourceUri, overrideIdentifier: opts.overrideIdentifier, style });
         }
       }
     }

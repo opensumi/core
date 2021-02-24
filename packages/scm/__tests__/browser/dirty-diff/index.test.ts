@@ -1,9 +1,9 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { DisposableCollection, PreferenceScope, Uri, URI, Emitter, CommandService, toDisposable } from '@ali/ide-core-common';
 import { WorkbenchEditorService, IDocPersistentCacheProvider } from '@ali/ide-editor';
 import { PreferenceChange } from '@ali/ide-core-browser';
 import { IEditorFeatureRegistry, IEditorFeatureContribution, EmptyDocCacheImpl, IEditorDocumentModelService } from '@ali/ide-editor/src/browser';
-import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
 import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/src/browser/workbench-editor.service';
 import { EditorDocumentModel } from '@ali/ide-editor/src/browser/doc-model/main';
 
@@ -17,9 +17,6 @@ import { DirtyDiffDecorator } from '../../../src/browser/dirty-diff/dirty-diff-d
 import { DirtyDiffWidget } from '../../../src/browser/dirty-diff/dirty-diff-widget';
 import { SCMPreferences } from '../../../src/browser/scm-preference';
 
-const mockedMonaco = createMockedMonaco();
-(global as any).monaco = mockedMonaco;
-
 jest.useFakeTimers();
 
 @Injectable()
@@ -27,13 +24,17 @@ class MockEditorDocumentModelService {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  async createModelReference(uri: URI) {
-    const instance = this.injector.get(EditorDocumentModel, [
-      uri,
-      'test-content',
-    ]);
+  private readonly instances: Map<string, EditorDocumentModel> = new Map();
 
-    return { instance };
+  async createModelReference(uri: URI): Promise<EditorDocumentModel> {
+    if (!this.instances.has(uri.toString())) {
+      const instance = this.injector.get(EditorDocumentModel, [
+        uri,
+        'test-content',
+      ]);
+      this.instances.set(uri.toString(), instance);
+    }
+    return this.instances.get(uri.toString())!;
   }
 }
 
@@ -69,7 +70,15 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
   let commandService: CommandService;
   let editorService: WorkbenchEditorService;
 
-  beforeEach(() => {
+  async function createModel(filePath: string): Promise<EditorDocumentModel> {
+    const fileTextModel = injector.get(EditorDocumentModel, [
+      URI.file(filePath),
+      'test-content',
+    ]);
+    return fileTextModel;
+  }
+
+  beforeEach(async (done) => {
     injector = createBrowserInjector([], new Injector([
       {
         token: IDocPersistentCacheProvider,
@@ -116,14 +125,11 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
     scmPreferences = injector.get(SCMPreferences);
     commandService = injector.get(CommandService);
     dirtyDiffWorkbenchController = injector.get(IDirtyDiffWorkbenchController);
-
-    monacoEditor = mockedMonaco.editor!.create(document.createElement('div'));
-    editorModel = injector.get(EditorDocumentModel, [
-      URI.file('/test/workspace/abc.ts'),
-      'test',
-    ]).getMonacoModel();
-
+    const model = await createModel(`/test/workspace/abc${Math.random()}.ts`);
+    editorModel = model.getMonacoModel();
+    monacoEditor = monaco.editor!.create(document.createElement('div'), { language: 'typescript' });
     monacoEditor.setModel(editorModel);
+    done();
   });
 
   afterEach(() => {
@@ -209,13 +215,13 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
 
     monacoEditor['_onDidChangeModel'].fire({
       oldModelUrl: null,
-      newModelUrl: Uri.file('def.ts'),
+      newModelUrl: Uri.file('def0.ts'),
     });
     // nothing happened
 
     monacoEditor['_onDidChangeModel'].fire({
-      oldModelUrl: Uri.file('abc.ts'),
-      newModelUrl: Uri.file('def.ts'),
+      oldModelUrl: Uri.file('abc1.ts'),
+      newModelUrl: Uri.file('def1.ts'),
     });
     // nothing happened
 
@@ -223,8 +229,8 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
 
     const disposeSpy = jest.spyOn(dirtyDiffWidget, 'dispose');
     monacoEditor['_onDidChangeModel'].fire({
-      oldModelUrl: Uri.file('abc.ts'),
-      newModelUrl: Uri.file('def.ts'),
+      oldModelUrl: Uri.file('abc2.ts'),
+      newModelUrl: Uri.file('def2.ts'),
     });
     // oldWidget.dispose
     expect(disposeSpy).toBeCalledTimes(1);
@@ -277,7 +283,7 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
       affects: () => false,
     });
 
-    expect(disposeSpy).toBeCalledTimes(1);
+    expect(disposeSpy).toBeCalled();
 
     disposeSpy.mockReset();
   });
@@ -296,7 +302,7 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
       affects: () => true,
     });
     // first disabled called when enabled#true
-    expect(disableSpy).toBeCalledTimes(1);
+    expect(disableSpy).toBeCalled();
 
     scmPreferences['scm.diffDecorations'] = 'all';
     scmPreferences.onPreferenceChangedEmitter.fire({
@@ -306,7 +312,7 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
       affects: () => true,
     });
 
-    expect(enableSpy).toBeCalledTimes(1);
+    expect(enableSpy).toBeCalled();
 
     [enableSpy, disableSpy].forEach((spy) => { spy.mockReset(); });
   });
@@ -343,12 +349,12 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
     editorService.editorGroups.pop();
     // old models
     dirtyDiffWorkbenchController['models'].push(injector.get(EditorDocumentModel, [
-      URI.file('/test/workspace/def.ts'),
+      URI.file('/test/workspace/def1.ts'),
       'test',
     ]).getMonacoModel());
 
     const docModel2 = injector.get(EditorDocumentModel, [
-      URI.file('/test/workspace/def.ts'),
+      URI.file('/test/workspace/def2.ts'),
       'test',
     ]);
 
@@ -384,7 +390,7 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
     expect(dirtyDiffWorkbenchController['items']).toEqual({});
 
     dirtyDiffWorkbenchController['models'].push(injector.get(EditorDocumentModel, [
-      URI.file('/test/workspace/def.ts'),
+      URI.file('/test/workspace/def4.ts'),
       'test',
     ]).getMonacoModel());
     dirtyDiffWorkbenchController['disable']();

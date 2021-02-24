@@ -1,6 +1,12 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import type { IModeService } from '@ali/monaco-editor-core/esm/vs/editor/common/services/modeService';
+import type { IModelService } from '@ali/monaco-editor-core/esm/vs/editor/common/services/modelService';
 import { Autowired, Injectable } from '@ali/common-di';
 import { URI, DataUri, Emitter, addElement, IDisposable, LRUMap, Event, WithEventBus, BasicEvent, Disposable } from '@ali/ide-core-common';
 import classnames from 'classnames';
+const cssEscape = require('css.escape');
+
 import { getIcon } from '../style/icon/icon';
 
 export interface ILabelProvider {
@@ -195,10 +201,10 @@ const getIconClass = (resource: URI, options?: ILabelOptions) => {
     }
     // Language Mode探测
     if (!modeService) {
-      modeService = monaco.services.StaticServices.modeService.get();
+      modeService = StaticServices.modeService.get();
     }
     if (!modelService) {
-      modelService = monaco.services.StaticServices.modelService.get();
+      modelService = StaticServices.modelService.get();
     }
     const detectedModeId = detectModeId(modelService, modeService, monaco.Uri.file(resource.withoutQuery().withoutScheme().toString()));
     if (detectedModeId) {
@@ -210,15 +216,11 @@ const getIconClass = (resource: URI, options?: ILabelOptions) => {
   return classnames(classes);
 };
 
-export function cssEscape(val: string): string {
-  return val.replace(/\s/g, '\\$&'); // make sure to not introduce CSS classes from files that contain whitespace
-}
-
 export function basenameOrAuthority(resource: URI) {
   return resource.path.base || resource.authority;
 }
 
-export function detectModeId(modelService, modeService, resource: monaco.Uri): string | null {
+export function detectModeId(modelService: IModelService, modeService: IModeService, resource: monaco.Uri): string | null {
   if (!resource) {
     return null; // we need a resource at least
   }
@@ -246,12 +248,12 @@ export function detectModeId(modelService, modeService, resource: monaco.Uri): s
   }
 
   // otherwise fallback to path based detection
-  return modeService.getModeIdByFilepathOrFirstLine(resource.toString());
+  return modeService.getModeIdByFilepathOrFirstLine(resource);
 }
 
 export function getLanguageIdFromMonaco(uri: URI) {
-  modeService = monaco.services.StaticServices.modeService.get();
-  modelService = monaco.services.StaticServices.modelService.get();
+  modeService = StaticServices.modeService.get();
+  modelService = StaticServices.modelService.get();
   return detectModeId(modelService, modeService, monaco.Uri.parse(uri.toString()));
 }
 

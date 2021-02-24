@@ -1,3 +1,6 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { FormattingConflicts } from '@ali/monaco-editor-core/esm/vs/editor/contrib/format/format';
+import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { BrowserCodeEditor } from './editor-collection.service';
 import {  IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService, IClipboardService, QuickOpenContribution, IQuickOpenHandlerRegistry, PrefixQuickOpenService } from '@ali/ide-core-browser';
@@ -90,8 +93,8 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     const textModelService = this.injector.get(MonacoTextModelService);
     monacoService.registerOverride(ServiceNames.TEXT_MODEL_SERVICE, textModelService);
     const formatSelector = this.injector.get(FormattingSelector);
-    monaco.format.FormattingConflicts._selectors.unshift(formatSelector.select.bind(formatSelector) as any);
-    (monaco.services.StaticServices as any).codeEditorService = {
+    (FormattingConflicts as unknown as any)._selectors.unshift(formatSelector.select.bind(formatSelector) as any);
+    (StaticServices as unknown as any).codeEditorService = {
       get: () => {
         return codeEditorService;
       },

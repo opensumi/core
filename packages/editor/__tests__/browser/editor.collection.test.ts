@@ -1,12 +1,13 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
 import { MonacoService, PreferenceService, PreferenceChange, Emitter, PreferenceScope, URI, PreferenceChanges } from '@ali/ide-core-browser';
 import { BrowserCodeEditor, BaseMonacoEditorWrapper } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import { EditorCollectionService, EditorType } from '@ali/ide-editor';
-import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
 import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { Injectable } from '@ali/common-di';
-import { IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
+import { IEditorDecorationCollectionService, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
+import { EditorDecorationCollectionService } from '@ali/ide-editor/lib/browser/editor.decoration.service';
 
 describe('editor collection service test', () => {
 
@@ -15,29 +16,35 @@ describe('editor collection service test', () => {
   injector.addProviders({
     token: MonacoService,
     useClass: MockedMonacoService,
+  }, {
+    token: IEditorDecorationCollectionService,
+    useClass: EditorDecorationCollectionService,
   });
 
   it('code editor test', () => {
     injector.mockService(EditorCollectionService);
-    const monaco = (global as any).monaco || createMockedMonaco();
     const mockEditor = monaco.editor.create(document.createElement('div'));
     const codeEditor = injector.get(BrowserCodeEditor, [mockEditor]);
+    const updateOptions = jest.spyOn(codeEditor, 'updateOptions');
+    const getSelections = jest.spyOn(codeEditor, 'getSelections');
+    const setSelections = jest.fn(() => {});
+    mockEditor.setSelections = setSelections;
+
     codeEditor.updateOptions({}, {});
-    expect(mockEditor.updateOptions).toBeCalled();
+    expect(updateOptions).toBeCalled();
 
     expect(codeEditor.getType()).toBe(EditorType.CODE);
 
     codeEditor.getSelections();
-    expect(mockEditor.getSelections).toBeCalled();
+    expect(getSelections).toBeCalled();
 
     codeEditor.setSelections([]);
-    expect(mockEditor.setSelections).toBeCalled();
+    expect(setSelections).toBeCalled();
 
   });
 
   afterAll(() => {
     injector.disposeAll();
-    (global as any).monaco = undefined;
   });
 
   it('options level test', () => {

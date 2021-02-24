@@ -1,11 +1,12 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { IDiffComputationResult } from '@ali/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
 import { Uri } from '@ali/ide-core-common';
 
 import { createMockedMonacoEditorApi } from './editor';
 import { MockedMonacoUri } from './common/uri';
-import { createMockedMonacoLanguageApi, mockFeatureProviderRegistry } from './language';
+import { createMockedMonacoLanguageApi } from './language';
 import { createMockedMonacoRangeApi } from './range';
 import { createMockedMonacoPositionApi } from './position';
-import { createMockedMonacoTextModelApi } from './textModel';
 
 export function createMockedMonaco(): Partial<typeof monaco> {
   const mockEditor = createMockedMonacoEditorApi();
@@ -16,16 +17,18 @@ export function createMockedMonaco(): Partial<typeof monaco> {
     Uri: MockedMonacoUri as any,
     Range: createMockedMonacoRangeApi(),
     Position: createMockedMonacoPositionApi(),
-    modes: {
-      // @ts-ignore
-      SelectionRangeRegistry: {
-        register(selector, provider) {
-          // console.log('SelectionRangeRegistry noop');
-          mockFeatureProviderRegistry.set('registerSelectionRangeProvider', provider);
-        },
-      },
-    },
-    textModel: createMockedMonacoTextModelApi(),
+    /** -------------------------------- IMPORTANT @deprecated -------------------------------- */
+    // modes: {
+    //   // @ts-ignore
+    //   SelectionRangeRegistry: {
+    //     register(selector, provider) {
+    //       // console.log('SelectionRangeRegistry noop');
+    //       mockFeatureProviderRegistry.set('registerSelectionRangeProvider', provider);
+    //     },
+    //   },
+    // },
+    // textModel: createMockedMonacoTextModelApi(),
+     /** -------------------------------- IMPORTANT @deprecated -------------------------------- */
     // @ts-ignore
     services: {
       // @ts-ignore
@@ -60,7 +63,7 @@ export function createMockedMonaco(): Partial<typeof monaco> {
           get(): any {
             return {
               canComputeDiff: (original: Uri, modified: Uri): boolean => true,
-              computeDiff: (original: MockedMonacoUri, modified: MockedMonacoUri, ignoreTrimWhitespace: boolean): Promise<monaco.commons.IDiffComputationResult | null> => {
+              computeDiff: (original: MockedMonacoUri, modified: MockedMonacoUri, ignoreTrimWhitespace: boolean): Promise<IDiffComputationResult | null> => {
                 const model = mockEditor.getModel(modified);
                 if (!model) {
                   return Promise.resolve(null);
@@ -69,6 +72,7 @@ export function createMockedMonaco(): Partial<typeof monaco> {
 
                 return Promise.resolve({
                   identical: false,
+                  quitEarly: true,
                   changes: [{
                     originalStartLineNumber: 1,
                     originalEndLineNumber: 5,

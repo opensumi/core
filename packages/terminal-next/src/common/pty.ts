@@ -1,6 +1,5 @@
 import { Terminal as XTerm } from 'xterm';
-import Uri from 'vscode-uri';
-import { ITerminalClient } from './client';
+import { Uri } from '@ali/ide-core-common';
 
 export const ITerminalServicePath = 'ITerminalServicePath';
 export const ITerminalNodeService = Symbol('ITerminalNodeService');

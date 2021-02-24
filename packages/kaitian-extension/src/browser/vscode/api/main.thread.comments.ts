@@ -1,10 +1,10 @@
+import { CommentThread, CommentInput, CommentReaction } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { UriComponents, CommentThread, CommentThreadCollapsibleState, Comment, CommentThreadChanges } from '../../../common/vscode/models';
+import { UriComponents, CommentThreadCollapsibleState, Comment, CommentThreadChanges } from '../../../common/vscode/models';
 import { IRange, Emitter, Event, URI, CancellationToken, IDisposable, positionToRange, isUndefined, Disposable } from '@ali/ide-core-common';
 import { IMainThreadComments, CommentProviderFeatures, IExtHostComments, IMainThreadCommands } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
-import * as modes from '../../../common/vscode/models';
 import { ICommentsService, ICommentsThread, IThreadComment } from '@ali/ide-comments';
 import { MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
@@ -47,7 +47,7 @@ export class MainthreadComments implements IDisposable, IMainThreadComments {
           if (isUndefined(handle)) {
             return;
           }
-          const commentController = this._commentControllers.get(handle);
+          const commentController = this._commentControllers.get(handle!);
           if (!commentController) {
             throw new Error('unknown controller');
           }
@@ -168,18 +168,18 @@ export class MainThreadCommentThread implements CommentThread {
   @Autowired(ICommentsService)
   private commentsService: ICommentsService;
 
-  private _input?: modes.CommentInput;
-  get input(): modes.CommentInput | undefined {
+  private _input?: CommentInput;
+  get input(): CommentInput | undefined {
     return this._input;
   }
 
-  set input(value: modes.CommentInput | undefined) {
+  set input(value: CommentInput | undefined) {
     this._input = value;
     this._onDidChangeInput.fire(value);
   }
 
-  private readonly _onDidChangeInput = new Emitter<modes.CommentInput | undefined>();
-  get onDidChangeInput(): Event<modes.CommentInput | undefined> { return this._onDidChangeInput.event; }
+  private readonly _onDidChangeInput = new Emitter<CommentInput | undefined>();
+  get onDidChangeInput(): Event<CommentInput | undefined> { return this._onDidChangeInput.event; }
 
   get label(): string | undefined {
     return this._thread.label;
@@ -201,7 +201,7 @@ export class MainThreadCommentThread implements CommentThread {
   private readonly _onDidChangeLabel = new Emitter<string | undefined>();
   readonly onDidChangeLabel: Event<string | undefined> = this._onDidChangeLabel.event;
 
-  public get comments(): modes.Comment[] | undefined {
+  public get comments(): Comment[] | undefined {
     return this._thread.comments.map((comment) => {
       return {
         uniqueIdInThread: +comment.id,
@@ -212,11 +212,11 @@ export class MainThreadCommentThread implements CommentThread {
           value: comment.body,
         },
         userName: comment.author.name,
-      } as modes.Comment;
+      } as Comment;
     });
   }
 
-  public set comments(newComments: modes.Comment[] | undefined) {
+  public set comments(newComments: Comment[] | undefined) {
     if (newComments) {
       this._thread.comments = newComments.map((comment) => {
         return {
@@ -238,8 +238,8 @@ export class MainThreadCommentThread implements CommentThread {
     this._onDidChangeComments.fire(newComments);
   }
 
-  private readonly _onDidChangeComments = new Emitter<modes.Comment[] | undefined>();
-  get onDidChangeComments(): Event<modes.Comment[] | undefined> { return this._onDidChangeComments.event; }
+  private readonly _onDidChangeComments = new Emitter<Comment[] | undefined>();
+  get onDidChangeComments(): Event<Comment[] | undefined> { return this._onDidChangeComments.event; }
 
   // TODO: range 暂时不支持修改
   set range(range: IRange) {
@@ -254,17 +254,17 @@ export class MainThreadCommentThread implements CommentThread {
   private readonly _onDidChangeRange = new Emitter<IRange>();
   public onDidChangeRange = this._onDidChangeRange.event;
 
-  private _collapsibleState: modes.CommentThreadCollapsibleState | undefined;
+  private _collapsibleState: CommentThreadCollapsibleState | undefined;
   get collapsibleState() {
-    return this._thread.isCollapsed ? modes.CommentThreadCollapsibleState.Collapsed : modes.CommentThreadCollapsibleState.Expanded;
+    return this._thread.isCollapsed ? CommentThreadCollapsibleState.Collapsed : CommentThreadCollapsibleState.Expanded;
   }
 
-  set collapsibleState(newState: modes.CommentThreadCollapsibleState | undefined) {
-    this._thread.isCollapsed = newState === modes.CommentThreadCollapsibleState.Collapsed;
+  set collapsibleState(newState: CommentThreadCollapsibleState | undefined) {
+    this._thread.isCollapsed = newState === CommentThreadCollapsibleState.Collapsed;
     this._onDidChangeCollasibleState.fire(this._collapsibleState);
   }
 
-  private readonly _onDidChangeCollasibleState = new Emitter<modes.CommentThreadCollapsibleState | undefined>();
+  private readonly _onDidChangeCollasibleState = new Emitter<CommentThreadCollapsibleState | undefined>();
   public onDidChangeCollasibleState = this._onDidChangeCollasibleState.event;
 
   private _isDisposed: boolean;
@@ -369,13 +369,13 @@ export class MainThreadCommentController implements IDisposable {
     return this._label;
   }
 
-  private _reactions: modes.CommentReaction[] | undefined;
+  private _reactions: CommentReaction[] | undefined;
 
   get reactions() {
     return this._reactions;
   }
 
-  set reactions(reactions: modes.CommentReaction[] | undefined) {
+  set reactions(reactions: CommentReaction[] | undefined) {
     this._reactions = reactions;
   }
 
@@ -410,7 +410,7 @@ export class MainThreadCommentController implements IDisposable {
     threadId: string,
     resource: UriComponents,
     range: IRange,
-  ): modes.CommentThread {
+  ): CommentThread {
     const uri = URI.from(resource);
     const thread = this.injector.get(MainThreadCommentThread, [
       commentThreadHandle,
@@ -463,7 +463,7 @@ export class MainThreadCommentController implements IDisposable {
     return commentingRanges || [];
   }
 
-  async toggleReaction(uri: URI, thread: modes.CommentThread, comment: modes.Comment, reaction: modes.CommentReaction, token: CancellationToken): Promise<void> {
+  async toggleReaction(uri: URI, thread: CommentThread, comment: Comment, reaction: CommentReaction, token: CancellationToken): Promise<void> {
     return this._proxy.$toggleReaction(this._handle, thread.commentThreadHandle, uri.codeUri, comment, reaction);
   }
 

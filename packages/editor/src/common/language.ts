@@ -1,3 +1,7 @@
+import { editor } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import type { IRelatedInformation } from '@ali/monaco-editor-core/esm/vs/platform/markers/common/markers';
+import { CancellationToken } from '@ali/monaco-editor-core/esm/vs/base/common/cancellation';
+import { URI as Uri } from '@ali/monaco-editor-core/esm/vs/base/common/uri';
 /* istanbul ignore file */
 // TODO: 这部分引用了vscode language server types，这个和我们的要求不同，版权改造之后再写单测
 import { IDisposable, MarkerSeverity } from '@ali/ide-core-common';
@@ -106,16 +110,16 @@ export function asSeverity(severity?: number): MarkerSeverity {
   }
   return MarkerSeverity.Hint;
 }
-export function asRelatedInformations(relatedInformation?: DiagnosticRelatedInformation[]): monaco.editor.IRelatedInformation[] | undefined {
+export function asRelatedInformations(relatedInformation?: DiagnosticRelatedInformation[]): IRelatedInformation[] | undefined {
   if (!relatedInformation) {
       return undefined;
   }
   return relatedInformation.map((item) => asRelatedInformation(item));
 }
 
-export function asRelatedInformation(relatedInformation: DiagnosticRelatedInformation): monaco.editor.IRelatedInformation {
+export function asRelatedInformation(relatedInformation: DiagnosticRelatedInformation): IRelatedInformation {
   return {
-      resource: monaco.Uri.parse(relatedInformation.location.uri),
+      resource: Uri.parse(relatedInformation.location.uri),
       startLineNumber: relatedInformation.location.range.start.line + 1,
       startColumn: relatedInformation.location.range.start.character + 1,
       endLineNumber: relatedInformation.location.range.end.line + 1,
@@ -123,14 +127,14 @@ export function asRelatedInformation(relatedInformation: DiagnosticRelatedInform
       message: relatedInformation.message,
   };
 }
-export function asDiagnostics(diagnostics: Diagnostic[] | undefined): monaco.editor.IMarkerData[] | undefined {
+export function asDiagnostics(diagnostics: Diagnostic[] | undefined): editor.IMarkerData[] | undefined {
   if (!diagnostics) {
     return undefined;
   }
   return diagnostics.map((diagnostic) => asDiagnostic(diagnostic));
 }
 
-export function asDiagnostic(diagnostic: Diagnostic): monaco.editor.IMarkerData {
+export function asDiagnostic(diagnostic: Diagnostic): editor.IMarkerData {
   return {
     code: typeof diagnostic.code === 'number' ? diagnostic.code.toString() : diagnostic.code,
     severity: asSeverity(diagnostic.severity),
@@ -150,8 +154,8 @@ export interface WorkspaceSymbolParams {
 }
 
 export interface WorkspaceSymbolProvider {
-  provideWorkspaceSymbols(params: WorkspaceSymbolParams, token: monaco.CancellationToken): Thenable<LSTypes.SymbolInformation[]>;
-  resolveWorkspaceSymbol(symbol: LSTypes.SymbolInformation, token: monaco.CancellationToken): Thenable<LSTypes.SymbolInformation>;
+  provideWorkspaceSymbols(params: WorkspaceSymbolParams, token: CancellationToken): Thenable<LSTypes.SymbolInformation[]>;
+  resolveWorkspaceSymbol(symbol: LSTypes.SymbolInformation, token: CancellationToken): Thenable<LSTypes.SymbolInformation>;
 }
 
 export interface Language {

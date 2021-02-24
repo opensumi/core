@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { IEditorFeatureContribution } from '../types';
 import { IEditor } from '../../common';
 

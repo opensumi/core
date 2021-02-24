@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired } from '@ali/common-di';
 import { URI, MarkerManager, MarkerSeverity, IMarker } from '@ali/ide-core-browser';
 import { IThemeService, listErrorForeground, listWarningForeground } from '@ali/ide-theme';

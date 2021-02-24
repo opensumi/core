@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { observable, action } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { WithEventBus } from '@ali/ide-core-common';

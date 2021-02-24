@@ -1,5 +1,4 @@
-import { CancellationToken, IDisposable } from '@ali/ide-core-common';
-import { UriComponents } from 'vscode-uri';
+import { CancellationToken, IDisposable, UriComponents } from '@ali/ide-core-common';
 import type * as vscode from 'vscode';
 
 import { ThemeColor } from './ext-types';

@@ -1,8 +1,9 @@
-import Uri from 'vscode-uri';
+import { URI as Uri } from 'vscode-uri';
 import { Path } from './path';
 import { IRelativePattern, match } from './utils/glob';
 
-export { default as Uri } from 'vscode-uri'
+export { URI as Uri, UriComponents } from 'vscode-uri';
+
 export class URI {
   static from(components: {
     scheme: string;
@@ -44,7 +45,7 @@ export class URI {
   private _path: Path | undefined;
 
   constructor(uri: string | Uri = '') {
-    if (uri instanceof Uri) {
+    if (Uri.isUri(uri)) {
       this.codeUri = uri;
     } else {
       this.codeUri = Uri.parse(uri);

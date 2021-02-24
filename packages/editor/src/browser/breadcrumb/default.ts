@@ -1,22 +1,21 @@
-
-import { Injectable, Autowired } from '@ali/common-di';
-import { IBreadCrumbPart, IBreadCrumbProvider, EditorSelectionChangeEvent } from '../types';
-import { URI, Emitter, CommandService, WithEventBus, MaybeNull, IRange, OnEvent, EDITOR_COMMANDS, IPosition } from '@ali/ide-core-browser';
+import debounce = require('lodash.debounce');
+import { Autowired, Injectable } from '@ali/common-di';
+import { CommandService, EDITOR_COMMANDS, Event, Emitter, getSymbolIcon, IPosition, IRange, MaybeNull, OnEvent, URI, WithEventBus } from '@ali/ide-core-browser';
+import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { Path } from '@ali/ide-core-common/lib/path';
+import { FileStat } from '@ali/ide-file-service/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common/file-service-client';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { Path } from '@ali/ide-core-common/lib/path';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { FileStat } from '@ali/ide-file-service/lib/common';
+
 import { IEditor } from '../../common';
+import { EditorSelectionChangeEvent, IBreadCrumbPart, IBreadCrumbProvider } from '../types';
 import { DocumentSymbolChangedEvent, DocumentSymbolStore, INormalizedDocumentSymbol } from './document-symbol';
-import debounce = require('lodash.debounce');
-import { getSymbolIcon } from '@ali/ide-core-browser';
 
 @Injectable()
 export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCrumbProvider {
 
   private _onDidUpdateBreadCrumb = new Emitter<URI>();
-  public onDidUpdateBreadCrumb = this._onDidUpdateBreadCrumb.event;
+  public onDidUpdateBreadCrumb: Event<URI> = this._onDidUpdateBreadCrumb.event;
 
   @Autowired(IFileServiceClient)
   fileServiceClient: IFileServiceClient;

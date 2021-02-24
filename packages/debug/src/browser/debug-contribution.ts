@@ -1,4 +1,5 @@
 import { Domain, ClientAppContribution, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution, CommandService, IReporterService } from '@ali/ide-core-browser';
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser';
 import { DebugBreakpointView } from './view/breakpoints/debug-breakpoints.view';
 import { DebugVariableView } from './view/variables/debug-variables.view';

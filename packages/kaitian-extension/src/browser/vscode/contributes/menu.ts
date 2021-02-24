@@ -122,7 +122,6 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
       if (!isValidMenuItems(menuActions, console)) {
         return;
       }
-
       const menuId = parseMenuId(menuPosition);
       if (isUndefined(menuId)) {
         collector.warn(formatLocalize('menuId.invalid', '`{0}` is not a valid menu identifier', menuPosition));

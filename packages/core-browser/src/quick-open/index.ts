@@ -1,5 +1,9 @@
-import { Keybinding } from '../keybinding';
+import { Mode } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/common/quickOpen';
+import { HideReason } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/browser/quickOpenWidget';
+
 import { URI, MessageType, MaybePromise, IDisposable, Event } from '@ali/ide-core-common';
+
+import { Keybinding } from '../keybinding';
 
 /**
  * 高亮显示的范围
@@ -11,27 +15,18 @@ export interface Highlight {
 
 /**
  * QuickOpen 执行的模式
+ * @deprecated
+ * 该类型使用 monaco-editor-core/esm 中导入的版本
  */
-export enum QuickOpenMode {
-  /* 选中条目但未执行 */
-  PREVIEW,
-  /* 选中条目且执行 */
-  OPEN,
-  /* 后台执行条目 */
-  OPEN_IN_BACKGROUND,
-}
+export { Mode as QuickOpenMode };
 
 /**
  * 隐藏原因
+ * * 元素选择 ELEMENT_SELECTED 0
+ * * 失去焦点 FOCUS_LOST 1
+ * * 取消输入 CANCELED 2
  */
-export enum HideReason {
-  /* 元素选择 */
-  ELEMENT_SELECTED,
-  /* 失去焦点 */
-  FOCUS_LOST,
-  /* 取消输入 */
-  CANCELED,
-}
+export { HideReason };
 
 export interface QuickTitleButton {
   icon: string; // a background image coming from a url
@@ -92,7 +87,7 @@ export interface QuickOpenItemOptions {
    * 点击 QuickOpen 要执行的方法
    * @param mode
    */
-  run?(mode: QuickOpenMode): boolean;
+  run?(mode: Mode): boolean;
 }
 /**
  * QuickOpen 分组
@@ -147,7 +142,7 @@ export class QuickOpenItem<T extends QuickOpenItemOptions = QuickOpenItemOptions
   getKeybinding(): Keybinding | undefined {
     return this.options.keybinding;
   }
-  run(mode: QuickOpenMode): boolean {
+  run(mode: Mode): boolean {
     if (!this.options.run) {
       return false;
     }

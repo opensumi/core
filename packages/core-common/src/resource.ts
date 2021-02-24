@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Range } from 'vscode-languageserver-types';
 import { URI } from './uri';

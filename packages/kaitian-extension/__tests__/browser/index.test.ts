@@ -86,7 +86,7 @@ describe(__filename, () => {
     const clipboardService = injector.get<IClipboardService>(IClipboardService);
     await commandService.executeCommand('copyFilePath', Uri.file('/home/admin/workspace/a.ts'));
     expect(clipboardService.writeText).toBeCalled();
-    expect(clipboardService.writeText).toBeCalledWith('/home/admin/workspace/a.ts');
+    expect(clipboardService.writeText).toBeCalledWith('file:///home/admin/workspace/a.ts');
   });
 
   it('execute copyRelativeFilePath command ', async () => {

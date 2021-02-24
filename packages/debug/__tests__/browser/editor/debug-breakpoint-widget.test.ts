@@ -1,3 +1,4 @@
+import type { Position } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Disposable } from '@ali/ide-core-browser';
 import { BreakpointWidgetInputFocus } from '@ali/ide-debug/lib/browser';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
@@ -34,7 +35,7 @@ describe('Debug Breakpoint Widget', () => {
   });
 
   it('show method should be work', () => {
-    const position = {lineNumber: 1, column: 2} as monaco.Position;
+    const position = {lineNumber: 1, column: 2} as Position;
     debugBreakpointWidget.show(position);
     expect(mockDebugEditor.onDidLayoutChange).toBeCalledTimes(1);
     expect(mockDebugEditor.getLayoutInfo).toBeCalledTimes(1);

@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { URI, IContextKeyService, Disposable } from '@ali/ide-core-browser';
 import { DebugBreakpoint, BreakpointManager } from '@ali/ide-debug/lib/browser';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';

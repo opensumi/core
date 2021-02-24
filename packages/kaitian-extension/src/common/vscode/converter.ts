@@ -1,8 +1,9 @@
+import { RenderLineNumbersType } from '@ali/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+
 import type * as vscode from 'vscode';
 import * as types from './ext-types';
 import * as model from './model.api';
 import { URI, ISelection, IRange, IMarkerData, IRelatedInformation, MarkerTag, MarkerSeverity, ProgressLocation as MainProgressLocation } from '@ali/ide-core-common';
-import { RenderLineNumbersType } from './editor';
 import { EndOfLineSequence, IDecorationRenderOptions, IThemeDecorationRenderOptions, IContentDecorationRenderOptions, TrackedRangeStickiness } from '@ali/ide-editor/lib/common';
 import { SymbolInformation, Range as R, Position as P, SymbolKind as S } from 'vscode-languageserver-types';
 import { ExtensionDocumentDataManager } from './doc';
@@ -288,25 +289,6 @@ export function fromSelection(selection: vscode.Selection): model.Selection {
   };
 }
 
-// tslint:disable-next-line:no-any
-export function fromWorkspaceEdit(value: vscode.WorkspaceEdit, documents?: any): model.WorkspaceEditDto {
-  const result: model.WorkspaceEditDto = {
-    edits: [],
-  };
-  for (const entry of (value as types.WorkspaceEdit)._allEntries()) {
-    const [uri, uriOrEdits] = entry;
-    if (Array.isArray(uriOrEdits)) {
-      // text edits
-      const doc = documents ? documents.getDocument(uri.toString()) : undefined;
-      result.edits.push({ resource: uri, modelVersionId: doc && doc.version, edits: uriOrEdits.map(fromTextEdit) } as model.ResourceTextEditDto);
-    } else {
-      // resource edits
-      result.edits.push({ oldUri: uri, newUri: uriOrEdits, options: entry[2] } as model.ResourceFileEditDto);
-    }
-  }
-  return result;
-}
-
 export function fromDocumentLink(link: vscode.DocumentLink): model.ILink {
   return {
     range: fromRange(link.range),
@@ -380,9 +362,12 @@ export namespace TypeConverts {
       };
     }
 
-    export function to(range: undefined): vscode.Range;
-    export function to(range: IRange | undefined): vscode.Range | undefined;
-    export function to(range: IRange | undefined): vscode.Range | undefined {
+    // tslint:disable: unified-signatures
+    export function to(range: undefined): types.Range;
+    export function to(range: IRange): types.Range;
+    // tslint:enable: unified-signatures
+    export function to(range: IRange | undefined): types.Range | undefined;
+    export function to(range: IRange | undefined): types.Range | undefined {
       if (!range) {
         return undefined;
       }
@@ -533,20 +518,33 @@ export namespace TypeConverts {
       return result;
     }
   }
+
   export namespace WorkspaceEdit {
-    export function from(value: vscode.WorkspaceEdit, documents?: ExtensionDocumentDataManager): WorkspaceEditDto {
-      const result: WorkspaceEditDto = {
+    export function from(value: vscode.WorkspaceEdit, documents?: ExtensionDocumentDataManager): model.WorkspaceEditDto {
+      const result: model.WorkspaceEditDto = {
         edits: [],
       };
-      for (const entry of (value as types.WorkspaceEdit)._allEntries()) {
-        const [uri, uriOrEdits] = entry;
-        if (Array.isArray(uriOrEdits)) {
-          // text edits
-          const doc = documents && uri ? documents.getDocument(uri) : undefined;
-          result.edits.push({ resource: uri, modelVersionId: doc && doc.version, edits: uriOrEdits.map(TextEdit.from) } as ResourceTextEditDto);
+      for (const entry of (value as types.WorkspaceEdit).allEntries()) {
+        if (entry._type === 1) {
+          // file operation
+          result.edits.push({
+            oldUri: entry.from,
+            newUri: entry.to,
+            options: entry.options,
+            // TODO: WorkspaceEdit metadata
+            // metadata: entry.metadata
+          } as model.ResourceFileEditDto);
+
         } else {
-          // resource edits
-          result.edits.push({ oldUri: uri, newUri: uriOrEdits, options: entry[2] } as ResourceFileEditDto);
+          // text edits
+          const doc = documents?.getDocument(entry.uri);
+          result.edits.push({
+            resource: entry.uri,
+            edit: TextEdit.from(entry.edit),
+            modelVersionId: doc?.version,
+            // TODO: WorkspaceEdit metadata
+            // metadata: entry.metadata
+          } as model.ResourceTextEditDto);
         }
       }
       return result;
@@ -555,10 +553,11 @@ export namespace TypeConverts {
     export function to(value: WorkspaceEditDto) {
       const result = new types.WorkspaceEdit();
       for (const edit of value.edits) {
-        if (Array.isArray((edit as ResourceTextEditDto).edits)) {
-          result.set(
+        if ((edit as ResourceTextEditDto).edit) {
+          result.replace(
             URI.revive((edit as ResourceTextEditDto).resource),
-            (edit as ResourceTextEditDto).edits.map(TextEdit.to) as types.TextEdit[],
+            Range.to((edit as ResourceTextEditDto).edit.range),
+            (edit as ResourceTextEditDto).edit.text,
           );
         } else {
           result.renameFile(

@@ -1,8 +1,12 @@
+import { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
+import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { Injectable, Autowired } from '@ali/common-di';
-import { WithEventBus, MaybeNull, OnEvent, BasicEvent, IRange, URI, CancellationTokenSource, SymbolKind } from '@ali/ide-core-browser';
+import { WithEventBus, MaybeNull, OnEvent, BasicEvent, URI } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '../../common';
 import { IEditorDocumentModelService, EditorDocumentModelContentChangedEvent } from '../doc-model/types';
 import debounce = require('lodash.debounce');
+import { CancellationTokenSource } from '@ali/monaco-editor-core/esm/vs/base/common/cancellation';
+import { DocumentSymbol, SymbolTag } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 
 @Injectable()
 export class DocumentSymbolStore extends WithEventBus {
@@ -21,7 +25,7 @@ export class DocumentSymbolStore extends WithEventBus {
 
   constructor() {
     super();
-    monaco.modes.DocumentSymbolProviderRegistry.onDidChange(() => {
+    modes.DocumentSymbolProviderRegistry.onDidChange(() => {
       Array.from(this.documentSymbols.keys()).forEach((uriString) => {
         this.markNeedUpdate(new URI(uriString));
       });
@@ -50,10 +54,10 @@ export class DocumentSymbolStore extends WithEventBus {
       return;
     }
     try {
-      const supports = await monaco.modes.DocumentSymbolProviderRegistry.all(modelRef.instance.getMonacoModel());
+      const supports = await modes.DocumentSymbolProviderRegistry.all(modelRef.instance.getMonacoModel() as unknown as ITextModel);
       let result: MaybeNull<DocumentSymbol[]>;
       for (const support of supports) {
-        result = await support.provideDocumentSymbols(modelRef.instance.getMonacoModel(), new CancellationTokenSource().token);
+        result = await support.provideDocumentSymbols(modelRef.instance.getMonacoModel() as unknown as ITextModel, new CancellationTokenSource().token);
         if (result) {
           break;
         }
@@ -104,20 +108,10 @@ export class DocumentSymbolStore extends WithEventBus {
 
 export class DocumentSymbolChangedEvent extends BasicEvent<URI> { }
 
-export interface DocumentSymbol {
-  name: string;
-  detail: string;
-  kind: SymbolKind;
-  containerName?: string;
-  range: IRange;
-  selectionRange: IRange;
-  children?: DocumentSymbol[];
-  tags?: SymbolTag[];
-}
-
-export enum SymbolTag {
-  Deprecated = 1,
-}
+export {
+  DocumentSymbol,
+  SymbolTag,
+};
 
 export interface INormalizedDocumentSymbol extends DocumentSymbol {
   parent?: INormalizedDocumentSymbol | IDummyRoot;

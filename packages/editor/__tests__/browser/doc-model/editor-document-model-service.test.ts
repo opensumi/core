@@ -1,7 +1,7 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { URI, IEventBus } from '@ali/ide-core-browser';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
-import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
 import { EditorDocumentModelServiceImpl, EditorDocumentModelContentRegistryImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
 import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EmptyDocCacheImpl, EditorDocumentModelCreationEvent } from '@ali/ide-editor/lib/browser';
@@ -27,21 +27,20 @@ describe('EditorDocumentModelService', () => {
         useClass: EmptyDocCacheImpl,
       },
     );
-    (global as any).monaco = createMockedMonaco() as any;
     useMockStorage(injector);
     const editorDocModelRegistry: IEditorDocumentModelContentRegistry = injector.get(IEditorDocumentModelContentRegistry);
     editorDocModelRegistry.registerEditorDocumentModelContentProvider(TestEditorDocumentProvider);
   });
 
-  afterAll(() => {
-    delete (global as any).monaco;
-  });
-
   it('chooseEncoding', async (done) => {
-
+    monaco.languages.register({
+      id: 'javascript',
+      aliases: ['JavaScript'],
+      extensions: ['.js'],
+    });
     const editorDocModelService: IEditorDocumentModelService = injector.get(IEditorDocumentModelService);
 
-    const testCodeUri = new URI('test://testUri1');
+    const testCodeUri = new URI('test://testUri1.js');
     const testDoc1 = await editorDocModelService.createModelReference(testCodeUri);
     expect(testDoc1.instance.encoding).toBe('utf8');
     await editorDocModelService.changeModelOptions(testCodeUri, { encoding: 'gbk' , languageId: 'javascript'});

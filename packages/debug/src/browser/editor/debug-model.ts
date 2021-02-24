@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { URI, DisposableCollection, isOSX, memoize } from '@ali/ide-core-common';
 import { Injector, Injectable, Autowired } from '@ali/common-di';
 import { DebugSessionManager } from '../debug-session-manager';

@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent } from '@ali/ide-components';
 import { URI, DisposableCollection, Emitter, CommandService, Deferred, Event, MaybeNull, MarkerManager, IPosition, IRange, Disposable, ThrottledDelayer } from '@ali/ide-core-browser';

@@ -1,9 +1,8 @@
-import { UriComponents } from 'vscode-uri';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
 import { CancellationToken } from '@ali/vscode-jsonrpc';
-import { IDisposable } from '@ali/ide-core-common';
+import type { IDisposable, UriComponents } from '@ali/ide-core-common';
 
-import { Command as VSCommand } from './model.api';
+import { VSCommand } from './model.api';
 
 export interface ObjectIdentifier {
   $ident?: number;

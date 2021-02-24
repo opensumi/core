@@ -1,4 +1,4 @@
-import URI from 'vscode-uri';
+import { Uri } from '@ali/ide-core-common';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IMainThreadUrls, MainThreadAPIIdentifier } from '@ali/ide-kaitian-extension/lib/common/vscode';
@@ -35,7 +35,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.urls.test.ts', 
       handleUri,
     });
     expect(mainService.$registerUriHandler).toBeCalledTimes(1);
-    const uri = URI.file('/123');
+    const uri = Uri.file('/123');
     extHostUrls.$handleExternalUri(0, uri);
     expect(handleUri).toBeCalledTimes(1);
     expect(handleUri).toBeCalledWith(uri);

@@ -1,4 +1,4 @@
-import URI from 'vscode-uri';
+import { Uri } from './uri';
 import { Iterator, IteratorResult, FIN } from './iterator';
 import { CharCode } from './charCode';
 
@@ -422,15 +422,15 @@ export class ResourceMap<T> {
 		this.ignoreCase = false; // in the future this should be an uri-comparator
 	}
 
-	set(resource: URI, value: T): void {
+	set(resource: Uri, value: T): void {
 		this.map.set(this.toKey(resource), value);
 	}
 
-	get(resource: URI): T | undefined {
+	get(resource: Uri): T | undefined {
 		return this.map.get(this.toKey(resource));
 	}
 
-	has(resource: URI): boolean {
+	has(resource: Uri): boolean {
 		return this.map.has(this.toKey(resource));
 	}
 
@@ -442,7 +442,7 @@ export class ResourceMap<T> {
 		this.map.clear();
 	}
 
-	delete(resource: URI): boolean {
+	delete(resource: Uri): boolean {
 		return this.map.delete(this.toKey(resource));
 	}
 
@@ -454,7 +454,7 @@ export class ResourceMap<T> {
 		return values(this.map);
 	}
 
-	private toKey(resource: URI): string {
+	private toKey(resource: Uri): string {
 		let key = resource.toString();
 		if (this.ignoreCase) {
 			key = key.toLowerCase();
@@ -463,8 +463,8 @@ export class ResourceMap<T> {
 		return key;
 	}
 
-	keys(): URI[] {
-		return keys(this.map).map(k => URI.parse(k));
+	keys(): Uri[] {
+		return keys(this.map).map(k => Uri.parse(k));
 	}
 
 	clone(): ResourceMap<T> {

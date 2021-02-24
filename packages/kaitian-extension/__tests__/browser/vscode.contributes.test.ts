@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import * as os from 'os';
 import { Injector } from '@ali/common-di';
 import { VSCodeContributeRunner } from '../../src/browser/vscode/contributes';
@@ -20,9 +21,6 @@ import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.them
 import { PreferenceSettingsService } from '@ali/ide-preferences/lib/browser/preference.service';
 import { TextmateService } from '@ali/ide-monaco/lib/browser/textmate.service';
 import { MonacoService } from '@ali/ide-core-browser/lib/monaco';
-import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
-
-(global as any).monaco = createMockedMonaco();
 
 const extension = {
   ...mockExtensionProps,
@@ -205,9 +203,8 @@ describe('VSCodeContributeRunner', () => {
 
   it('register language contribution', async (done) => {
     await runner.run();
-    const languages = (global as any).monaco.languages.getLanguages();
-    expect(languages.length).toBe(1);
-    expect(languages[0].id).toBe('javascript');
+    const languages = monaco.languages.getLanguages();
+    expect(languages.map((l) => l.id)).toContain('javascript');
     done();
   });
 });

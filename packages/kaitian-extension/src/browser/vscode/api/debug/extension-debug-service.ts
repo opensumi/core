@@ -87,7 +87,9 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
   }
 
   protected ensureDebugActivation(event: WaitUntilEvent, activationEvent?: DebugActivationEvent, debugType?: string): void {
-    event.waitUntil(this.activateByDebug(activationEvent, debugType));
+    if (typeof event.waitUntil === 'function') {
+      event.waitUntil(this.activateByDebug(activationEvent, debugType));
+    }
   }
 
   async activateByDebug(activationEvent?: DebugActivationEvent, debugType?: string): Promise<void> {

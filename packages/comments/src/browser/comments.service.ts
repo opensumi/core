@@ -1,3 +1,6 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import * as textModel from '@ali/monaco-editor-core/esm/vs/editor/common/model/textModel';
+import * as model from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 import {
   INJECTOR_TOKEN,
   Injector,
@@ -115,24 +118,33 @@ export class CommentsService extends Disposable implements ICommentsService {
     return this.threadsCreatedEmitter.event;
   }
 
-  private createThreadDecoration(thread: ICommentsThread) {
+  /**
+   * -------------------------------- IMPORTANT --------------------------------
+   * 需要注意区分 model.IModelDecorationOptions 与 monaco.editor.IModelDecorationOptions 两个类型
+   * 将 model.IModelDecorationOptions 类型的对象传给签名为 monaco.editor.IModelDecorationOptions 的方法时需要做 Type Assertion
+   * 这是因为 monaco.d.ts 与 vs/editor/common/model 分别导出了枚举 TrackedRangeStickiness
+   * 这种情况下两个枚举的类型是不兼容的，即使他们是同一段代码的编译产物
+   * -------------------------------- IMPORTANT --------------------------------
+   * @param thread
+   */
+  private createThreadDecoration(thread: ICommentsThread): model.IModelDecorationOptions {
     // 对于新增的空的 thread，默认显示当前用户的头像，否则使用第一个用户的头像
     const avatar = thread.comments.length === 0 ? this.currentAuthorAvatar : thread.comments[0].author.iconPath?.toString();
     const icon = avatar ? this.iconService.fromIcon('', avatar, IconType.Background) : getIcon('message');
-    const decorationOptions: monaco.editor.IModelDecorationOptions = {
+    const decorationOptions = {
       // 创建评论显示在 glyph margin 处
       glyphMarginClassName: ['comments-decoration', 'comments-thread', icon].join(' '),
     };
-    return monaco.textModel.ModelDecorationOptions.createDynamic(
+    return textModel.ModelDecorationOptions.createDynamic(
       decorationOptions,
     );
   }
 
-  private createHoverDecoration(): monaco.textModel.ModelDecorationOptions {
-    const decorationOptions: monaco.editor.IModelDecorationOptions = {
+  private createHoverDecoration(): model.IModelDecorationOptions {
+    const decorationOptions = {
       linesDecorationsClassName: ['comments-decoration', 'comments-add', getIcon('message')].join(' '),
     };
-    return monaco.textModel.ModelDecorationOptions.createDynamic(
+    return textModel.ModelDecorationOptions.createDynamic(
       decorationOptions,
     );
   }
@@ -193,7 +205,7 @@ export class CommentsService extends Disposable implements ICommentsService {
         oldDecorations = editor.monacoEditor.deltaDecorations(oldDecorations, [
           {
             range: positionToRange(range.startLineNumber),
-            options: this.createHoverDecoration(),
+            options: this.createHoverDecoration() as unknown as monaco.editor.IModelDecorationOptions,
           },
         ]);
       } else {
@@ -393,7 +405,7 @@ export class CommentsService extends Disposable implements ICommentsService {
           .map((thread) => {
             return {
               range: thread.range,
-              options: this.createThreadDecoration(thread),
+              options: this.createThreadDecoration(thread) as unknown as monaco.editor.IModelDecorationOptions,
             };
           });
         },

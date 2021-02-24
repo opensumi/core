@@ -27,9 +27,10 @@ export class ElectronMenuFactory extends Disposable {
         return { type: 'separator' };
       }
       if (menuNode.id === SubmenuItemNode.ID) {
+        const submenuTemplate = this.getTemplate(menuNode.children, map, context);
         return {
           label: `${mnemonicButtonLabel(menuNode.label, true)}`,
-          submenu: this.getTemplate(menuNode.children, map, context),
+          submenu: Array.isArray(submenuTemplate) && submenuTemplate.length ? submenuTemplate : undefined,
         };
       } else {
         this.bindAction(menuNode, map, context);

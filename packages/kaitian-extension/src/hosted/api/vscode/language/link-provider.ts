@@ -1,5 +1,5 @@
 import type * as vscode from 'vscode';
-import URI from 'vscode-uri';
+import { Uri } from '@ali/ide-core-common';
 import * as Converter from '../../../../common/vscode/converter';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { DocumentLink, ILink } from '../../../../common/vscode/model.api';
@@ -14,7 +14,7 @@ export class LinkProviderAdapter {
         private readonly documents: ExtensionDocumentDataManager,
     ) { }
 
-    provideLinks(resource: URI, token: vscode.CancellationToken): Promise<ILink[] | undefined> {
+    provideLinks(resource: Uri, token: vscode.CancellationToken): Promise<ILink[] | undefined> {
         const document = this.documents.getDocumentData(resource);
         if (!document) {
             return Promise.reject(new Error(`There is no document for ${resource}`));

@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import type * as vscode from 'vscode';
-import URI from 'vscode-uri';
+import { Uri } from '@ali/ide-core-common';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as types from '../../../../common/vscode/ext-types';
 import * as Converter from '../../../../common/vscode/converter';
@@ -29,7 +29,7 @@ export class TypeDefinitionAdapter {
         private readonly documents: ExtensionDocumentDataManager,
     ) { }
 
-    provideTypeDefinition(resource: URI, position: Position, token: vscode.CancellationToken): Promise<Definition | DefinitionLink[] | undefined> {
+    provideTypeDefinition(resource: Uri, position: Position, token: vscode.CancellationToken): Promise<Definition | DefinitionLink[] | undefined> {
         const documentData = this.documents.getDocumentData(resource);
         if (!documentData) {
             return Promise.reject(new Error(`There is no document for ${resource}`));

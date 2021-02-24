@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadCommands, IExtHostCommands, ArgumentProcessor } from '../../../common/vscode';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
@@ -159,7 +160,7 @@ export class MainThreadCommands implements IMainThreadCommands {
     if (arg.position) {
       arg.position = fromPosition(arg.position);
     }
-    return this.monacoCommandService.executeCommand('_executeReferenceProvider', arg);
+    return this.monacoCommandService.executeCommand('_executeReferenceProvider', arg.resource, arg.position);
   }
 
   async $executeImplementationProvider(arg) {
@@ -167,16 +168,16 @@ export class MainThreadCommands implements IMainThreadCommands {
     if (arg.position) {
       arg.position = fromPosition(arg.position);
     }
-    return this.monacoCommandService.executeCommand('_executeImplementationProvider', arg);
+    return this.monacoCommandService.executeCommand('_executeImplementationProvider', arg.resource, arg.position);
   }
 
   async $executeCodeLensProvider(arg) {
-    arg.resource = monaco.Uri.revive(arg.resource);
-    return this.monacoCommandService.executeCommand('_executeCodeLensProvider', arg);
+    const resource = monaco.Uri.revive(arg.resource);
+    return this.monacoCommandService.executeCommand('_executeCodeLensProvider', resource);
   }
 
   async $executeDocumentSymbolProvider(arg) {
-    arg.resource = monaco.Uri.revive(arg.resource);
-    return this.monacoCommandService.executeCommand('_executeDocumentSymbolProvider', arg);
+    const resource = monaco.Uri.revive(arg.resource);
+    return this.monacoCommandService.executeCommand('_executeDocumentSymbolProvider', resource);
   }
 }

@@ -1,6 +1,5 @@
-import URI from 'vscode-uri';
 import { Injectable } from '@ali/common-di';
-import { Disposable, Event, Emitter, CancellationTokenSource, localize, isThenable, IDisposable, toDisposable, dispose } from '@ali/ide-core-common';
+import { Uri, Disposable, Event, Emitter, CancellationTokenSource, localize, isThenable, IDisposable, toDisposable, dispose } from '@ali/ide-core-common';
 import { isPromiseCanceledError } from '@ali/ide-core-common/lib/errors';
 import { TernarySearchTree } from '@ali/ide-core-common/lib/map';
 import { LinkedList } from '@ali/ide-core-common/lib/linked-list';
@@ -15,11 +14,11 @@ class FileDecorationChangeEvent implements IResourceDecorationChangeEvent {
 
   private readonly _data = TernarySearchTree.forPaths<boolean>();
 
-  affectsResource(uri: URI): boolean {
+  affectsResource(uri: Uri): boolean {
     return this._data.get(uri.toString()) || this._data.findSuperstr(uri.toString()) !== undefined;
   }
 
-  static debouncer(last: FileDecorationChangeEvent, current: URI | URI[]) {
+  static debouncer(last: FileDecorationChangeEvent, current: Uri | Uri[]) {
     if (!last) {
       last = new FileDecorationChangeEvent();
     }
@@ -51,7 +50,7 @@ class DecorationProviderWrapper {
 
   constructor(
     private readonly _provider: IDecorationsProvider,
-    private readonly _uriEmitter: Emitter<URI | URI[]>,
+    private readonly _uriEmitter: Emitter<Uri | Uri[]>,
     private readonly _flushEmitter: Emitter<IResourceDecorationChangeEvent>,
   ) {
     this._dispoable = this._provider.onDidChange((uris) => {
@@ -77,11 +76,11 @@ class DecorationProviderWrapper {
     this.data.clear();
   }
 
-  knowsAbout(uri: URI): boolean {
+  knowsAbout(uri: Uri): boolean {
     return Boolean(this.data.get(uri.toString())) || Boolean(this.data.findSuperstr(uri.toString()));
   }
 
-  getOrRetrieve(uri: URI, includeChildren: boolean, callback: (data: IDecorationData, isChild: boolean) => void): void {
+  getOrRetrieve(uri: Uri, includeChildren: boolean, callback: (data: IDecorationData, isChild: boolean) => void): void {
     const key = uri.toString();
     let item = this.data.get(key);
 
@@ -108,7 +107,7 @@ class DecorationProviderWrapper {
     }
   }
 
-  private _fetchData(uri: URI): IDecorationData | null {
+  private _fetchData(uri: Uri): IDecorationData | null {
 
     // check for pending request and cancel it
     const pendingRequest = this.data.get(uri.toString());
@@ -140,7 +139,7 @@ class DecorationProviderWrapper {
     }
   }
 
-  private _keepItem(uri: URI, data: IDecorationData | undefined): IDecorationData | null {
+  private _keepItem(uri: Uri, data: IDecorationData | undefined): IDecorationData | null {
     const deco = data ? data : null;
     const old = this.data.set(uri.toString(), deco);
     if (deco || old) {
@@ -181,12 +180,12 @@ export class FileDecorationsService extends Disposable implements IDecorationsSe
   private readonly logger = getDebugLogger();
 
   private readonly _data = new LinkedList<DecorationProviderWrapper>();
-  private readonly _onDidChangeDecorationsDelayed = new Emitter<URI | URI[]>();
+  private readonly _onDidChangeDecorationsDelayed = new Emitter<Uri | Uri[]>();
   private readonly _onDidChangeDecorations = new Emitter<IResourceDecorationChangeEvent>();
 
   readonly onDidChangeDecorations: Event<IResourceDecorationChangeEvent> = Event.any(
     this._onDidChangeDecorations.event,
-    Event.debounce<URI | URI[], FileDecorationChangeEvent>(
+    Event.debounce<Uri | Uri[], FileDecorationChangeEvent>(
       this._onDidChangeDecorationsDelayed.event,
       FileDecorationChangeEvent.debouncer, // todo: remove it
       undefined, undefined, 500,
@@ -222,7 +221,7 @@ export class FileDecorationsService extends Disposable implements IDecorationsSe
     });
   }
 
-  getDecoration(uri: URI, includeChildren: boolean): IDecoration | undefined {
+  getDecoration(uri: Uri, includeChildren: boolean): IDecoration | undefined {
     const data: IDecorationData[] = [];
     let containsChildren: boolean = false;
     for (let iter = this._data.iterator(), next = iter.next(); !next.done; next = iter.next()) {

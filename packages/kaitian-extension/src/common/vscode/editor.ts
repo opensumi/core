@@ -1,3 +1,4 @@
+import type { RenderLineNumbersType as MonacoRenderLineNumbersType } from '@ali/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { ISelection, IRange, ILineChange } from '@ali/ide-core-common';
 import { IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationRenderOptions, IDecorationApplyOptions, IResourceOpenOptions } from '@ali/ide-editor';
 import { ViewColumn } from './enums';
@@ -71,7 +72,7 @@ export interface IResolvedTextEditorConfiguration {
   indentSize: number;
   insertSpaces: boolean;
   cursorStyle: TextEditorCursorStyle;
-  lineNumbers: RenderLineNumbersType;
+  lineNumbers: MonacoRenderLineNumbersType;
 }
 
 export interface ITextEditorUpdateConfiguration {
@@ -79,16 +80,12 @@ export interface ITextEditorUpdateConfiguration {
   indentSize?: number | 'tabSize';
   insertSpaces?: boolean | 'auto';
   cursorStyle?: TextEditorCursorStyle;
-  lineNumbers?: RenderLineNumbersType;
+  lineNumbers?: MonacoRenderLineNumbersType;
 }
 
-export const enum RenderLineNumbersType {
-  Off = 0,
-  On = 1,
-  Relative = 2,
-  Interval = 3,
-  Custom = 4,
-}
+// 继承自 MonacoRenderLineNumbersType#enum
+// export const RenderLineNumbersType = MonacoRenderLineNumbersType;
+export type RenderLineNumbersType = MonacoRenderLineNumbersType;
 
 /**
  * The style in which the editor's cursor should be rendered.

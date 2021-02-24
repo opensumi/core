@@ -10,11 +10,17 @@ import { LinkedList } from './linked-list';
 import { CancellationToken } from './cancellation';
 
 /**
+ * 重要备注
+ * 由于 vscode 内部的 DisposableStore 有个私有属性导致类型冲突
+ * 因此在 event 模块中的 disposables 不再支持传入 DisposableStore 类型
+ */
+
+/**
  * To an event a function with one or zero parameters
  * can be subscribed. The event is the subscriber function itself.
  */
 export interface Event<T> {
-  (listener: (e: T) => any, thisArgs?: any, disposables?: IDisposable[] | DisposableStore): IDisposable;
+  (listener: (e: T) => any, thisArgs?: any, disposables?: IDisposable[]): IDisposable;
 }
 
 export namespace Event {
@@ -273,7 +279,7 @@ export namespace Event {
     filter(fn: (e: T) => boolean): IChainableEvent<T>;
     reduce<R>(merge: (last: R | undefined, event: T) => R, initial?: R): IChainableEvent<R>;
     latch(): IChainableEvent<T>;
-    on(listener: (e: T) => any, thisArgs?: any, disposables?: IDisposable[] | DisposableStore): IDisposable;
+    on(listener: (e: T) => any, thisArgs?: any, disposables?: IDisposable[]): IDisposable;
     once(listener: (e: T) => any, thisArgs?: any, disposables?: IDisposable[]): IDisposable;
   }
 
@@ -301,7 +307,7 @@ export namespace Event {
       return new ChainableEvent(latch(this.event));
     }
 
-    on(listener: (e: T) => any, thisArgs: any, disposables: IDisposable[] | DisposableStore) {
+    on(listener: (e: T) => any, thisArgs: any, disposables: IDisposable[]) {
       return this.event(listener, thisArgs, disposables);
     }
 
@@ -483,7 +489,7 @@ export class Emitter<T> {
    */
   get event(): Event<T> {
     if (!this._event) {
-      this._event = (listener: (e: T) => any, thisArgs?: any, disposables?: IDisposable[] | DisposableStore) => {
+      this._event = (listener: (e: T) => any, thisArgs?: any, disposables?: IDisposable[]) => {
         if (!this._listeners) {
           this._listeners = new LinkedList();
         }
@@ -694,35 +700,35 @@ export class PauseableEmitter<T> extends Emitter<T> {
 }
 
 export interface WaitUntilEvent {
-  waitUntil(thenable: Promise<any>): void;
+  waitUntil?(thenable: Promise<any>): void;
 }
-
 export namespace WaitUntilEvent {
   export async function fire<T extends WaitUntilEvent>(
-    emitter: Emitter<T>,
-    event: Pick<T, Exclude<keyof T, 'waitUntil'>>,
-    timeout: number | undefined = undefined
+      emitter: Emitter<T>,
+      event: Pick<T, Exclude<keyof T, 'waitUntil'>>,
+      timeout: number | undefined = undefined
   ): Promise<void> {
     const waitables: Promise<void>[] = [];
     const asyncEvent = Object.assign(event, {
-      waitUntil: (thenable: Promise<any>) => {
-        if (Object.isFrozen(waitables)) {
-          throw new Error('waitUntil cannot be called asynchronously.');
+        waitUntil: (thenable: Promise<any>) => {
+            if (Object.isFrozen(waitables)) {
+                throw new Error('waitUntil cannot be called asynchronously.');
+            }
+            waitables.push(thenable);
         }
-        waitables.push(thenable);
-      }
     }) as T;
     emitter.fire(asyncEvent);
     // Asynchronous calls to `waitUntil` should fail.
     Object.freeze(waitables);
-    delete asyncEvent['waitUntil'];
+    // ts 要求 delete 的属性是 optional
+    delete asyncEvent.waitUntil;
     if (!waitables.length) {
-      return;
+        return;
     }
     if (timeout !== undefined) {
-      await Promise.race([Promise.all(waitables), new Promise(resolve => setTimeout(resolve, timeout))]);
+        await Promise.race([Promise.all(waitables), new Promise(resolve => setTimeout(resolve, timeout))]);
     } else {
-      await Promise.all(waitables);
+        await Promise.all(waitables);
     }
   }
 }

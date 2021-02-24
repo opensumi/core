@@ -1,3 +1,4 @@
+import { KeyCode as KeyCodeEnum } from '@ali/monaco-editor-core/esm/vs/base/common/keyCodes';
 import { isOSX } from '@ali/ide-core-common';
 import { isWindows } from '@ali/ide-core-common/lib/platform';
 
@@ -454,7 +455,7 @@ export namespace KeyModifier {
 
 export interface Key {
   readonly code: string;
-  readonly keyCode: number;
+  readonly keyCode: KeyCodeEnum;
   readonly easyString: string;
 }
 

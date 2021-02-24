@@ -1,3 +1,5 @@
+import type { CodeActionContext, CodeActionList, CodeAction, WorkspaceEdit } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+import type { IMarker } from '@ali/monaco-editor-core/esm/vs/platform/markers/common/markers';
 /********************************************************************************
  * Copyright (C) 2018 Red Hat, Inc. and others.
  *
@@ -15,7 +17,7 @@
  ********************************************************************************/
 
 import type * as vscode from 'vscode';
-import URI from 'vscode-uri/lib/umd';
+import { Uri as URI } from '@ali/ide-core-common';
 import { CodeActionKind } from '../../../../common/vscode/ext-types';
 import { Selection, Range } from '../../../../common/vscode/model.api';
 import * as Converter from '../../../../common/vscode/converter';
@@ -33,7 +35,7 @@ export class CodeActionAdapter {
         private readonly diagnostics: Diagnostics,
     ) { }
 
-    provideCodeAction(resource: URI, rangeOrSelection: Range | Selection, context: monaco.languages.CodeActionContext, commandConverter: CommandsConverter): Promise<monaco.languages.CodeAction[]> {
+    async provideCodeAction(resource: URI, rangeOrSelection: Range | Selection, context: CodeActionContext, commandConverter: CommandsConverter): Promise<CodeActionList | undefined> {
         const document = this.document.getDocumentData(resource);
         if (!document) {
             return Promise.reject(new Error(`There are no document for ${resource}`));
@@ -57,11 +59,11 @@ export class CodeActionAdapter {
         };
         // TODO dispose
         const disposables = new DisposableStore();
-        return Promise.resolve(this.provider.provideCodeActions(doc, ran, codeActionContext, createToken())).then((commandsOrActions) => {
+        const actions = await Promise.resolve(this.provider.provideCodeActions(doc, ran, codeActionContext, createToken())).then((commandsOrActions) => {
             if (!Array.isArray(commandsOrActions) || commandsOrActions.length === 0) {
                 return undefined!;
             }
-            const result: monaco.languages.CodeAction[] = [];
+            const result: CodeAction[] = [];
             for (const candidate of commandsOrActions) {
                 if (!candidate) {
                     continue;
@@ -87,8 +89,8 @@ export class CodeActionAdapter {
                     result.push({
                         title: candidate.title,
                         command: candidate.command && commandConverter.toInternal(candidate.command, disposables),
-                        diagnostics: candidate.diagnostics && candidate.diagnostics.map(Converter.convertDiagnosticToMarkerData) as monaco.editor.IMarker[],
-                        edit: candidate.edit && Converter.fromWorkspaceEdit(candidate.edit) as monaco.languages.WorkspaceEdit,
+                        diagnostics: candidate.diagnostics && candidate.diagnostics.map(Converter.convertDiagnosticToMarkerData) as IMarker[],
+                        edit: candidate.edit && Converter.TypeConverts.WorkspaceEdit.from(candidate.edit) as WorkspaceEdit,
                         kind: candidate.kind && candidate.kind.value,
                     });
                 }
@@ -97,6 +99,18 @@ export class CodeActionAdapter {
             return result;
         });
 
+        if (actions) {
+          return {
+            // FIXME 这里 CodeActionList 类型是 readonly
+            // @ts-ignore
+            actions,
+            dispose: () => {
+              disposables.dispose();
+            },
+          };
+        }
+
+        return undefined;
     }
 
     // tslint:disable-next-line:no-any

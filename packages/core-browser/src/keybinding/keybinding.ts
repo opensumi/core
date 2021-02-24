@@ -1,3 +1,4 @@
+import { ContextKeyExpr, ContextKeyAndExpr, ContextKeyDefinedExpr, ContextKeyEqualsExpr, ContextKeyNotEqualsExpr, ContextKeyNotExpr, ContextKeyNotRegexExpr, ContextKeyOrExpr, ContextKeyRegexExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { Injectable, Autowired } from '@ali/common-di';
 import { isOSX, Emitter, Event, CommandRegistry, ContributionProvider, IDisposable, Disposable, formatLocalize, isWindows, CommandService, isUndefined } from '@ali/ide-core-common';
 import { KeyCode, KeySequence, Key } from '../keyboard/keys';
@@ -107,7 +108,7 @@ export interface Keybinding {
   /**
    * https://code.visualstudio.com/docs/getstarted/keybindings#_when-clause-contexts
    */
-  when?: string | monaco.contextkey.ContextKeyOrExpr;
+  when?: string | ContextKeyExpr | undefined | null;
 
   // Command执行参数
   args?: any;
@@ -263,15 +264,15 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
       return when;
     }
     if (when.expr) {
-      when = when as monaco.contextkey.ContextKeyAndExpr | monaco.contextkey.ContextKeyOrExpr;
+      when = when as ContextKeyAndExpr | ContextKeyOrExpr;
     } else {
-      when = when as monaco.contextkey.ContextKeyDefinedExpr
-        | monaco.contextkey.ContextKeyEqualsExpr
-        | monaco.contextkey.ContextKeyNotEqualsExpr
-        | monaco.contextkey.ContextKeyNotExpr
-        | monaco.contextkey.ContextKeyNotRegexExpr
-        | monaco.contextkey.ContextKeyOrExpr
-        | monaco.contextkey.ContextKeyRegexExpr;
+      when = when as ContextKeyDefinedExpr
+        | ContextKeyEqualsExpr
+        | ContextKeyNotEqualsExpr
+        | ContextKeyNotExpr
+        | ContextKeyNotRegexExpr
+        | ContextKeyOrExpr
+        | ContextKeyRegexExpr;
     }
     if (!when.expr || (when.expr && when.expr.length > 0 && when.expr[0].serialize)) {
       if (!when.getType) {
@@ -333,7 +334,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   }
 
   // 判断两个when是否相等
-  private isKeybindingWhenEqual(when1?: string | monaco.contextkey.ContextKeyExpr, when2?: string | monaco.contextkey.ContextKeyExpr) {
+  private isKeybindingWhenEqual(when1?: string | ContextKeyExpr | null, when2?: string | ContextKeyExpr | null) {
     return this.convertMonacoWhen(when1) === this.convertMonacoWhen(when2);
   }
 

@@ -4,7 +4,7 @@ import { FileStat, FileDeleteOptions, FileMoveOptions, IBrowserFileSystemRegistr
 import { TextDocument } from 'vscode-languageserver-types';
 import { URI, Emitter, Event, isElectronRenderer, IEventBus, FileUri, DisposableCollection, IDisposable, TextDocumentContentChangeEvent } from '@ali/ide-core-common';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
-import Uri from 'vscode-uri';
+import { Uri } from '@ali/ide-core-common';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import {
   FileChangeEvent,

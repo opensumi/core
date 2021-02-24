@@ -26,7 +26,8 @@
     "@ali/ide-file-service": "1.35.3",
     "@ali/ide-theme": "1.35.3",
     "@reexport/vsc-modules": "^1.1.0",
-    "monaco-editor-core": "^0.17.0",
+    "monaco-editor-core": "^0.20.0",
+    "@ali/monaco-editor-core": "0.20.1-patch.16",
     "vscode-oniguruma": "1.3.1"
   },
   "devDependencies": {

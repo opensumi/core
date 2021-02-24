@@ -1,6 +1,8 @@
+import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IFileServiceClient, URI, Emitter, SymbolKind, IEventBus } from '@ali/ide-core-browser';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+import { URI, Emitter, IEventBus } from '@ali/ide-core-browser';
 import { DocumentSymbol, DocumentSymbolChangedEvent } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { IEditorDocumentModelService, WorkbenchEditorService } from '@ali/ide-editor/lib/browser';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
@@ -11,15 +13,8 @@ describe('breadcrumb test', () => {
 
   let injector: MockInjector;
 
-  beforeEach(() => {
+  beforeAll(() => {
     injector = createBrowserInjector([]);
-  });
-
-  afterEach(() => {
-    injector.disposeAll();
-  });
-
-  it('breadcrumb test', async  (done) => {
     injector.mockService(IFileServiceClient, {
       getFileStat: (uriString: string) => {
         if (uriString.endsWith('testDir1')) {
@@ -62,6 +57,7 @@ describe('breadcrumb test', () => {
             getMonacoModel: () => {
               return {
                 uri,
+                getLanguageIdentifier: () => 'javascript',
               };
             },
           },
@@ -69,7 +65,13 @@ describe('breadcrumb test', () => {
         };
       },
     });
+  });
 
+  afterEach(() => {
+    injector.disposeAll();
+  });
+
+  it('breadcrumb test', async  (done) => {
     injector.mockService(WorkbenchEditorService, {});
 
     const labelService = injector.get(LabelService);
@@ -87,7 +89,8 @@ describe('breadcrumb test', () => {
       {
         name: 'test1',
         detail: 'test1Detail',
-        kind: SymbolKind.Class,
+        tags: [],
+        kind: modes.SymbolKind.Class,
         containerName: 'test Class',
         range: {
           startColumn: 1,
@@ -105,8 +108,9 @@ describe('breadcrumb test', () => {
           {
             name: 'test1Method',
             detail: 'test1MethodDetail',
-            kind: SymbolKind.Method,
+            kind: modes.SymbolKind.Method,
             containerName: 'test1Method',
+            tags: [],
             range: {
               startColumn: 4,
               endColumn: 5,
@@ -125,8 +129,9 @@ describe('breadcrumb test', () => {
       {
         name: 'test2',
         detail: 'test2Detail',
-        kind: SymbolKind.Class,
+        kind: modes.SymbolKind.Class,
         containerName: 'test2 Class',
+        tags: [],
         range: {
           startColumn: 1,
           endColumn: 11,
@@ -143,8 +148,9 @@ describe('breadcrumb test', () => {
           {
             name: 'test2Method',
             detail: 'test2MethodDetail',
-            kind: SymbolKind.Method,
+            kind: modes.SymbolKind.Method,
             containerName: 'test2Method',
+            tags: [],
             range: {
               startColumn: 4,
               endColumn: 5,
@@ -162,25 +168,17 @@ describe('breadcrumb test', () => {
       },
     ];
 
-    (global as any).monaco = {
-      modes: {
-        DocumentSymbolProviderRegistry: {
-          onDidChange: onDidChangeEmitter.event,
-          all: () => {
-            return [{
-              provideDocumentSymbols: (model) => {
-                return testDS;
-              },
-            }];
-          },
+    modes.DocumentSymbolProviderRegistry['all'] = () => {
+      return [{
+        provideDocumentSymbols: () => {
+          return testDS;
         },
-      },
+      }];
     };
 
     const service: BreadCrumbServiceImpl = injector.get(BreadCrumbServiceImpl);
 
     const res = service.getBreadCrumbs(new URI('file:///testDir1/testDir2/file2.ts'), null)!;
-
     expect(res.length).toBe(3);
     expect(res[0].name).toBe('testDir1');
     expect(res[1].name).toBe('testDir2');

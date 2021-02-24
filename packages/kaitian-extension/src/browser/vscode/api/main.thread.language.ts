@@ -1,3 +1,6 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+
 import { Autowired, Injectable, Optinal } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IReporterService, PreferenceService } from '@ali/ide-core-browser';
@@ -375,7 +378,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
             timer.timeEnd(extname(model.uri.fsPath));
           }
           return v;
-        });
+        }) as unknown as PromiseLike<monaco.languages.IColorPresentation[]>;
       },
     };
   }
@@ -579,8 +582,8 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
-  // tslint:disable-next-line:no-any
   $emitCodeLensEvent(eventHandle: number, event?: any): void {
+    // FIXME: 由于 IDisposable 本身不是 Emitter 的实例，因此以下代码并不会执行
     const obj = this.disposables.get(eventHandle);
     if (obj instanceof Emitter) {
       obj.fire(event);
@@ -661,13 +664,18 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const disposable = new DisposableCollection();
     for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
-        disposable.push(monaco.languages.registerCodeActionProvider(language, quickFixProvider));
+        // 这里直接使用 modes.CodeActionProviderRegistry 来注册 QuickFixProvider,
+        // 因为 monaco.languages.registerCodeActionProvider 过滤掉了 CodeActionKinds 参数
+        // 会导致 supportedCodeAction ContextKey 失效，右键菜单缺失了 Refactor 和 Source Action
+        disposable.push(
+          modes.CodeActionProviderRegistry.register(language, quickFixProvider),
+        );
       }
     }
     this.disposables.set(handle, disposable);
   }
 
-  protected createQuickFixProvider(handle: number, selector: LanguageSelector | undefined, providedCodeActionKinds?: string[]): monaco.languages.CodeActionProvider {
+  protected createQuickFixProvider(handle: number, selector: LanguageSelector | undefined, providedCodeActionKinds?: string[]): modes.CodeActionProvider {
     return {
       provideCodeActions: (model, rangeOrSelection, monacoContext) => {
         if (!this.isLanguageFeatureEnabled(model)) {
@@ -683,7 +691,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         });
       },
       providedCodeActionKinds, // 不在monaco.d.ts中
-    } as monaco.languages.CodeActionProvider;
+    } as unknown as  modes.CodeActionProvider;
   }
 
   protected createLinkProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.LinkProvider {
@@ -901,12 +909,26 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
-  // TODO 新版的monaco有直接的monaco api -- smart select
-
   $registerSelectionRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void {
-    // @ts-ignore
-    this.disposables.set(handle, monaco.modes.SelectionRangeRegistry.register(selector, {
+    const languageSelector = fromLanguageSelector(selector);
+    const selectionRangeProvider = this.createSelectionProvider(handle, languageSelector);
+    const disposable = new DisposableCollection();
+    for (const language of this.getUniqueLanguages()) {
+      if (this.matchLanguage(languageSelector, language)) {
+        disposable.push(monaco.languages.registerSelectionRangeProvider(language, selectionRangeProvider));
+      }
+    }
+
+    this.disposables.set(handle, disposable);
+  }
+
+  protected createSelectionProvider(handle: number, selector?: LanguageSelector): monaco.languages.SelectionRangeProvider {
+    return {
       provideSelectionRanges: (model, positions, token) => {
+        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
+          return undefined!;
+        }
+
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined!;
         }
@@ -916,6 +938,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return v;
         });
       },
-    }));
+    };
   }
 }

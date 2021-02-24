@@ -1,3 +1,5 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+
 import { partialMock } from './common/util';
 import { IRange } from '@ali/ide-core-common';
 

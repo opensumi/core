@@ -30,11 +30,9 @@ export class ExtensionLogger2 {
     } else if (this.config.extLogServiceClassPath) {
       let LogServiceClass = getNodeRequire()(this.config.extLogServiceClassPath);
 
-      // console.log('ExtensionLogger2 injectLogService LogServiceClass', LogServiceClass)
       if (LogServiceClass.default) {
         LogServiceClass = LogServiceClass.default;
       }
-      // console.log('ExtensionLogger2 LogServiceClass', LogServiceClass)
       this.injector.overrideProviders({
         token: AppConfig,
         useValue: Object.assign({}, this.config, {LogServiceClass}),

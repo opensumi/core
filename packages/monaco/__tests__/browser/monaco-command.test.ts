@@ -1,3 +1,4 @@
+import { EditorAction, EditorExtensionsRegistry } from '@ali/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MonacoService } from '../../src/common';
@@ -5,6 +6,7 @@ import MonacoServiceImpl from '../../src/browser/monaco.service';
 import { MonacoCommandService, MonacoCommandRegistry, MonacoActionRegistry } from '../../src/browser/monaco.command.service';
 import { WorkbenchEditorService, EditorCollectionService } from '@ali/ide-editor';
 import { ILoggerManagerClient, Emitter, CommandRegistry } from '@ali/ide-core-common';
+import { CommandsRegistry, ICommandEvent } from '@ali/monaco-editor-core/esm/vs/platform/commands/common/commands';
 
 describe(' monaco command service test', () => {
   let injector: MockInjector;
@@ -16,7 +18,6 @@ describe(' monaco command service test', () => {
 
   beforeAll(async () => {
     injector = createBrowserInjector([]);
-    (global as any).amdLoader = {require: null};
 
     injector.addProviders({
       token: MonacoService,
@@ -46,30 +47,21 @@ describe(' monaco command service test', () => {
       },
     });
     commandRegistry = injector.get(CommandRegistry);
-    (global as any).amdLoader = {require: null};
     const service: MonacoService = injector.get(MonacoService);
     await service.loadMonaco();
     monacoCommandRegistry = injector.get(MonacoCommandRegistry);
     monacoCommandService = injector.get(MonacoCommandService);
     monacoActionRegistry = injector.get(MonacoActionRegistry);
-    (global as any).monaco = {
-      commands: {
-        CommandsRegistry: {
-          getCommands: () => ({
-            'replacePreviousChar': {},
-            'editor.action.cut': {},
-          }),
-        },
-      },
-      editorExtensions: {
-        EditorExtensionsRegistry: {
-          getEditorActions: () => [{
-            id: 'editor.action.cut',
-            label: '剪切',
-          }],
-        },
-      },
-    };
+    EditorExtensionsRegistry['getEditorActions'] = () => [{
+      id: 'editor.action.cut',
+      label: '剪切',
+      alias: 'cut',
+    }] as unknown as EditorAction[];
+
+    const commands = new Map();
+    commands.set('replacePreviousChar', {});
+    commands.set('editor.action.cut', {});
+    CommandsRegistry['getCommands'] = () => commands;
   });
 
   describe('monaco command service', () => {
@@ -86,10 +78,13 @@ describe(' monaco command service test', () => {
       const id = 'monaco.internal.test';
       const executeCommand = jest.fn();
       const onWillExecuteCommandCallBack = jest.fn();
-      const _onWillExecuteCommand = new Emitter<any>();
+      const _onWillExecuteCommand = new Emitter<ICommandEvent>();
+      const _onDidExecuteCommand = new Emitter<ICommandEvent>();
       monacoCommandService.setDelegate({
+        _serviceBrand: undefined,
         executeCommand,
-        _onWillExecuteCommand,
+        onWillExecuteCommand: _onWillExecuteCommand.event,
+        onDidExecuteCommand: _onDidExecuteCommand.event,
       });
       monacoCommandService.onWillExecuteCommand(onWillExecuteCommandCallBack);
       await monacoCommandService.executeCommand(id);

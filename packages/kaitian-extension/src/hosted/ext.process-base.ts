@@ -14,7 +14,7 @@ import { isPromiseCanceledError } from '@ali/ide-core-common/lib/errors';
 import { Injector } from '@ali/common-di';
 import { AppConfig, ILogService } from '@ali/ide-core-node';
 import { CommandHandler } from '../common/vscode';
-
+Error.stackTraceLimit = 100;
 const argv = require('yargs').argv;
 let logger: any = console;
 

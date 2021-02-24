@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MonacoService } from '../../src/common';
 import MonacoServiceImpl from '../../src/browser/monaco.service';
@@ -5,7 +6,7 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { TextmateService } from '../../src/browser/textmate.service';
 import { Injectable } from '@ali/common-di';
 import { IFileServiceClient } from '@ali/ide-file-service';
-import { IEventBus, EventBusImpl, ExtensionActivateEvent, URI } from '@ali/ide-core-browser';
+import { IEventBus, EventBusImpl, URI } from '@ali/ide-core-browser';
 
 @Injectable()
 class MockFileServiceClient {
@@ -116,7 +117,6 @@ let injector: MockInjector;
 describe('textmate service test', () => {
 
   injector = createBrowserInjector([]);
-  (global as any).amdLoader = {require: null};
   let monacoService: MonacoService;
   let textmateService: TextmateService;
 
@@ -139,17 +139,11 @@ describe('textmate service test', () => {
     },
   );
 
-  (global as any).amdLoader = {require: null};
-
-  it('should be able to load monaco', async (done) => {
-    monacoService = injector.get(MonacoService);
-    await monacoService.loadMonaco();
-    done();
-  });
-
   it('should be able to register language', async (done) => {
     textmateService = injector.get(TextmateService);
-    textmateService.registerLanguage({
+    monacoService = injector.get(MonacoService);
+    await monacoService.loadMonaco();
+    await textmateService.registerLanguage({
       id: 'html',
       extensions: [
         '.html',
@@ -163,8 +157,9 @@ describe('textmate service test', () => {
       ],
       configuration: './language-configuration.json',
     }, new URI('file:///mock/base'));
-    const eventBus = injector.get(IEventBus);
-    eventBus.on(ExtensionActivateEvent, (e) => done());
+    const languageIds = monaco.languages.getLanguages().map((l) => l.id);
+    expect(languageIds).toContain('html');
+    done();
   });
 
   it('on language event should be fired', () => {

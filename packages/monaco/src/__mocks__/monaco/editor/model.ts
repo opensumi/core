@@ -1,6 +1,8 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+
 // tslint:disable:no-console
 import { MockedMonacoUri } from '../common/uri';
-import { Disposable, Emitter } from '@ali/ide-core-common';
+import { Disposable, Emitter, Event } from '@ali/ide-core-common';
 import { EOL, EndOfLineSequence } from '@ali/ide-editor';
 
 let id = 1;
@@ -21,22 +23,22 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   oldValue: string;
 
   _onDidChangeContent = new Emitter<monaco.editor.IModelContentChangedEvent>();
-  onDidChangeContent = this._onDidChangeContent.event;
+  onDidChangeContent: Event<monaco.editor.IModelContentChangedEvent> = this._onDidChangeContent.event;
 
   _onDidChangeDecorations = new Emitter<monaco.editor.IModelDecorationsChangedEvent>();
-  onDidChangeDecorations = this._onDidChangeDecorations.event;
+  onDidChangeDecorations: Event<monaco.editor.IModelDecorationsChangedEvent> = this._onDidChangeDecorations.event;
 
   _onDidChangeOptions = new Emitter<monaco.editor.IModelOptionsChangedEvent>();
-  onDidChangeOptions = this._onDidChangeOptions.event;
+  onDidChangeOptions: Event<monaco.editor.IModelOptionsChangedEvent> = this._onDidChangeOptions.event;
 
   _onDidChangeLanguage = new Emitter<monaco.editor.IModelLanguageChangedEvent>();
-  onDidChangeLanguage = this._onDidChangeLanguage.event;
+  onDidChangeLanguage: Event<monaco.editor.IModelLanguageChangedEvent> = this._onDidChangeLanguage.event;
 
   _onDidChangeLanguageConfiguration = new Emitter<monaco.editor.IModelLanguageConfigurationChangedEvent>();
-  onDidChangeLanguageConfiguration = this._onDidChangeLanguageConfiguration.event;
+  onDidChangeLanguageConfiguration: Event<monaco.editor.IModelLanguageConfigurationChangedEvent> = this._onDidChangeLanguageConfiguration.event;
 
   _onWillDispose = new Emitter<void>();
-  onWillDispose = this._onWillDispose.event;
+  onWillDispose: Event<void> = this._onWillDispose.event;
 
   private versionId = 0;
   private eol: monaco.editor.EndOfLineSequence = EndOfLineSequence.LF as any;
@@ -49,6 +51,17 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     insertSpaces: true,
     defaultEOL: 1,
     trimAutoWhitespace: false,
+    equals() {
+      return true;
+    },
+    createChangeEvent(newOpts: monaco.editor.TextModelResolvedOptions) {
+      return {
+        tabSize: true,
+        indentSize: true,
+        insertSpaces: true,
+        trimAutoWhitespace: true,
+      };
+    },
   };
 
   constructor(value, language, uri?: monaco.Uri) {
@@ -58,6 +71,138 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     this.uri = uri || MockedMonacoUri.parse('inmemory://' + (id).toString());
     this.language = language;
     this.value = value;
+  }
+  isForSimpleWidget: boolean;
+  mightContainRTL(): boolean {
+    throw new Error('Method not implemented.');
+  }
+  mightContainNonBasicASCII(): boolean {
+    throw new Error('Method not implemented.');
+  }
+  getFormattingOptions(): monaco.languages.FormattingOptions {
+    throw new Error('Method not implemented.');
+  }
+  setValueFromTextBuffer(newValue: monaco.editor.ITextBuffer): void {
+    throw new Error('Method not implemented.');
+  }
+  createSnapshot(preserveBOM?: boolean): monaco.editor.ITextSnapshot {
+    throw new Error('Method not implemented.');
+  }
+  equalsTextBuffer(other: monaco.editor.ITextBuffer): boolean {
+    throw new Error('Method not implemented.');
+  }
+  isDominatedByLongLines(): boolean {
+    throw new Error('Method not implemented.');
+  }
+  tokenizeViewport(startLineNumber: number, endLineNumber: number): void {
+    throw new Error('Method not implemented.');
+  }
+  isTooLargeForSyncing(): boolean {
+    throw new Error('Method not implemented.');
+  }
+  isTooLargeForTokenization(): boolean {
+    throw new Error('Method not implemented.');
+  }
+  setTokens(tokens: any[]): void {
+    throw new Error('Method not implemented.');
+  }
+  setSemanticTokens(tokens: any[] | null): void {
+    throw new Error('Method not implemented.');
+  }
+  resetTokenization(): void {
+    throw new Error('Method not implemented.');
+  }
+  forceTokenization(lineNumber: number): void {
+    throw new Error('Method not implemented.');
+  }
+  tokenizeIfCheap(lineNumber: number): void {
+    throw new Error('Method not implemented.');
+  }
+  isCheapToTokenize(lineNumber: number): boolean {
+    throw new Error('Method not implemented.');
+  }
+  getLineTokens(lineNumber: number) {
+    throw new Error('Method not implemented.');
+  }
+  getLanguageIdentifier() {
+    throw new Error('Method not implemented.');
+  }
+  setMode(languageIdentifier: any): void {
+    throw new Error('Method not implemented.');
+  }
+  getLanguageIdAtPosition(lineNumber: number, column: number) {
+    throw new Error('Method not implemented.');
+  }
+  findMatchingBracketUp(bracket: string, position: monaco.IPosition): monaco.Range | null {
+    throw new Error('Method not implemented.');
+  }
+  findPrevBracket(position: monaco.IPosition): monaco.editor.IFoundBracket | null {
+    throw new Error('Method not implemented.');
+  }
+  findNextBracket(position: monaco.IPosition): monaco.editor.IFoundBracket | null {
+    throw new Error('Method not implemented.');
+  }
+  findEnclosingBrackets(position: monaco.IPosition, maxDuration?: number): [monaco.Range, monaco.Range] | null {
+    throw new Error('Method not implemented.');
+  }
+  matchBracket(position: monaco.IPosition): [monaco.Range, monaco.Range] | null {
+    throw new Error('Method not implemented.');
+  }
+  getActiveIndentGuide(lineNumber: number, minLineNumber: number, maxLineNumber: number): monaco.editor.IActiveIndentGuideInfo {
+    throw new Error('Method not implemented.');
+  }
+  getLinesIndentGuides(startLineNumber: number, endLineNumber: number): number[] {
+    throw new Error('Method not implemented.');
+  }
+  changeDecorations<T>(callback: (changeAccessor: monaco.editor.IModelDecorationsChangeAccessor) => T, ownerId?: number): T | null {
+    throw new Error('Method not implemented.');
+  }
+  removeAllDecorationsWithOwnerId(ownerId: number): void {
+    throw new Error('Method not implemented.');
+  }
+  _getTrackedRange(id: string): monaco.Range | null {
+    throw new Error('Method not implemented.');
+  }
+  // FIXME - Monaco 20 - ESM
+  // @ts-ignore
+  _setTrackedRange(id: any, newRange: any, newStickiness: any) {
+    return '';
+  }
+  undo(): monaco.Selection[] | null {
+    throw new Error('Method not implemented.');
+  }
+  canUndo(): boolean {
+    throw new Error('Method not implemented.');
+  }
+  redo(): monaco.Selection[] | null {
+    throw new Error('Method not implemented.');
+  }
+  canRedo(): boolean {
+    throw new Error('Method not implemented.');
+  }
+  onDidChangeRawContentFast(listener: (e: any) => void): monaco.IDisposable {
+    throw new Error('Method not implemented.');
+  }
+  onDidChangeRawContent(listener: (e: any) => void): monaco.IDisposable {
+    throw new Error('Method not implemented.');
+  }
+  onDidChangeTokens(listener: (e: monaco.editor.IModelTokensChangedEvent) => void): monaco.IDisposable {
+    throw new Error('Method not implemented.');
+  }
+  onDidChangeAttached(listener: () => void): monaco.IDisposable {
+    throw new Error('Method not implemented.');
+  }
+  onBeforeAttached(): void {
+    throw new Error('Method not implemented.');
+  }
+  onBeforeDetached(): void {
+    throw new Error('Method not implemented.');
+  }
+  isAttachedToEditor(): boolean {
+    throw new Error('Method not implemented.');
+  }
+  getAttachedEditorCount(): number {
+    throw new Error('Method not implemented.');
   }
 
   getOptions(): monaco.editor.TextModelResolvedOptions {
@@ -215,6 +360,17 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     this.options = {
       ...this.options,
       ...newOpts,
+      equals() {
+        return true;
+      },
+      createChangeEvent(newOpts: monaco.editor.TextModelResolvedOptions) {
+      return {
+          tabSize: true,
+          indentSize: true,
+          insertSpaces: true,
+          trimAutoWhitespace: true,
+        };
+      },
     };
     // @ts-ignore
     this._onDidChangeOptions.fire(this.options);
@@ -257,5 +413,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   setEOL(eol: monaco.editor.EndOfLineSequence): void {
     this.eol = eol;
   }
-
+  getCharacterCountInRange(range: monaco.IRange): number {
+    return 0;
+  }
 }

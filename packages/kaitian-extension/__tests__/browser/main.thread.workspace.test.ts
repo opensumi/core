@@ -1,10 +1,9 @@
-import { Emitter, IFileServiceClient, URI, Uri, IEventBus, PreferenceScope, ILoggerManagerClient, FileUri, CommonServerPath, OS, IApplicationService, DisposableCollection } from '@ali/ide-core-common';
+import { Uri as vscodeUri, Emitter, IFileServiceClient, URI, Uri, IEventBus, PreferenceScope, ILoggerManagerClient, FileUri, CommonServerPath, OS, IApplicationService, DisposableCollection } from '@ali/ide-core-common';
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as util from 'util';
-import vscodeUri from 'vscode-uri';
 import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MainThreadWorkspace } from '../../src/browser/vscode/api/main.thread.workspace';
@@ -217,7 +216,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
     const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
     fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
     injector.mock(ILoggerManagerClient, 'getLogFolder', () => {
-      return root.withoutScheme().toString();
+      return root.path.toString();
     });
     const extHostMessage = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocolExt));
     extHostDocs = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostDocuments, injector.get(ExtensionDocumentDataManagerImpl, [rpcProtocolExt]));

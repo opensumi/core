@@ -16,7 +16,7 @@
 
 import { createPatch } from 'diff';
 import type * as vscode from 'vscode';
-import URI from 'vscode-uri/lib/umd';
+import { Uri as URI } from '@ali/ide-core-common';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
 import { FormattingOptions, Range, SingleEditOperation } from '../../../../common/vscode/model.api';

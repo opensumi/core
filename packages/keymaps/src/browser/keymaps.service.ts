@@ -1,3 +1,4 @@
+import * as contextKey from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
 import { Disposable, IDisposable, ScopedKeybinding, KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeybindingService, ILogger, Event, KeybindingWeight } from '@ali/ide-core-browser';
@@ -6,6 +7,18 @@ import * as fuzzy from 'fuzzy';
 import { KEYMAPS_FILE_NAME, IKeymapService, KEYMAPS_SCHEME, KeybindingItem } from '../common';
 import { USER_STORAGE_SCHEME } from '@ali/ide-preferences';
 import { IFileServiceClient } from '@ali/ide-file-service';
+
+// contextKey.ContextKeyExprType 引入
+export const enum ContextKeyExprType {
+  Defined = 1,
+  Not = 2,
+  Equals = 3,
+  NotEquals = 4,
+  And = 5,
+  Regex = 6,
+  NotRegex = 7,
+  Or = 8,
+}
 
 @Injectable()
 export class KeymapService implements IKeymapService {

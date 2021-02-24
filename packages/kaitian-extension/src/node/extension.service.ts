@@ -219,7 +219,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         this.logger.log(`extension host path ${this.appConfig.extHost}`);
         extProcessPath = this.appConfig.extHost;
       } else {
-        extProcessPath = (process.env.EXT_MODE === 'js' ? path.join(__dirname, '../../lib/hosted/ext.process.js') : path.join(__dirname, '../hosted/ext.process' + path.extname(module.filename)));
+        extProcessPath = (process.env.EXT_MODE === 'js' ? path.join(__dirname, '../../hosted/ext.process.js') : path.join(__dirname, '../hosted/ext.process' + path.extname(module.filename)));
       }
     }
 

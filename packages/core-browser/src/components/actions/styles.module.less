@@ -100,6 +100,21 @@
   height: 14px;
 }
 
+// 这里的 css 规则是为了合理展示 divider 元素/菜单分割符
+// .menuItemDivider {
+//   display: none;
+// }
+
+// .menuItem + .menuItemDivider,
+// .submenuItem + .menuItemDivider {
+//   display: block;
+// }
+
+.menuItemDivider:first-child,
+.menuItemDivider:last-child {
+  display: none;
+}
+
 :global {
   // 菜单项增加滚动条
   .kt-menu {

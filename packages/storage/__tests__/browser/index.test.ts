@@ -2,6 +2,7 @@ import { Injectable, Injector } from '@ali/common-di';
 import { IStorageServer, IStoragePathServer, IUpdateRequest, IWorkspaceStorageServer, IGlobalStorageServer } from '../../src/common';
 import { URI, FileUri, AppConfig, Disposable, STORAGE_SCHEMA, ILoggerManagerClient } from '@ali/ide-core-node';
 import * as temp from 'temp';
+import * as path from 'path';
 import * as fs from 'fs-extra';
 import { IFileServiceClient, IDiskFileProvider } from '@ali/ide-file-service';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
@@ -121,7 +122,7 @@ describe('WorkspaceStorage should be work', () => {
         delete: ['id'],
       };
       await workspaceStorage.updateItems(storageName, updateRequest);
-      expect(fs.existsSync(root.resolve(`datas/${storageName}.json`).withScheme('').toString())).toBeTruthy();
+      expect(fs.existsSync(path.join(root.path.toString(), `datas/${storageName}.json`))).toBeTruthy();
       const res = await workspaceStorage.getItems(storageName);
       expect(typeof res).toBe('object');
       expect(Object.keys(res).length).toBe(1);
@@ -139,7 +140,7 @@ describe('WorkspaceStorage should be work', () => {
         delete: ['id'],
       };
       await workspaceStorage.updateItems(longStorageName, updateRequest);
-      expect(fs.existsSync(root.resolve(`datas/${longStorageName}.json`).withScheme('').toString())).toBeTruthy();
+      expect(fs.existsSync(path.join(root.path.toString(), `datas/${longStorageName}.json`))).toBeTruthy();
       const res = await workspaceStorage.getItems(longStorageName);
       expect(typeof res).toBe('object');
       expect(Object.keys(res).length).toBe(1);
@@ -158,7 +159,7 @@ describe('WorkspaceStorage should be work', () => {
         delete: ['id'],
       };
       await globalStorage.updateItems(storageName, updateRequest);
-      expect(fs.existsSync(root.resolve(`${storageName}.json`).withScheme('').toString())).toBeTruthy();
+      expect(fs.existsSync(path.join(root.path.toString(), `${storageName}.json`))).toBeTruthy();
       const res = await globalStorage.getItems(storageName);
       expect(typeof res).toBe('object');
       expect(Object.keys(res).length).toBe(1);
@@ -176,7 +177,7 @@ describe('WorkspaceStorage should be work', () => {
         delete: ['id'],
       };
       await globalStorage.updateItems(longStorageName, updateRequest);
-      expect(fs.existsSync(root.resolve(`${longStorageName}.json`).withScheme('').toString())).toBeTruthy();
+      expect(fs.existsSync(path.join(root.path.toString(), `${longStorageName}.json`))).toBeTruthy();
       const res = await globalStorage.getItems(longStorageName);
       expect(typeof res).toBe('object');
       expect(Object.keys(res).length).toBe(1);

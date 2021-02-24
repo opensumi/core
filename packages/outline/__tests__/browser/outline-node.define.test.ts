@@ -33,7 +33,7 @@ describe('OutlineCompositeTreeNode', () => {
       startLineNumber: 2,
       endLineNumber: 2,
     },
-  } as INormalizedDocumentSymbol;
+  } as unknown as INormalizedDocumentSymbol;
 
   beforeAll(() => {
     rootNode = new OutlineRoot(mockOutlineTreeService, null);
@@ -79,7 +79,7 @@ describe('OutlineTreeNode', () => {
       startLineNumber: 2,
       endLineNumber: 2,
     },
-  } as INormalizedDocumentSymbol;
+  } as unknown as INormalizedDocumentSymbol;
 
   beforeAll(() => {
     rootNode = new OutlineRoot(mockOutlineTreeService, null);

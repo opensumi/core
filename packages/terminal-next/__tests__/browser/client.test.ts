@@ -37,7 +37,7 @@ describe('Terminal Client', () => {
   beforeAll(async (done) => {
     root = FileUri.create(path.join(os.tmpdir(), 'preference-service-test'));
 
-    await fs.ensureDir(root.withoutScheme().toString());
+    await fs.ensureDir(root.path.toString());
 
     workspaceService = injector.get(IWorkspaceService);
 
@@ -58,7 +58,7 @@ describe('Terminal Client', () => {
     client = factory(widget, {});
     client.addDispose(Disposable.create(async () => {
       if (root) {
-        await fs.remove(root.withoutScheme().toString());
+        await fs.remove(root.path.toString());
       }
     }));
     await client.attached.promise;

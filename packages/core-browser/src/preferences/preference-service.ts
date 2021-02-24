@@ -47,15 +47,15 @@ export const PreferenceService = Symbol('PreferenceService');
 export interface PreferenceService extends IDisposable {
 
   readonly ready: Promise<void>;
-  get<T>(preferenceName: string, defaultValue?: T, resourceUri?: string, language?: string): T | undefined;
+  get<T>(preferenceName: string, defaultValue?: T, resourceUri?: string, overrideIdentifier?: string): T | undefined;
 
   /**
    * 是否一个配置在指定 scope 存在针对语言的配置
    * @param preferenceName 配置名称
-   * @param language 语言
+   * @param overrideIdentifier 语言
    * @param resourceUri uri
    */
-  hasLanguageSpecific(preferenceName: any, language: string, resourceUri: string): boolean;
+  hasLanguageSpecific(preferenceName: any, overrideIdentifier: string, resourceUri: string): boolean;
 
   /**
    * 设置一个偏好值
@@ -63,17 +63,17 @@ export interface PreferenceService extends IDisposable {
    * @param value 设置值
    * @param scope 目标scope级别 如 User, Workspace
    * @param resourceUri 目标资源位置，对于Folder来说，用于找到对应的文件夹
-   * @param language 目标语言偏好
+   * @param overrideIdentifier 目标语言偏好
    */
-  set(preferenceName: string, value: any, scope?: PreferenceScope, resourceUri?: string, language?: string): Promise<void>;
+  set(preferenceName: string, value: any, scope?: PreferenceScope, resourceUri?: string, overrideIdentifier?: string): Promise<void>;
 
   onPreferenceChanged: Event<PreferenceChange>;
 
   onPreferencesChanged: Event<PreferenceChanges>;
 
-  onLanguagePreferencesChanged: Event<{language: string, changes: PreferenceChanges}>;
+  onLanguagePreferencesChanged: Event<{overrideIdentifier: string, changes: PreferenceChanges}>;
 
-  inspect<T>(preferenceName: string, resourceUri?: string): {
+  inspect<T>(preferenceName: string, resourceUri?: string, language?: string): {
     preferenceName: string,
     defaultValue: T | undefined,
     globalValue: T | undefined, // User Preference
@@ -105,7 +105,7 @@ export class PreferenceServiceImpl implements PreferenceService {
   protected readonly onPreferencesChangedEmitter = new Emitter<PreferenceChanges>();
   public readonly onPreferencesChanged = this.onPreferencesChangedEmitter.event;
 
-  private readonly onLanguagePreferencesChangedEmitter = new Emitter<{language: string, changes: PreferenceChanges}>();
+  private readonly onLanguagePreferencesChangedEmitter = new Emitter<{overrideIdentifier: string, changes: PreferenceChanges}>();
   public readonly onLanguagePreferencesChanged = this.onLanguagePreferencesChangedEmitter.event;
 
   protected readonly toDispose = new DisposableCollection(this.onPreferenceChangedEmitter, this.onPreferencesChangedEmitter);
@@ -223,7 +223,7 @@ export class PreferenceServiceImpl implements PreferenceService {
     });
     Object.keys(languageSpecificChangesToEmit).forEach((language) => {
       this.onLanguagePreferencesChangedEmitter.fire({
-        language,
+        overrideIdentifier: language,
         changes: languageSpecificChangesToEmit[language],
       });
     });
@@ -415,22 +415,22 @@ export class PreferenceServiceImpl implements PreferenceService {
     return Number(value);
   }
 
-  public inspect<T>(preferenceName: string, resourceUri?: string): {
+  public inspect<T>(preferenceName: string, resourceUri?: string, language?: string): {
     preferenceName: string,
     defaultValue: T | undefined,
     globalValue: T | undefined, // User Preference
     workspaceValue: T | undefined, // Workspace Preference
     workspaceFolderValue: T | undefined, // Folder Preference
   } | undefined {
-    const defaultValue = this.inspectInScope<T>(preferenceName, PreferenceScope.Default, resourceUri);
-    const globalValue = this.inspectInScope<T>(preferenceName, PreferenceScope.User, resourceUri);
-    const workspaceValue = this.inspectInScope<T>(preferenceName, PreferenceScope.Workspace, resourceUri);
-    const workspaceFolderValue = this.inspectInScope<T>(preferenceName, PreferenceScope.Folder, resourceUri);
+    const defaultValue = this.inspectInScope<T>(preferenceName, PreferenceScope.Default, resourceUri, language);
+    const globalValue = this.inspectInScope<T>(preferenceName, PreferenceScope.User, resourceUri, language);
+    const workspaceValue = this.inspectInScope<T>(preferenceName, PreferenceScope.Workspace, resourceUri, language);
+    const workspaceFolderValue = this.inspectInScope<T>(preferenceName, PreferenceScope.Folder, resourceUri, language);
 
     return { preferenceName, defaultValue, globalValue, workspaceValue, workspaceFolderValue };
   }
-  protected inspectInScope<T>(preferenceName: string, scope: PreferenceScope, resourceUri?: string): T | undefined {
-    const value = this.doInspectInScope<T>(preferenceName, scope, resourceUri);
+  protected inspectInScope<T>(preferenceName: string, scope: PreferenceScope, resourceUri?: string, language?: string): T | undefined {
+    const value = this.doInspectInScope<T>(preferenceName, scope, resourceUri, language);
     return value;
   }
 
@@ -438,9 +438,9 @@ export class PreferenceServiceImpl implements PreferenceService {
     return this.doGet(preferenceName, undefined, resourceUri) !== undefined;
   }
 
-  protected doInspectInScope<T>(preferenceName: string, scope: PreferenceScope, resourceUri?: string): T | undefined {
+  protected doInspectInScope<T>(preferenceName: string, scope: PreferenceScope, resourceUri?: string, language?: string): T | undefined {
     const provider = this.getProvider(scope);
-    return provider && provider.get<T>(preferenceName, resourceUri);
+    return provider && provider.get<T>(preferenceName, resourceUri, language);
   }
 
   protected doGet<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): T | undefined {
