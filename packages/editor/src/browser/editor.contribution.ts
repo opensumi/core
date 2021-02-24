@@ -430,6 +430,18 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         const group = this.workbenchEditorService.sortedEditorGroups[index - 1];
         if (group) {
           group.focus();
+          return;
+        }
+
+        // 如果找的索引比 editorGroups 的数量大1，就向右拆分一个
+        const groupLength = this.workbenchEditorService.sortedEditorGroups.length;
+        if (groupLength === (index - 1)) {
+          const rightEditorGroup = this.workbenchEditorService.sortedEditorGroups[groupLength - 1];
+          const uri = rightEditorGroup?.currentResource?.uri;
+
+          if (rightEditorGroup && uri) {
+            await rightEditorGroup.split(EditorGroupSplitAction.Right, uri, { focus: true });
+          }
         }
       },
     });
