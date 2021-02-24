@@ -97,8 +97,8 @@ describe('ExtHostTask API', () => {
   },
   {
     token: ITerminalClientFactory,
-    useFactory: (injector) => (widget, options = {}, disposable: IDisposable) => {
-      return TerminalClientFactory.createClient(injector, widget, options, disposable);
+    useFactory: (injector) => (widget, options = {}) => {
+      return TerminalClientFactory.createClient(injector, widget, options);
     },
   },
   {

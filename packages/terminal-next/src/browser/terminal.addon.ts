@@ -1,6 +1,6 @@
 import { Terminal, ILinkMatcherOptions, ITerminalAddon } from 'xterm';
 import { IFileServiceClient, FileStat } from '@ali/ide-file-service/lib/common';
-import { URI, Disposable, Deferred } from '@ali/ide-core-common';
+import { URI, Disposable, Emitter, Event } from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { TerminalKeyBoardInputService } from './terminal.input';
 import { ITerminalConnection } from '../common';
@@ -127,33 +127,54 @@ export class FilePathAddon extends Disposable implements ITerminalAddon {
 }
 
 export class AttachAddon extends Disposable implements ITerminalAddon {
-  private _connection: ITerminalConnection;
-  private _connected: Deferred<void> = new Deferred();
+  private _connection: ITerminalConnection | undefined;
+  private _disposeConnection: Disposable | null;
+  private _terminal: Terminal;
 
-  public setConnection(connection: ITerminalConnection) {
+  private _onData = new Emitter<string | ArrayBuffer>();
+  onData: Event<string | ArrayBuffer> = this._onData.event;
+  private _onExit = new Emitter<number | undefined>();
+  onExit: Event<number | undefined> = this._onExit.event;
+
+  public setConnection(connection: ITerminalConnection | undefined) {
+    if (this._disposeConnection) {
+      this._disposeConnection.dispose();
+      this._disposeConnection = null;
+    }
     this._connection = connection;
-    this._connected.resolve();
-  }
-
-  public async activate(terminal: Terminal): Promise<void> {
-    await this._connected.promise;
-    this.addDispose(
-      this._connection.onData((data: string | ArrayBuffer) => {
-        terminal.write(typeof data === 'string' ? data : new Uint8Array(data));
-      }),
-    );
-
-    if (!this._connection.readonly) {
-      this.addDispose(terminal.onData((data) => this._sendData(data)));
-      this.addDispose(terminal.onBinary((data) => this._sendBinary(data)));
+    if (connection) {
+      this._disposeConnection = new Disposable(
+        connection.onData((data: string | ArrayBuffer) => {
+          this._terminal.write(typeof data === 'string' ? data : new Uint8Array(data));
+          this._onData.fire(data);
+        }),
+      );
+      if (connection.onExit) {
+        this._disposeConnection.addDispose(connection.onExit((code) => {
+          this._onExit.fire(code);
+        }));
+      }
     }
   }
 
+  public async activate(terminal: Terminal): Promise<void> {
+    this._terminal = terminal;
+    this.addDispose(Disposable.create(() => this._disposeConnection?.dispose()));
+    this.addDispose(terminal.onData((data) => this._sendData(data)));
+    this.addDispose(terminal.onBinary((data) => this._sendBinary(data)));
+  }
+
   private _sendData(data: string): void {
+    if (!this._connection || this._connection.readonly) {
+      return;
+    }
     this._connection.sendData(data);
   }
 
   private _sendBinary(data: string): void {
+    if (!this._connection || this._connection.readonly) {
+      return;
+    }
     const buffer = new Uint8Array(data.length);
     for (let i = 0; i < data.length; ++i) {
       buffer[i] = data.charCodeAt(i) & 255;

@@ -4,7 +4,7 @@ import { FitAddon } from 'xterm-addon-fit';
 import { SearchAddon } from 'xterm-addon-search';
 import { WebLinksAddon } from 'xterm-addon-web-links';
 import { Injectable, Autowired, Injector } from '@ali/common-di';
-import { Disposable, Deferred, Emitter, Event, debounce, ILogger, IDisposable} from '@ali/ide-core-common';
+import { Disposable, Deferred, Emitter, Event, debounce, ILogger } from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
@@ -39,11 +39,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   /** status */
   private _ready: boolean = false;
-  private _attached = new Deferred<void>();
-  private _firstStdout = new Deferred<void>();
-  private _error = new Deferred<void>();
+  private _attached: Deferred<void>;
+  private _firstStdout: Deferred<void>;
+  private _error: Deferred<void>;
   private _show: Deferred<void> | null;
-  private _firstStart: boolean = true;
+  private _hasOutput = false;
   /** end */
 
   @Autowired(ITerminalInternalService)
@@ -94,12 +94,13 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   @Autowired(IOpenerService)
   private readonly openerService: IOpenerService;
 
-  async init(widget: IWidget, options: TerminalOptions = {}, disposable: IDisposable = Disposable.create(() => {})) {
+  async init(widget: IWidget, options: TerminalOptions = {}) {
     this._uid = widget.id;
     this._options = options || {};
     this.name = this._options.name || '';
     this._container = document.createElement('div');
     this._container.className = styles.terminalInstance;
+    this._prepare();
     this._term = new Terminal({
       theme: this.theme.terminalTheme,
       ...this.preference.toJSON(),
@@ -108,17 +109,15 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this.addDispose(Disposable.create(() => {
       TerminalClient.WORKSPACE_PATH_CACHED.delete(widget.group.id);
     }));
-    this.addDispose(this.preference.onChange(({ name, value }) => {
-      if (!widget.show) {
-        if (!this._show) {
-          this._show = new Deferred();
-          this._show.promise.then(() => this._setOption(name, value));
-        } else {
-          this._show.promise.then(() => this._setOption(name, value));
-        }
-      } else {
-        this._setOption(name, value);
+
+    this.addDispose(this.preference.onChange(async ({ name, value }) => {
+      if (!widget.show && !this._show) {
+        this._show = new Deferred();
       }
+      if (this._show) {
+        await this._show.promise;
+      }
+      this._setOption(name, value);
     }));
 
     this.addDispose(widget.onShow((status) => {
@@ -127,7 +126,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
           this._show.resolve();
           this._show = null;
         }
-        this.layout();
+        this._layout();
       }
     }));
 
@@ -138,29 +137,15 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         // this._term.resize(1, 1);
       } else {
         this._error.resolve();
-        this.layout();
+        this._layout();
       }
     }));
 
-    const { dispose } = this.onOutput(() => {
-      dispose();
-      this._firstStdout.resolve();
-    });
-
     this._apply(widget);
-
-    if (TerminalClient.WORKSPACE_PATH_CACHED.has(widget.group.id)) {
-      this._workspacePath = TerminalClient.WORKSPACE_PATH_CACHED.get(widget.group.id)!;
-    } else {
-      const choose = await this._pickWorkspace();
-      if (!choose) {
-        disposable.dispose();
-        return;
-      }
-      this._workspacePath = choose;
-      TerminalClient.WORKSPACE_PATH_CACHED.set(widget.group.id, this._workspacePath);
+    if (await this._checkWorkspace()) {
+      this._attachXterm();
+      this._attachAfterRender();
     }
-    this.attach();
   }
 
   @observable
@@ -216,16 +201,19 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         this.openerService.open(url);
       }
     });
-
-    this.addDispose({
-      dispose: () => {
-        this._attachAddon.dispose();
-        this._fitAddon.dispose();
-        this._searchAddon.dispose();
-        this._weblinksAddon.dispose();
-        this._filelinksAddon.dispose();
-      },
-    });
+    this.addDispose([
+      this._attachAddon,
+      this._searchAddon,
+      this._fitAddon,
+      this._filelinksAddon,
+      this._weblinksAddon,
+      this._attachAddon.onData((data) => {
+        this._onOutput.fire({ id: this.id, data });
+      }),
+      this._attachAddon.onExit((code) => {
+        this._onExit.fire({ id: this.id, code });
+      }),
+    ]);
   }
 
   private _loadAddons() {
@@ -237,9 +225,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   private _xtermEvents() {
-    this.addDispose(this._term.onResize((event) => {
-      const { cols, rows } = event;
-      this.service.resize(this.id, cols, rows);
+    this.addDispose(this._term.onResize((_event) => {
+      if (this._hasOutput) {
+        this._doResize();
+      }
     }));
   }
 
@@ -248,17 +237,12 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._loadAddons();
     this._xtermEvents();
 
-    this.addDispose({
-      dispose: () => {
-        this._term.dispose();
-      },
-    });
+    this.addDispose(this._term);
   }
 
   private async _doAttach() {
     const sessionId = this.id;
     const type = this.preference.get<string>('type');
-    this._attachXterm();
 
     const linuxShellArgs = this.corePreferences.get('terminal.integrated.shellArgs.linux');
 
@@ -279,54 +263,63 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       // noop
     }
 
+    this._attachAddon.setConnection(connection);
     if (!connection) {
       this._attached.resolve();
       return;
     }
 
-    this._attachAddon.setConnection(connection);
-    this.addDispose(connection.onData((data) => {
-      this._onOutput.fire({ id: this.id, data });
-    }));
-    if (connection.onExit) {
-      this.addDispose(connection.onExit((code) => {
-        this._onExit.fire({ id: this.id, code });
-      }));
-    }
-
     this.name = (this.name || connection.name) || 'shell';
     this._ready = true;
     this._attached.resolve();
+    this._widget.name = this.name;
+
+    this._firstStdout.promise.then(() => {
+      this._doResize();
+    });
   }
 
-  reset() {
-    this._attached.reject();
-    this._firstStdout.reject();
-    this._error.reject();
-    this._show && this._show.reject();
+  _doResize() {
+    this.service.resize(this.id, this._term.cols, this._term.rows);
+  }
+
+  _prepare() {
+    this._attached?.reject();
+    this._firstStdout?.reject();
+    this._error?.reject();
+    this._show?.reject();
     this._ready = false;
+    this._hasOutput = false;
     this._attached = new Deferred<void>();
     this._show = new Deferred<void>();
     this._error = new Deferred<void>();
-    this._attachAddon.dispose();
+    this._firstStdout = new Deferred<void>();
+    this._attachAddon?.setConnection(undefined);
     const { dispose } = this.onOutput(() => {
       dispose();
+      this._hasOutput = true;
       this._firstStdout.resolve();
     });
-    if (this.widget.show) {
+  }
+
+  _attachAfterRender() {
+    // 等待 widget 渲染后再 attach，尽可能在创建时获取到准确的宽高
+    // rAF 在不可见状态下会丢失，所以一定要用 setTimeout
+    setTimeout(() => {
+      this._layout();
       this.attach();
-    } else {
-      this._show.promise.then(async () => {
-        await this.attach();
-        this._show = new Deferred<void>();
-      });
-    }
+      if (!this.widget.show) {
+        this._show?.promise.then(async () => {
+          this._show = new Deferred<void>();
+        });
+      }
+    });
   }
 
   private async _pickWorkspace() {
     if (this.workspace.isMultiRootWorkspaceOpened) {
       // 工作区模式下每次新建终端都需要用户手动进行一次路径选择
-      const roots = await this.workspace.tryGetRoots();
+      const roots = this.workspace.tryGetRoots();
       const choose = await this.quickPick.show(roots.map((file) => {
         return file.uri.substring(7);
       }));
@@ -334,6 +327,27 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     } else {
       return this.workspace.workspace?.uri.substring(7);
     }
+  }
+
+  private async _checkWorkspace() {
+    const widget = this._widget;
+    if (TerminalClient.WORKSPACE_PATH_CACHED.has(widget.group.id)) {
+      this._workspacePath = TerminalClient.WORKSPACE_PATH_CACHED.get(widget.group.id)!;
+    } else {
+      const choose = await this._pickWorkspace();
+      if (!choose) {
+        this.view.removeWidget(widget.id);
+        return false;
+      }
+      this._workspacePath = choose;
+      TerminalClient.WORKSPACE_PATH_CACHED.set(widget.group.id, this._workspacePath);
+    }
+    return true;
+  }
+
+  reset() {
+    this._prepare();
+    this._attachAfterRender();
   }
 
   private async attach() {
@@ -349,7 +363,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
      */
     try {
       this._term.setOption(name, value);
-      this.layout();
+      this._layout();
     } catch { /** nothing */ }
   }
 
@@ -359,59 +373,55 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     }
   }
 
-  private async layout() {
-    await this._attached.promise;
-    if (!this._term.element || this._term.element.clientHeight === 0 || this._term.element.clientWidth === 0) {
-      setTimeout(() => {
-        this._container.innerHTML = '';
-        this._term.open(this._container);
-        try {
-          this._fitAddon.fit();
-        } catch { /** nothing */ }
-      }, 0);
-    } else {
-      this._fitAddon.fit();
+  private _layout() {
+    // 如果 xterm 视图还没初始化，则先尝试初始化
+    this._renderOnDemand();
+    if (this._term.element) {
+      try {
+        this._fitAddon.fit();
+      } catch {
+        // noop
+      }
     }
   }
 
-  private async _firstOnRender() {
+  private _renderOnDemand() {
+    // 避免重复创建 xterm 视图，后果是终端实例和视图不匹配，表现为整个卡住
+    if (this._term.element) {
+      return;
+    }
+    // xterm 视图容器没准备好，取消渲染 xterm 视图
+    if (!this._widget.element?.clientHeight) {
+      return;
+    }
+    // 多 workspace 模式下，等待 workspace 选择后再渲染
+    if (!this._workspacePath) {
+      return;
+    }
     this._widget.element.appendChild(this._container);
     this._term.open(this._container);
-    await this.attached.promise;
-    this._widget.name = this.name;
     // 首次渲染且为当前选中的 client 时，聚焦
-    if (this.controller.activeClient?.id === this.id) {
-      this.focus();
-    }
+    // 等待数据更新、terminal 渲染完成，但是无需等待连接成功，体验上会更快一些
+    setTimeout(() => {
+      if (this.controller.activeClient?.id === this.id) {
+        this.focus();
+      }
+    });
   }
 
   @debounce(100)
   private _debounceResize() {
-    // 云环境下面，容器 resize 终端的宽高信息可能存在时间竞争，
-    // 所以这里我们加一个等待首次 stdout 的 deferred，
-    // 保证 resize 消息一定能够生效
-    this._firstStdout.promise.then(() => {
-      this.layout();
-    });
+    this._layout();
   }
 
-  private async _apply(widget: IWidget) {
-    this.addDispose(widget.onRender(async () => {
-      await this._firstOnRender();
-    }));
-
+  private _apply(widget: IWidget) {
+    this._widget = widget;
     this.addDispose(widget.onResize(async () => {
       this._debounceResize();
     }));
-
-    this._widget = widget;
-    if (widget.element) {
-      await this._firstOnRender();
-    }
   }
 
   focus() {
-    this._checkReady();
     return this._term.focus();
   }
 
@@ -472,7 +482,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 @Injectable()
 export class TerminalClientFactory {
 
-  static createClient(injector: Injector, widget: IWidget, options?: TerminalOptions, disposable?: IDisposable) {
+  static createClient(injector: Injector, widget: IWidget, options?: TerminalOptions) {
     const child = injector.createChild([
       {
         token: TerminalClient,
@@ -480,7 +490,7 @@ export class TerminalClientFactory {
       },
     ]);
     const client = child.get(TerminalClient);
-    client.init(widget, options, disposable);
+    client.init(widget, options);
     return client;
   }
 }

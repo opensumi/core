@@ -70,14 +70,14 @@ export class TerminalMenuContribution implements MenuContribution {
     const when = `${tabbarCtxKey} == ${TerminalContainerId}`;
     /** 更多菜单 */
     menuRegistry.registerMenuItem(commonMenuId, {
-      command: TERMINAL_COMMANDS.CLEAR_ALL_CONTENT,
+      command: TERMINAL_COMMANDS.CLEAR,
       order: 1,
       group: more1,
       when,
     });
 
     menuRegistry.registerMenuItem(commonMenuId, {
-      command: TERMINAL_COMMANDS.CLEAR,
+      command: TERMINAL_COMMANDS.CLEAR_ALL_CONTENT,
       order: 1,
       group: more1,
       when,

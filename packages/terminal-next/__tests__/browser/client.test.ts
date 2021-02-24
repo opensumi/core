@@ -34,7 +34,7 @@ describe('Terminal Client', () => {
   let workspaceService: IWorkspaceService;
   let root: URI | null;
 
-  beforeAll(async (done) => {
+  beforeAll(async () => {
     root = FileUri.create(path.join(os.tmpdir(), 'preference-service-test'));
 
     await fs.ensureDir(root.path.toString());
@@ -54,7 +54,15 @@ describe('Terminal Client', () => {
     const index = view.createGroup();
     const group = view.getGroup(index);
     widget = view.createWidget(group);
-    widget.element = createDOMContainer();
+    // clientHeight === 0 时会跳过视图渲染，这里强行修改一下 clientHeight 用于测试
+    widget.element = new Proxy(createDOMContainer(), {
+      get(target, prop, _receiver) {
+        if (prop === 'clientHeight') {
+          return 400;
+        }
+        return target[prop];
+      },
+    });
     client = factory(widget, {});
     client.addDispose(Disposable.create(async () => {
       if (root) {
@@ -62,7 +70,6 @@ describe('Terminal Client', () => {
       }
     }));
     await client.attached.promise;
-    done();
   });
 
   afterAll(() => {

@@ -1,6 +1,6 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { WithEventBus, Emitter, Deferred, Event, Disposable } from '@ali/ide-core-common';
+import { WithEventBus, Emitter, Deferred, Event } from '@ali/ide-core-common';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
 import { IThemeService } from '@ali/ide-theme';
@@ -87,7 +87,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   private _createClient(widget: IWidget, options = {}) {
-    const client = this.clientFactory(widget, options, Disposable.create(() => this.terminalView.removeWidget(widget.id)));
+    const client = this.clientFactory(widget, options);
     this._clients.set(client.id, client);
 
     client.addDispose({
@@ -161,30 +161,30 @@ export class TerminalController extends WithEventBus implements ITerminalControl
          */
         const widget = this.terminalView.createWidget(group,
           typeof sessionId === 'string' ? sessionId : sessionId.clientId);
-        const client = this.clientFactory(widget, {}, Disposable.create(() => this.terminalView.removeWidget(widget.id)));
+        const client = this.clientFactory(widget, {});
         this._clients.set(client.id, client);
+
+        if (current === client.id) {
+          currentWidgetId = widget.id;
+        }
 
         /**
          * 等待预先连接成功
          */
-        await client.attached.promise;
-        widget.name = client.name;
+        client.attached.promise.then(() => {
+          widget.name = client.name;
 
-        /**
-         * 不成功的时候则认为这个连接已经失效了，去掉这个 widget
-         */
-        if (!client.ready) {
-          this.terminalView.removeWidget(widget.id);
-        } else if (current === client.id) {
-          currentWidgetId = widget.id;
-        }
+          /**
+           * 不成功的时候则认为这个连接已经失效了，去掉这个 widget
+           */
+          if (!client.ready) {
+            this.terminalView.removeWidget(widget.id);
+          }
+        });
       }
     }
 
-    let selectedIndex = -1;
-    this.terminalView.groups.forEach((group, index) =>
-      Array.from(group.widgetsMap.keys()).find((v) => v === currentWidgetId)
-      && (selectedIndex = index));
+    const selectedIndex = this.terminalView.groups.findIndex((group) => group.widgetsMap.has(currentWidgetId));
 
     if (selectedIndex > -1 && currentWidgetId) {
       this.terminalView.selectWidget(currentWidgetId);
@@ -246,8 +246,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           const current = this._reset();
           this.terminalView.selectWidget(current.id);
         } else {
-          const widget = this.terminalView.currentWidget;
-          this.terminalView.selectWidget(widget.id);
+          this.terminalView.selectGroup(this.terminalView.currentGroupIndex > -1 ? this.terminalView.currentGroupIndex : 0);
         }
       }));
 

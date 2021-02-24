@@ -1,5 +1,5 @@
 import { Provider, Injectable } from '@ali/common-di';
-import { BrowserModule, IDisposable } from '@ali/ide-core-browser';
+import { BrowserModule } from '@ali/ide-core-browser';
 import {
   ITerminalController,
   ITerminalService,
@@ -96,8 +96,8 @@ export class TerminalNextModule extends BrowserModule {
     },
     {
       token: ITerminalClientFactory,
-      useFactory: (injector) => (widget: IWidget, options?: TerminalOptions, disposable?: IDisposable) => {
-        return TerminalClientFactory.createClient(injector, widget, options, disposable);
+      useFactory: (injector) => (widget: IWidget, options?: TerminalOptions) => {
+        return TerminalClientFactory.createClient(injector, widget, options);
       },
     },
     {
