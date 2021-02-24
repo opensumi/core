@@ -923,6 +923,18 @@ declare module 'vscode' {
      */
     activeParameter: number;
   }
+
+  /**
+   * Symbol tags are extra annotations that tweak the rendering of a symbol.
+   */
+  export enum SymbolTag {
+
+    /**
+     * Render a symbol as obsolete, usually using a strike-out.
+     */
+    Deprecated = 1
+  }
+
   /**
    * Represents information about programming constructs like variables, classes,
    * interfaces etc.
@@ -943,6 +955,11 @@ declare module 'vscode' {
      * The kind of this symbol.
      */
     kind: SymbolKind;
+
+    /**
+     * Tags for this symbol.
+     */
+    tags?: ReadonlyArray<SymbolTag>;
 
     /**
      * The location of this symbol.

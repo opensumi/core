@@ -1260,8 +1260,11 @@ declare module 'kaitian-worker' {
     targetSelectionRange?: Range;
   }
   /**
-   * The MarkdownString represents human readable text that supports formatting via the
+   * The MarkdownString represents human-readable text that supports formatting via the
    * markdown syntax. Standard markdown is supported, also tables, but no embedded html.
+   *
+   * When created with `supportThemeIcons` then rendering of [theme icons](#ThemeIcon) via
+   * the `$(<name>)`-syntax is supported.
    */
   export class MarkdownString {
 
@@ -1277,11 +1280,17 @@ declare module 'kaitian-worker' {
     isTrusted?: boolean;
 
     /**
+     * Indicates that this markdown string can contain [ThemeIcons](#ThemeIcon), e.g. `$(zap)`.
+     */
+    readonly supportThemeIcons?: boolean;
+
+    /**
      * Creates a new markdown string with the given value.
      *
      * @param value Optional, initial value.
+     * @param supportThemeIcons Optional, Specifies whether [ThemeIcons](#ThemeIcon) are supported within the [`MarkdownString`](#MarkdownString).
      */
-    constructor(value?: string);
+    constructor(value?: string, supportThemeIcons?: boolean);
 
     /**
      * Appends and escapes the given string to this markdown string.
@@ -1290,7 +1299,7 @@ declare module 'kaitian-worker' {
     appendText(value: string): MarkdownString;
 
     /**
-     * Appends the given string 'as is' to this markdown string.
+     * Appends the given string 'as is' to this markdown string. When [`supportThemeIcons`](#MarkdownString.supportThemeIcons) is `true`, [ThemeIcons](#ThemeIcon) in the `value` will be iconified.
      * @param value Markdown string.
      */
     appendMarkdown(value: string): MarkdownString;
@@ -1636,23 +1645,23 @@ declare module 'kaitian-worker' {
    *
    * ```ts
    * let a: HoverProvider = {
-   * 	provideHover(doc, pos, token): ProviderResult<Hover> {
-   * 		return new Hover('Hello World');
-   * 	}
+   *   provideHover(doc, pos, token): ProviderResult<Hover> {
+   *     return new Hover('Hello World');
+   *   }
    * }
    *
    * let b: HoverProvider = {
-   * 	provideHover(doc, pos, token): ProviderResult<Hover> {
-   * 		return new Promise(resolve => {
-   * 			resolve(new Hover('Hello World'));
-   * 	 	});
-   * 	}
+   *   provideHover(doc, pos, token): ProviderResult<Hover> {
+   *     return new Promise(resolve => {
+   *       resolve(new Hover('Hello World'));
+   *      });
+   *   }
    * }
    *
    * let c: HoverProvider = {
-   * 	provideHover(doc, pos, token): ProviderResult<Hover> {
-   * 		return; // undefined
-   * 	}
+   *   provideHover(doc, pos, token): ProviderResult<Hover> {
+   *     return; // undefined
+   *   }
    * }
    * ```
    */
@@ -1776,6 +1785,17 @@ declare module 'kaitian-worker' {
      * @return This snippet string.
      */
     appendPlaceholder(value: string | ((snippet: SnippetString) => any), num?: number): SnippetString;
+
+    /**
+     * Builder-function that appends a choice (`${1|a,b,c}`) to
+     * the [`value`](#SnippetString.value) of this snippet string.
+     *
+     * @param values The values for choices - the array of strings
+     * @param number The number of this tabstop, defaults to an auto-increment
+     * value starting at 1.
+     * @return This snippet string.
+     */
+    appendChoice(values: string[], num?: number): SnippetString;
 
     /**
      * Builder-function that appends a variable (`${VAR}`) to

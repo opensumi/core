@@ -455,6 +455,9 @@ export enum QuickTitleButtonSide {
   RIGHT = 1,
 }
 
+/**
+ * @deprecated
+ */
 export class ThemeIcon {
 
   static readonly File: ThemeIcon = new ThemeIcon('file');

@@ -588,6 +588,18 @@ declare module 'kaitian-worker' {
      */
     activeParameter: number;
   }
+
+  /**
+   * Symbol tags are extra annotations that tweak the rendering of a symbol.
+   */
+  export enum SymbolTag {
+
+    /**
+     * Render a symbol as obsolete, usually using a strike-out.
+     */
+    Deprecated = 1,
+  }
+
   /**
    * Represents information about programming constructs like variables, classes,
    * interfaces etc.
@@ -608,6 +620,11 @@ declare module 'kaitian-worker' {
      * The kind of this symbol.
      */
     kind: SymbolKind;
+
+    /**
+     * Tags for this symbol.
+     */
+    tags?: ReadonlyArray<SymbolTag>;
 
     /**
      * The location of this symbol.
@@ -1093,16 +1110,16 @@ declare module 'kaitian-worker' {
      * For example, a tree item is given a context value as `folder`. When contributing actions to `view/item/context`
      * using `menus` extension point, you can specify context value for key `viewItem` in `when` expression like `viewItem == folder`.
      * ```
-     *	"contributes": {
-     *		"menus": {
-     *			"view/item/context": [
-     *				{
-     *					"command": "extension.deleteFolder",
-      *					"when": "viewItem == folder"
-      *				}
-      *			]
-      *		}
-      *	}
+     *  "contributes": {
+     *    "menus": {
+     *      "view/item/context": [
+     *        {
+     *          "command": "extension.deleteFolder",
+      *          "when": "viewItem == folder"
+      *        }
+      *      ]
+      *    }
+      *  }
       * ```
       * This will show action `extension.deleteFolder` only for items with `contextValue` is `folder`.
       */
@@ -1482,7 +1499,7 @@ declare module 'kaitian-worker' {
      * the `skipEncoding`-argument: `uri.toString(true)`.
      *
      * @param skipEncoding Do not percentage-encode the result, defaults to `false`. Note that
-     *	the `#` and `?` characters occurring in the path will always be encoded.
+     *  the `#` and `?` characters occurring in the path will always be encoded.
       * @returns A string representation of this Uri.
       */
     toString(skipEncoding?: boolean): string;
@@ -2339,21 +2356,40 @@ declare module 'kaitian-worker' {
   }
 
   /**
-   * A reference to a named icon. Currently only [File](#ThemeIcon.File) and [Folder](#ThemeIcon.Folder) are supported.
-   * Using a theme icon is preferred over a custom icon as it gives theme authors the possibility to change the icons.
+   * A reference to a named icon. Currently, [File](#ThemeIcon.File), [Folder](#ThemeIcon.Folder),
+   * and [ThemeIcon ids](https://code.visualstudio.com/api/references/icons-in-labels#icon-listing) are supported.
+   * Using a theme icon is preferred over a custom icon as it gives product theme authors the possibility to change the icons.
+   *
+   * *Note* that theme icons can also be rendered inside labels and descriptions. Places that support theme icons spell this out
+   * and they use the `$(<name>)`-syntax, for instance `quickPick.label = "Hello World $(globe)"`.
    */
   export class ThemeIcon {
     /**
-     * Reference to a icon representing a file. The icon is taken from the current file icon theme or a placeholder icon.
+     * Reference to an icon representing a file. The icon is taken from the current file icon theme or a placeholder icon is used.
      */
     static readonly File: ThemeIcon;
 
     /**
-     * Reference to a icon representing a folder. The icon is taken from the current file icon theme or a placeholder icon.
+     * Reference to an icon representing a folder. The icon is taken from the current file icon theme or a placeholder icon is used.
      */
     static readonly Folder: ThemeIcon;
 
-    private constructor(id: string);
+    /**
+     * The id of the icon. The available icons are listed in https://code.visualstudio.com/api/references/icons-in-labels#icon-listing.
+     */
+    readonly id: string;
+
+    /**
+     * The optional ThemeColor of the icon. The color is currently only used in [TreeItem](#TreeItem).
+     */
+    readonly color?: ThemeColor;
+
+    /**
+     * Creates a reference to a theme icon.
+     * @param id id of the icon. The available icons are listed in https://code.visualstudio.com/api/references/icons-in-labels#icon-listing.
+     * @param color optional `ThemeColor` for the icon. The color is currently only used in [TreeItem](#TreeItem).
+     */
+    constructor(id: string, color?: ThemeColor);
   }
 
   /**
