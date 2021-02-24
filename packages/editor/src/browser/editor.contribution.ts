@@ -3,7 +3,7 @@ import { FormattingConflicts } from '@ali/monaco-editor-core/esm/vs/editor/contr
 import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { BrowserCodeEditor } from './editor-collection.service';
-import {  IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService, IClipboardService, QuickOpenContribution, IQuickOpenHandlerRegistry, PrefixQuickOpenService } from '@ali/ide-core-browser';
+import { IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService, IClipboardService, QuickOpenContribution, IQuickOpenHandlerRegistry, PrefixQuickOpenService } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { isElectronEnv, isWindows, PreferenceScope } from '@ali/ide-core-common';
 import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -215,6 +215,16 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       command: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL.id,
       keybinding: isElectronEnv() ? 'ctrlcmd+t' : 'ctrlcmd+o',
     });
+    if (isElectronEnv()) {
+      keybindings.registerKeybinding({
+        command: EDITOR_COMMANDS.NEXT_IN_GROUP.id,
+        keybinding: 'ctrl+tab',
+      });
+      keybindings.registerKeybinding({
+        command: EDITOR_COMMANDS.PREVIOUS_IN_GROUP.id,
+        keybinding: 'ctrl+shift+tab',
+      });
+    }
     for (let i = 1; i < 10; i++) {
       keybindings.registerKeybinding({
         command: EDITOR_COMMANDS.GO_TO_GROUP.id,
@@ -613,14 +623,14 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         }
         const index = editorGroup.resources.findIndex((r) => r.uri.isEqual(editorGroup.currentResource!.uri)) - 1;
         if (editorGroup.resources[index]) {
-          return editorGroup.open(editorGroup.resources[index].uri, {focus: true});
+          return editorGroup.open(editorGroup.resources[index].uri, { focus: true });
         } else {
-          return editorGroup.open(editorGroup.resources[0].uri, {focus: true});
+          return editorGroup.open(editorGroup.resources[0].uri, { focus: true });
         }
       },
     });
 
-    commands.registerCommand(EDITOR_COMMANDS.PREVIOUS_IN_GROUP, {
+    commands.registerCommand(EDITOR_COMMANDS.NEXT_IN_GROUP, {
       execute: async () => {
         const editorGroup = this.workbenchEditorService.currentEditorGroup;
         if (!editorGroup.currentResource) {
