@@ -100,17 +100,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this.name = this._options.name || '';
     this._container = document.createElement('div');
     this._container.className = styles.terminalInstance;
-    if (TerminalClient.WORKSPACE_PATH_CACHED.has(widget.group.id)) {
-      this._workspacePath = TerminalClient.WORKSPACE_PATH_CACHED.get(widget.group.id)!;
-    } else {
-      const choose = await this._pickWorkspace();
-      if (!choose) {
-        disposable.dispose();
-        return;
-      }
-      this._workspacePath = choose;
-      TerminalClient.WORKSPACE_PATH_CACHED.set(widget.group.id, this._workspacePath);
-    }
     this._term = new Terminal({
       theme: this.theme.terminalTheme,
       ...this.preference.toJSON(),
@@ -159,6 +148,18 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     });
 
     this._apply(widget);
+
+    if (TerminalClient.WORKSPACE_PATH_CACHED.has(widget.group.id)) {
+      this._workspacePath = TerminalClient.WORKSPACE_PATH_CACHED.get(widget.group.id)!;
+    } else {
+      const choose = await this._pickWorkspace();
+      if (!choose) {
+        disposable.dispose();
+        return;
+      }
+      this._workspacePath = choose;
+      TerminalClient.WORKSPACE_PATH_CACHED.set(widget.group.id, this._workspacePath);
+    }
     this.attach();
   }
 

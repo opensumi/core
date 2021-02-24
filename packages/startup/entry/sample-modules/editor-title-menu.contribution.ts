@@ -73,7 +73,7 @@ export class EditorTitleMenuContribution extends Disposable implements CommandCo
         id: 'command.test.toggle.explorer',
         label: '展开文件树',
       },
-      iconClass: getIcon('git'),
+      iconClass: getIcon('rundebug'),
       group: 'navigation',
     });
   }

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import clx from 'classnames';
 
-import { defaultIconfont } from './iconfont/iconManager';
+import { defaultIconMap, defaultIconfont } from './iconfont/iconManager';
 import { getKaitianIcon, IIconShapeOptions } from './util';
 
 import './styles.less';
@@ -74,7 +74,9 @@ const IconBase = function<T>(
     // 这里的逻辑会导致是优先用 defaultIconFont 里面去查找
     // 所以这里应该是跟 getIcon 逻辑表现不太一样
     // 此外这里的 useContext 的话，作用看起来意义不大了，因为 getIcon 是个函数，本质上无法做到通知
-    if (defaultIconfont[icon as DefaultIconKeys]) {
+    // 这里为了兼容被废弃的 icon 使用了 `defaultIconMap` 去取值
+    // 但是上方的类型 DefaultIconKeys 里面已经不包含被废弃的 icon 了，避免继续使用废弃的图标
+    if (defaultIconMap[icon as DefaultIconKeys]) {
       iconClx = getKaitianIcon(icon as string, iconShapeOptions);
     } else {
       const { getIcon } = React.useContext(IconContext);

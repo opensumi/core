@@ -1,4 +1,4 @@
-import { warning } from '../../utils';
+import warning from '../../utils/warning';
 
 import { defaultIconfont } from './iconMap';
 export { defaultIconfont };
@@ -27,9 +27,9 @@ const typoIconMap = {
   'terminate': 'stop',
 };
 
-const _defaultIconMap = Object.assign({}, defaultIconfont, typoIconMap);
+const _defaultIconAndTypoIconMap = Object.assign({}, defaultIconfont, typoIconMap);
 
-export const defaultIconMap = new Proxy(_defaultIconMap, {
+export const defaultIconMap = new Proxy(_defaultIconAndTypoIconMap, {
   get(obj, prop: string) {
     const typoValue = typoIconMap[prop];
     warning(!typoValue, `Icon '${prop}' was a typo, please use '${typoValue}' instead`);

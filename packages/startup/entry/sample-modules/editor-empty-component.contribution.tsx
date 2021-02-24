@@ -6,6 +6,7 @@ import {
   ComponentContribution,
   ComponentRegistry,
 } from '@ali/ide-core-browser';
+import { Icon } from '@ali/ide-components';
 import * as React from 'react';
 
 const EditorEmptyComponent: React.FC<{
@@ -21,7 +22,10 @@ const EditorEmptyComponent: React.FC<{
       height: '100%',
       fontSize: 20,
     }}>
-      <div>hello 大佬</div>
+      <div>
+        Hello IDE Framework
+        <Icon icon='rundebug' />
+      </div>
       <ul style={{margin: 0}}>
         {props.list.map((n) => <li key={n}>{n}</li>)}
       </ul>
@@ -42,7 +46,7 @@ export class EditorEmptyComponentContribution implements ComponentContribution {
       id: 'editor-empty',
       component: EditorEmptyComponent,
       initialProps: {
-        list: ['上坡', '吭头'],
+        list: ['Alibaba', 'Alipay'],
       },
     });
   }
