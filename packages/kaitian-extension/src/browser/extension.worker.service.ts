@@ -82,6 +82,10 @@ export class WorkerExtensionService implements AbstractExtensionService {
             }
           };
 
+          extendWorkerHost.onerror = (err) => {
+            reject(err);
+          };
+
           ready.promise.then((port) => {
             resolve(this.createProtocol(port, onMessageEmitter));
           });
