@@ -633,3 +633,24 @@ export enum CompletionItemKind {
 export enum CompletionItemTag {
   Deprecated = 1,
 }
+
+export interface SemanticTokensLegend {
+  readonly tokenTypes: string[];
+  readonly tokenModifiers: string[];
+}
+
+export interface SemanticTokens {
+  readonly resultId?: string;
+  readonly data: Uint32Array;
+}
+
+export interface SemanticTokensEdit {
+  readonly start: number;
+  readonly deleteCount: number;
+  readonly data?: Uint32Array;
+}
+
+export interface SemanticTokensEdits {
+  readonly resultId?: string;
+  readonly edits: SemanticTokensEdit[];
+}

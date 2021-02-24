@@ -10,9 +10,10 @@ import { applyPatch } from 'diff';
 import { DocumentFilter } from 'vscode-languageserver-protocol';
 import { ExtHostAPIIdentifier, IExtHostLanguages, IMainThreadLanguages, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
-import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider } from '../../../common/vscode/model.api';
+import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SemanticTokensLegend, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider } from '../../../common/vscode/model.api';
 import { reviveIndentationRule, reviveOnEnterRules, reviveRegExp, reviveWorkspaceEditDto } from '../../../common/vscode/utils';
 import { ILanguageService } from '@ali/ide-editor';
+import { DocumentRangeSemanticTokensProviderImpl, DocumentSemanticTokensProvider } from './semantic-tokens/semantic-token-provider';
 
 const PATCH_PREFIX = 'Index: a\n===================================================================\n--- a\n+++ a\n';
 
@@ -939,5 +940,16 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         });
       },
     };
+  }
+
+  //#region Semantic Tokens
+  $registerDocumentSemanticTokensProvider(handle: number, selector: SerializedDocumentFilter[], legend: SemanticTokensLegend): void {
+    const provider = new DocumentSemanticTokensProvider(this.proxy, handle, legend);
+    this.disposables.set(handle, modes.DocumentSemanticTokensProviderRegistry.register(fromLanguageSelector(selector)! as unknown as string, provider));
+  }
+
+  $registerDocumentRangeSemanticTokensProvider(handle: number, selector: SerializedDocumentFilter[], legend: SemanticTokensLegend): void {
+    const provider = new DocumentRangeSemanticTokensProviderImpl(this.proxy, handle, legend);
+    this.disposables.set(handle, modes.DocumentRangeSemanticTokensProviderRegistry.register(fromLanguageSelector(selector)! as unknown as string, provider));
   }
 }

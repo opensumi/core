@@ -37,6 +37,9 @@ import {
   DiagnosticChangeEvent,
   SelectionRangeProvider,
   DocumentFormattingEditProvider,
+  DocumentSemanticTokensProvider,
+  SemanticTokensLegend,
+  DocumentRangeSemanticTokensProvider,
 } from 'vscode';
 import {
   SerializedDocumentFilter,
@@ -103,6 +106,7 @@ import { RenameAdapter } from './language/rename';
 import { SelectionRangeAdapter } from './language/selection';
 import { ExtHostCommands } from './ext.host.command';
 import { IExtension } from '../../../common';
+import { DocumentRangeSemanticTokensAdapter, DocumentSemanticTokensAdapter } from './language/semantic-tokens';
 
 export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, extension: IExtension) {
 
@@ -191,6 +195,12 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, ex
     registerSelectionRangeProvider(selector: DocumentSelector, provider: SelectionRangeProvider): Disposable {
       return extHostLanguages.registerSelectionRangeProvider(selector, provider);
     },
+    registerDocumentSemanticTokensProvider(selector: DocumentSelector, provider: DocumentSemanticTokensProvider, legend: SemanticTokensLegend): Disposable {
+      return extHostLanguages.registerDocumentSemanticTokensProvider(selector, provider, legend);
+    },
+    registerDocumentRangeSemanticTokensProvider(selector: DocumentSelector, provider: DocumentRangeSemanticTokensProvider, legend: SemanticTokensLegend): Disposable {
+      return extHostLanguages.registerDocumentRangeSemanticTokensProvider(extension, selector, provider, legend);
+    },
   };
 }
 
@@ -215,7 +225,9 @@ export type Adapter =
   SelectionRangeAdapter |
   FormattingAdapter |
   RenameAdapter |
-  DeclarationAdapter;
+  DeclarationAdapter |
+  DocumentSemanticTokensAdapter |
+  DocumentRangeSemanticTokensAdapter;
 
 export class ExtHostLanguages implements IExtHostLanguages {
   private readonly proxy: IMainThreadLanguages;
@@ -241,7 +253,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     });
   }
 
-  private addNewAdapter(adapter: Adapter): number {
+  private addNewAdapter(adapter: Adapter, extension?: IExtension): number {
     const callId = this.nextCallId();
     this.adaptersMap.set(callId, adapter);
     return callId;
@@ -616,5 +628,30 @@ export class ExtHostLanguages implements IExtHostLanguages {
 
   $provideSelectionRanges(handle: number, resource: Uri, positions: Position[], token: CancellationToken): Promise<SelectionRange[][]> {
     return this.withAdapter(handle, SelectionRangeAdapter, (adapter) => adapter.provideSelectionRanges(resource, positions, token));
+  }
+
+  //#region Semantic Tokens
+  registerDocumentSemanticTokensProvider(selector: DocumentSelector, provider: DocumentSemanticTokensProvider, legend: SemanticTokensLegend): Disposable {
+    const callId = this.addNewAdapter(new DocumentSemanticTokensAdapter(this.documents, provider));
+    this.proxy.$registerDocumentSemanticTokensProvider(callId, this.transformDocumentSelector(selector), legend);
+    return this.createDisposable(callId);
+  }
+
+  $provideDocumentSemanticTokens(handle: number, resource: Uri, previousResultId: number, token: CancellationToken): Promise<Uint8Array | null> {
+    return this.withAdapter(handle, DocumentSemanticTokensAdapter, (adapter) => adapter.provideDocumentSemanticTokens(Uri.revive(resource), previousResultId, token));
+  }
+
+  $releaseDocumentSemanticTokens(handle: number, semanticColoringResultId: number): void {
+    this.withAdapter(handle, DocumentSemanticTokensAdapter, (adapter) => adapter.releaseDocumentSemanticColoring(semanticColoringResultId));
+  }
+
+  registerDocumentRangeSemanticTokensProvider(extension: IExtension, selector: DocumentSelector, provider: DocumentRangeSemanticTokensProvider, legend: SemanticTokensLegend): Disposable {
+    const callId = this.addNewAdapter(new DocumentRangeSemanticTokensAdapter(this.documents, provider), extension);
+    this.proxy.$registerDocumentRangeSemanticTokensProvider(callId, this.transformDocumentSelector(selector), legend);
+    return this.createDisposable(callId);
+  }
+
+  $provideDocumentRangeSemanticTokens(handle: number, resource: Uri, range: Range, token: CancellationToken): Promise<Uint8Array | null> {
+    return this.withAdapter(handle, DocumentRangeSemanticTokensAdapter, (adapter) => adapter.provideDocumentRangeSemanticTokens(Uri.revive(resource), range, token));
   }
 }

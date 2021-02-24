@@ -1,3 +1,4 @@
+import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { CompletionProviderRegistry } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { StandaloneCommandService } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
 import { OpenerService } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/openerService';
@@ -120,7 +121,36 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     this.textmateService.initialized = true;
   }
 
+  private patchMonacoThemeService() {
+    // 临时实现，覆盖 standaloneThemeService 中的 getTokenStyleMetadata，因为在 0.20.0 中一直永远 undefined
+    const standaloneThemeService = StaticServices.standaloneThemeService.get();
+    const originalGetTheme: typeof standaloneThemeService.getTheme = standaloneThemeService.getTheme.bind(standaloneThemeService);
+    const patchedGetTokenStyleMetadatadFlag = '__patched_getTokenStyleMetadata';
+    standaloneThemeService.getTheme = () => {
+      const theme = originalGetTheme();
+      if (!(patchedGetTokenStyleMetadatadFlag in theme)) {
+        Object.defineProperty(theme, patchedGetTokenStyleMetadatadFlag, { enumerable: false, configurable: false, writable: false, value: true });
+        theme.getTokenStyleMetadata = (type, modifiers) => {
+          // use theme rules match
+          const style = theme.tokenTheme._match([type].concat(modifiers).join('.'));
+          const metadata = style.metadata;
+          const foreground = modes.TokenMetadata.getForeground(metadata);
+          const fontStyle = modes.TokenMetadata.getFontStyle(metadata);
+          const res =  {
+            foreground,
+            italic: Boolean(fontStyle & 1),
+            bold: Boolean(fontStyle & 2),
+            underline: Boolean(fontStyle & 4),
+          };
+          return res;
+        };
+      }
+      return theme;
+    };
+  }
+
   onMonacoLoaded(monacoService: MonacoService) {
+    this.patchMonacoThemeService();
     const { MonacoCodeService } = require('@ali/ide-editor/lib/browser/editor.override');
     const codeEditorService = this.injector.get(MonacoCodeService);
     // 该类从 vs/editor/standalone/browser/simpleServices 中获取

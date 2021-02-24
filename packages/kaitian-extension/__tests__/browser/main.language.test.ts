@@ -172,7 +172,6 @@ describe('ExtHostLanguageFeatures', () => {
       // @ts-ignore
       expect(value.length).toEqual(1);
       expect(value[0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
-      console.log('Definition Test', value);
       done();
     }, 0);
   });
@@ -194,7 +193,6 @@ describe('ExtHostLanguageFeatures', () => {
       // @ts-ignore
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
-      console.log('Implementation Test', value);
       done();
     }, 0);
   });
@@ -211,7 +209,6 @@ describe('ExtHostLanguageFeatures', () => {
       // @ts-ignore
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
-      console.log('Type Definition Test', value);
       done();
     }, 0);
   });
@@ -525,4 +522,151 @@ describe('ExtHostLanguageFeatures', () => {
     });
   });
 
+  //#region Semantic Tokens
+  const tokenTypesLegend = [
+    'comment', 'string', 'keyword', 'number', 'regexp', 'operator', 'namespace',
+    'type', 'struct', 'class', 'interface', 'enum', 'typeParameter', 'function',
+    'member', 'macro', 'variable', 'parameter', 'property', 'label',
+  ];
+  const tokenModifiersLegend = [
+    'declaration', 'documentation', 'readonly', 'static', 'abstract', 'deprecated',
+    'modification', 'async',
+  ];
+
+  const textDocument = `Available token types:
+  [comment] [string] [keyword] [number] [regexp] [operator] [namespace]
+  [type] [struct] [class] [interface] [enum] [typeParameter] [function]
+  [member] [macro] [variable] [parameter] [property] [label]
+
+Available token modifiers:
+  [type.declaration] [type.documentation] [type.member] [type.static]
+  [type.abstract] [type.deprecated] [type.modification] [type.async]
+
+Some examples:
+  [class.static.token]     [type.static.abstract]
+  [class.static.token]     [type.static]
+
+  [struct]
+
+  [function.private]
+
+An error case:
+  [notInLegend]`;
+
+  const tokenTypes = new Map();
+  const tokenModifiers = new Map();
+  tokenTypesLegend.forEach((tokenType, index) => tokenTypes.set(tokenType, index));
+  tokenModifiersLegend.forEach((tokenModifier, index) => tokenModifiers.set(tokenModifier, index));
+  class TestSemanticTokensProvider implements vscode.DocumentSemanticTokensProvider {
+    async provideDocumentSemanticTokens(document) {
+      const allTokens = this._parseText(textDocument);
+      const builder = new types.SemanticTokensBuilder();
+      allTokens.forEach((token) => {
+        builder.push(token.line, token.startCharacter, token.length, this._encodeTokenType(token.tokenType), this._encodeTokenModifiers(token.tokenModifiers));
+      });
+      return builder.build();
+    }
+    _encodeTokenType(tokenType) {
+      if (tokenTypes.has(tokenType)) {
+        return tokenTypes.get(tokenType);
+      } else if (tokenType === 'notInLegend') {
+        return tokenTypes.size + 2;
+      }
+      return 0;
+    }
+    _encodeTokenModifiers(strTokenModifiers) {
+      let result = 0;
+      // tslint:disable-next-line:prefer-for-of
+      for (let i = 0; i < strTokenModifiers.length; i++) {
+        const tokenModifier = strTokenModifiers[i];
+        if (tokenModifiers.has(tokenModifier)) {
+          result = result | (1 << tokenModifiers.get(tokenModifier));
+        } else if (tokenModifier === 'notInLegend') {
+          result = result | (1 << tokenModifiers.size + 2);
+        }
+      }
+      return result;
+    }
+    _parseText(text) {
+      const r: any[] = [];
+      const lines = text.split(/\r\n|\r|\n/);
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        let currentOffset = 0;
+        do {
+          const openOffset = line.indexOf('[', currentOffset);
+          if (openOffset === -1) {
+            break;
+          }
+          const closeOffset = line.indexOf(']', openOffset);
+          if (closeOffset === -1) {
+            break;
+          }
+          const tokenData = this._parseTextToken(line.substring(openOffset + 1, closeOffset));
+          r.push({
+            line: i,
+            startCharacter: openOffset + 1,
+            length: closeOffset - openOffset - 1,
+            tokenType: tokenData.tokenType,
+            tokenModifiers: tokenData.tokenModifiers,
+          });
+          currentOffset = closeOffset;
+        } while (true);
+      }
+      return r;
+    }
+    _parseTextToken(text) {
+      const parts = text.split('.');
+      return {
+        tokenType: parts[0],
+        tokenModifiers: parts.slice(1),
+      };
+    }
+  }
+  const hostedProvider = new TestSemanticTokensProvider();
+
+  it('registerDocumentSemanticTokensProvider should be work', async (done) => {
+
+    const semanticLegend = new types.SemanticTokensLegend(tokenTypesLegend, tokenModifiersLegend);
+    monaco.languages.register({
+      id: 'semanticLanguage',
+      aliases: ['Semantic Language'],
+      extensions: ['.semanticLanguage'],
+    });
+
+    const mockMainThreadFunc = jest.spyOn(mainThread, '$registerDocumentSemanticTokensProvider');
+
+    disposables.push(extHost.registerDocumentSemanticTokensProvider({ language: 'semanticLanguage' }, hostedProvider, semanticLegend));
+
+    setTimeout(() => {
+      expect(mockMainThreadFunc).toBeCalled();
+      const uri = monaco.Uri.parse('file:///path/to/simple.semanticLanguage');
+      const textModel = monaco.editor.createModel('', 'semanticLanguage', uri);
+      expect(monacoModes.DocumentSemanticTokensProviderRegistry.ordered(textModel as any).length).toBe(1);
+      textModel.dispose();
+      done();
+    }, 0);
+  });
+
+  it('provideDocumentSemanticTokens should be work', async (done) => {
+    const uri = monaco.Uri.parse('file:///path/to/simple1.semanticLanguage');
+    const textModel = monaco.editor.createModel(``, 'semanticLanguage', uri);
+
+    const provider = monacoModes.DocumentSemanticTokensProviderRegistry.ordered(textModel as any)[0];
+    expect(provider).toBeDefined();
+
+    const legend = provider.getLegend();
+    expect(legend.tokenTypes).toEqual(tokenTypesLegend);
+    expect(legend.tokenModifiers).toEqual(tokenModifiersLegend);
+
+    const tokenSource = new monaco.CancellationTokenSource();
+    const mockProvideFunc = jest.spyOn(hostedProvider, 'provideDocumentSemanticTokens');
+    const tokens = await provider.provideDocumentSemanticTokens(textModel as any, null, tokenSource.token);
+
+    expect(mockProvideFunc).toBeCalled();
+    expect(tokens?.resultId).toBe('1');
+    expect((tokens as types.SemanticTokens)?.data instanceof Uint32Array).toBeTruthy();
+    done();
+  });
+  //#endregion Semantic Tokens
 });

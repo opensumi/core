@@ -36,6 +36,8 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     overrides: {[key: string]: any} = {},
   ): Promise<monaco.editor.IStandaloneCodeEditor> {
     const editor =  monaco.editor.create(monacoContainer, {
+      // @ts-ignore
+      'semanticHighlighting.enabled': true,
       glyphMargin: true,
       lightbulb: {
         enabled: true,
