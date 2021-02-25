@@ -257,7 +257,7 @@ export class SearchTreeService {
     data.file = file;
 
     if (!file.parent) {
-      data.path = file.uri!.withoutScheme().toString();
+      data.path = file.uri!.path.toString();
     }
 
     if (file.parent) {

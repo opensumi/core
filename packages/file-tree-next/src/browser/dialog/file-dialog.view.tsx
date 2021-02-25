@@ -54,7 +54,7 @@ export const FileDialog = (
   }, [isReady]);
 
   const hide = () => {
-    const value: string[] = model.selectedFiles.map((file) => file.uri.withoutScheme().toString());
+    const value: string[] = model.selectedFiles.map((file) => file.uri.path.toString());
     // 如果有文件名的，说明肯定是保存文件的情况
     if (fileName && (options as ISaveDialogOptions).showNameInput && (value?.length === 1 || options.defaultUri)) {
       const filePath = value?.length === 1 ? value[0] : options.defaultUri!.path.toString();

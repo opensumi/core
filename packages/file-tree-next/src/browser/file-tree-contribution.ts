@@ -433,7 +433,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_PATH, {
       execute: async (uri) => {
         const copyUri: URI = uri;
-        let pathStr: string = decodeURIComponent(copyUri.withoutScheme().toString());
+        let pathStr: string = decodeURIComponent(copyUri.path.toString());
         // windows下移除路径前的 /
         if (isWindows) {
           pathStr = pathStr.slice(1);

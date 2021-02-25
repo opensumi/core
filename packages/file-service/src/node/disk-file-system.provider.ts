@@ -317,8 +317,8 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
       onDidFilesChanged: (events: DidFilesChangedParams) => {
         const filteredChange = events.changes.filter((file) => {
           const uri = new URI(file.uri);
-          const uriString = uri.withoutScheme().toString();
-          return !this.watchFileExcludesMatcherList.some((match) => match(uriString));
+          const pathStr = uri.path.toString();
+          return !this.watchFileExcludesMatcherList.some((match) => match(pathStr));
         });
         this.fileChangeEmitter.fire(filteredChange);
         if (this.rpcClient) {

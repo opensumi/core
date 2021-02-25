@@ -206,7 +206,7 @@ const getIconClass = (resource: URI, options?: ILabelOptions) => {
     if (!modelService) {
       modelService = StaticServices.modelService.get();
     }
-    const detectedModeId = detectModeId(modelService, modeService, monaco.Uri.file(resource.withoutQuery().withoutScheme().toString()));
+    const detectedModeId = detectModeId(modelService, modeService, monaco.Uri.file(resource.withoutQuery().toString()));
     if (detectedModeId) {
       classes.push(`${cssEscape(detectedModeId)}-lang-file-icon`);
     }

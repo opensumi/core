@@ -268,10 +268,11 @@ export class FilterFileWithGlobRelativePath {
           // 处理相对路径
           const relative = parse(anchorGlob(glob));
           glob = glob.slice(2, glob.length);
-          const uriWithExclude = rootUri.resolve(anchorGlob(glob, false)).withoutScheme();
+
+          const pathStrWithExclude = rootUri.resolve(anchorGlob(glob, false)).path.toString();
           this.matcherList.push({
             relative,
-            absolute: parse(uriWithExclude.toString(true)),
+            absolute: parse(pathStrWithExclude),
           });
         }
       });
@@ -284,15 +285,15 @@ export class FilterFileWithGlobRelativePath {
     if (this.matcherList.length < 1) {
       return result;
     }
-    const uri = new URI(uriString).withoutScheme().toString(true);
+    const pathStr = new URI(uriString).path.toString();
 
     this.matcherList.some((matchers) => {
-      if (!matchers.relative(uri)) {
+      if (!matchers.relative(pathStr)) {
         return;
       } else {
         result = false;
       }
-      result = matchers.absolute(uri);
+      result = matchers.absolute(pathStr);
       return result;
     });
 

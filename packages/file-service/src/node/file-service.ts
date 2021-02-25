@@ -479,8 +479,8 @@ export class FileService extends RPCService implements IFileService {
       if (this.workspaceRoots.length > 0) {
         this.workspaceRoots.forEach((root: string) => {
           const uri = new URI(root)
-          const uriWithExclude = uri.resolve(str).withoutScheme();
-          this.filesExcludesMatcherList.push(parse(uriWithExclude.toString(true)));
+          const pathStrWithExclude = uri.resolve(str).path.toString();
+          this.filesExcludesMatcherList.push(parse(pathStrWithExclude));
         });
       } else {
         this.filesExcludesMatcherList.push(parse(str));
@@ -492,7 +492,7 @@ export class FileService extends RPCService implements IFileService {
     const uri = new URI(uriString);
 
     return this.filesExcludesMatcherList.some((matcher) => {
-      return matcher(uri.withoutScheme().toString(true));
+      return matcher(uri.path.toString());
     });
   }
 

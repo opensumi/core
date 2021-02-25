@@ -107,10 +107,36 @@ export class URI {
   }
 
   /**
+   * @deprecated
    * return this URI without a scheme
    */
   withoutScheme(): URI {
-    return this.withScheme('');
+    /**
+     * 本方法已废弃
+     * 由于 vscode-uri 自 1.0.8 起，内部强制校验和修正 `scheme` 参数
+     * 会将 scheme 为空时强制修正为 `file` (不可关闭)
+     * 会在不传入 scheme 时报错 (可通过 setUriThrowOnMissingScheme 关闭)
+     * 因此这里直接调用 `new Uri` 产生一个不带 scheme 的 Uri 实例
+     * ---- !!!!!!! ATTENTION ----
+     * 这样做的影响是 Uri 的实例 toJSON 时没有 $mid 参数，会在通信序列化时无法传输
+     * ---- !!!!!!! ATTENTION ----
+     * 但是 vscode-uri 对 contructor 属性加了 protected 保护，因此增加了 `ts-ignore`
+     */
+    if (process.env.NODE_ENV !== 'production' && console !== undefined) {
+      console.warn(
+        'Warning: `Uri.withoutScheme` is deprecated, '
+        + 'If you want to get `fsPath` by `withoutScheme` method, '
+        + 'it\'s recommended to use `uri.path.toString` directly'
+      );
+    }
+
+    // @ts-ignore
+    const newCodeUri = new Uri({
+      ...this.codeUri.toJSON(),
+      scheme: '',
+    });
+
+    return new URI(newCodeUri);
   }
 
   /**
