@@ -58,7 +58,6 @@
     "@ali/vscode-ripgrep": "^1.3.1-release",
     "address": "^1.1.2",
     "diff": "^4.0.1",
-    "esm": "^3.2.25",
     "glob-to-regexp": "0.4.1",
     "is-running": "^2.1.0",
     "lodash.clonedeep": "^4.5.0",
