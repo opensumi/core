@@ -14,6 +14,7 @@ import {
 import { IWebSocket } from '@ali/ide-connection';
 import { OutputChannel } from '@ali/ide-output/lib/browser/output.channel';
 import { DEBUG_REPORT_NAME } from '../common';
+import { DebugConfiguration } from 'vscode';
 
 export interface DebugExitEvent {
   code?: number;
@@ -145,7 +146,7 @@ export class DebugSessionConnection implements IDisposable {
 
   protected sessionAdapterID: DebugProtocol.InitializeRequestArguments['adapterID'];
 
-  async sendRequest<K extends keyof DebugRequestTypes>(command: K, args: DebugRequestTypes[K][0]): Promise<DebugRequestTypes[K][1]> {
+  async sendRequest<K extends keyof DebugRequestTypes>(command: K, args: DebugRequestTypes[K][0], configuration: DebugConfiguration): Promise<DebugRequestTypes[K][1]> {
     /**
      * 在接收到 initialize 请求的时候记录当前的 session 适配器类型
      */
@@ -157,6 +158,7 @@ export class DebugSessionConnection implements IDisposable {
     const result = await this.doSendRequest(command, args);
     dapReporterTime.timeEnd(command, {
       adapterID: this.sessionAdapterID,
+      request: configuration.request,
     });
     if (command === 'next' || command === 'stepIn' ||
       command === 'stepOut' || command === 'stepBack' ||
