@@ -167,8 +167,9 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
     }
   }
 
-  async getCurrentPreferenceUrl() {
-    const url =  await this.getPreferenceUrl(this.currentScope)!;
+  async getCurrentPreferenceUrl(scope?: PreferenceScope) {
+    // 默认获取全局设置的URI
+    const url =  await this.getPreferenceUrl(scope || this.currentScope || PreferenceScope.User)!;
     if (!url) {
       return;
     }
@@ -192,6 +193,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
 
   doSearch(value) {
     // React 上手动触发 onChange 的方法
+    // FIXME: 这里不该直接去操作DOM来触发搜索操作 @吭头
     const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')!.set;
     nativeInputValueSetter!.call(this.searchInput!, value);
     const ev2 = new Event('input', { bubbles: true});

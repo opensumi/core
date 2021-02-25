@@ -75,7 +75,7 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
         return node.name;
       }
 
-      return labelService.getName(node.uri) || node.name;
+      return node.name || labelService.getName(node.uri);
     }
 
     return node.name;

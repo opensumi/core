@@ -26,6 +26,8 @@ import {
   addElement,
   Command,
   ResourceProvider,
+  getIcon,
+  isString,
 } from '@ali/ide-core-browser';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
@@ -34,7 +36,6 @@ import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-edi
 import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { PREF_SCHEME, SettingContribution } from '../common';
 import { PreferenceView } from './preferences.view';
-import { getIcon } from '@ali/ide-core-browser';
 import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { PreferenceSettingsService, defaultSettingGroup, defaultSettingSections } from './preference.service';
 
@@ -75,9 +76,22 @@ export namespace PreferenceContextMenu {
 export namespace PREFERENCE_COMMANDS {
   const CATEGORY = 'preference';
 
+  export const OPEN_USER_SETTING_FILE: Command = {
+    id: 'preference.open.user',
+    label: localize('preference.editorTitle.openUserSource'),
+    category: CATEGORY,
+  };
+
+  export const OPEN_WORKSPACE_SETTING_FILE: Command = {
+    id: 'preference.open.workspace',
+    label: localize('preference.editorTitle.openWorkspaceSource'),
+    category: CATEGORY,
+  };
+
   export const OPEN_SOURCE_FILE: Command = {
     id: 'preference.open.source',
     label: localize('preference.editorTitle.openSource'),
+
     category: CATEGORY,
   };
 }
@@ -145,9 +159,20 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
       },
     });
 
+    commands.registerCommand(PREFERENCE_COMMANDS.OPEN_USER_SETTING_FILE, {
+      execute: async () => {
+        this.openResource(PreferenceScope.User);
+      },
+    });
+
+    commands.registerCommand(PREFERENCE_COMMANDS.OPEN_WORKSPACE_SETTING_FILE, {
+      execute: async () => {
+        this.openResource(PreferenceScope.Workspace);
+      },
+    });
+
     commands.registerCommand(PREFERENCE_COMMANDS.OPEN_SOURCE_FILE, {
       execute: async () => {
-        // open
         this.openResource();
       },
     });
@@ -231,14 +256,14 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   }
 
   async openPreferences(search?: string) {
-    await this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI().withScheme(PREF_SCHEME));
-    if (search) {
+    await this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI('/').withScheme(PREF_SCHEME));
+    if (isString(search)) {
       this.preferenceService.search(search);
     }
   }
 
-  async openResource() {
-    const url = await this.preferenceService.getCurrentPreferenceUrl();
+  async openResource(scope?: PreferenceScope) {
+    const url = await this.preferenceService.getCurrentPreferenceUrl(scope);
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(url));
   }
 

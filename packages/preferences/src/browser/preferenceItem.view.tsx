@@ -45,20 +45,6 @@ export const NextPreferenceItem = ({preferenceName, localizedName, scope}: {pref
   const { value: inheritedValue, effectingScope} = settingsService.getPreference(preferenceName, scope);
   const value = preferenceProvider.get(preferenceName);
 
-  // 当这个设置项被外部变更时，强制更新
-  const [, updateState] = React.useState();
-  const forceUpdate = React.useCallback(() => updateState({}), []);
-  React.useEffect(() => {
-    const disposer = preferenceProvider.onDidPreferencesChanged((e) => {
-      if (e.default && e.default.hasOwnProperty(preferenceName)) {
-        forceUpdate();
-      }
-    });
-    return () => {
-      disposer.dispose();
-    };
-  }, []);
-
   if (!localizedName) {
     localizedName = toPreferenceReadableName(preferenceName);
   }
@@ -130,36 +116,18 @@ function InputPreferenceItem({preferenceName, localizedName, currentValue, schem
 
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
   const schemaProvider: PreferenceSchemaProvider = useInjectable(PreferenceSchemaProvider);
-  const inputRef = React.useRef<HTMLInputElement>();
+  const [value, setValue] = React.useState<string>(currentValue);
 
-  function setInputValue(value) {
-    if (inputRef.current) {
-      if (isNumber) {
-        setNativeValue(inputRef.current, value);
-      } else {
-        setNativeValue(inputRef.current, value);
-      }
-    }
-  }
-
-  React.useEffect(() => {
-    setInputValue(currentValue);
-  });
-
-  const [, updateState] = React.useState();
-  const forceUpdate = React.useCallback(() => updateState({}), []);
-
-  const changeValue = ((value) => {
-    if (validate(value)) {
-      forceUpdate();
+  const handleValueChange = ((value) => {
+    if (hasValidateError(value)) {
+      // scheme校验失败
       return;
     }
-    if (currentValue !== value) {
-      preferenceService.set(preferenceName, value, scope);
-    }
+    preferenceService.set(preferenceName, value, scope);
+    setValue(value);
   });
 
-  function validate(value): ValidateMessage | undefined {
+  function hasValidateError(value): ValidateMessage | undefined {
     const res = schemaProvider.validate(preferenceName, value);
     if (res.valid) {
       return undefined;
@@ -180,12 +148,12 @@ function InputPreferenceItem({preferenceName, localizedName, currentValue, schem
         <div className={styles.text_control}>
           <ValidateInput
             type= {isNumber ? 'number' : 'text'}
-            validate ={validate}
+            validate ={hasValidateError}
             onBlur={(event) => {
               const value = isNumber ? event.target.valueAsNumber : event.target.value;
-              changeValue(value);
+              handleValueChange(value);
             }}
-            ref={inputRef as any}
+            value={value}
           />
         </div>
       </div>
@@ -196,18 +164,19 @@ function CheckboxPreferenceItem({preferenceName, localizedName, currentValue, sc
   const description = schema && schema.description && replaceLocalizePlaceholder(schema.description);
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
 
-  const changeValue = ((value) => {
-    if (currentValue !== value) {
-      preferenceService.set(preferenceName, value, scope);
-    }
+  const [value, setValue] = React.useState<boolean>(currentValue);
+
+  const handleValueChange = ((value) => {
+    setValue(value);
+    preferenceService.set(preferenceName, value, scope);
   });
 
   return (
     <div className={styles.preference_line}>
       <div className={classnames(styles.check, styles.key) }>
-      <CheckBox label={localizedName} checked={currentValue} onChange={(event) => {
-        changeValue((event.target as HTMLInputElement).checked);
-      }}/>
+        <CheckBox label={localizedName} checked={value} onChange={(event) => {
+          handleValueChange((event.target as HTMLInputElement).checked);
+        }}/>
         <SettingStatus preferenceName={preferenceName} scope={scope} effectingScope={effectingScope} hasValueInScope={hasValueInScope}/>
       </div>
       {
@@ -224,6 +193,7 @@ function SelectPreferenceItem({preferenceName, localizedName, currentValue, sche
 
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
   const settingsService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
+  const [value, setValue] = React.useState<string>(currentValue);
 
   const optionEnum = (schema as PreferenceDataProperty).enum;
 
@@ -231,10 +201,9 @@ function SelectPreferenceItem({preferenceName, localizedName, currentValue, sche
     return <div></div>;
   }
 
-  const changeValue = ((value) => {
-    if (currentValue !== value) {
-      preferenceService.set(preferenceName, value, scope);
-    }
+  const handlerValueChange = ((value) => {
+    setValue(value);
+    preferenceService.set(preferenceName, value, scope);
   });
 
   // enum 本身为 string[] | number[]
@@ -257,16 +226,14 @@ function SelectPreferenceItem({preferenceName, localizedName, currentValue, sche
       <div className={styles.control_wrap}>
         {isElectronRenderer() ?
         <NativeSelect onChange={(event) => {
-            changeValue(event.target.value);
+            handlerValueChange(event.target.value);
           }}
           className={styles.select_control}
-          value={currentValue}
+          value={value}
         >
           {options}
         </NativeSelect> :
-        <Select maxHeight='300' onChange={(value) => {
-          changeValue(value);
-        }} value={currentValue} className={styles.select_control}>
+        <Select maxHeight='300' onChange={handlerValueChange} value={value} className={styles.select_control}>
           {options}
         </Select>}
       </div>
@@ -315,17 +282,17 @@ function EditInSettingsJsonPreferenceItem({preferenceName, localizedName, schema
 // TODO: 优化这个组件
 function StringArrayPreferenceItem({preferenceName, localizedName, currentValue, schema, effectingScope, scope , hasValueInScope}: IPreferenceItemProps) {
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
+  const [value, setValue] = React.useState<string[]>(currentValue || []);
 
-  const changeValue = ((value) => {
-    if (currentValue !== value) {
-      preferenceService.set(preferenceName, value, scope);
-    }
+  const handleValueChange = ((value) => {
+    setValue(value);
+    preferenceService.set(preferenceName, value, scope);
   });
 
   let editEl;
   const addItem = () => {
     if (editEl.value) {
-      const newValue = currentValue.slice(0);
+      const newValue = value.slice(0);
       const rawValue = editEl.value;
       // FIXME: 这里的Input状态管理存在问题，后续修复，目前先解决样式问题
       editEl.value = '';
@@ -333,16 +300,16 @@ function StringArrayPreferenceItem({preferenceName, localizedName, currentValue,
         return;
       }
       newValue.push(rawValue);
-      changeValue(newValue);
+      handleValueChange(newValue);
     }
   };
   const removeItem = (idx) => {
-    const newValue = currentValue.slice(0);
+    const newValue = value.slice(0);
     newValue.splice(idx, 1);
     if (newValue.length) {
-      changeValue(newValue);
+      handleValueChange(newValue);
     } else {
-      changeValue([]);
+      handleValueChange([]);
     }
   };
 
@@ -376,17 +343,4 @@ function StringArrayPreferenceItem({preferenceName, localizedName, currentValue,
       </div>
     </div>
   );
-}
-
-function setNativeValue(element, value) {
-  const valueSetter = Object.getOwnPropertyDescriptor(element, 'value')!.set;
-  const prototype = Object.getPrototypeOf(element);
-  const prototypeValueSetter = Object.getOwnPropertyDescriptor(prototype, 'value')!.set;
-
-  if (valueSetter && valueSetter !== prototypeValueSetter) {
-    prototypeValueSetter!.call(element, value);
-  } else {
-    valueSetter!.call(element, value);
-  }
-  element.dispatchEvent(new Event('input', { bubbles: true }));
 }
