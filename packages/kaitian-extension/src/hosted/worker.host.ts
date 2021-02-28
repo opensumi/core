@@ -244,7 +244,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
     this.logger.verbose(`[Worker-Host] extension worker start activate ${id} ${extension.workerScriptPath}`);
 
     if (extension.workerScriptPath) {
-      const response = await fetch(extension.workerScriptPath);
+      const response = await fetch(decodeURIComponent(extension.workerScriptPath));
 
       if (response.status !== 200) {
         this.logger.error(response.statusText);
