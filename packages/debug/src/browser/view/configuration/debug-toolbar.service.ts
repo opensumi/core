@@ -72,11 +72,13 @@ export class DebugToolbarService {
     const languageType = this.model.currentSession?.configuration?.type;
     this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_TOOLBAR_OPERATION, name, {
       type: languageType,
+      request: this.currentSession?.configuration.request,
     });
     const reportTime = this.reporterService.time(DEBUG_REPORT_NAME?.DEBUG_TOOLBAR_OPERATION_TIME);
     return () => {
       reportTime.timeEnd(name, {
         type: languageType,
+        request: this.currentSession?.configuration.request,
       });
     };
   }

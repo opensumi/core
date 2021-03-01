@@ -88,11 +88,11 @@ export class FileTreeDialogService extends Tree implements IFileTreeService {
     let root = new URI(this.workspaceRoot.uri);
     if (root.path.toString() !== '/') {
       while (root.path.toString() !== '/') {
-        directory.push(root.withoutScheme().toString());
+        directory.push(root.path.toString());
         root = root.parent;
       }
     } else {
-      directory.push(root.withoutScheme().toString());
+      directory.push(root.path.toString());
     }
     return directory;
   }

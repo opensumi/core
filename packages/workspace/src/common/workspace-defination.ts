@@ -105,9 +105,13 @@ export namespace WorkspaceData {
     const workspaceFileUri = new URI(workspaceFile ? workspaceFile.uri : '').withScheme('file');
     for (const { path } of data.folders) {
       const folderUri = new URI(path).withScheme('file');
-      const rel = workspaceFileUri.parent.relative(folderUri);
-      if (rel) {
-        folderUris.push(rel.toString() || '.');
+      if (workspaceFileUri.parent.isEqualOrParent(folderUri)) {
+        if (workspaceFileUri.parent.isEqual(folderUri)) {
+          folderUris.push('.');
+        } else {
+          const rel = workspaceFileUri.parent.relative(folderUri);
+          folderUris.push(rel!.toString() || '.');
+        }
       } else {
         folderUris.push(folderUri.toString());
       }
@@ -128,8 +132,8 @@ export namespace WorkspaceData {
       const folders: string[] = [];
       for (const folder of data.folders) {
         const path = folder.path;
-        const uri = new URI(path);
-        if (uri.scheme) {
+        // 判断是否为绝对路径
+        if (/^.+\:\//.test(path)) {
           folders.push(path);
         } else {
           if (path === '.') {

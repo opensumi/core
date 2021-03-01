@@ -47,11 +47,11 @@ export class FileDialogService {
     let root = new URI(this.root.uri);
     if (root.path.toString() !== '/') {
       while (root.path.toString() !== '/') {
-        directorys.push(root.withoutScheme().toString());
+        directorys.push(root.path.toString());
         root = root.parent;
       }
     } else {
-      directorys.push(root.withoutScheme().toString());
+      directorys.push(root.path.toString());
     }
     return directorys;
   }

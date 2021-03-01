@@ -48,7 +48,9 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   constructor(workspace?: string, metadata?: any, options: BrowserWindowConstructorOptions & ICodeWindowOptions = {}) {
     super();
-    this._workspace = new URI(workspace);
+    if (workspace) {
+      this._workspace = new URI(workspace);
+    }
     this.metadata = metadata;
     this.windowClientId = 'CODE_WINDOW_CLIENT_ID:' + (++windowClientCount);
 

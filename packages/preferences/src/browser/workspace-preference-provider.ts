@@ -80,7 +80,7 @@ export class WorkspacePreferenceProvider extends PreferenceProvider {
   }
 
   protected emitPreferencesChangedEvent(changes: PreferenceProviderDataChanges | PreferenceProviderDataChange[], noFilterExternal?: boolean): void {
-    // 仅在非工作区模式下才透出配置变化
+    // 仅在工作区模式下才透出配置变化
     if (this.workspaceService.isMultiRootWorkspaceOpened) {
       super.emitPreferencesChangedEvent(changes, noFilterExternal);
     }

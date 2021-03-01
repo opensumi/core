@@ -255,7 +255,10 @@ export class WorkspaceService implements IWorkspaceService {
 
       const workspaceData = await this.getWorkspaceDataFromFile();
       if (workspaceData) {
-        for (const { path } of workspaceData.folders) {
+        for (let { path } of workspaceData.folders) {
+          if (path === '.') {
+            path = new URI(this._workspace.uri).parent.toString();
+          }
           const valid = await this.toValidRoot(path);
           if (valid) {
             roots.push(valid);

@@ -147,7 +147,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
         if (result) {
           this.clipboardService.writeText(`  ${result.line},${result.matchStart}:  ${result.lineText}`);
         } else {
-          let text = `\n ${data.uri!.withoutScheme().toString()} \n`;
+          let text = `\n ${data.uri!.path.toString()} \n`;
 
           data.children!.forEach((child: ISearchTreeItem) => {
             const result = child.searchResult!;
@@ -167,7 +167,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
           if (!node.children) {
             return;
           }
-          let text = `\n ${node.uri!.withoutScheme().toString()} \n`;
+          let text = `\n ${node.uri!.path.toString()} \n`;
 
           node.children.forEach((child: ISearchTreeItem) => {
             const result = child.searchResult!;

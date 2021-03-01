@@ -171,7 +171,7 @@ export class DebugSession implements IDebugSession {
       supportsVariableType: false,
       supportsVariablePaging: false,
       supportsRunInTerminalRequest: true,
-    });
+    }, this.configuration);
     this.updateCapabilities(response.body || {});
   }
   protected async launchOrAttach(): Promise<void> {
@@ -620,7 +620,7 @@ export class DebugSession implements IDebugSession {
       throw new Error(`debug: ${command} not supported`);
     }
 
-    return this.connection.sendRequest(command, args);
+    return this.connection.sendRequest(command, args, this.configuration);
   }
 
   sendCustomRequest<T extends DebugProtocol.Response>(command: string, args?: any): Promise<T> {

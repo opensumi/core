@@ -164,7 +164,10 @@ export class DebugSessionManager {
         }
       }
       const sessionId = await this.debug.createDebugSession(resolved.configuration);
-      reporterStart.timeEnd(resolved.configuration.type);
+      reporterStart.timeEnd(resolved.configuration.type, {
+        adapterID: resolved.configuration.type,
+        request: resolved.configuration.request,
+      });
       if (!sessionId) {
         this.messageService.error(`The debug session type "${resolved.configuration.type}" is not supported.`);
         return;

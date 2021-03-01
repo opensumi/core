@@ -54,7 +54,7 @@ export const FileDialog = (
 
   const onSelectHandler = (nodes: TreeNode<any>) => {
     const values = nodes.map((node) => {
-      return node.uri.withoutScheme().toString();
+      return node.uri.path.toString();
     });
     setSaveOrOpenValue(values);
   };

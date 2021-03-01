@@ -540,7 +540,7 @@ export class TextmateService extends WithEventBus {
   private async getOnigLib(): Promise<IOnigLib> {
     let wasmUri: string;
     if (isElectronEnv()) {
-      const onigWasmPath = getNodeRequire()('vscode-oniguruma/release/onig.wasm');
+      const onigWasmPath = getNodeRequire().resolve('vscode-oniguruma/release/onig.wasm');
       wasmUri = URI.file(onigWasmPath).codeUri.toString();
     } else {
       wasmUri = 'https://g.alicdn.com/kaitian/vscode-oniguruma-wasm/0.0.1/onig.wasm';

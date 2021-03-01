@@ -401,12 +401,12 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       execute: (_, uris) => {
         if (uris && uris.length) {
           const copyUri: URI = uris[0];
-          let pathStr: string = decodeURIComponent(copyUri.withoutScheme().toString());
+          let pathStr: string = decodeURIComponent(copyUri.path.toString());
           // windows下移除路径前的 /
           if (isWindows) {
             pathStr = pathStr.slice(1);
           }
-          this.clipboardService.writeText(decodeURIComponent(copyUri.withoutScheme().toString()));
+          this.clipboardService.writeText(pathStr);
         }
       },
       isVisible: () => {

@@ -1,4 +1,3 @@
-require = require('esm')(module/*, options*/);
 import { extProcessInit } from './ext.process-base';
 import { performance } from 'perf_hooks';
 import { setPerformance } from './api/vscode/language/util';
