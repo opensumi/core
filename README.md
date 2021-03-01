@@ -33,6 +33,13 @@ npm run start
 npm run start:lite
 ```
 
+### 部分系统 native 依赖需要安装
+由于终端模块使用了 node-canvas 作为测试依赖模块，需要手动安装，如 macos 需要安装
+
+```shell
+  brew install pkg-config cairo pango libpng jpeg giflib librsvg
+```
+
 ### 创建模块
 创建一个目录叫 `file-tree` 的子模块，内部会自动将模板代码创建出来，并且有一个 name 叫 `@ali/ide-file-tree` 的模块。
 
