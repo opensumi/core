@@ -48,7 +48,7 @@ npm run create file-tree
 ```
 
 ### 运行模块
-运行 `file-tree` 目录下面的模块的 `example`，这里会自动去寻找目录下的 `package.json`，得到模块名之后，使用 `lerna run` 执行命令。 
+运行 `file-tree` 目录下面的模块的 `example`，这里会自动去寻找目录下的 `package.json`，得到模块名之后，使用 `lerna run` 执行命令。
 
 ```
 npm run start file-tree
@@ -129,15 +129,8 @@ tnpm owner ls @ali/ide-file-tree
 - [changelog 文档](https://yuque.antfin-inc.com/ide-framework/integration/changelog)
 
 ### Electron 版本运行步骤
-
-```shell
-  cd tools/electron
-  tnpm i
-  tnpm run link-local
-  tnpm run build
-  tnpm run rebuild-native -- --force-rebuild=true
-  tnpm run start
-```
+- `npm run init && npm run start:electron` 即可启动 Electron
+- `tools/electron/README.md` 有详细步骤
 
 ### IDE Superman
 
@@ -147,23 +140,3 @@ tnpm owner ls @ali/ide-file-tree
 ```
 SCM_PLATFORM=antcode LSIF_HOST=${your_lsif_host} yarn start:lite
 ```
-
-### Deprecated: Electron环境
-
-由于 Lerna 管理的包不能平铺依赖，需要先手动link
-
-````
-npm run link:electron
-````
-
-Electron的运行时每一个进程都会单独打包成js， 需要进行构建
-
-````
-npm run build:electron
-````
-
-启动 electron
-
-````
-npm run start:electron
-````
