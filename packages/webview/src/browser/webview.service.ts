@@ -22,6 +22,8 @@ export class WebviewServiceImpl implements IWebviewService {
 
   public readonly plainWebviewsComponents = new Map<string, IPlainWebviewComponentHandle>();
 
+  private readonly webviews = new Map<string, IWebview>();
+
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
@@ -94,11 +96,21 @@ export class WebviewServiceImpl implements IWebviewService {
   }
 
   createWebview(options?: IWebviewContentOptions): IWebview {
+    let webview: IWebview;
     if (isElectronRenderer()) {
-      return this.injector.get(ElectronWebviewWebviewPanel, [(this.webviewIdCount ++).toString(), options]);
+      webview = this.injector.get(ElectronWebviewWebviewPanel, [(this.webviewIdCount ++).toString(), options]);
     } else {
-      return this.injector.get(IFrameWebviewPanel, [(this.webviewIdCount ++).toString(), options]);
+      webview = this.injector.get(IFrameWebviewPanel, [(this.webviewIdCount ++).toString(), options]);
     }
+    this.webviews.set(webview.id, webview);
+    webview.onRemove(() => {
+      this.webviews.delete(webview.id);
+    });
+    return webview;
+  }
+
+  getWebview(id: string): IWebview | undefined {
+    return this.webviews.get(id);
   }
 
   private async storeWebviewResource(id: string) {
@@ -333,6 +345,10 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
 
   get group() {
     return this.editorGroup;
+  }
+
+  get componentId() {
+    return EDITOR_WEBVIEW_SCHEME + '_' + this.id;
   }
 
   constructor(public readonly id: string, public webviewFactory: () =>  T) {

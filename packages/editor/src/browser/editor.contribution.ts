@@ -2,8 +2,7 @@ import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { FormattingConflicts } from '@ali/monaco-editor-core/esm/vs/editor/contrib/format/format';
 import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { BrowserCodeEditor } from './editor-collection.service';
-import { IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService, IClipboardService, QuickOpenContribution, IQuickOpenHandlerRegistry, PrefixQuickOpenService } from '@ali/ide-core-browser';
+import {  IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService, IClipboardService, QuickOpenContribution, IQuickOpenHandlerRegistry, PrefixQuickOpenService } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { isElectronEnv, isWindows, PreferenceScope } from '@ali/ide-core-common';
 import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -239,6 +238,18 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         args: [direction],
       });
     });
+
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.COMPONENT_UNDO.id,
+      keybinding: 'ctrlcmd+z',
+      when: 'inEditorComponent',
+    });
+
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.COMPONENT_REDO.id,
+      keybinding: 'shift+ctrlcmd+z',
+      when: 'inEditorComponent',
+    });
   }
 
   initialize() {
@@ -290,25 +301,20 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
 
     commands.registerCommand(EDITOR_COMMANDS.SAVE_CURRENT, {
       execute: async () => {
-        const editor = this.workbenchEditorService.currentEditor as BrowserCodeEditor;
-        if (editor) {
-          const group = this.workbenchEditorService.currentEditorGroup;
-          if (group && group.currentResource) {
-            group.pin(group.currentResource!.uri);
-          }
-          await editor.save();
+        const group = this.workbenchEditorService.currentEditorGroup;
+        if (group && group.currentResource) {
+          group.pin(group.currentResource!.uri);
+          group.saveCurrent();
         }
       },
     });
 
     commands.registerCommand(EDITOR_COMMANDS.SAVE_URI, {
       execute: async (uri: URI) => {
-        const docRef = this.editorDocumentModelService.getModelReference(uri);
-        if (docRef && docRef.instance.dirty) {
-          try {
-            await docRef.instance.save();
-          } catch (e) {
-            docRef.dispose();
+        for (const g of this.workbenchEditorService.editorGroups) {
+          const r = g.resources.find((r) => r.uri.isEqual(uri));
+          if (r) {
+            g.saveResource(r);
           }
         }
       },
@@ -775,6 +781,18 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     commands.registerCommand(EDITOR_COMMANDS.NEW_UNTITLED_FILE, {
       execute: () => {
         this.workbenchEditorService.createUntitledResource();
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.COMPONENT_UNDO, {
+      execute: () => {
+        this.workbenchEditorService.currentEditorGroup.componentUndo();
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.COMPONENT_REDO, {
+      execute: () => {
+        this.workbenchEditorService.currentEditorGroup.componentRedo();
       },
     });
 

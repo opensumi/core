@@ -24,6 +24,7 @@ export class WebIframeChannel implements IWebviewChannel {
       if (handler) {
         handler(e, e.data.data);
       } else {
+        // tslint:disable-next-line:no-console
         console.log('no handler for ', e);
       }
     });
@@ -36,6 +37,10 @@ export class WebIframeChannel implements IWebviewChannel {
     this.onMessage('devtools-opened', () => {
       this.isInDevelopmentMode = true;
     });
+  }
+
+  get inDev() {
+    return this.isInDevelopmentMode;
   }
 
   postMessage(channel, data?) {
@@ -58,6 +63,14 @@ export class WebIframeChannel implements IWebviewChannel {
     //   console.log('prevented webview navigation');
     //   return false;
     // };
+  }
+
+  onKeydown(event: KeyboardEvent) {
+    // 在浏览器上，需要阻止一些默认的keydown快捷键
+    if (event.key === 's' && (event.metaKey || event.ctrlKey) ) {
+      // 阻止保存
+      event.preventDefault();
+    }
   }
 }
 

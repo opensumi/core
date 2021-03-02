@@ -1,6 +1,6 @@
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Event, Emitter, Uri } from '@ali/ide-core-common';
+import { Event, Emitter, Uri, getDebugLogger } from '@ali/ide-core-common';
 import {
   IDiskFileProvider, FileChangeEvent, FileStat,
   DiskFileServicePath, FileSystemProvider, FileType,
@@ -33,11 +33,16 @@ export abstract class CoreFileServiceProviderClient implements FileSystemProvide
   createDirectory(uri: Uri): void | Thenable<void | FileStat> {
     return this.fileServiceProvider.createDirectory(uri);
   }
-  readFile(uri: Uri, encoding: string): string | Thenable<string> {
-    return this.fileServiceProvider.readFile(uri, encoding);
+  async readFile(uri: Uri, encoding?: string): Promise<Uint8Array> {
+    if (encoding) {
+      getDebugLogger('fileService.fsProvider').warn('encoding option for fsProvider.readFile is deprecated');
+    }
+    const buffer = await this.fileServiceProvider.readFile(uri);
+    return buffer;
   }
-  writeFile(uri: Uri, content: string, options: { create: boolean; overwrite: boolean; }): void | Thenable<void | FileStat> {
-    return this.fileServiceProvider.writeFile(uri, content, options);
+  writeFile(uri: Uri, content: Uint8Array, options: { create: boolean; overwrite: boolean; }): void | Thenable<void | FileStat> {
+    // TODO: 转换放到connection抹平
+    return this.fileServiceProvider.writeFile(uri, Array.from(content) as any, options);
   }
   delete(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean | undefined; }): void | Thenable<void> {
     return this.fileServiceProvider.delete(uri, options);

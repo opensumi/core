@@ -1,6 +1,6 @@
-import { Uri } from './ext-types';
-import { URI, Event, IExtensionInfo } from '@ali/ide-core-common';
+import { Event, IExtensionInfo, Uri } from '@ali/ide-core-common';
 import { ViewColumn } from './editor';
+import type * as vscode from 'vscode';
 
 export interface WebviewPanelShowOptions {
   readonly viewColumn?: number;
@@ -15,7 +15,7 @@ export interface IWebviewPanelOptions {
 export interface IWebviewOptions {
   readonly enableScripts?: boolean;
   readonly enableCommandUris?: boolean;
-  readonly localResourceRoots?: ReadonlyArray<URI>; // TODO 资源文件处理
+  readonly localResourceRoots?: ReadonlyArray<vscode.Uri>; // TODO 资源文件处理
   // TODO readonly portMapping?: ReadonlyArray<IWebviewPortMapping>;
 }
 
@@ -57,6 +57,12 @@ export interface IExtHostWebview {
   $onDidChangeWebviewPanelViewState(id: string, newState: IWebviewPanelViewState): void;
   $onDidDisposeWebviewPanel(id: string): Promise<void>;
   $deserializeWebviewPanel(newWebviewId: string, viewType: string, title: string, state: any, position: number, options: IWebviewOptions): Promise<void>;
+
+  /**
+   * browser主动创建了一个webview，把它交给 exthost 创建 webviewPanel
+   * @param id
+   */
+  $pipeBrowserHostedWebview(id: string, viewType: string): void;
 }
 
 export interface Webview {
@@ -85,6 +91,7 @@ export interface Webview {
    * @param message Body of the message.
    */
   postMessage(message: any): Thenable<boolean>;
+
 }
 
 export interface WebviewPanel {

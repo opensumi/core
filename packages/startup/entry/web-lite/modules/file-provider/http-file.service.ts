@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { URI, Uri, AppConfig } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { AbstractHttpFileService } from '@ali/ide-file-service/lib/browser/browser-fs-provider';
+import { AbstractHttpFileService } from './browser-fs-provider';
 
 import { IMetaService } from '../../services/meta-service/base';
 import { base64ToUnicode } from '../../utils';

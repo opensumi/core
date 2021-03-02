@@ -292,6 +292,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return containerId;
   }
 
+  // 时序保证用，view先注册，container后注册同样需要触发更新
   private tabbarUpdateSet: Set<string> = new Set();
 
   // 由于注册container和view的时序不能保障，注册时需要互相触发

@@ -1,7 +1,7 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult, IEditorGroupState, ResourceDecorationChangeEvent, IUntitledOptions, SaveReason, getSplitActionFromDragDrop } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider, Emitter, formatLocalize, IReporterService } from '@ali/ide-core-common';
+import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider, Emitter, formatLocalize, IReporterService, ILogger } from '@ali/ide-core-common';
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution, ResourceOpenTypeChangedEvent, EditorComponentDisposeEvent, EditorActiveResourceStateChangedEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
@@ -322,6 +322,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
         resourceContext.reset();
       }
     }
+
   }
 
   onDomCreated(domNode: HTMLElement) {
@@ -457,6 +458,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @Autowired(IOpenerService)
   private readonly openerService: IOpenerService;
 
+  @Autowired(ILogger)
+  logger: ILogger;
+
   codeEditor!: ICodeEditor;
 
   diffEditor!: IDiffEditor;
@@ -529,6 +533,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   private _editorLangIDContextKey: IContextKey<string>;
 
   private _isInDiffEditorContextKey: IContextKey<boolean>;
+
+  private _isInEditorComponentContextKey: IContextKey<boolean>;
 
   private _prevDomHeight: number = 0;
   private _prevDomWidth: number = 0;
@@ -646,6 +652,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       });
       this._editorLangIDContextKey = this.contextKeyService.createKey<string>('editorLangId', '');
       this._isInDiffEditorContextKey = this.contextKeyService.createKey<boolean>('isInDiffEditor', false);
+      this._isInEditorComponentContextKey = this.contextKeyService.createKey<boolean>('inEditorComponent', false);
     }
     if (this.currentEditor && this.currentEditor.currentUri) {
       this._resourceContext.set(this.currentEditor.currentUri);
@@ -661,6 +668,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this._editorLangIDContextKey.reset();
     }
     this._isInDiffEditorContextKey.set(!!this.currentOpenType && this.currentOpenType.type === 'diff');
+    this._isInEditorComponentContextKey.set(this.currentOpenType?.type === 'component');
   }
 
   get contextKeyService() {
@@ -1202,6 +1210,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   private async shouldClose(resource: IResource): Promise<boolean> {
+    // TODO: 自定义打开方式如果存在保存能力，也要能阻止关闭
     const openedResources = this.workbenchEditorService.editorGroups.map((group) => group.resources);
     if (!await this.resourceService.shouldCloseResource(resource, openedResources)) {
       return false;
@@ -1493,15 +1502,51 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     for (const r of this.resources) {
       // 不保存无标题文件
       if (!includeUntitled && r.uri.scheme === Schemas.untitled) {
-        return;
+        continue;
       }
-      const docRef = this.documentModelManager.getModelReference(r.uri);
-      if (docRef) {
-        if (docRef.instance.dirty) {
-          await docRef.instance.save(undefined, reason);
-        }
-        docRef.dispose();
+      await this.saveResource(r, reason);
+    }
+  }
+
+  async saveResource(resource: IResource, reason: SaveReason = SaveReason.Manual) {
+    // 尝试使用 openType 提供的保存方法保存
+    if (await this.saveByOpenType(resource, reason)) {
+      return;
+    }
+
+    // 否则使用 document 进行保存 (如果有)
+    const docRef = this.documentModelManager.getModelReference(resource.uri);
+    if (docRef) {
+      if (docRef.instance.dirty) {
+        await docRef.instance.save(undefined, reason);
       }
+      docRef.dispose();
+    }
+  }
+
+  async saveByOpenType(resource: IResource, reason: SaveReason): Promise<boolean> {
+    const openType = this.cachedResourcesActiveOpenTypes.get(resource.uri.toString());
+    if (openType && openType.saveResource) {
+      try {
+        await openType.saveResource(resource, reason);
+        return true;
+      } catch (e) {
+        this.logger.error(e);
+      }
+    }
+    return false;
+  }
+
+  async saveCurrent(reason: SaveReason = SaveReason.Manual) {
+    const resource = this.currentResource;
+    if (!resource) {
+      return;
+    }
+    if (await this.saveByOpenType(resource, reason)) {
+      return;
+    }
+    if (this.currentEditor) {
+      return this.currentEditor.save();
     }
   }
 
@@ -1515,6 +1560,20 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
     }
     return false;
+  }
+
+  componentUndo() {
+    const currentOpenType = this.currentOpenType;
+    if (currentOpenType?.undo) {
+      currentOpenType.undo(this.currentResource!);
+    }
+  }
+
+  componentRedo() {
+    const currentOpenType = this.currentOpenType;
+    if (currentOpenType?.redo) {
+      currentOpenType.redo(this.currentResource!);
+    }
   }
 
   /**

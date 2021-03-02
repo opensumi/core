@@ -23,6 +23,8 @@ import { ActionContributionSchema, ActionsContributionPoint } from './actions';
 import { ITaskDefinitionSchema, TaskDefinitionContributionPoint } from './taskDefinition';
 import { ProblemPatterns, ProblemPatternsContributionPoint } from './problemPatterns';
 import { ProblemMatchersContributions, ProblemMatchersContributionPoint } from './problemMatchers';
+import { CustomEditorContributionPoint } from './customEditors';
+import { CustomEditorScheme } from '../../../common/vscode/custom-editor';
 
 export const EXTENSION_IDENTIFIER_PATTERN = '^([a-z0-9A-Z][a-z0-9\-A-Z]*)\\.([a-z0-9A-Z][a-z0-9\-A-Z]*)$';
 
@@ -270,6 +272,7 @@ export interface ContributesSchema {
   taskDefinition: ITaskDefinitionSchema;
   problemPatterns: ProblemPatterns;
   problemeMatchers: ProblemMatchersContributions;
+  customEditors?: CustomEditorScheme[];
 }
 
 const CONTRIBUTES_SYMBOL = Symbol();
@@ -300,6 +303,7 @@ export class VSCodeContributeRunner extends WithEventBus {
     TaskDefinitionContributionPoint,
     ProblemPatternsContributionPoint,
     ProblemMatchersContributionPoint,
+    CustomEditorContributionPoint,
   ];
 
   @Autowired(INJECTOR_TOKEN)

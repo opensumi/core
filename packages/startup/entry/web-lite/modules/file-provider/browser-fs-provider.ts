@@ -1,4 +1,4 @@
-import { IDiskFileProvider, FileChangeEvent, FileStat, FileType, FileSystemError, notEmpty, isErrnoException } from '../common';
+import { IDiskFileProvider, FileChangeEvent, FileStat, FileType, FileSystemError, notEmpty, isErrnoException } from '@ali/ide-file-service/src/common';
 import { Event, URI, FileUri, Uri } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { promisify } from '@ali/ide-core-common/lib/browser-fs/util';
@@ -81,9 +81,9 @@ export class BrowserFsProvider implements IDiskFileProvider {
     const _uri = new URI(uri);
     return new Promise(async (resolve) => {
       this.doGetStat(_uri, 1)
-        .then((stat) => resolve(stat))
+        .then((stat) => resolve(stat!))
         .catch((e) => {
-          // console.log(e, 'stat error');
+          // @ts-ignore
           resolve();
         });
     });

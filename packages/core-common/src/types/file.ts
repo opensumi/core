@@ -168,7 +168,7 @@ export interface FileSystemProvider {
    * @return An array of bytes or a thenable that resolves to such.
    * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
    */
-  readFile(uri: Uri, encoding?: string): string | Thenable<string>;
+  readFile(uri: Uri, encoding?: string): Uint8Array | Thenable<Uint8Array>
 
   /**
    * Write data to a file, replacing its entire contents.
@@ -181,7 +181,7 @@ export interface FileSystemProvider {
    * @throws [`FileExists`](#FileSystemError.FileExists) when `uri` already exists, `create` is set but `overwrite` is not set.
    * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
    */
-  writeFile(uri: Uri, content: string, options: { create: boolean, overwrite: boolean, encoding?: string }): void | Thenable<void | FileStat>;
+  writeFile(uri: Uri, content: Uint8Array, options: { create: boolean, overwrite: boolean, encoding?: string }): void | Thenable<void | FileStat>;
 
   /**
    * Delete a file.

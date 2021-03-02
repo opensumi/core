@@ -8,7 +8,7 @@ import {
 } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { FileResource } from '@ali/ide-file-service/lib/browser/file-service-contribution';
-import { BrowserFsProvider, AbstractHttpFileService } from '@ali/ide-file-service/lib/browser/browser-fs-provider';
+import { BrowserFsProvider, AbstractHttpFileService } from './browser-fs-provider';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { StaticResourceContribution, StaticResourceService } from '@ali/ide-static-resource/lib/browser/static.definition';

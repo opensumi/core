@@ -60,7 +60,7 @@ export const PlainWebview: React.ComponentType<{id: string, renderRoot?: HTMLEle
 
 // 将iframe挂载在一个固定的位置，以overlay的形式覆盖在container中，
 // 防止它在DOM树改变时被重载
-class WebviewMounter extends Disposable {
+export class WebviewMounter extends Disposable {
 
   private mounting: number;
 
@@ -72,6 +72,9 @@ class WebviewMounter extends Disposable {
       return;
     }
     this.webview.appendTo(this.getWebviewRealContainer());
+    if (isWebview(this.webview)) {
+      this.webview.setKeybindingDomTarget(container);
+    }
     const resizeObserver = new ResizeObserver(this.doMount.bind(this));
     const mutationObserver = new MutationObserver((mutations) => {
       const ancestors: Set<HTMLElement> = new Set();

@@ -113,6 +113,10 @@ describe('OpenedEditorModelService should be work', () => {
       saveAll: (() => {}) as any,
 
       closeAll: (() => {}) as any,
+
+      saveCurrent: (() => {}) as any,
+
+      saveResource: (() => {}) as any,
     };
     // 当editorGroup长度为1时
     // 取groups中的resource，
@@ -128,6 +132,8 @@ describe('OpenedEditorModelService should be work', () => {
           icon: '',
           metadata: {},
         }],
+        saveCurrent: async () => {},
+        saveResource: async () => {},
       },
     ];
     injector.get(WorkbenchEditorService);

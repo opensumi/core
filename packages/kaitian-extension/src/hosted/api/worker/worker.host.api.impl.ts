@@ -30,6 +30,7 @@ import { ExtHostProgress } from '../vscode/ext.host.progress';
 import { ExtHostUrls } from '../vscode/ext.host.urls';
 import { ExtHostComments, createCommentsApiFactory } from '../vscode/ext.host.comments';
 import { ExtHostTheming } from '../vscode/ext.host.theming';
+import { ExtHostCustomEditorImpl } from '../vscode/ext.host.custom-editor';
 
 export function createAPIFactory(
   rpcProtocol: IRPCProtocol,
@@ -61,6 +62,7 @@ export function createAPIFactory(
   const extHostUrls = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostUrls, new ExtHostUrls(rpcProtocol));
   const extHostComments = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostComments, new ExtHostComments(rpcProtocol, extHostCommands, extHostDocs)) as ExtHostComments;
   const extHostTheming = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostTheming, new ExtHostTheming(rpcProtocol)) as ExtHostTheming;
+  const extHostCustomEditor = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCustomEditor, new ExtHostCustomEditorImpl(rpcProtocol, extHostWebview , extHostDocs)) as ExtHostCustomEditorImpl;
 
   return (extension: IExtension) => {
     return {
@@ -85,7 +87,7 @@ export function createAPIFactory(
         extension, extHostEditors, extHostMessage, extHostWebview,
         extHostTreeView, extHostWindowState, extHostDecorations, extHostStatusBar,
         extHostQuickOpen, extHostOutput, extHostTerminal, extHostWindow, extHostProgress,
-        extHostUrls, extHostTheming,
+        extHostUrls, extHostTheming, extHostCustomEditor,
       ),
       // KAITIAN 扩展 API
       layout: createLayoutAPIFactory(extHostCommands),

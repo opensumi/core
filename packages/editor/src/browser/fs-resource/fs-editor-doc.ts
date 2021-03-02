@@ -62,6 +62,7 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
   }
 
   async provideEditorDocumentModelContent(uri: URI, encoding) {
+    // TODO: 这部分要优化成buffer获取（长期来看是stream获取，encoding在哪一层做？）
     const res = await this.fileServiceClient.resolveContent(uri.toString(), {
       encoding,
     });

@@ -333,8 +333,8 @@ export interface FileSystemProvider {
 export interface IExtHostFileSystemShape {
   $stat(handle: number, resource: UriComponents): Promise<FileStat>;
   $readdir(handle: number, resource: UriComponents): Promise<[string, FileType][]>;
-  $readFile(handle: number, resource: UriComponents): Promise<string>;
-  $writeFile(handle: number, resource: UriComponents, content: string, opts: FileWriteOptions): Promise<void>;
+  $readFile(handle: number, resource: UriComponents): Promise<Uint8Array>;
+  $writeFile(handle: number, resource: UriComponents, content: Uint8Array, opts: FileWriteOptions): Promise<void>;
   $rename(handle: number, resource: UriComponents, target: UriComponents, opts: FileOverwriteOptions): Promise<void>;
   $copy(handle: number, resource: UriComponents, target: UriComponents, opts: FileOverwriteOptions): Promise<void>;
   $mkdir(handle: number, resource: UriComponents): Promise<void>;
@@ -355,8 +355,8 @@ export interface IMainThreadFileSystemShape extends IDisposable {
 
   $stat(uri: UriComponents): Promise<FileStat>;
   $readdir(resource: UriComponents): Promise<[string, FileType][]>;
-  $readFile(resource: UriComponents): Promise<string>;
-  $writeFile(resource: UriComponents, content: string): Promise<void>;
+  $readFile(resource: UriComponents): Promise<Uint8Array>;
+  $writeFile(resource: UriComponents, content: Uint8Array): Promise<void>;
   $rename(resource: UriComponents, target: UriComponents, opts: FileOverwriteOptions): Promise<void>;
   $copy(resource: UriComponents, target: UriComponents, opts: FileOverwriteOptions): Promise<void>;
   $mkdir(resource: UriComponents): Promise<void>;

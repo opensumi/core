@@ -17,6 +17,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostProgress } from './ext.host.progress';
 import { QuickInputOptions } from '@ali/ide-quick-open';
 import { ExtHostTheming } from './ext.host.theming';
+import { ExtHostCustomEditorImpl } from './ext.host.custom-editor';
 
 export function createWindowApiFactory(
   extension: IExtension,
@@ -34,6 +35,7 @@ export function createWindowApiFactory(
   extHostProgress: ExtHostProgress,
   extHostUrls: IExtHostUrls,
   extHostTheming: ExtHostTheming,
+  extHostCustomEditor: ExtHostCustomEditorImpl,
 ) {
   const extensionInfo: IExtensionInfo = {
     id: extension.id,
@@ -172,6 +174,9 @@ export function createWindowApiFactory(
 
     onDidChangeActiveColorTheme(listener, thisArg?, disposables?) {
       return extHostTheming.onDidChangeActiveColorTheme(listener, thisArg, disposables);
+    },
+    registerCustomEditorProvider(viewType: string, provider: vscode.CustomTextEditorProvider | vscode.CustomEditorProvider | vscode.CustomReadonlyEditorProvider, options: {supportsMultipleEditorsPerDocument?: boolean, webviewOptions?: vscode.WebviewPanelOptions} = {}): IDisposable {
+      return extHostCustomEditor.registerCustomEditorProvider(viewType, provider, options, extensionInfo);
     },
   };
 }

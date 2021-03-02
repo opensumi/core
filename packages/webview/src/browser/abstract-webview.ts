@@ -52,6 +52,12 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
   @Autowired(StaticResourceService)
   staticResourceService: StaticResourceService;
 
+  protected _keybindingDomTarget: HTMLElement | undefined = undefined;
+
+  public setKeybindingDomTarget(target) {
+    this._keybindingDomTarget = target;
+  }
+
   constructor(public readonly id: string, options: IWebviewContentOptions = {}) {
     super();
     this._options = options;
@@ -108,6 +114,19 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
     this._onWebviewMessage('do-update-state', (state) => {
       this.state = state;
       this._onDidUpdateState.fire(state);
+    });
+
+    this._onWebviewMessage('did-keydown', (event) => {
+      // Create a fake KeyboardEvent from the data provided
+      const emulatedKeyboardEvent = new KeyboardEvent('keydown', event);
+      // Force override the target
+      Object.defineProperty(emulatedKeyboardEvent, 'target', {
+        get: () => {
+          return this._keybindingDomTarget || this.getDomNode();
+        },
+      });
+      // And re-dispatch
+      window.dispatchEvent(emulatedKeyboardEvent);
     });
 
     this.updateStyle();
@@ -193,4 +212,5 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
   abstract getDomNode(): MaybeNull<HTMLElement>;
 
   abstract remove(): void;
+
 }

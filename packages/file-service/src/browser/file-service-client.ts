@@ -19,6 +19,7 @@ import {
 import { FileSystemWatcher } from './watcher';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { FilesChangeEvent, ExtensionActivateEvent } from '@ali/ide-core-browser';
+import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
 
 // TODO: 这里只做标记，实现插件注册的scheme统一走fs-client
 @Injectable()
@@ -88,46 +89,54 @@ export class FileServiceClient implements IFileServiceClient {
   async resolveContent(uri: string, options?: FileSetContentOptions) {
     const _uri = this.convertUri(uri);
     const provider = await this.getProvider(_uri.scheme);
-    const content = await provider.readFile(_uri.codeUri, options?.encoding);
-    return { content };
+    const rawContent = await provider.readFile(_uri.codeUri);
+    const data = (rawContent as any).data || rawContent;
+    const buffer = BinaryBuffer.wrap(Uint8Array.from(data));
+    return { content: buffer.toString() };
+  }
+
+  async readFile(uri: string) {
+    const _uri = this.convertUri(uri);
+    const provider = await this.getProvider(_uri.scheme);
+    const rawContent = await provider.readFile(_uri.codeUri);
+    const data = (rawContent as any).data || rawContent;
+    const buffer = BinaryBuffer.wrap(Uint8Array.from(data));
+    return { content: buffer };
   }
 
   async getFileStat(uri: string, withChildren: boolean = true) {
     const _uri = this.convertUri(uri);
     const provider = await this.getProvider(_uri.scheme);
-    const stat = await provider.stat(_uri.codeUri);
-    return this.filterStat(stat, withChildren);
+    try {
+      const stat = await provider.stat(_uri.codeUri);
+      return this.filterStat(stat, withChildren);
+    } catch (err) {
+      if (FileSystemError.FileNotFound.is(err)) {
+        return undefined;
+      }
+    }
   }
 
-  async setContent(file: FileStat, content: string, options?: FileSetContentOptions) {
+  async setContent(file: FileStat, content: string | Uint8Array, options?: FileSetContentOptions) {
     const _uri = this.convertUri(file.uri);
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
 
-    if (!stat) {
-      throw FileSystemError.FileNotFound(file.uri);
-    }
     if (stat.isDirectory) {
       throw FileSystemError.FileIsDirectory(file.uri, 'Cannot set the content.');
     }
     if (!(await this.isInSync(file, stat))) {
       throw this.createOutOfSyncError(file, stat);
     }
-    await provider.writeFile(_uri.codeUri, content, { create: false, overwrite: true, encoding: options?.encoding });
+    await provider.writeFile(_uri.codeUri, typeof content === 'string' ? BinaryBuffer.fromString(content).buffer : content, { create: false, overwrite: true, encoding: options?.encoding });
     const newStat = await provider.stat(_uri.codeUri);
-    if (newStat) {
-      return newStat;
-    }
-    throw FileSystemError.FileNotFound(_uri.codeUri.path, 'Error occurred while writing file content.');
+    return newStat;
   }
 
   async updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: FileSetContentOptions): Promise<FileStat> {
     const _uri = this.convertUri(file.uri);
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
-    if (!stat) {
-      throw FileSystemError.FileNotFound(file.uri);
-    }
     if (stat.isDirectory) {
       throw FileSystemError.FileIsDirectory(file.uri, 'Cannot set the content.');
     }
@@ -138,30 +147,25 @@ export class FileServiceClient implements IFileServiceClient {
       return stat;
     }
     const content = await provider.readFile(_uri.codeUri);
-    const newContent = this.applyContentChanges(content, contentChanges);
-    await provider.writeFile(_uri.codeUri, newContent, { create: false, overwrite: true, encoding: options?.encoding });
+    // TODO: encoding & buffer support
+    const newContent = this.applyContentChanges(BinaryBuffer.wrap(content).toString(), contentChanges);
+    await provider.writeFile(_uri.codeUri, BinaryBuffer.fromString(newContent).buffer, { create: false, overwrite: true, encoding: options?.encoding });
     const newStat = await provider.stat(_uri.codeUri);
-    if (newStat) {
-      return newStat;
-    }
-    throw FileSystemError.FileNotFound(file.uri, 'Error occurred while writing file content.');
+    return newStat;
   }
 
   async createFile(uri: string, options?: FileCreateOptions) {
     const _uri = this.convertUri(uri);
     const provider = await this.getProvider(_uri.scheme);
 
-    const content = await this.doGetContent(options);
+    const content = BinaryBuffer.fromString(options?.content || '').buffer;
     let newStat: any = await provider.writeFile(_uri.codeUri, content, {
       create: true,
       overwrite: options && options.overwrite || false,
       encoding: options?.encoding,
     });
     newStat = newStat || await provider.stat(_uri.codeUri);
-    if (newStat) {
-      return newStat;
-    }
-    throw FileSystemError.FileNotFound(uri, 'Error occurred while creating the file.');
+    return newStat;
   }
 
   async createFolder(uri: string): Promise<FileStat> {
@@ -174,7 +178,7 @@ export class FileServiceClient implements IFileServiceClient {
       return result;
     }
 
-    return provider.stat(_uri.codeUri);
+    return await provider.stat(_uri.codeUri);
   }
 
   async move(sourceUri: string, targetUri: string, options?: FileMoveOptions): Promise<FileStat> {
@@ -232,7 +236,6 @@ export class FileServiceClient implements IFileServiceClient {
     this.eventBus.fire(new FilesChangeEvent(changes));
   }
 
-  // FIXME: watch fix
   // 添加监听文件
   async watchFileChanges(uri: URI, excludes?: string[]): Promise<IFileServiceWatcher> {
     const id = this.watcherId++;
@@ -301,10 +304,7 @@ export class FileServiceClient implements IFileServiceClient {
     const _uri = this.convertUri(uriString);
     const provider = await this.getProvider(_uri.scheme);
 
-    const stat = await provider.stat(_uri.codeUri);
-    if (!stat) {
-      throw FileSystemError.FileNotFound(uriString);
-    }
+    await provider.stat(_uri.codeUri);
 
     await provider.delete(_uri.codeUri, {
       recursive: true,
@@ -409,15 +409,6 @@ export class FileServiceClient implements IFileServiceClient {
     const provider = this.fsProviders.get(scheme);
 
     if (!provider) {
-      // Try Init extensionFileSystemManage, if fail will return void!
-      // if (!this.extensionFileSystemManage) {
-      //   if (this.rpcClient && this.rpcClient[0]) {
-      //     this.extensionFileSystemManage = new ExtensionFileSystemManage(this.rpcClient![0]);
-      //   }
-      // }
-      // if (this.extensionFileSystemManage) {
-      //   provider = await this.extensionFileSystemManage.get(scheme);
-      // }
       throw new Error(`Not find ${scheme} provider.`);
     }
 
@@ -526,10 +517,6 @@ export class FileServiceClient implements IFileServiceClient {
     return option && typeof (option.moveToTrash) !== 'undefined'
       ? option.moveToTrash
       : this.options.moveToTrash;
-  }
-
-  protected async doGetContent(option?: { content?: string }): Promise<string> {
-    return (option && option.content) || '';
   }
 
 }

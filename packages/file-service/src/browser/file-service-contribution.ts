@@ -65,14 +65,14 @@ export class FileResource implements Resource {
     this.toDispose.dispose();
   }
 
-  async readContents(options?: { encoding?: string }): Promise<string> {
+  async readContents(options?: { encoding: string }): Promise<string> {
     try {
       const [ ret, stat ] = await Promise.all([
-        this.fileSystem.resolveContent(this.uriString, options),
+        this.fileSystem.readFile(this.uriString),
         this.fileSystem.getFileStat(this.uriString),
       ]);
       this.stat = stat;
-      return ret!.content;
+      return ret!.content.toString();
     } catch (e) {
       if (FileSystemError.FileNotFound.is(e)) {
         this.stat = undefined;

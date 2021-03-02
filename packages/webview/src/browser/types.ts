@@ -73,6 +73,8 @@ export interface IWebview extends IDisposable {
   readonly onRemove: Event<void>;
 
   setListenMessages(listening: boolean): void;
+
+  setKeybindingDomTarget(target: HTMLElement): void;
 }
 
 export interface IWebviewContentOptions {
@@ -147,6 +149,8 @@ export interface IWebviewService {
 
   createWebview(options?: IWebviewContentOptions): IWebview;
 
+  getWebview(id: string): IWebview | undefined;
+
   createEditorWebviewComponent(options?: IWebviewContentOptions, id?: string): IEditorWebviewComponent<IWebview>;
 
   createEditorPlainWebviewComponent(options?: IPlainWebviewConstructionOptions, id?: string): IEditorWebviewComponent<IPlainWebview>;
@@ -207,6 +211,8 @@ export interface IEditorWebviewComponent<T extends IWebview | IPlainWebview> ext
   close();
 
   webviewUri: URI;
+
+  componentId: string;
 
   onDidChangeGroupIndex: Event<number>;
 

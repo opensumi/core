@@ -6,6 +6,7 @@ import { FileResourceResolver } from '../../src/browser/file-service-contributio
 import { FileResource } from '../../src/browser/file-service-contribution';
 import { MockInjector } from '@ali/ide-dev-tool/src/mock-injector';
 import { MockFsProvider } from '../../src/common/mocks';
+import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
 
 describe('FileService Contribution should be work', () => {
   let injector: MockInjector;
@@ -46,7 +47,7 @@ describe('FileService Contribution should be work', () => {
     const content = 'test';
 
     await (resource as FileResource).saveContents(content);
-    expect(fsProvider.mockContent.get(testUri.toString())).toEqual(content);
+    expect(BinaryBuffer.wrap(Uint8Array.from(fsProvider.mockContent.get(testUri.toString()))).toString()).toEqual(content);
     done();
   });
 

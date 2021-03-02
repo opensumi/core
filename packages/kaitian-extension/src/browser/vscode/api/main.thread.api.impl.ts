@@ -16,6 +16,7 @@ import {
   IMainThreadComments,
   IMainThreadUrls,
   IMainThreadTheming,
+  IMainThreadCustomEditor,
 } from '../../../common/vscode'; // '../../common';
 import { MainThreadCommands } from './main.thread.commands';
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
@@ -50,6 +51,7 @@ import { MainThreadUrls } from './main.thread.urls';
 import { IMainThreadExtensionLog, MainThreadExtensionLogIdentifier } from '../../../common/extension-log';
 import { MainThreadExtensionLog } from '../../extension-log';
 import { MainThreadTheming } from './main.thread.theming';
+import { MainThreadCustomEditor } from './main.thread.custom-editor';
 
 export async function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -85,6 +87,7 @@ export async function createApiFactory(
   const MainthreadCommentsAPI = injector.get(MainthreadComments, [rpcProtocol, MainThreadCommandsAPI]);
   const MainthreadUrlsAPI = injector.get(MainThreadUrls, [rpcProtocol]);
   const MainthreadThemingAPI = injector.get(MainThreadTheming, [rpcProtocol]);
+  const MainThreadCustomEditorAPI = injector.get(MainThreadCustomEditor, [rpcProtocol, MainThreadWebviewAPI]);
 
   rpcProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   rpcProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
@@ -115,6 +118,7 @@ export async function createApiFactory(
   rpcProtocol.set<IMainThreadUrls>(MainThreadAPIIdentifier.MainThreadUrls, MainthreadUrlsAPI);
   rpcProtocol.set<IMainThreadTheming>(MainThreadAPIIdentifier.MainThreadTheming, MainthreadThemingAPI);
   rpcProtocol.set<IMainThreadExtensionLog>(MainThreadExtensionLogIdentifier, injector.get(MainThreadExtensionLog));
+  rpcProtocol.set<IMainThreadCustomEditor>(MainThreadAPIIdentifier.MainThreadCustomEditor, MainThreadCustomEditorAPI);
 
   await MainThreadWebviewAPI.init();
 

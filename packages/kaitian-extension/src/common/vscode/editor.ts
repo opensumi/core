@@ -2,6 +2,7 @@ import type { RenderLineNumbersType as MonacoRenderLineNumbersType } from '@ali/
 import { ISelection, IRange, ILineChange } from '@ali/ide-core-common';
 import { IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationRenderOptions, IDecorationApplyOptions, IResourceOpenOptions } from '@ali/ide-editor';
 import { ViewColumn } from './enums';
+export * from './custom-editor';
 export * from './enums';
 export interface IExtensionHostEditorService {
   $acceptChange(change: IEditorChangeDTO);

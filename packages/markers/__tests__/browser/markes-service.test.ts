@@ -55,6 +55,8 @@ const fakeEditorGroup: IEditorGroup = {
   closeAll: (() => {}) as any,
   onDidEditorGroupContentLoading: mockLoadingEmitter.event,
   resourceStatus: new Map(),
+  saveCurrent: (() => {}) as any,
+  saveResource: (() => {}) as any,
 };
 
 fakeEditorGroup.resources = [fakeResource];

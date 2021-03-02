@@ -4,6 +4,7 @@ import { FileChangeEvent, DidFilesChangedParams, FileChange } from '..';
 import { FileSetContentOptions, FileStat, FileMoveOptions, FileCreateOptions, FileCopyOptions, FileDeleteOptions, FileSystemProvider } from '../files';
 import { IFileServiceWatcher } from '../watcher';
 import { Injectable } from '@ali/common-di';
+import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
 
 @Injectable()
 export class MockFileServiceClient implements IFileServiceClient {
@@ -34,8 +35,13 @@ export class MockFileServiceClient implements IFileServiceClient {
 
   async resolveContent(uri: string, options?: FileSetContentOptions) {
     return {
-      stat: this.defaultMockFileStat,
       content: '',
+    };
+  }
+
+  async readFile(uri: string) {
+    return {
+      content: BinaryBuffer.fromString(''),
     };
   }
 

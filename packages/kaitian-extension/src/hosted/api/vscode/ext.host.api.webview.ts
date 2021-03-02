@@ -297,6 +297,12 @@ export class ExtHostWebviewService implements IExtHostWebview {
     return panel;
   }
 
+  $pipeBrowserHostedWebview(handle: string, viewType: string) {
+    const webview = new ExtHostWebview(handle, this._proxy, {}, this.resourceRoots);
+    const panel = new ExtHostWebviewPanel(handle, this._proxy, viewType, '', ViewColumn.One, {}, webview);
+    this._webviewPanels.set(handle, panel);
+  }
+
   public registerWebviewPanelSerializer(
     viewType: string,
     serializer: WebviewPanelSerializer,
@@ -368,7 +374,7 @@ export class ExtHostWebviewService implements IExtHostWebview {
     return serializer.deserializeWebviewPanel(revivedPanel, state);
   }
 
-  private getWebviewPanel(handle: string): ExtHostWebviewPanel | undefined {
+  public getWebviewPanel(handle: string): ExtHostWebviewPanel | undefined {
     return this._webviewPanels.get(handle);
   }
 }

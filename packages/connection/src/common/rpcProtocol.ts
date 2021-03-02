@@ -126,6 +126,11 @@ export namespace ObjectTransfer {
             }),
           },
         };
+      } else if (value instanceof Uint8Array || value instanceof Uint32Array || value instanceof Uint16Array) {
+        return {
+          $type: 'Buffer',
+          data: Array.from(value),
+        };
       }
     }
 
@@ -135,6 +140,9 @@ export namespace ObjectTransfer {
     if (value && value.$type !== undefined && value.data !== undefined) {
       if (value.$type === 'VSCODE_URI') {
         return Uri.parse(value.data);
+      }
+      if (value.$type === 'Buffer') {
+        return Uint8Array.from(value.data);
       }
       if (value.$type === 'VSCODE_COMPLETION_LIST') {
         return {

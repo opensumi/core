@@ -60,6 +60,7 @@ export interface IWebviewChannel {
   ready?: Promise<void>;
   onIframeLoaded?: (iframe: HTMLIFrameElement) => void;
   fakeLoad: boolean;
+  onKeydown?: (event: KeyboardEvent) => void;
 }
 
 function addslashes( str ) {

@@ -25,8 +25,6 @@ describe('file service client', () => {
 
   // FIXME: 这测试写等于没写……
   it.skip('Should Run method with args', () => {
-    fileServiceClient.resolveContent(uri.toString(), { encoding: 'utf8' });
-    expect(calledMap.get('resolveContent')).toEqual([uri.toString(), { encoding: 'utf8' }]);
 
     fileServiceClient.getFileStat(uri.toString());
     expect(calledMap.get('getFileStat')).toEqual([uri.toString()]);

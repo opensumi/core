@@ -20,7 +20,7 @@ import { ExtensionNodeServiceServerPath } from '@ali/ide-kaitian-extension/lib/c
 import { FileSearchServicePath } from '@ali/ide-file-search';
 import { ExtensionClientService } from './overrides/mock-extension-server';
 import { MockFileSearch } from './overrides/mock-file-search';
-import { AbstractHttpFileService, BROWSER_HOME_DIR } from '@ali/ide-file-service/lib/browser/browser-fs-provider';
+import { AbstractHttpFileService, BROWSER_HOME_DIR } from './modules/file-provider/browser-fs-provider';
 import { AoneCodeHttpFileService } from './modules/file-provider/http-file.service';
 
 export async function renderApp(opts: IClientAppOpts) {

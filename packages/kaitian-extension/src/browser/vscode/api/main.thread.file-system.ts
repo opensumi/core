@@ -8,6 +8,7 @@ import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { UriComponents } from '../../../common/vscode/ext-types';
 import { IExtHostFileSystemShape, FileDeleteOptions, IMainThreadFileSystemShape, FileStat, FileSystemProviderErrorCode, FileOverwriteOptions } from '../../../common/vscode/file-system';
 import { toFileStat, fromFileStat } from '../../../common/vscode/converter';
+import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
 
 @Injectable({ multiple: true })
 export class MainThreadFileSystem implements IMainThreadFileSystemShape {
@@ -86,11 +87,11 @@ export class MainThreadFileSystem implements IMainThreadFileSystemShape {
     return res;
   }
 
-  $readFile(uri: UriComponents): Promise<string> {
-    return this._fileService.resolveContent(URI.revive(uri).toString()).then((file) => file.content).catch(MainThreadFileSystem._handleError);
+  $readFile(uri: UriComponents): Promise<Uint8Array> {
+    return this._fileService.readFile(URI.revive(uri).toString()).then((file) => file.content.buffer).catch(MainThreadFileSystem._handleError);
   }
 
-  async $writeFile(uri: UriComponents, content: string): Promise<void> {
+  async $writeFile(uri: UriComponents, content: Uint8Array): Promise<void> {
     const _uri = URI.revive(uri);
     const stat = await this._fileService.getFileStat(_uri.toString(), false);
     if (!stat) {
@@ -103,7 +104,8 @@ export class MainThreadFileSystem implements IMainThreadFileSystemShape {
             .then((stat) => !!stat);
         },
       });
-      return this._fileService.createFile(_uri.toString(), { content })
+      // TODO: createFile迁移到uint8array
+      return this._fileService.createFile(_uri.toString(), { content: BinaryBuffer.wrap(content).toString() })
         .then(() => undefined).catch(MainThreadFileSystem._handleError);
     } else {
       return this._fileService.setContent(stat!, content)
@@ -206,11 +208,12 @@ class RemoteFileSystemProvider implements FileSystemProvider {
     return stat;
   }
 
-  readFile(resource: Uri): Promise<string> {
-    return this._proxy.$readFile(this._handle, resource);
+  async readFile(resource: Uri): Promise<Uint8Array> {
+    const buffer = await this._proxy.$readFile(this._handle, resource);
+    return buffer;
   }
 
-  writeFile(resource: Uri, content: string, opts: { create: boolean, overwrite: boolean }): Promise<void> {
+  writeFile(resource: Uri, content: Uint8Array, opts: { create: boolean, overwrite: boolean }): Promise<void> {
     return this._proxy.$writeFile(this._handle, resource, content, opts);
   }
 

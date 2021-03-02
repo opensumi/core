@@ -185,7 +185,7 @@ export class WebviewPanelManager {
           clearTimeout(this.loadTimeout);
           this.loadTimeout = undefined;
           onLoad(newFrame.contentDocument, newFrame.contentWindow);
-        }, 200);
+        }, 1000);
 
         const _this = this;
         newFrame.contentWindow.addEventListener('load', function(this: any, e) {
@@ -299,6 +299,7 @@ export class WebviewPanelManager {
       metaKey: e.metaKey,
       repeat: e.repeat,
     });
+    this.channel.onKeydown && this.channel.onKeydown(e);
   }
 
   private handleInnerScroll(event) {

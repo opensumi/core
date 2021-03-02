@@ -154,8 +154,14 @@ export class FileService extends RPCService implements IFileService {
   async getFileStat(uri: string): Promise<FileStat | undefined> {
     const _uri = this.getUri(uri);
     const provider = await this.getProvider(_uri.scheme);
-    const stat = await provider.stat(_uri.codeUri);
-    return this.filterStat(stat);
+    try {
+      const stat = await provider.stat(_uri.codeUri);
+      return this.filterStat(stat);
+    } catch (err) {
+      if (FileSystemError.FileNotFound.is(err)) {
+        return undefined;
+      }
+    }
   }
 
   async exists(uri: string): Promise<boolean> {
@@ -163,19 +169,18 @@ export class FileService extends RPCService implements IFileService {
     return this.access(uri);
   }
 
+  // 后端仍然保留 encoding 能力
   async resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ stat: FileStat, content: string }> {
     const _uri = this.getUri(uri);
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
-    if (!stat) {
-      throw FileSystemError.FileNotFound(uri);
-    }
+
     if (stat.isDirectory) {
       throw FileSystemError.FileIsDirectory(uri, 'Cannot resolve the content.');
     }
     const encoding = await this.doGetEncoding(options);
-    const content = await provider.readFile(_uri.codeUri, encoding);
-    return { stat, content };
+    const buffer = await provider.readFile(_uri.codeUri);
+    return { stat, content: decode(this.getNodeBuffer(buffer), encoding) };
   }
 
   async setContent(file: FileStat, content: string, options?: FileSetContentOptions): Promise<FileStat> {
@@ -183,9 +188,6 @@ export class FileService extends RPCService implements IFileService {
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
 
-    if (!stat) {
-      throw FileSystemError.FileNotFound(file.uri);
-    }
     if (stat.isDirectory) {
       throw FileSystemError.FileIsDirectory(file.uri, 'Cannot set the content.');
     }
@@ -193,21 +195,16 @@ export class FileService extends RPCService implements IFileService {
       throw this.createOutOfSyncError(file, stat);
     }
     const encoding = await this.doGetEncoding(options);
-    await provider.writeFile(_uri.codeUri, content, { create: false, overwrite: true, encoding });
+    const buffer = encode(content, encoding);
+    await provider.writeFile(_uri.codeUri, buffer, { create: false, overwrite: true, encoding });
     const newStat = await provider.stat(_uri.codeUri);
-    if (newStat) {
-      return newStat;
-    }
-    throw FileSystemError.FileNotFound(file.uri, 'Error occurred while writing file content.');
+    return newStat;
   }
 
   async updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: FileSetContentOptions): Promise<FileStat> {
     const _uri = this.getUri(file.uri);
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
-    if (!stat) {
-      throw FileSystemError.FileNotFound(file.uri);
-    }
     if (stat.isDirectory) {
       throw FileSystemError.FileIsDirectory(file.uri, 'Cannot set the content.');
     }
@@ -222,12 +219,10 @@ export class FileService extends RPCService implements IFileService {
     const buffer = await this.getNodeBuffer(await provider.readFile(_uri.codeUri));
     const content = decode(buffer, encoding);
     const newContent = this.applyContentChanges(content, contentChanges);
-    await provider.writeFile(_uri.codeUri, newContent, { create: false, overwrite: true, encoding });
+    const newBuffer = encode(newContent, encoding);
+    await provider.writeFile(_uri.codeUri, newBuffer, { create: false, overwrite: true, encoding });
     const newStat = await provider.stat(_uri.codeUri);
-    if (newStat) {
-      return newStat;
-    }
-    throw FileSystemError.FileNotFound(file.uri, 'Error occurred while writing file content.');
+    return newStat;
   }
 
   async move(sourceUri: string, targetUri: string, options?: FileMoveOptions): Promise<FileStat> {
@@ -276,16 +271,14 @@ export class FileService extends RPCService implements IFileService {
 
     const content = await this.doGetContent(options);
     const encoding = await this.doGetEncoding(options);
-    let newStat: any = await provider.writeFile(_uri.codeUri, content, {
+    const buffer = encode(content, encoding);
+    let newStat: any = await provider.writeFile(_uri.codeUri, buffer, {
       create: true,
       overwrite: options && options.overwrite || false,
       encoding,
     });
     newStat = newStat || await provider.stat(_uri.codeUri);
-    if (newStat) {
-      return newStat;
-    }
-    throw FileSystemError.FileNotFound(uri, 'Error occurred while creating the file.');
+    return newStat;
   }
 
   async createFolder(uri: string): Promise<FileStat> {
@@ -311,10 +304,7 @@ export class FileService extends RPCService implements IFileService {
     const _uri = this.getUri(uri);
     const provider = await this.getProvider(_uri.scheme);
 
-    const stat = await provider.stat(_uri.codeUri);
-    if (!stat) {
-      throw FileSystemError.FileNotFound(uri);
-    }
+    await provider.stat(_uri.codeUri);
 
     await (provider as any).delete(_uri.codeUri, {
       recursive: true,
@@ -360,17 +350,6 @@ export class FileService extends RPCService implements IFileService {
   }
 
   getEncodingInfo = getEncodingInfo
-
-  // FIXME: no usage any more?
-  async getRoots(): Promise<FileStat[]> {
-    const cwdRoot = paths.parse(process.cwd()).root;
-    const rootUri = FileUri.create(cwdRoot);
-    const root = await (await this.getProvider(Schemas.file)).stat(rootUri.codeUri);
-    if (root) {
-      return [root];
-    }
-    return [];
-  }
 
   async getCurrentUserHome(): Promise<FileStat | undefined> {
     return this.getFileStat(FileUri.create(os.homedir()).toString());

@@ -4,23 +4,23 @@ import { FileSystemProvider, IDiskFileProvider } from '../common/';
 export class FileSystemManage {
   readonly providers = new Map<string, FileSystemProvider | IDiskFileProvider>();
 
-  add(schema: string, provider: FileSystemProvider): IDisposable {
-    if (this.providers.has(schema)) {
-      throw new Error(`A provider for the scheme ${schema} is already registered.`);
+  add(scheme: string, provider: FileSystemProvider): IDisposable {
+    if (this.providers.has(scheme)) {
+      throw new Error(`A provider for the scheme ${scheme} is already registered.`);
     }
-    this.providers.set(schema, provider);
+    this.providers.set(scheme, provider);
     return {
       dispose: () => {
-        this.providers.delete(schema);
+        this.providers.delete(scheme);
       },
     };
   }
 
-  delete(schema: string) {
-    this.providers.delete(schema);
+  delete(scheme: string) {
+    this.providers.delete(scheme);
   }
 
-  get(schema: string) {
-    return this.providers.get(schema);
+  get(scheme: string) {
+    return this.providers.get(scheme);
   }
 }

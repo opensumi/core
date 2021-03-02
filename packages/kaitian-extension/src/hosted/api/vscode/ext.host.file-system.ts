@@ -11,7 +11,6 @@ import {
   IDisposable,
   Schemas,
   toDisposable,
-  stringUtils,
 } from '@ali/ide-core-common';
 import {
   MainThreadAPIIdentifier,
@@ -42,10 +41,12 @@ class ConsumerFileSystem implements vscode.FileSystem {
     return this._proxy.$mkdir(uri).catch(ConsumerFileSystem._handleError);
   }
   async readFile(uri: vscode.Uri): Promise<Uint8Array> {
-    return this._proxy.$readFile(uri).then((content) => new stringUtils.StringTextEncoder().encode(content)).catch(ConsumerFileSystem._handleError);
+    return this._proxy.$readFile(uri).then((content) => {
+      return Buffer.from(content);
+    }).catch(ConsumerFileSystem._handleError);
   }
   writeFile(uri: vscode.Uri, content: Uint8Array): Promise<void> {
-    return this._proxy.$writeFile(uri, new stringUtils.StringTextDecoder().decode(content)).catch(ConsumerFileSystem._handleError);
+    return this._proxy.$writeFile(uri, content).catch(ConsumerFileSystem._handleError);
   }
   delete(uri: vscode.Uri, options?: { recursive?: boolean; useTrash?: boolean; }): Promise<void> {
     return this._proxy.$delete(uri, { ...{ recursive: false, useTrash: false }, ...options }).catch(ConsumerFileSystem._handleError);
@@ -176,12 +177,12 @@ export class ExtHostFileSystem implements files.IExtHostFileSystemShape {
     return Promise.resolve(this._getFsProvider(handle).readDirectory(URI.revive(resource)));
   }
 
-  $readFile(handle: number, resource: UriComponents): Promise<string> {
-    return Promise.resolve(this._getFsProvider(handle).readFile(URI.revive(resource))).then((data) => new stringUtils.StringTextDecoder().decode(data));
+  $readFile(handle: number, resource: UriComponents): Promise<Uint8Array> {
+    return Promise.resolve(this._getFsProvider(handle).readFile(URI.revive(resource))).then((data) => data);
   }
 
-  $writeFile(handle: number, resource: UriComponents, content: string, opts: files.FileWriteOptions): Promise<void> {
-    return Promise.resolve(this._getFsProvider(handle).writeFile(URI.revive(resource), new stringUtils.StringTextEncoder().encode(content), opts));
+  $writeFile(handle: number, resource: UriComponents, content: Uint8Array, opts: files.FileWriteOptions): Promise<void> {
+    return Promise.resolve(this._getFsProvider(handle).writeFile(URI.revive(resource), content, opts));
   }
 
   $delete(handle: number, resource: UriComponents, opts: files.FileDeleteOptions): Promise<void> {

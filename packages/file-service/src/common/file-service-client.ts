@@ -9,6 +9,7 @@ import { FileStat,
 } from './files';
 import { IFileServiceWatcher } from './watcher';
 import { DidFilesChangedParams, FileChangeEvent } from '@ali/ide-core-common';
+import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
 
 export const IFileServiceClient = IFileServiceClientToken;
 
@@ -22,7 +23,7 @@ export interface IFileServiceClient {
 
   /**
    * Read the entire contents of a file.
-   *
+   * @deprecated please use readFile instead
    * @param uri The uri of the file.
    * @return An array of bytes or a thenable that resolves to such.
    * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
@@ -30,6 +31,8 @@ export interface IFileServiceClient {
    * @throws [`FileIsNoPermissions`](#FileSystemError.FileIsNoPermissions) when `uri` has no permissions.
    */
   resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ content: string }>;
+
+  readFile(uri: string): Promise<{ content: BinaryBuffer }>;
 
   /**
    * Read the file stat
@@ -40,7 +43,7 @@ export interface IFileServiceClient {
 
   getFileType(uri: string): Promise<string|undefined>;
 
-  setContent(file: FileStat, content: string, options?: FileSetContentOptions): Promise<FileStat>;
+  setContent(file: FileStat, content: string | Uint8Array, options?: FileSetContentOptions): Promise<FileStat>;
 
   updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: FileSetContentOptions): Promise<FileStat>;
 

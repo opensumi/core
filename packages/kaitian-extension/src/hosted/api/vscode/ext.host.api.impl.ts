@@ -37,6 +37,7 @@ import { ExtHostComments, createCommentsApiFactory } from './ext.host.comments';
 import { ExtHostFileSystemEvent } from './ext.host.file-system-event';
 import { ExtHostUrls } from './ext.host.urls';
 import { ExtHostTheming } from './ext.host.theming';
+import { ExtHostCustomEditorImpl } from './ext.host.custom-editor';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -76,6 +77,8 @@ export function createApiFactory(
   const extHostComments = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostComments, new ExtHostComments(rpcProtocol, extHostCommands, extHostDocs)) as ExtHostComments;
   const extHostUrls = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostUrls, new ExtHostUrls(rpcProtocol));
   const extHostTheming = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostTheming, new ExtHostTheming(rpcProtocol)) as ExtHostTheming;
+  const extHostCustomEditor = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCustomEditor, new ExtHostCustomEditorImpl(rpcProtocol, extHostWebview, extHostDocs)) as ExtHostCustomEditorImpl;
+
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
 
   return (extension: IExtension) => {
@@ -85,7 +88,7 @@ export function createApiFactory(
         extension, extHostEditors, extHostMessage, extHostWebview,
         extHostTreeView, extHostWindowState, extHostDecorations, extHostStatusBar,
         extHostQuickOpen, extHostOutput, extHostTerminal, extHostWindow, extHostProgress,
-        extHostUrls, extHostTheming,
+        extHostUrls, extHostTheming, extHostCustomEditor,
       ),
       languages: createLanguagesApiFactory(extHostLanguages, extension),
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem, extHostFileSystemEvent, extHostTasks, extension),

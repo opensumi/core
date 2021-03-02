@@ -2,6 +2,7 @@ import { Injectable } from '@ali/common-di';
 import { IDiskFileProvider, FileType } from '../';
 import { Emitter, Event } from '@ali/ide-core-common';
 import { FileChangeEvent } from '..';
+import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
 
 @Injectable()
 export class MockFsProvider implements IDiskFileProvider {
@@ -36,9 +37,9 @@ export class MockFsProvider implements IDiskFileProvider {
 
   }
   readFile(uri) {
-    return 'mock content';
+    return BinaryBuffer.fromString('mock content').buffer;
   }
-  writeFile(uri, content: string, options: { create: boolean; overwrite: boolean; }) {
+  writeFile(uri, content: Uint8Array, options: { create: boolean; overwrite: boolean; }) {
     this.mockContent.set(uri.toString(), content);
   }
   delete(uri, options: { recursive: boolean; moveToTrash?: boolean | undefined; }) {

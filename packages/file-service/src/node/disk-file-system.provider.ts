@@ -4,7 +4,7 @@ import * as paths from 'path';
 import * as os from 'os';
 import * as mv from 'mv';
 import { v4 } from 'uuid';
-import { sync as writeFileAtomicSync } from 'write-file-atomic';
+import * as writeFileAtomic from 'write-file-atomic';
 import {
   UriComponents,
   Uri,
@@ -33,7 +33,6 @@ import {
 import { Injectable, Autowired } from '@ali/common-di';
 import { RPCService } from '@ali/ide-connection';
 import * as fileType from 'file-type';
-import { decode, encode } from './encoding';
 import { ParsedPattern, parse } from '@ali/ide-core-common/lib/utils/glob';
 
 const debugLog = new DebugLog();
@@ -106,13 +105,19 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
 
   stat(uri: UriComponents): Thenable<FileStat> {
     const _uri = Uri.revive(uri);
-    return new Promise(async (resolve) => {
+    return new Promise(async (resolve, reject) => {
       this.doGetStat(_uri, 1)
         .then((stat) => {
-          // console.log(stat, 'provider stat bkend');
-          resolve(stat);
+          if (stat) {
+            resolve(stat);
+          } else {
+            reject(FileSystemError.FileNotFound(uri.path));
+          }
         })
-        .catch((e) => resolve());
+        .catch((e) => {
+          debugLog.error(e);
+          reject(e);
+        });
     });
   }
 
@@ -149,16 +154,12 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
     throw FileSystemError.FileNotFound(uri.path, 'Error occurred while creating the directory.');
   }
 
-  async readFile(uri: UriComponents, encoding = 'utf8'): Promise<string> {
+  async readFile(uri: UriComponents, encoding = 'utf8'): Promise<Uint8Array> {
     const _uri = Uri.revive(uri);
-    if (typeof encoding !== 'string') {
-      // cancellation token兼容
-      encoding = 'utf8';
-    }
 
     try {
       const buffer = await fse.readFile(FileUri.fsPath(new URI(_uri)));
-      return decode(buffer, encoding);
+      return buffer;
     } catch (error) {
       if (isErrnoException(error)) {
         if (error.code === 'ENOENT') {
@@ -180,7 +181,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
 
   async writeFile(
     uri: UriComponents,
-    content: string,
+    content: Uint8Array,
     options: { create: boolean, overwrite: boolean, encoding?: string },
   ): Promise<void | FileStat> {
     const _uri = Uri.revive(uri);
@@ -191,14 +192,14 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
     } else if (!exists && !options.create) {
       throw FileSystemError.FileNotFound(_uri.toString());
     }
-    const buffer = encode(content, options.encoding || 'utf8');
-
+    // fileServiceNode调用不会转换，前传通信会转换
+    const buffer = content instanceof Buffer ? content : Buffer.from(Uint8Array.from(content));
     if (options.create) {
       return await this.createFile(uri, { content: buffer });
     }
 
     try {
-      await writeFileAtomicSync(FileUri.fsPath(new URI(_uri)), buffer);
+      await writeFileAtomic(FileUri.fsPath(new URI(_uri)), buffer);
     } catch (e) {
       debugLog.warn('writeFileAtomicSync 出错，使用 fs', e);
       await fse.writeFile(FileUri.fsPath(new URI(_uri)), buffer);
@@ -434,7 +435,12 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
           if (error) {
             return reject(error);
           }
-          resolve(await this.doGetStat(_targetUri, 1));
+          const stat = await this.doGetStat(_targetUri, 1);
+          if (stat) {
+            resolve(stat);
+          } else {
+            reject(FileSystemError.FileNotFound(_targetUri.path));
+          }
         });
       });
     }

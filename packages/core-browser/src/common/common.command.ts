@@ -531,6 +531,21 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
   };
 
+  /**
+   * 编辑器是富组件时的 undo
+   */
+  export const COMPONENT_UNDO: Command = {
+    id: 'editor.componentUndo',
+    category: CATEGORY,
+  };
+
+  /**
+   * 编辑器是富组件时的 redo
+   */
+  export const COMPONENT_REDO: Command = {
+    id: 'editor.componentRedo',
+  };
+
   export const SEARCH_WORKSPACE_SYMBOL: Command = {
     id: 'editor.workspaceSymbol.quickopen',
     label: '%editor.workspaceSymbol.quickopen%',

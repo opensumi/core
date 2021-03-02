@@ -6,7 +6,7 @@ import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
 import { IMainThreadCommands, IExtHostCommands } from './command';
 import { IMainThreadMessage, IExtHostMessage, IExtHostQuickOpen, IMainThreadQuickOpen, IMainThreadStatusBar, IExtHostStatusBar, IMainThreadOutput, IExtHostOutput, IExtHostWindowState, IExtHostWindow, IMainThreadWindow } from './window';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
-import { IMainThreadEditorsService, IExtensionHostEditorService } from './editor';
+import { IMainThreadEditorsService, IExtensionHostEditorService, IMainThreadCustomEditor, IExtHostCustomEditor } from './editor';
 import { ExtHostLanguages } from '../../hosted/api/vscode/ext.host.language';
 import { IExtension, IExtensionHostService } from '../../common';
 import { IMainThreadPreference, IExtHostPreference } from './preference';
@@ -74,6 +74,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadComments: createExtHostContextProxyIdentifier<IMainThreadComments>('MainThreadComments'),
   MainThreadUrls: createExtHostContextProxyIdentifier<IMainThreadUrls>('MainThreadUrls'),
   MainThreadTheming: createExtHostContextProxyIdentifier<IMainThreadTheming>('MainThreadTheming'),
+  MainThreadCustomEditor: createExtHostContextProxyIdentifier<IMainThreadCustomEditor>('MainThreadCustomEditor'),
 };
 
 export const ExtHostAPIIdentifier = {
@@ -108,6 +109,7 @@ export const ExtHostAPIIdentifier = {
   KaitianExtHostWebview: createExtHostContextProxyIdentifier<IKaitianExtHostWebviews>('KaitianExtHostWebview'),
   ExtHostComments: createExtHostContextProxyIdentifier<IExtHostComments>('ExtHostComments'),
   ExtHostUrls: createExtHostContextProxyIdentifier<IExtHostUrls>('ExtHostUrls'),
+  ExtHostCustomEditor: createExtHostContextProxyIdentifier<IExtHostCustomEditor>('ExtHostCustomEditor'),
 };
 
 export abstract class VSCodeExtensionNodeService {

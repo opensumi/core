@@ -45,7 +45,6 @@ import { ExtHostTasks } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/t
 import { ExtHostTerminal } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.terminal';
 import { mockExtensions } from '../__mock__/extensions';
 import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
-import { decode } from '@ali/ide-file-service/lib/node/encoding';
 import { MainThreadFileSystem } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.file-system';
 import { ExtHostFileSystemEvent } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.file-system-event';
 import { MockLoggerManagerClient } from '../__mock__/loggermanager';
@@ -265,7 +264,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
     it('should able to readfile', async () => {
       const filePath = path.join(__dirname, 'main.thread.output.test.ts');
       const content = await extHostWorkspaceAPI.fs.readFile(vscodeUri.file(filePath));
-      expect(decode(Buffer.from(content.buffer), 'utf8')).toBe(fs.readFileSync(filePath, { encoding: 'utf8' }).toString());
+      expect(content.toString()).toBe(fs.readFileSync(filePath, { encoding: 'utf8' }).toString());
     });
 
     it('should able to readDir', async () => {

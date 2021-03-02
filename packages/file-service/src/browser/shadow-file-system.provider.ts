@@ -10,13 +10,14 @@ import {
     FileSystemProvider,
   } from '../common';
 import { Injectable } from '@ali/common-di';
+import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
 
 @Injectable()
 export class ShadowFileSystemProvider implements FileSystemProvider {
 
     readonly: boolean = true;
 
-    shadowFiles: Map<string, string> = new Map<string, string>();
+    shadowFiles: Map<string, Uint8Array> = new Map();
     private fileChangeEmitter = new Emitter<FileChangeEvent>();
     onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
     watch(uri: Uri, options: { recursive: boolean; excludes: string[]; }): number {
@@ -36,9 +37,9 @@ export class ShadowFileSystemProvider implements FileSystemProvider {
     }
     readFile(uri: Uri) {
         const content = this.shadowFiles.get(uri.toString());
-        return content ? new Buffer(content).toString() : Buffer.from('no available').toString();
+        return content || BinaryBuffer.fromString('no available').buffer;
     }
-    writeFile(uri: Uri, content: string, options: { create: boolean; overwrite: boolean; }) {
+    writeFile(uri: Uri, content: Uint8Array, options: { create: boolean; overwrite: boolean; }) {
         this.shadowFiles.set(uri.toString(), content);
     }
     delete(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean; }) {

@@ -177,6 +177,17 @@ export interface IEditorGroup {
 
   closeAll(): Promise<void>;
 
+  /**
+   * 保存当前
+   */
+  saveCurrent(reason?: SaveReason): Promise<void>;
+
+  /**
+   * 保存某个 resource
+   * @param resource
+   * @param reason
+   */
+  saveResource(resource: IResource, reason: SaveReason): Promise<void>;
 }
 export abstract class WorkbenchEditorService {
 
@@ -479,6 +490,22 @@ export interface IEditorOpenType {
 
   // 默认0， 大的排在前面
   weight?: number;
+
+  /**
+   * 如果当前是这个打开方式，则使用这个方式的保存
+   * @param resource
+   */
+  saveResource?(resource: IResource, reason: SaveReason);
+
+  /**
+   * 用户调用回滚文档时，如果是这个打开方式，则调用相关指令
+   * @param resource
+   */
+  revertResource?(resource: IResource);
+
+  undo?(resource: IResource);
+
+  redo?(resource: IResource);
 
 }
 
