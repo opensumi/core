@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser';
-import { ITerminalGroupViewService, ITerminalRenderProvider, ItemType } from '../../common';
+import { ITerminalGroupViewService, ITerminalRenderProvider } from '../../common';
 import TabItem from './tab.item';
 import { TerminalContextMenuService } from '../terminal.context-menu';
 
@@ -36,16 +36,6 @@ export default observer(() => {
           );
         })
       }
-      <TabItem
-        type={ ItemType.add }
-        onClick={ () => {
-          const index = view.createGroup();
-          const group = view.getGroup(index);
-          view.createWidget(group);
-          view.selectGroup(index);
-        } }
-        provider={ provider }
-      ></TabItem>
     </div>
   );
 });

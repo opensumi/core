@@ -9,7 +9,7 @@ export namespace TERMINAL_COMMANDS {
 
   export const ADD = {
     id: 'terminal.add',
-    label: 'add terminal',
+    label: '%terminal.new%',
     category: CATEGORY,
   };
 
