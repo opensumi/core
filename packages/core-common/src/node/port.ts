@@ -92,7 +92,9 @@ export function findFreePortFaster(startPort: number, giveUpAfter: number, timeo
 		}
 	}
 	return new Promise<number>(resolve => {
-		timeoutHandle = setTimeout(() => {
+		// 使用 global.setTimeout 消除歧义，减少测试问题
+		// ref: https://github.com/Microsoft/TypeScript/issues/30128#issuecomment-467968688
+		timeoutHandle = global.setTimeout(() => {
 			doResolve(0, resolve);
 		}, timeout);
 

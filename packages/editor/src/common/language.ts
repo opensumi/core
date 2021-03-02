@@ -1,6 +1,6 @@
 import { editor } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import type { IRelatedInformation } from '@ali/monaco-editor-core/esm/vs/platform/markers/common/markers';
-import { CancellationToken } from '@ali/monaco-editor-core/esm/vs/base/common/cancellation';
+import { CancellationToken } from '@ali/ide-core-common';
 import { URI as Uri } from '@ali/monaco-editor-core/esm/vs/base/common/uri';
 /* istanbul ignore file */
 // TODO: 这部分引用了vscode language server types，这个和我们的要求不同，版权改造之后再写单测
