@@ -44,6 +44,12 @@ declare module 'vscode' {
 
     /**
      * Creates a reference to a theme icon.
+     * @param id id of the icon. The avaiable icons are listed in https://microsoft.github.io/vscode-codicons/dist/codicon.html.
+     */
+    constructor(id: string);
+
+    /**
+     * Creates a reference to a theme icon.
      * @param id id of the icon. The available icons are listed in https://code.visualstudio.com/api/references/icons-in-labels#icon-listing.
      * @param color optional `ThemeColor` for the icon. The color is currently only used in [TreeItem](#TreeItem).
      */

@@ -1356,6 +1356,24 @@ declare module 'vscode' {
     readonly onDidChangeVisibility: Event<TreeViewVisibilityChangeEvent>;
 
     /**
+     * An optional human-readable message that will be rendered in the view.
+     * Setting the message to null, undefined, or empty string will remove the message from the view.
+     */
+    message?: string;
+
+    /**
+     * The tree view title is initially taken from the extension package.json
+     * Changes to the title property will be properly reflected in the UI in the title of the view.
+     */
+    title?: string;
+
+    /**
+     * An optional human-readable description which is rendered less prominently in the title of the view.
+     * Setting the title description to null, undefined, or empty string will remove the description from the view.
+     */
+    description?: string;
+
+    /**
      * Reveals the given element in the tree view.
      * If the tree view is not visible then the tree view is shown and element is revealed.
      *
@@ -1365,7 +1383,7 @@ declare module 'vscode' {
      * In order to expand the revealed element, set the option `expand` to `true`. To expand recursively set `expand` to the number of levels to expand.
      * **NOTE:** You can expand only to 3 levels maximum.
      *
-     * **NOTE:** [TreeDataProvider](#TreeDataProvider) is required to implement [getParent](#TreeDataProvider.getParent) method to access this API.
+     * **NOTE:** The [TreeDataProvider](#TreeDataProvider) that the `TreeView` [is registered with](#window.createTreeView) with must implement [getParent](#TreeDataProvider.getParent) method to access this API.
      */
     reveal(element: T, options?: { select?: boolean, focus?: boolean, expand?: boolean | number }): Thenable<void>;
   }
@@ -2275,6 +2293,12 @@ declare module 'vscode' {
     readonly processId: Thenable<number>;
 
     /**
+     * The object used to initialize the terminal, this is useful for example to detecting the
+     * shell type of when the terminal was not launched by this extension or for detecting what
+     * folder the shell was launched in.
+     */
+    readonly creationOptions: Readonly<TerminalOptions | ExtensionTerminalOptions>;
+    /**
      * The exit status of the terminal, this will be undefined while the terminal is active.
      *
      * **Example:** Show a notification with the exit code when the terminal exits with a
@@ -2593,6 +2617,14 @@ declare module 'vscode' {
      * @param messageOrUri Message or uri.
      */
     constructor(messageOrUri?: string | Uri);
+
+    /**
+     * A code that identifies this error.
+     *
+     * Possible values are names of errors, like [`FileNotFound`](#FileSystemError.FileNotFound),
+     * or `Unknown` for unspecified errors.
+     */
+    readonly code: string;
   }
 
   /**
@@ -2882,247 +2914,243 @@ declare module 'vscode' {
     Web = 2
   }
 
-  /**
-   * Symbol tags are extra annotations that tweak the rendering of a symbol.
-   */
-  export enum SymbolTag {
-
-    /**
-     * Render a symbol as obsolete, usually using a strike-out.
-     */
-    Deprecated = 1
-  }
-
   //#region Semantic Tokens
 
-	/**
-	 * A semantic tokens legend contains the needed information to decipher
-	 * the integer encoded representation of semantic tokens.
-	 */
-	export class SemanticTokensLegend {
-		/**
-		 * The possible token types.
-		 */
-		public readonly tokenTypes: string[];
-		/**
-		 * The possible token modifiers.
-		 */
-		public readonly tokenModifiers: string[];
+  /**
+   * A semantic tokens legend contains the needed information to decipher
+   * the integer encoded representation of semantic tokens.
+   */
+  export class SemanticTokensLegend {
+    /**
+     * The possible token types.
+     */
+    public readonly tokenTypes: string[];
+    /**
+     * The possible token modifiers.
+     */
+    public readonly tokenModifiers: string[];
 
-		constructor(tokenTypes: string[], tokenModifiers?: string[]);
-	}
+    constructor(tokenTypes: string[], tokenModifiers?: string[]);
+  }
 
-	/**
-	 * A semantic tokens builder can help with creating a `SemanticTokens` instance
-	 * which contains delta encoded semantic tokens.
-	 */
-	export class SemanticTokensBuilder {
+  /**
+   * A semantic tokens builder can help with creating a `SemanticTokens` instance
+   * which contains delta encoded semantic tokens.
+   */
+  export class SemanticTokensBuilder {
 
-		constructor(legend?: SemanticTokensLegend);
+    constructor(legend?: SemanticTokensLegend);
 
-		/**
-		 * Add another token.
-		 *
-		 * @param line The token start line number (absolute value).
-		 * @param char The token start character (absolute value).
-		 * @param length The token length in characters.
-		 * @param tokenType The encoded token type.
-		 * @param tokenModifiers The encoded token modifiers.
-		 */
-		push(line: number, char: number, length: number, tokenType: number, tokenModifiers?: number): void;
+    /**
+     * Add another token.
+     *
+     * @param line The token start line number (absolute value).
+     * @param char The token start character (absolute value).
+     * @param length The token length in characters.
+     * @param tokenType The encoded token type.
+     * @param tokenModifiers The encoded token modifiers.
+     */
+    push(line: number, char: number, length: number, tokenType: number, tokenModifiers?: number): void;
 
-		/**
-		 * Add another token. Use only when providing a legend.
-		 *
-		 * @param range The range of the token. Must be single-line.
-		 * @param tokenType The token type.
-		 * @param tokenModifiers The token modifiers.
-		 */
-		push(range: Range, tokenType: string, tokenModifiers?: string[]): void;
+    /**
+     * Add another token. Use only when providing a legend.
+     *
+     * @param range The range of the token. Must be single-line.
+     * @param tokenType The token type.
+     * @param tokenModifiers The token modifiers.
+     */
+    push(range: Range, tokenType: string, tokenModifiers?: string[]): void;
 
-		/**
-		 * Finish and create a `SemanticTokens` instance.
-		 */
-		build(resultId?: string): SemanticTokens;
-	}
+    /**
+     * Finish and create a `SemanticTokens` instance.
+     */
+    build(resultId?: string): SemanticTokens;
+  }
 
-	/**
-	 * Represents semantic tokens, either in a range or in an entire document.
-	 * @see [provideDocumentSemanticTokens](#DocumentSemanticTokensProvider.provideDocumentSemanticTokens) for an explanation of the format.
-	 * @see [SemanticTokensBuilder](#SemanticTokensBuilder) for a helper to create an instance.
-	 */
-	export class SemanticTokens {
-		/**
-		 * The result id of the tokens.
-		 *
-		 * This is the id that will be passed to `DocumentSemanticTokensProvider.provideDocumentSemanticTokensEdits` (if implemented).
-		 */
-		readonly resultId?: string;
-		/**
-		 * The actual tokens data.
-		 * @see [provideDocumentSemanticTokens](#DocumentSemanticTokensProvider.provideDocumentSemanticTokens) for an explanation of the format.
-		 */
-		readonly data: Uint32Array;
+  /**
+   * Represents semantic tokens, either in a range or in an entire document.
+   * @see [provideDocumentSemanticTokens](#DocumentSemanticTokensProvider.provideDocumentSemanticTokens) for an explanation of the format.
+   * @see [SemanticTokensBuilder](#SemanticTokensBuilder) for a helper to create an instance.
+   */
+  export class SemanticTokens {
+    /**
+     * The result id of the tokens.
+     *
+     * This is the id that will be passed to `DocumentSemanticTokensProvider.provideDocumentSemanticTokensEdits` (if implemented).
+     */
+    readonly resultId?: string;
+    /**
+     * The actual tokens data.
+     * @see [provideDocumentSemanticTokens](#DocumentSemanticTokensProvider.provideDocumentSemanticTokens) for an explanation of the format.
+     */
+    readonly data: Uint32Array;
 
-		constructor(data: Uint32Array, resultId?: string);
-	}
+    constructor(data: Uint32Array, resultId?: string);
+  }
 
-	/**
-	 * Represents edits to semantic tokens.
-	 * @see [provideDocumentSemanticTokensEdits](#DocumentSemanticTokensProvider.provideDocumentSemanticTokensEdits) for an explanation of the format.
-	 */
-	export class SemanticTokensEdits {
-		/**
-		 * The result id of the tokens.
-		 *
-		 * This is the id that will be passed to `DocumentSemanticTokensProvider.provideDocumentSemanticTokensEdits` (if implemented).
-		 */
-		readonly resultId?: string;
-		/**
-		 * The edits to the tokens data.
-		 * All edits refer to the initial data state.
-		 */
-		readonly edits: SemanticTokensEdit[];
+  /**
+   * Represents edits to semantic tokens.
+   * @see [provideDocumentSemanticTokensEdits](#DocumentSemanticTokensProvider.provideDocumentSemanticTokensEdits) for an explanation of the format.
+   */
+  export class SemanticTokensEdits {
+    /**
+     * The result id of the tokens.
+     *
+     * This is the id that will be passed to `DocumentSemanticTokensProvider.provideDocumentSemanticTokensEdits` (if implemented).
+     */
+    readonly resultId?: string;
+    /**
+     * The edits to the tokens data.
+     * All edits refer to the initial data state.
+     */
+    readonly edits: SemanticTokensEdit[];
 
-		constructor(edits: SemanticTokensEdit[], resultId?: string);
-	}
+    constructor(edits: SemanticTokensEdit[], resultId?: string);
+  }
 
-	/**
-	 * Represents an edit to semantic tokens.
-	 * @see [provideDocumentSemanticTokensEdits](#DocumentSemanticTokensProvider.provideDocumentSemanticTokensEdits) for an explanation of the format.
-	 */
-	export class SemanticTokensEdit {
-		/**
-		 * The start offset of the edit.
-		 */
-		readonly start: number;
-		/**
-		 * The count of elements to remove.
-		 */
-		readonly deleteCount: number;
-		/**
-		 * The elements to insert.
-		 */
-		readonly data?: Uint32Array;
+  /**
+   * Represents an edit to semantic tokens.
+   * @see [provideDocumentSemanticTokensEdits](#DocumentSemanticTokensProvider.provideDocumentSemanticTokensEdits) for an explanation of the format.
+   */
+  export class SemanticTokensEdit {
+    /**
+     * The start offset of the edit.
+     */
+    readonly start: number;
+    /**
+     * The count of elements to remove.
+     */
+    readonly deleteCount: number;
+    /**
+     * The elements to insert.
+     */
+    readonly data?: Uint32Array;
 
-		constructor(start: number, deleteCount: number, data?: Uint32Array);
-	}
-	/**
-	 * The document semantic tokens provider interface defines the contract between extensions and
-	 * semantic tokens.
-	 */
-	export interface DocumentSemanticTokensProvider {
-		/**
-		 * An optional event to signal that the semantic tokens from this provider have changed.
-		 */
-		onDidChangeSemanticTokens?: Event<void>;
+    constructor(start: number, deleteCount: number, data?: Uint32Array);
+  }
+  /**
+   * The document semantic tokens provider interface defines the contract between extensions and
+   * semantic tokens.
+   */
+  export interface DocumentSemanticTokensProvider {
+    /**
+     * An optional event to signal that the semantic tokens from this provider have changed.
+     */
+    onDidChangeSemanticTokens?: Event<void>;
 
-		/**
-		 * Tokens in a file are represented as an array of integers. The position of each token is expressed relative to
-		 * the token before it, because most tokens remain stable relative to each other when edits are made in a file.
-		 *
-		 * ---
-		 * In short, each token takes 5 integers to represent, so a specific token `i` in the file consists of the following array indices:
-		 *  - at index `5*i`   - `deltaLine`: token line number, relative to the previous token
-		 *  - at index `5*i+1` - `deltaStart`: token start character, relative to the previous token (relative to 0 or the previous token's start if they are on the same line)
-		 *  - at index `5*i+2` - `length`: the length of the token. A token cannot be multiline.
-		 *  - at index `5*i+3` - `tokenType`: will be looked up in `SemanticTokensLegend.tokenTypes`. We currently ask that `tokenType` < 65536.
-		 *  - at index `5*i+4` - `tokenModifiers`: each set bit will be looked up in `SemanticTokensLegend.tokenModifiers`
-		 *
-		 * ---
-		 * ### How to encode tokens
-		 *
-		 * Here is an example for encoding a file with 3 tokens in a uint32 array:
-		 * ```
-		 *    { line: 2, startChar:  5, length: 3, tokenType: "property",  tokenModifiers: ["private", "static"] },
-		 *    { line: 2, startChar: 10, length: 4, tokenType: "type",      tokenModifiers: [] },
-		 *    { line: 5, startChar:  2, length: 7, tokenType: "class",     tokenModifiers: [] }
-		 * ```
-		 *
-		 * 1. First of all, a legend must be devised. This legend must be provided up-front and capture all possible token types.
-		 * For this example, we will choose the following legend which must be passed in when registering the provider:
-		 * ```
-		 *    tokenTypes: ['property', 'type', 'class'],
-		 *    tokenModifiers: ['private', 'static']
-		 * ```
-		 *
-		 * 2. The first transformation step is to encode `tokenType` and `tokenModifiers` as integers using the legend. Token types are looked
-		 * up by index, so a `tokenType` value of `1` means `tokenTypes[1]`. Multiple token modifiers can be set by using bit flags,
-		 * so a `tokenModifier` value of `3` is first viewed as binary `0b00000011`, which means `[tokenModifiers[0], tokenModifiers[1]]` because
-		 * bits 0 and 1 are set. Using this legend, the tokens now are:
-		 * ```
-		 *    { line: 2, startChar:  5, length: 3, tokenType: 0, tokenModifiers: 3 },
-		 *    { line: 2, startChar: 10, length: 4, tokenType: 1, tokenModifiers: 0 },
-		 *    { line: 5, startChar:  2, length: 7, tokenType: 2, tokenModifiers: 0 }
-		 * ```
-		 *
-		 * 3. The next step is to represent each token relative to the previous token in the file. In this case, the second token
-		 * is on the same line as the first token, so the `startChar` of the second token is made relative to the `startChar`
-		 * of the first token, so it will be `10 - 5`. The third token is on a different line than the second token, so the
-		 * `startChar` of the third token will not be altered:
-		 * ```
-		 *    { deltaLine: 2, deltaStartChar: 5, length: 3, tokenType: 0, tokenModifiers: 3 },
-		 *    { deltaLine: 0, deltaStartChar: 5, length: 4, tokenType: 1, tokenModifiers: 0 },
-		 *    { deltaLine: 3, deltaStartChar: 2, length: 7, tokenType: 2, tokenModifiers: 0 }
-		 * ```
-		 *
-		 * 4. Finally, the last step is to inline each of the 5 fields for a token in a single array, which is a memory friendly representation:
-		 * ```
-		 *    // 1st token,  2nd token,  3rd token
-		 *    [  2,5,3,0,3,  0,5,4,1,0,  3,2,7,2,0 ]
-		 * ```
-		 *
-		 * @see [SemanticTokensBuilder](#SemanticTokensBuilder) for a helper to encode tokens as integers.
-		 * *NOTE*: When doing edits, it is possible that multiple edits occur until VS Code decides to invoke the semantic tokens provider.
-		 * *NOTE*: If the provider cannot temporarily compute semantic tokens, it can indicate this by throwing an error with the message 'Busy'.
-		 */
-		provideDocumentSemanticTokens(document: TextDocument, token: CancellationToken): ProviderResult<SemanticTokens>;
+    /**
+     * Tokens in a file are represented as an array of integers. The position of each token is expressed relative to
+     * the token before it, because most tokens remain stable relative to each other when edits are made in a file.
+     *
+     * ---
+     * In short, each token takes 5 integers to represent, so a specific token `i` in the file consists of the following array indices:
+     *  - at index `5*i`   - `deltaLine`: token line number, relative to the previous token
+     *  - at index `5*i+1` - `deltaStart`: token start character, relative to the previous token (relative to 0 or the previous token's start if they are on the same line)
+     *  - at index `5*i+2` - `length`: the length of the token. A token cannot be multiline.
+     *  - at index `5*i+3` - `tokenType`: will be looked up in `SemanticTokensLegend.tokenTypes`. We currently ask that `tokenType` < 65536.
+     *  - at index `5*i+4` - `tokenModifiers`: each set bit will be looked up in `SemanticTokensLegend.tokenModifiers`
+     *
+     * ---
+     * ### How to encode tokens
+     *
+     * Here is an example for encoding a file with 3 tokens in a uint32 array:
+     * ```
+     *    { line: 2, startChar:  5, length: 3, tokenType: "property",  tokenModifiers: ["private", "static"] },
+     *    { line: 2, startChar: 10, length: 4, tokenType: "type",      tokenModifiers: [] },
+     *    { line: 5, startChar:  2, length: 7, tokenType: "class",     tokenModifiers: [] }
+     * ```
+     *
+     * 1. First of all, a legend must be devised. This legend must be provided up-front and capture all possible token types.
+     * For this example, we will choose the following legend which must be passed in when registering the provider:
+     * ```
+     *    tokenTypes: ['property', 'type', 'class'],
+     *    tokenModifiers: ['private', 'static']
+     * ```
+     *
+     * 2. The first transformation step is to encode `tokenType` and `tokenModifiers` as integers using the legend. Token types are looked
+     * up by index, so a `tokenType` value of `1` means `tokenTypes[1]`. Multiple token modifiers can be set by using bit flags,
+     * so a `tokenModifier` value of `3` is first viewed as binary `0b00000011`, which means `[tokenModifiers[0], tokenModifiers[1]]` because
+     * bits 0 and 1 are set. Using this legend, the tokens now are:
+     * ```
+     *    { line: 2, startChar:  5, length: 3, tokenType: 0, tokenModifiers: 3 },
+     *    { line: 2, startChar: 10, length: 4, tokenType: 1, tokenModifiers: 0 },
+     *    { line: 5, startChar:  2, length: 7, tokenType: 2, tokenModifiers: 0 }
+     * ```
+     *
+     * 3. The next step is to represent each token relative to the previous token in the file. In this case, the second token
+     * is on the same line as the first token, so the `startChar` of the second token is made relative to the `startChar`
+     * of the first token, so it will be `10 - 5`. The third token is on a different line than the second token, so the
+     * `startChar` of the third token will not be altered:
+     * ```
+     *    { deltaLine: 2, deltaStartChar: 5, length: 3, tokenType: 0, tokenModifiers: 3 },
+     *    { deltaLine: 0, deltaStartChar: 5, length: 4, tokenType: 1, tokenModifiers: 0 },
+     *    { deltaLine: 3, deltaStartChar: 2, length: 7, tokenType: 2, tokenModifiers: 0 }
+     * ```
+     *
+     * 4. Finally, the last step is to inline each of the 5 fields for a token in a single array, which is a memory friendly representation:
+     * ```
+     *    // 1st token,  2nd token,  3rd token
+     *    [  2,5,3,0,3,  0,5,4,1,0,  3,2,7,2,0 ]
+     * ```
+     *
+     * @see [SemanticTokensBuilder](#SemanticTokensBuilder) for a helper to encode tokens as integers.
+     * *NOTE*: When doing edits, it is possible that multiple edits occur until VS Code decides to invoke the semantic tokens provider.
+     * *NOTE*: If the provider cannot temporarily compute semantic tokens, it can indicate this by throwing an error with the message 'Busy'.
+     */
+    provideDocumentSemanticTokens(document: TextDocument, token: CancellationToken): ProviderResult<SemanticTokens>;
 
-		/**
-		 * Instead of always returning all the tokens in a file, it is possible for a `DocumentSemanticTokensProvider` to implement
-		 * this method (`provideDocumentSemanticTokensEdits`) and then return incremental updates to the previously provided semantic tokens.
-		 *
-		 * ---
-		 * ### How tokens change when the document changes
-		 *
-		 * Suppose that `provideDocumentSemanticTokens` has previously returned the following semantic tokens:
-		 * ```
-		 *    // 1st token,  2nd token,  3rd token
-		 *    [  2,5,3,0,3,  0,5,4,1,0,  3,2,7,2,0 ]
-		 * ```
-		 *
-		 * Also suppose that after some edits, the new semantic tokens in a file are:
-		 * ```
-		 *    // 1st token,  2nd token,  3rd token
-		 *    [  3,5,3,0,3,  0,5,4,1,0,  3,2,7,2,0 ]
-		 * ```
-		 * It is possible to express these new tokens in terms of an edit applied to the previous tokens:
-		 * ```
-		 *    [  2,5,3,0,3,  0,5,4,1,0,  3,2,7,2,0 ] // old tokens
-		 *    [  3,5,3,0,3,  0,5,4,1,0,  3,2,7,2,0 ] // new tokens
-		 *
-		 *    edit: { start:  0, deleteCount: 1, data: [3] } // replace integer at offset 0 with 3
-		 * ```
-		 *
-		 * *NOTE*: If the provider cannot compute `SemanticTokensEdits`, it can "give up" and return all the tokens in the document again.
-		 * *NOTE*: All edits in `SemanticTokensEdits` contain indices in the old integers array, so they all refer to the previous result state.
-		 */
-		provideDocumentSemanticTokensEdits?(document: TextDocument, previousResultId: string, token: CancellationToken): ProviderResult<SemanticTokens | SemanticTokensEdits>;
-	}
+    /**
+     * Instead of always returning all the tokens in a file, it is possible for a `DocumentSemanticTokensProvider` to implement
+     * this method (`provideDocumentSemanticTokensEdits`) and then return incremental updates to the previously provided semantic tokens.
+     *
+     * ---
+     * ### How tokens change when the document changes
+     *
+     * Suppose that `provideDocumentSemanticTokens` has previously returned the following semantic tokens:
+     * ```
+     *    // 1st token,  2nd token,  3rd token
+     *    [  2,5,3,0,3,  0,5,4,1,0,  3,2,7,2,0 ]
+     * ```
+     *
+     * Also suppose that after some edits, the new semantic tokens in a file are:
+     * ```
+     *    // 1st token,  2nd token,  3rd token
+     *    [  3,5,3,0,3,  0,5,4,1,0,  3,2,7,2,0 ]
+     * ```
+     * It is possible to express these new tokens in terms of an edit applied to the previous tokens:
+     * ```
+     *    [  2,5,3,0,3,  0,5,4,1,0,  3,2,7,2,0 ] // old tokens
+     *    [  3,5,3,0,3,  0,5,4,1,0,  3,2,7,2,0 ] // new tokens
+     *
+     *    edit: { start:  0, deleteCount: 1, data: [3] } // replace integer at offset 0 with 3
+     * ```
+     *
+     * *NOTE*: If the provider cannot compute `SemanticTokensEdits`, it can "give up" and return all the tokens in the document again.
+     * *NOTE*: All edits in `SemanticTokensEdits` contain indices in the old integers array, so they all refer to the previous result state.
+     */
+    provideDocumentSemanticTokensEdits?(document: TextDocument, previousResultId: string, token: CancellationToken): ProviderResult<SemanticTokens | SemanticTokensEdits>;
+  }
 
-	/**
-	 * The document range semantic tokens provider interface defines the contract between extensions and
-	 * semantic tokens.
-	 */
-	export interface DocumentRangeSemanticTokensProvider {
-		/**
-		 * @see [provideDocumentSemanticTokens](#DocumentSemanticTokensProvider.provideDocumentSemanticTokens).
-		 */
-		provideDocumentRangeSemanticTokens(document: TextDocument, range: Range, token: CancellationToken): ProviderResult<SemanticTokens>;
-	}
+  /**
+   * The document range semantic tokens provider interface defines the contract between extensions and
+   * semantic tokens.
+   */
+  export interface DocumentRangeSemanticTokensProvider {
+    /**
+     * @see [provideDocumentSemanticTokens](#DocumentSemanticTokensProvider.provideDocumentSemanticTokens).
+     */
+    provideDocumentRangeSemanticTokens(document: TextDocument, range: Range, token: CancellationToken): ProviderResult<SemanticTokens>;
+  }
 
   //#endregion Semantic Tokens
 
+  /**
+   * The configuration scope which can be a
+   * a 'resource' or a languageId or both or
+   * a '[TextDocument](#TextDocument)' or
+   * a '[WorkspaceFolder](#WorkspaceFolder)'
+   */
+  export type ConfigurationScope = Uri | TextDocument | WorkspaceFolder | { uri?: Uri, languageId: string };
   //#region EvaluatableExpression
 
 	/**

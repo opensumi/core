@@ -1,10 +1,8 @@
-import { Uri, Event, IDisposable, CancellationToken } from '@ali/ide-core-common';
+import { Uri, Uri as URI, Event, IDisposable, CancellationToken, es5ClassCompat } from '@ali/ide-core-common';
 import { FileSystemProviderCapabilities, FileChange } from '@ali/ide-file-service';
 import { FileOperation } from '@ali/ide-workspace-edit';
 import { Disposable } from './ext-types';
 import { UriComponents } from './models';
-
-class URI extends Uri { }
 
 /**
  * Enumeration of file change types.
@@ -162,6 +160,7 @@ export function markAsFileSystemProviderError(error: Error, code: FileSystemProv
  * This class has factory methods for common error-cases, like `EntryNotFound` when
  * a file or folder doesn't exist, use them like so: `throw vscode.FileSystemError.EntryNotFound(someUri);`
  */
+@es5ClassCompat
 export class FileSystemError extends Error {
 
   static FileExists(messageOrUri?: string | URI): FileSystemError {
@@ -183,10 +182,12 @@ export class FileSystemError extends Error {
     return new FileSystemError(messageOrUri, FileSystemProviderErrorCode.Unavailable, FileSystemError.Unavailable);
   }
 
+  readonly code: string;
+
   // tslint:disable-next-line:ban-types
   constructor(uriOrMessage?: string | URI, code: FileSystemProviderErrorCode = FileSystemProviderErrorCode.Unknown, terminator?: Function) {
     super(URI.isUri(uriOrMessage) ? uriOrMessage.toString(true) : uriOrMessage);
-
+    this.code = terminator?.name ?? 'Unknown';
     // mark the error as file system provider error so that
     // we can extract the error code on the receiving side
     markAsFileSystemProviderError(this, code);
