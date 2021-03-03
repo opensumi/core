@@ -150,7 +150,6 @@ export class AccordionService extends WithEventBus {
   }
 
   appendView(view: View, replace?: boolean) {
-    this.beforeAppendViewEmitter.fire(view.id);
     if (this.appendedViewSet.has(view.id) && !replace) {
       return;
     }
@@ -174,6 +173,7 @@ export class AccordionService extends WithEventBus {
       }
       this.appendedViewSet.add(view.id);
     }
+    this.beforeAppendViewEmitter.fire(view.id);
     const index = this.views.findIndex((value) => (value.priority || 0) < (view.priority || 0));
     this.views.splice(index === -1 ? this.views.length : index, 0, view);
     this.viewContextKeyRegistry.registerContextKeyService(view.id, this.scopedCtxKeyService.createScoped()).createKey('view', view.id);

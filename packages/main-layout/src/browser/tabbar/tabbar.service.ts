@@ -305,6 +305,9 @@ export class TabbarService extends WithEventBus {
     if (disposables) {
       disposables.dispose();
     }
+    if (this.currentContainerId = containerId) {
+      this.currentContainerId = this.visibleContainers[0].options!.containerId;
+    }
   }
 
   getContainer(containerId: string) {
