@@ -103,12 +103,16 @@ export class EditorContextMenuController extends Disposable {
       menuNodes,
       args: [this._editor.currentUri],
       onHide: (canceled) => {
-        if (!canceled) {
+        // 这里在 canceled 的情况下对齐 VS Code 的行为，应该让编辑器聚焦
+        // canceled 是指点击到非右键菜单区域，比如文件树等
+        if (canceled) {
           this._editor.monacoEditor.focus();
-          this._editor.monacoEditor.updateOptions({
-            hover: oldHoverSetting,
-          });
         }
+
+        // 无论是否取消都应该恢复 hover 的设置
+        this._editor.monacoEditor.updateOptions({
+          hover: oldHoverSetting,
+        });
       },
     });
   }
