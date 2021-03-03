@@ -1,5 +1,5 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { IBulkEditPreviewHandler, IBulkEditResult, IBulkEditService } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import { IBulkEditPreviewHandler, IBulkEditResult, IBulkEditService, IBulkEditOptions } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 import { Injectable, Autowired } from '@ali/common-di';
 import { URI, ILogger } from '@ali/ide-core-common';
 import { UriComponents } from '@ali/ide-editor';
@@ -27,9 +27,19 @@ export class MonacoBulkEditService implements IBulkEditService {
     return `Made ${totalEdits} text edits in one file`;
   }
 
-  async apply(edit: monaco.languages.WorkspaceEdit): Promise<IBulkEditResult & { success: boolean }> {
+  async apply(edit: monaco.languages.WorkspaceEdit, options?: IBulkEditOptions): Promise<IBulkEditResult & { success: boolean }> {
+    let edits = edit;
+
+    if (options?.showPreview && this._previewHandler) {
+      try {
+        edits = await this._previewHandler(edit, options);
+      } catch (err) {
+        this.logger.error(`Handle refactor preview error: \n ${err.message}`);
+      }
+    }
+
     try {
-      const { workspaceEdit, totalEdits, totalFiles } = this.convertWorkspaceEdit(edit);
+      const { workspaceEdit, totalEdits, totalFiles } = this.convertWorkspaceEdit(edits);
       await this.workspaceEditService.apply(workspaceEdit);
       return {
         ariaSummary: this.getAriaSummary(totalEdits, totalFiles),
@@ -42,7 +52,6 @@ export class MonacoBulkEditService implements IBulkEditService {
     }
   }
 
-  // TODO: implement in monaco20
   hasPreviewHandler(): boolean {
     return Boolean(this._previewHandler);
   }

@@ -1,3 +1,5 @@
+import type { IBulkEditOptions } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import type { WorkspaceEdit } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
@@ -254,6 +256,40 @@ describe('workspace edit tests', () => {
 
     expect(injector.get(WorkbenchEditorService).open).toBeCalled();
 
+    done();
+  });
+
+  it('monaco bulk edit preview test', async (done) => {
+    const mockedPreviewFn = jest.fn((edit: WorkspaceEdit, options?: IBulkEditOptions): Promise<WorkspaceEdit> => {
+      return Promise.resolve(edit);
+    });
+    const monacoBulkEditService: MonacoBulkEditService = injector.get(MonacoBulkEditService);
+    monacoBulkEditService.setPreviewHandler(mockedPreviewFn);
+
+    await monacoBulkEditService.apply({
+      edits: [
+        {
+          resource: monaco.Uri!.parse('file:///monaco-test-2.ts'),
+          edit: {
+            range: {
+              startColumn: 1,
+              endColumn: 1,
+              startLineNumber: 1,
+              endLineNumber: 1,
+            },
+            text: 'test1',
+          },
+        },
+      ],
+    }, { showPreview: true });
+
+    const model = monaco.editor!.getModel(monaco.Uri!.parse('file:///monaco-test-2.ts'))!;
+    expect(model.pushEditOperations).toBeCalled();
+    expect(model.pushStackElement).toBeCalled();
+
+    expect(injector.get(WorkbenchEditorService).open).toBeCalled();
+
+    expect(mockedPreviewFn).toBeCalled();
     done();
   });
 });

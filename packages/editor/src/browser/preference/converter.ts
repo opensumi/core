@@ -650,6 +650,8 @@ export const editorOptionsConverters: Map<KaitianPreferenceKey , NoConverter | I
      */
     ['editor.showUnused', { monaco: 'showUnused' }],
 
+    ['editor.rename.enablePreview', { monaco: 'editor.rename.enablePreview' }],
+
     /**
      * 是否强行readonly
      */

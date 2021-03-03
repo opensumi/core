@@ -1,3 +1,4 @@
+import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { ContextKeyExpr, IContextKeyServiceTarget } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { ContextKeyService } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
 import { KeybindingResolver } from '@ali/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingResolver';
@@ -34,6 +35,8 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
   constructor() {
     super();
     this.preferenceService.onPreferencesChanged(this.triggerPreferencesChanged, this, this.disposables);
+    const monacoConfigService = StaticServices.configurationService.get();
+    monacoConfigService.getValue = this.getValue.bind(this);
   }
 
   public keys() {

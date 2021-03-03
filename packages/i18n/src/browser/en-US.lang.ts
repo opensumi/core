@@ -676,5 +676,10 @@ export const localizationBundle = {
     'main-layout.bottom-panel.toggle': 'Toggle Bottom Side Bar',
     'main-layout.bottom-panel.show': 'Show Bottom Side Bar',
     'main-layout.bottom-panel.hide': 'Hide Bottom Side Bar',
+
+    'refactor-preview.overlay.title': 'Another refactoring is being previewed.',
+    'refactor-preview.overlay.detail': `Press 'Continue' to discard the previous refactoring and continue with the current refactoring.`,
+    'refactor-preview.overlay.continue': 'Continue',
+    'refactor-preview.overlay.cancel': 'Cancel',
   },
 };

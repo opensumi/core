@@ -1,0 +1,49 @@
+.refactor_preview {
+  display: flex;
+}
+
+.resource_node {
+  display: flex;
+  height: 23px;
+  line-height: 23px;
+  padding: 0px 10px;
+  cursor: pointer;
+
+  .resource_clickable {
+    display: flex;
+    height: 23px;
+    line-height: 23px;
+  }
+
+  &:hover {
+    background-color: var(--editor-selectionBackground);
+  }
+
+  .resource_node_path {
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--descriptionForeground);
+  }
+}
+
+.refactor_preview_node_diff {
+  display: inline-block;
+  padding: 0px;
+  margin: 0px 10px 0px 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  .refactor_preview_node_base {
+    height: 16px;
+    text-decoration: line-through;
+    background-color: var(--diffEditor-removedTextBackground)
+  }
+
+  .refactor_preview_node_new {
+    height: 16px;
+    background-color: var(--diffEditor-insertedTextBackground)
+  }
+}

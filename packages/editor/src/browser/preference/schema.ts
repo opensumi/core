@@ -888,6 +888,11 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     default: EDITOR_DEFAULTS.viewInfo.renderWhitespace,
     description: localize('renderWhitespace', 'Controls how the editor should render whitespace characters.'),
   },
+  'editor.rename.enablePreview': {
+    type: 'boolean',
+    default: true,
+    description: 'Enable/disable the ability to preview changes before renaming',
+  },
   'editor.renderControlCharacters': {
     'type': 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.renderControlCharacters,

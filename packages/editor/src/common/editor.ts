@@ -1,4 +1,4 @@
-import { editor } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import type { editor } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import type { ITextModelUpdateOptions } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 import type { IEditorOptions } from '@ali/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { Injectable } from '@ali/common-di';

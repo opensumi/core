@@ -1132,6 +1132,34 @@ declare module 'vscode' {
     Deprecated = 1
   }
 
+	/**
+	 * Additional data for entries of a workspace edit. Supports to label entries and marks entries
+	 * as needing confirmation by the user. The editor groups edits with equal labels into tree nodes,
+	 * for instance all edits labelled with "Changes in Strings" would be a tree node.
+	 */
+	export interface WorkspaceEditEntryMetadata {
+
+		/**
+		 * A flag which indicates that user confirmation is needed.
+		 */
+		needsConfirmation: boolean;
+
+		/**
+		 * A human-readable string which is rendered prominent.
+		 */
+		label: string;
+
+		/**
+		 * A human-readable string which is rendered less prominent on the same line.
+		 */
+		description?: string;
+
+		/**
+		 * The icon path or [ThemeIcon](#ThemeIcon) for the edit.
+		 */
+		iconPath?: Uri | { light: Uri; dark: Uri } | ThemeIcon;
+	}
+
   /**
    * A workspace edit is a collection of textual and files changes for
    * multiple resources and documents.
@@ -1152,7 +1180,7 @@ declare module 'vscode' {
      * @param range A range.
      * @param newText A string.
      */
-    replace(uri: Uri, range: Range, newText: string): void;
+    replace(uri: Uri, range: Range, newText: string, metadata?: WorkspaceEditEntryMetadata): void;
 
     /**
      * Insert the given text at the given position.
@@ -1161,7 +1189,7 @@ declare module 'vscode' {
      * @param position A position.
      * @param newText A string.
      */
-    insert(uri: Uri, position: Position, newText: string): void;
+    insert(uri: Uri, position: Position, newText: string, metadata?: WorkspaceEditEntryMetadata): void;
 
     /**
      * Delete the text at the given range.
@@ -1169,7 +1197,7 @@ declare module 'vscode' {
      * @param uri A resource identifier.
      * @param range A range.
      */
-    delete(uri: Uri, range: Range): void;
+    delete(uri: Uri, range: Range, metadata?: WorkspaceEditEntryMetadata): void;
 
     /**
      * Check if a text edit for a resource exists.
@@ -1202,14 +1230,14 @@ declare module 'vscode' {
      * @param options Defines if an existing file should be overwritten or be
      * ignored. When overwrite and ignoreIfExists are both set overwrite wins.
      */
-    createFile(uri: Uri, options?: { overwrite?: boolean, ignoreIfExists?: boolean }): void;
+    createFile(uri: Uri, options?: { overwrite?: boolean, ignoreIfExists?: boolean }, metadata?: WorkspaceEditEntryMetadata): void;
 
     /**
      * Delete a file or folder.
      *
      * @param uri The uri of the file that is to be deleted.
      */
-    deleteFile(uri: Uri, options?: { recursive?: boolean, ignoreIfNotExists?: boolean }): void;
+    deleteFile(uri: Uri, options?: { recursive?: boolean, ignoreIfNotExists?: boolean }, metadata?: WorkspaceEditEntryMetadata): void;
 
     /**
      * Rename a file or folder.
@@ -1219,7 +1247,7 @@ declare module 'vscode' {
      * @param options Defines if existing files should be overwritten or be
      * ignored. When overwrite and ignoreIfExists are both set overwrite wins.
      */
-    renameFile(oldUri: Uri, newUri: Uri, options?: { overwrite?: boolean, ignoreIfExists?: boolean }): void;
+    renameFile(oldUri: Uri, newUri: Uri, options?: { overwrite?: boolean, ignoreIfExists?: boolean }, metadata?: WorkspaceEditEntryMetadata): void;
 
     /**
      * Get all text edits grouped by resource.

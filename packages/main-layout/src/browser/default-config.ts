@@ -18,7 +18,7 @@ export const defaultConfig: LayoutConfig = {
     modules: ['@ali/ide-editor'],
   },
   [SlotLocation.bottom]: {
-    modules: ['@ali/ide-terminal-next', '@ali/ide-output', 'debug-console', '@ali/ide-markers'],
+    modules: ['@ali/ide-terminal-next', '@ali/ide-output', 'debug-console', '@ali/ide-markers', '@ali/ide-refactor-preview'],
   },
   [SlotLocation.statusBar]: {
     modules: ['@ali/ide-status-bar'],

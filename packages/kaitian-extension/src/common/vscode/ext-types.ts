@@ -1058,41 +1058,45 @@ export interface FileOperation {
   from: Uri | undefined;
   to: Uri | undefined;
   options?: FileOperationOptions;
+  metadata?: vscode.WorkspaceEditEntryMetadata;
 }
 
 export interface FileTextEdit {
   _type: 2;
   uri: Uri;
   edit: TextEdit;
+  metadata?: vscode.WorkspaceEditEntryMetadata;
 }
+
+type WorkspaceEditEntry = FileOperation | FileTextEdit;
 
 @es5ClassCompat
 export class WorkspaceEdit implements vscode.WorkspaceEdit {
 
-  private _edits = new Array<FileOperation | FileTextEdit>();
+  private _edits = new Array<WorkspaceEditEntry>();
 
-  renameFile(from: vscode.Uri, to: vscode.Uri, options?: { overwrite?: boolean, ignoreIfExists?: boolean }): void {
-    this._edits.push({ _type: 1, from, to, options });
+  renameFile(from: vscode.Uri, to: vscode.Uri, options?: { overwrite?: boolean, ignoreIfExists?: boolean }, metadata?: vscode.WorkspaceEditEntryMetadata): void {
+    this._edits.push({ _type: 1, from, to, options, metadata });
   }
 
-  createFile(uri: vscode.Uri, options?: { overwrite?: boolean, ignoreIfExists?: boolean }): void {
-    this._edits.push({ _type: 1, from: undefined, to: uri, options });
+  createFile(uri: vscode.Uri, options?: { overwrite?: boolean, ignoreIfExists?: boolean }, metadata?: vscode.WorkspaceEditEntryMetadata): void {
+    this._edits.push({ _type: 1, from: undefined, to: uri, options, metadata });
   }
 
-  deleteFile(uri: vscode.Uri, options?: { recursive?: boolean, ignoreIfNotExists?: boolean }): void {
-    this._edits.push({ _type: 1, from: uri, to: undefined, options });
+  deleteFile(uri: vscode.Uri, options?: { recursive?: boolean, ignoreIfNotExists?: boolean }, metadata?: vscode.WorkspaceEditEntryMetadata): void {
+    this._edits.push({ _type: 1, from: uri, to: undefined, options, metadata });
   }
 
-  replace(uri: Uri, range: Range, newText: string): void {
-    this._edits.push({ _type: 2, uri, edit: new TextEdit(range, newText) });
+  replace(uri: Uri, range: Range, newText: string, metadata?: vscode.WorkspaceEditEntryMetadata): void {
+    this._edits.push({ _type: 2, uri, edit: new TextEdit(range, newText), metadata });
   }
 
-  insert(resource: Uri, position: Position, newText: string): void {
-    this.replace(resource, new Range(position, position), newText);
+  insert(resource: Uri, position: Position, newText: string, metadata?: vscode.WorkspaceEditEntryMetadata): void {
+    this.replace(resource, new Range(position, position), newText, metadata);
   }
 
-  delete(resource: Uri, range: Range): void {
-    this.replace(resource, range, '');
+  delete(resource: Uri, range: Range, metadata?: vscode.WorkspaceEditEntryMetadata): void {
+    this.replace(resource, range, '', metadata);
   }
 
   has(uri: Uri): boolean {
