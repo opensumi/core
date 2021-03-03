@@ -337,7 +337,7 @@ export class MainThreadCommentThread implements CommentThread {
 }
 
 @Injectable({ multiple: true })
-export class MainThreadCommentController implements IDisposable {
+export class MainThreadCommentController extends Disposable {
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -394,9 +394,10 @@ export class MainThreadCommentController implements IDisposable {
     private readonly _label: string,
     private _features: CommentProviderFeatures,
   ) {
-    this.commentsService.registerCommentRangeProvider(_uniqueId, {
+    super();
+    this.addDispose(this.commentsService.registerCommentRangeProvider(_uniqueId, {
       getCommentingRanges: (documentModel) => this.getCommentingRanges(documentModel.uri, CancellationToken.None),
-    });
+    }));
   }
 
   // TODO: 还未实现 CommentProviderFeatures
@@ -422,6 +423,12 @@ export class MainThreadCommentController implements IDisposable {
     ]);
 
     this._threads.set(commentThreadHandle, thread);
+    this.addDispose({
+      dispose: () => {
+        this._threads.delete(commentThreadHandle);
+        thread.dispose();
+      },
+    });
 
     return thread;
   }
@@ -482,8 +489,4 @@ export class MainThreadCommentController implements IDisposable {
     };
   }
 
-  dispose(): void {
-    this._threads.forEach((thread) => thread.dispose());
-    this._threads.clear();
-  }
 }

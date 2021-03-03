@@ -19,6 +19,7 @@ import {
   memoize,
   IDisposable,
   positionToRange,
+  Deferred,
 } from '@ali/ide-core-browser';
 import { IEditor } from '@ali/ide-editor';
 import { IEditorDecorationCollectionService, IEditorDocumentModelService, WorkbenchEditorService } from '@ali/ide-editor/lib/browser';
@@ -82,7 +83,7 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   private rangeOwner = new Map<string, IRange[]>();
 
-  private providerDecorationCache = new LRUCache<string, IRange[]>(10000);
+  private providerDecorationCache = new LRUCache<string, Deferred<IRange[]>>(10000);
 
   // 只支持在 file 协议和 git 协议中显示评论数据
   private shouldShowCommentsSchemes = new Set(['file', 'git']);
@@ -351,10 +352,11 @@ export class CommentsService extends Disposable implements ICommentsService {
   }
 
   public async getContributionRanges(uri: URI): Promise<IRange[]> {
+    // 一个diff editor对应两个uri，两个uri的rangeOwner不应该互相覆盖
     const cache = this.providerDecorationCache.get(uri.toString());
     // 优先从缓存中拿
     if (cache) {
-      return cache;
+      return await cache.promise;
     }
 
     const model = this.documentService.getModelReference(uri);
@@ -364,17 +366,20 @@ export class CommentsService extends Disposable implements ICommentsService {
       rangePromise.push((async () => {
         const ranges = await provider.getCommentingRanges(model?.instance!);
         if (ranges && ranges.length) {
+          // FIXME: range会被diff uri的两个range互相覆盖，导致可能根据行查不到provider
           this.rangeOwner.set(id, ranges);
         }
         return ranges;
       })());
     }
+    const deferredRes = new Deferred<IRange[]>();
+    this.providerDecorationCache.set(uri.toString(), deferredRes);
     const res = await Promise.all(rangePromise);
     // 消除 document 引用
     model?.dispose();
     // 拍平，去掉 undefined
     const flattenRange: IRange[] = flattenDeep(res).filter(Boolean);
-    this.providerDecorationCache.set(uri.toString(), flattenRange);
+    deferredRes.resolve(flattenRange);
     return flattenRange;
   }
 
@@ -440,6 +445,8 @@ export class CommentsService extends Disposable implements ICommentsService {
     this.rangeProviderMap.set(id, provider);
     return Disposable.create(() => {
       this.rangeProviderMap.delete(id);
+      this.rangeOwner.delete(id);
+      this.providerDecorationCache.clear();
     });
   }
 
@@ -455,6 +462,10 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   public getProviderIdsByLine(line: number): string[] {
     const result: string[] = [];
+    if (this.rangeOwner.size === 1) {
+      // 只有一个provider，直接返回
+      return [this.rangeOwner.keys().next().value];
+    }
     for (const rangeOwner of this.rangeOwner) {
       const [id, ranges] = rangeOwner;
       if (ranges && ranges.some((range) => range.startLineNumber <= line && line <= range.endLineNumber)) {
