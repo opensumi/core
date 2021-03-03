@@ -3,7 +3,7 @@ import { asPromise, CancellationToken, IRange } from '@ali/ide-core-common';
 
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { SemanticTokensEdits, Uri } from '../../../../common/vscode/ext-types';
-import { TypeConverts } from '../../../../common/vscode/converter';
+import * as TypeConverts from '../../../../common/vscode/converter';
 import { encodeSemanticTokensDto } from '../../../../common/vscode/semantic-tokens';
 
 class SemanticTokensPreviousResult {

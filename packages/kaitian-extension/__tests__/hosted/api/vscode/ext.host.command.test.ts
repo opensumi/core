@@ -1,9 +1,10 @@
-import { ExtHostCommands, CommandsConverter, createCommandsApiFactory } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.command';
+import { Range } from '@ali/monaco-editor-core/esm/vs/editor/common/core/range';
+import { ExtHostCommands, createCommandsApiFactory } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.command';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, IMainThreadCommands, CommandHandler } from '@ali/ide-kaitian-extension/lib/common/vscode';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { IExtensionInfo } from '@ali/ide-core-common';
-import { Uri } from '@ali/ide-core-common';
+import { IExtensionInfo, Uri, SymbolKind } from '@ali/ide-core-common';
+import * as modes from '@ali/ide-kaitian-extension/lib/common/vscode/model.api';
 import * as types from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
 import type * as vscode from 'vscode';
 
@@ -69,10 +70,6 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts
         return Promise.resolve(true);
       }),
       $executeCommand: jest.fn(() => Promise.resolve()),
-      $executeReferenceProvider: jest.fn(() => Promise.resolve({
-        uri: Uri.parse(''),
-        range: new types.Range(1, 1, 1, 1),
-      })),
     });
     const editorService = mockService({});
     const extension = mockService({
@@ -201,15 +198,6 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts
       expect(mainService.$getCommands).toBeCalledTimes(1);
     });
 
-    it('register builtin commands', async () => {
-      extCommand.$registerBuiltInCommands();
-      extCommand.$registerCommandConverter();
-      expect(extCommand.converter instanceof CommandsConverter).toBeTruthy();
-      await extCommand.executeCommand('vscode.executeReferenceProvider', Uri.parse(''), new types.Position(1, 1), []);
-      // 说明已经注册成功，本地有命令的，所以远端不会执行
-      expect(mainService.$executeCommand).toBeCalledTimes(0);
-    });
-
     it('call $executeContributedCommand with exist command', async () => {
       const extTest = jest.fn();
       const commandId = 'ext.test';
@@ -284,4 +272,177 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts
     });
   });
 
+  describe('vscode builtin command', () => {
+    let mockMainThreadFunc;
+    beforeEach(async () => {
+      mockMainThreadFunc = jest.spyOn(mainService, '$executeCommand');
+      await extCommand.$registerBuiltInCommands();
+      await extCommand.$registerCommandConverter();
+    });
+
+    it('vscode.executeFormatDocumentProvider', async () => {
+      const file = Uri.file('/a.txt');
+      await extCommand.executeCommand('vscode.executeFormatDocumentProvider', file);
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeFormatDocumentProvider');
+    });
+    it('vscode.executeFormatRangeProvider', async () => {
+      const file = Uri.file('/a.txt');
+      await extCommand.executeCommand('vscode.executeFormatRangeProvider', file, new types.Range(1, 1, 1, 1));
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeFormatRangeProvider');
+    });
+    it('vscode.executeFormatOnTypeProvider', async () => {
+      const file = Uri.file('/a.txt');
+      await extCommand.executeCommand('vscode.executeFormatOnTypeProvider', file, new types.Position(1, 1), '');
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeFormatOnTypeProvider');
+    });
+    it('vscode.executeDefinitionProvider', async () => {
+      const file = Uri.file('/a.txt');
+      await extCommand.executeCommand('vscode.executeDefinitionProvider', file, new types.Position(1, 1));
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeDefinitionProvider');
+    });
+    it('vscode.executeTypeDefinitionProvider', async () => {
+      const file = Uri.file('/a.txt');
+      await extCommand.executeCommand('vscode.executeTypeDefinitionProvider', file, new types.Position(1, 1));
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeTypeDefinitionProvider');
+    });
+    it('vscode.executeDeclarationProvider', async () => {
+      const file = Uri.file('/a.txt');
+      await extCommand.executeCommand('vscode.executeDeclarationProvider', file, new types.Position(1, 1));
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeDeclarationProvider');
+    });
+    it('vscode.executeDeclarationProvider', async () => {
+      const file = Uri.file('/a.txt');
+      await extCommand.executeCommand('vscode.executeDeclarationProvider', file, new types.Position(1, 1));
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeDeclarationProvider');
+    });
+    it('vscode.executeImplementationProvider', async () => {
+      const file = Uri.file('/a.txt');
+      await extCommand.executeCommand('vscode.executeImplementationProvider', file, new types.Position(1, 1));
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeImplementationProvider');
+    });
+    it('vscode.executeReferenceProvider', async () => {
+      const file = Uri.file('/a.txt');
+      await extCommand.executeCommand('vscode.executeReferenceProvider', file, new types.Position(1, 1), []);
+      expect(mainService.$executeCommand).toBeCalledWith('_executeReferenceProvider', expect.anything(), {'column': 2, 'lineNumber': 2});
+    });
+    it('vscode.executeHoverProvider', async () => {
+      const file = Uri.file('/a.txt');
+      await extCommand.executeCommand('vscode.executeHoverProvider', file, new types.Position(1, 1));
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeHoverProvider');
+    });
+    it('vscode.executeSelectionRangeProvider', async () => {
+      const file = Uri.file('/a.txt');
+      mockMainThreadFunc.mockReturnValueOnce(Promise.resolve([
+        [ new Range(1, 1, 1, 1) ],
+      ]));
+      await extCommand.executeCommand('vscode.executeSelectionRangeProvider', file, [new types.Position(1, 1)]);
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeSelectionRangeProvider');
+    });
+    it('vscode.executeWorkspaceSymbolProvider', async () => {
+      const file = Uri.file('/a.txt');
+      await extCommand.executeCommand('vscode.executeWorkspaceSymbolProvider', file.toString());
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeWorkspaceSymbolProvider');
+    });
+    it('vscode.prepareCallHierarchy', async () => {
+      const file = Uri.file('/a.txt');
+      const resultItem = {
+        _sessionId: '',
+        _itemId: '',
+        kind: SymbolKind.Class,
+        name: 'test',
+        uri: Uri.file('/a.txt'),
+        range: new Range(1, 1, 1, 1),
+        selectionRange: new Range(1, 1, 1, 1),
+      } as modes.ICallHierarchyItemDto;
+      mockMainThreadFunc.mockReturnValueOnce(Promise.resolve([resultItem]));
+      const result = await extCommand.executeCommand<vscode.CallHierarchyItem[]>('vscode.prepareCallHierarchy', file, new types.Position(1, 1));
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executePrepareCallHierarchy');
+      expect(result.length).toBe(1);
+      expect(result[0].name).toBe('test');
+    });
+    it('vscode.provideIncomingCalls', async () => {
+      const item = new types.CallHierarchyItem(types.SymbolKind.Class, 'test', 'test', Uri.file('/a.txt'), new types.Range(1, 1, 1, 1), new types.Range(1, 1, 1, 1));
+      const resultItem = {
+        fromRanges: [new Range(1, 1, 1, 1)],
+        from: {
+          _sessionId: '',
+          _itemId: '',
+          kind: SymbolKind.Class,
+          name: 'test',
+          uri: Uri.file('/a.txt'),
+          range: new Range(1, 1, 1, 1),
+          selectionRange: new Range(1, 1, 1, 1),
+        },
+      } as modes.IIncomingCallDto;
+      mockMainThreadFunc.mockReturnValueOnce(Promise.resolve([resultItem]));
+      const result = await extCommand.executeCommand<vscode.CallHierarchyIncomingCall[]>('vscode.provideIncomingCalls', item);
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeProvideIncomingCalls');
+      expect(result.length).toBe(1);
+      expect(result[0].from.name).toBe('test');
+    });
+    it('vscode.provideOutgoingCalls', async () => {
+      const item = new types.CallHierarchyItem(types.SymbolKind.Class, 'test', 'test', Uri.file('/a.txt'), new types.Range(1, 1, 1, 1), new types.Range(1, 1, 1, 1));
+      const resultItem = {
+        fromRanges: [new Range(1, 1, 1, 1)],
+        to: {
+          _sessionId: '',
+          _itemId: '',
+          kind: SymbolKind.Class,
+          name: 'test',
+          uri: Uri.file('/a.txt'),
+          range: new Range(1, 1, 1, 1),
+          selectionRange: new Range(1, 1, 1, 1),
+        },
+      } as modes.IOutgoingCallDto;
+      mockMainThreadFunc.mockReturnValueOnce(Promise.resolve([resultItem]));
+      const result = await extCommand.executeCommand<vscode.CallHierarchyOutgoingCall[]>('vscode.provideOutgoingCalls', item);
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeProvideOutgoingCalls');
+      expect(result.length).toBe(1);
+      expect(result[0].to.name).toBe('test');
+    });
+    it('vscode.executeDocumentRenameProvider', async () => {
+      const file = Uri.file('/a.txt');
+      await extCommand.executeCommand('vscode.executeDocumentRenameProvider', file, new types.Position(1, 1), 'b.txt');
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeDocumentRenameProvider');
+    });
+    it('vscode.executeLinkProvider', async () => {
+      const file = Uri.file('/a.txt');
+      mockMainThreadFunc.mockReturnValueOnce(Promise.resolve([]));
+      await extCommand.executeCommand('vscode.executeLinkProvider', file, 1);
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeLinkProvider');
+    });
+    it('vscode.executeCompletionItemProvider', async () => {
+      const file = Uri.file('/a.txt');
+      await extCommand.executeCommand('vscode.executeCompletionItemProvider', file, new types.Position(1, 1), 'triggerCharacter', 1);
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeCompletionItemProvider');
+    });
+    it('vscode.executeSignatureHelpProvider', async () => {
+      const file = Uri.file('/a.txt');
+      await extCommand.executeCommand('vscode.executeSignatureHelpProvider', file, new types.Position(1, 1), 'triggerCharacter');
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeSignatureHelpProvider');
+    });
+    it('vscode.executeCodeLensProvider', async () => {
+      const file = Uri.file('/a.txt');
+      await extCommand.executeCommand('vscode.executeCodeLensProvider', file, 1);
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeCodeLensProvider');
+    });
+    it('vscode.executeCodeActionProvider', async () => {
+      const file = Uri.file('/a.txt');
+      mockMainThreadFunc.mockReturnValueOnce(Promise.resolve([]));
+      await extCommand.executeCommand('vscode.executeCodeActionProvider', file, new types.Range(1, 1, 1, 1), 'kind', 1);
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeCodeActionProvider');
+    });
+    it('vscode.executeDocumentColorProvider', async () => {
+      const file = Uri.file('/a.txt');
+      mockMainThreadFunc.mockReturnValueOnce(Promise.resolve([]));
+      await extCommand.executeCommand('vscode.executeDocumentColorProvider', file);
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeDocumentColorProvider');
+    });
+    it('vscode.executeColorPresentationProvider', async () => {
+      const file = Uri.file('/a.txt');
+      mockMainThreadFunc.mockReturnValueOnce(Promise.resolve([]));
+      await extCommand.executeCommand('vscode.executeColorPresentationProvider', new types.Color(0, 0, 0, 0), { uri: file, range: new types.Range(1, 1, 1, 1) });
+      expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeColorPresentationProvider');
+    });
+  });
 });

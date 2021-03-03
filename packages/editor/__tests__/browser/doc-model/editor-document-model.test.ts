@@ -1,6 +1,6 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import * as md5 from 'md5';
-import { isWindows, isMacintosh, isLinux } from '@ali/monaco-editor-core/esm/vs/base/common/platform';
+import { isMacintosh, isLinux } from '@ali/monaco-editor-core/esm/vs/base/common/platform';
 import { uniqueId } from 'lodash';
 import { URI, IEventBus } from '@ali/ide-core-browser';
 

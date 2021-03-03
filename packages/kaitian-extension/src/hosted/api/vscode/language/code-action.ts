@@ -90,7 +90,7 @@ export class CodeActionAdapter {
                         title: candidate.title,
                         command: candidate.command && commandConverter.toInternal(candidate.command, disposables),
                         diagnostics: candidate.diagnostics && candidate.diagnostics.map(Converter.convertDiagnosticToMarkerData) as IMarker[],
-                        edit: candidate.edit && Converter.TypeConverts.WorkspaceEdit.from(candidate.edit) as WorkspaceEdit,
+                        edit: candidate.edit && Converter.WorkspaceEdit.from(candidate.edit) as WorkspaceEdit,
                         kind: candidate.kind && candidate.kind.value,
                     });
                 }

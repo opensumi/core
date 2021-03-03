@@ -98,6 +98,7 @@ class WhenExpressionParser {
   private static deserializeRegex(serializedValue: string): RegExp | null {
 
     if (isFalsyOrWhitespace(serializedValue)) {
+      // tslint:disable:no-console
       console.warn('missing regexp-value for =~-expression');
       return null;
     }
@@ -105,6 +106,7 @@ class WhenExpressionParser {
     const start = serializedValue.indexOf('/');
     const end = serializedValue.lastIndexOf('/');
     if (start === end || start < 0 /* || to < 0 */) {
+      // tslint:disable:no-console
       console.warn(`bad regexp-value '${serializedValue}', missing /-enclosure`);
       return null;
     }
@@ -114,6 +116,7 @@ class WhenExpressionParser {
     try {
       return new RegExp(value, caseIgnoreFlag);
     } catch (e) {
+      // tslint:disable:no-console
       console.warn(`bad regexp-value '${serializedValue}', parse error: ${e}`);
       return null;
     }

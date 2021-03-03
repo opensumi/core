@@ -1,6 +1,6 @@
 import type * as vscode from 'vscode';
 import { IDisposable, IRange, CancellationToken } from '@ali/ide-core-common';
-import { Uri, UriComponents} from './ext-types';
+import { Uri, UriComponents } from './ext-types';
 import { FileStat } from '@ali/ide-file-service';
 import { EndOfLineSequence } from '@ali/ide-editor/lib/common';
 import type * as model from './model.api';
@@ -129,30 +129,6 @@ export enum ConfigurationTarget {
 
 export interface WorkspaceRootsChangeEvent {
   roots: FileStat[];
-}
-
-export interface WorkspaceEditDto {
-  edits: Array<ResourceFileEditDto | ResourceTextEditDto>;
-
-  // todo@joh reject should go into rename
-  rejectReason?: string;
-}
-
-export interface ResourceFileEditDto {
-  oldUri?: UriComponents;
-  newUri?: UriComponents;
-  options?: {
-    overwrite?: boolean;
-    ignoreIfExists?: boolean;
-    ignoreIfNotExists?: boolean;
-    recursive?: boolean;
-  };
-}
-
-export interface ResourceTextEditDto {
-  resource: UriComponents;
-  modelVersionId?: number;
-  edit: ITextEdit;
 }
 
 export interface ITextEdit { range: IRange; text: string; eol?: EndOfLineSequence; }

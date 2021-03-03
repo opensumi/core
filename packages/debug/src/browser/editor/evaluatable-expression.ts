@@ -1,6 +1,5 @@
 import { Injectable } from '@ali/common-di';
 import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
-import { IRelativePattern } from '@ali/ide-core-common/lib/utils/glob';
 import { IDisposable } from '@ali/ide-core-common';
 import { LanguageFeatureRegistry } from '@ali/monaco-editor-core/esm/vs/editor/common/modes/languageFeatureRegistry';
 

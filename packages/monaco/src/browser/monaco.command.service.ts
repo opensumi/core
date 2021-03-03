@@ -4,7 +4,7 @@ import { EditorExtensionsRegistry } from '@ali/monaco-editor-core/esm/vs/editor/
 import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { CommandsRegistry } from '@ali/monaco-editor-core/esm/vs/platform/commands/common/commands';
 import { Injectable, Autowired } from '@ali/common-di';
-import { Command, Emitter, CommandRegistry, CommandHandler, ILogger, EDITOR_COMMANDS, CommandService, isElectronRenderer, IReporterService, REPORT_NAME, MonacoService, ServiceNames, memoize } from '@ali/ide-core-browser';
+import { Command, Emitter, CommandRegistry, CommandHandler, ILogger, EDITOR_COMMANDS, CommandService, isElectronRenderer, IReporterService, REPORT_NAME, MonacoService, ServiceNames, memoize, Uri } from '@ali/ide-core-browser';
 
 import { WorkbenchEditorService, EditorCollectionService } from '@ali/ide-editor';
 import { Event } from '@ali/monaco-editor-core/esm/vs/base/common/event';
@@ -218,6 +218,12 @@ export class MonacoActionRegistry {
     ['editor.action.selectAll', EDITOR_COMMANDS.SELECT_ALL.id],
   ]);
 
+  private static CONVERT_MONACO_COMMAND_ARGS = new Map<string, (...args: any[]) => any[]>([
+    [
+      'editor.action.showReferences', (uri, ...args) => [monaco.Uri.parse(uri), ...args],
+    ],
+  ]);
+
   /**
    * 要排除注册的 Action
    *
@@ -280,6 +286,26 @@ export class MonacoActionRegistry {
   }
 
   /**
+   * 是否是 _execute 开头的 monaco 命令
+   */
+  private isInternalExecuteCommand(commandId: string) {
+    return commandId.startsWith('_execute');
+  }
+
+  /**
+   * monaco 内部会判断 uri 执行是否是 monaco.Uri 实例，执行改类命令统一转换一下
+   * @param args
+   */
+  private processInternalCommandArgument(commandId: string, args: any[] = []): any[] {
+    if (this.isInternalExecuteCommand(commandId)) {
+      return args.map((arg) => arg instanceof Uri ? monaco.Uri.revive(arg) : arg);
+    } else if (MonacoActionRegistry.CONVERT_MONACO_COMMAND_ARGS.has(commandId)) {
+      return MonacoActionRegistry.CONVERT_MONACO_COMMAND_ARGS.get(commandId)!(...args);
+    }
+    return args;
+  }
+
+  /**
    * 调用 monaco 内部 _commandService 执行命令
    * 实际执行的就是 MonacoCommandService
    * @param commandId 命令名称
@@ -288,14 +314,15 @@ export class MonacoActionRegistry {
     return {
       execute: (editor, ...args) => {
         const editorCommand = !!this.monacoEditorRegistry.getEditorCommand(commandId) ||
-          !(commandId.startsWith('_execute') || commandId === 'setContext' || MonacoActionRegistry.COMMON_ACTIONS.has(commandId));
+          !(this.isInternalExecuteCommand(commandId) || commandId === 'setContext' || MonacoActionRegistry.COMMON_ACTIONS.has(commandId));
         const instantiationService = editorCommand ? editor && editor['_instantiationService'] : this.globalInstantiationService;
         if (!instantiationService) {
           return;
         }
+        const commandArgs = this.processInternalCommandArgument(commandId, args);
         return instantiationService.invokeFunction(
           this.monacoCommands.get(commandId)?.handler,
-          ...args,
+          ...commandArgs,
         );
       },
       isEnabled: (editor) => {

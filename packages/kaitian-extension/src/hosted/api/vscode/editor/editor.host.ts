@@ -3,7 +3,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import type * as vscode from 'vscode';
 import { Uri, Position, Range, Selection, TextEditorLineNumbersStyle} from '../../../../common/vscode/ext-types';
 import { ISelection, Emitter, Event, IRange, getDebugLogger, Disposable } from '@ali/ide-core-common';
-import { TypeConverts, fromRange, fromSelection, viewColumnToResourceOpenOptions, fromPosition } from '../../../../common/vscode/converter';
+import * as TypeConverts from '../../../../common/vscode/converter';
 import { IEditorStatusChangeDTO, IEditorChangeDTO, TextEditorSelectionChangeKind, IEditorCreatedDTO, IResolvedTextEditorConfiguration, IMainThreadEditorsService, ITextEditorUpdateConfiguration, TextEditorCursorStyle } from '../../../../common/vscode/editor';
 import { TextEditorEdit } from './edit.builder';
 import { ISingleEditOperation, IDecorationApplyOptions, IResourceOpenOptions } from '@ali/ide-editor';
@@ -113,12 +113,12 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
     let options: IResourceOpenOptions;
     if (typeof columnOrOptions === 'number') {
       options = {
-        ...viewColumnToResourceOpenOptions(columnOrOptions),
+        ...TypeConverts.viewColumnToResourceOpenOptions(columnOrOptions),
         preserveFocus,
       };
     } else if (typeof columnOrOptions === 'object') {
       options = {
-        ...viewColumnToResourceOpenOptions(columnOrOptions.viewColumn),
+        ...TypeConverts.viewColumnToResourceOpenOptions(columnOrOptions.viewColumn),
         preserveFocus: columnOrOptions.preserveFocus,
         range: typeof columnOrOptions.selection === 'object' ? TypeConverts.Range.from(columnOrOptions.selection) : undefined,
         preview: typeof columnOrOptions.preview === 'boolean' ? columnOrOptions.preview : undefined,
@@ -287,19 +287,19 @@ export class TextEditorData {
     try {
       let _location: IRange[] = [];
       if (!location || (Array.isArray(location) && location.length === 0)) {
-        _location = this.selections.map((s) => fromRange(s));
+        _location = this.selections.map((s) => TypeConverts.Range.from(s));
       } else if (location instanceof Position) {
-        const { lineNumber, column } = fromPosition(location);
+        const { lineNumber, column } = TypeConverts.fromPosition(location);
         _location = [{ startLineNumber: lineNumber, startColumn: column, endLineNumber: lineNumber, endColumn: column }];
       } else if (location instanceof Range) {
-        _location = [fromRange(location)!];
+        _location = [TypeConverts.Range.from(location)!];
       } else {
         _location = [];
         for (const posOrRange of location) {
           if (posOrRange instanceof Range) {
-            _location.push(fromRange(posOrRange)!);
+            _location.push(TypeConverts.Range.from(posOrRange)!);
           } else {
-            const { lineNumber, column } = fromPosition(posOrRange);
+            const { lineNumber, column } = TypeConverts.fromPosition(posOrRange);
             _location.push({ startLineNumber: lineNumber, startColumn: column, endLineNumber: lineNumber, endColumn: column });
           }
         }
@@ -321,13 +321,13 @@ export class TextEditorData {
       if (Range.isRange(rangesOrOptions[0])) {
         resolved = (rangesOrOptions as vscode.Range[]).map((r) => {
           return {
-            range: fromRange(r),
+            range: TypeConverts.Range.from(r),
           };
         });
       } else if (Range.isRange((rangesOrOptions[0]! as any).range)) {
         resolved = (rangesOrOptions as vscode.DecorationOptions[]).map((r) => {
           return {
-            range: fromRange(r.range),
+            range: TypeConverts.Range.from(r.range),
             renderOptions: r.renderOptions ? TypeConverts.DecorationRenderOptions.from(r.renderOptions) : undefined,
             hoverMessage: r.hoverMessage as any,
           };
@@ -396,7 +396,7 @@ export class TextEditorData {
   }
 
   public doSetSelection: () => void = debounce(() => {
-    this.editorService._proxy.$setSelections(this.id, this.selections.map((selection) => fromSelection(selection)));
+    this.editorService._proxy.$setSelections(this.id, this.selections.map((selection) => TypeConverts.Selection.from(selection)));
   }, 50, {maxWait: 200, leading: true, trailing: true});
 
   get textEditor(): vscode.TextEditor {
@@ -419,7 +419,7 @@ export class TextEditorData {
         },
         set selections(val) {
           data.selections = val;
-          data.editorService._proxy.$setSelections(data.id, data.selections.map((selection) => fromSelection(selection)));
+          data.editorService._proxy.$setSelections(data.id, data.selections.map((selection) => TypeConverts.Selection.from(selection)));
         },
         get selection() {
           return data.selections && data.selections[0];
@@ -453,7 +453,7 @@ export class TextEditorData {
 export function toIRange(range: vscode.Range | vscode.Selection | vscode.Position): IRange {
   if (Range.isRange(range)) {
     // vscode.Range
-    return fromRange(range);
+    return TypeConverts.Range.from(range);
   } else if (Selection.isSelection(range)) {
     // vscode.Selection
     const r = range as vscode.Selection;

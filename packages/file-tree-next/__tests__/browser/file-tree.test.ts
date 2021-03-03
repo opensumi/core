@@ -209,7 +209,7 @@ describe('FileTree should be work while on single workspace model', () => {
     done();
   });
   afterAll(() => {
-    // track.cleanupSync();
+    track.cleanupSync();
     mockTreeHandle.promptNewTreeNode.mockReset();
     mockTreeHandle.promptNewCompositeTreeNode.mockReset();
     mockTreeHandle.promptRename.mockReset();

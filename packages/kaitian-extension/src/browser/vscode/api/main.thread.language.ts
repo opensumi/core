@@ -7,12 +7,13 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { IReporterService, PreferenceService } from '@ali/ide-core-browser';
 import { DisposableCollection, Emitter, IMarkerData, LRUMap, MarkerManager, REPORT_NAME, URI } from '@ali/ide-core-common';
 import { extname } from '@ali/ide-core-common/lib/path';
+import { ICallHierarchyService } from '@ali/ide-monaco/lib/browser/callHierarchy/callHierarchy.service';
 import { IEvaluatableExpressionService } from '@ali/ide-debug/lib/browser/editor/evaluatable-expression';
 import { applyPatch } from 'diff';
 import { DocumentFilter } from 'vscode-languageserver-protocol';
 import { ExtHostAPIIdentifier, IExtHostLanguages, IMainThreadLanguages, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
-import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SemanticTokensLegend, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider } from '../../../common/vscode/model.api';
+import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SemanticTokensLegend, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ICallHierarchyItemDto, CallHierarchyItem } from '../../../common/vscode/model.api';
 import { reviveIndentationRule, reviveOnEnterRules, reviveRegExp, reviveWorkspaceEditDto } from '../../../common/vscode/utils';
 import { ILanguageService } from '@ali/ide-editor';
 import { DocumentRangeSemanticTokensProviderImpl, DocumentSemanticTokensProvider } from './semantic-tokens/semantic-token-provider';
@@ -37,6 +38,8 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   @Autowired(ILanguageService)
   private readonly languageService: ILanguageService;
 
+  @Autowired(ICallHierarchyService)
+  protected readonly callHierarchyService: ICallHierarchyService;
   @Autowired(IEvaluatableExpressionService)
   protected readonly evaluatableExpressionService: IEvaluatableExpressionService;
 
@@ -158,7 +161,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
             return undefined!;
           }
           this.reporter.point(REPORT_NAME.RESOLVE_COMPLETION_ITEM);
-          return Promise.resolve(this.proxy.$resolveCompletionItem(handle, model.uri, position, suggestion, token));
+          return Promise.resolve(this.proxy.$resolveCompletionItem(handle, model.uri, position, suggestion, token) as any);
         }
         : undefined,
     }));
@@ -948,6 +951,59 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
+  $registerCallHierarchyProvider(handle: number, selector: SerializedDocumentFilter[]): void {
+    const languageSelector = fromLanguageSelector(selector);
+    const provider = this.createCallHierarchyProvider(handle, languageSelector);
+    // @ts-ignore
+    this.callHierarchyService.registerCallHierarchyProvider(selector, provider);
+  }
+
+  private reviveCallHierarchyItemDto(data: ICallHierarchyItemDto | undefined): CallHierarchyItem {
+    if (data) {
+      data.uri = URI.revive(data.uri);
+    }
+    return data as CallHierarchyItem;
+  }
+
+  protected createCallHierarchyProvider(handle: number, selector: LanguageSelector | undefined) {
+    return {
+      prepareCallHierarchy: async (document, position, token) => {
+        const items = await this.proxy.$prepareCallHierarchy(handle, document.uri, position, token);
+        if (!items) {
+          return undefined;
+        }
+        return {
+          dispose: () => {
+            for (const item of items) {
+              this.proxy.$releaseCallHierarchy(handle, item._sessionId);
+            }
+          },
+          roots: items.map(this.reviveCallHierarchyItemDto),
+        };
+      },
+
+      provideOutgoingCalls: async (item, token) => {
+        const outgoing = await this.proxy.$provideCallHierarchyOutgoingCalls(handle, item._sessionId, item._itemId, token);
+        if (!outgoing) {
+          return outgoing;
+        }
+        outgoing.forEach((value) => {
+          value.to = this.reviveCallHierarchyItemDto(value.to);
+        });
+        return outgoing;
+      },
+      provideIncomingCalls: async (item, token) => {
+        const incoming = await this.proxy.$provideCallHierarchyIncomingCalls(handle, item._sessionId, item._itemId, token);
+        if (!incoming) {
+          return incoming;
+        }
+        incoming.forEach((value) => {
+          value.from = this.reviveCallHierarchyItemDto(value.from);
+        });
+        return incoming;
+      },
+    };
+  }
   //#region Semantic Tokens
   $registerDocumentSemanticTokensProvider(handle: number, selector: SerializedDocumentFilter[], legend: SemanticTokensLegend): void {
     const provider = new DocumentSemanticTokensProvider(this.proxy, handle, legend);

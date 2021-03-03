@@ -2,6 +2,8 @@ import { URI } from '@ali/ide-core-common';
 
 export * from '@ali/ide-core-browser/lib/monaco';
 
+export * from './callHierarchy';
+
 export interface LanguagesContribution {
   id: string;
   // 扩展名

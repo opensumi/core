@@ -5,7 +5,7 @@ import * as monacoModes from '@ali/monaco-editor-core/esm/vs/editor/common/modes
 /* tslint:disable no-console */
 import { ExtHostLanguages } from '../../src/hosted/api/vscode/ext.host.language';
 import { MainThreadLanguages } from '../../src/browser/vscode/api/main.thread.language';
-import { Uri } from '@ali/ide-core-common';
+import { URI, Uri, Position } from '@ali/ide-core-common';
 import type * as vscode from 'vscode';
 import * as types from '../../src/common/vscode/ext-types';
 import * as modes from '../../src/common/vscode/model.api';
@@ -18,6 +18,8 @@ import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
 import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.commands';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
+import { ICallHierarchyService, CallHierarchyService } from '@ali/ide-monaco/lib/browser/callHierarchy/callHierarchy.service';
+import { IEditorDocumentModelService } from '@ali/ide-editor/src/browser';
 import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from '@ali/ide-debug/lib/browser/editor/evaluatable-expression';
 
 const emitterA = new Emitter<any>();
@@ -54,6 +56,10 @@ describe('ExtHostLanguageFeatures', () => {
     {
       token: MonacoService,
       useClass: MockedMonacoService,
+    },
+    {
+      token: ICallHierarchyService,
+      useClass: CallHierarchyService,
     },
     {
       token: IEvaluatableExpressionService,
@@ -672,6 +678,81 @@ An error case:
     expect(tokens?.resultId).toBe('1');
     expect((tokens as types.SemanticTokens)?.data instanceof Uint32Array).toBeTruthy();
     done();
+  });
+  //#endregion Semantic Tokens
+  //#region Call Hierarchy
+  describe('CallHierarchy', () => {
+
+    beforeAll(() => {
+      injector.addProviders(    {
+        token: IEditorDocumentModelService,
+        useValue: {
+          getModelReference: () => {},
+          createModelReference: (uri) => {
+            return Promise.resolve({
+              instance: {
+                uri: model.uri,
+                getMonacoModel: () => {
+                  return {
+                    uri: model.uri,
+                    isTooLargeForSyncing: () => false,
+                    getLanguageIdentifier: () => ({ language: 'plaintext'}),
+                  };
+                },
+              },
+              dispose: jest.fn(),
+            });
+          },
+        },
+      });
+    });
+
+    afterAll(() => {
+      injector.disposeOne(IEditorDocumentModelService);
+    });
+
+    test('registerCallHierarchyProvider should be work', async () => {
+
+      class TestCallHierarchyProvider implements vscode.CallHierarchyProvider {
+        prepareCallHierarchy(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.CallHierarchyItem | vscode.CallHierarchyItem[]> {
+          const range = new types.Range(0, 0, 0, 0);
+          return new types.CallHierarchyItem(types.SymbolKind.Object, 'test-name', 'test-detail', document.uri, range, range);
+        }
+        provideCallHierarchyIncomingCalls(item: vscode.CallHierarchyItem, token: vscode.CancellationToken): vscode.ProviderResult<vscode.CallHierarchyIncomingCall[]> {
+          const range = new types.Range(0, 0, 0, 0);
+          return [new types.CallHierarchyIncomingCall(item, [range])];
+        }
+        provideCallHierarchyOutgoingCalls(item: vscode.CallHierarchyItem, token: vscode.CancellationToken): vscode.ProviderResult<vscode.CallHierarchyOutgoingCall[]> {
+          const range = new types.Range(0, 0, 0, 0);
+          return [
+            new types.CallHierarchyOutgoingCall(item, [range, range]),
+            new types.CallHierarchyOutgoingCall(item, [range, range]),
+          ];
+        }
+      }
+
+      const callHierarchyService = injector.get<ICallHierarchyService>(ICallHierarchyService);
+      const mockMainThreadFunc = jest.spyOn(mainThread, '$registerCallHierarchyProvider');
+
+      extHost.registerCallHierarchyProvider('plaintext', new TestCallHierarchyProvider());
+
+      await 0;
+
+      expect(mockMainThreadFunc).toBeCalled();
+      const prepareCallHierarchyItems =  await callHierarchyService.prepareCallHierarchyProvider(new URI(model.uri), new Position(1, 1));
+      expect(prepareCallHierarchyItems.length).toBe(1);
+      expect(prepareCallHierarchyItems[0].kind).toBe(types.SymbolKind.Object);
+      const provideIncomingCalls =  await callHierarchyService.provideIncomingCalls(prepareCallHierarchyItems[0]);
+      expect(provideIncomingCalls).toBeDefined();
+      expect(provideIncomingCalls!.length).toBe(1);
+      expect(provideIncomingCalls![0].fromRanges.length).toBe(1);
+      expect(provideIncomingCalls![0].from.kind).toBe(types.SymbolKind.Object);
+      const provideOutgoingCalls =  await callHierarchyService.provideOutgoingCalls(prepareCallHierarchyItems[0]);
+      expect(provideOutgoingCalls).toBeDefined();
+      expect(provideOutgoingCalls!.length).toBe(2);
+      expect(provideOutgoingCalls![0].fromRanges.length).toBe(2);
+      expect(provideOutgoingCalls![0].to.kind).toBe(types.SymbolKind.Object);
+    });
   });
   //#endregion Semantic Tokens
 

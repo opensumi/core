@@ -37,6 +37,7 @@ import {
   DiagnosticChangeEvent,
   SelectionRangeProvider,
   DocumentFormattingEditProvider,
+  CallHierarchyProvider,
   DocumentSemanticTokensProvider,
   SemanticTokensLegend,
   DocumentRangeSemanticTokensProvider,
@@ -72,6 +73,9 @@ import {
   SignatureHelpContextDto,
   SelectionRange,
   CompletionItem,
+  ICallHierarchyItemDto,
+  IIncomingCallDto,
+  IOutgoingCallDto,
 } from '../../../common/vscode/model.api';
 import {
   IMainThreadLanguages,
@@ -80,6 +84,7 @@ import {
   IExtHostLanguages,
 } from '../../../common/vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
+import { UriComponents } from 'vscode-uri';
 import { Uri } from '@ali/ide-core-common';
 import { Disposable } from '../../../common/vscode/ext-types';
 import { CompletionAdapter } from './language/completion';
@@ -105,6 +110,7 @@ import { WorkspaceSymbolAdapter } from './language/workspace-symbol';
 import { SignatureHelpAdapter } from './language/signature';
 import { RenameAdapter } from './language/rename';
 import { SelectionRangeAdapter } from './language/selection';
+import { CallHierarchyAdapter } from './language/callhierarchy';
 import { ExtHostCommands } from './ext.host.command';
 import { IExtension } from '../../../common';
 import { DocumentRangeSemanticTokensAdapter, DocumentSemanticTokensAdapter } from './language/semantic-tokens';
@@ -197,6 +203,9 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, ex
     registerSelectionRangeProvider(selector: DocumentSelector, provider: SelectionRangeProvider): Disposable {
       return extHostLanguages.registerSelectionRangeProvider(selector, provider);
     },
+    registerCallHierarchyProvider(selector: DocumentSelector, provider: CallHierarchyProvider): Disposable {
+      return extHostLanguages.registerCallHierarchyProvider(selector, provider);
+    },
     registerDocumentSemanticTokensProvider(selector: DocumentSelector, provider: DocumentSemanticTokensProvider, legend: SemanticTokensLegend): Disposable {
       return extHostLanguages.registerDocumentSemanticTokensProvider(selector, provider, legend);
     },
@@ -231,6 +240,7 @@ export type Adapter =
   FormattingAdapter |
   RenameAdapter |
   DeclarationAdapter |
+  CallHierarchyAdapter |
   DocumentSemanticTokensAdapter |
   DocumentRangeSemanticTokensAdapter |
   EvaluatableExpressionAdapter;
@@ -634,6 +644,28 @@ export class ExtHostLanguages implements IExtHostLanguages {
 
   $provideSelectionRanges(handle: number, resource: Uri, positions: Position[], token: CancellationToken): Promise<SelectionRange[][]> {
     return this.withAdapter(handle, SelectionRangeAdapter, (adapter) => adapter.provideSelectionRanges(resource, positions, token));
+  }
+
+  registerCallHierarchyProvider(selector: DocumentSelector, provider: CallHierarchyProvider): Disposable {
+    const callId = this.addNewAdapter(new CallHierarchyAdapter(this.documents, provider));
+    this.proxy.$registerCallHierarchyProvider(callId, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
+  }
+
+  $prepareCallHierarchy(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<ICallHierarchyItemDto[] | undefined> {
+    return this.withAdapter(handle, CallHierarchyAdapter, (adapter) => Promise.resolve(adapter.prepareSession(Uri.revive(resource), position, token)));
+  }
+
+  $provideCallHierarchyIncomingCalls(handle: number, sessionId: string, itemId: string, token: CancellationToken): Promise<IIncomingCallDto[] | undefined> {
+    return this.withAdapter(handle, CallHierarchyAdapter, (adapter) => adapter.provideCallsTo(sessionId, itemId, token));
+  }
+
+  $provideCallHierarchyOutgoingCalls(handle: number, sessionId: string, itemId: string, token: CancellationToken): Promise<IOutgoingCallDto[] | undefined> {
+    return this.withAdapter(handle, CallHierarchyAdapter, (adapter) => adapter.provideCallsFrom(sessionId, itemId, token));
+  }
+
+  $releaseCallHierarchy(handle: number, sessionId: string): void {
+    this.withAdapter(handle, CallHierarchyAdapter, (adapter) => Promise.resolve(adapter.releaseSession(sessionId)));
   }
 
   //#region Semantic Tokens

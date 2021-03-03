@@ -1,6 +1,6 @@
 import type * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { Disposable, Position, Range, Location, CodeLens, SymbolInformation } from '../../../common/vscode/ext-types';
+import { Disposable, Position, Range, Location } from '../../../common/vscode/ext-types';
 import * as extHostTypeConverter from '../../../common/vscode/converter';
 import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor, ICommandHandlerDescription, CommandHandler } from '../../../common/vscode';
 import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
@@ -13,6 +13,7 @@ import * as modes from '../../../common/vscode/model.api';
 import { Uri } from '@ali/ide-core-common';
 import { IExtension } from '../../../common';
 import { IBuiltInCommand } from '../../ext.process-base';
+import { newCommands } from './ext.host.api.command';
 
 export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extHostEditors: ExtensionHostEditorService, extension: IExtension) {
   const commands: typeof vscode.commands = {
@@ -126,38 +127,23 @@ export class ExtHostCommands implements IExtHostCommands {
       }
     }
 
-    this.register('vscode.executeReferenceProvider', this.executeReferenceProvider, {
-      description: 'Execute reference provider.',
-      args: [
-        { name: 'uri', description: 'Uri of a text document', constraint: Uri },
-        { name: 'position', description: 'Position in a text document', constraint: Position },
-      ],
-      returns: 'A promise that resolves to an array of Location-instances.',
-    });
-    this.register('vscode.executeImplementationProvider', this.executeImplementationProvider, {
-      description: 'Execute all implementation providers.',
-      args: [
-        { name: 'uri', description: 'Uri of a text document', constraint: Uri },
-        { name: 'position', description: 'Position of a symbol', constraint: Position },
-      ],
-      returns: 'A promise that resolves to an array of Location-instance.',
-    });
-    this.register('vscode.executeCodeLensProvider', this.executeCodeLensProvider, {
-      description: 'Execute CodeLens provider.',
-      args: [
-        { name: 'uri', description: 'Uri of a text document', constraint: Uri },
-        { name: 'itemResolveCount', description: '(optional) Number of lenses that should be resolved and returned. Will only return resolved lenses, will impact performance)', constraint: (value: any) => value === undefined || typeof value === 'number' },
-      ],
-      returns: 'A promise that resolves to an array of CodeLens-instances.',
-    });
-    this.register('vscode.executeDocumentSymbolProvider', this.executeDocumentSymbolProvider, {
-      description: 'Execute document symbol provider.',
-      args: [
-        { name: 'uri', description: 'Uri of a text document', constraint: Uri },
-      ],
-      returns: 'A promise that resolves to an array of SymbolInformation and DocumentSymbol instances.',
-    });
-    // TODO: vscode.executeCompletionItemProvider command
+    for (const command of newCommands) {
+      this.register(command.id, async (...args) => {
+        const internalArgs = command.args.map((arg, i) => {
+          if (!arg.validate(args[i])) {
+            throw new Error(`Invalid argument '${arg.name}' when running '${command.id}', receieved: ${args[i]}`);
+          }
+          return arg.convert(args[i]);
+        });
+
+        const internalResult = await this.executeCommand(command.internalId, ...internalArgs);
+        return command.result.convert(internalResult, args, this.converter);
+      }, {
+        description: command.description,
+        args: command.args,
+        returns: command.result.description,
+      });
+    }
   }
 
   private register(id: string, commandHandler: CommandHandler | Handler, description?: ICommandHandlerDescription): Disposable {
@@ -260,76 +246,6 @@ export class ExtHostCommands implements IExtHostCommands {
     }
   }
 
-  private executeReferenceProvider(resource: Uri, position: Position): Promise<Location[] | undefined> {
-    const arg = {
-      resource,
-      position,
-    };
-    return this.proxy.$executeReferenceProvider(arg)
-      .then((locations) => {
-        return tryMapWith(extHostTypeConverter.toLocation)(locations!);
-      });
-  }
-
-  private executeImplementationProvider(resource: Uri, position: Position): Promise<Location[] | undefined> {
-    const arg = {
-      resource,
-      position,
-    };
-    return this.proxy.$executeImplementationProvider(arg)
-      .then((locations) => {
-        return tryMapWith(extHostTypeConverter.toLocation)(locations!);
-      });
-  }
-
-  private executeCodeLensProvider(resource: Uri, itemResolveCount: number): Promise<CodeLens[] | undefined> {
-    const args = { resource, itemResolveCount };
-    return this.proxy.$executeCodeLensProvider(args)
-      .then((items) => {
-        return items.map((item) => {
-          return new CodeLens(
-            extHostTypeConverter.toRange(item.range),
-            item.command ? this.converter.fromInternal(item.command) : undefined,
-          );
-        });
-      });
-  }
-
-  private executeDocumentSymbolProvider(resource: Uri): Promise<vscode.SymbolInformation[] | undefined> {
-    const args = {
-      resource,
-    };
-    return this.proxy.$executeDocumentSymbolProvider(args)
-      .then((items) => {
-        if (!Array.isArray(items) || items === undefined) {
-          return undefined;
-        }
-
-        class MergedInfo extends SymbolInformation implements vscode.DocumentSymbol {
-          static to(symbol: modes.DocumentSymbol): MergedInfo {
-            const res = new MergedInfo(
-              symbol.name,
-              extHostTypeConverter.SymbolKind.toSymbolKind(symbol.kind),
-              symbol.containerName || '',
-              new Location(resource, extHostTypeConverter.toRange(symbol.range)),
-            );
-            res.detail = symbol.detail;
-            res.range = res.location.range;
-            res.selectionRange = extHostTypeConverter.toRange(symbol.selectionRange);
-            res.children = symbol.children ? symbol.children.map(MergedInfo.to) : [];
-            return res;
-          }
-
-          detail!: string;
-          range!: vscode.Range;
-          selectionRange!: vscode.Range;
-          children!: vscode.DocumentSymbol[];
-          containerName!: string;
-        }
-        return items.map(MergedInfo.to);
-      });
-  }
-
   private executeLocalCommand<T>(id: string, args: any[]): Promise<T> {
     const commandHandler = this.commands.get(id);
     if (!commandHandler) {
@@ -391,15 +307,6 @@ export class ExtHostCommands implements IExtHostCommands {
     return !isPermitted || isPermitted(extensionInfo, ...args);
   }
 
-}
-
-function tryMapWith<T, R>(f: (x: T) => R) {
-  return (value: T[]) => {
-    if (Array.isArray(value)) {
-      return value.map(f);
-    }
-    return undefined;
-  };
 }
 
 export class CommandsConverter {

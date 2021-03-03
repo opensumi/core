@@ -1,7 +1,7 @@
+import { DocumentSelector, CompletionItemProvider, CancellationToken, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider, DocumentRangeFormattingEditProvider, DocumentFormattingEditProvider, CallHierarchyProvider } from 'vscode';
+import { SerializedDocumentFilter, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, SerializedLanguageConfiguration, ReferenceContext, Location, ILink, DocumentSymbol, WorkspaceEditDto, RenameLocation, Selection, ISerializedSignatureHelpProviderMetadata, SelectionRange, CompletionItem, ICallHierarchyItemDto, IOutgoingCallDto, IIncomingCallDto, CodeLensList, CodeLens, SemanticTokensLegend } from './model.api';
 import type { editor } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import type { CodeActionContext, CodeActionList, SignatureHelpContext, SignatureHelpResult } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
-import { DocumentSelector, CompletionItemProvider, CancellationToken, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider, DocumentRangeFormattingEditProvider, DocumentFormattingEditProvider } from 'vscode';
-import { SerializedDocumentFilter, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, SerializedLanguageConfiguration, ReferenceContext, Location, ILink, DocumentSymbol, WorkspaceEditDto, RenameLocation, Selection, ISerializedSignatureHelpProviderMetadata, SelectionRange, CompletionItem, CodeLensList, CodeLens, SemanticTokensLegend } from './model.api';
 import { Disposable } from './ext-types';
 import { SymbolInformation } from 'vscode-languageserver-types';
 import globToRegExp = require('glob-to-regexp');
@@ -37,6 +37,7 @@ export interface IMainThreadLanguages {
   $registerRenameProvider(handle: number, selector: SerializedDocumentFilter[], supportsResoveInitialValues: boolean): void;
   $registerSelectionRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerDeclarationProvider(handle: number, selector: SerializedDocumentFilter[]): void;
+  $registerCallHierarchyProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerDocumentSemanticTokensProvider(handle: number, selector: SerializedDocumentFilter[], legend: SemanticTokensLegend): void;
   $registerDocumentRangeSemanticTokensProvider(handle: number, selector: SerializedDocumentFilter[], legend: SemanticTokensLegend): void;
   $registerEvaluatableExpressionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
@@ -105,6 +106,11 @@ export interface IExtHostLanguages {
 
   $provideSelectionRanges(handle: number, resource: UriComponents, positions: Position[], token: CancellationToken): Promise<SelectionRange[][]>;
 
+  registerCallHierarchyProvider(selector: DocumentSelector, provider: CallHierarchyProvider): Disposable;
+  $prepareCallHierarchy(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<ICallHierarchyItemDto[] | undefined>;
+  $releaseCallHierarchy(handle: number, sessionId: string): void;
+  $provideCallHierarchyIncomingCalls(handle: number, sessionId: string, itemId: string, token: CancellationToken): Promise<IIncomingCallDto[] | undefined>;
+  $provideCallHierarchyOutgoingCalls(handle: number, sessionId: string, itemId: string, token: CancellationToken): Promise<IOutgoingCallDto[] | undefined>;
   $provideDocumentSemanticTokens(handle: number, resource: UriComponents, previousResultId: number, token: CancellationToken): Promise<Uint8Array | null>;
   $releaseDocumentSemanticTokens(handle: number, semanticColoringResultId: number): void;
   $provideDocumentRangeSemanticTokens(handle: number, resource: UriComponents, range: Range, token: CancellationToken): Promise<Uint8Array | null>;

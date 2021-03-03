@@ -2,13 +2,14 @@ import type * as vscode from 'vscode';
 import * as paths from 'path';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, ExtensionDocumentDataManager } from '../../../common/vscode';
-import { Uri, WorkspaceEdit, UriComponents } from '../../../common/vscode/ext-types';
+import { Uri, WorkspaceEdit } from '../../../common/vscode/ext-types';
+import { UriComponents } from '../../../common/vscode/models';
 import { WorkspaceRootsChangeEvent, IExtHostMessage, relative, normalize } from '../../../common/vscode';
 import { ExtHostPreference } from './ext.host.preference';
 import { Emitter, Event, MessageType } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { FileStat } from '@ali/ide-file-service';
-import { TypeConverts, fromGlobPattern } from '../../../common/vscode/converter';
+import * as TypeConverts from '../../../common/vscode/converter';
 import { WorkspaceFolder } from '../../../common/vscode/models/workspace';
 import { ExtensionIdentifier } from '../../../common/vscode/extension';
 import { CancellationToken } from '@ali/vscode-jsonrpc';
@@ -72,7 +73,7 @@ export function createWorkspaceApiFactory(
       return extHostFileSystem.fileSystem;
     },
     createFileSystemWatcher: (pattern, ignoreCreate, ignoreChange, ignoreDelete): vscode.FileSystemWatcher => {
-      return extHostFileSystemEvent.createFileSystemWatcher(fromGlobPattern(pattern), ignoreCreate, ignoreChange, ignoreDelete);
+      return extHostFileSystemEvent.createFileSystemWatcher(TypeConverts.fromGlobPattern(pattern), ignoreCreate, ignoreChange, ignoreDelete);
     },
     onDidCreateFiles: (listener: (e: vscode.FileCreateEvent) => any, thisArg?: any, disposables?: vscode.Disposable[]) => {
       return extHostFileSystemEvent.onDidCreateFile(listener, thisArg, disposables);

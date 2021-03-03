@@ -271,6 +271,9 @@ export enum SymbolKind {
   TypeParameter = 25,
 }
 
+export enum SymbolTag {
+  Deprecated = 1
+}
 
 /**
  * A change

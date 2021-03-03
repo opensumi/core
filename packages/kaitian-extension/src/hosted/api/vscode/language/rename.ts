@@ -38,7 +38,7 @@ export class RenameAdapter {
           return undefined;
         }
 
-        return Converter.TypeConverts.WorkspaceEdit.from(value);
+        return Converter.WorkspaceEdit.from(value);
       },
       (error) => {
         const rejectReason = RenameAdapter.asMessage(error);

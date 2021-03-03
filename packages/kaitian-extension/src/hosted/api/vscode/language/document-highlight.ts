@@ -30,7 +30,7 @@ export class DocumentHighlightAdapter {
                 const highlights: DocumentHighlight[] = [];
 
                 for (const highlight of documentHighlights) {
-                    highlights.push(Converter.fromDocumentHighlight(highlight));
+                    highlights.push(Converter.DocumentHighlight.from(highlight));
                 }
 
                 return highlights;

@@ -1,4 +1,3 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired, Injector } from '@ali/common-di';
 import { MonacoCommandService } from '@ali/ide-monaco/lib/browser/monaco.command.service';
 import { ILogger, CommandRegistry, IExtensionInfo } from '@ali/ide-core-common';
@@ -39,7 +38,7 @@ export class KaitianBrowserCommand {
    * command 在 commandRegistry 已注册，则优先通过 extHostCommand 调用，这样即可在插件进程执行鉴权逻辑
    * 否则仅在前端鉴权后执行，对于没有后端或没有 extHost 的情况下，满足执行前端命令的需求
    */
-  public executeCommand<T>(id: string, extension: IExtension, ...args: any[]): Promise<T | undefined> {
+  public async executeCommand<T>(id: string, extension: IExtension, ...args: any[]): Promise<T | undefined> {
     const extensionInfo: IExtensionInfo = {
       id: extension.id,
       extensionId: extension.extensionId,
@@ -55,13 +54,10 @@ export class KaitianBrowserCommand {
     }
 
     try {
-      // monaco 内置命令转换参数适配
-      if (id === 'editor.action.showReferences') {
-        return this.monacoCommandService.executeCommand(id, ...[monaco.Uri.parse(args[0]), ...args.slice(1)]);
-      }
-      return this.monacoCommandService.executeCommand(id, ...args);
+      return await this.monacoCommandService.executeCommand(id, ...args);
     } catch (e) {
-      return Promise.reject(e);
+      this.logger.error(e);
+      throw e;
     }
   }
 }

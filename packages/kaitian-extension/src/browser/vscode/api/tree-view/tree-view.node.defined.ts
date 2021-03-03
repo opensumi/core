@@ -1,6 +1,6 @@
 import { TreeNode, CompositeTreeNode, ITree } from '@ali/ide-components';
 import { TreeViewDataProvider } from '../main.thread.treeview';
-import { ICommand } from '../../../../common/vscode/ext-types';
+import { ICommand } from '../../../../common/vscode/models';
 
 export class ExtensionTreeRoot extends CompositeTreeNode {
 

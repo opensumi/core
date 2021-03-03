@@ -1,10 +1,8 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadCommands, IExtHostCommands, ArgumentProcessor } from '../../../common/vscode';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { CommandRegistry, ILogger, IContextKeyService, IDisposable } from '@ali/ide-core-browser';
 import { MonacoCommandService } from '@ali/ide-monaco/lib/browser/monaco.command.service';
-import { fromPosition } from '../../../common/vscode/converter';
 import { URI, isNonEmptyArray, Disposable, IExtensionInfo } from '@ali/ide-core-common';
 
 export interface IExtCommandHandler extends IDisposable {
@@ -143,41 +141,12 @@ export class MainThreadCommands implements IMainThreadCommands {
     return this.$executeCommand<T>(id, ...args);
   }
 
-  $executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined> {
+  async $executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined> {
     try {
-      // monaco 内置命令转换参数适配
-      if (id === 'editor.action.showReferences') {
-        return this.monacoCommandService.executeCommand(id, ...[monaco.Uri.parse(args[0]), ...args.slice(1)]);
-      }
-      return this.monacoCommandService.executeCommand(id, ...args);
+      return await this.monacoCommandService.executeCommand(id, ...args);
     } catch (e) {
-      return Promise.reject(e);
+      this.logger.error(e);
+      throw e;
     }
-  }
-
-  async $executeReferenceProvider(arg) {
-    arg.resource = monaco.Uri.revive(arg.resource);
-    if (arg.position) {
-      arg.position = fromPosition(arg.position);
-    }
-    return this.monacoCommandService.executeCommand('_executeReferenceProvider', arg.resource, arg.position);
-  }
-
-  async $executeImplementationProvider(arg) {
-    arg.resource = monaco.Uri.revive(arg.resource);
-    if (arg.position) {
-      arg.position = fromPosition(arg.position);
-    }
-    return this.monacoCommandService.executeCommand('_executeImplementationProvider', arg.resource, arg.position);
-  }
-
-  async $executeCodeLensProvider(arg) {
-    const resource = monaco.Uri.revive(arg.resource);
-    return this.monacoCommandService.executeCommand('_executeCodeLensProvider', resource);
-  }
-
-  async $executeDocumentSymbolProvider(arg) {
-    const resource = monaco.Uri.revive(arg.resource);
-    return this.monacoCommandService.executeCommand('_executeDocumentSymbolProvider', resource);
   }
 }

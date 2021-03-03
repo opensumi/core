@@ -1,10 +1,10 @@
 import type * as vscode from 'vscode';
-import * as convert from '../../../../common/vscode/converter';
+import * as TypeConverts from '../../../../common/vscode/converter';
 import {
   Emitter as EventEmiiter, IDisposable,
   CancellationTokenSource,
 } from '@ali/ide-core-common';
-import { ExtensionDocumentDataManager, IMainThreadDocumentsShape, MainThreadAPIIdentifier, IExtensionDocumentModelChangedEvent, IExtensionDocumentModelOpenedEvent, IExtensionDocumentModelRemovedEvent, IExtensionDocumentModelSavedEvent, IExtensionDocumentModelOptionsChangedEvent, IExtensionDocumentModelWillSaveEvent, IMainThreadWorkspace, ITextEdit } from '../../../../common/vscode';
+import { ExtensionDocumentDataManager, IMainThreadDocumentsShape, MainThreadAPIIdentifier, IExtensionDocumentModelChangedEvent, IExtensionDocumentModelOpenedEvent, IExtensionDocumentModelRemovedEvent, IExtensionDocumentModelSavedEvent, IExtensionDocumentModelOptionsChangedEvent, IExtensionDocumentModelWillSaveEvent, IMainThreadWorkspace } from '../../../../common/vscode';
 import { ExtHostDocumentData, setWordDefinitionFor } from './ext-data.host';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Uri, TextEdit } from '../../../../common/vscode/ext-types';
@@ -175,7 +175,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
         contentChanges: changes.map((change) => {
           return {
             ...change,
-            range: convert.toRange(change.range) as any,
+            range: TypeConverts.toRange(change.range) as any,
           };
         }),
       });
@@ -243,7 +243,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
   async createWaitUntil(uri: Uri, promise: Promise<TextEdit[] | void>): Promise<void> {
     const res = await promise;
     if (res instanceof Array && res[0] && res[0] instanceof TextEdit) {
-      await this.applyEdit(uri, res.map(convert.TypeConverts.TextEdit.from)[0]);
+      await this.applyEdit(uri, res.map(TypeConverts.TextEdit.from)[0]);
     }
   }
 
@@ -251,11 +251,10 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     setWordDefinitionFor(modeId, wordDefinition);
   }
 
-  applyEdit(uri: Uri, edit: ITextEdit): Promise<boolean> {
+  applyEdit(uri: Uri, edit: model.TextEdit): Promise<boolean> {
     const dto: model.WorkspaceEditDto = { edits: [{
       resource: uri,
-      // TODO: eol 类型需要强转下，值其实是一样的
-      edit: edit as model.TextEdit,
+      edit,
     }]};
     return this._workspaceProxy.$tryApplyWorkspaceEdit(dto);
   }

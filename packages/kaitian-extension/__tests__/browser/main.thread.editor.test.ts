@@ -41,7 +41,7 @@ import { EditorComponentRegistryImpl } from '@ali/ide-editor/lib/browser/compone
 import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser/types';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 import { IResource, IEditorOpenType } from '@ali/ide-editor';
-import { TypeConverts } from '@ali/ide-kaitian-extension/lib/common/vscode/converter';
+import * as TypeConverts from '@ali/ide-kaitian-extension/lib/common/vscode/converter';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

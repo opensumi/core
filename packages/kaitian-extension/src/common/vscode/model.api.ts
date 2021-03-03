@@ -2,11 +2,56 @@ import type { EndOfLineSequence } from '@ali/monaco-editor-core/esm/vs/editor/co
 import { CancellationToken } from '@ali/monaco-editor-core/esm/vs/base/common/cancellation';
 
 // 内置的api类型声明
-import { Uri as URI, IRange, IDisposable, UriComponents } from '@ali/ide-core-common';
+import { Uri as URI, IRange, IDisposable, UriComponents, SymbolTag } from '@ali/ide-core-common';
 import { ISingleEditOperation } from '@ali/ide-editor';
 import type * as vscode from 'vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 import { IndentAction, SymbolKind } from './ext-types';
+import { IMarkdownString } from './models/html-content';
+import { CallHierarchyItem } from '@ali/ide-monaco/lib/common';
+export { IMarkdownString, SymbolTag, CallHierarchyItem };
+
+export interface IRawColorInfo {
+  color: [number, number, number, number];
+  range: Range;
+}
+
+/**
+ * String representations for a color
+ */
+export interface IColorPresentation {
+  /**
+   * The label of this color presentation. It will be shown on the color
+   * picker header. By default this is also the text that is inserted when selecting
+   * this color presentation.
+   */
+  label: string;
+  /**
+   * An [edit](#TextEdit) which is applied to a document when selecting
+   * this presentation for the color.
+   */
+  textEdit?: TextEdit;
+  /**
+   * An optional array of additional [text edits](#TextEdit) that are applied when
+   * selecting this color presentation.
+   */
+  additionalTextEdits?: TextEdit[];
+}
+
+export interface CodeLens {
+  range: IRange;
+  id?: string;
+  command?: VSCommand;
+}
+
+export interface CustomCodeAction {
+  title: string;
+  kind?: string;
+  _isSynthetic?: boolean;
+  command?: VSCommand;
+  edit?: IWorkspaceEditDto;
+  isPreferred?: boolean;
+}
 
 /**
  * A position in the editor. This interface is suitable for serialization.
@@ -59,14 +104,8 @@ export interface Selection {
    */
   readonly positionColumn: number;
 }
-
-export interface MarkdownString {
-  value: string;
-  isTrusted?: boolean;
-}
-
 export interface Hover {
-  contents: MarkdownString[];
+  contents: IMarkdownString[];
   range?: Range;
 }
 
@@ -145,6 +184,29 @@ export interface Location {
    * The document range of this locations.
    */
   range: Range;
+}
+
+export interface LocationLink {
+  /**
+   * A range to select where this link originates from.
+   */
+  originSelectionRange?: Range;
+
+  /**
+   * The target uri this link points to.
+   */
+  uri: URI;
+
+  /**
+   * The full range this link points to.
+   */
+  range: Range;
+
+  /**
+   * A range to select this link points to. Must be contained
+   * in `LocationLink.range`.
+   */
+  targetSelectionRange?: Range;
 }
 
 export enum CompletionTriggerKind {
@@ -234,7 +296,7 @@ export interface CompletionItem {
   /**
    * A human-readable string that represents a doc-comment.
    */
-  documentation?: string | MarkdownString;
+  documentation?: string | IMarkdownString;
   /**
    * A string that should be used when comparing this item
    * with other items. When `falsy` the [label](#CompletionItem.label)
@@ -273,11 +335,7 @@ export interface CompletionItem {
    * *Note:* The range must be a [single line](#Range.isSingleLine) and it must
    * [contain](#Range.contains) the position at which completion has been [requested](#CompletionItemProvider.provideCompletionItems).
    */
-  range: IRange | {
-    insert: IRange;
-    replace: IRange;
-  };
-
+  range?: IRange | { insert: IRange, replace: IRange };
   /**
    * An optional set of characters that when pressed while this completion is active will accept it first and
    * then type that character. *Note* that all commit characters should have `length=1` and that superfluous
@@ -473,6 +531,8 @@ export interface WorkspaceEditDto {
   rejectReason?: string;
 }
 
+export type IWorkspaceEditDto = WorkspaceEditDto;
+
 export interface FileOperationOptions {
   overwrite?: boolean;
   ignoreIfExists?: boolean;
@@ -520,10 +580,6 @@ export interface ILinksList {
   dispose?(): void;
 }
 
-export enum SymbolTag {
-  Deprecated = 1,
-}
-
 export interface DocumentSymbol {
   name: string;
   detail: string;
@@ -540,19 +596,28 @@ export interface WorkspaceSymbolProvider {
   resolveWorkspaceSymbol(symbol: SymbolInformation, token: CancellationToken): Thenable<SymbolInformation>;
 }
 
+export interface IWorkspaceSymbol {
+  name: string;
+  containerName?: string;
+  kind: SymbolKind;
+  tags?: SymbolTag[];
+  location: Location;
+}
+
 export interface WorkspaceSymbolParams {
   query: string;
 }
 
 export interface ParameterInformation {
   label: string | [number, number];
-  documentation?: string | MarkdownString;
+  documentation?: string | IMarkdownString;
 }
 
 export interface SignatureInformation {
   label: string;
-  documentation?: string | MarkdownString;
+  documentation?: string | IMarkdownString;
   parameters: ParameterInformation[];
+  activeParameter?: number;
 }
 
 export interface SignatureHelp {
@@ -602,36 +667,99 @@ export interface SignatureHelpDto {
 export type CacheId = number;
 
 export enum CompletionItemKind {
-  Method = 0,
-  Function = 1,
-  Constructor = 2,
-  Field = 3,
-  Variable = 4,
-  Class = 5,
-  Struct = 6,
-  Interface = 7,
-  Module = 8,
-  Property = 9,
-  Event = 10,
-  Operator = 11,
-  Unit = 12,
-  Value = 13,
-  Constant = 14,
-  Enum = 15,
-  EnumMember = 16,
-  Keyword = 17,
-  Text = 18,
-  Color = 19,
-  File = 20,
-  Reference = 21,
-  Customcolor = 22,
-  Folder = 23,
-  TypeParameter = 24,
-  Snippet = 25,
+  Method,
+  Function,
+  Constructor,
+  Field,
+  Variable,
+  Class,
+  Struct,
+  Interface,
+  Module,
+  Property,
+  Event,
+  Operator,
+  Unit,
+  Value,
+  Constant,
+  Enum,
+  EnumMember,
+  Keyword,
+  Text,
+  Color,
+  File,
+  Reference,
+  Customcolor,
+  Folder,
+  TypeParameter,
+  User,
+  Issue,
+  Snippet, // <- highest value (used for compare!)
+}
+
+export interface CompletionItemLabel {
+  /**
+   * The function or variable. Rendered leftmost.
+   */
+  name: string;
+  /**
+   * The parameters without the return type. Render after `name`.
+   */
+  parameters?: string;
+  /**
+   * The fully qualified name, like package name or file path. Rendered after `signature`.
+   */
+  qualifier?: string;
+  /**
+   * The return-type of a function or type of a property/variable. Rendered rightmost.
+   */
+  type?: string;
 }
 
 export enum CompletionItemTag {
   Deprecated = 1,
+}
+
+/**
+ * Mapped-type that replaces all occurrences of URI with UriComponents and
+ * drops all functions.
+ */
+export type Dto<T> = T extends { toJSON(): infer U }
+  ? U
+  : T extends object
+  ? { [k in keyof T]: Dto<T[k]>; }
+  : T;
+
+export type ICallHierarchyItemDto = Dto<CallHierarchyItem>;
+
+export interface IIncomingCallDto {
+  from: ICallHierarchyItemDto;
+  fromRanges: IRange[];
+}
+
+export interface IOutgoingCallDto {
+  fromRanges: IRange[];
+  to: ICallHierarchyItemDto;
+}
+
+/**
+ * TODO: From vs/editor/common/core/range
+ */
+export function isIRange(obj: any): obj is Range {
+  return (
+    obj
+    && (typeof obj.startLineNumber === 'number')
+    && (typeof obj.startColumn === 'number')
+    && (typeof obj.endLineNumber === 'number')
+    && (typeof obj.endColumn === 'number')
+  );
+}
+
+export function isLocationLink(thing: any): thing is LocationLink {
+  return thing
+    && URI.isUri((thing as LocationLink).uri)
+    && isIRange((thing as LocationLink).range)
+    && (isIRange((thing as LocationLink).originSelectionRange) || isIRange((thing as LocationLink).targetSelectionRange));
 }
 
 export interface SemanticTokensLegend {

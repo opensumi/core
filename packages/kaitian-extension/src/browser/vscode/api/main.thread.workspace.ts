@@ -1,5 +1,5 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IMainThreadWorkspace, IExtHostStorage, ResourceTextEditDto, ResourceFileEditDto, IExtHostWorkspace } from '../../../common/vscode';
+import { ExtHostAPIIdentifier, IMainThreadWorkspace, IExtHostStorage, IExtHostWorkspace } from '../../../common/vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
@@ -9,6 +9,7 @@ import { IWorkspaceEditService, IWorkspaceEdit, IResourceTextEdit, IResourceFile
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { FileSearchServicePath, IFileSearchService } from '@ali/ide-file-search/lib/common';
 import type * as model from '../../../common/vscode/model.api';
+import { ResourceTextEditDto, ResourceFileEditDto } from '../../../common/vscode/model.api';
 
 @Injectable({multiple: true})
 export class MainThreadWorkspace extends WithEventBus implements IMainThreadWorkspace {

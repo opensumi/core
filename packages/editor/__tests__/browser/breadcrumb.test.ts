@@ -2,7 +2,7 @@ import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import { URI, Emitter, IEventBus } from '@ali/ide-core-browser';
+import { URI, IEventBus } from '@ali/ide-core-browser';
 import { DocumentSymbol, DocumentSymbolChangedEvent } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { IEditorDocumentModelService, WorkbenchEditorService } from '@ali/ide-editor/lib/browser';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
@@ -82,8 +82,6 @@ describe('breadcrumb test', () => {
         uri: new URI('file:///'),
       },
     });
-
-    const onDidChangeEmitter = new Emitter<void>();
 
     const testDS: DocumentSymbol[] = [
       {

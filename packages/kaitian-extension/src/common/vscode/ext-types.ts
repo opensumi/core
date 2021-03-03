@@ -1,10 +1,11 @@
 import type * as vscode from 'vscode';
 import { Uri } from '@ali/ide-core-common';
 import { illegalArgument } from './utils';
-import { FileOperationOptions } from './model.api';
+import { FileOperationOptions, CompletionItemLabel } from './model.api';
 import { startsWithIgnoreCase, uuid, es5ClassCompat, isStringArray } from '@ali/ide-core-common';
-import { isMarkdownString, MarkdownString } from './models/html-content';
-export * from './models';
+import { escapeCodicons } from './models/html-content';
+
+export { UriComponents } from './models/uri';
 
 export { Uri };
 export enum ProgressLocation {
@@ -521,7 +522,7 @@ export class Hover {
     }
     if (Array.isArray(contents)) {
       this.contents = contents as MarkdownString[] | vscode.MarkedString[];
-    } else if (isMarkdownString(contents)) {
+    } else if (MarkdownString.isMarkdownString(contents)) {
       this.contents = [contents];
     } else {
       this.contents = [contents];
@@ -731,6 +732,8 @@ export enum CompletionItemKind {
   Event = 22,
   Operator = 23,
   TypeParameter = 24,
+  User = 25,
+  Issue = 26,
 }
 /**
  * Completion item tags are extra annotations that tweak the rendering of a completion
@@ -744,25 +747,70 @@ export enum CompletionItemTag {
 }
 
 @es5ClassCompat
+export class MarkdownString {
+
+  value: string;
+  isTrusted?: boolean;
+  readonly supportThemeIcons?: boolean;
+
+  constructor(value?: string, supportThemeIcons: boolean = false) {
+    this.value = value ?? '';
+    this.supportThemeIcons = supportThemeIcons;
+  }
+
+  appendText(value: string): MarkdownString {
+    // escape markdown syntax tokens: http://daringfireball.net/projects/markdown/syntax#backslash
+    this.value += (this.supportThemeIcons ? escapeCodicons(value) : value)
+      .replace(/[\\`*_{}[\]()#+\-.!]/g, '\\$&')
+      .replace(/\n/, '\n\n');
+
+    return this;
+  }
+
+  appendMarkdown(value: string): MarkdownString {
+    this.value += value;
+
+    return this;
+  }
+
+  appendCodeblock(code: string, language: string = ''): MarkdownString {
+    this.value += '\n```';
+    this.value += language;
+    this.value += '\n';
+    this.value += code;
+    this.value += '\n```\n';
+    return this;
+  }
+
+  static isMarkdownString(thing: any): thing is MarkdownString {
+    if (thing instanceof MarkdownString) {
+      return true;
+    }
+    return thing && thing.appendCodeblock && thing.appendMarkdown && thing.appendText && (thing.value !== undefined);
+  }
+}
+
+@es5ClassCompat
 export class CompletionItem implements vscode.CompletionItem {
 
   label: string;
-  kind: CompletionItemKind | undefined;
+  label2?: CompletionItemLabel;
+  kind?: vscode.CompletionItemKind;
   tags?: CompletionItemTag[];
   detail?: string;
-  documentation?: string | MarkdownString;
+  documentation?: string | vscode.MarkdownString;
   sortText?: string;
   filterText?: string;
   preselect?: boolean;
   insertText: string | SnippetString;
   keepWhitespace?: boolean;
-  range: Range;
+  range?: Range | { inserting: Range; replacing: Range; };
   commitCharacters?: string[];
-  textEdit: TextEdit;
+  textEdit?: TextEdit;
   additionalTextEdits: TextEdit[];
-  command: vscode.Command;
+  command?: vscode.Command;
 
-  constructor(label: string, kind?: CompletionItemKind) {
+  constructor(label: string, kind?: vscode.CompletionItemKind) {
     this.label = label;
     this.kind = kind;
   }
@@ -770,6 +818,7 @@ export class CompletionItem implements vscode.CompletionItem {
   toJSON(): any {
     return {
       label: this.label,
+      label2: this.label2,
       kind: this.kind && CompletionItemKind[this.kind],
       detail: this.detail,
       documentation: this.documentation,
@@ -981,6 +1030,8 @@ export class CodeAction {
 
   kind?: CodeActionKind;
 
+  isPreferred?: boolean;
+
   constructor(title: string, kind?: CodeActionKind) {
     this.title = title;
     this.kind = kind;
@@ -1173,11 +1224,11 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
 @es5ClassCompat
 export class DocumentLink {
   range: Range;
-  target: Uri;
+  target?: Uri;
   tooltip?: string;
 
-  constructor(range: Range, target: Uri) {
-    if (target && !(target instanceof Uri)) {
+  constructor(range: Range, target: Uri | undefined) {
+    if (target && !(Uri.isUri(target))) {
       throw illegalArgument('target');
     }
     if (!Range.isRange(range) || range.isEmpty) {
@@ -1273,9 +1324,9 @@ export class SymbolInformation {
   kind: SymbolKind;
   tags?: SymbolTag[];
   containerName: undefined | string;
-  constructor(name: string, kind: SymbolKind, containerName: string, location: Location);
+  constructor(name: string, kind: SymbolKind, containerName: string | undefined, location: Location);
   constructor(name: string, kind: SymbolKind, range: Range, uri?: Uri, containerName?: string);
-  constructor(name: string, kind: SymbolKind, rangeOrContainer: string | Range, locationOrUri?: Location | Uri, containerName?: string) {
+  constructor(name: string, kind: SymbolKind, rangeOrContainer: string | undefined | Range, locationOrUri?: Location | Uri, containerName?: string) {
     this.name = name;
     this.kind = kind;
     this.containerName = containerName;
@@ -1389,10 +1440,10 @@ export enum SignatureHelpTriggerKind {
 
 @es5ClassCompat
 export class ParameterInformation {
-  label: string;
-  documentation?: string | MarkdownString;
+  label: string | [number, number];
+  documentation?: string | vscode.MarkdownString;
 
-  constructor(label: string, documentation?: string | MarkdownString) {
+  constructor(label: string | [number, number], documentation?: string | vscode.MarkdownString) {
     this.label = label;
     this.documentation = documentation;
   }
@@ -1401,10 +1452,11 @@ export class ParameterInformation {
 @es5ClassCompat
 export class SignatureInformation {
   label: string;
-  documentation?: string | MarkdownString;
+  documentation?: string | vscode.MarkdownString;
   parameters: ParameterInformation[];
+  activeParameter?: number;
 
-  constructor(label: string, documentation?: string | MarkdownString) {
+  constructor(label: string, documentation?: string | vscode.MarkdownString) {
     this.label = label;
     this.documentation = documentation;
     this.parameters = [];
@@ -2444,6 +2496,64 @@ export enum ExtensionMode {
 }
 
 //#endregion Theming
+
+@es5ClassCompat
+export class CallHierarchyItem {
+
+  _sessionId?: string;
+  _itemId?: string;
+
+  kind: SymbolKind;
+  name: string;
+  detail?: string;
+  uri: Uri;
+  range: Range;
+  selectionRange: Range;
+
+  constructor(kind: SymbolKind, name: string, detail: string, uri: Uri, range: Range, selectionRange: Range) {
+    this.kind = kind;
+    this.name = name;
+    this.detail = detail;
+    this.uri = uri;
+    this.range = range;
+    this.selectionRange = selectionRange;
+  }
+}
+
+export class CallHierarchyIncomingCall {
+
+  from: vscode.CallHierarchyItem;
+  fromRanges: vscode.Range[];
+
+  constructor(item: vscode.CallHierarchyItem, fromRanges: vscode.Range[]) {
+    this.fromRanges = fromRanges;
+    this.from = item;
+  }
+}
+export class CallHierarchyOutgoingCall {
+
+  to: vscode.CallHierarchyItem;
+  fromRanges: vscode.Range[];
+
+  constructor(item: vscode.CallHierarchyItem, fromRanges: vscode.Range[]) {
+    this.fromRanges = fromRanges;
+    this.to = item;
+  }
+}
+
+export enum ViewColumn {
+  Active = -1,
+  Beside = -2,
+  One = 1,
+  Two = 2,
+  Three = 3,
+  Four = 4,
+  Five = 5,
+  Six = 6,
+  Seven = 7,
+  Eight = 8,
+  Nine = 9,
+}
 //#region Semantic Coloring
 
 @es5ClassCompat

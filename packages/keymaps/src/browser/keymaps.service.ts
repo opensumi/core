@@ -1,4 +1,3 @@
-import * as contextKey from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
 import { Disposable, IDisposable, ScopedKeybinding, KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeybindingService, ILogger, Event, KeybindingWeight } from '@ali/ide-core-browser';

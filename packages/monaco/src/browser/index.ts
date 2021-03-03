@@ -5,6 +5,8 @@ import { MonacoClientContribution } from './monaco.contribution';
 import { SchemaStore, SchemaRegistry } from './schema-registry';
 import { MonacoMimeService } from './monaco-mime';
 import { MonacoContextKeyService } from './monaco.context-key.service';
+import { CallHierarchyService, ICallHierarchyService } from './callHierarchy/callHierarchy.service';
+import { CallHierarchyContribution } from './callHierarchy/callHierarchy.contribution';
 
 @Injectable()
 export class MonacoModule extends BrowserModule {
@@ -12,6 +14,7 @@ export class MonacoModule extends BrowserModule {
 
   providers: Provider[] = [
     MonacoClientContribution,
+    CallHierarchyContribution,
     {
       token: MonacoService,
       useClass: MonacoServiceImpl,
@@ -31,6 +34,10 @@ export class MonacoModule extends BrowserModule {
     {
       token: IContextKeyService,
       useClass: MonacoContextKeyService,
+    },
+    {
+      token: ICallHierarchyService,
+      useClass: CallHierarchyService,
     },
   ];
 }

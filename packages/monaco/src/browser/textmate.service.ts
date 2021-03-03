@@ -109,7 +109,6 @@ export class TextmateService extends WithEventBus {
     });
 
     monaco.languages.onLanguage(language.id, () => {
-      this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onLanguage', data: language.id }));
       this.activateLanguage(language.id);
     });
 
@@ -211,6 +210,7 @@ export class TextmateService extends WithEventBus {
     if (this.activatedLanguage.has(languageId)) {
       return;
     }
+    this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onLanguage', data: languageId }));
     this.activatedLanguage.add(languageId);
     this.setTokensProviderByLanguageId(languageId);
   }

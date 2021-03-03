@@ -4,7 +4,7 @@ import { ExtensionDocumentDataManager, IMainThreadWorkspace, MainThreadAPIIdenti
 import { WorkspaceEdit } from '../../../common/vscode/ext-types';
 import { FileSystemEvents, IExtHostFileSystemEvent, SourceTargetPair } from '../../../common/vscode/file-system';
 import { IRelativePattern, parse } from '../../../common/vscode/glob';
-import { TypeConverts } from '../../../common/vscode/converter';
+import * as TypeConverts from '../../../common/vscode/converter';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtension } from '../../..';
 import { FileOperation } from '@ali/ide-workspace-edit';
