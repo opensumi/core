@@ -1,14 +1,10 @@
-import { Command } from '@ali/ide-core-browser';
+import { Command } from '@ali/ide-core-common';
 
-export class CommonCls {
-  add(a: number, b: number) {
-    return a + b;
-  }
+export namespace QUICK_OPEN_COMMANDS {
+  export const OPEN: Command = {
+    id: 'editor.action.quickCommand',
+  };
 }
-
-export const quickCommand: Command = {
-  id: 'editor.action.quickCommand',
-};
 
 export * from '../browser/quick-open.model';
 export * from '../browser/quick-open-action-provider';

@@ -7,12 +7,7 @@ import { QuickOpenService, PrefixQuickOpenService } from './quick-open.model';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from './prefix-quick-open.service';
 import { QuickCommandHandler } from './quick-open.command.service';
 import { HelpQuickOpenHandler } from './quick-open.help.service';
-import { quickCommand } from '../common';
-
-/**
- * @deprecated import from '@ali/ide-quick-open'
- */
-export { quickCommand };
+import { QUICK_OPEN_COMMANDS } from '../common';
 
 // 连接 monaco 内部的 quick-open
 // 作为 contribution provider 的职责
@@ -63,14 +58,14 @@ export class QuickOpenFeatureContribution implements CommandContribution, Keybin
   private readonly helpQuickOpenHandler: HelpQuickOpenHandler;
 
   registerCommands(commands: CommandRegistry): void {
-    commands.registerCommand(quickCommand, {
+    commands.registerCommand(QUICK_OPEN_COMMANDS.OPEN, {
       execute: () => this.prefixQuickOpenService.open('>'),
     });
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({
-      command: quickCommand.id,
+      command: QUICK_OPEN_COMMANDS.OPEN.id,
       keybinding: 'ctrlcmd+shift+p',
     });
   }
@@ -78,7 +73,7 @@ export class QuickOpenFeatureContribution implements CommandContribution, Keybin
   registerMenus(menus: IMenuRegistry): void {
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
       command: {
-        id: quickCommand.id,
+        id: QUICK_OPEN_COMMANDS.OPEN.id,
         label: localize('menu-bar.view.quick.command'),
       },
       group: '0_primary',

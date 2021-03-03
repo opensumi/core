@@ -2,10 +2,10 @@ import * as React from 'react';
 import { renderApp } from '@ali/ide-startup/entry/web/render-app';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
-import { BrowserModule, CommandRegistry, CommandService } from '@ali/ide-core-browser';
+import { BrowserModule, CommandRegistry, CommandService, ILogger } from '@ali/ide-core-browser';
 import { QuickPickService, IQuickInputService } from '../src/browser/quick-open.model';
 import { QuickOpenModule } from '../src/browser';
-import { quickCommand } from '../src/browser/quick-open.contribution';
+import { QUICK_OPEN_COMMANDS } from '../src/common';
 import { MonacoModule } from '@ali/ide-monaco/lib/browser';
 import { EditorModule } from '@ali/ide-editor/lib/browser';
 import { Injectable } from '@ali/common-di';
@@ -17,6 +17,7 @@ const QuickOpenDemo = observer(() => {
 
   const quickPickService = useInjectable<QuickPickService>(QuickPickService);
   const quickInputService = useInjectable<IQuickInputService>(IQuickInputService);
+  const loggerService = useInjectable<ILogger>(ILogger);
 
   React.useEffect(() => {
     commandRegistry.registerCommand({
@@ -52,12 +53,12 @@ const QuickOpenDemo = observer(() => {
   }, []);
 
   function openQuickOpen() {
-    commandService.executeCommand(quickCommand.id);
+    commandService.executeCommand(QUICK_OPEN_COMMANDS.OPEN.id);
   }
 
   async function openQuickPickString() {
     const value = await quickPickService.show(['LF', 'CRLF']);
-    console.log('选择: ' + value);
+    loggerService.log(value);
   }
 
   async function openQuickPickQuickPickItem() {
@@ -74,7 +75,7 @@ const QuickOpenDemo = observer(() => {
     const value = await quickPickService.show(items, {
       placeholder: '请选择',
     });
-    console.log(value);
+    loggerService.log(value);
   }
 
   async function openQuickinput() {
@@ -82,7 +83,7 @@ const QuickOpenDemo = observer(() => {
     const value = await quickInputService.open({
       password: true,
     });
-    console.log(value);
+    loggerService.log(value);
   }
 
   return (

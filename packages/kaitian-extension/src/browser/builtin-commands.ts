@@ -1,6 +1,7 @@
 import { TERMINAL_COMMANDS } from '@ali/ide-terminal-next';
 import { FILE_COMMANDS, Command } from '@ali/ide-core-browser';
-import { quickCommand } from '@ali/ide-quick-open';
+import { QUICK_OPEN_COMMANDS } from '@ali/ide-quick-open';
+import { DEBUG_COMMANDS } from '@ali/ide-debug/lib/browser/debug-contribution';
 
 export const RELOAD_WINDOW_COMMAND: Command = {
   id: 'reload_window',
@@ -48,5 +49,50 @@ export const SETTINGS_COMMAND_OPEN_SETTINGS: Command = {
 
 export const QPEN_COMMAND_PALETTE: Command = {
   id: 'workbench.action.quickOpen',
-  delegate: quickCommand.id,
+  delegate: QUICK_OPEN_COMMANDS.OPEN.id,
+};
+
+export const DEBUG_COMMAND_STEP_INTO: Command = {
+  id: 'workbench.action.debug.stepInto',
+  delegate: DEBUG_COMMANDS.NEXT.id,
+};
+
+export const DEBUG_COMMAND_STEP_OVER: Command = {
+  id: 'workbench.action.debug.stepOver',
+  delegate: DEBUG_COMMANDS.OVER.id,
+};
+
+export const DEBUG_COMMAND_STEP_OUT: Command = {
+  id: 'workbench.action.debug.stepOut',
+  delegate: DEBUG_COMMANDS.PREV.id,
+};
+
+export const DEBUG_COMMAND_CONTINUE: Command = {
+  id: 'workbench.action.debug.continue',
+  delegate: DEBUG_COMMANDS.CONTINUE.id,
+};
+
+export const DEBUG_COMMAND_RUN: Command = {
+  id: 'workbench.action.debug.run',
+  delegate: DEBUG_COMMANDS.START.id,
+};
+
+export const DEBUG_COMMAND_START: Command = {
+  id: 'workbench.action.debug.start',
+  delegate: DEBUG_COMMANDS.START.id,
+};
+
+export const DEBUG_COMMAND_PAUSE: Command = {
+  id: 'workbench.action.debug.pause',
+  delegate: DEBUG_COMMANDS.PAUSE.id,
+};
+
+export const DEBUG_COMMAND_RESTART: Command = {
+  id: 'workbench.action.debug.restart',
+  delegate: DEBUG_COMMANDS.RESTART.id,
+};
+
+export const DEBUG_COMMAND_STOP: Command = {
+  id: 'workbench.action.debug.stop',
+  delegate: DEBUG_COMMANDS.STOP.id,
 };

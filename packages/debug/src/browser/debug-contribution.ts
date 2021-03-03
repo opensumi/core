@@ -84,6 +84,9 @@ export namespace DEBUG_COMMANDS {
   export const RESTART = {
     id: 'debug.restart',
   };
+  export const PAUSE = {
+    id: 'debug.pause',
+  };
   // menu commands
   export const DELETE_BREAKPOINT = {
     id: 'debug.delete.breakpoint',
@@ -333,6 +336,11 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
     commands.registerCommand(DEBUG_COMMANDS.CONTINUE, {
       execute: (data) => {
         this.debugToolbarService.doContinue();
+      },
+    });
+    commands.registerCommand(DEBUG_COMMANDS.PAUSE, {
+      execute: (data) => {
+        this.debugToolbarService.doPause();
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.OVER, {
