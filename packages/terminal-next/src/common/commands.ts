@@ -15,7 +15,7 @@ export namespace TERMINAL_COMMANDS {
 
   export const REMOVE = {
     id: 'terminal.remove',
-    label: 'remove terminal',
+    label: '%terminal.remove%',
     category: CATEGORY,
   };
 

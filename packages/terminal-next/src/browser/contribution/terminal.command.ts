@@ -80,6 +80,7 @@ export class TerminalCommandContribution implements CommandContribution {
       },
     });
 
+    // 搜索
     registry.registerCommand({
       ...TERMINAL_COMMANDS.OPEN_SEARCH,
       iconClass: getIcon('search'),
@@ -89,6 +90,7 @@ export class TerminalCommandContribution implements CommandContribution {
       },
     });
 
+    // 分屏
     registry.registerCommand({
       ...TERMINAL_COMMANDS.SPLIT,
       iconClass: getIcon('embed'),
@@ -100,6 +102,7 @@ export class TerminalCommandContribution implements CommandContribution {
       },
     });
 
+    // 删除所有终端
     registry.registerCommand({
       ...TERMINAL_COMMANDS.CLEAR,
     }, {
@@ -122,9 +125,10 @@ export class TerminalCommandContribution implements CommandContribution {
       ...TERMINAL_COMMANDS.REMOVE,
       iconClass: getIcon('delete'),
     }, {
-      execute: async (_: any, index: number) => {
-        if (index !== -1) {
-          this.view.removeGroup(index);
+      execute: async () => {
+        const widgetId = this.view.currentWidgetId;
+        if (widgetId) {
+          this.view.removeWidget(widgetId);
         }
       },
     });

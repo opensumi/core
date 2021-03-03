@@ -16,8 +16,17 @@ export function renderInfoItem(props: ItemProps) {
     }
   };
 
+  const ref = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    // 刚刚选中，滚一下
+    if (props.selected) {
+      ref.current?.scrollIntoView();
+    }
+  }, [props.selected]);
+
   return (
     <div
+      ref={ref}
       className={ clx({
         [styles.item_container]: true,
         [styles.item_selected]: !!props.selected,

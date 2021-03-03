@@ -529,6 +529,7 @@ export const localizationBundle = {
     'terminal.search': '搜索',
     'terminal.search.next': '搜索下一个匹配项',
     'terminal.openWithPath': '在终端中打开',
+    'terminal.remove': '关闭终端',
     'terminal.menu.search': '搜索',
     'terminal.menu.split': '拆分',
     'terminal.menu.rename': '重命名',

@@ -28,16 +28,22 @@ export class TerminalRenderContribution implements ComponentContribution, TabBar
       tooltip: localize('terminal.search'),
     });
     registry.registerItem({
+      id: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
+      command: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
+      viewId: TerminalRenderContribution.viewId,
+      tooltip: localize('terminal.menu.clearGroups'),
+    });
+    registry.registerItem({
       id: TERMINAL_COMMANDS.SPLIT.id,
       command: TERMINAL_COMMANDS.SPLIT.id,
       viewId: TerminalRenderContribution.viewId,
       tooltip: localize('terminal.split'),
     });
     registry.registerItem({
-      id: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
-      command: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
+      id: TERMINAL_COMMANDS.REMOVE.id,
+      command: TERMINAL_COMMANDS.REMOVE.id,
       viewId: TerminalRenderContribution.viewId,
-      tooltip: localize('terminal.menu.clearGroups'),
+      tooltip: localize('terminal.remove'),
     });
   }
 
