@@ -63,13 +63,3 @@ export interface IOptionalMetaData {
   name?: string;
   [key: string]: any;
 }
-
-export type TopDownIteratorCallback =
-/**
- * @param node 当前节点
- * @param stepOver 同级的下一个节点
- * @param stepIn 如果当前为可折叠节点，则进入节点，当前的节点变为该节点的第一个子节点
- * @param stepOut 跳出到父节点
- * @param exit 退出当前迭代
- */
-(node: ITreeNodeOrCompositeTreeNode, stepOver: () => void, stepIn: () => void, stepOut: () => void, exit: () => void) => void;

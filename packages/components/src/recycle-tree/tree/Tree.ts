@@ -35,7 +35,7 @@ export abstract class Tree implements ITree {
     this.onChangedEmitter.fire(undefined);
   }
 
-  abstract async resolveChildren(parent?: ICompositeTreeNode): Promise<ITreeNodeOrCompositeTreeNode[] | null>;
+  abstract resolveChildren(parent?: ICompositeTreeNode): Promise<ITreeNodeOrCompositeTreeNode[] | null>;
 
   sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode): number {
     if (a.constructor === b.constructor) {
