@@ -2,6 +2,7 @@ import * as path from 'path';
 import type * as vscode from 'vscode';
 import { isWindows, isOSX } from '@ali/ide-core-common';
 import { IDebuggerContribution, IPlatformSpecificAdapterContribution } from '@ali/ide-debug';
+import { DebugAdapterExecutable } from '../../../../common/vscode/ext-types';
 
 export async function resolveDebugAdapterExecutable(pluginPath: string, debuggerContribution: IDebuggerContribution): Promise<vscode.DebugAdapterExecutable | undefined> {
   const info = toPlatformInfo(debuggerContribution);
@@ -18,10 +19,7 @@ export async function resolveDebugAdapterExecutable(pluginPath: string, debugger
   const runtimeArgs = info && info.runtimeArgs || debuggerContribution.runtimeArgs || [];
   const command = runtime ? runtime : program;
   const args = runtime ? [...runtimeArgs, program, ...programArgs] : programArgs;
-  return {
-    command,
-    args,
-  };
+  return new DebugAdapterExecutable(command, args);
 }
 
 function toPlatformInfo(executable: IDebuggerContribution): IPlatformSpecificAdapterContribution | undefined {

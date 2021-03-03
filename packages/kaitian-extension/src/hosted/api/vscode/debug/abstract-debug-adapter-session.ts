@@ -1,12 +1,42 @@
+import { Event } from '@ali/ide-core-common';
 import {
   DebugStreamConnection,
-  DebugAdapterSession,
 } from '@ali/ide-debug';
+import type * as vscode from 'vscode';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { DisposableCollection, Disposable } from '@ali/ide-core-node';
 import { IWebSocket } from '@ali/ide-connection';
 
-export abstract class AbstractDebugAdapterSession implements DebugAdapterSession {
+export abstract class AbstractDebugAdapter implements vscode.DebugAdapter {
+
+  constructor( readonly id: string ) {}
+
+  onDidSendMessage: Event<vscode.DebugProtocolMessage>;
+  handleMessage: (message: vscode.DebugProtocolMessage) => void;
+  dispose: () => {};
+}
+
+export class DirectDebugAdapter extends AbstractDebugAdapter {
+  constructor(public id: string, public readonly implementation: vscode.DebugAdapter) {
+    super(id);
+  }
+
+  start(channel: NodeJS.ReadableStream, outStream: NodeJS.WritableStream): void {
+    // @ts-ignore
+    this.implementation.start(channel, outStream);
+  }
+
+  sendMessage(message: DebugProtocol.ProtocolMessage): void {
+    this.implementation.handleMessage(message);
+  }
+
+  stopSession(): Promise<void> {
+    this.implementation.dispose();
+    return Promise.resolve(undefined);
+  }
+}
+
+export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
 
   private static TWO_CRLF = '\r\n\r\n';
   private static CONTENT_LENGTH = 'Content-Length';
@@ -20,6 +50,7 @@ export abstract class AbstractDebugAdapterSession implements DebugAdapterSession
     readonly id: string,
     protected readonly debugStreamConnection: DebugStreamConnection,
   ) {
+    super(id);
     this.contentLength = -1;
     this.buffer = Buffer.alloc(0);
     this.toDispose.pushAll([
@@ -81,23 +112,23 @@ export abstract class AbstractDebugAdapterSession implements DebugAdapterSession
           continue;
         }
       } else {
-        let idx = this.buffer.indexOf(AbstractDebugAdapterSession.CONTENT_LENGTH);
+        let idx = this.buffer.indexOf(StreamDebugAdapter.CONTENT_LENGTH);
         if (idx > 0) {
           this.buffer.slice(0, idx);
           this.buffer = this.buffer.slice(idx);
         }
 
-        idx = this.buffer.indexOf(AbstractDebugAdapterSession.TWO_CRLF);
+        idx = this.buffer.indexOf(StreamDebugAdapter.TWO_CRLF);
         if (idx !== -1) {
           const header = this.buffer.toString('utf8', 0, idx);
           const lines = header.split('\r\n');
           for (const line of lines) {
             const pair = line.split(/: +/);
-            if (pair[0] === AbstractDebugAdapterSession.CONTENT_LENGTH) {
+            if (pair[0] === StreamDebugAdapter.CONTENT_LENGTH) {
               this.contentLength = +pair[1];
             }
           }
-          this.buffer = this.buffer.slice(idx + AbstractDebugAdapterSession.TWO_CRLF.length);
+          this.buffer = this.buffer.slice(idx + StreamDebugAdapter.TWO_CRLF.length);
           continue;
         }
       }

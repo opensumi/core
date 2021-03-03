@@ -1566,7 +1566,7 @@ export class DebugAdapterExecutable {
   readonly args: string[];
   readonly options;
 
-  constructor(command: string, args: string[], options) {
+  constructor(command: string, args: string[], options?) {
     this.command = command;
     this.args = args || [];
     this.options = options;
@@ -1595,6 +1595,15 @@ export class DebugAdapterServer {
   constructor(port: number, host?: string) {
     this.port = port;
     this.host = host;
+  }
+}
+
+@es5ClassCompat
+export class DebugAdapterInlineImplementation implements vscode.DebugAdapterInlineImplementation {
+  readonly implementation: vscode.DebugAdapter;
+
+  constructor(impl: vscode.DebugAdapter) {
+    this.implementation = impl;
   }
 }
 

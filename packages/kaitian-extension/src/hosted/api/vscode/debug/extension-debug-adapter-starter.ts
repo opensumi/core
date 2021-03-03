@@ -3,6 +3,7 @@ import type * as vscode from 'vscode';
 import { DebugStreamConnection, DebugAdapterForkExecutable } from '@ali/ide-debug';
 import { ChildProcess, fork, SpawnOptions, spawn } from 'child_process';
 import { CustomeChildProcessModule, CustomeChildProcess } from '../../../ext.process-base';
+import { DirectDebugAdapter } from './abstract-debug-adapter-session';
 
 /**
  * 启动调试适配器进程
@@ -64,4 +65,16 @@ export function connectDebugAdapter(server: vscode.DebugAdapterServer): DebugStr
     output: socket,
     dispose: () => socket.end(),
   };
+}
+
+/**
+ * 直接调用插件自己实现的调试适配器
+ * 这里通过 server 服务来拉起适配器
+ */
+export function directDebugAdapter(id: string, da: vscode.DebugAdapter): DebugStreamConnection {
+  const server = net.createServer((socket: net.Socket) => {
+    const session = new DirectDebugAdapter(id, da);
+    session.start(socket as NodeJS.ReadableStream, socket);
+  }).listen(0);
+  return connectDebugAdapter({ port: (server.address() as net.AddressInfo).port });
 }

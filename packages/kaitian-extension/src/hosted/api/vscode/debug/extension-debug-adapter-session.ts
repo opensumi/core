@@ -1,9 +1,9 @@
 import type * as vscode from 'vscode';
 import { DebugStreamConnection, DebugConfiguration } from '@ali/ide-debug';
 import { IWebSocket } from '@ali/ide-connection';
-import { AbstractDebugAdapterSession } from './abstract-debug-adapter-session';
+import { StreamDebugAdapter } from './abstract-debug-adapter-session';
 
-export class ExtensionDebugAdapterSession extends AbstractDebugAdapterSession implements vscode.DebugSession {
+export class ExtensionDebugAdapterSession extends StreamDebugAdapter implements vscode.DebugSession {
   readonly type: string;
   readonly name: string;
   readonly workspaceFolder: vscode.WorkspaceFolder | undefined;

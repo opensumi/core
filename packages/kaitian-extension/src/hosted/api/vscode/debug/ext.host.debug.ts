@@ -1,14 +1,14 @@
 import type * as vscode from 'vscode';
 import { IExtHostCommands, IExtHostDebugService, IMainThreadDebug, ExtensionWSChannel, IExtHostConnectionService } from '../../../../common/vscode';
 import { Emitter, Event, uuid, IJSONSchema, IJSONSchemaSnippet } from '@ali/ide-core-common';
-import { Disposable, Uri, DebugConsoleMode } from '../../../../common/vscode/ext-types';
+import { Disposable, Uri, DebugConsoleMode, DebugAdapterExecutable, DebugAdapterServer, DebugAdapterInlineImplementation } from '../../../../common/vscode/ext-types';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier } from '../../../../common/vscode/';
 import { ExtensionDebugAdapterSession } from './extension-debug-adapter-session';
 import { Breakpoint } from '../../../../common/vscode/models';
 import { DebugConfiguration, DebugStreamConnection, IDebuggerContribution } from '@ali/ide-debug';
 import { ExtensionDebugAdapterTracker } from './extension-debug-adapter-tracker';
-import { connectDebugAdapter, startDebugAdapter } from './extension-debug-adapter-starter';
+import { connectDebugAdapter, startDebugAdapter, directDebugAdapter } from './extension-debug-adapter-starter';
 import { resolveDebugAdapterExecutable } from './extension-debug-adapter-excutable-resolver';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { CustomeChildProcessModule } from '../../../ext.process-base';
@@ -402,10 +402,18 @@ export class ExtHostDebug implements IExtHostDebugService {
     return ExtensionDebugAdapterTracker.create(session, this.trackerFactories);
   }
 
-  protected async createCommunicationProvider(session: vscode.DebugSession, debugConfiguration: vscode.DebugConfiguration): Promise<DebugStreamConnection> {
-    const executable = await this.resolveDebugAdapterExecutable(debugConfiguration);
+  protected async getDebugAdapterDescriptor(session: vscode.DebugSession, executable?: vscode.DebugAdapterExecutable): Promise<vscode.DebugAdapterDescriptor | undefined | null> {
     const descriptorFactory = this.descriptorFactories.get(session.type);
     if (descriptorFactory) {
+      return await descriptorFactory.createDebugAdapterDescriptor(session, executable);
+    }
+    return undefined;
+  }
+
+  protected async createCommunicationProvider(session: vscode.DebugSession, debugConfiguration: vscode.DebugConfiguration): Promise<DebugStreamConnection> {
+    const executable = await this.resolveDebugAdapterExecutable(debugConfiguration);
+    const descriptor = await this.getDebugAdapterDescriptor(session, executable);
+    if (descriptor) {
       // 'createDebugAdapterDescriptor' 方法会在Debug session启动时被调用，主要用于提供调试适配器需要的信息。
       // 返回的信息必须为 vscode.DebugAdapterDescriptor 类型
       // 当前支持两种调试适配器：
@@ -421,12 +429,17 @@ export class ExtHostDebug implements IExtHostDebugService {
       //   }
       //  @param session The [debug session](#DebugSession) for which the debug adapter will be used.
       //  @param executable The debug adapter's executable information as specified in the package.json (or undefined if no such information exists).
-      const descriptor = await descriptorFactory.createDebugAdapterDescriptor(session, executable);
-      if (descriptor) {
-        if ('port' in descriptor) {
-          return connectDebugAdapter(descriptor);
-        } else {
-          return startDebugAdapter(descriptor, this.cp);
+      const adapterDescriptor = this.convertToDto(descriptor);
+      if (adapterDescriptor) {
+        const { type, adapter } = adapterDescriptor;
+        switch (type) {
+          case 'server':
+            return connectDebugAdapter(adapter as DebugAdapterServer);
+          case 'executable':
+            return startDebugAdapter(adapter as DebugAdapterExecutable);
+          case 'implementation':
+            return directDebugAdapter(session.id, (adapter as DebugAdapterInlineImplementation).implementation);
+          default: break;
         }
       }
     }
@@ -473,5 +486,29 @@ export class ExtHostDebug implements IExtHostDebugService {
       name: path.base,
       index: 0,
     };
+  }
+
+  private convertToDto(x: vscode.DebugAdapterDescriptor | undefined | null): {
+    type: 'executable' | 'server' | 'implementation',
+    adapter: vscode.DebugAdapterDescriptor,
+  } {
+    if (x instanceof DebugAdapterExecutable) {
+      return {
+        type: 'executable',
+        adapter: x,
+      };
+    } else if (x instanceof DebugAdapterServer) {
+      return {
+        type: 'server',
+        adapter: x,
+      };
+    } else if (x instanceof DebugAdapterInlineImplementation) {
+      return {
+        type: 'implementation',
+        adapter: x,
+      };
+    } else {
+      throw new Error('convertToDto unexpected type');
+    }
   }
 }
