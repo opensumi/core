@@ -1,11 +1,12 @@
+import { ExtHostDebug, createDebugApiFactory } from './../../../../src/hosted/api/vscode/debug/ext.host.debug';
+import { ExtHostConnection } from './../../../../src/hosted/api/vscode/ext.host.connection';
 import { IRPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
 import { createBrowserInjector } from '../../../../../debug/node_modules/@ali/ide-dev-tool/src/injector-helper';
 import { URI } from '@ali/ide-core-common';
-import { ExtHostDebug, createDebugApiFactory } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/debug';
-import { ExtHostConnection } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.connection';
 import * as path from 'path';
+import { DebugAdapterServer, DebugAdapterExecutable, DebugAdapterInlineImplementation } from '../../../../src/common/vscode/ext-types';
 
 const mockMainThreadCommandProxy = {
   $executeCommand: jest.fn(() => new Promise(() => ({}))),
@@ -172,5 +173,50 @@ describe('packages/kaitian-extension/__tests__/hosted/api/vscode/ext.host.debug.
       done();
     });
     await extHostDebug.$terminateDebugSession(sessionId);
+  });
+
+  it('convertToDto method should be work', async (done) => {
+    const execDADescriptor = async (id: string, adDescriptor) => {
+      extHostDebug.registerDebugAdapterDescriptorFactory(id, {
+        createDebugAdapterDescriptor: (() => {
+          return adDescriptor;
+        }) as any,
+      });
+      const debugConfiguration = {
+        type: 'node',
+        name: 'test',
+        request: '',
+      };
+      const debugSession = {
+        id: 'sessionId',
+        type: id,
+        name: 'test',
+        workspaceFolder: undefined,
+        configuration: debugConfiguration,
+        customRequest: (command: string, args?: any) => mockMainThreadDebug.$customRequest('sessionId', command, args),
+      };
+      // @ts-ignore
+      const executable = await (extHostDebug as any).resolveDebugAdapterExecutable(debugConfiguration);
+      const descriptor = await (extHostDebug as any).getDebugAdapterDescriptor(debugSession, executable);
+      return descriptor;
+    };
+    let adapterDescriptor;
+
+    const descriptorServer = await execDADescriptor('mock', new DebugAdapterServer(7017, '127.0.0.1'));
+    adapterDescriptor = (extHostDebug as any).convertToDto(descriptorServer);
+    expect(adapterDescriptor.type).toBe('server');
+
+    const descriptorExec = await execDADescriptor('mockE', new DebugAdapterExecutable('hhhh', []));
+    adapterDescriptor = (extHostDebug as any).convertToDto(descriptorExec);
+    expect(adapterDescriptor.type).toBe('executable');
+
+    const descriptorI = await execDADescriptor('mockI', new DebugAdapterInlineImplementation({
+      start: (input, output) => {},
+    } as any));
+    adapterDescriptor = (extHostDebug as any).convertToDto(descriptorI);
+    expect(adapterDescriptor.type).toBe('implementation');
+
+    done();
+
   });
 });
