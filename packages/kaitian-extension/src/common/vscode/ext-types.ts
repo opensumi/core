@@ -2665,3 +2665,18 @@ export class SemanticTokensEdits {
   }
 }
 //#endregion Semantic Coloring
+
+//#region EvaluatableExpression
+
+@es5ClassCompat
+export class EvaluatableExpression implements vscode.EvaluatableExpression {
+  readonly range: vscode.Range;
+  readonly expression?: string;
+
+  // FIXME: 这里写 vscode.Range 跑测试会报 ReferenceError: vscode is not defined
+  constructor(range: any, expression?: string) {
+    this.range = range;
+    this.expression = expression;
+  }
+}
+//#endregion EvaluatableExpression

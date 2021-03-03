@@ -18,6 +18,7 @@ import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
 import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.commands';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
+import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from '@ali/ide-debug/lib/browser/editor/evaluatable-expression';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -53,6 +54,10 @@ describe('ExtHostLanguageFeatures', () => {
     {
       token: MonacoService,
       useClass: MockedMonacoService,
+    },
+    {
+      token: IEvaluatableExpressionService,
+      useClass: EvaluatableExpressionServiceImpl,
     },
   );
 
@@ -669,4 +674,62 @@ An error case:
     done();
   });
   //#endregion Semantic Tokens
+
+  const textModel = monaco.editor.createModel('test.a = "test"', 'test');
+  const evaluatableExpressionService = injector.get<IEvaluatableExpressionService>(IEvaluatableExpressionService);
+  const expressionProvider = {
+    provideEvaluatableExpression(document, position) {
+      const wordRange = new types.Range(position, position);
+      return wordRange ? new types.EvaluatableExpression(wordRange, 'this is a expression for test') : undefined;
+    },
+  };
+
+  //#region EvaluatableExpressionProvider
+  it('registerEvaluatableExpressionProvider should be work', async (done) => {
+    monaco.languages.register({
+      id: 'test',
+      extensions: ['.test'],
+    });
+    const extension = {
+      name: 'test',
+      id: 'evaluatableExpression.test',
+      activate: () => {},
+      deactivate: () => {},
+      toJSON: () => {},
+    };
+
+    const mockedMainthreadFunc = jest.spyOn(mainThread, '$registerEvaluatableExpressionProvider');
+    extHost.registerEvaluatableExpressionProvider(extension as any, 'test', expressionProvider);
+
+    setTimeout(() => {
+      expect(mockedMainthreadFunc).toBeCalled();
+      expect(evaluatableExpressionService.hasEvaluatableExpressProvider(textModel as unknown as ITextModel)).toBeTruthy();
+      done();
+    }, 0);
+
+  });
+
+  it('provideEvaluatableExpression should be work', async (done) => {
+    const providers = evaluatableExpressionService.getSupportedEvaluatableExpressionProvider(textModel as unknown as ITextModel);
+
+    expect(providers.length).toBe(1);
+    expect(providers[0].provideEvaluatableExpression).toBeDefined();
+
+    const pos = new monaco.Position(1, 7);
+
+    const mockProvideFunc = jest.spyOn(expressionProvider, 'provideEvaluatableExpression');
+    const tokenSource = new monaco.CancellationTokenSource();
+    const expression = await providers[0].provideEvaluatableExpression(textModel as unknown as ITextModel, pos, tokenSource.token);
+
+    expect(mockProvideFunc).toBeCalled();
+    expect(expression?.range).toEqual({
+      startLineNumber: 1,
+      startColumn: 7,
+      endLineNumber: 1,
+      endColumn: 7,
+    });
+    expect(expression?.expression).toBe('this is a expression for test');
+    done();
+  });
+  //#endregion EvaluatableExpressionProvider
 });

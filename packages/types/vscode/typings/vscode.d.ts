@@ -3092,6 +3092,59 @@ declare module 'vscode' {
 	}
 
   //#endregion Semantic Tokens
+
+  //#region EvaluatableExpression
+
+	/**
+	 * An EvaluatableExpression represents an expression in a document that can be evaluated by an active debugger or runtime.
+	 * The result of this evaluation is shown in a tooltip-like widget.
+	 * If only a range is specified, the expression will be extracted from the underlying document.
+	 * An optional expression can be used to override the extracted expression.
+	 * In this case the range is still used to highlight the range in the document.
+	 */
+	export class EvaluatableExpression {
+
+		/*
+		 * The range is used to extract the evaluatable expression from the underlying document and to highlight it.
+		 */
+		readonly range: Range;
+
+		/*
+		 * If specified the expression overrides the extracted expression.
+		 */
+		readonly expression?: string;
+
+		/**
+		 * Creates a new evaluatable expression object.
+		 *
+		 * @param range The range in the underlying document from which the evaluatable expression is extracted.
+		 * @param expression If specified overrides the extracted expression.
+		 */
+		constructor(range: Range, expression?: string);
+	}
+
+	/**
+	 * The evaluatable expression provider interface defines the contract between extensions and
+	 * the debug hover. In this contract the provider returns an evaluatable expression for a given position
+	 * in a document and VS Code evaluates this expression in the active debug session and shows the result in a debug hover.
+	 */
+	export interface EvaluatableExpressionProvider {
+
+		/**
+		 * Provide an evaluatable expression for the given document and position.
+		 * VS Code will evaluate this expression in the active debug session and will show the result in the debug hover.
+		 * The expression can be implicitly specified by the range in the underlying document or by explicitly returning an expression.
+		 *
+		 * @param document The document for which the debug hover is about to appear.
+		 * @param position The line and character position in the document where the debug hover is about to appear.
+		 * @param token A cancellation token.
+		 * @return An EvaluatableExpression or a thenable that resolves to such. The lack of a result can be
+		 * signaled by returning `undefined` or `null`.
+		 */
+		provideEvaluatableExpression(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<EvaluatableExpression>;
+	}
+
+  //#endregion
 }
 
 /**

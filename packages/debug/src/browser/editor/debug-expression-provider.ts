@@ -1,15 +1,54 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { Injectable } from '@ali/common-di';
+import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
+import { Injectable, Autowired } from '@ali/common-di';
+import { IEvaluatableExpressionService } from './evaluatable-expression';
+import { CancellationTokenSource, coalesce, IRange } from '@ali/ide-core-common';
 
-/**
- * TODO: 向LSP引入新请求以查找表达式范围: https://github.com/Microsoft/language-server-protocol/issues/462
- */
 @Injectable()
 export class DebugExpressionProvider {
-  get(model: monaco.editor.IModel, selection: monaco.IRange): string {
-    const lineContent = model.getLineContent(selection.startLineNumber);
-    const { start, end } = this.getExactExpressionStartAndEnd(lineContent, selection.startColumn, selection.endColumn);
-    return lineContent.substring(start - 1, end);
+
+  @Autowired(IEvaluatableExpressionService)
+  protected readonly evaluatableExpressionService: IEvaluatableExpressionService;
+
+  async get(model: monaco.editor.IModel, selection: monaco.IRange): Promise<string | undefined> {
+    let matchingExpression: string | undefined;
+    let rng: IRange | undefined;
+
+    if (this.evaluatableExpressionService.hasEvaluatableExpressProvider(model as unknown as ITextModel)) {
+      const cancellationSource = new CancellationTokenSource();
+      const supports = this.evaluatableExpressionService.getSupportedEvaluatableExpressionProvider(model as unknown as ITextModel);
+
+      const pos = new monaco.Position(
+        selection.startLineNumber,
+        selection.startColumn,
+      );
+
+      const promises = supports.map((support) => {
+        return Promise.resolve(support.provideEvaluatableExpression(model as unknown as ITextModel, pos, cancellationSource.token)).then((expression) => {
+          return expression;
+        }, () => {
+          return undefined;
+        });
+      });
+
+      const results = await Promise.all(promises).then(coalesce);
+      if (results.length > 0) {
+        matchingExpression = results[0].expression;
+        rng = results[0].range;
+
+        if (!matchingExpression) {
+          const lineContent = model.getLineContent(pos.lineNumber);
+          matchingExpression = lineContent.substring(rng.startColumn - 1, rng.endColumn - 1);
+        }
+      }
+    } else {
+      const lineContent = model.getLineContent(selection.startLineNumber);
+      const { start, end } = this.getExactExpressionStartAndEnd(lineContent, selection.startColumn, selection.endColumn);
+
+      matchingExpression = lineContent.substring(start - 1, end);
+    }
+
+    return matchingExpression;
   }
 
   protected getExactExpressionStartAndEnd(lineContent: string, looseStart: number, looseEnd: number): { start: number, end: number } {
@@ -51,7 +90,6 @@ export class DebugExpressionProvider {
         matchingExpression = matchingExpression.substring(0, subExpression.lastIndex);
       }
     }
-
     return matchingExpression ?
       { start: startOffset, end: startOffset + matchingExpression.length - 1 } :
       { start: 0, end: 0 };

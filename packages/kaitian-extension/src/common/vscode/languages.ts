@@ -7,6 +7,7 @@ import { SymbolInformation } from 'vscode-languageserver-types';
 import globToRegExp = require('glob-to-regexp');
 import { IMarkerData, Uri, UriComponents } from '@ali/ide-core-common';
 import { CompletionContext } from './model.api';
+import { IEvaluatableExpression } from '@ali/ide-debug/lib/common/evaluatable-expression';
 
 export interface IMainThreadLanguages {
   $unregister(handle: number): void;
@@ -38,6 +39,7 @@ export interface IMainThreadLanguages {
   $registerDeclarationProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerDocumentSemanticTokensProvider(handle: number, selector: SerializedDocumentFilter[], legend: SemanticTokensLegend): void;
   $registerDocumentRangeSemanticTokensProvider(handle: number, selector: SerializedDocumentFilter[], legend: SemanticTokensLegend): void;
+  $registerEvaluatableExpressionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
 }
 
 export interface IExtHostLanguages {
@@ -106,6 +108,8 @@ export interface IExtHostLanguages {
   $provideDocumentSemanticTokens(handle: number, resource: UriComponents, previousResultId: number, token: CancellationToken): Promise<Uint8Array | null>;
   $releaseDocumentSemanticTokens(handle: number, semanticColoringResultId: number): void;
   $provideDocumentRangeSemanticTokens(handle: number, resource: UriComponents, range: Range, token: CancellationToken): Promise<Uint8Array | null>;
+
+  $provideEvaluatableExpression(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<IEvaluatableExpression | undefined>;
 }
 
 export function testGlob(pattern: string, value: string): boolean {

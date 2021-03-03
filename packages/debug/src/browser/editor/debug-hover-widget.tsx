@@ -154,7 +154,7 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
     }
 
     this.options = options;
-    const expression = this.expressionProvider.get(this.editor.getModel()!, options.selection);
+    const expression = await this.expressionProvider.get(this.editor.getModel()!, options.selection);
     if (!expression) {
       return;
     }

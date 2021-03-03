@@ -1,11 +1,13 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 
 import { Autowired, Injectable, Optinal } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IReporterService, PreferenceService } from '@ali/ide-core-browser';
 import { DisposableCollection, Emitter, IMarkerData, LRUMap, MarkerManager, REPORT_NAME, URI } from '@ali/ide-core-common';
 import { extname } from '@ali/ide-core-common/lib/path';
+import { IEvaluatableExpressionService } from '@ali/ide-debug/lib/browser/editor/evaluatable-expression';
 import { applyPatch } from 'diff';
 import { DocumentFilter } from 'vscode-languageserver-protocol';
 import { ExtHostAPIIdentifier, IExtHostLanguages, IMainThreadLanguages, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
@@ -14,6 +16,7 @@ import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, Lan
 import { reviveIndentationRule, reviveOnEnterRules, reviveRegExp, reviveWorkspaceEditDto } from '../../../common/vscode/utils';
 import { ILanguageService } from '@ali/ide-editor';
 import { DocumentRangeSemanticTokensProviderImpl, DocumentSemanticTokensProvider } from './semantic-tokens/semantic-token-provider';
+import { CancellationToken } from 'vscode';
 
 const PATCH_PREFIX = 'Index: a\n===================================================================\n--- a\n+++ a\n';
 
@@ -33,6 +36,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   @Autowired(ILanguageService)
   private readonly languageService: ILanguageService;
+
+  @Autowired(IEvaluatableExpressionService)
+  protected readonly evaluatableExpressionService: IEvaluatableExpressionService;
 
   private languageFeatureEnabled = new LRUMap<string, boolean>(200, 100);
 
@@ -952,4 +958,16 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const provider = new DocumentRangeSemanticTokensProviderImpl(this.proxy, handle, legend);
     this.disposables.set(handle, modes.DocumentRangeSemanticTokensProviderRegistry.register(fromLanguageSelector(selector)! as unknown as string, provider));
   }
+  //#endregion Semantic Tokens
+
+  //#region EvaluatableExpression
+  $registerEvaluatableExpressionProvider(handler: number, selector: SerializedDocumentFilter[]): void {
+    const provider = {
+      provideEvaluatableExpression: (model: ITextModel, position: monaco.Position, token: CancellationToken) => {
+        return this.proxy.$provideEvaluatableExpression(handler, model.uri, position, token);
+      },
+    };
+    this.disposables.set(handler, this.evaluatableExpressionService.registerEvaluatableExpressionProvider(selector, provider));
+  }
+  //#endregion EvaluatableExpression
 }

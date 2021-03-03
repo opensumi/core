@@ -23,6 +23,7 @@ import { WatchPanelContribution } from './view/watch/debug-watch.contribution';
 
 import './debug-style.less';
 import { DebugWatch } from './model';
+import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from './editor/evaluatable-expression';
 
 @Injectable()
 export class DebugModule extends BrowserModule {
@@ -58,6 +59,10 @@ export class DebugModule extends BrowserModule {
     {
       token: DebugConfigurationManager,
       useClass: DebugConfigurationManager,
+    },
+    {
+      token: IEvaluatableExpressionService,
+      useClass: EvaluatableExpressionServiceImpl,
     },
     {
       token: FolderPreferenceProvider,

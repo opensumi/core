@@ -5,6 +5,7 @@ import * as types from './ext-types';
 import * as model from './model.api';
 import { URI, ISelection, IRange, IMarkerData, IRelatedInformation, MarkerTag, MarkerSeverity, ProgressLocation as MainProgressLocation } from '@ali/ide-core-common';
 import { EndOfLineSequence, IDecorationRenderOptions, IThemeDecorationRenderOptions, IContentDecorationRenderOptions, TrackedRangeStickiness } from '@ali/ide-editor/lib/common';
+import { IEvaluatableExpression } from '@ali/ide-debug/lib/common/evaluatable-expression';
 import { SymbolInformation, Range as R, Position as P, SymbolKind as S } from 'vscode-languageserver-types';
 import { ExtensionDocumentDataManager } from './doc';
 import { WorkspaceEditDto, ResourceTextEditDto, ResourceFileEditDto, ITextEdit } from './workspace';
@@ -863,4 +864,17 @@ export function isLikelyVscodeRange(thing: any): thing is types.Range {
     return false;
   }
   return (thing as types.Range).start !== undefined && (thing as types.Range).end !== undefined;
+}
+
+export namespace EvaluatableExpression {
+  export function from(expression: vscode.EvaluatableExpression): IEvaluatableExpression {
+    return {
+      range: fromRange(expression.range),
+      expression: expression.expression,
+    } as IEvaluatableExpression;
+  }
+
+  export function to(info: IEvaluatableExpression): types.EvaluatableExpression {
+    return new types.EvaluatableExpression(toRange(info.range), info.expression);
+  }
 }

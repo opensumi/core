@@ -40,6 +40,7 @@ import {
   DocumentSemanticTokensProvider,
   SemanticTokensLegend,
   DocumentRangeSemanticTokensProvider,
+  EvaluatableExpressionProvider,
 } from 'vscode';
 import {
   SerializedDocumentFilter,
@@ -107,6 +108,7 @@ import { SelectionRangeAdapter } from './language/selection';
 import { ExtHostCommands } from './ext.host.command';
 import { IExtension } from '../../../common';
 import { DocumentRangeSemanticTokensAdapter, DocumentSemanticTokensAdapter } from './language/semantic-tokens';
+import { EvaluatableExpressionAdapter } from './language/evaluatableExpression';
 
 export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, extension: IExtension) {
 
@@ -201,6 +203,9 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, ex
     registerDocumentRangeSemanticTokensProvider(selector: DocumentSelector, provider: DocumentRangeSemanticTokensProvider, legend: SemanticTokensLegend): Disposable {
       return extHostLanguages.registerDocumentRangeSemanticTokensProvider(extension, selector, provider, legend);
     },
+    registerEvaluatableExpressionProvider(selector: DocumentSelector, provider: EvaluatableExpressionProvider): Disposable {
+      return extHostLanguages.registerEvaluatableExpressionProvider(extension, selector, provider);
+    },
   };
 }
 
@@ -227,7 +232,8 @@ export type Adapter =
   RenameAdapter |
   DeclarationAdapter |
   DocumentSemanticTokensAdapter |
-  DocumentRangeSemanticTokensAdapter;
+  DocumentRangeSemanticTokensAdapter |
+  EvaluatableExpressionAdapter;
 
 export class ExtHostLanguages implements IExtHostLanguages {
   private readonly proxy: IMainThreadLanguages;
@@ -654,4 +660,18 @@ export class ExtHostLanguages implements IExtHostLanguages {
   $provideDocumentRangeSemanticTokens(handle: number, resource: Uri, range: Range, token: CancellationToken): Promise<Uint8Array | null> {
     return this.withAdapter(handle, DocumentRangeSemanticTokensAdapter, (adapter) => adapter.provideDocumentRangeSemanticTokens(Uri.revive(resource), range, token));
   }
+
+  //#endregion
+
+  //#region EvaluatableExpression
+  registerEvaluatableExpressionProvider(extension: IExtension, selector: DocumentSelector, provider: EvaluatableExpressionProvider): Disposable {
+    const callId = this.addNewAdapter(new EvaluatableExpressionAdapter(this.documents, provider), extension);
+    this.proxy.$registerEvaluatableExpressionProvider(callId, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
+  }
+
+  $provideEvaluatableExpression(handle: number, resource: Uri, position: Position, token: CancellationToken) {
+    return this.withAdapter(handle, EvaluatableExpressionAdapter, (adapter) => adapter.provideEvaluatableExpression(Uri.revive(resource), position, token));
+  }
+  //#endregion EvaluatableExpression
 }

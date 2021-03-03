@@ -418,6 +418,19 @@ declare module 'vscode' {
 		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
 		 */
 		export function registerDocumentRangeSemanticTokensProvider(selector: DocumentSelector, provider: DocumentRangeSemanticTokensProvider, legend: SemanticTokensLegend): Disposable;
+
+
+    /**
+     * Register a provider that locates evaluatable expressions in text documents.
+     * VS Code will evaluate the expression in the active debug session and will show the result in the debug hover.
+     *
+     * If multiple providers are registered for a language an arbitrary provider will be used.
+     *
+     * @param selector A selector that defines the documents this provider is applicable to.
+     * @param provider An evaluatable expression provider.
+     * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+     */
+    export function registerEvaluatableExpressionProvider(selector: DocumentSelector, provider: EvaluatableExpressionProvider): Disposable;
   }
 
 

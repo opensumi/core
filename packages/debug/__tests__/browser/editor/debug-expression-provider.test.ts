@@ -1,12 +1,18 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { DebugExpressionProvider } from '@ali/ide-debug/lib/browser/editor';
+import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from '@ali/ide-debug/lib/browser/editor/evaluatable-expression';
 
 describe('Debug Expression Provider', () => {
   const mockInjector = createBrowserInjector([]);
   let debugExpressionProvider: DebugExpressionProvider;
-  const mockTextModel = {
-    getLineContent: jest.fn(() => 'test.a = "test"'),
-  } as any;
+  const textModel = monaco.editor.createModel('test.a = "test"', 'test');
+
+  const mockedGetLineContent = jest.spyOn(textModel, 'getLineContent');
+  mockInjector.addProviders({
+    token: IEvaluatableExpressionService,
+    useClass: EvaluatableExpressionServiceImpl,
+  });
 
   const selection = {
     startLineNumber: 1,
@@ -23,9 +29,9 @@ describe('Debug Expression Provider', () => {
     expect(typeof debugExpressionProvider.get).toBe('function');
   });
 
-  it('get method should be work', () => {
-    const expression = debugExpressionProvider.get(mockTextModel, selection);
-    expect(mockTextModel.getLineContent).toBeCalledWith(selection.startLineNumber);
+  it('get method should be work', async () => {
+    const expression = await debugExpressionProvider.get(textModel, selection);
+    expect(mockedGetLineContent).toBeCalledWith(selection.startLineNumber);
     expect(expression).toBe('test.a');
   });
 });
