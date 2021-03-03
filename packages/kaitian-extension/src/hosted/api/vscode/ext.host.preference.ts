@@ -152,9 +152,8 @@ export class ExtHostPreference implements IExtHostPreference {
             let clonedTarget: any;
             const cloneTarget = () => {
               clonedConfig = clonedConfig ? clonedConfig : cloneDeep(preferences);
-              clonedTarget = clonedTarget ? cloneTarget : lookUp(clonedConfig, accessor);
+              clonedTarget = clonedTarget ? clonedTarget : lookUp(clonedConfig, accessor);
             };
-
             if (!isObject(target)) {
               return target;
             }
@@ -162,12 +161,16 @@ export class ExtHostPreference implements IExtHostPreference {
               get: (targ: any, prop: string) => {
                 if (typeof prop === 'string' && prop.toLowerCase() === 'tojson') {
                   cloneTarget();
+                  // 当调用过配置对象的toJSON方法后，会固化某一份配置的配置值
+                  // 从而保障在某些情况下插件的配置值不被外部改变
                   return () => clonedTarget;
                 }
                 if (clonedConfig) {
-                  clonedTarget = cloneTarget ? cloneTarget : lookUp(clonedConfig, accessor);
+                  // 当存在克隆过的配置对象时，直接从缓存对象中获取属性值
+                  clonedTarget = clonedTarget ? clonedTarget : lookUp(clonedConfig, accessor);
                   return clonedTarget[prop];
                 }
+
                 const res = targ[prop];
                 if (typeof prop === 'string') {
                   return cloneOnWriteProxy(res, `${accessor}.${prop}`);
