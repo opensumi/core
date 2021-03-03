@@ -132,6 +132,12 @@ export namespace VSCodeCommands {
     delegate: EDITOR_COMMANDS.REVERT_DOCUMENT.id,
   };
 
+  // 打开或关闭终端
+  export const TOGGLE_WORKBENCH_VIEW_TERMINAL: Command = {
+    id: 'workbench.action.terminal.toggleTerminal',
+    delegate: 'workbench.view.terminal',
+  };
+
   // 在资源管理器中聚焦文件
   export const WORKBENCH_FOCUS_FILES_EXPLORER: Command = {
     id: 'workbench.files.action.focusFilesExplorer',
