@@ -33,11 +33,20 @@ export interface ISettingGroup {
 
 }
 
+export interface IPreferenceViewDesc {
+  id: string;
+  localized: string;
+  /**
+   * 在指定 scope 下不展示
+   */
+  hiddenInScope?: PreferenceScope[];
+}
+
 export interface ISettingSection {
 
   title?: string;
 
-  preferences: Array<string | {id: string, localized: string} >;
+  preferences: Array<string | IPreferenceViewDesc>;
 
   component?: React.ComponentType<{scope: PreferenceScope}>;
 

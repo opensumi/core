@@ -49,9 +49,11 @@ describe('external preference tests', () => {
     (global as any).localStorage = undefined;
     // should not throw error when localStorage is not defined;
     const mockWorkspace = '/User/test';
+    // 注册 LocalStorageProvider
     registerLocalStorageProvider('general.theme', mockWorkspace);
     registerLocalStorageProvider('general.icon', mockWorkspace);
-    registerLocalStorageProvider('general.language', mockWorkspace);
+    registerLocalStorageProvider('general.language');
+
     getExternalPreferenceProvider('general.theme')!.set('testTheme', PreferenceScope.Workspace);
     expect(getPreferenceThemeId()).toBe(undefined);
     // mock localStorage
@@ -70,7 +72,11 @@ describe('external preference tests', () => {
 
     // 默认值为 zh-CN
     expect(getPreferenceLanguageId()).toBe('zh-CN');
+    // 工作空间级别不生效
     getExternalPreferenceProvider('general.language')!.set('testLanguage', PreferenceScope.Workspace);
+    expect(getPreferenceLanguageId()).toBe('zh-CN');
+    // 全局级别可生效
+    getExternalPreferenceProvider('general.language')!.set('testLanguage', PreferenceScope.Default);
     expect(getPreferenceLanguageId()).toBe('testLanguage');
 
     // getPreferenceLanguageId 可传参 defaultPreference

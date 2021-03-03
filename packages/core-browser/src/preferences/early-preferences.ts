@@ -37,7 +37,7 @@ export function getPreferenceLanguageId(defaultPreferences?: IPreferences): stri
 }
 
 // 默认使用localStorage
-export function registerLocalStorageProvider(key: string, workspaceFolder: string) {
+export function registerLocalStorageProvider(key: string, workspaceFolder?: string) {
   function getScopePrefix(scope: PreferenceScope) {
     if (scope === PreferenceScope.Workspace) {
       return workspaceFolder;
@@ -50,6 +50,12 @@ export function registerLocalStorageProvider(key: string, workspaceFolder: strin
         // earlyPreference不支持针对作用域大于Folder的值设置
         return;
       }
+
+      if (!workspaceFolder && scope > PreferenceScope.Default) {
+        // 不传入 workspaceDir 则只支持全局设置
+        return;
+      }
+
       if ((global as any).localStorage) {
         if (value !== undefined) {
           localStorage.setItem(getScopePrefix(scope) + `:${key}`, value);

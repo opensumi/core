@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { observable } from 'mobx';
 import { PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages, PreferenceService, IClientApp, localize, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { IPreferenceSettingsService, ISettingGroup, ISettingSection, PreferenceProviderProvider } from '@ali/ide-core-browser';
+import { IPreferenceViewDesc, IPreferenceSettingsService, ISettingGroup, ISettingSection, PreferenceProviderProvider } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser';
 import { getDebugLogger } from '@ali/ide-core-common';
 import { IDialogService } from '@ali/ide-overlay';
@@ -111,29 +111,38 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
         return true;
       }
     });
-    if (!search) {
-      this.cachedGroupSection.set(key, res);
-      return res;
-    } else {
-      const filtered: ISettingSection[] = [];
-      res.forEach((section) => {
-        if (section.preferences) {
-          const sec = {...section};
-          sec.preferences = section.preferences.filter((pref) => {
+
+    const result: ISettingSection[] = [];
+
+    res.forEach((section) => {
+      if (section.preferences) {
+        const sec = {...section};
+        sec.preferences = section.preferences
+          .filter((pref) => {
+            if (this._filterPreference(pref, scope)) {
+              return false;
+            }
+            if (!search) {
+              return true;
+            }
+
             const prefId = typeof pref === 'string' ? pref : pref.id;
             const schema = this.schemaProvider.getPreferenceProperty(prefId);
             const prefLabel = typeof pref === 'string' ? toPreferenceReadableName(pref) : localize(pref.localized);
             const description = schema && replaceLocalizePlaceholder(schema.description);
             return prefId.indexOf(search) > -1 || prefLabel.indexOf(search) > -1 || (description && description.indexOf(search) > -1);
           });
-          if (sec.preferences.length > 0) {
-            filtered.push(sec);
-          }
+        if (sec.preferences.length > 0) {
+          result.push(sec);
         }
-      });
-      this.cachedGroupSection.set(key, filtered);
-      return filtered;
-    }
+      }
+    });
+    this.cachedGroupSection.set(key, result);
+    return result;
+  }
+
+  private _filterPreference(preference: string | IPreferenceViewDesc, scope: PreferenceScope): boolean {
+    return typeof preference !== 'string' && Array.isArray(preference.hiddenInScope) && preference.hiddenInScope.includes(scope);
   }
 
   getPreference(preferenceName: string, scope: PreferenceScope, inherited: boolean = false): {value: any, effectingScope: PreferenceScope} {
@@ -247,7 +256,7 @@ export const defaultSettingSections: {
       preferences: [
         {id: 'general.theme', localized: 'preference.general.theme'},
         {id: 'general.icon', localized: 'preference.general.icon'},
-        {id: 'general.language', localized: 'preference.general.language'},
+        {id: 'general.language', localized: 'preference.general.language', hiddenInScope: [PreferenceScope.Workspace]},
       ],
     },
   ],
