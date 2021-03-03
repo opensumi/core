@@ -233,6 +233,7 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
       },
     });
     registry.registerCommand(BUILTIN_COMMANDS.SETTINGS_COMMAND_OPEN_SETTINGS);
+    registry.registerCommand(BUILTIN_COMMANDS.QPEN_COMMAND_PALETTE);
   }
 
   asQuickOpenItems(activated: { node?: ActivatedExtension[] | undefined; worker?: ActivatedExtension[] | undefined; }): QuickOpenItem<QuickOpenItemOptions>[] {

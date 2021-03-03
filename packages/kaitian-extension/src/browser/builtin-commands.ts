@@ -1,5 +1,6 @@
 import { TERMINAL_COMMANDS } from '@ali/ide-terminal-next';
 import { FILE_COMMANDS, Command } from '@ali/ide-core-browser';
+import { quickCommand } from '@ali/ide-quick-open';
 
 export const RELOAD_WINDOW_COMMAND: Command = {
   id: 'reload_window',
@@ -43,4 +44,9 @@ export const COPY_RELATIVE_FILE_PATH: Command = {
 export const SETTINGS_COMMAND_OPEN_SETTINGS: Command = {
   id: 'workbench.action.openSettings',
   delegate: 'core.openpreference',
+};
+
+export const QPEN_COMMAND_PALETTE: Command = {
+  id: 'workbench.action.quickOpen',
+  delegate: quickCommand.id,
 };

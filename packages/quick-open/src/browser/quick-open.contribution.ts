@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Domain, CommandContribution, ContributionProvider, KeybindingContribution, CommandRegistry, Command, KeybindingRegistry, localize } from '@ali/ide-core-browser';
+import { Domain, CommandContribution, ContributionProvider, KeybindingContribution, CommandRegistry, KeybindingRegistry, localize } from '@ali/ide-core-browser';
 import { ClientAppContribution, MonacoService, MonacoContribution } from '@ali/ide-core-browser';
 import { MenuId, MenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
 
@@ -7,10 +7,12 @@ import { QuickOpenService, PrefixQuickOpenService } from './quick-open.model';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from './prefix-quick-open.service';
 import { QuickCommandHandler } from './quick-open.command.service';
 import { HelpQuickOpenHandler } from './quick-open.help.service';
+import { quickCommand } from '../common';
 
-export const quickCommand: Command = {
-  id: 'editor.action.quickCommand',
-};
+/**
+ * @deprecated import from '@ali/ide-quick-open'
+ */
+export { quickCommand };
 
 // 连接 monaco 内部的 quick-open
 // 作为 contribution provider 的职责
