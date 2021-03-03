@@ -4,7 +4,7 @@ import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import {  IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService, IClipboardService, QuickOpenContribution, IQuickOpenHandlerRegistry, PrefixQuickOpenService } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { isElectronEnv, isWindows, PreferenceScope } from '@ali/ide-core-common';
+import { isElectronEnv, isWindows, isOSX, PreferenceScope } from '@ali/ide-core-common';
 import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { SUPPORTED_ENCODINGS } from '@ali/ide-core-common/lib/const';
 
@@ -163,6 +163,14 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       keybinding: isElectronEnv() ? 'alt+cmd+right' : 'ctrlcmd+ctrl+right',
     });
     keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.PREVIOUS.id,
+      keybinding: isElectronEnv() ? 'ctrlcmd+pageup' : 'alt+pageup',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.NEXT.id,
+      keybinding: isElectronEnv() ? 'ctrlcmd+pagedown' : 'alt+pagedown',
+    });
+    keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.GO_FORWARD.id,
       keybinding: isWindows ? 'alt+right' : 'ctrl+shift+-',
     });
@@ -216,13 +224,23 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
     if (isElectronEnv()) {
       keybindings.registerKeybinding({
-        command: EDITOR_COMMANDS.NEXT_IN_GROUP.id,
+        command: EDITOR_COMMANDS.NEXT.id,
         keybinding: 'ctrl+tab',
       });
       keybindings.registerKeybinding({
-        command: EDITOR_COMMANDS.PREVIOUS_IN_GROUP.id,
+        command: EDITOR_COMMANDS.PREVIOUS.id,
         keybinding: 'ctrl+shift+tab',
       });
+      if (isOSX) {
+        keybindings.registerKeybinding({
+          command: EDITOR_COMMANDS.NEXT.id,
+          keybinding: 'ctrlcmd+shift+]',
+        });
+        keybindings.registerKeybinding({
+          command: EDITOR_COMMANDS.PREVIOUS.id,
+          keybinding: 'ctrlcmd+shift+[',
+        });
+      }
     }
     for (let i = 1; i < 10; i++) {
       keybindings.registerKeybinding({
