@@ -13,6 +13,7 @@ import {
 import { Disposable, ILogger } from '@ali/ide-core-common';
 import { Optional, Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { IWorkspaceFolder } from '@ali/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
+import { IWorkspaceService } from '@ali/ide-workspace';
 
 // 新版本这个 magic string 没有导出了
 const KEYBINDING_CONTEXT_ATTR = 'data-keybinding-context';
@@ -24,6 +25,9 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
 
   @Autowired(PreferenceSchemaProvider)
   private readonly preferenceSchemaProvider: PreferenceSchemaProvider;
+
+  @Autowired(IWorkspaceService)
+  private readonly workspaceService: IWorkspaceService;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
@@ -94,7 +98,7 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
 
     if (workspaceScopeChanges.length) {
       this._onDidChangeConfiguration.fire({
-        affectedKeys: userScopeChanges.map((n) => n.preferenceName),
+        affectedKeys: workspaceScopeChanges.map((n) => n.preferenceName),
         source: ConfigurationTarget.WORKSPACE,
         change: {
           keys: [],
@@ -109,8 +113,8 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
 
     if (workspaceFolderScopeChanges.length) {
       this._onDidChangeConfiguration.fire({
-        affectedKeys: userScopeChanges.map((n) => n.preferenceName),
-        source: ConfigurationTarget.WORKSPACE_FOLDER,
+        affectedKeys: workspaceFolderScopeChanges.map((n) => n.preferenceName),
+        source: this.workspaceService.isMultiRootWorkspaceOpened ? ConfigurationTarget.WORKSPACE_FOLDER : ConfigurationTarget.WORKSPACE,
         change: {
           keys: [],
           overrides: [],
