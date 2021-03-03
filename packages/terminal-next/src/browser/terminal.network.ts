@@ -26,9 +26,9 @@ export class TerminalNetworkService extends Disposable implements ITerminalNetwo
 
   constructor() {
     super();
-    this.controller.onDidCloseTerminal((sessionId: string) => {
-      this._resetRetryTimers.delete(sessionId);
-      this._reconnectInfo.delete(sessionId);
+    this.controller.onDidCloseTerminal((e) => {
+      this._resetRetryTimers.delete(e.id);
+      this._reconnectInfo.delete(e.id);
     });
     this.onDispose(() => {
       if (this._timer) {

@@ -5,7 +5,7 @@ import { IMainLayoutService } from '@ali/ide-main-layout';
 import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
 import { IThemeService } from '@ali/ide-theme';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { ITerminalController, ITerminalClient, ITerminalClientFactory, IWidget, ITerminalInfo, ITerminalBrowserHistory, ITerminalTheme, ITerminalGroupViewService, TerminalOptions, ITerminalErrorService, ITerminalInternalService, TerminalContainerId, ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest } from '../common';
+import { ITerminalController, ITerminalClient, ITerminalClientFactory, IWidget, ITerminalInfo, ITerminalBrowserHistory, ITerminalTheme, ITerminalGroupViewService, TerminalOptions, ITerminalErrorService, ITerminalInternalService, TerminalContainerId, ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest, ITerminalExitEvent } from '../common';
 import { TerminalGroupViewService } from './terminal.view';
 import { TerminalContextKey } from './terminal.context-key';
 import { ResizeEvent, getSlotLocation, AppConfig } from '@ali/ide-core-browser';
@@ -16,13 +16,13 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   protected _tabbarHandler: TabBarHandler | undefined;
   protected _clients: Map<string, ITerminalClient>;
   protected _onDidOpenTerminal = new Emitter<ITerminalInfo>();
-  protected _onDidCloseTerminal = new Emitter<string>();
+  protected _onDidCloseTerminal = new Emitter<ITerminalExitEvent>();
   protected _onDidChangeActiveTerminal = new Emitter<string>();
   protected _ready = new Deferred<void>();
   protected _activeClientId?: string;
 
   readonly onDidOpenTerminal: Event<ITerminalInfo> = this._onDidOpenTerminal.event;
-  readonly onDidCloseTerminal: Event<string> = this._onDidCloseTerminal.event;
+  readonly onDidCloseTerminal: Event<ITerminalExitEvent> = this._onDidCloseTerminal.event;
   readonly onDidChangeActiveTerminal: Event<string> = this._onDidChangeActiveTerminal.event;
 
   private readonly _onInstanceRequestStartExtensionTerminal = new Emitter<IStartExtensionTerminalRequest>();
@@ -90,10 +90,14 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     const client = this.clientFactory(widget, options);
     this._clients.set(client.id, client);
 
+    client.addDispose(client.onExit((e) => {
+      this._onDidCloseTerminal.fire({ id: client.id, code: e.code });
+    }));
+
     client.addDispose({
       dispose: () => {
         this._clients.delete(client.id);
-        this._onDidCloseTerminal.fire(client.id);
+        this._onDidCloseTerminal.fire({ id: client.id, code: -1 });
       },
     });
 

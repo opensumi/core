@@ -1,5 +1,5 @@
 import { Event } from '@ali/ide-core-common';
-import { ITerminalInfo, ITerminalDimensionsDto, ITerminalLaunchError, ITerminalDimensions } from '@ali/ide-terminal-next';
+import { ITerminalInfo, ITerminalDimensionsDto, ITerminalLaunchError, ITerminalDimensions, ITerminalExitEvent } from '@ali/ide-terminal-next';
 import type * as vscode from 'vscode';
 
 export interface IMainThreadTerminal {
@@ -46,7 +46,7 @@ export interface IExtHostTerminal {
 
   $onDidChangeActiveTerminal(id: string);
 
-  $onDidCloseTerminal(id: string);
+  $onDidCloseTerminal(e: ITerminalExitEvent);
 
   $onDidOpenTerminal(info: ITerminalInfo);
 

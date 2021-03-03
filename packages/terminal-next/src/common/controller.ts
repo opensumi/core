@@ -1,7 +1,7 @@
 import { Event, Disposable, Deferred } from '@ali/ide-core-common';
 import { ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest } from './extension';
 import { IWidgetGroup, IWidget } from './resize';
-import { ITerminalClient } from './client';
+import { ITerminalClient, ITerminalExitEvent } from './client';
 import { TerminalOptions, ITerminalInfo } from './pty';
 
 export interface ITerminalExternalClient {
@@ -39,7 +39,7 @@ export interface ITerminalController extends Disposable {
   toJSON(): ITerminalBrowserHistory;
 
   onDidOpenTerminal: Event<ITerminalInfo>;
-  onDidCloseTerminal: Event<string>;
+  onDidCloseTerminal: Event<ITerminalExitEvent>;
   onDidChangeActiveTerminal: Event<string>;
 
   requestStartExtensionTerminal(proxy: ITerminalProcessExtHostProxy, cols: number, rows: number): Promise<ITerminalLaunchError | undefined>;

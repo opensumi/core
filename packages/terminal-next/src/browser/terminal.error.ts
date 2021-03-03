@@ -30,8 +30,8 @@ export class TerminalErrorService implements ITerminalErrorService {
       } catch { /** nothing */ }
     });
 
-    this.controller.onDidCloseTerminal((clientId: string) => {
-      this.errors.delete(clientId);
+    this.controller.onDidCloseTerminal((e) => {
+      this.errors.delete(e.id);
     });
   }
 

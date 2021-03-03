@@ -1,7 +1,7 @@
 import type * as vscode from 'vscode';
 import { Event, Emitter, getDebugLogger, isUndefined, DisposableStore, IDisposable, Deferred } from '@ali/ide-core-common';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ITerminalInfo, TerminalDataBufferer, ITerminalChildProcess, ITerminalDimensionsOverride, ITerminalDimensionsDto, ITerminalLaunchError } from '@ali/ide-terminal-next';
+import { ITerminalInfo, TerminalDataBufferer, ITerminalChildProcess, ITerminalDimensionsOverride, ITerminalDimensionsDto, ITerminalLaunchError, ITerminalExitEvent } from '@ali/ide-terminal-next';
 import { IMainThreadTerminal, MainThreadAPIIdentifier, IExtHostTerminal } from '../../../common/vscode';
 
 const debugLog = getDebugLogger();
@@ -13,6 +13,8 @@ export class ExtHostTerminal implements IExtHostTerminal {
   private openTerminalEvent: Emitter<Terminal> = new Emitter();
   private terminalsMap: Map<string, Terminal> = new Map();
   private _terminalDeferreds: Map<string, Deferred<Terminal>> = new Map();
+
+  private disposables: DisposableStore = new DisposableStore();
 
   private _shellPath: string;
 
@@ -41,13 +43,16 @@ export class ExtHostTerminal implements IExtHostTerminal {
     return this.changeActiveTerminalEvent.event;
   }
 
-  $onDidCloseTerminal(id: string) {
-    const terminal = this.terminalsMap.get(id);
+  $onDidCloseTerminal(e: ITerminalExitEvent) {
+    const terminal = this.terminalsMap.get(e.id);
     if (!terminal) {
       return debugLog.error('没有找到终端');
     }
-    this.terminalsMap.delete(id);
+
+    terminal.setExitCode(e.code);
     this.closeTerminalEvent.fire(terminal);
+
+    this.terminalsMap.delete(e.id);
   }
 
   get onDidCloseTerminal(): Event<Terminal> {
@@ -106,6 +111,11 @@ export class ExtHostTerminal implements IExtHostTerminal {
       const disposable = this._setupExtHostProcessListeners(id, p);
       this._terminalProcessDisposables[id] = disposable;
     });
+
+    this.disposables.add(p.onProcessExit((e: number | undefined) => {
+      terminal.setExitCode(e);
+    }));
+
     return terminal;
   }
 
@@ -140,6 +150,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
     this.changeActiveTerminalEvent.dispose();
     this.closeTerminalEvent.dispose();
     this.openTerminalEvent.dispose();
+    this.disposables.dispose();
   }
 
   private async _getTerminalByIdEventually(id: string, timeout = 1000) {
@@ -242,6 +253,8 @@ export class Terminal implements vscode.Terminal {
   // tslint:disable-next-line: variable-name
   public __id: string;
 
+  private _exitStatus: vscode.TerminalExitStatus | undefined;
+
   private createdPromiseResolve;
 
   private when: Promise<any> = new Promise((resolve) => {
@@ -257,6 +270,10 @@ export class Terminal implements vscode.Terminal {
     if (!isUndefined(id)) {
       this.created(id);
     }
+  }
+
+  get exitStatus() {
+    return this._exitStatus;
   }
 
   get processId(): Thenable<number> {
@@ -307,6 +324,10 @@ export class Terminal implements vscode.Terminal {
     const id = await this.proxy.$createTerminal({ name: this.name, isExtensionTerminal: true });
     this.created(id);
     return id;
+  }
+
+  public setExitCode(code: number | undefined) {
+    this._exitStatus = Object.freeze({ code });
   }
 }
 

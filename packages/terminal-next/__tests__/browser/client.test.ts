@@ -124,7 +124,13 @@ describe('Terminal Client', () => {
     expect(client.term.getSelection()).toEqual(searched);
   });
 
-  it('Terminal Dispose', () => {
+  it('Terminal Dispose', (done) => {
+    client.onExit((e) => {
+      expect(e.code).toBe(-1);
+      expect(e.id).toBe(client.id);
+      done();
+    });
+    client['_attachAddon']._onExit.fire(-1);
     client.dispose();
 
     expect(client.disposed).toBeTruthy();

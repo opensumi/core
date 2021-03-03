@@ -40,8 +40,8 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     this.disposable.addDispose(this.terminalApi.onDidChangeActiveTerminal((id) => {
       this.proxy.$onDidChangeActiveTerminal(id);
     }));
-    this.disposable.addDispose(this.terminalApi.onDidCloseTerminal((id) => {
-      this.proxy.$onDidCloseTerminal(id);
+    this.disposable.addDispose(this.terminalApi.onDidCloseTerminal((e) => {
+      this.proxy.$onDidCloseTerminal(e);
     }));
     this.disposable.addDispose(this.terminalApi.onDidOpenTerminal((info: ITerminalInfo) => {
       this.proxy.$onDidOpenTerminal(info);

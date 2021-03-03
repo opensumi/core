@@ -1,16 +1,16 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { Event, Emitter } from '@ali/ide-core-common';
 import { capitalize } from 'lodash';
-import { ITerminalApiService, ITerminalGroupViewService, ITerminalController, ITerminalInfo, TerminalOptions, ITerminalExternalClient, ITerminalInternalService, ITerminalNetwork } from '../common';
+import { ITerminalApiService, ITerminalGroupViewService, ITerminalController, ITerminalInfo, TerminalOptions, ITerminalExternalClient, ITerminalInternalService, ITerminalNetwork, ITerminalExitEvent } from '../common';
 
 @Injectable()
 export class TerminalApiService implements ITerminalApiService {
   private _onDidOpenTerminal = new Emitter<ITerminalInfo>();
-  private _onDidCloseTerminal = new Emitter<string>();
+  private _onDidCloseTerminal = new Emitter<ITerminalExitEvent>();
   private _onDidChangeActiveTerminal = new Emitter<string>();
 
   readonly onDidOpenTerminal: Event<ITerminalInfo> = this._onDidOpenTerminal.event;
-  readonly onDidCloseTerminal: Event<string> = this._onDidCloseTerminal.event;
+  readonly onDidCloseTerminal: Event<ITerminalExitEvent> = this._onDidCloseTerminal.event;
   readonly onDidChangeActiveTerminal: Event<string> = this._onDidChangeActiveTerminal.event;
 
   @Autowired(ITerminalController)
@@ -32,8 +32,8 @@ export class TerminalApiService implements ITerminalApiService {
       this._onDidOpenTerminal.fire(info);
     });
 
-    this.controller.onDidCloseTerminal((id) => {
-      this._onDidCloseTerminal.fire(id);
+    this.controller.onDidCloseTerminal((e) => {
+      this._onDidCloseTerminal.fire(e);
     });
 
     this.controller.onDidChangeActiveTerminal((id) => {

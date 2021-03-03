@@ -1,6 +1,7 @@
 import { Event } from '@ali/ide-core-common';
 import { TerminalOptions, ITerminalInfo } from './pty';
 import { ITerminalExternalClient } from './controller';
+import { ITerminalExitEvent } from './client';
 
 export const ITerminalApiService = Symbol('ITerminalApiService');
 export interface ITerminalApiService {
@@ -9,7 +10,7 @@ export interface ITerminalApiService {
   getProcessId(sessionId: string): Promise<number | undefined>;
 
   onDidOpenTerminal: Event<ITerminalInfo>;
-  onDidCloseTerminal: Event<string>;
+  onDidCloseTerminal: Event<ITerminalExitEvent>;
   onDidChangeActiveTerminal: Event<string>;
 
   terminals: ITerminalInfo[];
