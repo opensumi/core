@@ -34,7 +34,8 @@ export class MonacoBulkEditService implements IBulkEditService {
       try {
         edits = await this._previewHandler(edit, options);
       } catch (err) {
-        this.logger.error(`Handle refactor preview error: \n ${err.message}`);
+        this.logger.error(`Handle refactor preview error: \n ${err.message || err}`);
+        return { ariaSummary: err.message, success: false };
       }
     }
 

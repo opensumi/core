@@ -677,6 +677,9 @@ export const localizationBundle = {
     'main-layout.bottom-panel.show': 'Show Bottom Side Bar',
     'main-layout.bottom-panel.hide': 'Hide Bottom Side Bar',
 
+    'refactor-preview.title': 'REFACTOR PREVIEW',
+    'refactor-preview.title.clear': 'Discard Refactoring',
+    'refactor-preview.title.apply': 'Apply Refactoring',
     'refactor-preview.overlay.title': 'Another refactoring is being previewed.',
     'refactor-preview.overlay.detail': `Press 'Continue' to discard the previous refactoring and continue with the current refactoring.`,
     'refactor-preview.overlay.continue': 'Continue',

@@ -247,12 +247,12 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     const linuxShellArgs = this.corePreferences.get('terminal.integrated.shellArgs.linux');
 
     const ptyOptions = {
+      cwd: this._workspacePath,
       ...this._options,
       shellArgs: [
         ...(this._options.shellArgs || []),
         ...(linuxShellArgs || []),
       ],
-      cwd: this._workspacePath,
     };
 
     const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this._term;

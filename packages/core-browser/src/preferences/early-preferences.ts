@@ -1,6 +1,7 @@
 import { PreferenceScope } from './preference-scope';
 import { PreferenceItem, Event } from '@ali/ide-core-common';
 import { IPreferences } from '../bootstrap';
+import { PreferenceProvider } from './preference-provider';
 
 // 这些设置选项生效时间太早, 并且可能在app生命周期外生效，不能只由preference服务进行管理
 export interface IExternalPreferenceProvider<T = any> {
@@ -19,7 +20,15 @@ export function registerExternalPreferenceProvider<T>(name, provider: IExternalP
 }
 
 export function getExternalPreferenceProvider(name) {
-  return providers.get(name);
+  let provider = providers.get(name);
+  if (!provider) {
+    // 尝试使用delegate的配置名获取
+    const delegate = PreferenceProvider.PreferenceDelegates[name];
+    if (!!delegate) {
+      provider = providers.get(delegate.delegateTo);
+    }
+  }
+  return provider;
 }
 
 export function getPreferenceThemeId(): string {
@@ -47,7 +56,7 @@ export function registerLocalStorageProvider(key: string, workspaceFolder?: stri
   registerExternalPreferenceProvider<string>(key, {
     set: (value, scope) => {
       if (scope >= PreferenceScope.Folder) {
-        // earlyPreference不支持针对作用域大于Folder的值设置
+        // earlyPreference不支持针对作用域大于等于Folder的值设置
         return;
       }
 

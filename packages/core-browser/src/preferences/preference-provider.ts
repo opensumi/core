@@ -284,6 +284,15 @@ export abstract class PreferenceProvider implements IDisposable {
   public abstract getLanguagePreferences(resourceUri?: string, language?: string): { [language: string]: {[p: string]: any} } | undefined;
 
   public async setPreference(preferenceName: string, value: any, resourceUri?: string, language?: string): Promise<boolean> {
+    // ref: https://code.alipay.com/kaitian/ide-framework/pull_requests/108?tab=comment
+    // 对于我们 workbench.colorTheme -> general.theme 这种托管，
+    // 修改 workbench.colorTheme 为 'themeA' 的时候，get('general.theme')，会首先查看 workbench.colorTheme，
+    // 如果有值，则采用 workbench.colorTheme， 而不管配置文件中是否 general.theme 有值，
+    // 换言之，在 workbench.colorTheme  有值的情况下，general.theme 无论怎么修改都是无效的，
+    // 因此如果 setPreference('general.theme', 'themeA' ) 的话，必须先把 workbench.colorTheme 置空才能生效。
+    //
+    // 这种情况下，插件进程的 vscode.workspace.onDidConfigurationChange 会触发两次事件变化
+    // 一个为 general.theme, 一个为workbench.colorTheme
     if (PreferenceProvider.PreferenceDelegatesReverse[preferenceName]) {
       // 将delegate置空
       const delegate = PreferenceProvider.PreferenceDelegatesReverse[preferenceName];

@@ -689,6 +689,9 @@ export const localizationBundle = {
     'main-layout.bottom-panel.show': '显示底部面板',
     'main-layout.bottom-panel.hide': '隐藏底部面板',
 
+    'refactor-preview.title': '重构预览',
+    'refactor-preview.title.clear': '放弃重构',
+    'refactor-preview.title.apply': '应用重构',
     'refactor-preview.overlay.title': '正在预览另一个重构。',
     'refactor-preview.overlay.detail': `点击\"继续\"放弃之前的重构，并继续当前重构。`,
     'refactor-preview.overlay.continue': '继续',

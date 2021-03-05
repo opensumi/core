@@ -653,6 +653,12 @@ export const editorOptionsConverters: Map<KaitianPreferenceKey , NoConverter | I
     ['editor.rename.enablePreview', { monaco: 'editor.rename.enablePreview' }],
 
     /**
+     * Controls the algorithm that computes wrapping points.
+     * Default is "advanced" (Monaco Editor default is "simple")
+     */
+    ['editor.wrappingStrategy', { monaco: 'wrappingStrategy' }],
+
+    /**
      * 是否强行readonly
      */
     ['editor.forceReadOnly', { monaco: 'readOnly', convert: (value: boolean) => {

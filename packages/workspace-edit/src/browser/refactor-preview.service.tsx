@@ -15,11 +15,14 @@ import type {
 } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { IDialogService } from '@ali/ide-overlay';
 import { Deferred, localize, MessageType } from '@ali/ide-core-common';
+import { RefactorPreview } from './refactor-preview';
 
 export enum FilterEditKind {
   added,
   removed,
 }
+
+export const PreviewViewId = 'RefactorPreview';
 
 export interface IRefactorPreviewService {
   edits: Array<WorkspaceTextEdit | WorkspaceFileEdit>;
@@ -33,7 +36,7 @@ export interface IRefactorPreviewService {
 
   filterEdit(edit: WorkspaceTextEdit, kind: FilterEditKind): void;
 
-  applyEdits(edit: Array<WorkspaceTextEdit | WorkspaceFileEdit>): void;
+  applyEdits(): void;
 
   clearAllEdits(): void;
 }
@@ -69,8 +72,28 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
     this.checkedStore = {};
   }
 
+  private registerRefactorPreviewView() {
+    const handler = this.mainLayout.getTabbarHandler(PreviewViewId);
+    if (handler) {
+      return;
+    }
+
+    this.mainLayout.collectTabbarComponent(
+      [{
+        component: RefactorPreview,
+        id: PreviewViewId,
+      }],
+      {
+        title: localize('refactor-preview.title', 'REFACTOR PREVIEW'),
+        containerId: PreviewViewId,
+        hidden: true,
+      },
+      'bottom',
+    );
+  }
+
   private togglePreviewView(show: boolean) {
-    const handler = this.mainLayout.getTabbarHandler('refactor-preview');
+    const handler = this.mainLayout.getTabbarHandler(PreviewViewId);
     if (!!show) {
       handler?.show();
       handler?.activate();
@@ -89,6 +112,9 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
   async previewEdits(
     edit: WorkspaceEdit,
   ): Promise<Array<WorkspaceTextEdit | WorkspaceFileEdit>> {
+
+    this.registerRefactorPreviewView();
+
     if (this.previewDeferred) {
       const continued = await this.dialogService.open(
         <div>
@@ -129,7 +155,7 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
     this.checkedStore[id] = kind;
   }
 
-  applyEdits(edit: Array<WorkspaceTextEdit | WorkspaceFileEdit>): void {
+  applyEdits(): void {
     if (!this.previewDeferred) {
       // it's can not be happened
       return;

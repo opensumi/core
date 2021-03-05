@@ -6,7 +6,6 @@ import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
-import { Icon } from '@ali/ide-core-browser/lib/components';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser/doc-model/types';
 import { URI } from '@ali/ide-core-common/lib/uri';
 import { RecycleList } from '@ali/ide-components/lib/recycle-list';
@@ -156,24 +155,3 @@ export const RefactorPreview = observer(
     );
   },
 );
-
-export const RefactorPreviewTitle = observer(() => {
-  const refactorPreviewService = useInjectable<IRefactorPreviewService>(
-    IRefactorPreviewService,
-  );
-  const handleApplyEdit = useCallback(() => {
-    refactorPreviewService.applyEdits(refactorPreviewService.edits);
-  }, []);
-
-  return (
-    <div className={styles.refactor_preview}>
-      <Icon
-        icon='clear'
-        onClick={refactorPreviewService.clearAllEdits.bind(
-          refactorPreviewService,
-        )}
-      />
-      <Icon icon='check' onClick={handleApplyEdit} />
-    </div>
-  );
-});

@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { URI, DisposableCollection } from '@ali/ide-core-browser';
-import { PreferenceScope, PreferenceProvider, PreferenceProviderDataChanges, PreferenceProviderDataChange } from '@ali/ide-core-browser/lib/preferences';
+import { PreferenceScope, PreferenceProvider } from '@ali/ide-core-browser/lib/preferences';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { WorkspaceFilePreferenceProviderFactory } from './workspace-file-preference-provider';
 
@@ -77,13 +77,6 @@ export class WorkspacePreferenceProvider extends PreferenceProvider {
     return this.workspaceFileProviderFactory({
       workspaceUri: new URI(workspace.uri),
     });
-  }
-
-  protected emitPreferencesChangedEvent(changes: PreferenceProviderDataChanges | PreferenceProviderDataChange[], noFilterExternal?: boolean): void {
-    // 仅在工作区模式下才透出配置变化
-    if (this.workspaceService.isMultiRootWorkspaceOpened) {
-      super.emitPreferencesChangedEvent(changes, noFilterExternal);
-    }
   }
 
   doGet<T>(preferenceName: string, resourceUri: string | undefined = this.ensureResourceUri(), language?: string): T | undefined {
