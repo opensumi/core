@@ -1,5 +1,5 @@
 import { TERMINAL_COMMANDS } from '@ali/ide-terminal-next';
-import { FILE_COMMANDS, Command } from '@ali/ide-core-browser';
+import { FILE_COMMANDS, Command, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { QUICK_OPEN_COMMANDS } from '@ali/ide-quick-open';
 import { DEBUG_COMMANDS } from '@ali/ide-debug/lib/browser/debug-contribution';
 
@@ -50,6 +50,21 @@ export const SETTINGS_COMMAND_OPEN_SETTINGS: Command = {
 export const QPEN_COMMAND_PALETTE: Command = {
   id: 'workbench.action.quickOpen',
   delegate: QUICK_OPEN_COMMANDS.OPEN.id,
+};
+
+export const EDITOR_NAVIGATE_BACK: Command = {
+  id: 'workbench.action.navigateBack',
+  delegate: EDITOR_COMMANDS.GO_BACK.id,
+};
+
+export const EDITOR_NAVIGATE_FORWARD: Command = {
+  id: 'workbench.action.navigateForward',
+  delegate: EDITOR_COMMANDS.GO_FORWARD.id,
+};
+
+export const EDITOR_SAVE_ALL: Command = {
+  id: 'workbench.action.files.saveAll',
+  delegate: EDITOR_COMMANDS.SAVE_ALL.id,
 };
 
 export const DEBUG_COMMAND_STEP_INTO: Command = {

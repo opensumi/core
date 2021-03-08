@@ -234,6 +234,10 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
     });
     registry.registerCommand(BUILTIN_COMMANDS.SETTINGS_COMMAND_OPEN_SETTINGS);
     registry.registerCommand(BUILTIN_COMMANDS.QPEN_COMMAND_PALETTE);
+    // editor builtin commands
+    registry.registerCommand(BUILTIN_COMMANDS.EDITOR_NAVIGATE_BACK);
+    registry.registerCommand(BUILTIN_COMMANDS.EDITOR_NAVIGATE_FORWARD);
+    registry.registerCommand(BUILTIN_COMMANDS.EDITOR_SAVE_ALL);
     // debug builtin commands
     registry.registerCommand(BUILTIN_COMMANDS.DEBUG_COMMAND_STEP_INTO);
     registry.registerCommand(BUILTIN_COMMANDS.DEBUG_COMMAND_STEP_OVER);
@@ -244,6 +248,7 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
     registry.registerCommand(BUILTIN_COMMANDS.DEBUG_COMMAND_PAUSE);
     registry.registerCommand(BUILTIN_COMMANDS.DEBUG_COMMAND_RESTART);
     registry.registerCommand(BUILTIN_COMMANDS.DEBUG_COMMAND_STOP);
+
   }
 
   asQuickOpenItems(activated: { node?: ActivatedExtension[] | undefined; worker?: ActivatedExtension[] | undefined; }): QuickOpenItem<QuickOpenItemOptions>[] {
