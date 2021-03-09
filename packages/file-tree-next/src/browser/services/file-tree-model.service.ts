@@ -803,7 +803,7 @@ export class FileTreeModelService {
       if (confirm !== ok) {
         return;
       } else {
-        let preUri: URI = new URI('');
+        let preUri: URI;
         for (const uri of uris) {
           const effectNode = this.fileTreeService.getNodeByPathOrUri(uri);
           this.loadingDecoration.addTarget(effectNode!);
@@ -812,7 +812,7 @@ export class FileTreeModelService {
         this.treeModel.dispatchChange();
         // 移除文件
         for (const uri of uris) {
-          if (!!preUri && preUri.isEqualOrParent(uri)) {
+          if (!!preUri! && preUri!.isEqualOrParent(uri)) {
             // 当下个删除文件为上个删除文件的子文件时，只需要忽略即可
             continue;
           }

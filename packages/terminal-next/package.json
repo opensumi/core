@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-terminal-next",
-  "version": "1.37.0",
+  "version": "1.37.1",
   "files": [
     "lib"
   ],
@@ -28,17 +28,17 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-components": "1.37.0",
-    "@ali/ide-core-browser": "1.37.0",
-    "@ali/ide-core-common": "1.37.0",
-    "@ali/ide-connection": "1.37.0",
-    "@ali/ide-core-node": "1.37.0",
-    "@ali/ide-editor": "1.37.0",
-    "@ali/ide-file-service": "1.37.0",
-    "@ali/ide-main-layout": "1.37.0",
-    "@ali/ide-theme": "1.37.0",
-    "@ali/ide-workspace": "1.37.0",
-    "@ali/ide-quick-open": "1.37.0",
+    "@ali/ide-components": "1.37.1",
+    "@ali/ide-core-browser": "1.37.1",
+    "@ali/ide-core-common": "1.37.1",
+    "@ali/ide-connection": "1.37.1",
+    "@ali/ide-core-node": "1.37.1",
+    "@ali/ide-editor": "1.37.1",
+    "@ali/ide-file-service": "1.37.1",
+    "@ali/ide-main-layout": "1.37.1",
+    "@ali/ide-theme": "1.37.1",
+    "@ali/ide-workspace": "1.37.1",
+    "@ali/ide-quick-open": "1.37.1",
     "shell-path": "^2.1.0",
     "os-locale": "^4.0.0",
     "lodash.omit": "^4.1.1",

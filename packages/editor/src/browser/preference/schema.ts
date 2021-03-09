@@ -78,7 +78,7 @@ export const EDITOR_DEFAULTS = {
   multiCursorMergeOverlapping: true,
   accessibilitySupport: 'auto',
   showUnused: true,
-  wrappingStrategy: 'advanced',
+  wrappingStrategy: 'simple',
 
   viewInfo: {
     extraEditorClassName: '',
@@ -221,20 +221,18 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   },
   'editor.wordWrapBreakAfterCharacters': {
     'type': 'string',
+    'default': ' \t})]?|/&.,;¢°′″‰℃、。｡､￠，．：；？！％・･ゝゞヽヾーァィゥェォッャュョヮヵヶぁぃぅぇぉっゃゅょゎゕゖㇰㇱㇲㇳㇴㇵㇶㇷㇸㇹㇺㇻㇼㇽㇾㇿ々〻ｧｨｩｪｫｬｭｮｯｰ”〉》」』】〕）］｝｣',
     'description': localize('wordWrapBreakAfterCharacters', "Configure word wrapping characters. A break will be introduced after these characters. Defaults to ' \t})]?|/&.,;¢°′″‰℃、。｡､￠，．：；？！％・･ゝゞヽヾーァィゥェォッャュョヮヵヶぁぃぅぇぉっゃゅょゎゕゖㇰㇱㇲㇳㇴㇵㇶㇷㇸㇹㇺㇻㇼㇽㇾㇿ々〻ｧｨｩｪｫｬｭｮｯｰ”〉》」』】〕）］｝｣'."),
   },
   'editor.wrappingStrategy': {
     'type': 'string',
     'enum': ['advanced', 'simple'],
-    /**
-     * wrappingStrategy 默认值为 simple，即假定所有字符的宽度相等，但在包含中文的情况下，会导致陷入死循环
-     * advanced 是借助 dom 来计算，但算法整体会比较慢，可能会导致大文件下性能有一定消耗，但这里可以暂时修复 simple 带来的问题
-     */
-    'default': 'advanced',
+    'default': 'simple',
     'description': localize('wrappingStrategy', 'Controls the algorithm that computes wrapping points.'),
   },
   'editor.wordWrapBreakBeforeCharacters': {
     'type': 'string',
+    'default': '([{‘“〈《「『【〔（［｛｢£¥＄￡￥+＋',
     'description': localize('wordWrapBreakBeforeCharacters', "Configure word wrapping characters. A break will be introduced before these characters. Defaults to '([{‘“〈《「『【〔（［｛｢£¥＄￡￥+＋'."),
   },
   'editor.lineNumbersMinChars': {
