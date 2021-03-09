@@ -5,7 +5,7 @@ import { IToolbarRegistry, ToolbarActionGroupsChangedEvent, IToolbarAction, ISiz
 import { IEventBus, Disposable, Emitter } from '@ali/ide-core-common';
 import { ConfigContext, ConfigProvider, AppConfig } from '../react-providers';
 import { getIcon } from '../style/icon/icon';
-import { DomListener } from '../utils';
+import { DomListener } from '../dom';
 import * as classnames from 'classnames';
 import { PreferenceService } from '../preferences';
 import { AbstractMenuService, MenuId, generateCtxMenu, ICtxMenuRenderer } from '../menu/next';

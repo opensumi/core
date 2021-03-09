@@ -351,7 +351,7 @@ export class KeymapService implements IKeymapService {
     if (!keybinding) {
       return '';
     }
-    return this.keybindingRegistry.convertMonacoWhen(keybinding.when);
+    return this.keybindingService.convertMonacoWhen(keybinding.when);
   }
 
   /**
@@ -591,7 +591,7 @@ export class KeymapService implements IKeymapService {
           return {
             id: command ? command.id : this.getRaw(binding.command),
             command: (command ? command.label || command.id : binding.command) || '',
-            when: this.keybindingRegistry.convertMonacoWhen(binding.when),
+            when: this.keybindingService.convertMonacoWhen(binding.when),
             keybinding: this.getRaw(binding.keybinding),
             source: isUserKeybinding ? this.getScope(KeybindingScope.USER) : this.getScope(KeybindingScope.DEFAULT),
           };

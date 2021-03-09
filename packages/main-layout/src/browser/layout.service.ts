@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WithEventBus, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent, AppConfig, ComponentRegistry, Logger, CommandRegistry, CommandService } from '@ali/ide-core-browser';
+import { WithEventBus, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent, AppConfig, ComponentRegistry, ILogger, CommandRegistry, CommandService } from '@ali/ide-core-browser';
 import { MainLayoutContribution, IMainLayoutService, ViewComponentOptions } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
@@ -38,8 +38,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   @Autowired(ComponentRegistry)
   private componentRegistry: ComponentRegistry;
 
-  @Autowired(Logger)
-  private logger: Logger;
+  @Autowired(ILogger)
+  private logger: ILogger;
 
   private handleMap: Map<string, TabBarHandler> = new Map();
 

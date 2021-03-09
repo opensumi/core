@@ -1,9 +1,8 @@
 import { ContextKeyExpr, ContextKeyAndExpr, ContextKeyDefinedExpr, ContextKeyEqualsExpr, ContextKeyNotEqualsExpr, ContextKeyNotExpr, ContextKeyNotRegexExpr, ContextKeyOrExpr, ContextKeyRegexExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { Injectable, Autowired } from '@ali/common-di';
-import { isOSX, Emitter, Event, CommandRegistry, ContributionProvider, IDisposable, Disposable, formatLocalize, isWindows, CommandService, isUndefined } from '@ali/ide-core-common';
-import { KeyCode, KeySequence, Key } from '../keyboard/keys';
+import { ILogger, isOSX, Emitter, Event, CommandRegistry, ContributionProvider, IDisposable, Disposable, formatLocalize, CommandService, isUndefined } from '@ali/ide-core-common';
+import { KeyCode, KeySequence, Key, SpecialCases } from '../keyboard/keys';
 import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
-import { Logger } from '../logger';
 import { IContextKeyService } from '../context-key';
 import { StatusBarAlignment, IStatusBarService } from '../services';
 
@@ -45,7 +44,8 @@ export namespace Keybinding {
 
   /**
    * 返回带有绑定的字符串表达式
-   * 缺省值将会被忽略
+   * 仅序列化关键的快捷键及command
+   * 在快捷时被使用
    *
    * @param binding 按键绑定的字符串表达式.
    */
@@ -156,7 +156,6 @@ export interface KeybindingRegistry {
   isEnabled(binding: Keybinding, event: KeyboardEvent): boolean;
   isPseudoCommand(commandId: string): boolean;
   resetKeybindings(): void;
-  convertMonacoWhen(when: any): string;
   onKeybindingsChanged: Event<{ affectsCommands: string[] }>;
 }
 
@@ -172,12 +171,17 @@ export interface KeybindingService {
   /**
    * 根据传入的键盘事件返回对应的快捷键文本
    */
-  convert(event: KeyboardEvent, separator: string): string;
+  convert(event: KeyboardEvent, separator?: string): string;
 
   /**
    * 清空键盘事件队列
    */
   clearConvert(): void;
+  /**
+   * 转化monaco传入的when为可识别的字符串
+   * @param when
+   */
+  convertMonacoWhen(when: any): string;
 }
 
 @Injectable()
@@ -206,8 +210,8 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   @Autowired(CommandService)
   protected readonly commandService: CommandService;
 
-  @Autowired(Logger)
-  protected readonly logger: Logger;
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   @Autowired(IContextKeyService)
   protected readonly whenContextService: IContextKeyService;
@@ -513,6 +517,14 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   }
 
   /**
+   * 将字符串转化为首字母大写
+   * @param str 字符串
+   */
+  private capitalizeFirstLetter(str: string) {
+    return str.replace(/^\S/, function(s) {return s.toUpperCase(); });
+  }
+
+  /**
    * 返回用户可读的组合按键指令文本 （带修饰符）
    * @param keyCode
    * @param separator
@@ -521,33 +533,19 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
     const keyCodeResult: any[] = [];
     if (keyCode.meta) {
       if (isOSX) {
-        keyCodeResult.push('⌘');
-      } else if (isWindows) {
-        keyCodeResult.push('Win');
+        keyCodeResult.push(SpecialCases.MACMETA);
       } else {
-        keyCodeResult.push('Meta');
+        keyCodeResult.push(this.capitalizeFirstLetter(SpecialCases.META));
       }
     }
     if (keyCode.ctrl) {
-      if (isOSX) {
-        keyCodeResult.push('⌃');
-      } else {
-        keyCodeResult.push('Ctrl');
-      }
+      keyCodeResult.push(this.capitalizeFirstLetter(SpecialCases.CTRL));
     }
     if (keyCode.alt) {
-      if (isOSX) {
-        keyCodeResult.push('⌥');
-      } else {
-        keyCodeResult.push('Alt');
-      }
+      keyCodeResult.push(this.capitalizeFirstLetter(SpecialCases.ALT));
     }
     if (keyCode.shift) {
-      if (isOSX) {
-        keyCodeResult.push('⇧');
-      } else {
-        keyCodeResult.push('Shift');
-      }
+      keyCodeResult.push(this.capitalizeFirstLetter(SpecialCases.SHIFT));
     }
     if (keyCode.key) {
       keyCodeResult.push(this.acceleratorForKey(keyCode.key));
@@ -562,22 +560,22 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   public acceleratorForKey(key: Key): string {
     if (isOSX) {
       if (key === Key.ARROW_LEFT) {
-        return '←';
+        return SpecialCases.ARROW_LEFT;
       }
       if (key === Key.ARROW_RIGHT) {
-        return '→';
+        return SpecialCases.ARROW_RIGHT;
       }
       if (key === Key.ARROW_UP) {
-        return '↑';
+        return SpecialCases.ARROW_UP;
       }
       if (key === Key.ARROW_DOWN) {
-        return '↓';
+        return SpecialCases.ARROW_DOWN;
       }
       if (key === Key.BACKSPACE) {
-        return '⌫';
+        return SpecialCases.BACKSPACE;
       }
       if (key === Key.ENTER) {
-        return '⏎';
+        return SpecialCases.ENTER;
       }
     }
     const keyString = this.keyboardLayoutService.getKeyboardCharacter(key);

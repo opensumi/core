@@ -8,7 +8,7 @@ import * as classnames from 'classnames';
 import { AppConfig, ConfigProvider } from '../../react-providers';
 import { Button } from '@ali/ide-components';
 import { PreferenceService } from '../../preferences';
-import { DomListener } from '../../utils';
+import { DomListener } from '../../dom';
 
 export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionElementProps) => {
   const context = useInjectable<AppConfig>(AppConfig);

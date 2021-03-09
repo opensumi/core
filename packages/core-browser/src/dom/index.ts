@@ -1,4 +1,4 @@
-import { Disposable, Emitter, Event as BaseEvent } from '@ali/ide-core-common';
+import { Disposable, Emitter, Event as BaseEvent, IDisposable } from '@ali/ide-core-common';
 import { isWebKit } from '@ali/ide-core-common/lib/platform';
 
 export const EventType = {
@@ -60,25 +60,6 @@ export interface IFocusTracker extends Disposable {
   onDidBlur: BaseEvent<void>;
 }
 
-export interface IDomEvent {
-  <K extends keyof HTMLElementEventMap> ( element: EventHandler, type: K, useCapture?: boolean ): BaseEvent<HTMLElementEventMap[K]>;
-  ( element: EventHandler, type: string, useCapture?: boolean ): BaseEvent<any>;
-}
-
-export const domEvent: IDomEvent = ( element: EventHandler, type: string, useCapture?: boolean ) => {
-  const fn = ( e: Event ) => emitter.fire( e );
-  const emitter = new Emitter<Event>( {
-    onFirstListenerAdd: () => {
-      element.addEventListener( type, fn, useCapture );
-    },
-    onLastListenerRemove: () => {
-      element.removeEventListener( type, fn, useCapture );
-    },
-  } );
-
-  return emitter.event;
-};
-
 export function isAncestor( testChild: Node | null, testAncestor: Node | null ): boolean {
   while ( testChild ) {
     if ( testChild === testAncestor ) {
@@ -88,6 +69,35 @@ export function isAncestor( testChild: Node | null, testAncestor: Node | null ):
   }
 
   return false;
+}
+
+export class DomListener implements IDisposable {
+
+  private _handler: (e: any) => void;
+  private _node: Element | Window | Document;
+  private readonly _type: string;
+  private readonly _useCapture: boolean;
+
+  constructor(node: Element | Window | Document, type: string, handler: (e: any) => void, useCapture?: boolean) {
+    this._node = node;
+    this._type = type;
+    this._handler = handler;
+    this._useCapture = (useCapture || false);
+    this._node.addEventListener(this._type, this._handler, this._useCapture);
+  }
+
+  public dispose(): void {
+    if (!this._handler) {
+      // Already disposed
+      return;
+    }
+
+    this._node.removeEventListener(this._type, this._handler, this._useCapture);
+
+    // Prevent leakers from holding on to the dom or handler func
+    this._node = null!;
+    this._handler = null!;
+  }
 }
 
 export class FocusTracker extends Disposable {
@@ -126,8 +136,8 @@ export class FocusTracker extends Disposable {
 
     this.addDispose(this.didBlur);
     this.addDispose(this.didFocus);
-    this.addDispose(domEvent(element, EventType.FOCUS, true)(onFocus));
-    this.addDispose(domEvent(element, EventType.BLUR, true)(onBlur));
+    this.addDispose(new DomListener(element, EventType.FOCUS, onFocus, true));
+    this.addDispose(new DomListener(element, EventType.BLUR, onBlur, true));
   }
 }
 

@@ -93,9 +93,6 @@ function toNormalCase(str: string) {
   return str.substr(0, 1).toUpperCase() + str.substr(1);
 }
 
-/**
- * Representation of a pressed key combined with key modifiers.
- */
 export class KeyCode {
 
   public readonly key: Key | undefined;
@@ -140,8 +137,9 @@ export class KeyCode {
     return this.ctrl === other.ctrl && this.alt === other.alt && this.shift === other.shift && this.meta === other.meta;
   }
 
-  /*
-   * Return a keybinding string compatible with the `Keybinding.keybinding` property.
+  /**
+   * 将KeyCode转换为可读的文本
+   * @returns
    */
   public toString(): string {
     const result: string[] = [];
@@ -210,26 +208,21 @@ export class KeyCode {
 
   private static keybindings: { [key: string]: KeyCode } = {};
 
-  /* Reset the key hashmap, this is for testing purposes.  */
-  public static resetKeyBindings() {
-    KeyCode.keybindings = {};
-  }
-
   /**
-   * Parses a string and returns a KeyCode object.
-   * @param keybinding String representation of a keybinding
+   * 通过快捷键字符串解析快捷键为KeyCode
+   * 默认支持的分隔符为 '+'
+   * @param keybinding
+   * @returns
    */
-  public static parse(keybinding: string): KeyCode {
+  public static parse(keybinding: string, separator: string = '+'): KeyCode {
 
     if (KeyCode.keybindings[keybinding]) {
       return KeyCode.keybindings[keybinding];
     }
 
     const schema: KeyCodeSchema = {};
-    const keys = keybinding
-      .trim().toLowerCase()
-      .split('+');
-    /* If duplicates i.e ctrl+ctrl+a or alt+alt+b or b+alt+b it is invalid */
+    const keys = keybinding.trim().toLowerCase().split(separator);
+    // 快捷键去重，如 ctrl+a+ctrl 应变为 ctrl + a
     if (keys.length !== new Set(keys).size) {
       throw new Error(`Can't parse keybinding ${keybinding} Duplicate modifiers`);
     }
@@ -240,14 +233,12 @@ export class KeyCode {
       }
       const key = EASY_TO_KEY[keyString];
 
-      /* meta only works on macOS */
       if (keyString === SpecialCases.META) {
         if (isOSX) {
           schema.meta = true;
         } else {
           throw new Error(`Can't parse keybinding ${keybinding} meta is for OSX only`);
         }
-        /* ctrlcmd for M1 keybindings that work on both macOS and other platforms */
       } else if (keyString === SpecialCases.MACMETA) {
         if (isOSX) {
           schema.meta = true;
@@ -694,5 +685,4 @@ export namespace KeysOrKeyCodes {
     }
     return [toKeyCode(keysOrKeyCodes)];
   };
-
 }

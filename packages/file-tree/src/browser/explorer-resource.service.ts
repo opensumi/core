@@ -4,7 +4,7 @@ import { observable, action } from 'mobx';
 import {
   DisposableCollection,
   Disposable,
-  Logger,
+  ILogger,
   URI, Uri,
   IContextKeyService,
   IContextKey,
@@ -205,8 +205,8 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   private refreshDecorationEmitter = new Emitter<any>();
   refreshDecorationEvent: Event<any> = this.refreshDecorationEmitter.event;
 
-  @Autowired(Logger)
-  logger: Logger;
+  @Autowired(ILogger)
+  private logger: ILogger;
 
   @observable
   baseIndent: number;

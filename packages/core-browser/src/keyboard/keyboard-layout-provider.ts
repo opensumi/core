@@ -1,7 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IKeyboardLayoutInfo } from '@ali/ide-core-common/lib/keyboard/keymap.interface';
-import { isOSX, Emitter, Deferred } from '@ali/ide-core-common';
-import { Logger } from '../logger';
+import { isOSX, Emitter, Deferred, ILogger } from '@ali/ide-core-common';
 import { NativeKeyboardLayout, KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeyValidator, KeyValidationInput } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
 import { GlobalBrowserStorageService } from '../services';
 
@@ -10,8 +9,8 @@ export type KeyboardLayoutSource = 'navigator.keyboard' | 'user-choice' | 'press
 @Injectable()
 export class BrowserKeyboardLayoutImpl implements KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeyValidator {
 
-  @Autowired(Logger)
-  protected readonly logger: Logger;
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   @Autowired(GlobalBrowserStorageService)
   private readonly browserStorageService: GlobalBrowserStorageService;

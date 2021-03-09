@@ -30,6 +30,12 @@ describe('KeymapsService should be work', () => {
   const mockKeybindingService = {
     convert: jest.fn(),
     clearConvert: jest.fn(),
+    convertMonacoWhen: jest.fn((when: any) => {
+      if (typeof when === 'string') {
+        return when;
+      }
+      return '';
+    }),
   };
   const resourceProvider = jest.fn(() => mockResource);
   const mockKeybindingRegistry = {
@@ -38,12 +44,6 @@ describe('KeymapsService should be work', () => {
         command: 'test.command',
         keybindings: 'cmd+c',
       }];
-    }),
-    convertMonacoWhen: jest.fn((when: any) => {
-      if (typeof when === 'string') {
-        return when;
-      }
-      return '';
     }),
     unregisterKeybinding: jest.fn(),
     registerKeybinding: jest.fn(() => Disposable.create(() => {})),
@@ -203,10 +203,10 @@ describe('KeymapsService should be work', () => {
         keybinding: 'cmd+c',
         when: 'focus' as any,
       };
-      mockKeybindingRegistry.convertMonacoWhen.mockClear();
+      mockKeybindingService.convertMonacoWhen.mockClear();
       const result =  keymapsService.getWhen(keybinding);
       expect(result).toBe(keybinding.when);
-      expect(mockKeybindingRegistry.convertMonacoWhen).toBeCalledTimes(1);
+      expect(mockKeybindingService.convertMonacoWhen).toBeCalledTimes(1);
     });
 
     it('getScope method should be work', () => {
