@@ -144,14 +144,14 @@ export abstract class PromptHandle {
 
     this.$validate.classList.value = validateBoxClassName;
     this.$validate.innerText = validateMessage.message || '';
-    this.$.parentElement!.parentElement!.classList.add(this._validateClassName);
+    this.$.parentElement?.parentElement?.classList.add(this._validateClassName);
   }
 
   public removeValidateMessage() {
     if (this._hasValidateElement) {
       this.$.parentElement?.parentElement?.parentElement?.removeChild(this.$validate);
       this._hasValidateElement = false;
-      this.$.parentElement!.parentElement!.classList.remove(this._validateClassName);
+      this.$.parentElement?.parentElement?.classList.remove(this._validateClassName);
     }
   }
 
