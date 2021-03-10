@@ -109,7 +109,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
     Error.prepareStackTrace = (error: Error, stackTrace: any[]) => {
       let extension: IExtensionProps | undefined;
-      let stackTraceMessage = '';
+      let stackTraceMessage = `Error: ${error.message}`;
       let fileName: string;
       for (const call of stackTrace) {
         stackTraceMessage += `\n\tat ${call.toString()}`;
