@@ -1,12 +1,22 @@
 .view_container {
   display: flex;
+  flex: 1;
+  min-width: 0;
   font-size: 12px;
-  overflow: scroll;
   height: 24px;
 }
 
-.view_container::-webkit-scrollbar {
+.tabs {
+  display: flex;
+  overflow: scroll;
+}
+
+.tabs::-webkit-scrollbar {
   display: none;
+}
+
+.button {
+  flex: 1;
 }
 
 .item_container {
@@ -71,7 +81,7 @@
 }
 
 .item_add {
-  padding: 0 12px;
+  padding: 0 6px;
   line-height: 24px;
   cursor: pointer;
   user-select: none;

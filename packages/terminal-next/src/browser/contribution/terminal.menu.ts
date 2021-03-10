@@ -38,8 +38,8 @@ export class TerminalMenuContribution implements MenuContribution {
     /** 终端 Tab 菜单 */
     menuRegistry.registerMenuItem(MenuId.TermTab, {
       command: {
-        id: TERMINAL_COMMANDS.SPLIT.id,
-        label: localize('terminal.menu.split'),
+        id: TERMINAL_COMMANDS.TAB_RENAME.id,
+        label: localize('terminal.menu.rename'),
       },
       order: 1,
       group,
@@ -47,8 +47,8 @@ export class TerminalMenuContribution implements MenuContribution {
 
     menuRegistry.registerMenuItem(MenuId.TermTab, {
       command: {
-        id: TERMINAL_COMMANDS.TAB_RENAME.id,
-        label: localize('terminal.menu.rename'),
+        id: TERMINAL_COMMANDS.SPLIT.id,
+        label: localize('terminal.menu.split'),
       },
       order: 2,
       group,

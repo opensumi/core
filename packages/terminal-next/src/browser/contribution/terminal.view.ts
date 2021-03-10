@@ -16,12 +16,6 @@ export class TerminalRenderContribution implements ComponentContribution, TabBar
 
   registerToolbarItems(registry: ToolbarRegistry) {
     registry.registerItem({
-      id: TERMINAL_COMMANDS.ADD.id,
-      command: TERMINAL_COMMANDS.ADD.id,
-      viewId: TerminalRenderContribution.viewId,
-      tooltip: localize('terminal.new'),
-    });
-    registry.registerItem({
       id: TERMINAL_COMMANDS.OPEN_SEARCH.id,
       command: TERMINAL_COMMANDS.OPEN_SEARCH.id,
       viewId: TerminalRenderContribution.viewId,

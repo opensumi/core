@@ -1,6 +1,5 @@
 import * as React from 'react';
-import * as clx from 'classnames';
-import { useInjectable, localize, getIcon } from '@ali/ide-core-browser';
+import { useInjectable, localize } from '@ali/ide-core-browser';
 import { ITerminalGroupViewService, IWidget, ITerminalError, ITerminalErrorService } from '../../common';
 
 import * as styles from './terminal.module.less';
@@ -70,15 +69,6 @@ export default ({ widget, error, show }: IProps) => {
       {
         error ? renderError(error, errorService, view) : null
       }
-      <div
-        className={ clx({
-          [getIcon('close')]: true,
-          [styles.terimnalClose]: true,
-        }) }
-        onClick={ () => {
-          view.removeWidget(widget.id);
-        } }
-      ></div>
       <div
         data-term-id={ widget.id }
         style={ { display: error ? 'none' : 'block' } }

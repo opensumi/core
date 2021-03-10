@@ -67,19 +67,6 @@ export class TerminalCommandContribution implements CommandContribution {
   }
 
   registerCommands(registry: CommandRegistry) {
-    // 新建 tab
-    registry.registerCommand({
-      ...TERMINAL_COMMANDS.ADD,
-      iconClass: getIcon('plus'),
-    }, {
-      execute: () => {
-        const index = this.view.createGroup();
-        const group = this.view.getGroup(index);
-        this.view.createWidget(group);
-        this.view.selectGroup(index);
-      },
-    });
-
     // 搜索
     registry.registerCommand({
       ...TERMINAL_COMMANDS.OPEN_SEARCH,
