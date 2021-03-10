@@ -11,6 +11,7 @@ export type IExtension = Writeable<IExtensionProps> & {
   enableScope: EnableScope,
   reloadRequire?: boolean;
   installed: boolean;
+  newVersion?: string;
 };
 
 export enum EnableScope {
@@ -95,6 +96,7 @@ export interface RawExtension extends BaseExtension {
     kaitian: string,
   };
   displayGroupName?: string;
+  newVersion?: string;
 }
 
 // 插件详情页显示
@@ -140,6 +142,7 @@ export interface IExtensionManagerService  {
   extensionMomentState: Map<string, ExtensionMomentState>;
   installedIds: string[];
   useEnabledIds: string[];
+  bindEvents(): void;
   init(): Promise<void>;
   getDetailById(extensionId: string): Promise<ExtensionDetail | undefined>;
   getDetailFromMarketplace(extensionId: string, version?: string): Promise<ExtensionDetail | undefined>;

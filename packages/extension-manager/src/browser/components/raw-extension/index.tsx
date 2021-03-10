@@ -7,7 +7,7 @@ import * as clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser';
 import { generateCtxMenu, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
-
+import * as compareVersions from 'compare-versions';
 import { RawExtension, IExtensionManagerService } from '../../../common';
 import * as commonStyles from '../../extension-manager.common.module.less';
 import * as styles from './index.module.less';
@@ -30,6 +30,7 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
   const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
   const extensionMomentState = extensionManagerService.extensionMomentState.get(extension.extensionId);
+  const isUpdating = extensionMomentState?.isUpdating;
   const isInstalling = extensionMomentState?.isInstalling;
   const isDisable = extension.installed && !extension.enable;
 
@@ -68,6 +69,14 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
     });
   }, []);
 
+  const canUpdate = React.useMemo(() => {
+    // 内置插件不应该升级
+    if (extension && extension.isBuiltin) {
+      return false;
+    }
+    return extension && !!extension.newVersion && compareVersions(extension.version, extension.newVersion) === -1;
+  }, [extension]);
+
   return (
     <div className={className} onContextMenu={handleCtxMenu}>
       <div onClick={handleClick} className={clx(styles.wrap, 'kt-extension-raw')}>
@@ -88,6 +97,7 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
             {showExtraAction && (
               <span style={{ display: 'flex', flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
                 {extension.reloadRequire && <Button size='small' type='primary' ghost={true} style={{ marginRight: 4 }} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}
+                {canUpdate && <Button size='small' type='primary' ghost={true} style={{ marginRight: 4 }} onClick={() => extensionManagerService.updateExtension(extension, extension.newVersion!)}>{isUpdating ? localize('marketplace.extension.updating') : localize('marketplace.extension.update')}</Button>}
                 {extension.installed ? (
                   <InlineActionBar
                     menus={extensionManagerService.contextMenu}

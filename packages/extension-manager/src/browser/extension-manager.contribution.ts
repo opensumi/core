@@ -1,13 +1,13 @@
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Command, CommandContribution, Domain, localize, CommandRegistry } from '@ali/ide-core-common';
-import { IExtensionManagerService, EXTENSION_SCHEME, enableExtensionsContainerId, RawExtension, EnableScope} from '../common';
+import { IExtensionManagerService, EXTENSION_SCHEME, enableExtensionsContainerId, RawExtension, EnableScope, TabActiveKey } from '../common';
 import { ExtensionDetailView } from './extension-detail.view';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { Autowired } from '@ali/common-di';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { ResourceService } from '@ali/ide-editor';
 import { ExtensionResourceProvider } from './extension-resource-provider';
-import { getIcon, IQuickInputService, QuickPickService } from '@ali/ide-core-browser';
+import { getIcon, IQuickInputService, QuickPickService, ClientAppContribution } from '@ali/ide-core-browser';
 import { MenuId, MenuContribution as MenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
 
 import ExtensionPanelView from './extension-panel.view';
@@ -69,8 +69,8 @@ namespace ExtensionCommands {
   };
 }
 
-@Domain(ComponentContribution, MainLayoutContribution, BrowserEditorContribution, MenuContribution, CommandContribution)
-export class ExtensionManagerContribution implements MainLayoutContribution, ComponentContribution, BrowserEditorContribution, MenuContribution, CommandContribution {
+@Domain(ClientAppContribution, ComponentContribution, MainLayoutContribution, BrowserEditorContribution, MenuContribution, CommandContribution)
+export class ExtensionManagerContribution implements ClientAppContribution, MainLayoutContribution, ComponentContribution, BrowserEditorContribution, MenuContribution, CommandContribution {
 
   @Autowired(IMainLayoutService)
   private readonly mainLayoutService: IMainLayoutService;
@@ -92,6 +92,10 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
 
   @Autowired(IStatusBarService)
   private readonly statusBarService: IStatusBarService;
+
+  initialize() {
+    this.extensionManagerService.bindEvents();
+  }
 
   registerResource(resourceService: ResourceService) {
     resourceService.registerResourceProvider(this.resourceProvider);
@@ -326,6 +330,10 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
     if (handler) {
       // 在激活的时候获取数据
       handler.onActivate(() => {
+        // 如果有可以更新的插件，则点击插件面板默认指向已安装插件
+        if (handler.getBadge()) {
+          this.extensionManagerService.tabActiveKey = TabActiveKey.INSTALLED;
+        }
         this.extensionManagerService.init();
       });
     }

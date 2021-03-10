@@ -38,7 +38,6 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const [tabIndex, setTabIndex] = React.useState(0);
   const [currentExtension, setCurrentExtension] = React.useState<ExtensionDetail | null>(null);
   const [latestExtension, setLatestExtension] = React.useState<ExtensionDetail | null>(null);
-  const [updated, setUpdated] = React.useState(false);
   const [dependencies, setDependencies] = React.useState<ExtensionDetail[]>([]);
   const [extensionPack, setExtensionPack] = React.useState<ExtensionDetail[]>([]);
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
@@ -121,7 +120,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   async function update() {
     if (extension) {
       await extensionManagerService.updateExtension(extension, latestExtension!.version);
-      setUpdated(true);
+      setCurrentExtension(latestExtension);
     }
   }
 
@@ -135,11 +134,11 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
 
   const canUpdate = React.useMemo(() => {
     // 内置插件不应该升级
-    if (currentExtension && currentExtension.isBuiltin) {
+    if (extension && extension.isBuiltin) {
       return false;
     }
-    return currentExtension && latestExtension && compareVersions(currentExtension.version, latestExtension.version) === -1;
-  }, [currentExtension, latestExtension]);
+    return extension && extension.newVersion && compareVersions(extension.version, extension.newVersion) === -1;
+  }, [extension]);
 
   const downloadCount = React.useMemo(() => {
     return currentExtension && currentExtension.downloadCount
@@ -242,7 +241,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
             <div className={styles.description}>{extension.description}</div>
             <div className={styles.actions}>
               {extension.reloadRequire && <Button className={styles.action} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}
-              {canUpdate && !updated ? (
+              {canUpdate ? (
                 <Button className={styles.action} onClick={update} loading={isUpdating}>{isUpdating ? localize('marketplace.extension.updating') : localize('marketplace.extension.update')}</Button>
               ) : null}
               {!installed ? (

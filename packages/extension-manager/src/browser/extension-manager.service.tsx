@@ -1,7 +1,7 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, SearchExtension, RequestHeaders, BaseExtension, ExtensionMomentState, OpenExtensionOptions, ExtensionChangeEvent, ExtensionChangeType, IMarketplaceExtensionInfo, IExtensionVersion, IExtension } from '../common';
+import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, SearchExtension, RequestHeaders, BaseExtension, ExtensionMomentState, OpenExtensionOptions, ExtensionChangeEvent, ExtensionChangeType, IMarketplaceExtensionInfo, IExtensionVersion, IExtension, enableExtensionsContainerId } from '../common';
 import { ExtensionService, IExtensionProps, EXTENSION_ENABLE, ExtensionDependencies } from '@ali/ide-kaitian-extension/lib/common';
-import { action, observable, computed, runInAction } from 'mobx';
+import { action, observable, computed, runInAction, reaction } from 'mobx';
 import * as flatten from 'lodash.flatten';
 import { Path } from '@ali/ide-core-common/lib/path';
 import * as compareVersions from 'compare-versions';
@@ -14,6 +14,7 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IMessageService } from '@ali/ide-overlay';
 import { EditorPreferences } from '@ali/ide-editor/lib/browser';
 import uniqBy = require('lodash.uniqby');
+import { IMainLayoutService } from '@ali/ide-main-layout';
 
 @Injectable()
 export class ExtensionManagerService extends Disposable implements IExtensionManagerService {
@@ -96,18 +97,23 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   @observable
   extensionMomentState: Map<string, ExtensionMomentState> = new Map<string, ExtensionMomentState>();
 
+  @Autowired(IMainLayoutService)
+  private readonly layoutService: IMainLayoutService;
+
   // 是否显示内置插件
   private isShowBuiltinExtensions: boolean = false;
 
   private hotPageIndex = 1;
 
+  // 如果超过该值则会提示全部更新的面板
+  private minUpdateAllExtensionCount = 3;
+
   private extensionInfo = new Map<string, IMarketplaceExtensionInfo>();
 
-  constructor() {
-    super();
+  bindEvents() {
     this.addDispose(this.extensionService.onDidExtensionActivated(async (e) => {
       if (!e.isBuiltin && !e.isDevelopment) {
-        await this.checkExtensionUpdates(e);
+        this.checkExtensionUpdates(e);
       }
     }));
     this.addDispose(Disposable.create(() => {
@@ -117,7 +123,41 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
       this.hotExtensions = [];
       this.extensions = [];
     }));
+    // 更新插件市场 Badge
+    reaction(
+      () => this.canBeUpdatedExtensions.length,
+      async (value) => {
+        this.tabbarHandler?.setBadge(value > 0 ? value + '' : '');
+        if (value >= this.minUpdateAllExtensionCount) {
+          // 重新赋值防止重复弹窗
+          this.minUpdateAllExtensionCount = Number.MAX_SAFE_INTEGER;
+          const delayUpdate = localize('marketplace.extension.update.delay');
+          const nowUpdate = localize('marketplace.extension.update.now');
+          const delayReload = localize('marketplace.extension.reload.delay');
+          const nowReload = localize('marketplace.extension.reload.now');
+          const updateMessage = await this.messageService.info(localize('marketplace.extension.updateAll'), [delayUpdate, nowUpdate]);
+          if (updateMessage === nowUpdate) {
+            await this.updateAllCanBeUpdatedExtension();
+            // 批量更新完毕后提示重启 IDE
+            const reloadMessage = await this.messageService.info(localize('marketplace.extension.needreloadFromAll'), [delayReload, nowReload]);
+            if (reloadMessage === nowReload) {
+              this.clientApp.fireOnReload();
+            }
+          }
+        }
+      },
+    );
   }
+
+  /**
+   * 更新所有可以更新的插件
+   */
+  private async updateAllCanBeUpdatedExtension() {
+    for (const extension of this.canBeUpdatedExtensions) {
+      await this.updateExtension(this.getRawExtensionById(extension.extensionId)!, extension.newVersion!);
+    }
+  }
+
   async enableAllExtensions(): Promise<void> {
     await Promise.all(this.rawExtension
       .filter((extension) => !extension.enable)
@@ -213,25 +253,30 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
 
   private async checkExtensionUpdates(e: IExtensionProps) {
     try {
-      const current = await this.getDetailById(e.extensionId);
       const latest = await this.getDetailFromMarketplace(e.extensionId);
-      if (!latest || !current) {
+      if (!latest) {
         this.logger.warn(`Can not find extension ${e.extensionId} from marketplace.`);
         return;
       }
-      const delayUpdate = localize('marketplace.extension.update.delay');
-      const nowUpdate = localize('marketplace.extension.update.now');
-      const reloadRequire = await this.computeReloadState(current.path);
-      if (compareVersions(current.version, latest.version) === -1) {
-        this.messageService.info(
-          formatLocalize('marketplace.extension.findUpdate', latest.displayName || latest.name, latest.version), [delayUpdate, nowUpdate],
-        )
-        .then((message) => {
-          if (message === nowUpdate) {
-            this.updateExtension(current, latest.version)
-              .then(() => this.checkNeedReload(e.extensionId, reloadRequire));
+      // 有最新版本
+      if (compareVersions(e.packageJSON.version, latest.version) === -1) {
+        let extension = this.getExtension(e.extensionId);
+        if (extension) {
+          runInAction(() => {
+            extension!.newVersion = latest.version;
+          });
+        } else {
+          const extensionProp = await this.extensionService.getExtensionProps(e.realPath);
+          if (extensionProp) {
+            extension = await this.transformFromExtensionProp(extensionProp);
+            if (extension) {
+              runInAction(() => {
+                extension!.newVersion = latest.version;
+                this.extensions.push(extension!);
+              });
+            }
           }
-        });
+        }
       }
     } catch (err) {
       this.logger.warn(err.message);
@@ -243,7 +288,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
    * @param extensionId
    */
 
-  private getExtension(extensionId): IExtension | void {
+  private getExtension(extensionId): IExtension | undefined {
     return this.extensions.find((extension) => extension.extensionId === extensionId);
   }
 
@@ -711,6 +756,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
         },
         downloadCount: extensionInfo?.downloadCount,
         displayGroupName: extensionInfo?.displayGroupName,
+        newVersion: extension.newVersion,
       };
     });
   }
@@ -1238,5 +1284,21 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
         this.clientApp.fireOnReload();
       }
     }
+  }
+
+  /**
+   *
+   * 可以更新的插件
+   * @readonly
+   * @memberof ExtensionManagerService
+   */
+  @computed
+  get canBeUpdatedExtensions() {
+    return this.extensions.filter((extension) => extension.newVersion && compareVersions(extension.packageJSON.version, extension.newVersion) === -1);
+  }
+
+  @memoize
+  get tabbarHandler() {
+    return this.layoutService.getTabbarHandler(enableExtensionsContainerId);
   }
 }

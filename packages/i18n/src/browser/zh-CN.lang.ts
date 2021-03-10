@@ -471,6 +471,8 @@ export const localizationBundle = {
     'marketplace.panel.tab.placeholder.installed': '搜索已安装的扩展',
     'marketplace.tab.installed': '已安装的扩展',
     'marketplace.extension.findUpdate': '发现插件 {0} 有最新版本 {1}，是否要更新到最新版本？',
+    'marketplace.extension.updateAll': '发现有多个扩展可以更新，是否一键全部更新？',
+    'marketplace.extension.needreloadFromAll': '所有扩展更新完毕，重启后生效，是否立即重启？',
     'marketplace.extension.needreload': '插件 {0} 更新成功，重启后生效，是否立即重启？',
     'marketplace.extension.canupdate': '有新版本',
     'marketplace.extension.updating': '更新中',

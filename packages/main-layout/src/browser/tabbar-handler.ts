@@ -82,6 +82,10 @@ export class TabBarHandler {
     this.tabbarService.getContainer(this.containerId)!.options!.badge = badge;
   }
 
+  getBadge() {
+    return this.tabbarService.getContainer(this.containerId)!.options!.badge;
+  }
+
   setIconClass(iconClass: string) {
     this.tabbarService.getContainer(this.containerId)!.options!.iconClass = iconClass;
   }
