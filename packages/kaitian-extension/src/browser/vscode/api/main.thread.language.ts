@@ -91,23 +91,17 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   $registerHoverProvider(handle: number, selector: SerializedDocumentFilter[]): void {
     const languageSelector = fromLanguageSelector(selector);
     const hoverProvider = this.createHoverProvider(handle, languageSelector);
-    const disposable = new DisposableCollection();
-    for (const language of this.getUniqueLanguages()) {
-      if (this.matchLanguage(languageSelector, language)) {
-        disposable.push(monaco.languages.registerHoverProvider(language, hoverProvider));
-      }
-    }
-
-    this.disposables.set(handle, disposable);
+    this.disposables.set(handle, modes.HoverProviderRegistry.register(selector, hoverProvider));
   }
 
-  protected createHoverProvider(handle: number, selector?: LanguageSelector): monaco.languages.HoverProvider {
+  protected createHoverProvider(handle: number, selector?: LanguageSelector): modes.HoverProvider {
     return {
       provideHover: (model, position, token) => {
-        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
+        // model.ITextModel 与 monaco.editor.ITextModel getOptions EOL部分不兼容，不影响逻辑
+        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model as unknown as monaco.editor.ITextModel))) {
           return undefined!;
         }
-        if (!this.isLanguageFeatureEnabled(model)) {
+        if (!this.isLanguageFeatureEnabled(model as unknown as monaco.editor.ITextModel)) {
           return undefined!;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_HOVER);
