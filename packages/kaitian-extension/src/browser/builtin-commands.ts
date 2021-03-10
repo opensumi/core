@@ -111,3 +111,8 @@ export const DEBUG_COMMAND_STOP: Command = {
   id: 'workbench.action.debug.stop',
   delegate: DEBUG_COMMANDS.STOP.id,
 };
+
+export const EDITOR_SHOW_ALL_SYMBOLS: Command = {
+  id: 'workbench.action.showAllSymbols',
+  delegate: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL.id,
+};

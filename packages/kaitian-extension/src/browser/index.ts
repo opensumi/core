@@ -248,7 +248,7 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
     registry.registerCommand(BUILTIN_COMMANDS.DEBUG_COMMAND_PAUSE);
     registry.registerCommand(BUILTIN_COMMANDS.DEBUG_COMMAND_RESTART);
     registry.registerCommand(BUILTIN_COMMANDS.DEBUG_COMMAND_STOP);
-
+    registry.registerCommand(BUILTIN_COMMANDS.EDITOR_SHOW_ALL_SYMBOLS);
   }
 
   asQuickOpenItems(activated: { node?: ActivatedExtension[] | undefined; worker?: ActivatedExtension[] | undefined; }): QuickOpenItem<QuickOpenItemOptions>[] {
