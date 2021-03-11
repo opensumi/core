@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { Disposable, IDisposable, ScopedKeybinding, KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeybindingService, ILogger, Event, KeybindingWeight } from '@ali/ide-core-browser';
+import { Disposable, IDisposable, ScopedKeybinding, KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeybindingService, ILogger, Event, KeybindingWeight, ThrottledDelayer } from '@ali/ide-core-browser';
 import { KeymapsParser } from './keymaps-parser';
 import * as fuzzy from 'fuzzy';
 import { KEYMAPS_FILE_NAME, IKeymapService, KEYMAPS_SCHEME, KeybindingItem } from '../common';
@@ -21,6 +21,8 @@ export const enum ContextKeyExprType {
 
 @Injectable()
 export class KeymapService implements IKeymapService {
+
+  static DEFAULT_SEARCH_DELAY: number = 500;
 
   @Autowired(KeybindingRegistry)
   protected readonly keyBindingRegistry: KeybindingRegistry;
@@ -59,12 +61,12 @@ export class KeymapService implements IKeymapService {
     return this.keymapChangeEmitter.event;
   }
 
-  private searchTimer: any = null;
-
   protected convertKeySequence: KeySequence = [];
 
   protected readonly toUnregisterUserKeybindingMap: Map<string, IDisposable> = new Map();
   protected readonly toRestoreDefaultKeybindingMap: Map<string, IDisposable> = new Map();
+
+  private searchDelayer = new ThrottledDelayer(KeymapService.DEFAULT_SEARCH_DELAY);
 
   /**
    * fuzzy搜索参数，pre及post用于包裹搜索结果
@@ -440,12 +442,12 @@ export class KeymapService implements IKeymapService {
   searchKeybindings = (search: string) => {
     this.currentSearchValue = search;
     // throttle
-    if (this.searchTimer) {
-      clearTimeout(this.searchTimer);
+    if (!this.searchDelayer.isTriggered) {
+      this.searchDelayer.cancel();
     }
-    this.searchTimer = setTimeout(() => {
+    this.searchDelayer.trigger(async () => {
       this.doSearchKeybindings(this.currentSearchValue);
-    }, 100);
+    });
   }
 
   /**
