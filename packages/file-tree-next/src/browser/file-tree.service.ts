@@ -507,8 +507,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
     const nodes: Directory[] = [];
     for (const uri of uris) {
       const node = this.getNodeByPathOrUri(uri.parent);
-      if (node && Directory.is(node)) {
-        nodes.push(node as Directory);
+      if (node && Directory.is(node) && node.parent) {
+        nodes.push(node.parent as Directory);
       }
     }
     return nodes;
