@@ -121,7 +121,6 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       },
       order: 1,
       group: '0_new',
-      when: `!${FilesExplorerFilteredContext.raw}`,
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
@@ -131,7 +130,6 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       },
       order: 2,
       group: '0_new',
-      when: `!${FilesExplorerFilteredContext.raw}`,
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
@@ -361,6 +359,9 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FILE, {
       execute: async (uri) => {
+        if (this.fileTreeService.filterMode) {
+          this.fileTreeService.toggleFilterMode();
+        }
         if (uri) {
           this.fileTreeModelService.newFilePrompt(uri);
         } else {
@@ -382,6 +383,9 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FOLDER, {
       execute: async (uri) => {
+        if (this.fileTreeService.filterMode) {
+          this.fileTreeService.toggleFilterMode();
+        }
         if (uri) {
           this.fileTreeModelService.newDirectoryPrompt(uri);
         } else {

@@ -85,6 +85,7 @@ export const RecycleTreeFilterDecorator: FilterHoc<
       ...api,
       clearFilter: () => {
         setFilter('');
+        setValue('');
       },
     } as IRecycleTreeFilterHandle);
   };
