@@ -1,6 +1,6 @@
 import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { Disposable } from '@ali/ide-core-browser';
+import { AppConfig, Disposable } from '@ali/ide-core-browser';
 import { IStatusBarService, StatusBarEntry, StatusBarAlignment, StatusBarEntryAccessor } from '@ali/ide-core-browser/lib/services';
 import { CommandService } from '@ali/ide-core-common';
 
@@ -16,10 +16,16 @@ export class StatusBarService extends Disposable implements IStatusBarService {
   @Autowired(CommandService)
   private commandService: CommandService;
 
+  @Autowired(AppConfig)
+  protected readonly appConfig: AppConfig;
+
   /**
    * 获取背景颜色
    */
   getBackgroundColor(): string | undefined {
+    if (this.appConfig.extensionDevelopmentHost) {
+      return 'var(--kt-statusBar-extensionDebuggingBackground)';
+    }
     return this.backgroundColor;
   }
 
