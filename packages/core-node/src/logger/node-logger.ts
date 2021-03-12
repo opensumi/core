@@ -14,8 +14,13 @@ export const INodeLogger = Symbol('INodeLogger');
 export class NodeLogger implements INodeLogger {
 
   @Autowired(ILogServiceManager)
-  loggerManger: ILogServiceManager;
-  logger: ILogService = this.loggerManger.getLogger(SupportLogNamespace.Node);
+  private loggerManger: ILogServiceManager;
+
+  private logger: ILogService;
+
+  constructor() {
+    this.logger = this.loggerManger.getLogger(SupportLogNamespace.Node);
+  }
 
   error(...args) {
     return this.logger.error(...args);
