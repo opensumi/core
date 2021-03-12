@@ -322,6 +322,11 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
       this.popOverContainer.classList.add('kt-toolbar-popover-default');
     }
 
+    const animeDisposer = new DomListener(this.popOverContainer, 'animationend', () => {
+      animeDisposer.dispose();
+      this.popOverContainer?.classList.add('kt-toolbar-popover-animationend');
+    });
+
     return this._popOverElement.then((ele) => {
       if (this._popOverClickOutsideDisposer) {
         this._popOverClickOutsideDisposer.dispose();
@@ -333,6 +338,10 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
       this._onDidChangePopoverVisibility.fire(true);
       if (mergedStyle.hideOnClickOutside !== false) {
         setTimeout(() => {
+          if (this._popOverClickOutsideDisposer) {
+            this._popOverClickOutsideDisposer.dispose();
+            this._popOverClickOutsideDisposer = undefined;
+          }
           const disposer = new Disposable();
           disposer.addDispose(new DomListener(window, 'click', (e: MouseEvent) => {
             if (e.target && ele.contains(e.target as Node)) {
@@ -363,6 +372,7 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
       this._popOverClickOutsideDisposer = undefined;
     }
     this.popOverContainer && this.popOverContainer.classList.remove('kt-toolbar-popover-visible');
+    this.popOverContainer?.classList.remove('kt-toolbar-popover-animationend');
     this._onDidChangePopoverVisibility.fire(false);
   }
 
