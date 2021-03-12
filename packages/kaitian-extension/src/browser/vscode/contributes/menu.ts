@@ -151,8 +151,8 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
             return [uri.codeUri];
           };
         } else if (menuId as MenuId === MenuId.EditorTitle) {
-          argsTransformer = (uri: URI, group: IEditorGroup, editorUri?: URI) => {
-            return [editorUri?.codeUri || uri.codeUri];
+          argsTransformer = (uri?: URI, group?: IEditorGroup, editorUri?: URI) => {
+            return [editorUri?.codeUri || uri?.codeUri];
           };
         }
 
