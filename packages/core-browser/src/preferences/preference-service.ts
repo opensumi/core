@@ -47,23 +47,30 @@ export const PreferenceService = Symbol('PreferenceService');
 export interface PreferenceService extends IDisposable {
 
   readonly ready: Promise<void>;
+  /**
+   * 获取一个配置的值
+   * @param preferenceName  配置名称
+   * @param defaultValue 默认值
+   * @param resourceUri 资源路径
+   * @param overrideIdentifier 一般指语言偏好设置
+   */
   get<T>(preferenceName: string, defaultValue?: T, resourceUri?: string, overrideIdentifier?: string): T | undefined;
 
   /**
    * 是否一个配置在指定 scope 存在针对语言的配置
    * @param preferenceName 配置名称
    * @param overrideIdentifier 语言
-   * @param resourceUri uri
+   * @param resourceUri 资源路径
    */
   hasLanguageSpecific(preferenceName: any, overrideIdentifier: string, resourceUri: string): boolean;
 
   /**
-   * 设置一个偏好值
+   * 设置一个配置的值
    * @param preferenceName 偏好名称
    * @param value 设置值
    * @param scope 目标scope级别 如 User, Workspace
-   * @param resourceUri 目标资源位置，对于Folder来说，用于找到对应的文件夹
-   * @param overrideIdentifier 目标语言偏好
+   * @param resourceUri 资源路径
+   * @param overrideIdentifier 一般指语言偏好设置
    */
   set(preferenceName: string, value: any, scope?: PreferenceScope, resourceUri?: string, overrideIdentifier?: string): Promise<void>;
 
