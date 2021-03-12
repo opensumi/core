@@ -48,7 +48,7 @@ import {
   ExtensionActivateEvent,
   IToolbarPopoverRegistry,
 } from '@ali/ide-core-browser';
-import { isEmptyObject } from '@ali/ide-core-common';
+import { isEmptyObject, replaceLocalizePlaceholder } from '@ali/ide-core-common';
 import { Path, posix } from '@ali/ide-core-common/lib/path';
 import { warning } from '@ali/ide-components/lib/utils/warning';
 import { Extension } from './extension';
@@ -805,8 +805,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         const viewsConfig = Object.keys(browserViews).reduce((config, location) => {
           config[location] = {
             type: this.getRegisterViewKind(location as KtViewLocation),
-            view: browserViews[location].view.map(({ id, titleComponentId, ...other }) => ({
+            view: browserViews[location].view.map(({ id, titleComponentId, title, ...other }) => ({
               ...other,
+              title: replaceLocalizePlaceholder(title, extension.id),
               id,
               component: this.getModuleExportsComponent(moduleExports, extension, id, proxiedHead),
               titleComponent: titleComponentId && this.getModuleExportsComponent(moduleExports, extension, titleComponentId, proxiedHead),
