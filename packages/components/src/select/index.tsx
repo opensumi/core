@@ -52,6 +52,12 @@ export interface ISelectProps<T = string> {
    * 渲染选中项
    */
   selectedRenderer?: React.FC<{data: IDataOption<T>}> | React.ComponentClass<{data: IDataOption<T>}>;
+
+  /**
+   * 在显示可选项之前的操作
+   * 返回 true 表示阻止此次显示
+   */
+  onBeforeShowOptions?: () => boolean;
 }
 
 export const Option: React.FC<React.PropsWithChildren<{
@@ -201,15 +207,21 @@ export function Select<T = string>({
   searchPlaceholder = '',
   emptyComponent,
   selectedRenderer,
+  onBeforeShowOptions,
 }: ISelectProps<T>) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState('');
 
   const selectRef = React.useRef<HTMLDivElement | null>(null);
   const overlayRef = React.useRef<HTMLDivElement | null>(null);
 
   function toggleOpen() {
-    const target = open ? false : true;
+    const target: boolean = !open;
+    if (target) {
+      if (onBeforeShowOptions && onBeforeShowOptions()) {
+        return;
+      }
+    }
     setOpen(target);
   }
 
