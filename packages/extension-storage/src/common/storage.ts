@@ -27,3 +27,10 @@ export interface ExtensionStoragePath {
   storagePath?: string;
   globalStoragePath: string;
 }
+
+export interface IExtensionStorageTask {
+  [key: string]: {
+    key: string;
+    value: KeysToAnyValues;
+  }[];
+}
