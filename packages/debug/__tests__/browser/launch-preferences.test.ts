@@ -653,7 +653,7 @@ describe('Launch Preferences', () => {
         const actual = preferences.inspect('launch');
 
         let expected;
-        if (configPaths[1]) {
+        if (configPaths[0]) {
           expected = launch;
           if (Array.isArray(expected)) {
             expected = { ...expected };

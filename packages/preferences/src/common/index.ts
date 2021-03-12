@@ -26,3 +26,9 @@ export interface SettingContribution {
    */
   handleSettingSections?(settingSections: { [key: string]: ISettingSection[] }): { [key: string]: ISettingSection[] };
 }
+
+export interface IPreferenceTask {
+  path: string[];
+  key: string;
+  value: string;
+}

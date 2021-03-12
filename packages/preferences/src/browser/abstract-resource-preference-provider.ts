@@ -1,6 +1,6 @@
 import * as jsoncparser from 'jsonc-parser';
 import { Injectable, Autowired } from '@ali/common-di';
-import { Deferred, JSONUtils, URI, ResourceProvider, Disposable, isUndefined, PreferenceProviderDataChanges, ILogger, IResolvedPreferences } from '@ali/ide-core-browser';
+import { JSONUtils, URI, ResourceProvider, Disposable, isUndefined, PreferenceProviderDataChanges, ILogger, IResolvedPreferences, Throttler } from '@ali/ide-core-browser';
 import {
   PreferenceProvider,
   PreferenceSchemaProvider,
@@ -8,6 +8,7 @@ import {
   PreferenceProviderDataChange,
   PreferenceConfigurations,
 } from '@ali/ide-core-browser';
+import { IPreferenceTask } from '../common';
 
 // vscode 对语言的setting是根据这种格式来的
 // "[json]": { "editor.formatter": "xxxx" }
@@ -35,7 +36,8 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
   @Autowired(ILogger)
   private logger: ILogger;
 
-  private doSetPreferenceDeferred: Deferred<void> | null;
+  private preferenceThrottler: Throttler = new Throttler();
+  private preferenceTasks: IPreferenceTask[] = [];
 
   constructor() {
     super();
@@ -105,6 +107,45 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     }
   }
 
+  async resolvePreferenceTasks(tasks: IPreferenceTask[]) {
+    const resource = await this.resource;
+    let content = ((await this.readContents()) || '').trim();
+
+    // 将多次配置修改合并为一次文件内容变更
+    for (const task of tasks) {
+      const { path, value } = task;
+      if (!resource.saveContents) {
+        return false;
+      }
+      if (!content && value === undefined) {
+        continue;
+      }
+      if (path.length || value !== undefined) {
+        const formattingOptions = { tabSize: 2, insertSpaces: true, eol: '' };
+        const edits = jsoncparser.modify(content, path, value, { formattingOptions });
+        content = jsoncparser.applyEdits(content, edits);
+      }
+    }
+
+    try {
+      await resource.saveContents!(content);
+      await this.readPreferences();
+      return true;
+    } catch (e) {
+      this.logger.error(`${e.toString()}`);
+      return false;
+    }
+  }
+
+  /**
+   * 配置变更队列处理函数
+   */
+  doSetPreferenceTask() {
+    const tasks = this.preferenceTasks.slice(0);
+    this.preferenceTasks = [];
+    return this.resolvePreferenceTasks(tasks);
+  }
+
   async doSetPreference(key: string, value: any, resourceUri?: string, language?: string): Promise<boolean> {
     if (!this.contains(resourceUri)) {
       return false;
@@ -113,37 +154,9 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     if (!path) {
       return false;
     }
-    if (this.doSetPreferenceDeferred) {
-      await this.doSetPreferenceDeferred.promise;
-    }
-    this.doSetPreferenceDeferred = new Deferred();
-    const resource = await this.resource;
-    if (!resource.saveContents) {
-      return false;
-    }
-    const content = ((await this.readContents()) || '').trim();
-    if (!content && value === undefined) {
-      return true;
-    }
-    try {
-      let newContent = '';
-      if (path.length || value !== undefined) {
-        const formattingOptions = { tabSize: 2, insertSpaces: true, eol: '' };
-        const edits = jsoncparser.modify(content, path, value, { formattingOptions });
-        newContent = jsoncparser.applyEdits(content, edits);
-      }
-      await resource.saveContents(newContent);
-    } catch (e) {
-      this.doSetPreferenceDeferred.reject();
-      this.doSetPreferenceDeferred = null;
-      const message = `Failed to update the value of ${key}.`;
-      this.logger.error(`${message} ${e.toString()}`);
-      return false;
-    }
-    await this.readPreferences();
-    this.doSetPreferenceDeferred.resolve();
-    this.doSetPreferenceDeferred = null;
-    return true;
+    // 这里将每次配置变更的参数构造为一个 IPreferenceTask
+    this.preferenceTasks.push({path, key, value});
+    return await this.preferenceThrottler.queue<boolean>(this.doSetPreferenceTask.bind(this));
   }
 
   protected getPath(preferenceName: string, language?: string): string[] | undefined {
