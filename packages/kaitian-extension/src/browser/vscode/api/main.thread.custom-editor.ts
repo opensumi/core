@@ -2,7 +2,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IMainThreadCustomEditor, IExtHostCustomEditor, CustomEditorType, ICustomEditorOptions, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { WithEventBus, OnEvent, IExtensionInfo, URI } from '@ali/ide-core-node';
+import { WithEventBus, OnEvent, IExtensionInfo, URI } from '@ali/ide-core-common';
 import { CustomEditorShouldDisplayEvent, CustomEditorOptionChangeEvent, CustomEditorShouldHideEvent, CustomEditorShouldSaveEvent, CustomEditorShouldRevertEvent, CustomEditorShouldEditEvent } from '../../../common/vscode/custom-editor';
 import { IEditorDocumentModelService, ResourceDecorationNeedChangeEvent } from '@ali/ide-editor/lib/browser';
 import { MainThreadWebview } from './main.thread.api.webview';
