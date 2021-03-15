@@ -1,7 +1,7 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Uri, URI } from '@ali/ide-core-common/lib/uri';
-import { rtrim, escapeRegExpCharacters } from '@ali/ide-core-common/lib/utils/strings';
+import { rtrim, escapeRegExpCharacters, multiRightTrim } from '@ali/ide-core-common/lib/utils/strings';
 import { format } from '@ali/ide-core-common/lib/utils/strings';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { join } from '@ali/ide-core-common/lib/path';
@@ -120,8 +120,7 @@ class OutputLinkComputer {
           }
         }
 
-        const fullMatch = rtrim(match[0], '.');
-
+        const fullMatch = multiRightTrim(match[0], [`'`, ';', '.', '。']);
         const index = line.indexOf(fullMatch, offset);
         offset += index + fullMatch.length;
 
@@ -138,7 +137,7 @@ class OutputLinkComputer {
 
         links.push({
           range: linkRange,
-          url: resourceString,
+          url: multiRightTrim(resourceString!, [`'`, ';', '.', '。']),
         });
       }
     });
