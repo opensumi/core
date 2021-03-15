@@ -1,6 +1,7 @@
 import { TreeNode, CompositeTreeNode, ITree } from '@ali/ide-components';
 import { TreeViewDataProvider } from '../main.thread.treeview';
 import { ICommand } from '../../../../common/vscode/models';
+import { MenuNode } from '@ali/ide-core-browser/lib/menu/next';
 
 export class ExtensionTreeRoot extends CompositeTreeNode {
 
@@ -53,6 +54,7 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
     public command: ICommand | undefined,
     public contextValue: string = '',
     public treeItemId: string = '',
+    public actions: MenuNode[],
     expanded?: boolean,
     id?: number,
   ) {
@@ -98,6 +100,7 @@ export class ExtensionTreeNode extends TreeNode {
     public command: ICommand | undefined,
     public contextValue: string = '',
     public treeItemId: string = '',
+    public actions: MenuNode[],
     id?: number,
   ) {
     super(tree as ITree, parent, undefined, { name }, { disableCache: true });
