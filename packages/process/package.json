@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-process",
-  "version": "1.37.1",
+  "version": "1.38.0",
   "files": [
     "lib"
   ],
@@ -19,11 +19,11 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "1.37.1",
-    "@ali/ide-core-node": "1.37.1"
+    "@ali/ide-core-common": "1.38.0",
+    "@ali/ide-core-node": "1.38.0"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "1.37.1",
+    "@ali/ide-core-browser": "1.38.0",
     "@ali/ide-dev-tool": "^1.1.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
