@@ -186,6 +186,13 @@ describe('Strings', () => {
 		expect(strings.trim('foo bar', 'bar')).toBe('foo ');
 	});
 
+  test('multiRightTrim', () => {
+    expect(strings.multiRightTrim(' foo ,', [','])).toBe(' foo ');
+    expect(strings.multiRightTrim('foo;,', [',', ';'])).toBe('foo');
+    expect(strings.multiRightTrim('/path/to/a.java;', [';'])).toBe('/path/to/a.java');
+    expect(strings.multiRightTrim('/path/to/a.ts,', [','])).toBe('/path/to/a.ts');
+  });
+
 	test('trimWhitespace', () => {
 		expect(' foo '.trim()).toBe('foo');
 		expect('	 foo	'.trim()).toBe('foo');

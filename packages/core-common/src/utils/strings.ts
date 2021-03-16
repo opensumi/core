@@ -98,7 +98,7 @@ export function escape(html: string): string {
  * Escapes regular expression characters in a given string
  */
 export function escapeRegExpCharacters(value: string): string {
-  return value.replace(/[\-\\\{\}\*\+\?\|\^\$\.\[\]\(\)\#]/g, '\\$&');
+  return value.replace(/[\\\{\}\*\+\?\|\^\$\.\[\]\(\)]/g, '\\$&');
 }
 
 /**
@@ -132,6 +132,25 @@ export function ltrim(haystack: string, needle: string): string {
     offset = offset + needleLen;
   }
   return haystack.substring(offset);
+}
+
+/**
+ * Removes all occurrences of needles from the end of haystack.
+ * @param source
+ * @param needles
+ * @example
+ * ```ts
+ * let source = '/path/to/file.ts,;';
+ * const res = multiRightTrim(source, [`,`, ';']);
+ * // res === '/path/to/file.ts';
+ *  ```
+ */
+export function multiRightTrim(source: string, needles: string[]): string {
+  let result = decodeURIComponent(source);
+  for (const needle of needles) {
+    result = rtrim(result, needle);
+  }
+  return result;
 }
 
 /**

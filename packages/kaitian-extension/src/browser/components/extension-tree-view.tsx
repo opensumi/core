@@ -4,8 +4,6 @@ import { isOSX } from '@ali/ide-core-browser';
 import { Injector } from '@ali/common-di';
 import { observer } from 'mobx-react-lite';
 import { ViewState } from '@ali/ide-core-browser';
-import { TitleActionList } from '@ali/ide-core-browser/lib/components/actions';
-import { MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 import { ExtensionTreeViewModel } from '../vscode/api/tree-view/tree-view.model.service';
 import { RecycleTree, INodeRendererProps, IRecycleTreeHandle, TreeNodeType } from '@ali/ide-components';
@@ -137,15 +135,6 @@ export const ExtensionTabBarTreeView = observer(({
           model={model.treeModel}
         >
           {(props: INodeRendererProps) => {
-            const inlineActions = model.getInlineMenuNodes((props.item as ExtensionTreeNode).contextValue);
-            const actions = () => {
-              return <TitleActionList
-                className={styles.inlineMenu}
-                context={[{treeViewId: model.treeViewId, treeItemId: (props.item as ExtensionTreeNode).treeItemId}]}
-                nav={inlineActions}
-                menuId={MenuId.ViewItemContext}
-              />;
-            };
             return <TreeViewNode
               item={props.item}
               itemType={props.itemType}
@@ -155,7 +144,6 @@ export const ExtensionTabBarTreeView = observer(({
               onContextMenu={handlerContextMenu}
               defaultLeftPadding={8}
               leftPadding={8}
-              actions={actions}
             />;
           }}
         </RecycleTree>;

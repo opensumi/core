@@ -3,14 +3,14 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optinal } from '@ali/c
 import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { Emitter, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize, getIcon, getExternalIcon, LabelService, URI } from '@ali/ide-core-browser';
+import { Emitter, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize, getIcon, getExternalIcon, LabelService, URI, IContextKeyService } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { ExtensionTabBarTreeView } from '../../components';
 import { IIconService, IconType, IThemeService } from '@ali/ide-theme';
 import { ExtensionTreeViewModel } from './tree-view/tree-view.model.service';
 import { ExtensionCompositeTreeNode, ExtensionTreeRoot, ExtensionTreeNode } from './tree-view/tree-view.node.defined';
 import { Tree, ITreeNodeOrCompositeTreeNode } from '@ali/ide-components';
-import { IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, generateCtxMenu, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable({multiple: true})
 export class MainThreadTreeView implements IMainThreadTreeView {
@@ -35,6 +35,12 @@ export class MainThreadTreeView implements IMainThreadTreeView {
 
   @Autowired(LabelService)
   private readonly labelService: LabelService;
+
+  @Autowired(IContextKeyService)
+  private readonly contextKeyService: IContextKeyService;
+
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -64,7 +70,7 @@ export class MainThreadTreeView implements IMainThreadTreeView {
       return;
     }
     const disposable = new DisposableStore();
-    const dataProvider = new TreeViewDataProvider(treeViewId, this.proxy, this.iconService, this.themeService, this.labelService);
+    const dataProvider = new TreeViewDataProvider(treeViewId, this.proxy, this.iconService, this.themeService, this.labelService, this.contextKeyService, this.menuService);
     const model = this.createTreeModel(treeViewId, dataProvider, options);
     this.treeModels.set(treeViewId, model);
     disposable.add(toDisposable(() => this.treeModels.delete(treeViewId)));
@@ -163,6 +169,8 @@ export class TreeViewDataProvider extends Tree {
     private readonly iconService: IIconService,
     private readonly themeService: IThemeService,
     private readonly labelService: LabelService,
+    private readonly contextKeyService: IContextKeyService,
+    private readonly menuService: AbstractMenuService,
   ) {
     super();
   }
@@ -186,6 +194,7 @@ export class TreeViewDataProvider extends Tree {
   async createFoldNode(item: TreeViewItem, parent: ExtensionCompositeTreeNode): Promise<ExtensionCompositeTreeNode> {
     const expanded = TreeItemCollapsibleState.Expanded === item.collapsibleState;
     const icon = await this.toIconClass(item);
+    const actions = item.contextValue ? this.getInlineMenuNodes(item.contextValue) : [];
     const node = new ExtensionCompositeTreeNode(
       this,
       parent,
@@ -196,6 +205,7 @@ export class TreeViewDataProvider extends Tree {
       item.command,
       item.contextValue || '',
       item.id,
+      actions,
       expanded,
       // 传入缓存的节点id，保障节点在初始化之后path及id一直保持一致
       this.treeItemId2TreeNode.get(item.id)?.id,
@@ -205,6 +215,7 @@ export class TreeViewDataProvider extends Tree {
 
   async createNormalNode(item: TreeViewItem, parent: ExtensionCompositeTreeNode): Promise<ExtensionTreeNode> {
     const icon = await this.toIconClass(item);
+    const actions = item.contextValue ? this.getInlineMenuNodes(item.contextValue) : [];
     const node = new ExtensionTreeNode(
       this,
       parent,
@@ -215,6 +226,7 @@ export class TreeViewDataProvider extends Tree {
       item.command,
       item.contextValue || '',
       item.id,
+      actions,
       // 传入缓存的节点id，保障节点在初始化之后path及id一直保持一致
       this.treeItemId2TreeNode.get(item.id)?.id,
     );
@@ -240,6 +252,21 @@ export class TreeViewDataProvider extends Tree {
     } else {
       return '';
     }
+  }
+
+  private getInlineMenuNodes(viewItemValue: string) {
+    const viewContextKey = this.contextKeyService.createScoped();
+
+    viewContextKey.createKey('view', this.treeViewId);
+    viewContextKey.createKey('viewItem', viewItemValue);
+
+    // viewItem
+    const menus = this.menuService.createMenu(MenuId.ViewItemContext, viewContextKey);
+    const result = generateCtxMenu({ menus, separator: 'inline' });
+    menus.dispose();
+    viewContextKey.dispose();
+
+    return result[0];
   }
 
   /**

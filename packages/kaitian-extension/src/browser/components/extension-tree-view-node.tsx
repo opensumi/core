@@ -5,6 +5,8 @@ import { INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType } fr
 import { getIcon } from '@ali/ide-core-browser';
 import { Loading } from '@ali/ide-core-browser/lib/components/loading';
 import { ExtensionTreeNode, ExtensionCompositeTreeNode } from '../vscode/api/tree-view/tree-view.node.defined';
+import { TitleActionList } from '@ali/ide-core-browser/lib/components/actions';
+import { MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 export interface ITreeViewNodeProps {
   item: any;
@@ -14,7 +16,6 @@ export interface ITreeViewNodeProps {
   onTwistierClick?: (ev: React.MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
   onClick: (ev: React.MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
   onContextMenu?: (ev: React.MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
-  actions?: React.JSXElementConstructor<any>;
 }
 
 export type TreeViewNodeRenderedProps = ITreeViewNodeProps & INodeRendererProps;
@@ -28,7 +29,6 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
   onTwistierClick,
   decorations,
   defaultLeftPadding = 8,
-  actions: Actions,
 }: TreeViewNodeRenderedProps) => {
   const handleClick = (ev: React.MouseEvent) => {
     if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
@@ -100,9 +100,14 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
   };
 
   const renderInlineActions = () => {
-    if (Actions) {
+    if (item.actions.length > 0) {
       return <div className={styles.tree_view_actions}>
-        <Actions />
+        <TitleActionList
+          className={styles.inlineMenu}
+          context={[{ treeViewId: item.treeViewId, treeItemId: (item as ExtensionTreeNode).treeItemId }]}
+          nav={item.actions}
+          menuId={MenuId.ViewItemContext}
+        />
       </div>;
     }
   };
