@@ -25,7 +25,7 @@
     "@ali/ide-core-node": "1.38.0",
     "drivelist": "^6.4.3",
     "file-type": "^12.0.0",
-    "iconv-lite": "^0.5.0",
+    "iconv-lite": "^0.6.0",
     "jschardet": "^2.1.0",
     "lodash.debounce": "^4.0.8",
     "mv": "^2.1.1",
