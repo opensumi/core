@@ -327,6 +327,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         await this.fileTreeService.refresh();
       },
     });
+
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.DELETE_FILE, {
       execute: (_, uris) => {
         if (!uris) {
@@ -342,6 +343,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         return !!this.fileTreeModelService.focusedFile;
       },
     });
+
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.RENAME_FILE, {
       execute: (uri) => {
         if (!uri) {
@@ -357,6 +359,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         return !!this.fileTreeModelService.focusedFile;
       },
     });
+
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FILE, {
       execute: async (uri) => {
         if (this.fileTreeService.filterMode) {
@@ -381,6 +384,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         }
       },
     });
+
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FOLDER, {
       execute: async (uri) => {
         if (this.fileTreeService.filterMode) {
@@ -405,6 +409,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         }
       },
     });
+
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COMPARE_SELECTED, {
       execute: (_, uris) => {
         if (uris && uris.length) {
@@ -418,6 +423,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         return !!this.fileTreeModelService.focusedFile && !Directory.is(this.fileTreeModelService.focusedFile);
       },
     });
+
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.OPEN_RESOURCES, {
       execute: (uri) => {
         this.fileTreeService.openAndFixedFile(uri);
@@ -426,6 +432,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         return !!this.fileTreeModelService.focusedFile && !Directory.is(this.fileTreeModelService.focusedFile);
       },
     });
+
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.OPEN_TO_THE_SIDE, {
       execute: (uri) => {
         this.fileTreeService.openToTheSide(uri);
@@ -434,6 +441,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         return !!this.fileTreeModelService.focusedFile && !Directory.is(this.fileTreeModelService.focusedFile);
       },
     });
+
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_PATH, {
       execute: async (uri) => {
         const copyUri: URI = uri;
@@ -448,6 +456,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         return this.fileTreeModelService.selectedFiles.length > 0;
       },
     });
+
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_RELATIVE_PATH, {
       execute: async (uri) => {
         let rootUri: URI;
@@ -476,6 +485,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         return this.fileTreeModelService.selectedFiles.length > 0;
       },
     });
+
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_FILE, {
       execute: (_, uris) => {
         if (uris && uris.length) {
@@ -491,6 +501,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         return !!this.fileTreeModelService.focusedFile;
       },
     });
+
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.CUT_FILE, {
       execute: (_, uris) => {
         if (uris && uris.length) {
@@ -506,6 +517,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         return !!this.fileTreeModelService.focusedFile;
       },
     });
+
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.PASTE_FILE, {
       execute: (uri) => {
         if (uri) {
@@ -522,6 +534,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         return this.fileTreeModelService.pasteStore && this.fileTreeModelService.pasteStore.type !== PasteTypes.NONE;
       },
     });
+
     commands.registerCommand(FILE_COMMANDS.OPEN_FOLDER, {
       execute: (options: { newWindow: boolean }) => {
         const dialogService: IElectronNativeDialogService = this.injector.get(IElectronNativeDialogService);
@@ -538,6 +551,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         });
       },
     });
+
     commands.registerCommand(FILE_COMMANDS.OPEN_WORKSPACE, {
       execute: (options: { newWindow: boolean }) => {
         const supportsOpenWorkspace = this.preferenceService.get('application.supportsOpenWorkspace');
@@ -562,6 +576,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         });
       },
     });
+
     commands.registerCommand(FILE_COMMANDS.FOCUS_FILES, {
       execute: () => {
         const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
@@ -577,6 +592,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         return this.windowDialogService.showOpenDialog(options);
       },
     });
+
     // save file
     commands.registerCommand(FILE_COMMANDS.SAVE_FILE, {
       execute: (options: ISaveDialogOptions) => {
@@ -626,6 +642,24 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
     commands.registerCommand(FILE_COMMANDS.EXPAND, {
       execute: () => {
         this.fileTreeModelService.expandCurrentFile();
+      },
+    });
+
+    commands.registerCommand(FILE_COMMANDS.REVEAL_IN_EXPLORER, {
+      execute: (uri?: URI) => {
+        const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
+        if (handler && !handler.isVisible) {
+          handler.activate();
+        }
+        if (handler && handler.isCollapsed(ExplorerResourceViewId)) {
+          handler?.setCollapsed(ExplorerResourceViewId, false);
+        }
+        if (!uri && this.editorService.currentEditor) {
+          uri = this.editorService.currentEditor.currentUri!;
+        }
+        if (uri) {
+          this.fileTreeModelService.location(uri);
+        }
       },
     });
   }
@@ -696,6 +730,11 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       command: FILE_COMMANDS.COLLAPSE.id,
       keybinding: 'left',
       when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus`,
+    });
+
+    bindings.registerKeybinding({
+      command: FILE_COMMANDS.REVEAL_IN_EXPLORER.id,
+      keybinding: 'ctrlcmd+shift+e',
     });
   }
 

@@ -116,3 +116,8 @@ export const EDITOR_SHOW_ALL_SYMBOLS: Command = {
   id: 'workbench.action.showAllSymbols',
   delegate: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL.id,
 };
+
+export const REVEAL_IN_EXPLORER: Command = {
+  id: 'revealInExplorer',
+  delegate: FILE_COMMANDS.REVEAL_IN_EXPLORER.id,
+};

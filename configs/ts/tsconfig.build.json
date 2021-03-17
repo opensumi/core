@@ -94,9 +94,6 @@
       "path": "./references/tsconfig.terminal-next.json"
     },
     {
-      "path": "./references/tsconfig.file-tree.json"
-    },
-    {
       "path": "./references/tsconfig.file-tree-next.json"
     },
     {
