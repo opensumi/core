@@ -103,7 +103,10 @@ export class DebugBreakpointsService extends WithEventBus {
   @action.bound
   toggleBreakpointEnable(data: DebugBreakpoint | DebugExceptionBreakpoint) {
     if (isDebugBreakpoint(data)) {
-      const real = this.breakpoints.getBreakpoint(URI.parse(data.uri), data.raw.line);
+      const real = this.breakpoints.getBreakpoint(URI.parse(data.uri), {
+        lineNumber: data.raw.line,
+        column: data.raw.column,
+      });
       if (real) {
         real.enabled = !real.enabled;
         this.breakpoints.updateBreakpoint(real);

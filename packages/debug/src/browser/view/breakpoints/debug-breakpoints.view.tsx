@@ -86,8 +86,8 @@ export const BreakpointItem = ({
         };
       } else {
         options['range'] = {
-          startColumn: 0,
-          endColumn: 0,
+          startColumn: (data.breakpoint as DebugBreakpoint).raw.column || 0,
+          endColumn: (data.breakpoint as DebugBreakpoint).raw.column || 0,
           startLineNumber: (data.breakpoint as DebugBreakpoint).raw.line,
           endLineNumber: (data.breakpoint as DebugBreakpoint).raw.line,
         };
@@ -137,17 +137,12 @@ export const BreakpointItem = ({
       <span className={ styles.debug_breakpoints_description }>{ data.description }</span>
     </div>
     {
-      isDebugBreakpoint(data.breakpoint) ?
-        isRuntimeBreakpoint(data.breakpoint) ?
-          <Badge>
-            {
-              status && (status.column
-                ? `${status.line}:${status.column}`
-                : status.line)
-            }
-          </Badge> :
-          <Badge>{ (data.breakpoint as DebugBreakpoint).raw.line }</Badge>
-        : null
+      isDebugBreakpoint(data.breakpoint) ? (
+        <Badge>
+          { (data.breakpoint as DebugBreakpoint).raw.line }
+          { data.breakpoint.raw.column && `:${data.breakpoint.raw.column}` }
+        </Badge>
+      ) : null
     }
   </div>;
 };

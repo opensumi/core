@@ -98,3 +98,28 @@
 .monaco-editor.vs-dark .view-overlays .kaitian-debug-top-stack-frame-exception-line {
   background-color: #6C2022;
 }
+
+.inline-breakpoint-widget.codicon {
+	display: flex !important;
+	align-items: center;
+}
+
+.inline-breakpoint-widget.codicon-debug-breakpoint-disabled {
+	opacity: 0.7;
+}
+
+.monaco-editor .inline-breakpoint-widget.line-start {
+	left: -8px !important;
+}
+
+.monaco-editor .inline-breakpoint-widget {
+	cursor: pointer;
+}
+
+.monaco-editor .debug-breakpoint-placeholder::before {
+	content: ' ';
+	width: 0.9em;
+	display: inline-flex;
+	vertical-align: middle;
+	margin-top: -1px; /* TODO @misolori: figure out a way to not use negative margin for alignment */
+}
