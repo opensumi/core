@@ -1,4 +1,4 @@
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, ExtensionService } from '../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EditorComponentRegistry, ReactEditorComponent } from '@ali/ide-editor/lib/browser';
 import { ICustomEditorOptions } from '../../../common/vscode';
@@ -120,12 +120,17 @@ export function createCustomEditorComponent(viewType: string, openTypeId: string
     const activationEventService: IActivationEventService = useInjectable(IActivationEventService);
     const webviewService: IWebviewService = useInjectable(IWebviewService);
     const eventBus: IEventBus = useInjectable(IEventBus);
+    const extensionService: ExtensionService = useInjectable(ExtensionService);
     let container: HTMLDivElement | null = null;
 
     React.useEffect(() => {
       const cancellationTokenSource = new CancellationTokenSource();
       const disposer = new Disposable();
-      activationEventService.fireEvent('onCustomEditor', viewType).then(() => {
+      // 此处需要等待 activationEvents 为 * 的插件启动完成，因为有些插件是这样实现的 (比如 vscode-office)
+      Promise.all([
+        activationEventService.fireEvent('onCustomEditor', viewType),
+        extensionService.eagerExtensionsActivated.promise,
+      ]).then(() => {
         if (cancellationTokenSource.token.isCancellationRequested) {
           return;
         }
