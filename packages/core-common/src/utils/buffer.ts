@@ -4,19 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as strings from './strings';
+import { toCanonicalName, iconvDecode, UTF8 } from '../encoding';
 
-
-declare const Buffer: any;
+let textEncoder: TextEncoder | null;
 
 const hasBuffer = (typeof Buffer !== 'undefined');
 const hasTextEncoder = (typeof TextEncoder !== 'undefined');
 const hasTextDecoder = (typeof TextDecoder !== 'undefined');
 
-let textEncoder: TextEncoder | null;
-let textDecoder: TextDecoder | null;
 
 export class BinaryBuffer {
-
 	static alloc(byteLength: number): BinaryBuffer {
 		if (hasBuffer) {
 			return new BinaryBuffer(Buffer.allocUnsafe(byteLength));
@@ -34,11 +31,15 @@ export class BinaryBuffer {
 		return new BinaryBuffer(actual);
 	}
 
+  /**
+   * fromString 产生的 BinaryBuffer 的 encoding 都是 utf8
+   * @param source source string
+   */
 	static fromString(source: string): BinaryBuffer {
 		if (hasBuffer) {
 			return new BinaryBuffer(Buffer.from(source));
 		} else if (hasTextEncoder) {
-			if (!textEncoder) {
+      if (!textEncoder) {
 				textEncoder = new TextEncoder();
 			}
 			return new BinaryBuffer(textEncoder.encode(source));
@@ -74,14 +75,20 @@ export class BinaryBuffer {
 		this.byteLength = this.buffer.byteLength;
 	}
 
-	toString(): string {
-		if (hasBuffer) {
-			return this.buffer.toString();
+  /**
+   * 将 BinaryBuffer 转为字符串
+   * @param encoding 字节编码，不传默认为 utf8。需要传入 `SUPPORTED_ENCODINGS` 已有的键值。
+   */
+	toString(encoding?: string): string {
+    if (hasBuffer) {
+      // 可能原生 toString 比 iconv.decode 要快
+      if (encoding === undefined || encoding === 'utf8') {
+        return (this.buffer as Buffer).toString();
+      }
+			return iconvDecode(this.buffer as Buffer, encoding);
 		} else if (hasTextDecoder) {
-			if (!textDecoder) {
-				textDecoder = new TextDecoder();
-			}
-			return textDecoder.decode(this.buffer);
+      encoding = toCanonicalName(encoding || UTF8)
+			return new TextDecoder(encoding).decode(this.buffer);
 		} else {
 			return strings.decodeUTF8(this.buffer);
 		}

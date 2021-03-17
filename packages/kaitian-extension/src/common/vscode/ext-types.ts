@@ -2803,3 +2803,12 @@ export class EvaluatableExpression implements vscode.EvaluatableExpression {
   }
 }
 //#endregion EvaluatableExpression
+
+//#region Timeline
+
+@es5ClassCompat
+export class TimelineItem implements vscode.TimelineItem {
+  constructor(public label: string, public timestamp: number) { }
+}
+
+//#endregion Timeline

@@ -85,14 +85,18 @@ export class FileServiceClient implements IFileServiceClient {
     return this.registry.providers.has(scheme) || this.fsProviders.has(scheme);
   }
 
-  // 直接先读文件，错误在后端抛出
+  /**
+   * 直接先读文件，错误在后端抛出
+   * @deprecated 方法在未来或许有变化
+   * @param uri URI 地址
+   */
   async resolveContent(uri: string, options?: FileSetContentOptions) {
     const _uri = this.convertUri(uri);
     const provider = await this.getProvider(_uri.scheme);
     const rawContent = await provider.readFile(_uri.codeUri);
     const data = (rawContent as any).data || rawContent;
     const buffer = BinaryBuffer.wrap(Uint8Array.from(data));
-    return { content: buffer.toString() };
+    return { content: buffer.toString(options?.encoding) };
   }
 
   async readFile(uri: string) {
@@ -148,7 +152,7 @@ export class FileServiceClient implements IFileServiceClient {
     }
     const content = await provider.readFile(_uri.codeUri);
     // TODO: encoding & buffer support
-    const newContent = this.applyContentChanges(BinaryBuffer.wrap(content).toString(), contentChanges);
+    const newContent = this.applyContentChanges(BinaryBuffer.wrap(content).toString(options?.encoding), contentChanges);
     await provider.writeFile(_uri.codeUri, BinaryBuffer.fromString(newContent).buffer, { create: false, overwrite: true, encoding: options?.encoding });
     const newStat = await provider.stat(_uri.codeUri);
     return newStat;

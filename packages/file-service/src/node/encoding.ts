@@ -1,3 +1,5 @@
+// TODO: merge into core-common/encoding.ts
+
 import * as fs from 'fs-extra';
 import * as jschardet from 'jschardet';
 import * as iconv from 'iconv-lite';

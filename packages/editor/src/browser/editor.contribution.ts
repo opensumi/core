@@ -550,12 +550,12 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
             value: encoding,
             description: SUPPORTED_ENCODINGS[encoding].labelShort,
           }));
-          const res = await this.quickPickService.show(encodingItems, {
+          const encoding = await this.quickPickService.show(encodingItems, {
             placeholder: localize('editor.chooseEncoding'),
           });
-          if (res) {
+          if (encoding) {
             this.editorDocumentModelService.changeModelOptions(resource.uri, {
-              encoding: res,
+              encoding,
             });
           }
         }
