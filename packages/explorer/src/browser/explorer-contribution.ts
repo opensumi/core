@@ -13,7 +13,6 @@ export class ExplorerContribution implements ComponentContribution {
       title: localize('explorer.title'),
       priority: 10,
       containerId: ExplorerContainerId,
-      activateKeyBinding: 'shift+ctrlcmd+e',
     });
   }
 }

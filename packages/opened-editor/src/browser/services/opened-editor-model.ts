@@ -1,6 +1,6 @@
 import { TreeModel, TreeNodeEvent, CompositeTreeNode } from '@ali/ide-components';
 import { Injectable, Optional, Autowired} from '@ali/common-di';
-import { ThrottledDelayer } from '@ali/ide-core-browser';
+import { ThrottledDelayer, Emitter, Event } from '@ali/ide-core-browser';
 import { OpenedEditorDecorationService } from './opened-editor-decoration.service';
 import { EditorFileGroup } from '../opened-editor-node.define';
 
@@ -13,10 +13,15 @@ export class OpenedEditorModel extends TreeModel {
   public readonly decorationService: OpenedEditorDecorationService;
 
   private flushDispatchChangeDelayer =  new ThrottledDelayer<void>(OpenedEditorModel.DEFAULT_FLUSH_DELAY);
+  private onWillUpdateEmitter: Emitter<void> = new Emitter();
 
   constructor(@Optional() root: EditorFileGroup) {
     super();
     this.init(root);
+  }
+
+  get onWillUpdate(): Event<void> {
+    return this.onWillUpdateEmitter.event;
   }
 
   init(root: CompositeTreeNode) {
@@ -29,6 +34,7 @@ export class OpenedEditorModel extends TreeModel {
         this.flushDispatchChangeDelayer.cancel();
       }
       this.flushDispatchChangeDelayer.trigger(async () => {
+        await this.onWillUpdateEmitter.fireAndAwait();
         this.dispatchChange();
       });
     });
