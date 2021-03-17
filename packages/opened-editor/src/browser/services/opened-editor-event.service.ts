@@ -1,4 +1,4 @@
-import { Emitter, WithEventBus, OnEvent } from '@ali/ide-core-browser';
+import { Event, Emitter, WithEventBus, OnEvent } from '@ali/ide-core-browser';
 import { IResource, IEditorGroup, ResourceDecorationChangeEvent, IResourceDecorationChangeEventPayload } from '@ali/ide-editor';
 import { Injectable } from '@ali/common-di';
 import { EditorGroupOpenEvent, EditorGroupCloseEvent, EditorGroupDisposeEvent, EditorGroupChangeEvent } from '@ali/ide-editor/lib/browser';
@@ -16,9 +16,9 @@ export class OpenedEditorEventService extends WithEventBus {
   private _onDidDecorationChange: Emitter<IResourceDecorationChangeEventPayload | null> = new Emitter();
   private _onDidActiveChange: Emitter<OpenedEditorEvent | null> = new Emitter();
 
-  public onDidChange = this._onDidChange.event;
-  public onDidDecorationChange = this._onDidDecorationChange.event;
-  public onDidActiveChange = this._onDidActiveChange.event;
+  public onDidChange: Event<OpenedEditorEvent | null> = this._onDidChange.event;
+  public onDidDecorationChange: Event<IResourceDecorationChangeEventPayload | null> = this._onDidDecorationChange.event;
+  public onDidActiveChange: Event<OpenedEditorEvent | null> = this._onDidActiveChange.event;
 
   constructor() {
     super();
