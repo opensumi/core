@@ -4,8 +4,8 @@ import { TreeViewActionTypes, SelectableTreeNode, URI } from '@ali/ide-core-brow
 import * as paths from '@ali/ide-core-common/lib/path';
 import { IThemeService } from '@ali/ide-theme';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
-import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
+import { IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 import { ISCMResource, ISCMResourceGroup } from '../common';
 
@@ -45,7 +45,7 @@ export class SCMResourceGroupTreeNode implements ISCMResourceTreeNode {
 
   constructor(
     @Optional() item: ISCMResourceGroup,
-    @Optional() scmMenu?: IMenu,
+    @Optional() scmMenu?: IContextMenu,
   ) {
     this.id = item.id;
     this.name = item.label;
@@ -55,10 +55,10 @@ export class SCMResourceGroupTreeNode implements ISCMResourceTreeNode {
     this.actions = scmMenu ? this.getInlineActions(scmMenu) : null;
   }
 
-  private getInlineActions(scmMenu: IMenu) {
+  private getInlineActions(scmMenu: IContextMenu) {
     return [{
       location: TreeViewActionTypes.TreeNode_Right,
-      component: <InlineActionBar<ISCMResourceGroup> context={[this.item]} menus={scmMenu} separator='inline' />,
+      component: <InlineMenuBar<ISCMResourceGroup> context={[this.item]} menus={scmMenu} separator='inline' />,
     }];
   }
 }
@@ -93,7 +93,7 @@ export class SCMResourceTreeNode implements ISCMResourceTreeNode {
 
   constructor(
     @Optional() item: ISCMResource,
-    @Optional() scmMenu?: IMenu,
+    @Optional() scmMenu?: IContextMenu,
   ) {
     this.id = item.resourceGroup.id + item.sourceUri;
     this.name = paths.basename(item.sourceUri.path);
@@ -115,10 +115,10 @@ export class SCMResourceTreeNode implements ISCMResourceTreeNode {
     return color ? { color } : undefined;
   }
 
-  private getInlineActions(scmMenu: IMenu) {
+  private getInlineActions(scmMenu: IContextMenu) {
     return [{
       location: TreeViewActionTypes.TreeNode_Right,
-      component: <InlineActionBar<ISCMResource> context={[this.item]} menus={scmMenu} separator='inline' />,
+      component: <InlineMenuBar<ISCMResource> context={[this.item]} menus={scmMenu} separator='inline' />,
     }];
   }
 }

@@ -4,7 +4,7 @@ import { isOSX, CommandService, DisposableStore } from '@ali/ide-core-common';
 import { format } from '@ali/ide-core-common/lib/utils/strings';
 import { useHotKey } from '@ali/ide-core-browser/lib/react-hooks/hot-key';
 import { Input } from '@ali/ide-components';
-import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
+import { InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
 
 import { ISCMRepository, InputValidationType, ISCMProvider } from '../../common';
 import { ViewModelContext } from '../scm-model';
@@ -101,7 +101,7 @@ export const SCMHeader: React.FC<{
       />
       {
         repository && repository.provider && inputMenu && (
-          <InlineActionBar<ISCMProvider, string>
+          <InlineMenuBar<ISCMProvider, string>
             className={styles.scmMenu}
             context={[repository.provider, commitMsg]}
             type='button'

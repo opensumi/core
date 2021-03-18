@@ -1,6 +1,6 @@
 import { DisposableStore } from '@ali/ide-core-common';
 import { IContextKeyService } from '@ali/ide-core-browser';
-import { IMenuRegistry, MenuRegistryImpl, MenuId, generateMergedCtxMenu, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, MenuRegistryImpl, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -84,7 +84,7 @@ describe('test for scm-menu.ts', () => {
       const scmMenus = injector.get(SCMMenus, []);
       expect(scmMenus['scopedCtxKeyService'].getContextValue('scmProvider')).toBe('');
 
-      const menuNodes = generateMergedCtxMenu({ menus: scmMenus.getTitleMenu() });
+      const menuNodes = scmMenus.getTitleMenu().getMergedMenuNodes();
       expect(menuNodes.length).toBe(1);
       expect(menuNodes[0].label).toBe('fakeCmd0');
     });
@@ -94,7 +94,7 @@ describe('test for scm-menu.ts', () => {
       const scmMenus = injector.get(SCMMenus, [repoProvider]);
       expect(scmMenus['scopedCtxKeyService'].getContextValue('scmProvider')).toBe(repoProvider.contextValue);
 
-      const menuNodes = generateMergedCtxMenu({ menus: scmMenus.getTitleMenu() });
+      const menuNodes = scmMenus.getTitleMenu().getMergedMenuNodes();
       expect(menuNodes.length).toBe(1);
       expect(menuNodes[0].label).toBe('fakeCmd1');
     });
@@ -146,10 +146,10 @@ describe('test for scm-menu.ts', () => {
     expect(menuNodes.length).toBe(1);
     expect(menuNodes[0].label).toBe('fakeCmd2');
 
-    const [inlineMenuNodes] = generateCtxMenu({
-      menus: scmMenus.getResourceGroupInlineActions(mockSCMResourceGroup0)!,
-      separator: 'inline',
-    });
+    const [inlineMenuNodes] = scmMenus
+      .getResourceGroupInlineActions(mockSCMResourceGroup0)!
+      .getGroupedMenuNodes();
+
     expect(inlineMenuNodes.length).toBe(1);
     expect(inlineMenuNodes[0].label).toBe('fakeCmd1');
 
@@ -205,10 +205,10 @@ describe('test for scm-menu.ts', () => {
     expect(menuNodes.length).toBe(1);
     expect(menuNodes[0].label).toBe('fakeCmd2');
 
-    const [inlineMenuNodes] = generateCtxMenu({
-      menus: scmMenus.getResourceInlineActions(mockSCMResourceGroup0)!,
-      separator: 'inline',
-    });
+    const [inlineMenuNodes] = scmMenus
+      .getResourceInlineActions(mockSCMResourceGroup0)!
+      .getGroupedMenuNodes();
+
     expect(inlineMenuNodes.length).toBe(1);
     expect(inlineMenuNodes[0].label).toBe('fakeCmd1');
 
