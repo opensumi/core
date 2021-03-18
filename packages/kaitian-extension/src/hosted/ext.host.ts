@@ -168,7 +168,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   }
 
   private findExtension(filePath: string) {
-    return this.extensions.find((extension) => filePath.startsWith(fs.realpathSync(extension.path)));
+    return this.extensions.find((extension) => filePath.startsWith(extension.realPath));
   }
 
   private lookup(extensionModule: NodeJS.Module, depth: number): IExtensionProps | undefined {
