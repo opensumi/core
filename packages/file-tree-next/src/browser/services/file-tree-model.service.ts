@@ -78,6 +78,8 @@ export class FileTreeModelService {
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
+  private _isDisposed = false;
+
   private _treeModel: FileTreeModel;
   private _dndService: DragAndDropService;
 
@@ -595,6 +597,10 @@ export class FileTreeModelService {
   }
 
   handleTreeBlur = () => {
+    // file-tree 组件销毁会触发 handleTreeBlue，此时 fileTreeContextKey 可能还没初始化，但其它的 service 已经 dispose 了
+    if (this._isDisposed) {
+      return;
+    }
     this.fileTreeContextKey.filesExplorerFocused.set(false);
     // 失去焦点状态时，清理右键菜单的选中态
     if (this.preContextMenuFocusedFile) {
@@ -1443,5 +1449,9 @@ export class FileTreeModelService {
       await this.location(this._nextLocationTarget);
       this._nextLocationTarget = undefined;
     }
+  }
+
+  dispose() {
+    this._isDisposed = true;
   }
 }

@@ -160,28 +160,64 @@ export async function initWorkerTheadAPIProxy(
   extensionService,
 ) {
   const MainThreadCommandsAPI = injector.get(MainThreadCommands, [workerProtocol, true]);
+  const MainThreadLanguagesAPI = injector.get(MainThreadLanguages, [workerProtocol]);
   const MainThreadStatusBarAPI = injector.get(MainThreadStatusBar, [workerProtocol]);
   const MainThreadQuickOpenAPI = injector.get(MainThreadQuickOpen, [workerProtocol]);
   const MainThreadExtensionDocumentDataAPI = injector.get(MainThreadExtensionDocumentData, [workerProtocol]);
   const MainThreadEditorServiceAPI = injector.get(MainThreadEditorService, [workerProtocol, MainThreadExtensionDocumentDataAPI]);
   const MainThreadProgressAPI = injector.get(MainThreadProgress, [workerProtocol]);
+  const MainThreadWorkspaceAPI = injector.get(MainThreadWorkspace, [workerProtocol]);
+  const MainThreadFileSystemAPI = injector.get(MainThreadFileSystem, [workerProtocol]);
+  const MainThreadPreferenceAPI = injector.get(MainThreadPreference, [workerProtocol]);
+  const MainThreadOutputAPI = injector.get(MainThreadOutput);
+  const MainThreadMessageAPI = injector.get(MainThreadMessage, [workerProtocol]);
+  const MainThreadExtensionLogAPI = injector.get(MainThreadExtensionLog);
+  const MainThreadWebviewAPI = injector.get(MainThreadWebview, [workerProtocol]);
+  const MainThreadStorageAPI = injector.get(MainThreadStorage, [workerProtocol]);
+  const MainThreadUrlsAPI = injector.get(MainThreadUrls, [workerProtocol]);
+  const MainthreadCommentsAPI = injector.get(MainthreadComments, [workerProtocol, MainThreadCommandsAPI]);
+  const MainThreadThemingAPI = injector.get(MainThreadTheming, [workerProtocol]);
+
   workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
-  workerProtocol.set<IMainThreadLanguages>(MainThreadAPIIdentifier.MainThreadLanguages, injector.get(MainThreadLanguages, [workerProtocol]));
+  workerProtocol.set<IMainThreadLanguages>(MainThreadAPIIdentifier.MainThreadLanguages, MainThreadLanguagesAPI);
   workerProtocol.set<MainThreadExtensionDocumentData>(MainThreadAPIIdentifier.MainThreadDocuments, MainThreadExtensionDocumentDataAPI);
   workerProtocol.set<MainThreadStatusBar>(MainThreadAPIIdentifier.MainThreadStatusBar, MainThreadStatusBarAPI);
   workerProtocol.set<IMainThreadQuickOpen>(MainThreadAPIIdentifier.MainThreadQuickOpen, MainThreadQuickOpenAPI);
-  workerProtocol.set(MainThreadAPIIdentifier.MainThreadWorkspace, injector.get(MainThreadWorkspace, [workerProtocol]));
-  workerProtocol.set(MainThreadAPIIdentifier.MainThreadFileSystem, injector.get(MainThreadFileSystem, [workerProtocol]));
-  workerProtocol.set(MainThreadAPIIdentifier.MainThreadPreference, injector.get(MainThreadPreference, [workerProtocol]));
-  workerProtocol.set(MainThreadAPIIdentifier.MainThreadOutput, injector.get(MainThreadOutput)) as MainThreadOutput;
+  workerProtocol.set<IMainThreadWorkspace>(MainThreadAPIIdentifier.MainThreadWorkspace, MainThreadWorkspaceAPI);
+  workerProtocol.set<MainThreadFileSystem>(MainThreadAPIIdentifier.MainThreadFileSystem, MainThreadFileSystemAPI);
+  workerProtocol.set<IMainThreadPreference>(MainThreadAPIIdentifier.MainThreadPreference, MainThreadPreferenceAPI);
+  workerProtocol.set<IMainThreadOutput>(MainThreadAPIIdentifier.MainThreadOutput, MainThreadOutputAPI) as MainThreadOutput;
   workerProtocol.set<MainThreadEditorService>(MainThreadAPIIdentifier.MainThreadEditors, MainThreadEditorServiceAPI);
-  workerProtocol.set<IMainThreadMessage>(MainThreadAPIIdentifier.MainThreadMessages, injector.get(MainThreadMessage, [workerProtocol]));
-  workerProtocol.set<IMainThreadExtensionLog>(MainThreadExtensionLogIdentifier, injector.get(MainThreadExtensionLog));
-  workerProtocol.set<IMainThreadWebview>(MainThreadAPIIdentifier.MainThreadWebview, injector.get(MainThreadWebview, [workerProtocol]));
-  workerProtocol.set<IMainThreadStorage>(MainThreadAPIIdentifier.MainThreadStorage, injector.get(MainThreadStorage, [workerProtocol]));
-  workerProtocol.set<IMainThreadUrls>(MainThreadAPIIdentifier.MainThreadUrls, injector.get(MainThreadUrls, [workerProtocol]));
-  workerProtocol.set<IMainThreadComments>(MainThreadAPIIdentifier.MainThreadComments, injector.get(MainthreadComments, [workerProtocol, MainThreadCommandsAPI]));
+  workerProtocol.set<IMainThreadMessage>(MainThreadAPIIdentifier.MainThreadMessages, MainThreadMessageAPI);
+  workerProtocol.set<IMainThreadExtensionLog>(MainThreadExtensionLogIdentifier, MainThreadExtensionLogAPI);
+  workerProtocol.set<IMainThreadWebview>(MainThreadAPIIdentifier.MainThreadWebview, MainThreadWebviewAPI);
+  workerProtocol.set<IMainThreadStorage>(MainThreadAPIIdentifier.MainThreadStorage, MainThreadStorageAPI);
+  workerProtocol.set<IMainThreadUrls>(MainThreadAPIIdentifier.MainThreadUrls, MainThreadUrlsAPI);
+  workerProtocol.set<IMainThreadComments>(MainThreadAPIIdentifier.MainThreadComments, MainthreadCommentsAPI);
   workerProtocol.set<IMainThreadProgress>(MainThreadAPIIdentifier.MainThreadProgress, MainThreadProgressAPI);
-  workerProtocol.set<IMainThreadTheming>(MainThreadAPIIdentifier.MainThreadTheming, injector.get(MainThreadTheming, [workerProtocol]));
+  workerProtocol.set<IMainThreadTheming>(MainThreadAPIIdentifier.MainThreadTheming, MainThreadThemingAPI);
+
+  // 作用和 node extension service 等同，用来设置 webview resourceRoots
+  await MainThreadWebviewAPI.init();
+
+  return () => {
+    MainThreadCommandsAPI.dispose();
+    MainThreadLanguagesAPI.dispose();
+    MainThreadStatusBarAPI.dispose();
+    MainThreadQuickOpenAPI.dispose();
+    MainThreadExtensionDocumentDataAPI.dispose();
+    MainThreadEditorServiceAPI.dispose();
+    MainThreadProgressAPI.dispose();
+    MainThreadWorkspaceAPI.dispose();
+    MainThreadFileSystemAPI.dispose();
+    MainThreadPreferenceAPI.dispose();
+    MainThreadOutputAPI.dispose();
+    MainThreadMessageAPI.dispose();
+    MainThreadWebviewAPI.dispose();
+    MainThreadStorageAPI.dispose();
+    MainThreadUrlsAPI.dispose();
+    MainthreadCommentsAPI.dispose();
+    MainThreadThemingAPI.dispose();
+  };
 }

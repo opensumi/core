@@ -179,6 +179,8 @@ export class ClientApp implements IClientApp {
     this.createBrowserModules(defaultPreferences);
   }
 
+  private _inComposition = false;
+
   /**
    * 将被依赖但未被加入modules的模块加入到待加载模块最后
    */
@@ -464,70 +466,18 @@ export class ClientApp implements IClientApp {
    * 注册全局事件监听
    */
   protected registerEventListeners(): void {
-    window.addEventListener('beforeunload', (event) => {
-      // 浏览器关闭事件前
-      if (isElectronRenderer()) {
-        if (this.stateService.state === 'electron_confirmed_close') {
-          return;
-        }
-        // 在electron上，先直接prevent, 然后进入ask环节
-        event.returnValue = '';
-        event.preventDefault();
-        if (this.stateService.state !== 'electron_asking_close') {
-          this.stateService.state = 'electron_asking_close';
-          this.preventStopElectron().then((res) => {
-            if (res) {
-              this.stateService.state = 'ready';
-            } else {
-              return this.stopContributionsElectron().then(() => {
-                this.stateService.state = 'electron_confirmed_close';
-                const electronLifeCycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
-                // 在下一个 event loop 执行，否则可能导致第一次无法关闭。
-                setTimeout(() => {
-                  electronLifeCycle.closeWindow(electronEnv.currentWindowId);
-                }, 0);
-              });
-            }
-          });
-        }
-      } else {
-        // 为了避免不必要的弹窗，如果页面并没有发生交互浏览器可能不会展示在 beforeunload 事件中引发的弹框，甚至可能即使发生交互了也直接不显示。
-        if (this.preventStop()) {
-          (event || window.event).returnValue = true;
-          return true;
-        }
-      }
-    });
-    window.addEventListener('unload', () => {
-      // 浏览器关闭事件
-      this.stateService.state = 'closing_window';
-      if (!isElectronRenderer()) {
-        this.stopContributions();
-      }
-    });
+    window.addEventListener('beforeunload', this._handleBeforeUpload);
+    window.addEventListener('unload', this._handleUnload);
 
-    window.addEventListener('resize', () => {
-      // 浏览器resize事件
-    });
+    window.addEventListener('resize', this._handleResize);
     // 处理中文输入回退时可能出现多个光标问题
     // https://github.com/eclipse-theia/theia/pull/6673
-    let inComposition = false;
-    window.addEventListener('compositionstart', (event) => {
-      inComposition = true;
-    });
-    window.addEventListener('compositionend', (event) => {
-      inComposition = false;
-    });
-    window.addEventListener('keydown', (event: any) => {
-      if (event && event.target!.name !== NO_KEYBINDING_NAME && !inComposition) {
-        this.keybindingService.run(event);
-      }
-    }, true);
+    window.addEventListener('compositionstart', this._handleCompositionstart);
+    window.addEventListener('compositionend', this._handleCompositionend);
+    window.addEventListener('keydown', this._handleKeydown, true);
 
     if (isOSX) {
-      document.body.addEventListener('wheel', (event) => {
-        // 屏蔽在OSX系统浏览器中由于滚动导致的前进后退事件
-      }, { passive: false });
+      document.body.addEventListener('wheel', this._handleWheel, { passive: false });
     }
   }
 
@@ -633,4 +583,80 @@ export class ClientApp implements IClientApp {
     registerLocalStorageProvider('general.language', workspaceDir);
   }
 
+  public dispose() {
+    window.removeEventListener('beforeunload', this._handleBeforeUpload);
+    window.removeEventListener('unload', this._handleUnload);
+    window.removeEventListener('resize', this._handleResize);
+    window.removeEventListener('compositionstart', this._handleCompositionstart);
+    window.removeEventListener('compositionend', this._handleCompositionend);
+    window.removeEventListener('keydown', this._handleKeydown, true);
+    if (isOSX) {
+      document.body.removeEventListener('wheel', this._handleWheel);
+    }
+  }
+
+  private _handleBeforeUpload = (event: BeforeUnloadEvent) => {
+    // 浏览器关闭事件前
+    if (isElectronRenderer()) {
+      if (this.stateService.state === 'electron_confirmed_close') {
+        return;
+      }
+      // 在electron上，先直接prevent, 然后进入ask环节
+      event.returnValue = '';
+      event.preventDefault();
+      if (this.stateService.state !== 'electron_asking_close') {
+        this.stateService.state = 'electron_asking_close';
+        this.preventStopElectron().then((res) => {
+          if (res) {
+            this.stateService.state = 'ready';
+          } else {
+            return this.stopContributionsElectron().then(() => {
+              this.stateService.state = 'electron_confirmed_close';
+              const electronLifeCycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
+              // 在下一个 event loop 执行，否则可能导致第一次无法关闭。
+              setTimeout(() => {
+                electronLifeCycle.closeWindow(electronEnv.currentWindowId);
+              }, 0);
+            });
+          }
+        });
+      }
+    } else {
+      // 为了避免不必要的弹窗，如果页面并没有发生交互浏览器可能不会展示在 beforeunload 事件中引发的弹框，甚至可能即使发生交互了也直接不显示。
+      if (this.preventStop()) {
+        (event || window.event).returnValue = true;
+        return true;
+      }
+    }
+  }
+
+  private _handleUnload = () => {
+    // 浏览器关闭事件
+    this.stateService.state = 'closing_window';
+    if (!isElectronRenderer()) {
+      this.stopContributions();
+    }
+  }
+
+  private _handleResize = () => {
+    // 浏览器resize事件
+  }
+
+  private _handleKeydown = (event: any) => {
+    if (event && event.target!.name !== NO_KEYBINDING_NAME && !this._inComposition) {
+      this.keybindingService.run(event);
+    }
+  }
+
+  private _handleCompositionstart = () => {
+    this._inComposition = true;
+  }
+
+  private _handleCompositionend = () => {
+    this._inComposition = false;
+  }
+
+  private _handleWheel = () => {
+    // 屏蔽在OSX系统浏览器中由于滚动导致的前进后退事件
+  }
 }

@@ -14,6 +14,8 @@ import { OnigScanner, loadWASM, OnigString } from 'vscode-oniguruma';
 import { createTextmateTokenizer, TokenizerOption } from './textmate-tokenizer';
 import { LanguagesContribution, FoldingRules, IndentationRules, GrammarsContribution, ScopeMap, ILanguageConfiguration, IAutoClosingPairConditional, CommentRule } from '../common';
 
+let wasmLoaded = false;
+
 export function getEncodedLanguageId(languageId: string): number {
   return monaco.languages.getEncodedLanguageId(languageId);
 }
@@ -538,6 +540,10 @@ export class TextmateService extends WithEventBus {
   }
 
   private async getOnigLib(): Promise<IOnigLib> {
+    // loadWasm 二次加载会报错 https://github.com/microsoft/vscode-oniguruma/blob/main/src/index.ts#L378
+    if (wasmLoaded) {
+      return new OnigasmLib();
+    }
     let wasmUri: string;
     if (isElectronEnv() && electronEnv.onigWasmPath) {
       wasmUri = URI.file(electronEnv.onigWasmPath).codeUri.toString();
@@ -548,6 +554,7 @@ export class TextmateService extends WithEventBus {
     const response = await fetch(wasmUri);
     const bytes = await response.arrayBuffer();
     await loadWASM(bytes);
+    wasmLoaded = true;
     return new OnigasmLib();
   }
 
