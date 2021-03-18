@@ -1,11 +1,10 @@
 import { ElectronMainApp } from '@ali/ide-core-electron-main';
-import { URI, isDevelopment } from '@ali/ide-core-common';
+import { URI } from '@ali/ide-core-common';
 import { join } from 'path';
-import { app } from 'electron';
 // import { ElectronMainWorkspaceModule } from '@ali/ide-workspace/lib/electron-main';
 
 const electronApp = new ElectronMainApp({
-  browserNodeIntegrated: true,
+  browserNodeIntegrated: false,
   browserUrl: URI.file(join(__dirname, '../browser/index.html')).toString(),
   modules: [
     // ElectronMainWorkspaceModule,
