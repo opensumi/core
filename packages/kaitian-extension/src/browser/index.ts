@@ -233,7 +233,6 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
       },
     });
     registry.registerCommand(BUILTIN_COMMANDS.SETTINGS_COMMAND_OPEN_SETTINGS);
-    registry.registerCommand(BUILTIN_COMMANDS.QPEN_COMMAND_PALETTE);
     // editor builtin commands
     registry.registerCommand(BUILTIN_COMMANDS.EDITOR_NAVIGATE_BACK);
     registry.registerCommand(BUILTIN_COMMANDS.EDITOR_NAVIGATE_FORWARD);
