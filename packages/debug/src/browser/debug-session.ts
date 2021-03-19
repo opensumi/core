@@ -615,8 +615,7 @@ export class DebugSession implements IDebugSession {
   async breakpointLocations(uri: URI, line: number) {
     const source = await this.toSource(uri);
     const response = await this.sendRequest('breakpointLocations', { source: source.raw, line });
-    const { breakpoints } = response.body;
-    const positions: IPosition[] = breakpoints.map((item) => ({ lineNumber: item.line, column: item.column || 1 }));
+    const positions: IPosition[] = (response.body?.breakpoints || []).map((item) => ({ lineNumber: item.line, column: item.column || 1 }));
     return Object.values<IPosition>(positions.reduce((obj, p) => ({
       ...obj,
       [`${p.lineNumber}:${p.column}`]: p,
