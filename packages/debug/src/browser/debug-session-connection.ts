@@ -157,10 +157,19 @@ export class DebugSessionConnection implements IDisposable {
 
     const dapReporterTime = this.reporterService.time(DEBUG_REPORT_NAME.DEBUG_ADAPTER_PROTOCOL_TIME);
     const result = await this.doSendRequest(command, args);
-    dapReporterTime.timeEnd(command, {
-      adapterID: this.sessionAdapterID,
-      request: configuration.request,
-    });
+    /*
+    * 对 threads 请求增加 数量 统计
+    */
+    const reportExtra = {
+        adapterID: this.sessionAdapterID,
+        request: configuration.request,
+    };
+
+    if (command === 'threads') {
+      reportExtra['amount'] = (result as DebugProtocol.ThreadsResponse).body.threads.length;
+    }
+
+    dapReporterTime.timeEnd(command, reportExtra);
     if (command === 'next' || command === 'stepIn' ||
       command === 'stepOut' || command === 'stepBack' ||
       command === 'reverseContinue' || command === 'restartFrame') {
