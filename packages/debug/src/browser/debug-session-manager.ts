@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { DebugSession, DebugState } from './debug-session';
-import { WaitUntilEvent, Emitter, Event, URI, IContextKey, DisposableCollection, IContextKeyService, formatLocalize, Uri, IReporterService } from '@ali/ide-core-browser';
+import { WaitUntilEvent, Emitter, Event, URI, IContextKey, DisposableCollection, IContextKeyService, formatLocalize, Uri, IReporterService, uuid } from '@ali/ide-core-browser';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
 import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions, DEBUG_REPORT_NAME } from '../common';
 import { DebugStackFrame } from './model/debug-stack-frame';
@@ -32,9 +32,39 @@ export interface DebugSessionCustomEvent {
   readonly session: DebugSession;
 }
 
+/**
+ * 埋点专用的额外数据
+ */
+interface DebugBaseExtra {
+  /**
+   * 跟 sessionId 一一对应，先于 sessionId 生成，可以跟踪初始化时的事件
+   */
+  traceId: string;
+
+  /**
+   * 是否为远程调试
+   */
+  remote: 0 | 1;
+}
+interface DebugSessionExtra extends DebugBaseExtra {
+  threads: Map<string, DebugThreadExtra>;
+}
+
+interface DebugThreadExtra extends DebugBaseExtra {
+  threadId?: string;
+
+  /**
+   * 当前的用户操作
+   */
+  action?: string;
+}
+
 @Injectable()
 export class DebugSessionManager {
+  protected readonly _uid = uuid();
   protected readonly _sessions = new Map<string, DebugSession>();
+  protected readonly _extraMap = new Map<string, DebugSessionExtra>();
+  protected _actionIndex = 0;
 
   protected readonly onWillStartDebugSessionEmitter = new Emitter<WillStartDebugSession>();
   readonly onWillStartDebugSession: Event<WillStartDebugSession> = this.onWillStartDebugSessionEmitter.event;
@@ -137,8 +167,87 @@ export class DebugSessionManager {
     });
   }
 
+  private _getExtra(sessionId: string | undefined, threadId: number | string | undefined): DebugThreadExtra | undefined {
+    if (sessionId == null) {
+      return;
+    }
+    const data = this._extraMap.get(sessionId);
+    if (data) {
+      return {
+        traceId: data.traceId,
+        remote: data.remote,
+        ...threadId && data.threads.get(`${threadId}`),
+      };
+    }
+  }
+
+  private _setExtra(sessionId: string, threadId: string, extra?: DebugThreadExtra) {
+    const data = this._extraMap.get(sessionId);
+    if (!data) {
+      return;
+    }
+    if (extra) {
+      data.threads.set(threadId, extra);
+    } else {
+      data.threads.delete(threadId);
+    }
+  }
+
+  report(name: string, msg: string | undefined, extra?: any) {
+    extra = {
+      traceId: this._uid,
+      ...this._getExtra(extra?.sessionId, extra?.threadId),
+      ...extra,
+    };
+    return this.reporterService.point(name, msg, extra);
+  }
+
+  reportTime(name: string, defaults?: any) {
+    const timer = this.reporterService.time(name);
+    return (msg: string | undefined, extra?: any) => {
+      extra = {
+        ...defaults,
+        ...extra,
+      };
+      extra = {
+        traceId: this._uid,
+        ...this._getExtra(extra?.sessionId, extra?.threadId),
+        ...extra,
+      };
+      return timer.timeEnd(msg, extra);
+    };
+  }
+
+  reportAction(sessionId: string, threadId: number | string | undefined, action: string) {
+    let extra = this._getExtra(sessionId, threadId);
+    if (!extra) {
+      // session 不存在，忽略
+      return;
+    }
+    if (threadId && !extra.threadId) {
+      extra = {
+        ...extra,
+      };
+    }
+    this._actionIndex += 1;
+    extra.action = `${action}-${this._actionIndex}`;
+    this._setExtra(sessionId, `${threadId ?? ''}`, extra);
+  }
+
   async start(options: DebugSessionOptions): Promise<DebugSession | undefined> {
-    this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_BREAKPOINT, 'number', this.breakpoints.getBreakpoints().length);
+    const { configuration } = options;
+    const extra: DebugSessionExtra = {
+      traceId: `${this._uid}-${Date.now()}`,
+      remote: 0,
+      threads: new Map(),
+    };
+    if (configuration.request === 'attach' && !['localhost', '127.0.0.1', '::1'].includes(configuration.address || 'localhost')) {
+      extra.remote = 1;
+    }
+    this.report(DEBUG_REPORT_NAME.DEBUG_BREAKPOINT, 'number', {
+      count: this.breakpoints.getBreakpoints().length,
+      ...extra,
+    });
     if (!options.configuration.__restart) {
       if (this.isExistedDebugSession(options)) {
         this.messageService.error(formatLocalize('debug.launch.existed', options.configuration.name));
@@ -146,33 +255,34 @@ export class DebugSessionManager {
       }
     }
     try {
-      const reporterStart = this.reporterService.time(DEBUG_REPORT_NAME?.DEBUG_SESSION_START_TIME);
+      const timeStart = this.reportTime(DEBUG_REPORT_NAME.DEBUG_SESSION_START_TIME, extra);
       await this.fireWillStartDebugSession();
       const resolved = await this.resolveConfiguration(options);
       if (resolved.configuration.preLaunchTask) {
         const workspaceFolderUri = Uri.parse(resolved.workspaceFolderUri!);
         const task = await this.taskService.getTask(workspaceFolderUri, resolved.configuration.preLaunchTask);
         if (task) {
-          const taskTimeReport = this.reporterService.time(DEBUG_REPORT_NAME?.DEBUG_PRE_LAUNCH_TASK_TIME);
+          const timeTask = this.reportTime(DEBUG_REPORT_NAME.DEBUG_PRE_LAUNCH_TASK_TIME, extra);
           const result = await this.taskService.run(task);
           if (result.exitCode !== 0) {
             this.messageService.error(`The preLaunchTask ${resolved.configuration.preLaunchTask} exitCode is ${result.exitCode}`);
           }
-          taskTimeReport.timeEnd(workspaceFolderUri.toString(), {
+          timeTask(workspaceFolderUri.toString(), {
             exitCode: result.exitCode,
           });
         }
       }
       const sessionId = await this.debug.createDebugSession(resolved.configuration);
-      reporterStart.timeEnd(resolved.configuration.type, {
+      timeStart(resolved.configuration.type, {
         adapterID: resolved.configuration.type,
         request: resolved.configuration.request,
+        sessionId,
       });
       if (!sessionId) {
         this.messageService.error(`The debug session type "${resolved.configuration.type}" is not supported.`);
         return;
       }
-      return this.doStart(sessionId, resolved);
+      return this.doStart(sessionId, resolved, extra);
     } catch (e) {
       if (DebugError.NotFound.is(e)) {
         this.messageService.error(`The debug session type "${e.data.type}" is not supported.`);
@@ -184,12 +294,12 @@ export class DebugSessionManager {
     }
   }
 
-  protected async fireWillStartDebugSession(): Promise<void> {
+  async fireWillStartDebugSession(): Promise<void> {
     await WaitUntilEvent.fire(this.onWillStartDebugSessionEmitter, {});
   }
 
   protected configurationIds = new Map<string, number>();
-  protected async resolveConfiguration(options: Readonly<DebugSessionOptions>): Promise<InternalDebugSessionOptions> {
+  async resolveConfiguration(options: Readonly<DebugSessionOptions>): Promise<InternalDebugSessionOptions> {
     if (InternalDebugSessionOptions.is(options)) {
       return options;
     }
@@ -212,7 +322,7 @@ export class DebugSessionManager {
     };
   }
 
-  protected async resolveDebugConfiguration(configuration: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration> {
+  async resolveDebugConfiguration(configuration: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration> {
     await this.fireWillResolveDebugConfiguration(configuration.type);
     return this.debug.resolveDebugConfiguration(configuration, workspaceFolderUri);
   }
@@ -222,15 +332,16 @@ export class DebugSessionManager {
     return this.debug.resolveDebugConfigurationWithSubstitutedVariables(configuration, workspaceFolderUri);
   }
 
-  protected async fireWillResolveDebugConfiguration(debugType: string): Promise<void> {
+  async fireWillResolveDebugConfiguration(debugType: string): Promise<void> {
     await WaitUntilEvent.fire(this.onWillResolveDebugConfigurationEmitter, { debugType });
   }
 
-  protected async doStart(sessionId: string, options: DebugSessionOptions): Promise<DebugSession> {
+  protected async doStart(sessionId: string, options: DebugSessionOptions, extra: DebugSessionExtra): Promise<DebugSession> {
     const contrib = this.sessionContributionRegistry.get(options.configuration.type);
     const sessionFactory = contrib ? contrib.debugSessionFactory() : this.debugSessionFactory;
     const session = sessionFactory.get(sessionId, options);
     this._sessions.set(sessionId, session);
+    this._extraMap.set(sessionId, extra);
 
     this.debugTypeKey.set(session.configuration.type);
     this.onDidCreateDebugSessionEmitter.fire(session);
@@ -388,5 +499,8 @@ export class DebugSessionManager {
     if (currentSession && currentSession.id === sessionId) {
       this.updateCurrentSession(undefined);
     }
+    setTimeout(() => {
+      this._extraMap.delete(sessionId);
+    }, 8 * 1000);
   }
 }

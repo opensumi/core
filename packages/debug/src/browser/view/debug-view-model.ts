@@ -147,4 +147,15 @@ export class DebugViewModel implements IDisposable {
     this.fireDidChange();
   }
 
+  report(...args: ArgsType<DebugSessionManager['report']>) {
+    return this.manager.report(...args);
+  }
+
+  reportTime(...args: ArgsType<DebugSessionManager['reportTime']>) {
+    return this.manager.reportTime(...args);
+  }
+
+  reportAction(...args: ArgsType<DebugSessionManager['reportAction']>) {
+    return this.manager.reportAction(...args);
+  }
 }
