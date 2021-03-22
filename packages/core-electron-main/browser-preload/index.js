@@ -27,7 +27,6 @@ electronEnv.isElectronRenderer = true;
 electronEnv.BufferBridge = Buffer;
 electronEnv.currentWindowId = window.id;
 electronEnv.currentWebContentsId = webContentsId;
-electronEnv.monacoPath = join(dirname(require.resolve('monaco-editor-core/package.json')));
 electronEnv.onigWasmPath = require.resolve('vscode-oniguruma/release/onig.wasm');
 
 const metaData = JSON.parse(ipcRenderer.sendSync('window-metadata', electronEnv.currentWindowId));
