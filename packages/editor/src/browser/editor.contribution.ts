@@ -21,6 +21,7 @@ import { EditorTopPaddingContribution } from './view/topPadding';
 import { EditorSuggestWidgetContribution } from './view/suggest-widget';
 import { EditorOpener } from './editor-opener';
 import { WorkspaceSymbolQuickOpenHandler } from './language/workspace-symbol-quickopen';
+import { AUTO_SAVE_MODE } from '../common/editor';
 
 interface ResourceArgs {
   group: EditorGroup;
@@ -926,6 +927,9 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
   @Autowired(PreferenceService)
   preferenceService: PreferenceService;
 
+  @Autowired(WorkbenchEditorService)
+  private workbenchEditorService: WorkbenchEditorServiceImpl;
+
   @Autowired(CommandService)
   commandService: CommandService;
 
@@ -940,14 +944,14 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
       contribute: (editor: IEditor) => {
         const disposable = new Disposable();
         disposable.addDispose(editor.monacoEditor.onDidBlurEditorWidget(() => {
-          if (this.preferenceService.get('editor.autoSave') === 'editorFocusChange') {
+          if (this.preferenceService.get('editor.autoSave') === AUTO_SAVE_MODE.EDITOR_FOCUS_CHANGE) {
             if (editor.currentDocumentModel && !editor.currentDocumentModel.closeAutoSave && editor.currentDocumentModel.dirty && editor.currentDocumentModel.savable) {
               editor.currentDocumentModel.save(undefined, SaveReason.FocusOut);
             }
           }
         }));
         disposable.addDispose(editor.monacoEditor.onDidChangeModel((e) => {
-          if (this.preferenceService.get('editor.autoSave') === 'editorFocusChange') {
+          if (this.preferenceService.get('editor.autoSave') === AUTO_SAVE_MODE.EDITOR_FOCUS_CHANGE) {
             if (e.oldModelUrl) {
               const oldUri = new URI(e.oldModelUrl.toString());
               const docRef = this.editorDocumentService.getModelReference(oldUri, 'editor-focus-autosave');
@@ -962,30 +966,54 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
       },
     });
     window.addEventListener('blur', () => {
-      if (this.preferenceService.get('editor.autoSave') === 'windowLostFocus') {
+      if (this.preferenceService.get('editor.autoSave') === AUTO_SAVE_MODE.WINDOWS_LOST_FOCUS) {
         this.commandService.executeCommand(EDITOR_COMMANDS.SAVE_ALL.id, SaveReason.FocusOut);
       }
     });
     this.preferenceSettings.setEnumLabels('editor.autoSave', {
-      'off': localize('editor.autoSave.enum.off'),
-      'afterDelay': localize('editor.autoSave.enum.afterDelay'),
-      'editorFocusChange': localize('editor.autoSave.enum.editorFocusChange'),
-      'windowLostFocus': localize('editor.autoSave.enum.windowLostFocus'),
+      [AUTO_SAVE_MODE.OFF] : localize('editor.autoSave.enum.off'),
+      [AUTO_SAVE_MODE.AFTER_DELAY]: localize('editor.autoSave.enum.afterDelay'),
+      [AUTO_SAVE_MODE.EDITOR_FOCUS_CHANGE]: localize('editor.autoSave.enum.editorFocusChange'),
+      [AUTO_SAVE_MODE.WINDOWS_LOST_FOCUS]: localize('editor.autoSave.enum.windowLostFocus'),
     });
     registry.registerEditorFeatureContribution(new EditorTopPaddingContribution());
     registry.registerEditorFeatureContribution(this.injector.get(EditorSuggestWidgetContribution));
+    this.registerAutoSaveConfigurationChange();
+  }
+
+  registerAutoSaveConfigurationChange() {
+    this.preferenceService.onSpecificPreferenceChange('editor.autoSave', (change) => {
+      const mode = change.newValue;
+      if (mode !== AUTO_SAVE_MODE.OFF) {
+        // 只有两种原因：丢失焦点和延迟保存，非此即彼
+        let reason = SaveReason.FocusOut;
+        if (mode === AUTO_SAVE_MODE.AFTER_DELAY) {
+          reason = SaveReason.AfterDelay;
+        }
+        // 只保存被该设置影响的文档
+        // 比如在当前工作区写代码，然后打开了一个 ~/.xxx 文件
+        // 然后用户修改了设置，这里就只保存当前工作区的文件。
+        for (const group of this.workbenchEditorService.editorGroups) {
+          for (const resource of group.resources) {
+            if (change.affects(resource?.uri.toString())) {
+              group.saveResource(resource, reason);
+            }
+          }
+        }
+      }
+    });
   }
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(EDITOR_COMMANDS.AUTO_SAVE, {
       execute: () => {
         const autoSavePreferenceField = 'editor.autoSave';
-        const value = this.preferenceSettings.getPreference(autoSavePreferenceField, PreferenceScope.User).value as string || 'off';
+        const value = this.preferenceSettings.getPreference(autoSavePreferenceField, PreferenceScope.User).value as string || AUTO_SAVE_MODE.OFF;
         const nextValue = [
-          'afterDelay',
-          'editorFocusChange',
-          'windowLostFocus',
-        ].includes(value) ? 'off' : 'afterDelay';
+          AUTO_SAVE_MODE.AFTER_DELAY,
+          AUTO_SAVE_MODE.EDITOR_FOCUS_CHANGE,
+          AUTO_SAVE_MODE.WINDOWS_LOST_FOCUS,
+        ].includes(value) ? AUTO_SAVE_MODE.OFF : AUTO_SAVE_MODE.AFTER_DELAY;
 
         return this.preferenceSettings.setPreference(autoSavePreferenceField, nextValue, PreferenceScope.User);
       },
