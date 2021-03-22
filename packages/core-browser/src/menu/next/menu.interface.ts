@@ -210,6 +210,10 @@ export interface IMenu extends IDisposable {
   onDispose: Event<void>;
 }
 
+export function isIMenu(menus: IMenu | IContextMenu): menus is IMenu {
+  return 'getMenuNodes' in menus && typeof menus.getMenuNodes === 'function';
+}
+
 export interface IContextMenu extends IDisposable {
   /**
    * menu-id

@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNode } from '@ali/ide-components';
+import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNode } from '@ali/ide-components';
 import { URI, DisposableCollection, Emitter, IContextKeyService, EDITOR_COMMANDS, CommandService, ThrottledDelayer, Deferred, Event } from '@ali/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -58,7 +58,7 @@ export class OpenedEditorModelService {
   @Autowired(IMainLayoutService)
   private readonly layoutService: IMainLayoutService;
 
-  private _treeModel: TreeModel;
+  private _treeModel: OpenedEditorModel;
   private _whenReady: Promise<void>;
 
   private _decorations: DecorationsManager;
@@ -202,6 +202,26 @@ export class OpenedEditorModelService {
       }
     }));
 
+    this.disposableCollection.push(this.treeModel!.onWillUpdate(() => {
+      // 更新树前更新下选中节点
+      if (!!this.focusedFile) {
+        const node = this.treeModel?.root.getTreeNodeByPath(this.focusedFile.path);
+        if (node) {
+          this.activeFileDecoration(node as EditorFile, false);
+        }
+      } else if (this.selectedFiles.length !== 0) {
+        // 仅处理一下单选情况
+        const node = this.treeModel?.root.getTreeNodeByPath(this.selectedFiles[0].path);
+        if (node) {
+          this.selectFileDecoration(node as EditorFile, false);
+        }
+      }
+    }));
+
+    this.disposableCollection.push(this.openedEditorEventService.onDidChange(() => {
+      this.refresh();
+    }));
+
     this.disposableCollection.push(this.onDidRefreshed(() => {
       this.dirtyDecoration.appliedTargets.clear();
       // 更新dirty节点，节点可能已更新
@@ -233,7 +253,7 @@ export class OpenedEditorModelService {
   }
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
-  activeFileDecoration = (target: EditorFileGroup | EditorFile) => {
+  activeFileDecoration = (target: EditorFileGroup | EditorFile, dispatchChange: boolean = true) => {
     if (this.preContextMenuFocusedFile) {
       this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
       this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
@@ -254,12 +274,14 @@ export class OpenedEditorModelService {
       this._selectedFiles = [target];
 
       // 通知视图更新
-      this.treeModel.dispatchChange();
+      if (dispatchChange) {
+        this.treeModel.dispatchChange();
+      }
     }
   }
 
   // 清空其他选中/焦点态节点，更新当前选中节点
-  selectFileDecoration = (target: EditorFileGroup | EditorFile) => {
+  selectFileDecoration = (target: EditorFileGroup | EditorFile, dispatchChange: boolean = true) => {
     if (this.preContextMenuFocusedFile) {
       this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
       this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
@@ -278,7 +300,9 @@ export class OpenedEditorModelService {
       this._selectedFiles = [target];
 
       // 通知视图更新
-      this.treeModel.dispatchChange();
+      if (dispatchChange) {
+        this.treeModel.dispatchChange();
+      }
     }
   }
 
@@ -465,7 +489,11 @@ export class OpenedEditorModelService {
       }
       node = await this.editorTreeHandle.ensureVisible(node) as EditorFile;
       if (node) {
-        this.selectFileDecoration(node);
+        if (this.focusedFile === node) {
+          this.activeFileDecoration(node as EditorFile);
+        } else {
+          this.selectFileDecoration(node as EditorFile);
+        }
       }
     });
   }

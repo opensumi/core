@@ -2,17 +2,19 @@ import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { TextmateRegistry } from './textmate-registry';
 import { Injectable, Autowired } from '@ali/common-di';
-import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger, ExtensionActivateEvent, getDebugLogger, MonacoService } from '@ali/ide-core-browser';
+import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger, ExtensionActivateEvent, getDebugLogger, MonacoService, electronEnv } from '@ali/ide-core-browser';
 import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap, INITIAL } from 'vscode-textmate';
 import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import { getNodeRequire, URI } from '@ali/ide-core-common';
+import { URI } from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IThemeData } from '@ali/ide-theme';
 import { OnigScanner, loadWASM, OnigString } from 'vscode-oniguruma';
 
 import { createTextmateTokenizer, TokenizerOption } from './textmate-tokenizer';
 import { LanguagesContribution, FoldingRules, IndentationRules, GrammarsContribution, ScopeMap, ILanguageConfiguration, IAutoClosingPairConditional, CommentRule } from '../common';
+
+let wasmLoaded = false;
 
 export function getEncodedLanguageId(languageId: string): number {
   return monaco.languages.getEncodedLanguageId(languageId);
@@ -538,10 +540,13 @@ export class TextmateService extends WithEventBus {
   }
 
   private async getOnigLib(): Promise<IOnigLib> {
+    // loadWasm 二次加载会报错 https://github.com/microsoft/vscode-oniguruma/blob/main/src/index.ts#L378
+    if (wasmLoaded) {
+      return new OnigasmLib();
+    }
     let wasmUri: string;
-    if (isElectronEnv()) {
-      const onigWasmPath = getNodeRequire().resolve('vscode-oniguruma/release/onig.wasm');
-      wasmUri = URI.file(onigWasmPath).codeUri.toString();
+    if (isElectronEnv() && electronEnv.onigWasmPath) {
+      wasmUri = URI.file(electronEnv.onigWasmPath).codeUri.toString();
     } else {
       wasmUri = 'https://g.alicdn.com/kaitian/vscode-oniguruma-wasm/0.0.1/onig.wasm';
     }
@@ -549,6 +554,7 @@ export class TextmateService extends WithEventBus {
     const response = await fetch(wasmUri);
     const bytes = await response.arrayBuffer();
     await loadWASM(bytes);
+    wasmLoaded = true;
     return new OnigasmLib();
   }
 

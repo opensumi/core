@@ -55,3 +55,8 @@ export const BREAKPOINT_DECORATION: monaco.editor.IModelDecorationOptions = {
   glyphMarginClassName: 'kaitian-debug-breakpoint',
   stickiness: STICKINESS,
 };
+
+export const BREAKPOINT_DECORATION_DISABLED: monaco.editor.IModelDecorationOptions = {
+  glyphMarginClassName: 'kaitian-debug-breakpoint-disabled',
+  stickiness: STICKINESS,
+};

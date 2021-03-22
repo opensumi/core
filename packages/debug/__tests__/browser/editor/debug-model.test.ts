@@ -26,6 +26,8 @@ describe('Debug Model', () => {
         endLineNumber: 1,
         endColumn: 10,
       }),
+      getLineFirstNonWhitespaceColumn: () => 1,
+      getLineLastNonWhitespaceColumn: () => 10,
       onDidLayoutChange: jest.fn(() => Disposable.create(() => {})),
       onDidChangeContent: jest.fn(() => Disposable.create(() => {})),
     })),

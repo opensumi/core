@@ -1,7 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { IRPCProtocol, RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { AppConfig, Deferred, Emitter, IExtensionProps, ILogger, URI } from '@ali/ide-core-browser';
-import { UriComponents, Event } from '@ali/ide-core-common';
+import { UriComponents, Event, Disposable } from '@ali/ide-core-common';
 import { posix } from '@ali/ide-core-common/lib/path';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { IExtension, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../common';
@@ -12,7 +12,7 @@ import { initWorkerTheadAPIProxy } from './vscode/api/main.thread.api.impl';
 import { startInsideIframe } from './workerHostIframe';
 
 @Injectable()
-export class WorkerExtensionService implements AbstractExtensionService {
+export class WorkerExtensionService extends Disposable implements AbstractExtensionService {
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;
@@ -39,7 +39,9 @@ export class WorkerExtensionService implements AbstractExtensionService {
     if (this.protocol) {
       this.onReady.resolve();
       this.logger.verbose('init worker thread api proxy', this.protocol);
-      initWorkerTheadAPIProxy(this.protocol, this.injector, this);
+      initWorkerTheadAPIProxy(this.protocol, this.injector, this)
+        .then((dispose) => this.addDispose({ dispose }));
+
       await this.getProxy().$initExtensions();
     }
     return this.protocol;
@@ -75,6 +77,9 @@ export class WorkerExtensionService implements AbstractExtensionService {
       } else {
         try {
           const extendWorkerHost = new Worker(workerUrl, { name: 'KaitianWorkerExtensionHost' });
+          this.addDispose({
+            dispose: () => extendWorkerHost.terminate(),
+          });
           extendWorkerHost.onmessage = (e) => {
             if (e.data instanceof MessagePort) {
               ready.resolve(e.data);

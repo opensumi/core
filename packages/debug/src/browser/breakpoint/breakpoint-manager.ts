@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Emitter, Event, URI, isUndefined, StorageProvider, IStorage, STORAGE_NAMESPACE, IReporterService } from '@ali/ide-core-browser';
 import { DebugBreakpoint, DebugExceptionBreakpoint, BREAKPOINT_KIND } from './breakpoint-marker';
@@ -88,10 +89,26 @@ export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
     return result;
   }
 
-  getBreakpoint(uri: URI, line: number): DebugBreakpoint | undefined {
+  getBreakpoint(uri: URI, filter: number | Partial<monaco.IPosition> | undefined): DebugBreakpoint | undefined {
+    if (typeof filter === 'number') {
+      filter = { lineNumber: filter };
+    }
+    const filterOptions = filter as Partial<monaco.IPosition> | undefined;
+    let dataFilter: ((breakpoint: DebugBreakpoint) => boolean) | undefined;
+    if (filterOptions) {
+      dataFilter = (breakpoint: DebugBreakpoint) => {
+        if (
+          filterOptions.lineNumber && breakpoint.raw.line !== filterOptions.lineNumber ||
+          filterOptions.column && breakpoint.raw.column !== filterOptions.column
+        ) {
+          return false;
+        }
+        return true;
+      };
+    }
     const marker = this.findMarkers({
       uri,
-      dataFilter: (breakpoint) => breakpoint.raw.line === line,
+      dataFilter,
     })[0];
     return marker && marker.data;
   }
@@ -112,11 +129,13 @@ export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
   addBreakpoint(breakpoint: DebugBreakpoint): boolean {
     const uri = new URI(breakpoint.uri);
     const breakpoints = this.getBreakpoints(uri);
-    const newBreakpoints = breakpoints.filter(({ raw }) => raw.line !== breakpoint.raw.line);
+    const existed = breakpoints.find(({ raw }) => raw.line === breakpoint.raw.line && raw.column === breakpoint.raw.column);
     this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_BREAKPOINT, 'add');
-    if (breakpoints.length === newBreakpoints.length) {
-      newBreakpoints.push(breakpoint);
-      this.setBreakpoints(uri, newBreakpoints);
+    if (!existed) {
+      this.setBreakpoints(uri, [
+        ...breakpoints,
+        breakpoint,
+      ]);
       return true;
     }
     return false;

@@ -21,8 +21,6 @@ module.exports = {
     "!packages/startup/**/*.ts",
     "!packages/core-electron-main/**/*.ts",
     "!packages/*/src/electron-main/**/*.ts",
-    "!packages/userstorage/**/*.ts",
-    "!packages/file-tree/**/*.ts",
   ],
   moduleNameMapper: {
     ...tsModuleNameMapper,

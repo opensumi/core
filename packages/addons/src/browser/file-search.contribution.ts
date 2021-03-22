@@ -36,7 +36,7 @@ import { RecentFilesManager } from '@ali/ide-core-browser';
 const DEFAULT_FILE_SEARCH_LIMIT = 200;
 
 export const quickFileOpen: Command = {
-  id: 'workbench.action.openRecent',
+  id: 'workbench.action.quickOpen',
   category: 'File',
   label: 'Open File...',
 };

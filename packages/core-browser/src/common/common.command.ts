@@ -158,6 +158,11 @@ export namespace FILE_COMMANDS {
     id: 'filetree.expand',
     category: CATEGORY,
   };
+
+  export const REVEAL_IN_EXPLORER: Command = {
+    id: 'filetree.revealInExplorer',
+    category: CATEGORY,
+  };
 }
 
 export namespace OPEN_EDITORS_COMMANDS {

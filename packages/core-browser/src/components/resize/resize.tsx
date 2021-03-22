@@ -292,6 +292,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
   });
   const onMouseUp = ((e) => {
     resizing.current = false;
+    ref.current?.classList.remove(styles.active);
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
     // 结束拖拽时恢复拖拽区域滚动条
@@ -304,6 +305,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
   });
   const onMouseDown =  ((e) => {
     resizing.current = true;
+    ref.current?.classList.add(styles.active);
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
     startX.current = e.pageX;
@@ -548,6 +550,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
 
   const onMouseDown = ((e) => {
     resizing.current = true;
+    ref.current?.classList.add(styles.active);
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
     startY.current = e.pageY;
@@ -606,6 +609,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
 
   const onMouseUp = ((e) => {
     resizing.current = false;
+    ref.current?.classList.remove(styles.active);
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
     if (props.onFinished) {

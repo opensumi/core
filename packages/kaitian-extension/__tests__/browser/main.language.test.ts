@@ -19,8 +19,12 @@ import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.com
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
 import { ICallHierarchyService, CallHierarchyService } from '@ali/ide-monaco/lib/browser/callHierarchy/callHierarchy.service';
-import { IEditorDocumentModelService } from '@ali/ide-editor/src/browser';
+import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry, EmptyDocCacheImpl } from '@ali/ide-editor/src/browser';
+import { EditorDocumentModelServiceImpl, EditorDocumentModelContentRegistryImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
+import { IDocPersistentCacheProvider } from '@ali/ide-editor';
 import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from '@ali/ide-debug/lib/browser/editor/evaluatable-expression';
+import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
+import { TestEditorDocumentProvider } from '@ali/ide-editor/__tests__/browser/test-providers';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -65,7 +69,24 @@ describe('ExtHostLanguageFeatures', () => {
       token: IEvaluatableExpressionService,
       useClass: EvaluatableExpressionServiceImpl,
     },
+    {
+      token: IEditorDocumentModelService,
+      useClass: EditorDocumentModelServiceImpl,
+    },
+    {
+      token: IEditorDocumentModelContentRegistry,
+      useClass: EditorDocumentModelContentRegistryImpl,
+    },
+    {
+      token: IDocPersistentCacheProvider,
+      useClass: EmptyDocCacheImpl,
+    },
   );
+
+  useMockStorage(injector);
+
+  const editorDocModelRegistry: IEditorDocumentModelContentRegistry = injector.get(IEditorDocumentModelContentRegistry);
+  editorDocModelRegistry.registerEditorDocumentModelContentProvider(TestEditorDocumentProvider);
 
   (global as any).amdLoader = { require: null };
 
@@ -533,6 +554,22 @@ describe('ExtHostLanguageFeatures', () => {
     });
   });
 
+  test('change document model language', async () => {
+    const uri = URI.parse('test://testing/file');
+    extHostDocuments.$fireModelOpenedEvent({
+      uri: uri.toString(),
+      dirty: false,
+      versionId: 1,
+      languageId: 'plaintext',
+      lines: [],
+      eol: '\n',
+    });
+    await extHost.changeLanguage(uri.codeUri, 'a');
+    const editorDocModelService: IEditorDocumentModelService = injector.get(IEditorDocumentModelService);
+    const testDoc = await editorDocModelService.createModelReference(uri);
+    expect(testDoc.instance.languageId).toBe('a');
+  });
+
   //#region Semantic Tokens
   const tokenTypesLegend = [
     'comment', 'string', 'keyword', 'number', 'regexp', 'operator', 'namespace',
@@ -704,6 +741,7 @@ An error case:
             });
           },
         },
+        override: true,
       });
     });
 

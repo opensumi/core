@@ -12,7 +12,7 @@ import { ConfigurationDefaultsContributionPoint } from './configurationDefaults'
 import { ColorsSchema, ColorsContributionPoint } from './color';
 import { LocalizationsContributionPoint } from './localization';
 import { KeybindingSchema, KeybindingContributionPoint } from './keybindings';
-import { MenusContributionPoint } from './menu';
+import { MenusContributionPoint, SubmenusContributionPoint } from './menu';
 import { SnippetSchema, SnippetsContributionPoint } from './snippets';
 import { ViewContainersSchema, ViewContainersContributionPoint } from './view-containers';
 import { ViewsSchema, ViewsContributionPoint } from './views';
@@ -293,6 +293,7 @@ export class VSCodeContributeRunner extends WithEventBus {
     ConfigurationDefaultsContributionPoint,
     ColorsContributionPoint,
     KeybindingContributionPoint,
+    SubmenusContributionPoint,
     MenusContributionPoint,
     SnippetsContributionPoint,
     ViewContainersContributionPoint,

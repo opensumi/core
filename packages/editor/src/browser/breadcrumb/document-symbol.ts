@@ -25,11 +25,11 @@ export class DocumentSymbolStore extends WithEventBus {
 
   constructor() {
     super();
-    modes.DocumentSymbolProviderRegistry.onDidChange(() => {
+    this.addDispose(modes.DocumentSymbolProviderRegistry.onDidChange(() => {
       Array.from(this.documentSymbols.keys()).forEach((uriString) => {
         this.markNeedUpdate(new URI(uriString));
       });
-    });
+    }));
   }
 
   getDocumentSymbol(uri: URI): INormalizedDocumentSymbol[] | undefined {
