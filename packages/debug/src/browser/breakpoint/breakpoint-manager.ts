@@ -93,28 +93,26 @@ export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
     if (typeof filter === 'number') {
       filter = { lineNumber: filter };
     }
-    const filterOptions = filter as Partial<monaco.IPosition> | undefined;
+    return this.getBreakpoints(uri, filter)[0];
+  }
+
+  getBreakpoints(uri?: URI, filter?: Partial<monaco.IPosition>): DebugBreakpoint[] {
     let dataFilter: ((breakpoint: DebugBreakpoint) => boolean) | undefined;
-    if (filterOptions) {
+    if (filter) {
       dataFilter = (breakpoint: DebugBreakpoint) => {
         if (
-          filterOptions.lineNumber && breakpoint.raw.line !== filterOptions.lineNumber ||
-          filterOptions.column && breakpoint.raw.column !== filterOptions.column
+          filter.lineNumber && breakpoint.raw.line !== filter.lineNumber ||
+          filter.column && breakpoint.raw.column !== filter.column
         ) {
           return false;
         }
         return true;
       };
     }
-    const marker = this.findMarkers({
+    return this.findMarkers({
       uri,
       dataFilter,
-    })[0];
-    return marker && marker.data;
-  }
-
-  getBreakpoints(uri?: URI): DebugBreakpoint[] {
-    return this.findMarkers({ uri }).map((marker) => marker.data);
+    }).map((marker) => marker.data);
   }
 
   setBreakpoints(uri: URI, breakpoints: DebugBreakpoint[]): void {

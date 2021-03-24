@@ -13,65 +13,74 @@ describe('Debug Model', () => {
   let childInjector: Injector;
   let debugModel: IDebugModel;
   const testFileUri = URI.file('editor.js');
-  const mockCtxMenuRenderer = {
-    show: jest.fn(),
-  } as any;
+  let mockCtxMenuRenderer: ICtxMenuRenderer;
+  let mockEditor: any;
+  let mockBreakpointManager: any;
+  let mockBreakpointWidget: any;
+  let mockDebugHoverWidget: any;
+  let mockMenuService: any;
 
-  const mockEditor = {
-    getModel: jest.fn(() => ({
-      uri: testFileUri,
-      getDecorationRange: () => ({
-        startLineNumber: 1,
-        startColumn: 0,
-        endLineNumber: 1,
-        endColumn: 10,
-      }),
-      getLineFirstNonWhitespaceColumn: () => 1,
-      getLineLastNonWhitespaceColumn: () => 10,
-      onDidLayoutChange: jest.fn(() => Disposable.create(() => {})),
-      onDidChangeContent: jest.fn(() => Disposable.create(() => {})),
-    })),
-    onKeyDown: jest.fn(() => Disposable.create(() => {})),
-    getPosition: jest.fn(() => ({lineNumber: 2, column: 1})),
-    deltaDecorations: jest.fn(() => []),
-    focus: jest.fn(),
-  };
-
-  const mockBreakpointManager = {
-    onDidChange: jest.fn(() => Disposable.create(() => {})),
-    delBreakpoint: jest.fn(() => Disposable.create(() => {})),
-    addBreakpoint: jest.fn(() => Disposable.create(() => {})),
-    updateBreakpoint: jest.fn(() => Disposable.create(() => {})),
-    getBreakpoint: jest.fn(() => DebugBreakpoint.create(testFileUri, {line: 2})),
-    getBreakpoints: jest.fn(() => [DebugBreakpoint.create(testFileUri, {line: 2})]),
-  };
-
-  const mockBreakpointWidget = {
-    dispose: () => {},
-    show: jest.fn(),
-    hide: jest.fn(),
-    position: {lineNumber: 1, column: 2},
-    values: {
-      condition: '',
-      hitCondition: '',
-      logMessage: '',
-    },
-  };
-
-  const mockDebugHoverWidget = {
-    getDomNode: jest.fn(),
-    hide: jest.fn(),
-    show: jest.fn(),
-  };
-
-  const mockMenuService = {
-    createMenu: jest.fn(() => ({
-      getMenuNodes: () => [],
-    })),
-  };
-
-  beforeAll(() => {
+  beforeEach(() => {
     (global as any).monaco = createMockedMonaco() as any;
+
+    mockCtxMenuRenderer = {
+      show: jest.fn(),
+    } as any;
+
+    mockEditor = {
+      getModel: jest.fn(() => ({
+        uri: testFileUri,
+        getDecorationRange: () => ({
+          startLineNumber: 1,
+          startColumn: 0,
+          endLineNumber: 1,
+          endColumn: 10,
+        }),
+        getLineFirstNonWhitespaceColumn: () => 1,
+        getLineLastNonWhitespaceColumn: () => 10,
+        onDidLayoutChange: jest.fn(() => Disposable.create(() => {})),
+        onDidChangeContent: jest.fn(() => Disposable.create(() => {})),
+      })),
+      onDidChangeModelContent: () => Disposable.create(() => {}),
+      onKeyDown: jest.fn(() => Disposable.create(() => {})),
+      getPosition: jest.fn(() => ({lineNumber: 2, column: 1})),
+      deltaDecorations: jest.fn(() => []),
+      focus: jest.fn(),
+      dispose: () => {},
+    };
+
+    mockBreakpointManager = {
+      onDidChange: jest.fn(() => Disposable.create(() => {})),
+      delBreakpoint: jest.fn(() => Disposable.create(() => {})),
+      addBreakpoint: jest.fn(() => Disposable.create(() => {})),
+      updateBreakpoint: jest.fn(() => Disposable.create(() => {})),
+      getBreakpoint: jest.fn(() => DebugBreakpoint.create(testFileUri, {line: 2})),
+      getBreakpoints: jest.fn(() => [DebugBreakpoint.create(testFileUri, {line: 2})]),
+    };
+
+    mockBreakpointWidget = {
+      dispose: () => {},
+      show: jest.fn(),
+      hide: jest.fn(),
+      position: {lineNumber: 1, column: 2},
+      values: {
+        condition: '',
+        hitCondition: '',
+        logMessage: '',
+      },
+    };
+
+    mockDebugHoverWidget = {
+      getDomNode: jest.fn(),
+      hide: jest.fn(),
+      show: jest.fn(),
+    };
+
+    mockMenuService = {
+      createMenu: jest.fn(() => ({
+        getMenuNodes: () => [],
+      })),
+    };
 
     mockInjector.overrideProviders({
       token: ICtxMenuRenderer,
@@ -112,14 +121,10 @@ describe('Debug Model', () => {
     debugModel = childInjector.get(IDebugModel);
   });
 
-  afterAll(() => {
-
-  });
-
   it('debugModel should be init success', () => {
     expect(mockEditor.onKeyDown).toBeCalledTimes(1);
-    expect(mockEditor.getModel).toBeCalledTimes(1);
-    expect(mockBreakpointManager.onDidChange).toBeCalledTimes(0);
+    expect(mockEditor.getModel).toBeCalledTimes(4);
+    expect(mockBreakpointManager.onDidChange).toBeCalledTimes(1);
   });
 
   it('should have enough API', () => {
@@ -167,9 +172,9 @@ describe('Debug Model', () => {
 
   it('toggleBreakpoint should be work', () => {
     debugModel.toggleBreakpoint({lineNumber: 1, column: 2});
-    expect(mockBreakpointManager.getBreakpoint).toBeCalledTimes(2);
+    expect(mockBreakpointManager.getBreakpoints).toBeCalledTimes(4);
     expect(mockBreakpointManager.delBreakpoint).toBeCalledTimes(1);
-    mockBreakpointManager.getBreakpoint.mockReturnValueOnce(null as any);
+    mockBreakpointManager.getBreakpoints.mockReturnValueOnce([] as any);
     debugModel.toggleBreakpoint({lineNumber: 1, column: 2});
     expect(mockBreakpointManager.addBreakpoint).toBeCalledTimes(1);
   });
@@ -187,11 +192,11 @@ describe('Debug Model', () => {
   it('acceptBreakpoint should be work', () => {
     debugModel.acceptBreakpoint();
     expect(mockBreakpointManager.updateBreakpoint).toBeCalledTimes(1);
-    expect(mockBreakpointWidget.hide).toBeCalledTimes(2);
+    expect(mockBreakpointWidget.hide).toBeCalledTimes(1);
     mockBreakpointManager.getBreakpoint.mockReturnValueOnce(null as any);
     debugModel.acceptBreakpoint();
-    expect(mockBreakpointManager.addBreakpoint).toBeCalledTimes(2);
-    expect(mockBreakpointWidget.hide).toBeCalledTimes(3);
+    expect(mockBreakpointManager.addBreakpoint).toBeCalledTimes(1);
+    expect(mockBreakpointWidget.hide).toBeCalledTimes(2);
   });
 
   it('onContextMenu should be work', () => {
@@ -267,6 +272,6 @@ describe('Debug Model', () => {
     });
     debugModel.onMouseLeave(mockEvent as monaco.editor.IEditorMouseEvent);
     expect(getBoundingClientRect).toBeCalledTimes(1);
-    expect(mockDebugHoverWidget.hide).toBeCalledTimes(2);
+    expect(mockDebugHoverWidget.hide).toBeCalledTimes(1);
   });
 });
