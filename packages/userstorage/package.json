@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-userstorage",
-  "version": "1.38.2",
+  "version": "1.38.3",
   "files": [
     "lib"
   ],
@@ -19,9 +19,9 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-browser": "1.38.2",
-    "@ali/ide-core-common": "1.38.2",
-    "@ali/ide-file-service": "1.38.2"
+    "@ali/ide-core-browser": "1.38.3",
+    "@ali/ide-core-common": "1.38.3",
+    "@ali/ide-file-service": "1.38.3"
   },
   "devDependencies": {
     "@ali/ide-dev-tool": "^1.1.0",
