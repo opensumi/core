@@ -2342,8 +2342,6 @@ declare module 'vscode' {
     dispose(): void;
   }
 
-  export interface env { }
-
   /**
    * An extension context is a collection of utilities private to an
    * extension.
