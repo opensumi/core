@@ -21,6 +21,7 @@ export const CheckBox: React.FC<React.HTMLProps<HTMLInputElement> & {
   label,
   size = 'default',
   disabled,
+  checked = false,
   ...restProps
 }) => {
   warning(
@@ -36,7 +37,7 @@ export const CheckBox: React.FC<React.HTMLProps<HTMLInputElement> & {
   return (
     <label className={cls}>
       <span className='kt-checkbox-lump'>
-        <input type='checkbox' disabled={disabled} {...restProps} />
+        <input type='checkbox' disabled={disabled} checked={checked} {...restProps} />
         <span className='kt-checkbox-icon'>
           <CheckIconSvg />
         </span>

@@ -33,11 +33,14 @@ npm run start
 npm run start:lite
 ```
 
+启动 web 版本的时候打开的文件夹为 `tools/workspace`，你可以把你工作文件放这。
+
 ### 部分系统 native 依赖需要安装
+
 由于终端模块使用了 node-canvas 作为测试依赖模块，需要手动安装，如 macos 需要安装
 
 ```shell
-  brew install pkg-config cairo pango libpng jpeg giflib librsvg
+brew install pkg-config cairo pango libpng jpeg giflib librsvg
 ```
 
 ### 创建模块
