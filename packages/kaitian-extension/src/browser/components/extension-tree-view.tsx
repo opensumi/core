@@ -136,7 +136,7 @@ export const ExtensionTabBarTreeView = observer(({
         >
           {(props: INodeRendererProps) => {
             return <TreeViewNode
-              item={props.item}
+              item={props.item as any}
               itemType={props.itemType}
               decorations={model.decorations.getDecorations(props.item as any)}
               onClick={handleItemClicked}
@@ -144,6 +144,7 @@ export const ExtensionTabBarTreeView = observer(({
               onContextMenu={handlerContextMenu}
               defaultLeftPadding={8}
               leftPadding={8}
+              treeViewId={treeViewId}
             />;
           }}
         </RecycleTree>;

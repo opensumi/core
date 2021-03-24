@@ -9,7 +9,8 @@ import { TitleActionList } from '@ali/ide-core-browser/lib/components/actions';
 import { MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 export interface ITreeViewNodeProps {
-  item: any;
+  item: ExtensionTreeNode | ExtensionCompositeTreeNode;
+  treeViewId: string;
   defaultLeftPadding?: number;
   leftPadding?: number;
   decorations?: ClasslistComposite;
@@ -29,19 +30,20 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
   onTwistierClick,
   decorations,
   defaultLeftPadding = 8,
+  treeViewId,
 }: TreeViewNodeRenderedProps) => {
   const handleClick = (ev: React.MouseEvent) => {
     if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      onClick(ev, item as ExtensionTreeNode, itemType);
+      onClick(ev, item, itemType);
     }
   };
 
   const handlerTwistierClick = (ev: React.MouseEvent) => {
     if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
       if (onTwistierClick) {
-        onTwistierClick(ev, item as ExtensionTreeNode, itemType);
+        onTwistierClick(ev, item, itemType);
       } else {
-        onClick(ev, item as ExtensionTreeNode, itemType);
+        onClick(ev, item, itemType);
       }
     }
   };
@@ -51,7 +53,7 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
       return;
     }
     if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      onContextMenu(ev, item as ExtensionTreeNode, itemType);
+      onContextMenu(ev, item, itemType);
     }
   };
 
@@ -104,7 +106,7 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
       return <div className={styles.tree_view_actions}>
         <TitleActionList
           className={styles.inlineMenu}
-          context={[{ treeViewId: item.treeViewId, treeItemId: (item as ExtensionTreeNode).treeItemId }]}
+          context={[{ treeViewId, treeItemId: item.treeItemId }]}
           nav={item.actions}
           menuId={MenuId.ViewItemContext}
         />
