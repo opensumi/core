@@ -4,8 +4,8 @@ import * as styles from './styles.module.less';
 import { getIcon, ErrorBoundary } from '@ali/ide-core-browser';
 import { Layout, PanelContext } from '@ali/ide-core-browser/lib/components';
 import { useInjectable, ViewUiStateManager } from '@ali/ide-core-browser';
-import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
-import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { InlineActionBar, InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
+import { isIMenu, IMenu, IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@ali/ide-core-browser/lib/progress';
 import { ProgressBar } from '@ali/ide-core-browser/lib/progress/progress-bar';
 
@@ -32,7 +32,7 @@ export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   index: number;
   initialProps?: any;
   noHeader?: boolean;
-  titleMenu: IMenu;
+  titleMenu: IMenu | IContextMenu;
 }
 
 export const AccordionSection = (
@@ -127,8 +127,12 @@ export const AccordionSection = (
           <i className={cls(getIcon('arrow-down'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
           <div className={styles.section_label} style={{lineHeight: headerSize + 'px'}}>{header}</div>
         </div>
-        {expanded && <div className={styles.actions_wrap}>
-          <InlineActionBar menus={titleMenu} context={titleMenuContext} />
+        {expanded && titleMenu && <div className={styles.actions_wrap}>
+          {
+            isIMenu(titleMenu)
+              ? <InlineActionBar menus={titleMenu} context={titleMenuContext} />
+              : <InlineMenuBar menus={titleMenu} />
+          }
         </div>}
       </div>}
       <div

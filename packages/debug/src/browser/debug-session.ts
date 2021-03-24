@@ -5,6 +5,7 @@ import {
   DisposableCollection,
   Deferred,
   IDisposable,
+  IPosition,
   Mutable,
   canceled,
 } from '@ali/ide-core-browser';
@@ -609,6 +610,16 @@ export class DebugSession implements IDebugSession {
       this._onVariableChange.fire();
       return res;
     }
+  }
+
+  async breakpointLocations(uri: URI, line: number) {
+    const source = await this.toSource(uri);
+    const response = await this.sendRequest('breakpointLocations', { source: source.raw, line });
+    const positions: IPosition[] = (response.body?.breakpoints || []).map((item) => ({ lineNumber: item.line, column: item.column || 1 }));
+    return Object.values<IPosition>(positions.reduce((obj, p) => ({
+      ...obj,
+      [`${p.lineNumber}:${p.column}`]: p,
+    }), {}));
   }
 
   sendRequest<K extends keyof DebugRequestTypes>(command: K, args: DebugRequestTypes[K][0]): Promise<DebugRequestTypes[K][1]> {

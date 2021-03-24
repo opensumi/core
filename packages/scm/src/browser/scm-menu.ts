@@ -2,7 +2,7 @@ import { Injectable, Autowired, Optional } from '@ali/common-di';
 import { IDisposable, dispose } from '@ali/ide-core-common/lib/disposable';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import { IContextKeyService } from '@ali/ide-core-browser';
-import { AbstractMenuService, IMenu, MenuId, MenuNode, TupleMenuNodeResult, AbstractContextMenuService } from '@ali/ide-core-browser/lib/menu/next';
+import { MenuId, MenuNode, TupleMenuNodeResult, AbstractContextMenuService, IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 import { ISCMProvider, ISCMResource, ISCMResourceGroup } from '../common';
 import { getSCMResourceContextKey } from './scm-util';
@@ -12,22 +12,22 @@ interface ISCMResourceGroupMenuEntry extends IDisposable {
 }
 
 interface ISCMMenus {
-  readonly resourceGroupMenu: IMenu;
-  readonly resourceMenu: IMenu;
+  readonly resourceGroupMenu: IContextMenu;
+  readonly resourceMenu: IContextMenu;
 }
 
 @Injectable({ multiple: true })
 export class SCMMenus implements IDisposable {
-  private titleMenu: IMenu;
-  private inputMenu: IMenu;
+  private titleMenu: IContextMenu;
+  private inputMenu: IContextMenu;
 
   private readonly resourceGroupMenuEntries: ISCMResourceGroupMenuEntry[] = [];
   private readonly resourceGroupMenus = new Map<ISCMResourceGroup, ISCMMenus>();
 
   private readonly disposables: IDisposable[] = [];
 
-  @Autowired(AbstractMenuService)
-  private readonly menuService: AbstractMenuService;
+  @Autowired(AbstractContextMenuService)
+  private readonly menuService: AbstractContextMenuService;
 
   @Autowired(AbstractContextMenuService)
   private readonly contextMenuService: AbstractContextMenuService;
@@ -50,8 +50,14 @@ export class SCMMenus implements IDisposable {
       scmProviderKey.set('');
     }
 
-    this.titleMenu = this.menuService.createMenu(MenuId.SCMTitle, this.scopedCtxKeyService);
-    this.inputMenu = this.menuService.createMenu(MenuId.SCMInput, this.scopedCtxKeyService);
+    this.titleMenu = this.menuService.createMenu({
+      id: MenuId.SCMTitle,
+      contextKeyService: this.scopedCtxKeyService,
+    });
+    this.inputMenu = this.menuService.createMenu({
+      id: MenuId.SCMInput,
+      contextKeyService: this.scopedCtxKeyService,
+    });
 
     this.disposables.push(this.titleMenu, this.inputMenu);
   }
@@ -93,7 +99,7 @@ export class SCMMenus implements IDisposable {
   /**
    * 获取 resource group 的 inline actions
    */
-  getResourceGroupInlineActions(group: ISCMResourceGroup): IMenu | undefined {
+  getResourceGroupInlineActions(group: ISCMResourceGroup): IContextMenu | undefined {
     if (!this.resourceGroupMenus.has(group)) {
       return;
     }
@@ -104,7 +110,7 @@ export class SCMMenus implements IDisposable {
   /**
    * 获取 resource 的 inline actions
    */
-  getResourceInlineActions(group: ISCMResourceGroup): IMenu | undefined {
+  getResourceInlineActions(group: ISCMResourceGroup): IContextMenu | undefined {
     if (!this.resourceGroupMenus.has(group)) {
       return;
     }
@@ -139,8 +145,20 @@ export class SCMMenus implements IDisposable {
       contextKeyService.createKey('scmProvider', group.provider.contextValue);
       contextKeyService.createKey('scmResourceGroup', getSCMResourceContextKey(group));
 
-      const resourceGroupMenu = this.menuService.createMenu(MenuId.SCMResourceGroupContext, contextKeyService);
-      const resourceMenu = this.menuService.createMenu(MenuId.SCMResourceContext, contextKeyService);
+      const resourceGroupMenu = this.menuService.createMenu({
+        id: MenuId.SCMResourceGroupContext,
+        contextKeyService,
+        config: {
+          separator: 'inline',
+        },
+      });
+      const resourceMenu = this.menuService.createMenu({
+        id: MenuId.SCMResourceContext,
+        contextKeyService,
+        config: {
+          separator: 'inline',
+        },
+      });
 
       this.resourceGroupMenus.set(group, { resourceGroupMenu, resourceMenu });
 

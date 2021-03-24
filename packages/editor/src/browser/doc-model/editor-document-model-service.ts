@@ -77,7 +77,17 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     const modelDisposeDebounceTime = this.preferenceService.get<number>('editor.modelDisposeTime', 3000);
     // debounce
     this._modelsToDispose.add(uri.toString());
-    setTimeout(() => {
+    let timer: number | null = null;
+    const disposer = this.addDispose({
+      dispose: () => {
+        if (timer) {
+          clearTimeout(timer);
+        }
+      },
+    });
+    timer = setTimeout(() => {
+      disposer.dispose();
+      timer = null;
       if (this._modelsToDispose.has(uri.toString())) {
         this._doDelete(uri.toString());
       }
@@ -266,4 +276,10 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     return result;
   }
 
+  dispose() {
+    super.dispose();
+    this.getAllModels().forEach((model) => {
+      model.getMonacoModel().dispose();
+    });
+  }
 }

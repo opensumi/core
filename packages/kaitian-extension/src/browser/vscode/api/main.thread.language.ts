@@ -1,5 +1,6 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 
 import { Autowired, Injectable, Optinal } from '@ali/common-di';
@@ -15,7 +16,9 @@ import { ExtHostAPIIdentifier, IExtHostLanguages, IMainThreadLanguages, MonacoMo
 import { fromLanguageSelector } from '../../../common/vscode/converter';
 import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SemanticTokensLegend, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ICallHierarchyItemDto, CallHierarchyItem } from '../../../common/vscode/model.api';
 import { reviveIndentationRule, reviveOnEnterRules, reviveRegExp, reviveWorkspaceEditDto } from '../../../common/vscode/utils';
+import { UriComponents } from '../../../common/vscode/ext-types';
 import { ILanguageService } from '@ali/ide-editor';
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { DocumentRangeSemanticTokensProviderImpl, DocumentSemanticTokensProvider } from './semantic-tokens/semantic-token-provider';
 import { CancellationToken } from 'vscode';
 
@@ -43,6 +46,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   @Autowired(IEvaluatableExpressionService)
   protected readonly evaluatableExpressionService: IEvaluatableExpressionService;
 
+  @Autowired(IEditorDocumentModelService)
+  private readonly documentModelManager: IEditorDocumentModelService;
+
   private languageFeatureEnabled = new LRUMap<string, boolean>(200, 100);
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
@@ -66,6 +72,21 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   $getLanguages(): string[] {
     return monaco.languages.getLanguages().map((l) => l.id);
+  }
+
+  async $changeLanguage(resource: UriComponents, languageId: string): Promise<void> {
+    const languageIdentifier = StaticServices.modeService.get().getLanguageIdentifier(languageId);
+    if (!languageIdentifier || languageIdentifier.language !== languageId) {
+      return Promise.reject(new Error(`Unknown language id: ${languageId}`));
+    }
+
+    const uri = new URI(URI.revive(resource));
+    const ref = await this.documentModelManager.createModelReference(uri);
+    try {
+      ref.instance.languageId = languageId;
+    } finally {
+      ref.dispose();
+    }
   }
 
   isLanguageFeatureEnabled(model: monaco.editor.ITextModel) {

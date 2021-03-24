@@ -264,7 +264,7 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
   }
 
   private collectOneChanges(newPref: {[name: string]: any}, oldPref: {[name: string]: any}): {[preferenceName: string]: PreferenceProviderDataChange}  {
-    const keys = new Set([...Object.keys(oldPref), ...Object.keys(newPref)]);
+    const keys = new Set([...Object.keys(oldPref || {}), ...Object.keys(newPref || {})]);
     const changes: {[preferenceName: string]: PreferenceProviderDataChange} = {};
     const uri = this.getUri();
 

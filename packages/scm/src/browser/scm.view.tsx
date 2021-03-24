@@ -6,7 +6,7 @@ import { IContextKeyService, View, useInjectable  } from '@ali/ide-core-browser'
 import { AccordionContainer } from '@ali/ide-main-layout/lib/browser/accordion/accordion.view';
 import { TitleBar } from '@ali/ide-main-layout/lib/browser/accordion/titlebar.view';
 import { Button } from '@ali/ide-components';
-import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
+import { InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
 
 import { ISCMRepository, scmProviderViewId, scmResourceViewId, scmContainerId } from '../common';
 import { ViewModelContext } from './scm-model';
@@ -171,7 +171,7 @@ export const SCMPanel: React.FC<{ viewState: ViewState }> = observer((props) => 
     <div className={styles.view}>
       <TitleBar title={panelTitle} menubar={
         !hasMultiRepos && titleMenu
-          ? <InlineActionBar
+          ? <InlineMenuBar
             menus={titleMenu}
             context={selectedRepo && selectedRepo.provider && [selectedRepo.provider]} />
           : null

@@ -1,21 +1,35 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, CommandService, ILogger, formatLocalize, IContextKeyService, isUndefined, URI } from '@ali/ide-core-browser';
+import { CommandRegistry, CommandService, ILogger, formatLocalize, IContextKeyService, isUndefined, URI, localize } from '@ali/ide-core-browser';
 import { ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
-import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, MenuId, IMenuItem, ISubmenuItem } from '@ali/ide-core-browser/lib/menu/next';
 import { IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
 import { IEditorGroup } from '@ali/ide-editor';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
 
+// 对插件侧 contributes 的 menu interface
 export interface MenuActionFormat extends IMenuItem {
   command: string;
   when?: string;
   alt?: string;
 }
 
-export interface MenusSchema {
-  [MenuPosition: string]: MenuActionFormat[];
+// 对插件侧 contributes 的 submenu interface
+// tslint:disable-next-line:no-empty-interface
+export interface SubmenuActionFormat extends ISubmenuItem { }
+
+function isMenuActionFormat(item: MenuActionFormat | SubmenuActionFormat): item is MenuActionFormat {
+  return typeof (item as MenuActionFormat).command === 'string';
 }
+
+export interface MenusSchema {
+  [MenuPosition: string]: Array<MenuActionFormat | SubmenuActionFormat>;
+}
+
+export type SubmenusSchema = Array<{
+  id: string;
+  label: string;
+}>;
 
 export function parseMenuId(value: string): MenuId | string {
   switch (value) {
@@ -48,32 +62,77 @@ export function parseMenuGroup(groupStr?: string) {
   return [group, order];
 }
 
-export function isValidMenuItems(menu: MenuActionFormat[], collector: Console): boolean {
-  if (!Array.isArray(menu)) {
-    collector.error(formatLocalize('requirearray'));
+export function isValidMenuItem(item: MenuActionFormat, collector: Console): boolean {
+  if (typeof item.command !== 'string') {
+    collector.error(formatLocalize('requirestring', 'command'));
+    return false;
+  }
+  if (item.alt && typeof item.alt !== 'string') {
+    collector.error(formatLocalize('optstring', 'alt'));
+    return false;
+  }
+  if (item.when && typeof item.when !== 'string') {
+    collector.error(formatLocalize('optstring', 'when'));
+    return false;
+  }
+  if (item.group && typeof item.group !== 'string') {
+    collector.error(formatLocalize('optstring', 'group'));
     return false;
   }
 
-  for (const item of menu) {
-    if (typeof item.command !== 'string') {
-      collector.error(formatLocalize('requirestring', 'command'));
-      return false;
-    }
-    if (item.alt && typeof item.alt !== 'string') {
-      collector.error(formatLocalize('optstring', 'alt'));
-      return false;
-    }
-    if (item.when && typeof item.when !== 'string') {
-      collector.error(formatLocalize('optstring', 'when'));
-      return false;
-    }
-    if (item.group && typeof item.group !== 'string') {
-      collector.error(formatLocalize('optstring', 'group'));
-      return false;
+  return true;
+}
+
+function isValidSubmenuItem(item: SubmenuActionFormat, collector: Console): boolean {
+  if (typeof item.submenu !== 'string') {
+    collector.error(formatLocalize('requirestring', 'property `{0}` is mandatory and must be of type `string`', 'submenu'));
+    return false;
+  }
+  if (item.when && typeof item.when !== 'string') {
+    collector.error(formatLocalize('optstring', 'property `{0}` can be omitted or must be of type `string`', 'when'));
+    return false;
+  }
+  if (item.group && typeof item.group !== 'string') {
+    collector.error(formatLocalize('optstring', 'property `{0}` can be omitted or must be of type `string`', 'group'));
+    return false;
+  }
+
+  return true;
+}
+
+function isValidItems(items: Array<MenuActionFormat | SubmenuActionFormat>, collector: Console): boolean {
+  if (!Array.isArray(items)) {
+    collector.error(formatLocalize('requirearray', 'submenu items must be an array'));
+    return false;
+  }
+
+  for (const item of items) {
+    if (isMenuActionFormat(item)) {
+      if (!isValidMenuItem(item, collector)) {
+        return false;
+      }
+    } else {
+      if (!isValidSubmenuItem(item, collector)) {
+        return false;
+      }
     }
   }
 
   return true;
+}
+
+// vscode contributes#submenus 时, 用来做 submenu item 的 i18n 字符替换
+const _submenuDescRegistry = new Map<string /* submenu id */, SubmenusSchema>();
+
+@Injectable()
+@Contributes('submenus')
+export class SubmenusContributionPoint extends VSCodeContributePoint<SubmenusSchema> {
+  // TODO: add json schema validation
+  schema = {};
+
+  contribute() {
+    _submenuDescRegistry.set(this.extension.id, this.json);
+  }
 }
 
 @Injectable()
@@ -119,7 +178,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
     // menu registration
     for (const menuPosition of Object.keys(this.json)) {
       const menuActions = this.json[menuPosition];
-      if (!isValidMenuItems(menuActions, console)) {
+      if (!isValidItems(menuActions, console)) {
         return;
       }
       const menuId = parseMenuId(menuPosition);
@@ -129,48 +188,75 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
       }
 
       for (const item of menuActions) {
-        const command = this.commandRegistry.getRawCommand(item.command);
-        // alt 逻辑先不处理
-        const alt = item.alt && this.commandRegistry.getRawCommand(item.alt);
+        if (isMenuActionFormat(item)) {
+          const command = this.commandRegistry.getRawCommand(item.command);
+          // alt 逻辑先不处理
+          const alt = item.alt && this.commandRegistry.getRawCommand(item.alt);
 
-        if (!command) {
-          collector.error(formatLocalize('missing.command', item.command));
-          continue;
-        }
-        if (item.alt && !alt) {
-          collector.warn(formatLocalize('missing.altCommand', item.alt));
-        }
-        if (item.command === item.alt) {
-          collector.info(formatLocalize('dupe.command'));
-        }
+          if (!command) {
+            collector.error(formatLocalize('missing.command', item.command));
+            continue;
+          }
+          if (item.alt && !alt) {
+            collector.warn(formatLocalize('missing.altCommand', item.alt));
+          }
+          if (item.command === item.alt) {
+            collector.info(formatLocalize('dupe.command'));
+          }
 
-        const [group, order] = parseMenuGroup(item.group);
-        let argsTransformer: ((...args: any[]) => any[]) | undefined;
-        if (menuId as MenuId === MenuId.EditorTitleContext) {
-          argsTransformer = ({ uri, group }: {uri: URI, group: IEditorGroup}) => {
-            return [uri.codeUri];
-          };
-        } else if (menuId as MenuId === MenuId.EditorTitle) {
-          argsTransformer = (uri?: URI, group?: IEditorGroup, editorUri?: URI) => {
-            return [editorUri?.codeUri || uri?.codeUri];
-          };
-        }
+          const [group, order] = parseMenuGroup(item.group);
+          let argsTransformer: ((...args: any[]) => any[]) | undefined;
+          if (menuId as MenuId === MenuId.EditorTitleContext) {
+            argsTransformer = ({ uri, group }: { uri: URI, group: IEditorGroup }) => {
+              return [uri.codeUri];
+            };
+          } else if (menuId as MenuId === MenuId.EditorTitle) {
+            argsTransformer = (uri: URI, group: IEditorGroup, editorUri?: URI) => {
+              return [editorUri?.codeUri || uri.codeUri];
+            };
+          }
 
-        this.addDispose(this.menuRegistry.registerMenuItem(
-          menuId,
-          {
-            command: item.command,
-            alt,
-            group,
-            order,
-            when: item.when,
-            // 以下为 kaitian 扩展部分
-            argsTransformer,
-            type: item.type,
-            toggledWhen: item.toggledWhen,
-            enabledWhen: item.enabledWhen,
-          } as IMenuItem,
-        ));
+          this.addDispose(this.menuRegistry.registerMenuItem(
+            menuId,
+            {
+              command: item.command,
+              alt,
+              group,
+              order,
+              when: item.when,
+              // 以下为 kaitian 扩展部分
+              argsTransformer,
+              type: item.type,
+              toggledWhen: item.toggledWhen,
+              enabledWhen: item.enabledWhen,
+            } as IMenuItem,
+          ));
+        } else {
+          const submenuRegistry = _submenuDescRegistry.get(this.extension.id);
+          if (!submenuRegistry) {
+            collector.error(localize('missing.submenu.section', 'Need a submenu contributes firstly', item.submenu));
+            continue;
+          }
+          const submenuDesc = submenuRegistry.find((n) => n.id === item.submenu);
+
+          if (!submenuDesc) {
+            collector.error(localize('missing.submenu', "Menu item references a submenu `{0}` which is not defined in the 'submenus' section.", item.submenu));
+            continue;
+          }
+
+          const [group, order] = parseMenuGroup(item.group);
+
+          this.menuRegistry.registerMenuItem(
+            menuId,
+            {
+              submenu: item.submenu,
+              label: submenuDesc.label,
+              when: item.when,
+              group,
+              order,
+            } as ISubmenuItem,
+          );
+        }
       }
     }
   }

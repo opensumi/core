@@ -25,6 +25,7 @@ export type DebugRequestHandler = (request: DebugProtocol.Request) => any;
 
 export interface DebugRequestTypes {
   'attach': [DebugProtocol.AttachRequestArguments, DebugProtocol.AttachResponse];
+  'breakpointLocations': [DebugProtocol.BreakpointLocationsArguments, DebugProtocol.BreakpointLocationsResponse];
   'completions': [DebugProtocol.CompletionsArguments, DebugProtocol.CompletionsResponse];
   'configurationDone': [DebugProtocol.ConfigurationDoneArguments, DebugProtocol.ConfigurationDoneResponse];
   'continue': [DebugProtocol.ContinueArguments, DebugProtocol.ContinueResponse];

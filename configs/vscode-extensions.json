@@ -3,110 +3,216 @@
   "extensions": {
     "vscode-extensions": [
       {
-        "name": "git",
-        "version": "1.0.0"
+        "name": "bat"
       },
       {
-        "name": "merge-conflict",
-        "version": "1.0.0"
+        "name": "clojure"
       },
       {
-        "name": "css",
-        "version": "1.0.0"
+        "name": "coffeescript"
       },
       {
-        "name": "html",
-        "version": "1.0.0"
+        "name": "configuration-editing"
       },
       {
-        "name": "json",
-        "version": "1.0.0"
+        "name": "cpp"
       },
       {
-        "name": "javascript",
-        "version": "1.0.0"
+        "name": "csharp"
       },
       {
-        "name": "atom-one-dark",
-        "version": "2.1.0"
+        "name": "css"
       },
       {
-        "name": "java",
-        "version": "1.0.0"
+        "name": "css-language-features"
       },
       {
-        "name": "markdown-basics",
-        "version": "1.0.0"
+        "name": "debug-auto-launch"
       },
       {
-        "name": "markdown-language-features",
-        "version": "1.0.0"
+        "name": "docker"
       },
       {
-        "name": "theme-defaults",
-        "version": "1.0.0"
+        "name": "emmet"
       },
       {
-        "name": "vscode-java",
-        "version": "0.47.0"
+        "name": "extension-editing"
       },
       {
-        "name": "vscode-language-pack-jp",
-        "version": "1.36.2"
+        "name": "fsharp"
       },
       {
-        "name": "vscode-language-pack-zh-hans",
-        "version": "1.37.1"
+        "name": "git-ui"
       },
       {
-        "name": "vscode-icons",
-        "version": "9.4.0"
+        "name": "go"
       },
       {
-        "name": "json-language-feature",
-        "version": "1.0.0"
+        "name": "groovy"
       },
       {
-        "name": "configuration-editing",
-        "version": "1.0.0"
+        "name": "grunt"
       },
       {
-        "name": "node-debug",
-        "version": "1.40.1"
+        "name": "gulp"
       },
       {
-        "name": "node-debug2",
-        "version": "1.39.3"
-      }
-    ],
-    "ide-framework": [
-      {
-        "name": "kaitian-sample",
-        "version": "0.0.2"
+        "name": "handlebars"
       },
       {
-        "name": "tree-view-sample",
-        "version": "0.0.2"
+        "name": "hlsl"
+      },
+      {
+        "name": "html"
+      },
+      {
+        "name": "html-language-features"
+      },
+      {
+        "name": "ini"
+      },
+      {
+        "name": "jake"
+      },
+      {
+        "name": "java"
+      },
+      {
+        "name": "javascript"
+      },
+      {
+        "name": "json"
+      },
+      {
+        "name": "json-language-features"
+      },
+      {
+        "name": "less"
+      },
+      {
+        "name": "log"
+      },
+      {
+        "name": "lua"
+      },
+      {
+        "name": "make"
+      },
+      {
+        "name": "markdown-basics"
+      },
+      {
+        "name": "merge-conflict"
+      },
+      {
+        "name": "objective-c"
+      },
+      {
+        "name": "perl"
+      },
+      {
+        "name": "php"
+      },
+      {
+        "name": "php-language-features"
+      },
+      {
+        "name": "powershell"
+      },
+      {
+        "name": "pug"
+      },
+      {
+        "name": "python"
+      },
+      {
+        "name": "r"
+      },
+      {
+        "name": "razor"
+      },
+      {
+        "name": "ruby"
+      },
+      {
+        "name": "rust"
+      },
+      {
+        "name": "scss"
+      },
+      {
+        "name": "search-result"
+      },
+      {
+        "name": "shaderlab"
+      },
+      {
+        "name": "shellscript"
+      },
+      {
+        "name": "sql"
+      },
+      {
+        "name": "swift"
+      },
+      {
+        "name": "theme-abyss"
+      },
+      {
+        "name": "theme-defaults"
+      },
+      {
+        "name": "theme-kimbie-dark"
+      },
+      {
+        "name": "theme-monokai"
+      },
+      {
+        "name": "theme-monokai-dimmed"
+      },
+      {
+        "name": "theme-quietlight"
+      },
+      {
+        "name": "theme-red"
+      },
+      {
+        "name": "theme-solarized-dark"
+      },
+      {
+        "name": "theme-solarized-light"
+      },
+      {
+        "name": "theme-tomorrow-night-blue"
+      },
+      {
+        "name": "typescript-basics"
+      },
+      {
+        "name": "vb"
+      },
+      {
+        "name": "vscode-theme-seti"
+      },
+      {
+        "name": "xml"
+      },
+      {
+        "name": "yaml"
       }
     ],
     "kaitian": [
       {
-        "name": "ide-dark-theme",
-        "version": "2.0.0"
+        "name": "git"
       },
       {
-        "name": "typescript-basics",
-        "version": "1.37.2-patch.1"
+        "name": "vscode-language-pack-zh-hans"
       },
       {
-        "name": "typescript-language-features",
-        "version": "1.46.1-patch.2"
-      }
-    ],
-    "cloud-ide": [
+        "name": "typescript-language-features"
+      },
       {
-        "name": "vscode-eslint",
-        "version": "1.9.0-patch.1"
+        "name": "ide-dark-theme"
       }
     ]
   }

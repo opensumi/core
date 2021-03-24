@@ -10,6 +10,7 @@ export const descriptionForeground = registerColor('descriptionForeground', { li
 export const iconForeground = registerColor('icon.foreground', { dark: '#C5C5C5', light: '#424242', hc: '#FFFFFF' }, localize('iconForeground', 'The default color for icons in the workbench.'));
 
 export const focusBorder = registerColor('focusBorder', { dark: '#167CDB', light: '#167CDB', hc: null }, localize('focusBorder', 'Overall border color for focused elements. This color is only used if not overridden by a component.'));
+export const sashHoverBorder = registerColor('sash.hoverBorder', { dark: focusBorder, light: focusBorder, hc: focusBorder }, localize('sashActiveBorder', 'Border color of active sashes.'));
 
 export const contrastBorder = registerColor('contrastBorder', { light: null, dark: null, hc: hcBorderColor }, localize('contrastBorder', 'An extra border around elements to separate them from others for greater contrast.'));
 export const activeContrastBorder = registerColor('contrastActiveBorder', { light: null, dark: null, hc: focusBorder }, localize('activeContrastBorder', 'An extra border around active elements to separate them from others for greater contrast.'));

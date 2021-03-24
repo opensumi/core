@@ -155,6 +155,9 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, ex
     setLanguageConfiguration(language: string, configuration: LanguageConfiguration): Disposable {
       return extHostLanguages.setLanguageConfiguration(language, configuration);
     },
+    setTextDocumentLanguage(document: TextDocument, languageId: string): Thenable<TextDocument> {
+      return extHostLanguages.changeLanguage(document.uri, languageId);
+    },
     createDiagnosticCollection(name?: string): DiagnosticCollection {
       return extHostLanguages.createDiagnosticCollection(name);
     },
@@ -314,6 +317,15 @@ export class ExtHostLanguages implements IExtHostLanguages {
 
   async getLanguages(): Promise<string[]> {
     return this.proxy.$getLanguages();
+  }
+
+  async changeLanguage(uri: Uri, languageId: string): Promise<TextDocument> {
+    await this.proxy.$changeLanguage(uri, languageId);
+    const data = this.documents.getDocumentData(uri);
+    if (!data) {
+      throw new Error(`document '${uri.toString()}' NOT found`);
+    }
+    return data.document;
   }
 
   // ### Hover begin

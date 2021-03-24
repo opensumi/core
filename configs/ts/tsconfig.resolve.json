@@ -141,12 +141,6 @@
       "@ali/ide-explorer/lib/*": [
         "../packages/explorer/src/*"
       ],
-      "@ali/ide-file-tree": [
-        "../packages/file-tree/src/index.ts"
-      ],
-      "@ali/ide-file-tree/lib/*": [
-        "../packages/file-tree/src/*"
-      ],
       "@ali/ide-quick-open": [
         "../packages/quick-open/src/index.ts"
       ],

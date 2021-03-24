@@ -541,12 +541,16 @@ export enum Direction {
 }
 
 export enum SaveReason {
-
   Manual = 1,
-
   AfterDelay = 2,
-
   FocusOut = 3,
+}
+
+export namespace AUTO_SAVE_MODE {
+  export const OFF = 'off';
+  export const AFTER_DELAY = 'afterDelay';
+  export const EDITOR_FOCUS_CHANGE = 'editorFocusChange';
+  export const WINDOWS_LOST_FOCUS = 'windowLostFocus';
 }
 
 export interface IEditorDocumentModelContentChange {

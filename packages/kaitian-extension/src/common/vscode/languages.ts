@@ -14,6 +14,7 @@ export interface IMainThreadLanguages {
   $registerDocumentHighlightProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerHoverProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $getLanguages(): string[];
+  $changeLanguage(resource: UriComponents, languageId: string): Promise<void>;
   $registerCompletionSupport(handle: number, selector: SerializedDocumentFilter[], triggerCharacters: string[], supportsResolveDetails: boolean): void;
   $registerDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerTypeDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void;

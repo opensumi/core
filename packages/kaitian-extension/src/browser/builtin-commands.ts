@@ -1,6 +1,5 @@
 import { TERMINAL_COMMANDS } from '@ali/ide-terminal-next';
 import { FILE_COMMANDS, Command, EDITOR_COMMANDS } from '@ali/ide-core-browser';
-import { QUICK_OPEN_COMMANDS } from '@ali/ide-quick-open';
 import { DEBUG_COMMANDS } from '@ali/ide-debug/lib/browser/debug-contribution';
 
 export const RELOAD_WINDOW_COMMAND: Command = {
@@ -45,11 +44,6 @@ export const COPY_RELATIVE_FILE_PATH: Command = {
 export const SETTINGS_COMMAND_OPEN_SETTINGS: Command = {
   id: 'workbench.action.openSettings',
   delegate: 'core.openpreference',
-};
-
-export const QPEN_COMMAND_PALETTE: Command = {
-  id: 'workbench.action.quickOpen',
-  delegate: QUICK_OPEN_COMMANDS.OPEN.id,
 };
 
 export const EDITOR_NAVIGATE_BACK: Command = {
@@ -115,4 +109,9 @@ export const DEBUG_COMMAND_STOP: Command = {
 export const EDITOR_SHOW_ALL_SYMBOLS: Command = {
   id: 'workbench.action.showAllSymbols',
   delegate: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL.id,
+};
+
+export const REVEAL_IN_EXPLORER: Command = {
+  id: 'revealInExplorer',
+  delegate: FILE_COMMANDS.REVEAL_IN_EXPLORER.id,
 };
