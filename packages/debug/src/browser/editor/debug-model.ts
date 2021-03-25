@@ -495,9 +495,11 @@ export class DebugModel implements IDebugModel {
   }
 
   protected doToggleBreakpoint(position: monaco.Position = this.position) {
-    const breakpoint = this.getBreakpoint(position);
-    if (breakpoint) {
-      this.breakpointManager.delBreakpoint(breakpoint);
+    const breakpoints = this.breakpointManager.getBreakpoints(this.uri, { lineNumber: position.lineNumber });
+    if (breakpoints.length) {
+      for (const breakpoint of breakpoints) {
+        this.breakpointManager.delBreakpoint(breakpoint);
+      }
     } else {
       this.breakpointManager.addBreakpoint(DebugBreakpoint.create(
         this.uri,

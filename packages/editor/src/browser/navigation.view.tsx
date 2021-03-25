@@ -118,21 +118,28 @@ export const NavigationMenu = observer(({model}: {model: NavigationMenuModel}) =
             p.onClick!();
             viewService.dispose();
           } : undefined;
-          return  <div onClick={clickToNavigate || clickToGetChild} ref={(el) => itemRef = el} className={
-            classnames({
-              [styles.navigation_menu_item_current]: i === model.initialIndex,
-            })
-          }>
-            <span className={p.icon || getIcon('smile')}></span>
-            <span>{p.name}</span>
-            {p.getChildren && <span className={styles.navigation_right} onClick={
-              // 如果两个都存在，点右侧按钮为展开，点击名称为导航至
-              (clickToNavigate && clickToGetChild) ? (e) => {
-                e.stopPropagation();
-                clickToGetChild();
-              } : undefined
-            }><Icon icon={'right'} size='small' /></span> }
-          </div>;
+          return (
+            <div
+              onClick={clickToNavigate || clickToGetChild}
+              ref={(el) => itemRef = el}
+              className={
+                classnames({
+                  [styles.navigation_menu_item_current]: i === model.initialIndex,
+                })
+              }
+              key={'menu-' + p.name}
+            >
+              <span className={p.icon || getIcon('smile')}></span>
+              <span>{p.name}</span>
+              {p.getChildren && <span className={styles.navigation_right} onClick={
+                // 如果两个都存在，点右侧按钮为展开，点击名称为导航至
+                (clickToNavigate && clickToGetChild) ? (e) => {
+                  e.stopPropagation();
+                  clickToGetChild();
+                } : undefined
+              }><Icon icon={'right'} size='small' /></span> }
+            </div>
+          );
         })
       }
     </Scroll>

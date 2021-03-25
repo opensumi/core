@@ -106,9 +106,10 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>(
 
     const inputRef = React.useRef<HTMLInputElement | null>(null);
     const [isDirty, setIsDirty] = React.useState(false);
+
     // handle initial value from `value` or `defaultValue`
-    const [inputValue, setInputValue] = React.useState<string>(() => (typeof value === 'undefined' ? defaultValue : value) || '');
-    const [preValue, setPrevValue] = React.useState<string>(() => (typeof value === 'undefined' ? defaultValue : value) || '');
+    const [inputValue, setInputValue] = React.useState<string>(() => ((value ?? defaultValue) || ''));
+    const [preValue, setPrevValue] = React.useState<string>(() => ((value ?? defaultValue) || ''));
 
     // make `ref` to input works
     React.useImperativeHandle(ref, () => inputRef.current!);
@@ -122,6 +123,12 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>(
 
     // implements for `getDerivedStateFromProps` to update `state#inputValue` from `props#value`
     React.useEffect(() => {
+      // what if value is null??
+      // 如果不加这一句的话，后面又会把 inputValue 设置成 null
+      if (value === null || typeof value === 'undefined') {
+        return;
+      }
+
       if (value !== preValue && value !== inputValue) {
         setInputValue(value);
       }
@@ -199,6 +206,7 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>(
       [`kt-input-${size}`]: size,
       ['kt-input-disabled']: props.disabled,
     });
+
     return (
       <div className={inputClx} style={wrapperStyle}>
         {addonRender(addonBefore, 'kt-input-addon-before')}
