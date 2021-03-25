@@ -723,7 +723,18 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
    */
   @computed
   get showExtensions() {
-    return this.rawExtension.filter((extension) => extension.isBuiltin ? extension.isBuiltin === this.isShowBuiltinExtensions : true).sort((extension) => extension.isBuiltin ? 1 : -1);
+    return this.rawExtension
+      .filter((extension) => extension.isBuiltin ? extension.isBuiltin === this.isShowBuiltinExtensions : true)
+      .sort((extension) => extension.isBuiltin ? 1 : -1)
+      .sort((a, b) => {
+        if (!a.newVersion && b.newVersion) {
+          return 1;
+        } else if (a.newVersion && !b.newVersion) {
+          return -1;
+        } else {
+          return 0;
+        }
+      });
   }
 
   @computed
