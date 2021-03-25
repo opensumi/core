@@ -194,7 +194,7 @@ export class TreeViewDataProvider extends Tree {
   async createFoldNode(item: TreeViewItem, parent: ExtensionCompositeTreeNode): Promise<ExtensionCompositeTreeNode> {
     const expanded = TreeItemCollapsibleState.Expanded === item.collapsibleState;
     const icon = await this.toIconClass(item);
-    const actions = item.contextValue ? this.getInlineMenuNodes(item.contextValue) : [];
+    const actions = this.getInlineMenuNodes(item.contextValue || '');
     const node = new ExtensionCompositeTreeNode(
       this,
       parent,
@@ -215,7 +215,7 @@ export class TreeViewDataProvider extends Tree {
 
   async createNormalNode(item: TreeViewItem, parent: ExtensionCompositeTreeNode): Promise<ExtensionTreeNode> {
     const icon = await this.toIconClass(item);
-    const actions = item.contextValue ? this.getInlineMenuNodes(item.contextValue) : [];
+    const actions = this.getInlineMenuNodes(item.contextValue || '');
     const node = new ExtensionTreeNode(
       this,
       parent,

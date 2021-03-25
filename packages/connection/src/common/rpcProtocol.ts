@@ -126,6 +126,11 @@ export namespace ObjectTransfer {
             }),
           },
         };
+      } else if (value.type === 'Buffer') {
+        return {
+          $type: 'Buffer',
+          data: Array.from(value.data),
+        };
       } else if (value instanceof Uint8Array || value instanceof Uint32Array || value instanceof Uint16Array) {
         return {
           $type: 'Buffer',
