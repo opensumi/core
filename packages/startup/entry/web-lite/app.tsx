@@ -51,8 +51,8 @@ renderApp({
   noExtHost: true,
   extWorkerHost: 'https://dev.g.alicdn.com/tao-ide/ide-lite/0.0.1/worker-host.js',
   defaultPreferences: {
-    'general.theme': 'Default Dark+',
-    'general.icon': 'vscode-icons',
+    'general.theme': 'tao-ide-dark',
+    'general.icon': 'vsicons-slim',
     'application.confirmExit': 'never',
     'editor.quickSuggestionsDelay': 100,
     'editor.quickSuggestionsMaxCount': 50,

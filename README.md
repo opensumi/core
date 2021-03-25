@@ -142,4 +142,5 @@ tnpm owner ls @ali/ide-file-tree
 
 ```
 SCM_PLATFORM=antcode LSIF_HOST=${your_lsif_host} yarn start:lite
+SCM_PLATFORM=aone AONECODE_SK=${gitlab sk} yarn start:lite
 ```

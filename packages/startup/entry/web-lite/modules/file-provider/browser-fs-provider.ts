@@ -6,6 +6,7 @@ import { ensureDir } from '@ali/ide-core-common/lib/browser-fs/ensure-dir';
 
 import * as fs from 'fs';
 import * as paths from 'path';
+import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
 
 interface BrowserFsProviderOptions { isReadonly?: boolean; rootFolder: string; }
 
@@ -118,7 +119,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
       throw err;
     }
   }
-  async readFile(uri: Uri): Promise<string> {
+  async readFile(uri: Uri): Promise<Uint8Array> {
     const _uri = new URI(uri);
     let content: string | undefined;
     try {
@@ -135,9 +136,10 @@ export class BrowserFsProvider implements IDiskFileProvider {
       // workspaceDir 要带版本号信息(ref)，保证本地存储和版本号是对应的
       content && fs.writeFile(FileUri.fsPath(_uri), content, () => {});
     }
-    return content!;
+    return BinaryBuffer.fromString(content!).buffer;
   }
-  async writeFile(uri: Uri, content: string, options: { create: boolean; overwrite: boolean; isInit?: boolean }): Promise<void | FileStat> {
+  async writeFile(uri: Uri, buffer: Uint8Array, options: { create: boolean; overwrite: boolean; isInit?: boolean }): Promise<void | FileStat> {
+    const content = BinaryBuffer.wrap(buffer).toString();
     this.checkCapability();
 
     const _uri = new URI(uri);
@@ -174,7 +176,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
     const content = await this.readFile(oldUri);
     // FIXME: 如何保证browserFs侧写入和远端写入的原子性？
     if (oldUri.fsPath.startsWith(this.options.rootFolder)) {
-      await this.httpFileService.updateFile(oldUri, content, { newUri });
+      await this.httpFileService.updateFile(oldUri, content.toString(), { newUri });
     }
     return await promisify(fs.rename)(oldUri.fsPath, newUri.fsPath);
   }
@@ -196,7 +198,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
     this.checkCapability();
     const content = await this.readFile(source);
     if (source.fsPath.startsWith(this.options.rootFolder)) {
-      await this.httpFileService.createFile(destination, content, {});
+      await this.httpFileService.createFile(destination, content.toString(), {});
     }
     await promisify(fs.writeFile)(destination.fsPath, content);
   }
@@ -306,7 +308,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
       if (node.type === 'tree') {
         ensureNodes.push(this.createDirectory(URI.file(new Path(this.options.rootFolder).join(`${node.path}`).toString()).codeUri));
       } else {
-        ensureNodes.push(this.writeFile(URI.file(new Path(this.options.rootFolder).join(`${node.path}`).toString()).codeUri, '', {create: true, isInit: true, overwrite: false}) as Promise<FileStat>);
+        ensureNodes.push(this.writeFile(URI.file(new Path(this.options.rootFolder).join(`${node.path}`).toString()).codeUri, BinaryBuffer.fromString('').buffer, {create: true, isInit: true, overwrite: false}) as Promise<FileStat>);
       }
     }
     try {

@@ -1,188 +1,60 @@
 import { IExtensionMetaData } from '@ali/ide-kaitian-extension/lib/common';
+import { Uri } from '@ali/ide-core-common';
 
-const vscAuthority = 'kt-ext://cdn.jsdelivr.net/gh/microsoft/vscode/extensions';
+const ktMarketBase = 'kt-ext://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/marketplace/assets';
 
 export const nodeLessExtensions: IExtensionMetaData[] = [
   {
-    id: 'themeDefaults',
-    extensionId: 'tao.themeDefaults',
-    path: vscAuthority + '/theme-defaults',
-    extraMetadata: {},
+    id: 'def-ide-theme',
     isBuiltin: false,
-    realPath: vscAuthority + '/theme-defaults',
+    extensionId: 'tao.def-ide-theme',
+    path: 'kt-ext://g.alicdn.com/tao-ide/ide-lite/0.0.1/extensions/theme/',
+    uri: Uri.parse('kt-ext://g.alicdn.com/tao-ide/ide-lite/0.0.1/extensions/theme'),
+    extraMetadata: {},
+    realPath: 'kt-ext://g.alicdn.com/tao-ide/ide-lite/0.0.1/extensions/theme',
     extendConfig: {},
-    isBuiltin: true,
     defaultPkgNlsJSON: undefined,
     packageNlsJSON: undefined,
     packageJSON: {
       'contributes': {
         'themes': [
           {
-            'id': 'Default Dark+',
-            'label': 'Dark+ (default dark)',
+            'id': 'tao-ide-dark',
+            'label': 'Tao IDE Dark',
             'uiTheme': 'vs-dark',
-            'path': './themes/dark_plus.json',
+            'path': './dark/plus.json',
           },
           {
-            'id': 'Default Light+',
-            'label': 'Light+ (default light)',
+            'id': 'tao-ide-light',
+            'label': 'Tao IDE Light',
             'uiTheme': 'vs',
-            'path': './themes/light_plus.json',
-          },
-        ],
-        'iconThemes': [
-          {
-            'id': 'vs-minimal',
-            'label': 'Minimal (Visual Studio Code)',
-            'path': './fileicons/vs_minimal-icon-theme.json',
+            'path': './light/plus.json',
           },
         ],
       },
     },
   },
   {
-    id: 'seti-icon',
-    isBuiltin: false,
-    extensionId: 'tao.seti-icon',
-    path: vscAuthority + '/theme-seti',
-    extraMetadata: {},
-    realPath: vscAuthority + '/theme-seti',
-    extendConfig: {},
+    id: 'vsicons-slim',
+    extensionId: 'kaitian.vsicons-slim',
     isBuiltin: true,
+    path: ktMarketBase + '/kaitian.vsicons-slim/v1.0.4/extension/',
+    uri: Uri.parse(ktMarketBase + '/kaitian.vsicons-slim/v1.0.4/extension/'),
+    extraMetadata: {},
+    realPath: ktMarketBase + '/kaitian.vsicons-slim/v1.0.4/extension/',
+    extendConfig: {},
     defaultPkgNlsJSON: undefined,
     packageNlsJSON: undefined,
     packageJSON: {
       'contributes': {
         'iconThemes': [
           {
-            'id': 'vs-seti',
-            'label': 'Seti (Visual Studio Code)',
-            'path': './icons/vs-seti-icon-theme.json',
+            'id': 'vsicons-slim',
+            'label': 'VSCode Icons Slim',
+            'path': 'vsicons-slim.json',
           },
         ],
       },
     },
-  },
-  {
-    id: 'typescript-basic',
-    isBuiltin: false,
-    extensionId: 'tao.typescript-basic',
-    path: vscAuthority + '/typescript-basics',
-    extraMetadata: {},
-    isBuiltin: true,
-    realPath: vscAuthority + '/typescript-basics',
-    extendConfig: {},
-    defaultPkgNlsJSON: undefined,
-    packageNlsJSON: undefined,
-    packageJSON: {
-      contributes: {
-        'languages': [
-          {
-            'id': 'typescript',
-            'aliases': [
-              'TypeScript',
-              'ts',
-              'typescript',
-            ],
-            'extensions': [
-              '.ts',
-            ],
-            'configuration': './language-configuration.json',
-          },
-          {
-            'id': 'typescriptreact',
-            'aliases': [
-              'TypeScript React',
-              'tsx',
-            ],
-            'extensions': [
-              '.tsx',
-            ],
-            'configuration': './language-configuration.json',
-          },
-          {
-            'id': 'jsonc',
-            'filenames': [
-              'tsconfig.json',
-              'jsconfig.json',
-            ],
-            'filenamePatterns': [
-              'tsconfig.*.json',
-              'tsconfig-*.json',
-            ],
-          },
-        ],
-        'grammars': [
-          {
-            'language': 'typescript',
-            'scopeName': 'source.ts',
-            'path': './syntaxes/TypeScript.tmLanguage.json',
-            'tokenTypes': {
-              'entity.name.type.instance.jsdoc': 'other',
-              'entity.name.function.tagged-template': 'other',
-              'meta.import string.quoted': 'other',
-              'variable.other.jsdoc': 'other',
-            },
-          },
-          {
-            'language': 'typescriptreact',
-            'scopeName': 'source.tsx',
-            'path': './syntaxes/TypeScriptReact.tmLanguage.json',
-            'embeddedLanguages': {
-              'meta.tag.tsx': 'jsx-tags',
-              'meta.tag.without-attributes.tsx': 'jsx-tags',
-              'meta.tag.attributes.tsx': 'typescriptreact',
-              'meta.embedded.expression.tsx': 'typescriptreact',
-            },
-            'tokenTypes': {
-              'entity.name.type.instance.jsdoc': 'other',
-              'entity.name.function.tagged-template': 'other',
-              'meta.import string.quoted': 'other',
-              'variable.other.jsdoc': 'other',
-            },
-          },
-        ],
-      },
-    },
-  },
-  {
-    'id': 'kaitian-worker.volans-completions',
-    'extensionId': 'extension',
-    isBuiltin: true,
-    'path': 'kt-ext://dev.g.alicdn.com/tao-ide/ide-lite/0.0.1/extensions/completion',
-    'packageJSON': {
-      'activationEvents': [
-        '*',
-      ],
-      'kaitianContributes': {
-        'workerMain': './dist/extension.js',
-      },
-      'contributes': {
-        'commands': [
-          {
-            'command': 'volansComplete.refreshConfig',
-            'title': '%extension.commands.refresh%',
-          },
-        ],
-        'configuration': {
-          'type': 'object',
-          'title': 'Mini Program',
-          'properties': {
-            'Mini-Program.enabledJSAPIComplete': {
-              'type': 'boolean',
-              'default': true,
-              'description': '%extension.configuration.enableJSComplete%',
-            },
-          },
-        },
-        'workerMain': './dist/extension.js',
-      },
-    },
-    // 会作为extensionPath，需要带kt-ext scheme，插件代码里需要直接parse uri而不是直接URI.file
-    'realPath': 'https://dev.g.alicdn.com/tao-ide/ide-lite/0.0.1/extensions/completion',
-    defaultPkgNlsJSON: undefined,
-    packageNlsJSON: undefined,
-    extraMetadata: {},
-    extendConfig: {},
   },
 ];

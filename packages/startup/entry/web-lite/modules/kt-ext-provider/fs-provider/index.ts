@@ -1,5 +1,6 @@
 import { Injectable } from '@ali/common-di';
 import { Uri, Event } from '@ali/ide-core-browser';
+import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
 import { FileSystemProvider, FileStat, FileType, FileChangeEvent } from '@ali/ide-file-service';
 
 /**
@@ -24,17 +25,17 @@ export class KaitianExtFsProvider implements FileSystemProvider {
     throw new Error('Method not implemented.');
   }
 
-  async readFile(uri: Uri): Promise<string> {
+  async readFile(uri: Uri) {
     const requestUrl = uri.with({ scheme: 'https' });
 
     return await fetch(requestUrl.toString(), {
       headers: {
         'Accept-Encoding': 'gzip, deflate',
       },
-    }).then((res) => res.text());
+    }).then((res) => res.text()).then((content) => BinaryBuffer.fromString(content).buffer);
   }
 
-  writeFile(uri: Uri, content: string, options: { create: boolean; overwrite: boolean; }): void | Thenable<void | FileStat> {
+  writeFile(uri: Uri, content: Buffer, options: { create: boolean; overwrite: boolean; }): void | Thenable<void | FileStat> {
     throw new Error('Method not implemented.');
   }
 
