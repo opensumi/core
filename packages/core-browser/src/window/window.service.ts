@@ -1,7 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { IWindowService, IOpenWorkspaceOption, NewWindowOptions } from '.';
 import { isElectronRenderer, URI } from '@ali/ide-core-common';
-import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
+import { IElectronMainLifeCycleService, IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { electronEnv } from '../utils/electron';
 import { IExternalUriService } from '../services';
 
@@ -18,11 +18,18 @@ export class WindowService implements IWindowService {
     if (options?.external) {
       url = this.externalUriService.resolveExternalUri(new URI(url)).toString(true);
     }
-    const newWindow = window.open(url);
-    if (newWindow === null) {
-      throw new Error('Cannot open a new window for URL: ' + url);
+    if (isElectronRenderer()) {
+      // Electron 环境下使用 shell.openExternal 方法打开外部U ri
+      const electronMainUIService: IElectronMainUIService = this.injector.get(IElectronMainUIService);
+      electronMainUIService.openExternal(url);
+      return undefined;
+    } else {
+      const newWindow = window.open(url);
+      if (newWindow === null) {
+        throw new Error('Cannot open a new window for URL: ' + url);
+      }
+      return newWindow;
     }
-    return newWindow;
   }
 
   openWorkspace(workspace: URI, options: IOpenWorkspaceOption = {}): void {

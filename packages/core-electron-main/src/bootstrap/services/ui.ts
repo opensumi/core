@@ -61,19 +61,19 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
   }
 
   async openPath(path: string) {
-    return shell.openPath(path);
+    return await shell.openPath(path);
   }
 
   async openExternal(uri: string) {
-    shell.openExternal(uri);
+    await shell.openExternal(uri);
   }
 
   async moveToTrash(path: string) {
-    shell.moveItemToTrash(path);
+    await shell.moveItemToTrash(path);
   }
 
   async revealInFinder(path: string) {
-    shell.showItemInFolder(path);
+    await  shell.showItemInFolder(path);
   }
 
   async revealInSystemTerminal(path: string) {
