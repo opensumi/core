@@ -499,8 +499,10 @@ export class DebugSessionManager {
     if (currentSession && currentSession.id === sessionId) {
       this.updateCurrentSession(undefined);
     }
+    // server 有可能会先返回一个 exited 事件，导致 destroy 先触发
+    // 包一个 setTimeout 等埋点上报后再清理
     setTimeout(() => {
       this._extraMap.delete(sessionId);
-    }, 8 * 1000);
+    });
   }
 }

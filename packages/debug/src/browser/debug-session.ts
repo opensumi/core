@@ -10,7 +10,7 @@ import {
   canceled,
 } from '@ali/ide-core-browser';
 import debounce = require('lodash.debounce');
-import { DebugSessionConnection, DebugEventTypes, DebugRequestTypes } from './debug-session-connection';
+import { DebugSessionConnection, DebugEventTypes, DebugRequestTypes, DebugExitEvent } from './debug-session-connection';
 import { DebugSessionOptions, InternalDebugSessionOptions, IDebugSession, IDebugSessionManager, DEBUG_REPORT_NAME } from '../common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@ali/ide-file-service';
@@ -56,6 +56,8 @@ export class DebugSession implements IDebugSession {
   }
 
   protected updateDeffered: Deferred<void> | null = null;
+
+  protected exitDeferred = new Deferred<DebugExitEvent>();
 
   constructor(
     readonly id: string,
@@ -116,6 +118,9 @@ export class DebugSession implements IDebugSession {
       }),
       this.on('terminated', () => {
         this.terminated = true;
+      }),
+      this.on('exited', (reason) => {
+        this.exitDeferred.resolve(reason);
       }),
       this.on('capabilities', (event) => this.updateCapabilities(event.body.capabilities)),
       this.breakpoints.onDidChangeBreakpoints((event) => this.updateBreakpoint(event)),
@@ -572,16 +577,12 @@ export class DebugSession implements IDebugSession {
   }
 
   protected exited(timeout: number): Promise<boolean> {
-    return new Promise<boolean>((resolve) => {
-      const listener = this.on('exited', () => {
-        listener.dispose();
-        resolve(true);
-      });
-      setTimeout(() => {
-        listener.dispose();
-        resolve(false);
-      }, timeout);
-    });
+    return Promise.race([
+      this.exitDeferred.promise.then(() => true, () => false),
+      new Promise<boolean>((resolve) => {
+        setTimeout(resolve, timeout, false);
+      }),
+    ]);
   }
 
   async restart(): Promise<boolean> {
