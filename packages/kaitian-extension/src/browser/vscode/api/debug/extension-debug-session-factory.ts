@@ -1,5 +1,6 @@
 import { Injector } from '@ali/common-di';
 import { DebugSession, DebugSessionConnection, BreakpointManager, DebugSessionFactory, DebugPreferences, DebugModelManager } from '@ali/ide-debug/lib/browser';
+import { IDebugSessionManager } from '@ali/ide-debug';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -23,9 +24,10 @@ export class ExtensionDebugSession extends DebugSession {
     protected readonly labelService: LabelService,
     protected readonly messageService: IMessageService,
     protected readonly fileSystem: IFileServiceClient,
+    protected readonly sessionManager: IDebugSessionManager,
     protected readonly terminalOptionsExt: any,
   ) {
-    super(id, options, connection, terminalService, editorService, breakpointManager, modelManager, labelService, messageService, fileSystem);
+    super(id, options, connection, terminalService, editorService, breakpointManager, modelManager, labelService, messageService, fileSystem, sessionManager);
   }
 
   protected async doRunInTerminal(terminalOptions: TerminalOptions, command?: string): Promise<DebugProtocol.RunInTerminalResponse['body']> {
@@ -49,6 +51,7 @@ export class ExtensionDebugSessionFactory implements DebugSessionFactory {
     protected readonly debugPreference: DebugPreferences,
     protected readonly outputService: OutputService,
     protected readonly injector: Injector,
+    protected readonly sessionManager: IDebugSessionManager,
   ) {
   }
 
@@ -70,7 +73,9 @@ export class ExtensionDebugSessionFactory implements DebugSessionFactory {
       this.labelService,
       this.messageService,
       this.fileSystem,
-      this.terminalOptionsExt);
+      this.sessionManager,
+      this.terminalOptionsExt,
+    );
   }
 
   protected getTraceOutputChannel(): OutputChannel | undefined {

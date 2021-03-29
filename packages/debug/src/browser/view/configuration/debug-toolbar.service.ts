@@ -69,17 +69,21 @@ export class DebugToolbarService {
   }
 
   private instrumentReporter(name: string): () => void {
-    const languageType = this.model.currentSession?.configuration?.type;
-    this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_TOOLBAR_OPERATION, name, {
+    const session = this.model.currentSession!;
+    const languageType = session.configuration?.type;
+    const currentThread = this.model.currentThread;
+    const threadId = currentThread?.raw?.id;
+    this.model.reportAction(session.id, threadId, name);
+    const extra = {
       type: languageType,
       request: this.currentSession?.configuration.request,
-    });
-    const reportTime = this.reporterService.time(DEBUG_REPORT_NAME?.DEBUG_TOOLBAR_OPERATION_TIME);
+      sessionId: session.id,
+      threadId,
+    };
+    this.model.report(DEBUG_REPORT_NAME.DEBUG_TOOLBAR_OPERATION, name, extra);
+    const reportTime = this.model.reportTime(DEBUG_REPORT_NAME.DEBUG_TOOLBAR_OPERATION_TIME, extra);
     return () => {
-      reportTime.timeEnd(name, {
-        type: languageType,
-        request: this.currentSession?.configuration.request,
-      });
+      reportTime(name);
     };
   }
 

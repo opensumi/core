@@ -6,8 +6,9 @@ import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { WSChannelHandler } from '@ali/ide-connection';
 import { DebugPreferences } from './debug-preferences';
 import { DebugSessionConnection } from './debug-session-connection';
+import { DebugSessionManager } from './debug-session-manager';
 import { DebugModelManager } from './editor/debug-model-manager';
-import { DebugAdapterPath, DebugSessionOptions } from '../common';
+import { DebugAdapterPath, DebugSessionOptions, IDebugSessionManager } from '../common';
 import { BreakpointManager } from './breakpoint';
 import { IMessageService } from '@ali/ide-overlay';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -91,6 +92,8 @@ export class DefaultDebugSessionFactory implements DebugSessionFactory {
   protected readonly outputService: OutputService;
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
+  @Autowired(IDebugSessionManager)
+  protected readonly manager: DebugSessionManager;
 
   get(sessionId: string, options: DebugSessionOptions): DebugSession {
     const connection = this.injector.get(DebugSessionConnection, [
@@ -110,7 +113,9 @@ export class DefaultDebugSessionFactory implements DebugSessionFactory {
       this.modelManager,
       this.labelService,
       this.messages,
-      this.fileSystem);
+      this.fileSystem,
+      this.manager,
+    );
   }
 
   protected getTraceOutputChannel(): OutputChannel | undefined {

@@ -205,6 +205,7 @@ export class MainThreadDebug implements IMainThreadDebug {
       this.debugPreferences,
       this.outputService,
       this.injector,
+      this.sessionManager,
     );
     disposable.pushAll([
       this.adapterContributionRegister.registerDebugAdapterContribution(

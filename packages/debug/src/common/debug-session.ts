@@ -18,7 +18,10 @@ export interface IDebugSessionManager {
   fireWillStartDebugSession(): Promise<void>;
   resolveConfiguration(options: Readonly<DebugSessionOptions>): Promise<InternalDebugSessionOptions>;
   resolveDebugConfiguration(configuration: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration>;
-  fireWillResolveDebugConfiguration(debugType: string): Promise<void> ;
+  fireWillResolveDebugConfiguration(debugType: string): Promise<void>;
+  report(name: string, msg: string | undefined, extra?: any): void;
+  reportTime(name: string, defaults?: any): (msg: string | undefined, extra?: any) => number;
+  reportAction(sessionId: string, threadId: number | string | undefined, action: string): void;
 
   [key: string]: any;
 }

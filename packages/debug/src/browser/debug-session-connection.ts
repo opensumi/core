@@ -7,14 +7,13 @@ import {
   Disposable,
   IDisposable,
   Deferred,
-  IReporterService,
-  ReporterService,
   getDebugLogger,
 } from '@ali/ide-core-browser';
 import { IWebSocket } from '@ali/ide-connection';
 import { OutputChannel } from '@ali/ide-output/lib/browser/output.channel';
-import { DEBUG_REPORT_NAME } from '../common';
+import { DEBUG_REPORT_NAME, IDebugSessionManager } from '../common';
 import { DebugConfiguration } from 'vscode';
+import { DebugSessionManager } from './debug-session-manager';
 
 export interface DebugExitEvent {
   code?: number;
@@ -94,8 +93,8 @@ const standardDebugEvents = new Set<string>([
 @Injectable({multiple: true})
 export class DebugSessionConnection implements IDisposable {
 
-  @Autowired(ReporterService)
-  private readonly reporterService: IReporterService;
+  @Autowired(IDebugSessionManager)
+  protected readonly manager: DebugSessionManager;
 
   private sequence = 1;
 
@@ -155,21 +154,26 @@ export class DebugSessionConnection implements IDisposable {
       this.sessionAdapterID = (args as DebugProtocol.InitializeRequestArguments).adapterID;
     }
 
-    const dapReporterTime = this.reporterService.time(DEBUG_REPORT_NAME.DEBUG_ADAPTER_PROTOCOL_TIME);
+    const reportDAP = this.manager.reportTime(DEBUG_REPORT_NAME.DEBUG_ADAPTER_PROTOCOL_TIME, {
+      sessionId: this.sessionId,
+      threadId: (args as any).threadId,
+    });
     const result = await this.doSendRequest(command, args);
+
     /*
     * 对 threads 请求增加 数量 统计
     */
-    const reportExtra = {
+    const reportExtra: any = {
         adapterID: this.sessionAdapterID,
         request: configuration.request,
     };
 
     if (command === 'threads') {
-      reportExtra['amount'] = (result as DebugProtocol.ThreadsResponse).body.threads.length;
+      reportExtra.amount = (result as DebugProtocol.ThreadsResponse).body.threads.length;
     }
 
-    dapReporterTime.timeEnd(command, reportExtra);
+    reportDAP(command, reportExtra);
+
     if (command === 'next' || command === 'stepIn' ||
       command === 'stepOut' || command === 'stepBack' ||
       command === 'reverseContinue' || command === 'restartFrame') {

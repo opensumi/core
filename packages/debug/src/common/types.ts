@@ -70,4 +70,8 @@ export enum DEBUG_REPORT_NAME {
    * DAP 请求和响应耗时
    */
   DEBUG_ADAPTER_PROTOCOL_TIME = 'debugAdapterProtocolTime',
+  /**
+   * 命中
+   */
+  DEBUG_STOPPED = 'debugStopped',
 }
