@@ -1,7 +1,7 @@
 import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { Autowired } from '@ali/common-di';
 import { Domain, CommandContribution, CommandRegistry, localize, IQuickInputService, IReporterService } from '@ali/ide-core-browser';
-import { DebugVariable } from '../../tree/debug-tree-node.define';
+import { DebugVariableContainer, DebugVariable } from '../../tree/debug-tree-node.define';
 import { DebugVariablesModelService } from './debug-variables-tree.model.service';
 import { DEBUG_COMMANDS } from '../../debug-contribution';
 import { IMessageService } from '@ali/ide-overlay';
@@ -40,6 +40,11 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
         }
       },
     });
+    registry.registerCommand(DEBUG_COMMANDS.COPY_VARIABLE_VALUE, {
+      execute: async (node: DebugVariableContainer | DebugVariable) => {
+        this.debugVariablesModelService.copyValue(node);
+      },
+    });
   }
 
   registerMenus(registry: IMenuRegistry) {
@@ -47,6 +52,13 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
       command: {
         id: DEBUG_COMMANDS.SET_VARIABLE_VALUE.id,
         label: localize('deugger.menu.setValue'),
+      },
+      order: 1,
+    });
+    registry.registerMenuItem(MenuId.DebugVariablesContext, {
+      command: {
+        id: DEBUG_COMMANDS.COPY_VARIABLE_VALUE.id,
+        label: localize('deugger.menu.copyValue'),
       },
       order: 1,
     });

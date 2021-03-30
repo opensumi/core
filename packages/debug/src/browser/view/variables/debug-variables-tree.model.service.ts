@@ -1,11 +1,11 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNodeEvent } from '@ali/ide-components';
-import { Emitter, IContextKeyService, ThrottledDelayer, Deferred, Event, DisposableCollection } from '@ali/ide-core-browser';
+import { Emitter, IContextKeyService, ThrottledDelayer, Deferred, Event, DisposableCollection, IClipboardService } from '@ali/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { DebugVariablesModel } from './debug-variables-model';
 import { Path } from '@ali/ide-core-common/lib/path';
 import pSeries = require('p-series');
-import { ExpressionContainer, ExpressionNode, DebugVariableRoot } from '../../tree/debug-tree-node.define';
+import { ExpressionContainer, ExpressionNode, DebugVariableRoot, DebugVariableContainer, DebugVariable } from '../../tree/debug-tree-node.define';
 import { DebugViewModel } from '../debug-view-model';
 import { DebugSession } from '../../debug-session';
 
@@ -35,6 +35,9 @@ export class DebugVariablesModelService {
 
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;
+
+  @Autowired(IClipboardService)
+  private readonly clipboardService: IClipboardService;
 
   private _activeTreeModel: DebugVariablesModel | undefined;
   private allTreeModel: Map<DebugStackFrame, DebugVariablesModel> = new Map();
@@ -395,5 +398,30 @@ export class DebugVariablesModelService {
     // 重置更新队列
     this._changeEventDispatchQueue = [];
     return promise;
+  }
+
+  async copyValue(node: DebugVariableContainer | DebugVariable) {
+    const getClipboardValue = async () => {
+      if (node.session && node.session.capabilities.supportsValueFormattingOptions) {
+        try {
+          const { variable: { evaluateName } } = node;
+          if (evaluateName) {
+            const body = await node.session.evaluate(evaluateName, 'clipboard');
+            if (body) {
+              return body.result;
+            }
+          }
+          return '';
+        } catch (err) {
+          return '';
+        }
+      } else {
+        return node.value;
+      }
+    };
+    const value = await getClipboardValue();
+    if (value) {
+      await this.clipboardService.writeText(value);
+    }
   }
 }

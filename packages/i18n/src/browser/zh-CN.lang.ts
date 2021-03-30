@@ -549,6 +549,8 @@ export const localizationBundle = {
     'deugger.menu.setValue': '设置变量',
     'deugger.menu.setValue.param': '请输入你要改变变量的值',
 
+    'deugger.menu.copyValue': '复制值',
+
     'theme.toggle': '颜色主题',
     'theme.icon.toggle': '文件图标主题',
 
