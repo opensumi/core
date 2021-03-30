@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-file-tree-next",
-  "version": "1.39.3",
+  "version": "1.40.0",
   "files": [
     "lib"
   ],
@@ -20,24 +20,24 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "1.39.3",
-    "@ali/ide-core-node": "1.39.3",
-    "@ali/ide-file-service": "1.39.3",
-    "@ali/ide-workspace": "1.39.3",
-    "@ali/ide-workspace-edit": "1.39.3",
-    "@ali/ide-components": "1.39.3"
+    "@ali/ide-core-common": "1.40.0",
+    "@ali/ide-core-node": "1.40.0",
+    "@ali/ide-file-service": "1.40.0",
+    "@ali/ide-workspace": "1.40.0",
+    "@ali/ide-workspace-edit": "1.40.0",
+    "@ali/ide-components": "1.40.0"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "1.39.3",
+    "@ali/ide-core-browser": "1.40.0",
     "@ali/ide-dev-tool": "^1.1.0",
-    "@ali/ide-overlay": "1.39.3",
-    "@ali/ide-explorer": "1.39.3",
-    "@ali/ide-decoration": "1.39.3",
-    "@ali/ide-editor": "1.39.3",
-    "@ali/ide-main-layout": "1.39.3",
-    "@ali/ide-theme": "1.39.3",
-    "@ali/ide-workspace": "1.39.3",
-    "@ali/ide-terminal-next": "1.39.3",
+    "@ali/ide-overlay": "1.40.0",
+    "@ali/ide-explorer": "1.40.0",
+    "@ali/ide-decoration": "1.40.0",
+    "@ali/ide-editor": "1.40.0",
+    "@ali/ide-main-layout": "1.40.0",
+    "@ali/ide-theme": "1.40.0",
+    "@ali/ide-workspace": "1.40.0",
+    "@ali/ide-terminal-next": "1.40.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"
