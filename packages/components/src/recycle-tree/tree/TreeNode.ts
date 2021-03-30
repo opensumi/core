@@ -243,6 +243,11 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   private hardReloadPromise: Promise<void> | null;
   private hardReloadPResolver: (() => void) | null;
 
+  private refreshTasks: (string[])[] = [];
+  private activeRefreshPromise: Promise<any> | null;
+  private queuedRefreshPromise: Promise<any> | null;
+  private queuedRefreshPromiseFactory: (() => Promise<any>) | null;
+
   private watchTerminator: (path: string) => void;
   public watchEvents: Map<string, IWatcherInfo>;
 
@@ -472,7 +477,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   }
 
   // 静默刷新子节点, 即不触发分支更新事件
-  public async forceReloadChildrenQuiet(expandedPaths: string[] = this.getAllExpandedNodePath(), needReload: boolean = true) {
+  private async forceReloadChildrenQuiet(expandedPaths: string[] = this.getAllExpandedNodePath(), needReload: boolean = true) {
     let forceLoadPath;
     if (this.isExpanded) {
       if (needReload) {
@@ -525,6 +530,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           }
         }
       }
+
       if (forceLoadPath) {
         expandedPaths.unshift(forceLoadPath);
         this.expandBranch(this, true);
@@ -934,10 +940,74 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         this._children = null;
       } else {
         // needReload --- 判断根目录是否需要进行一次刷新，部分情况，如压缩目录下的文件创建后不应该刷新
-        await this.forceReloadChildrenQuiet(expandedPaths);
+        await this.refresh(expandedPaths);
       }
     }
     this.watcher.notifyDidProcessWatchEvent(this, event);
+  }
+
+  public async refresh(paths: string[] = this.getAllExpandedNodePath()) {
+    this.refreshTasks.push(paths);
+    return await this.queue(this.doRefresh.bind(this));
+  }
+
+  private async queue<T>(promiseFactory: () => Promise<T>) {
+    if (this.activeRefreshPromise) {
+      this.queuedRefreshPromiseFactory = promiseFactory;
+
+      if (!this.queuedRefreshPromise) {
+        const onComplete = () => {
+          this.queuedRefreshPromise = null;
+
+          const result = this.queue(this.queuedRefreshPromiseFactory!);
+          this.queuedRefreshPromiseFactory = null;
+
+          return result;
+        };
+
+        this.queuedRefreshPromise = new Promise((resolve) => {
+          this.activeRefreshPromise!.then(onComplete, onComplete).then(resolve);
+        });
+      }
+
+      return new Promise((c, e) => {
+        this.queuedRefreshPromise!.then(c, e);
+      });
+    }
+
+    this.activeRefreshPromise = promiseFactory();
+
+    return new Promise((c, e) => {
+      this.activeRefreshPromise!.then((result: any) => {
+        this.activeRefreshPromise = null;
+        c(result);
+      }, (err: any) => {
+        this.activeRefreshPromise = null;
+        e(err);
+      });
+    });
+  }
+
+  private async doRefresh() {
+    const tasks = this.refreshTasks.slice(0);
+    const paths = this.mergeExpandedPaths(tasks);
+    return await this.forceReloadChildrenQuiet(paths);
+  }
+
+  private mergeExpandedPaths(paths: (string[])[]) {
+    // 返回最长的刷新路径即可
+    let result;
+    for (const path of paths) {
+      if (!result) {
+        result = path;
+        continue;
+      } else {
+        if (path.length > result.length) {
+          result = path;
+        }
+      }
+    }
+    return result;
   }
 
   private isItemVisibleAtRootSurface(node: TreeNode) {

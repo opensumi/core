@@ -8,9 +8,7 @@ import { DisposableCollection, Emitter, Event, Disposable } from '../utils';
 import { INodeRendererProps, NodeRendererWrap, INodeRenderer } from './TreeNodeRendererWrap';
 import { TreeNodeType, TreeNodeEvent } from './types';
 import { ScrollbarsVirtualList } from '../scrollbars';
-import * as cls from 'classnames';
 import * as fuzzy from 'fuzzy';
-import './recycle-tree.less';
 
 export type IRecycleTreeAlign = 'start' | 'center' | 'end' | 'auto';
 
@@ -113,6 +111,7 @@ export interface IRecycleTreeError {
 export enum RenderErrorType {
   RENDER_ITEM,
   GET_RENDED_KEY,
+  RENDER_ERROR,
 }
 
 export interface IRecycleTreeHandle {
@@ -201,7 +200,7 @@ interface IFilterNodeRendererProps {
 
 export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
-  private static BATCHED_UPDATE_MAX_DEBOUNCE_MS: number = 4;
+  private static BATCHED_UPDATE_MAX_DEBOUNCE_MS: number = 100;
   private static TRY_ENSURE_VISIBLE_MAX_TIMES: number = 5;
   private static FILTER_FUZZY_OPTIONS = {
     pre: '<match>',
@@ -286,8 +285,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           this.batchUpdateResolver = null;
           this.onDidUpdateEmitter.fire();
         });
-      } else {
-        return this.batchUpdatePromise;
       }
       // 更新批量更新返回的promise对象
       clearTimeout(timer);
@@ -607,8 +604,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     const node = this.getItemAtIndex(index);
     if (node && node.item) {
       if (!node.item.id) {
-        // FIXME: 不清楚啥时候能复现无Item情况
-        this.onErrorEmitter.fire({ type: RenderErrorType.GET_RENDED_KEY, message: `Can\'t get item at index ${index}` });
         return index;
       }
       return node.item.id;
@@ -730,7 +725,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
     const { item, itemType: type, template } = node;
     if (!item) {
-      this.onErrorEmitter.fire({ type: RenderErrorType.RENDER_ITEM, message: `RenderItem error at index ${index}` });
       return <div style={style}></div>;
     }
     const itemStyle = overflow === 'ellipsis' ? style : { ...style, width: 'auto', minWidth: '100%' };
@@ -773,8 +767,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         overscanCount={overScanCount || RecycleTree.DEFAULT_OVER_SCAN_COUNT}
         ref={this.listRef}
         onScroll={this.handleListScroll}
-        style={style}
-        className={cls(className, 'kt-recycle-tree')}
+        style={{
+          transform: 'translate3d(0px, 0px, 0px)',
+          ...style,
+        }}
+        className={className}
         outerElementType={ScrollbarsVirtualList}>
         {this.renderItem}
       </FixedSizeList>);

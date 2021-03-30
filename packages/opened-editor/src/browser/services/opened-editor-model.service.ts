@@ -426,7 +426,7 @@ export class OpenedEditorModelService {
     if (!EditorFileGroup.is(node) && (node as EditorFileGroup).parent) {
       node = (node as EditorFileGroup).parent as EditorFileGroup;
     }
-    // 这里也可以直接调用node.forceReloadChildrenQuiet，但由于文件树刷新事件可能会较多
+    // 这里也可以直接调用node.refresh，但由于文件树刷新事件可能会较多
     // 队列化刷新动作减少更新成本
     this.queueChangeEvent(node.path, () => {
       this.onDidRefreshedEmitter.fire();

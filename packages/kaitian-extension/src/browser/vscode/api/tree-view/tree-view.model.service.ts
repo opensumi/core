@@ -534,7 +534,7 @@ export class ExtensionTreeViewModel {
     return this.refreshDelayer.trigger(async () => {
       this.refreshDeferred = new Deferred();
       if (!item) {
-        this.treeModel.root.forceReloadChildrenQuiet();
+        this.treeModel.root.refresh();
       } else {
         const id = this.treeViewDataProvider.getTreeNodeIdByTreeItemId(item.id);
         if (!id) {
