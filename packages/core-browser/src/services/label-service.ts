@@ -5,7 +5,6 @@ import type { IModelService } from '@ali/monaco-editor-core/esm/vs/editor/common
 import { Autowired, Injectable } from '@ali/common-di';
 import { URI, DataUri, Emitter, addElement, IDisposable, LRUMap, Event, WithEventBus, BasicEvent, Disposable } from '@ali/ide-core-common';
 import classnames from 'classnames';
-const cssEscape = require('css.escape');
 
 import { getIcon } from '../style/icon/icon';
 
@@ -216,6 +215,10 @@ const getIconClass = (resource: URI, options?: ILabelOptions) => {
   return classnames(classes);
 };
 
+export function cssEscape(str: string): string {
+  return str.replace(/[\11\12\14\15\40]/g, '/'); // HTML class names can not contain certain whitespace characters, use / instead, which doesn't exist in file names.
+}
+
 export function basenameOrAuthority(resource: URI) {
   return resource.path.base || resource.authority;
 }
@@ -260,4 +263,4 @@ export function getLanguageIdFromMonaco(uri: URI) {
 /**
  * labelService所处理的label或者icon变更的事件
  */
-export class ResourceLabelOrIconChangedEvent extends BasicEvent<URI> {}
+export class ResourceLabelOrIconChangedEvent extends BasicEvent<URI> { }
