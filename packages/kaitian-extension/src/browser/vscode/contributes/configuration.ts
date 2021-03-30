@@ -80,8 +80,6 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
   }
 
   private validateDefaultValue(property: PreferenceSchemaProperties): void {
-    property.default = {};
-
     const properties = property.properties;
     if (properties) {
       // tslint:disable-next-line:forin

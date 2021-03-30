@@ -162,10 +162,8 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
         return '';
       case 'array':
         return [];
-      // vscode插件如 highlight-matching-tag
-      // 依赖null作为默认的object解析值
       case 'object':
-        return null;
+        return {};
     }
     return null;
   }
