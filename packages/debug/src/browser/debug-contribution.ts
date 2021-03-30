@@ -123,6 +123,9 @@ export namespace DEBUG_COMMANDS {
   export const SET_VARIABLE_VALUE = {
     id: 'debug.variables.setValue',
   };
+  export const COPY_VARIABLE_VALUE = {
+    id: 'debug.variables.copy',
+  };
 }
 
 export namespace DebugBreakpointWidgetCommands {

@@ -4,7 +4,7 @@ import { URI, Disposable, DisposableCollection, IFileServiceClient, IContextKeyS
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
 import { DebugModel, DebugModelManager } from '@ali/ide-debug/lib/browser/editor';
 import { DebugModule, DebugStackFrame, DebugThread, DebugSession, DebugSessionConnection, BreakpointManager } from '@ali/ide-debug/lib/browser';
-import { DebugSessionOptions } from '@ali/ide-debug';
+import { DebugSessionOptions, IDebugSessionManager } from '@ali/ide-debug';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
 import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -110,7 +110,9 @@ describe('Debug Model', () => {
       injector.get(DebugModelManager),
       injector.get(LabelService),
       {} as IMessageService,
-      injector.get(IFileServiceClient));
+      injector.get(IFileServiceClient),
+      injector.get(IDebugSessionManager),
+    );
     const thread = new DebugThread(fakeSession);
     const frame = new DebugStackFrame(thread, fakeSession);
     frame.update({

@@ -63,7 +63,7 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
       if (property.type !== 'object') {
         continue;
       }
-      if (!property.default) {
+      if (typeof property.default === 'undefined') {
         this.validateDefaultValue(property);
       }
 

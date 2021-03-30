@@ -2,10 +2,9 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { localize, getDebugLogger, URI, parseWithComments } from '@ali/ide-core-common';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-const cssEscape = require('css.escape');
 import { IIconTheme } from '../common';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class IconThemeData implements IIconTheme {
   hasFileIcons: boolean;
   hasFolderIcons: boolean;
@@ -154,14 +153,14 @@ function processIconThemeDocument(iconThemeDocumentLocation: URI, iconThemeDocum
       const folderNames = associations.folderNames;
       if (folderNames) {
         for (const folderName in folderNames) {
-          addSelector(`${qualifier} .${cssEscape(folderName.toLowerCase())}-name-folder-icon.folder-icon::before`, folderNames[folderName]);
+          addSelector(`${qualifier} .${escapeCSS(folderName.toLowerCase())}-name-folder-icon.folder-icon::before`, folderNames[folderName]);
           result.hasFolderIcons = true;
         }
       }
       const folderNamesExpanded = associations.folderNamesExpanded;
       if (folderNamesExpanded) {
         for (const folderName in folderNamesExpanded) {
-          addSelector(`${qualifier} .${cssEscape(folderName.toLowerCase())}-name-folder-icon.folder-icon.expanded::before`, folderNamesExpanded[folderName]);
+          addSelector(`${qualifier} .${escapeCSS(folderName.toLowerCase())}-name-folder-icon.folder-icon.expanded::before`, folderNamesExpanded[folderName]);
           result.hasFolderIcons = true;
         }
       }
@@ -172,7 +171,7 @@ function processIconThemeDocument(iconThemeDocumentLocation: URI, iconThemeDocum
           languageIds.jsonc = languageIds.json;
         }
         for (const languageId in languageIds) {
-          addSelector(`${qualifier} .${cssEscape(languageId)}-lang-file-icon.file-icon::before`, languageIds[languageId]);
+          addSelector(`${qualifier} .${escapeCSS(languageId)}-lang-file-icon.file-icon::before`, languageIds[languageId]);
           result.hasFileIcons = true;
         }
       }
@@ -183,7 +182,7 @@ function processIconThemeDocument(iconThemeDocumentLocation: URI, iconThemeDocum
           const segments = fileExtension.toLowerCase().split('.');
           if (segments.length) {
             for (let i = 0; i < segments.length; i++) {
-              selectors.push(`.${cssEscape(segments.slice(i).join('.'))}-ext-file-icon`);
+              selectors.push(`.${escapeCSS(segments.slice(i).join('.'))}-ext-file-icon`);
             }
             selectors.push('.ext-file-icon'); // extra segment to increase file-ext score
           }
@@ -196,11 +195,11 @@ function processIconThemeDocument(iconThemeDocumentLocation: URI, iconThemeDocum
         for (let fileName in fileNames) {
           const selectors: string[] = [];
           fileName = fileName.toLowerCase();
-          selectors.push(`.${cssEscape(fileName)}-name-file-icon`);
+          selectors.push(`.${escapeCSS(fileName)}-name-file-icon`);
           const segments = fileName.split('.');
           if (segments.length) {
             for (let i = 1; i < segments.length; i++) {
-              selectors.push(`.${cssEscape(segments.slice(i).join('.'))}-ext-file-icon`);
+              selectors.push(`.${escapeCSS(segments.slice(i).join('.'))}-ext-file-icon`);
             }
             selectors.push('.ext-file-icon'); // extra segment to increase file-ext score
           }
@@ -256,4 +255,9 @@ function processIconThemeDocument(iconThemeDocumentLocation: URI, iconThemeDocum
   }
   result.content = cssRules.join('\n');
   return result;
+}
+
+function escapeCSS(str: string) {
+  str = str.replace(/[\11\12\14\15\40]/g, '/'); // HTML class names can not contain certain whitespace characters, use / instead, which doesn't exist in file names.
+  return window.CSS.escape(str);
 }

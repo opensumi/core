@@ -112,7 +112,7 @@ describe('Tree', () => {
       new File(tree, root, { name: 'b' }),
       new File(tree, root, { name: 'c' }),
     ]);
-    await root.forceReloadChildrenQuiet();
+    await root.refresh();
     expect(root.branchSize).toBe(3);
   });
 

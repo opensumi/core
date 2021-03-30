@@ -1,4 +1,4 @@
-import { Disposable, Event, PreferenceScope } from '@ali/ide-core-common';
+import { Disposable, Event, isObject, isUndefined, PreferenceScope } from '@ali/ide-core-common';
 import { PreferenceService } from './preference-service';
 import { PreferenceSchema } from './preference-contribution';
 
@@ -59,7 +59,7 @@ export function createPreferenceProxy<T>(preferences: PreferenceService, schema:
     disposer.addDispose(preferences.onPreferencesChanged((changes) => {
       for (const key of Object.keys(changes)) {
         const e = changes[key];
-        const preferenceName: any = e.preferenceName ;
+        const preferenceName: any = e.preferenceName;
         if (preferenceName.startsWith(prefix)) {
           if (schema.properties[preferenceName]) {
             if (opts.resourceUri) {
@@ -82,7 +82,7 @@ export function createPreferenceProxy<T>(preferences: PreferenceService, schema:
         if (event.overrideIdentifier === opts.overrideIdentifier) {
           for (const key of Object.keys(event.changes)) {
             const e = event.changes[key];
-            const preferenceName: any = e.preferenceName ;
+            const preferenceName: any = e.preferenceName;
             if (preferenceName.startsWith(prefix)) {
               if (schema.properties[preferenceName]) {
                 if (opts.resourceUri) {
@@ -186,10 +186,35 @@ export function createPreferenceProxy<T>(preferences: PreferenceService, schema:
     if (isDeep) {
       const newPrefix = fullProperty + '.';
       for (const p of Object.keys(schema.properties)) {
+        // 这里实际上要求 Configuration 在注册的时候声明全量配置名
+        // 如，获取 a.b, 则要求 Configuration 声明时必须为 a.b.c
         if (p.startsWith(newPrefix)) {
           return createPreferenceProxy(preferences, schema, { prefix: newPrefix, resourceUri: opts.resourceUri, overrideIdentifier: opts.overrideIdentifier, style });
         }
       }
+
+      // 升级 Monaco 0.20.0 版本后，Monaco 中的ConfigurationService会尝试通过配置全称获取配置值
+      // 如，直接获取 a.b.c.d 配置值
+      // 下面的逻辑兼容了通过 a.b 获取 a.b.c， a.b.c.d 的方式
+      let value;
+      let parentSegment = fullProperty;
+      const segments: string[] = [];
+      for (let index; parentSegment && isUndefined(value); ) {
+        index = parentSegment.lastIndexOf('.');
+        // 查找到对应值后退出查询
+        segments.push(parentSegment.substring(index + 1));
+        parentSegment = parentSegment.substring(0, index);
+        if (parentSegment in schema.properties) {
+          value = get(_, parentSegment);
+        }
+      }
+
+      let segment;
+      while (isObject(value) && (segment = segments.pop())) {
+        // 进一步遍历获取配置值
+        value = value[segment];
+      }
+      return segments.length ? undefined : value;
     }
     return undefined;
   };

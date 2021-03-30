@@ -57,8 +57,6 @@ export default observer(() => {
 
   return (
     <div
-      onFocus={ () => controller.focus() }
-      onBlur={ () => controller.blur() }
       className={ styles.terminalWrapper }
       style={ { backgroundColor: controller.themeBackground } }
       data-group-current={ currentGroupId }
@@ -90,6 +88,8 @@ export default observer(() => {
               key={ `terminal-${group.id}` }
               style={ { display: currentGroupIndex === index ? 'block' : 'none' } }
               className={ styles.group }
+              onFocus={ () => controller.focus() }
+              onBlur={ () => controller.blur() }
             >
               <ResizeView
                 shadow={ false }

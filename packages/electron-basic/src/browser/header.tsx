@@ -109,17 +109,20 @@ export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
   }, [currentResource]);
 
   function setPosition() {
-    if (ref.current) {
-      const windowWidth = window.innerWidth;
-      let prevWidth = 0;
-      let node = ref.current.previousElementSibling;
-      while (node) {
-        prevWidth += (node as HTMLElement).offsetWidth;
-        node = node.previousElementSibling;
+    // 在下一个 animationFrame 执行，此时 spanRef.current!.offsetWidth 的宽度才是正确的
+    window.requestAnimationFrame(() => {
+      if (ref.current) {
+        const windowWidth = window.innerWidth;
+        let prevWidth = 0;
+        let node = ref.current.previousElementSibling;
+        while (node) {
+          prevWidth += (node as HTMLElement).offsetWidth;
+          node = node.previousElementSibling;
+        }
+        const left = Math.max(0, windowWidth * 0.5 - prevWidth - spanRef.current!.offsetWidth * 0.5);
+        ref.current.style.paddingLeft = left + 'px';
       }
-      const left = Math.max(0, windowWidth * 0.5 - prevWidth - spanRef.current!.offsetWidth * 0.5);
-      ref.current.style.paddingLeft = left + 'px';
-    }
+    });
   }
 
   const dirname = appConfig.workspaceDir ? basename(appConfig.workspaceDir) : undefined;

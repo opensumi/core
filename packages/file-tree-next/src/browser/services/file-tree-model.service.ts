@@ -590,7 +590,6 @@ export class FileTreeModelService {
     this.disposableCollection.push(handle.onError((event: IRecycleTreeError) => {
       // 出错时，暴露当前错误状态，用于排查问题
       this.logger.warn(event.type, event.message);
-      this.logger.warn(`Current render state branchSize: ${this.treeModel.root.branchSize} flattenBranch size: ${this.treeModel.root.flattenedBranch?.length}`);
       // 当渲染出错时，尝试刷新Tree
       this.fileTreeService.refresh();
     }));
@@ -981,7 +980,6 @@ export class FileTreeModelService {
           to = (target.parent as Directory).uri.resolve(newNameFragments.concat().join(Path.separator));
         }
         const error = await this.fileTreeAPI.mv(from, to, target.type === TreeNodeType.CompositeTreeNode);
-        promptHandle.removeAddonAfter();
         if (!!error) {
           this.validateMessage = {
             type: PROMPT_VALIDATE_TYPE.ERROR,
@@ -994,10 +992,6 @@ export class FileTreeModelService {
         if (!isCompactNode) {
           this.fileTreeService.moveNodeByPath(target.parent as Directory, target.path, new Path(target.parent!.path).join(newName).toString());
           // 普通节点重命名后，如果该节点为文件夹节点，需刷新该节点的父节点
-          if (Directory.is(target)) {
-            // 在部分Linux机器下，文件夹重命名可能不会发送对应的文件夹更新事件，这里手动触发一次刷新文件树操作
-            this.fileTreeService.refresh(target.parent as Directory);
-          }
         } else {
           // 更新压缩目录展示名称
           target.updateDisplayName(newNameFragments.concat(nameFragments.slice(index + 1)).join(Path.separator));
@@ -1023,6 +1017,7 @@ export class FileTreeModelService {
             this.fileTreeService.refresh(target as Directory);
           }
         }
+        promptHandle.removeAddonAfter();
         locationFileWhileFileExist(target.path);
       } else if (promptHandle instanceof NewPromptHandle) {
         const parent = promptHandle.parent as Directory;

@@ -1,5 +1,5 @@
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { IEventBus, EventBusImpl, IReporterService } from '@ali/ide-core-common';
+import { IEventBus, EventBusImpl } from '@ali/ide-core-common';
 import { DebugViewModel } from '@ali/ide-debug/lib/browser/view/debug-view-model';
 import { MockInjector } from '@ali/ide-dev-tool/src/mock-injector';
 import { DebugToolbarService } from '@ali/ide-debug/lib/browser/view/configuration/debug-toolbar.service';
@@ -12,7 +12,6 @@ describe('Debug Configuration Service', () => {
     },
   ]));
   let debugToolbarService: DebugToolbarService;
-  let reporterService: IReporterService;
 
   const mockDebugViewModel = {
     onDidChange: jest.fn(),
@@ -30,6 +29,9 @@ describe('Debug Configuration Service', () => {
     },
     start: jest.fn(),
     restart: jest.fn(),
+    report: jest.fn(),
+    reportTime: jest.fn(() => () => {}),
+    reportAction: jest.fn(),
   };
 
   beforeAll(async () => {
@@ -41,7 +43,6 @@ describe('Debug Configuration Service', () => {
       token: DebugViewModel,
       useValue: mockDebugViewModel,
     });
-    reporterService = mockInjector.get(IReporterService);
     debugToolbarService = mockInjector.get(DebugToolbarService);
   });
 

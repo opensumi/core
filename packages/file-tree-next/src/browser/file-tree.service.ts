@@ -35,6 +35,7 @@ export interface IMoveChange {
 export class FileTreeService extends Tree implements IFileTreeService {
 
   private static DEFAULT_FLUSH_FILE_EVENT_DELAY = 500;
+  private static readonly EXPLORER_FILE_CHANGES_REACT_DELAY = 500;
 
   @Autowired(IFileTreeAPI)
   private readonly fileTreeAPI: IFileTreeAPI;
@@ -331,7 +332,13 @@ export class FileTreeService extends Tree implements IFileTreeService {
     });
     // 处理除了删除/添加/移动事件外的异常事件
     if (!await this.refreshAffectedNodes(this.getAffectedUris(changes)) && this.isRootAffected(changes)) {
-      await this.refresh();
+      // 在文件树场景下，我们无法保证内部事件及真实响应事件的响应时机
+      // 即，如果无法保证内部事件执行完，直接再次响应真实事件，将会遇到不可预期的问题
+      // 如，渲染异常
+      // ref https://github.com/Microsoft/vscode/blob/21c0490036b6d7dfeda74c5a8e9cd40116ace1c5/src/vs/workbench/contrib/files/common/explorerService.ts#L278
+      setTimeout(() => {
+        this.refresh();
+      }, FileTreeService.EXPLORER_FILE_CHANGES_REACT_DELAY);
     }
   }
 
@@ -661,7 +668,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       // 根目录刷新时情况忽略队列
       this._cacheIgnoreFileEvent.clear();
     }
-    // 这里也可以直接调用node.forceReloadChildrenQuiet，但由于文件树刷新事件可能会较多
+    // 这里也可以直接调用node.refresh，但由于文件树刷新事件可能会较多
     // 队列化刷新动作减少更新成本
     this.queueChangeEvent(node.path, () => {
       this.onNodeRefreshedEmitter.fire(node);

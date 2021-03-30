@@ -10,8 +10,8 @@ import {
   canceled,
 } from '@ali/ide-core-browser';
 import debounce = require('lodash.debounce');
-import { DebugSessionConnection, DebugEventTypes, DebugRequestTypes } from './debug-session-connection';
-import { DebugSessionOptions, InternalDebugSessionOptions, IDebugSession } from '../common';
+import { DebugSessionConnection, DebugEventTypes, DebugRequestTypes, DebugExitEvent } from './debug-session-connection';
+import { DebugSessionOptions, InternalDebugSessionOptions, IDebugSession, IDebugSessionManager, DEBUG_REPORT_NAME } from '../common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { DebugProtocol } from 'vscode-debugprotocol';
@@ -44,6 +44,9 @@ export class DebugSession implements IDebugSession {
   private _onVariableChange = new Emitter<void>();
   readonly onVariableChange: Event<void> = this._onVariableChange.event;
 
+  private _onRequest = new Emitter<string>();
+  readonly onRequest: Event<string> = this._onRequest.event;
+
   protected readonly toDispose = new DisposableCollection();
 
   protected _capabilities: DebugProtocol.Capabilities = {};
@@ -53,6 +56,8 @@ export class DebugSession implements IDebugSession {
   }
 
   protected updateDeffered: Deferred<void> | null = null;
+
+  protected exitDeferred = new Deferred<DebugExitEvent>();
 
   constructor(
     readonly id: string,
@@ -64,7 +69,9 @@ export class DebugSession implements IDebugSession {
     protected readonly modelManager: DebugModelManager,
     protected readonly labelProvider: LabelService,
     protected readonly messages: IMessageService,
-    protected readonly fileSystem: IFileServiceClient) {
+    protected readonly fileSystem: IFileServiceClient,
+    protected readonly sessionManager: IDebugSessionManager,
+  ) {
 
     this.connection.onRequest('runInTerminal', (request: DebugProtocol.RunInTerminalRequest) => {
       this.runInTerminal(request);
@@ -88,10 +95,17 @@ export class DebugSession implements IDebugSession {
         }
       }),
       this.on('stopped', async ({ body }) => {
+        const reportTime = this.sessionManager.reportTime(DEBUG_REPORT_NAME.DEBUG_STOPPED, {
+          sessionId: this.id,
+          threadId: body.threadId,
+        });
         this.updateDeffered = new Deferred();
         await this.updateThreads(body);
         await this.updateFrames();
         this.updateDeffered.resolve();
+        // 下一个 scopes 触发后 action 结束
+        await this.takeCommand('scopes');
+        reportTime('stopped');
       }),
       this.on('thread', ({ body: { reason, threadId } }) => {
         if (reason === 'started') {
@@ -104,6 +118,9 @@ export class DebugSession implements IDebugSession {
       }),
       this.on('terminated', () => {
         this.terminated = true;
+      }),
+      this.on('exited', (reason) => {
+        this.exitDeferred.resolve(reason);
       }),
       this.on('capabilities', (event) => this.updateCapabilities(event.body.capabilities)),
       this.breakpoints.onDidChangeBreakpoints((event) => this.updateBreakpoint(event)),
@@ -560,16 +577,12 @@ export class DebugSession implements IDebugSession {
   }
 
   protected exited(timeout: number): Promise<boolean> {
-    return new Promise<boolean>((resolve) => {
-      const listener = this.on('exited', () => {
-        listener.dispose();
-        resolve(true);
-      });
-      setTimeout(() => {
-        listener.dispose();
-        resolve(false);
-      }, timeout);
-    });
+    return Promise.race([
+      this.exitDeferred.promise.then(() => true, () => false),
+      new Promise<boolean>((resolve) => {
+        setTimeout(resolve, timeout, false);
+      }),
+    ]);
   }
 
   async restart(): Promise<boolean> {
@@ -622,7 +635,7 @@ export class DebugSession implements IDebugSession {
     }), {}));
   }
 
-  sendRequest<K extends keyof DebugRequestTypes>(command: K, args: DebugRequestTypes[K][0]): Promise<DebugRequestTypes[K][1]> {
+  async sendRequest<K extends keyof DebugRequestTypes>(command: K, args: DebugRequestTypes[K][0]): Promise<DebugRequestTypes[K][1]> {
     if (
       (!this._capabilities.supportsTerminateRequest && command === 'terminate') ||
       (!this._capabilities.supportsCompletionsRequest && command === 'completions') ||
@@ -631,7 +644,22 @@ export class DebugSession implements IDebugSession {
       throw new Error(`debug: ${command} not supported`);
     }
 
-    return this.connection.sendRequest(command, args, this.configuration);
+    try {
+      return await this.connection.sendRequest(command, args, this.configuration);
+    } finally {
+      this._onRequest.fire(command);
+    }
+  }
+
+  protected async takeCommand(command: string) {
+    return new Promise((resolve) => {
+      const disposable = this.onRequest((e) => {
+        if (e === command) {
+          disposable.dispose();
+          resolve();
+        }
+      });
+    });
   }
 
   sendCustomRequest<T extends DebugProtocol.Response>(command: string, args?: any): Promise<T> {
