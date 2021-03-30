@@ -6,9 +6,6 @@ import { IsTerminalFocused } from '@ali/ide-core-browser/lib/contextkey';
 @Domain(KeybindingContribution)
 export class TerminalKeybindinngContribution implements KeybindingContribution {
   registerKeybindings(registry: KeybindingRegistry) {
-    // 复制/粘贴/全选 不能影响到终端搜索组件的快捷键
-    const ternimalFoucsedAndBlurSerchWidget = `${IsTerminalFocused.raw} && !inputFocus`;
-
     registry.registerKeybinding({
       command: TERMINAL_COMMANDS.OPEN_SEARCH.id,
       keybinding: 'ctrlcmd+f',
@@ -27,17 +24,17 @@ export class TerminalKeybindinngContribution implements KeybindingContribution {
     registry.registerKeybinding({
       command: TERMINAL_COMMANDS.COPY.id,
       keybinding: isWindows ? 'ctrlcmd+shift+c' : 'ctrlcmd+c',
-      when: ternimalFoucsedAndBlurSerchWidget,
+      when: IsTerminalFocused.raw,
     });
     registry.registerKeybinding({
       command: TERMINAL_COMMANDS.PASTE.id,
       keybinding: isWindows ? 'ctrlcmd+shift+v' : 'ctrlcmd+v',
-      when: ternimalFoucsedAndBlurSerchWidget,
+      when: IsTerminalFocused.raw,
     });
     registry.registerKeybinding({
       command: TERMINAL_COMMANDS.SELECT_ALL.id,
       keybinding: 'ctrlcmd+a',
-      when: ternimalFoucsedAndBlurSerchWidget,
+      when: IsTerminalFocused.raw,
     });
   }
 }
