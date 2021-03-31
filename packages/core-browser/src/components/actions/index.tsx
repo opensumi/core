@@ -447,6 +447,7 @@ export function InlineMenuBar<T = undefined, U = undefined, K = undefined, M = u
       menuId={menus.menuId}
       nav={navMenu}
       more={separator === 'inline' ? [] : moreMenu}
+      context={context}
       {...restProps} />
   );
 }
