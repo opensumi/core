@@ -20,7 +20,7 @@ const pathClause = [
   // \\?\c:\xxx\xxx
   `(?:(?:\\\\\\\\[.?]\\\\)?[a-zA-Z]:\\\\)?[${segmentClause}]+(?:\\\\[${segmentClause}]+)+`,
 ].join('|');
-export const rePath = new RegExp(`(${pathClause})(${posClause})?`);
+export const rePath = new RegExp(`(?:^|\s)((?:${pathClause})(?:${posClause})?)`);
 
 export class FilePathAddon extends Disposable implements ITerminalAddon {
   private _linkMatcherId: number | undefined;
@@ -34,17 +34,7 @@ export class FilePathAddon extends Disposable implements ITerminalAddon {
     private _options: ILinkMatcherOptions = {},
   ) {
     super();
-    this._options.matchIndex = 0;
-    this._options.validationCallback = this._checkPathValid.bind(this);
-  }
-
-  private _checkPathValid(uri: string, callback: (valid: boolean) => void) {
-    const [, path] = uri.match(rePath)!;
-    if (path) {
-      callback(true);
-    } else {
-      callback(false);
-    }
+    this._options.matchIndex = 1;
   }
 
   private _mayAbsolutePath(uri: string) {
