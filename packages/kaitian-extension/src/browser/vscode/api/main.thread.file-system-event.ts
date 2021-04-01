@@ -29,24 +29,30 @@ export class MainThreadFileSystemEvent {
       deleted: [],
     };
     this._listener.add(this.fileService.onFilesChanged((changes) => {
+      let hasResult = false;
       for (const change of changes) {
         switch (change.type) {
           case FileChangeType.ADDED:
             events.created.push(new URI(change.uri).codeUri);
+            hasResult = true;
             break;
           case FileChangeType.UPDATED:
             events.changed.push(new URI(change.uri).codeUri);
+            hasResult = true;
             break;
           case FileChangeType.DELETED:
             events.deleted.push(new URI(change.uri).codeUri);
+            hasResult = true;
             break;
         }
       }
 
-      proxy.$onFileEvent(events);
-      events.created.length = 0;
-      events.changed.length = 0;
-      events.deleted.length = 0;
+      if (hasResult) {
+        proxy.$onFileEvent(events);
+        events.created = [];
+        events.changed = [];
+        events.deleted = [];
+      }
     }));
 
     // BEFORE file operation
