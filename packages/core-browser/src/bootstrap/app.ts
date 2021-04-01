@@ -145,7 +145,7 @@ export class ClientApp implements IClientApp {
       ...restOpts,
       // 一些转换和 typo 修复
       workspaceDir: opts.workspaceDir || '',
-      extensionDir: opts.extensionDir || (isElectronRenderer() ? electronEnv.metadata.extensionDir : ''),
+      extensionDir: opts.extensionDir || (isElectronRenderer() ? electronEnv.metadata?.extensionDir : ''),
       injector: this.injector,
       wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
       layoutConfig: opts.layoutConfig as LayoutConfig,
@@ -153,7 +153,7 @@ export class ClientApp implements IClientApp {
       allowSetDocumentTitleFollowWorkspaceDir,
     };
 
-    if (isElectronEnv() && electronEnv.metadata.extensionDevelopmentHost) {
+    if (isElectronEnv() && electronEnv.metadata?.extensionDevelopmentHost) {
       this.config.extensionDevelopmentHost = electronEnv.metadata.extensionDevelopmentHost;
     }
 
@@ -167,7 +167,7 @@ export class ClientApp implements IClientApp {
     }
 
     // 旧方案兼容, 把electron.metadata.extensionCandidate提前注入appConfig的对应配置中
-    if (isElectronEnv() && electronEnv.metadata.extensionCandidate) {
+    if (isElectronEnv() && electronEnv.metadata?.extensionCandidate) {
       this.config.extensionCandidate = (this.config.extensionCandidate || []).concat(electronEnv.metadata.extensionCandidate || []);
     }
 
