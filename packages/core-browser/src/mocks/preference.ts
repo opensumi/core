@@ -1,5 +1,5 @@
 import { PreferenceScope, ISettingGroup, ISettingSection } from '..';
-import { Injectable, Injector } from '@ali/common-di';
+import { Injectable, Injector, Optional } from '@ali/common-di';
 import { PreferenceProvider } from '../preferences';
 
 @Injectable()
@@ -39,7 +39,7 @@ export class MockPreferenceSettingsService {
 export class MockPreferenceProvider extends PreferenceProvider {
   protected readonly preferences: { [name: string]: any } = {};
 
-  constructor() {
+  constructor(@Optional() protected scope: PreferenceScope) {
     super();
     this.init();
   }
@@ -57,28 +57,38 @@ export class MockPreferenceProvider extends PreferenceProvider {
   }
 
   async doSetPreference(key: string, value: any, resourceUri?: string): Promise<boolean> {
+    const oldValue = this.preferences[key];
     this.preferences[key] = value;
-    return true;
+    return this.emitPreferencesChangedEvent([{ preferenceName: key, oldValue, newValue: value, scope: this.scope, domain: [] }]);
   }
 
+  async setPreference(preferenceName: string, newValue: any, resourceUri?: string): Promise<boolean> {
+    return await this.doSetPreference(preferenceName, newValue, resourceUri);
+  }
 }
 
 export const injectMockPreferences = (injector: Injector) => {
-  injector.addProviders(
+  injector.overrideProviders(
     {
       token: PreferenceProvider,
       tag: PreferenceScope.User,
-      useClass: MockPreferenceProvider,
+      useFactory: (injector) => {
+        return injector.get(MockPreferenceProvider, [PreferenceScope.User]);
+      },
     },
     {
       token: PreferenceProvider,
       tag: PreferenceScope.Workspace,
-      useClass: MockPreferenceProvider,
+      useFactory: (injector) => {
+        return injector.get(MockPreferenceProvider, [PreferenceScope.Workspace]);
+      },
     },
     {
       token: PreferenceProvider,
       tag: PreferenceScope.Folder,
-      useClass: MockPreferenceProvider,
+      useFactory: (injector) => {
+        return injector.get(MockPreferenceProvider, [PreferenceScope.Folder]);
+      },
     },
   );
 };

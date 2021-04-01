@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { IDisposable, DisposableCollection, Emitter, Event, URI, Deferred, JSONUtils, JSONValue, Resource } from '@ali/ide-core-common';
+import { IDisposable, DisposableCollection, Emitter, Event, URI, Deferred, JSONUtils, JSONValue, Resource, isEmptyObject } from '@ali/ide-core-common';
 import { PreferenceScope } from '@ali/ide-core-common/lib/preferences/preference-scope';
 import { getExternalPreferenceProvider, getAllExternalProviders } from './early-preferences';
 export interface IResolvedPreferences {
@@ -129,7 +129,7 @@ export abstract class PreferenceProvider implements IDisposable {
    * 处理事件监听中接收到的Event数据对象
    * 以便后续接收到数据后能确认来自那个配置项的值
    */
-  protected emitPreferencesChangedEvent(changes: PreferenceProviderDataChanges | PreferenceProviderDataChange[], noFilterExternal?: boolean): void {
+  protected emitPreferencesChangedEvent(changes: PreferenceProviderDataChanges | PreferenceProviderDataChange[], noFilterExternal?: boolean): boolean {
     let prefChanges: PreferenceProviderDataChanges;
     if (Array.isArray(changes)) {
       prefChanges =  {default: {}, languageSpecific: {}};
@@ -166,7 +166,11 @@ export abstract class PreferenceProvider implements IDisposable {
         }
       }
     }
-    this.onDidPreferencesChangedEmitter.fire(prefChanges);
+    if (prefChanges && !isEmptyObject(prefChanges)) {
+      this.onDidPreferencesChangedEmitter.fire(prefChanges);
+      return true;
+    }
+    return false;
   }
 
   // @final 不要 override 这个
