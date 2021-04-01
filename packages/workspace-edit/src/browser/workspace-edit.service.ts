@@ -1,6 +1,6 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { IResourceTextEdit, ITextEdit, IWorkspaceEditService, IWorkspaceEdit, IResourceFileEdit, WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent, IWorkspaceFileService } from '../common';
-import { URI, IEventBus, isWindows, isUndefined, IRange } from '@ali/ide-core-browser';
+import { IResourceTextEdit, IWorkspaceEditService, IWorkspaceEdit, IResourceFileEdit, WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent, IWorkspaceFileService } from '../common';
+import { URI, IEventBus, isWindows, isUndefined } from '@ali/ide-core-browser';
 import { FileSystemError } from '@ali/ide-file-service/lib/common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EndOfLineSequence, WorkbenchEditorService, EOL } from '@ali/ide-editor';
@@ -10,7 +10,7 @@ import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection
 import { EditorGroup } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { Range } from '@ali/monaco-editor-core/esm/vs/editor/common/core/range';
 
-type WorkspaceEdit = ResourceTextEdit | ResourceFileEdit;
+type WorkspaceEdit = ResourceTextEditTask | ResourceFileEdit;
 
 @Injectable()
 export class WorkspaceEditServiceImpl implements IWorkspaceEditService {
@@ -63,7 +63,30 @@ export class BulkEdit {
     if (isResourceFileEdit(edit)) {
       this.edits.push(new ResourceFileEdit(edit));
     } else {
-      this.edits.push(new ResourceTextEdit(edit as IResourceTextEdit));
+      const last = this.edits[this.edits.length - 1];
+      const textEdit = edit as IResourceTextEdit;
+      if (last && !isResourceFileEdit(last)) {
+        // 合并连续同目标的edits
+        if (last.resource.toString() === textEdit.resource.toString()) {
+          let shouldMerge = false;
+          if (last.modelVersionId) {
+            if (textEdit.modelVersionId) {
+              shouldMerge = textEdit.modelVersionId === last.modelVersionId;
+            } else {
+              shouldMerge = true;
+            }
+          } else {
+            if (!textEdit.modelVersionId) {
+              shouldMerge = true;
+            }
+          }
+          if (shouldMerge) {
+            last.addEdit(edit as IResourceTextEdit);
+            return;
+          }
+        }
+      }
+      this.edits.push(new ResourceTextEditTask(edit as IResourceTextEdit));
     }
   }
 
@@ -73,24 +96,28 @@ export class BulkEdit {
 
 }
 
-export class ResourceTextEdit implements IResourceTextEdit {
+export class ResourceTextEditTask {
 
-  resource: URI;
-  modelVersionId: number | undefined;
-  edit: ITextEdit;
-  options: {
+  public edits: IResourceTextEdit[];
+  public resource: URI;
+  public modelVersionId: number | undefined;
+  public options: {
     openDirtyInEditor?: boolean
     dirtyIfInEditor?: boolean,
   } = {};
 
   constructor(edit: IResourceTextEdit) {
     this.resource = edit.resource;
-    this.modelVersionId = edit.modelVersionId,
-    this.edit = edit.edit;
+    this.modelVersionId = edit.modelVersionId;
     this.options = edit.options || {};
+    this.edits = [ edit ];
   }
 
-  async apply(documentModelService: IEditorDocumentModelService, editorService: WorkbenchEditorService): Promise<void> {
+  addEdit(edit: IResourceTextEdit) {
+    this.edits.push(edit);
+  }
+
+  async apply(documentModelService: IEditorDocumentModelService, editorService: WorkbenchEditorService) {
     const docRef = await documentModelService.createModelReference(this.resource, 'bulk-edit');
     const documentModel = docRef.instance;
     const monacoModel = documentModel.getMonacoModel();
@@ -100,18 +127,15 @@ export class ResourceTextEdit implements IResourceTextEdit {
       }
     }
     const edits: monaco.editor.IIdentifiedSingleEditOperation[] = [];
-    const { edit } = this;
     let newEOL: EndOfLineSequence | null = null;
-    if (!isUndefined(edit.eol)) {
-      newEOL = edit.eol;
-    }
-    const range = edit.range || monacoModel.getFullModelRange();
-
-    if (range && Range.isEmpty(range) || edit.text) {
+    for (const edit of this.edits) {
+      if (!isUndefined(edit.edit.eol)) {
+        newEOL = edit.edit.eol;
+      }
       edits.push({
         forceMoveMarkers: true,
-        range: Range.lift(range),
-        text: edit.text,
+        range: Range.lift(edit.edit.range),
+        text: edit.edit.text,
       });
     }
 
@@ -133,14 +157,14 @@ export class ResourceTextEdit implements IResourceTextEdit {
     docRef.dispose();
   }
 
-  async focusEditor(editorService: WorkbenchEditorService) {
+  private async focusEditor(editorService: WorkbenchEditorService) {
     if (editorService.currentEditor && editorService.currentResource && editorService.currentResource.uri.isEqual(this.resource)) {
       (editorService.currentEditor as IMonacoImplEditor).monacoEditor.focus();
     }
   }
 
   // 返回是否保存
-  async editorOperation(editorService: WorkbenchEditorService): Promise<boolean> {
+  private async editorOperation(editorService: WorkbenchEditorService): Promise<boolean> {
     if (this.options.openDirtyInEditor) {
       for (const group of editorService.editorGroups) {
         if (group.resources.findIndex((r) => r.uri.isEqual(this.resource)) !== -1) {
@@ -281,9 +305,15 @@ export class ResourceFileEdit implements IResourceFileEdit {
       }
     } else if (this.newUri && !this.oldUri) {
       // 创建文件
-      await fileServiceClient.create(this.newUri, '', { overwrite: options.overwrite });
-      if (options.showInEditor) {
-        editorService.open(this.newUri);
+      try {
+        await fileServiceClient.create(this.newUri, '', { overwrite: options.overwrite });
+        if (options.showInEditor) {
+          editorService.open(this.newUri);
+        }
+      } catch (err) {
+        // FIXME: 这里 catch 一下异常，因为 overwrite 的时候 fileService 可能会抛出文件已存在的错误，会导致后续的 edits 无法执行
+        /* tslint:disable:no-console */
+        console.error(err);
       }
     }
   }
