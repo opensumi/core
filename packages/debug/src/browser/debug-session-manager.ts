@@ -71,6 +71,12 @@ interface DebugThreadExtra extends DebugBaseExtra {
    * 当前的用户操作
    */
   action?: string;
+
+  /**
+   * 文件所在的路径和行号
+   */
+  filePath?: string;
+  fileLineNumber?: number;
 }
 
 @Injectable()
@@ -247,6 +253,10 @@ export class DebugSessionManager implements IDebugSessionManager {
     }
     this._actionIndex += 1;
     extra.action = `${action}-${this._actionIndex}`;
+
+    // 记录被暂停的文件路径和行号
+    extra.filePath = this.currentFrame?.raw.source?.path;
+    extra.fileLineNumber = this.currentFrame?.raw.line;
     this._setExtra(sessionId, `${threadId ?? ''}`, extra);
   }
 

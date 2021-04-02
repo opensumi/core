@@ -370,6 +370,7 @@ export class DebugSession implements IDebugSession {
   protected clearThreads(): void {
     const frontEndTime = this.sessionManager.reportTime(DEBUG_REPORT_NAME.DEBUG_UI_FRONTEND_TIME, {
       sessionId: this.id,
+      threadId: this.currentThread?.id,
     });
     for (const thread of this.threads) {
       thread.clear();
@@ -381,6 +382,7 @@ export class DebugSession implements IDebugSession {
   protected clearThread(threadId: number): void {
     const frontEndTime = this.sessionManager.reportTime(DEBUG_REPORT_NAME.DEBUG_UI_FRONTEND_TIME, {
       sessionId: this.id,
+      threadId,
     });
     const thread: DebugThread | undefined = this._threads.find((t) => t.raw.id === threadId);
     if (thread) {
@@ -501,6 +503,7 @@ export class DebugSession implements IDebugSession {
   protected doUpdateThreads(threads: DebugProtocol.Thread[], stoppedDetails?: StoppedDetails): void {
     const frontEndTime = this.sessionManager.reportTime(DEBUG_REPORT_NAME.DEBUG_UI_FRONTEND_TIME, {
       sessionId: this.id,
+      threadId: stoppedDetails?.threadId,
     });
     const existing = this._threads;
     this._threads = [];

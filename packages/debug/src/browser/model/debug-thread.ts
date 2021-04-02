@@ -122,6 +122,7 @@ export class DebugThread extends DebugThreadData {
   protected doUpdateFrames(frames: DebugProtocol.StackFrame[]): DebugStackFrame[] {
     const frontEndTime = this.session.reportTime(DEBUG_REPORT_NAME.DEBUG_UI_FRONTEND_TIME, {
       sessionId: this.session.id,
+      threadId: this.raw.id,
     });
     const result = new Set<DebugStackFrame>();
     for (const raw of frames) {
