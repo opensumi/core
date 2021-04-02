@@ -22,6 +22,7 @@
   "dependencies": {
     "@ali/ide-core-common": "1.40.1",
     "@ali/ide-core-node": "1.40.1",
+    "@ali/ide-editor": "1.40.1",
     "@ali/ide-file-service": "1.40.1",
     "@ali/ide-workspace": "1.40.1",
     "@ali/ide-workspace-edit": "1.40.1",

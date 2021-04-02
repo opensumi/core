@@ -76,6 +76,7 @@ export const defaultIconfont = {
   'file-default': 'file-default',
   'file-exclamation': 'file-exclamation',
   'file-text': 'file-text',
+  'focus': 'focus',
   'folder': 'folder',
   'folder-default': 'folder-default',
   'folder-fill': 'folder-fill',

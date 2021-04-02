@@ -92,7 +92,12 @@ export namespace FILE_COMMANDS {
   export const LOCATION: Command = {
     id: 'filetree.location',
     category: CATEGORY,
-    label: '%file.location%',
+  };
+
+  export const LOCATION_WITH_EDITOR: Command = {
+    id: 'filetree.location_with_editor',
+    category: CATEGORY,
+    iconClass: getIcon('focus'),
   };
 
   export const OPEN_FOLDER: Command = {

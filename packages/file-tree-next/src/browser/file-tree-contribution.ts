@@ -42,7 +42,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
   public readonly decorationService: IDecorationsService;
 
   @Autowired(WorkbenchEditorService)
-  private readonly editorService: WorkbenchEditorService;
+  private readonly workbenchEditorService: WorkbenchEditorService;
 
   @Autowired(CommandService)
   private readonly commandService: CommandService;
@@ -236,6 +236,21 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
     });
   }
 
+  private revealFile(locationUri: URI) {
+    if (locationUri) {
+      if (this.isRendered) {
+        const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
+        if (!handler || !handler.isVisible || handler.isCollapsed(ExplorerResourceViewId)) {
+          this.fileTreeModelService.locationOnShow(locationUri);
+        } else {
+          this.fileTreeModelService.location(locationUri);
+        }
+      } else {
+        this.fileTreeModelService.locationOnShow(locationUri);
+      }
+    }
+  }
+
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(FILE_COMMANDS.OPEN_WITH_PATH, {
       execute: (uri?: URI) => {
@@ -286,24 +301,17 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         return !!this.fileTreeModelService.focusedFile && Directory.is(this.fileTreeModelService.focusedFile);
       },
     });
-    commands.registerCommand(FILE_COMMANDS.LOCATION, {
-      execute: (uri?: URI) => {
-        let locationUri = uri;
 
-        if (!locationUri) {
-          locationUri = this.fileTreeModelService.selectedFiles[0].uri;
-        }
-        if (locationUri) {
-          if (this.isRendered) {
-            const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
-            if (!handler || !handler.isVisible || handler.isCollapsed(ExplorerResourceViewId)) {
-              this.fileTreeModelService.locationOnShow(locationUri);
-            } else {
-              this.fileTreeModelService.location(locationUri);
-            }
-          } else {
-            this.fileTreeModelService.locationOnShow(locationUri);
-          }
+    commands.registerCommand(FILE_COMMANDS.LOCATION, {
+      execute: (locationUri?: URI) => {
+        this.revealFile(locationUri || this.fileTreeModelService.selectedFiles[0].uri);
+      },
+    });
+
+    commands.registerCommand(FILE_COMMANDS.LOCATION_WITH_EDITOR, {
+      execute: () => {
+        if (this.workbenchEditorService.currentEditor?.currentUri?.scheme === 'file') {
+          this.revealFile(this.workbenchEditorService.currentEditor?.currentUri);
         }
       },
     });
@@ -413,7 +421,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COMPARE_SELECTED, {
       execute: (_, uris) => {
         if (uris && uris.length) {
-          const currentEditor = this.editorService.currentEditor;
+          const currentEditor = this.workbenchEditorService.currentEditor;
           if (currentEditor && currentEditor.currentUri) {
             this.fileTreeService.compare(uris[0], currentEditor.currentUri);
           }
@@ -654,8 +662,8 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         if (handler && handler.isCollapsed(ExplorerResourceViewId)) {
           handler?.setCollapsed(ExplorerResourceViewId, false);
         }
-        if (!uri && this.editorService.currentEditor) {
-          uri = this.editorService.currentEditor.currentUri!;
+        if (!uri && this.workbenchEditorService.currentEditor) {
+          uri = this.workbenchEditorService.currentEditor.currentUri!;
         }
         if (uri) {
           this.fileTreeModelService.location(uri);
@@ -739,6 +747,18 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
   }
 
   registerToolbarItems(registry: ToolbarRegistry) {
+    // 点击聚焦当前编辑器 focus 的文件
+    registry.registerItem({
+      id: FILE_COMMANDS.LOCATION_WITH_EDITOR.id,
+      command: FILE_COMMANDS.LOCATION_WITH_EDITOR.id,
+      label: localize('file.location'),
+      viewId: ExplorerResourceViewId,
+      when: `view == '${ExplorerResourceViewId}' && !config.explorer.autoReveal`,
+      // 由于目前 contextkey 设置 resourceScheme 是绑定在 editor 的 dom scope 因此设置无效
+      // enabledWhen: 'resourceScheme == file',
+      order: 0,
+    });
+
     registry.registerItem({
       id: FILE_COMMANDS.NEW_FILE.id,
       command: FILE_COMMANDS.NEW_FILE.id,
