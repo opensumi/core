@@ -1,5 +1,5 @@
 import { isWindows, stripAnsi } from '@ali/ide-core-common';
-import { exec } from 'child_process';
+import { spawn } from 'child_process';
 
 // 成功过一次后，取 PATH 的超时时间
 const MAX_WAIT_AFTER_SUCCESS = 3 * 1000;
@@ -29,25 +29,47 @@ function parseEnv(env: string) {
 }
 
 async function createUpdateShellPathPromise(): Promise<void> {
-  try {
-    shellPath = await new Promise<string | undefined>((resolve, reject) => {
+  let pid: number;
+  const timer = setTimeout(() => {
+    if (pid) {
       try {
-        exec(
-          `${process.env.SHELL ||
-            '/bin/bash'} -ilc 'echo -n "_SHELL_ENV_DELIMITER_"; env; echo -n "_SHELL_ENV_DELIMITER_"; exit'`
-        , (err, res) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(parseEnv(res.toString()).PATH);
-          }
-        });
-        setTimeout(() => {
-          reject('timed out');
-        }, SHELL_TIMEOUT);
-      } catch (err) {
-        reject(err);
+        process.kill(pid);
+      } catch (error) {
+        // ignore
       }
+    }
+  }, SHELL_TIMEOUT);
+
+  try {
+    shellPath = await new Promise((resolve, reject) => {
+      const buf: Buffer[] = [];
+      const proc = spawn(process.env.SHELL || '/bin/bash', [
+        '-ilc',
+        'echo -n "_SHELL_ENV_DELIMITER_"; env; echo -n "_SHELL_ENV_DELIMITER_"; exit;',
+      ], {
+        stdio: ['ignore', 'pipe', 'pipe'],
+        detached: true, // 在有些场景 zsh 会卡住， detached 后正常
+      });
+      proc.on('error', (err) => {
+        reject(err);
+      });
+      proc.stdout.on('data', (chunk) => {
+        buf.push(chunk);
+      });
+      proc.stderr.on('data', (chunk) => {
+        // reject(chunk.toString());
+      });
+      proc.on('close', () => {
+        clearTimeout(timer);
+
+        if (buf.length) {
+          resolve(parseEnv(Buffer.concat(buf).toString()).PATH);
+        } else {
+          reject(new Error('Fail to get env.'));
+        }
+      });
+      proc.unref();
+      pid = proc.pid;
     });
     hasSuccess = true;
   } catch (err) {

@@ -1,5 +1,4 @@
-import { StorageProvider, IStorage,  Event, Emitter, Disposable, URI } from '@ali/ide-core-common';
-import { isNullOrUndefined } from 'util';
+import { isUndefinedOrNull, StorageProvider, IStorage,  Event, Emitter, Disposable, URI } from '@ali/ide-core-common';
 import { Injector } from '@ali/common-di';
 
 let mockedStorage: MockedStorage | null = null;
@@ -29,7 +28,7 @@ export class MockedStorage extends Disposable implements IStorage {
 
   get(key: any, fallbackValue?: any) {
     const value = this.items.get(key);
-    if (isNullOrUndefined(value)) {
+    if (isUndefinedOrNull(value)) {
       return fallbackValue;
     }
     return value;
@@ -37,7 +36,7 @@ export class MockedStorage extends Disposable implements IStorage {
 
   getBoolean(key: any, fallbackValue?: any) {
     const value = this.items.get(key);
-    if (isNullOrUndefined(value)) {
+    if (isUndefinedOrNull(value)) {
       return fallbackValue;
     }
     return value === 'true';
@@ -47,7 +46,7 @@ export class MockedStorage extends Disposable implements IStorage {
   getNumber(key: string, fallbackValue?: number | undefined): number | undefined;
   getNumber(key: any, fallbackValue?: any) {
     const value = this.items.get(key);
-    if (isNullOrUndefined(value)) {
+    if (isUndefinedOrNull(value)) {
       return fallbackValue;
     }
     return parseInt(value, 10);

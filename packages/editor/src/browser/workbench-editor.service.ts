@@ -7,8 +7,7 @@ import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from '
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { FILE_COMMANDS, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, MonacoService, IScopedContextKeyService, IContextKey, RecentFilesManager, PreferenceService, IOpenerService } from '@ali/ide-core-browser';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
-import { Schemas, REPORT_NAME, IReporterTimer } from '@ali/ide-core-common';
-import { isNullOrUndefined } from 'util';
+import { isUndefinedOrNull, Schemas, REPORT_NAME } from '@ali/ide-core-common';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 import { IMessageService } from '@ali/ide-overlay';
 import { EditorTabChangedError, isEditorError } from './error';
@@ -566,6 +565,20 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this.activeComponents.delete(e.payload);
       this.activateComponentsProps.delete(e.payload);
     });
+
+    this.listenToExplorerAutoRevealConfig();
+  }
+
+  private explorerAutoRevealConfig: boolean;
+  private listenToExplorerAutoRevealConfig() {
+    this.explorerAutoRevealConfig = !!this.preferenceService.get<boolean>('explorer.autoReveal');
+    this.disposables.push(
+      this.preferenceService.onPreferenceChanged((change) => {
+        if (change.preferenceName === 'explorer.autoReveal') {
+          this.explorerAutoRevealConfig = change.newValue;
+        }
+      }),
+    );
   }
 
   attachToDom(domNode: HTMLElement | null | undefined) {
@@ -878,7 +891,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         this.openingPromise.delete(uri.toString());
       });
     }
-    const previewMode = this.preferenceService.get('editor.previewMode') && (isNullOrUndefined(options.preview) ? true : options.preview);
+    const previewMode = this.preferenceService.get('editor.previewMode') && (isUndefinedOrNull(options.preview) ? true : options.preview);
     if (!previewMode) {
       this.openingPromise.get(uri.toString())!.then(() => {
         this.pinPreviewed(uri);
@@ -898,7 +911,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
     let resourceReady: Deferred<void> | undefined;
     try {
-      const previewMode = this.preferenceService.get('editor.previewMode') && (isNullOrUndefined(options.preview) ? true : options.preview);
+      const previewMode = this.preferenceService.get('editor.previewMode') && (isUndefinedOrNull(options.preview) ? true : options.preview);
       if (this.currentResource && this.currentResource.uri.isEqual(uri)) {
         // 就是当前打开的resource
         if (options.focus && this.currentEditor) {
@@ -912,7 +925,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         if ((options && options.disableNavigate) || (options && options.backend)) {
           // no-op
         } else {
-          this.commands.tryExecuteCommand(FILE_COMMANDS.LOCATION.id, uri);
+          this.locateInFileTree(uri);
         }
         this.notifyTabChanged();
         return {
@@ -995,7 +1008,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         if ((options && options.disableNavigate) || (options && options.backend)) {
           // no-op
         } else {
-          this.commands.tryExecuteCommand(FILE_COMMANDS.LOCATION.id, uri);
+          this.locateInFileTree(uri);
         }
         this.eventBus.fire(new EditorGroupChangeEvent({
           group: this,
@@ -1017,6 +1030,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
       return false;
       // todo 给用户显示error
+    }
+  }
+
+  private locateInFileTree(uri: URI) {
+    if (this.explorerAutoRevealConfig) {
+      this.commands.tryExecuteCommand(FILE_COMMANDS.LOCATION.id, uri);
     }
   }
 

@@ -13,6 +13,7 @@ export const localizationBundle = {
 
     'file.new': '新建文件',
     'file.folder.new': '新建文件夹',
+    'file.locate': '文件定位',
 
     'file.save': '保存文件',
     'file.saveAll': '保存全部',
@@ -321,6 +322,7 @@ export const localizationBundle = {
     'preference.explorer.fileTree.baseIndent.title': '资源管理器 -> 文件树基础缩进',
     'preference.debug.toolbar.float.title': '运行与调试 -> 浮层模式',
     'preference.explorer.compactFolders': '资源管理器 -> 控制资源管理器是否应以紧凑形式呈现文件夹。在这种形式中，单个子文件夹将被压缩在组合的树元素中。例如，对 Java 包结构很有用。',
+    'preference.explorer.autoReveal': '资源管理器 -> 控制资源管理器在打开文件时是否应自动显示并选择文件。',
     'preference.editorTitle.openSource': '打开设置（JSON）',
     'preference.editorTitle.openUserSource': '打开全局设置（JSON）',
     'preference.editorTitle.openWorkspaceSource': '打开工作区设置（JSON）',

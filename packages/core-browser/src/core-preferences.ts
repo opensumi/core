@@ -133,6 +133,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       description: '%preference.explorer.compactFolders%',
       default: true,
     },
+    'explorer.autoReveal': {
+      'type': 'boolean',
+      'description': '%preference.explorer.autoReveal%',
+      'default': true,
+    },
     'debug.toolbar.float': {
       type: 'boolean',
       default: true,
@@ -294,6 +299,7 @@ export interface CoreConfiguration {
   'explorer.confirmDelete': boolean;
   'explorer.fileTree.baseIndent': number;
   'explorer.fileTree.indent': number;
+  'explorer.autoReveal': boolean;
   'explorer.confirmMove': boolean;
   'explorer.compactFolders': boolean;
   'debug.toolbar.float': boolean;

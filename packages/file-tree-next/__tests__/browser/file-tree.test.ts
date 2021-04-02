@@ -295,7 +295,7 @@ describe('FileTree should be work while on single workspace model', () => {
     });
 
     it('Style decoration should be right while click with ctrl/cmd/shift', async (done) => {
-      const { handleItemClick, handleItemToggleClick, handleItemRangeClick, selectedFiles, decorations } = fileTreeModelService;
+      const { handleItemClick, handleItemToggleClick, handleItemRangeClick, decorations } = fileTreeModelService;
       const treeModel = fileTreeModelService.treeModel;
       const rootNode = treeModel.root;
       const directoryNode = rootNode.getTreeNodeAtIndex(0) as Directory;
@@ -303,10 +303,10 @@ describe('FileTree should be work while on single workspace model', () => {
       handleItemToggleClick(directoryNode, TreeNodeType.CompositeTreeNode);
       let dirDecoration = decorations.getDecorations(directoryNode);
       expect(dirDecoration?.classlist).toEqual([styles.mod_selected]);
-      // second, file should be focused
+      // second, file should be selected
       handleItemToggleClick(directoryNode, TreeNodeType.CompositeTreeNode);
       dirDecoration = decorations.getDecorations(directoryNode);
-      expect(dirDecoration?.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+      expect(dirDecoration?.classlist).toEqual([styles.mod_selected]);
       // third, file should be remove focused
       handleItemToggleClick(directoryNode, TreeNodeType.CompositeTreeNode);
       dirDecoration = decorations.getDecorations(directoryNode);
@@ -317,7 +317,7 @@ describe('FileTree should be work while on single workspace model', () => {
       handleItemRangeClick(fileNode, TreeNodeType.TreeNode);
       const fileDecoration = decorations.getDecorations(fileNode);
       expect(fileDecoration?.classlist).toEqual([styles.mod_selected]);
-      expect(selectedFiles.length).toBe(2);
+      expect(fileTreeModelService.selectedFiles.length).toBe(3);
       done();
     });
 

@@ -156,7 +156,7 @@ export class DebugSessionConnection implements IDisposable {
 
     const reportDAP = this.manager.reportTime(DEBUG_REPORT_NAME.DEBUG_ADAPTER_PROTOCOL_TIME, {
       sessionId: this.sessionId,
-      threadId: (args as any).threadId,
+      threadId: (args as any).threadId || this.manager.currentThread?.raw.id,
     });
     const result = await this.doSendRequest(command, args);
 

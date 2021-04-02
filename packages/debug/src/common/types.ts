@@ -71,7 +71,11 @@ export enum DEBUG_REPORT_NAME {
    */
   DEBUG_ADAPTER_PROTOCOL_TIME = 'debugAdapterProtocolTime',
   /**
-   * 命中
+   * 断点命中
    */
   DEBUG_STOPPED = 'debugStopped',
+  /**
+   * 前端 UI 渲染层耗时
+   */
+  DEBUG_UI_FRONTEND_TIME = 'debugFrontEndTime',
 }

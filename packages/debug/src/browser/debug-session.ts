@@ -368,18 +368,28 @@ export class DebugSession implements IDebugSession {
   }
 
   protected clearThreads(): void {
+    const frontEndTime = this.sessionManager.reportTime(DEBUG_REPORT_NAME.DEBUG_UI_FRONTEND_TIME, {
+      sessionId: this.id,
+      threadId: this.currentThread?.id,
+    });
     for (const thread of this.threads) {
       thread.clear();
     }
     this.updateCurrentThread();
+    frontEndTime('clearThreads');
   }
 
   protected clearThread(threadId: number): void {
-    const thread = this._threads.find((t) => t.raw.id === threadId);
+    const frontEndTime = this.sessionManager.reportTime(DEBUG_REPORT_NAME.DEBUG_UI_FRONTEND_TIME, {
+      sessionId: this.id,
+      threadId,
+    });
+    const thread: DebugThread | undefined = this._threads.find((t) => t.raw.id === threadId);
     if (thread) {
       thread.clear();
     }
     this.updateCurrentThread();
+    frontEndTime('clearThread');
   }
 
   get state(): DebugState {
@@ -491,6 +501,10 @@ export class DebugSession implements IDebugSession {
     });
   }
   protected doUpdateThreads(threads: DebugProtocol.Thread[], stoppedDetails?: StoppedDetails): void {
+    const frontEndTime = this.sessionManager.reportTime(DEBUG_REPORT_NAME.DEBUG_UI_FRONTEND_TIME, {
+      sessionId: this.id,
+      threadId: stoppedDetails?.threadId,
+    });
     const existing = this._threads;
     this._threads = [];
     for (const raw of threads) {
@@ -504,6 +518,7 @@ export class DebugSession implements IDebugSession {
       thread.update(data);
     }
     this.updateCurrentThread(stoppedDetails);
+    frontEndTime('doUpdateThreads');
   }
 
   protected updateCurrentThread(stoppedDetails?: StoppedDetails): void {
@@ -681,4 +696,9 @@ export class DebugSession implements IDebugSession {
   }
 
   // REPL end
+
+  // report service
+  reportTime(name: string, defaults?: any): (msg: string | undefined, extra?: any) => number {
+    return this.sessionManager.reportTime(name, defaults);
+  }
 }

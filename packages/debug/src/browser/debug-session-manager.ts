@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { DebugSession, DebugState } from './debug-session';
 import { WaitUntilEvent, Emitter, Event, URI, IContextKey, DisposableCollection, IContextKeyService, formatLocalize, Uri, IReporterService, uuid } from '@ali/ide-core-browser';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
-import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions, DEBUG_REPORT_NAME } from '../common';
+import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions, DEBUG_REPORT_NAME, IDebugSessionManager } from '../common';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { IMessageService } from '@ali/ide-overlay';
 import { IVariableResolverService } from '@ali/ide-variable';
@@ -12,6 +12,7 @@ import { DebugSessionContributionRegistry, DebugSessionFactory } from './debug-s
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { DebugModelManager } from './editor/debug-model-manager';
 import { ITaskService } from '@ali/ide-task/lib/common';
+import { isRemoteAttach } from './debugUtils';
 
 // tslint:disable-next-line:no-empty-interface
 export interface WillStartDebugSession extends WaitUntilEvent {
@@ -36,6 +37,17 @@ export interface DebugSessionCustomEvent {
  * 埋点专用的额外数据
  */
 interface DebugBaseExtra {
+
+  /**
+   * adapterID 区分语言
+   */
+  adapterID: string;
+
+  /**
+   * request 区分 attach 或 launch
+   */
+  request: 'attach' | 'launch';
+
   /**
    * 跟 sessionId 一一对应，先于 sessionId 生成，可以跟踪初始化时的事件
    */
@@ -43,6 +55,8 @@ interface DebugBaseExtra {
 
   /**
    * 是否为远程调试
+   * 0: 非远程
+   * 1: 远程
    */
   remote: 0 | 1;
 }
@@ -57,10 +71,16 @@ interface DebugThreadExtra extends DebugBaseExtra {
    * 当前的用户操作
    */
   action?: string;
+
+  /**
+   * 文件所在的路径和行号
+   */
+  filePath?: string;
+  fileLineNumber?: number;
 }
 
 @Injectable()
-export class DebugSessionManager {
+export class DebugSessionManager implements IDebugSessionManager {
   protected readonly _uid = uuid();
   protected readonly _sessions = new Map<string, DebugSession>();
   protected readonly _extraMap = new Map<string, DebugSessionExtra>();
@@ -176,6 +196,8 @@ export class DebugSessionManager {
       return {
         traceId: data.traceId,
         remote: data.remote,
+        adapterID: data.adapterID,
+        request: data.request,
         ...threadId && data.threads.get(`${threadId}`),
       };
     }
@@ -231,17 +253,23 @@ export class DebugSessionManager {
     }
     this._actionIndex += 1;
     extra.action = `${action}-${this._actionIndex}`;
+
+    // 记录被暂停的文件路径和行号
+    extra.filePath = this.currentFrame?.raw.source?.path;
+    extra.fileLineNumber = this.currentFrame?.raw.line;
     this._setExtra(sessionId, `${threadId ?? ''}`, extra);
   }
 
   async start(options: DebugSessionOptions): Promise<DebugSession | undefined> {
     const { configuration } = options;
     const extra: DebugSessionExtra = {
-      traceId: `${this._uid}-${Date.now()}`,
+      adapterID: configuration.type,
+      request: configuration.request === 'launch' ? 'launch' : 'attach',
+      traceId: this._uid,
       remote: 0,
       threads: new Map(),
     };
-    if (configuration.request === 'attach' && !['localhost', '127.0.0.1', '::1'].includes(configuration.address || 'localhost')) {
+    if (isRemoteAttach(configuration)) {
       extra.remote = 1;
     }
     this.report(DEBUG_REPORT_NAME.DEBUG_BREAKPOINT, 'number', {

@@ -2,6 +2,7 @@ import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { Event, Emitter } from '@ali/ide-core-browser';
 import { DebugSession } from '../debug-session';
 import { DebugStackFrame } from './debug-stack-frame';
+import { DEBUG_REPORT_NAME } from '../../common';
 
 export type StoppedDetails = DebugProtocol.StoppedEvent['body'] & {
   framesErrorMessage?: string
@@ -95,7 +96,8 @@ export class DebugThread extends DebugThreadData {
       try {
         const start = this.frameCount;
         const frames = await this.doFetchFrames(start, levels);
-        return this.doUpdateFrames(frames);
+        const newframes = this.doUpdateFrames(frames);
+        return newframes;
       } catch (e) {
         return [];
       }
@@ -118,6 +120,10 @@ export class DebugThread extends DebugThreadData {
     }
   }
   protected doUpdateFrames(frames: DebugProtocol.StackFrame[]): DebugStackFrame[] {
+    const frontEndTime = this.session.reportTime(DEBUG_REPORT_NAME.DEBUG_UI_FRONTEND_TIME, {
+      sessionId: this.session.id,
+      threadId: this.raw.id,
+    });
     const result = new Set<DebugStackFrame>();
     for (const raw of frames) {
       const id = raw.id;
@@ -127,7 +133,10 @@ export class DebugThread extends DebugThreadData {
       result.add(frame);
     }
     this.updateCurrentFrame();
-    return [...result.values()];
+    const values = [...result.values()];
+    frontEndTime('doUpdateFrames');
+    return values;
+
   }
   protected clearFrames(): void {
     this._frames.clear();
