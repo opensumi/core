@@ -350,6 +350,7 @@ export class FileTreeModelService {
     if (this.preContextMenuFocusedFile) {
       this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
       this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
+      this._selectedFiles = this.selectedFiles.filter((file) => !file.uri.isEqual(this.preContextMenuFocusedFile!.uri));
       this.preContextMenuFocusedFile = null;
     }
     if (target) {
@@ -388,6 +389,7 @@ export class FileTreeModelService {
       this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
       this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
       this.preContextMenuFocusedFile = null;
+      this._selectedFiles = this.selectedFiles.filter((file) => !file.uri.isEqual(this.preContextMenuFocusedFile!.uri));
     }
     if (target) {
       if (this.selectedFiles.length > 0) {
@@ -423,6 +425,8 @@ export class FileTreeModelService {
         if (this.preContextMenuFocusedFile) {
           this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
           this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
+          this._selectedFiles = this.selectedFiles.filter((file) => !file.uri.isEqual(this.preContextMenuFocusedFile!.uri));
+          this.preContextMenuFocusedFile = null;
         } else if (!!this.focusedFile) {
           // 多选情况下第一次切换焦点文件
           this.focusedDecoration.removeTarget(this.focusedFile);
@@ -432,7 +436,7 @@ export class FileTreeModelService {
         this.preContextMenuFocusedFile = null;
         this.focusedDecoration.removeTarget(this.focusedFile);
       }
-      if (target) {
+      if (target && this._selectedFiles.indexOf(target) < 0) {
         this.selectedDecoration.addTarget(target);
         this.focusedDecoration.addTarget(target);
         this._focusedFile = target;
@@ -605,6 +609,7 @@ export class FileTreeModelService {
     if (this.preContextMenuFocusedFile) {
       this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
       this._selectedFiles = this.selectedFiles.filter((file) => !file.uri.isEqual(this.preContextMenuFocusedFile!.uri));
+      this.preContextMenuFocusedFile = null;
     }
     // 清空焦点状态
     this.enactiveFileDecoration();
@@ -635,6 +640,7 @@ export class FileTreeModelService {
     if (type !== TreeNodeType.CompositeTreeNode && type !== TreeNodeType.TreeNode) {
       return;
     }
+
     // 选中的节点不是选中状态时，默认先更新节点为选中状态
     // 后续点击切换焦点状态
     if (this.selectedFiles.indexOf(item) > -1) {
@@ -1315,6 +1321,7 @@ export class FileTreeModelService {
         files.push(file);
       }
     }
+
     this._pasteStore = {
       files: files as (File | Directory)[],
       type: PasteTypes.COPY,
