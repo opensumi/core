@@ -18,6 +18,8 @@ module.exports = {
   collectCoverageFrom: [
     "packages/*/src/**/*.ts",
     "!packages/**/*.contribution.ts",
+    // 部分contribution文件为-contribution结尾
+    "!packages/**/*-contribution.ts",
     "!packages/startup/**/*.ts",
     "!packages/core-electron-main/**/*.ts",
     "!packages/*/src/electron-main/**/*.ts",

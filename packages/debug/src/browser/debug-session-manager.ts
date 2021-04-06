@@ -122,10 +122,10 @@ export class DebugSessionManager implements IDebugSessionManager {
   protected debugStopped: IContextKey<boolean>;
 
   @Autowired(LabelService)
-  labelProvider: LabelService;
+  protected readonly labelProvider: LabelService;
 
   @Autowired(IContextKeyService)
-  contextKeyService: IContextKeyService;
+  protected readonly contextKeyService: IContextKeyService;
 
   @Autowired(DebugSessionContributionRegistry)
   protected readonly sessionContributionRegistry: DebugSessionContributionRegistry;
@@ -140,10 +140,10 @@ export class DebugSessionManager implements IDebugSessionManager {
   protected readonly workbenchEditorService: WorkbenchEditorService;
 
   @Autowired(IMessageService)
-  messageService: IMessageService;
+  protected readonly messageService: IMessageService;
 
   @Autowired(IVariableResolverService)
-  variableResolver: IVariableResolverService;
+  protected readonly variableResolver: IVariableResolverService;
 
   @Autowired(BreakpointManager)
   protected readonly breakpoints: BreakpointManager;
