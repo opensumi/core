@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-keymaps",
-  "version": "1.40.3",
+  "version": "1.40.4",
   "files": [
     "lib"
   ],
@@ -20,16 +20,16 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "1.40.3"
+    "@ali/ide-core-common": "1.40.4"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "1.40.3",
-    "@ali/ide-overlay": "1.40.3",
-    "@ali/ide-preferences": "1.40.3",
+    "@ali/ide-core-browser": "1.40.4",
+    "@ali/ide-overlay": "1.40.4",
+    "@ali/ide-preferences": "1.40.4",
     "@ali/ide-dev-tool": "^1.2.1",
-    "@ali/ide-file-service": "1.40.3",
-    "@ali/ide-editor": "1.40.3",
-    "@ali/ide-components": "1.40.3",
+    "@ali/ide-file-service": "1.40.4",
+    "@ali/ide-editor": "1.40.4",
+    "@ali/ide-components": "1.40.4",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"
