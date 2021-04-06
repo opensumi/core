@@ -42,23 +42,20 @@ export const FileTree = observer(({
     hidesExplorerArrows: true,
   });
 
-  const hasShiftMask = (event): boolean => {
+  const hasShiftMask = React.useCallback((event): boolean => {
     // Ctrl/Cmd 权重更高
     if (hasCtrlCmdMask(event)) {
       return false;
     }
     return event.shiftKey;
-  };
+  }, []);
 
-  const hasCtrlCmdMask = (event): boolean => {
+  const hasCtrlCmdMask = React.useCallback((event): boolean => {
     const { metaKey, ctrlKey } = event;
     return (isOSX && metaKey) || ctrlKey;
-  };
+  }, []);
 
-  const handleItemClicked = (ev: React.MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
-    // 阻止点击事件冒泡
-    ev.stopPropagation();
-
+  const handleItemClicked = React.useCallback((event: React.MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
     const { handleItemClick, handleItemToggleClick, handleItemRangeClick } = fileTreeModelService;
     if (!item) {
       return;
@@ -72,9 +69,18 @@ export const FileTree = observer(({
     } else {
       handleItemClick(item, type, activeUri);
     }
-  };
+  }, []);
 
-  const handleTwistierClick = (ev: React.MouseEvent, item: Directory) => {
+  const handleItemDoubleClicked = React.useCallback((event: React.MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
+
+    const { handleItemDoubleClick } = fileTreeModelService;
+    if (!item) {
+      return;
+    }
+    handleItemDoubleClick(item, type, activeUri);
+  }, []);
+
+  const handleTwistierClick = React.useCallback((ev: React.MouseEvent, item: Directory) => {
     // 阻止点击事件冒泡
     ev.stopPropagation();
 
@@ -82,7 +88,7 @@ export const FileTree = observer(({
 
     toggleDirectory(item);
 
-  };
+  }, []);
 
   React.useEffect(() => {
     if (isReady) {
@@ -153,48 +159,48 @@ export const FileTree = observer(({
     });
   };
 
-  const handleOuterClick = () => {
+  const handleOuterClick = React.useCallback(() => {
     // 空白区域点击，取消焦点状态
     const { enactiveFileDecoration } = fileTreeModelService;
     enactiveFileDecoration();
-  };
+  }, []);
 
-  const handleFocus = () => {
+  const handleFocus = React.useCallback(() => {
     // 文件树焦点
     const { handleTreeFocus } = fileTreeModelService;
     handleTreeFocus();
-  };
+  }, []);
 
-  const handleOuterContextMenu = (ev: React.MouseEvent) => {
+  const handleOuterContextMenu = React.useCallback((ev: React.MouseEvent) => {
     const { handleContextMenu } = fileTreeModelService;
     // 空白区域右键菜单
     handleContextMenu(ev);
-  };
+  }, []);
 
-  const handleOuterDragStart = (ev: React.DragEvent) => {
+  const handleOuterDragStart = React.useCallback((ev: React.DragEvent) => {
     ev.stopPropagation();
     ev.preventDefault();
-  };
+  }, []);
 
-  const handleOuterDragOver = (ev: React.DragEvent) => {
+  const handleOuterDragOver = React.useCallback((ev: React.DragEvent) => {
     ev.preventDefault();
     setOuterDragOver(true);
-  };
+  }, []);
 
-  const handleOuterDragLeave = () => {
+  const handleOuterDragLeave = React.useCallback(() => {
     setOuterDragOver(false);
-  };
+  }, []);
 
-  const handleOuterDrop = (ev: React.DragEvent) => {
+  const handleOuterDrop = React.useCallback((ev: React.DragEvent) => {
     const { handleDrop } = fileTreeModelService.dndService;
     setOuterDragOver(false);
     handleDrop(ev);
-  };
+  }, []);
 
-  const handlerContextMenu = (ev: React.MouseEvent, node: File | Directory, type: TreeNodeType, activeUri?: URI) => {
+  const handlerContextMenu = React.useCallback((ev: React.MouseEvent, node: File | Directory, type: TreeNodeType, activeUri?: URI) => {
     const { handleContextMenu } = fileTreeModelService;
     handleContextMenu(ev, node, activeUri);
-  };
+  }, []);
 
   const renderFileTree = () => {
     if (isReady) {
@@ -222,6 +228,7 @@ export const FileTree = observer(({
             dndService={fileTreeModelService.dndService}
             decorations={fileTreeModelService.decorations.getDecorations(props.item as any)}
             onClick={handleItemClicked}
+            onDoubleClick={handleItemDoubleClicked}
             onTwistierClick={handleTwistierClick}
             onContextMenu={handlerContextMenu}
             defaultLeftPadding={baseIndent}

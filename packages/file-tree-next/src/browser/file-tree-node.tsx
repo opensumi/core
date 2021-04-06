@@ -3,7 +3,7 @@ import * as cls from 'classnames';
 import * as styles from './file-tree-node.module.less';
 import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle } from '@ali/ide-components';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { getIcon, URI } from '@ali/ide-core-browser';
+import { getIcon, URI, useClickPreventionOnDoubleClick } from '@ali/ide-core-browser';
 import { Directory, File } from '../common/file-tree-node.define';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 import { DragAndDropService } from './services/file-tree-dnd.service';
@@ -20,6 +20,7 @@ export interface IFileTreeNodeProps {
   dndService: DragAndDropService;
   onTwistierClick?: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
   onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType, activeUri?: URI) => void;
+  onDoubleClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType, activeUri?: URI) => void;
   onContextMenu: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType, activeUri?: URI) => void;
   template?: React.JSXElementConstructor<any>;
   // 是否有文件夹图标，没有的情况下文件图标会与父目录小箭头对齐
@@ -37,6 +38,7 @@ export type FileTreeNodeRenderedProps = IFileTreeNodeProps & INodeRendererProps;
 export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   item,
   onClick,
+  onDoubleClick,
   onContextMenu,
   dndService,
   itemType,
@@ -53,7 +55,6 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   hasPrompt,
 }: FileTreeNodeRenderedProps) => {
   const [activeIndex, setActiveIndex] = React.useState<number>(-1);
-
   const isRenamePrompt = itemType === TreeNodeType.RenamePrompt;
   const isNewPrompt = itemType === TreeNodeType.NewPrompt;
   const isPrompt = isRenamePrompt || isNewPrompt;
@@ -70,6 +71,17 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     }
   };
 
+  const handleDoubleClick = (ev: React.MouseEvent) => {
+    if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
+      if (isCompactName) {
+        setActiveIndex(item.name.split(Path.separator).length - 1);
+      }
+      onDoubleClick(ev, item as File, itemType);
+    }
+  };
+
+  const [handleActuallyClick, handleActuallyDoubleClick] = useClickPreventionOnDoubleClick(handleClick, handleDoubleClick);
+
   const handlerTwistierClick = (ev: React.MouseEvent) => {
     if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
       if (onTwistierClick) {
@@ -80,51 +92,51 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     }
   };
 
-  const handleContextMenu = (ev: React.MouseEvent) => {
+  const handleContextMenu = React.useCallback((ev: React.MouseEvent) => {
     if (ev.nativeEvent.which === 0) {
         return;
     }
     if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
       onContextMenu(ev, item as TreeNode, itemType);
     }
-  };
+  }, [onContextMenu, item]);
 
-  const handleDragStart = (ev: React.DragEvent) => {
+  const handleDragStart = React.useCallback((ev: React.DragEvent) => {
     const { handleDragStart } = dndService;
     if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
       handleDragStart(ev, item);
     }
-  };
+  }, [dndService, item]);
 
-  const handleDragLeave = (ev: React.DragEvent) => {
+  const handleDragLeave = React.useCallback((ev: React.DragEvent) => {
     const { handleDragLeave } = dndService;
 
     if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
       handleDragLeave(ev, item);
     }
-  };
+  }, [dndService, item]);
 
-  const handleDragEnter = (ev: React.DragEvent) => {
+  const handleDragEnter = React.useCallback((ev: React.DragEvent) => {
     const { handleDragEnter } = dndService;
     if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
       handleDragEnter(ev, item);
     }
-  };
+  }, [dndService, item]);
 
-  const handleDrop = (ev: React.DragEvent) => {
+  const handleDrop = React.useCallback((ev: React.DragEvent) => {
     const { handleDrop } = dndService;
 
     if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
       handleDrop(ev, item);
     }
-  };
+  }, [dndService, item]);
 
-  const handleDragOver = (ev: React.DragEvent) => {
+  const handleDragOver = React.useCallback((ev: React.DragEvent) => {
     const { handleDragOver } = dndService;
     if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
       handleDragOver(ev, item);
     }
-  };
+  }, [dndService, item]);
 
   let isDirectory = itemType === TreeNodeType.CompositeTreeNode;
   let paddingLeft;
@@ -335,7 +347,8 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   return (
     <div
         key={item.id}
-        onClick={handleClick}
+        onClick={handleActuallyClick}
+        onDoubleClick={handleActuallyDoubleClick}
         onContextMenu={handleContextMenu}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
