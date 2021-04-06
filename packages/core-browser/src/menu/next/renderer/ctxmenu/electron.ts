@@ -121,6 +121,9 @@ export class ElectronCtxMenuRenderer implements IElectronCtxMenuRenderer {
       if (action) {
         action();
       }
+      if (onHide) {
+        onHide(false);
+      }
       disposer.dispose();
     }));
 
