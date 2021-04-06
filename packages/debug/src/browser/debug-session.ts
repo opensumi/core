@@ -95,9 +95,10 @@ export class DebugSession implements IDebugSession {
         }
       }),
       this.on('stopped', async ({ body }) => {
+        const { threadId } = body;
         const reportTime = this.sessionManager.reportTime(DEBUG_REPORT_NAME.DEBUG_STOPPED, {
           sessionId: this.id,
-          threadId: body.threadId,
+          threadId,
         });
         this.updateDeffered = new Deferred();
         await this.updateThreads(body);
@@ -106,6 +107,12 @@ export class DebugSession implements IDebugSession {
         // 下一个 scopes 触发后 action 结束
         await this.takeCommand('scopes');
         reportTime('stopped');
+        // action 结束后需要清除
+        const extra = this.sessionManager.getExtra(this.id, threadId);
+        if (threadId && extra && extra.action) {
+          extra.action = undefined;
+          this.sessionManager.setExtra(this.id, `${threadId ?? ''}`, extra);
+        }
       }),
       this.on('thread', ({ body: { reason, threadId } }) => {
         if (reason === 'started') {

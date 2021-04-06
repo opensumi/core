@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { DebugSession, DebugState } from './debug-session';
 import { WaitUntilEvent, Emitter, Event, URI, IContextKey, DisposableCollection, IContextKeyService, formatLocalize, Uri, IReporterService, uuid } from '@ali/ide-core-browser';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
-import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions, DEBUG_REPORT_NAME, IDebugSessionManager } from '../common';
+import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions, DEBUG_REPORT_NAME, IDebugSessionManager, DebugSessionExtra, DebugThreadExtra } from '../common';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { IMessageService } from '@ali/ide-overlay';
 import { IVariableResolverService } from '@ali/ide-variable';
@@ -31,52 +31,6 @@ export interface DebugSessionCustomEvent {
   readonly body?: any;
   readonly event: string;
   readonly session: DebugSession;
-}
-
-/**
- * 埋点专用的额外数据
- */
-interface DebugBaseExtra {
-
-  /**
-   * adapterID 区分语言
-   */
-  adapterID: string;
-
-  /**
-   * request 区分 attach 或 launch
-   */
-  request: 'attach' | 'launch';
-
-  /**
-   * 跟 sessionId 一一对应，先于 sessionId 生成，可以跟踪初始化时的事件
-   */
-  traceId: string;
-
-  /**
-   * 是否为远程调试
-   * 0: 非远程
-   * 1: 远程
-   */
-  remote: 0 | 1;
-}
-interface DebugSessionExtra extends DebugBaseExtra {
-  threads: Map<string, DebugThreadExtra>;
-}
-
-interface DebugThreadExtra extends DebugBaseExtra {
-  threadId?: string;
-
-  /**
-   * 当前的用户操作
-   */
-  action?: string;
-
-  /**
-   * 文件所在的路径和行号
-   */
-  filePath?: string;
-  fileLineNumber?: number;
 }
 
 @Injectable()
@@ -203,6 +157,10 @@ export class DebugSessionManager implements IDebugSessionManager {
     }
   }
 
+  public getExtra(sessionId: string | undefined, threadId: number | string | undefined): DebugThreadExtra | undefined {
+    return this._getExtra(sessionId, threadId);
+  }
+
   private _setExtra(sessionId: string, threadId: string, extra?: DebugThreadExtra) {
     const data = this._extraMap.get(sessionId);
     if (!data) {
@@ -213,6 +171,10 @@ export class DebugSessionManager implements IDebugSessionManager {
     } else {
       data.threads.delete(threadId);
     }
+  }
+
+  public setExtra(sessionId: string, threadId: string, extra?: DebugThreadExtra) {
+    return this._setExtra(sessionId, threadId, extra);
   }
 
   report(name: string, msg: string | undefined, extra?: any) {

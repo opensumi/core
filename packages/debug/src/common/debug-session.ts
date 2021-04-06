@@ -22,6 +22,8 @@ export interface IDebugSessionManager {
   report(name: string, msg: string | undefined, extra?: any): void;
   reportTime(name: string, defaults?: any): (msg: string | undefined, extra?: any) => number;
   reportAction(sessionId: string, threadId: number | string | undefined, action: string): void;
+  getExtra(sessionId: string | undefined, threadId: number | string | undefined): DebugThreadExtra | undefined;
+  setExtra(sessionId: string, threadId: string, extra?: DebugThreadExtra);
 
   [key: string]: any;
 }
@@ -32,4 +34,50 @@ export interface IDebugSession extends IDisposable {
   id: string;
   hasSeparateRepl: () => boolean;
   on: <K extends keyof DebugEventTypes>(kind: K, listener: (e: DebugEventTypes[K]) => any) => IDisposable;
+}
+
+/**
+ * 埋点专用的额外数据
+ */
+export interface DebugBaseExtra {
+
+  /**
+   * adapterID 区分语言
+   */
+  adapterID: string;
+
+  /**
+   * request 区分 attach 或 launch
+   */
+  request: 'attach' | 'launch';
+
+  /**
+   * 跟 sessionId 一一对应，先于 sessionId 生成，可以跟踪初始化时的事件
+   */
+  traceId: string;
+
+  /**
+   * 是否为远程调试
+   * 0: 非远程
+   * 1: 远程
+   */
+  remote: 0 | 1;
+}
+export interface DebugSessionExtra extends DebugBaseExtra {
+  threads: Map<string, DebugThreadExtra>;
+}
+
+export interface DebugThreadExtra extends DebugBaseExtra {
+  threadId?: string;
+
+  /**
+   * 当前的用户操作
+   */
+  action?: string;
+
+  /**
+   * 文件所在的路径和行号
+   */
+  filePath?: string;
+  fileLineNumber?: number;
 }
