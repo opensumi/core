@@ -100,8 +100,6 @@ export class FileTreeModelService {
   // 当前焦点的文件路径URI
   private _activeUri: URI | null;
 
-  private clickTimes: number;
-  private clickTimer: any;
   private preContextMenuFocusedFile: File | Directory | null;
   private _nextLocationTarget: URI | undefined;
 
@@ -251,7 +249,7 @@ export class FileTreeModelService {
         }
       });
     }));
-    this.disposableCollection.push(this.fileTreeService.onWorkspaceChange((workspace: Directory) => {
+    this.disposableCollection.push(this.fileTreeService.onWorkspaceChange(() => {
       this.disposableCollection.dispose();
       this.initTreeModel();
     }));
@@ -659,7 +657,6 @@ export class FileTreeModelService {
     this.setExplorerCompressedContextKey(item, activeUri);
 
     this._isMutiSelected = false;
-    this.clickTimes++;
     if (this.fileTreeService.isCompactMode && activeUri) {
       this._activeUri = activeUri;
     } else if (!activeUri) {
@@ -679,25 +676,19 @@ export class FileTreeModelService {
         this.fileTreeService.openFile(item.uri);
       }
     }
-    if (this.clickTimer) {
-      clearTimeout(this.clickTimer);
-    }
+  }
 
-    this.clickTimer = setTimeout(() => {
-      // 单击事件
-      // 200ms内多次点击默认为双击事件
-      if (this.clickTimes > 1) {
-        if (type === TreeNodeType.TreeNode) {
-          // 双击的时候，不管 workbench.list.openMode 为单击还是双击，都以非预览模式打开文件
-          this.fileTreeService.openAndFixedFile(item.uri);
-        } else {
-          if (this.corePreferences['workbench.list.openMode'] === 'doubleClick') {
-            this.toggleDirectory(item as Directory);
-          }
-        }
+  handleItemDoubleClick = (item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
+    this.handleItemClick(item, type, activeUri);
+
+    if (type === TreeNodeType.TreeNode) {
+      // 双击的时候，不管 workbench.list.openMode 为单击还是双击，都以非预览模式打开文件
+      this.fileTreeService.openAndFixedFile(item.uri);
+    } else {
+      if (this.corePreferences['workbench.list.openMode'] === 'doubleClick') {
+        this.toggleDirectory(item as Directory);
       }
-      this.clickTimes = 0;
-    }, 200);
+    }
   }
 
   public moveToNext() {
