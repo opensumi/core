@@ -368,7 +368,6 @@ export class DebugSession implements IDebugSession {
   set currentThread(thread: DebugThread | undefined) {
     this.toDisposeOnCurrentThread.dispose();
     this._currentThread = thread;
-    this.fireDidChange();
     if (thread) {
       this.toDisposeOnCurrentThread.push(thread.onDidChanged(() => this.fireDidChange()));
     }
@@ -536,6 +535,9 @@ export class DebugSession implements IDebugSession {
     }
     this.currentThread = typeof threadId === 'number' && this._threads.find((t) => t.raw.id === threadId)
       || this._threads.values().next().value;
+    if (this.currentThread?.raw.id !== threadId) {
+      this.fireDidChange();
+    }
   }
 
   protected async updateFrames(): Promise<void> {
