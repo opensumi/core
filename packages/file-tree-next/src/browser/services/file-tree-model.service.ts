@@ -605,9 +605,7 @@ export class FileTreeModelService {
     this.fileTreeContextKey.filesExplorerFocused.set(false);
     // 失去焦点状态时，清理右键菜单的选中态
     if (this.preContextMenuFocusedFile) {
-      this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
-      this._selectedFiles = this.selectedFiles.filter((file) => !file.uri.isEqual(this.preContextMenuFocusedFile!.uri));
-      this.preContextMenuFocusedFile = null;
+      this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
     }
     // 清空焦点状态
     this.enactiveFileDecoration();

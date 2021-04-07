@@ -95,9 +95,10 @@ export class DebugSession implements IDebugSession {
         }
       }),
       this.on('stopped', async ({ body }) => {
+        const { threadId } = body;
         const reportTime = this.sessionManager.reportTime(DEBUG_REPORT_NAME.DEBUG_STOPPED, {
           sessionId: this.id,
-          threadId: body.threadId,
+          threadId,
         });
         this.updateDeffered = new Deferred();
         await this.updateThreads(body);
@@ -106,6 +107,12 @@ export class DebugSession implements IDebugSession {
         // 下一个 scopes 触发后 action 结束
         await this.takeCommand('scopes');
         reportTime('stopped');
+        // action 结束后需要清除
+        const extra = this.sessionManager.getExtra(this.id, threadId);
+        if (threadId && extra && extra.action) {
+          extra.action = undefined;
+          this.sessionManager.setExtra(this.id, `${threadId ?? ''}`, extra);
+        }
       }),
       this.on('thread', ({ body: { reason, threadId } }) => {
         if (reason === 'started') {
@@ -361,7 +368,6 @@ export class DebugSession implements IDebugSession {
   set currentThread(thread: DebugThread | undefined) {
     this.toDisposeOnCurrentThread.dispose();
     this._currentThread = thread;
-    this.fireDidChange();
     if (thread) {
       this.toDisposeOnCurrentThread.push(thread.onDidChanged(() => this.fireDidChange()));
     }
@@ -529,6 +535,9 @@ export class DebugSession implements IDebugSession {
     }
     this.currentThread = typeof threadId === 'number' && this._threads.find((t) => t.raw.id === threadId)
       || this._threads.values().next().value;
+    if (this.currentThread?.raw.id !== threadId) {
+      this.fireDidChange();
+    }
   }
 
   protected async updateFrames(): Promise<void> {
