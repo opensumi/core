@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-workspace-edit",
-  "version": "1.40.4",
+  "version": "1.40.5",
   "files": [
     "lib"
   ],
@@ -19,16 +19,16 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "1.40.4",
-    "@ali/ide-core-node": "1.40.4",
-    "@ali/ide-editor": "1.40.4",
-    "@ali/ide-file-service": "1.40.4",
-    "@ali/ide-overlay": "1.40.4",
-    "@ali/ide-main-layout": "1.40.4",
-    "@ali/ide-components": "1.40.4"
+    "@ali/ide-core-common": "1.40.5",
+    "@ali/ide-core-node": "1.40.5",
+    "@ali/ide-editor": "1.40.5",
+    "@ali/ide-file-service": "1.40.5",
+    "@ali/ide-overlay": "1.40.5",
+    "@ali/ide-main-layout": "1.40.5",
+    "@ali/ide-components": "1.40.5"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "1.40.4",
+    "@ali/ide-core-browser": "1.40.5",
     "@ali/ide-dev-tool": "^1.1.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
