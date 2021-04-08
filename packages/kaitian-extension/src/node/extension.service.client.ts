@@ -150,7 +150,7 @@ export class ExtensionServiceClientImpl extends RPCService implements IExtension
     }
 
     const languagePackJson = await this.fileService.getFileStat(languagePath);
-    this.fileService.setContent(languagePackJson!, JSON.stringify(languagePacks));
+    await this.fileService.setContent(languagePackJson!, JSON.stringify(languagePacks));
 
     const nlsConfig = await lp.getNLSConfiguration('f06011ac164ae4dc8e753a3fe7f9549844d15e35', storagePath, languageId.toLowerCase());
     // tslint:disable-next-line: no-string-literal
