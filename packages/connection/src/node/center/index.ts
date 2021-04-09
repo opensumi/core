@@ -1,22 +1,13 @@
 import {
-  createMessageConnection,
-
   SocketMessageReader,
   SocketMessageWriter,
-
-  WebSocketMessageReader,
-  WebSocketMessageWriter,
-
+  createNodeMessageConnection,
   MessageConnection,
-
 } from '@ali/vscode-jsonrpc';
 
 export {
   SocketMessageReader,
   SocketMessageWriter,
-
-  WebSocketMessageReader,
-  WebSocketMessageWriter,
 };
 import {
   RPCProxy,
@@ -70,7 +61,7 @@ export class RPCServiceCenter {
   public uid: string;
   public rpcProxy: RPCProxy[] = [];
   public serviceProxy: ServiceProxy[] = [];
-  private connection: MessageConnection[] = [];
+  private connection: Array<MessageConnection> = [];
   private serviceMethodMap = {};
 
   private createService: string[] = [];
@@ -87,6 +78,7 @@ export class RPCServiceCenter {
     });
     this.logger = logger || console;
   }
+
   registerService(serviceName: string, type: ServiceType): void {
     if (type === ServiceType.Service) {
       this.createService.push(serviceName);
@@ -97,10 +89,12 @@ export class RPCServiceCenter {
       this.getService.push(serviceName);
     }
   }
+
   when() {
     return this.connectionPromise;
   }
-  setConnection(connection: RPCMessageConnection) {
+
+  setConnection(connection: MessageConnection) {
     if (!this.connection.length) {
       this.connectionPromiseResolve();
     }
@@ -114,7 +108,8 @@ export class RPCServiceCenter {
     this.serviceProxy.push(serviceProxy);
 
   }
-  removeConnection(connection: RPCMessageConnection) {
+
+  removeConnection(connection: MessageConnection) {
     const removeIndex = this.connection.indexOf(connection);
     if ( removeIndex !== -1) {
       this.connection.splice(removeIndex, 1);
@@ -233,15 +228,8 @@ export class RPCServiceStub {
 }
 
 export function createSocketConnection(socket: net.Socket) {
-  return createMessageConnection(
+  return createNodeMessageConnection(
     new SocketMessageReader(socket),
     new SocketMessageWriter(socket),
-  );
-}
-
-export function createWebSocketConnection(socket: any) {
-  return createMessageConnection(
-    new WebSocketMessageReader(socket),
-    new WebSocketMessageWriter(socket),
   );
 }

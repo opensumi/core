@@ -2,10 +2,10 @@ import {
   RPCServiceCenter,
   initRPCService,
   WSChannelHandler,
-  createWebSocketConnection,
   createSocketConnection,
   RPCMessageConnection,
  } from '@ali/ide-connection';
+import { createWebSocketConnection } from '@ali/ide-connection/lib/common/message';
 import { Injector, Provider } from '@ali/common-di';
 import { getDebugLogger, IReporterService, BasicModule, BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, BrowserConnectionErrorEvent, IEventBus } from '@ali/ide-core-common';
 import { BackService } from '@ali/ide-core-common/lib/module';

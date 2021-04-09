@@ -1,4 +1,5 @@
-import { AbstractMessageReader, DataCallback } from '@ali/vscode-jsonrpc/lib/messageReader';
+import { Disposable, IDisposable } from '@ali/ide-core-common';
+import { AbstractMessageReader, DataCallback } from '@ali/vscode-jsonrpc';
 
 /**
  * 支持通过RPC通道读取消息.
@@ -6,13 +7,13 @@ import { AbstractMessageReader, DataCallback } from '@ali/vscode-jsonrpc/lib/mes
 export class ExtensionMessageReader extends AbstractMessageReader {
   protected state: 'initial' | 'listening' | 'closed' = 'initial';
   protected callback: DataCallback | undefined;
-  protected readonly events: { message?: any, error?: any }[] = [];
+  protected events: { message?: any, error?: any }[] = [];
 
   constructor() {
     super();
   }
 
-  listen(callback: DataCallback): void {
+  listen(callback: DataCallback): IDisposable {
     if (this.state === 'initial') {
       this.state = 'listening';
       this.callback = callback;
@@ -27,6 +28,12 @@ export class ExtensionMessageReader extends AbstractMessageReader {
         }
       }
     }
+
+    return Disposable.create(() => {
+      this.state = 'closed';
+      this.callback = undefined;
+      this.events = [];
+    });
   }
 
   readMessage(message: string): void {

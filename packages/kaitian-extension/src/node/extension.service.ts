@@ -15,10 +15,9 @@ import {
   SocketMessageReader,
   SocketMessageWriter,
 
-  WebSocketMessageReader,
-  WebSocketMessageWriter,
   WSChannel,
 } from '@ali/ide-connection';
+import { WebSocketMessageReader, WebSocketMessageWriter } from '@ali/ide-connection/lib/common/message';
 import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
 import { getShellPath } from '@ali/ide-core-node';
 

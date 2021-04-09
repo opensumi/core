@@ -1,12 +1,15 @@
 import {
   RPCServiceCenter,
   initRPCService,
-  createWebSocketConnection,
   RPCMessageConnection,
   WebSocketServerRoute,
   CommonChannelHandler,
   commonChannelPathHandler,
 } from '../../src/node';
+import {
+  createWebSocketConnection,
+} from '../../src/common/message';
+
 import {
   RPCProtocol,
   createMainContextProxyIdentifier,
@@ -44,7 +47,6 @@ describe('connection', () => {
 
     await new Promise((resolve) => {
       server.listen(7788, () => {
-        console.log('server listen on 7788');
         resolve();
       });
     });
@@ -65,7 +67,6 @@ describe('connection', () => {
 
     const channelSend = (content) => {
       connection.send(content, (err) => {
-        console.log(err);
       });
     };
     const channel = new WSChannel(channelSend, 'TEST_CHANNEL_ID');

@@ -11,9 +11,9 @@ import {
 
   initRPCService,
   RPCServiceCenter,
-  createWebSocketConnection,
   createSocketConnection,
 } from '@ali/ide-connection';
+import { createWebSocketConnection } from '@ali/ide-connection/lib/common/message';
 import { INodeLogger } from './logger/node-logger';
 
 export { RPCServiceCenter };

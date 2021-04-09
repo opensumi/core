@@ -65,13 +65,12 @@ import {
   WSChannelHandler as IWSChanneHandler,
   RPCServiceCenter,
   initRPCService,
-  createWebSocketConnection,
   createSocketConnection,
   RPCProtocol,
   ProxyIdentifier,
   IRPCProtocol,
 } from '@ali/ide-connection';
-
+import { createWebSocketConnection } from '@ali/ide-connection/lib/common/message';
 import { VSCodeCommands } from './vscode/commands';
 import { UriComponents } from '../common/vscode/ext-types';
 

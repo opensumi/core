@@ -1,4 +1,5 @@
 const { JSDOM } = require('jsdom');
+const { TextDecoder, TextEncoder } = require('util');
 
 const jsdom = new JSDOM(`<div id="main"></div>`, {
   // https://github.com/jsdom/jsdom#basic-options
@@ -36,6 +37,8 @@ global.document.queryCommandSupported = () => { };
 global.document.execCommand = () => { };
 global.HTMLElement = jsdom.window.HTMLElement;
 global.self = global;
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
 
 
 class MockLocalStorage {

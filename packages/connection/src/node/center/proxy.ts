@@ -58,25 +58,15 @@ export class RPCProxy {
       });
     }
   }
-  // public listenNested() {
-  //   if (this.connection) {
-  //     const connection = this.connection;
-  //     connection.onRequest('$$call', (...args) => this.onRequest('$$call', ...args));
-  //   }
-  // }
+
   public listen(connection: MessageConnection) {
     this.connection = connection;
 
-    // if(Object.keys(this.proxyService).length){
-    //   this.listenService(this.proxyService)
     if (this.target) {
       this.listenService(this.target);
     }
     this.connectionPromiseResolve(connection);
-
-    if (connection.isListening && !connection.isListening()) {
-      connection.listen();
-    }
+    connection.listen();
   }
 
   public createProxy(): any {

@@ -1,4 +1,4 @@
-import { AbstractMessageWriter, MessageWriter } from '@ali/vscode-jsonrpc/lib/messageWriter';
+import { AbstractMessageWriter, MessageWriter } from '@ali/vscode-jsonrpc/lib/common/messageWriter';
 import { Message } from '@ali/vscode-jsonrpc';
 import { IExtHostConnection } from './connection';
 
@@ -12,8 +12,11 @@ export class ExtensionMessageWriter extends AbstractMessageWriter implements Mes
         super();
     }
 
-    write(arg: string | Message): void {
+    write(arg: string | Message): Promise<void> {
         const content = JSON.stringify(arg);
         this.proxy.$sendMessage(this.id, content);
+        return Promise.resolve();
     }
+
+    end() {}
 }

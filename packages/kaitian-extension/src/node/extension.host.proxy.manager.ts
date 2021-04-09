@@ -153,7 +153,9 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
   }
 
   async dispose() {
-    await this.extHostProxy?.$dispose();
-    this.disposer.dispose();
+    if (!this.disposer.disposed) {
+      await this.extHostProxy?.$dispose();
+      this.disposer.dispose();
+    }
   }
 }

@@ -1,6 +1,7 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as vm from 'vm';
+const { TextDecoder, TextEncoder } = require('util');
 
 const workerScript = `
 const kaitian = require('kaitian');
@@ -55,6 +56,8 @@ export class MockWorker {
           fetch: mockFetch,
           MessageChannel,
           MessagePort,
+          TextDecoder,
+          TextEncoder,
           postMessage: (value: any, transferList?: Array<ArrayBuffer | MessagePort>) => {
             this.onmessage({
               data: value,
