@@ -31,7 +31,6 @@ export class HoverAdapter {
         if (!value.range) {
             value.range = new Range(pos, pos);
         }
-
         return Converter.fromHover(value);
     });
   }

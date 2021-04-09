@@ -1,5 +1,5 @@
 import { DocumentSelector, CompletionItemProvider, CancellationToken, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider, DocumentRangeFormattingEditProvider, DocumentFormattingEditProvider, CallHierarchyProvider } from 'vscode';
-import { SerializedDocumentFilter, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, SerializedLanguageConfiguration, ReferenceContext, Location, ILink, DocumentSymbol, WorkspaceEditDto, RenameLocation, Selection, ISerializedSignatureHelpProviderMetadata, SelectionRange, CompletionItem, ICallHierarchyItemDto, IOutgoingCallDto, IIncomingCallDto, CodeLensList, CodeLens, SemanticTokensLegend } from './model.api';
+import { SerializedDocumentFilter, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, SerializedLanguageConfiguration, ReferenceContext, Location, ILink, DocumentSymbol, WorkspaceEditDto, RenameLocation, Selection, ISerializedSignatureHelpProviderMetadata, SelectionRange, CompletionItem, ICallHierarchyItemDto, IOutgoingCallDto, IIncomingCallDto, CodeLensList, CodeLens, SemanticTokensLegend, WithDuration } from './model.api';
 import type { editor } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import type { CodeActionContext, CodeActionList, SignatureHelpContext, SignatureHelpResult } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { Disposable } from './ext-types';
@@ -49,6 +49,7 @@ export interface IExtHostLanguages {
 
   registerHoverProvider(selector, provider): Disposable;
   $provideHover(handle: number, resource: any, position: any, token: any): Promise<Hover | undefined>;
+  $provideHoverWithDuration(handle: number, resource: any, position: any, token: any): Promise<WithDuration<Hover | undefined>>;
 
   registerCompletionItemProvider(selector: DocumentSelector, provider: CompletionItemProvider, triggerCharacters: string[]): Disposable;
   $provideCompletionItems(handle: number, resource: UriComponents, position: Position, context: CompletionContext, token: CancellationToken);
@@ -56,6 +57,7 @@ export interface IExtHostLanguages {
   $releaseCompletionItems(handle: number, id: number): void;
 
   $provideDefinition(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
+  $provideDefinitionWithDuration(handle: number, resource: Uri, position: Position, token: CancellationToken): Promise<WithDuration<Definition | DefinitionLink[] | undefined>>;
   registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable;
 
   $provideTypeDefinition(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
@@ -77,11 +79,13 @@ export interface IExtHostLanguages {
   $provideDocumentFormattingEdits(handle: number, resource: UriComponents, options: FormattingOptions): Promise<SingleEditOperation[] | undefined>;
 
   $provideOnTypeFormattingEdits(handle: number, resource: UriComponents, position: Position, ch: string, options: FormattingOptions): Promise<SingleEditOperation[] | undefined>;
+  $provideOnTypeFormattingEditsWithDuration(handle: number, resource: Uri, position: Position, ch: string, options: FormattingOptions): Promise<WithDuration<SingleEditOperation[] | undefined>>;
 
   $provideCodeLenses(handle: number, resource: UriComponents): Promise<CodeLensList | undefined>;
   $resolveCodeLens(handle: number, resource: UriComponents, codeLens: CodeLens): Promise<CodeLens | undefined>;
 
   $provideImplementation(handle: number, resource: UriComponents, position: Position): Promise<Definition | DefinitionLink[] | undefined>;
+  $provideImplementationWithDuration(handle: number, resource: Uri, position: Position): Promise<WithDuration<Definition | DefinitionLink[] | undefined>>;
 
   $provideCodeActions(
     handle: number,
@@ -94,6 +98,7 @@ export interface IExtHostLanguages {
   $resolveDocumentLink(handle: number, link: ILink, token: CancellationToken): Promise<ILink | undefined>;
 
   $provideReferences(handle: number, resource: UriComponents, position: Position, context: ReferenceContext, token: CancellationToken): Promise<Location[] | undefined>;
+  $provideReferencesWithDuration(handle: number, resource: Uri, position: Position, context: ReferenceContext, token: CancellationToken): Promise<WithDuration<Location[] | undefined>>;
 
   $provideDocumentSymbols(handle: number, resource: UriComponents, token: CancellationToken): Promise<DocumentSymbol[] | undefined>;
 

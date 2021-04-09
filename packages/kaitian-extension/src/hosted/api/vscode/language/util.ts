@@ -124,3 +124,21 @@ export const setPerformance = (perf: Performance) => {
   performance = perf;
 };
 export const getPerformance = () => performance;
+
+/**
+ *
+ * @description 记录插件进程中相关操作的耗时
+ */
+export const getDurationTimer = () => {
+  const perf = getPerformance();
+  const recorder = perf ? perf : Date;
+
+  const startTime = recorder.now();
+
+  return {
+    end: () => {
+      const cost = Math.round(recorder.now() - startTime);
+      return cost;
+    },
+  };
+};

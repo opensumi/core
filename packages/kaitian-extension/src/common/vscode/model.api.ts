@@ -782,3 +782,8 @@ export interface SemanticTokensEdits {
   readonly resultId?: string;
   readonly edits: SemanticTokensEdit[];
 }
+
+export interface WithDuration<T> {
+  _dur: number;
+  result: T;
+}

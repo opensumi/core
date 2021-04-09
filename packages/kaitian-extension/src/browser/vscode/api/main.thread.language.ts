@@ -126,11 +126,13 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_HOVER);
-        return this.proxy.$provideHover(handle, model.uri, position, token).then((v) => {
-          if (v) {
-            timer.timeEnd(extname(model.uri.fsPath));
+        return this.proxy.$provideHoverWithDuration(handle, model.uri, position, token).then(({ result, _dur }) => {
+          if (result) {
+            timer.timeEnd(extname(model.uri.fsPath), {
+              extDuration: _dur,
+            });
           }
-          return v!;
+          return result!;
         });
       },
     };
@@ -247,11 +249,14 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_DEFINITION);
-        const result = await this.proxy.$provideDefinition(handle, model.uri, position, token);
+        const { result, _dur } = await this.proxy.$provideDefinitionWithDuration(handle, model.uri, position, token);
+
         if (!result) {
           return undefined!;
         }
-        timer.timeEnd(extname(model.uri.fsPath));
+        timer.timeEnd(extname(model.uri.fsPath), {
+          extDuration: _dur,
+        });
         if (Array.isArray(result)) {
           const definitionLinks: monaco.languages.LocationLink[] = [];
           for (const item of result) {
@@ -554,11 +559,13 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_ON_TYPE_FORMATTING_EDITS);
-        return this.proxy.$provideOnTypeFormattingEdits(handle, model.uri, position, ch, options).then((v) => {
-          if (v) {
-            timer.timeEnd(extname(model.uri.fsPath));
+        return this.proxy.$provideOnTypeFormattingEditsWithDuration(handle, model.uri, position, ch, options).then(({ result, _dur }) => {
+          if (result) {
+            timer.timeEnd(extname(model.uri.fsPath), {
+              extDuration: _dur,
+            });
           }
-          return v!;
+          return result!;
         });
       },
     };
@@ -659,11 +666,13 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_IMPLEMENTATION);
-        return this.proxy.$provideImplementation(handle, model.uri, position).then((result) => {
+        return this.proxy.$provideImplementationWithDuration(handle, model.uri, position).then(({result, _dur}) => {
           if (!result) {
             return undefined!;
           }
-          timer.timeEnd(extname(model.uri.fsPath));
+          timer.timeEnd(extname(model.uri.fsPath), {
+            extDuration: _dur,
+          });
           if (Array.isArray(result)) {
             // using DefinitionLink because Location is mandatory part of DefinitionLink
             const definitionLinks: any[] = [];
@@ -795,13 +804,15 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_REFERENCES);
-        return this.proxy.$provideReferences(handle, model.uri, position, context, token).then((result) => {
+        return this.proxy.$provideReferencesWithDuration(handle, model.uri, position, context, token).then(({result, _dur}) => {
           if (!result) {
             return undefined!;
           }
 
           if (Array.isArray(result)) {
-            timer.timeEnd(extname(model.uri.fsPath));
+            timer.timeEnd(extname(model.uri.fsPath), {
+              extDuration: _dur,
+            });
             const references: monaco.languages.Location[] = [];
             for (const item of result) {
               references.push({ ...item, uri: monaco.Uri.revive(item.uri) });

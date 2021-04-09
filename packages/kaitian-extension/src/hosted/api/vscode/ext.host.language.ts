@@ -76,6 +76,7 @@ import {
   ICallHierarchyItemDto,
   IIncomingCallDto,
   IOutgoingCallDto,
+  WithDuration,
 } from '../../../common/vscode/model.api';
 import {
   IMainThreadLanguages,
@@ -103,7 +104,7 @@ import { Diagnostics } from './language/diagnostics';
 import { ImplementationAdapter } from './language/implementation';
 import { LinkProviderAdapter } from './language/link-provider';
 import { ReferenceAdapter } from './language/reference';
-import { score } from './language/util';
+import { getDurationTimer, score } from './language/util';
 import { serializeEnterRules, serializeRegExp, serializeIndentation } from '../../../common/vscode/utils';
 import { OutlineAdapter } from './language/outline';
 import { WorkspaceSymbolAdapter } from './language/workspace-symbol';
@@ -287,6 +288,12 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return callback(adapter as A);
   }
 
+  private withDurationRecord(action)  {
+    const duration = getDurationTimer();
+    return action().then((result) => ({ _dur: duration.end(), result }));
+
+  }
+
   private transformDocumentSelector(selector: DocumentSelector): SerializedDocumentFilter[] {
     if (Array.isArray(selector)) {
       return selector.map((sel) => this.doTransformDocumentSelector(sel)!);
@@ -338,6 +345,9 @@ export class ExtHostLanguages implements IExtHostLanguages {
   $provideHover(handle: number, resource: any, position: Position, token: CancellationToken): Promise<Hover | undefined> {
     return this.withAdapter(handle, HoverAdapter, (adapter) => adapter.provideHover(resource, position, token));
   }
+  $provideHoverWithDuration(handle: number, resource: any, position: Position, token: CancellationToken): Promise<WithDuration<Hover | undefined>> {
+    return this.withDurationRecord(() => this.$provideHover(handle, resource, position, token));
+  }
   // ### Hover end
 
   // ### Completion begin
@@ -365,6 +375,10 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.withAdapter(handle, DefinitionAdapter, (adapter) => adapter.provideDefinition(resource, position, token));
   }
 
+  $provideDefinitionWithDuration(handle: number, resource: Uri, position: Position, token: CancellationToken): Promise<WithDuration<Definition | DefinitionLink[] | undefined>> {
+    return this.withDurationRecord(() => this.$provideDefinition(handle, resource, position, token));
+  }
+
   registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable {
     const callId = this.addNewAdapter(new DefinitionAdapter(provider, this.documents));
     this.proxy.$registerDefinitionProvider(callId, this.transformDocumentSelector(selector));
@@ -375,6 +389,9 @@ export class ExtHostLanguages implements IExtHostLanguages {
   // ### Type Definition provider begin
   $provideTypeDefinition(handle: number, resource: Uri, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined> {
     return this.withAdapter(handle, TypeDefinitionAdapter, (adapter) => adapter.provideTypeDefinition(resource, position, token));
+  }
+  $provideTypeDefinitionWithDuration(handle: number, resource: Uri, position: Position, token: CancellationToken) {
+    return this.withDurationRecord(() => this.$provideTypeDefinition(handle, resource, position, token));
   }
 
   registerTypeDefinitionProvider(selector: DocumentSelector, provider: TypeDefinitionProvider): Disposable {
@@ -460,6 +477,9 @@ export class ExtHostLanguages implements IExtHostLanguages {
   $provideOnTypeFormattingEdits(handle: number, resource: Uri, position: Position, ch: string, options: FormattingOptions): Promise<SingleEditOperation[] | undefined> {
     return this.withAdapter(handle, OnTypeFormattingAdapter, (adapter) => adapter.provideOnTypeFormattingEdits(resource, position, ch, options));
   }
+  $provideOnTypeFormattingEditsWithDuration(handle: number, resource: Uri, position: Position, ch: string, options: FormattingOptions): Promise<WithDuration<SingleEditOperation[] | undefined>>  {
+    return this.withDurationRecord(() => this.$provideOnTypeFormattingEdits(handle, resource, position, ch, options));
+  }
   // ### Document Type Formatting Provider end
 
   // ### Document Code Lens Provider begin
@@ -510,6 +530,9 @@ export class ExtHostLanguages implements IExtHostLanguages {
   $provideImplementation(handle: number, resource: Uri, position: Position): Promise<Definition | DefinitionLink[] | undefined> {
     return this.withAdapter(handle, ImplementationAdapter, (adapter) => adapter.provideImplementation(resource, position));
   }
+  $provideImplementationWithDuration(handle: number, resource: Uri, position: Position): Promise<WithDuration<Definition | DefinitionLink[] | undefined>> {
+    return this.withDurationRecord(() => this.$provideImplementation(handle, resource, position));
+  }
 
   registerImplementationProvider(selector: DocumentSelector, provider: ImplementationProvider): Disposable {
     const callId = this.addNewAdapter(new ImplementationAdapter(provider, this.documents));
@@ -559,6 +582,10 @@ export class ExtHostLanguages implements IExtHostLanguages {
   // ### Code Reference Provider begin
   $provideReferences(handle: number, resource: Uri, position: Position, context: ReferenceContext, token: CancellationToken): Promise<Location[] | undefined> {
     return this.withAdapter(handle, ReferenceAdapter, (adapter) => adapter.provideReferences(resource, position, context, token));
+  }
+
+  $provideReferencesWithDuration(handle: number, resource: Uri, position: Position, context: ReferenceContext, token: CancellationToken): Promise<WithDuration<Location[] | undefined>> {
+    return this.withDurationRecord(() => this.$provideReferences(handle, resource, position, context, token));
   }
 
   registerReferenceProvider(selector: DocumentSelector, provider: ReferenceProvider): Disposable {
