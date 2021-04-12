@@ -1086,7 +1086,26 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         await this.codeEditor.open(await this.getDocumentModelRef(resource.uri), options.range ? new monaco.Range(options.range.startLineNumber!, options.range.startColumn!, options.range.endLineNumber!, options.range.endColumn!) : undefined);
         if (options.focus) {
           this._domNode?.focus();
-          this.codeEditor.focus();
+          // monaco 编辑器的 focus 多了一步检查，由于此时其实对应编辑器的 dom 的 display 为 none （需要等 React 下一次渲染才会改变为 block）,
+          // 会引起 document.activeElement !== editor.textArea.domNode，进而会导致focus失败
+          // 此处我们先简单修复把 focus 放到下一个 eventLoop 做。
+          setTimeout(() => {
+            // 此处必须多做一些检查以免不必要的 focus
+            if (this.disposed) {
+              return;
+            }
+            if (this !== this.workbenchEditorService.currentEditorGroup) {
+              return;
+            }
+            if (this.currentEditor === this.codeEditor && this.codeEditor.currentUri?.isEqual(resource.uri)) {
+              try {
+                this.codeEditor.focus();
+              } catch (e) {
+                // noop
+              }
+            }
+          });
+
         }
         // 可能在diff Editor中修改导致为脏
         if (this.codeEditor.currentDocumentModel!.dirty) {
@@ -1099,7 +1118,22 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         await this.diffEditor.compare(original, modified, options, resource.uri);
         if (options.focus) {
           this._domNode?.focus();
-          this.diffEditor.focus();
+          // 理由见上方 codeEditor.focus 部分
+          setTimeout(() => {
+            if (this.disposed) {
+              return;
+            }
+            if (this !== this.workbenchEditorService.currentEditorGroup) {
+              return;
+            }
+            if (this.currentEditor === this.diffEditor.modifiedEditor) {
+              try {
+                this.diffEditor.focus();
+              } catch (e) {
+                // noop
+              }
+            }
+          });
         }
       } else if (activeOpenType.type === 'component') {
         const component = this.editorComponentRegistry.getEditorComponent(activeOpenType.componentId as string);

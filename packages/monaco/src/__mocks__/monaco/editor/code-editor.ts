@@ -352,7 +352,11 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   layout(dimension?: monaco.editor.IDimension | undefined): void {
     return;
   }
-  focus = jest.fn();
+
+  focus = jest.fn(() => {
+    this._onDidFocusEditorText.fire();
+  });
+
   hasTextFocus(): boolean {
     return false;
   }

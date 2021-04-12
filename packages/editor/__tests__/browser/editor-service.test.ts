@@ -21,6 +21,7 @@ import { EditorFeatureRegistryImpl } from '@ali/ide-editor/lib/browser/feature';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 import { isEditStack, isEOLStack } from '@ali/ide-editor/lib/browser/doc-model/editor-is-fn';
 import { IMessageService } from '@ali/ide-overlay';
+import { delay } from '../../../terminal-next/__tests__/browser/utils';
 
 const injector = createBrowserInjector([]);
 
@@ -232,6 +233,19 @@ describe('workbench editor service tests', () => {
     await editorService.open(testCodeUri, { split: EditorGroupSplitAction.Right });
     await editorService.open(testCodeUri, { split: EditorGroupSplitAction.Bottom });
     expect(editorService.editorGroups.length).toBe(3);
+
+    await editorService.closeAll();
+    done();
+  });
+
+  it('should focus editor', async (done) => {
+    const testCodeUri = new URI('test:///testuri1');
+    const focused = jest.fn();
+    editorService.currentEditorGroup.codeEditor.monacoEditor.onDidFocusEditorText(focused);
+    await editorService.open(testCodeUri, { focus: true});
+    await delay(100);
+
+    expect(focused).toBeCalled();
 
     await editorService.closeAll();
     done();
