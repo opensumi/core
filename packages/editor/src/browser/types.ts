@@ -108,14 +108,36 @@ export const BrowserEditorContribution = Symbol('BrowserEditorContribution');
 
 export interface BrowserEditorContribution {
 
+  /**
+   * 用来在合适的时机向 `ResourceService` 注册可以在编辑器内打开的资源。
+   *
+   * 为了让一个 uri 能够在编辑器中被打开，首先需要向 `ResourceService` 注册一个用于解析 uri 至一个编辑器资源（`IResource`) 的 `IResourceProvider`。
+   * 它的主要职责是在这个 uri 在编辑器标签 Tab 上显示时提供它的名称、图标、是否被编辑等状态，以及相应这个 tab 被关闭时的回调等等。
+   *
+   * @param resourceService
+   */
   registerResource?(resourceService: ResourceService): void;
 
+  /**
+   * 用来在合适的时机向 `EditorComponentRegistry` 注册编辑器组件、打开方式等功能。
+   *
+   * 一个 uri 对应的编辑器资源 (`IResource`) 需要能够在编辑器中展示，还需要为它注册对应的一个或者多个打开方式，以及对应打开方式使用的 React 组件。
+   * @param editorComponentRegistry
+   */
   registerEditorComponent?(editorComponentRegistry: EditorComponentRegistry): void;
 
   registerEditorDocumentModelContentProvider?(registry: IEditorDocumentModelContentRegistry): void;
 
+  /**
+   * @deprecated
+   * @param editorActionRegistry
+   */
   registerEditorActions?(editorActionRegistry: IEditorActionRegistry): void;
 
+  /**
+   * 当进入 IDE 时，编辑器会尝试恢复上一次打开的编辑器组和组内打开的文件
+   * 完成后会执行 onDidRestoreState 这个 hook
+   */
   onDidRestoreState?(): void;
 
   registerEditorFeature?(registry: IEditorFeatureRegistry);

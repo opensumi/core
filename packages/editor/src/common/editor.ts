@@ -32,22 +32,43 @@ export enum EditorType {
  */
 export interface IEditor {
 
+  /**
+   * 获得当前编辑器
+   */
   getId(): string;
 
+  /**
+   * 获得编辑器的类型
+   */
   getType(): EditorType;
+
   /**
    * editor中打开的documentModel
    */
 
   currentDocumentModel: IEditorDocumentModel | null;
 
+  /**
+   * 当前的uri
+   */
   currentUri: URI | null;
 
-  getSelections(): ISelection[] | null;
-
+  /**
+   * 插入代码片段
+   * @param template
+   * @param ranges
+   * @param opts
+   */
   insertSnippet(template: string, ranges: readonly IRange[], opts: IUndoStopOptions);
 
+  /**
+   * 应用装饰器
+   * @param key
+   * @param options
+   */
   applyDecoration(key: string, options: IDecorationApplyOptions[]);
+
+  getSelections(): ISelection[] | null;
 
   onSelectionsChanged: Event<{ selections: ISelection[], source: string }>;
 
@@ -63,6 +84,9 @@ export interface IEditor {
 
   save(): Promise<void>;
 
+  /**
+   * 获得包裹的 monaco 编辑器
+   */
   monacoEditor: editor.ICodeEditor;
 
   onDispose: Event<void>;
@@ -110,9 +134,27 @@ export interface IDiffEditor extends IDisposable {
 
 @Injectable()
 export abstract class EditorCollectionService {
+  /**
+   * 当前的编辑器
+   */
   public readonly currentEditor: IEditor | undefined;
+
+  /**
+   * 创建一个 monaco 编辑器实例
+   * @param dom
+   * @param options
+   * @param overrides
+   */
   public abstract async createCodeEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): Promise<ICodeEditor>;
+
+  /**
+   * 创建一个 monaco diffEditor 实例
+   * @param dom
+   * @param options
+   * @param overrides
+   */
   public abstract async createDiffEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): Promise<IDiffEditor>;
+
   public abstract listEditors(): IEditor[];
   public abstract listDiffEditors(): IDiffEditor[];
 
@@ -136,16 +178,37 @@ export class DidChangeEditorGroupUriEvent extends BasicEvent<URI[][]> { }
  */
 export class DidApplyEditorDecorationFromProvider extends BasicEvent<{ key?: string; uri: URI }> {  }
 
+/**
+ * 编辑器组
+ * 是一组tab和一个展示编辑器或者编辑器富组件的单元，主要用来管理 tab 的生命周期，以及控制编辑器主体的展示。
+ * 一个 workbenchEditorService 会拥有多个（至少一个）编辑器组，它会在类似 “向右拆分” 这样的功能被使用时创建，在该组tab完全关闭时销毁。
+ */
 export interface IEditorGroup {
 
+  /**
+   * 当前 editorGroup 在 workbenchEditorService.sortedEditorGroups 中的 index
+   */
   index: number;
 
+  /**
+   * 当前 editorGroup 的名称，唯一，可视作 id
+   */
   name: string;
 
+  /**
+   * 每个编辑器组拥有一个代码编辑器和一个diff编辑器实例
+   * 当前group的代码编辑器
+   */
   codeEditor: ICodeEditor;
 
+  /**
+   * 当前group的diff编辑器实例
+   */
   diffEditor: IDiffEditor;
 
+  /**
+   * 当前的编辑器 （如果当前是富组件，则返回 null)
+   */
   currentEditor: IEditor | null;
 
   /**
@@ -153,10 +216,19 @@ export interface IEditorGroup {
    */
   currentFocusedEditor: IEditor | undefined;
 
+  /**
+   * 所有当前编辑器租的 tab 的资源
+   */
   resources: IResource[];
 
+  /**
+   * 当前的 tab 对应的资源
+   */
   currentResource: MaybeNull<IResource>;
 
+  /**
+   * 当前的打开方式
+   */
   currentOpenType: MaybeNull<IEditorOpenType>;
 
   onDidEditorGroupContentLoading: Event<IResource>;
@@ -165,8 +237,16 @@ export interface IEditorGroup {
 
   open(uri: URI, options?: IResourceOpenOptions): Promise<IOpenResourceResult>;
 
+  /**
+   * 取消指定 uri 的 tab 的 preview模式（斜体模式），如果它是的话
+   * @param uri
+   */
   pin(uri: URI): Promise<void>;
 
+  /**
+   * 关闭指定的 uri 的 tab， 如果存在的话
+   * @param uri
+   */
   close(uri: URI): Promise<void>;
 
   getState(): IEditorGroupState;
@@ -178,7 +258,7 @@ export interface IEditorGroup {
   closeAll(): Promise<void>;
 
   /**
-   * 保存当前
+   * 保存当前的 tab 的文件 (如果它能被保存的话)
    */
   saveCurrent(reason?: SaveReason): Promise<void>;
 
@@ -191,8 +271,14 @@ export interface IEditorGroup {
 }
 export abstract class WorkbenchEditorService {
 
+  /**
+   * 当前 resource 发生变更
+   */
   onActiveResourceChange: Event<MaybeNull<IResource>>;
 
+  /**
+   * 当前编辑器内鼠标
+   */
   onCursorChange: Event<CursorStatus>;
 
   /**
@@ -205,29 +291,73 @@ export abstract class WorkbenchEditorService {
    */
   onDidCurrentEditorGroupChanged: Event<IEditorGroup>;
 
-  // TODO
+  /**
+   * 所有的编辑器组
+   */
   editorGroups: IEditorGroup[];
 
+  /**
+   *
+   */
   sortedEditorGroups: IEditorGroup[];
 
+  /**
+   * 当前的编辑器对象
+   */
   currentEditor: IEditor | null;
 
+  /**
+   * 当前焦点的编辑器资源
+   */
   currentResource: MaybeNull<IResource>;
 
+  /**
+   * 当前的编辑器组
+   */
   currentEditorGroup: IEditorGroup;
 
+  /**
+   * 关闭全部
+   * @param uri 只关闭指定的 uri
+   * @param force 不进行关闭前提醒（不执行 shouldCloseResource)
+   */
   abstract async closeAll(uri?: URI, force?: boolean): Promise<void>;
 
+  /**
+   * 打开指定的 uri
+   * @param uri
+   * @param options 打开的选项
+   */
   abstract async open(uri: URI, options?: IResourceOpenOptions): Promise<IOpenResourceResult>;
+
+  /**
+   * 打开多个 uri
+   * @param uri
+   */
   abstract async openUris(uri: URI[]): Promise<void>;
 
+  /**
+   * 保存全部
+   * @param includeUntitled 是否对新文件进行保存询问, 默认false
+   */
   abstract saveAll(includeUntitled?: boolean): Promise<void>;
 
+  /**
+   * 关闭指定的 uri， 等同于 closeAll 带 uri 参数
+   * @param uri
+   * @param force
+   */
   abstract async close(uri: any, force?: boolean): Promise<void>;
 
+  /**
+   * 获得当前打开的 uri
+   */
   abstract getAllOpenedUris(): URI[];
 
-  // 创建一个带待存的资源
+  /**
+   * 创建一个带待存的资源
+   * @param options
+   */
   abstract createUntitledResource(options?: IUntitledOptions): Promise<IOpenResourceResult>;
 }
 
@@ -238,23 +368,44 @@ export interface IUntitledOptions extends IResourceOpenOptions {
 
 export interface IResourceOpenOptions {
 
+  /**
+   * 跳转到指定的编辑器位置
+   */
   range?: Partial<IRange>;
 
-  // 如果打开的是 diff 编辑器，可以指定 original editor 的 range
+  /**
+   * 如果打开的是 diff 编辑器，可以指定 original editor 的 range
+   */
   originalRange?: Partial<IRange>;
 
+  /**
+   * 打开的tab在本组编辑器中的位置
+   */
   index?: number;
 
+  /**
+   * 是否不自动切换到这个打开的 tab，
+   */
   backend?: boolean;
 
+  /**
+   * 指定的编辑器组号码（对应 workbenchEditorService 的 sortedEditorGroups 的索引）
+   */
   groupIndex?: number;
 
-  // 相对于当前活跃的 groupIndex
+  /**
+   * 相对于当前活跃的 groupIndex （对应 workbenchEditorService 的 sortedEditorGroups 的索引来加减）
+   */
   relativeGroupIndex?: number;
 
-  // 强制使用这个作为tab名称
+  /**
+   *  强制使用这个作为tab名称， 而不遵从 resourceProvider 中提供的信息
+   */
   label?: string;
 
+  /**
+   * 执行编辑器组拆分操作
+   */
   split?: EditorGroupSplitAction;
 
   /**
@@ -267,8 +418,14 @@ export interface IResourceOpenOptions {
    */
   focus?: boolean;
 
+  /**
+   * 强制使用指定的打开方式
+   */
   forceOpenType?: IEditorOpenType;
 
+  /**
+   * 不尝试在文件树上对打开的 uri 进行定位
+   */
   disableNavigate?: boolean;
 
   /**
