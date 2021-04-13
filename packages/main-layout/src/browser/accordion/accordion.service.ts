@@ -76,6 +76,9 @@ export class AccordionService extends WithEventBus {
   private beforeAppendViewEmitter = new Emitter<string>();
   public onBeforeAppendViewEvent = this.beforeAppendViewEmitter.event;
 
+  private afterAppendViewEmitter = new Emitter<string>();
+  public onAfterAppendViewEvent = this.afterAppendViewEmitter.event;
+
   private afterDisposeViewEmitter = new Emitter<string>();
   public onAfterDisposeViewEvent = this.afterDisposeViewEmitter.event;
 
@@ -187,6 +190,7 @@ export class AccordionService extends WithEventBus {
     }));
     this.toDispose.set(view.id, disposables);
     this.popViewKeyIfOnlyOneViewVisible();
+    this.afterAppendViewEmitter.fire(view.id);
   }
 
   disposeView(viewId: string) {

@@ -282,7 +282,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       this.commandRegistry.registerCommand({
         id: `${view.id}.focus`,
       }, {
-        execute: () => {
+        execute: async () => {
+          await this.ensureViewReady(view.id);
           // TODO: 目前 view 没有 focus 状态，先跳转到对应的 container 上 @寻壑
           return this.commandService.executeCommand(`workbench.view.extension.${containerId}`, { forceShow: true });
         },
@@ -290,6 +291,22 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     }
 
     return containerId;
+  }
+
+  private ensureViewReady(viewId: string) {
+    const containerId = this.viewToContainerMap.get(viewId)!;
+    const viewReady = new Deferred<void>();
+    const accordionService = this.getAccordionService(containerId);
+    if (!accordionService.visibleViews.find((view) => view.id === viewId)) {
+      accordionService.onAfterAppendViewEvent((id) => {
+        if (id === viewId) {
+          viewReady.resolve();
+        }
+      });
+    } else {
+      viewReady.resolve();
+    }
+    return viewReady.promise;
   }
 
   // 时序保证用，view先注册，container后注册同样需要触发更新
