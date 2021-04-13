@@ -1,7 +1,7 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Emitter, Disposable, IDisposable, DisposableCollection } from '@ali/ide-core-common';
 import { MainThreadKaitianAPIIdentifier } from '../../../common/kaitian';
-import { IExtHostIDEWindow, IMainThreadIDEWindow, IIDEWindowWebviewOptions, IIDEWindowWebviewEnv, IExtPlainWebviewWindow } from '../../../common/kaitian/window';
+import { IExtHostIDEWindow, IMainThreadIDEWindow, IIDEWindowWebviewOptions, IIDEWindowWebviewEnv, IExtPlainWebviewWindow, IWindowInfo } from '../../../common/kaitian/window';
 import { IExtHostCommands } from '../../../common/vscode';
 
 export class ExtHostIDEWindow implements IExtHostIDEWindow {
@@ -22,8 +22,8 @@ export class ExtHostIDEWindow implements IExtHostIDEWindow {
       window?.show();
       return window;
     }
-    await this.proxy.$createWebviewWindow(webviewId, options, env);
-    const window = new ExtIDEWebviewWindow(webviewId, this.proxy, Disposable.create(() => {
+    const windowInfo = await this.proxy.$createWebviewWindow(webviewId, options, env);
+    const window = new ExtIDEWebviewWindow(webviewId, windowInfo, this.proxy, Disposable.create(() => {
       this._windowMaps.delete(webviewId);
     }));
     this._windowMaps.set(webviewId, window);
@@ -52,12 +52,20 @@ export class ExtIDEWebviewWindow implements IExtPlainWebviewWindow {
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
-  constructor(private webviewId: string, private proxy: IMainThreadIDEWindow, dispose: IDisposable) {
+  constructor(private webviewId: string, private info: IWindowInfo, private proxy: IMainThreadIDEWindow, dispose: IDisposable) {
     this.disposableCollection.push(dispose);
     this.disposableCollection.push(Disposable.create(() => {
       this.proxy.$destroy(this.webviewId);
     }));
 
+  }
+
+  get webContentsId() {
+    return this.info.webContentsId;
+  }
+
+  get windowId() {
+    return this.info.windowId;
   }
 
   get onMessage() {

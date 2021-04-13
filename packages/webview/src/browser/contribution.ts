@@ -3,7 +3,7 @@ import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-edi
 import { Domain, URI, CommandContribution, CommandRegistry } from '@ali/ide-core-browser';
 import { isElectronRenderer, localize } from '@ali/ide-core-common';
 import { ResourceService, IResource } from '@ali/ide-editor';
-import { EDITOR_WEBVIEW_SCHEME, IWebviewService, IEditorWebviewMetaData } from './types';
+import { EDITOR_WEBVIEW_SCHEME, IWebviewService, IEditorWebviewMetaData, isWebview } from './types';
 import { Autowired } from '@ali/common-di';
 import { WebviewServiceImpl } from './webview.service';
 
@@ -46,7 +46,13 @@ export class WebviewModuleContribution implements BrowserEditorContribution, Com
             }
           }
         }
-        this.webviewService.editorWebviewComponents.get(resource.uri.path.toString())!.clear();
+        const component = this.webviewService.editorWebviewComponents.get(resource.uri.path.toString());
+        if (isWebview(component?.webview!)) {
+          // 只对类 vscode webview 进行 dispose,
+          // loadUrl 的 plainWebview 必须手动 dispose
+          this.webviewService.editorWebviewComponents.get(resource.uri.path.toString())!.clear();
+        }
+
         return true;
       },
     });

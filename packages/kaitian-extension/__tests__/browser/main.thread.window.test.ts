@@ -1,12 +1,13 @@
 import { Emitter } from '@ali/ide-core-common';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IWebviewService } from '@ali/ide-webview';
+import { IWebviewService, IPlainWebviewWindow } from '@ali/ide-webview';
 import { MainThreadIDEWindow } from '@ali/ide-kaitian-extension/lib/browser/kaitian/main.thread.window';
 
 const onMessageEmitter = new Emitter<string>();
 const onClosedEmitter = new Emitter<void>();
-const mockWindow = {
+const mockWindow: IPlainWebviewWindow = {
+  ready: Promise.resolve(),
   onMessage: onMessageEmitter.event,
   onClosed: onClosedEmitter.event,
   show: jest.fn(),
@@ -16,6 +17,9 @@ const mockWindow = {
   setAlwaysOnTop: jest.fn(),
   loadURL: jest.fn(),
   dispose: jest.fn(),
+  url: '',
+  webContentsId: 100,
+  windowId: 99,
 };
 
 const mockWebviewService = {
@@ -48,10 +52,12 @@ describe('MainThreadWindow API Test Suite', () => {
 
   it('should able to $createWebviewWindow', async () => {
     const webviewId = 'testView';
-    mainThreadIDEWindow.$createWebviewWindow(webviewId, {}, { env: 'TEST' });
+    const windowInfo = await mainThreadIDEWindow.$createWebviewWindow(webviewId, {}, { env: 'TEST' });
     expect(mockWebviewService.createWebviewWindow).toBeCalledTimes(1);
     onMessageEmitter.fire('message');
     expect(mockExtThreadIDEWindowProxy.$postMessage).toBeCalledWith(webviewId, 'message');
+    expect(windowInfo.webContentsId).toBe(mockWindow.webContentsId);
+    expect(windowInfo.windowId).toBe(mockWindow.windowId);
   });
 
   it('should able to $show', async () => {

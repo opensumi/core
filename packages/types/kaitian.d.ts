@@ -209,6 +209,16 @@ declare module 'kaitian' {
      * 接收webview窗口关闭事件
      */
     onClosed: Event<void>;
+
+    /**
+     * Electron Window 的 windowId
+     */
+    windowId: number;
+
+    /**
+     * Electron Window 的 webContentsId
+     */
+    webContentsId: number;
   }
 
   export namespace ideWindow {

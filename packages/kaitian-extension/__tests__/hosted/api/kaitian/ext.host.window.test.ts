@@ -2,12 +2,19 @@ import { IRPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { MainThreadKaitianAPIIdentifier } from '../../../../src/common/kaitian';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
-import { ExtHostIDEWindow } from '@ali/ide-kaitian-extension/lib/hosted/api/kaitian/ext.host.window';
+import { ExtHostIDEWindow, ExtIDEWebviewWindow } from '@ali/ide-kaitian-extension/lib/hosted/api/kaitian/ext.host.window';
 import { createBrowserInjector } from '../../../../../debug/node_modules/@ali/ide-dev-tool/src/injector-helper';
 import { createWindowApiFactory } from '@ali/ide-kaitian-extension/lib/hosted/api/kaitian/ext.host.window';
+import { IWindowInfo } from '@ali/ide-kaitian-extension/lib/common/kaitian/window';
 
 const mockMainThreadIDEWindowProxy = {
-  $createWebviewWindow: jest.fn(),
+  $createWebviewWindow: jest.fn(async () => {
+    const info: IWindowInfo = {
+      webContentsId: 100,
+      windowId: 99,
+    };
+    return info;
+  }),
   $show: jest.fn(),
   $hide: jest.fn(),
   $postMessage: jest.fn(),
@@ -37,7 +44,7 @@ const rpcProtocol: IRPCProtocol = {
 describe('packages/kaitian-extension/__tests__/hosted/api/kaitian/ext.host.window.test.ts', () => {
   let extHostIDEWindow: ExtHostIDEWindow;
   let extHostCommands: ExtHostCommands;
-  let windowAPI;
+  let windowAPI: ReturnType<typeof createWindowApiFactory>;
 
   const injector = createBrowserInjector([]);
 
@@ -57,10 +64,10 @@ describe('packages/kaitian-extension/__tests__/hosted/api/kaitian/ext.host.windo
 
   describe('createWebviewWindow should be work', () => {
     const webviewId = 'TestView';
-    let window;
+    let window: ExtIDEWebviewWindow;
 
     beforeAll(async (done) => {
-      window = await windowAPI.createWebviewWindow(webviewId, {}, {});
+      window = (await windowAPI.createWebviewWindow(webviewId, {}, {}))!;
       done();
     });
 
@@ -111,9 +118,15 @@ describe('packages/kaitian-extension/__tests__/hosted/api/kaitian/ext.host.windo
       expect(mockMainThreadIDEWindowProxy.$setSize).toBeCalledTimes(1);
     });
 
+    it('window should contain windowId and webContentsID', () => {
+      expect(window.windowId).toBe(99);
+      expect(window.webContentsId).toBe(100);
+    });
+
     it ('dispose method should be work', () => {
       window.dispose();
       expect(mockMainThreadIDEWindowProxy.$destroy).toBeCalledTimes(1);
     });
+
   });
 });

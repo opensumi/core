@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostKaitianAPIIdentifier } from '../../common/kaitian';
 import { Disposable } from '@ali/ide-core-browser';
-import { IMainThreadIDEWindow, IIDEWindowWebviewOptions, IIDEWindowWebviewEnv, IExtHostIDEWindow } from '../../common/kaitian/window';
+import { IMainThreadIDEWindow, IIDEWindowWebviewOptions, IIDEWindowWebviewEnv, IExtHostIDEWindow, IWindowInfo } from '../../common/kaitian/window';
 import { IPlainWebviewWindow, IWebviewService } from '@ali/ide-webview';
 
 // 与MainThreadWindow 做一下区分，用于拓展kaitian下的ideWindow API
@@ -27,12 +27,13 @@ export class MainThreadIDEWindow extends Disposable implements IMainThreadIDEWin
     };
   }
 
-  async $createWebviewWindow(webviewId: string, options?: IIDEWindowWebviewOptions, env?: IIDEWindowWebviewEnv) {
+  async $createWebviewWindow(webviewId: string, options?: IIDEWindowWebviewOptions, env?: IIDEWindowWebviewEnv): Promise<IWindowInfo> {
     try {
+      let window: IPlainWebviewWindow;
       if (this._plainWebviewWindowMap.has(webviewId)) {
-        return;
+        window = this._plainWebviewWindowMap.get(webviewId)!;
       } else {
-        const window = this.webviewService.createWebviewWindow(options, env);
+        window = this.webviewService.createWebviewWindow(options, env);
         if (window) {
           this.disposables.push(window.onMessage((event) => {
             this._proxy.$postMessage(webviewId, event);
@@ -46,6 +47,11 @@ export class MainThreadIDEWindow extends Disposable implements IMainThreadIDEWin
           this._plainWebviewWindowMap.set(webviewId, window);
         }
       }
+      await window.ready;
+      return {
+        windowId: window.windowId,
+        webContentsId: window.webContentsId,
+      };
     } catch (e) {
       throw e;
     }
@@ -100,4 +106,5 @@ export class MainThreadIDEWindow extends Disposable implements IMainThreadIDEWin
       this._plainWebviewWindowMap.delete(webviewId);
     }
   }
+
 }

@@ -212,6 +212,14 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
     window.webContents.send(channel, message);
   }
 
+  async getWebContentsId(windowId): Promise<number> {
+    const window = BrowserWindow.fromId(windowId);
+    if (!window) {
+      throw new Error('window with windowId ' + windowId + ' does not exist!');
+    }
+    return window.webContents.id;
+  }
+
   async showBrowserWindow(windowId: number): Promise<void> {
     const window = BrowserWindow.fromId(windowId);
     if (!window) {

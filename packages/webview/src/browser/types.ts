@@ -122,6 +122,8 @@ export interface IPlainWebview extends IDisposable {
  */
 export interface IPlainWebviewWindow extends IDisposable {
 
+  ready: Promise<void>;
+
   readonly url: string | undefined;
 
   loadURL(url: string): Promise<void>;
@@ -139,6 +141,10 @@ export interface IPlainWebviewWindow extends IDisposable {
   setSize(size: {width?: number; height?: number; }): Promise<void>;
 
   setAlwaysOnTop(flag: boolean): Promise<void>;
+
+  windowId: number;
+
+  webContentsId: number;
 }
 
 export const IWebviewService = Symbol('IWebviewService');
@@ -247,4 +253,8 @@ export interface IWebviewReviver {
    * 负数表示不处理
    */
   handles: (id: string) => MaybePromise<number>;
+}
+
+export function isWebview(webview: IWebview | IPlainWebview): webview is IWebview {
+  return webview && !!(webview as IWebview).setContent;
 }

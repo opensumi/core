@@ -12,6 +12,8 @@ export class ElectronPlainWebviewWindow extends Disposable implements IPlainWebv
 
   private _windowId: number;
 
+  private _webContentsId: number;
+
   private _ready: Promise<void>;
 
   private _closed: boolean = false;
@@ -28,9 +30,12 @@ export class ElectronPlainWebviewWindow extends Disposable implements IPlainWebv
         ],
         ...options?.webPreferences,
       },
-    }).then((id) => {
+      ...options,
+    }).then(async (id) => {
       this._windowId = id;
-      const listener = (event: any, { from, message }: { from: number, message: any }) => {
+      this._webContentsId = await this.electronMainUIService.getWebContentsId(this._windowId);
+    }).then(() => {
+      const listener = (event: any, {from, message}: { from: number, message: any }) => {
         if (from === this._windowId) {
           this._onMessage.fire(message);
         }
@@ -65,6 +70,10 @@ export class ElectronPlainWebviewWindow extends Disposable implements IPlainWebv
   onClosed: Event<void> = this._onClosed.event;
 
   private _url: string;
+
+  get ready() {
+    return this._ready;
+  }
 
   get url() {
     return this._url;
@@ -105,5 +114,13 @@ export class ElectronPlainWebviewWindow extends Disposable implements IPlainWebv
     } catch (e) {
       // ignore
     }
+  }
+
+  get windowId() {
+    return this._windowId;
+  }
+
+  get webContentsId() {
+    return this._webContentsId;
   }
 }

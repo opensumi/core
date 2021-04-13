@@ -1,7 +1,11 @@
 import { IDisposable, Event } from '@ali/ide-core-common';
 
+export interface IWindowInfo {
+  windowId: number;
+  webContentsId: number;
+}
 export interface IMainThreadIDEWindow {
-  $createWebviewWindow(webviewId: string, options?: IIDEWindowWebviewOptions, env?: IIDEWindowWebviewEnv): Promise<void>;
+  $createWebviewWindow(webviewId: string, options?: IIDEWindowWebviewOptions, env?: IIDEWindowWebviewEnv): Promise<IWindowInfo>;
   $show(webviewId: string): Promise<void>;
   $hide(webviewId: string): Promise<void>;
   $postMessage(webviewId: string, message: any): Promise<void>;

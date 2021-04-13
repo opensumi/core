@@ -10,7 +10,9 @@ describe('webview-window-test', () => {
 
   injector.addProviders({
     token: IElectronMainUIService,
-    useValue: {},
+    useValue: {
+      getWebContentsId: (windowId) => windowId + 1,
+    },
   });
   it('webview-window class test', async (done) => {
 
@@ -44,6 +46,7 @@ describe('webview-window-test', () => {
     const window = injector.get(ElectronPlainWebviewWindow, [{}, testEnv]);
     await (window as any)._ready;
     expect((window as any)._windowId).toBe(windowId);
+    expect(window.webContentsId).toBe(windowId + 1);
 
     await expect(createWindow).toBeCalled();
     expect(windowCalledEnvJSON).toBe(JSON.stringify(testEnv));

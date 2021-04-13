@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { IWebview, IPlainWebview, IEditorWebviewMetaData, IWebviewService } from './types';
+import { IWebview, IPlainWebview, IEditorWebviewMetaData, IWebviewService, isWebview } from './types';
 import { Disposable, DomListener, useInjectable } from '@ali/ide-core-browser';
 import { WebviewServiceImpl } from './webview.service';
 
@@ -180,8 +180,4 @@ export class WebviewMounter extends Disposable {
     return this._container!;
   }
 
-}
-
-function isWebview(webview: IWebview | IPlainWebview): webview is IWebview {
-  return !!(webview as IWebview).setContent;
 }

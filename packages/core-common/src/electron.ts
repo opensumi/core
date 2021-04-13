@@ -97,6 +97,13 @@ export interface IElectronMainUIServiceShape {
    */
   postMessageToBrowserWindow(windowId: number, channel: string, message: any): Promise<void>;
 
+  /**
+   * 获得一个 browserWindow 的 webContentsId
+   * @param windowId
+   */
+  getWebContentsId(windowId: number): Promise<number>;
+
+
 }
 export interface IElectronMainUIService extends IElectronMainUIServiceShape, IElectronMainApi<'fullScreenStatusChange' | 'windowClosed' | 'maximizeStatusChange'> {
 
