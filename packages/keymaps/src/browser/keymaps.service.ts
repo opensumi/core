@@ -384,31 +384,42 @@ export class KeymapService implements IKeymapService {
     const items: KeybindingItem[] = [];
     for (const command of commands) {
       const keybindings = this.keybindingRegistry.getKeybindingsForCommand(command.id);
-      keybindings.forEach((kd: ScopedKeybinding) => {
-        let item: KeybindingItem;
-        if (this.storeKeybindings) {
-          const isUserKeybinding = this.storeKeybindings.find((kb) => command && kb.command === command.id);
-          item = {
+      if (!keybindings || !keybindings.length) {
+        // 针对带有label的Command，在快捷键面板上添加可配置按钮
+        if (command.label) {
+          items.push({
             id: command.id,
-            command: command.label || command.id,
-            keybinding: isUserKeybinding ? isUserKeybinding.keybinding : kd ? this.keybindingRegistry.acceleratorFor(kd, '+').join(' ') : '',
-            when: isUserKeybinding ? this.getWhen(isUserKeybinding) : this.getWhen((keybindings && kd)),
-            source: isUserKeybinding ? this.getScope(KeybindingScope.USER) : this.getScope(KeybindingScope.DEFAULT),
-            hasCommandLabel: !!command.label,
-          };
-        } else {
-          item = {
-            id: command.id,
-            command: command.label || command.id,
-            keybinding: (keybindings && kd) ? this.keybindingRegistry.acceleratorFor(kd, '+').join(' ') : '',
-            when: this.getWhen((keybindings && kd)),
-            source: (keybindings && kd && typeof kd.scope !== 'undefined')
-              ? this.getScope(kd.scope!) : '',
-            hasCommandLabel: !!command.label,
-          };
+            command: command.label,
+            hasCommandLabel: true,
+          });
         }
-        items.push(item);
-      });
+      } else {
+        keybindings.forEach((kd: ScopedKeybinding) => {
+          let item: KeybindingItem;
+          if (this.storeKeybindings) {
+            const isUserKeybinding = this.storeKeybindings.find((kb) => command && kb.command === command.id);
+            item = {
+              id: command.id,
+              command: command.label || command.id,
+              keybinding: isUserKeybinding ? isUserKeybinding.keybinding : kd ? this.keybindingRegistry.acceleratorFor(kd, '+').join(' ') : '',
+              when: isUserKeybinding ? this.getWhen(isUserKeybinding) : this.getWhen((keybindings && kd)),
+              source: isUserKeybinding ? this.getScope(KeybindingScope.USER) : this.getScope(KeybindingScope.DEFAULT),
+              hasCommandLabel: !!command.label,
+            };
+          } else {
+            item = {
+              id: command.id,
+              command: command.label || command.id,
+              keybinding: (keybindings && kd) ? this.keybindingRegistry.acceleratorFor(kd, '+').join(' ') : '',
+              when: this.getWhen((keybindings && kd)),
+              source: (keybindings && kd && typeof kd.scope !== 'undefined')
+                ? this.getScope(kd.scope!) : '',
+              hasCommandLabel: !!command.label,
+            };
+          }
+          items.push(item);
+        });
+      }
     }
 
     // 获取排序后的列表
