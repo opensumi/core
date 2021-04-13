@@ -76,6 +76,7 @@ export interface IRecycleTreeProps<T = TreeModel> {
    */
   filterProvider?: {
     fuzzyOptions: () => fuzzy.FilterOptions<any>;
+    filterAlways?: boolean;
   };
   /**
    * 空白时的占位元素
@@ -276,6 +277,9 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       this.idxToRendererPropsCache.clear();
       // 更新React组件
       this.forceUpdate(this.batchUpdateResolver);
+      if (this.props.filter && this.props.filterProvider && this.props.filterProvider.filterAlways) {
+        this.filterItems(this.props.filter);
+      }
     };
     return () => {
       if (!this.batchUpdatePromise) {
@@ -320,6 +324,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     if (this.props.model !== prevProps.model) {
       // model变化时，在渲染前清理缓存
       this.idxToRendererPropsCache.clear();
+      this.idToFilterRendererPropsCache.clear();
     }
   }
 

@@ -111,7 +111,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
         itemHeight={DEBUG_CONSOLE_TREE_NODE_HEIGHT}
         onReady={handleTreeReady}
         filter={filterValue}
-        filterProvider={{ fuzzyOptions }}
+        filterProvider={{ fuzzyOptions, filterAlways: true}}
         model={model!.treeModel}
         overflow={ 'auto' }
       >
