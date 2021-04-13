@@ -67,7 +67,7 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
 
   async saveDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding: string, ignoreDiff: boolean = false): Promise<IEditorDocumentModelSaveResult> {
     const { name } = uri.getParsedQuery();
-    const defaultPath = uri.path.toString() ? path.dirname(uri.path.toString()) : this.appConfig.workspaceDir;
+    const defaultPath = uri.path.toString() !== '/' ? path.dirname(uri.path.toString()) : this.appConfig.workspaceDir;
     const saveUri = await this.commandService.tryExecuteCommand<URI>('file.save', {
       showNameInput: true,
       defaultFileName: name || uri.displayName,
