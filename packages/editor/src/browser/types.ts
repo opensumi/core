@@ -67,6 +67,11 @@ export enum EditorComponentRenderMode {
  */
 export class RegisterEditorComponentResolverEvent extends BasicEvent<string> {}
 
+/**
+ * 注册编辑器组件时触发
+ */
+export class RegisterEditorComponentEvent extends BasicEvent<string> {}
+
 export abstract class EditorComponentRegistry {
 
   abstract registerEditorComponent<T>(component: IEditorComponent<T>, initialProps?: any): IDisposable;

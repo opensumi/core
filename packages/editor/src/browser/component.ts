@@ -1,4 +1,4 @@
-import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver, EditorComponentRenderMode, IEditorSideWidget, EditorSide, EditorComponentDisposeEvent } from './types';
+import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver, EditorComponentRenderMode, IEditorSideWidget, EditorSide, EditorComponentDisposeEvent, RegisterEditorComponentEvent } from './types';
 import { IDisposable, IEventBus } from '@ali/ide-core-common';
 import { IResource, IEditorOpenType } from '../common';
 import { Injectable, Autowired } from '@ali/common-di';
@@ -38,6 +38,7 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
     }
     this.components.set(uid, component);
     this.initialPropsMap.set(uid, initialProps);
+    this.eventBus.fire(new RegisterEditorComponentEvent(uid));
     return {
       dispose: () => {
         if (this.components.get(uid) === component) {
