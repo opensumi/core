@@ -377,6 +377,10 @@ export class DebugScope extends ExpressionContainer {
       indexedVariables: raw.indexedVariables,
     }, parent, undefined, raw.name);
   }
+
+  public getRawScope(): DebugProtocol.Scope {
+    return this.raw;
+  }
 }
 
 export class DebugWatchNode extends ExpressionContainer {

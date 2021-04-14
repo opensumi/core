@@ -3,7 +3,7 @@ import { useInjectable, getIcon } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { ViewState } from '@ali/ide-core-browser';
 import { INodeRendererProps, ClasslistComposite, IRecycleTreeHandle, TreeNodeType, RecycleTree, INodeRendererWrapProps, TreeModel, CompositeTreeNode } from '@ali/ide-components';
-import { ExpressionContainer, ExpressionNode, DebugVariableContainer, DebugVariable } from '../../tree/debug-tree-node.define';
+import { ExpressionContainer, ExpressionNode, DebugVariableContainer, DebugVariable, DebugVariableRoot, DebugScope } from '../../tree/debug-tree-node.define';
 import { DebugVariablesModelService } from './debug-variables-tree.model.service';
 import * as styles from './debug-variables.module.less';
 import * as cls from 'classnames';
@@ -27,6 +27,20 @@ export const DebugVariableView = observer(({
     debugVariablesModelService.onDidUpdateTreeModel(async (model: TreeModel) => {
       if (model) {
         await debugVariablesModelService.treeModel!.root.ensureLoaded();
+        if (model.root instanceof DebugVariableRoot) {
+          /**
+           * 如果变量面板全部都是折叠状态
+           * 则需要找到第一个 scope 作用域的 expensive 为 false 的变量，并默认展开它
+           * PS: 一般的情况下是 Local
+           * */
+          const scopes = model.root.children || [];
+          if (scopes.length > 0 && scopes.every((s: DebugScope) =>  !s.expanded)) {
+            const toExpand = scopes.find((s: DebugScope) => s.getRawScope().expensive === false);
+            if (toExpand) {
+              debugVariablesModelService.toggleDirectory(toExpand as ExpressionContainer);
+            }
+          }
+        }
       }
       setModel(model);
     });
