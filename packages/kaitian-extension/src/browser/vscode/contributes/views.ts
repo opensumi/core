@@ -1,7 +1,7 @@
 import { VSCodeContributePoint, Contributes } from '../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { ExtensionLoadingView } from '../../components';
 import { IMainLayoutService } from '@ali/ide-main-layout';
+import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
 import { DisposableCollection } from '@ali/ide-core-browser';
 
 export interface ViewsContribution {
@@ -33,11 +33,11 @@ export class ViewsContributionPoint extends VSCodeContributePoint<ViewsSchema> {
         return {
           ...view,
           name: this.getLocalizeFromNlsJSON(view.name),
-          component: ExtensionLoadingView,
+          component: WelcomeView,
         };
       });
       for (const view of views) {
-        const handlerId = this.mainlayoutService.collectViewComponent(view, location, {}, {
+        const handlerId = this.mainlayoutService.collectViewComponent(view, location, {viewId: view.id}, {
           fromExtension: true,
         });
         this.disposableCollection.push({

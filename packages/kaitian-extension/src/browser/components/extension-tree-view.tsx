@@ -4,16 +4,18 @@ import { isOSX } from '@ali/ide-core-browser';
 import { Injector } from '@ali/common-di';
 import { observer } from 'mobx-react-lite';
 import { ViewState } from '@ali/ide-core-browser';
+import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
 
 import { ExtensionTreeViewModel } from '../vscode/api/tree-view/tree-view.model.service';
 import { RecycleTree, INodeRendererProps, IRecycleTreeHandle, TreeNodeType } from '@ali/ide-components';
 import { TREE_VIEW_NODE_HEIGHT, TreeViewNode } from './extension-tree-view-node';
 import { ExtensionCompositeTreeNode, ExtensionTreeNode } from '../vscode/api/tree-view/tree-view.node.defined';
-import { ExtensionLoadingView } from './extension-loading-view';
+import { TreeViewDataProvider } from '../vscode/api/main.thread.treeview';
 
 export interface ExtensionTabBarTreeViewProps {
   injector: Injector;
   viewState: ViewState;
+  dataProvider: TreeViewDataProvider;
   model: ExtensionTreeViewModel;
   treeViewId: string;
 }
@@ -21,9 +23,18 @@ export interface ExtensionTabBarTreeViewProps {
 export const ExtensionTabBarTreeView = observer(({
   viewState,
   model,
+  dataProvider,
   treeViewId,
 }: React.PropsWithChildren<ExtensionTabBarTreeViewProps>) => {
   const [isReady, setIsReady] = React.useState<boolean>(false);
+  const [isEmpty, setIsEmpty] = React.useState(dataProvider.isTreeEmpty);
+
+  React.useEffect(() => {
+    const disposable = dataProvider.onDidChangeEmpty(() => {
+      setIsEmpty(dataProvider.isTreeEmpty);
+    });
+    return () => disposable.dispose();
+  }, []);
 
   const { width, height } = viewState;
   const { canSelectMany } = model.treeViewOptions || {};
@@ -125,7 +136,9 @@ export const ExtensionTabBarTreeView = observer(({
   }, [wrapperRef.current]);
 
   const renderTreeView = () => {
-    if (isReady) {
+    if (!isReady || isEmpty) {
+      return <WelcomeView viewId={treeViewId} />;
+    } else {
       if (model.treeModel) {
         return <RecycleTree
           height={height}
@@ -149,8 +162,6 @@ export const ExtensionTabBarTreeView = observer(({
           }}
         </RecycleTree>;
       }
-    } else {
-      return <ExtensionLoadingView />;
     }
   };
 

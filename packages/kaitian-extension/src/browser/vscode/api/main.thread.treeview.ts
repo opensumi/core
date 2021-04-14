@@ -3,7 +3,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optinal } from '@ali/c
 import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { Emitter, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize, getIcon, getExternalIcon, LabelService, URI, IContextKeyService } from '@ali/ide-core-browser';
+import { Emitter, Event, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize, getIcon, getExternalIcon, LabelService, URI, IContextKeyService } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { ExtensionTabBarTreeView } from '../../components';
 import { IIconService, IconType, IThemeService } from '@ali/ide-theme';
@@ -79,6 +79,7 @@ export class MainThreadTreeView implements IMainThreadTreeView {
       component: ExtensionTabBarTreeView,
     }, {
       model,
+      dataProvider,
       treeViewId,
     });
 
@@ -161,6 +162,10 @@ export class TreeViewDataProvider extends Tree {
   private onTreeDataChangedEmitter = new Emitter<any>();
   private onRevealChangedEmitter = new Emitter<any>();
 
+  private isEmpty = true;
+  private _onDidChangeEmpty: Emitter<void> = new Emitter();
+  public onDidChangeEmpty: Event<void> = this._onDidChangeEmpty.event;
+
   private treeItemId2TreeNode: Map<string, ExtensionTreeNode | ExtensionCompositeTreeNode | ExtensionTreeRoot> = new Map();
 
   constructor(
@@ -173,6 +178,10 @@ export class TreeViewDataProvider extends Tree {
     private readonly menuService: AbstractMenuService,
   ) {
     super();
+  }
+
+  get isTreeEmpty() {
+    return this.isEmpty;
   }
 
   get onTreeDataChanged() {
@@ -294,6 +303,13 @@ export class TreeViewDataProvider extends Tree {
         for (const child of children) {
           const node = await this.createTreeNode(child, parent);
           nodes.push(node);
+        }
+      }
+      if (ExtensionTreeRoot.is(parent)) {
+        const oldEmpty = this.isEmpty;
+        this.isEmpty = !children || children.length === 0;
+        if (oldEmpty !== this.isEmpty) {
+          this._onDidChangeEmpty.fire();
         }
       }
     } else {

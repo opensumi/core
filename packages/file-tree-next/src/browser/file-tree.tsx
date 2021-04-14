@@ -7,10 +7,10 @@ import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
 import { Directory, File } from '../common/file-tree-node.define';
-import { EmptyTreeView } from './empty.view';
 import * as cls from 'classnames';
 import * as styles from './file-tree.module.less';
 import { IFileTreeService } from '../common';
+import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
 
 export const FILTER_AREA_HEIGHT = 30;
 export const FILE_TREE_FILTER_DELAY = 500;
@@ -240,7 +240,7 @@ export const FileTree = observer(({
           />}
         </FilterableRecycleTree>;
       } else {
-        return <EmptyTreeView />;
+        return <WelcomeView viewId='file-explorer-next' />;
       }
     } else {
       return <ProgressBar loading />;

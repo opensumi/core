@@ -150,3 +150,37 @@ i.arrow_icon {
 .hide {
   display: none;
 }
+.welcome {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px 1em;
+  box-sizing: border-box;
+  align-items: center;
+  &>* {
+    margin-block-start: 1em;
+    margin-block-end: 0;
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+  }
+  p {
+    width: 100%;
+    text-align: left;
+  }
+  :global(.button-container) {
+    width: 100%;
+    max-width: 300px;
+    transition: max-width .2s ease-out;
+    :global(.kt-button) {
+      box-sizing: border-box;
+      display: flex;
+      width: 100%;
+      padding: 4px;
+      text-align: center;
+      cursor: pointer;
+      justify-content: center;
+      align-items: center;
+      max-width: 300px;
+    }
+  }
+}

@@ -1,10 +1,11 @@
-import { BasicEvent, SlotLocation } from '@ali/ide-core-browser';
+import { BasicEvent, IDisposable, SlotLocation } from '@ali/ide-core-browser';
 import { ViewContainerOptions, View, SideStateManager } from '@ali/ide-core-browser/lib/layout';
 import { TabBarHandler } from '../browser/tabbar-handler';
 import { TabbarService } from '../browser/tabbar/tabbar.service';
 import { AccordionService } from '../browser/accordion/accordion.service';
 import { IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
-import { Deferred } from '@ali/ide-core-common/lib';
+import { Deferred, Event } from '@ali/ide-core-common/lib';
+import { ContextKeyExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 export interface ComponentCollection {
   views?: View[];
@@ -87,4 +88,21 @@ export interface MainLayoutContribution {
 /**
  * 当有新的TabBar被注册时发送的新事件
  */
-export class TabBarRegistrationEvent extends BasicEvent<{tabBarId: string}> {}
+export class TabBarRegistrationEvent extends BasicEvent<{ tabBarId: string }> { }
+
+export const IViewsRegistry = Symbol('IViewsRegistry');
+
+export interface IViewsRegistry {
+  readonly onDidChangeViewWelcomeContent: Event<string>;
+  registerViewWelcomeContent(id: string, descriptor: IViewContentDescriptor): IDisposable;
+  registerViewWelcomeContent2<TKey>(id: string, viewContentMap: Map<TKey, IViewContentDescriptor>): Map<TKey, IDisposable>;
+  getViewWelcomeContent(id: string): IViewContentDescriptor[];
+}
+
+export interface IViewContentDescriptor {
+  readonly content: string;
+  readonly when?: ContextKeyExpr | 'default';
+  readonly group?: string;
+  readonly order?: number;
+  readonly precondition?: ContextKeyExpr | undefined;
+}

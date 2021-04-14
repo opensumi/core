@@ -691,5 +691,8 @@ export const localizationBundle = {
     'refactor-preview.overlay.detail': `Press 'Continue' to discard the previous refactoring and continue with the current refactoring.`,
     'refactor-preview.overlay.continue': 'Continue',
     'refactor-preview.overlay.cancel': 'Cancel',
+
+    'welcome-view.noOpenRepo': 'No source control providers registered.',
+    'welcome-view.noFolderHelp': 'You have not yet opened a folder.\n[Open Folder](command:{0})',
   },
 };

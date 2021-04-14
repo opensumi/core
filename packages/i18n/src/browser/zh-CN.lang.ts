@@ -702,5 +702,8 @@ export const localizationBundle = {
     'refactor-preview.overlay.detail': `点击\"继续\"放弃之前的重构，并继续当前重构。`,
     'refactor-preview.overlay.continue': '继续',
     'refactor-preview.overlay.cancel': '取消',
+
+    'welcome-view.noOpenRepo': '未注册任何源代码管理实现。',
+    'welcome-view.noFolderHelp': '没有打开一个目录.\n[打开目录](command:{0})',
   },
 };

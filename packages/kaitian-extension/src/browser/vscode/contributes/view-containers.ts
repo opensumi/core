@@ -8,14 +8,6 @@ export interface ViewContainersContribution {
   [key: string]: ViewContainerItem;
 }
 
-export interface ViewsContribution {
-  [key: string]: {
-    id: string;
-    name: string;
-    when: string
-  };
-}
-
 export interface ViewContainerItem {
   id: string;
   title: string;

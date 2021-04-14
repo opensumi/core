@@ -1,11 +1,10 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ViewState } from '@ali/ide-core-browser';
-import { CommandService, localize } from '@ali/ide-core-common';
+import { localize } from '@ali/ide-core-common';
 import { IContextKeyService, View, useInjectable  } from '@ali/ide-core-browser';
 import { AccordionContainer } from '@ali/ide-main-layout/lib/browser/accordion/accordion.view';
 import { TitleBar } from '@ali/ide-main-layout/lib/browser/accordion/titlebar.view';
-import { Button } from '@ali/ide-components';
 import { InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
 
 import { ISCMRepository, scmProviderViewId, scmResourceViewId, scmContainerId } from '../common';
@@ -16,26 +15,7 @@ import { SCMRepoSelect } from './components/scm-select.view';
 
 import * as styles from './scm.module.less';
 import { getSCMRepositoryDesc } from './scm-util';
-
-/**
- * 空视图
- */
-const SCMEmpty = () => {
-  const commandService = useInjectable<CommandService>(CommandService);
-
-  const handleClick = React.useCallback(() => {
-    commandService.executeCommand('git.init');
-  }, []);
-
-  return (
-    <div className={styles.noop}>
-      {localize('scm.provider.empty')}
-      <div style={{ marginTop: 10 }}>
-        <Button onClick={handleClick} block>{localize('scm.provider.init')}</Button>
-      </div>
-    </div>
-  );
-};
+import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
 
 export const SCMRepoPanel: React.FC<{
   repository: ISCMRepository;
@@ -82,7 +62,7 @@ export const SCMResourceView: React.FC<{ viewState: ViewState }> = observer((pro
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
 
   if (!viewModel.selectedRepos.length) {
-    return <SCMEmpty />;
+    return <WelcomeView viewId='scm_view' />;
   }
 
   const selectedRepo = viewModel.selectedRepos[0];

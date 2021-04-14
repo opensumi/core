@@ -1,7 +1,7 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { OutlineModule } from '@ali/ide-outline/lib/browser';
-import { IMainLayoutService } from '@ali/ide-main-layout';
+import { IMainLayoutService, IViewsRegistry } from '@ali/ide-main-layout';
 import { FileTreeContribution } from '@ali/ide-file-tree-next/lib/browser/file-tree-contribution';
 import { IFileTreeAPI, IFileTreeService } from '@ali/ide-file-tree-next';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -13,6 +13,7 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IDialogService, IMessageService, IWindowDialogService } from '@ali/ide-overlay';
 import { IClipboardService, IContextKeyService, PreferenceService } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
+import { ViewsRegistry } from '@ali/ide-main-layout/lib/browser/views-registry';
 
 describe('FileTreeContribution', () => {
   let mockInjector: MockInjector;
@@ -111,6 +112,10 @@ describe('FileTreeContribution', () => {
       {
         token: PreferenceService,
         useValue: {},
+      },
+      {
+        token: IViewsRegistry,
+        useClass: ViewsRegistry,
       },
     );
 

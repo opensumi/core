@@ -876,3 +876,43 @@ export class LRUCache<K, V> extends LinkedMap<K, V> {
 		}
 	}
 }
+
+export class SetMap<K, V> {
+
+	private map = new Map<K, Set<V>>();
+
+	add(key: K, value: V): void {
+		let values = this.map.get(key);
+
+		if (!values) {
+			values = new Set<V>();
+			this.map.set(key, values);
+		}
+
+		values.add(value);
+	}
+
+	delete(key: K, value: V): void {
+		const values = this.map.get(key);
+
+		if (!values) {
+			return;
+		}
+
+		values.delete(value);
+
+		if (values.size === 0) {
+			this.map.delete(key);
+		}
+	}
+
+	forEach(key: K, fn: (value: V) => void): void {
+		const values = this.map.get(key);
+
+		if (!values) {
+			return;
+		}
+
+		values.forEach(fn);
+	}
+}

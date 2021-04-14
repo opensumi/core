@@ -2,12 +2,12 @@ import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, PreferenceSchema, localize, URI, PreferenceScope } from '@ali/ide-core-common';
 import { ClientAppContribution, PreferenceContribution, PreferenceService } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
-import { MainLayoutContribution } from '@ali/ide-main-layout';
+import { IViewsRegistry, MainLayoutContribution } from '@ali/ide-main-layout';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 
 import { SCMPanel } from './scm.view';
-import { scmContainerId, IDirtyDiffWorkbenchController, OPEN_DIRTY_DIFF_WIDGET, GOTO_NEXT_CHANGE, GOTO_PREVIOUS_CHANGE, TOGGLE_DIFF_SIDE_BY_SIDE } from '../common';
+import { scmContainerId, IDirtyDiffWorkbenchController, OPEN_DIRTY_DIFF_WIDGET, GOTO_NEXT_CHANGE, GOTO_PREVIOUS_CHANGE, TOGGLE_DIFF_SIDE_BY_SIDE, scmResourceViewId } from '../common';
 import { SCMBadgeController, SCMStatusBarController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
@@ -45,6 +45,16 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
+
+  @Autowired(IViewsRegistry)
+  viewsRegistry: IViewsRegistry;
+
+  onStart() {
+    this.viewsRegistry.registerViewWelcomeContent(scmResourceViewId, {
+      content: localize('welcome-view.noOpenRepo', 'No source control providers registered.'),
+      when: 'default',
+    });
+  }
 
   onDidRender() {
     [
@@ -155,7 +165,7 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
 
   private getDiffEditor(editor: IEditor) {
     const editorId = editor.getId();
-    const [ diffEditor ] = this.editorCollectionService.listDiffEditors().filter((diffEditor) => diffEditor.modifiedEditor.getId() === editorId || diffEditor.originalEditor.getId() === editorId);
+    const [diffEditor] = this.editorCollectionService.listDiffEditors().filter((diffEditor) => diffEditor.modifiedEditor.getId() === editorId || diffEditor.originalEditor.getId() === editorId);
     return diffEditor;
   }
 

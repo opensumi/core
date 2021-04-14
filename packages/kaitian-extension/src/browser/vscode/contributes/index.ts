@@ -25,6 +25,7 @@ import { ProblemPatterns, ProblemPatternsContributionPoint } from './problemPatt
 import { ProblemMatchersContributions, ProblemMatchersContributionPoint } from './problemMatchers';
 import { CustomEditorContributionPoint } from './customEditors';
 import { CustomEditorScheme } from '../../../common/vscode/custom-editor';
+import { ViewsWelcomeContributionPoint } from './views-welcome';
 
 export const EXTENSION_IDENTIFIER_PATTERN = '^([a-z0-9A-Z][a-z0-9\-A-Z]*)\\.([a-z0-9A-Z][a-z0-9\-A-Z]*)$';
 
@@ -298,6 +299,7 @@ export class VSCodeContributeRunner extends WithEventBus {
     SnippetsContributionPoint,
     ViewContainersContributionPoint,
     ViewsContributionPoint,
+    ViewsWelcomeContributionPoint,
     BreakpointsContributionPoint,
     DebuggersContributionPoint,
     ActionsContributionPoint,

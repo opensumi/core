@@ -2,7 +2,7 @@ import { URI, ClientAppContribution, localize, CommandContribution, KeybindingCo
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileTreeService } from './file-tree.service';
-import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
+import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '@ali/ide-main-layout';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
 import { KAITIAN_MULTI_WORKSPACE_EXT, IWorkspaceService, UNTITLED_WORKSPACE } from '@ali/ide-workspace';
 import { FileTree } from './file-tree';
@@ -17,6 +17,8 @@ import { FilesExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextk
 import { FilesExplorerFocusedContext, FilesExplorerInputFocusedContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 import { IFileTreeService, PasteTypes } from '../common';
 import { TERMINAL_COMMANDS } from '@ali/ide-terminal-next';
+import { ViewContentGroups } from '@ali/ide-main-layout/lib/browser/views-registry';
+import { formatLocalize } from '../../../main-layout/node_modules/@ali/ide-core-common/lib';
 
 export const ExplorerResourceViewId = 'file-explorer-next';
 
@@ -56,9 +58,18 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
+  @Autowired(IViewsRegistry)
+  private viewsRegistry: IViewsRegistry;
+
   private isRendered = false;
 
   async onStart() {
+    // TODO: workspace、remote模式内容不同
+    this.viewsRegistry.registerViewWelcomeContent(ExplorerResourceViewId, {
+      content: formatLocalize('welcome-view.noFolderHelp', FILE_COMMANDS.OPEN_FOLDER.id),
+      group: ViewContentGroups.Open,
+      order: 1,
+    });
     await this.fileTreeService.init();
     this.mainLayoutService.collectViewComponent({
       id: ExplorerResourceViewId,

@@ -6,7 +6,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ResourceMap, TernarySearchTree, PathIterator, StringIterator, LinkedMap, Touch, LRUCache, mapToSerializable, serializableToMap } from '../src/map';
+import { ResourceMap, TernarySearchTree, PathIterator, StringIterator, LinkedMap, Touch, LRUCache, mapToSerializable, serializableToMap, SetMap } from '../src/map';
 import { URI } from 'vscode-uri';
 import { IteratorResult } from '../src/iterator';
 
@@ -274,6 +274,30 @@ describe('Map', () => {
 		expect(map.keys().length).toEqual(1);
 		expect(map.keys()[0]).toEqual('1');
 	});
+
+  test('SetMap - add unique value', () => {
+    const value1 = 1;
+    const value2 = 2;
+    const value3 = 1;
+    const value4 = 997;
+    const key = 'key';
+    const setMap = new SetMap<string, number>();
+    setMap.add(key, value1);
+    setMap.add(key, value2);
+    setMap.add(key, value3);
+    setMap.add(key, value4);
+    let sum1 = 0;
+    setMap.forEach(key, (value) => {
+      sum1 += value;
+    });
+    expect(sum1).toEqual(1000);
+    setMap.delete(key, value4);
+    let sum2 = 0;
+    setMap.forEach(key, (value) => {
+      sum2 += value;
+    });
+    expect(sum2).toEqual(3);
+  });
 
 
 	test('PathIterator', () => {
