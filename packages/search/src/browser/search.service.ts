@@ -6,6 +6,7 @@ import * as React from 'react';
 import { createRef } from 'react';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { Emitter, IEventBus, trim, isUndefined, localize } from '@ali/ide-core-common';
+import * as arrays from '@ali/ide-core-common/lib/arrays';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import {
   Key,
@@ -137,6 +138,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     isWholeWord: false,
     isUseRegexp: false,
     isIncludeIgnored: false,
+    isOnlyOpenEditors: false,
   };
   @observable
   searchResults: Map<string, ContentSearchResult[]> = observable.map();
@@ -152,6 +154,9 @@ export class ContentSearchClientService implements IContentSearchClientService {
   @observable
   isShowValidateMessage: boolean = true;
 
+  @observable
+  isExpandAllResult: boolean = true;
+
   _searchHistory: SearchHistory;
 
   docModelSearchedList: string[] = [];
@@ -163,6 +168,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
   searchResultCollection: SearchResultCollection = new SearchResultCollection();
 
   constructor() {
+    this.setDefaultIncludeValue();
     this.recoverUIState();
   }
 
@@ -198,13 +204,15 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
     this.isShowValidateMessage = true;
 
+    this.isExpandAllResult = true;
+
     // Stop old search
     if (this.currentSearchId) {
       this.contentSearchServer.cancel(this.currentSearchId);
       this.cleanOldSearch();
       this.currentSearchId = this.currentSearchId + 1;
     }
-    const rootDirs: string[] = [];
+    let rootDirs: string[] = [];
     this.workspaceService.tryGetRoots().forEach((stat) => {
       const uri = new URI(stat.uri);
       if (uri.scheme !== Schemas.file) {
@@ -212,6 +220,46 @@ export class ContentSearchClientService implements IContentSearchClientService {
       }
       return rootDirs.push(uri.toString());
     });
+
+    // TODO: 当前无法在不同 cwd 内根据各自 include 搜素，因此如果多 workspaceFolders，此处可能返回比实际要多的结果
+    // 同时 searchId 设计原因只能针对单服务，多个 search 服务无法对同一个 searchId 返回结果
+    // 长期看需要改造，以支持 registerFileSearchProvider
+    if (this.UIState.isOnlyOpenEditors) {
+      rootDirs = [];
+      const openResources = arrays.coalesce(arrays.flatten(this.workbenchEditorService.editorGroups.map((group) => group.resources)));
+      const includeMatcherList = searchOptions.include?.map((str) => parse(anchorGlob(str))) || [];
+      const excludeMatcherList = searchOptions.exclude?.map((str) => parse(anchorGlob(str))) || [];
+      const openResourcesInFilter = openResources.filter((resource) => {
+        const uriString = resource.uri.toString();
+        if (excludeMatcherList.length > 0 && excludeMatcherList.some((matcher) => matcher(uriString))) {
+          return false;
+        }
+        if (includeMatcherList.length > 0 && !includeMatcherList.some((matcher) => matcher(uriString))) {
+          return false;
+        }
+        return true;
+      });
+      const include: string[] = [];
+      const isAbsolutePath = (resource: URI): boolean => {
+        return !!resource.codeUri.path && resource.codeUri.path[0] === '/';
+      };
+      openResourcesInFilter.forEach(({ uri }) => {
+        if (uri.scheme === Schemas.walkThrough) { return; }
+        if (isAbsolutePath(uri)) {
+          const searchRoot = this.workspaceService.getWorkspaceRootUri(uri) ?? uri.withPath(uri.path.dir);
+          const relPath = searchRoot.path.relative(uri.path);
+          rootDirs.push(searchRoot.toString());
+          if (relPath) {
+            include.push(`./${relPath.toString()}`);
+          }
+        } else if (uri.codeUri.fsPath) {
+          include.push(uri.codeUri.fsPath);
+        }
+      });
+      searchOptions.include = include;
+      searchOptions.exclude = include.length ? undefined : ['**/*'];
+    }
+
     // 从 doc model 中搜索
     const searchFromDocModelInfo = this.searchAllFromDocModel({
       searchValue: value,
@@ -531,6 +579,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
       if (!isDone) {
         return;
       }
+      // FIXME: model 为打开的情况下会保存，但是此时可能并没有同步到远端，导致此时刷新扔可能保留上次的结果
+      // 目前行为依赖 workspaceEditService，不太好修
       this.search();
     });
   }
@@ -557,6 +607,20 @@ export class ContentSearchClientService implements IContentSearchClientService {
     }
 
     return result;
+  }
+
+  private setDefaultIncludeValue() {
+    const searchIncludes = this.searchPreferences['search.include'] || {};
+    this.includeValue = Object.keys(searchIncludes).reduce<string[]>((includes, key) => {
+      if (searchIncludes[key]) {
+        includes.push(key);
+      }
+      return includes;
+    }, []).join(',');
+    // 如有 inlcude 填充，则显示搜索条件
+    if (this.includeValue) {
+      this.updateUIState({ isDetailOpen: true });
+    }
   }
 
   private mergeSameUriResult(

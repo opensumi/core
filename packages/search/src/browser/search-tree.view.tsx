@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { observer } from 'mobx-react-lite';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes } from '@ali/ide-core-browser/lib/components';
 import { ViewState } from '@ali/ide-core-browser';
@@ -50,7 +51,11 @@ function getScrollContainerStyle(viewState: ViewState, searchPanelLayout: any): 
   } as ISearchLayoutProp;
 }
 
-function getResultTotalContent(total: ResultTotal, searchTreeService: SearchTreeService) {
+const ResultTotalContent = observer<{
+  total: ResultTotal;
+  searchTreeService: SearchTreeService;
+  searchBrowserService: ContentSearchClientService;
+}>(({ total, searchTreeService, searchBrowserService }) => {
   if (total.resultNum > 0) {
     return (
       <p className={styles.result_describe}>
@@ -60,19 +65,20 @@ function getResultTotalContent(total: ResultTotal, searchTreeService: SearchTree
             .replace('{1}', String(total.fileNum))
         }
         <span
-          title={localize('search.CollapseDeepestExpandedLevelAction.label')}
+          title={localize(searchBrowserService.isExpandAllResult ? 'search.CollapseDeepestExpandedLevelAction.label' : 'search.ExpandDeepestExpandedLevelAction.label')}
           onClick={searchTreeService.foldTree}
           className={cls(
-            getIcon('collapse-all'),
+            getIcon(searchBrowserService.isExpandAllResult ? 'collapse-all' : 'expand-all'),
             styles.result_fold,
             { [styles.result_fold_enabled]: total.fileNum > 0 },
+            { [styles.result_fold_disabled]: searchBrowserService.isSearchDoing },
           )
         }></span>
       </p>
     );
   }
-  return '';
-}
+  return null;
+});
 
 export const SearchTree = React.forwardRef((
   {
@@ -108,7 +114,7 @@ export const SearchTree = React.forwardRef((
 
   return (
     <div className={styles.tree}>
-      {getResultTotalContent(resultTotal, searchTreeService)}
+      <ResultTotalContent total={resultTotal} searchTreeService={searchTreeService} searchBrowserService={searchBrowserService} />
       {nodes && nodes.length > 0 ?
         <RecycleTree
           onContextMenu={ onContextMenu }

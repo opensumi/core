@@ -84,6 +84,7 @@ export interface IUIState {
   isMatchCase: boolean;
   isWholeWord: boolean;
   isUseRegexp: boolean;
+  isOnlyOpenEditors: boolean;
 
   isIncludeIgnored: boolean;
 }

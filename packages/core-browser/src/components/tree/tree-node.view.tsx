@@ -274,7 +274,7 @@ export const TreeContainerNode = (
       return <Icon
         key={`${node.id}-${typeof action.paramsKey === 'string' ? node[action.paramsKey] : node.id}-${action.command}`}
         iconClass={cls(styles.action_icon, icon)}
-        title={action.title}
+        tooltip={action.title} // Icon 用 tooltip 当 title
         onClick={clickHandler} />;
     });
   };

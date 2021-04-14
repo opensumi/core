@@ -11,17 +11,14 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { OverlayModule } from '@ali/ide-overlay/lib/browser';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import { IContextKeyService } from '@ali/ide-core-browser';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 
 import { ContentSearchClientService } from '../../src/browser/search.service';
 import {
   IContentSearchClientService,
   ContentSearchServerPath,
   ContentSearchOptions,
-  ISearchTreeItem,
-  SendClientResult,
-  SEARCH_STATE,
   ContentSearchResult,
-  IUIState,
 } from '../../src/common';
 import { SearchModule } from '../../src/browser/';
 import { SearchTreeService } from '../../src/browser/search-tree.service';
@@ -77,6 +74,11 @@ class MockWorkspaceEditorService {
 @Injectable()
 class MockEditorDocumentModelContentRegistry {
   registerEditorDocumentModelContentProvider() {}
+}
+
+@Injectable()
+class MockFileServiceClient {
+  getCurrentUserHome() {}
 }
 
 @Injectable()
@@ -152,6 +154,9 @@ describe('search.service.ts', () => {
     }, {
       token: IContextKeyService,
       useClass: MockContextKeyService,
+    }, {
+      token: IFileServiceClient,
+      useClass: MockFileServiceClient,
     });
 
     searchService = injector.get(ContentSearchClientService);

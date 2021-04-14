@@ -1,5 +1,91 @@
 @import '../style/mixins.less';
 
+.arrow(@position) {
+  & when (@position = 'top'), (@position = 'bottom') {
+    &::after {
+      position: absolute;
+      left: 50%;
+      margin-left: -7px;
+      content: '';
+      width: 0;
+      height: 0;
+      border: 7px solid transparent;
+    }
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 15px;
+      border-style: solid;
+      background: transparent;
+      border: 0;
+    }
+  }
+  & when (@position = 'top') {
+    &::after {
+      top: 100%;
+      border-bottom-width: 0;
+      border-top-color: var(--kt-popover-background);
+    }
+    &::before {
+      top: 100%;
+    }
+  }
+  & when (@position = 'bottom') {
+    &::after {
+      bottom: 100%;
+      border-top-width: 0;
+      border-bottom-color: var(--kt-popover-background);
+    }
+    &::before {
+      bottom: 100%;
+    }
+  }
+
+  & when (@position = 'left'), (@position = 'right') {
+    &::after {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-7px);
+      content: '';
+      width: 0;
+      height: 0;
+      border: 7px solid transparent;
+    }
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      width: 15px;
+      height: 100%;
+      border-style: solid;
+      background: transparent;
+      border: 0;
+    }
+  }
+  & when (@position = 'left') {
+    &::after {
+      left: 100%;
+      border-right-width: 0;
+      border-left-color: var(--kt-popover-background);
+    }
+    &::before {
+      left: 100%;
+    }
+  }
+  & when (@position = 'right') {
+    &::after {
+      right: 100%;
+      border-left-width: 0;
+      border-right-color: var(--kt-popover-background);
+    }
+    &::before {
+      right: 100%;
+    }
+  }
+}
+
 .kt-popover {
   position: relative;
   position: relative;
@@ -31,60 +117,19 @@
     .overlay-shadow();
     padding: 5px 10px;
     z-index: 10001;
-    margin-top: -5px;
     padding: 16px;
   }
 
   &-top {
-    &::after {
-      position: absolute;
-      left: 50%;
-      margin-left: -7px;
-      top: 100%;
-      content: '';
-      width: 0;
-      height: 0;
-      border-style: solid;
-      border-width: 7px 7px 0 7px;
-      border-color: var(--kt-popover-background) transparent transparent transparent;
-    }
-
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 100%;
-      width: 100%;
-      height: 15px;
-      border-style: solid;
-      background: transparent;
-      border: 0;
-    }
+    .arrow('top');
   }
   &-bottom {
-    &::after {
-      position: absolute;
-      left: 50%;
-      margin-left: -7px;
-      bottom: 100%;
-      content: '';
-      width: 0;
-      height: 0;
-      border-style: solid;
-      border-width: 0 7px 7px 7px;
-      border-color:  transparent transparent var(--kt-popover-border) transparent;
-    }
-
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      bottom: 100%;
-      width: 100%;
-      height: 15px;
-      border-style: solid;
-      background: transparent;
-      border: 0;
-    }
+    .arrow('bottom');
+  }
+  &-left {
+    .arrow('left')
+  }
+  &-right {
+    .arrow('right')
   }
 }

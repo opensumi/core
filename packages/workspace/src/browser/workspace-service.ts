@@ -720,6 +720,9 @@ export class WorkspaceService implements IWorkspaceService {
       const rootUri = root.uri;
       const isRelative = path && path.indexOf(rootUri) >= 0;
       if (isRelative) {
+        if (path === rootUri) {
+          return '';
+        }
         if (rootUri.slice(-1) === '/') {
           return decodeURI(path.replace(rootUri, ''));
         }

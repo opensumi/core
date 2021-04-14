@@ -13,6 +13,8 @@ export enum PopoverTriggerType {
 export enum PopoverPosition {
   top = 'top',
   bottom = 'bottom',
+  left = 'left',
+  right = 'right',
 }
 
 function noop() {}
@@ -34,8 +36,8 @@ export const Popover: React.FC<{
 }> = ({
   delay, children, trigger, display, id, insertClass, popoverClass, content, position = PopoverPosition.top, title, titleClassName, action, onClickAction, ...restProps
 }) => {
-  const childEl = React.useRef<any>();
-  const contentEl = React.useRef<any>();
+  const childEl = React.useRef<HTMLSpanElement | null>(null);
+  const contentEl = React.useRef<HTMLDivElement | null>(null);
   const triggerType = trigger || PopoverTriggerType.hover;
   let hideContentTimer;
   let actionDelayTimer;
@@ -69,21 +71,32 @@ export const Popover: React.FC<{
       if (!childEl.current || !contentEl.current) {
         return;
       }
+      const { left, top, width, height } = childEl.current.getBoundingClientRect() as ClientRect;
+      const contentRect = contentEl.current.getBoundingClientRect() as ClientRect;
+
       if (position === PopoverPosition.top) {
-        const { left, top, width } = (childEl.current as any).getBoundingClientRect() as ClientRect;
-        const contentRect = (contentEl.current as any).getBoundingClientRect() as ClientRect;
         const contentLeft = left - contentRect.width / 2 + width / 2;
-        const contentTop = top - contentRect.height;
-        (contentEl.current! as HTMLElement).style.left = (contentLeft < 0 ? 0 : contentLeft) +  'px';
-        contentEl.current!.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
+        const contentTop = top - contentRect.height - 7;
+        contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) +  'px';
+        contentEl.current.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
         contentEl.current.style.visibility = 'visible';
       } else if (position === PopoverPosition.bottom) {
-        const { left, top, width, height } = (childEl.current as any).getBoundingClientRect() as ClientRect;
-        const contentRect = (contentEl.current as any).getBoundingClientRect() as ClientRect;
         const contentLeft = left - contentRect.width / 2 + width / 2;
         const contentTop = top + height + 7;
-        (contentEl.current! as HTMLElement).style.left = (contentLeft < 0 ? 0 : contentLeft) +  'px';
+        contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) +  'px';
         contentEl.current!.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
+        contentEl.current.style.visibility = 'visible';
+      } else if (position === PopoverPosition.left) {
+        const contentLeft = left - contentRect.width - 7;
+        const contentTop = top - contentRect.height / 2 + height / 2;
+        contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) +  'px';
+        contentEl.current.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
+        contentEl.current.style.visibility = 'visible';
+      } else if (position === PopoverPosition.right) {
+        const contentLeft = left + width + 7;
+        const contentTop = top - contentRect.height / 2 + height / 2;
+        contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) +  'px';
+        contentEl.current.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
         contentEl.current.style.visibility = 'visible';
       }
     });
@@ -94,7 +107,7 @@ export const Popover: React.FC<{
       return;
     }
     hideContentTimer = setTimeout(() => {
-      contentEl.current.style.display = 'none';
+      contentEl.current!.style.display = 'none';
     }, 500);
   }
 

@@ -1,7 +1,8 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import * as React from 'react';
 import { action } from 'mobx';
-import { URI, Schemas, Emitter, formatLocalize, dispose, IDisposable, DisposableStore, IRange, localize, MessageType } from '@ali/ide-core-common';
+import { LabelService } from '@ali/ide-core-browser';
+import { URI, Schemas, Emitter, formatLocalize, dispose, IDisposable, DisposableStore, IRange, localize, MessageType, memoize } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -9,6 +10,7 @@ import { WorkbenchEditorService, TrackedRangeStickiness } from '@ali/ide-editor'
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import { IDialogService } from '@ali/ide-overlay';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 
 import { replaceAll, replace } from './replace';
 import { ContentSearchClientService } from './search.service';
@@ -17,6 +19,7 @@ import {
   ISearchTreeItem,
 } from '../common';
 import { SearchPreferences } from './search-preferences';
+import * as styles from './search.module.less';
 
 const REPLACE_PREVIEW = 'replacePreview';
 
@@ -179,6 +182,8 @@ export class SearchTreeService {
 
   private readonly disposables: IDisposable[] = [];
 
+  private userhomePath: URI | null;
+
   @Autowired(IEditorDocumentModelService)
   documentModelManager: IEditorDocumentModelService;
 
@@ -214,6 +219,12 @@ export class SearchTreeService {
 
   @Autowired(ICtxMenuRenderer)
   private readonly ctxMenuRenderer: ICtxMenuRenderer;
+
+  @Autowired(IFileServiceClient)
+  protected fileServiceClient: IFileServiceClient;
+
+  @Autowired(LabelService)
+  private readonly labelService: LabelService;
 
   constructor() {
     this.contentRegistry.registerEditorDocumentModelContentProvider(
@@ -365,8 +376,9 @@ export class SearchTreeService {
 
   @action.bound
   foldTree() {
+    const isExpandAll = this.searchBrowserService.isExpandAllResult = !this.searchBrowserService.isExpandAllResult;
     const newNodes = this._nodes.map((node) => {
-      node.expanded = false;
+      node.expanded = isExpandAll;
       return node;
     });
     this.nodes = newNodes;
@@ -488,15 +500,18 @@ export class SearchTreeService {
     resultList.forEach((insertSearchResult: ContentSearchResult, index: number) => {
       const searchResult = insertSearchResult;
       const start = (searchResult.renderStart || searchResult.matchStart) - 1;
+      const end = start + searchResult.matchLength;
+      const description = searchResult.renderLineText || searchResult.lineText;
+      const { searchBrowserService } = this;
 
       result.push({
         id: `${uri.toString()}?index=${index}`,
         name: '',
-        description: searchResult.renderLineText || searchResult.lineText,
+        description,
         highLightRanges: {
           description: [{
             start,
-            end: start + searchResult.matchLength,
+            end,
           }],
         },
         order: index,
@@ -504,6 +519,11 @@ export class SearchTreeService {
         searchResult: insertSearchResult,
         parent,
         uri,
+        // 使用 accessor 在 replaceValue 更改时渲染自动获取最新 title
+        get tooltip() {
+          return description && `${description.slice(0, start)}${searchBrowserService.replaceValue || description.slice(start, end)}${description.slice(end)}`.substr(0, 999);
+        },
+        descriptionClass: styles.search_result_code,
       });
     });
 
@@ -524,7 +544,8 @@ export class SearchTreeService {
       const uri = searchResultArray[0];
       const resultList = searchResultArray[1];
       const _uri = new URI(uri);
-      const description = await workspaceService.asRelativePath(uri) || uri;
+      const dirPath = _uri.parent.toString();
+      const description = await workspaceService.asRelativePath(dirPath) ?? dirPath;
 
       if (!resultList || resultList.length < 1) {
         continue;
@@ -539,13 +560,11 @@ export class SearchTreeService {
         order: order++,
         depth: 0,
         parent: undefined,
+        tooltip: await this.getReadableTooltip(_uri),
+        icon: this.labelService.getIcon(_uri),
       };
       node.children = this.getChildrenNodes(resultList, _uri, node);
       node.badge = node.children.length;
-      if (node.children.length > 10) {
-        // 结果太多大于10 则默认折叠
-        node.expanded = false;
-      }
       result.push(node);
       node.children.forEach((child) => {
         result.push(child);
@@ -555,4 +574,29 @@ export class SearchTreeService {
     return result;
   }
 
+  @memoize
+  async getCurrentUserHome() {
+    if (!this.userhomePath) {
+      try {
+        const userhome = await this.fileServiceClient.getCurrentUserHome();
+        if (userhome) {
+          this.userhomePath = new URI(userhome.uri);
+        }
+      } catch (err) {}
+    }
+    return this.userhomePath;
+  }
+
+  public async getReadableTooltip(path: URI) {
+    const pathStr = path.toString();
+    const userhomePath = await this.getCurrentUserHome();
+    if (!userhomePath) {
+      return decodeURIComponent(path.withScheme('').toString());
+    }
+    if (userhomePath.isEqualOrParent(path)) {
+      const userhomePathStr = userhomePath && userhomePath.toString();
+      return decodeURIComponent(pathStr.replace(userhomePathStr, '~'));
+    }
+    return decodeURIComponent(path.withScheme('').toString());
+  }
 }

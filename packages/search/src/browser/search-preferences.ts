@@ -23,6 +23,11 @@ export const searchPreferenceSchema: PreferenceSchema = {
         '**/bower_components': true,
       },
     },
+    'search.include': {
+      type: 'object',
+      description: '%preference.search.include%',
+      default: {},
+    },
     'search.useReplacePreview': {
       type: 'boolean',
       description: localize('preference.search.useReplacePreview'),
@@ -34,6 +39,7 @@ export const searchPreferenceSchema: PreferenceSchema = {
 // 给 preference 项的值添加类型定义
 export interface SearchConfiguration {
   'search.exclude': { [key: string]: boolean };
+  'search.include': { [key: string]: boolean };
 }
 
 export const SearchPreferences = Symbol('SearchPreferences');

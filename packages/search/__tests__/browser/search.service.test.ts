@@ -94,6 +94,10 @@ describe('search.service.ts', () => {
         'search.exclude': {
           '**/bower_components': true,
         },
+        'search.include': {
+          '*.java': true,
+          '*.ts': true,
+        },
       },
     }, {
       token: CorePreferences,
@@ -116,11 +120,13 @@ describe('search.service.ts', () => {
 
   test('可以加载正常service', () => {
     expect(searchService.UIState).toBeDefined();
+    expect((searchService as any).includeValue).toBe('*.java,*.ts');
   });
 
   test('method:updateUIState', () => {
-    searchService.updateUIState({ isMatchCase: true });
+    searchService.updateUIState({ isMatchCase: true, isOnlyOpenEditors: true });
     expect(searchService.UIState.isMatchCase).toBe(true);
+    expect(searchService.UIState.isOnlyOpenEditors).toBe(true);
     expect(searchService.UIState.isUseRegexp).toBe(false);
   });
 
@@ -155,6 +161,7 @@ describe('search.service.ts', () => {
       isWholeWord: true,
       isUseRegexp: true,
       isIncludeIgnored: false,
+      isOnlyOpenEditors: false,
     };
     service.includeValue = 'includeValue1, includeValue2';
     service.excludeValue = 'excludeValue';
