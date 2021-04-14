@@ -382,8 +382,10 @@ export class DebugWatchModelService {
     }
   }
 
-  clearAllExpression() {
-    this.debugWatch.clear();
+  async clearAllExpression() {
+    this.debugWatch.updateWatchExpressions([]);
+    await this.initTreeModel();
+    this.save();
   }
 
   private dispatchWatchEvent(path: string, event: IWatcherEvent) {

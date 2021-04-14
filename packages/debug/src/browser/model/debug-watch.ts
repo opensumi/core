@@ -97,7 +97,7 @@ export class DebugWatch implements DebugWatchData {
   }
 
   async clear() {
-    this._expressions = [];
+    this.updateWatchExpressions([]);
     this.fireExpressionChange();
     this.fireDidChange();
   }
