@@ -1,3 +1,9 @@
+/* scrollbar 默认高度 */
+@kt-scrollbar-height: 10px;
+
+/* scrollbar 默认宽度 */
+@kt-scrollbar-width: 10px;
+
 .kt-scrollbar {
 
   .scrollbar-thumb-vertical,
@@ -5,7 +11,8 @@
     opacity: 0;
     transition: opacity .5s ease;
     background: var(--scrollbarSlider-background);
-    width: var(--kt-scrollbar-width);
+    width: @kt-scrollbar-width;
+    height: @kt-scrollbar-height;
     &:hover {
       background: var(--scrollbarSlider-hoverBackground);
     }
