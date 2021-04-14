@@ -174,7 +174,7 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
       itemHeight={ 22 }
       width = {viewState.width}
       height = { (isLoading || canLoadMore) ? (frames.length + 1) * 22 : frames.length * 22 }
-      footer = { footer }
+      footer = { (isLoading || canLoadMore) ? footer : undefined }
     />
   );
 });
