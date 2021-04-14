@@ -2,7 +2,7 @@ import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { URI, CommandRegistry, Emitter, Event } from '@ali/ide-core-common';
+import { Schemas, URI, CommandRegistry, Emitter, Event } from '@ali/ide-core-common';
 import { IEditorDocumentModelService, IEditorDocumentModelContentProvider, ICodeEditor, getSimpleEditorOptions } from '@ali/ide-editor/lib/browser';
 import { EditorCollectionService } from '@ali/ide-editor';
 import { IContextKeyService } from '@ali/ide-core-browser';
@@ -94,7 +94,7 @@ export class DebugConsoleService {
   }
 
   get consoleInputUri() {
-    return new URI('debug/console/input').withScheme('walkThroughSnippet');
+    return new URI('debug/console/input').withScheme(Schemas.walkThroughSnippet);
   }
 
   get consoleInputElement() {
@@ -238,13 +238,15 @@ export class DebugConsoleService {
   }
 }
 
+// 不可保存，因此不需要设置 saveDocumentModel
+// TODO: 统一的 walkThroughSnippet 的 provider，应挪走
 @Injectable()
 export class DebugConsoleInputDocumentProvider implements IEditorDocumentModelContentProvider {
   @Autowired(DebugConsoleService)
-  protected readonly debugConsole: DebugConsoleService;
+  private readonly debugConsole: DebugConsoleService;
 
   handlesScheme(scheme: string) {
-    return scheme === this.debugConsole.consoleInputUri.scheme;
+    return scheme === Schemas.walkThroughSnippet;
   }
 
   async provideEditorDocumentModelContent() {
@@ -259,9 +261,5 @@ export class DebugConsoleInputDocumentProvider implements IEditorDocumentModelCo
 
   preferLanguageForUri() {
     return 'plaintext';
-  }
-
-  saveDocumentModel() {
-    return { state: 'success' } as any;
   }
 }
