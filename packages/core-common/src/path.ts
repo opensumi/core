@@ -352,7 +352,7 @@ interface ParsedPath {
 	name: string;
 }
 
-interface IPath {
+export interface IPath {
 	normalize(path: string): string;
 	isAbsolute(path: string): boolean;
 	join(...paths: string[]): string;

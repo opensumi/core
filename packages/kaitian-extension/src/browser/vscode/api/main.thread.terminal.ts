@@ -1,8 +1,8 @@
 import type * as vscode from 'vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { Disposable, PreferenceService } from '@ali/ide-core-browser';
-import { ITerminalApiService, ITerminalController, ITerminalInfo, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest, ITerminalDimensions, ITerminalDimensionsDto } from '@ali/ide-terminal-next';
+import { Disposable, PreferenceService, IDisposable } from '@ali/ide-core-browser';
+import { ITerminalApiService, ITerminalController, ITerminalInfo, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest, ITerminalDimensions, ITerminalDimensionsDto, ITerminalExternalLinkProvider, ITerminalClient, ITerminalLink } from '@ali/ide-terminal-next';
 import { IMainThreadTerminal, IExtHostTerminal, ExtHostAPIIdentifier } from '../../../common/vscode';
 
 import { ILogger } from '@ali/ide-core-browser';
@@ -11,6 +11,14 @@ import { ILogger } from '@ali/ide-core-browser';
 export class MainThreadTerminal implements IMainThreadTerminal {
   private readonly proxy: IExtHostTerminal;
   private readonly _terminalProcessProxies = new Map<string, ITerminalProcessExtHostProxy>();
+
+  /**
+   * A single shared terminal link provider for the exthost. When an ext registers a link
+   * provider, this is registered with the terminal on the renderer side and all links are
+   * provided through this, even from multiple ext link providers. Xterm should remove lower
+   * priority intersecting links itself.
+   */
+  private _linkProvider: IDisposable | undefined;
 
   @Autowired(ITerminalApiService)
   private terminalApi: ITerminalApiService;
@@ -154,5 +162,33 @@ export class MainThreadTerminal implements IMainThreadTerminal {
 
   public $sendProcessCwd(terminalId: string, cwd: string): void {
     this._getTerminalProcess(terminalId).emitCwd(cwd);
+  }
+
+  public $startLinkProvider() {
+    this._linkProvider?.dispose();
+    this._linkProvider = this.controller.registerLinkProvider(new ExtensionTerminalLinkProvider(this.proxy));
+  }
+
+  public $stopLinkProvider() {
+    this._linkProvider?.dispose();
+    this._linkProvider = undefined;
+  }
+}
+
+class ExtensionTerminalLinkProvider implements ITerminalExternalLinkProvider {
+  constructor(
+    private readonly _proxy: IExtHostTerminal,
+  ) {
+  }
+
+  async provideLinks(instance: ITerminalClient, line: string): Promise<ITerminalLink[] | undefined> {
+    const proxy = this._proxy;
+    const extHostLinks = await proxy.$provideLinks(instance.id, line);
+    return extHostLinks.map((dto) => ({
+      id: dto.id,
+      startIndex: dto.startIndex,
+      length: dto.length,
+      activate: () => proxy.$activateLink(instance.id, dto.id),
+    }));
   }
 }

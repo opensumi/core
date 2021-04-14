@@ -2,17 +2,17 @@ import { observable } from 'mobx';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { SearchAddon } from 'xterm-addon-search';
-import { WebLinksAddon } from 'xterm-addon-web-links';
-import { Injectable, Autowired, Injector } from '@ali/common-di';
-import { Disposable, Deferred, Emitter, Event, debounce, ILogger } from '@ali/ide-core-common';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
+import { Disposable, Deferred, Emitter, Event, debounce, ILogger, IDisposable } from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
-import { FilePathAddon, AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
+import { AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
 import { TerminalKeyBoardInputService } from './terminal.input';
-import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, ITerminalGroupViewService, ITerminalInternalService, IWidget, ITerminalDataEvent, ITerminalExitEvent, ITerminalConnection } from '../common';
+import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, ITerminalGroupViewService, ITerminalInternalService, IWidget, ITerminalDataEvent, ITerminalExitEvent, ITerminalConnection, ITerminalExternalLinkProvider } from '../common';
 import { ITerminalPreference } from '../common/preference';
-import { CorePreferences, IOpenerService, QuickPickService } from '@ali/ide-core-browser';
+import { CorePreferences, QuickPickService } from '@ali/ide-core-browser';
+import { TerminalLinkManager } from './links/link-manager';
 
 import * as styles from './component/terminal.module.less';
 
@@ -27,14 +27,13 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private _options: TerminalOptions;
   private _widget: IWidget;
   private _workspacePath: string;
+  private _linkManager: TerminalLinkManager;
   /** end */
 
   /** addons */
   private _fitAddon: FitAddon;
   private _attachAddon: AttachAddon;
   private _searchAddon: SearchAddon;
-  private _weblinksAddon: WebLinksAddon;
-  private _filelinksAddon: FilePathAddon;
   /** end */
 
   /** status */
@@ -44,7 +43,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private _error: Deferred<void>;
   private _show: Deferred<void> | null;
   private _hasOutput = false;
+  private _areLinksReady: boolean = false;
   /** end */
+
+  @Autowired(INJECTOR_TOKEN)
+  protected readonly injector: Injector;
 
   @Autowired(ITerminalInternalService)
   protected readonly service: ITerminalInternalService;
@@ -91,8 +94,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private _onExit = new Emitter<ITerminalExitEvent>();
   onExit: Event<ITerminalExitEvent> = this._onExit.event;
 
-  @Autowired(IOpenerService)
-  private readonly openerService: IOpenerService;
+  private readonly _onLinksReady = new Emitter<ITerminalClient>();
+  onLinksReady: Event<ITerminalClient> = this._onLinksReady.event;
 
   async init(widget: IWidget, options: TerminalOptions = {}) {
     this._uid = widget.id;
@@ -191,22 +194,18 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     return this._show;
   }
 
+  get areLinksReady(): boolean {
+    return this._areLinksReady;
+  }
+
   private _prepareAddons() {
     this._attachAddon = new AttachAddon();
     this._searchAddon = new SearchAddon();
     this._fitAddon = new FitAddon();
-    this._filelinksAddon = new FilePathAddon(this._workspacePath, this.fileService, this.editorService, this.keyboard);
-    this._weblinksAddon = new WebLinksAddon((_, url) => {
-      if (this.keyboard.isCommandOrCtrl) {
-        this.openerService.open(url);
-      }
-    });
     this.addDispose([
       this._attachAddon,
       this._searchAddon,
       this._fitAddon,
-      this._filelinksAddon,
-      this._weblinksAddon,
       this._attachAddon.onData((data) => {
         this._onOutput.fire({ id: this.id, data });
       }),
@@ -220,8 +219,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._term.loadAddon(this._attachAddon);
     this._term.loadAddon(this._fitAddon);
     this._term.loadAddon(this._searchAddon);
-    this._term.loadAddon(this._filelinksAddon);
-    this._term.loadAddon(this._weblinksAddon);
   }
 
   private _xtermEvents() {
@@ -236,8 +233,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._prepareAddons();
     this._loadAddons();
     this._xtermEvents();
-
+    this._linkManager = this.injector.get(TerminalLinkManager, [this._term]);
+    this.addDispose(this._linkManager);
     this.addDispose(this._term);
+    this._areLinksReady = true;
+    this._onLinksReady.fire(this);
   }
 
   private async _doAttach() {
@@ -467,6 +467,13 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   async sendText(message: string) {
     await this.service.sendText(this.id, message);
     this._onInput.fire({ id: this.id, data: message });
+  }
+
+  registerLinkProvider(provider: ITerminalExternalLinkProvider): IDisposable {
+    if (!this._linkManager) {
+      throw new Error('TerminalInstance.registerLinkProvider before link manager was ready');
+    }
+    return this._linkManager.registerExternalLinkProvider(this, provider);
   }
 
   dispose(clear: boolean = true) {

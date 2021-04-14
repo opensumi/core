@@ -1,7 +1,7 @@
-import { Event, Disposable, Deferred } from '@ali/ide-core-common';
+import { Event, Disposable, Deferred, IDisposable } from '@ali/ide-core-common';
 import { ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest } from './extension';
 import { IWidgetGroup, IWidget } from './resize';
-import { ITerminalClient, ITerminalExitEvent } from './client';
+import { ITerminalClient, ITerminalExitEvent, ITerminalExternalLinkProvider } from './client';
 import { TerminalOptions, ITerminalInfo } from './pty';
 
 export interface ITerminalExternalClient {
@@ -44,6 +44,8 @@ export interface ITerminalController extends Disposable {
 
   requestStartExtensionTerminal(proxy: ITerminalProcessExtHostProxy, cols: number, rows: number): Promise<ITerminalLaunchError | undefined>;
   readonly onInstanceRequestStartExtensionTerminal: Event<IStartExtensionTerminalRequest>;
+
+  registerLinkProvider(provider: ITerminalExternalLinkProvider): IDisposable;
 }
 
 export const ITerminalSearchService = Symbol('ITerminalSearchService');

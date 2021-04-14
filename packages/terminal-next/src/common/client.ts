@@ -144,6 +144,18 @@ export interface ITerminalClient extends Disposable {
    * 退出事件
    */
   onExit: Event<ITerminalExitEvent>;
+
+  /**
+   * linkManager 初始化成功事件
+   */
+  onLinksReady: Event<ITerminalClient>;
+
+  areLinksReady: boolean;
+
+  /**
+   * 注册 LinkProvider
+   */
+  registerLinkProvider(provider: ITerminalExternalLinkProvider): IDisposable;
 }
 
 export const ITerminalClientFactory = Symbol('ITerminalClientFactory');
@@ -155,4 +167,27 @@ export interface ITerminalConnection {
   sendData(data: string | ArrayBuffer): void;
   onData: Event<string | ArrayBuffer>;
   onExit?: Event<number | undefined>;
+}
+
+/**
+ * Similar to xterm.js' ILinkProvider but using promises and hides xterm.js internals (like buffer
+ * positions, decorations, etc.) from the rest of vscode. This is the interface to use for
+ * workbench integrations.
+ */
+export interface ITerminalExternalLinkProvider {
+  provideLinks(instance: ITerminalClient, line: string): Promise<ITerminalLink[] | undefined>;
+}
+
+export interface ITerminalLink {
+  /** The startIndex of the link in the line. */
+  startIndex: number;
+  /** The length of the link in the line. */
+  length: number;
+  /** The descriptive label for what the link does when activated. */
+  label?: string;
+  /**
+   * Activates the link.
+   * @param text The text of the link.
+   */
+  activate(text: string): void;
 }

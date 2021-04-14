@@ -1,10 +1,17 @@
 import type * as vscode from 'vscode';
-import { Event, Emitter, getDebugLogger, isUndefined, DisposableStore, IDisposable, Deferred } from '@ali/ide-core-common';
+import { Event, Emitter, getDebugLogger, isUndefined, DisposableStore, IDisposable, Deferred, Disposable, CancellationTokenSource } from '@ali/ide-core-common';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ITerminalInfo, TerminalDataBufferer, ITerminalChildProcess, ITerminalDimensionsOverride, ITerminalDimensionsDto, ITerminalLaunchError, ITerminalExitEvent } from '@ali/ide-terminal-next';
+import { ITerminalInfo, TerminalDataBufferer, ITerminalChildProcess, ITerminalDimensionsOverride, ITerminalDimensionsDto, ITerminalLaunchError, ITerminalExitEvent, ITerminalLinkDto } from '@ali/ide-terminal-next';
 import { IMainThreadTerminal, MainThreadAPIIdentifier, IExtHostTerminal } from '../../../common/vscode';
 
 const debugLog = getDebugLogger();
+
+let nextLinkId = 1;
+
+interface ICachedLinkEntry {
+  provider: vscode.TerminalLinkProvider;
+  link: vscode.TerminalLink;
+}
 
 export class ExtHostTerminal implements IExtHostTerminal {
   private proxy: IMainThreadTerminal;
@@ -13,6 +20,9 @@ export class ExtHostTerminal implements IExtHostTerminal {
   private openTerminalEvent: Emitter<Terminal> = new Emitter();
   private terminalsMap: Map<string, Terminal> = new Map();
   private _terminalDeferreds: Map<string, Deferred<Terminal>> = new Map();
+  private readonly _linkProviders: Set<vscode.TerminalLinkProvider> = new Set();
+  private readonly _terminalLinkCache: Map<string, Map<number, ICachedLinkEntry>> = new Map();
+  private readonly _terminalLinkCancellationSource: Map<string, CancellationTokenSource> = new Map();
 
   private disposables: DisposableStore = new DisposableStore();
 
@@ -144,6 +154,87 @@ export class ExtHostTerminal implements IExtHostTerminal {
       }
       this.terminalsMap.set(info.id, terminal);
     });
+  }
+
+  registerLinkProvider(provider: vscode.TerminalLinkProvider): IDisposable {
+    this._linkProviders.add(provider);
+    if (this._linkProviders.size === 1) {
+      this.proxy.$startLinkProvider();
+    }
+    return Disposable.create(() => {
+      this._linkProviders.delete(provider);
+      if (this._linkProviders.size === 0) {
+        this.proxy.$stopLinkProvider();
+      }
+    });
+  }
+
+  async $provideLinks(terminalId: string, line: string): Promise<ITerminalLinkDto[]> {
+    const terminal = this.terminalsMap.get(terminalId);
+    if (!terminal) {
+      return [];
+    }
+
+    // Discard any cached links the terminal has been holding, currently all links are released
+    // when new links are provided.
+    this._terminalLinkCache.delete(terminalId);
+
+    const oldToken = this._terminalLinkCancellationSource.get(terminalId);
+    if (oldToken) {
+      oldToken.dispose(true);
+    }
+    const cancellationSource = new CancellationTokenSource();
+    this._terminalLinkCancellationSource.set(terminalId, cancellationSource);
+
+    const result: ITerminalLinkDto[] = [];
+    const context: vscode.TerminalLinkContext = { terminal, line };
+    const promises: vscode.ProviderResult<{ provider: vscode.TerminalLinkProvider, links: vscode.TerminalLink[] }>[] = [];
+
+    for (const provider of this._linkProviders) {
+      promises.push(new Promise(async (r) => {
+        cancellationSource.token.onCancellationRequested(() => r({ provider, links: [] }));
+        const links = (await provider.provideTerminalLinks(context, cancellationSource.token)) || [];
+        if (!cancellationSource.token.isCancellationRequested) {
+          r({ provider, links });
+        }
+      }));
+    }
+
+    const provideResults = await Promise.all(promises);
+
+    if (cancellationSource.token.isCancellationRequested) {
+      return [];
+    }
+
+    const cacheLinkMap = new Map<number, ICachedLinkEntry>();
+    for (const provideResult of provideResults) {
+      if (provideResult && provideResult.links.length > 0) {
+        result.push(...provideResult.links.map((providerLink) => {
+          const link = {
+            id: nextLinkId++,
+            startIndex: providerLink.startIndex,
+            length: providerLink.length,
+          };
+          cacheLinkMap.set(link.id, {
+            provider: provideResult.provider,
+            link: providerLink,
+          });
+          return link;
+        }));
+      }
+    }
+
+    this._terminalLinkCache.set(terminalId, cacheLinkMap);
+
+    return result;
+  }
+
+  $activateLink(terminalId: string, linkId: number): void {
+    const cachedLink = this._terminalLinkCache.get(terminalId)?.get(linkId);
+    if (!cachedLink) {
+      return;
+    }
+    cachedLink.provider.handleTerminalLink(cachedLink.link);
   }
 
   dispose() {
@@ -322,6 +413,10 @@ export class Terminal implements vscode.Terminal {
 
   async createExtensionTerminal(): Promise<string> {
     const id = await this.proxy.$createTerminal({ name: this.name, isExtensionTerminal: true });
+    if (!id) {
+      // 这种情况应该是不会发生的，加个判断安全
+      throw new Error('createExtensionTerminal error');
+    }
     this.created(id);
     return id;
   }

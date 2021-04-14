@@ -111,7 +111,10 @@ export class CancellationTokenSource {
     }
   }
 
-  dispose(): void {
+  dispose(cancel = false): void {
+    if (cancel) {
+      this.cancel();
+    }
     if (this._parentListener) {
       this._parentListener.dispose();
     }

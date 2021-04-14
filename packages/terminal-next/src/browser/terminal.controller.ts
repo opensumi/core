@@ -1,11 +1,11 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { WithEventBus, Emitter, Deferred, Event } from '@ali/ide-core-common';
+import { WithEventBus, Emitter, Deferred, Event, IDisposable, DisposableStore } from '@ali/ide-core-common';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
 import { IThemeService } from '@ali/ide-theme';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { ITerminalController, ITerminalClient, ITerminalClientFactory, IWidget, ITerminalInfo, ITerminalBrowserHistory, ITerminalTheme, ITerminalGroupViewService, TerminalOptions, ITerminalErrorService, ITerminalInternalService, TerminalContainerId, ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest, ITerminalExitEvent } from '../common';
+import { ITerminalController, ITerminalClient, ITerminalClientFactory, IWidget, ITerminalInfo, ITerminalBrowserHistory, ITerminalTheme, ITerminalGroupViewService, TerminalOptions, ITerminalErrorService, ITerminalInternalService, TerminalContainerId, ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest, ITerminalExitEvent, ITerminalExternalLinkProvider } from '../common';
 import { TerminalGroupViewService } from './terminal.view';
 import { TerminalContextKey } from './terminal.context-key';
 import { ResizeEvent, getSlotLocation, AppConfig } from '@ali/ide-core-browser';
@@ -20,6 +20,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   protected _onDidChangeActiveTerminal = new Emitter<string>();
   protected _ready = new Deferred<void>();
   protected _activeClientId?: string;
+
+  private _linkProviders: Set<ITerminalExternalLinkProvider> = new Set();
+  private _linkProviderDisposables: Map<ITerminalExternalLinkProvider, DisposableStore> = new Map();
 
   readonly onDidOpenTerminal: Event<ITerminalInfo> = this._onDidOpenTerminal.event;
   readonly onDidCloseTerminal: Event<ITerminalExitEvent> = this._onDidCloseTerminal.event;
@@ -100,6 +103,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         this._onDidCloseTerminal.fire({ id: client.id, code: -1 });
       },
     });
+
+    this._setInstanceLinkProviders(client);
 
     this._onDidOpenTerminal.fire({
       id: client.id,
@@ -370,5 +375,31 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     return new Promise<ITerminalLaunchError | undefined>((callback) => {
       this._onInstanceRequestStartExtensionTerminal.fire({ proxy, cols, rows, callback });
     });
+  }
+
+  public registerLinkProvider(linkProvider: ITerminalExternalLinkProvider): IDisposable {
+    const disposable = new DisposableStore();
+    this._linkProviders.add(linkProvider);
+    for (const client of this._clients.values()) {
+      if (client.areLinksReady) {
+        disposable.add(client.registerLinkProvider(linkProvider));
+      }
+    }
+    this._linkProviderDisposables.set(linkProvider, disposable);
+    return {
+      dispose: () => {
+        const disposable = this._linkProviderDisposables.get(linkProvider);
+        disposable?.dispose();
+        this._linkProviders.delete(linkProvider);
+      },
+    };
+  }
+
+  private _setInstanceLinkProviders(instance: ITerminalClient): void {
+    for (const linkProvider of this._linkProviders) {
+      const disposable = this._linkProviderDisposables.get(linkProvider);
+      const provider = instance.registerLinkProvider(linkProvider);
+      disposable?.add(provider);
+    }
   }
 }

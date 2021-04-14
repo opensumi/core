@@ -178,6 +178,9 @@ export function createWindowApiFactory(
     registerCustomEditorProvider(viewType: string, provider: vscode.CustomTextEditorProvider | vscode.CustomEditorProvider | vscode.CustomReadonlyEditorProvider, options: {supportsMultipleEditorsPerDocument?: boolean, webviewOptions?: vscode.WebviewPanelOptions} = {}): IDisposable {
       return extHostCustomEditor.registerCustomEditorProvider(viewType, provider, options, extensionInfo);
     },
+    registerTerminalLinkProvider(handler: vscode.TerminalLinkProvider): vscode.Disposable {
+      return extHostTerminal.registerLinkProvider(handler);
+    },
   };
 }
 

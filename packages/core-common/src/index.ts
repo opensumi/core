@@ -38,3 +38,4 @@ export * from './errors';
 export * from './node/port';
 export * from './line-text'
 export * from './filters';
+export * from './character-classifier';

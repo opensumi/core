@@ -1,5 +1,5 @@
-import { Event } from '@ali/ide-core-common';
-import { ITerminalInfo, ITerminalDimensionsDto, ITerminalLaunchError, ITerminalDimensions, ITerminalExitEvent } from '@ali/ide-terminal-next';
+import { Event, IDisposable } from '@ali/ide-core-common';
+import { ITerminalInfo, ITerminalDimensionsDto, ITerminalLaunchError, ITerminalDimensions, ITerminalExitEvent, ITerminalLinkDto } from '@ali/ide-terminal-next';
 import type * as vscode from 'vscode';
 
 export interface IMainThreadTerminal {
@@ -13,7 +13,10 @@ export interface IMainThreadTerminal {
 
   $getProcessId(id: string);
 
-  $createTerminal(options: vscode.TerminalOptions);
+  $createTerminal(options: vscode.TerminalOptions): Promise<string | void>;
+
+  $startLinkProvider(): void;
+  $stopLinkProvider(): void;
 
   // Process
   $sendProcessTitle(terminalId: string, title: string): void;
@@ -59,4 +62,8 @@ export interface IExtHostTerminal {
   $acceptProcessShutdown(id: string, immediate: boolean): void;
   $acceptProcessRequestInitialCwd(id: string): void;
   $acceptProcessRequestCwd(id: string): void;
+
+  registerLinkProvider(provider: vscode.TerminalLinkProvider): IDisposable;
+  $provideLinks(terminalId: string, line: string): Promise<ITerminalLinkDto[]>;
+  $activateLink(terminalId: string, linkId: number): void;
 }

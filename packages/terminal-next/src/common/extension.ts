@@ -89,6 +89,17 @@ export interface ITerminalDimensionsDto {
   rows: number;
 }
 
+export interface ITerminalLinkDto {
+  /** The ID of the link to enable activation and disposal. */
+  id: number;
+  /** The startIndex of the link in the line. */
+  startIndex: number;
+  /** The length of the link in the line. */
+  length: number;
+  /** TODO: The descriptive label for what the link does when activated. */
+  // label?: string;
+}
+
 export interface ITerminalLaunchError {
   message: string;
   code?: number;
