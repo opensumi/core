@@ -5,7 +5,7 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   static ID = 0;
 
   private position: any;
-  private selections: any[];
+  private selections: any[] = [];
   model: monaco.editor.ITextModel | null;
 
   id: number;

@@ -110,17 +110,17 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
   }
 
   // editorTitle出现了参数不统一。。
-  private extractGroupAndUriFromArgs(args0: ResourceArgs | URI, args1?: EditorGroup): {
+  private extractGroupAndUriFromArgs(resource: ResourceArgs | URI, editorGroup?: EditorGroup): {
     group?: EditorGroup,
     uri?: URI,
   } {
     let group: EditorGroup;
     let uri: URI;
-    if (args0 instanceof URI) {
-      group = args1 || this.workbenchEditorService.currentEditorGroup;
-      uri = args0 || (group && group.currentResource && group.currentResource.uri);
+    if (resource instanceof URI) {
+      group = editorGroup || this.workbenchEditorService.currentEditorGroup;
+      uri = resource || (group && group.currentResource && group.currentResource.uri);
     } else {
-      const resourceArgs = args0 || {};
+      const resourceArgs = resource || {};
       group = resourceArgs.group || this.workbenchEditorService.currentEditorGroup;
       uri = resourceArgs.uri || (group && group.currentResource && group.currentResource.uri);
     }
@@ -441,8 +441,8 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
 
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT, {
-      execute: async (args0: ResourceArgs | URI, args1?: EditorGroup) => {
-        const { group, uri } = this.extractGroupAndUriFromArgs(args0, args1);
+      execute: async (resource: ResourceArgs | URI, editorGroup?: EditorGroup) => {
+        const { group, uri } = this.extractGroupAndUriFromArgs(resource, editorGroup);
 
         if (group && uri) {
           await group.split(EditorGroupSplitAction.Right, uri, { focus: true });

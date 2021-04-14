@@ -871,6 +871,27 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     const direction = (action === EditorGroupSplitAction.Left || action === EditorGroupSplitAction.Right) ? SplitDirection.Horizontal : SplitDirection.Vertical;
     const before = (action === EditorGroupSplitAction.Left || action === EditorGroupSplitAction.Top) ? true : false;
     this.grid.split(direction, editorGroup, before);
+
+    // 对于同一个编辑器分栏的场景，希望保留原本的滚动状态，与 VS Code 保持一致
+    if (options && !options.scrollTop) {
+      options.scrollTop = this.currentEditor?.monacoEditor.getScrollTop();
+    }
+    if (options && !options.scrollLeft) {
+      options.scrollLeft = this.currentEditor?.monacoEditor.getScrollLeft();
+    }
+
+    if (options && !options?.range) {
+      const selection = this.currentCodeEditor?.monacoEditor.getSelection();
+      if (selection) {
+        options.range = new monaco.Range(
+          selection.startLineNumber,
+          selection.startColumn,
+          selection.endLineNumber,
+          selection.endColumn,
+        );
+      }
+    }
+
     return editorGroup.open(uri, {...options, preview: false});
   }
 
@@ -1084,6 +1105,15 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if (activeOpenType.type === 'code') {
         await this.codeEditorReady.promise;
         await this.codeEditor.open(await this.getDocumentModelRef(resource.uri), options.range ? new monaco.Range(options.range.startLineNumber!, options.range.startColumn!, options.range.endLineNumber!, options.range.endColumn!) : undefined);
+        setTimeout(() => {
+          if (options.scrollTop) {
+            this.codeEditor.monacoEditor.setScrollTop(options.scrollTop!);
+          }
+          if (options.scrollLeft) {
+            this.codeEditor.monacoEditor.setScrollLeft(options.scrollLeft!);
+          }
+        }, 0);
+
         if (options.focus) {
           this._domNode?.focus();
           // monaco 编辑器的 focus 多了一步检查，由于此时其实对应编辑器的 dom 的 display 为 none （需要等 React 下一次渲染才会改变为 block）,
@@ -1107,6 +1137,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           });
 
         }
+
         // 可能在diff Editor中修改导致为脏
         if (this.codeEditor.currentDocumentModel!.dirty) {
           this.pinPreviewed(resource.uri);
