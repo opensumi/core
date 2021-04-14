@@ -316,11 +316,15 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
 
 @Injectable()
 export class MonacoContextKeyService extends BaseContextKeyService implements IContextKeyService {
+
+  @Autowired(IConfigurationService)
+  protected readonly configurationService: IConfigurationService;
+
   public readonly contextKeyService: ContextKeyService;
 
   constructor() {
     super();
-    this.contextKeyService = new ContextKeyService(this.injector.get(ConfigurationService));
+    this.contextKeyService = new ContextKeyService(this.configurationService);
     this.listenToContextChanges();
   }
 

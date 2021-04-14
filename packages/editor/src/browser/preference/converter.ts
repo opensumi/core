@@ -1,13 +1,14 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { PreferenceService, removeUndefined } from '@ali/ide-core-browser';
+import { removeUndefined, Uri } from '@ali/ide-core-browser';
 import { IConvertedMonacoOptions } from '../types';
+import { IConfigurationService } from '@ali/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
 /**
- * 计算由PreferenceService设置值带来的monaco编辑器的属性
- * @param preferenceService
+ * 计算由ConfigurationService设置值带来的monaco编辑器的属性
+ * @param configurationService IConfigurationService
  * @param updatingKey 需要处理的Preference key。如果没有这个值，默认处理全部。
  */
-export function getConvertedMonacoOptions(preferenceService: PreferenceService, resourceUri?: string, language?: string, updatingKey?: string[]): IConvertedMonacoOptions {
+export function getConvertedMonacoOptions(configurationService: IConfigurationService, resourceUri?: string, language?: string, updatingKey?: string[]): IConvertedMonacoOptions {
   const editorOptions: Partial<monaco.editor.IEditorOptions> = {};
   const diffOptions: Partial<monaco.editor.IDiffEditorOptions> = {};
   const modelOptions: Partial<monaco.editor.ITextModelUpdateOptions> = {};
@@ -16,7 +17,10 @@ export function getConvertedMonacoOptions(preferenceService: PreferenceService, 
   const diffEditorOptionsKeys = updatingKey ? updatingKey.filter((key) => diffEditorOptionsConverters.has(key)) : Array.from(diffEditorOptionsConverters.keys());
 
   editorOptionsKeys.forEach((key) => {
-    const value = preferenceService.get(key, undefined, resourceUri, language);
+    const value = configurationService.getValue(key, {
+      resource: resourceUri ? Uri.parse(resourceUri) : undefined,
+      overrideIdentifier: language,
+    });
     if (value === undefined) {
       return;
     }
@@ -29,7 +33,10 @@ export function getConvertedMonacoOptions(preferenceService: PreferenceService, 
   });
 
   textModelUpdateOptionsKeys.forEach((key) => {
-    const value = preferenceService.get(key, undefined, resourceUri, language);
+    const value = configurationService.getValue(key, {
+      resource: resourceUri ? Uri.parse(resourceUri) : undefined,
+      overrideIdentifier: language,
+    });
     if (value === undefined) {
       return;
     }
@@ -42,7 +49,10 @@ export function getConvertedMonacoOptions(preferenceService: PreferenceService, 
   });
 
   diffEditorOptionsKeys.forEach((key) => {
-    const value = preferenceService.get(key, undefined, resourceUri, language);
+    const value = configurationService.getValue(key, {
+      resource: resourceUri ? Uri.parse(resourceUri) : undefined,
+      overrideIdentifier: language,
+    });
     if (value === undefined) {
       return;
     }
@@ -705,10 +715,26 @@ export const diffEditorOptionsConverters: Map<KaitianPreferenceKey , NoConverter
   ['diffEditor.originalEditable', { monaco: 'originalEditable' }],
 ]);
 
+function isContainOptionKey(key: string, optionMap: Map<KaitianPreferenceKey, NoConverter | IMonacoOptionsConverter>) {
+  if (optionMap.has(key)) {
+    return true;
+  } else {
+    // 处理 "包含" 情况下的配置判断，如
+    // editor.suggest.xxx
+    const keys = optionMap.keys();
+    for (const k of keys) {
+      if (key.startsWith(k)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 export function isEditorOption(key: string) {
-  return editorOptionsConverters.has(key) || textModelUpdateOptionsConverters.has(key) || diffEditorOptionsConverters.has(key);
+  return isContainOptionKey(key, editorOptionsConverters) || isContainOptionKey(key, textModelUpdateOptionsConverters) || isContainOptionKey(key, diffEditorOptionsConverters);
 }
 
 export function isDiffEditorOption(key: string): boolean {
-  return diffEditorOptionsConverters.has(key);
+  return isContainOptionKey(key, diffEditorOptionsConverters);
 }

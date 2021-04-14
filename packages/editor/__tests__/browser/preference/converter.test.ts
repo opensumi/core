@@ -4,11 +4,11 @@ describe('editor Options Converter Tests', () => {
 
   const preferences: Map<string, any> = new Map();
 
-  const mockedPreferenceService: any = {
-    get: (k) => {
+  const mockConfigurationService: any = {
+    getValue: (k) => {
       return preferences.get(k);
     },
-    set: (k, v) => {
+    setValue: (k, v) => {
       preferences.set(k, v);
     },
   };
@@ -18,11 +18,12 @@ describe('editor Options Converter Tests', () => {
   });
 
   it('should be able to get all preference settings', () => {
-    mockedPreferenceService.set('editor.fontSize', 1000);
-    mockedPreferenceService.set('editor.minimap', true);
-    mockedPreferenceService.set('editor.tabSize', 100);
-    mockedPreferenceService.set('diffEditor.enableSplitViewResizing', true);
-    const options = getConvertedMonacoOptions(mockedPreferenceService);
+    mockConfigurationService.setValue('editor.fontSize', 1000);
+    mockConfigurationService.setValue('editor.minimap', true);
+    mockConfigurationService.setValue('editor.tabSize', 100);
+    mockConfigurationService.setValue('diffEditor.enableSplitViewResizing', true);
+
+    const options = getConvertedMonacoOptions(mockConfigurationService);
     expect(options.editorOptions.fontSize).toBe(1000);
     expect(options.editorOptions.minimap).toMatchObject({
       enabled: true,
@@ -32,10 +33,10 @@ describe('editor Options Converter Tests', () => {
   });
 
   it('should be able to filter preference settings by updating params', () => {
-    mockedPreferenceService.set('editor.fontSize', 1000);
-    mockedPreferenceService.set('editor.tabSize', 100);
-    mockedPreferenceService.set('diffEditor.enableSplitViewResizing', true);
-    const options = getConvertedMonacoOptions(mockedPreferenceService, undefined, undefined, ['editor.fontSize']);
+    mockConfigurationService.setValue('editor.fontSize', 1000);
+    mockConfigurationService.setValue('editor.tabSize', 100);
+    mockConfigurationService.setValue('diffEditor.enableSplitViewResizing', true);
+    const options = getConvertedMonacoOptions(mockConfigurationService, undefined, undefined, ['editor.fontSize']);
     expect(options.editorOptions.fontSize).toBe(1000);
     expect(options.modelOptions.tabSize).toBeUndefined();
     expect(options.diffOptions.enableSplitViewResizing).toBeUndefined();

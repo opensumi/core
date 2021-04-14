@@ -1056,6 +1056,10 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     'default': true,
     'description': localize('renderIndicators', 'Controls whether the diff editor shows +/- indicators for added/removed changes.'),
   },
+  'editor.defaultFormatter': {
+    'type': 'string',
+    'description': localize('defaultFormatter', 'Default code formatter'),
+  },
 };
 
 const customEditorSchema: PreferenceSchemaProperties = {

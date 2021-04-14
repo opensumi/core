@@ -1,28 +1,52 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
-import { MonacoService, PreferenceService, PreferenceChange, Emitter, PreferenceScope, URI, PreferenceChanges } from '@ali/ide-core-browser';
+import { MonacoService, Emitter, URI } from '@ali/ide-core-browser';
 import { BrowserCodeEditor, BaseMonacoEditorWrapper } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import { EditorCollectionService, EditorType } from '@ali/ide-editor';
-import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
+import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { Injectable } from '@ali/common-di';
 import { IEditorDecorationCollectionService, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
 import { EditorDecorationCollectionService } from '@ali/ide-editor/lib/browser/editor.decoration.service';
+import { IConfigurationService, IConfigurationChangeEvent, IConfigurationOverrides, ConfigurationTarget } from '@ali/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
 describe('editor collection service test', () => {
 
-  const injector = createBrowserInjector([]);
+  let injector: MockInjector;
 
-  injector.addProviders({
-    token: MonacoService,
-    useClass: MockedMonacoService,
-  }, {
-    token: IEditorDecorationCollectionService,
-    useClass: EditorDecorationCollectionService,
+  beforeEach(() => {
+    injector = createBrowserInjector([]);
+    injector.addProviders({
+      token: MonacoService,
+      useClass: MockedMonacoService,
+    }, {
+      token: IEditorDecorationCollectionService,
+      useClass: EditorDecorationCollectionService,
+    });
+  });
+
+  afterAll(() => {
+    injector.disposeAll();
   });
 
   it('code editor test', () => {
+    const emitter = new Emitter<IConfigurationChangeEvent>();
+    const prefs = {
+      'editor.fontSize': 20,
+      'editor.forceReadonly': false,
+    };
     injector.mockService(EditorCollectionService);
+    const mockConfigurationService: Partial<IConfigurationService> =  {
+      onDidChangeConfiguration: emitter.event,
+      getValue: ((section: string, overrides?: IConfigurationOverrides) => {
+        return prefs[section];
+      }) as any,
+    };
+    injector.addProviders({
+      token: IConfigurationService,
+      useValue: mockConfigurationService,
+      override: true,
+    });
     const mockEditor = monaco.editor.create(document.createElement('div'));
     const codeEditor = injector.get(BrowserCodeEditor, [mockEditor]);
     const updateOptions = jest.spyOn(codeEditor, 'updateOptions');
@@ -43,13 +67,8 @@ describe('editor collection service test', () => {
 
   });
 
-  afterAll(() => {
-    injector.disposeAll();
-  });
-
   it('options level test', () => {
-    const emitter = new Emitter<PreferenceChange>();
-    const emitter1 = new Emitter<PreferenceChanges>();
+    const emitter = new Emitter<IConfigurationChangeEvent>();
     const prefs = {
       'editor.fontSize': 20,
       'editor.forceReadonly': false,
@@ -57,33 +76,25 @@ describe('editor collection service test', () => {
     const setPref = (key, value) => {
       prefs[key] = value;
       emitter.fire({
-        oldValue: undefined,
-        newValue: value,
-        preferenceName: key,
-        scope: PreferenceScope.User,
-        affects: () => true,
-      });
-      emitter1.fire({
-        [key]: {
-          oldValue: undefined,
-          newValue: value,
-          preferenceName: key,
-          scope: PreferenceScope.User,
-          affects: () => true,
+        source: ConfigurationTarget.USER,
+        affectedKeys: [key],
+        change: {
+          keys: [key],
+          overrides: [],
         },
+        affectsConfiguration: (() => {}) as any,
+        sourceConfig: {},
       });
     };
-    const mockPreferenceService: Partial<PreferenceService> =  {
-      onPreferenceChanged: emitter.event,
-      onPreferencesChanged:  emitter1.event,
-      get: (key) => {
-        return prefs[key];
-      },
+    const mockConfigurationService: Partial<IConfigurationService> =  {
+      onDidChangeConfiguration: emitter.event,
+      getValue: ((section: string, overrides?: IConfigurationOverrides) => {
+        return prefs[section];
+      }) as any,
     };
-    const injector = createBrowserInjector([]);
     injector.addProviders({
-      token: PreferenceService,
-      useValue: mockPreferenceService,
+      token: IConfigurationService,
+      useValue: mockConfigurationService,
       override: true,
     });
     injector.mockService(IEditorFeatureRegistry);

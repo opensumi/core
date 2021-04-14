@@ -26,7 +26,7 @@ import { EditorFeatureRegistryImpl } from '@ali/ide-editor/lib/browser/feature';
 import { EditorGroupChangeEvent, EditorVisibleChangeEvent, EditorGroupIndexChangedEvent, EditorSelectionChangeEvent } from '@ali/ide-editor/lib/browser/types';
 import { MonacoService } from '@ali/ide-monaco';
 import MonacoServiceImpl from '@ali/ide-monaco/lib/browser/monaco.service';
-import { CorePreferences, PreferenceService } from '@ali/ide-core-browser';
+import { CorePreferences } from '@ali/ide-core-browser';
 import { ResourceServiceImpl } from '@ali/ide-editor/lib/browser/resource.service';
 import { LanguageService } from '@ali/ide-editor/lib/browser/language/language.service';
 import { useMockStorage } from '../../../core-browser/lib/mocks/storage';
@@ -41,6 +41,7 @@ import { EditorComponentRegistryImpl } from '@ali/ide-editor/lib/browser/compone
 import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser/types';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 import { IResource, IEditorOpenType } from '@ali/ide-editor';
+import { IConfigurationService, IConfigurationChangeEvent, ConfigurationTarget } from '@ali/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 import * as TypeConverts from '@ali/ide-kaitian-extension/lib/common/vscode/converter';
 
 const emitterA = new Emitter<any>();
@@ -58,12 +59,24 @@ const mockClientB = {
 const rpcProtocolExt = new RPCProtocol(mockClientA);
 const rpcProtocolMain = new RPCProtocol(mockClientB);
 const preferences: Map<string, any> = new Map();
+const emitter = new Emitter<IConfigurationChangeEvent>();
 
-const mockedPreferenceService: any = {
-  get: (k) => {
+const mockConfigurationService: any = {
+  onDidChangeConfiguration: emitter.event,
+  getValue: (k) => {
     return preferences.get(k);
   },
-  set: (k, v) => {
+  setValue: (k, v) => {
+    emitter.fire({
+      source: ConfigurationTarget.USER,
+      affectedKeys: [k],
+      change: {
+        keys: [k],
+        overrides: [],
+      },
+      affectsConfiguration: (() => {}) as any,
+      sourceConfig: {},
+    });
     preferences.set(k, v);
   },
 };
@@ -93,8 +106,8 @@ describe('MainThreadEditor Test Suites', () => {
         token: ResourceService,
         useClass: ResourceServiceImpl,
       }, {
-        token: PreferenceService,
-        useValue: mockedPreferenceService,
+        token: IConfigurationService,
+        useValue: mockConfigurationService,
       }, {
         token: EditorCollectionService,
         useClass: EditorCollectionServiceImpl,

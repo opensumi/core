@@ -2,7 +2,7 @@ import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ILineChange, URI, WithEventBus, OnEvent, Emitter as EventEmitter, ISelection, Disposable, removeUndefined } from '@ali/ide-core-common';
 import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationNeedChangeEvent, CursorStatus, IUndoStopOptions, IDecorationApplyOptions, EditorType, IResourceOpenOptions } from '../common';
-import { IRange, MonacoService, PreferenceService, IContextKeyService } from '@ali/ide-core-browser';
+import { IRange, MonacoService, IContextKeyService } from '@ali/ide-core-browser';
 import { MonacoEditorDecorationApplier } from './decoration-applier';
 import { IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, IEditorDocumentModelService, IEditorDocumentModel } from './doc-model/types';
 import { Emitter } from '@ali/ide-core-common';
@@ -10,21 +10,22 @@ import { IEditorFeatureRegistry } from './types';
 import { EditorFeatureRegistryImpl } from './feature';
 import { getConvertedMonacoOptions, isEditorOption, isDiffEditorOption } from './preference/converter';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey';
+import { IConfigurationService } from '@ali/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
 @Injectable()
 export class EditorCollectionServiceImpl extends WithEventBus implements EditorCollectionService {
 
   @Autowired()
-  private monacoService: MonacoService;
+  protected readonly monacoService: MonacoService;
 
   @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
+  protected readonly injector: Injector;
 
-  @Autowired(PreferenceService)
-  preferenceService: PreferenceService;
+  @Autowired(IConfigurationService)
+  protected readonly configurationService: IConfigurationService;
 
   @Autowired(IEditorFeatureRegistry)
-  editorFeatureRegistry: EditorFeatureRegistryImpl;
+  protected readonly editorFeatureRegistry: EditorFeatureRegistryImpl;
 
   private _editors: Set<IMonacoImplEditor> = new Set();
   private _diffEditors: Set<IDiffEditor> = new Set();
@@ -54,7 +55,7 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   }
 
   async createCodeEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): Promise<ICodeEditor> {
-    const mergedOptions = { ...getConvertedMonacoOptions(this.preferenceService).editorOptions, ...options };
+    const mergedOptions = { ...getConvertedMonacoOptions(this.configurationService).editorOptions, ...options };
     const monacoCodeEditor = await this.monacoService.createCodeEditor(dom, mergedOptions, overrides);
     const editor = this.injector.get(BrowserCodeEditor, [monacoCodeEditor, options]);
 
@@ -99,7 +100,7 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   }
 
   public async createDiffEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): Promise<IDiffEditor> {
-    const preferenceOptions = getConvertedMonacoOptions(this.preferenceService);
+    const preferenceOptions = getConvertedMonacoOptions(this.configurationService);
     const mergedOptions = {...preferenceOptions.editorOptions, ...preferenceOptions.diffOptions, ...options};
     const monacoDiffEditor = await this.monacoService.createDiffEditor(dom, mergedOptions, overrides);
     const editor = this.injector.get(BrowserDiffEditor, [monacoDiffEditor, options]);
@@ -196,8 +197,8 @@ export abstract class BaseMonacoEditorWrapper extends Disposable implements IEdi
   @Autowired(IEditorFeatureRegistry)
   protected readonly editorFeatureRegistry: IEditorFeatureRegistry;
 
-  @Autowired(PreferenceService)
-  protected readonly preferenceService: PreferenceService;
+  @Autowired(IConfigurationService)
+  protected readonly configurationService: IConfigurationService;
 
   protected readonly decorationApplier: MonacoEditorDecorationApplier;
 
@@ -236,8 +237,8 @@ export abstract class BaseMonacoEditorWrapper extends Disposable implements IEdi
     this.addDispose(this.monacoEditor.onDidChangeModelLanguage(() => {
       this._doUpdateOptions();
     }));
-    this.addDispose(this.preferenceService.onPreferencesChanged((e) => {
-      const changedEditorKeys = Object.keys(e).filter((key) => isEditorOption(key));
+    this.addDispose(this.configurationService.onDidChangeConfiguration((e) => {
+      const changedEditorKeys = e.affectedKeys.filter((key) => isEditorOption(key));
       if (changedEditorKeys.length > 0) {
         this._doUpdateOptions();
       }
@@ -269,7 +270,7 @@ export abstract class BaseMonacoEditorWrapper extends Disposable implements IEdi
   private _calculateFinalOptions() {
     const uriStr = this.currentUri ? this.currentUri.toString() : undefined;
     const languageId = this.currentDocumentModel ? this.currentDocumentModel.languageId : undefined;
-    const options = getConvertedMonacoOptions(this.preferenceService, uriStr, languageId, undefined);
+    const options = getConvertedMonacoOptions(this.configurationService, uriStr, languageId, undefined);
     const basicEditorOptions: Partial<monaco.editor.IEditorOptions> = {
       readOnly: this.currentDocumentModel?.readonly || false,
     };
@@ -356,9 +357,6 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
   private _onRefOpen = new Emitter<IEditorDocumentModelRef>();
 
   public onRefOpen = this._onRefOpen.event;
-
-  @Autowired(PreferenceService)
-  preferenceService: PreferenceService;
 
   public get currentDocumentModel() {
     if (this._currentDocumentModelRef && !this._currentDocumentModelRef.disposed) {
@@ -491,13 +489,13 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
   public _disposed: boolean;
 
   @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
+  protected readonly injector: Injector;
 
-  @Autowired(PreferenceService)
-  preferenceService: PreferenceService;
+  @Autowired(IConfigurationService)
+  protected readonly configurationService: IConfigurationService;
 
   @Autowired(IContextKeyService)
-  contextKeyService: IContextKeyService;
+  protected readonly contextKeyService: IContextKeyService;
 
   private editorState: Map<string, monaco.editor.IDiffEditorViewState> = new Map();
 
@@ -527,8 +525,8 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
   constructor(public readonly monacoDiffEditor: monaco.editor.IDiffEditor, private specialOptions: any = {}) {
     super();
     this.wrapEditors();
-    this.addDispose(this.preferenceService.onPreferencesChanged((e) => {
-      const changedEditorKeys = Object.keys(e).filter((key) => isDiffEditorOption(key));
+    this.addDispose(this.configurationService.onDidChangeConfiguration((e) => {
+      const changedEditorKeys = e.affectedKeys.filter((key) => isDiffEditorOption(key));
       if (changedEditorKeys.length > 0) {
         this.doUpdateDiffOptions();
       }
@@ -608,7 +606,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
   private async doUpdateDiffOptions() {
     const uriStr = this.modifiedEditor.currentUri ? this.modifiedEditor.currentUri.toString() : undefined;
     const languageId = this.modifiedEditor.currentDocumentModel ? this.modifiedEditor.currentDocumentModel.languageId : undefined;
-    const options = getConvertedMonacoOptions(this.preferenceService, uriStr, languageId);
+    const options = getConvertedMonacoOptions(this.configurationService, uriStr, languageId);
     this.monacoDiffEditor.updateOptions({...options.diffOptions, ...this.specialOptions});
   }
 

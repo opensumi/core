@@ -21,6 +21,7 @@ import { EditorFeatureRegistryImpl } from '@ali/ide-editor/lib/browser/feature';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 import { isEditStack, isEOLStack } from '@ali/ide-editor/lib/browser/doc-model/editor-is-fn';
 import { IMessageService } from '@ali/ide-overlay';
+import { IConfigurationService } from '@ali/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 import { delay } from '../../../terminal-next/__tests__/browser/utils';
 
 const injector = createBrowserInjector([]);
@@ -92,6 +93,13 @@ injector.overrideProviders({
   token: CorePreferences,
   useValue: {
     'editor.previewMode': true,
+  },
+});
+injector.overrideProviders({
+  token: IConfigurationService,
+  useValue: {
+    getValue() { return true; },
+    onDidChangeConfiguration() { return new Disposable(); },
   },
 });
 injector.overrideProviders({
