@@ -155,12 +155,40 @@ describe('editor history test', () => {
     selection = {
       selectionStartColumn: 1,
       selectionStartLineNumber: 1,
-      positionColumn: 10,
+      positionColumn: 1,
       positionLineNumber: 1,
     };
 
-    const testUri1 = new URI('file:///testUri1.ts');
-    const testUri2 = new URI('file:///testUri2.ts');
+    const testUri1 = new URI('file:///test_uri1.ts');
+    const testUri2 = new URI('file:///test_uri2.ts');
+    const testUri3 = new URI('file:///test_uri3.ts');
+
+    // 一定会先发一个这个, 此时 selection 是初始的 1，1
+    eventBus.fire(new EditorGroupChangeEvent({
+      group: testEditorGroup,
+      newOpenType: {
+        type: 'code',
+      },
+      oldOpenType: null,
+      newResource: {
+        uri: testUri1,
+        name: 'test1',
+        icon: 'test',
+      },
+      oldResource: null,
+    }));
+
+    selection = {
+      selectionStartColumn: 10,
+      selectionStartLineNumber: 20,
+      positionColumn: 10,
+      positionLineNumber: 20,
+    };
+
+    expect(historyService.currentState.uri).toBe(testUri1);
+    expect(historyService.currentState.groupIndex).toBe(0);
+    expect(historyService.currentState.position.column).toBe(1);
+    expect(historyService.currentState.position.lineNumber).toBe(1);
 
     eventBus.fire(new EditorSelectionChangeEvent({
       group: testEditorGroup,
@@ -176,11 +204,35 @@ describe('editor history test', () => {
 
     expect(historyService.currentState.uri).toBe(testUri1);
     expect(historyService.currentState.groupIndex).toBe(0);
-    expect(historyService.currentState.position.column).toBe(1);
-    expect(historyService.currentState.position.lineNumber).toBe(1);
+    expect(historyService.currentState.position.column).toBe(10);
+    expect(historyService.currentState.position.lineNumber).toBe(20);
 
     selection = {
       selectionStartColumn: 2,
+      selectionStartLineNumber: 21,
+      positionColumn: 10,
+      positionLineNumber: 21,
+    };
+
+    eventBus.fire(new EditorSelectionChangeEvent({
+      group: testEditorGroup,
+      selections: [selection],
+      resource: {
+        uri: testUri1,
+        name: 'test1',
+        icon: 'test',
+      },
+      editorUri: testUri1,
+      source: 'test',
+    }));
+
+    expect(historyService.currentState.uri).toBe(testUri1);
+    expect(historyService.currentState.groupIndex).toBe(0);
+    expect(historyService.currentState.position.column).toBe(2);
+    expect(historyService.currentState.position.lineNumber).toBe(21);
+
+    selection = {
+      selectionStartColumn: 10,
       selectionStartLineNumber: 1,
       positionColumn: 10,
       positionLineNumber: 1,
@@ -200,32 +252,15 @@ describe('editor history test', () => {
 
     expect(historyService.currentState.uri).toBe(testUri1);
     expect(historyService.currentState.groupIndex).toBe(0);
-    expect(historyService.currentState.position.column).toBe(1);
+    expect(historyService.currentState.position.column).toBe(10);
     expect(historyService.currentState.position.lineNumber).toBe(1);
 
     selection = {
-      selectionStartColumn: 2,
-      selectionStartLineNumber: 20,
-      positionColumn: 10,
+      selectionStartColumn: 1,
+      selectionStartLineNumber: 1,
+      positionColumn: 1,
       positionLineNumber: 1,
     };
-
-    eventBus.fire(new EditorSelectionChangeEvent({
-      group: testEditorGroup,
-      selections: [selection],
-      resource: {
-        uri: testUri1,
-        name: 'test1',
-        icon: 'test',
-      },
-      editorUri: testUri1,
-      source: 'test',
-    }));
-
-    expect(historyService.currentState.uri).toBe(testUri1);
-    expect(historyService.currentState.groupIndex).toBe(0);
-    expect(historyService.currentState.position.column).toBe(2);
-    expect(historyService.currentState.position.lineNumber).toBe(20);
 
     eventBus.fire(new EditorGroupChangeEvent({
       group: testEditorGroup,
@@ -247,37 +282,113 @@ describe('editor history test', () => {
       },
     }));
 
+    selection = {
+      selectionStartColumn: 2,
+      selectionStartLineNumber: 2,
+      positionColumn: 2,
+      positionLineNumber: 2,
+    };
+
+    eventBus.fire(new EditorSelectionChangeEvent({
+      group: testEditorGroup,
+      selections: [selection],
+      resource: {
+        uri: testUri2,
+        name: 'test2',
+        icon: 'test',
+      },
+      editorUri: testUri2,
+      source: 'test',
+    }));
+
+    selection = {
+      selectionStartColumn: 1,
+      selectionStartLineNumber: 1,
+      positionColumn: 1,
+      positionLineNumber: 1,
+    };
+
+    eventBus.fire(new EditorGroupChangeEvent({
+      group: testEditorGroup,
+      newOpenType: {
+        type: 'code',
+      },
+      oldOpenType: {
+        type: 'code',
+      },
+      newResource: {
+        uri: testUri3,
+        name: 'test3',
+        icon: 'test',
+      },
+      oldResource: {
+        uri: testUri1,
+        name: 'test1',
+        icon: 'test',
+      },
+    }));
+
+    // testUri3 不选中 focus, 不发送 SelectionChangeEvent
+
+    expect(historyService.currentState.uri).toBe(testUri3);
+    expect(historyService.currentState.groupIndex).toBe(0);
+    expect(historyService.currentState.position.column).toBe(1);
+    expect(historyService.currentState.position.lineNumber).toBe(1);
+
+    historyService.back();
+
     expect(historyService.currentState.uri).toBe(testUri2);
     expect(historyService.currentState.groupIndex).toBe(0);
     expect(historyService.currentState.position.column).toBe(2);
-    expect(historyService.currentState.position.lineNumber).toBe(20);
+    expect(historyService.currentState.position.lineNumber).toBe(2);
+
+    historyService.back();
+
+    expect(historyService.currentState.uri).toBe(testUri1);
+    expect(historyService.currentState.groupIndex).toBe(0);
+    expect(historyService.currentState.position.column).toBe(10);
+    expect(historyService.currentState.position.lineNumber).toBe(1);
 
     historyService.back();
 
     expect(historyService.currentState.uri).toBe(testUri1);
     expect(historyService.currentState.groupIndex).toBe(0);
     expect(historyService.currentState.position.column).toBe(2);
-    expect(historyService.currentState.position.lineNumber).toBe(20);
+    expect(historyService.currentState.position.lineNumber).toBe(21);
+
+    historyService.forward();
+
+    expect(historyService.currentState.uri).toBe(testUri1);
+    expect(historyService.currentState.groupIndex).toBe(0);
+    expect(historyService.currentState.position.column).toBe(10);
+    expect(historyService.currentState.position.lineNumber).toBe(1);
 
     historyService.forward();
 
     expect(historyService.currentState.uri).toBe(testUri2);
     expect(historyService.currentState.groupIndex).toBe(0);
     expect(historyService.currentState.position.column).toBe(2);
-    expect(historyService.currentState.position.lineNumber).toBe(20);
+    expect(historyService.currentState.position.lineNumber).toBe(2);
+
+    historyService.forward();
+
+    expect(historyService.currentState.uri).toBe(testUri3);
+    expect(historyService.currentState.groupIndex).toBe(0);
+    expect(historyService.currentState.position.column).toBe(1);
+    expect(historyService.currentState.position.lineNumber).toBe(1);
 
     eventBus.fire(new EditorGroupCloseEvent({
       group: testEditorGroup,
       resource: {
-        uri: testUri2,
-        name: 'test2',
+        uri: testUri3,
+        name: 'test3',
         icon: 'test',
       },
     }));
 
     historyService.popClosed();
 
-    expect(currentUri).toBe(testUri2);
+    expect(currentUri).toBe(testUri3);
 
   });
 

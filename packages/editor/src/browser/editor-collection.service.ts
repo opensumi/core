@@ -201,6 +201,16 @@ export abstract class BaseMonacoEditorWrapper extends Disposable implements IEdi
 
   protected readonly decorationApplier: MonacoEditorDecorationApplier;
 
+  private _disableSelectionEmitter: boolean = false;
+
+  protected disableSelectionEmitter() {
+    this._disableSelectionEmitter = true;
+  }
+
+  protected enableSelectionEmitter() {
+    this._disableSelectionEmitter = false;
+  }
+
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
@@ -279,10 +289,13 @@ export abstract class BaseMonacoEditorWrapper extends Disposable implements IEdi
 
   onSelectionsChanged(listener) {
     return this.monacoEditor.onDidChangeCursorSelection((e) => {
-      listener({
-        selections: this.getSelections(),
-        source: e.source,
-      });
+      if (!this._disableSelectionEmitter) {
+        listener({
+          selections: this.getSelections(),
+          source: e.source,
+        });
+      }
+
     });
   }
 
@@ -427,14 +440,17 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
     this.saveCurrentState();
     this._currentDocumentModelRef = documentModelRef;
     const model = this.currentDocumentModel!.getMonacoModel();
+    this.disableSelectionEmitter();
     this.monacoEditor.setModel(model);
     if (range) {
       // 对于第一次打开的文件，选区不能定位到屏幕中间，需要延迟一下等编辑器准备好后触发
       setTimeout(() => {
+        this.enableSelectionEmitter();
         this.monacoEditor.revealRangeInCenter(range);
         this.monacoEditor.setSelection(range);
       });
     } else {
+      this.enableSelectionEmitter();
       this.restoreState();
     }
     this._onRefOpen.fire(documentModelRef);

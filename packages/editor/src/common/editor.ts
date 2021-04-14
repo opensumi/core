@@ -112,6 +112,7 @@ export interface ICodeEditor extends IEditor, IDisposable {
   // TODO monaco.position和lsp的是不兼容的
   onCursorPositionChanged: Event<CursorStatus>;
   onRefOpen: Event<IEditorDocumentModelRef>;
+
 }
 
 /**

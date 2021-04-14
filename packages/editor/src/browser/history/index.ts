@@ -29,7 +29,7 @@ export class EditorHistoryService extends WithEventBus {
       this.onNewState(new EditorHistoryState(e.payload.editorUri, {
         lineNumber: e.payload.selections[0]!.selectionStartLineNumber,
         column: e.payload.selections[0]!.selectionStartColumn,
-      }, e.payload.group.index));
+      }, e.payload.group.index, false));
     }
   }
 
@@ -41,7 +41,7 @@ export class EditorHistoryService extends WithEventBus {
         this.onNewState(new EditorHistoryState(e.payload.newResource!.uri, {
           lineNumber: selections[0].selectionStartLineNumber,
           column: selections[0]!.selectionStartColumn,
-        }, e.payload.group.index));
+        }, e.payload.group.index, true));
       }
     }
   }
@@ -52,20 +52,28 @@ export class EditorHistoryService extends WithEventBus {
   }
 
   onNewState(state: EditorHistoryState) {
-    if (this.currentState) {
-      if (this.currentState.isRelevant(state)) {
+    if (this.currentIndex !== this.stack.length - 1) {
+      if (state.isTabChange && this.currentState.isRelevant(state)) {
+        //
+        return;
+      }
+      if (this.currentState && this.currentState.isEqual(state)) {
+        // 这个状态可能来自 back/forward 被调用产生的行为
+        // 如果相同，不做任何行为
         return;
       }
     }
-    this.doPushState(state);
+    const isRelevant = this.currentState && this.currentState.isRelevant(state);
+    this.doPushState(state, isRelevant);
   }
 
   get currentState() {
     return this.stack[this.currentIndex];
   }
 
-  doPushState(state: EditorHistoryState) {
-    this.stack.splice(this.currentIndex + 1);
+  doPushState(state: EditorHistoryState, isRelevant: boolean) {
+    // 如果和最新的状态关联， 则替换最新的状态
+    this.stack.splice(this.currentIndex + (isRelevant ? 0 : 1));
     this.stack.push(state);
     if (this.stack.length > HardMaxStateLength) {
       this.stack.splice(0, this.stack.length - SoftMaxStateLength);
@@ -124,16 +132,21 @@ export class EditorHistoryService extends WithEventBus {
 
 export class EditorHistoryState {
 
-  constructor(public readonly uri: URI, public readonly position: IPosition, public groupIndex: number) {
+  constructor(public readonly uri: URI, public readonly position: IPosition, public groupIndex: number, public isTabChange: boolean) {
 
   }
 
   isRelevant(anotherState: EditorHistoryState): boolean {
     if (this.uri.isEqual(anotherState.uri)) {
-      if (anotherState.position.lineNumber < this.position.lineNumber + HistoryPositionLineThreshold && anotherState.position.lineNumber > this.position.lineNumber - HistoryPositionLineThreshold) {
+      if ((anotherState.position.lineNumber < this.position.lineNumber + HistoryPositionLineThreshold) && (anotherState.position.lineNumber > this.position.lineNumber - HistoryPositionLineThreshold)) {
+        return true;
+      }
+      if (this.isTabChange || anotherState.isTabChange) {
+        // 如果是 tabChange 类型，我们认为是相关的，这样防止无意义的 0 line 0 column 状态出现
         return true;
       }
     }
+
     return false;
   }
 
