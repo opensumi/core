@@ -63,7 +63,7 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
   };
 
   const getName = (node: OutlineCompositeTreeNode | OutlineTreeNode) => {
-    return node.displayName;
+    return node.displayName.replace(/\n/g, '↵');
   };
 
   const renderDisplayName = (node: OutlineCompositeTreeNode | OutlineTreeNode) => {
