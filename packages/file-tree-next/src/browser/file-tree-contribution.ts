@@ -1,4 +1,4 @@
-import { URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, isWindows, IElectronNativeDialogService, ToolbarRegistry, KeybindingRegistry, IWindowService, IClipboardService, PreferenceService } from '@ali/ide-core-browser';
+import { URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, isWindows, IElectronNativeDialogService, ToolbarRegistry, KeybindingRegistry, IWindowService, IClipboardService, PreferenceService, formatLocalize } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileTreeService } from './file-tree.service';
@@ -18,7 +18,6 @@ import { FilesExplorerFocusedContext, FilesExplorerInputFocusedContext } from '@
 import { IFileTreeService, PasteTypes } from '../common';
 import { TERMINAL_COMMANDS } from '@ali/ide-terminal-next';
 import { ViewContentGroups } from '@ali/ide-main-layout/lib/browser/views-registry';
-import { formatLocalize } from '../../../main-layout/node_modules/@ali/ide-core-common/lib';
 
 export const ExplorerResourceViewId = 'file-explorer-next';
 
