@@ -3,7 +3,7 @@ import * as cls from 'classnames';
 import * as styles from './file-tree-node.module.less';
 import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle } from '@ali/ide-components';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { getIcon, URI, useClickPreventionOnDoubleClick } from '@ali/ide-core-browser';
+import { getIcon, URI } from '@ali/ide-core-browser';
 import { Directory, File } from '../common/file-tree-node.define';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 import { DragAndDropService } from './services/file-tree-dnd.service';
@@ -79,8 +79,6 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
       onDoubleClick(ev, item as File, itemType);
     }
   };
-
-  const [handleActuallyClick, handleActuallyDoubleClick] = useClickPreventionOnDoubleClick(handleClick, handleDoubleClick);
 
   const handlerTwistierClick = (ev: React.MouseEvent) => {
     if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
@@ -347,8 +345,8 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   return (
     <div
         key={item.id}
-        onClick={handleActuallyClick}
-        onDoubleClick={handleActuallyDoubleClick}
+        onClick={handleClick}
+        onDoubleClick={handleDoubleClick}
         onContextMenu={handleContextMenu}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}

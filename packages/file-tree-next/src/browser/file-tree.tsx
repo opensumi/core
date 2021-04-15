@@ -72,7 +72,6 @@ export const FileTree = observer(({
   }, []);
 
   const handleItemDoubleClicked = React.useCallback((event: React.MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
-
     const { handleItemDoubleClick } = fileTreeModelService;
     if (!item) {
       return;

@@ -677,8 +677,7 @@ export class FileTreeModelService {
   }
 
   handleItemDoubleClick = (item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
-    this.handleItemClick(item, type, activeUri);
-
+    // 双击事件触发前，会先触发 handleItemClick 方法装饰文件
     if (type === TreeNodeType.TreeNode) {
       // 双击的时候，不管 workbench.list.openMode 为单击还是双击，都以非预览模式打开文件
       this.fileTreeService.openAndFixedFile(item.uri);
