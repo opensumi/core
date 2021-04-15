@@ -701,5 +701,6 @@ export const localizationBundle = {
 
     'welcome-view.noOpenRepo': 'No source control providers registered.',
     'welcome-view.noFolderHelp': 'You have not yet opened a folder.\n[Open Folder](command:{0})',
+    'welcome-view.noLaunchJson': 'No debug configuration detected。\n[Create Debug Configuration](command:{0})',
   },
 };

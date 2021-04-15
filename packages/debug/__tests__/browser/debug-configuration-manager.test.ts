@@ -5,6 +5,7 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IDebugServer } from '@ali/ide-debug';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { IWorkspaceService } from '@ali/ide-workspace';
+import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 
 describe('Debug Configuration Manager', () => {
   const mockInjector = createBrowserInjector([]);
@@ -19,18 +20,6 @@ describe('Debug Configuration Manager', () => {
   const mockWorkspaceService = {
     roots: Promise.resolve([rootFileStat]),
     getWorkspaceRootUri: jest.fn(() => root),
-  };
-
-  const mockDebugConfigurationTypeKey = {
-    set: jest.fn(),
-  };
-
-  const mockContextKeyService = {
-    createKey: jest.fn((key: string) => {
-      if (key === 'debugConfigurationType') {
-        return mockDebugConfigurationTypeKey;
-      }
-    }),
   };
 
   const mockMonacoEditorModel = {
@@ -123,7 +112,7 @@ describe('Debug Configuration Manager', () => {
   beforeAll(async (done) => {
     mockInjector.overrideProviders({
       token: IContextKeyService,
-      useValue: mockContextKeyService,
+      useClass: MockContextKeyService,
     });
 
     mockInjector.overrideProviders({
@@ -178,8 +167,6 @@ describe('Debug Configuration Manager', () => {
   });
 
   it('debugModelManager should be init success', () => {
-    expect(mockContextKeyService.createKey).toBeCalledTimes(1);
-    expect(mockDebugConfigurationTypeKey.set).toBeCalledTimes(1);
     expect(mockPreferenceService.onPreferenceChanged).toBeCalledTimes(2);
   });
 

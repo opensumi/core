@@ -98,16 +98,18 @@ export class DebugConfigurationManager {
   readonly onWillProvideDebugConfiguration: Event<WillProvideDebugConfiguration> = this.onWillProvideDebugConfigurationEmitter.event;
 
   protected debugConfigurationTypeKey: IContextKey<string>;
+  protected debugConfigurationEmptyKey: IContextKey<boolean>;
 
   private _whenReadyDeferred: Deferred<void>;
   protected updateModelDelayer: ThrottledDelayer<void> = new ThrottledDelayer(DebugConfigurationManager.DEFAULT_UPDATE_MODEL_TIMEOUT);
 
   constructor() {
+    this.debugConfigurationTypeKey = this.contextKeyService.createKey<string>('debugConfigurationType', undefined);
+    this.debugConfigurationEmptyKey = this.contextKeyService.createKey<boolean>('debugConfigurationEmpty', true);
     this.init();
   }
 
   protected async init(): Promise<void> {
-    this.debugConfigurationTypeKey = this.contextKeyService.createKey<string>('debugConfigurationType', undefined);
     this.preferences.onPreferenceChanged((e) => {
       if (e.preferenceName === 'launch') {
         this.updateModels();
@@ -140,6 +142,13 @@ export class DebugConfigurationManager {
         }
       }
       this.updateCurrent();
+      let configEmpty = true;
+      this.models.forEach((model) => {
+        if (model.configurations.length) {
+          configEmpty = false;
+        }
+      });
+      this.debugConfigurationEmptyKey.set(configEmpty);
       if (this._whenReadyDeferred) {
         this._whenReadyDeferred.resolve();
       }

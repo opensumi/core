@@ -712,5 +712,6 @@ export const localizationBundle = {
 
     'welcome-view.noOpenRepo': '未注册任何源代码管理实现。',
     'welcome-view.noFolderHelp': '没有打开一个目录.\n[打开目录](command:{0})',
+    'welcome-view.noLaunchJson': '没有检测到调试配置，请先创建。\n[创建调试配置](command:{0})',
   },
 };

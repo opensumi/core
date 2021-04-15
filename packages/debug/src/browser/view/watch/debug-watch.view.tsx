@@ -8,7 +8,6 @@ import { DebugWatchModelService } from './debug-watch-tree.model.service';
 import * as styles from './debug-watch.module.less';
 import * as cls from 'classnames';
 import { Loading } from '@ali/ide-core-browser/lib/components/loading';
-import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
 
 export const DEBUG_WATCH_TREE_FIELD_NAME = 'DEBUG_WATCH_TREE_FIELD';
 
@@ -92,7 +91,7 @@ export const DebugWatchView = observer(({
 
   const renderContent = () => {
     if (!model) {
-      return <WelcomeView viewId='debug-watch' />;
+      return <span />;
     } else {
       return <AdaptiveTree
         height={height}
@@ -101,7 +100,7 @@ export const DebugWatchView = observer(({
         onReady={handleTreeReady}
         model={model!}
         placeholder={() => {
-          return <WelcomeView viewId='debug-watch' />;
+          return <span />;
         }}
       >
         {(props: INodeRendererWrapProps) => {

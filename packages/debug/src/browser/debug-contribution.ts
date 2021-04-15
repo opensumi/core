@@ -1,11 +1,11 @@
-import { Domain, ClientAppContribution, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution, CommandService, IReporterService } from '@ali/ide-core-browser';
+import { Domain, ClientAppContribution, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution, CommandService, IReporterService, formatLocalize } from '@ali/ide-core-browser';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser';
 import { DebugBreakpointView } from './view/breakpoints/debug-breakpoints.view';
 import { DebugVariableView } from './view/variables/debug-variables.view';
 import { DebugCallStackView } from './view/frames/debug-call-stack.view';
 import { DebugConfigurationView } from './view/configuration/debug-configuration.view';
-import { IMainLayoutService } from '@ali/ide-main-layout';
+import { IMainLayoutService, IViewsRegistry } from '@ali/ide-main-layout';
 import { Autowired } from '@ali/common-di';
 import { DebugModelManager } from './editor/debug-model-manager';
 import { BreakpointManager, SelectedBreakpoint } from './breakpoint';
@@ -21,7 +21,7 @@ import { DebugViewModel } from './view/debug-view-model';
 import { DebugSession } from './debug-session';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
-import { IDebugSessionManager, launchSchemaUri, DEBUG_CONTAINER_ID, DEBUG_WATCH_ID, DEBUG_VARIABLES_ID, DEBUG_STACK_ID, DEBUG_BREAKPOINTS_ID, DEBUG_FLOATING_CLICK_WIDGET, DEBUG_REPORT_NAME } from '../common';
+import { IDebugSessionManager, launchSchemaUri, DEBUG_CONTAINER_ID, DEBUG_WATCH_ID, DEBUG_VARIABLES_ID, DEBUG_STACK_ID, DEBUG_BREAKPOINTS_ID, DEBUG_FLOATING_CLICK_WIDGET, DEBUG_REPORT_NAME, DEBUG_WELCOME_ID } from '../common';
 import { DebugConsoleService } from './view/console/debug-console.service';
 import { DebugToolbarService } from './view/configuration/debug-toolbar.service';
 import { MenuContribution, MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
@@ -30,6 +30,7 @@ import { EditorHoverContribution } from './editor/editor-hover-contribution';
 import { FloatingClickWidget } from './components/floating-click-widget';
 import { PreferenceService } from '@ali/ide-core-browser';
 import { DebugBreakpointZoneWidget } from './editor/debug-breakpoint-zone-widget';
+import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
 
 const LAUNCH_JSON_REGEX = /launch\.json$/;
 
@@ -200,6 +201,9 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   @Autowired(IReporterService)
   private readonly reporterService: IReporterService;
 
+  @Autowired(IViewsRegistry)
+  private viewsRegistry: IViewsRegistry;
+
   private firstSessionStart: boolean = true;
 
   get selectedBreakpoint(): SelectedBreakpoint | undefined {
@@ -227,25 +231,36 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
         component: DebugWatchView,
         id: DEBUG_WATCH_ID,
         name: localize('debug.watch.title'),
+        when: '!debugConfigurationEmpty',
         collapsed: false,
       },
       {
         component: DebugCallStackView,
         id: DEBUG_STACK_ID,
         name: localize('debug.callStack.title'),
+        when: '!debugConfigurationEmpty',
         collapsed: false,
       },
       {
         component: DebugVariableView,
         id: DEBUG_VARIABLES_ID,
         name: localize('debug.variables.title'),
+        when: '!debugConfigurationEmpty',
         collapsed: false,
       },
       {
         component: DebugBreakpointView,
         id: DEBUG_BREAKPOINTS_ID,
         name: localize('debug.breakpoints.title'),
+        when: '!debugConfigurationEmpty',
         collapsed: false,
+      },
+      {
+        component: WelcomeView,
+        id: DEBUG_WELCOME_ID,
+        name: 'Debug Welcome',
+        when: 'debugConfigurationEmpty',
+        initialProps: { viewId: DEBUG_WELCOME_ID},
       },
     ], {
       iconClass: getIcon('debug'),
@@ -258,6 +273,10 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   }
 
   async onStart() {
+    this.viewsRegistry.registerViewWelcomeContent(DEBUG_WELCOME_ID, {
+      content: formatLocalize('welcome-view.noLaunchJson', DEBUG_COMMANDS.START.id),
+      when: 'default',
+    });
     this.sessionManager.onDidCreateDebugSession((session: DebugSession) => {
       this.debugModel.init(session);
     });
