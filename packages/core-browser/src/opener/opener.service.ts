@@ -1,12 +1,16 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IOpenerService, IOpener } from '.';
 import { URI, ILogger } from '@ali/ide-core-common';
+import { DefaultOpener } from './default-opener';
 
 @Injectable()
 export class OpenerService implements IOpenerService {
 
   @Autowired(ILogger)
   private logger: ILogger;
+
+  @Autowired(DefaultOpener)
+  private defaultOpener: IOpener;
 
   private openers: IOpener[] = [];
 
@@ -50,7 +54,7 @@ export class OpenerService implements IOpenerService {
       }
     }
 
-    return false;
+    return this.defaultOpener.open(uri);
   }
 
   dispose() {

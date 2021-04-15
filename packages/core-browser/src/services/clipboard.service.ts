@@ -55,6 +55,9 @@ export class BrowserClipboardService implements IClipboardService {
   }
   async readText(): Promise<string> {
     try {
+      if (!navigator.clipboard) {
+        throw new Error('当前环境不支持剪贴板API');
+      }
       return await navigator.clipboard.readText();
     } catch (error) {
       this.logger.error(error);

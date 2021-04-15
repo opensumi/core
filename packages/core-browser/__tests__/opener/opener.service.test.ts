@@ -1,17 +1,25 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IOpenerService, IOpener } from '../../src/opener';
 import { OpenerService } from '../../src/opener/opener.service';
+import { DefaultOpener } from '../../src/opener/default-opener';
 import { URI } from '../../src';
 
 describe('packages/core-browser/src/opener/opener.service.ts', () => {
   let openerService: IOpenerService;
 
-  beforeAll(() => {
+  beforeEach(() => {
     const injector = createBrowserInjector([]);
     injector.addProviders(
       {
         token: IOpenerService,
         useClass: OpenerService,
+      },
+      {
+        token: DefaultOpener,
+        useFactory: () => ({
+          open: jest.fn(async () => true),
+          handleScheme: jest.fn(),
+        }),
       },
     );
     openerService = injector.get(IOpenerService);
@@ -89,6 +97,13 @@ describe('packages/core-browser/src/opener/opener.service.ts', () => {
     expect(opener1.open).toBeCalledTimes(1);
     // 使用 handleURI 后不会执行 handleScheme
     expect(opener1.handleScheme).toBeCalledTimes(0);
+  });
+
+  it('use default opener', async () => {
+    await openerService.open(URI.parse('alipays://app'));
+    const defaultOpener = (openerService as any).defaultOpener;
+    expect(defaultOpener.open).toBeCalledTimes(1);
+    expect(defaultOpener.handleScheme).toBeCalledTimes(0);
   });
 
   it('dispose a opener', async () => {
