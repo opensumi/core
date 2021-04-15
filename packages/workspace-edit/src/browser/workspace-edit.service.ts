@@ -6,7 +6,6 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { EndOfLineSequence, WorkbenchEditorService, EOL } from '@ali/ide-editor';
 import { runInAction } from 'mobx';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
-import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import { EditorGroup } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { Range } from '@ali/monaco-editor-core/esm/vs/editor/common/core/range';
 
@@ -157,32 +156,22 @@ export class ResourceTextEditTask {
     docRef.dispose();
   }
 
-  private async focusEditor(editorService: WorkbenchEditorService) {
-    if (editorService.currentEditor && editorService.currentResource && editorService.currentResource.uri.isEqual(this.resource)) {
-      (editorService.currentEditor as IMonacoImplEditor).monacoEditor.focus();
-    }
-  }
-
   // 返回是否保存
   private async editorOperation(editorService: WorkbenchEditorService): Promise<boolean> {
     if (this.options.openDirtyInEditor) {
       for (const group of editorService.editorGroups) {
         if (group.resources.findIndex((r) => r.uri.isEqual(this.resource)) !== -1) {
-          this.focusEditor(editorService);
           return false;
         }
       }
       editorService.open(this.resource, { backend: true });
-      this.focusEditor(editorService);
       return false;
     } else if (this.options.dirtyIfInEditor) {
       for (const group of editorService.editorGroups) {
         if (group.resources.findIndex((r) => r.uri.isEqual(this.resource)) !== -1) {
-          this.focusEditor(editorService);
           return false;
         }
       }
-      this.focusEditor(editorService);
     }
     return true;
   }
