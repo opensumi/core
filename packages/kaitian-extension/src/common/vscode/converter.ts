@@ -604,9 +604,11 @@ export function convertDiagnosticToMarkerData(
   };
 }
 
-function convertCode(code: string | number | undefined): string | undefined {
+function convertCode(code: string | number | undefined | { target: URI; value: string; }): string | undefined {
   if (typeof code === 'number') {
     return String(code);
+   } else if (typeof code === 'object') {
+     return code.value;
   } else {
     return code;
   }
