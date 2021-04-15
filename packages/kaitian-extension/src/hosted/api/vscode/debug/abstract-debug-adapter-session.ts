@@ -6,6 +6,7 @@ import type * as vscode from 'vscode';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { DisposableCollection, Disposable } from '@ali/ide-core-node';
 import { IWebSocket } from '@ali/ide-connection';
+import { DebugSessionConnection } from '@ali/ide-debug/lib/browser';
 
 export abstract class AbstractDebugAdapter implements vscode.DebugAdapter {
 
@@ -37,7 +38,6 @@ export class DirectDebugAdapter extends AbstractDebugAdapter {
 }
 
 export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
-
   private static TWO_CRLF = '\r\n\r\n';
   private static CONTENT_LENGTH = 'Content-Length';
 
@@ -55,8 +55,8 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
     this.buffer = Buffer.alloc(0);
     this.toDispose.pushAll([
       this.debugStreamConnection,
-      Disposable.create(() => this.write(JSON.stringify({ seq: -1, type: 'request', command: 'disconnect' }))),
-      Disposable.create(() => this.write(JSON.stringify({ seq: -1, type: 'request', command: 'terminate' }))),
+      Disposable.create(() => this.write(JSON.stringify({ seq: DebugSessionConnection.SEQUENCE_ID ++, type: 'request', command: 'disconnect' }))),
+      Disposable.create(() => this.write(JSON.stringify({ seq: DebugSessionConnection.SEQUENCE_ID ++, type: 'request', command: 'terminate' }))),
     ]);
   }
 
@@ -78,7 +78,7 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
     const event: DebugProtocol.ExitedEvent = {
       type: 'event',
       event: 'exited',
-      seq: -1,
+      seq: DebugSessionConnection.SEQUENCE_ID ++,
       body: {
         exitCode,
       },
@@ -90,7 +90,7 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
     const event: DebugProtocol.Event = {
       type: 'event',
       event: 'error',
-      seq: -1,
+      seq: DebugSessionConnection.SEQUENCE_ID ++,
       body: error,
     };
     this.send(JSON.stringify(event));
@@ -145,7 +145,10 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
   protected write(message: string): void {
     // 在自定义 bash 模式下，需要使用 \r\n 来保证被写入
     const finalMessage = message + '\r\n';
-    this.debugStreamConnection.input.write(`Content-Length: ${Buffer.byteLength(finalMessage, 'utf8')}\r\n\r\n${finalMessage}`, 'utf8');
+    // 在 Stream 关闭后不再发送消息
+    if (this.debugStreamConnection.input.writable) {
+      this.debugStreamConnection.input.write(`Content-Length: ${Buffer.byteLength(finalMessage, 'utf8')}\r\n\r\n${finalMessage}`, 'utf8');
+    }
   }
 
   async stop(): Promise<void> {

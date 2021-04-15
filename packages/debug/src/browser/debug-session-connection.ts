@@ -92,11 +92,10 @@ const standardDebugEvents = new Set<string>([
 
 @Injectable({multiple: true})
 export class DebugSessionConnection implements IDisposable {
+  public static SEQUENCE_ID = 1;
 
   @Autowired(IDebugSessionManager)
   protected readonly manager: DebugSessionManager;
-
-  private sequence = 1;
 
   protected readonly pendingRequests = new Map<number, (response: DebugProtocol.Response) => void>();
   protected readonly connection: Promise<IWebSocket>;
@@ -199,7 +198,7 @@ export class DebugSessionConnection implements IDisposable {
     const result = new Deferred<K>();
 
     const request: DebugProtocol.Request = {
-      seq: this.sequence++,
+      seq: DebugSessionConnection.SEQUENCE_ID ++,
       type: 'request',
       command,
       arguments: args,
@@ -255,7 +254,7 @@ export class DebugSessionConnection implements IDisposable {
   protected async handleRequest(request: DebugProtocol.Request): Promise<void> {
     const response: DebugProtocol.Response = {
       type: 'response',
-      seq: 0,
+      seq: DebugSessionConnection.SEQUENCE_ID ++,
       command: request.command,
       request_seq: request.seq,
       success: true,
@@ -328,7 +327,7 @@ export class DebugSessionConnection implements IDisposable {
         threadId,
         allThreadsContinued,
       },
-      seq: -1,
+      seq: DebugSessionConnection.SEQUENCE_ID ++,
     });
   }
 
