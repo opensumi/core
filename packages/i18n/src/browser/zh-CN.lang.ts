@@ -217,6 +217,10 @@ export const localizationBundle = {
     'debug.console.panel.title': '调试控制台',
     'debug.console.panel.default': '默认',
     'debug.console.filter.placeholder': '筛选器(例如 text、!exclude)',
+    'debug.console.clear': '清空日志',
+    'debug.console.copy': '复制',
+    'debug.console.copyAll': '复制全部',
+    'debug.console.collapseAll': '折叠全部',
 
     'output.tabbar.title': '输出',
     'output.channel.none': '<还没有任何输出>',

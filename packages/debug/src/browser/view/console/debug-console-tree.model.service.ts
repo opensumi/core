@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNodeEvent, IWatcherEvent } from '@ali/ide-components';
-import { Emitter, IContextKeyService, Deferred, Event, DisposableCollection } from '@ali/ide-core-browser';
+import { Emitter, IContextKeyService, Deferred, Event, DisposableCollection, IClipboardService } from '@ali/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { DebugConsoleTreeModel } from './debug-console-model';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -44,6 +44,9 @@ export class DebugConsoleModelService {
 
   @Autowired(IDebugSessionManager)
   protected readonly manager: IDebugSessionManager;
+
+  @Autowired(IClipboardService)
+  private readonly clipboardService: IClipboardService;
 
   private _activeDebugSessionModel: IDebugConsoleModel | undefined;
   private debugSessionModelMap: Map<string, IDebugConsoleModel> = new Map();
@@ -123,6 +126,34 @@ export class DebugConsoleModelService {
     return this.onDidRefreshedEmitter.event;
   }
 
+  clear = () => {
+    // 重新初始化Console中渲染的TreeModel
+    this.initTreeModel(this.manager.currentSession, true);
+  }
+
+  collapseAll = () => {
+    this.treeModel?.root.collapsedAll();
+  }
+
+  copyAll = () => {
+    let text = '';
+    if (!this.treeModel?.root || !this.treeModel.root.children) {
+      return ;
+    }
+    for (const child of this.treeModel.root.children) {
+      text += this.getValidText(child as DebugConsoleNode) + '\n';
+    }
+    this.clipboardService.writeText(text.slice(0, -('\n'.length)));
+  }
+
+  copy = (node: DebugConsoleNode) => {
+    this.clipboardService.writeText(this.getValidText(node));
+  }
+
+  private getValidText(node: DebugConsoleNode) {
+    return node.description;
+  }
+
   getConsoleModel(id: string): IDebugConsoleModel | undefined {
     return this.debugSessionModelMap.get(id);
   }
@@ -176,14 +207,14 @@ export class DebugConsoleModelService {
     }));
   }
 
-  async initTreeModel(session?: DebugSession) {
+  async initTreeModel(session?: DebugSession, force?: boolean) {
     if (!session) {
       return;
     }
     // 根据 IDebugSessionReplMode 判断子 session 是否要共享父 session 的 repl
     const sessionId = session.hasSeparateRepl() ? session.id : session.parentSession!.id;
 
-    if (this.debugSessionModelMap.has(sessionId)) {
+    if (this.debugSessionModelMap.has(sessionId) && !force) {
       const model = this.debugSessionModelMap.get(sessionId);
       this._activeDebugSessionModel = model;
     } else {

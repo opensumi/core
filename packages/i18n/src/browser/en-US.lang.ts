@@ -243,6 +243,10 @@ export const localizationBundle = {
     'debug.console.panel.title': 'DEBUG CONSOLE',
     'debug.console.panel.default': 'default',
     'debug.console.filter.placeholder': 'Filter (e.g. text, !exclude)',
+    'debug.console.clear': 'Clear',
+    'debug.console.copy': 'Copy',
+    'debug.console.copyAll': 'Copy All',
+    'debug.console.collapseAll': 'Collapse All',
 
     'debug.stack.loadMore': 'Load More Stack Frames',
     'debug.stack.loading': 'Loading...',

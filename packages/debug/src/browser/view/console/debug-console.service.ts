@@ -257,7 +257,9 @@ export class DebugConsoleInputDocumentProvider implements IEditorDocumentModelCo
     return false;
   }
 
-  onDidChangeContent = this.debugConsole.onConsoleInputValueChange;
+  get onDidChangeContent() {
+    return this.debugConsole.onConsoleInputValueChange;
+  }
 
   preferLanguageForUri() {
     return 'plaintext';

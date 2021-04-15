@@ -183,6 +183,7 @@ describe('Debug Console Tree Model', () => {
     expect(typeof debugConsoleModelService.dispose).toBe('function');
     expect(typeof debugConsoleModelService.onDidUpdateTreeModel).toBe('function');
     expect(typeof debugConsoleModelService.initTreeModel).toBe('function');
+    expect(typeof debugConsoleModelService.clear).toBe('function');
     expect(typeof debugConsoleModelService.initDecorations).toBe('function');
     expect(typeof debugConsoleModelService.activeNodeDecoration).toBe('function');
     expect(typeof debugConsoleModelService.activeNodeFocusedDecoration).toBe('function');
@@ -215,6 +216,17 @@ describe('Debug Console Tree Model', () => {
       parentSession: undefined,
     } as Partial<IDebugSession>;
     debugConsoleModelService.initTreeModel(mockSession as any);
+    expect(mockSession.on).toBeCalledTimes(1);
+  });
+
+  it('clear method should be work', () => {
+    const mockSession = {
+      on: jest.fn(),
+      hasSeparateRepl: () => true,
+      parentSession: undefined,
+    } as Partial<IDebugSession>;
+    mockDebugSessionManager.currentSession = mockSession as any;
+    debugConsoleModelService.clear();
     expect(mockSession.on).toBeCalledTimes(1);
   });
 

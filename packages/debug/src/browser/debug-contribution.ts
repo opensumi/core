@@ -126,6 +126,20 @@ export namespace DEBUG_COMMANDS {
   export const COPY_VARIABLE_VALUE = {
     id: 'debug.variables.copy',
   };
+  export const CLEAR_CONSOLE = {
+    id: 'debug.console.clear',
+    label: localize('debug.console.clear'),
+  };
+  export const COPY_CONSOLE_ITEM = {
+    id: 'debug.console.copy',
+  };
+  export const COPY_CONSOLE_ALL = {
+    id: 'debug.console.copyALl',
+  };
+  export const COLLAPSE_ALL_CONSOLE_ITEM = {
+    id: 'debug.console.collapseAll',
+    label: localize('debug.console.collapseAll'),
+  };
 }
 
 export namespace DebugBreakpointWidgetCommands {
