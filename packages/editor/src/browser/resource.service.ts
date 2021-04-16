@@ -76,6 +76,11 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
     return this.resources.get(uri.toString())!.resource as IResource;
   }
 
+  handlesUri(uri: URI): boolean {
+    const provider = this.calculateProvider(uri);
+    return !!provider;
+  }
+
   async doGetResource(uri: URI): Promise<{
     resource: IResource<any>,
     provider: IResourceProvider;
