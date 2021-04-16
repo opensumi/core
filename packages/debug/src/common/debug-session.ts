@@ -81,3 +81,10 @@ export interface DebugThreadExtra extends DebugBaseExtra {
   filePath?: string;
   fileLineNumber?: number;
 }
+
+let DEBUG_SESSION_SEQUENCE_ID = 1;
+
+export function getSequenceId() {
+  // 获取递增的请求 ID
+  return DEBUG_SESSION_SEQUENCE_ID ++;
+}
