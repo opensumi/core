@@ -5,7 +5,7 @@ import { FileSystemError } from '@ali/ide-file-service/lib/common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EndOfLineSequence, WorkbenchEditorService, EOL } from '@ali/ide-editor';
 import { runInAction } from 'mobx';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { IEditorDocumentModelService, IResource, isDiffResource } from '@ali/ide-editor/lib/browser';
 import { EditorGroup } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { Range } from '@ali/monaco-editor-core/esm/vs/editor/common/core/range';
 
@@ -160,7 +160,7 @@ export class ResourceTextEditTask {
   private async editorOperation(editorService: WorkbenchEditorService): Promise<boolean> {
     if (this.options.openDirtyInEditor) {
       for (const group of editorService.editorGroups) {
-        if (group.resources.findIndex((r) => r.uri.isEqual(this.resource)) !== -1) {
+        if (group.resources.findIndex((r) => isDocumentUriInResource(r, this.resource)) !== -1) {
           return false;
         }
       }
@@ -168,7 +168,7 @@ export class ResourceTextEditTask {
       return false;
     } else if (this.options.dirtyIfInEditor) {
       for (const group of editorService.editorGroups) {
-        if (group.resources.findIndex((r) => r.uri.isEqual(this.resource)) !== -1) {
+        if (group.resources.findIndex((r) => isDocumentUriInResource(r, this.resource)) !== -1) {
           return false;
         }
       }
@@ -314,4 +314,18 @@ export class ResourceFileEdit implements IResourceFileEdit {
 
 export function isResourceFileEdit(thing: any): thing is ResourceFileEdit {
   return (!!((thing as ResourceFileEdit).newUri) || !!((thing as ResourceFileEdit).oldUri));
+}
+
+/**
+ * 当前编辑器的文档是否在指定的编辑器 resource (tab) 中
+ * 此处需要额外判断一下 diffEditor 的情况
+ * @param resource
+ * @param uri
+ */
+function isDocumentUriInResource(resource: IResource<any>, uri: URI) {
+  if (isDiffResource(resource)) {
+    return resource.metadata?.modified.isEqual(uri) || resource.metadata?.original.isEqual(uri);
+  } else {
+    return resource.uri.isEqual(uri);
+  }
 }
