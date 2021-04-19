@@ -1,13 +1,12 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { IOpener, URI, IRange } from '@ali/ide-core-browser';
-import { IEditorDocumentModelContentRegistry } from './doc-model/types';
-import { WorkbenchEditorService } from '../common';
+import { WorkbenchEditorService, ResourceService } from '../common';
 
 @Injectable()
 export class EditorOpener implements IOpener {
 
-  @Autowired(IEditorDocumentModelContentRegistry)
-  private readonly editorDocumentModelContentRegistry: IEditorDocumentModelContentRegistry;
+  @Autowired(ResourceService)
+  resourceService: ResourceService;
 
   @Autowired(WorkbenchEditorService)
   workbenchEditorService: WorkbenchEditorService;
@@ -36,7 +35,7 @@ export class EditorOpener implements IOpener {
   }
   async handleURI(uri: URI) {
     // 判断编辑器是否可以打开
-    return !!await this.editorDocumentModelContentRegistry.getProvider(uri);
+    return this.resourceService.handlesUri(uri);
   }
   handleScheme() {
     // 使用 handleURI 后会忽略 handleScheme
