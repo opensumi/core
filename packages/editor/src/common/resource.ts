@@ -109,3 +109,7 @@ export interface IResource<MetaData = any> {
 export type IDiffResource  = IResource<{ original: URI, modified: URI }>;
 
 export const DIFF_SCHEME = 'diff';
+
+export function isDiffResource(resource: IResource): resource is IDiffResource {
+  return resource.uri.scheme === DIFF_SCHEME;
+}
