@@ -193,6 +193,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
     showInEditor?: boolean;
     isDirectory?: boolean;
     copy?: boolean;
+    ignoreIfExists?: boolean | undefined;
   } = {};
 
   constructor(edit: IResourceFileEdit) {
@@ -288,7 +289,9 @@ export class ResourceFileEdit implements IResourceFileEdit {
         await editorService.close(this.oldUri, true);
         eventBus.fire(new WorkspaceEditDidDeleteFileEvent({ oldUri: this.oldUri}));
       } catch (err) {
-        if (!(FileSystemError.FileNotFound.is(err) && options.ignoreIfNotExists)) {
+        if (FileSystemError.FileNotFound.is(err) && options.ignoreIfNotExists) {
+          // 不抛出错误
+        } else {
           throw err;
         }
       }
@@ -296,13 +299,15 @@ export class ResourceFileEdit implements IResourceFileEdit {
       // 创建文件
       try {
         await fileServiceClient.create(this.newUri, '', { overwrite: options.overwrite });
-        if (options.showInEditor) {
-          editorService.open(this.newUri);
-        }
       } catch (err) {
-        // FIXME: 这里 catch 一下异常，因为 overwrite 的时候 fileService 可能会抛出文件已存在的错误，会导致后续的 edits 无法执行
-        /* tslint:disable:no-console */
-        console.error(err);
+        if (FileSystemError.FileExists.is(err) && options.ignoreIfExists) {
+          // 不抛出错误
+        } else {
+          throw err;
+        }
+      }
+      if (options.showInEditor) {
+        editorService.open(this.newUri);
       }
     }
   }

@@ -6,7 +6,7 @@ import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
 import { WorkbenchEditorService, IEditorGroup } from '@ali/ide-editor';
 import { URI } from '@ali/ide-core-browser';
 import { IWorkspaceEditService, IResourceFileEdit, IWorkspaceFileService} from '../src/common';
-import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+import { IFileServiceClient, FileSystemError } from '@ali/ide-file-service/lib/common';
 import { WorkspaceEditModule } from '../src/browser';
 import { MonacoBulkEditService } from '../src/browser/bulk-edit.service';
 
@@ -38,6 +38,7 @@ describe('workspace edit tests', () => {
 
   const injector = createBrowserInjector([WorkspaceEditModule]);
   const editorGroups: IEditorGroup[] = [];
+  const files = new Set<string>();
   injector.addProviders({
     token: IEditorDocumentModelService,
     useValue: mockService({
@@ -77,6 +78,19 @@ describe('workspace edit tests', () => {
       access: (uri: URI) => {
         return true;
       },
+      createFile: jest.fn((uri: string, options: {overwrite?: boolean} = {}) => {
+        if (files.has(uri)) {
+          if (options.overwrite) {
+            return {
+              uri,
+            };
+          } else {
+            throw FileSystemError.FileExists(uri);
+          }
+        } else {
+          files.add(uri);
+        }
+      }),
     }),
   });
 
@@ -152,6 +166,7 @@ describe('workspace edit tests', () => {
         },
       ],
       open: jest.fn(),
+      close: jest.fn(),
     } as any);
 
     const moveEdit: IResourceFileEdit = {
@@ -169,6 +184,7 @@ describe('workspace edit tests', () => {
         showInEditor: true,
       },
     };
+
     const deleteEdit: IResourceFileEdit = {
       oldUri: new URI('file:///deleteTest.ts'),
       options: {
@@ -213,6 +229,38 @@ describe('workspace edit tests', () => {
     expect(mockParticipant).toBeCalledTimes(3);
     expect(mockWillCall).toBeCalledTimes(3);
     expect(mockDidCall).toBeCalledTimes(3);
+
+    // 已存在的文件，不添加 ignoreIfExists 和 overwrite 选项， 应该抛出文件已存在的问题
+    const createEdit2: IResourceFileEdit = {
+      newUri: new URI('file:///createTest.ts'),
+      options: {
+      },
+    };
+
+    let error: Error | undefined;
+    await service.apply({
+      edits: [
+        createEdit2,
+      ],
+    }).catch((err) => {
+      error = err;
+    });
+
+    expect(FileSystemError.FileExists.is(error)).toBe(true);
+
+    // 添加 ignoreIfExists 应该正常执行不抛出错误
+    const createEdit3: IResourceFileEdit = {
+      newUri: new URI('file:///createTest.ts'),
+      options: {
+        ignoreIfExists: true,
+      },
+    };
+    error = undefined;
+    await service.apply({
+      edits: [
+        createEdit3,
+      ],
+    });
 
     done();
   });
