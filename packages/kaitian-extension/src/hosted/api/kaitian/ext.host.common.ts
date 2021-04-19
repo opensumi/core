@@ -27,8 +27,9 @@ export class ExtHostCommon implements IExtHostCommon {
   onEvent(eventName: string, listener: (...eventArgs: any[]) => any): IDisposable {
     if (!this.emitters.has(eventName)) {
       this.emitters.set(eventName, new Emitter());
-      this.proxy.$subscribeEvent(eventName);
     }
+
+    this.proxy.$subscribeEvent(eventName);
     const disposer = this.emitters.get(eventName)!.event((eventArgs: any[]) => {
       return listener(...eventArgs);
     });
