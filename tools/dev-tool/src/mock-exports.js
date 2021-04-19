@@ -6,4 +6,5 @@ module.exports = {
   'mod_dragging' : 'mod_dragging',
   'mod_dragover' : 'mod_dragover',
   'mod_dirty': 'mod_dirty',
+  'mod_actived': 'mod_actived',
 };

@@ -1,7 +1,7 @@
 import { localize } from '@ali/ide-core-common';
 import { registerColor } from '../color-registry';
 import { Color } from '../../common/color';
-import { contrastBorder, focusBorder } from './base';
+import { activeContrastBorder, contrastBorder, focusBorder } from './base';
 
 export const listFocusBackground = registerColor('list.focusBackground', { dark: '#062F4A', light: '#D6EBFF', hc: null }, localize('listFocusBackground', 'List/Tree background color for the focused item when the list/tree is active. An active list/tree has keyboard focus, an inactive does not.'));
 export const listFocusForeground = registerColor('list.focusForeground', { dark: null, light: null, hc: null }, localize('listFocusForeground', 'List/Tree foreground color for the focused item when the list/tree is active. An active list/tree has keyboard focus, an inactive does not.'));
@@ -21,3 +21,4 @@ export const listFilterWidgetBackground = registerColor('listFilterWidget.backgr
 export const listFilterWidgetOutline = registerColor('listFilterWidget.outline', { dark: Color.transparent, light: Color.transparent, hc: '#f38518' }, localize('listFilterWidgetOutline', 'Outline color of the type filter widget in lists and trees.'));
 export const listFilterWidgetNoMatchesOutline = registerColor('listFilterWidget.noMatchesOutline', { dark: '#BE1100', light: '#BE1100', hc: contrastBorder }, localize('listFilterWidgetNoMatchesOutline', 'Outline color of the type filter widget in lists and trees, when there are no matches.'));
 export const treeIndentGuidesStroke = registerColor('tree.indentGuidesStroke', { dark: '#585858', light: '#a9a9a9', hc: '#a9a9a9' }, localize('treeIndentGuidesStroke', 'Tree stroke color for the indentation guides.'));
+export const listFocusOutline = registerColor('list.focusOutline', { dark: focusBorder, light: focusBorder, hc: activeContrastBorder }, localize('listFocusOutline', 'List/Tree outline color for the focused item when the list/tree is active. An active list/tree has keyboard focus, an inactive does not.'));
