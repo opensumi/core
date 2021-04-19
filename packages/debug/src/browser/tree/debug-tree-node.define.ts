@@ -1,4 +1,4 @@
-import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
+import { DebugProtocol } from '@ali/vscode-debugprotocol/lib/debugProtocol';
 import { DebugSession } from '../debug-session';
 import { MessageType, localize } from '@ali/ide-core-browser';
 import { TreeNode, CompositeTreeNode, ITree, ITreeNodeOrCompositeTreeNode } from '@ali/ide-components';

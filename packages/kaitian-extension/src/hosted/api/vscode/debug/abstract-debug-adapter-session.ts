@@ -3,7 +3,7 @@ import {
   DebugStreamConnection,
 } from '@ali/ide-debug';
 import type * as vscode from 'vscode';
-import { DebugProtocol } from 'vscode-debugprotocol';
+import { DebugProtocol } from '@ali/vscode-debugprotocol';
 import { DisposableCollection, Disposable } from '@ali/ide-core-node';
 import { IWebSocket } from '@ali/ide-connection';
 import { DebugSessionConnection } from '@ali/ide-debug/lib/browser';

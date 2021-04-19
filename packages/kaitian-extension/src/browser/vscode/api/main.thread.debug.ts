@@ -13,7 +13,7 @@ import { ExtensionDebugService } from './debug/extension-debug-service';
 import { ExtensionDebugAdapterContribution } from './debug/extension-debug-adapter-contribution';
 import { IActivationEventService } from '../../types';
 import { Breakpoint, WorkspaceFolder } from '../../../common/vscode/models';
-import { DebugProtocol } from 'vscode-debugprotocol';
+import { DebugProtocol } from '@ali/vscode-debugprotocol';
 import { IDebugSessionManager, IDebugSessionOptions } from '@ali/ide-debug/lib/common/debug-session';
 import { ITerminalApiService } from '@ali/ide-terminal-next';
 import { OutputService } from '@ali/ide-output/lib/browser/output.service';

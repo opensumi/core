@@ -1,4 +1,4 @@
-import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
+import { DebugProtocol } from '@ali/vscode-debugprotocol/lib/debugProtocol';
 import { DebugSession } from '../debug-session';
 import { URI, Uri, IRange } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';

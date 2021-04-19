@@ -1,6 +1,6 @@
 import { CompletionItemKind } from '../../../common';
 import { Autowired, Injectable, Optional } from '@ali/common-di';
-import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
+import { DebugProtocol } from '@ali/vscode-debugprotocol/lib/debugProtocol';
 import { DisposableCollection, Emitter, Event, MessageType, ILogger } from '@ali/ide-core-common';
 import { ExpressionContainer, AnsiConsoleNode, DebugConsoleNode, DebugVariableContainer } from '../../tree';
 import { DebugSession } from '../../debug-session';

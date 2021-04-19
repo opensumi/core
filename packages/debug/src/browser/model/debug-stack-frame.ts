@@ -1,4 +1,4 @@
-import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
+import { DebugProtocol } from '@ali/vscode-debugprotocol/lib/debugProtocol';
 import { DebugSession } from '../debug-session';
 import { DebugThread } from './debug-thread';
 import { DebugSource } from './debug-source';
