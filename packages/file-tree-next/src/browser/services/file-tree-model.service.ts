@@ -970,16 +970,19 @@ export class FileTreeModelService {
       parent = (promptHandle as NewPromptHandle).parent as Directory;
     }
 
-    // 压缩目录的情况下不需要判断同名文件
-    if (parent && promptHandle instanceof RenamePromptHandle && !((promptHandle.target as File).displayName.indexOf(Path.separator) > 0)) {
-      // 不允许覆盖已存在的文件
-      const child = parent.children?.find((child) => child.name === name);
-      if (child) {
-        return {
-          message: formatLocalize('validate.tree.fileNameExistsError', name),
-          type: PROMPT_VALIDATE_TYPE.ERROR,
-          value: name,
-        };
+    // 压缩目录重命名的情况下不需要判断同名文件
+    if (parent) {
+      const isCompactNodeRenamed = promptHandle instanceof RenamePromptHandle && (promptHandle.target as File).displayName.indexOf(Path.separator) > 0;
+      if (!isCompactNodeRenamed) {
+        // 不允许覆盖已存在的文件
+        const child = parent.children?.find((child) => child.name === name);
+        if (child) {
+          return {
+            message: formatLocalize('validate.tree.fileNameExistsError', name),
+            type: PROMPT_VALIDATE_TYPE.ERROR,
+            value: name,
+          };
+        }
       }
     }
 

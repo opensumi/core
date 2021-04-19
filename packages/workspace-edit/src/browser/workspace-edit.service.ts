@@ -298,7 +298,11 @@ export class ResourceFileEdit implements IResourceFileEdit {
     } else if (this.newUri && !this.oldUri) {
       // 创建文件
       try {
-        await fileServiceClient.create(this.newUri, '', { overwrite: options.overwrite });
+        if (options.isDirectory) {
+          await fileServiceClient.createFolder(this.newUri);
+        } else {
+          await fileServiceClient.create(this.newUri, '', { overwrite: options.overwrite });
+        }
       } catch (err) {
         if (FileSystemError.FileExists.is(err) && options.ignoreIfExists) {
           // 不抛出错误
@@ -306,7 +310,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
           throw err;
         }
       }
-      if (options.showInEditor) {
+      if (!options.isDirectory && options.showInEditor) {
         editorService.open(this.newUri);
       }
     }
