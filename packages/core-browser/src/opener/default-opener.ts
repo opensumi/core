@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { URI, Schemas } from '@ali/ide-core-common';
+import { URI, Schemas, isElectronRenderer } from '@ali/ide-core-common';
 import { IOpener } from '.';
 import { IWindowService } from '../window';
 
@@ -14,7 +14,7 @@ export class DefaultOpener implements IOpener {
   }
 
   async open(uri: URI) {
-    if ([Schemas.http, Schemas.https].includes(uri.scheme)) {
+    if (isElectronRenderer() || [Schemas.http, Schemas.https].includes(uri.scheme)) {
       this.windowService.openNewWindow(uri.toString(true), {
         external: true,
       });
