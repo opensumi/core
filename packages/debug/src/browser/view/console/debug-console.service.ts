@@ -90,7 +90,7 @@ export class DebugConsoleService {
   }
 
   execute = (value: string) => {
-    this.debugConsoleModelService.execute(value);
+    return this.debugConsoleModelService.execute(value);
   }
 
   get consoleInputUri() {
@@ -108,11 +108,10 @@ export class DebugConsoleService {
     this._consoleInputElement = e;
     this.inputEditor = await this.editorService.createCodeEditor(this._consoleInputElement!, { ...consoleInputMonacoOptions });
     const editor = this.inputEditor.monacoEditor;
-    editor.onDidChangeModelContent(({ changes }) => {
-      const change = changes[0];
-      if (change.text === '\n') {
+    editor.onKeyDown(async (e: monaco.IKeyboardEvent) => {
+      if (e.keyCode === monaco.KeyCode.Enter) {
         const value = editor.getValue();
-        this.execute(value);
+        await this.execute(value);
         editor.setValue('');
       }
     });
@@ -126,12 +125,6 @@ export class DebugConsoleService {
     const docModel = await this.documentService.createModelReference(this.consoleInputUri);
     const model = docModel.instance.getMonacoModel();
     model.updateOptions({ tabSize: 2 });
-    model.onDidChangeContent(() => {
-      if (model.getValue().indexOf('\n') > -1) {
-        model.setValue(model.getValue().replace(/\n/g, ''));
-      }
-      this._onConsoleInputValueChange.fire(this.consoleInputUri);
-    });
     // Note: 这里 monaco.editor.ITextModel 与 ITextModel 类型冲突，所以使用了 assertion
     this._consoleModel = model as unknown as ITextModel;
     this.inputEditor.monacoEditor.setModel(model);
