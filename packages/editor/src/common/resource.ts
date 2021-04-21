@@ -50,6 +50,11 @@ export abstract class ResourceService {
    * @param resource
    */
   abstract disposeResource(resource: IResource<any>): void;
+
+  /**
+   * 是否存在 provider 可以处理某个 uri
+   */
+  abstract handlesUri(uri: URI): boolean;
 }
 
 /**
@@ -104,3 +109,7 @@ export interface IResource<MetaData = any> {
 export type IDiffResource  = IResource<{ original: URI, modified: URI }>;
 
 export const DIFF_SCHEME = 'diff';
+
+export function isDiffResource(resource: IResource): resource is IDiffResource {
+  return resource.uri.scheme === DIFF_SCHEME;
+}

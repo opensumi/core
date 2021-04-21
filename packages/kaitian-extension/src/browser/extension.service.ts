@@ -980,7 +980,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     extension: IExtension,
     defaultExports: boolean,
   ): Promise<{ moduleExports: T, proxiedHead: HTMLHeadElement }> {
-    const pendingFetch = await fetch(decodeURIComponent(browserPath));
+    const pendingFetch = await fetch(decodeURIComponent(browserPath), { credentials: 'include' });
     const { _module, _exports, _require } = getMockAmdLoader<T>(this.injector, extension, this.protocol);
     const stylesCollection = [];
     const proxiedHead = document.createElement('head');
@@ -997,7 +997,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   private async loadBrowserModule<T>(browserPath: string, extension: IExtension, defaultExports: boolean): Promise<any> {
-    const pendingFetch = await fetch(decodeURIComponent(browserPath));
+    const pendingFetch = await fetch(decodeURIComponent(browserPath), { credentials: 'include' });
     const { _module, _exports, _require } = getMockAmdLoader<T>(this.injector, extension, this.protocol);
 
     const initFn = new Function('module', 'exports', 'require', await pendingFetch.text());

@@ -1,6 +1,6 @@
 {
   "name": "@ali/kaitian",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": false,
   "typings": "index.d.ts",
   "repository": {
@@ -11,7 +11,7 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-components": "2.0.0",
+    "@ali/ide-components": "2.1.0",
     "@types/react": "^16.9.33"
   }
 }

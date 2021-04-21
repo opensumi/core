@@ -6,7 +6,7 @@ import type * as vscode from 'vscode';
 import { DebugProtocol } from '@ali/vscode-debugprotocol';
 import { DisposableCollection, Disposable } from '@ali/ide-core-node';
 import { IWebSocket } from '@ali/ide-connection';
-import { DebugSessionConnection } from '@ali/ide-debug/lib/browser';
+import { getSequenceId } from '@ali/ide-debug';
 
 export abstract class AbstractDebugAdapter implements vscode.DebugAdapter {
 
@@ -55,8 +55,8 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
     this.buffer = Buffer.alloc(0);
     this.toDispose.pushAll([
       this.debugStreamConnection,
-      Disposable.create(() => this.write(JSON.stringify({ seq: DebugSessionConnection.SEQUENCE_ID ++, type: 'request', command: 'disconnect' }))),
-      Disposable.create(() => this.write(JSON.stringify({ seq: DebugSessionConnection.SEQUENCE_ID ++, type: 'request', command: 'terminate' }))),
+      Disposable.create(() => this.write(JSON.stringify({ seq: getSequenceId(), type: 'request', command: 'disconnect' }))),
+      Disposable.create(() => this.write(JSON.stringify({ seq: getSequenceId(), type: 'request', command: 'terminate' }))),
     ]);
   }
 
@@ -78,7 +78,7 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
     const event: DebugProtocol.ExitedEvent = {
       type: 'event',
       event: 'exited',
-      seq: DebugSessionConnection.SEQUENCE_ID ++,
+      seq: getSequenceId(),
       body: {
         exitCode,
       },
@@ -90,7 +90,7 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
     const event: DebugProtocol.Event = {
       type: 'event',
       event: 'error',
-      seq: DebugSessionConnection.SEQUENCE_ID ++,
+      seq: getSequenceId(),
       body: error,
     };
     this.send(JSON.stringify(event));

@@ -191,6 +191,18 @@ describe('FileTreeModelService should be work', () => {
     expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
   });
 
+  it('activeFileActivedDecoration method should be work', () => {
+    const mockFileTreeService = {
+      on: jest.fn(),
+    } as any;
+    fileTreeModelService.initDecorations(mockRoot);
+    const node = new File(mockFileTreeService, mockRoot, mockRoot.uri.resolve('test.js'), 'test.js', undefined, 'tooltip');
+    fileTreeModelService.activeFileActivedDecoration(node);
+    const decoration = fileTreeModelService.decorations.getDecorations(node);
+    expect(decoration).toBeDefined();
+    expect(decoration!.classlist).toEqual([styles.mod_actived]);
+  });
+
   it('selectFileDecoration method should be work', () => {
     const mockFileTreeService = {
       on: jest.fn(),

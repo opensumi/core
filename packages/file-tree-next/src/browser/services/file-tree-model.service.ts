@@ -91,16 +91,19 @@ export class FileTreeModelService {
   // 装饰器
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
   private focusedDecoration: Decoration = new Decoration(styles.mod_focused); // 焦点态
+  private contextMenuDecoration: Decoration = new Decoration(styles.mod_actived); // 焦点态
   private loadingDecoration: Decoration = new Decoration(styles.mod_loading); // 加载态
   private cutDecoration: Decoration = new Decoration(styles.mod_cut); // 剪切态
   // 即使选中态也是焦点态的节点，全局仅会有一个
   private _focusedFile: File | Directory | undefined;
   // 选中态的节点，会可能有多个
   private _selectedFiles: (File | Directory)[] = [];
+  // 右键菜单选择的节点
+  private _contextMenuFile: File | Directory | null;
+
   // 当前焦点的文件路径URI
   private _activeUri: URI | null;
 
-  private preContextMenuFocusedFile: File | Directory | null;
   private _nextLocationTarget: URI | undefined;
 
   // 右键菜单ContextKey，相对独立
@@ -170,6 +173,12 @@ export class FileTreeModelService {
   get focusedFile() {
     return this._focusedFile;
   }
+
+  // 右键菜单选中的节点
+  get contextMenuFile() {
+    return this._contextMenuFile;
+  }
+
   // 是选中态，非焦点态节点
   get selectedFiles() {
     return this._selectedFiles;
@@ -255,7 +264,12 @@ export class FileTreeModelService {
     }));
     this.disposableCollection.push(this.treeModel!.onWillUpdate(() => {
       // 更新树前更新下选中节点
-      if (!!this.focusedFile) {
+      if (!!this.contextMenuFile) {
+        const node = this.treeModel?.root.getTreeNodeByPath(this.contextMenuFile.path);
+        if (node) {
+          this.activeFileDecoration(node as File, false);
+        }
+      } else if (!!this.focusedFile) {
         const node = this.treeModel?.root.getTreeNodeByPath(this.focusedFile.path);
         if (node) {
           this.activeFileDecoration(node as File, false);
@@ -291,6 +305,7 @@ export class FileTreeModelService {
     this._decorations = new DecorationsManager(root as any);
     this._decorations.addDecoration(this.selectedDecoration);
     this._decorations.addDecoration(this.focusedDecoration);
+    this._decorations.addDecoration(this.contextMenuDecoration);
     this._decorations.addDecoration(this.cutDecoration);
     this._decorations.addDecoration(this.loadingDecoration);
   }
@@ -345,11 +360,9 @@ export class FileTreeModelService {
       return;
     }
 
-    if (this.preContextMenuFocusedFile) {
-      this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
-      this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
-      this._selectedFiles = this.selectedFiles.filter((file) => !file.uri.isEqual(this.preContextMenuFocusedFile!.uri));
-      this.preContextMenuFocusedFile = null;
+    if (this.contextMenuFile) {
+      this.contextMenuDecoration.removeTarget(this.contextMenuFile);
+      this._contextMenuFile = null;
     }
     if (target) {
       if (this.selectedFiles.length > 0) {
@@ -383,11 +396,10 @@ export class FileTreeModelService {
       return;
     }
 
-    if (this.preContextMenuFocusedFile) {
-      this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
-      this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
-      this.preContextMenuFocusedFile = null;
-      this._selectedFiles = this.selectedFiles.filter((file) => !file.uri.isEqual(this.preContextMenuFocusedFile!.uri));
+    if (this.contextMenuFile) {
+      this.contextMenuDecoration.removeTarget(this.contextMenuFile);
+      this._contextMenuFile = null;
+      this._selectedFiles = this.selectedFiles.filter((file) => !file.uri.isEqual(this.contextMenuFile!.uri));
     }
     if (target) {
       if (this.selectedFiles.length > 0) {
@@ -409,6 +421,20 @@ export class FileTreeModelService {
     }
   }
 
+  // 右键菜单焦点态切换
+  activeFileActivedDecoration = (target: File | Directory) => {
+    if (this.contextMenuFile) {
+      this.contextMenuDecoration.removeTarget(this.contextMenuFile);
+    }
+    if (this.focusedFile) {
+      this.focusedDecoration.removeTarget(this.focusedFile);
+      this._focusedFile = undefined;
+    }
+    this.contextMenuDecoration.addTarget(target);
+    this._contextMenuFile = target;
+    this.treeModel.dispatchChange();
+  }
+
   // 清空其他焦点态节点，更新当前焦点节点，
   // removePreFocusedDecoration 表示更新焦点节点时如果此前已存在焦点节点，之前的节点装饰器将会被移除
   activeFileFocusedDecoration = (target: File | Directory, removePreFocusedDecoration: boolean = false) => {
@@ -419,29 +445,25 @@ export class FileTreeModelService {
 
     if (this.focusedFile !== target) {
       if (removePreFocusedDecoration) {
-        // 当存在上一次右键菜单激活的文件时，需要把焦点态的文件节点的装饰器全部移除
-        if (this.preContextMenuFocusedFile) {
-          this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
-          this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
-          this._selectedFiles = this.selectedFiles.filter((file) => !file.uri.isEqual(this.preContextMenuFocusedFile!.uri));
-          this.preContextMenuFocusedFile = null;
-        } else if (!!this.focusedFile) {
+        if (!!this.focusedFile) {
           // 多选情况下第一次切换焦点文件
           this.focusedDecoration.removeTarget(this.focusedFile);
         }
-        this.preContextMenuFocusedFile = target;
+        this._contextMenuFile = target;
       } else if (!!this.focusedFile) {
-        this.preContextMenuFocusedFile = null;
+        this._contextMenuFile = null;
         this.focusedDecoration.removeTarget(this.focusedFile);
       }
-      if (target && this._selectedFiles.indexOf(target) < 0) {
-        this.selectedDecoration.addTarget(target);
+      if (target) {
+        // 存在多选文件时切换焦点的情况
+        if (this._selectedFiles.indexOf(target) < 0) {
+          this.selectedDecoration.addTarget(target);
+          this._selectedFiles.push(target);
+          this.onDidSelectedFileChangeEmitter.fire(this._selectedFiles.map((file) => file.uri));
+        }
         this.focusedDecoration.addTarget(target);
         this._focusedFile = target;
-        this._selectedFiles.push(target);
-        // 事件通知状态变化
         this.onDidFocusedFileChangeEmitter.fire(target.uri);
-        this.onDidSelectedFileChangeEmitter.fire(this._selectedFiles.map((file) => file.uri));
       }
     }
     // 通知视图更新
@@ -464,7 +486,7 @@ export class FileTreeModelService {
   // 选中范围内的所有节点
   activeFileDecorationByRange = (begin: number, end: number) => {
     this.clearFileSelectedDecoration();
-    this.preContextMenuFocusedFile = null;
+    this._contextMenuFile = null;
     for (; begin <= end; begin++) {
       const file = this.treeModel.root.getTreeNodeAtIndex(begin);
       if (file) {
@@ -483,8 +505,11 @@ export class FileTreeModelService {
     if (this.focusedFile) {
       this.focusedDecoration.removeTarget(this.focusedFile);
       this.onDidFocusedFileChangeEmitter.fire();
-      this.treeModel.dispatchChange();
     }
+    if (this.contextMenuFile) {
+      this.contextMenuDecoration.removeTarget(this.contextMenuFile);
+    }
+    this.treeModel.dispatchChange();
     this._focusedFile = undefined;
   }
 
@@ -518,7 +543,7 @@ export class FileTreeModelService {
     }
 
     if (file) {
-      this.activeFileFocusedDecoration(file, true);
+      this.activeFileActivedDecoration(file);
     } else {
       this.enactiveFileDecoration();
     }
@@ -531,7 +556,15 @@ export class FileTreeModelService {
       node = this.treeModel.root as Directory;
     } else {
       node = file;
-      nodes = this._isMutiSelected ? this.selectedFiles : [node];
+      if (this._isMutiSelected) {
+        if (this.selectedFiles.indexOf(node) >= 0) {
+          nodes = this._isMutiSelected ? this.selectedFiles : [node];
+        } else {
+          nodes = this._isMutiSelected ? this.selectedFiles.concat([node]) : [node];
+        }
+      } else {
+        nodes = [node];
+      }
     }
 
     this.setFileTreeContextKey(node);
@@ -604,8 +637,8 @@ export class FileTreeModelService {
     }
     this.fileTreeContextKey.filesExplorerFocused.set(false);
     // 失去焦点状态时，清理右键菜单的选中态
-    if (this.preContextMenuFocusedFile) {
-      this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
+    if (this.contextMenuFile) {
+      this.contextMenuDecoration.removeTarget(this.contextMenuFile);
     }
     // 清空焦点状态
     this.enactiveFileDecoration();
@@ -689,11 +722,17 @@ export class FileTreeModelService {
   }
 
   public moveToNext() {
-    if (!this.focusedFile) {
+    let node;
+    if (this.focusedFile) {
+      node = this.focusedFile;
+    } else if (this.contextMenuFile) {
+      node = this.contextMenuFile;
+    }
+    if (!node) {
       // 当前没有焦点文件时，执行无效果
       return;
     }
-    const currentIndex = this.treeModel.root.getIndexAtTreeNode(this.focusedFile);
+    const currentIndex = this.treeModel.root.getIndexAtTreeNode(node);
     const nextIndex = currentIndex + 1;
     const nextFileNode = this.treeModel.root.getTreeNodeAtIndex(nextIndex);
     const snapshot = this.explorerStorage.get<ISerializableState>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
@@ -702,18 +741,24 @@ export class FileTreeModelService {
     if (!nextFileNode) {
       return;
     }
-    this.activeFileFocusedDecoration(nextFileNode as File, true);
+    this.activeFileActivedDecoration(nextFileNode as File);
     if (offsetHeight > height) {
       this.fileTreeHandle.ensureVisible(nextFileNode as File, 'end');
     }
   }
 
   public moveToPrev() {
-    if (!this.focusedFile) {
+    let node;
+    if (this.focusedFile) {
+      node = this.focusedFile;
+    } else if (this.contextMenuFile) {
+      node = this.contextMenuFile;
+    }
+    if (!node) {
       // 当前没有焦点文件时，执行无效果
       return;
     }
-    const currentIndex = this.treeModel.root.getIndexAtTreeNode(this.focusedFile);
+    const currentIndex = this.treeModel.root.getIndexAtTreeNode(node);
     if (currentIndex === 0) {
       return ;
     }
@@ -724,22 +769,24 @@ export class FileTreeModelService {
     }
     const snapshot = this.explorerStorage.get<ISerializableState>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
     const offsetHeight = prevIndex * FILE_TREE_NODE_HEIGHT;
-    this.activeFileFocusedDecoration(prevFileNode as File, true);
+    this.activeFileActivedDecoration(prevFileNode as File);
     if ((snapshot.scrollPosition || 0) > offsetHeight) {
       this.fileTreeHandle.ensureVisible(prevFileNode as File, 'start');
     }
   }
 
   public async collapseCurrentFile() {
-    if (!this.focusedFile) {
-      // 当前没有焦点文件时，执行无效果
-      return;
+    let node;
+    if (this.focusedFile) {
+      node = this.focusedFile;
+    } else if (this.contextMenuFile) {
+      node = this.contextMenuFile;
     }
     let target: Directory;
-    if (Directory.is(this.focusedFile) && this.focusedFile.expanded) {
-      target = this.focusedFile as Directory;
-    } else if (this.focusedFile) {
-      target = this.focusedFile.parent as Directory;
+    if (Directory.is(node) && node.expanded) {
+      target = node as Directory;
+    } else if (node) {
+      target = node.parent as Directory;
     } else {
       return ;
     }
@@ -750,13 +797,15 @@ export class FileTreeModelService {
   }
 
   public async expandCurrentFile() {
-    if (!this.focusedFile) {
-      // 当前没有焦点文件时，执行无效果
-      return;
+    let node;
+    if (this.focusedFile) {
+      node = this.focusedFile;
+    } else if (this.contextMenuFile) {
+      node = this.contextMenuFile;
     }
-    if (Directory.is(this.focusedFile)) {
-      if (!this.focusedFile.expanded) {
-        await this.fileTreeHandle.expandNode(this.focusedFile as Directory);
+    if (Directory.is(node)) {
+      if (!node.expanded) {
+        await this.fileTreeHandle.expandNode(node as Directory);
       }
     }
   }
@@ -921,16 +970,19 @@ export class FileTreeModelService {
       parent = (promptHandle as NewPromptHandle).parent as Directory;
     }
 
-    // 压缩目录的情况下不需要判断同名文件
-    if (parent && promptHandle instanceof RenamePromptHandle && !((promptHandle.target as File).displayName.indexOf(Path.separator) > 0)) {
-      // 不允许覆盖已存在的文件
-      const child = parent.children?.find((child) => child.name === name);
-      if (child) {
-        return {
-          message: formatLocalize('validate.tree.fileNameExistsError', name),
-          type: PROMPT_VALIDATE_TYPE.ERROR,
-          value: name,
-        };
+    // 压缩目录重命名的情况下不需要判断同名文件
+    if (parent) {
+      const isCompactNodeRenamed = promptHandle instanceof RenamePromptHandle && (promptHandle.target as File).displayName.indexOf(Path.separator) > 0;
+      if (!isCompactNodeRenamed) {
+        // 不允许覆盖已存在的文件
+        const child = parent.children?.find((child) => child.name === name);
+        if (child) {
+          return {
+            message: formatLocalize('validate.tree.fileNameExistsError', name),
+            type: PROMPT_VALIDATE_TYPE.ERROR,
+            value: name,
+          };
+        }
       }
     }
 
@@ -1215,8 +1267,8 @@ export class FileTreeModelService {
     if (uri.isEqual((this.treeModel.root as Directory).uri)) {
       // 可能为空白区域点击, 即选中的对象为根目录
       targetNode = await this.fileTreeService.getNodeByPathOrUri(uri)!;
-    } else if (this.preContextMenuFocusedFile) {
-      targetNode = this.preContextMenuFocusedFile;
+    } else if (this.contextMenuFile) {
+      targetNode = this.contextMenuFile;
     } else if (this.selectedFiles.length > 0) {
       const selectedNode = this.selectedFiles[this.selectedFiles.length - 1];
       if (!this.treeModel.root.isItemVisibleAtSurface(selectedNode)) {

@@ -11,7 +11,7 @@ import {
 } from '@ali/ide-core-browser';
 import { IWebSocket } from '@ali/ide-connection';
 import { OutputChannel } from '@ali/ide-output/lib/browser/output.channel';
-import { DEBUG_REPORT_NAME, IDebugSessionManager } from '../common';
+import { DEBUG_REPORT_NAME, getSequenceId, IDebugSessionManager } from '../common';
 import { DebugConfiguration } from 'vscode';
 import { DebugSessionManager } from './debug-session-manager';
 
@@ -92,7 +92,6 @@ const standardDebugEvents = new Set<string>([
 
 @Injectable({multiple: true})
 export class DebugSessionConnection implements IDisposable {
-  public static SEQUENCE_ID = 1;
 
   @Autowired(IDebugSessionManager)
   protected readonly manager: DebugSessionManager;
@@ -198,7 +197,7 @@ export class DebugSessionConnection implements IDisposable {
     const result = new Deferred<K>();
 
     const request: DebugProtocol.Request = {
-      seq: DebugSessionConnection.SEQUENCE_ID ++,
+      seq: getSequenceId(),
       type: 'request',
       command,
       arguments: args,
@@ -254,7 +253,7 @@ export class DebugSessionConnection implements IDisposable {
   protected async handleRequest(request: DebugProtocol.Request): Promise<void> {
     const response: DebugProtocol.Response = {
       type: 'response',
-      seq: DebugSessionConnection.SEQUENCE_ID ++,
+      seq: getSequenceId(),
       command: request.command,
       request_seq: request.seq,
       success: true,
@@ -327,7 +326,7 @@ export class DebugSessionConnection implements IDisposable {
         threadId,
         allThreadsContinued,
       },
-      seq: DebugSessionConnection.SEQUENCE_ID ++,
+      seq: getSequenceId(),
     });
   }
 

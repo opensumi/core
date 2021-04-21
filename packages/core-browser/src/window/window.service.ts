@@ -19,8 +19,10 @@ export class WindowService implements IWindowService {
       url = this.externalUriService.resolveExternalUri(new URI(url)).toString(true);
     }
     if (isElectronRenderer()) {
-      // Electron 环境下使用 shell.openExternal 方法打开外部U ri
+      // Electron 环境下使用 shell.openExternal 方法打开外部 Uri
       const electronMainUIService: IElectronMainUIService = this.injector.get(IElectronMainUIService);
+      // TODO: 由于 electron 下没有打开外部的警告（静默打开），此处直接 openExternal 可能会存在一定的安全隐患
+      // 需要给用户添加一点提示。 或者这个也可以统一做到 OpenerService 里面。
       electronMainUIService.openExternal(url);
       return undefined;
     } else {

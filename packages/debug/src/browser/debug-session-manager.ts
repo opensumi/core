@@ -318,7 +318,6 @@ export class DebugSessionManager implements IDebugSessionManager {
   }
 
   protected async resolveDebugConfigurationWithSubstitutedVariables(configuration: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration> {
-    await this.fireWillResolveDebugConfiguration(configuration.type);
     return this.debug.resolveDebugConfigurationWithSubstitutedVariables(configuration, workspaceFolderUri);
   }
 

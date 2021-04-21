@@ -212,7 +212,16 @@ export class FileTreeAPI implements IFileTreeAPI {
 
   async createDirectory(uri: URI) {
     try {
-      await this.fileServiceClient.createFolder(uri.toString());
+      await this.workspaceEditService.apply({
+        edits: [
+          {
+            newUri: uri,
+            options: {
+              isDirectory: true,
+            },
+          },
+        ],
+      });
     } catch (e) {
       return e.message;
     }

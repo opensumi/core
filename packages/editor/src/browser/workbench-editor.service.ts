@@ -6,7 +6,7 @@ import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPos
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { FILE_COMMANDS, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, MonacoService, IScopedContextKeyService, IContextKey, RecentFilesManager, PreferenceService, IOpenerService } from '@ali/ide-core-browser';
-import { IEditorDocumentModelService, IEditorDocumentModelRef, IEditorDocumentModelContentRegistry } from './doc-model/types';
+import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
 import { isUndefinedOrNull, Schemas, REPORT_NAME } from '@ali/ide-core-common';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 import { IMessageService } from '@ali/ide-overlay';
@@ -459,9 +459,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   @Autowired(ILogger)
   logger: ILogger;
-
-  @Autowired(IEditorDocumentModelContentRegistry)
-  private readonly editorDocumentModelContentRegistry: IEditorDocumentModelContentRegistry;
 
   codeEditor!: ICodeEditor;
 
@@ -929,7 +926,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   async doOpen(uri: URI, options: IResourceOpenOptions = {}): Promise<{ group: IEditorGroup, resource: IResource } | false> {
-    if (!await this.editorDocumentModelContentRegistry.getProvider(uri)) {
+    if (!this.resourceService.handlesUri(uri)) {
       this.openerService.open(uri);
       return false;
     }

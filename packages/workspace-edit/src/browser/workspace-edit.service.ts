@@ -5,7 +5,7 @@ import { FileSystemError } from '@ali/ide-file-service/lib/common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EndOfLineSequence, WorkbenchEditorService, EOL } from '@ali/ide-editor';
 import { runInAction } from 'mobx';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { IEditorDocumentModelService, IResource, isDiffResource } from '@ali/ide-editor/lib/browser';
 import { EditorGroup } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { Range } from '@ali/monaco-editor-core/esm/vs/editor/common/core/range';
 
@@ -160,7 +160,7 @@ export class ResourceTextEditTask {
   private async editorOperation(editorService: WorkbenchEditorService): Promise<boolean> {
     if (this.options.openDirtyInEditor) {
       for (const group of editorService.editorGroups) {
-        if (group.resources.findIndex((r) => r.uri.isEqual(this.resource)) !== -1) {
+        if (group.resources.findIndex((r) => isDocumentUriInResource(r, this.resource)) !== -1) {
           return false;
         }
       }
@@ -168,7 +168,7 @@ export class ResourceTextEditTask {
       return false;
     } else if (this.options.dirtyIfInEditor) {
       for (const group of editorService.editorGroups) {
-        if (group.resources.findIndex((r) => r.uri.isEqual(this.resource)) !== -1) {
+        if (group.resources.findIndex((r) => isDocumentUriInResource(r, this.resource)) !== -1) {
           return false;
         }
       }
@@ -193,6 +193,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
     showInEditor?: boolean;
     isDirectory?: boolean;
     copy?: boolean;
+    ignoreIfExists?: boolean | undefined;
   } = {};
 
   constructor(edit: IResourceFileEdit) {
@@ -288,21 +289,29 @@ export class ResourceFileEdit implements IResourceFileEdit {
         await editorService.close(this.oldUri, true);
         eventBus.fire(new WorkspaceEditDidDeleteFileEvent({ oldUri: this.oldUri}));
       } catch (err) {
-        if (!(FileSystemError.FileNotFound.is(err) && options.ignoreIfNotExists)) {
+        if (FileSystemError.FileNotFound.is(err) && options.ignoreIfNotExists) {
+          // 不抛出错误
+        } else {
           throw err;
         }
       }
     } else if (this.newUri && !this.oldUri) {
       // 创建文件
       try {
-        await fileServiceClient.create(this.newUri, '', { overwrite: options.overwrite });
-        if (options.showInEditor) {
-          editorService.open(this.newUri);
+        if (options.isDirectory) {
+          await fileServiceClient.createFolder(this.newUri);
+        } else {
+          await fileServiceClient.create(this.newUri, '', { overwrite: options.overwrite });
         }
       } catch (err) {
-        // FIXME: 这里 catch 一下异常，因为 overwrite 的时候 fileService 可能会抛出文件已存在的错误，会导致后续的 edits 无法执行
-        /* tslint:disable:no-console */
-        console.error(err);
+        if (FileSystemError.FileExists.is(err) && options.ignoreIfExists) {
+          // 不抛出错误
+        } else {
+          throw err;
+        }
+      }
+      if (!options.isDirectory && options.showInEditor) {
+        editorService.open(this.newUri);
       }
     }
   }
@@ -314,4 +323,18 @@ export class ResourceFileEdit implements IResourceFileEdit {
 
 export function isResourceFileEdit(thing: any): thing is ResourceFileEdit {
   return (!!((thing as ResourceFileEdit).newUri) || !!((thing as ResourceFileEdit).oldUri));
+}
+
+/**
+ * 当前编辑器的文档是否在指定的编辑器 resource (tab) 中
+ * 此处需要额外判断一下 diffEditor 的情况
+ * @param resource
+ * @param uri
+ */
+function isDocumentUriInResource(resource: IResource<any>, uri: URI) {
+  if (isDiffResource(resource)) {
+    return resource.metadata?.modified.isEqual(uri) || resource.metadata?.original.isEqual(uri);
+  } else {
+    return resource.uri.isEqual(uri);
+  }
 }
