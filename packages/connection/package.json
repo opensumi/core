@@ -22,7 +22,7 @@
   "dependencies": {
     "@ali/ide-components": "2.1.0",
     "@ali/ide-core-common": "2.1.0",
-    "@ali/vscode-jsonrpc": "^6.1.0-beta.1",
+    "@ali/vscode-jsonrpc": "^6.1.0-beta.2",
     "lzutf8": "^0.5.5",
     "path-match": "^1.2.4",
     "shortid": "^2.2.14",
