@@ -369,6 +369,12 @@ declare module 'vscode' {
 			readonly supportsMultipleEditorsPerDocument?: boolean;
 		}): Disposable;
     /**
+     * Register provider that enables the detection and handling of links within the terminal.
+     * @param provider The provider that provides the terminal links.
+     * @return Disposable that unregisters the provider.
+     */
+    export function registerTerminalLinkProvider(provider: TerminalLinkProvider): Disposable;
+    /**
      * ~~Show progress in the Source Control viewlet while running the given callback and while
      * its returned promise isn't resolve or rejected.~~
      *
