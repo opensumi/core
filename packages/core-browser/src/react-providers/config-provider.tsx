@@ -103,6 +103,12 @@ export interface AppConfig {
    * 开启插件进程的 Debug
   */
   enableDebugExtensionHost?: boolean;
+
+  /**
+   * 加载插件前端资源时的 fetch credentials 选项
+   * 可选项为 "include" | "omit" | "same-origin"
+   */
+  extensionFetchCredentials?: RequestCredentials;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
