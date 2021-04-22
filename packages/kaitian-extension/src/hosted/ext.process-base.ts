@@ -1,5 +1,5 @@
 import { ConstructorOf } from '@ali/common-di';
-import { Emitter, ReporterProcessMessage, LogLevel } from '@ali/ide-core-common';
+import { Emitter, ReporterProcessMessage, LogLevel, IReporter } from '@ali/ide-core-common';
 import * as net from 'net';
 import * as Stream from 'stream';
 import { performance } from 'perf_hooks';
@@ -16,6 +16,7 @@ import { Injector } from '@ali/common-di';
 import { AppConfig, ILogService } from '@ali/ide-core-node';
 import { CommandHandler } from '../common/vscode';
 import { setPerformance } from './api/vscode/language/util';
+import { ExtensionReporter } from './extension-reporter';
 
 setPerformance(performance);
 
@@ -51,10 +52,11 @@ export interface ExtHostAppConfig extends Partial<AppConfig> {
 }
 
 export interface ExtProcessConfig {
+  injector?: Injector;
   LogServiceClass?: ConstructorOf<ILogService>;
   logDir?: string;
   logLevel?: LogLevel;
-  builtinCommands: IBuiltInCommand[];
+  builtinCommands?: IBuiltInCommand[];
   customDebugChildProcess?: CustomeChildProcessModule;
 }
 
@@ -96,12 +98,17 @@ function patchProcess() {
   };
 }
 
-export async function extProcessInit(config?: ExtProcessConfig) {
+export async function extProcessInit(config: ExtProcessConfig = {}) {
   const extAppConfig = JSON.parse(argv['kt-app-config'] || '{}');
-  const extInjector = new Injector();
+  const { injector, ...extConfig } = config;
+  const extInjector = injector || new Injector();
+  const reporterEmitter = new Emitter<ReporterProcessMessage>();
   extInjector.addProviders({
     token: AppConfig,
-    useValue: { ...extAppConfig, ...config},
+    useValue: { ...extAppConfig, ...extConfig},
+  }, {
+    token: IReporter,
+    useValue: new ExtensionReporter(reporterEmitter),
   });
   patchProcess();
   const {extProtocol: protocol, logger} = await initRPCProtocol(extInjector);
@@ -113,7 +120,7 @@ export async function extProcessInit(config?: ExtProcessConfig) {
 
     const preload: IExtensionHostService = new Preload(protocol, logger, extInjector);
 
-    preload.onFireReporter((reportMessage: ReporterProcessMessage) => {
+    reporterEmitter.event((reportMessage: ReporterProcessMessage) => {
       if (process && process.send) {
         process.send({
           type: ProcessMessageType.REPORTER,

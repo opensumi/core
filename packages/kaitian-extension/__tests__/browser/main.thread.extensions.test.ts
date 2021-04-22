@@ -33,6 +33,7 @@ import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
 import { WorkspacePreferences } from '@ali/ide-workspace/lib/browser/workspace-preferences';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { IWebviewService } from '@ali/ide-webview';
+import { IReporter, DefaultReporter } from '@ali/ide-core-common';
 
 @Injectable()
 class MockLoggerManagerClient {
@@ -76,6 +77,9 @@ describe('MainThreadExtensions Test Suites', () => {
   extHostInjector.addProviders({
     token: NodeAppConfig,
     useValue: {},
+  }, {
+    token: IReporter,
+    useClass: DefaultReporter,
   });
   const injector = createBrowserInjector([], new MockInjector([{
       token: OutputPreferences,

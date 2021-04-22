@@ -3,7 +3,7 @@ import type * as vscode from 'vscode';
 
 import { Injector } from '@ali/common-di';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
-import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, ReporterProcessMessage, REPORT_NAME, IExtensionProps, Uri, timeout } from '@ali/ide-core-common';
+import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, REPORT_NAME, IExtensionProps, Uri, timeout, ReporterService, IReporter } from '@ali/ide-core-common';
 import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy, getExtensionId } from '../common';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
@@ -11,7 +11,6 @@ import { createAPIFactory as createKaitianAPIFactory } from './api/kaitian/ext.h
 import { MainThreadAPIIdentifier, VSCodeExtensionService } from '../common/vscode';
 import { ExtensionContext } from './api/vscode/ext.host.extensions';
 import { KTExtension } from './vscode.extension';
-import { ExtensionReporterService } from './extension-reporter';
 import { AppConfig } from '@ali/ide-core-node';
 import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from '../common/activator';
 
@@ -44,13 +43,10 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
   private reporterService: IReporterService;
 
-  readonly reporterEmitter: Emitter<ReporterProcessMessage> = new Emitter<ReporterProcessMessage>();
-
-  public readonly onFireReporter = this.reporterEmitter.event;
-
   constructor(rpcProtocol: RPCProtocol, logger, private injector: Injector) {
     this.rpcProtocol = rpcProtocol;
     this.storage = new ExtHostStorage(rpcProtocol);
+    const reporter = injector.get(IReporter);
     this.vscodeAPIFactory = createVSCodeAPIFactory(
       this.rpcProtocol,
       this as any,
@@ -61,13 +57,13 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       this.rpcProtocol,
       this,
       'node',
-      this.reporterEmitter,
+      reporter,
     );
 
     this.vscodeExtAPIImpl = new Map();
     this.kaitianExtAPIImpl = new Map();
     this.logger = logger; // new ExtensionLogger(rpcProtocol);
-    this.reporterService = new ExtensionReporterService(this.reporterEmitter, {
+    this.reporterService = new ReporterService(reporter, {
       host: REPORT_HOST.EXTENSION,
     });
 

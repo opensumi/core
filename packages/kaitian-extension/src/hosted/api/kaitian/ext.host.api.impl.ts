@@ -3,8 +3,7 @@ import { IExtensionHostService, IExtensionWorkerHost, IExtension, WorkerHostAPII
 import { createLayoutAPIFactory, KaitianExtHostLayout } from './ext.host.layout';
 import { createWindowApiFactory, ExtHostIDEWindow } from './ext.host.window';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
-import { ExtensionReporterService } from '../../extension-reporter';
-import { Emitter, ReporterProcessMessage, REPORT_HOST } from '@ali/ide-core-common';
+import { ReporterService, REPORT_HOST, IReporter } from '@ali/ide-core-common';
 import { KaitianExtHostWebview, createKaitianWebviewApi } from './ext.host.webview';
 import { ExtHostKaitianAPIIdentifier } from '../../../common/kaitian';
 import { ExtHostLifeCycle, createLifeCycleApi } from './ext.host.lifecycle';
@@ -18,7 +17,7 @@ export function createAPIFactory(
   rpcProtocol: IRPCProtocol,
   extensionService: IExtensionHostService | IExtensionWorkerHost,
   type: string,
-  reporterEmitter: Emitter<ReporterProcessMessage>,
+  reporterEmitter: IReporter,
 ) {
 
   if (type === 'worker') {
@@ -36,7 +35,7 @@ export function createAPIFactory(
   const kaitianExtHostWindow = rpcProtocol.set(ExtHostKaitianAPIIdentifier.ExtHostIDEWindow, new ExtHostIDEWindow(rpcProtocol)) as ExtHostIDEWindow;
 
   return (extension: IExtension) => {
-    const reporter = new ExtensionReporterService(reporterEmitter, {
+    const reporter = new ReporterService(reporterEmitter, {
       extensionId: extension.extensionId,
       extensionVersion: extension.packageJSON.version,
       host: REPORT_HOST.EXTENSION,

@@ -1,4 +1,4 @@
-import { Disposable, IJSONSchema, IDisposable, ReporterProcessMessage, Deferred, localize, Event, Uri, MaybePromise } from '@ali/ide-core-common';
+import { Disposable, IJSONSchema, IDisposable, Deferred, localize, Event, Uri, MaybePromise } from '@ali/ide-core-common';
 import { createExtHostContextProxyIdentifier, ProxyIdentifier } from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { Extension } from '../hosted/vscode.extension';
@@ -190,8 +190,6 @@ export interface IExtensionHostService extends IExtensionHost {
   $fireChangeEvent(): Promise<void>;
   init(): Promise<void>;
   close(): Promise<void>;
-  onFireReporter: Event<ReporterProcessMessage>;
-  reporterEmitter: Emitter<ReporterProcessMessage>;
   getExtendExports(id: string): any;
   extensionsActivator: ExtensionsActivator;
 }
