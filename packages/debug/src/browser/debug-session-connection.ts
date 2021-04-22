@@ -1,5 +1,5 @@
 import { Injectable, Optional, Autowired } from '@ali/common-di';
-import { DebugProtocol } from 'vscode-debugprotocol';
+import { DebugProtocol } from '@ali/vscode-debugprotocol';
 import {
   Event,
   Emitter,

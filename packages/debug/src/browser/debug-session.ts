@@ -14,7 +14,7 @@ import { DebugSessionConnection, DebugEventTypes, DebugRequestTypes, DebugExitEv
 import { DebugSessionOptions, InternalDebugSessionOptions, IDebugSession, IDebugSessionManager, DEBUG_REPORT_NAME } from '../common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@ali/ide-file-service';
-import { DebugProtocol } from 'vscode-debugprotocol';
+import { DebugProtocol } from '@ali/vscode-debugprotocol';
 import { DebugSource } from './model/debug-source';
 import { DebugConfiguration } from '../common';
 import { StoppedDetails, DebugThread, DebugThreadData } from './model/debug-thread';

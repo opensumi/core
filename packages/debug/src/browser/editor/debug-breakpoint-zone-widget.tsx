@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom';
 import { ZoneWidget } from '@ali/ide-monaco-enhance';
 import { DebugEditor } from '../../common';
 import * as styles from './debug-breakpoint.module.less';
-import { DebugProtocol } from 'vscode-debugprotocol';
+import { DebugProtocol } from '@ali/vscode-debugprotocol';
 import { Input, Select } from '@ali/ide-components';
 import { localize, Emitter, Event } from '@ali/ide-core-common';
 

@@ -8,7 +8,7 @@ import { IMessageService } from '@ali/ide-overlay';
 import { IWebSocket } from '@ali/ide-connection';
 import { DebugSessionOptions } from '@ali/ide-debug';
 import { ITerminalApiService, TerminalOptions } from '@ali/ide-terminal-next';
-import { DebugProtocol } from 'vscode-debugprotocol';
+import { DebugProtocol } from '@ali/vscode-debugprotocol';
 import { OutputChannel } from '@ali/ide-output/lib/browser/output.channel';
 import { OutputService } from '@ali/ide-output/lib/browser/output.service';
 

@@ -1,5 +1,5 @@
 import { URI } from '@ali/ide-core-common';
-import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
+import { DebugProtocol } from '@ali/vscode-debugprotocol/lib/debugProtocol';
 import btoa = require('btoa');
 import { Marker } from '../markers';
 

@@ -53,7 +53,7 @@
     "reconnecting-websocket": "^4.2.0",
     "resize-observer-polyfill": "1.5.1",
     "vscode-codicons": "0.0.12",
-    "vscode-debugprotocol": "^1.35.0",
+    "@ali/vscode-debugprotocol": "1.46.0-beta.1",
     "vscode-languageserver-protocol": "^3.14.1",
     "vscode-textmate": "5.1.1"
   }

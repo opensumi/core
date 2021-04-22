@@ -3,7 +3,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { DEBUG_WELCOME_ID } from '@ali/ide-debug';
 import { ContextKeyExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { IMainLayoutService, IViewContentDescriptor, IViewsRegistry } from '@ali/ide-main-layout';
-import { DisposableCollection, IDisposable, localize } from '@ali/ide-core-browser';
+import { DisposableCollection, localize } from '@ali/ide-core-browser';
 
 export enum ViewsWelcomeExtensionPointFields {
   view = 'view',
@@ -100,7 +100,7 @@ export class ViewsWelcomeContributionPoint extends VSCodeContributePoint<ViewsWe
       }
 
       viewContentMap.set(welcome, {
-        content: welcome.contents,
+        content: this.getLocalizeFromNlsJSON(welcome.contents),
         when: ContextKeyExpr.deserialize(welcome.when),
         precondition,
         group,

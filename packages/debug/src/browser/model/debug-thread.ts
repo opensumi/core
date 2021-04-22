@@ -1,4 +1,4 @@
-import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
+import { DebugProtocol } from '@ali/vscode-debugprotocol/lib/debugProtocol';
 import { Event, Emitter } from '@ali/ide-core-browser';
 import { DebugSession } from '../debug-session';
 import { DebugStackFrame } from './debug-stack-frame';

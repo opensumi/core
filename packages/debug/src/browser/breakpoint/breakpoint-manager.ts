@@ -3,7 +3,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { Emitter, Event, URI, isUndefined, StorageProvider, IStorage, STORAGE_NAMESPACE, IReporterService } from '@ali/ide-core-browser';
 import { DebugBreakpoint, DebugExceptionBreakpoint, BREAKPOINT_KIND } from './breakpoint-marker';
 import { MarkerManager, Marker } from '../markers';
-import { DebugProtocol } from 'vscode-debugprotocol';
+import { DebugProtocol } from '@ali/vscode-debugprotocol';
 import { DebugModel } from '../editor';
 import { DEBUG_REPORT_NAME } from '../../common';
 

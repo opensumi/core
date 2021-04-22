@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
+import { DebugProtocol } from '@ali/vscode-debugprotocol/lib/debugProtocol';
 import { DebugBreakpointsService } from './debug-breakpoints.service';
 import { useInjectable, ViewState, CommandService, EDITOR_COMMANDS, URI } from '@ali/ide-core-browser';
 import * as styles from './debug-breakpoints.module.less';
