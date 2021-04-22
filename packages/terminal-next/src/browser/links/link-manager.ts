@@ -116,7 +116,9 @@ export class TerminalLinkManager extends Disposable {
     const lineColumnInfo: LineColumnInfo = this.extractLineColumnInfo(link);
     const range: ITextEditorSelection = {
       startLineNumber: lineColumnInfo.lineNumber,
+      endLineNumber: lineColumnInfo.lineNumber,
       startColumn: lineColumnInfo.columnNumber,
+      endColumn: lineColumnInfo.columnNumber,
     };
     await this._editorService.open(resolvedLink.uri, { range });
   }

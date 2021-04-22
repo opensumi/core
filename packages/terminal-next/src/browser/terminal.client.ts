@@ -234,6 +234,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._loadAddons();
     this._xtermEvents();
     this._linkManager = this.injector.get(TerminalLinkManager, [this._term]);
+    this._linkManager.processCwd = this._workspacePath;
     this.addDispose(this._linkManager);
     this.addDispose(this._term);
     this._areLinksReady = true;
