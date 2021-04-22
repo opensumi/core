@@ -1,6 +1,6 @@
 {
   "name": "@ali/kaitian-cli-engine",
-  "version": "2.1.0",
+  "version": "2.1.3",
   "description": "Integration engine runtime for kaitian-cli and kaitian extension",
   "main": "",
   "files": [
@@ -26,13 +26,12 @@
   },
   "dependencies": {
     "@ali/common-di": "^5.0.0",
-    "@ali/ide-core-browser": "2.1.0",
-    "@ali/ide-core-common": "2.1.0",
-    "@ali/ide-core-node": "2.1.0",
-    "@ali/ide-express-file-server": "2.1.0",
-    "@ali/ide-i18n": "2.1.0",
-    "@ali/ide-kaitian-extension": "2.1.0",
-    "@ali/ide-startup": "2.1.0",
+    "@ali/ide-core-browser": "2.1.3",
+    "@ali/ide-core-common": "2.1.3",
+    "@ali/ide-core-node": "2.1.3",
+    "@ali/ide-express-file-server": "2.1.3",
+    "@ali/ide-i18n": "2.1.3",
+    "@ali/ide-kaitian-extension": "2.1.3",
     "@koa/cors": "^3.0.0",
     "chalk": "^4.0.0",
     "ejs": "^2.7.4",
@@ -44,6 +43,7 @@
     "yargs-parser": "^18.1.2"
   },
   "devDependencies": {
+    "@ali/ide-startup": "2.1.3",
     "@types/ejs": "^3.0.2",
     "@types/koa-mount": "^4.0.0",
     "@types/react": "^16.9.17",

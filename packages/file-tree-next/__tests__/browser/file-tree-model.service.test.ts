@@ -14,9 +14,9 @@ import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.
 import { IThemeService } from '@ali/ide-theme';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { Emitter } from '@reexport/vsc-modules/lib/base/common/event';
-import { FileContextKey } from '@ali/ide-file-tree/lib/browser/file-contextkey';
 import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
+import { FileContextKey } from '@ali/ide-file-tree-next/lib/browser/file-contextkey';
 
 class TempDirectory {}
 

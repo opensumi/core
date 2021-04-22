@@ -47,7 +47,6 @@
     "@ali/ide-file-scheme": "2.1.3",
     "@ali/ide-file-search": "2.1.3",
     "@ali/ide-file-service": "2.1.3",
-    "@ali/ide-file-tree": "1.38.2",
     "@ali/ide-file-tree-next": "2.1.3",
     "@ali/ide-i18n": "2.1.3",
     "@ali/ide-kaitian-extension": "2.1.3",

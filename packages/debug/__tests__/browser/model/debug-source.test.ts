@@ -1,6 +1,6 @@
 import { DebugSource } from '@ali/ide-debug/lib/browser';
 import { URI } from '@ali/ide-core-browser';
-import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
+import { DebugProtocol } from '@ali/vscode-debugprotocol/lib/debugProtocol';
 
 describe('DebugSource Model', () => {
   describe('DebugSource should be work after init', () => {

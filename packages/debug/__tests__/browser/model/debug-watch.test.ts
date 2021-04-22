@@ -1,6 +1,6 @@
 import { DebugWatch, DebugThread } from '@ali/ide-debug/lib/browser';
 import { ILogger } from '@ali/ide-core-browser';
-import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
+import { DebugProtocol } from '@ali/vscode-debugprotocol/lib/debugProtocol';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
