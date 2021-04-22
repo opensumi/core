@@ -509,7 +509,7 @@ export class FileTreeModelService {
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
     }
-    this.treeModel.dispatchChange();
+    this.treeModel?.dispatchChange();
     this._focusedFile = undefined;
   }
 
@@ -760,7 +760,7 @@ export class FileTreeModelService {
     }
     const currentIndex = this.treeModel.root.getIndexAtTreeNode(node);
     if (currentIndex === 0) {
-      return ;
+      return;
     }
     const prevIndex = currentIndex - 1;
     const prevFileNode = this.treeModel.root.getTreeNodeAtIndex(prevIndex);
@@ -788,7 +788,7 @@ export class FileTreeModelService {
     } else if (node) {
       target = node.parent as Directory;
     } else {
-      return ;
+      return;
     }
     if (target && target.expanded) {
       await this.fileTreeHandle.collapseNode(target as Directory);
