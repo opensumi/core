@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-file-service",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "files": [
     "lib"
   ],
@@ -20,9 +20,9 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-connection": "2.1.1",
-    "@ali/ide-core-common": "2.1.1",
-    "@ali/ide-core-node": "2.1.1",
+    "@ali/ide-connection": "2.1.2",
+    "@ali/ide-core-common": "2.1.2",
+    "@ali/ide-core-node": "2.1.2",
     "drivelist": "^6.4.3",
     "file-type": "^12.0.0",
     "iconv-lite": "^0.6.0",
@@ -36,7 +36,7 @@
     "write-file-atomic": "^3.0.0"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "2.1.1",
+    "@ali/ide-core-browser": "2.1.2",
     "@ali/ide-dev-tool": "^1.1.0",
     "@types/mv": "^2.1.0",
     "@types/uuid": "^3.4.4",
