@@ -1,10 +1,10 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNodeEvent, IWatcherEvent } from '@ali/ide-components';
+import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNodeEvent, IWatcherEvent, CompositeTreeNode } from '@ali/ide-components';
 import { Emitter, IContextKeyService, Deferred, Event, DisposableCollection, IClipboardService } from '@ali/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { DebugConsoleTreeModel } from './debug-console-model';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { ExpressionContainer, ExpressionNode, DebugConsoleNode, DebugConsoleRoot, DebugVariableContainer, DebugConsoleVariableContainer } from '../../tree/debug-tree-node.define';
+import { ExpressionContainer, ExpressionNode, DebugConsoleNode, DebugConsoleRoot } from '../../tree/debug-tree-node.define';
 import { DebugViewModel } from '../debug-view-model';
 import { DebugConsoleSession } from './debug-console-session';
 import * as pSeries from 'p-series';
@@ -25,7 +25,7 @@ export interface IDebugConsoleModel {
 
 @Injectable()
 export class DebugConsoleModelService {
-  private static DEFAULT_FLUSH_EVENT_DELAY = 100;
+  private static DEFAULT_REFRESH_DELAY = 200;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -236,26 +236,13 @@ export class DebugConsoleModelService {
         const branchSize = (treeModel.root as DebugConsoleRoot).branchSize;
         const children = debugConsoleSession.resolveChildren();
         (treeModel.root as DebugConsoleRoot).updatePresetChildren(children);
-        if (branchSize === 0) {
-          this.refresh();
-          return;
-        }
         if (branchSize === children.length) {
           return;
-        }
-        const addNodes = children.slice(branchSize);
-        let addNode;
-        for (const node of addNodes) {
-          if (node.parent === treeModel.root) {
-            addNode = node;
-            this.dispatchWatchEvent(treeModel.root, treeModel.root.path, { type: WatchEvent.Added, node: addNode, id: treeModel.root.id });
-          } else {
-            addNode = new DebugConsoleVariableContainer(session, (node as DebugVariableContainer).variable, treeModel.root, (node as DebugVariableContainer).source, (node as DebugVariableContainer).line);
-            this.dispatchWatchEvent(treeModel.root, treeModel.root.path, { type: WatchEvent.Added, node: addNode, id: treeModel.root.id });
-          }
+        } else {
+          this.refresh();
         }
         if (treeModel.isScrollBottom) {
-          await this.treeHandle.ensureVisible(addNode);
+          await this.treeHandle.ensureVisible(children[children.length - 1]);
         }
         treeModel?.dispatchChange();
       });
@@ -468,7 +455,7 @@ export class DebugConsoleModelService {
         this.flushEventQueueDeferred?.resolve();
         this.flushEventQueueDeferred = null;
         callback();
-      }, DebugConsoleModelService.DEFAULT_FLUSH_EVENT_DELAY) as any;
+      }, DebugConsoleModelService.DEFAULT_REFRESH_DELAY) as any;
     }
     if (this._changeEventDispatchQueue.indexOf(path) === -1) {
       this._changeEventDispatchQueue.push(path);
@@ -494,9 +481,9 @@ export class DebugConsoleModelService {
       }
     }
     promise = pSeries(roots.map((path) => async () => {
-      const watcher = this.treeModel?.root?.watchEvents.get(path);
-      if (watcher && typeof watcher.callback === 'function') {
-        await watcher.callback({ type: WatchEvent.Changed, path });
+      const node = this.treeModel?.root?.getTreeNodeByPath(path);
+      if (node && CompositeTreeNode.is(node)) {
+        await (node as CompositeTreeNode).refresh();
       }
       return null;
     }));
