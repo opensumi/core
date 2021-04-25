@@ -283,9 +283,12 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         if (!searchFolder) {
           if (this.fileTreeModelService.focusedFile) {
             searchFolder = this.fileTreeModelService.focusedFile.uri;
-          } else {
-            searchFolder = this.fileTreeModelService.selectedFiles[0].uri;
+          } else if (this.fileTreeModelService.selectedFiles.length > 0) {
+            searchFolder = this.fileTreeModelService.selectedFiles[0]?.uri;
           }
+        }
+        if (!searchFolder) {
+          return;
         }
         let searchPath: string;
         if (this.fileTreeService.isMultipleWorkspace) {
@@ -314,7 +317,11 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
 
     commands.registerCommand(FILE_COMMANDS.LOCATION, {
       execute: (locationUri?: URI) => {
-        this.revealFile(locationUri || this.fileTreeModelService.selectedFiles[0].uri);
+        if (locationUri) {
+          this.revealFile(locationUri);
+        } else if (this.fileTreeModelService.selectedFiles && this.fileTreeModelService.selectedFiles.length > 0) {
+          this.revealFile(this.fileTreeModelService.selectedFiles[0].uri);
+        }
       },
     });
 
