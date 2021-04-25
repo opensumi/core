@@ -104,7 +104,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       },
     });
 
-    this._setInstanceLinkProviders(client);
+    client.addDispose(client.onLinksReady(() => {
+      this._setInstanceLinkProviders(client);
+    }));
 
     this._onDidOpenTerminal.fire({
       id: client.id,
