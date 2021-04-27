@@ -1,4 +1,6 @@
-import { MessageReader, MessageWriter, Message } from '@ali/vscode-jsonrpc';
+import { Message } from '@ali/vscode-jsonrpc/lib/common/messages';
+import { MessageReader } from '@ali/vscode-jsonrpc/lib/common/messageReader';
+import { MessageWriter } from '@ali/vscode-jsonrpc/lib/common/messageWriter';
 import { IDisposable } from '@ali/ide-core-common';
 import { ExtensionMessageReader } from './extension-message-reader';
 import { ExtensionMessageWriter } from './extension-message-writer';

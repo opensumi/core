@@ -1,4 +1,4 @@
-import {MessageConnection} from '@ali/vscode-jsonrpc';
+import { MessageConnection } from '@ali/vscode-jsonrpc/lib/common/connection';
 
 export abstract class RPCService {
   rpcClient?: any[];

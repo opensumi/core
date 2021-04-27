@@ -1,6 +1,5 @@
-import { CancellationToken } from '@ali/vscode-jsonrpc';
 import { Injectable, Optional, Autowired } from '@ali/common-di';
-import { UriComponents, Uri as URI, Event, Emitter, IDisposable, Disposable } from '@ali/ide-core-common';
+import { UriComponents, Uri as URI, Event, Emitter, IDisposable, Disposable, CancellationToken } from '@ali/ide-core-common';
 import { Sequence, ISplice } from '@ali/ide-core-common/lib/sequence';
 import { IRPCProtocol } from '@ali/ide-connection';
 import {

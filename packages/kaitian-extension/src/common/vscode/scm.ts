@@ -1,5 +1,5 @@
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
-import { CancellationToken } from '@ali/vscode-jsonrpc';
+import { CancellationToken } from '@ali/vscode-jsonrpc/lib/common/cancellation';
 import type { IDisposable, UriComponents } from '@ali/ide-core-common';
 
 import { VSCommand } from './model.api';

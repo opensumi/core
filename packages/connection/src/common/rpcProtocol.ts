@@ -1,5 +1,4 @@
-import { Deferred, Event, Uri } from '@ali/ide-core-common';
-import { CancellationToken, CancellationTokenSource } from '@ali/vscode-jsonrpc';
+import { CancellationToken, CancellationTokenSource, Deferred, Event, Uri } from '@ali/ide-core-common';
 // Uri: vscode 中的 uri
 // URI: 在 vscode 中的 uri 基础上包装了一些基础方法
 
@@ -296,7 +295,7 @@ export class RPCProtocol implements IRPCProtocol {
   }
 
   private _remoteCall(rpcId: string, methodName: string, args: any[]): Promise<any> {
-    const cancellationToken: CancellationToken | undefined = args.length && CancellationToken.is(args[args.length - 1]) ? args.pop() : undefined;
+    const cancellationToken: CancellationToken | undefined = args.length && CancellationToken.isCancellationToken(args[args.length - 1]) ? args.pop() : undefined;
     if (cancellationToken && cancellationToken.isCancellationRequested) {
       return Promise.reject(canceled());
     }

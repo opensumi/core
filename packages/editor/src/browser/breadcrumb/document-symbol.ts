@@ -1,11 +1,10 @@
 import { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { Injectable, Autowired } from '@ali/common-di';
-import { WithEventBus, MaybeNull, OnEvent, BasicEvent, URI } from '@ali/ide-core-browser';
+import { WithEventBus, MaybeNull, OnEvent, BasicEvent, URI, CancellationTokenSource } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '../../common';
 import { IEditorDocumentModelService, EditorDocumentModelContentChangedEvent } from '../doc-model/types';
 import debounce = require('lodash.debounce');
-import { CancellationTokenSource } from '@ali/monaco-editor-core/esm/vs/base/common/cancellation';
 import { DocumentSymbol, SymbolTag } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 
 @Injectable()

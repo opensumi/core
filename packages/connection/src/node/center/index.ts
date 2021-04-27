@@ -1,9 +1,9 @@
 import {
   SocketMessageReader,
   SocketMessageWriter,
-  createNodeMessageConnection,
+  createMessageConnection,
   MessageConnection,
-} from '@ali/vscode-jsonrpc';
+} from '@ali/vscode-jsonrpc/lib/node/main';
 
 export {
   SocketMessageReader,
@@ -228,7 +228,7 @@ export class RPCServiceStub {
 }
 
 export function createSocketConnection(socket: net.Socket) {
-  return createNodeMessageConnection(
+  return createMessageConnection(
     new SocketMessageReader(socket),
     new SocketMessageWriter(socket),
   );

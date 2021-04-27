@@ -1,8 +1,7 @@
 import type { EndOfLineSequence } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
-import { CancellationToken } from '@ali/monaco-editor-core/esm/vs/base/common/cancellation';
 
 // 内置的api类型声明
-import { Uri as URI, IRange, IDisposable, UriComponents, SymbolTag } from '@ali/ide-core-common';
+import { Uri as URI, IRange, IDisposable, UriComponents, SymbolTag, CancellationToken } from '@ali/ide-core-common';
 import { ISingleEditOperation } from '@ali/ide-editor';
 import type * as vscode from 'vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';

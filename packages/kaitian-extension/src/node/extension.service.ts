@@ -414,7 +414,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       commonChannelPathHandler.register('ExtMainThreadConnection', {
         handler: (connection: WSChannel, connectionClientId: string) => {
           this.logger.log(`kaitian ext main connected ${connectionClientId}`);
-
           const reader = new WebSocketMessageReader(connection);
           const writer = new WebSocketMessageWriter(connection);
           handler({

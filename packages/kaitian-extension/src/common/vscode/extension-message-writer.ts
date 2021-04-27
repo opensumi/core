@@ -1,5 +1,5 @@
 import { AbstractMessageWriter, MessageWriter } from '@ali/vscode-jsonrpc/lib/common/messageWriter';
-import { Message } from '@ali/vscode-jsonrpc';
+import { Message } from '@ali/vscode-jsonrpc/lib/common/messages';
 import { IExtHostConnection } from './connection';
 
 /**
