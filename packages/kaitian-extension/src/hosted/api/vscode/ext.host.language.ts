@@ -83,6 +83,8 @@ import {
   MainThreadAPIIdentifier,
   ExtensionDocumentDataManager,
   IExtHostLanguages,
+  ISuggestDataDto,
+  ISuggestDataDtoField,
 } from '../../../common/vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 import { UriComponents } from 'vscode-uri';
@@ -355,7 +357,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.withAdapter(handle, CompletionAdapter, (adapter) => adapter.provideCompletionItems(resource, position, context, token));
   }
 
-  $resolveCompletionItem(handle: number, resource: Uri, position: Position, completion: CompletionItem, token: CancellationToken): Promise<CompletionItem> {
+  $resolveCompletionItem(handle: number, resource: Uri, position: Position, completion: CompletionItem, token: CancellationToken): Promise<ISuggestDataDto | undefined> {
     return this.withAdapter(handle, CompletionAdapter, (adapter) => adapter.resolveCompletionItem(resource, position, completion, token));
   }
 

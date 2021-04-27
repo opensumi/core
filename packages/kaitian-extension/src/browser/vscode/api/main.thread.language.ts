@@ -6,16 +6,16 @@ import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/mo
 import { Autowired, Injectable, Optinal } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IReporterService, PreferenceService } from '@ali/ide-core-browser';
-import { DisposableCollection, Emitter, IMarkerData, LRUMap, MarkerManager, REPORT_NAME, URI } from '@ali/ide-core-common';
+import { DisposableCollection, Emitter, IMarkerData, IRange, LRUMap, MarkerManager, REPORT_NAME, URI } from '@ali/ide-core-common';
 import { extname } from '@ali/ide-core-common/lib/path';
 import { ICallHierarchyService } from '@ali/ide-monaco/lib/browser/callHierarchy/callHierarchy.service';
 import { IEvaluatableExpressionService } from '@ali/ide-debug/lib/browser/editor/evaluatable-expression';
 import { applyPatch } from 'diff';
 import { DocumentFilter } from 'vscode-languageserver-protocol';
-import { ExtHostAPIIdentifier, IExtHostLanguages, IMainThreadLanguages, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
+import { ExtHostAPIIdentifier, IExtHostLanguages, IMainThreadLanguages, ISuggestDataDto, ISuggestDataDtoField, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
 import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SemanticTokensLegend, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ICallHierarchyItemDto, CallHierarchyItem } from '../../../common/vscode/model.api';
-import { reviveIndentationRule, reviveOnEnterRules, reviveRegExp, reviveWorkspaceEditDto } from '../../../common/vscode/utils';
+import { mixin, reviveIndentationRule, reviveOnEnterRules, reviveRegExp, reviveWorkspaceEditDto } from '../../../common/vscode/utils';
 import { UriComponents } from '../../../common/vscode/ext-types';
 import { ILanguageService } from '@ali/ide-editor';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
@@ -138,6 +138,54 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
+  private isDeflatedSuggestDto(data: ISuggestDataDto | modes.CompletionItem) {
+    return (
+      data[ISuggestDataDtoField.label] ||
+      data[ISuggestDataDtoField.label2] ||
+      data[ISuggestDataDtoField.kind] ||
+      data[ISuggestDataDtoField.kindModifier] ||
+      data[ISuggestDataDtoField.detail] ||
+      data[ISuggestDataDtoField.documentation] ||
+      data[ISuggestDataDtoField.sortText] ||
+      data[ISuggestDataDtoField.filterText] ||
+      data[ISuggestDataDtoField.preselect] ||
+      data[ISuggestDataDtoField.range] ||
+      data[ISuggestDataDtoField.insertTextRules] ||
+      data[ISuggestDataDtoField.commitCharacters] ||
+      data[ISuggestDataDtoField.insertText] ||
+      data[ISuggestDataDtoField.command]
+    );
+  }
+
+  private inflateSuggestDto(defaultRange: IRange | { insert: IRange, replace: IRange }, data: ISuggestDataDto): modes.CompletionItem {
+    if (!this.isDeflatedSuggestDto(data)) {
+      return data as unknown as modes.CompletionItem;
+    }
+
+    return {
+      label: data[ISuggestDataDtoField.label2] ?? data[ISuggestDataDtoField.label],
+      // @ts-ignore
+      kind: data[ISuggestDataDtoField.kind] ?? modes.CompletionItemKind.Property,
+      // @ts-ignore
+      tags: data[ISuggestDataDtoField.kindModifier],
+      detail: data[ISuggestDataDtoField.detail],
+      documentation: data[ISuggestDataDtoField.documentation],
+      sortText: data[ISuggestDataDtoField.sortText],
+      filterText: data[ISuggestDataDtoField.filterText],
+      preselect: data[ISuggestDataDtoField.preselect],
+      insertText: typeof data.h === 'undefined' ? data[ISuggestDataDtoField.label] : data.h,
+      // @ts-ignore
+      range: data[ISuggestDataDtoField.range] ?? defaultRange,
+      // @ts-ignore
+      insertTextRules: data[ISuggestDataDtoField.insertTextRules],
+      commitCharacters: data[ISuggestDataDtoField.commitCharacters],
+      additionalTextEdits: data[ISuggestDataDtoField.additionalTextEdits],
+      command: data[ISuggestDataDtoField.command],
+      // not-standard
+      _id: data.x,
+    };
+  }
+
   $registerCompletionSupport(handle: number, selector: SerializedDocumentFilter[], triggerCharacters: string[], supportsResolveDetails: boolean): void {
     // NOTE monaco.languages.registerCompletionItemProvider api显示只能传string，实际内部实现支持DocumentSelector
     this.disposables.set(handle, monaco.languages.registerCompletionItemProvider(fromLanguageSelector(selector)! as any, {
@@ -160,8 +208,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
             extDuration: (result as any)._dur,
           });
         }
+        const suggestions = result.items.map((data) => this.inflateSuggestDto(result.defaultRange, data));
         return {
-          suggestions: result.items,
+          suggestions,
           incomplete: result.isIncomplete,
           dispose: () => {
             if (typeof (result as any)._id === 'number') {
@@ -178,7 +227,14 @@ export class MainThreadLanguages implements IMainThreadLanguages {
             return undefined!;
           }
           this.reporter.point(REPORT_NAME.RESOLVE_COMPLETION_ITEM);
-          return Promise.resolve(this.proxy.$resolveCompletionItem(handle, model.uri, position, suggestion, token) as any);
+          return this.proxy.$resolveCompletionItem(handle, model.uri, position, suggestion, token)
+            .then((result) => {
+              if (!result) {
+                return suggestion;
+              }
+              const newSuggestion = this.inflateSuggestDto(suggestion.range, result);
+              return mixin(suggestion, newSuggestion, true);
+            });
         }
         : undefined,
     }));

@@ -1,5 +1,5 @@
 import { Uri as URI } from '@ali/ide-core-common';
-import { ExtensionDocumentDataManager } from '../../../../common/vscode';
+import { ExtensionDocumentDataManager, ISuggestDataDto, ISuggestDataDtoField } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
 import type * as vscode from 'vscode';
 import {
@@ -9,7 +9,6 @@ import {
   CompletionItem,
 } from '../../../../common/vscode/model.api';
 import { SnippetString, Range } from '../../../../common/vscode/ext-types';
-import { mixin } from '../../../../common/vscode/utils';
 import { CommandsConverter } from '../ext.host.command';
 import { DisposableStore } from '@ali/ide-core-common';
 import { getPerformance } from './util';
@@ -65,12 +64,13 @@ export class CompletionAdapter {
       get $mid() {
         return -1;
       },
-      get $type() {
-        return 'CompletionList';
-      },
       _id,
       _dur: duration,
       isIncomplete,
+      defaultRange: {
+        replace: Converter.fromRange(replacing),
+        insert: Converter.fromRange(inserting),
+      },
       items: originalItems
         .map((item) => {
           const id = itemId++;
@@ -84,17 +84,14 @@ export class CompletionAdapter {
           if (!resolved) {
             return undefined;
           }
-          return {
-            pid: _id,
-            id,
-            ...resolved,
-          };
+          return resolved;
         })
         .filter((item) => !!item),
     };
     this.cache.set(_id, {});
     r.items.forEach((item, i) => {
-      this.cache.get(_id)![item!.id] = originalItems[i]; // 这里必须设置原来提供的CompletionItem，因为vscode很多插件存在instanceOf判断
+      // x: id, id 为 [id, parentId], 所以 item.x[0] 既是原本的 id
+      this.cache.get(_id)![item?.x![0]!] = originalItems[i]; // 这里必须设置原来提供的CompletionItem，因为vscode很多插件存在instanceOf判断
     });
     return r;
   }
@@ -104,22 +101,22 @@ export class CompletionAdapter {
     position: Position,
     completion: CompletionItem,
     token: vscode.CancellationToken,
-  ): Promise<CompletionItem> {
+  ): Promise<ISuggestDataDto | undefined> {
     if (typeof this.delegate.resolveCompletionItem !== 'function') {
-      return Promise.resolve(completion);
+      return Promise.resolve(undefined);
     }
 
     const { pid: parentId, id } = completion;
     const item = this.cache.has(parentId) && this.cache.get(parentId)![id];
     if (!item) {
-      return Promise.resolve(completion);
+      return Promise.resolve(undefined);
     }
 
     return Promise.resolve(
       this.delegate.resolveCompletionItem(item, token),
     ).then((resolvedItem) => {
       if (!resolvedItem) {
-        return completion;
+        return undefined;
       }
 
       const newCompletion = this.convertCompletionItem(
@@ -127,11 +124,7 @@ export class CompletionAdapter {
         id,
         parentId,
       );
-      if (newCompletion) {
-        mixin(completion, newCompletion, true);
-      }
-
-      return completion;
+      return newCompletion;
     });
   }
 
@@ -151,7 +144,7 @@ export class CompletionAdapter {
     parentId: number,
     defaultInserting?: vscode.Range,
     defaultReplacing?: vscode.Range,
-  ): CompletionItem | undefined {
+  ): ISuggestDataDto | undefined {
     if (typeof item.label !== 'string' || item.label.length === 0) {
       // tslint:disable no-console
       console.warn('Invalid Completion Item -> must have at least a label');
@@ -177,43 +170,38 @@ export class CompletionAdapter {
       };
     }
 
-    const result: CompletionItem = {
-      id,
-      range,
-      kind: Converter.fromCompletionItemKind(item.kind),
-      tags: item.tags && item.tags.map(Converter.CompletionItemTag.from),
-      parentId,
-      label: item.label,
-      detail: item.detail,
-      documentation: item.documentation,
-      filterText: item.filterText,
-      sortText: item.sortText,
-      preselect: item.preselect,
-      insertText: '',
-      additionalTextEdits:
+    const result: ISuggestDataDto = {
+      x: [id, parentId],
+      [ISuggestDataDtoField.range]: range,
+      [ISuggestDataDtoField.kind]: item.kind ? Converter.fromCompletionItemKind(item.kind) : undefined,
+      [ISuggestDataDtoField.kindModifier]: item.tags && item.tags.map(Converter.CompletionItemTag.from),
+      [ISuggestDataDtoField.label]: item.label,
+      [ISuggestDataDtoField.detail]: item.detail,
+      [ISuggestDataDtoField.documentation]: item.documentation,
+      [ISuggestDataDtoField.filterText]: item.filterText,
+      [ISuggestDataDtoField.sortText]: item.sortText,
+      [ISuggestDataDtoField.preselect]: item.preselect ? item.preselect : undefined,
+      [ISuggestDataDtoField.insertText]: '',
+      [ISuggestDataDtoField.additionalTextEdits]:
         item.additionalTextEdits &&
         item.additionalTextEdits.map(Converter.fromTextEdit),
-      command: item.command
+        [ISuggestDataDtoField.command]: item.command
         ? this.commandConverter.toInternal(item.command, disposables)
         : undefined,
-      commitCharacters: item.commitCharacters,
-      insertTextRules: undefined,
+        [ISuggestDataDtoField.commitCharacters]: item.commitCharacters,
+        [ISuggestDataDtoField.insertTextRules]: undefined,
     };
 
     if (item.textEdit) {
-      result.insertText = item.textEdit.newText;
+      result[ISuggestDataDtoField.insertText] = item.textEdit.newText;
     } else if (typeof item.insertText === 'string') {
-      result.insertText = item.insertText;
-      result.snippetType = 'internal';
+      result[ISuggestDataDtoField.insertText] = item.insertText;
     } else if (item.insertText instanceof SnippetString) {
-      result.insertText = item.insertText.value;
-      result.snippetType = 'textmate';
-      result.insertTextRules = CompletionItemInsertTextRule.InsertAsSnippet;
+      result[ISuggestDataDtoField.insertText] = item.insertText.value;
+      result[ISuggestDataDtoField.insertTextRules] = CompletionItemInsertTextRule.InsertAsSnippet;
     } else {
-      result.insertText = item.label;
-      result.snippetType = 'internal';
+      result[ISuggestDataDtoField.insertText] = item.label;
     }
-
     return result;
   }
 

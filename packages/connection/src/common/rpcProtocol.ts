@@ -97,39 +97,6 @@ export namespace ObjectTransfer {
           $type: 'VSCODE_URI',
           data: uri.toString(),
         };
-      } else if (value.$mid === -1 && value.$type === 'CompletionList') {
-        return {
-          $type: 'VSCODE_COMPLETION_LIST',
-          data: {
-            _id: value._id,
-            _dur: value._dur,
-            isIncomplete: value.isIncomplete,
-            items: value.items.map((item) => {
-              return {
-                p: item.pid,
-                i: item.id,
-                l: item.label,
-                k: item.kind,
-                s: item.sortText,
-                f: item.filterText,
-                it: item.insertText === item.label ? undefined : item.insertText,
-                itl: item.insertTextRules || undefined,
-                r: item.range || undefined,
-                d: item.detail,
-                dc: item.documentation,
-                ps: item.preselect,
-                c: item.command,
-                cc: item.commitCharacters,
-                at: item.additionalTextEdits,
-              };
-            }),
-          },
-        };
-      } else if (value.type === 'Buffer') {
-        return {
-          $type: 'Buffer',
-          data: Array.from(value.data),
-        };
       } else if (value instanceof Uint8Array || value instanceof Uint32Array || value instanceof Uint16Array) {
         return {
           $type: 'Buffer',
@@ -147,32 +114,6 @@ export namespace ObjectTransfer {
       }
       if (value.$type === 'Buffer') {
         return Uint8Array.from(value.data);
-      }
-      if (value.$type === 'VSCODE_COMPLETION_LIST') {
-        return {
-          _id: value.data._id,
-          _dur: value.data._dur,
-          isIncomplete: value.data.isIncomplete,
-          items: value.data.items ? value.data.items.map((item) => {
-            return {
-              pid: item.p,
-              id: item.i,
-              label: item.l,
-              kind: item.k,
-              sortText: item.s,
-              insertText: item.it || item.l,
-              filterText: item.f,
-              range: item.r || null,
-              insertTextRules: item.itl,
-              detail: item.d,
-              documentation: item.dc,
-              preselect: item.ps,
-              command: item.c,
-              commitCharacters: item.cc,
-              additionalTextEdits: item.at,
-            };
-          }) : [],
-        };
       }
     }
     return value;
