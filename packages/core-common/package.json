@@ -20,9 +20,10 @@
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
     "@ali/common-di": "^5.0.0",
+    "iconv-lite": "^0.6.0",
     "shortid": "^2.2.14",
+    "strip-json-comments": "3.0.1",
     "tslib": "^1.9.3",
-    "vscode-uri": "^2.1.2",
-    "strip-json-comments": "3.0.1"
+    "vscode-uri": "^2.1.2"
   }
 }
