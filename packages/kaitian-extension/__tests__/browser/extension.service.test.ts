@@ -44,6 +44,7 @@ class MockLoggerManagerClient {
       error() { },
       verbose() { },
       warn() { },
+      dispose() {},
     };
   }
 }
@@ -213,21 +214,22 @@ const mockExtension = {
   toJSON: () => mockExtensionProps,
 };
 
-const mockExtensions: IExtension[] = [mockExtension];
-
-@Injectable()
 class MockExtNodeClientService implements IExtensionNodeClientService {
+
+  constructor(private mockExtensionProps: IExtensionProps, private mockExtensions: IExtension[]) {
+  }
+
   getElectronMainThreadListenPath(clientId: string): Promise<string> {
     throw new Error('Method not implemented.');
   }
   getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]> {
-    return Promise.resolve(mockExtensions);
+    return Promise.resolve(this.mockExtensions);
   }
   createProcess(clientId: string): Promise<void> {
     return Promise.resolve();
   }
   getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData | undefined): Promise<IExtensionMetaData | undefined> {
-    return Promise.resolve({ ...mockExtensionProps, extraMetadata: { ...extraMetaData } });
+    return Promise.resolve({ ...this.mockExtensionProps, extraMetadata: { ...extraMetaData } });
   }
   infoProcessNotExist(): void {
     throw new Error('Method not implemented.');
@@ -246,8 +248,11 @@ class MockExtNodeClientService implements IExtensionNodeClientService {
 describe('Extension service', () => {
   let extensionService: ExtensionService;
   let injector: MockInjector;
+  const originFetch = (global as any).fetch;
+  let mockExtensions: IExtension[];
 
-  beforeAll((done) => {
+  beforeEach(async () => {
+    mockExtensions = [mockExtension];
     (global as any).fetch = jest.fn().mockResolvedValueOnce({
       ok: true,
       text: async () => fs.readFileSync(path.join(__dirname, '../__mock__/extension/browser-new.js'), 'utf8'),
@@ -413,7 +418,7 @@ describe('Extension service', () => {
       },
       {
         token: ExtensionNodeServiceServerPath,
-        useClass: MockExtNodeClientService,
+        useValue: new MockExtNodeClientService(mockExtensionProps, mockExtensions),
       },
       {
         token: ISchemaStore,
@@ -427,14 +432,15 @@ describe('Extension service', () => {
 
     injector.get(IMainLayoutService).viewReady.resolve();
     extensionService = injector.get(ExtensionService);
-    done();
+    await extensionService.activate();
+  });
+
+  afterEach(() => {
+    (global as any).fetch = originFetch;
+    injector.disposeAll();
   });
 
   describe('activate', () => {
-    it('should activate extension service.', async (done) => {
-      await extensionService.activate();
-      done();
-    });
 
     it('emit event before activate', async () => {
       const cb = jest.fn();
@@ -498,6 +504,14 @@ describe('Extension service', () => {
       setTimeout(() => {
         done();
       }, 1000);
+    });
+
+    it('extension should not repeated activation', async () => {
+      const extensions = await extensionService.getExtensions();
+      expect(extensions).toHaveLength(1);
+      await extensionService.postChangedExtension(false, mockExtensionProps.realPath);
+      const postExtensions = await extensionService.getExtensions();
+      expect(postExtensions).toHaveLength(1);
     });
   });
 

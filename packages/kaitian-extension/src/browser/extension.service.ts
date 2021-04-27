@@ -305,6 +305,12 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     } : _upgrade;
     const extensionMetadata = await this.extensionNodeService.getExtension(extensionPath, getPreferenceLanguageId(), {});
     if (extensionMetadata) {
+      // 如果已经加载了一个 id 一样的插件，则不激活当前插件
+      const sameExtension = this.extensionMetaDataArr?.find((metaData) => metaData.id === extensionMetadata.id);
+      if (sameExtension) {
+        this.logger.warn(`Extension ${extensionMetadata.id} already exists, skip acivate`);
+        return;
+      }
       const extension = this.injector.get(Extension, [
         extensionMetadata,
         this,
