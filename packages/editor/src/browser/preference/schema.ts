@@ -132,7 +132,7 @@ export const EDITOR_DEFAULTS = {
       renderCharacters: true,
       maxColumn: 120,
     },
-    fixedOverflowWidgets: false,
+    fixedOverflowWidgets: true,
   },
 
   contribInfo: {
