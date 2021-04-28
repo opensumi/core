@@ -3,7 +3,7 @@ import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { SearchAddon } from 'xterm-addon-search';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { Disposable, Deferred, Emitter, Event, debounce, ILogger, IDisposable } from '@ali/ide-core-common';
+import { Disposable, Deferred, Emitter, Event, debounce, ILogger, IDisposable, URI } from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
@@ -322,11 +322,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       // 工作区模式下每次新建终端都需要用户手动进行一次路径选择
       const roots = this.workspace.tryGetRoots();
       const choose = await this.quickPick.show(roots.map((file) => {
-        return file.uri.substring(7);
+        return new URI(file.uri).codeUri.fsPath;
       }));
       return choose;
     } else {
-      return this.workspace.workspace?.uri.substring(7);
+      return new URI(this.workspace.workspace?.uri).codeUri.fsPath;
     }
   }
 
