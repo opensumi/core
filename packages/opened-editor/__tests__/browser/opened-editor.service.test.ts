@@ -160,10 +160,7 @@ describe('OpenedEditorModelService should be work', () => {
       expect(Array.isArray(openedEditorModelService.selectedFiles)).toBeTruthy();
       expect(typeof openedEditorModelService.onDidRefreshed).toBe('function');
       expect(typeof openedEditorModelService.initDecorations).toBe('function');
-      expect(typeof openedEditorModelService.clearFileSelectedDecoration).toBe('function');
       expect(typeof openedEditorModelService.activeFileDecoration).toBe('function');
-      expect(typeof openedEditorModelService.activeFileFocusedDecoration).toBe('function');
-      expect(typeof openedEditorModelService.activeFileSelectedDecoration).toBe('function');
       expect(typeof openedEditorModelService.enactiveFileDecoration).toBe('function');
       expect(typeof openedEditorModelService.removeFileDecoration).toBe('function');
       expect(typeof openedEditorModelService.handleContextMenu).toBe('function');

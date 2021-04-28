@@ -79,7 +79,6 @@ export class DebugConsoleContribution implements ComponentContribution, BrowserE
         label: localize('debug.console.copy'),
       },
       group: 'copy',
-      when: 'inDebugMode',
     });
     registry.registerMenuItem(MenuId.DebugConsoleContext, {
       command: {
@@ -87,7 +86,6 @@ export class DebugConsoleContribution implements ComponentContribution, BrowserE
         label: localize('debug.console.copyAll'),
       },
       group: 'copy',
-      when: 'inDebugMode',
     });
     registry.registerMenuItem(MenuId.DebugConsoleContext, {
       command: {
@@ -95,7 +93,6 @@ export class DebugConsoleContribution implements ComponentContribution, BrowserE
         label: localize('debug.console.clear'),
       },
       group: 'other',
-      when: 'inDebugMode',
     });
     registry.registerMenuItem(MenuId.DebugConsoleContext, {
       command: {
@@ -103,7 +100,6 @@ export class DebugConsoleContribution implements ComponentContribution, BrowserE
         label: localize('debug.console.collapseAll'),
       },
       group: 'other',
-      when: 'inDebugMode',
     });
   }
 }

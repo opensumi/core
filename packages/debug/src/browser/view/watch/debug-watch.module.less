@@ -44,10 +44,26 @@
   }
 
   &.mod_focused {
+    outline: 1px solid var(--list-focusOutline);
     color: var(--kt-tree-activeSelectionForeground) !important;;
     background: var(--kt-tree-activeSelectionBackground);
     .expansion_toggle {
       color: var(--kt-tree-activeSelectionForeground) !important;;
+    }
+    .debug_watch_node_displayname {
+      .compact_name {
+        &.active {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+
+  &.mod_actived {
+    outline: 1px solid var(--list-focusOutline);
+    outline-offset: -1px;
+    .expansion_toggle {
+      color: var(--kt-tree-activeSelectionForeground) !important;
     }
     .debug_watch_node_displayname {
       .compact_name {

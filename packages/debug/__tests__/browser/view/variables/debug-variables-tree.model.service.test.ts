@@ -97,7 +97,7 @@ describe('Debug Variables Tree Model', () => {
     expect(typeof debugVariablesModelService.initTreeModel).toBe('function');
     expect(typeof debugVariablesModelService.initDecorations).toBe('function');
     expect(typeof debugVariablesModelService.activeNodeDecoration).toBe('function');
-    expect(typeof debugVariablesModelService.activeNodeFocusedDecoration).toBe('function');
+    expect(typeof debugVariablesModelService.activeNodeActivedDecoration).toBe('function');
     expect(typeof debugVariablesModelService.enactiveNodeDecoration).toBe('function');
     expect(typeof debugVariablesModelService.removeNodeDecoration).toBe('function');
     expect(typeof debugVariablesModelService.handleTreeHandler).toBe('function');

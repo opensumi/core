@@ -15,7 +15,6 @@ export interface IFileTreeDialogNodeProps {
   decorations?: ClasslistComposite;
   onTwistierClick?: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
   onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
-  onContextMenu?: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
   template?: React.JSXElementConstructor<any>;
 }
 
@@ -24,7 +23,6 @@ export type FileTreeDialogNodeRenderedProps = IFileTreeDialogNodeProps & INodeRe
 export const FileTreeDialogNode: React.FC<FileTreeDialogNodeRenderedProps> = ({
   item,
   onClick,
-  onContextMenu,
   itemType,
   labelService,
   leftPadding = 8,
@@ -50,15 +48,6 @@ export const FileTreeDialogNode: React.FC<FileTreeDialogNodeRenderedProps> = ({
       } else {
         onClick(ev, item as File, itemType);
       }
-    }
-  };
-
-  const handleContextMenu = (ev: React.MouseEvent) => {
-    if (ev.nativeEvent.which === 0 || !onContextMenu) {
-      return;
-    }
-    if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      onContextMenu(ev, item as TreeNode, itemType);
     }
   };
 
@@ -184,7 +173,6 @@ export const FileTreeDialogNode: React.FC<FileTreeDialogNodeRenderedProps> = ({
     <div
         key={item.id}
         onClick={handleClick}
-        onContextMenu={handleContextMenu}
         title={getItemTooltip()}
         className={cls(
           styles.file_tree_node,

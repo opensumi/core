@@ -22,7 +22,7 @@ export interface ExtensionTreeValidateMessage extends PromptValidateMessage {
   value: string;
 }
 
-const ITreeViewDataProvider  = Symbol('ITreeViewDataProvider');
+const ITreeViewDataProvider = Symbol('ITreeViewDataProvider');
 
 @Injectable()
 export class ExtensionTreeViewModel {
@@ -90,16 +90,16 @@ export class ExtensionTreeViewModel {
   // 装饰器
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
   private focusedDecoration: Decoration = new Decoration(styles.mod_focused); // 焦点态
-  private loadingDecoration: Decoration = new Decoration(styles.mod_loading); // 焦点态
-  private cutDecoration: Decoration = new Decoration(styles.mod_cut); // 焦点态
+  private contextMenuDecoration: Decoration = new Decoration(styles.mod_actived); // 右键菜单激活态
+  private loadingDecoration: Decoration = new Decoration(styles.mod_loading); // 加载态
   // 即使选中态也是焦点态的节点，全局仅会有一个
   private _focusedNode: ExtensionTreeNode | ExtensionCompositeTreeNode | undefined;
   // 选中态的节点，会可能有多个
   private _selectedNodes: (ExtensionTreeNode | ExtensionCompositeTreeNode)[] = [];
+  // 右键菜单激活态的节点
+  private _contextMenuNode: ExtensionTreeNode | ExtensionCompositeTreeNode | undefined;
   private clickTimes: number;
   private clickTimer: any;
-
-  private preContextMenuFocusedNode: ExtensionTreeNode | ExtensionCompositeTreeNode | null;
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
@@ -152,9 +152,15 @@ export class ExtensionTreeViewModel {
   get focusedNode() {
     return this._focusedNode;
   }
+
   // 是选中态，非焦点态节点
   get selectedNodes() {
     return this._selectedNodes;
+  }
+
+  // 右键菜单激活态节点
+  get contextMenuNode() {
+    return this._contextMenuNode;
   }
 
   async initTreeModel() {
@@ -204,7 +210,7 @@ export class ExtensionTreeViewModel {
     this._decorations = new DecorationsManager(root as any);
     this._decorations.addDecoration(this.selectedDecoration);
     this._decorations.addDecoration(this.focusedDecoration);
-    this._decorations.addDecoration(this.cutDecoration);
+    this._decorations.addDecoration(this.contextMenuDecoration);
     this._decorations.addDecoration(this.loadingDecoration);
   }
 
@@ -224,10 +230,9 @@ export class ExtensionTreeViewModel {
       return;
     }
 
-    if (this.preContextMenuFocusedNode) {
-      this.focusedDecoration.removeTarget(this.preContextMenuFocusedNode);
-      this.selectedDecoration.removeTarget(this.preContextMenuFocusedNode);
-      this.preContextMenuFocusedNode = null;
+    if (this.contextMenuNode) {
+      this.contextMenuDecoration.removeTarget(this.contextMenuNode);
+      this._contextMenuNode = undefined;
     }
     if (target) {
       if (this.selectedNodes.length > 0) {
@@ -262,17 +267,13 @@ export class ExtensionTreeViewModel {
 
     if (this.focusedNode !== target) {
       if (removePreFocusedDecoration) {
-        // 当存在上一次右键菜单激活的文件时，需要把焦点态的文件节点的装饰器全部移除
-        if (this.preContextMenuFocusedNode) {
-          this.focusedDecoration.removeTarget(this.preContextMenuFocusedNode);
-          this.selectedDecoration.removeTarget(this.preContextMenuFocusedNode);
-        } else if (!!this.focusedNode) {
+        if (!!this.focusedNode) {
           // 多选情况下第一次切换焦点文件
           this.focusedDecoration.removeTarget(this.focusedNode);
         }
-        this.preContextMenuFocusedNode = target;
+        this._contextMenuNode = target;
       } else if (!!this.focusedNode) {
-        this.preContextMenuFocusedNode = null;
+        this._contextMenuNode = undefined;
         this.focusedDecoration.removeTarget(this.focusedNode);
       }
       if (target) {
@@ -282,16 +283,33 @@ export class ExtensionTreeViewModel {
           }
           this._selectedNodes = [];
         }
-        this.selectedDecoration.addTarget(target);
-        this._selectedNodes.push(target);
-        this.onDidSelectedNodeChangeEmitter.fire(this._selectedNodes.map((node) => node.treeItemId));
+        if (this._selectedNodes.indexOf(target) < 0) {
+          this.selectedDecoration.addTarget(target);
+          this._selectedNodes.push(target);
+          // 事件通知选中状态变化
+          this.onDidSelectedNodeChangeEmitter.fire(this._selectedNodes.map((node) => node.treeItemId));
+        }
         this.focusedDecoration.addTarget(target);
         this._focusedNode = target;
-        // 事件通知状态变化
+        // 事件通知焦点状态变化
         this.onDidFocusedNodeChangeEmitter.fire(target.treeItemId);
       }
     }
     // 通知视图更新
+    this.treeModel.dispatchChange();
+  }
+
+  // 右键菜单焦点态切换
+  activeNodeActivedDecoration = (target: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
+    if (this.contextMenuNode) {
+      this.contextMenuDecoration.removeTarget(this.contextMenuNode);
+    }
+    if (this.focusedNode) {
+      this.focusedDecoration.removeTarget(this.focusedNode);
+      this._focusedNode = undefined;
+    }
+    this.contextMenuDecoration.addTarget(target);
+    this._contextMenuNode = target;
     this.treeModel.dispatchChange();
   }
 
@@ -302,10 +320,9 @@ export class ExtensionTreeViewModel {
       return;
     }
 
-    if (this.preContextMenuFocusedNode) {
-      this.focusedDecoration.removeTarget(this.preContextMenuFocusedNode);
-      this.selectedDecoration.removeTarget(this.preContextMenuFocusedNode);
-      this.preContextMenuFocusedNode = null;
+    if (this.contextMenuNode) {
+      this.contextMenuDecoration.removeTarget(this.contextMenuNode);
+      this._contextMenuNode = undefined;
     }
     if (target) {
       if (this.selectedNodes.length > 0) {
@@ -343,7 +360,7 @@ export class ExtensionTreeViewModel {
   // 选中范围内的所有节点
   activeNodeDecorationByRange = (begin: number, end: number) => {
     this.clearNodeSelectedDecoration();
-    this.preContextMenuFocusedNode = null;
+    this._contextMenuNode = undefined;
     for (; begin <= end; begin++) {
       const node = this.treeModel.root.getTreeNodeAtIndex(begin);
       if (node) {
@@ -362,9 +379,13 @@ export class ExtensionTreeViewModel {
     if (this.focusedNode) {
       this.focusedDecoration.removeTarget(this.focusedNode);
       this.onDidFocusedNodeChangeEmitter.fire();
-      this.treeModel.dispatchChange();
+      this._focusedNode = undefined;
     }
-    this._focusedNode = undefined;
+    if (this.contextMenuNode) {
+      this.contextMenuDecoration.removeTarget(this.contextMenuNode);
+      this._contextMenuNode = undefined;
+    }
+    this.treeModel?.dispatchChange();
   }
 
   toggleDirectory = async (item: ExtensionCompositeTreeNode) => {
@@ -381,6 +402,8 @@ export class ExtensionTreeViewModel {
     }
     this.decorations.removeDecoration(this.selectedDecoration);
     this.decorations.removeDecoration(this.focusedDecoration);
+    this.decorations.removeDecoration(this.contextMenuDecoration);
+    this.decorations.removeDecoration(this.loadingDecoration);
   }
 
   handleTreeHandler(handle: IExtensionTreeHandle) {
@@ -469,7 +492,7 @@ export class ExtensionTreeViewModel {
     const { x, y } = ev.nativeEvent;
 
     if (item) {
-      this.activeNodeFocusedDecoration(item, true);
+      this.activeNodeActivedDecoration(item);
     } else {
       this.enactiveNodeDecoration();
     }
@@ -482,7 +505,15 @@ export class ExtensionTreeViewModel {
       node = this.treeModel.root as ExtensionCompositeTreeNode;
     } else {
       node = item;
-      nodes = this._isMultiSelected ? this.selectedNodes : [node];
+      if (this._isMultiSelected) {
+        if (this.selectedNodes.indexOf(node) >= 0) {
+          nodes = this._isMultiSelected ? this.selectedNodes : [node];
+        } else {
+          nodes = this._isMultiSelected ? this.selectedNodes.concat([node]) : [node];
+        }
+      } else {
+        nodes = [node];
+      }
     }
 
     const menuNodes = this.getCtxMenuNodes(node.contextValue);
@@ -491,7 +522,7 @@ export class ExtensionTreeViewModel {
     ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
-      args: [{treeViewId: this.treeViewId, treeItemId: node.treeItemId}, nodes.map((node) => ({treeViewId: this.treeViewId, treeItemId: node.treeItemId}))],
+      args: [{ treeViewId: this.treeViewId, treeItemId: node.treeItemId }, nodes.map((node) => ({ treeViewId: this.treeViewId, treeItemId: node.treeItemId }))],
     });
   }
 
@@ -534,7 +565,7 @@ export class ExtensionTreeViewModel {
     return this.refreshDelayer.trigger(async () => {
       this.refreshDeferred = new Deferred();
       if (!item) {
-        this.treeModel.root.refresh();
+        this.treeModel.root?.refresh();
       } else {
         const id = this.treeViewDataProvider.getTreeNodeIdByTreeItemId(item.id);
         if (!id) {
@@ -542,7 +573,7 @@ export class ExtensionTreeViewModel {
         }
         const cache = (this.treeModel.root as ExtensionTreeRoot).getTreeNodeById(id);
         if (!cache) {
-          return ;
+          return;
         }
         let path;
         if (ExtensionCompositeTreeNode.is(cache)) {
@@ -579,7 +610,7 @@ export class ExtensionTreeViewModel {
       }
       const cache = (this.treeModel.root as ExtensionTreeRoot).getTreeNodeById(id);
       if (!cache) {
-        return ;
+        return;
       }
 
       const select = isUndefinedOrNull(options.select) ? false : options.select;
@@ -598,7 +629,7 @@ export class ExtensionTreeViewModel {
           this.activeNodeFocusedDecoration(itemsToExpand as ExtensionTreeNode, false, true);
         }
       }
-      for (; ExtensionCompositeTreeNode.is(itemsToExpand) && (itemsToExpand as ExtensionCompositeTreeNode).branchSize > 0 && expand > 0; expand --) {
+      for (; ExtensionCompositeTreeNode.is(itemsToExpand) && (itemsToExpand as ExtensionCompositeTreeNode).branchSize > 0 && expand > 0; expand--) {
         await this.extensionTreeHandle.expandNode(itemsToExpand as CompositeTreeNode);
         itemsToExpand = itemsToExpand?.children ? itemsToExpand?.children[0] as TreeNode : undefined;
       }

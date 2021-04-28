@@ -13,7 +13,7 @@ export class DebugWatchData {
   clear: () => Promise<void>;
   onDidChange: Event<void>;
   onDidVariableChange: Event<void>;
-  onDidExpressionChange: Event<void>;
+  onDidExpressionChange: Event<string[]>;
 }
 
 @Injectable()
@@ -30,9 +30,9 @@ export class DebugWatch implements DebugWatchData {
 
   protected readonly toDispose = new DisposableCollection();
 
-  protected fireDidChange: any = throttle(() => this.onDidChangeEmitter.fire(), 50);
-  protected fireVariableChange: any = throttle(() => this.onDidVariableChangeEmitter.fire(), 50);
-  protected fireExpressionChange: any = throttle(() => this.onDidExExpressionChangeEmitter.fire(), 50);
+  protected fireDidChange: () => void = throttle(() => this.onDidChangeEmitter.fire(), 50);
+  protected fireVariableChange: () => void = throttle(() => this.onDidVariableChangeEmitter.fire(), 50);
+  protected fireExpressionChange: (expressions: string[]) => void = throttle((expressions: string[]) => this.onDidExExpressionChangeEmitter.fire(expressions), 50);
 
   private _expressions: string[] = [];
   private _root: DebugWatchRoot;
@@ -41,7 +41,7 @@ export class DebugWatch implements DebugWatchData {
 
   private onDidChangeEmitter: Emitter<void> = new Emitter();
   private onDidVariableChangeEmitter: Emitter<void> = new Emitter();
-  private onDidExExpressionChangeEmitter: Emitter<void> = new Emitter();
+  private onDidExExpressionChangeEmitter: Emitter<string[]> = new Emitter();
 
   constructor() {
     this.whenReady = this.init();
@@ -55,7 +55,7 @@ export class DebugWatch implements DebugWatchData {
     return this.onDidVariableChangeEmitter.event;
   }
 
-  get onDidExpressionChange(): Event<void> {
+  get onDidExpressionChange(): Event<string[]> {
     return this.onDidExExpressionChangeEmitter.event;
   }
 
@@ -98,7 +98,7 @@ export class DebugWatch implements DebugWatchData {
 
   async clear() {
     this.updateWatchExpressions([]);
-    this.fireExpressionChange();
+    this.fireExpressionChange([]);
     this.fireDidChange();
   }
 
@@ -111,7 +111,7 @@ export class DebugWatch implements DebugWatchData {
     const index = this._expressions.indexOf(value);
     if (index === -1) {
       this._expressions.push(value);
-      this.fireExpressionChange();
+      this.fireExpressionChange(this._expressions);
     }
   }
 
@@ -120,7 +120,7 @@ export class DebugWatch implements DebugWatchData {
     if (index >= 0) {
       this._expressions.splice(index, 1, newValue);
     }
-    this.fireExpressionChange();
+    this.fireExpressionChange(this._expressions);
   }
 
   removeWatchExpression(value: string) {
@@ -128,6 +128,6 @@ export class DebugWatch implements DebugWatchData {
     if (index >= 0) {
       this._expressions.splice(index, 1);
     }
-    this.fireExpressionChange();
+    this.fireExpressionChange(this._expressions);
   }
 }

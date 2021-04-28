@@ -109,7 +109,6 @@ describe('Debug Watch Tree Model', () => {
     expect(typeof debugWatchModelService.activeNodeDecoration).toBe('function');
     expect(typeof debugWatchModelService.enactiveNodeDecoration).toBe('function');
     expect(typeof debugWatchModelService.removeNodeDecoration).toBe('function');
-    expect(typeof debugWatchModelService.activeNodeFocusedDecoration).toBe('function');
     expect(typeof debugWatchModelService.handleTreeHandler).toBe('function');
     expect(typeof debugWatchModelService.handleTreeBlur).toBe('function');
     expect(typeof debugWatchModelService.handleTwistierClick).toBe('function');

@@ -61,13 +61,14 @@ export class DebugConsoleModelService {
   // 装饰器
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
   private focusedDecoration: Decoration = new Decoration(styles.mod_focused); // 焦点态
+  private contextMenuDecoration: Decoration = new Decoration(styles.mod_actived); // 右键菜单激活态
   private loadingDecoration: Decoration = new Decoration(styles.mod_loading); // 加载态
   // 即使选中态也是焦点态的节点
   private _focusedNode: AnsiConsoleNode | DebugConsoleNode | undefined;
   // 选中态的节点
   private _selectedNodes: (AnsiConsoleNode | DebugConsoleNode)[] = [];
-
-  private preContextMenuFocusedFile: AnsiConsoleNode | DebugConsoleNode | null;
+  // 右键菜单选中态的节点
+  private _contextMenuNode: AnsiConsoleNode | DebugConsoleNode | undefined;
 
   private onDidRefreshedEmitter: Emitter<void> = new Emitter();
   private onDidUpdateTreeModelEmitter: Emitter<IDebugConsoleModel | void> = new Emitter();
@@ -113,9 +114,15 @@ export class DebugConsoleModelService {
   get focusedNode() {
     return this._focusedNode;
   }
+
   // 是选中态，非焦点态节点
   get selectedNodes() {
     return this._selectedNodes;
+  }
+
+  // 右键菜单激活态的节点
+  get contextMenuNode() {
+    return this._contextMenuNode;
   }
 
   get onDidUpdateTreeModel(): Event<IDebugConsoleModel | void> {
@@ -147,7 +154,9 @@ export class DebugConsoleModelService {
   }
 
   copy = (node: DebugConsoleNode) => {
-    this.clipboardService.writeText(this.getValidText(node));
+    if (!!node) {
+      this.clipboardService.writeText(this.getValidText(node));
+    }
   }
 
   private getValidText(node: DebugConsoleNode) {
@@ -209,6 +218,8 @@ export class DebugConsoleModelService {
 
   async initTreeModel(session?: DebugSession, force?: boolean) {
     if (!session) {
+      this._activeDebugSessionModel = undefined;
+      this.onDidUpdateTreeModelEmitter.fire(this._activeDebugSessionModel);
       return;
     }
     // 根据 IDebugSessionReplMode 判断子 session 是否要共享父 session 的 repl
@@ -258,23 +269,15 @@ export class DebugConsoleModelService {
     this._decorations = new DecorationsManager(root as any);
     this._decorations.addDecoration(this.selectedDecoration);
     this._decorations.addDecoration(this.focusedDecoration);
+    this._decorations.addDecoration(this.contextMenuDecoration);
     this._decorations.addDecoration(this.loadingDecoration);
-  }
-
-  // 清空所有节点选中态
-  clearFileSelectedDecoration = () => {
-    this._selectedNodes.forEach((file) => {
-      this.selectedDecoration.removeTarget(file);
-    });
-    this._selectedNodes = [];
   }
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
   activeNodeDecoration = (target: AnsiConsoleNode | DebugConsoleNode, dispatchChange: boolean = true) => {
-    if (this.preContextMenuFocusedFile) {
-      this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
-      this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
-      this.preContextMenuFocusedFile = null;
+    if (this.contextMenuNode) {
+      this.contextMenuDecoration.removeTarget(this.contextMenuNode);
+      this._contextMenuNode = undefined;
     }
     if (target) {
       if (this.selectedNodes.length > 0) {
@@ -299,32 +302,17 @@ export class DebugConsoleModelService {
     }
   }
 
-  // 清空其他焦点态节点，更新当前焦点节点，
-  // removePreFocusedDecoration 表示更新焦点节点时如果此前已存在焦点节点，之前的节点装饰器将会被移除
-  activeNodeFocusedDecoration = (target: AnsiConsoleNode | DebugConsoleNode, removePreFocusedDecoration: boolean = false) => {
-    if (this.focusedNode !== target) {
-      if (removePreFocusedDecoration) {
-        // 当存在上一次右键菜单激活的文件时，需要把焦点态的文件节点的装饰器全部移除
-        if (this.preContextMenuFocusedFile) {
-          this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
-          this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
-        } else if (!!this.focusedNode) {
-          // 多选情况下第一次切换焦点文件
-          this.focusedDecoration.removeTarget(this.focusedNode);
-        }
-        this.preContextMenuFocusedFile = target;
-      } else if (!!this.focusedNode) {
-        this.preContextMenuFocusedFile = null;
-        this.focusedDecoration.removeTarget(this.focusedNode);
-      }
-      if (target) {
-        this.selectedDecoration.addTarget(target);
-        this.focusedDecoration.addTarget(target);
-        this._focusedNode = target;
-        this._selectedNodes.push(target);
-      }
+  // 右键菜单焦点态切换
+  activeNodeActivedDecoration = (target: AnsiConsoleNode | DebugConsoleNode) => {
+    if (this.contextMenuNode) {
+      this.contextMenuDecoration.removeTarget(this.contextMenuNode);
     }
-    // 通知视图更新
+    if (this.focusedNode) {
+      this.focusedDecoration.removeTarget(this.focusedNode);
+      this._focusedNode = undefined;
+    }
+    this.contextMenuDecoration.addTarget(target);
+    this._contextMenuNode = target;
     this.treeModel?.dispatchChange();
   }
 
@@ -332,9 +320,13 @@ export class DebugConsoleModelService {
   enactiveNodeDecoration = () => {
     if (this.focusedNode) {
       this.focusedDecoration.removeTarget(this.focusedNode);
-      this.treeModel?.dispatchChange();
+      this._focusedNode = undefined;
     }
-    this._focusedNode = undefined;
+    if (this.contextMenuNode) {
+      this.contextMenuDecoration.removeTarget(this.contextMenuNode);
+      this._contextMenuNode = undefined;
+    }
+    this.treeModel?.dispatchChange();
   }
 
   removeNodeDecoration() {
@@ -343,6 +335,8 @@ export class DebugConsoleModelService {
     }
     this.decorations.removeDecoration(this.selectedDecoration);
     this.decorations.removeDecoration(this.focusedDecoration);
+    this.decorations.removeDecoration(this.contextMenuDecoration);
+    this.decorations.removeDecoration(this.loadingDecoration);
   }
 
   handleContextMenu = (ev: React.MouseEvent, expression?: AnsiConsoleNode | DebugConsoleNode) => {
@@ -352,7 +346,7 @@ export class DebugConsoleModelService {
     const { x, y } = ev.nativeEvent;
 
     if (expression) {
-      this.activeNodeFocusedDecoration(expression, true);
+      this.activeNodeActivedDecoration(expression);
     } else {
       this.enactiveNodeDecoration();
     }

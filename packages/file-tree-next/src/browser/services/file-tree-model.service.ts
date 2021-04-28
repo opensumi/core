@@ -91,7 +91,7 @@ export class FileTreeModelService {
   // 装饰器
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
   private focusedDecoration: Decoration = new Decoration(styles.mod_focused); // 焦点态
-  private contextMenuDecoration: Decoration = new Decoration(styles.mod_actived); // 焦点态
+  private contextMenuDecoration: Decoration = new Decoration(styles.mod_actived); // 右键菜单激活态
   private loadingDecoration: Decoration = new Decoration(styles.mod_loading); // 加载态
   private cutDecoration: Decoration = new Decoration(styles.mod_cut); // 剪切态
   // 即使选中态也是焦点态的节点，全局仅会有一个
@@ -99,7 +99,7 @@ export class FileTreeModelService {
   // 选中态的节点，会可能有多个
   private _selectedFiles: (File | Directory)[] = [];
   // 右键菜单选择的节点
-  private _contextMenuFile: File | Directory | null;
+  private _contextMenuFile: File | Directory | undefined;
 
   // 当前焦点的文件路径URI
   private _activeUri: URI | null;
@@ -362,7 +362,7 @@ export class FileTreeModelService {
 
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
-      this._contextMenuFile = null;
+      this._contextMenuFile = undefined;
     }
     if (target) {
       if (this.selectedFiles.length > 0) {
@@ -398,7 +398,7 @@ export class FileTreeModelService {
 
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
-      this._contextMenuFile = null;
+      this._contextMenuFile = undefined;
       this._selectedFiles = this.selectedFiles.filter((file) => !file.uri.isEqual(this.contextMenuFile!.uri));
     }
     if (target) {
@@ -451,7 +451,7 @@ export class FileTreeModelService {
         }
         this._contextMenuFile = target;
       } else if (!!this.focusedFile) {
-        this._contextMenuFile = null;
+        this._contextMenuFile = undefined;
         this.focusedDecoration.removeTarget(this.focusedFile);
       }
       if (target) {
@@ -486,7 +486,7 @@ export class FileTreeModelService {
   // 选中范围内的所有节点
   activeFileDecorationByRange = (begin: number, end: number) => {
     this.clearFileSelectedDecoration();
-    this._contextMenuFile = null;
+    this._contextMenuFile = undefined;
     for (; begin <= end; begin++) {
       const file = this.treeModel.root.getTreeNodeAtIndex(begin);
       if (file) {
@@ -504,13 +504,14 @@ export class FileTreeModelService {
   enactiveFileDecoration = () => {
     if (this.focusedFile) {
       this.focusedDecoration.removeTarget(this.focusedFile);
+      this._focusedFile = undefined;
       this.onDidFocusedFileChangeEmitter.fire();
     }
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
+      this._contextMenuFile = undefined;
     }
     this.treeModel?.dispatchChange();
-    this._focusedFile = undefined;
   }
 
   toggleDirectory = async (item: Directory) => {

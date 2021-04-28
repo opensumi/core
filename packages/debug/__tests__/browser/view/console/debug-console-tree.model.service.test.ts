@@ -186,7 +186,7 @@ describe('Debug Console Tree Model', () => {
     expect(typeof debugConsoleModelService.clear).toBe('function');
     expect(typeof debugConsoleModelService.initDecorations).toBe('function');
     expect(typeof debugConsoleModelService.activeNodeDecoration).toBe('function');
-    expect(typeof debugConsoleModelService.activeNodeFocusedDecoration).toBe('function');
+    expect(typeof debugConsoleModelService.activeNodeActivedDecoration).toBe('function');
     expect(typeof debugConsoleModelService.enactiveNodeDecoration).toBe('function');
     expect(typeof debugConsoleModelService.removeNodeDecoration).toBe('function');
     expect(typeof debugConsoleModelService.handleTreeHandler).toBe('function');

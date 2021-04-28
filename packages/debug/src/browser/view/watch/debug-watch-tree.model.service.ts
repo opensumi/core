@@ -16,8 +16,10 @@ export interface IDebugWatchHandle extends IRecycleTreeHandle {
 
 @Injectable()
 export class DebugWatchModelService {
-  private static DEFAULT_FLUSH_EVENT_DELAY = 100;
+  private static DEFAULT_REFRESH_DELAY = 100;
   private static DEFAULT_TRIGGER_DELAY = 200;
+
+  private static DEBUG_WATCHER_EXPRESSIONS_STORAGE_KEY = 'watchers';
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -55,13 +57,14 @@ export class DebugWatchModelService {
   // 装饰器
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
   private focusedDecoration: Decoration = new Decoration(styles.mod_focused); // 焦点态
+  private contextMenuDecoration: Decoration = new Decoration(styles.mod_actived); // 右键菜单激活态
   private loadingDecoration: Decoration = new Decoration(styles.mod_loading); // 加载态
   // 即使选中态也是焦点态的节点
   private _focusedNode: ExpressionContainer | ExpressionNode | undefined;
   // 选中态的节点
   private _selectedNodes: (ExpressionContainer | ExpressionNode)[] = [];
-
-  private preContextMenuFocusedFile: ExpressionContainer | ExpressionNode | null;
+  // 右键菜单选中态的节点
+  private _contextMenuNode: ExpressionContainer | ExpressionNode | undefined;
 
   private onDidRefreshedEmitter: Emitter<void> = new Emitter();
   private onDidUpdateTreeModelEmitter: Emitter<TreeModel | void> = new Emitter();
@@ -105,9 +108,15 @@ export class DebugWatchModelService {
   get focusedNode() {
     return this._focusedNode;
   }
+
   // 是选中态，非焦点态节点
   get selectedNodes() {
     return this._selectedNodes;
+  }
+
+  // 右键菜单激活态的节点
+  get contextMenuNode() {
+    return this._contextMenuNode;
   }
 
   get onDidUpdateTreeModel(): Event<TreeModel | void> {
@@ -124,20 +133,14 @@ export class DebugWatchModelService {
     }
   }
 
-  async save() {
+  async save(expressions: string[] = []) {
     const storage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
-    const data: string[] = [];
-    if (this.treeModel) {
-      for (const node of (this.treeModel?.root as DebugWatchRoot).children!) {
-        data.push((node as DebugWatchNode).expression);
-      }
-    }
-    await storage.set('watchers', data);
+    await storage.set(DebugWatchModelService.DEBUG_WATCHER_EXPRESSIONS_STORAGE_KEY, expressions);
   }
 
   async load() {
     const storage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
-    const data = await storage.get<string[]>('watchers', []);
+    const data = await storage.get<string[]>(DebugWatchModelService.DEBUG_WATCHER_EXPRESSIONS_STORAGE_KEY, []);
     await this.debugWatch.updateWatchExpressions(data);
     this.loadedDeferred.resolve();
   }
@@ -158,8 +161,8 @@ export class DebugWatchModelService {
     this.debugWatch.onDidVariableChange(async () => {
       this.refresh();
     });
-    this.debugWatch.onDidExpressionChange(() => {
-      this.save();
+    this.debugWatch.onDidExpressionChange((expressions: string[]) => {
+      this.save(expressions);
     });
   }
 
@@ -199,23 +202,16 @@ export class DebugWatchModelService {
     this._decorations = new DecorationsManager(root as any);
     this._decorations.addDecoration(this.selectedDecoration);
     this._decorations.addDecoration(this.focusedDecoration);
+    this._decorations.addDecoration(this.contextMenuDecoration);
     this._decorations.addDecoration(this.loadingDecoration);
-  }
-
-  // 清空所有节点选中态
-  clearFileSelectedDecoration = () => {
-    this._selectedNodes.forEach((file) => {
-      this.selectedDecoration.removeTarget(file);
-    });
-    this._selectedNodes = [];
   }
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
   activeNodeDecoration = (target: ExpressionContainer | ExpressionNode, dispatchChange: boolean = true) => {
-    if (this.preContextMenuFocusedFile) {
-      this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
-      this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
-      this.preContextMenuFocusedFile = null;
+    if (this.contextMenuNode) {
+      this.focusedDecoration.removeTarget(this.contextMenuNode);
+      this.selectedDecoration.removeTarget(this.contextMenuNode);
+      this._contextMenuNode = undefined;
     }
     if (target) {
       if (this.selectedNodes.length > 0) {
@@ -240,32 +236,17 @@ export class DebugWatchModelService {
     }
   }
 
-  // 清空其他焦点态节点，更新当前焦点节点，
-  // removePreFocusedDecoration 表示更新焦点节点时如果此前已存在焦点节点，之前的节点装饰器将会被移除
-  activeNodeFocusedDecoration = (target: ExpressionContainer | ExpressionNode, removePreFocusedDecoration: boolean = false) => {
-    if (this.focusedNode !== target) {
-      if (removePreFocusedDecoration) {
-        // 当存在上一次右键菜单激活的文件时，需要把焦点态的文件节点的装饰器全部移除
-        if (this.preContextMenuFocusedFile) {
-          this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
-          this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
-        } else if (!!this.focusedNode) {
-          // 多选情况下第一次切换焦点文件
-          this.focusedDecoration.removeTarget(this.focusedNode);
-        }
-        this.preContextMenuFocusedFile = target;
-      } else if (!!this.focusedNode) {
-        this.preContextMenuFocusedFile = null;
-        this.focusedDecoration.removeTarget(this.focusedNode);
-      }
-      if (target) {
-        this.selectedDecoration.addTarget(target);
-        this.focusedDecoration.addTarget(target);
-        this._focusedNode = target;
-        this._selectedNodes.push(target);
-      }
+  // 右键菜单焦点态切换
+  activeNodeActivedDecoration = (target: ExpressionContainer | ExpressionNode) => {
+    if (this.contextMenuNode) {
+      this.contextMenuDecoration.removeTarget(this.contextMenuNode);
     }
-    // 通知视图更新
+    if (this.focusedNode) {
+      this.focusedDecoration.removeTarget(this.focusedNode);
+      this._focusedNode = undefined;
+    }
+    this.contextMenuDecoration.addTarget(target);
+    this._contextMenuNode = target;
     this.treeModel?.dispatchChange();
   }
 
@@ -273,9 +254,13 @@ export class DebugWatchModelService {
   enactiveNodeDecoration = () => {
     if (this.focusedNode) {
       this.focusedDecoration.removeTarget(this.focusedNode);
-      this.treeModel?.dispatchChange();
+      this._focusedNode = undefined;
     }
-    this._focusedNode = undefined;
+    if (this.contextMenuNode) {
+      this.contextMenuDecoration.removeTarget(this.contextMenuNode);
+      this._contextMenuNode = undefined;
+    }
+    this.treeModel?.dispatchChange();
   }
 
   removeNodeDecoration() {
@@ -284,6 +269,8 @@ export class DebugWatchModelService {
     }
     this.decorations.removeDecoration(this.selectedDecoration);
     this.decorations.removeDecoration(this.focusedDecoration);
+    this.decorations.removeDecoration(this.contextMenuDecoration);
+    this.decorations.removeDecoration(this.loadingDecoration);
   }
 
   handleContextMenu = (ev: React.MouseEvent, expression?: ExpressionContainer | ExpressionNode) => {
@@ -293,7 +280,7 @@ export class DebugWatchModelService {
     const { x, y } = ev.nativeEvent;
 
     if (expression) {
-      this.activeNodeFocusedDecoration(expression, true);
+      this.activeNodeActivedDecoration(expression);
     } else {
       this.enactiveNodeDecoration();
     }
@@ -472,7 +459,7 @@ export class DebugWatchModelService {
         this.flushEventQueueDeferred?.resolve();
         this.flushEventQueueDeferred = null;
         callback();
-      }, DebugWatchModelService.DEFAULT_FLUSH_EVENT_DELAY) as any;
+      }, DebugWatchModelService.DEFAULT_REFRESH_DELAY) as any;
     }
     if (this._changeEventDispatchQueue.indexOf(path) === -1) {
       this._changeEventDispatchQueue.push(path);

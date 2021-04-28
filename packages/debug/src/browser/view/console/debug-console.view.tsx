@@ -99,8 +99,6 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
     return <div
       className={styles.debug_console_output}
       tabIndex={-1}
-      onContextMenu={handleOuterContextMenu}
-      onClick={handleOuterClick}
       onBlur={handleOuterBlur}
       ref={wrapperRef}
       data-name={DEBUG_CONSOLE_TREE_FIELD_NAME}
@@ -132,7 +130,11 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
     </div>;
   };
 
-  return <div className={styles.debug_console}>
+  return <div
+    className={styles.debug_console}
+    onContextMenu={handleOuterContextMenu}
+    onClick={handleOuterClick}
+  >
     {renderOutputContent()}
     <div className={styles.variable_repl_bar}>
       <div className={styles.variable_repl_editor} ref={debugInputRef}></div>
