@@ -98,19 +98,17 @@ export class ElectronMainApp {
   }
 
   loadWorkspace(workspace?: string, metadata: any = {}, options: BrowserWindowConstructorOptions & ICodeWindowOptions = {}, openOptions?: IWindowOpenOptions): CodeWindow {
-    if (workspace && !URI.isUriString(workspace)) {
-      workspace = URI.file(workspace).toString();
-    }
+    const formattedWorkspace = this.formatWorkspace(workspace);
     if (openOptions && openOptions.windowId) {
       const lastWindow = this.getCodeWindowByElectronBrowserWindowId(openOptions.windowId);
       if (lastWindow) {
-        lastWindow.setWorkspace(workspace!);
+        lastWindow.setWorkspace(formattedWorkspace!);
         lastWindow.metadata = metadata;
         lastWindow.reload();
         return lastWindow;
       }
     }
-    const window = this.injector.get(CodeWindow, [workspace, metadata, options]);
+    const window = this.injector.get(CodeWindow, [formattedWorkspace, metadata, options]);
     window.start();
     if (options.show !== false) {
       window.getBrowserWindow().show();
@@ -181,6 +179,24 @@ export class ElectronMainApp {
     registry.registerMainApi('lifecycle', new ElectronMainLifeCycleApi(this));
   }
 
+  /**
+   * 兼容不规范的 url 比如 Windows "file://C:\\path\\to\\中文.html?background=#hash=title1"
+   * 要转换为 c:\path\to\測試.html
+   * @param workspace
+   * @returns string | undefined
+   */
+  private formatWorkspace(workspace?: string): string | undefined {
+    if (!workspace) {
+      return undefined;
+    }
+    if (URI.isUriString(workspace)) {
+      // 注意这里如果有 unicode 的字符，获取正确的路径:
+      // 需要 URI.parse().codeUri.fsPath 或者 URI.parse().codeUri.toString(true)
+      return new URL(workspace).toString();
+    } else {
+      return URI.file(workspace).toString();
+    }
+  }
 }
 
 class ElectronMainLifeCycleApi implements IElectronMainApiProvider<void> {

@@ -15,7 +15,7 @@ export class URI {
     return new URI(Uri.from(components));
   }
 
-  static file(path:string) {
+  static file(path: string) {
     return new URI(Uri.file(path));
   }
 
@@ -24,13 +24,13 @@ export class URI {
   }
 
   static isUri(thing: any): thing is URI {
-		if (thing instanceof URI) {
-			return true;
-		}
-		if (!thing) {
-			return false;
-		}
-		return Uri.isUri(thing);
+    if (thing instanceof URI) {
+      return true;
+    }
+    if (!thing) {
+      return false;
+    }
+    return Uri.isUri(thing);
   }
 
   static isUriString(str: string): boolean {
@@ -120,7 +120,7 @@ export class URI {
      * ---- !!!!!!! ATTENTION ----
      * 这样做的影响是 Uri 的实例 toJSON 时没有 $mid 参数，会在通信序列化时无法传输
      * ---- !!!!!!! ATTENTION ----
-     * 但是 vscode-uri 对 contructor 属性加了 protected 保护，因此增加了 `ts-ignore`
+     * 但是 vscode-uri 对 constructor 属性加了 protected 保护，因此增加了 `ts-ignore`
      */
     if (process.env.NODE_ENV !== 'production' && console !== undefined) {
       console.warn(
@@ -264,19 +264,19 @@ export class URI {
     return result;
   }
 
-  getParsedQuery(): {[key: string] : string} {
+  getParsedQuery(): { [key: string]: string } {
     const queryString = this.query;
     const query = {};
     const pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
     for (let i = 0; i < pairs.length; i++) {
-        const pair = pairs[i].split('=');
-        query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+      const pair = pairs[i].split('=');
+      query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
     }
     return query;
   }
 
-  static stringifyQuery(query: {[key: string] : any}): string {
-    const values: string[]= [];
+  static stringifyQuery(query: { [key: string]: any }): string {
+    const values: string[] = [];
     Object.keys(query).forEach((key) => {
       const value = encodeURIComponent(query[key]);
       if (value !== undefined) {
