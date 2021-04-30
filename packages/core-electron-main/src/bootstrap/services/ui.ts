@@ -73,7 +73,7 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
   }
 
   async revealInFinder(path: string) {
-    await  shell.showItemInFolder(path);
+    await shell.showItemInFolder(path);
   }
 
   async revealInSystemTerminal(path: string) {
@@ -169,12 +169,13 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
     if (!window) {
       throw new Error('window with windowId ' + windowId + ' does not exist!');
     }
-    const urlParsed = URI.parse(url);
-    const queryStriing = qs.stringify({
+    const formattedURL = (new URL(url)).toString();
+    const urlParsed = URI.parse(formattedURL);
+    const queryString = qs.stringify({
       ...qs.parse(urlParsed.query),
       windowId,
     });
-    window.loadURL(urlParsed.withQuery(queryStriing).toString(true));
+    window.loadURL(urlParsed.withQuery(queryString).toString(true));
     return new Promise((resolve, reject) => {
       const resolved = () => {
         resolve();
