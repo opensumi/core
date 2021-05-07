@@ -345,24 +345,17 @@ export class OpenedEditorModelService {
   }
 
   handleContextMenu = (ev: React.MouseEvent, file?: EditorFileGroup | EditorFile) => {
+    if (!file) {
+      this.enactiveFileDecoration();
+      return;
+    }
+
     ev.stopPropagation();
     ev.preventDefault();
 
     const { x, y } = ev.nativeEvent;
 
-    if (file) {
-      this.activeFileActivedDecoration(file);
-    } else {
-      this.enactiveFileDecoration();
-    }
-    let node: EditorFileGroup | EditorFile;
-
-    if (!file) {
-      // 空白区域右键菜单
-      node = this.treeModel.root as EditorFileGroup;
-    } else {
-      node = file;
-    }
+    this.activeFileActivedDecoration(file);
 
     const menus = this.contextMenuService.createMenu({
       id: MenuId.OpenEditorsContext,
@@ -373,7 +366,7 @@ export class OpenedEditorModelService {
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
-      args: [node],
+      args: [file],
     });
   }
 
