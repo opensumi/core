@@ -773,7 +773,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       command: FILE_COMMANDS.LOCATION_WITH_EDITOR.id,
       label: localize('file.location'),
       viewId: ExplorerResourceViewId,
-      when: `view == '${ExplorerResourceViewId}' && !config.explorer.autoReveal`,
+      when: `view == '${ExplorerResourceViewId}' && !config.explorer.autoReveal && !${FilesExplorerFilteredContext.raw}`,
       // 由于目前 contextkey 设置 resourceScheme 是绑定在 editor 的 dom scope 因此设置无效
       // enabledWhen: 'resourceScheme == file',
       order: 0,
