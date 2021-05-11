@@ -81,15 +81,12 @@ export class DebugWatch implements DebugWatchData {
       this.fireDidChange();
     }));
     this.toDispose.push(this.manager.onDidChangeActiveDebugSession(() => {
-      const thread = this.manager.currentThread;
       const session = this.manager.currentSession;
-      if (thread) {
-        thread.onDidChanged(() => {
-          this.fireVariableChange();
-        });
-      }
       if (session) {
         session.onVariableChange(() => {
+          this.fireVariableChange();
+        });
+        session.onDidChangeCallStack(() => {
           this.fireVariableChange();
         });
       }

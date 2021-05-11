@@ -100,7 +100,7 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
         {
           (!mutiple || unfold) &&
           threads.map((thread) =>
-            <DebugStackThreadView key={ thread.id } indent={ mutiple ? 16 : 0 } viewState={ viewState } thread={ thread } />)
+            <DebugStackThreadView key={ thread.id } indent={ mutiple ? 16 : 0 } viewState={ viewState } thread={ thread } session={ session }/>)
         }
         {
           subSession.length > 0 && subSession.map((s) => {

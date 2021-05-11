@@ -24,6 +24,7 @@ describe('DebugWatch Model', () => {
         id: 'session',
         evaluate: jest.fn(),
         onVariableChange: jest.fn(),
+        onDidChangeCallStack: jest.fn(),
       } as any;
       const debugThread = new DebugThread(session);
       debugThread.update({raw});

@@ -41,6 +41,9 @@ export class DebugSession implements IDebugSession {
     this.onDidChangeEmitter.fire(undefined);
   }
 
+  private _onDidChangeCallStack = new Emitter<void>();
+  readonly onDidChangeCallStack: Event<void> = this._onDidChangeCallStack.event;
+
   private _onVariableChange = new Emitter<void>();
   readonly onVariableChange: Event<void> = this._onVariableChange.event;
 
@@ -359,17 +362,15 @@ export class DebugSession implements IDebugSession {
   }
 
   protected _currentThread: DebugThread | undefined;
-  protected readonly toDisposeOnCurrentThread = new DisposableCollection();
 
   get currentThread(): DebugThread | undefined {
     return this._currentThread;
   }
 
   set currentThread(thread: DebugThread | undefined) {
-    this.toDisposeOnCurrentThread.dispose();
     this._currentThread = thread;
     if (thread) {
-      this.toDisposeOnCurrentThread.push(thread.onDidChanged(() => this.fireDidChange()));
+      this.fireDidChange();
     }
   }
 
@@ -379,9 +380,10 @@ export class DebugSession implements IDebugSession {
       threadId: this.currentThread?.id,
       threadAmount: this.threadCount,
     });
-    for (const thread of this.threads) {
+    this._threads.forEach((thread: DebugThread) => {
       thread.clear();
-    }
+    });
+    this._onDidChangeCallStack.fire();
     this.updateCurrentThread();
     frontEndTime('clearThreads');
   }
@@ -392,9 +394,10 @@ export class DebugSession implements IDebugSession {
       threadId,
       threadAmount: this.threadCount,
     });
-    const thread: DebugThread | undefined = this._threads.find((t) => t.raw.id === threadId);
+    const thread: DebugThread | undefined = this._threads.get(threadId);
     if (thread) {
       thread.clear();
+      this._onDidChangeCallStack.fire();
     }
     this.updateCurrentThread();
     frontEndTime('clearThread');
@@ -474,12 +477,13 @@ export class DebugSession implements IDebugSession {
     };
   }
 
-  protected _threads: DebugThread[] = [];
-  get threads() {
-    return this._threads;
+  // protected _threads: DebugThread[] = [];
+  protected _threads: Map<number, DebugThread> = new Map();
+  get threads(): DebugThread[] {
+    return Array.from(this._threads.values());
   }
   get threadCount(): number {
-    return this._threads.length;
+    return this._threads.size;
   }
   *getThreads(filter: (thread: DebugThread) => boolean): IterableIterator<DebugThread> {
     for (const thread of this.threads) {
@@ -508,24 +512,39 @@ export class DebugSession implements IDebugSession {
       }
     });
   }
-  protected doUpdateThreads(threads: DebugProtocol.Thread[], stoppedDetails?: StoppedDetails): void {
+  protected doUpdateThreads(rawThreads: DebugProtocol.Thread[], stoppedDetails?: StoppedDetails): void {
     const frontEndTime = this.sessionManager.reportTime(DEBUG_REPORT_NAME.DEBUG_UI_FRONTEND_TIME, {
       sessionId: this.id,
       threadId: stoppedDetails?.threadId,
       threadAmount: threads.length,
     });
-    const existing = this._threads;
-    this._threads = [];
-    for (const raw of threads) {
-      const id = raw.id;
-      const thread = existing.find((t) => t.raw.id === id) || new DebugThread(this);
-      this._threads.push(thread);
-      const data: Partial<Mutable<DebugThreadData>> = { raw };
-      if (stoppedDetails && (stoppedDetails.allThreadsStopped || stoppedDetails.threadId === id)) {
-        data.stoppedDetails = stoppedDetails;
+
+    const threadIds: number[] = [];
+    rawThreads.forEach((raw: DebugProtocol.Thread) => {
+      threadIds.push(raw.id);
+      if (!this._threads.has(raw.id)) {
+        const thread = new DebugThread(this);
+        const data: Partial<Mutable<DebugThreadData>> = { raw };
+        thread.update(data);
+        this._threads.set(raw.id, thread);
+      } else if (raw.name) {
+        const oldThread = this._threads.get(raw.id);
+        if (oldThread) {
+          oldThread.raw.name = raw.name;
+        }
       }
-      thread.update(data);
-    }
+    });
+
+    this._threads.forEach((dthread: DebugThread) => {
+      const { raw: { id } } = dthread;
+      if (threadIds.indexOf(id) === -1) {
+        this._threads.delete(id);
+      }
+      if (stoppedDetails && (stoppedDetails.allThreadsStopped || stoppedDetails.threadId === id)) {
+        this._threads.get(id)?.update({ stoppedDetails });
+      }
+    });
+
     this.updateCurrentThread(stoppedDetails);
     frontEndTime('doUpdateThreads');
   }
@@ -536,8 +555,7 @@ export class DebugSession implements IDebugSession {
     if (stoppedDetails && !stoppedDetails.preserveFocusHint && !!stoppedDetails.threadId) {
       threadId = stoppedDetails.threadId;
     }
-    this.currentThread = typeof threadId === 'number' && this._threads.find((t) => t.raw.id === threadId)
-      || this._threads.values().next().value;
+    this.currentThread = typeof threadId === 'number' && this._threads.get(threadId) || this._threads.values().next().value;
     if (this.currentThread?.raw.id !== threadId) {
       this.fireDidChange();
     }
@@ -548,12 +566,15 @@ export class DebugSession implements IDebugSession {
     if (!thread || thread.frameCount) {
         return;
     }
+
     if (this.capabilities.supportsDelayedStackTraceLoading) {
         await thread.fetchFrames(1);
         await thread.fetchFrames(19);
     } else {
         await thread.fetchFrames();
     }
+
+    this._onDidChangeCallStack.fire();
 
     // set current frame from editor
     const editor = this.workbenchEditorService.currentEditor;
