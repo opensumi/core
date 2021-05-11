@@ -516,7 +516,7 @@ export class DebugSession implements IDebugSession {
     const frontEndTime = this.sessionManager.reportTime(DEBUG_REPORT_NAME.DEBUG_UI_FRONTEND_TIME, {
       sessionId: this.id,
       threadId: stoppedDetails?.threadId,
-      threadAmount: threads.length,
+      threadAmount: rawThreads.length,
     });
 
     const threadIds: number[] = [];
