@@ -554,7 +554,7 @@ declare module 'vscode' {
    * The workspace symbol provider interface defines the contract between extensions and
    * the [symbol search](https://code.visualstudio.com/docs/editor/editingevolved#_open-symbol-by-name)-feature.
    */
-  export interface WorkspaceSymbolProvider {
+  export interface WorkspaceSymbolProvider<T extends SymbolInformation = SymbolInformation> {
 
     /**
      * Project-wide search for a symbol matching the given query string.
@@ -565,7 +565,7 @@ declare module 'vscode' {
      * strict matching.
      *
      * To improve performance implementors can implement `resolveWorkspaceSymbol` and then provide symbols with partial
-     * [location](#SymbolInformation.location)-objects, without a `range` defined. The editor will then call
+     * {@link SymbolInformation.location location}-objects, without a `range` defined. The editor will then call
      * `resolveWorkspaceSymbol` for selected symbols only, e.g. when opening a workspace symbol.
      *
      * @param query A query string, can be the empty string in which case all symbols should be returned.
@@ -573,12 +573,12 @@ declare module 'vscode' {
      * @return An array of document highlights or a thenable that resolves to such. The lack of a result can be
      * signaled by returning `undefined`, `null`, or an empty array.
      */
-    provideWorkspaceSymbols(query: string, token: CancellationToken): ProviderResult<SymbolInformation[]>;
+    provideWorkspaceSymbols(query: string, token: CancellationToken): ProviderResult<T[]>;
 
     /**
-     * Given a symbol fill in its [location](#SymbolInformation.location). This method is called whenever a symbol
+     * Given a symbol fill in its {@link SymbolInformation.location location}. This method is called whenever a symbol
      * is selected in the UI. Providers can implement this method and return incomplete symbols from
-     * [`provideWorkspaceSymbols`](#WorkspaceSymbolProvider.provideWorkspaceSymbols) which often helps to improve
+     * {@link WorkspaceSymbolProvider.provideWorkspaceSymbols `provideWorkspaceSymbols`} which often helps to improve
      * performance.
      *
      * @param symbol The symbol that is to be resolved. Guaranteed to be an instance of an object returned from an
@@ -587,7 +587,7 @@ declare module 'vscode' {
      * @return The resolved symbol or a thenable that resolves to that. When no result is returned,
      * the given `symbol` is used.
      */
-    resolveWorkspaceSymbol?(symbol: SymbolInformation, token: CancellationToken): ProviderResult<SymbolInformation>;
+    resolveWorkspaceSymbol?(symbol: T, token: CancellationToken): ProviderResult<T>;
   }
 
   /**
@@ -1017,9 +1017,9 @@ declare module 'vscode' {
     kind: SymbolKind;
 
     /**
-		 * Tags for this symbol.
-		 */
-		tags?: ReadonlyArray<SymbolTag>;
+     * Tags for this symbol.
+     */
+    tags?: ReadonlyArray<SymbolTag>;
 
     /**
      * The location of this symbol.
@@ -1162,65 +1162,65 @@ declare module 'vscode' {
    */
   export enum CompletionItemKind {
     Text = 0,
-		Method = 1,
-		Function = 2,
-		Constructor = 3,
-		Field = 4,
-		Variable = 5,
-		Class = 6,
-		Interface = 7,
-		Module = 8,
-		Property = 9,
-		Unit = 10,
-		Value = 11,
-		Enum = 12,
-		Keyword = 13,
-		Snippet = 14,
-		Color = 15,
-		Reference = 17,
-		File = 16,
-		Folder = 18,
-		EnumMember = 19,
-		Constant = 20,
-		Struct = 21,
-		Event = 22,
-		Operator = 23,
-		TypeParameter = 24,
-		User = 25,
-		Issue = 26,
+    Method = 1,
+    Function = 2,
+    Constructor = 3,
+    Field = 4,
+    Variable = 5,
+    Class = 6,
+    Interface = 7,
+    Module = 8,
+    Property = 9,
+    Unit = 10,
+    Value = 11,
+    Enum = 12,
+    Keyword = 13,
+    Snippet = 14,
+    Color = 15,
+    Reference = 17,
+    File = 16,
+    Folder = 18,
+    EnumMember = 19,
+    Constant = 20,
+    Struct = 21,
+    Event = 22,
+    Operator = 23,
+    TypeParameter = 24,
+    User = 25,
+    Issue = 26,
   }
 
   export enum CompletionItemTag {
     Deprecated = 1
   }
 
-	/**
-	 * Additional data for entries of a workspace edit. Supports to label entries and marks entries
-	 * as needing confirmation by the user. The editor groups edits with equal labels into tree nodes,
-	 * for instance all edits labelled with "Changes in Strings" would be a tree node.
-	 */
-	export interface WorkspaceEditEntryMetadata {
+  /**
+   * Additional data for entries of a workspace edit. Supports to label entries and marks entries
+   * as needing confirmation by the user. The editor groups edits with equal labels into tree nodes,
+   * for instance all edits labelled with "Changes in Strings" would be a tree node.
+   */
+  export interface WorkspaceEditEntryMetadata {
 
-		/**
-		 * A flag which indicates that user confirmation is needed.
-		 */
-		needsConfirmation: boolean;
+    /**
+     * A flag which indicates that user confirmation is needed.
+     */
+    needsConfirmation: boolean;
 
-		/**
-		 * A human-readable string which is rendered prominent.
-		 */
-		label: string;
+    /**
+     * A human-readable string which is rendered prominent.
+     */
+    label: string;
 
-		/**
-		 * A human-readable string which is rendered less prominent on the same line.
-		 */
-		description?: string;
+    /**
+     * A human-readable string which is rendered less prominent on the same line.
+     */
+    description?: string;
 
-		/**
-		 * The icon path or [ThemeIcon](#ThemeIcon) for the edit.
-		 */
-		iconPath?: Uri | { light: Uri; dark: Uri } | ThemeIcon;
-	}
+    /**
+     * The icon path or [ThemeIcon](#ThemeIcon) for the edit.
+     */
+    iconPath?: Uri | { light: Uri; dark: Uri } | ThemeIcon;
+  }
 
   /**
    * A workspace edit is a collection of textual and files changes for
@@ -2327,18 +2327,18 @@ declare module 'vscode' {
   }
 
   /**
-	 * Represents how a terminal exited.
-	 */
-	export interface TerminalExitStatus {
-		/**
-		 * The exit code that a terminal exited with, it can have the following values:
-		 * - Zero: the terminal process or custom execution succeeded.
-		 * - Non-zero: the terminal process or custom execution failed.
-		 * - `undefined`: the user forcibly closed the terminal or a custom execution exited
-		 *   without providing an exit code.
-		 */
-		readonly code: number | undefined;
-	}
+   * Represents how a terminal exited.
+   */
+  export interface TerminalExitStatus {
+    /**
+     * The exit code that a terminal exited with, it can have the following values:
+     * - Zero: the terminal process or custom execution succeeded.
+     * - Non-zero: the terminal process or custom execution failed.
+     * - `undefined`: the user forcibly closed the terminal or a custom execution exited
+     *   without providing an exit code.
+     */
+    readonly code: number | undefined;
+  }
 
   export interface Terminal {
 
@@ -2366,7 +2366,7 @@ declare module 'vscode' {
      * ```typescript
      * window.onDidCloseTerminal(t => {
      *   if (t.exitStatus && t.exitStatus.code) {
-     *   	vscode.window.showInformationMessage(`Exit code: ${t.exitStatus.code}`);
+     *     vscode.window.showInformationMessage(`Exit code: ${t.exitStatus.code}`);
      *   }
      * });
      * ```
@@ -3211,54 +3211,54 @@ declare module 'vscode' {
   export type ConfigurationScope = Uri | TextDocument | WorkspaceFolder | { uri?: Uri, languageId: string };
   //#region EvaluatableExpression
 
-	/**
-	 * An EvaluatableExpression represents an expression in a document that can be evaluated by an active debugger or runtime.
-	 * The result of this evaluation is shown in a tooltip-like widget.
-	 * If only a range is specified, the expression will be extracted from the underlying document.
-	 * An optional expression can be used to override the extracted expression.
-	 * In this case the range is still used to highlight the range in the document.
-	 */
-	export class EvaluatableExpression {
+  /**
+   * An EvaluatableExpression represents an expression in a document that can be evaluated by an active debugger or runtime.
+   * The result of this evaluation is shown in a tooltip-like widget.
+   * If only a range is specified, the expression will be extracted from the underlying document.
+   * An optional expression can be used to override the extracted expression.
+   * In this case the range is still used to highlight the range in the document.
+   */
+  export class EvaluatableExpression {
 
-		/*
-		 * The range is used to extract the evaluatable expression from the underlying document and to highlight it.
-		 */
-		readonly range: Range;
+    /*
+     * The range is used to extract the evaluatable expression from the underlying document and to highlight it.
+     */
+    readonly range: Range;
 
-		/*
-		 * If specified the expression overrides the extracted expression.
-		 */
-		readonly expression?: string;
+    /*
+     * If specified the expression overrides the extracted expression.
+     */
+    readonly expression?: string;
 
-		/**
-		 * Creates a new evaluatable expression object.
-		 *
-		 * @param range The range in the underlying document from which the evaluatable expression is extracted.
-		 * @param expression If specified overrides the extracted expression.
-		 */
-		constructor(range: Range, expression?: string);
-	}
+    /**
+     * Creates a new evaluatable expression object.
+     *
+     * @param range The range in the underlying document from which the evaluatable expression is extracted.
+     * @param expression If specified overrides the extracted expression.
+     */
+    constructor(range: Range, expression?: string);
+  }
 
-	/**
-	 * The evaluatable expression provider interface defines the contract between extensions and
-	 * the debug hover. In this contract the provider returns an evaluatable expression for a given position
-	 * in a document and VS Code evaluates this expression in the active debug session and shows the result in a debug hover.
-	 */
-	export interface EvaluatableExpressionProvider {
+  /**
+   * The evaluatable expression provider interface defines the contract between extensions and
+   * the debug hover. In this contract the provider returns an evaluatable expression for a given position
+   * in a document and VS Code evaluates this expression in the active debug session and shows the result in a debug hover.
+   */
+  export interface EvaluatableExpressionProvider {
 
-		/**
-		 * Provide an evaluatable expression for the given document and position.
-		 * VS Code will evaluate this expression in the active debug session and will show the result in the debug hover.
-		 * The expression can be implicitly specified by the range in the underlying document or by explicitly returning an expression.
-		 *
-		 * @param document The document for which the debug hover is about to appear.
-		 * @param position The line and character position in the document where the debug hover is about to appear.
-		 * @param token A cancellation token.
-		 * @return An EvaluatableExpression or a thenable that resolves to such. The lack of a result can be
-		 * signaled by returning `undefined` or `null`.
-		 */
-		provideEvaluatableExpression(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<EvaluatableExpression>;
-	}
+    /**
+     * Provide an evaluatable expression for the given document and position.
+     * VS Code will evaluate this expression in the active debug session and will show the result in the debug hover.
+     * The expression can be implicitly specified by the range in the underlying document or by explicitly returning an expression.
+     *
+     * @param document The document for which the debug hover is about to appear.
+     * @param position The line and character position in the document where the debug hover is about to appear.
+     * @param token A cancellation token.
+     * @return An EvaluatableExpression or a thenable that resolves to such. The lack of a result can be
+     * signaled by returning `undefined` or `null`.
+     */
+    provideEvaluatableExpression(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<EvaluatableExpression>;
+  }
 
   //#endregion
 }

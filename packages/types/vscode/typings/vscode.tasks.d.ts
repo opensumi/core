@@ -489,16 +489,16 @@ declare module 'vscode' {
 	 * A task provider allows to add tasks to the task service.
 	 * A task provider is registered via #tasks.registerTaskProvider.
 	 */
-	export interface TaskProvider {
+	export interface TaskProvider<T extends Task = Task> {
 		/**
 		 * Provides tasks.
 		 * @param token A cancellation token.
 		 * @return an array of tasks
 		 */
-		provideTasks(token?: CancellationToken): ProviderResult<Task[]>;
+		provideTasks(token: CancellationToken): ProviderResult<T[]>;
 
 		/**
-		 * Resolves a task that has no [`execution`](#Task.execution) set. Tasks are
+		 * Resolves a task that has no {@link Task.execution `execution`} set. Tasks are
 		 * often created from information found in the `tasks.json`-file. Such tasks miss
 		 * the information on how to execute them and a task provider must fill in
 		 * the missing information in the `resolveTask`-method. This method will not be
@@ -506,11 +506,15 @@ declare module 'vscode' {
 		 * tasks are always fully resolved. A valid default implementation for the
 		 * `resolveTask` method is to return `undefined`.
 		 *
+		 * Note that when filling in the properties of `task`, you _must_ be sure to
+		 * use the exact same `TaskDefinition` and not create a new one. Other properties
+		 * may be changed.
+		 *
 		 * @param task The task to resolve.
 		 * @param token A cancellation token.
 		 * @return The resolved task
 		 */
-		resolveTask(task: Task, token?: CancellationToken): ProviderResult<Task>;
+		resolveTask(task: T, token: CancellationToken): ProviderResult<T>;
 	}
 
 	/**

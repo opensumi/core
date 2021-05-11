@@ -170,8 +170,8 @@ declare module 'vscode' {
      * like "TypeScript", and an array of extensions, e.g.
      * ```ts
      * {
-     * 	'Images': ['png', 'jpg']
-     * 	'TypeScript': ['ts', 'tsx']
+     *   'Images': ['png', 'jpg']
+     *   'TypeScript': ['ts', 'tsx']
      * }
      * ```
      */
@@ -197,8 +197,8 @@ declare module 'vscode' {
      * like "TypeScript", and an array of extensions, e.g.
      * ```ts
      * {
-     * 	'Images': ['png', 'jpg']
-     * 	'TypeScript': ['ts', 'tsx']
+     *   'Images': ['png', 'jpg']
+     *   'TypeScript': ['ts', 'tsx']
      * }
      * ```
      */
@@ -333,41 +333,41 @@ declare module 'vscode' {
      */
     export function registerWebviewPanelSerializer(viewType: string, serializer: WebviewPanelSerializer): Disposable;
     /**
-		 * Register a provider for custom editors for the `viewType` contributed by the `customEditors` extension point.
-		 *
-		 * When a custom editor is opened, VS Code fires an `onCustomEditor:viewType` activation event. Your extension
-		 * must register a [`CustomTextEditorProvider`](#CustomTextEditorProvider), [`CustomReadonlyEditorProvider`](#CustomReadonlyEditorProvider),
-		 * [`CustomEditorProvider`](#CustomEditorProvider)for `viewType` as part of activation.
-		 *
-		 * @param viewType Unique identifier for the custom editor provider. This should match the `viewType` from the
-		 *   `customEditors` contribution point.
-		 * @param provider Provider that resolves custom editors.
-		 * @param options Options for the provider.
-		 *
-		 * @return Disposable that unregisters the provider.
-		 */
-		export function registerCustomEditorProvider(viewType: string, provider: CustomTextEditorProvider | CustomReadonlyEditorProvider | CustomEditorProvider, options?: {
-			/**
-			 * Content settings for the webview panels created for this custom editor.
-			 */
-			readonly webviewOptions?: WebviewPanelOptions;
+     * Register a provider for custom editors for the `viewType` contributed by the `customEditors` extension point.
+     *
+     * When a custom editor is opened, VS Code fires an `onCustomEditor:viewType` activation event. Your extension
+     * must register a [`CustomTextEditorProvider`](#CustomTextEditorProvider), [`CustomReadonlyEditorProvider`](#CustomReadonlyEditorProvider),
+     * [`CustomEditorProvider`](#CustomEditorProvider)for `viewType` as part of activation.
+     *
+     * @param viewType Unique identifier for the custom editor provider. This should match the `viewType` from the
+     *   `customEditors` contribution point.
+     * @param provider Provider that resolves custom editors.
+     * @param options Options for the provider.
+     *
+     * @return Disposable that unregisters the provider.
+     */
+    export function registerCustomEditorProvider(viewType: string, provider: CustomTextEditorProvider | CustomReadonlyEditorProvider | CustomEditorProvider, options?: {
+      /**
+       * Content settings for the webview panels created for this custom editor.
+       */
+      readonly webviewOptions?: WebviewPanelOptions;
 
-			/**
-			 * Only applies to `CustomReadonlyEditorProvider | CustomEditorProvider`.
-			 *
-			 * Indicates that the provider allows multiple editor instances to be open at the same time for
-			 * the same resource.
-			 *
-			 * By default, VS Code only allows one editor instance to be open at a time for each resource. If the
-			 * user tries to open a second editor instance for the resource, the first one is instead moved to where
-			 * the second one was to be opened.
-			 *
-			 * When `supportsMultipleEditorsPerDocument` is enabled, users can split and create copies of the custom
-			 * editor. In this case, the custom editor must make sure it can properly synchronize the states of all
-			 * editor instances for a resource so that they are consistent.
-			 */
-			readonly supportsMultipleEditorsPerDocument?: boolean;
-		}): Disposable;
+      /**
+       * Only applies to `CustomReadonlyEditorProvider | CustomEditorProvider`.
+       *
+       * Indicates that the provider allows multiple editor instances to be open at the same time for
+       * the same resource.
+       *
+       * By default, VS Code only allows one editor instance to be open at a time for each resource. If the
+       * user tries to open a second editor instance for the resource, the first one is instead moved to where
+       * the second one was to be opened.
+       *
+       * When `supportsMultipleEditorsPerDocument` is enabled, users can split and create copies of the custom
+       * editor. In this case, the custom editor must make sure it can properly synchronize the states of all
+       * editor instances for a resource so that they are consistent.
+       */
+      readonly supportsMultipleEditorsPerDocument?: boolean;
+    }): Disposable;
     /**
      * Register provider that enables the detection and handling of links within the terminal.
      * @param provider The provider that provides the terminal links.
@@ -613,8 +613,10 @@ declare module 'vscode' {
    * VS Code will save off the state from `setState` of all webviews that have a serializer. When the
    * webview first becomes visible after the restart, this state is passed to `deserializeWebviewPanel`.
    * The extension can then restore the old `WebviewPanel` from this state.
+   *
+   * @param T Type of the webview's state.
    */
-  interface WebviewPanelSerializer {
+  interface WebviewPanelSerializer<T = unknown> {
     /**
      * Restore a webview panel from its serialized `state`.
      *
@@ -626,7 +628,7 @@ declare module 'vscode' {
      *
      * @return Thenable indicating that the webview has been fully restored.
      */
-    deserializeWebviewPanel(webviewPanel: WebviewPanel, state: any): Thenable<void>;
+    deserializeWebviewPanel(webviewPanel: WebviewPanel, state: T): Thenable<void>;
   }
 
   /**

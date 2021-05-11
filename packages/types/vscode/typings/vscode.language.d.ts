@@ -239,13 +239,13 @@ declare module 'vscode' {
     export function setTextDocumentLanguage(document: TextDocument, languageId: string): Thenable<TextDocument>;
 
     /**
-		 * Register a call hierarchy provider.
-		 *
-		 * @param selector A selector that defines the documents this provider is applicable to.
-		 * @param provider A call hierarchy provider.
-		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-		 */
-		export function registerCallHierarchyProvider(selector: DocumentSelector, provider: CallHierarchyProvider): Disposable;
+     * Register a call hierarchy provider.
+     *
+     * @param selector A selector that defines the documents this provider is applicable to.
+     * @param provider A call hierarchy provider.
+     * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+     */
+    export function registerCallHierarchyProvider(selector: DocumentSelector, provider: CallHierarchyProvider): Disposable;
 
     /**
      * An [event](#Event) which fires when the global set of diagnostics changes. This is
@@ -401,30 +401,30 @@ declare module 'vscode' {
 
 
     /**
-		 * Register a semantic tokens provider for a whole document.
-		 *
-		 * Multiple providers can be registered for a language. In that case providers are sorted
-		 * by their [score](#languages.match) and the best-matching provider is used. Failure
-		 * of the selected provider will cause a failure of the whole operation.
-		 *
-		 * @param selector A selector that defines the documents this provider is applicable to.
-		 * @param provider A document semantic tokens provider.
-		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-		 */
-		export function registerDocumentSemanticTokensProvider(selector: DocumentSelector, provider: DocumentSemanticTokensProvider, legend: SemanticTokensLegend): Disposable;
+     * Register a semantic tokens provider for a whole document.
+     *
+     * Multiple providers can be registered for a language. In that case providers are sorted
+     * by their [score](#languages.match) and the best-matching provider is used. Failure
+     * of the selected provider will cause a failure of the whole operation.
+     *
+     * @param selector A selector that defines the documents this provider is applicable to.
+     * @param provider A document semantic tokens provider.
+     * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+     */
+    export function registerDocumentSemanticTokensProvider(selector: DocumentSelector, provider: DocumentSemanticTokensProvider, legend: SemanticTokensLegend): Disposable;
 
-		/**
-		 * Register a semantic tokens provider for a document range.
-		 *
-		 * Multiple providers can be registered for a language. In that case providers are sorted
-		 * by their [score](#languages.match) and the best-matching provider is used. Failure
-		 * of the selected provider will cause a failure of the whole operation.
-		 *
-		 * @param selector A selector that defines the documents this provider is applicable to.
-		 * @param provider A document range semantic tokens provider.
-		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-		 */
-		export function registerDocumentRangeSemanticTokensProvider(selector: DocumentSelector, provider: DocumentRangeSemanticTokensProvider, legend: SemanticTokensLegend): Disposable;
+    /**
+     * Register a semantic tokens provider for a document range.
+     *
+     * Multiple providers can be registered for a language. In that case providers are sorted
+     * by their [score](#languages.match) and the best-matching provider is used. Failure
+     * of the selected provider will cause a failure of the whole operation.
+     *
+     * @param selector A selector that defines the documents this provider is applicable to.
+     * @param provider A document range semantic tokens provider.
+     * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+     */
+    export function registerDocumentRangeSemanticTokensProvider(selector: DocumentSelector, provider: DocumentRangeSemanticTokensProvider, legend: SemanticTokensLegend): Disposable;
 
 
     /**
@@ -1014,11 +1014,10 @@ declare module 'vscode' {
   }
 
   /**
-   * Represents a collection of [completion items](#CompletionItem) to be presented
+   * Represents a collection of {@link CompletionItem completion items} to be presented
    * in the editor.
-   * @寻壑
    */
-  export class CompletionList {
+  export class CompletionList<T extends CompletionItem = CompletionItem> {
 
     /**
      * This list is not complete. Further typing should result in recomputing
@@ -1029,7 +1028,7 @@ declare module 'vscode' {
     /**
      * The completion items.
      */
-    items: CompletionItem[];
+    items: T[];
 
     /**
      * Creates a new completion list.
@@ -1037,7 +1036,7 @@ declare module 'vscode' {
      * @param items The completion items.
      * @param isIncomplete The list is not complete.
      */
-    constructor(items?: CompletionItem[], isIncomplete?: boolean);
+    constructor(items?: T[], isIncomplete?: boolean);
   }
   /**
    * A document link is a range in a text document that links to an internal or external resource, like another
@@ -1075,33 +1074,33 @@ declare module 'vscode' {
   }
 
   /**
-   * The document link provider defines the contract between extensions and feature of showing
-   * links in the editor.
-   */
-  export interface DocumentLinkProvider {
+	 * The document link provider defines the contract between extensions and feature of showing
+	 * links in the editor.
+	 */
+	export interface DocumentLinkProvider<T extends DocumentLink = DocumentLink> {
 
-    /**
-     * Provide links for the given document. Note that the editor ships with a default provider that detects
-     * `http(s)` and `file` links.
-     *
-     * @param document The document in which the command was invoked.
-     * @param token A cancellation token.
-     * @return An array of [document links](#DocumentLink) or a thenable that resolves to such. The lack of a result
-     * can be signaled by returning `undefined`, `null`, or an empty array.
-     */
-    provideDocumentLinks(document: TextDocument, token: CancellationToken): ProviderResult<DocumentLink[]>;
+		/**
+		 * Provide links for the given document. Note that the editor ships with a default provider that detects
+		 * `http(s)` and `file` links.
+		 *
+		 * @param document The document in which the command was invoked.
+		 * @param token A cancellation token.
+		 * @return An array of {@link DocumentLink document links} or a thenable that resolves to such. The lack of a result
+		 * can be signaled by returning `undefined`, `null`, or an empty array.
+		 */
+		provideDocumentLinks(document: TextDocument, token: CancellationToken): ProviderResult<T[]>;
 
-    /**
-     * Given a link fill in its [target](#DocumentLink.target). This method is called when an incomplete
-     * link is selected in the UI. Providers can implement this method and return incomplete links
-     * (without target) from the [`provideDocumentLinks`](#DocumentLinkProvider.provideDocumentLinks) method which
-     * often helps to improve performance.
-     *
-     * @param link The link that is to be resolved.
-     * @param token A cancellation token.
-     */
-    resolveDocumentLink?(link: DocumentLink, token: CancellationToken): ProviderResult<DocumentLink>;
-  }
+		/**
+		 * Given a link fill in its {@link DocumentLink.target target}. This method is called when an incomplete
+		 * link is selected in the UI. Providers can implement this method and return incomplete links
+		 * (without target) from the {@link DocumentLinkProvider.provideDocumentLinks `provideDocumentLinks`} method which
+		 * often helps to improve performance.
+		 *
+		 * @param link The link that is to be resolved.
+		 * @param token A cancellation token.
+		 */
+		resolveDocumentLink?(link: T, token: CancellationToken): ProviderResult<T>;
+	}
 
   /**
    * The document color provider defines the contract between extensions and feature of
@@ -2017,7 +2016,20 @@ declare module 'vscode' {
      */
     provideOnTypeFormattingEdits(document: TextDocument, position: Position, ch: string, options: FormattingOptions, token: CancellationToken): ProviderResult<TextEdit[]>;
   }
-  export interface CompletionItemProvider {
+  /**
+   * The completion item provider interface defines the contract between extensions and
+   * [IntelliSense](https://code.visualstudio.com/docs/editor/intellisense).
+   *
+   * Providers can delay the computation of the {@link CompletionItem.detail `detail`}
+   * and {@link CompletionItem.documentation `documentation`} properties by implementing the
+   * {@link CompletionItemProvider.resolveCompletionItem `resolveCompletionItem`}-function. However, properties that
+   * are needed for the initial sorting and filtering, like `sortText`, `filterText`, `insertText`, and `range`, must
+   * not be changed during resolve.
+   *
+   * Providers are asked for completions either explicitly by a user gesture or -depending on the configuration-
+   * implicitly when typing words or trigger characters.
+   */
+  export interface CompletionItemProvider<T extends CompletionItem = CompletionItem> {
 
     /**
      * Provide completion items for the given position and document.
@@ -2027,27 +2039,31 @@ declare module 'vscode' {
      * @param token A cancellation token.
      * @param context How the completion was triggered.
      *
-     * @return An array of completions, a [completion list](#CompletionList), or a thenable that resolves to either.
+     * @return An array of completions, a {@link CompletionList completion list}, or a thenable that resolves to either.
      * The lack of a result can be signaled by returning `undefined`, `null`, or an empty array.
      */
-    provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext): ProviderResult<CompletionItem[] | CompletionList>;
+    provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext): ProviderResult<T[] | CompletionList<T>>;
 
     /**
-     * Given a completion item fill in more data, like [doc-comment](#CompletionItem.documentation)
-     * or [details](#CompletionItem.detail).
+     * Given a completion item fill in more data, like {@link CompletionItem.documentation doc-comment}
+     * or {@link CompletionItem.detail details}.
      *
      * The editor will only resolve a completion item once.
      *
-     * *Note* that accepting a completion item will not wait for it to be resolved. Because of that [`insertText`](#CompletionItem.insertText),
-     * [`additionalTextEdits`](#CompletionItem.additionalTextEdits), and [`command`](#CompletionItem.command) should not
-     * be changed when resolving an item.
+     * *Note* that this function is called when completion items are already showing in the UI or when an item has been
+     * selected for insertion. Because of that, no property that changes the presentation (label, sorting, filtering etc)
+     * or the (primary) insert behaviour ({@link CompletionItem.insertText insertText}) can be changed.
+     *
+     * This function may fill in {@link CompletionItem.additionalTextEdits additionalTextEdits}. However, that means an item might be
+     * inserted *before* resolving is done and in that case the editor will do a best effort to still apply those additional
+     * text edits.
      *
      * @param item A completion item currently active in the UI.
      * @param token A cancellation token.
      * @return The resolved completion item or a thenable that resolves to of such. It is OK to return the given
      * `item`. When no result is returned, the given `item` will be used.
      */
-    resolveCompletionItem?(item: CompletionItem, token: CancellationToken): ProviderResult<CompletionItem>;
+    resolveCompletionItem?(item: T, token: CancellationToken): ProviderResult<T>;
   }
 
   /**
