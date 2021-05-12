@@ -170,6 +170,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     if (!this.services.get(location)) {
       service.onCurrentChange(({currentId}) => {
         this.storeState(service, currentId);
+        // onView 也支持监听 containerId
+        this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onView', data: currentId }));
         if (currentId && !service.noAccordion) {
           const accordionService = this.getAccordionService(currentId);
           accordionService.expandedViews.forEach((view) => {
