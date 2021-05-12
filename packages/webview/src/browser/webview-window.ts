@@ -30,7 +30,6 @@ export class ElectronPlainWebviewWindow extends Disposable implements IPlainWebv
         ],
         ...options?.webPreferences,
       },
-      ...options,
     }).then(async (id) => {
       this._windowId = id;
       this._webContentsId = await this.electronMainUIService.getWebContentsId(this._windowId);
