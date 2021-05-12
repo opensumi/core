@@ -53,6 +53,13 @@
       margin-bottom: 10px;
     }
 
+    .result_fresh {
+      float: right;
+      margin-right: 10px;
+      margin-top: -5px;
+      cursor: pointer;
+    }
+
     .result_fold {
       opacity: 0.6;
       float: right;
@@ -180,11 +187,11 @@
     margin-left: 5px;
   }
 
-  @option-size: 21px;
+  @option-size: 20px;
 
   .search_option {
-    width: 21px;
-    height: 21px;
+    width: @option-size;
+    height: @option-size;
     margin: 0 1px;
     box-sizing: border-box;
     display: flex;
@@ -202,8 +209,8 @@
 
     &::before {
       display: inline-block;
-      height: @option-size;
-      line-height: @option-size;
+      height: @option-size - 2;
+      line-height: @option-size - 2;
     }
 
     &.select {
@@ -354,4 +361,14 @@
 
 .search_result_code {
   color: var(--foreground);
+}
+
+.search_result_label {
+  margin-right: 0;
+}
+
+.checkbox :global(.kt-checkbox-icon) {
+  width: 14px;
+  height: 14px;
+  border-color: var(--input-placeholderForeground);
 }

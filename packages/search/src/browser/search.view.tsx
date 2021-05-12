@@ -90,7 +90,7 @@ export const Search = observer(({
               <p className={styles.search_input_title}>
                 {localize('search.input.title')}
                 <CheckBox
-                  insertClass={cls(styles.checkbox)}
+                  className={cls(styles.checkbox)}
                   label={localize('search.input.checkbox')}
                   checked={UIState.isDetailOpen}
                   id='search-input'
@@ -201,7 +201,7 @@ export const Search = observer(({
                   <span className={styles.limit}>{localize('search.excludes')}</span>
                   <div className={styles.checkbox_wrap}>
                     <CheckBox
-                      insertClass={cls(styles.checkbox)}
+                      className={cls(styles.checkbox)}
                       label={localize('search.excludes.default.enable')}
                       checked={!UIState.isIncludeIgnored}
                       id='search-input-isIncludeIgnored'
@@ -209,7 +209,7 @@ export const Search = observer(({
                     />
                     <Popover
                       title={localize('search.help.excludeList')}
-                      insertClass={cls(styles.search_excludes_description)}
+                      className={cls(styles.search_excludes_description)}
                       id={'search_excludes'}
                       action={localize('search.help.modify')}
                       onClickAction={searchBrowserService.openPreference}

@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes } from '@ali/ide-core-browser/lib/components';
 import { ViewState } from '@ali/ide-core-browser';
-import { getIcon } from '@ali/ide-core-browser';
+import { getIcon, getExternalIcon } from '@ali/ide-core-browser';
 import * as cls from 'classnames';
 import { SearchTreeService } from './search-tree.service';
 import { ContentSearchClientService } from './search.service';
@@ -73,7 +73,12 @@ const ResultTotalContent = observer<{
             { [styles.result_fold_enabled]: total.fileNum > 0 },
             { [styles.result_fold_disabled]: searchBrowserService.isSearchDoing },
           )
-        }></span>
+        } />
+        <span
+          title={localize('search.RefreshAction.label')}
+          onClick={() => searchBrowserService.refresh()}
+          className={cls(getIcon('refresh'), styles.result_fresh)}
+        />
       </p>
     );
   }
@@ -117,6 +122,7 @@ export const SearchTree = React.forwardRef((
       <ResultTotalContent total={resultTotal} searchTreeService={searchTreeService} searchBrowserService={searchBrowserService} />
       {nodes && nodes.length > 0 ?
         <RecycleTree
+          leftPadding={0}
           onContextMenu={ onContextMenu }
           replace={ replaceValue || '' }
           onSelect = { (files) => { onSelect(files); } }
@@ -132,7 +138,7 @@ export const SearchTree = React.forwardRef((
             return {};
           } }
           actions= {[{
-            icon: getIcon('replace'),
+            icon: getExternalIcon('replace'),
             title: localize('search.replace.title'),
             command: 'replaceResult',
             location: TreeViewActionTypes.TreeNode_Right,
@@ -144,7 +150,7 @@ export const SearchTree = React.forwardRef((
             location: TreeViewActionTypes.TreeNode_Right,
             paramsKey: 'id',
           }, {
-            icon: getIcon('replace'),
+            icon: getExternalIcon('replace-all'),
             title: localize('search.replace.title'),
             command: 'replaceResults',
             location: TreeViewActionTypes.TreeContainer,

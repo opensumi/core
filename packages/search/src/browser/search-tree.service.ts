@@ -524,6 +524,7 @@ export class SearchTreeService {
           return description && `${description.slice(0, start)}${searchBrowserService.replaceValue || description.slice(start, end)}${description.slice(end)}`.substr(0, 999);
         },
         descriptionClass: styles.search_result_code,
+        labelClass: styles.search_result_label,
       });
     });
 
@@ -562,6 +563,7 @@ export class SearchTreeService {
         parent: undefined,
         tooltip: await this.getReadableTooltip(_uri),
         icon: this.labelService.getIcon(_uri),
+        badgeStyle: { height: 16, minWidth: 16, lineHeight: '16px', padding: '0 4px' },
       };
       node.children = this.getChildrenNodes(resultList, _uri, node);
       node.badge = node.children.length;
