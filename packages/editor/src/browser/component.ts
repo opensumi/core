@@ -1,5 +1,5 @@
 import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver, EditorComponentRenderMode, IEditorSideWidget, EditorSide, EditorComponentDisposeEvent, RegisterEditorComponentEvent } from './types';
-import { IDisposable, IEventBus } from '@ali/ide-core-common';
+import { ExtensionActivateEvent, IDisposable, IEventBus } from '@ali/ide-core-common';
 import { IResource, IEditorOpenType } from '../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import * as ReactDOM from 'react-dom';
@@ -38,6 +38,8 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
     }
     this.components.set(uid, component);
     this.initialPropsMap.set(uid, initialProps);
+     // 使用 activationEvent 通知插件
+    this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onRegisterEditorComponent', data: uid }));
     this.eventBus.fire(new RegisterEditorComponentEvent(uid));
     return {
       dispose: () => {
