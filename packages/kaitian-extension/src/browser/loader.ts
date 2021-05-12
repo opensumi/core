@@ -4,7 +4,7 @@ import * as ReactDOM from 'react-dom';
 import { isElectronEnv } from '@ali/ide-core-common';
 import { createBrowserApi } from './kaitian-browser';
 import { IExtension } from '../common';
-import { RPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol } from '@ali/ide-connection';
 
 export function getAMDRequire() {
   if (isElectronEnv()) {
@@ -19,7 +19,7 @@ export function getAMDRequire() {
   }
 }
 
-export function getMockAmdLoader<T>(injector, extension: IExtension, rpcProtocol?: RPCProtocol) {
+export function getMockAmdLoader<T>(injector, extension: IExtension, rpcProtocol?: IRPCProtocol) {
   const _exports: { default?: any } | T = {};
   const _module = { exports: _exports };
   const _require = (request: string) => {

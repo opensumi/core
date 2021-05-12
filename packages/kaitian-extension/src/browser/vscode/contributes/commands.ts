@@ -1,6 +1,6 @@
-import { VSCodeContributePoint, Contributes, ExtensionService } from '../../../common';
+import { VSCodeContributePoint, Contributes, ExtensionService, IExtCommandManagement } from '../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, CommandService, ILogger, PreferenceService, AppConfig } from '@ali/ide-core-browser';
+import { CommandRegistry, AppConfig } from '@ali/ide-core-browser';
 import { ThemeType, IIconService, IconType } from '@ali/ide-theme';
 
 export interface CommandFormat {
@@ -24,25 +24,19 @@ export type CommandsSchema = Array<CommandFormat>;
 export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSchema> {
 
   @Autowired(CommandRegistry)
-  commandRegistry: CommandRegistry;
-
-  @Autowired(CommandService)
-  commandService: CommandService;
+  private readonly commandRegistry: CommandRegistry;
 
   @Autowired(ExtensionService)
-  extensionService: ExtensionService;
+  private readonly extensionService: ExtensionService;
 
-  @Autowired(PreferenceService)
-  preferenceService: PreferenceService;
+  @Autowired(IExtCommandManagement)
+  private readonly extensionCommandManager: IExtCommandManagement;
 
   @Autowired(IIconService)
-  iconService: IIconService;
-
-  @Autowired(ILogger)
-  logger: ILogger;
+  private readonly iconService: IIconService;
 
   @Autowired(AppConfig)
-  config: AppConfig;
+  private readonly config: AppConfig;
 
   async contribute() {
     this.json.forEach((command) => {
@@ -59,9 +53,9 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
       }));
       // TODO: 支持定义worker中的command
       if (this.config.noExtHost) {
-        this.addDispose(this.extensionService.declareExtensionCommand(command.command, 'worker'));
+        this.addDispose(this.extensionCommandManager.registerExtensionCommandEnv(command.command, 'worker'));
       } else {
-        this.addDispose(this.extensionService.declareExtensionCommand(command.command, 'node'));
+        this.addDispose(this.extensionCommandManager.registerExtensionCommandEnv(command.command, 'node'));
         // this.addDispose(this.extensionService.declareExtensionCommand(command.command, 'worker'));
       }
     });

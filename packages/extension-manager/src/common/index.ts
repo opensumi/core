@@ -1,6 +1,6 @@
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { BasicEvent, IExtensionProps } from '@ali/ide-core-common';
-import { ExtensionDependencies, ExtraMetaData } from '@ali/ide-kaitian-extension/lib/common';
+import { ExtensionDependencies, IExtraMetaData } from '@ali/ide-kaitian-extension/lib/common';
 
 export const EXTENSION_DIR = 'extension/';
 
@@ -115,15 +115,15 @@ export interface ExtensionDetail extends RawExtension {
 
 export const ExtensionManagerServerPath = 'ExtensionManagerServerPath';
 
-// 插件市场前端服务
-export const IExtensionManagerService = Symbol('IExtensionManagerService');
-
 export const IExtensionManager = Symbol('IExtensionManager');
 export interface IExtensionManager {
   installExtension(extension: BaseExtension, version?: string): Promise<string | string[]>;
   updateExtension(extension: BaseExtension, version: string): Promise<string | string[]>;
   uninstallExtension(extension: BaseExtension): Promise<boolean>;
 }
+
+// 插件市场前端服务
+export const IExtensionManagerService = Symbol('IExtensionManagerService');
 export interface IExtensionManagerService  {
   isInit: boolean;
   loading: SearchState;
@@ -191,7 +191,7 @@ export interface IExtensionsInPackResFromMarketPlace {
     id: string;
     identifier: string;
     extensionId: string;
-    extensionPack: ExtraMetaData[];
+    extensionPack: IExtraMetaData[];
   };
 }
 

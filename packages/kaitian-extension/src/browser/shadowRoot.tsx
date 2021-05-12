@@ -1,16 +1,17 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import { useEffect, useRef, useState } from 'react';
-import * as clx from 'classnames';
 import { ComponentContextProvider, IconContext } from '@ali/ide-components';
+import { DisposableCollection, useInjectable } from '@ali/ide-core-browser';
 import { localize } from '@ali/ide-core-common';
+import { getThemeTypeSelector, IThemeService, ThemeType } from '@ali/ide-theme';
+import * as clx from 'classnames';
+import * as React from 'react';
+import { useEffect, useRef, useState } from 'react';
+import * as ReactDOM from 'react-dom';
 
-import { IExtension, ExtensionService } from '../common';
-import { IThemeService, getThemeTypeSelector, ThemeType } from '@ali/ide-theme';
-import { useInjectable, DisposableCollection } from '@ali/ide-core-browser';
-import './style.less';
+import { IExtension } from '../common';
+import { AbstractViewExtProcessService } from '../common/extension.service';
 
 const pkgJson = require('../../package.json');
+
 const ShadowContent = ({ root, children }) => ReactDOM.createPortal(children, root);
 
 function cloneNode<T>(head): T {
@@ -70,7 +71,7 @@ function getStyleSheet(filePath: string, version: string) {
 const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, extensionId: string, children: any, proxiedHead: HTMLHeadElement }) => {
   const shadowRootRef = useRef<HTMLDivElement | null>(null);
   const [shadowRoot, setShadowRoot] = React.useState<ShadowRoot | null>(null);
-  const extensionService = useInjectable<ExtensionService>(ExtensionService);
+  const viewExtensionService = useInjectable<AbstractViewExtProcessService>(AbstractViewExtProcessService);
   const themeService = useInjectable<IThemeService>(IThemeService);
   const [themeType, setThemeType] = useState<null | ThemeType>(null);
 
@@ -86,7 +87,7 @@ const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, ex
         const newHead = cloneNode<HTMLHeadElement>(proxiedHead);
         disposables.push(useMutationObserver(proxiedHead, newHead));
         shadowRootElement.appendChild(newHead);
-        const portalRoot = extensionService.getPortalShadowRoot(extensionId);
+        const portalRoot = viewExtensionService.getPortalShadowRoot(extensionId);
         if (portalRoot) {
           portalRoot.appendChild(proxiedHead);
         }
@@ -106,7 +107,7 @@ const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, ex
   }, []);
 
   return (
-    <div id={id} className={clx('shadow-root-host')} ref={shadowRootRef}>
+    <div id={id} style={{ width: '100%', height: '100%' }} ref={shadowRootRef}>
       {shadowRoot && <ShadowContent root={shadowRoot}>
         <div className={clx(getThemeTypeSelector(themeType!), 'shadow-context-wrapper')} style={{ width: '100%', height: '100%' }}>{children}</div>
       </ShadowContent>}

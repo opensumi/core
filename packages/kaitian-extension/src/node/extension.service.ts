@@ -4,7 +4,7 @@ import * as fs from 'fs-extra';
 import * as util from 'util';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ExtensionScanner } from './extension.scanner';
-import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData, IExtensionNodeClientService, ProcessMessageType, IExtensionHostManager, OutputType, ICreateProcessOptions } from '../common';
+import { IExtensionMetaData, IExtensionNodeService, IExtraMetaData, IExtensionNodeClientService, ProcessMessageType, IExtensionHostManager, OutputType, ICreateProcessOptions } from '../common';
 import { Deferred, isDevelopment, INodeLogger, AppConfig, isWindows, isElectronNode, ReporterProcessMessage, IReporter, IReporterService, REPORT_TYPE, PerformanceData, REPORT_NAME } from '@ali/ide-core-node';
 import { Event, Emitter, timeout, IReporterTimer, isUndefined, SupportLogNamespace, getDebugLogger } from '@ali/ide-core-common';
 import type * as cp from 'child_process';
@@ -73,13 +73,13 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     this.setExtProcessConnectionForward();
   }
 
-  public async getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: { [key: string]: any } = {}): Promise<IExtensionMetaData[]> {
+  public async getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: IExtraMetaData = {}): Promise<IExtensionMetaData[]> {
     // 扫描内置插件和插件市场的插件目录
     this.extensionScanner = new ExtensionScanner([...scan, this.appConfig.marketplace.extensionDir], localization, extensionCandidate, extraMetaData);
     return this.extensionScanner.run();
   }
 
-  async getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
+  async getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData): Promise<IExtensionMetaData | undefined> {
     return await ExtensionScanner.getExtension(extensionPath, localization, extraMetaData);
   }
 

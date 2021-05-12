@@ -1,11 +1,11 @@
-// import { VscodeContributionPoint, Contributes } from './common';
-import { VSCodeContributePoint, Contributes, IExtensionNodeClientService, ExtensionNodeServiceServerPath, ExtensionService } from '../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, CommandService, ILogger, registerLocalizationBundle, URI, PreferenceService, parseWithComments, getLanguageId } from '@ali/ide-core-browser';
-// import { VSCodeExtensionService } from '../types';
+import { ILogger, registerLocalizationBundle, URI, PreferenceService, parseWithComments, getLanguageId } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { IExtensionStoragePathServer } from '@ali/ide-extension-storage';
+
+import { VSCodeContributePoint, Contributes, IExtensionNodeClientService, ExtensionNodeServiceServerPath } from '../../../common';
+import { AbstractExtInstanceManagementService } from '../../types';
 
 export interface TranslationFormat {
   id: string;
@@ -29,33 +29,23 @@ export type LocalizationsSchema = Array<LocalizationFormat>;
 @Injectable()
 @Contributes('localizations')
 export class LocalizationsContributionPoint extends VSCodeContributePoint<LocalizationsSchema> {
-
-  @Autowired(CommandRegistry)
-  commandRegistry: CommandRegistry;
-
-  @Autowired(CommandService)
-  commandService: CommandService;
-
   @Autowired(PreferenceService)
-  preferenceService: PreferenceService;
+  private readonly preferenceService: PreferenceService;
 
   @Autowired(IExtensionStoragePathServer)
-  private extensionStoragePathServer: IExtensionStoragePathServer;
-
-  // @Autowired(VSCodeExtensionService)
-  // vscodeExtensionService: VSCodeExtensionService;
+  private readonly extensionStoragePathServer: IExtensionStoragePathServer;
 
   @Autowired(ILogger)
-  logger: ILogger;
+  private readonly logger: ILogger;
 
   @Autowired(IFileServiceClient)
-  private fileServiceClient: IFileServiceClient;
+  private readonly fileServiceClient: IFileServiceClient;
 
   @Autowired(ExtensionNodeServiceServerPath)
-  extensionNodeService: IExtensionNodeClientService;
+  private readonly extensionNodeService: IExtensionNodeClientService;
 
-  @Autowired(ExtensionService)
-  extensionService: ExtensionService;
+  @Autowired(AbstractExtInstanceManagementService)
+  private readonly extensionInstanceManageService: AbstractExtInstanceManagementService;
 
   private safeParseJSON(content) {
     let json;
@@ -68,7 +58,7 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
   }
 
   async contribute() {
-    const currentExtensions = this.extensionService.getExtensions();
+    const currentExtensions = this.extensionInstanceManageService.getExtensionInstances();
     const promises: Promise<void>[] = [];
     this.json.forEach((localization) => {
       if (localization.translations) {

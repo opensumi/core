@@ -128,7 +128,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
   }
 
-  public async $initExtensions() {
+  public async $handleExtHostCreated() {
     const extensions: IExtensionProps[] = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService).$getExtensions();
     // node 层 extensionLocation 不使用 static 直接使用 file
     this.extensions = extensions.map((item) => ({

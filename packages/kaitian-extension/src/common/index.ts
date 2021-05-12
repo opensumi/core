@@ -1,9 +1,9 @@
-import { Disposable, IJSONSchema, IDisposable, Deferred, localize, Event, Uri, MaybePromise } from '@ali/ide-core-common';
-import { createExtHostContextProxyIdentifier, ProxyIdentifier } from '@ali/ide-connection';
+import { Disposable, IJSONSchema, IDisposable, Deferred, localize, Uri, MaybePromise } from '@ali/ide-core-common';
+import { createExtHostContextProxyIdentifier } from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { Extension } from '../hosted/vscode.extension';
 import { Emitter, IExtensionProps } from '@ali/ide-core-common';
-import { IExtensionContributions } from './vscode';
+import { IExtensionContributions, IMainThreadCommands } from './vscode';
 import { IKaitianExtensionContributions } from './kaitian/extension';
 import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from './activator';
 
@@ -27,17 +27,17 @@ export interface IExtensionMetaData {
   isDevelopment?: boolean;
 }
 
+/**
+ * 提供插件扫描时的额外信息读取能力
+ * 比如 read/changelog/package.nls.json 等等
+ */
 export interface IExtraMetaData {
-  [key: string]: any;
+  [key: string]: string;
 }
 
 export const ExtensionNodeServiceServerPath = 'ExtensionNodeServiceServerPath';
 
 export type ExtensionDependencies = (string | { [extensionId: string]: string })[];
-
-export interface ExtraMetaData {
-  [key: string]: any;
-}
 
 export interface ICreateProcessOptions {
   /**
@@ -49,13 +49,13 @@ export interface ICreateProcessOptions {
 export const IExtensionNodeService = Symbol('IExtensionNodeService');
 export interface IExtensionNodeService {
   initialize(): Promise<void>;
-  getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
+  getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: IExtraMetaData): Promise<IExtensionMetaData[]>;
   createProcess(clientId: string, options?: ICreateProcessOptions): Promise<void>;
   ensureProcessReady(clientId: string): Promise<boolean>;
   getElectronMainThreadListenPath(clientId: string);
   getElectronMainThreadListenPath2(clientId: string);
   getExtServerListenPath(clientId: string);
-  getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
+  getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData): Promise<IExtensionMetaData | undefined>;
   setConnectionServiceClient(clientId: string, serviceClient: IExtensionNodeClientService);
   disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
   disposeAllClientExtProcess(): Promise<void>;
@@ -66,9 +66,9 @@ export interface IExtensionNodeService {
 export const IExtensionNodeClientService = Symbol('IExtensionNodeClientService');
 export interface IExtensionNodeClientService {
   getElectronMainThreadListenPath(clientId: string): Promise<string>;
-  getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
+  getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: IExtraMetaData): Promise<IExtensionMetaData[]>;
   createProcess(clientId: string, options: ICreateProcessOptions): Promise<void>;
-  getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
+  getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData): Promise<IExtensionMetaData | undefined>;
   infoProcessNotExist(): void;
   infoProcessCrash(): void;
   disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
@@ -84,47 +84,102 @@ export interface ChangeExtensionOptions {
   isBuiltin?: boolean;
 }
 
-export abstract class ExtensionService {
-
-  abstract async executeExtensionCommand(command: string, args: any[]): Promise<void>;
+/**
+ * 管理不同进程内插件注册的 command 的运行环境及其调用
+ */
+export abstract class IExtCommandManagement {
+  abstract registerProxyCommandExecutor(env: ExtensionHostType, proxyCommandExecutor: IMainThreadCommands): void;
+  abstract executeExtensionCommand(env: ExtensionHostType, command: string, args: any[]): Promise<any>;
   /**
-   *
    * @param command command id
-   * @param targetHost 目标插件进程的位置，默认 'node' // TODO worker中的声明未支持，
+   * @param targetHost 目标插件进程的运行环境，默认 'node' // TODO worker中的声明未支持，
    */
-  abstract declareExtensionCommand(command: string, targetHost?: ExtensionHostType): IDisposable;
-  abstract getExtensionCommand(command: string): ExtensionHostType | undefined;
-  abstract async activate(): Promise<void>;
-  abstract async activeExtension(extension: IExtension): Promise<void>;
-  abstract async getProxy<T>(identifier: ProxyIdentifier): Promise<T>;
-  abstract async getAllExtensions(): Promise<IExtensionMetaData[]>;
-  abstract getExtensionProps(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionProps | undefined>;
-  abstract getAllExtensionJson(): Promise<IExtensionProps[]>;
-  abstract async postChangedExtension(options: ChangeExtensionOptions): Promise<void>;
-  abstract async postChangedExtension(upgrade: boolean, extensionPath: string, oldExtensionPath?: string): Promise<void>;
-  abstract async postChangedExtension(upgrade: boolean | ChangeExtensionOptions, extensionPath?: string, oldExtensionPath?: string): Promise<void>;
-  abstract async isExtensionRunning(extensionPath: string): Promise<boolean>;
-  abstract async postDisableExtension(extensionPath: string): Promise<void>;
-  abstract async postEnableExtension(extensionPath: string): Promise<void>;
-  abstract async postUninstallExtension(path: string): Promise<void>;
-  abstract getExtensions(): IExtension[];
-  abstract async activateExtensionByExtPath(extensionPath: string): Promise<void>;
-  abstract registerShadowRootBody(id: string, body: HTMLElement): void;
-  abstract getShadowRootBody(id: string): HTMLElement | undefined;
-  abstract registerPortalShadowRoot(extensionId: string): void;
-  abstract getPortalShadowRoot(extensionId: string): ShadowRoot | undefined;
-  abstract async initKaitianBrowserAPIDependency(extension: IExtension): Promise<void>;
+  abstract registerExtensionCommandEnv(command: string, targetHost?: ExtensionHostType): IDisposable;
+  abstract getExtensionCommandEnv(command: string): ExtensionHostType | undefined;
+}
 
-  abstract getExtensionByExtId(dep: string): IExtension | undefined;
+/**
+ * 为插件市场面板提供数据/交互
+ */
+export abstract class AbstractExtensionManagementService {
+  /**
+   * @deprecated 建议直接用 getExtensions 后自行 map#toJSON 即可
+   */
+  abstract getAllExtensionJson(): IExtensionProps[];
 
+  /**
+   * 禁用插件
+   */
+  abstract postDisableExtension(extensionPath: string): Promise<void>;
+
+  /**
+   * 启用插件
+   */
+  abstract postEnableExtension(extensionPath: string): Promise<void>;
+
+  /**
+   * 安装插件之后开始激活
+   */
+  abstract postChangedExtension(options: ChangeExtensionOptions): Promise<void>;
+  abstract postChangedExtension(upgrade: boolean, extensionPath: string, oldExtensionPath?: string): Promise<void>;
+  abstract postChangedExtension(upgrade: boolean | ChangeExtensionOptions, extensionPath?: string, oldExtensionPath?: string): Promise<void>;
+
+  /**
+   * 卸载插件
+   */
+  abstract postUninstallExtension(extensionPath: string): Promise<void>;
+
+  /**
+   * 通过 extensionPath 获取插件实例
+   */
+  abstract getExtensionByPath(extensionPath: string): IExtension | undefined;
+  /**
+   * 通过 extension id 获取插件实例
+   */
+  abstract getExtensionByExtId(extensionId: string): IExtension | undefined;
+
+  /**
+   * 通过 extensionPath 获取插件实例序列化数据及从 node 层获取的 extraMetadata
+   */
+  abstract getExtensionProps(extensionPath: string, extraMetaData?: IExtraMetaData): Promise<IExtensionProps | undefined>;
+}
+
+export abstract class ExtensionService {
+  /**
+   * 激活插件服务
+   */
+  abstract activate(): Promise<void>;
+
+  /**
+   * 重启插件进程
+   */
+  abstract restartExtProcess(): Promise<void>;
+
+  /**
+   * 激活插件, 给 Extension 实例使用
+   */
+  abstract activeExtension(extension: IExtension): Promise<void>;
+
+  /**
+   * 销毁插件
+   */
+  abstract disposeExtensions(): Promise<void>;
+
+  /**
+   * 执行插件命令
+   */
+  abstract executeExtensionCommand(command: string, args: any[]): Promise<void>;
+
+  /**
+   * @internal 提供获取所有运行中的插件的列表数据
+   */
   abstract getActivatedExtensions(): Promise<{ [key in ExtensionHostType]?: ActivatedExtension[] }>;
 
-  onDidExtensionActivated: Event<IExtensionProps>;
   eagerExtensionsActivated: Deferred<void>;
 }
 
 export abstract class ExtensionCapabilityRegistry {
-  abstract async getAllExtensions(): Promise<IExtensionMetaData[]>;
+  abstract getAllExtensions(): Promise<IExtensionMetaData[]>;
 }
 
 export const LANGUAGE_BUNDLE_FIELD = 'languageBundle';
@@ -134,6 +189,7 @@ export interface JSONType { [key: string]: any; }
 export interface IExtension extends IExtensionProps {
   readonly contributes: IExtensionContributions & IKaitianExtensionContributions;
   activate(visited?: Set<string>);
+  enable(): void;
   toJSON(): IExtensionProps;
 }
 
@@ -150,7 +206,7 @@ export abstract class VSCodeContributePoint<T extends JSONType = JSONType> exten
   }
   schema?: IJSONSchema;
 
-  abstract async contribute();
+  abstract contribute();
 
   protected getLocalizeFromNlsJSON(title: string) {
     const nlsRegex = /^%([\w\d.-]+)%$/i;
@@ -174,7 +230,7 @@ export const MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER = createExtHostContextProxyI
 
 export interface IExtensionHost {
   $activateExtension(id: string): Promise<void>;
-  $initExtensions(): Promise<void>;
+  $handleExtHostCreated(): Promise<void>;
   $getActivatedExtensions(): Promise<ActivatedExtensionJSON[]>;
 
   getExtensionExports(id: string): any;

@@ -7,11 +7,11 @@ import { ToolBarPosition } from '@ali/ide-toolbar';
 import { EditorComponentRenderMode } from '@ali/ide-editor/lib/browser';
 import { Injector } from '@ali/common-di';
 import { IThemeService, getColorRegistry } from '@ali/ide-theme';
+import { IRPCProtocol } from '@ali/ide-connection';
 
 import { createBrowserCommandsApiFactory } from './commands';
 import { createBrowserComponents } from './components';
 import { IExtension } from '../../common';
-import { RPCProtocol } from '@ali/ide-connection';
 
 /**
  * Browser 尽量只export视图相关的少量API
@@ -19,7 +19,7 @@ import { RPCProtocol } from '@ali/ide-connection';
  * 1. browser只暴露getter，任何注册、调用等会产生副作用的行为全部放入逻辑层
  * @param injector
  */
-export function createBrowserApi(injector: Injector, extension: IExtension, rpcProtocol?: RPCProtocol) {
+export function createBrowserApi(injector: Injector, extension: IExtension, rpcProtocol?: IRPCProtocol) {
 
   const commands = createBrowserCommandsApiFactory(injector, extension, rpcProtocol);
   const components = createBrowserComponents(injector, extension);

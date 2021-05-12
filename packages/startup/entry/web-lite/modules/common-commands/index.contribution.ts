@@ -1,7 +1,7 @@
 import { Autowired } from '@ali/common-di';
 import { Domain, CommandService, CommandContribution, CommandRegistry, EDITOR_COMMANDS, URI } from '@ali/ide-core-browser';
 
-import { VSCodeCommands } from '@ali/ide-kaitian-extension/lib/browser/vscode/commands';
+import { VSCodeBuiltinCommands } from '@ali/ide-kaitian-extension/lib/browser/vscode/builtin-commands';
 import { UriComponents } from '@ali/ide-kaitian-extension/lib/common/vscode/models';
 import { TextDocumentShowOptions, ViewColumn } from '@ali/ide-kaitian-extension/lib/common/vscode';
 import { isLikelyVscodeRange, fromRange, viewColumnToResourceOpenOptions } from '@ali/ide-kaitian-extension/lib/common/vscode/converter';
@@ -17,7 +17,7 @@ export class CommonCommandsContribution implements CommandContribution {
 
   registerCommands(commandRegistry: CommandRegistry) {
     // vscode.open
-    commandRegistry.registerCommand(VSCodeCommands.OPEN, {
+    commandRegistry.registerCommand(VSCodeBuiltinCommands.OPEN, {
       execute: (uriComponents: UriComponents, columnOrOptions?: ViewColumn | TextDocumentShowOptions, label?: string) => {
         const uri = URI.from(uriComponents);
         const options: IResourceOpenOptions = {};
@@ -43,7 +43,7 @@ export class CommonCommandsContribution implements CommandContribution {
     });
 
     // vscode.diff
-    commandRegistry.registerCommand(VSCodeCommands.DIFF, {
+    commandRegistry.registerCommand(VSCodeBuiltinCommands.DIFF, {
       execute: (left: UriComponents, right: UriComponents, title: string, options: any = {}) => {
         const openOptions: IResourceOpenOptions = {
           ...viewColumnToResourceOpenOptions(options.viewColumn),

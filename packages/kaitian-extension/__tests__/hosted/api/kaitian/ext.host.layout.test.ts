@@ -12,6 +12,7 @@ const extension = {
   toJSON: () => {
     return mockExtensionProps;
   },
+  enable() {},
   contributes: {},
   activate: () => {
   },

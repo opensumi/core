@@ -11,23 +11,19 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { IMonacoImplEditor, EditorCollectionServiceImpl, BrowserDiffEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import debounce = require('lodash.debounce');
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
-import { ExtensionService } from '../../../common';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { viewColumnToResourceOpenOptions } from '../../../common/vscode/converter';
 
 @Injectable({multiple: true})
 export class MainThreadEditorService extends WithEventBus implements IMainThreadEditorsService {
   @Autowired(WorkbenchEditorService)
-  editorService: WorkbenchEditorServiceImpl;
+  private readonly editorService: WorkbenchEditorServiceImpl;
 
   @Autowired(IEditorDecorationCollectionService)
-  decorationService: IEditorDecorationCollectionService;
+  private readonly decorationService: IEditorDecorationCollectionService;
 
   @Autowired(EditorCollectionService)
-  codeEditorService: EditorCollectionServiceImpl;
-
-  @Autowired(ExtensionService)
-  extensionService: ExtensionService;
+  private readonly codeEditorService: EditorCollectionServiceImpl;
 
   @Autowired(StaticResourceService)
   staticResourceService: StaticResourceService;

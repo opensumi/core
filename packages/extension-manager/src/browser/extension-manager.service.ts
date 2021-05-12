@@ -1,13 +1,13 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, SearchExtension, RequestHeaders, BaseExtension, ExtensionMomentState, OpenExtensionOptions, ExtensionChangeEvent, ExtensionChangeType, IMarketplaceExtensionInfo, IExtensionVersion, IExtension, enableExtensionsContainerId } from '../common';
-import { ExtensionService, IExtensionProps, EXTENSION_ENABLE, ExtensionDependencies } from '@ali/ide-kaitian-extension/lib/common';
+import { IExtensionProps, EXTENSION_ENABLE, ExtensionDependencies, AbstractExtensionManagementService } from '@ali/ide-kaitian-extension/lib/common';
 import { action, observable, computed, runInAction, reaction } from 'mobx';
 import * as flatten from 'lodash.flatten';
 import { Path } from '@ali/ide-core-common/lib/path';
 import * as compareVersions from 'compare-versions';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, localize, IClientApp } from '@ali/ide-core-browser';
-import {  getLanguageId, IReporterService, REPORT_NAME, formatLocalize, IEventBus, memoize, Disposable } from '@ali/ide-core-common';
+import { getLanguageId, IReporterService, REPORT_NAME, formatLocalize, IEventBus, memoize, Disposable } from '@ali/ide-core-common';
 import { IMenu, AbstractMenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -15,12 +15,12 @@ import { IMessageService } from '@ali/ide-overlay';
 import { EditorPreferences } from '@ali/ide-editor/lib/browser';
 import uniqBy = require('lodash.uniqby');
 import { IMainLayoutService } from '@ali/ide-main-layout';
+import { ExtensionDidActivatedEvent } from '@ali/ide-kaitian-extension/lib/browser/types';
 
 @Injectable()
 export class ExtensionManagerService extends Disposable implements IExtensionManagerService {
-
-  @Autowired()
-  protected extensionService: ExtensionService;
+  @Autowired(AbstractExtensionManagementService)
+  private readonly kaitianExtensionManagerService: AbstractExtensionManagementService;
 
   @Autowired()
   protected staticResourceService: StaticResourceService;
@@ -44,13 +44,19 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   private readonly eventBus: IEventBus;
 
   @Autowired(WorkbenchEditorService)
-  workbenchEditorService: WorkbenchEditorService;
+  private readonly workbenchEditorService: WorkbenchEditorService;
 
   @Autowired(EditorPreferences)
-  editorPreferences: EditorPreferences;
+  private readonly editorPreferences: EditorPreferences;
 
   @Autowired(IMessageService)
-  messageService: IMessageService;
+  private readonly messageService: IMessageService;
+
+  @Autowired(IReporterService)
+  private readonly reporterService: IReporterService;
+
+  @Autowired(IClientApp)
+  private readonly clientApp: IClientApp;
 
   @observable
   extensions: IExtension[] = [];
@@ -82,15 +88,6 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   @observable
   tabActiveKey = TabActiveKey.MARKETPLACE;
 
-  @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
-
-  @Autowired(IReporterService)
-  reporterService: IReporterService;
-
-  @Autowired(IClientApp)
-  clientApp: IClientApp;
-
   @observable
   isInit: boolean = false;
 
@@ -111,9 +108,10 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   private extensionInfo = new Map<string, IMarketplaceExtensionInfo>();
 
   bindEvents() {
-    this.addDispose(this.extensionService.onDidExtensionActivated(async (e) => {
-      if (!e.isBuiltin && !e.isDevelopment) {
-        this.checkExtensionUpdates(e);
+    this.addDispose(this.eventBus.on(ExtensionDidActivatedEvent, async (e) => {
+      const extProps = e.payload;
+      if (!extProps.isBuiltin && !extProps.isDevelopment) {
+        this.checkExtensionUpdates(extProps);
       }
     }));
     this.addDispose(Disposable.create(() => {
@@ -266,7 +264,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
             extension!.newVersion = latest.version;
           });
         } else {
-          const extensionProp = await this.extensionService.getExtensionProps(e.realPath);
+          const extensionProp = await this.kaitianExtensionManagerService.getExtensionProps(e.realPath);
           if (extensionProp) {
             extension = await this.transformFromExtensionProp(extensionProp);
             if (extension) {
@@ -483,7 +481,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
       const reloadRequire = await this.computeReloadState(path);
       if (!reloadRequire) {
         // 2. 更新插件进程信息
-        await this.extensionService.postChangedExtension({
+        await this.kaitianExtensionManagerService.postChangedExtension({
           upgrade: false,
           extensionPath: path,
           isBuiltin,
@@ -496,7 +494,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
           extension.reloadRequire = reloadRequire;
           extension.isBuiltin = isBuiltin;
         } else {
-          const extensionProp = await this.extensionService.getExtensionProps(path);
+          const extensionProp = await this.kaitianExtensionManagerService.getExtensionProps(path);
           if (extensionProp) {
             const extension = await this.transformFromExtensionProp(extensionProp);
             // 添加到 extensions，下次获取 rawExtension
@@ -536,8 +534,8 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
     const rawPathArrayLike = await this.extensionManagerServer.installExtensionByReleaseId(releaseId);
     for (const p of flatten([rawPathArrayLike], Infinity)) {
       // 在后台去启用插件
-      await this.extensionService.postChangedExtension(false, p);
-      const extensionProp = await this.extensionService.getExtensionProps(p);
+      await this.kaitianExtensionManagerService.postChangedExtension(false, p);
+      const extensionProp = await this.kaitianExtensionManagerService.getExtensionProps(p);
 
       if (extensionProp) {
         const extension = await this.transformFromExtensionProp(extensionProp);
@@ -558,20 +556,18 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
    */
   async onInstallExtension(extensionId: string, path: string) {
     // 在后台去启用插件
-    await this.extensionService.postChangedExtension(false, path);
+    await this.kaitianExtensionManagerService.postChangedExtension(false, path);
   }
 
   /**
    * 更新插件后热启用操作
-   * @param path
-   * @param oldExtensionPath
    */
-  async onUpdateExtension(path: string, oldExtensionPath: string) {
-    await this.extensionService.postChangedExtension(true, path, oldExtensionPath);
+  async onUpdateExtension(extensionPath: string, oldExtensionPath: string) {
+    await this.kaitianExtensionManagerService.postChangedExtension(true, extensionPath, oldExtensionPath);
   }
 
-  private async onUninstallExtension(path: string) {
-    await this.extensionService.postUninstallExtension(path);
+  private async onUninstallExtension(extensionPath: string) {
+    await this.kaitianExtensionManagerService.postUninstallExtension(extensionPath);
   }
 
   /**
@@ -579,7 +575,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
    * @param extensionPath
    */
   async computeReloadState(extensionPath: string) {
-    return await this.extensionService.isExtensionRunning(extensionPath);
+    return !!this.kaitianExtensionManagerService.getExtensionByPath(extensionPath)?.activated;
   }
 
   @action
@@ -692,7 +688,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
       'x-language-id': getLanguageId(),
     });
     // 获取所有已安装的插件
-    const extensionProps = await this.extensionService.getAllExtensionJson();
+    const extensionProps = await this.kaitianExtensionManagerService.getAllExtensionJson();
     const extensions = await this.transformFromExtensionProp(extensionProps);
     // 是否要展示内置插件
     this.isShowBuiltinExtensions = await this.extensionManagerServer.isShowBuiltinExtensions();
@@ -790,7 +786,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
     for (const installId of this.installedIds) {
       const detail = this.getRawExtensionById(installId);
       if (detail && detail.enable) {
-        const extProp = await this.extensionService.getExtensionProps(detail.path);
+        const extProp = await this.kaitianExtensionManagerService.getExtensionProps(detail.path);
 
         for (const dep of extProp?.packageJSON?.extensionDependencies || []) {
 
@@ -904,11 +900,11 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   }
 
   async onDisableExtension(extensionPath: string) {
-    await this.extensionService.postDisableExtension(extensionPath);
+    await this.kaitianExtensionManagerService.postDisableExtension(extensionPath);
   }
 
   async onEnableExtension(extensionPath) {
-    await this.extensionService.postEnableExtension(extensionPath);
+    await this.kaitianExtensionManagerService.postEnableExtension(extensionPath);
   }
 
   async getDetailById(extensionId: string): Promise<ExtensionDetail | undefined> {
@@ -916,7 +912,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
     if (!extension) {
       return;
     }
-    const extensionDetail = await this.extensionService.getExtensionProps(extension.path, {
+    const extensionDetail = await this.kaitianExtensionManagerService.getExtensionProps(extension.path, {
       readme: './README.md',
       changelog: './CHANGELOG.md',
       packageJSON: './package.json',
@@ -1020,7 +1016,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
     const extensionPath = extension.path;
     const extensionId = extension.extensionId;
 
-    const extensionsInPack: string[] = (await this.extensionService.getExtensionByExtId(extensionId))?.packageJSON?.extensionPack;
+    const extensionsInPack: string[] = (await this.kaitianExtensionManagerService.getExtensionByExtId(extensionId))?.packageJSON?.extensionPack;
     // 如果有 pack， 则把 pack 也卸载掉
     if (extensionsInPack) {
       for (const extensionIdentiferInPack of extensionsInPack) {
@@ -1189,7 +1185,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
 
   private async getDependedExtMap(): Promise<Map<string, string[]>> {
     const depended = new Map();
-    const extensionProps = await this.extensionService.getAllExtensionJson();
+    const extensionProps = await this.kaitianExtensionManagerService.getAllExtensionJson();
     for (const prop of extensionProps) {
       for (const dep of prop?.packageJSON?.extensionDependencies || []) {
         const { id } = this.transformDepsDeclaration(dep);
@@ -1205,7 +1201,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
 
   private async getDependenciesExtMap(): Promise<Map<string, string[]>> {
     const dependencies = new Map();
-    const extensionProps = await this.extensionService.getAllExtensionJson();
+    const extensionProps = await this.kaitianExtensionManagerService.getAllExtensionJson();
 
     for (const prop of extensionProps) {
       for (const dep of prop?.packageJSON.extensionDependencies || []) {

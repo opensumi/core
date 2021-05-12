@@ -1,8 +1,8 @@
-import { Injectable, Autowired, Injector } from '@ali/common-di';
+import { Injectable, Autowired, Injector, Optional } from '@ali/common-di';
 import { MonacoCommandService } from '@ali/ide-monaco/lib/browser/monaco.command.service';
 import { ILogger, CommandRegistry, IExtensionInfo } from '@ali/ide-core-common';
-import { ExtensionService, IExtension } from '../../common';
-import { RPCProtocol } from '@ali/ide-connection';
+import { IExtension } from '../../common';
+import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtHostCommands } from '../../common/vscode/command';
 import { ExtHostAPIIdentifier } from '../../common/vscode';
 
@@ -10,20 +10,17 @@ import { ExtHostAPIIdentifier } from '../../common/vscode';
 export class KaitianBrowserCommand {
 
   @Autowired()
-  monacoCommandService: MonacoCommandService;
+  private readonly monacoCommandService: MonacoCommandService;
 
   @Autowired(CommandRegistry)
-  commandRegistry: CommandRegistry;
-
-  @Autowired(ExtensionService)
-  extensionService: ExtensionService;
+  private readonly commandRegistry: CommandRegistry;
 
   @Autowired(ILogger)
-  logger: ILogger;
+  private readonly logger: ILogger;
 
   private readonly proxy?: IExtHostCommands;
 
-  constructor(private rpcProtocol?: RPCProtocol) {
+  constructor(@Optional() private rpcProtocol?: IRPCProtocol) {
     if (this.rpcProtocol) {
       this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
     }
@@ -62,7 +59,7 @@ export class KaitianBrowserCommand {
   }
 }
 
-export function createBrowserCommandsApiFactory(injector: Injector, extension: IExtension, rpcProtocol?: RPCProtocol) {
+export function createBrowserCommandsApiFactory(injector: Injector, extension: IExtension, rpcProtocol?: IRPCProtocol) {
   const commands: KaitianBrowserCommand = injector.get(KaitianBrowserCommand, [rpcProtocol]);
   return {
     executeCommand<T>(command: string, ...args: any) {

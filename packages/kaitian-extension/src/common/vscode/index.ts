@@ -1,5 +1,5 @@
 import type * as vscode from 'vscode';
-import { UriComponents, Emitter, IExtensionProps } from '@ali/ide-core-common';
+import { Emitter, IExtensionProps } from '@ali/ide-core-common';
 
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@ali/ide-connection';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
@@ -40,9 +40,8 @@ export interface VSCodeExtensionService {
   $activateExtension(extensionPath: string): Promise<void>;
 }
 
-export interface KTWorkerExtensionService extends VSCodeExtensionService {
+export interface KaitianWorkerExtensionService extends VSCodeExtensionService {
   $getStaticServicePath(): Promise<string>;
-  $resolveStaticResource(uri: UriComponents): Promise<UriComponents>;
 }
 
 export const MainThreadAPIIdentifier = {

@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { IExtensionNodeClientService, ExtraMetaData, IExtensionMetaData } from '@ali/ide-kaitian-extension';
+import { IExtensionNodeClientService, IExtraMetaData, IExtensionMetaData } from '@ali/ide-kaitian-extension';
 import { mockExtensions, mockExtensionProps } from './extensions';
 
 @Injectable()
@@ -7,13 +7,13 @@ export class MockExtNodeClientService implements IExtensionNodeClientService {
   getElectronMainThreadListenPath(clientId: string): Promise<string> {
     throw new Error('Method not implemented.');
   }
-  getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]> {
+  getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: IExtraMetaData): Promise<IExtensionMetaData[]> {
     return Promise.resolve(mockExtensions);
   }
   createProcess(clientId: string): Promise<void> {
     return Promise.resolve();
   }
-  getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData | undefined): Promise<IExtensionMetaData | undefined> {
+  getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData | undefined): Promise<IExtensionMetaData | undefined> {
     return Promise.resolve({ ...mockExtensionProps, extraMetadata: { ...extraMetaData } });
   }
   infoProcessNotExist(): void {

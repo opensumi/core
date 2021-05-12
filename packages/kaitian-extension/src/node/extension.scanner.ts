@@ -4,7 +4,7 @@ import * as os from 'os';
 import { getDebugLogger, getNodeRequire, Uri } from '@ali/ide-core-node';
 import * as semver from 'semver';
 
-import { IExtensionMetaData, ExtraMetaData } from '../common';
+import { IExtensionMetaData, IExtraMetaData } from '../common';
 import { mergeContributes } from './merge-contributes';
 
 function resolvePath(path) {
@@ -15,72 +15,7 @@ function resolvePath(path) {
 }
 
 export class ExtensionScanner {
-
-  private results: Map<string, IExtensionMetaData> = new Map();
-
-  private availableExtensions: Map<string, IExtensionMetaData> = new Map();
-
-  constructor(
-    private scan: string[],
-    private localization: string,
-    private extensionCandidate: string[],
-    private extraMetaData: ExtraMetaData,
-  ) { }
-
-  public async run(): Promise<IExtensionMetaData[]> {
-
-    const scan = this.scan.map((dir) => {
-      return resolvePath(dir);
-    });
-
-    await Promise.all(
-
-      scan.map((dir) => {
-        return this.scanDir(dir);
-      }).concat(
-        this.extensionCandidate.map(async (extension) => {
-          await this.getExtension(extension, this.localization);
-        }),
-      ),
-    );
-
-    return Array.from(this.availableExtensions.values());
-  }
-  private async scanDir(dir: string): Promise<void> {
-    getDebugLogger().info('kaitian scanDir', dir);
-    try {
-      const extensionDirArr = await fs.readdir(dir);
-      await Promise.all(extensionDirArr.map((extensionDir) => {
-        const extensionPath = path.join(dir, extensionDir);
-        return this.getExtension(extensionPath, this.localization);
-      }));
-    } catch (e) {
-      getDebugLogger().error(e);
-    }
-  }
-
-  static async getLocalizedExtraMetadataPath(prefix: string, extensionPath: string, localization: string, suffix: string): Promise<string | undefined> {
-    const lowerCasePrefix = prefix.toLowerCase();
-    const lowerCaseLocalization = localization.toLowerCase();
-    const maybeExist = [
-      `${prefix}.${localization}${suffix}`, // {prefix}.zh-CN{suffix}
-      `${lowerCasePrefix}.${localization}${suffix}`,
-      `${prefix}.${lowerCaseLocalization}${suffix}`, // {prefix}.zh-cn{suffix}
-      `${lowerCasePrefix}.${lowerCaseLocalization}${suffix}`,
-      `${prefix}.${localization.split('-')[0]}${suffix}`,       // {prefix}.zh{suffix}
-      `${lowerCasePrefix}.${localization.split('-')[0]}${suffix}`,
-    ];
-
-    for (const maybe of maybeExist) {
-      const filepath = path.join(extensionPath, maybe);
-      if (await fs.pathExists(filepath)) {
-        return filepath;
-      }
-    }
-    return undefined;
-  }
-
-  static async getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
+  static async getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData): Promise<IExtensionMetaData | undefined> {
 
     // electron中，extensionPath可能为一个.asar结尾的路径，这种情况下,fs-extra的pathExists会判断为不存在
     try {
@@ -212,6 +147,70 @@ export class ExtensionScanner {
     return `${publisher}.${name}`;
   }
 
+  private results: Map<string, IExtensionMetaData> = new Map();
+
+  private availableExtensions: Map<string, IExtensionMetaData> = new Map();
+
+  constructor(
+    private scan: string[],
+    private localization: string,
+    private extensionCandidate: string[],
+    private extraMetaData: IExtraMetaData,
+  ) { }
+
+  public async run(): Promise<IExtensionMetaData[]> {
+
+    const scan = this.scan.map((dir) => {
+      return resolvePath(dir);
+    });
+
+    await Promise.all(
+
+      scan.map((dir) => {
+        return this.scanDir(dir);
+      }).concat(
+        this.extensionCandidate.map(async (extension) => {
+          await this.getExtension(extension, this.localization);
+        }),
+      ),
+    );
+
+    return Array.from(this.availableExtensions.values());
+  }
+  private async scanDir(dir: string): Promise<void> {
+    getDebugLogger().info('kaitian scanDir', dir);
+    try {
+      const extensionDirArr = await fs.readdir(dir);
+      await Promise.all(extensionDirArr.map((extensionDir) => {
+        const extensionPath = path.join(dir, extensionDir);
+        return this.getExtension(extensionPath, this.localization);
+      }));
+    } catch (e) {
+      getDebugLogger().error(e);
+    }
+  }
+
+  static async getLocalizedExtraMetadataPath(prefix: string, extensionPath: string, localization: string, suffix: string): Promise<string | undefined> {
+    const lowerCasePrefix = prefix.toLowerCase();
+    const lowerCaseLocalization = localization.toLowerCase();
+    const maybeExist = [
+      `${prefix}.${localization}${suffix}`, // {prefix}.zh-CN{suffix}
+      `${lowerCasePrefix}.${localization}${suffix}`,
+      `${prefix}.${lowerCaseLocalization}${suffix}`, // {prefix}.zh-cn{suffix}
+      `${lowerCasePrefix}.${lowerCaseLocalization}${suffix}`,
+      `${prefix}.${localization.split('-')[0]}${suffix}`,       // {prefix}.zh{suffix}
+      `${lowerCasePrefix}.${localization.split('-')[0]}${suffix}`,
+    ];
+
+    for (const maybe of maybeExist) {
+      const filepath = path.join(extensionPath, maybe);
+      if (await fs.pathExists(filepath)) {
+        return filepath;
+      }
+    }
+    return undefined;
+  }
+
   private isLatestVersion(extension: IExtensionMetaData): boolean {
     if (this.availableExtensions.has(extension.id)) {
       const existedExtension = this.availableExtensions.get(extension.id)!;
@@ -237,7 +236,7 @@ export class ExtensionScanner {
     return true;
   }
 
-  public async getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
+  public async getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData): Promise<IExtensionMetaData | undefined> {
 
     if (this.results.has(extensionPath)) {
       return;

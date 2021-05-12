@@ -29,6 +29,10 @@ export class ExtensionMetadataService extends Disposable {
   @Autowired(IEventBus)
   private eventBus: IEventBus;
 
+  /**
+   * 执行 contributes
+   * 监听 activationEvent 和 workspaceContains
+   */
   public async run(extension: IExtension) {
     try {
       const runner = this.injector.get(VSCodeContributeRunner, [extension]);

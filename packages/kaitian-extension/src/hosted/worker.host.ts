@@ -4,7 +4,7 @@ import {
 } from '@ali/ide-connection';
 import { IExtensionWorkerHost, EXTENSION_EXTEND_SERVICE_PREFIX } from '../common';
 import { createAPIFactory as createKaitianAPIFactory } from './api/worker/worker.host.api.impl';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier, KTWorkerExtensionService } from '../common/vscode';
+import { MainThreadAPIIdentifier, ExtHostAPIIdentifier, KaitianWorkerExtensionService } from '../common/vscode';
 import { ExtensionLogger } from './extension-log';
 import { KTWorkerExtension } from './vscode.extension';
 import { KTWorkerExtensionContext } from './api/vscode/ext.host.extensions';
@@ -44,7 +44,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
 
   private activatedExtensions: Map<string, ActivatedExtension> = new Map<string, ActivatedExtension>();
 
-  private mainThreadExtensionService: KTWorkerExtensionService;
+  private mainThreadExtensionService: KaitianWorkerExtensionService;
 
   readonly extensionsChangeEmitter: Emitter<void> = new Emitter<void>();
 
@@ -56,7 +56,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
     this.rpcProtocol = rpcProtocol;
 
     this.kaitianAPIFactory = createKaitianAPIFactory(this.rpcProtocol, this, 'worker');
-    this.mainThreadExtensionService = this.rpcProtocol.getProxy<KTWorkerExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService);
+    this.mainThreadExtensionService = this.rpcProtocol.getProxy<KaitianWorkerExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService);
     this.logger = new ExtensionLogger(rpcProtocol);
     this.storage = new ExtHostStorage(rpcProtocol);
     rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, this.storage);
@@ -99,7 +99,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
 
   static workerApiNamespace: string[] = ['kaitian', 'kaitian-worker', 'vscode'];
 
-  public async $initExtensions() {
+  public async $handleExtHostCreated() {
     await this.init();
 
     const extensions = await this.mainThreadExtensionService.$getExtensions();
@@ -107,7 +107,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
       ...ext,
       extensionLocation: Uri.from(ext.extensionLocation),
     }));
-    this.logger.verbose('worker $initExtensions', this.extensions.map((extension) => {
+    this.logger.verbose('worker $handleExtHostCreated', this.extensions.map((extension) => {
       return extension.packageJSON.name;
     }));
 

@@ -1,4 +1,4 @@
-import { IExtensionNodeClientService, ExtraMetaData, IExtensionMetaData, IExtension } from '../../lib/common';
+import { IExtensionNodeClientService, IExtraMetaData, IExtensionMetaData, IExtension } from '../../lib/common';
 import { mockExtensionProps } from './extensions';
 import { Injectable } from '@ali/common-di';
 
@@ -8,6 +8,7 @@ const mockExtensions: IExtension[] = [{
   activate: () => {
     return true;
   },
+  enable() {},
   toJSON: () => mockExtensionProps,
 }];
 
@@ -16,13 +17,13 @@ export class MockExtNodeClientService implements IExtensionNodeClientService {
   getElectronMainThreadListenPath(clientId: string): Promise<string> {
     throw new Error('Method not implemented.');
   }
-  getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]> {
+  getAllExtensions(scan: string[], extensionCandidate: string[], localization: string): Promise<IExtensionMetaData[]> {
     return Promise.resolve(mockExtensions);
   }
   createProcess(clientId: string): Promise<void> {
     return Promise.resolve();
   }
-  getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData | undefined): Promise<IExtensionMetaData | undefined> {
+  getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData | undefined): Promise<IExtensionMetaData | undefined> {
     return Promise.resolve({ ...mockExtensionProps, extraMetadata: { ...extraMetaData } });
   }
   infoProcessNotExist(): void {

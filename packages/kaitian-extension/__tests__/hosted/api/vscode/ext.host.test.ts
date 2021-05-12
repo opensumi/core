@@ -70,7 +70,7 @@ describe('Extension process test', () => {
       const rpcProtocol = await initMockRPCProtocol(mockClient);
       extHostImpl = new ExtensionHostServiceImpl(rpcProtocol, mockLoggger, injector);
       await extHostImpl.init();
-      await extHostImpl.$initExtensions();
+      await extHostImpl.$handleExtHostCreated();
     });
 
     afterEach(() => {
@@ -79,6 +79,7 @@ describe('Extension process test', () => {
     });
 
     it('should init extensions', async (done) => {
+      await extHostImpl.$handleExtHostCreated();
       const extensions = extHostImpl.$getExtensions();
       const ext = extHostImpl.getExtension(mockExtensionProps.id);
       expect(extensions).toEqual([mockExtensionProps, mockExtensionProps2]);

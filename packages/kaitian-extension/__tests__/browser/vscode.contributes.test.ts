@@ -4,23 +4,22 @@ import { Injector } from '@ali/common-di';
 import { VSCodeContributeRunner } from '../../src/browser/vscode/contributes';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { mockExtensionProps } from '../__mock__/extensions';
-import { CommandRegistry, CommandRegistryImpl, CommandService, CommandServiceImpl, EventBusImpl, IEventBus, ILogger, ILoggerManagerClient, Uri } from '@ali/ide-core-common';
+import { CommandRegistry, CommandService, CommandServiceImpl, EventBusImpl, IEventBus, ILogger, ILoggerManagerClient, Uri } from '@ali/ide-core-common';
 import { ExtensionWillContributeEvent } from '@ali/ide-kaitian-extension/lib/browser/types';
 import { ISchemaRegistry } from '@ali/ide-monaco';
 import { SchemaRegistry, SchemaStore } from '@ali/ide-monaco/lib/browser/schema-registry';
 import { IExtensionStoragePathServer } from '@ali/ide-extension-storage';
-import { IPreferenceSettingsService, ISchemaStore, PreferenceService } from '@ali/ide-core-browser';
+import { ISchemaStore, PreferenceService } from '@ali/ide-core-browser';
 import { MockPreferenceService } from '../../../terminal-next/__tests__/browser/mock.service';
 import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
-import { ExtensionNodeServiceServerPath, ExtensionService } from '@ali/ide-kaitian-extension/lib/common';
-import { ExtensionServiceImpl } from '@ali/ide-kaitian-extension/lib/browser/extension.service';
+import { ExtensionNodeServiceServerPath } from '@ali/ide-kaitian-extension/lib/common';
 import { MockExtNodeClientService } from '../__mock__/extension.service.client';
 import { IIconService, IThemeService } from '@ali/ide-theme';
 import { IconService } from '@ali/ide-theme/lib/browser';
 import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
-import { PreferenceSettingsService } from '@ali/ide-preferences/lib/browser/preference.service';
 import { TextmateService } from '@ali/ide-monaco/lib/browser/textmate.service';
 import { MonacoService } from '@ali/ide-core-browser/lib/monaco';
+import { setupExtensionServiceInjector } from './extension-service/extension-service-mock-helper';
 
 const extension = {
   ...mockExtensionProps,
@@ -79,7 +78,7 @@ describe('VSCodeContributeRunner', () => {
   let eventBus: IEventBus;
 
   beforeAll((done) => {
-    injector = new Injector([]);
+    injector = setupExtensionServiceInjector();
     injector.addProviders(...[
       {
         token: IEventBus,
@@ -128,32 +127,16 @@ describe('VSCodeContributeRunner', () => {
         useClass: IconService,
       },
       {
-        token: ExtensionService,
-        useClass: ExtensionServiceImpl,
-      },
-      {
         token: IThemeService,
         useClass: WorkbenchThemeService,
-      },
-      {
-        token: IPreferenceSettingsService,
-        useClass: PreferenceSettingsService,
       },
       {
         token: CommandService,
         useClass: CommandServiceImpl,
       },
       {
-        token: CommandRegistry,
-        useClass: CommandRegistryImpl,
-      },
-      {
         token: PreferenceService,
         useValue: new MockPreferenceService(),
-      },
-      {
-        token: ExtensionNodeServiceServerPath,
-        useClass: MockExtNodeClientService,
       },
       {
         token: IExtensionStoragePathServer,
@@ -164,6 +147,10 @@ describe('VSCodeContributeRunner', () => {
         },
       },
     ]);
+    injector.overrideProviders({
+      token: ExtensionNodeServiceServerPath,
+      useClass: MockExtNodeClientService,
+    });
     runner = injector.get(VSCodeContributeRunner, [extension]);
     eventBus = injector.get(IEventBus);
     done();

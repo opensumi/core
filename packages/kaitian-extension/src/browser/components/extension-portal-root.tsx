@@ -1,9 +1,9 @@
 import * as React from 'react';
 import * as clx from 'classnames';
 import { useInjectable } from '@ali/ide-core-browser';
-import { ExtensionService } from '../../common';
 import { getThemeTypeSelector, IThemeService, ThemeType } from '@ali/ide-theme/lib/common';
 import { DisposableCollection } from '@ali/ide-components/lib/utils/disposable';
+import { AbstractViewExtProcessService } from '../../common/extension.service';
 
 interface IPortalRootProps {
   original: React.FC;
@@ -13,7 +13,7 @@ interface IPortalRootProps {
 
 export const PortalRoot = (props: IPortalRootProps) => {
   const [themeType, setThemeType] = React.useState<null | ThemeType>(null);
-  const extensionService = useInjectable<ExtensionService>(ExtensionService);
+  const extensionService = useInjectable<AbstractViewExtProcessService>(AbstractViewExtProcessService);
   const themeService = useInjectable<IThemeService>(IThemeService);
 
   React.useEffect(() => {

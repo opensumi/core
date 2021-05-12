@@ -20,6 +20,8 @@
     "start:electron-app": "npm run rebuild:electron && NODE_ENV=development KTLOG_SHOW_DEBUG=1 electron --inspect=9229 -r ts-node/register -r tsconfig-paths/register entry/electron/index.ts",
     "rebuild:electron": "node ../../scripts/rebuild-native.js --target=electron --electronVersion=3.1.5",
     "build": "tsc --build ../../configs/ts/references/tsconfig.startup.json",
+    "bundle:standard": "NODE_ENV=production webpack --config webpack.standard.config.js",
+    "bundle:standard:analysis": "analysis=1 npm run bundle:standard",
     "bundle:lite": "NODE_ENV=production webpack --config webpack.lite.config.js",
     "bundle:lite:stats": "NODE_ENV=production webpack --progress --profile --config webpack.lite.config.js --json > stats.json",
     "bundle:lite:analysis": "analysis=1 npm run bundle:lite",

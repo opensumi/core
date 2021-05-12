@@ -4,9 +4,9 @@ import { ExtensionManagerModule } from '../../src/browser';
 import { IContextKeyService, uuid } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 import { MockInjector } from '@ali/ide-dev-tool/src/mock-injector';
-import { ExtensionService } from '@ali/ide-kaitian-extension';
-import { ExtensionServiceImpl } from '@ali/ide-kaitian-extension/lib/browser/extension.service';
-import { Disposable, StorageProvider, Uri } from '@ali/ide-core-common';
+import { AbstractExtensionManagementService } from '@ali/ide-kaitian-extension';
+import { StorageProvider, Uri } from '@ali/ide-core-common';
+import { ExtensionManagementService } from '@ali/ide-kaitian-extension/src/browser/extension-management.service';
 import { ExtensionManagerServerPath } from '../../lib';
 import { ExtensionManagerServer } from '../../lib/node/extension-manager-server';
 
@@ -27,19 +27,18 @@ describe('extension manager service test', () => {
       token: IContextKeyService,
       useClass: MockContextKeyService,
     }, {
-      token: ExtensionService,
-      useClass: ExtensionServiceImpl,
+      token: AbstractExtensionManagementService,
+      useClass: ExtensionManagementService,
     }, {
       token: ExtensionManagerServerPath,
       useClass: ExtensionManagerServer,
     });
 
-    injector.mockService(ExtensionService, {
+    injector.mockService(AbstractExtensionManagementService, {
       'getExtensionProps': (path) => {
         // @ts-ignore
         return extensionManagerService.extensions.find((ext) => ext.path === path);
       },
-      onDidExtensionActivated: () => Disposable.NULL,
       postEnableExtension: fakePostEnableExtension,
       postDisableExtension: fakePostDisableExtension,
       getAllExtensionJson: () => {

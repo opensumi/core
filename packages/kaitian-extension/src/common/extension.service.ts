@@ -1,8 +1,9 @@
 import { IRPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
-import { Event, IExtensionProps } from '@ali/ide-core-common';
+import { Deferred } from '@ali/ide-core-common';
 import { ActivatedExtensionJSON } from './activator';
 
 import { IExtension } from './index';
+import type { KaitianWorkerExtensionService, VSCodeExtensionService } from './vscode';
 
 type ExtensionChangeKind = 'install' | 'uninstall' | 'upgrade' | 'enable' | 'disable';
 
@@ -11,17 +12,34 @@ export interface IExtensionChangeEvent {
   extension: IExtension;
 }
 
-export abstract class AbstractExtensionService {
-  abstract async activate(): Promise<IRPCProtocol>;
+abstract class BaseExtProcessService {
+  public ready: Deferred<void>;
+  abstract protocol: IRPCProtocol;
+  abstract disposeProcess(): void | Promise<void>;
+  abstract activate(): Promise<IRPCProtocol>;
+  abstract activeExtension(extension: IExtension): Promise<void>;
+}
 
+export abstract class AbstractNodeExtProcessService<T = any> extends BaseExtProcessService implements VSCodeExtensionService {
   abstract initExtension(extensions: IExtension[]): Promise<void>;
-  abstract async activeExtension(extension: IExtension): Promise<void>;
-
-  abstract onDidExtensionChange: Event<IExtensionChangeEvent>;
   abstract getExtension(extensionId: string): IExtension | undefined;
   abstract getActivatedExtensions(): Promise<ActivatedExtensionJSON[]>;
 
-  abstract async $activateExtension(extension: IExtension): Promise<void>;
-  abstract $getExtensions(): IExtensionProps[];
+  abstract getProxy(): T | Promise<T>;
 
+  // RPC call
+  abstract $activateExtension: VSCodeExtensionService['$activateExtension'];
+  abstract $getExtensions: VSCodeExtensionService['$getExtensions'];
+}
+
+// 相对 node extension service 额外增加 `$getStaticServicePath`
+export abstract class AbstractWorkerExtProcessService<T = any> extends AbstractNodeExtProcessService<T> implements KaitianWorkerExtensionService {
+  abstract activate(ignoreCors?: boolean): Promise<IRPCProtocol>;
+  abstract $getStaticServicePath: KaitianWorkerExtensionService['$getStaticServicePath'];
+}
+
+export abstract class AbstractViewExtProcessService {
+  abstract getPortalShadowRoot(extensionId: string): ShadowRoot | undefined;
+  abstract activate(): void;
+  abstract activeExtension(extension: IExtension, protocol: IRPCProtocol): Promise<void>;
 }

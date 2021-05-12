@@ -1,0 +1,275 @@
+import { TERMINAL_COMMANDS } from '@ali/ide-terminal-next';
+import { FILE_COMMANDS, Command, EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { DEBUG_COMMANDS } from '@ali/ide-debug/lib/browser/debug-contribution';
+
+/**
+ * 插件进程内置 command 的命名空间
+ */
+export const SET_CONTEXT: Command = {
+  id: 'setContext',
+};
+
+export const WORKBENCH_CLOSE_ACTIVE_EDITOR: Command = {
+  id: 'workbench.action.closeActiveEditor',
+  delegate: EDITOR_COMMANDS.CLOSE.id,
+};
+
+export const REVERT_AND_CLOSE_ACTIVE_EDITOR: Command = {
+  id: 'workbench.action.revertAndCloseActiveEditor',
+  delegate: EDITOR_COMMANDS.REVERT_AND_CLOSE.id,
+};
+
+export const SPLIT_EDITOR_RIGHT: Command = {
+  id: 'workbench.action.splitEditorRight',
+  delegate: EDITOR_COMMANDS.SPLIT_TO_RIGHT.id,
+};
+
+export const SPLIT_EDITOR_DOWN: Command = {
+  id: 'workbench.action.splitEditorDown',
+  delegate: EDITOR_COMMANDS.SPLIT_TO_BOTTOM.id,
+};
+
+export const NEW_UNTITLED_FILE: Command = {
+  id: 'workbench.action.files.newUntitledFile',
+  delegate: EDITOR_COMMANDS.NEW_UNTITLED_FILE.id,
+};
+
+export const CLOSE_ALL_EDITORS: Command = {
+  id: 'workbench.action.closeAllEditors',
+  delegate: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
+};
+
+export const CLOSE_OTHER_EDITORS: Command = {
+  id: 'workbench.action.closeOtherEditors',
+  delegate: EDITOR_COMMANDS.CLOSE_OTHER_IN_GROUP.id,
+};
+
+export const FILE_SAVE: Command = {
+  id: 'workbench.action.files.save',
+  delegate: EDITOR_COMMANDS.SAVE_CURRENT.id,
+};
+
+export const SPLIT_EDITOR: Command = {
+  id: 'workbench.action.splitEditor',
+  // 默认打开右侧
+  delegate: EDITOR_COMMANDS.SPLIT_TO_RIGHT.id,
+};
+
+export const SPLIT_EDITOR_ORTHOGONAL: Command = {
+  id: 'workbench.action.splitEditorOrthogonal',
+  // 默认打开下侧
+  delegate: EDITOR_COMMANDS.SPLIT_TO_BOTTOM.id,
+};
+
+export const NAVIGATE_LEFT: Command = {
+  id: 'workbench.action.navigateLeft',
+  // 默认打开下侧
+  delegate: EDITOR_COMMANDS.NAVIGATE_LEFT.id,
+};
+
+export const NAVIGATE_UP: Command = {
+  id: 'workbench.action.navigateUp',
+  delegate: EDITOR_COMMANDS.NAVIGATE_UP.id,
+};
+
+export const NAVIGATE_RIGHT: Command = {
+  id: 'workbench.action.navigateRight',
+  delegate: EDITOR_COMMANDS.NAVIGATE_RIGHT.id,
+};
+
+export const NAVIGATE_DOWN: Command = {
+  id: 'workbench.action.navigateDown',
+  delegate: EDITOR_COMMANDS.NAVIGATE_DOWN.id,
+};
+
+export const NAVIGATE_NEXT: Command = {
+  id: 'workbench.action.navigateEditorGroups',
+  delegate: EDITOR_COMMANDS.NAVIGATE_NEXT.id,
+};
+
+export const NEXT_EDITOR: Command = {
+  id: 'workbench.action.nextEditor',
+  delegate: EDITOR_COMMANDS.NEXT.id,
+};
+
+export const PREVIOUS_EDITOR: Command = {
+  id: 'workbench.action.previousEditor',
+  delegate: EDITOR_COMMANDS.PREVIOUS.id,
+};
+
+export const PREVIOUS_EDITOR_IN_GROUP: Command = {
+  id: 'workbench.action.previousEditorInGroup',
+  delegate: EDITOR_COMMANDS.PREVIOUS_IN_GROUP.id,
+};
+
+export const NEXT_EDITOR_IN_GROUP: Command = {
+  id: 'workbench.action.nextEditorInGroup',
+  delegate: EDITOR_COMMANDS.NEXT_IN_GROUP.id,
+};
+
+export const LAST_EDITOR_IN_GROUP: Command = {
+  id: 'workbench.action.lastEditorInGroup',
+  delegate: EDITOR_COMMANDS.LAST_IN_GROUP.id,
+};
+
+export const EVEN_EDITOR_WIDTH: Command = {
+  id: 'workbench.action.eventEditorWidths',
+  delegate: EDITOR_COMMANDS.EVEN_EDITOR_GROUPS.id,
+};
+
+export const CLOSE_OTHER_GROUPS: Command = {
+  id: 'workbench.action.closeEditorsInOtherGroups',
+  delegate: EDITOR_COMMANDS.EVEN_EDITOR_GROUPS.id,
+};
+
+export const OPEN_EDITOR_AT_INDEX: Command = {
+  id: 'workbench.action.openEditorAtIndex',
+  delegate: EDITOR_COMMANDS.OPEN_EDITOR_AT_INDEX.id,
+};
+
+export const REVERT_FILES: Command = {
+  id: 'workbench.action.files.revert',
+  delegate: EDITOR_COMMANDS.REVERT_DOCUMENT.id,
+};
+
+// 打开或关闭终端
+export const TOGGLE_WORKBENCH_VIEW_TERMINAL: Command = {
+  id: 'workbench.action.terminal.toggleTerminal',
+  delegate: 'workbench.view.terminal',
+};
+
+// 在资源管理器中聚焦文件
+export const WORKBENCH_FOCUS_FILES_EXPLORER: Command = {
+  id: 'workbench.files.action.focusFilesExplorer',
+  delegate: FILE_COMMANDS.FOCUS_FILES.id,
+};
+
+// 打开激活的编辑器组
+export const WORKBENCH_FOCUS_ACTIVE_EDITOR_GROUP: Command = {
+  id: 'workbench.action.focusActiveEditorGroup',
+  delegate: EDITOR_COMMANDS.FOCUS_ACTIVE_EDITOR_GROUP.id,
+};
+
+// 打开内容
+export const OPEN: Command = {
+  id: 'vscode.open',
+};
+
+// 比较内容
+export const DIFF: Command = {
+  id: 'vscode.diff',
+};
+
+export const RELOAD_WINDOW_COMMAND: Command = {
+  id: 'reload_window',
+};
+
+export const RELOAD_WINDOW: Command = {
+  id: 'workbench.action.reloadWindow',
+  delegate: RELOAD_WINDOW_COMMAND.id,
+};
+
+export const SHOW_RUN_TIME_EXTENSION: Command = {
+  id: 'workbench.action.showRuntimeExtensions',
+  label: 'Show Running Extensions',
+};
+
+export const START_EXTENSION_HOST_PROFILER: Command = {
+  id: 'workbench.action.extensionHostProfiler.start',
+  label: 'Start Extension Host Profile',
+};
+
+export const STOP_EXTENSION_HOST_PROFILER: Command = {
+  id: 'workbench.action.extensionHostProfiler.stop',
+  label: 'Stop Extension Host Profile',
+};
+
+export const CLEAR_TERMINAL: Command = {
+  id: 'workbench.action.terminal.clear',
+  delegate: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
+};
+
+export const COPY_FILE_PATH: Command = {
+  id: 'copyFilePath',
+  label: FILE_COMMANDS.COPY_PATH.label,
+};
+
+export const COPY_RELATIVE_FILE_PATH: Command = {
+  id: 'copyRelativeFilePath',
+  label: FILE_COMMANDS.COPY_RELATIVE_PATH.label,
+};
+
+export const SETTINGS_COMMAND_OPEN_SETTINGS: Command = {
+  id: 'workbench.action.openSettings',
+  delegate: 'core.openpreference',
+};
+
+export const EDITOR_NAVIGATE_BACK: Command = {
+  id: 'workbench.action.navigateBack',
+  delegate: EDITOR_COMMANDS.GO_BACK.id,
+};
+
+export const EDITOR_NAVIGATE_FORWARD: Command = {
+  id: 'workbench.action.navigateForward',
+  delegate: EDITOR_COMMANDS.GO_FORWARD.id,
+};
+
+export const EDITOR_SAVE_ALL: Command = {
+  id: 'workbench.action.files.saveAll',
+  delegate: EDITOR_COMMANDS.SAVE_ALL.id,
+};
+
+export const DEBUG_COMMAND_STEP_INTO: Command = {
+  id: 'workbench.action.debug.stepInto',
+  delegate: DEBUG_COMMANDS.NEXT.id,
+};
+
+export const DEBUG_COMMAND_STEP_OVER: Command = {
+  id: 'workbench.action.debug.stepOver',
+  delegate: DEBUG_COMMANDS.OVER.id,
+};
+
+export const DEBUG_COMMAND_STEP_OUT: Command = {
+  id: 'workbench.action.debug.stepOut',
+  delegate: DEBUG_COMMANDS.PREV.id,
+};
+
+export const DEBUG_COMMAND_CONTINUE: Command = {
+  id: 'workbench.action.debug.continue',
+  delegate: DEBUG_COMMANDS.CONTINUE.id,
+};
+
+export const DEBUG_COMMAND_RUN: Command = {
+  id: 'workbench.action.debug.run',
+  delegate: DEBUG_COMMANDS.START.id,
+};
+
+export const DEBUG_COMMAND_START: Command = {
+  id: 'workbench.action.debug.start',
+  delegate: DEBUG_COMMANDS.START.id,
+};
+
+export const DEBUG_COMMAND_PAUSE: Command = {
+  id: 'workbench.action.debug.pause',
+  delegate: DEBUG_COMMANDS.PAUSE.id,
+};
+
+export const DEBUG_COMMAND_RESTART: Command = {
+  id: 'workbench.action.debug.restart',
+  delegate: DEBUG_COMMANDS.RESTART.id,
+};
+
+export const DEBUG_COMMAND_STOP: Command = {
+  id: 'workbench.action.debug.stop',
+  delegate: DEBUG_COMMANDS.STOP.id,
+};
+
+export const EDITOR_SHOW_ALL_SYMBOLS: Command = {
+  id: 'workbench.action.showAllSymbols',
+  delegate: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL.id,
+};
+
+export const REVEAL_IN_EXPLORER: Command = {
+  id: 'revealInExplorer',
+  delegate: FILE_COMMANDS.REVEAL_IN_EXPLORER.id,
+};

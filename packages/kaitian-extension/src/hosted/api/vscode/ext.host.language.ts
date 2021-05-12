@@ -84,7 +84,6 @@ import {
   ExtensionDocumentDataManager,
   IExtHostLanguages,
   ISuggestDataDto,
-  ISuggestDataDtoField,
 } from '../../../common/vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 import { UriComponents } from 'vscode-uri';

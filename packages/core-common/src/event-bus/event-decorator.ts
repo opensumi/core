@@ -15,8 +15,8 @@ export class WithEventBus extends Disposable {
     super(...args);
 
     const map: Map<string, ConstructorOf<any>> = Reflect.getMetadata(EVENT_TOKEN, this) || new Map();
-    for (const [key, Construcotor] of map.entries()) {
-      const dispose = this.eventBus.on(Construcotor, (event: any) => {
+    for (const [key, Constructor] of map.entries()) {
+      const dispose = this.eventBus.on(Constructor, (event: any) => {
         return (this as any)[key](event);
       });
       this.addDispose(dispose);
@@ -24,10 +24,10 @@ export class WithEventBus extends Disposable {
   }
 }
 
-export function OnEvent<T extends BasicEvent<any>>(Construcotor: ConstructorOf<T>) {
+export function OnEvent<T extends BasicEvent<any>>(Constructor: ConstructorOf<T>) {
   return (target: object, key: string, descriptor: TypedPropertyDescriptor<(event: T) => void>) => {
     const map: Map<string, ConstructorOf<any>> = Reflect.getMetadata(EVENT_TOKEN, target) || new Map();
-    map.set(key, Construcotor);
+    map.set(key, Constructor);
     Reflect.defineMetadata(EVENT_TOKEN, map, target);
   }
 }

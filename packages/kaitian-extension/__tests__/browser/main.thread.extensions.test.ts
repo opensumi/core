@@ -6,12 +6,11 @@ import * as types from '../../src/common/vscode/ext-types';
 import { createExtensionsApiFactory } from '../../src/hosted/api/vscode/ext.host.extensions';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import ExtensionHostServiceImpl from '../../src/hosted/ext.host';
-import { ExtensionService, ExtensionNodeServiceServerPath } from '../../src/common';
-import { ExtensionServiceImpl } from '../../src/browser/extension.service';
+import { ExtensionNodeServiceServerPath } from '../../src/common';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../src/common/vscode';
 import { MainThreadStorage } from '../../src/browser/vscode/api/main.thread.storage';
 import { MainThreadExtensionLogIdentifier } from '../../src/common/extension-log';
-import { MainThreadExtensionLog } from '../../src/browser/extension-log';
+import { MainThreadExtensionLog } from '../../src/browser/vscode/api/main.thread.log';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
 import { IContextKeyService, AppConfig } from '@ali/ide-core-browser';
 import { AppConfig as NodeAppConfig } from '@ali/ide-core-node';
@@ -33,6 +32,8 @@ import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
 import { WorkspacePreferences } from '@ali/ide-workspace/lib/browser/workspace-preferences';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { IWebviewService } from '@ali/ide-webview';
+import { mockKaitianExtensionProviders } from './extension-service/extension-service-mock-helper';
+import { MainThreadExtensionService } from '../__mock__/api/mainthread.extension.service';
 import { IReporter, DefaultReporter } from '@ali/ide-core-common';
 
 @Injectable()
@@ -81,7 +82,9 @@ describe('MainThreadExtensions Test Suites', () => {
     token: IReporter,
     useClass: DefaultReporter,
   });
-  const injector = createBrowserInjector([], new MockInjector([{
+  const injector = createBrowserInjector([], new MockInjector([
+    ...mockKaitianExtensionProviders,
+    {
       token: OutputPreferences,
       useValue: {
         'output.logWhenNoPanel': true,
@@ -100,10 +103,8 @@ describe('MainThreadExtensions Test Suites', () => {
     }, {
       token: ExtensionNodeServiceServerPath,
       useClass: MockExtNodeClientService,
-    }, {
-      token: ExtensionService,
-      useClass: ExtensionServiceImpl,
-    }, {
+    },
+    {
       token: IExtensionStorageService,
       useValue: {
         whenReady: Promise.resolve(true),
@@ -167,7 +168,7 @@ describe('MainThreadExtensions Test Suites', () => {
     },
   ]));
   let extHostExtension: ReturnType<typeof createExtensionsApiFactory>;
-  let mainthreadService: ExtensionServiceImpl;
+  let mainthreadService: MainThreadExtensionService;
   let extensionHostService: ExtensionHostServiceImpl;
   const disposables: types.OutputChannel[] = [];
 
@@ -181,20 +182,20 @@ describe('MainThreadExtensions Test Suites', () => {
     injector.get(WorkbenchEditorService);
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadWebview, injector.get(MainThreadWebview, [rpcProtocolMain]));
     extensionHostService = new ExtensionHostServiceImpl(rpcProtocolExt, new MockLoggerManagerClient().getLogger(), extHostInjector);
-    mainthreadService = injector.get(ExtensionService);
+    mainthreadService = new MainThreadExtensionService();
     rpcProtocolMain.set(MainThreadExtensionLogIdentifier, injector.get(MainThreadExtensionLog, []));
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadStorage, injector.get(MainThreadStorage, [rpcProtocolMain]));
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadExtensionService, mainthreadService);
     rpcProtocolMain.set(ExtHostAPIIdentifier.ExtHostExtensionService, extensionHostService);
-    await mainthreadService.activate();
+    // await mainthreadService.activate();
     await extensionHostService.init();
-    await extensionHostService.$initExtensions();
+    await extensionHostService.$handleExtHostCreated();
     extHostExtension = createExtensionsApiFactory(extensionHostService);
     done();
   });
 
   it('should get all extension by extHostExtensionApi', (done) => {
-    expect(extHostExtension.all.length).toBe(1);
+    expect(extHostExtension.all.length).toBe(2);
     done();
   });
 

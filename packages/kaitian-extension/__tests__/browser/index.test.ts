@@ -1,24 +1,27 @@
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { KaitianExtensionClientAppContribution } from '../../src/browser';
-import { CommandService, CommandRegistry, IClientApp, URI, Uri, IClipboardService } from '@ali/ide-core-browser';
-import { mockService, MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { FileTreeContribution } from '@ali/ide-file-tree-next/lib/browser/file-tree-contribution';
-import { IFileTreeService } from '@ali/ide-file-tree-next';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { ExtensionNodeServiceServerPath, IExtensionNodeClientService } from '../../src';
 import { WSChannelHandler } from '@ali/ide-connection';
+import { CommandRegistry, CommandService, IClientApp, IClipboardService, URI, Uri } from '@ali/ide-core-browser';
 import { uuid } from '@ali/ide-core-common';
+import { IFileTreeService } from '@ali/ide-file-tree-next';
+import { FileTreeContribution } from '@ali/ide-file-tree-next/lib/browser/file-tree-contribution';
 import { PreferenceContribution } from '@ali/ide-preferences/lib/browser/preference-contribution';
+import { IWorkspaceService } from '@ali/ide-workspace';
+
+import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
+import { ExtensionNodeServiceServerPath, IExtensionNodeClientService } from '../../src';
+import { KaitianExtensionClientAppContribution, KaitianExtensionCommandContribution } from '../../src/browser/extension.contribution';
+import { setupExtensionServiceInjector } from './extension-service/extension-service-mock-helper';
 
 describe(__filename, () => {
   let injector: MockInjector;
   let commandService: CommandService;
   let kaitianExtensionClientAppContribution: KaitianExtensionClientAppContribution;
+  let kaitianExtensionCommandContribution: KaitianExtensionCommandContribution;
 
   beforeEach(() => {
-    injector = createBrowserInjector([]);
+    injector = setupExtensionServiceInjector();
     injector.overrideProviders(
       KaitianExtensionClientAppContribution,
+      KaitianExtensionCommandContribution,
       PreferenceContribution,
       FileTreeContribution,
       {
@@ -63,9 +66,10 @@ describe(__filename, () => {
     );
     const commandRegistry = injector.get<CommandRegistry>(CommandRegistry);
     kaitianExtensionClientAppContribution = injector.get(KaitianExtensionClientAppContribution);
+    kaitianExtensionCommandContribution = injector.get(KaitianExtensionCommandContribution);
     const fileTreeContribution = injector.get(FileTreeContribution);
     const preferenceContribution = injector.get(PreferenceContribution);
-    kaitianExtensionClientAppContribution.registerCommands(commandRegistry);
+    kaitianExtensionCommandContribution.registerCommands(commandRegistry);
     fileTreeContribution.registerCommands(commandRegistry);
 
     preferenceContribution.registerCommands(commandRegistry);

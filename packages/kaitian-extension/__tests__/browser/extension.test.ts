@@ -1,5 +1,5 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { URI, Uri, Emitter } from '@ali/ide-core-browser';
+import { URI, Uri } from '@ali/ide-core-browser';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IExtensionMetaData } from '../../src/common';
 import * as paths from 'path';
@@ -51,11 +51,9 @@ describe(__filename, () => {
   it('should get correct extensionLocation for file scheme', async () => {
     const extension = injector.get(Extension, [
       mockExtension,
-      injector.get(ExtensionService),
       true,
       true,
       false,
-      new Emitter<any>(),
     ]);
     expect(extension.extensionLocation).toEqual(Uri.parse(`http://localhost${mockExtension.path}`));
   });
@@ -63,11 +61,9 @@ describe(__filename, () => {
   it('should get correct extensionLocation for custom scheme', async () => {
     const extension = injector.get(Extension, [
       { ...mockExtension, uri: Uri.parse(`kt-ext://cdn${mockExtension.path}`) },
-      injector.get(ExtensionService),
       true,
       true,
       false,
-      new Emitter<any>(),
     ]);
     expect(extension.extensionLocation).toEqual(Uri.parse(`http://localhost${mockExtension.path}`));
   });

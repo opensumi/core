@@ -13,6 +13,7 @@ export class ExtensionManagerModule extends BrowserModule {
       useClass: ExtensionManagerService,
     },
   ];
+
   backServices = [
     {
       servicePath: ExtensionManagerServerPath,

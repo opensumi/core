@@ -4,7 +4,7 @@ import { uuid, INodeLogger, Uri } from '@ali/ide-core-node';
 import * as os from 'os';
 import { createHash } from 'crypto';
 
-import { ExtraMetaData, IExtensionMetaData, IExtensionNodeService, IExtensionNodeClientService, ICreateProcessOptions } from '../common';
+import { IExtraMetaData, IExtensionMetaData, IExtensionNodeService, IExtensionNodeClientService, ICreateProcessOptions } from '../common';
 import { RPCService } from '@ali/ide-connection';
 import * as lp from './languagePack';
 import { IFileService } from '@ali/ide-file-service';
@@ -32,13 +32,13 @@ export class ExtensionServiceClientImpl extends RPCService implements IExtension
 
   public infoProcessNotExist() {
     if (this.rpcClient) {
-      this.rpcClient[0].processNotExist(this.clientId);
+      this.rpcClient[0].$processNotExist(this.clientId);
     }
   }
 
   public infoProcessCrash() {
     if (this.rpcClient) {
-      this.rpcClient[0].processCrashRestart(this.clientId);
+      this.rpcClient[0].$processCrashRestart(this.clientId);
     }
   }
 
@@ -62,7 +62,7 @@ export class ExtensionServiceClientImpl extends RPCService implements IExtension
    * @param extensionPath 插件路径
    * @param extraMetaData 补充数据
    */
-  public async getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
+  public async getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData): Promise<IExtensionMetaData | undefined> {
     return await this.extensionService.getExtension(extensionPath, localization, extraMetaData);
   }
 
@@ -77,7 +77,8 @@ export class ExtensionServiceClientImpl extends RPCService implements IExtension
     scan: string[],
     extensionCandidate: string[],
     localization: string,
-    extraMetaData: { [key: string]: any } = {}): Promise<IExtensionMetaData[]> {
+    extraMetaData: IExtraMetaData,
+  ): Promise<IExtensionMetaData[]> {
     return await this.extensionService.getAllExtensions(scan, extensionCandidate, localization, extraMetaData);
   }
 

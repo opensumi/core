@@ -49,7 +49,7 @@ import { MainthreadComments } from './main.thread.comments';
 import { MainThreadFileSystemEvent } from './main.thread.file-system-event';
 import { MainThreadUrls } from './main.thread.urls';
 import { IMainThreadExtensionLog, MainThreadExtensionLogIdentifier } from '../../../common/extension-log';
-import { MainThreadExtensionLog } from '../../extension-log';
+import { MainThreadExtensionLog } from './main.thread.log';
 import { MainThreadTheming } from './main.thread.theming';
 import { MainThreadCustomEditor } from './main.thread.custom-editor';
 

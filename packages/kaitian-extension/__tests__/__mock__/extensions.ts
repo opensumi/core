@@ -63,5 +63,6 @@ export const mockExtensions: IExtension[] = [{
   activate: () => {
     return true;
   },
+  enable() {},
   toJSON: () => mockExtensionProps,
 }];

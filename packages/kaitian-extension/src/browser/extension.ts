@@ -1,12 +1,11 @@
 import { Injectable, Optional, Autowired } from '@ali/common-di';
 import { JSONType, ExtensionService, IExtension, IExtensionProps, IExtensionMetaData } from '../common';
-import { getDebugLogger, registerLocalizationBundle, getCurrentLanguageInfo, Emitter, Uri, Deferred, URI, WithEventBus } from '@ali/ide-core-common';
+import { getDebugLogger, registerLocalizationBundle, getCurrentLanguageInfo, Uri, Deferred, URI, WithEventBus } from '@ali/ide-core-common';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { ExtensionMetadataService } from './metadata.service';
-import { ExtensionWillActivateEvent } from './types';
+import { AbstractExtInstanceManagementService, ExtensionDidActivatedEvent, ExtensionWillActivateEvent } from './types';
 
 const metaDataSymbol = Symbol.for('metaDataSymbol');
-const extensionServiceSymbol = Symbol.for('extensionServiceSymbol');
 
 @Injectable({ multiple: true })
 export class Extension extends WithEventBus implements IExtension {
@@ -32,18 +31,22 @@ export class Extension extends WithEventBus implements IExtension {
   private readonly logger = getDebugLogger();
 
   @Autowired(ExtensionMetadataService)
-  extMetadataService: ExtensionMetadataService;
+  private readonly extMetadataService: ExtensionMetadataService;
+
+  @Autowired(ExtensionService)
+  private readonly extensionService: ExtensionService;
 
   @Autowired()
-  private staticResourceService: StaticResourceService;
+  private readonly staticResourceService: StaticResourceService;
+
+  @Autowired(AbstractExtInstanceManagementService)
+  private readonly extensionInstanceManageService: AbstractExtInstanceManagementService;
 
   constructor(
     @Optional(metaDataSymbol) private extensionData: IExtensionMetaData,
-    @Optional(extensionServiceSymbol) private extensionService: ExtensionService,
     @Optional(Symbol()) public isUseEnable: boolean,
     @Optional(Symbol()) public isBuiltin: boolean,
     @Optional(Symbol()) public isDevelopment: boolean,
-    private didActivated: Emitter<IExtensionProps>,
   ) {
     super();
 
@@ -96,6 +99,10 @@ export class Extension extends WithEventBus implements IExtension {
     this._enabled = true;
   }
 
+  /**
+   * 激活插件的 nls 语言包
+   * 激活插件的 contributes 贡献点
+   */
   async contributeIfEnabled() {
     if (this._enabled) {
       this.addDispose(this.extMetadataService);
@@ -132,7 +139,7 @@ export class Extension extends WithEventBus implements IExtension {
       if (visited.has(nextDepId)) {
         continue;
       }
-      const nextExt = this.extensionService.getExtensionByExtId(nextDepId);
+      const nextExt = this.extensionInstanceManageService.getExtensionInstanceByExtId(nextDepId);
       nextExt && await nextExt.activate(visited);
     }
 
@@ -150,12 +157,10 @@ export class Extension extends WithEventBus implements IExtension {
       return this._activating.promise;
     }
     this._activating = new Deferred();
-    // initKaitianBrowserAPIDependency 时依赖 extension 实例，所以在插件激活前做这一步
-    await this.extensionService.initKaitianBrowserAPIDependency(this);
 
     this.extensionService.activeExtension(this).then(() => {
       this._activated = true;
-      this.didActivated.fire(this.toJSON());
+      this.eventBus.fire(new ExtensionDidActivatedEvent(this.toJSON()));
       this._activating.resolve();
     }).catch((e) => {
       this.logger.error(e);
