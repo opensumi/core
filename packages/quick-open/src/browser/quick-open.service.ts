@@ -414,7 +414,8 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
 
   protected createEntry(item: QuickOpenItem, lookFor: string): QuickOpenEntry | undefined {
     const { fuzzyMatchLabel, fuzzyMatchDescription, fuzzyMatchDetail } = this.options;
-    const labelHighlights = fuzzyMatchLabel ? this.matchesFuzzy(lookFor, item.getLabel(), fuzzyMatchLabel) : item.getLabelHighlights();
+    // 自动匹配若为空，取自定义的匹配
+    const labelHighlights = fuzzyMatchLabel ? this.matchesFuzzy(lookFor, item.getLabel(), fuzzyMatchLabel, item.getLabelHighlights.bind(item)) : item.getLabelHighlights();
     const descriptionHighlights = this.options.fuzzyMatchDescription ? this.matchesFuzzy(lookFor, item.getDescription(), fuzzyMatchDescription) : item.getDescriptionHighlights();
     const detailHighlights = this.options.fuzzyMatchDetail ? this.matchesFuzzy(lookFor, item.getDetail(), fuzzyMatchDetail) : item.getDetailHighlights();
     if ((lookFor && !labelHighlights && !descriptionHighlights && (!detailHighlights || detailHighlights.length === 0))
@@ -426,12 +427,16 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
     return entry;
   }
 
-  protected matchesFuzzy(lookFor: string, value: string | undefined, options?: QuickOpenOptions.FuzzyMatchOptions | boolean): IHighlight[] | undefined {
+  protected matchesFuzzy(lookFor: string, value: string | undefined, options?: QuickOpenOptions.FuzzyMatchOptions | boolean, fallback?: () => IHighlight[]): IHighlight[] | undefined {
     if (!lookFor || !value) {
       return [];
     }
     const enableSeparateSubstringMatching = typeof options === 'object' && options.enableSeparateSubstringMatching;
-    return matchesFuzzy(lookFor, value, enableSeparateSubstringMatching) || undefined;
+    const res = matchesFuzzy(lookFor, value, enableSeparateSubstringMatching) || undefined;
+    if (res && res.length) {
+      return res;
+    }
+    return fallback && fallback();
   }
 
   getAutoFocus(lookFor: string): IAutoFocus {

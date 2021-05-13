@@ -1,4 +1,5 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { matchesFuzzy } from '@ali/monaco-editor-core/esm/vs/base/common/filters';
 import { Mode } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/common/quickOpen';
 /**
  * 用于快速打开，检索文件
@@ -11,6 +12,8 @@ import {
   Command,
   CancellationTokenSource,
   Schemas,
+  CancellationToken,
+  IRange,
 } from '@ali/ide-core-common';
 import {
   localize,
@@ -21,6 +24,8 @@ import {
   QuickOpenItem,
   QuickOpenService,
   PreferenceService,
+  getSymbolIcon,
+  Highlight,
 } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { KeybindingContribution, KeybindingRegistry, ILogger } from '@ali/ide-core-browser';
@@ -28,9 +33,10 @@ import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
 import { QuickOpenGroupItem, QuickOpenModel, QuickOpenOptions, PrefixQuickOpenService, QuickOpenBaseAction } from '@ali/ide-quick-open';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { EditorGroupSplitAction } from '@ali/ide-editor';
+import { EditorGroupSplitAction, WorkbenchEditorService } from '@ali/ide-editor';
+import { DocumentSymbolStore, IDummyRoot, INormalizedDocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { getIcon } from '@ali/ide-core-browser';
-import { FileSearchServicePath } from '@ali/ide-file-search/lib/common';
+import { FileSearchServicePath, IFileSearchService } from '@ali/ide-file-search/lib/common';
 import { RecentFilesManager } from '@ali/ide-core-browser';
 
 const DEFAULT_FILE_SEARCH_LIMIT = 200;
@@ -39,6 +45,12 @@ export const quickFileOpen: Command = {
   id: 'workbench.action.quickOpen',
   category: 'File',
   label: 'Open File...',
+};
+
+export const quickGoToSymbol: Command = {
+  id: 'workbench.action.gotoSymbol',
+  category: 'File',
+  label: 'Open File Symbol...',
 };
 
 // support /some/file.js(73,84)
@@ -155,7 +167,13 @@ export class FileSearchQuickCommandHandler {
   private readonly commandService: CommandService;
 
   @Autowired(FileSearchServicePath)
-  private readonly fileSearchService;
+  private readonly fileSearchService: IFileSearchService;
+
+  @Autowired(WorkbenchEditorService)
+  private readonly workbenchEditorService: WorkbenchEditorService;
+
+  @Autowired(DocumentSymbolStore)
+  private documentSymbolStore: DocumentSymbolStore;
 
   @Autowired()
   private readonly labelService: LabelService;
@@ -179,6 +197,8 @@ export class FileSearchQuickCommandHandler {
   readonly default: boolean = true;
   readonly prefix: string = '...';
   readonly description: string = localize('file-search.command.fileOpen.description');
+  private prevEditorState: {uri?: URI, range?: IRange} = {};
+  private prevSelected: URI | undefined;
 
   currentLookFor: string = '';
 
@@ -207,6 +227,7 @@ export class FileSearchQuickCommandHandler {
 
   getOptions(): QuickOpenOptions {
     return {
+      placeholder: localize('file-search.command.fileOpen.placeholder'),
       fuzzyMatchLabel: {
         enableSeparateSubstringMatching: true,
       },
@@ -217,11 +238,120 @@ export class FileSearchQuickCommandHandler {
     };
   }
 
-  onClose() {
+  onClose(canceled?: boolean) {
+    if (canceled && this.prevEditorState.uri) {
+      // 取消时恢复打开quickOpen时的编辑器状态
+      this.workbenchEditorService.open(this.prevEditorState.uri, {
+        range: this.prevEditorState.range,
+      });
+      this.prevEditorState = {};
+    }
+    this.prevSelected = undefined;
     this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
   }
 
-  private async getFindOutItems(alreadyCollected, lookFor, token) {
+  // 保存此时的编辑器uri和光标位置
+  private trySaveEditorState() {
+    if (this.workbenchEditorService.currentResource) {
+      let currentRange = {startColumn: 1, startLineNumber: 1, endColumn: 1, endLineNumber: 1};
+      const selections = this.workbenchEditorService.currentEditor?.getSelections();
+      if (selections) {
+        const {
+          selectionStartLineNumber,
+          selectionStartColumn,
+          positionLineNumber,
+          positionColumn,
+        } = selections[0];
+        currentRange = new monaco.Range(
+          selectionStartLineNumber,
+          selectionStartColumn,
+          positionLineNumber,
+          positionColumn,
+        );
+      }
+      this.prevEditorState = {
+        uri: this.workbenchEditorService.currentResource.uri,
+        range: currentRange,
+      };
+    }
+  }
+
+  private async getFindOutItems(alreadyCollected: Set<string>, lookFor: string, token: CancellationToken) {
+    let results: QuickOpenGroupItem[];
+    // 有@时进入查找symbol逻辑
+    if (lookFor.indexOf('@') > -1) {
+      // save current editor state
+      this.trySaveEditorState();
+      results = [];
+      // 拆分文件查找和symbol查找query
+      const [fileQuery, symbolQuery] = lookFor.split('@');
+      let targetFile: URI | undefined;
+      // 默认采用缓存的结果，无缓存的结果则分析输入查找（直接粘贴 fileName@symbolName 场景）
+      if (this.prevSelected) {
+        targetFile = this.prevSelected;
+      } else if (fileQuery) {
+        const files = await this.getQueryFiles(fileQuery, alreadyCollected, token);
+        if (files.length) {
+          targetFile = files[0].getUri();
+        }
+      } else {
+        targetFile = this.workbenchEditorService.currentResource?.uri;
+      }
+      if (targetFile) {
+        // TODO: store ready event
+        const symbols = this.documentSymbolStore.getDocumentSymbol(targetFile) || [];
+        // 将symbol tree节点展开
+        const flatSymbols: INormalizedDocumentSymbol[] = [];
+        this.flattenSymbols({children: symbols}, flatSymbols);
+        const items: QuickOpenGroupItem[] = flatSymbols.filter((item) => {
+          // 手动匹配symbol并高亮
+          const matchRange: Highlight[] = matchesFuzzy(symbolQuery, item.name, true) || [];
+          if (matchRange) {
+            (item as any).labelHighlights = matchRange;
+          }
+          return matchRange && matchRange.length;
+        }).map((symbol) => {
+          return new QuickOpenGroupItem({
+            uri: targetFile,
+            label: symbol.name,
+            iconClass: getSymbolIcon(symbol.kind),
+            description: (symbol.parent as INormalizedDocumentSymbol)?.name,
+            labelHighlights: (symbol as any).labelHighlights,
+            showBorder: false,
+            run: (mode: Mode) => {
+              if (mode === Mode.PREVIEW) {
+                this.locateSymbol(targetFile!, symbol);
+                return true;
+              }
+              if (mode === Mode.OPEN) {
+                this.locateSymbol(targetFile!, symbol);
+                return true;
+              }
+              return false;
+            },
+          });
+        });
+        results = items;
+      } else {
+        return [];
+      }
+    } else {
+      results = await this.getQueryFiles(lookFor, alreadyCollected, token);
+      // 排序后设置第一个元素的样式
+      if (results[0]) {
+        const newItems = await this.getItems(
+          [results[0].getUri()!.toString()],
+          {
+            groupLabel: localize('fileResults'),
+            showBorder: true,
+          });
+        results[0] = newItems[0];
+      }
+    }
+    return results;
+  }
+
+  protected async getQueryFiles(fileQuery: string, alreadyCollected: Set<string>, token: CancellationToken) {
     const roots = await this.workspaceService.roots;
     const rootUris: string[] = [];
     roots.forEach((stat) => {
@@ -232,7 +362,7 @@ export class FileSearchQuickCommandHandler {
       this.logger.debug('file-search.contribution rootUri', uri.toString());
       return rootUris.push(uri.toString());
     });
-    const result = await this.fileSearchService.find(lookFor, {
+    const files = await this.fileSearchService.find(fileQuery, {
       rootUris,
       fuzzyMatch: true,
       limit: DEFAULT_FILE_SEARCH_LIMIT,
@@ -240,9 +370,8 @@ export class FileSearchQuickCommandHandler {
       noIgnoreParent: true,
       excludePatterns: ['*.git*', ...this.getPreferenceSearchExcludes()],
     }, token);
-
-    let results: QuickOpenGroupItem[] = await this.getItems(
-      result.filter((uri: string) => {
+    const results = await this.getItems(
+      files.filter((uri: string) => {
         if (alreadyCollected.has(uri) ||
           token.isCancellationRequested
         ) {
@@ -253,18 +382,17 @@ export class FileSearchQuickCommandHandler {
       }),
       {},
     );
-    results = results.sort(this.compareItems.bind(this));
-    // 排序后设置第一个元素的样式
-    if (results[0]) {
-      const newItems = await this.getItems(
-        [results[0].getUri()!.toString()],
-        {
-          groupLabel: localize('fileResults'),
-          showBorder: true,
-        });
-      results[0] = newItems[0];
-    }
+    results.sort(this.compareItems.bind(this));
     return results;
+  }
+
+  private async flattenSymbols(symbol: INormalizedDocumentSymbol | IDummyRoot, list: INormalizedDocumentSymbol[]) {
+    symbol.children!.forEach((item) => {
+      list.push(item);
+      if (item.children) {
+        this.flattenSymbols(item, list);
+      }
+    });
   }
 
   private async getRecentlyItems(alreadyCollected, lookFor, token) {
@@ -307,11 +435,14 @@ export class FileSearchQuickCommandHandler {
         groupLabel: index === 0 ? options.groupLabel : '',
         showBorder: (uriList.length > 0 && index === 0) ? options.showBorder : false,
         run: (mode: Mode) => {
-          if (mode !== Mode.OPEN) {
-            return false;
+          if (mode === Mode.PREVIEW) {
+            this.prevSelected = uri;
           }
-          this.openFile(uri);
-          return true;
+          if (mode === Mode.OPEN) {
+            this.openFile(uri);
+            return true;
+          }
+          return false;
         },
       });
       items.push(item);
@@ -323,6 +454,14 @@ export class FileSearchQuickCommandHandler {
     const range = getRangeByInput(this.currentLookFor);
     this.currentLookFor = '';
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { preview: false, range, focus: true });
+  }
+
+  private locateSymbol(uri: URI, symbol: INormalizedDocumentSymbol) {
+    // TODO: 目前symbol跳转后会被quickOpen挡住，需要优化
+    this.workbenchEditorService.open(uri, {
+      range: symbol.range,
+      preview: true,
+    });
   }
 
   /**
@@ -443,6 +582,11 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
     commands.registerCommand(quickFileOpen, {
       execute: () => {
         return this.quickOpenService.open('...');
+      },
+    });
+    commands.registerCommand(quickGoToSymbol, {
+      execute: () => {
+        return this.quickOpenService.open('...@');
       },
     });
   }

@@ -130,6 +130,7 @@ export const localizationBundle = {
     'search.replace.title': '替换',
     'search.input.checkbox': '显示搜索条件',
     'file-search.command.fileOpen.description': '打开文件',
+    'file-search.command.fileOpen.placeholder': '按名称搜索文件（追加@转到符号）',
     'search.includes': '要包含的文件',
     'search.includes.description': '输入文件名或文件夹名，多个用 "," 分隔',
     'search.excludes': '要排除的文件',

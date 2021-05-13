@@ -145,6 +145,7 @@ export const localizationBundle = {
     'search.replace.title': 'Replace',
     'search.input.checkbox': 'Display search rules',
     'file-search.command.fileOpen.description': 'Open File',
+    'file-search.command.fileOpen.placeholder': 'Search File By Name(Append @ To Locate Symbol)',
     'search.includes': 'Files to include',
     'search.includes.description': 'Enter the file name or folder name, multiple separated by ","',
     'search.excludes': 'Files to exclude',

@@ -54,7 +54,7 @@ describe('test for browser/file-search.contribution.ts', () => {
     contribution.registerCommands(registry);
 
     const commands = registry.getCommands();
-    expect(commands.length).toBe(1);
+    expect(commands.length).toBe(2);
     expect(commands[0].id).toBe(quickFileOpen.id);
 
     await commandService.executeCommand(quickFileOpen.id);
