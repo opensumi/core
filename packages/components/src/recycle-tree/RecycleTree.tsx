@@ -101,7 +101,12 @@ export interface IRecycleTreeProps<T = TreeModel> {
    * @memberof IRecycleTreeProps
    */
   overScanCount?: number;
-
+  /**
+   * 声明Tree组件底部空白区域大小
+   * @type {number}
+   * @memberof IRecycleTreeProps
+   */
+  paddingBottomSize?: number;
 }
 
 export interface IRecycleTreeError {
@@ -755,7 +760,20 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       className,
       placeholder,
       overScanCount,
+      paddingBottomSize,
     } = this.props;
+
+    const InnerElementType = React.forwardRef((props, ref) => {
+      const { style, ...rest } = props as any;
+      return <div
+        ref={ref!}
+        style={{
+          ...style,
+          height: `${parseFloat(style.height) + (paddingBottomSize || 0)}px`,
+        }}
+        {...rest}
+      />;
+    });
     if (placeholder && this.adjustedRowCount === 0) {
       const Placeholder = placeholder;
       return <Placeholder />;
@@ -777,7 +795,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           ...style,
         }}
         className={className}
-        outerElementType={ScrollbarsVirtualList}>
+        outerElementType={ScrollbarsVirtualList}
+        innerElementType={InnerElementType}>
         {this.renderItem}
       </FixedSizeList>);
   }
