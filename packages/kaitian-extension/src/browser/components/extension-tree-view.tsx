@@ -11,6 +11,7 @@ import { RecycleTree, INodeRendererProps, IRecycleTreeHandle, TreeNodeType } fro
 import { TREE_VIEW_NODE_HEIGHT, TreeViewNode } from './extension-tree-view-node';
 import { ExtensionCompositeTreeNode, ExtensionTreeNode } from '../vscode/api/tree-view/tree-view.node.defined';
 import { TreeViewDataProvider } from '../vscode/api/main.thread.treeview';
+import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
 
 export interface ExtensionTabBarTreeViewProps {
   injector: Injector;
@@ -136,7 +137,9 @@ export const ExtensionTabBarTreeView = observer(({
   }, [wrapperRef.current]);
 
   const renderTreeView = () => {
-    if (!isReady || isEmpty) {
+    if (!isReady) {
+      return <ProgressBar loading />;
+    } else if (isEmpty) {
       return <WelcomeView viewId={treeViewId} />;
     } else {
       if (model.treeModel) {

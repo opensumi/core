@@ -7,7 +7,6 @@ import { parseLinkedText } from '@ali/ide-core-common/lib/linkedText';
 import { Button } from '@ali/ide-components/lib/button';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import clsx from 'classnames';
-import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
 
 export namespace CSSIcon {
   export const iconNameSegment = '[A-Za-z0-9]+';
@@ -117,5 +116,5 @@ export const WelcomeView: React.FC<{ viewId: string }> = (props) => {
 
   return contents.length ? <div className={styles.welcome}>
     <WelcomeContent contents={contents} />
-  </div> : <ProgressBar loading />;
+  </div> : null;
 };
