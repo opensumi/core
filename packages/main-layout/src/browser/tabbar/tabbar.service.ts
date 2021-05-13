@@ -1,4 +1,4 @@
-import { memoize, WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService, getTabbarCtxKey, IContextKey, DisposableCollection, IScopedContextKeyService } from '@ali/ide-core-browser';
+import { toDisposable, WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService, getTabbarCtxKey, IContextKey, DisposableCollection, IScopedContextKeyService } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action, observe, computed } from 'mobx';
 import { AbstractContextMenuService, AbstractMenuService, IContextMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -314,12 +314,35 @@ export class TabbarService extends WithEventBus {
     return this.containersMap.get(containerId);
   }
 
-  @memoize
-  getTitleToolbarMenu(containerId: string) {
+  // 针对 containerId 对 menu 进行缓存
+  private _menuMap = new Map<string, IMenu>();
+
+  public getTitleToolbarMenu(containerId: string) {
+    const existedMenu = this._menuMap.get(containerId);
+    if (existedMenu) {
+      return existedMenu;
+    }
+
     const menu = this.menuService.createMenu(MenuId.ViewTitle, this.viewContextKeyRegistry.getContextKeyService(containerId));
+    this._menuMap.set(containerId, menu);
+
     // 添加到 containerId 对应的 disposable 中
+    // 在 containerId 对应的 view dispose 时会将 menu 对象和缓存清理掉
     const disposables = this.disposableMap.get(containerId);
-    disposables && disposables.push(menu);
+    const toDispose = [
+      menu,
+      toDisposable(() => {
+        this._menuMap.delete(containerId);
+      }),
+    ];
+
+    if (disposables) {
+      disposables.pushAll(toDispose);
+    } else {
+      // 避免出现不必要的内存泄露
+      this.addDispose(toDispose);
+    }
+
     return menu;
   }
 
