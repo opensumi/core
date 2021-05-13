@@ -93,7 +93,7 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
 
   registerComponent(registry: ComponentRegistry) {
     const top = this.config.layoutConfig[SlotLocation.top];
-    if ( top && top.modules  ) {
+    if (top && top.modules) {
       const index = top.modules.indexOf('@ali/ide-menu-bar');
       if (index !== -1) {
         top.modules.splice(index, 1, 'electron-header');
@@ -221,7 +221,7 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
       id: 'electron.revealInFinderTab',
       label: localize('explorer.electron.revealInFinder'),
     }, {
-      execute: ({uri}: {uri?: URI} = {}) => {
+      execute: ({ uri }: { uri?: URI } = {}) => {
         if (uri && uri.scheme === 'file') {
           this.electronMainUIService.revealInFinder(uri.codeUri.fsPath);
         }
@@ -258,17 +258,17 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
     });
 
     keybindings.registerKeybinding({
-      command: 'electron.reload' ,
+      command: 'electron.reload',
       keybinding: 'shift+ctrlcmd+r',
     });
 
     keybindings.registerKeybinding({
-      command: 'electron.zoomIn' ,
+      command: 'electron.zoomIn',
       keybinding: isWindows ? 'alt+=' : 'ctrlcmd+=',
     });
 
     keybindings.registerKeybinding({
-      command: 'electron.zoomOut' ,
+      command: 'electron.zoomOut',
       keybinding: isWindows ? 'alt+-' : 'ctrlcmd+-',
     });
   }

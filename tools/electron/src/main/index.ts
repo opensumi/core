@@ -18,6 +18,7 @@ const electronApp = new ElectronMainApp({
   extensionDir: join(__dirname, '../../../../extensions'), // 相对于app/dist的路径
   extensionCandidate: [],
   overrideWebPreferences: {},
+  overrideBrowserOptions: {},
 });
 
 electronApp.init().then(() => {

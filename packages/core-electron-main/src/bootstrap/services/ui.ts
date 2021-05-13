@@ -33,7 +33,10 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
         this.fireMaximizeChangedEvent(window.getBrowserWindow().id, false);
       });
       window.getBrowserWindow().on('resized', () => {
-        this.fireMaximizeChangedEvent(window.getBrowserWindow().id, false);
+        this.fireMaximizeChangedEvent(window.getBrowserWindow().id, window.getBrowserWindow().isMaximized());
+      });
+      window.getBrowserWindow().on('moved', () => {
+        this.fireMaximizeChangedEvent(window.getBrowserWindow().id, window.getBrowserWindow().isMaximized());
       });
     });
   }

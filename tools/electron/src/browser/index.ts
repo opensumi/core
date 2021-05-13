@@ -1,7 +1,7 @@
 const win = window as any;
 win.Buffer = win.BufferBridge;
 if (!(window as any).process) {
-  (window as any).process = { browser: true , env: (window as any).env, listener: () => []};
+  (window as any).process = { browser: true, env: (window as any).env, listener: () => [] };
 }
 
 import '@ali/ide-i18n/lib/browser';

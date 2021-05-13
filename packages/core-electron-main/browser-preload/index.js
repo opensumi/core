@@ -1,7 +1,6 @@
 const net = require('net');
 const os = require('os');
 const { ipcRenderer } = require('electron');
-const { dirname, join } = require('path');
 
 const electronEnv = {};
 

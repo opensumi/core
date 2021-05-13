@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as clx from 'classnames';
 import { observer } from 'mobx-react-lite';
-import { useInjectable, SlotRenderer } from '@ali/ide-core-browser';
+import { useInjectable, SlotRenderer, ComponentRegistry } from '@ali/ide-core-browser';
 import { MenuActionList } from '@ali/ide-core-browser/lib/components/actions';
 import { IMenubarItem } from '@ali/ide-core-browser/lib/menu/next';
 import { ClickOutside } from '@ali/ide-core-browser/lib/components/click-outside';
@@ -29,7 +29,7 @@ const MenubarItem = observer<IMenubarItem & {
       setMenuOpen((r) => !r);
     }
     afterMenubarClick();
-  }, [ id ]);
+  }, [id]);
 
   const handleMenuItemClick = () => {
     setMenuOpen(false);
@@ -41,7 +41,7 @@ const MenubarItem = observer<IMenubarItem & {
     if (focusMode) {
       menubarStore.handleMenubarClick(id);
     }
-  }, [ id, focusMode ]);
+  }, [id, focusMode]);
 
   const triggerMenuVisibleChange = (visible: boolean) => {
     setMenuOpen(visible);
@@ -74,6 +74,7 @@ const MenubarItem = observer<IMenubarItem & {
 // 点击 MenuItem 也会解除 focus mode
 export const MenuBar = observer(() => {
   const menubarStore = useInjectable<MenubarStore>(MenubarStore);
+  const componentRegistry: ComponentRegistry = useInjectable(ComponentRegistry);
   const [focusMode, setFocusMode] = React.useState(false);
 
   const handleMouseLeave = React.useCallback(() => {
@@ -81,11 +82,14 @@ export const MenuBar = observer(() => {
     setFocusMode(false);
   }, [focusMode]);
 
+  const LogoIcon = componentRegistry.getComponentRegistryInfo('@ali/ide-menu-bar-logo')?.views[0].component;
+
   return (
     <ClickOutside
       className={styles.menubars}
       mouseEvents={['click', 'contextmenu']}
       onOutsideClick={handleMouseLeave}>
+      { LogoIcon ? <LogoIcon /> : <div className={styles.logoIconEmpty}></div>}
       {
         menubarStore.menubarItems.map(({ id, label }) => (
           <MenubarItem

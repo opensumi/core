@@ -1,12 +1,17 @@
-@HEADER_HEIGHT : 24px;
+:global(.mac) {
+  --header-height: 22px;
+}
+:global(.windows) {
+  --header-height: 27px;
+}
 
 .header {
-  height: @HEADER_HEIGHT;
+  height: var(--header-height);
   background: var(--menu-background);
   color: var(--titlebar-activeForeground);
   display:flex;
   text-align: center;
-  line-height: @HEADER_HEIGHT;
+  line-height: var(--header-height);
   font-size:12px;
   user-select: none;
   .title_info {
@@ -21,12 +26,27 @@
 
 .windowActions {
   display: flex;
-  height: @HEADER_HEIGHT;
+  height: var(--header-height);
+  -webkit-app-region: no-drag;
+  user-select: none;
   > div {
-    font-size:14px;
-    padding: 0 5px;
+    font-size: 16px;
+    padding: 0 15px;
     &:hover {
-      transform: scale(1.10);
+      background-color: hsla(0,0%,100%,.1);
+    }
+    &:hover:last-child {
+      background-color: rgba(232, 17, 35, 0.9);
+      color: white;
+    }
+  }
+}
+
+:global(.vs) {
+  .windowActions {
+    > div:not(:last-child):hover {
+      background-color: rgba(0,0,0,.1);
+      color: #696767;
     }
   }
 }

@@ -1,79 +1,110 @@
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import * as styles from './header.module.less';
-import { useInjectable, MaybeNull, isWindows, ComponentRenderer, ComponentRegistry, Disposable, DomListener, AppConfig, replaceLocalizePlaceholder, electronEnv, isOSX, IWindowService } from '@ali/ide-core-browser';
+import { useInjectable, MaybeNull, ComponentRenderer, ComponentRegistry, Disposable, DomListener, AppConfig, replaceLocalizePlaceholder, electronEnv, isOSX, IWindowService } from '@ali/ide-core-browser';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { WorkbenchEditorService, IResource } from '@ali/ide-editor';
 import { getIcon } from '@ali/ide-core-browser';
 import { localize } from '@ali/ide-core-common';
 import { basename } from '@ali/ide-core-common/lib/utils/paths';
 
-export const ElectronHeaderBar = observer(() => {
+const useFullScreen = () => {
+  const uiService: IElectronMainUIService = useInjectable(IElectronMainUIService);
+  const [isFullScreen, setFullScreen] = useState<boolean>(false);
 
-  const uiService = useInjectable(IElectronMainUIService) as IElectronMainUIService;
-  const windowService: IWindowService = useInjectable(IWindowService);
-  const componentRegistry: ComponentRegistry = useInjectable(ComponentRegistry);
-  const [maximized, setMaximized] = useState(false);
-
-  const [isFullScreen, setFullScreen] = React.useState<boolean>(false);
-
-  React.useEffect(() => {
-    uiService.isFullScreen(electronEnv.currentWindowId).then((res) => {
-      setFullScreen(res);
+  useEffect(() => {
+    uiService.isFullScreen(electronEnv.currentWindowId).then((fullScreen) => {
+      setFullScreen(fullScreen);
     });
-    const listener = uiService.on('fullScreenStatusChange', (windowId, res) => {
+    const listener = uiService.on('fullScreenStatusChange', (windowId, fullScreen) => {
       if (windowId === electronEnv.currentWindowId) {
-        setFullScreen(res);
+        setFullScreen(fullScreen);
       }
     });
+    return () => {
+      listener.dispose();
+    };
+  }, []);
+  return {
+    isFullScreen,
+  };
+};
+
+const useMaximize = () => {
+  const uiService: IElectronMainUIService = useInjectable(IElectronMainUIService);
+  const [maximized, setMaximized] = useState(false);
+
+  const getMaximized = async () => uiService.isMaximized(electronEnv.currentWindowId);
+
+  useEffect(() => {
     const maximizeListener = uiService.on('maximizeStatusChange', (windowId, isMaximized) => {
       if (windowId === electronEnv.currentWindowId) {
         setMaximized(isMaximized);
       }
     });
-    uiService.isMaximized(electronEnv.currentWindowId).then((maximized) => {
+    getMaximized().then((maximized) => {
       setMaximized(maximized);
     });
     return () => {
-      listener.dispose();
       maximizeListener.dispose();
     };
   }, []);
+
+  return {
+    maximized,
+    getMaximized,
+  };
+};
+
+export const ElectronHeaderBar = observer(({ Icon }: React.PropsWithChildren<{ Icon?: React.FunctionComponent }>) => {
+  const windowService: IWindowService = useInjectable(IWindowService);
+  const componentRegistry: ComponentRegistry = useInjectable(ComponentRegistry);
+
+  const { isFullScreen } = useFullScreen();
+  const { maximized, getMaximized } = useMaximize();
+
+  const LeftComponent = () => {
+    if (isOSX) {
+      return null;
+    }
+
+    return <>
+      <ComponentRenderer Component={componentRegistry.getComponentRegistryInfo('@ali/ide-menu-bar')!.views[0].component!} />
+    </>;
+  };
+
+  const RightComponent = () => {
+    if (isOSX) {
+      return null;
+    }
+
+    return <div className={styles.windowActions}>
+      <div className={getIcon('min')} onClick={() => windowService.minimize()} />
+      {
+        maximized ? <div className={getIcon('max')} onClick={() => windowService.unmaximize()} />
+          : <div className={getIcon('unmax')} onClick={() => windowService.maximize()} />
+      }
+      <div className={getIcon('close1')} onClick={() => windowService.close()} />
+    </div>;
+  };
+
   // 在 Mac 下，如果是全屏状态，隐藏顶部标题栏
   if (isOSX && isFullScreen) {
-    return <div><TitleInfo hidden={true}/></div>;
+    return <div><TitleInfo hidden={true} /></div>;
   }
-  return <div className={styles.header} onDoubleClick={() => {
-    if (maximized) {
+
+  return <div className={styles.header} onDoubleClick={async () => {
+    if (await getMaximized()) {
       windowService.unmaximize();
     } else {
       windowService.maximize();
     }
   }}>
-    {
-      (isWindows) ? <ComponentRenderer Component={componentRegistry.getComponentRegistryInfo('@ali/ide-menu-bar')!.views[0].component!}/> : null
-    }
+    <LeftComponent />
     <TitleInfo />
-    {
-      (isWindows) ? <div className={styles.windowActions}>
-        <div className={getIcon('windows_mini')} onClick= {() => {
-          windowService.minimize();
-        }} />
-        {
-          !maximized ? <div className={getIcon('windows_fullscreen')} onClick= {() => {
-            windowService.maximize();
-          }}/> : <div className={getIcon('windows_recover')} onClick= {() => {
-            windowService.unmaximize();
-          }}/>
-        }
-        <div className={getIcon('windows_quit')} onClick= {() => {
-          windowService.close();
-        }}/>
-      </div> : undefined
-    }
+    <RightComponent />
   </div>;
-
 });
 
 declare const ResizeObserver: any;
@@ -81,13 +112,13 @@ declare const ResizeObserver: any;
 export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
 
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorService;
-  const [currentResource, setCurrentResource] = React.useState<MaybeNull<IResource>>(editorService.currentResource);
-  const ref = React.useRef<HTMLDivElement>();
-  const spanRef = React.useRef<HTMLSpanElement>();
+  const [currentResource, setCurrentResource] = useState<MaybeNull<IResource>>(editorService.currentResource);
+  const ref = useRef<HTMLDivElement>();
+  const spanRef = useRef<HTMLSpanElement>();
   const appConfig: AppConfig = useInjectable(AppConfig);
-  const [appTitle, setAppTile] = React.useState<string>();
+  const [appTitle, setAppTile] = useState<string>();
 
-  React.useEffect(() => {
+  useEffect(() => {
     setPosition();
     const disposer = new Disposable();
     disposer.addDispose(editorService.onActiveResourceChange((resource) => {
@@ -100,7 +131,7 @@ export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
       const resizeObserver = new ResizeObserver(setPosition);
       resizeObserver.observe(ref.current.previousElementSibling);
       disposer.addDispose({
-        dispose : () => {
+        dispose: () => {
           resizeObserver.disconnect();
         },
       });
@@ -127,10 +158,10 @@ export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
 
   const dirname = appConfig.workspaceDir ? basename(appConfig.workspaceDir) : undefined;
 
-  const title = (currentResource ? currentResource.name + ' — ' : '') + (dirname ? dirname + ' — '  : '') + (replaceLocalizePlaceholder(appConfig.appName) || 'Electron IDE');
+  const title = (currentResource ? currentResource.name + ' — ' : '') + (dirname ? dirname + ' — ' : '') + (replaceLocalizePlaceholder(appConfig.appName) || 'Electron IDE');
 
   // 同时更新 Html Title
-  React.useEffect(() => {
+  useEffect(() => {
     let documentTitle = title;
     if (appConfig.extensionDevelopmentHost) {
       documentTitle = `[${localize('workspace.development.title')}] ${title}`;

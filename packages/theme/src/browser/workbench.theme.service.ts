@@ -1,5 +1,5 @@
 import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, getThemeId, getThemeTypeSelector, IColorCustomizations, ITokenColorizationRule, ITokenColorCustomizations } from '../common/theme.service';
-import { URI, WithEventBus, localize, Emitter, Event, isObject, DisposableCollection, uuid } from '@ali/ide-core-common';
+import { URI, WithEventBus, localize, Emitter, Event, isObject, DisposableCollection, uuid, isLinux, isWindows } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
 import { Color, IThemeColor } from '../common/color';
@@ -68,6 +68,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   constructor() {
     super();
     this.listen();
+    this.applyPlatformClass();
   }
 
   public registerThemes(themeContributions: ThemeContribution[], extPath: URI) {
@@ -353,6 +354,12 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     const htmlNode = document.getElementsByTagName('html')[0];
     htmlNode.classList.remove(getThemeTypeSelector(prevThemeType));
     htmlNode.classList.add(getThemeTypeSelector(themeType));
+  }
+
+  protected applyPlatformClass() {
+    const platformClass = isWindows ? 'windows' : isLinux ? 'linux' : 'mac';
+    const rootNode = document.getElementsByTagName('body')[0]!;
+    rootNode.classList.add(platformClass);
   }
 }
 
