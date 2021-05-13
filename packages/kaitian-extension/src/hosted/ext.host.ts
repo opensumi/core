@@ -27,7 +27,7 @@ export function getNodeRequire() {
 
 export default class ExtensionHostServiceImpl implements IExtensionHostService {
   private logger: any; // ExtensionLogger;
-  private extensions: IExtensionProps[];
+  private extensions: IExtensionProps[] = [];
   private rpcProtocol: RPCProtocol;
 
   private vscodeAPIFactory: any;
@@ -99,7 +99,13 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     });
   }
 
-  private initExtensionHostErrorStackTrace() {
+  private _extHostErrorStackTraceExtended = false;
+  private extendExtHostErrorStackTrace() {
+    if (this._extHostErrorStackTraceExtended) {
+      return;
+    }
+
+    this._extHostErrorStackTraceExtended = true;
     Error.stackTraceLimit = 100;
 
     Error.prepareStackTrace = (error: Error, stackTrace: any[]) => {
@@ -128,7 +134,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
   }
 
-  public async $handleExtHostCreated() {
+  public async $updateExtHostData() {
     const extensions: IExtensionProps[] = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService).$getExtensions();
     // node 层 extensionLocation 不使用 static 直接使用 file
     this.extensions = extensions.map((item) => ({
@@ -139,7 +145,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       return extension.packageJSON.name;
     }));
 
-    this.initExtensionHostErrorStackTrace();
+    this.extendExtHostErrorStackTrace();
   }
 
   public async $fireChangeEvent() {

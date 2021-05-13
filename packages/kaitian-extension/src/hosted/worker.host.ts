@@ -99,7 +99,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
 
   static workerApiNamespace: string[] = ['kaitian', 'kaitian-worker', 'vscode'];
 
-  public async $handleExtHostCreated() {
+  public async $updateExtHostData() {
     await this.init();
 
     const extensions = await this.mainThreadExtensionService.$getExtensions();
@@ -111,12 +111,18 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
       return extension.packageJSON.name;
     }));
 
-    this.initExtensionHostErrorStackTrace();
+    this.extendExtHostErrorStackTrace();
 
     this.initDeferred.resolve();
   }
 
-  private initExtensionHostErrorStackTrace() {
+  private _extHostErrorStackTraceExtended = false;
+  private extendExtHostErrorStackTrace() {
+    if (this._extHostErrorStackTraceExtended) {
+      return;
+    }
+    this._extHostErrorStackTraceExtended = true;
+
     Error.stackTraceLimit = 100;
     Error.prepareStackTrace = (error: Error, stackTrace: any[]) => {
       let extension: IExtensionProps | undefined;

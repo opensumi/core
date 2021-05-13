@@ -33,6 +33,8 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
   private _apiFactoryDisposables: IDisposable[] = [];
 
   public ready: Deferred<void> = new Deferred();
+  private _extHostUpdated: Deferred<void> = new Deferred();
+
   private extensions: IExtension[] = [];
   public protocol: IRPCProtocol;
 
@@ -54,7 +56,8 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
       await this.createBrowserMainThreadAPI(this.protocol);
 
       const proxy = await this.getProxy();
-      await proxy.$handleExtHostCreated();
+      await proxy.$updateExtHostData();
+      this._extHostUpdated.resolve();
     }
 
     return this.protocol;
@@ -62,18 +65,19 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
 
   public async activeExtension(extension: IExtension): Promise<void> {
     if (!this.appConfig.noExtHost) {
-      await this.ready.promise;
+      // 只有当 proxy.$updateExtHostData 调用之后才可以开始激活插件
+      await this._extHostUpdated.promise;
       const proxy = await this.getProxy();
       await proxy.$activateExtension(extension.id);
     }
   }
 
-  public async initExtension(extensions: IExtension[]): Promise<void> {
+  public async updateExtensionData(extensions: IExtension[]): Promise<void> {
     this.extensions = extensions;
     if (this.protocol) {
       const proxy: IExtensionHostService = await this.getProxy();
       // 同步 host 进程中的 extension 列表
-      await proxy.$handleExtHostCreated();
+      await proxy.$updateExtHostData();
       // 发送 extension 变化
       proxy.$fireChangeEvent();
     }

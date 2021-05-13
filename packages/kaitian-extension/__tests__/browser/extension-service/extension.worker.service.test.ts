@@ -16,7 +16,7 @@ describe('Extension service', () => {
   });
 
   it('initExtension should be work', async () => {
-    await workerService.initExtension(MOCK_EXTENSIONS);
+    await workerService.updateExtensionData(MOCK_EXTENSIONS);
     expect(workerService.getExtension(MOCK_EXTENSIONS[0].id)).toBeDefined();
     expect(workerService.getExtension(MOCK_EXTENSIONS[0].id)!.id).toBe(MOCK_EXTENSIONS[0].id);
   });

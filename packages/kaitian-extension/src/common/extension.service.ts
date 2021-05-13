@@ -21,7 +21,10 @@ abstract class BaseExtProcessService {
 }
 
 export abstract class AbstractNodeExtProcessService<T = any> extends BaseExtProcessService implements VSCodeExtensionService {
-  abstract initExtension(extensions: IExtension[]): Promise<void>;
+  /**
+   * 更新插件进程中的插件列表数据
+   */
+  abstract updateExtensionData(extensions: IExtension[]): Promise<void>;
   abstract getExtension(extensionId: string): IExtension | undefined;
   abstract getActivatedExtensions(): Promise<ActivatedExtensionJSON[]>;
 

@@ -24,6 +24,8 @@ export class WorkerExtProcessService extends Disposable implements AbstractWorke
   private readonly injector: Injector;
 
   public ready: Deferred<void> = new Deferred();
+  private _extHostUpdated: Deferred<void> = new Deferred();
+
   private extensions: IExtension[] = [];
 
   public protocol: IRPCProtocol;
@@ -43,7 +45,8 @@ export class WorkerExtProcessService extends Disposable implements AbstractWorke
       const dispose = await initWorkerTheadAPIProxy(this.protocol, this.injector, this);
       this.addDispose({ dispose });
 
-      await this.getProxy().$handleExtHostCreated();
+      await this.getProxy().$updateExtHostData();
+      this._extHostUpdated.resolve();
     }
     return this.protocol;
   }
@@ -66,15 +69,16 @@ export class WorkerExtProcessService extends Disposable implements AbstractWorke
 
   private async doActivateExtension(extension: IExtension) {
     if (this.appConfig.extWorkerHost) {
-      await this.ready.promise;
+      // 只有当 proxy.$updateExtHostData 调用之后才可以开始激活插件
+      await this._extHostUpdated.promise;
       await this.getProxy().$activateExtension(extension.id);
     }
   }
 
-  public async initExtension(extensions: IExtension[]): Promise<void> {
+  public async updateExtensionData(extensions: IExtension[]): Promise<void> {
     this.extensions = extensions;
     if (this.protocol) {
-      this.getProxy().$handleExtHostCreated();
+      this.getProxy().$updateExtHostData();
     }
   }
 

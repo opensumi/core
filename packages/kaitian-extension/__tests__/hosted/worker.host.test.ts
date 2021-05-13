@@ -59,7 +59,7 @@ describe('Extension Worker Thread Test Suites', () => {
   });
 
   it('init extensions', async () => {
-    await extHostImpl.$handleExtHostCreated();
+    await extHostImpl.$updateExtHostData();
     const extensions = extHostImpl.getExtensions();
     const ext = extHostImpl.getExtension(mockExtensionProps.id);
     expect(extensions.length).toBe(2);

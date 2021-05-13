@@ -230,7 +230,10 @@ export const MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER = createExtHostContextProxyI
 
 export interface IExtensionHost {
   $activateExtension(id: string): Promise<void>;
-  $handleExtHostCreated(): Promise<void>;
+  /**
+   * 更新插件进程内的插件相关数据
+   */
+  $updateExtHostData(): Promise<void>;
   $getActivatedExtensions(): Promise<ActivatedExtensionJSON[]>;
 
   getExtensionExports(id: string): any;

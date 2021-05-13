@@ -188,8 +188,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
 
     const extensionInstanceList = this.extensionInstanceManageService.getExtensionInstances();
-    this.nodeExtensionService.initExtension(extensionInstanceList);
-    this.workerExtensionService.initExtension(extensionInstanceList);
+    this.nodeExtensionService.updateExtensionData(extensionInstanceList);
+    this.workerExtensionService.updateExtensionData(extensionInstanceList);
   }
 
   /**
@@ -287,11 +287,11 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private async updateExtHostData() {
     const extensions = this.extensionInstanceManageService.getExtensionInstances();
     if (!this.appConfig.noExtHost) {
-      await this.nodeExtensionService.initExtension(extensions);
+      await this.nodeExtensionService.updateExtensionData(extensions);
     }
 
     if (this.appConfig.extWorkerHost) {
-      await this.workerExtensionService.initExtension(extensions);
+      await this.workerExtensionService.updateExtensionData(extensions);
     }
   }
 

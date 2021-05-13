@@ -189,7 +189,7 @@ describe('MainThreadExtensions Test Suites', () => {
     rpcProtocolMain.set(ExtHostAPIIdentifier.ExtHostExtensionService, extensionHostService);
     // await mainthreadService.activate();
     await extensionHostService.init();
-    await extensionHostService.$handleExtHostCreated();
+    await extensionHostService.$updateExtHostData();
     extHostExtension = createExtensionsApiFactory(extensionHostService);
     done();
   });
