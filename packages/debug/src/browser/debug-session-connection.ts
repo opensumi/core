@@ -1,3 +1,4 @@
+import { CancellationToken } from '@ali/ide-core-common';
 import { Injectable, Optional, Autowired } from '@ali/common-di';
 import { DebugProtocol } from '@ali/vscode-debugprotocol';
 import {
@@ -58,6 +59,7 @@ export interface DebugRequestTypes {
   'terminateThreads': [DebugProtocol.TerminateThreadsArguments, DebugProtocol.TerminateThreadsResponse];
   'threads': [{}, DebugProtocol.ThreadsResponse];
   'variables': [DebugProtocol.VariablesArguments, DebugProtocol.VariablesResponse];
+  'cancel': [DebugProtocol.CancelArguments, DebugProtocol.CancelResponse];
 }
 
 export interface DebugEventTypes {
@@ -144,7 +146,7 @@ export class DebugSessionConnection implements IDisposable {
 
   protected sessionAdapterID: DebugProtocol.InitializeRequestArguments['adapterID'];
 
-  async sendRequest<K extends keyof DebugRequestTypes>(command: K, args: DebugRequestTypes[K][0], configuration: DebugConfiguration): Promise<DebugRequestTypes[K][1]> {
+  async sendRequest<K extends keyof DebugRequestTypes>(command: K, args: DebugRequestTypes[K][0], configuration: DebugConfiguration, token?: CancellationToken): Promise<DebugRequestTypes[K][1]> {
     /**
      * 在接收到 initialize 请求的时候记录当前的 session 适配器类型
      */
@@ -156,7 +158,7 @@ export class DebugSessionConnection implements IDisposable {
       sessionId: this.sessionId,
       threadId: (args as any).threadId || this.manager.currentThread?.raw.id,
     });
-    const result = await this.doSendRequest(command, args);
+    const result = await this.doSendRequest(command, args, token);
 
     /*
     * 对 threads 请求增加 数量 统计
@@ -193,7 +195,7 @@ export class DebugSessionConnection implements IDisposable {
     return this.doSendRequest<T>(command, args);
   }
 
-  protected async doSendRequest<K extends DebugProtocol.Response>(command: string, args?: any): Promise<K> {
+  protected async doSendRequest<K extends DebugProtocol.Response>(command: string, args: any = null, token?: CancellationToken): Promise<K> {
     const result = new Deferred<K>();
 
     const request: DebugProtocol.Request = {
@@ -203,13 +205,30 @@ export class DebugSessionConnection implements IDisposable {
       arguments: args,
     };
 
+    let cancelationListener: IDisposable;
+
     this.pendingRequests.set(request.seq, (response: any) => {
+      if (cancelationListener) {
+        cancelationListener.dispose();
+      }
       if (!response.success) {
         result.reject(response);
       } else {
         result.resolve(response);
       }
     });
+
+    if (token) {
+      cancelationListener = token.onCancellationRequested(() => {
+        cancelationListener.dispose();
+        const session = this.manager.getSession(this.sessionId);
+        if (session && session.capabilities.supportsCancelRequest) {
+          session.sendRequest('cancel', {
+            requestId: request.seq,
+          });
+        }
+      });
+    }
 
     await this.send(request);
     return result.promise;

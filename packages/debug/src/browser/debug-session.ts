@@ -23,6 +23,7 @@ import { BreakpointManager, BreakpointsChangeEvent, IRuntimeBreakpoint, DebugBre
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { DebugModelManager } from './editor/debug-model-manager';
+import { CancellationTokenSource, CancellationToken } from '@ali/ide-core-common';
 import { ITerminalApiService, TerminalOptions } from '@ali/ide-terminal-next';
 import { ExpressionContainer } from './tree/debug-tree-node.define';
 
@@ -62,6 +63,8 @@ export class DebugSession implements IDebugSession {
 
   protected exitDeferred = new Deferred<DebugExitEvent>();
 
+  protected cancellationMap = new Map<number, CancellationTokenSource[]>();
+
   constructor(
     readonly id: string,
     readonly options: DebugSessionOptions,
@@ -93,8 +96,18 @@ export class DebugSession implements IDebugSession {
         // 更新线程
         if (allThreadsContinued !== false) {
           this.clearThreads();
-        } else {
+          return;
+        }
+
+        if (threadId) {
           this.clearThread(threadId);
+          const tokens = this.cancellationMap.get(threadId);
+          this.cancellationMap.delete(threadId);
+          if (tokens) {
+            tokens.forEach((t) => t.cancel());
+          }
+        } else {
+          this.cancelAllRequests();
         }
       }),
       this.on('stopped', async ({ body }) => {
@@ -683,7 +696,7 @@ export class DebugSession implements IDebugSession {
     }), {}));
   }
 
-  async sendRequest<K extends keyof DebugRequestTypes>(command: K, args: DebugRequestTypes[K][0]): Promise<DebugRequestTypes[K][1]> {
+  async sendRequest<K extends keyof DebugRequestTypes>(command: K, args: DebugRequestTypes[K][0], token?: CancellationToken): Promise<DebugRequestTypes[K][1]> {
     if (
       (!this._capabilities.supportsTerminateRequest && command === 'terminate') ||
       (!this._capabilities.supportsCompletionsRequest && command === 'completions') ||
@@ -692,8 +705,16 @@ export class DebugSession implements IDebugSession {
       throw new Error(`debug: ${command} not supported`);
     }
 
+    let requestToken: CancellationToken | undefined;
+
+    if (
+      (['stackTrace', 'scopes', 'variables', 'completions', 'threads'] as K[]).some((c) => command === c)
+    ) {
+      requestToken = this.currentThread?.raw.id ? this.getNewCancellationToken(this.currentThread?.raw.id, token) : undefined;
+    }
+
     try {
-      return await this.connection.sendRequest(command, args, this.configuration);
+      return await this.connection.sendRequest(command, args, this.configuration, requestToken);
     } finally {
       this._onRequest.fire(command);
     }
@@ -734,4 +755,23 @@ export class DebugSession implements IDebugSession {
   reportTime(name: string, defaults?: any): (msg: string | undefined, extra?: any) => number {
     return this.sessionManager.reportTime(name, defaults);
   }
+
+  // Cancellation
+
+  private getNewCancellationToken(threadId: number, token?: CancellationToken): CancellationToken {
+    const tokenSource = new CancellationTokenSource(token);
+    const tokens = this.cancellationMap.get(threadId) || [];
+    tokens.push(tokenSource);
+    this.cancellationMap.set(threadId, tokens);
+
+    return tokenSource.token;
+  }
+
+  private cancelAllRequests(): void {
+    this.cancellationMap.forEach((tokens) => tokens.forEach((t) => t.cancel()));
+    this.cancellationMap.clear();
+  }
+
+  // Cancellation end
+
 }
