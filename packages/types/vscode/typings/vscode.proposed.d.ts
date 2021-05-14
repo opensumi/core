@@ -179,13 +179,13 @@ declare module 'vscode' {
 
   //#region file-decorations: https://github.com/microsoft/vscode/issues/54938
 
-	export class Decoration {
-		letter?: string;
-		title?: string;
-		color?: ThemeColor;
-		priority?: number;
-		bubble?: boolean;
-	}
+  export class Decoration {
+    letter?: string;
+    title?: string;
+    color?: ThemeColor;
+    priority?: number;
+    bubble?: boolean;
+  }
 
   export interface DecorationProvider {
     onDidChangeDecorations: Event<undefined | Uri | Uri[]>;
@@ -381,69 +381,110 @@ declare module 'vscode' {
   }
 
   //#region eamodio - timeline: https://github.com/microsoft/vscode/issues/84297
-	export class TimelineItem {
-		/**
-		 * A timestamp (in milliseconds since 1 January 1970 00:00:00) for when the timeline item occurred.
-		 */
-		timestamp: number;
+  export class TimelineItem {
+    /**
+     * A timestamp (in milliseconds since 1 January 1970 00:00:00) for when the timeline item occurred.
+     */
+    timestamp: number;
 
-		/**
-		 * A human-readable string describing the timeline item.
-		 */
-		label: string;
+    /**
+     * A human-readable string describing the timeline item.
+     */
+    label: string;
 
-		/**
-		 * Optional id for the timeline item. It must be unique across all the timeline items provided by this source.
-		 *
-		 * If not provided, an id is generated using the timeline item's timestamp.
-		 */
-		id?: string;
+    /**
+     * Optional id for the timeline item. It must be unique across all the timeline items provided by this source.
+     *
+     * If not provided, an id is generated using the timeline item's timestamp.
+     */
+    id?: string;
 
-		/**
-		 * The icon path or [ThemeIcon](#ThemeIcon) for the timeline item.
-		 */
-		iconPath?: Uri | { light: Uri; dark: Uri } | ThemeIcon;
+    /**
+     * The icon path or [ThemeIcon](#ThemeIcon) for the timeline item.
+     */
+    iconPath?: Uri | { light: Uri; dark: Uri } | ThemeIcon;
 
-		/**
-		 * A human readable string describing less prominent details of the timeline item.
-		 */
-		description?: string;
+    /**
+     * A human readable string describing less prominent details of the timeline item.
+     */
+    description?: string;
 
-		/**
-		 * The tooltip text when you hover over the timeline item.
-		 */
-		detail?: string;
+    /**
+     * The tooltip text when you hover over the timeline item.
+     */
+    detail?: string;
 
-		/**
-		 * The [command](#Command) that should be executed when the timeline item is selected.
-		 */
-		command?: Command;
+    /**
+     * The [command](#Command) that should be executed when the timeline item is selected.
+     */
+    command?: Command;
 
-		/**
-		 * Context value of the timeline item. This can be used to contribute specific actions to the item.
-		 * For example, a timeline item is given a context value as `commit`. When contributing actions to `timeline/item/context`
-		 * using `menus` extension point, you can specify context value for key `timelineItem` in `when` expression like `timelineItem == commit`.
-		 * ```
-		 *	"contributes": {
-		 *		"menus": {
-		 *			"timeline/item/context": [
-		 *				{
-		 *					"command": "extension.copyCommitId",
-		 *					"when": "timelineItem == commit"
-		 *				}
-		 *			]
-		 *		}
-		 *	}
-		 * ```
-		 * This will show the `extension.copyCommitId` action only for items where `contextValue` is `commit`.
-		 */
-		contextValue?: string;
+    /**
+     * Context value of the timeline item. This can be used to contribute specific actions to the item.
+     * For example, a timeline item is given a context value as `commit`. When contributing actions to `timeline/item/context`
+     * using `menus` extension point, you can specify context value for key `timelineItem` in `when` expression like `timelineItem == commit`.
+     * ```
+     *  "contributes": {
+     *    "menus": {
+     *      "timeline/item/context": [
+     *        {
+     *          "command": "extension.copyCommitId",
+     *          "when": "timelineItem == commit"
+     *        }
+     *      ]
+     *    }
+     *  }
+     * ```
+     * This will show the `extension.copyCommitId` action only for items where `contextValue` is `commit`.
+     */
+    contextValue?: string;
 
-		/**
-		 * @param label A human-readable string describing the timeline item
-		 * @param timestamp A timestamp (in milliseconds since 1 January 1970 00:00:00) for when the timeline item occurred
-		 */
-		constructor(label: string, timestamp: number);
-	}
+    /**
+     * @param label A human-readable string describing the timeline item
+     * @param timestamp A timestamp (in milliseconds since 1 January 1970 00:00:00) for when the timeline item occurred
+     */
+    constructor(label: string, timestamp: number);
+  }
+  //#endregion
+  //#region auth provider: https://github.com/microsoft/vscode/issues/88309
+
+  /**
+   * An {@link Event} which fires when an {@link AuthenticationProvider} is added or removed.
+   */
+  export interface AuthenticationProvidersChangeEvent {
+    /**
+     * The ids of the {@link AuthenticationProvider}s that have been added.
+     */
+    readonly added: ReadonlyArray<AuthenticationProviderInformation>;
+
+    /**
+     * The ids of the {@link AuthenticationProvider}s that have been removed.
+     */
+    readonly removed: ReadonlyArray<AuthenticationProviderInformation>;
+  }
+
+  export namespace authentication {
+    /**
+     * @deprecated - getSession should now trigger extension activation.
+     * Fires with the provider id that was registered or unregistered.
+     */
+    export const onDidChangeAuthenticationProviders: Event<AuthenticationProvidersChangeEvent>;
+
+    /**
+     * @deprecated
+     * An array of the information of authentication providers that are currently registered.
+     */
+    export const providers: ReadonlyArray<AuthenticationProviderInformation>;
+
+    /**
+     * @deprecated
+     * Logout of a specific session.
+     * @param providerId The id of the provider to use
+     * @param sessionId The session id to remove
+     * provider
+     */
+    export function logout(providerId: string, sessionId: string): Thenable<void>;
+  }
+
   //#endregion
 }

@@ -9,6 +9,7 @@ export class MockLoggerManagerClient {
       error() { },
       verbose() { },
       warn() {},
+      dispose() {},
     };
   }
 

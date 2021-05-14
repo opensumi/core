@@ -8,7 +8,7 @@ import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy, g
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
 import { createAPIFactory as createKaitianAPIFactory } from './api/kaitian/ext.host.api.impl';
-import { MainThreadAPIIdentifier, VSCodeExtensionService } from '../common/vscode';
+import { MainThreadAPIIdentifier, VSCodeExtensionService, IExtensionDescription, ExtensionIdentifier } from '../common/vscode';
 import { ExtensionContext } from './api/vscode/ext.host.extensions';
 import { KTExtension } from './vscode.extension';
 import { AppConfig } from '@ali/ide-core-node';
@@ -27,7 +27,7 @@ export function getNodeRequire() {
 
 export default class ExtensionHostServiceImpl implements IExtensionHostService {
   private logger: any; // ExtensionLogger;
-  private extensions: IExtensionProps[] = [];
+  private extensions: IExtensionDescription[];
   private rpcProtocol: RPCProtocol;
 
   private vscodeAPIFactory: any;
@@ -74,7 +74,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     return this.extensionsActivator.all().map((e) => e.toJSON());
   }
 
-  public $getExtensions(): IExtensionProps[] {
+  public $getExtensions(): IExtensionDescription[] {
     return this.extensions;
   }
 
@@ -109,7 +109,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     Error.stackTraceLimit = 100;
 
     Error.prepareStackTrace = (error: Error, stackTrace: any[]) => {
-      let extension: IExtensionProps | undefined;
+      let extension: IExtensionDescription | undefined;
       let stackTraceMessage = `Error: ${error.message}`;
       let fileName: string;
       for (const call of stackTrace) {
@@ -137,8 +137,15 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   public async $updateExtHostData() {
     const extensions: IExtensionProps[] = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService).$getExtensions();
     // node 层 extensionLocation 不使用 static 直接使用 file
+    // node 层 extension 实例和 vscode 保持一致，并继承 IExtensionProps
     this.extensions = extensions.map((item) => ({
       ...item,
+      isUnderDevelopment: !!item.isDevelopment,
+      publisher: item.packageJSON?.publisher,
+      version: item.packageJSON?.version,
+      engines: item.packageJSON?.engines,
+      identifier: new ExtensionIdentifier(item.id),
+      uuid: item.packageJSON?.__metadata?.id,
       extensionLocation: Uri.file(item.path),
     }));
     this.logger.debug('kaitian extensions', this.extensions.map((extension) => {
@@ -172,7 +179,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     return this.extensions.find((extension) => filePath.startsWith(extension.realPath));
   }
 
-  private lookup(extensionModule: NodeJS.Module, depth: number): IExtensionProps | undefined {
+  private lookup(extensionModule: NodeJS.Module, depth: number): IExtensionDescription | undefined {
     if (depth >= 3) {
       return undefined;
     }
@@ -259,7 +266,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     }
   }
 
-  private containsKaitianContributes(extension: IExtensionProps): boolean {
+  private containsKaitianContributes(extension: IExtensionDescription): boolean {
     if (extension.packageJSON.kaitianContributes) {
       return true;
     }
@@ -270,7 +277,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     return this.extensionsActivator.has(extensionId);
   }
 
-  private reportRuntimeError(err: Error, extension: IExtensionProps, stackTraceMessage: string) {
+  private reportRuntimeError(err: Error, extension: IExtensionDescription, stackTraceMessage: string) {
     /**
      * 可能存在一些第三方库会主动抛出空的 Error ，例如 https://github.com/BrunoCesarAngst/daoo/blob/32e85c7799f9929685be299f07011fe4afa72f9d/aula13/node_modules/bluebird/js/release/async.js#L3
      * 这会导致上报的异常信息干扰非常大，无法正常基于堆栈排查问题
@@ -291,7 +298,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     // await this._ready
 
     // TODO: 处理没有 VSCode 插件的情况
-    const extension: IExtensionProps | undefined = this.extensions.find((ext) => {
+    const extension: IExtensionDescription | undefined = this.extensions.find((ext) => {
       return ext.id === id;
     });
 
@@ -402,7 +409,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     }
   }
 
-  private getExtensionViewModuleProxy(extension: IExtensionProps, viewsProxies: string[]) {
+  private getExtensionViewModuleProxy(extension: IExtensionDescription, viewsProxies: string[]) {
     return viewsProxies.reduce((proxies, viewId) => {
       proxies[viewId] = this.rpcProtocol.getProxy({
         serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}:${viewId}`,
@@ -421,7 +428,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     }, {});
   }
 
-  private getExtendModuleProxy(extension: IExtensionProps, isKaitianContributes: boolean) {
+  private getExtendModuleProxy(extension: IExtensionDescription, isKaitianContributes: boolean) {
     /**
      * @example
      * "kaitianContributes": {
@@ -444,7 +451,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     }
   }
 
-  private registerExtendModuleService(exportsData, extension: IExtensionProps) {
+  private registerExtendModuleService(exportsData, extension: IExtensionDescription) {
     const service = {};
     for (const key in exportsData) {
       if (exportsData.hasOwnProperty(key)) {
@@ -462,7 +469,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     return this.activateExtension(id);
   }
 
-  private async loadExtensionContext(extension: IExtensionProps, modulePath: string, storageProxy: ExtHostStorage, extendProxy: IExtendProxy) {
+  private async loadExtensionContext(extension: IExtensionDescription, modulePath: string, storageProxy: ExtHostStorage, extendProxy: IExtendProxy) {
 
     const extensionId = extension.id;
     const registerExtendFn = (exportsData) => {

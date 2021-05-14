@@ -1,5 +1,6 @@
 // menu id 枚举值列表
 export enum MenuId {
+  AccountsContext  = 'accounts/context',
   ActivityBarContext = 'activityBar/context',
   ActivityBarExtra = 'activityBar/extra',
   CommandPalette = 'commandPalette',

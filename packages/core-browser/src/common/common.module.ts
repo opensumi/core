@@ -4,6 +4,7 @@ import { ClientCommonContribution } from './common.contribution';
 import { OpenerContribution } from '../opener';
 import { DefaultOpnerContribution, OpenerContributionClient } from '../opener/opener.contribution';
 import { CommonServerPath } from '@ali/ide-core-common';
+import { AuthenticationContribution } from '../authentication/authentication.contribution';
 
 @Injectable()
 export class ClientCommonModule extends BrowserModule {
@@ -12,6 +13,7 @@ export class ClientCommonModule extends BrowserModule {
     ClientCommonContribution,
     DefaultOpnerContribution,
     OpenerContributionClient,
+    AuthenticationContribution,
   ];
   backServices = [
     {

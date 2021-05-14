@@ -1,7 +1,7 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IExtensionHostService, IExtensionWorkerHost, IExtension, WorkerHostAPIIdentifier } from '../../../common';
+import { IExtensionHostService, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../common';
 import { createLayoutAPIFactory } from './worker.host.layout';
-import { TextEditorCursorStyle, ViewColumn, TextEditorSelectionChangeKind } from '../../../common/vscode';
+import { TextEditorCursorStyle, ViewColumn, TextEditorSelectionChangeKind, IExtensionDescription } from '../../../common/vscode';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import * as workerExtTypes from './worker.ext-types';
 import { OverviewRulerLane } from '@ali/ide-editor';
@@ -64,7 +64,7 @@ export function createAPIFactory(
   const extHostTheming = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostTheming, new ExtHostTheming(rpcProtocol)) as ExtHostTheming;
   const extHostCustomEditor = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCustomEditor, new ExtHostCustomEditorImpl(rpcProtocol, extHostWebview , extHostDocs)) as ExtHostCustomEditorImpl;
 
-  return (extension: IExtension) => {
+  return (extension: IExtensionDescription) => {
     return {
       ...workerExtTypes,
       EventEmitter: Emitter,

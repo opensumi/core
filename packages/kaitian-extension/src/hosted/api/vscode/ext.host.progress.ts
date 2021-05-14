@@ -3,11 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { MainThreadAPIIdentifier, IExtHostProgress, IMainThreadProgress } from '../../../common/vscode';
+import { MainThreadAPIIdentifier, IExtHostProgress, IMainThreadProgress, IExtensionDescription } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { formatLocalize, CancellationToken, Progress, IProgressStep, throttle, CancellationTokenSource } from '@ali/ide-core-common';
 import { ProgressLocation } from '../../../common/vscode/converter';
-import { IExtension } from '../../../common';
 import { ProgressOptions } from 'vscode';
 
 export class ExtHostProgress implements IExtHostProgress {
@@ -19,7 +18,7 @@ export class ExtHostProgress implements IExtHostProgress {
     this._proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadProgress);
   }
 
-  withProgress<R>(extension: IExtension, options: ProgressOptions, task: (progress: Progress<IProgressStep>, token: CancellationToken) => Thenable<R>): Thenable<R> {
+  withProgress<R>(extension: IExtensionDescription, options: ProgressOptions, task: (progress: Progress<IProgressStep>, token: CancellationToken) => Thenable<R>): Thenable<R> {
     const handle = this._handles++;
     const { title, location, cancellable } = options;
     const source = formatLocalize('extensionSource', '{0} (Extension)', extension.name);

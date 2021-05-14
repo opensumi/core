@@ -7,10 +7,7 @@ import {
 } from '@ali/ide-core-common';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import { IRPCProtocol } from '@ali/ide-connection';
-// import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser';
-import { IExtension } from '../../../common';
-
-import { MainThreadAPIIdentifier } from '../../../common/vscode';
+import { MainThreadAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
 import {
   SCMRawResourceSplices, SCMRawResource, SCMRawResourceSplice,
   IMainThreadSCMShape, IExtHostSCMShape, CommandDto,
@@ -210,7 +207,7 @@ export class ExtHostSCMInputBox implements vscode.SourceControlInputBox {
     this._proxy.$setInputBoxVisibility(this._sourceControlHandle, visible);
   }
 
-  constructor(private _extension: IExtension, private _proxy: IMainThreadSCMShape, private _sourceControlHandle: number) {
+  constructor(private _extension: IExtensionDescription, private _proxy: IMainThreadSCMShape, private _sourceControlHandle: number) {
     // noop
   }
 
@@ -459,7 +456,7 @@ class ExtHostSourceControl implements vscode.SourceControl {
   private handle: number = ExtHostSourceControl._handlePool++;
 
   constructor(
-    _extension: IExtension,
+    _extension: IExtensionDescription,
     private _proxy: IMainThreadSCMShape,
     private _commands: ExtHostCommands,
     private _id: string,
@@ -588,7 +585,7 @@ export class ExtHostSCM implements IExtHostSCMShape {
     });
   }
 
-  createSourceControl(extension: IExtension, id: string, label: string, rootUri: vscode.Uri | undefined): vscode.SourceControl {
+  createSourceControl(extension: IExtensionDescription, id: string, label: string, rootUri: vscode.Uri | undefined): vscode.SourceControl {
     this.logger.log('ExtHostSCM#createSourceControl', extension.id, id, label, rootUri);
 
     const handle = ExtHostSCM._handlePool++;
@@ -603,7 +600,7 @@ export class ExtHostSCM implements IExtHostSCMShape {
   }
 
   // Deprecated
-  getLastInputBox(extension: IExtension): ExtHostSCMInputBox | undefined {
+  getLastInputBox(extension: IExtensionDescription): ExtHostSCMInputBox | undefined {
     this.logger.log('ExtHostSCM#getLastInputBox', extension.id);
 
     const sourceControls = this._sourceControlsByExtension.get(extension.id);

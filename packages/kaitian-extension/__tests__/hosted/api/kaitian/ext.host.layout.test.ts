@@ -5,18 +5,9 @@ import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector'
 import { MainThreadLayout } from '../../../../src/browser/kaitian/main.thread.layout';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
-import { mockExtensionProps } from '../../../__mock__/extensions';
+import { mockExtensions } from '../../../__mock__/extensions';
 
-const extension = {
-  ...mockExtensionProps,
-  toJSON: () => {
-    return mockExtensionProps;
-  },
-  enable() {},
-  contributes: {},
-  activate: () => {
-  },
-};
+const extension = mockExtensions[0];
 
 describe('packages/kaitian-extension/__tests__/hosted/api/kaitian/ext.host.layout.test.ts', () => {
   let ktLayout: KaitianExtHostLayout;

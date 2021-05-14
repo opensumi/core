@@ -1,8 +1,7 @@
-import { IDisposable, IProgressOptions, IProgressStep } from '@ali/ide-core-common';
-import { IExtension } from '..';
+import { IDisposable, IProgressOptions, IProgressStep, IExtensionProps } from '@ali/ide-core-common';
 
 export interface IMainThreadProgress extends IDisposable {
-  $startProgress(handle: number, options: IProgressOptions, extension?: IExtension): void;
+  $startProgress(handle: number, options: IProgressOptions, extension?: IExtensionProps): void;
   $progressReport(handle: number, message: IProgressStep): void;
   $progressEnd(handle: number): void;
 }

@@ -82,7 +82,8 @@ describe('Extension process test', () => {
       await extHostImpl.$updateExtHostData();
       const extensions = extHostImpl.$getExtensions();
       const ext = extHostImpl.getExtension(mockExtensionProps.id);
-      expect(extensions).toEqual([mockExtensionProps, mockExtensionProps2]);
+      expect(extensions[0].id).toBe(mockExtensionProps.id);
+      expect(extensions[1].id).toBe(mockExtensionProps2.id);
       expect(ext?.id).toBe(mockExtensionProps.id);
 
       done();

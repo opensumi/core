@@ -3,9 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { equalsIgnoreCase } from '@ali/ide-core-common';
+import { equalsIgnoreCase, IExtensionProps } from '@ali/ide-core-common';
 import type { Uri } from '@ali/ide-core-common';
-import { IExtension } from '..';
 
 export const MANIFEST_CACHE_FOLDER = 'CachedExtensions';
 export const USER_MANIFEST_CACHE_FILE = 'user';
@@ -193,22 +192,23 @@ export class ExtensionIdentifier {
   }
 }
 
-// warning: 这个类型是 vscode 的插件参数的定义
-// 但是 ide-framework 里面的插件参数定义为 IExtension, 定义在 packages/kaitian-extension/src/common/index.ts
-export interface IExtensionDescription extends IExtensionManifest {
+/**
+ * 插件进程 extension 实例 vscode 保持一致，并且继承 IExtensionProps
+ */
+export interface IExtensionDescription extends IExtensionManifest, IExtensionProps {
   readonly identifier: ExtensionIdentifier;
   readonly uuid?: string;
   readonly isBuiltin: boolean;
   readonly isUnderDevelopment: boolean;
   readonly extensionLocation: Uri;
-  enableProposedApi?: boolean;
+  enableProposedApi: boolean;
 }
 
 export function isLanguagePackExtension(manifest: { [key: string]: any }): boolean {
   return manifest.contributes && manifest.contributes.localizations ? manifest.contributes.localizations.length > 0 : false;
 }
 
-export function throwProposedApiError(extension: IExtension): never {
+export function throwProposedApiError(extension: IExtensionDescription): never {
   // do we support `--enable-proposed-api`
   throw new Error(`[${extension.name}]: Proposed API is only available when running out of dev or with the following command line switch: --enable-proposed-api ${extension.id}`);
 }

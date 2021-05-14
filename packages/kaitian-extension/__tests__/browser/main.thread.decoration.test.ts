@@ -13,7 +13,7 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 
 import ExtensionHostextWindowAPIImpl from '../../src/hosted/ext.host';
 import { ExtHostDecorations } from '../../src/hosted/api/vscode/ext.host.decoration';
-import { IExtension } from '../../src/common';
+import { mockExtensions } from '../__mock__/extensions';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -56,7 +56,7 @@ describe('MainThreadDecorationAPI Test Suites ', () => {
     rpcProtocolMain.set<IMainThreadEnv>(MainThreadAPIIdentifier.MainThreadDecorations, mainThreadDecorations);
     setTimeout(() => {
       extWindowAPI = createWindowApiFactory(
-        injector.get<IExtension>(ExtensionHostextWindowAPIImpl),
+        mockExtensions[0],
         {} as any,
         {} as any,
         {} as any,

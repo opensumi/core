@@ -8,3 +8,4 @@ export * from './string';
 export * from './dnd';
 export * from './common';
 export * from './application';
+export * from './authentication';

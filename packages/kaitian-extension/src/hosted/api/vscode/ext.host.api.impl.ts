@@ -1,6 +1,6 @@
 
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IExtHostConnectionService, IExtHostDebugService, ExtHostAPIIdentifier, TextEditorCursorStyle, TextEditorSelectionChangeKind, VSCodeExtensionService } from '../../../common/vscode'; // '../../common';
+import { IExtHostConnectionService, IExtHostDebugService, ExtHostAPIIdentifier, TextEditorCursorStyle, TextEditorSelectionChangeKind, VSCodeExtensionService, IExtensionDescription } from '../../../common/vscode'; // '../../common';
 import { IExtensionHostService } from '../../../common';
 import { createWindowApiFactory, ExtHostWindow } from './ext.host.window.api.impl';
 import { ExtensionDocumentDataManagerImpl } from './doc';
@@ -22,7 +22,6 @@ import { ExtHostTreeViews } from './ext.host.treeview';
 import { ExtHostWebviewService } from './ext.host.api.webview';
 import { ExtHostSCM } from './ext.host.scm';
 import { ExtHostWindowState } from './ext.host.window-state';
-import { IExtension } from '../../../common';
 import { ExtHostDecorations } from './ext.host.decoration';
 import { ExtHostQuickOpen } from './ext.host.quickopen';
 import { ExtHostOutput } from './ext.host.output';
@@ -38,6 +37,7 @@ import { ExtHostFileSystemEvent } from './ext.host.file-system-event';
 import { ExtHostUrls } from './ext.host.urls';
 import { ExtHostTheming } from './ext.host.theming';
 import { ExtHostCustomEditorImpl } from './ext.host.custom-editor';
+import { ExtHostAuthentication, createAuthenticationApiFactory } from './ext.host.authentication';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -78,11 +78,12 @@ export function createApiFactory(
   const extHostUrls = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostUrls, new ExtHostUrls(rpcProtocol));
   const extHostTheming = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostTheming, new ExtHostTheming(rpcProtocol)) as ExtHostTheming;
   const extHostCustomEditor = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCustomEditor, new ExtHostCustomEditorImpl(rpcProtocol, extHostWebview, extHostDocs)) as ExtHostCustomEditorImpl;
-
+  const extHostAuthentication = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostAuthentication, new ExtHostAuthentication(rpcProtocol)) as ExtHostAuthentication;
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
 
-  return (extension: IExtension) => {
+  return (extension: IExtensionDescription) => {
     return {
+      authentication: createAuthenticationApiFactory(extension, extHostAuthentication),
       commands: createCommandsApiFactory(extHostCommands, extHostEditors, extension),
       window: createWindowApiFactory(
         extension, extHostEditors, extHostMessage, extHostWebview,

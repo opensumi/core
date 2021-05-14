@@ -24,7 +24,7 @@ export class QuickTitleBar {
   private _title: string | undefined;
   private _step: number | undefined;
   private _totalSteps: number | undefined;
-  private _buttons: ReadonlyArray<QuickTitleButton>;
+  private _buttons: ReadonlyArray<QuickTitleButton> = [];
 
   private tabIndex = 2; // Keep track of the tabIndex for the buttons
 

@@ -84,6 +84,7 @@ import {
   ExtensionDocumentDataManager,
   IExtHostLanguages,
   ISuggestDataDto,
+  IExtensionDescription,
 } from '../../../common/vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 import { UriComponents } from 'vscode-uri';
@@ -114,11 +115,10 @@ import { RenameAdapter } from './language/rename';
 import { SelectionRangeAdapter } from './language/selection';
 import { CallHierarchyAdapter } from './language/callhierarchy';
 import { ExtHostCommands } from './ext.host.command';
-import { IExtension } from '../../../common';
 import { DocumentRangeSemanticTokensAdapter, DocumentSemanticTokensAdapter } from './language/semantic-tokens';
 import { EvaluatableExpressionAdapter } from './language/evaluatableExpression';
 
-export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, extension: IExtension) {
+export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, extension: IExtensionDescription) {
 
   return {
     getLanguages(): Promise<string[]> {
@@ -274,7 +274,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     });
   }
 
-  private addNewAdapter(adapter: Adapter, extension?: IExtension): number {
+  private addNewAdapter(adapter: Adapter, extension?: IExtensionDescription): number {
     const callId = this.nextCallId();
     this.adaptersMap.set(callId, adapter);
     return callId;
@@ -723,7 +723,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     this.withAdapter(handle, DocumentSemanticTokensAdapter, (adapter) => adapter.releaseDocumentSemanticColoring(semanticColoringResultId));
   }
 
-  registerDocumentRangeSemanticTokensProvider(extension: IExtension, selector: DocumentSelector, provider: DocumentRangeSemanticTokensProvider, legend: SemanticTokensLegend): Disposable {
+  registerDocumentRangeSemanticTokensProvider(extension: IExtensionDescription, selector: DocumentSelector, provider: DocumentRangeSemanticTokensProvider, legend: SemanticTokensLegend): Disposable {
     const callId = this.addNewAdapter(new DocumentRangeSemanticTokensAdapter(this.documents, provider), extension);
     this.proxy.$registerDocumentRangeSemanticTokensProvider(callId, this.transformDocumentSelector(selector), legend);
     return this.createDisposable(callId);
@@ -736,7 +736,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
   //#endregion
 
   //#region EvaluatableExpression
-  registerEvaluatableExpressionProvider(extension: IExtension, selector: DocumentSelector, provider: EvaluatableExpressionProvider): Disposable {
+  registerEvaluatableExpressionProvider(extension: IExtensionDescription, selector: DocumentSelector, provider: EvaluatableExpressionProvider): Disposable {
     const callId = this.addNewAdapter(new EvaluatableExpressionAdapter(this.documents, provider), extension);
     this.proxy.$registerEvaluatableExpressionProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);

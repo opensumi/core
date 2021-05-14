@@ -1,8 +1,8 @@
-import { IExtHostCommands } from '../../../common/vscode';
+import { IExtHostCommands, IExtensionDescription } from '../../../common/vscode';
 import { Emitter, IDisposable } from '@ali/ide-core-common';
 import { MainThreadKaitianAPIIdentifier } from '../../../common/kaitian';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IExtension, EMIT_EXT_HOST_EVENT } from '../../../common';
+import { EMIT_EXT_HOST_EVENT } from '../../../common';
 import { IExtHostCommon, IMainThreadCommon } from '../../../common/kaitian/common';
 
 export class ExtHostCommon implements IExtHostCommon {
@@ -48,7 +48,7 @@ export class ExtHostCommon implements IExtHostCommon {
 export function createEventAPIFactory(
   extHostCommands: IExtHostCommands,
   kaitianCommon: ExtHostCommon,
-  extension: IExtension,
+  extension: IExtensionDescription,
 ) {
   return {
     fire: async (eventName: string, ...eventArgs: any[]) => {

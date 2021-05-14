@@ -10,9 +10,8 @@ import { ExtensionHostEditorService } from './editor/editor.host';
 import { ExtHostWebviewService } from './ext.host.api.webview';
 import * as types from '../../../common/vscode/ext-types';
 import { Uri, Disposable } from '../../../common/vscode/ext-types';
-import { IExtension } from '../../../common';
 import { IExtHostDecorationsShape } from '../../../common/vscode/decoration';
-import { throwProposedApiError } from '../../../common/vscode/extension';
+import { throwProposedApiError, IExtensionDescription } from '../../../common/vscode/extension';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostProgress } from './ext.host.progress';
 import { QuickInputOptions } from '@ali/ide-quick-open';
@@ -20,7 +19,7 @@ import { ExtHostTheming } from './ext.host.theming';
 import { ExtHostCustomEditorImpl } from './ext.host.custom-editor';
 
 export function createWindowApiFactory(
-  extension: IExtension,
+  extension: IExtensionDescription,
   extHostEditors: ExtensionHostEditorService,
   extHostMessage: IExtHostMessage,
   extHostWebviews: ExtHostWebviewService,
@@ -184,7 +183,7 @@ export function createWindowApiFactory(
   };
 }
 
-function proposedApiFunction<T>(extension: IExtension, fn: T): T {
+function proposedApiFunction<T>(extension: IExtensionDescription, fn: T): T {
   if (extension.enableProposedApi) {
     return fn;
   } else {

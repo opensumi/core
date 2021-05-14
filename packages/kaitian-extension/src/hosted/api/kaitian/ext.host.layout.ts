@@ -1,9 +1,8 @@
-import { IExtHostCommands } from '../../../common/vscode';
+import { IExtHostCommands, IExtensionDescription } from '../../../common/vscode';
 import { ITabbarHandler, IMainThreadLayout, IExtHostLayout } from '../../../common/kaitian/layout';
 import { Emitter } from '@ali/ide-core-common';
 import { MainThreadKaitianAPIIdentifier } from '../../../common/kaitian';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IExtension } from '../../../common';
 
 export class TabbarHandler implements ITabbarHandler {
   public readonly onActivateEmitter = new Emitter<void>();
@@ -79,7 +78,7 @@ export class KaitianExtHostLayout implements IExtHostLayout {
 export function createLayoutAPIFactory(
   extHostCommands: IExtHostCommands,
   kaitianLayout: IExtHostLayout,
-  extension: IExtension,
+  extension: IExtensionDescription,
 ) {
   return {
     toggleBottomPanel: async (size?: number) => {

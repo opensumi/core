@@ -2,7 +2,7 @@ import type * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Disposable, Position, Range, Location } from '../../../common/vscode/ext-types';
 import * as extHostTypeConverter from '../../../common/vscode/converter';
-import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor, ICommandHandlerDescription, CommandHandler } from '../../../common/vscode';
+import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor, ICommandHandlerDescription, CommandHandler, IExtensionDescription } from '../../../common/vscode';
 import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
 import { validateConstraint, isFunction } from '@ali/ide-core-common/lib/utils/types';
 import { getDebugLogger, revive, toDisposable, DisposableStore, isNonEmptyArray, IExtensionInfo } from '@ali/ide-core-common';
@@ -11,11 +11,10 @@ import { ObjectIdentifier } from './language/util';
 import { CommandDto } from '../../../common/vscode/scm';
 import * as modes from '../../../common/vscode/model.api';
 import { Uri } from '@ali/ide-core-common';
-import { IExtension } from '../../../common';
 import { IBuiltInCommand } from '../../ext.process-base';
 import { newCommands } from './ext.host.api.command';
 
-export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extHostEditors: ExtensionHostEditorService, extension: IExtension) {
+export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extHostEditors: ExtensionHostEditorService, extension: IExtensionDescription) {
   const commands: typeof vscode.commands = {
     registerCommand(id: string, command: <T>(...args: any[]) => T | Promise<T>, thisArgs?: any): Disposable {
       try {

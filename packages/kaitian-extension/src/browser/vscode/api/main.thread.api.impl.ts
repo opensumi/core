@@ -17,6 +17,7 @@ import {
   IMainThreadUrls,
   IMainThreadTheming,
   IMainThreadCustomEditor,
+  IMainThreadAuthentication,
 } from '../../../common/vscode'; // '../../common';
 import { MainThreadCommands } from './main.thread.commands';
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
@@ -52,6 +53,7 @@ import { IMainThreadExtensionLog, MainThreadExtensionLogIdentifier } from '../..
 import { MainThreadExtensionLog } from './main.thread.log';
 import { MainThreadTheming } from './main.thread.theming';
 import { MainThreadCustomEditor } from './main.thread.custom-editor';
+import { MainThreadAuthentication } from './main.thread.authentication';
 
 export async function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -88,6 +90,7 @@ export async function createApiFactory(
   const MainthreadUrlsAPI = injector.get(MainThreadUrls, [rpcProtocol]);
   const MainthreadThemingAPI = injector.get(MainThreadTheming, [rpcProtocol]);
   const MainThreadCustomEditorAPI = injector.get(MainThreadCustomEditor, [rpcProtocol, MainThreadWebviewAPI]);
+  const MainThreadAuthenticationAPI = injector.get(MainThreadAuthentication, [rpcProtocol]);
 
   rpcProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   rpcProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
@@ -119,6 +122,7 @@ export async function createApiFactory(
   rpcProtocol.set<IMainThreadTheming>(MainThreadAPIIdentifier.MainThreadTheming, MainthreadThemingAPI);
   rpcProtocol.set<IMainThreadExtensionLog>(MainThreadExtensionLogIdentifier, injector.get(MainThreadExtensionLog));
   rpcProtocol.set<IMainThreadCustomEditor>(MainThreadAPIIdentifier.MainThreadCustomEditor, MainThreadCustomEditorAPI);
+  rpcProtocol.set<IMainThreadAuthentication>(MainThreadAPIIdentifier.MainThreadAuthentication, MainThreadAuthenticationAPI);
 
   await MainThreadWebviewAPI.init();
 
@@ -151,6 +155,7 @@ export async function createApiFactory(
     MainthreadCommentsAPI.dispose();
     MainthreadUrlsAPI.dispose();
     MainthreadThemingAPI.dispose();
+    MainThreadAuthenticationAPI.dispose();
   };
 }
 

@@ -1,6 +1,7 @@
 import * as path from 'path';
 import { Uri } from '@ali/ide-core-common';
-import { IExtensionProps, IExtension } from '../../src/common';
+import { IExtensionProps } from '../../src/common';
+import { IExtensionDescription, ExtensionIdentifier } from '../../src/common/vscode';
 
 // 临时绕过
 export const mockExtensionProps: IExtensionProps & { uri?: Uri } = {
@@ -14,7 +15,7 @@ export const mockExtensionProps: IExtensionProps & { uri?: Uri } = {
   extensionId: 'uuid-for-test-extension',
   extensionLocation: Uri.file(path.join(__dirname, 'extension')),
   isUseEnable: true,
-  enableProposedApi: false,
+  enableProposedApi: true,
   isBuiltin: false,
   packageJSON: {
     name: 'kaitian-extension',
@@ -57,12 +58,12 @@ export const mockExtensionProps2: IExtensionProps = {
   },
 };
 
-export const mockExtensions: IExtension[] = [{
+export const mockExtensions: IExtensionDescription[] = [{
   ...mockExtensionProps,
+  identifier: new ExtensionIdentifier(mockExtensionProps.id),
+  isUnderDevelopment: false,
+  publisher: mockExtensionProps.packageJSON.publisher,
+  version: mockExtensionProps.packageJSON.version,
+  engines: mockExtensionProps.packageJSON.engines,
   contributes: mockExtensionProps.packageJSON.contributes,
-  activate: () => {
-    return true;
-  },
-  enable() {},
-  toJSON: () => mockExtensionProps,
 }];

@@ -2,12 +2,12 @@ import type * as vscode from 'vscode';
 import { Uri as URI, MutableDisposable, DisposableStore, IRange, Emitter, debounce, asPromise, CancellationToken } from '@ali/ide-core-common';
 import { IExtHostComments, IMainThreadComments } from '../../../common/vscode/comments';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { MainThreadAPIIdentifier, IExtHostCommands, ExtensionDocumentDataManager } from '../../../common/vscode';
+import { MainThreadAPIIdentifier, IExtHostCommands, ExtensionDocumentDataManager, IExtensionDescription } from '../../../common/vscode';
 import type { UriComponents } from '@ali/ide-core-common';
 import * as extHostTypeConverter from '../../../common/vscode/converter';
 import * as models from '../../../common/vscode/models';
 import * as types from '../../../common/vscode/ext-types';
-import { IExtension, getExtensionId } from '../../../common';
+import { getExtensionId } from '../../../common';
 
 type ProviderHandle = number;
 type ReactionHandler = (comment: vscode.Comment, reaction: vscode.CommentReaction) => Promise<void>;
@@ -19,7 +19,7 @@ type CommentThreadModification = Partial<{
   collapsibleState: vscode.CommentThreadCollapsibleState,
 }>;
 
-export function createCommentsApiFactory(extension: IExtension, extHostComments: ExtHostComments) {
+export function createCommentsApiFactory(extension: IExtensionDescription, extHostComments: ExtHostComments) {
   const comment: typeof vscode.comments = {
     createCommentController(id: string, label: string) {
       return extHostComments.createCommentController(extension, id, label);
@@ -142,7 +142,7 @@ export class ExtHostComments implements IExtHostComments {
     });
   }
 
-  createCommentController(extension: IExtension, id: string, label: string): vscode.CommentController {
+  createCommentController(extension: IExtensionDescription, id: string, label: string): vscode.CommentController {
     const handle = ExtHostComments.handlePool++;
     const commentController = new ExtHostCommentController(extension, handle, this._proxy, id, label);
     this._commentControllers.set(commentController.handle, commentController);
@@ -260,7 +260,7 @@ class ExtHostCommentController implements vscode.CommentController {
   }
 
   constructor(
-    private _extension: IExtension,
+    private _extension: IExtensionDescription,
     private _handle: number,
     private _proxy: IMainThreadComments,
     private _id: string,
@@ -426,7 +426,7 @@ export class ExtHostCommentThread implements vscode.CommentThread {
     private _uri: vscode.Uri,
     private _range: vscode.Range,
     private _comments: vscode.Comment[],
-    extension: IExtension,
+    extension: IExtensionDescription,
   ) {
     this._acceptInputDisposables.value = new DisposableStore();
 

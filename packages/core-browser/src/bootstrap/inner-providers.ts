@@ -23,6 +23,7 @@ import {
   ITaskDefinitionRegistry,
   TaskDefinitionRegistryImpl,
   IApplicationService,
+  IAuthenticationService,
 } from '@ali/ide-core-common';
 import { ClientAppContribution } from '../common';
 import { ClientAppStateService } from '../application/application-state-service';
@@ -58,6 +59,7 @@ import { WindowService } from '../window/window.service';
 import { IClipboardService, BrowserClipboardService } from '../services/clipboard.service';
 import { IExternalUriService, ExternalUriService } from '../services/external-uri.service';
 import { ToolbarPopoverRegistry } from '../toolbar/toolbar.popover.registry';
+import { AuthenticationService } from '../authentication/authentication.service';
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider
@@ -201,6 +203,10 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: IExternalUriService,
       useClass: ExternalUriService,
+    },
+    {
+      token: IAuthenticationService,
+      useClass: AuthenticationService,
     },
   ];
   injector.addProviders(...providers);

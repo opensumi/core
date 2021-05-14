@@ -1,8 +1,7 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { MainThreadAPIIdentifier, IMainThreadWebview } from '../../../common/vscode';
-import { Disposable, Emitter, stringify } from '@ali/ide-core-common';
+import { MainThreadAPIIdentifier, IMainThreadWebview, IExtensionDescription } from '../../../common/vscode';
+import { Disposable, Emitter } from '@ali/ide-core-common';
 import { IPlainWebviewHandle, IExtHostPlainWebview } from '../../../common/kaitian/webview';
-import { IExtension } from '../../../common';
 import { join } from '@ali/ide-core-common/lib/path';
 
 export class KaitianExtHostWebview {
@@ -92,7 +91,7 @@ export class ExtHostPlainWebview extends PlainWebviewHandle implements IExtHostP
 
 }
 
-export function createKaitianWebviewApi(extension: IExtension, kaitianExtHostWebview: KaitianExtHostWebview) {
+export function createKaitianWebviewApi(extension: IExtensionDescription, kaitianExtHostWebview: KaitianExtHostWebview) {
   return {
     getPlainWebviewHandle: (id: string) => {
       return kaitianExtHostWebview.getWebviewHandle(id);

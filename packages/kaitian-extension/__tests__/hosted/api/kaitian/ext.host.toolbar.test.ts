@@ -7,8 +7,7 @@ import { createBrowserInjector } from '../../../../../debug/node_modules/@ali/id
 
 import { createToolbarAPIFactory, ExtHostToolbarActionService } from '@ali/ide-kaitian-extension/lib/hosted/api/kaitian/ext.host.toolbar';
 import { ExtHostCommon } from '@ali/ide-kaitian-extension/lib/hosted/api/kaitian/ext.host.common';
-import { mockExtensionProps } from '../../../__mock__/extensions';
-import { IExtension } from '@ali/ide-kaitian-extension/lib/common';
+import { mockExtensions } from '../../../__mock__/extensions';
 
 const actionMaps: Map<string, any> = new Map();
 
@@ -65,7 +64,7 @@ const rpcProtocol: IRPCProtocol = {
   get: (r) => map.get(r),
 };
 
-const extension = mockExtensionProps as IExtension;
+const extension = mockExtensions[0];
 
 describe('packages/kaitian-extension/__tests__/hosted/api/kaitian/ext.host.toolbar.test.ts', () => {
   let extHostToolbar: ExtHostToolbarActionService;

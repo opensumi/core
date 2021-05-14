@@ -1,12 +1,11 @@
 import { Event, Emitter, Disposable, URI, AsyncEmitter, WaitUntilEvent, CancellationToken, getDebugLogger } from '@ali/ide-core-common';
 import * as vscode from 'vscode';
-import { ExtensionDocumentDataManager, IMainThreadWorkspace, MainThreadAPIIdentifier } from '../../../common/vscode';
+import { ExtensionDocumentDataManager, IMainThreadWorkspace, MainThreadAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
 import { WorkspaceEdit } from '../../../common/vscode/ext-types';
 import { FileSystemEvents, IExtHostFileSystemEvent, SourceTargetPair } from '../../../common/vscode/file-system';
 import { IRelativePattern, parse } from '../../../common/vscode/glob';
 import * as TypeConverts from '../../../common/vscode/converter';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IExtension } from '../../..';
 import { FileOperation } from '@ali/ide-workspace-edit';
 import * as model from '../../../common/vscode/model.api';
 
@@ -93,7 +92,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
 }
 
 interface IExtensionListener<E> {
-  extension: IExtension;
+  extension: IExtensionDescription;
   (e: E): any;
 }
 
@@ -148,19 +147,19 @@ export class ExtHostFileSystemEvent implements IExtHostFileSystemEvent {
     }
   }
 
-  getOnWillRenameFileEvent(extension: IExtension): Event<vscode.FileWillRenameEvent> {
+  getOnWillRenameFileEvent(extension: IExtensionDescription): Event<vscode.FileWillRenameEvent> {
     return this._createWillExecuteEvent(extension, this._onWillRenameFile);
   }
 
-  getOnWillCreateFileEvent(extension: IExtension): Event<vscode.FileWillCreateEvent> {
+  getOnWillCreateFileEvent(extension: IExtensionDescription): Event<vscode.FileWillCreateEvent> {
     return this._createWillExecuteEvent(extension, this._onWillCreateFile);
   }
 
-  getOnWillDeleteFileEvent(extension: IExtension): Event<vscode.FileWillDeleteEvent> {
+  getOnWillDeleteFileEvent(extension: IExtensionDescription): Event<vscode.FileWillDeleteEvent> {
     return this._createWillExecuteEvent(extension, this._onWillDeleteFile);
   }
 
-  private _createWillExecuteEvent<E extends WaitUntilEvent>(extension: IExtension, emitter: AsyncEmitter<E>): Event<E> {
+  private _createWillExecuteEvent<E extends WaitUntilEvent>(extension: IExtensionDescription, emitter: AsyncEmitter<E>): Event<E> {
     return (listener, thisArg, disposables) => {
       const wrappedListener: IExtensionListener<E> = function wrapped(e: E) { listener.call(thisArg, e); };
       wrappedListener.extension = extension;

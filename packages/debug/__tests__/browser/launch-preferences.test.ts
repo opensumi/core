@@ -391,7 +391,8 @@ describe('Launch Preferences', () => {
       const initializeInjector = async () => {
         toTearDown.push(Disposable.create(enableJSDOM()));
         ClientAppConfigProvider.set({
-          'applicationName': 'test',
+          applicationName: 'test',
+          uriScheme: 'test',
         });
 
         fs.removeSync(rootPath);

@@ -21,4 +21,10 @@ export interface ClientAppConfig extends ApplicationConfig {
    */
   readonly applicationName: string;
 
+  /**
+   * 默认内部的 uriScheme，用于桌面版 app 的唤起
+   * 也默认为 vscode.env.uriScheme 的值
+   */
+  readonly uriScheme: string;
+
 }

@@ -11,9 +11,8 @@ import { Path } from '@ali/ide-core-common/lib/path';
 import { FileStat } from '@ali/ide-file-service';
 import * as TypeConverts from '../../../common/vscode/converter';
 import { WorkspaceFolder } from '../../../common/vscode/models/workspace';
-import { ExtensionIdentifier } from '../../../common/vscode/extension';
+import { ExtensionIdentifier, IExtensionDescription } from '../../../common/vscode/extension';
 import { IExtHostTasks } from '../../../common/vscode/tasks';
-import { IExtension } from '../../../common';
 import { ExtHostFileSystem } from './ext.host.file-system';
 import { ExtHostFileSystemEvent } from './ext.host.file-system-event';
 
@@ -24,7 +23,7 @@ export function createWorkspaceApiFactory(
   extHostFileSystem: ExtHostFileSystem,
   extHostFileSystemEvent: ExtHostFileSystemEvent,
   extHostTasks: IExtHostTasks,
-  extension: IExtension,
+  extension: IExtensionDescription,
 ) {
 
   const workspace = {

@@ -1,4 +1,4 @@
-import { IExtHostProxy, IExtensionHostManager, EXT_HOST_PROXY_SERVER_PROT } from '../../src/common';
+import { IExtHostProxy, IExtensionHostManager } from '../../src/common';
 import { ExtHostProxy } from '../../src/hosted/ext.host.proxy-base';
 import { ExtensionHostProxyManager } from '../../src/node/extension.host.proxy.manager';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -8,6 +8,7 @@ import * as path from 'path';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const PROXY_PORT = 10296;
 describe(__filename, () => {
   describe('extension host proxy', () => {
     const extHostPath = path.join(__dirname, '../__mock__/ext.host.js');
@@ -27,9 +28,17 @@ describe(__filename, () => {
         },
       }, {
         token: IExtensionHostManager,
-        useClass: ExtensionHostProxyManager,
+        useFactory(injector) {
+          return injector.get(ExtensionHostProxyManager, [{
+            port: PROXY_PORT,
+          }]);
+        },
       });
-      extHostProxy = new ExtHostProxy();
+      extHostProxy = new ExtHostProxy({
+        socketConnectOpts: {
+          port: PROXY_PORT,
+        },
+      });
       extHostProxy.init();
       extensionHostManager = injector.get<IExtensionHostManager>(IExtensionHostManager);
       await Promise.all([
@@ -53,7 +62,7 @@ describe(__filename, () => {
       // 重新启动 IDE 后端
       // 传入构造函数参数，以便重新生成 di 实例
       extensionHostManager = injector.get(ExtensionHostProxyManager, [{
-        port: EXT_HOST_PROXY_SERVER_PROT,
+        port: PROXY_PORT,
       }]);
       await extensionHostManager.init();
       // 等待连接成功
