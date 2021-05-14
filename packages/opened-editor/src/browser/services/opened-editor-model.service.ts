@@ -330,7 +330,6 @@ export class OpenedEditorModelService {
     }
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
-      this._contextMenuFile = undefined;
     }
     this.treeModel.dispatchChange();
   }

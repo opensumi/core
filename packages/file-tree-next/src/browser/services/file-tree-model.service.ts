@@ -132,6 +132,7 @@ export class FileTreeModelService {
   private collapsedAllDeferred: Deferred<void> | null;
 
   private treeStateWatcher: TreeStateWatcher;
+  private willSelectedNodePath: string | null;
 
   constructor() {
     this._whenReady = this.initTreeModel();
@@ -264,10 +265,16 @@ export class FileTreeModelService {
     }));
     this.disposableCollection.push(this.treeModel!.onWillUpdate(() => {
       // 更新树前更新下选中节点
-      if (!!this.contextMenuFile) {
+      if (this.willSelectedNodePath) {
+        const node = this.fileTreeService.getNodeByPathOrUri(this.willSelectedNodePath);
+        if (node) {
+          this.selectFileDecoration(node, false);
+          this.willSelectedNodePath = null;
+        }
+      } else if (!!this.contextMenuFile) {
         const node = this.treeModel?.root.getTreeNodeByPath(this.contextMenuFile.path);
         if (node) {
-          this.activeFileDecoration(node as File, false);
+          this.selectFileDecoration(node as File, false);
         }
       } else if (!!this.focusedFile) {
         const node = this.treeModel?.root.getTreeNodeByPath(this.focusedFile.path);
@@ -509,7 +516,6 @@ export class FileTreeModelService {
     }
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
-      this._contextMenuFile = undefined;
     }
     this.treeModel?.dispatchChange();
   }
@@ -1002,9 +1008,12 @@ export class FileTreeModelService {
 
   private proxyPrompt = (promptHandle: RenamePromptHandle | NewPromptHandle) => {
     let isCommit = false;
-    const locationFileWhileFileExist = (pathOrUri: URI | string) => {
+    const selectNodeIfNodeExist = async (path: string) => {
       // 文件树更新后尝试定位文件位置
-      this.location(pathOrUri);
+      const node = await this.fileTreeService.getNodeByPathOrUri(path);
+      if (node && node.path === path) {
+        this.selectFileDecoration(node);
+      }
     };
     const commit = async (newName) => {
       this.validateMessage = undefined;
@@ -1026,8 +1035,11 @@ export class FileTreeModelService {
           from = (target.parent as Directory).uri.resolve(nameFragments.slice(0, index + 1).join(Path.separator));
           to = (target.parent as Directory).uri.resolve(newNameFragments.concat().join(Path.separator));
         }
+        // 屏蔽重命名文件事件
+        this.fileTreeService.ignoreFileEventOnce((target.parent as Directory).uri);
         const error = await this.fileTreeAPI.mv(from, to, target.type === TreeNodeType.CompositeTreeNode);
         if (!!error) {
+          this.fileTreeService.ignoreFileEventOnce(null);
           this.validateMessage = {
             type: PROMPT_VALIDATE_TYPE.ERROR,
             message: error,
@@ -1037,8 +1049,10 @@ export class FileTreeModelService {
           return false;
         }
         if (!isCompactNode) {
-          this.fileTreeService.moveNodeByPath(target.parent as Directory, target.path, new Path(target.parent!.path).join(newName).toString());
-          // 普通节点重命名后，如果该节点为文件夹节点，需刷新该节点的父节点
+          // 重命名节点的情况，直接刷新一下父节点即可
+          const newPath = new Path(target.parent!.path).join(newName).toString();
+          await this.fileTreeService.refresh(target.parent as Directory);
+          this.willSelectedNodePath = newPath;
         } else {
           // 更新压缩目录展示名称
           target.updateDisplayName(newNameFragments.concat(nameFragments.slice(index + 1)).join(Path.separator));
@@ -1052,20 +1066,18 @@ export class FileTreeModelService {
           });
           target.updateToolTip(this.fileTreeAPI.getReadableTooltip(to));
           this.treeModel.dispatchChange();
-          this.fileTreeService.ignoreFileEventOnce((target.parent as Directory).uri);
           if ((target.parent as Directory).children?.find((child) => target.path.indexOf(child.path) >= 0)) {
             // 当重命名后的压缩节点在父节点中存在子集节点时，刷新父节点
             // 如：
             // 压缩节点 001/002 修改为 003/002 时
             // 同时父节点下存在 003 空节点
-            this.fileTreeService.refresh(target.parent as Directory);
+            await this.fileTreeService.refresh(target.parent as Directory);
           } else {
             // 压缩节点重命名时，刷新文件夹更新子文件路径
-            this.fileTreeService.refresh(target as Directory);
+            await this.fileTreeService.refresh(target as Directory);
           }
         }
         promptHandle.removeAddonAfter();
-        locationFileWhileFileExist(target.path);
       } else if (promptHandle instanceof NewPromptHandle) {
         const parent = promptHandle.parent as Directory;
         const newUri = parent.uri.resolve(newName);
@@ -1104,10 +1116,10 @@ export class FileTreeModelService {
             if (!parentNode.expanded && !parentNode.children) {
               await parentNode.setExpanded(true);
               // 使用uri作为定位是不可靠的，需要检查一下该节点是否处于软链接目录内进行对应转换
-              locationFileWhileFileExist(new Path(parent.path).join(newName).toString());
+              selectNodeIfNodeExist(new Path(parent.path).join(newName).toString());
             } else {
               await this.fileTreeService.refresh(parentNode as Directory);
-              locationFileWhileFileExist(new Path(parent.path).join(newName).toString());
+              selectNodeIfNodeExist(new Path(parent.path).join(newName).toString());
             }
           } else {
             // 不存在同名目录的情况下
@@ -1127,11 +1139,11 @@ export class FileTreeModelService {
                 parent.updateToolTip(this.fileTreeAPI.getReadableTooltip(parent.uri.resolve(newName)));
                 // Re-cache TreeNode
                 this.fileTreeService.reCacheNode(parent, prePath);
-                locationFileWhileFileExist(parent.path);
+                selectNodeIfNodeExist(parent.path);
               } else {
                 const addNode = await this.fileTreeService.addNode(parent, newName, promptHandle.type);
                 // 文件夹首次创建需要将焦点设到新建的文件夹上
-                locationFileWhileFileExist(addNode.path);
+                selectNodeIfNodeExist(addNode.path);
               }
             } else if (promptHandle.type === TreeNodeType.TreeNode) {
               const namePieces = Path.splitPath(newName);
@@ -1154,7 +1166,7 @@ export class FileTreeModelService {
               this.fileTreeService.reCacheNode(parent, prePath);
 
               const addNode = await this.fileTreeService.addNode(parent, fileName, TreeNodeType.TreeNode) as File;
-              locationFileWhileFileExist(addNode.path);
+              selectNodeIfNodeExist(addNode.path);
             }
           }
         } else {
@@ -1174,10 +1186,10 @@ export class FileTreeModelService {
             parent.updateToolTip(this.fileTreeAPI.getReadableTooltip(parentUri));
             // Re-cache TreeNode
             this.fileTreeService.reCacheNode(parent, prePath);
-            locationFileWhileFileExist(parent.path);
+            selectNodeIfNodeExist(parent.path);
           } else {
             await this.fileTreeService.addNode(parent, newName, promptHandle.type);
-            locationFileWhileFileExist(parent.uri.resolve(newName));
+            selectNodeIfNodeExist(new Path(parent!.path).join(newName).toString());
           }
         }
       }
@@ -1228,6 +1240,10 @@ export class FileTreeModelService {
       this.fileTreeContextKey.filesExplorerInputFocused.set(true);
     };
     const handleDestroy = () => {
+      if (this.contextMenuFile) {
+        // 卸载输入框时及时更新选中态
+        this.selectFileDecoration(this.contextMenuFile, true);
+      }
       // 在焦点元素销毁时，electron与chrome web上处理焦点的方式略有不同
       // 这里需要明确将FileTree的explorerFocused设置为正确的false
       this.fileTreeContextKey.filesExplorerFocused.set(false);
@@ -1454,6 +1470,10 @@ export class FileTreeModelService {
   public location = async (pathOrUri: URI | string) => {
     // 筛选模式下，禁止使用定位功能
     if (this.fileTreeService.filterMode) {
+      return;
+    }
+    // 当存在等待选中的节点路径时，跳过定位
+    if (this.willSelectedNodePath) {
       return;
     }
     if (this._loadSnapshotReady) {

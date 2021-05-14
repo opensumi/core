@@ -525,7 +525,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     this._cacheIgnoreFileEvent.set(uri.toString(), type);
   }
 
-  ignoreFileEventOnce(uri: URI) {
+  ignoreFileEventOnce(uri: URI | null) {
     this._cacheIgnoreFileEventOnce = uri;
   }
 

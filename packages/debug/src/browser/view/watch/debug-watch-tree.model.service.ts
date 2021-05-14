@@ -258,7 +258,6 @@ export class DebugWatchModelService {
     }
     if (this.contextMenuNode) {
       this.contextMenuDecoration.removeTarget(this.contextMenuNode);
-      this._contextMenuNode = undefined;
     }
     this.treeModel?.dispatchChange();
   }

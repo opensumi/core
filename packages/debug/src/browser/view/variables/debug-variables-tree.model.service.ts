@@ -247,7 +247,6 @@ export class DebugVariablesModelService {
     }
     if (this.contextMenuNode) {
       this.contextMenuDecoration.removeTarget(this.contextMenuNode);
-      this._contextMenuNode = undefined;
     }
     this.treeModel?.dispatchChange();
   }
