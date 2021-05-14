@@ -9,16 +9,16 @@ import { useInjectable, localize, IContextKeyService, isUndefined } from '@ali/i
 import { Button } from '@ali/ide-components';
 import { CommentsBody } from './comments-body';
 import * as marked from 'marked';
+import { CommentReactions, CommentReactionSwitcher } from './comment-reactions.view';
 
 const useCommentContext
   = (contextKeyService: IContextKeyService, comment: IThreadComment)
-  : [ string,  React.Dispatch<React.SetStateAction<string>>, (event: React.ChangeEvent<HTMLTextAreaElement>) => void, IMenu, IMenu, (files: FileList) => Promise<void>] => {
+  : [string,  React.Dispatch<React.SetStateAction<string>>, (event: React.ChangeEvent<HTMLTextAreaElement>) => void, IMenu, IMenu, (files: FileList) => Promise<void>] => {
   const menuService = useInjectable<AbstractMenuService>(AbstractMenuService);
   const { body, contextValue } = comment;
   const [ textValue, setTextValue ] = React.useState('');
   const commentsFeatureRegistry = useInjectable<ICommentsFeatureRegistry>(ICommentsFeatureRegistry);
   const fileUploadHandler = React.useMemo(() => commentsFeatureRegistry.getFileUploadHandler(), []);
-
   // set textValue when body changed
   React.useEffect(() => {
     setTextValue(body);
@@ -126,6 +126,7 @@ const ReplyItem: React.FC<{
             )}
             { ' : ' }
             <span className={styles.comment_item_body}>{body}</span>
+            {(reply.reactions && reply.reactions.length > 0) && <CommentReactionSwitcher className={styles.reply_item_title} thread={thread} comment={reply} />}
             <InlineActionBar<ICommentsCommentTitle>
               separator='inline'
               className={styles.reply_item_title}
@@ -207,6 +208,7 @@ const ReplyItem: React.FC<{
           />
         </div>
       )}
+      {(reply.reactions && reply.reactions.length > 0) && <CommentReactions thread={thread} comment={reply} /> }
     </div>
   );
 });
@@ -275,11 +277,12 @@ export const CommentItem: React.FC<{
             )}
           </div>
           <div className={styles.comment_item_actions}>
-          {!readOnly && (
-            <Button className={styles.comment_item_reply_button} size='small' type='secondary' onClick={() => setShowReply(true)}>
-            {localize('comments.thread.action.reply')}
-            </Button>
-          )}
+            {(comment.reactions && comment.reactions.length > 0) && <CommentReactionSwitcher thread={thread} comment={comment} /> }
+            {!readOnly && (
+              <Button className={styles.comment_item_reply_button} size='small' type='secondary' onClick={() => setShowReply(true)}>
+              {localize('comments.thread.action.reply')}
+              </Button>
+            )}
           <InlineActionBar<ICommentsCommentTitle>
             menus={commentTitleContext}
             context={[
@@ -323,6 +326,7 @@ export const CommentItem: React.FC<{
             />
           </div>
         )}
+        {(comment.reactions && comment.reactions.length > 0) && <CommentReactions thread={thread} comment={comment} /> }
         {(replies.length > 0 || showReply) && (
           <div className={styles.comment_item_reply_wrap}>
             {replies.map((reply) => <ReplyItem key={reply.id} thread={thread} reply={reply} />)}

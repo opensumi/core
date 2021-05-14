@@ -42,6 +42,10 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
     commentIsEmptyContext.set(!value);
   }, []);
 
+  const placeholder = React.useMemo(() => {
+    return commentsFeatureRegistry.getProviderFeature(thread.providerId)?.placeholder || `${localize('comments.reply.placeholder')}...`;
+  }, []);
+
   const handleDragFiles = React.useCallback(async (files: FileList) => {
     if (fileUploadHandler) {
       const appendText = await fileUploadHandler(replyText, files);
@@ -76,7 +80,7 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
             initialHeight={'auto'}
             value={replyText}
             onChange={onChangeReply}
-            placeholder={`${localize('comments.reply.placeholder')}...`}
+            placeholder={placeholder}
             dragFiles={handleDragFiles}
           />
           <div className={styles.comment_bottom_actions}>

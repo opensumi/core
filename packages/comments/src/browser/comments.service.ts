@@ -243,7 +243,9 @@ export class CommentsService extends Disposable implements ICommentsService {
       readOnly: false,
     },
   ) {
-    const thread = this.injector.get(CommentsThread, [uri, range, options]);
+    // 获取当前 range 的 providerId，用于 commentController contextKey 的生成
+    const providerId = this.getProviderIdsByLine(range.startLineNumber)[0];
+    const thread = this.injector.get(CommentsThread, [uri, range, providerId, options]);
     thread.onDispose(() => {
       this.threads.delete(thread.id);
       this.threadsChangeEmitter.fire(thread);
@@ -456,7 +458,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     const uri = this.workbenchEditorService.currentEditor?.currentUri;
     uri && this.decorationChangeEmitter.fire(uri);
     // diffeditor 的 originalUri 也需要更新 Decoration
-    const originalUri = this.workbenchEditorService.currentEditorGroup.diffEditor.originalEditor.currentUri;
+    const originalUri = this.workbenchEditorService.currentEditorGroup?.diffEditor.originalEditor.currentUri;
     originalUri && this.decorationChangeEmitter.fire(originalUri);
   }
 

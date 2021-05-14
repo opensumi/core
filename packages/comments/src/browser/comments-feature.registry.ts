@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { CommentsPanelOptions, ICommentsFeatureRegistry, PanelTreeNodeHandler, FileUploadHandler, MentionsOptions, ZoneWidgerRender, ICommentsConfig } from '../common';
+import { CommentsPanelOptions, ICommentsFeatureRegistry, PanelTreeNodeHandler, FileUploadHandler, MentionsOptions, ZoneWidgerRender, ICommentsConfig, ICommentProviderFeature } from '../common';
 
 @Injectable()
 export class CommentsFeatureRegistry implements ICommentsFeatureRegistry {
@@ -15,6 +15,8 @@ export class CommentsFeatureRegistry implements ICommentsFeatureRegistry {
   private mentionsOptions: MentionsOptions = {};
 
   private zoneWidgetRender: ZoneWidgerRender;
+
+  private providerFeature = new Map<string, ICommentProviderFeature>();
 
   registerConfig(config: ICommentsConfig): void {
     this.config = {
@@ -68,5 +70,13 @@ export class CommentsFeatureRegistry implements ICommentsFeatureRegistry {
 
   getZoneWidgetRender(): ZoneWidgerRender | undefined {
     return this.zoneWidgetRender;
+  }
+
+  registerProviderFeature(providerId: string, feature: ICommentProviderFeature): void {
+    this.providerFeature.set(providerId, feature);
+  }
+
+  getProviderFeature(providerId: string): ICommentProviderFeature | undefined {
+    return this.providerFeature.get(providerId);
   }
 }

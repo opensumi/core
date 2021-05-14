@@ -1,11 +1,11 @@
-import { CommentThread, CommentInput, CommentReaction } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+import { CommentThread, CommentInput, CommentReaction as CoreCommentReaction, CommentMode as CoreCommentMode } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { UriComponents, CommentThreadCollapsibleState, Comment, CommentThreadChanges } from '../../../common/vscode/models';
-import { IRange, Emitter, Event, URI, CancellationToken, IDisposable, positionToRange, isUndefined, Disposable } from '@ali/ide-core-common';
+import { UriComponents, CommentThreadCollapsibleState, Comment as CoreComment, CommentThreadChanges } from '../../../common/vscode/models';
+import { IRange, Emitter, Event, URI, CancellationToken, IDisposable, positionToRange, isUndefined, Disposable, WithEventBus, OnEvent } from '@ali/ide-core-common';
 import { IMainThreadComments, CommentProviderFeatures, IExtHostComments, IMainThreadCommands } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
-import { ICommentsService, ICommentsThread, IThreadComment } from '@ali/ide-comments';
+import { ICommentsService, ICommentsThread, ICommentsFeatureRegistry, CommentMode, CommentReactionClick, IThreadComment, CommentReaction } from '@ali/ide-comments';
 import { MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable({ multiple: true })
@@ -107,7 +107,7 @@ export class MainthreadComments implements IDisposable, IMainThreadComments {
     });
   }
 
-  $updateCommentThread(handle: number, commentThreadHandle: number, threadId: string, resource: UriComponents, changes: Partial<{ range: IRange; label: string; contextValue: string; comments: Comment[]; collapseState: CommentThreadCollapsibleState; }>): void {
+  $updateCommentThread(handle: number, commentThreadHandle: number, threadId: string, resource: UriComponents, changes: Partial<{ range: IRange; label: string; contextValue: string; comments: CoreComment[]; collapseState: CommentThreadCollapsibleState; }>): void {
     const provider = this._commentControllers.get(handle);
     if (!provider) {
       return undefined;
@@ -116,9 +116,8 @@ export class MainthreadComments implements IDisposable, IMainThreadComments {
   }
   $registerCommentController(handle: number, id: string, label: string): void {
     this.commentsService.registerCommentPanel();
-    const providerId = `ext_comment_controller_${id}`;
-    this._providers.set(providerId, handle);
-    const provider = this.injector.get(MainThreadCommentController, [this.proxy, handle, providerId, id, label, {}]);
+    this._providers.set(id, handle);
+    const provider = this.injector.get(MainThreadCommentController, [this.proxy, handle, id, label, {}]);
     this.disposable.addDispose(provider);
     this._commentControllers.set(handle, provider);
     // 注册后触发 decoration
@@ -136,7 +135,7 @@ export class MainthreadComments implements IDisposable, IMainThreadComments {
     // 销毁注册的 thread
     if (provider) {
       provider.dispose();
-      this._providers.delete(provider.uniqueId);
+      this._providers.delete(provider.id);
     }
     this._commentControllers.delete(handle);
   }
@@ -201,36 +200,62 @@ export class MainThreadCommentThread implements CommentThread {
   private readonly _onDidChangeLabel = new Emitter<string | undefined>();
   readonly onDidChangeLabel: Event<string | undefined> = this._onDidChangeLabel.event;
 
-  public get comments(): Comment[] | undefined {
-    return this._thread.comments.map((comment) => {
-      return {
-        uniqueIdInThread: +comment.id,
-        contextValue: comment.contextValue,
-        mode: comment.mode,
-        label: typeof comment.label === 'string' ? comment.label : '',
-        body: {
-          value: comment.body,
-        },
-        userName: comment.author.name,
-      } as Comment;
-    });
+  public convertToIThreadComment(comment: CoreComment): IThreadComment {
+    return {
+      id: comment.uniqueIdInThread.toString(),
+      mode: comment.mode as unknown as CommentMode,
+      body: comment.body.value,
+      label: comment.label,
+      contextValue: comment.contextValue,
+      author: {
+        name: comment.userName,
+        iconPath: comment.userIconPath,
+      },
+      reactions: comment.commentReactions?.map((reaction) => this.convertToCommentReaction(reaction)),
+    };
   }
 
-  public set comments(newComments: Comment[] | undefined) {
+  public convertToCommentReaction(reaction: CoreCommentReaction): CommentReaction {
+    const { label, iconPath, count, hasReacted } = reaction;
+    return {
+      label,
+      iconPath: new URI(URI.revive(iconPath)),
+      count: count ?? 0,
+      authorHasReacted: !!hasReacted,
+    };
+  }
+
+  public convertToCoreReaction(reaction: CommentReaction): CoreCommentReaction {
+    const { label, iconPath, count, authorHasReacted } = reaction;
+    return {
+      label,
+      iconPath: URI.revive(iconPath),
+      count: count ?? 0,
+      hasReacted: authorHasReacted,
+    };
+  }
+
+  public convertToCoreComment(comment: IThreadComment): CoreComment {
+    return {
+      uniqueIdInThread: +comment.id,
+      contextValue: comment.contextValue,
+      mode: comment.mode as unknown as CoreCommentMode,
+      label: typeof comment.label === 'string' ? comment.label : '',
+      body: {
+        value: comment.body,
+      },
+      userName: comment.author.name,
+      commentReactions: comment.reactions?.map((reaction) => this.convertToCoreReaction(reaction)),
+    };
+  }
+
+  public get comments(): CoreComment[] | undefined {
+    return this._thread.comments.map((comment) => this.convertToCoreComment(comment));
+  }
+
+  public set comments(newComments: CoreComment[] | undefined) {
     if (newComments) {
-      this._thread.comments = newComments.map((comment) => {
-        return {
-          id: comment.uniqueIdInThread.toString(),
-          mode: comment.mode,
-          body: comment.body.value,
-          label: comment.label,
-          contextValue: comment.contextValue,
-          author: {
-            name: comment.userName,
-            iconPath: comment.userIconPath,
-          },
-        } as IThreadComment;
-      });
+      this._thread.comments = newComments.map((comment) => this.convertToIThreadComment(comment));
     } else {
       this._thread.comments = [];
     }
@@ -238,8 +263,8 @@ export class MainThreadCommentThread implements CommentThread {
     this._onDidChangeComments.fire(newComments);
   }
 
-  private readonly _onDidChangeComments = new Emitter<Comment[] | undefined>();
-  get onDidChangeComments(): Event<Comment[] | undefined> { return this._onDidChangeComments.event; }
+  private readonly _onDidChangeComments = new Emitter<CoreComment[] | undefined>();
+  get onDidChangeComments(): Event<CoreComment[] | undefined> { return this._onDidChangeComments.event; }
 
   // TODO: range 暂时不支持修改
   set range(range: IRange) {
@@ -337,7 +362,7 @@ export class MainThreadCommentThread implements CommentThread {
 }
 
 @Injectable({ multiple: true })
-export class MainThreadCommentController extends Disposable {
+export class MainThreadCommentController extends WithEventBus {
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -345,12 +370,11 @@ export class MainThreadCommentController extends Disposable {
   @Autowired(ICommentsService)
   private commentsService: ICommentsService;
 
+  @Autowired(ICommentsFeatureRegistry)
+  private readonly commentsFeatureRegistry: ICommentsFeatureRegistry;
+
   get handle(): number {
     return this._handle;
-  }
-
-  get uniqueId() {
-    return this._uniqueId;
   }
 
   get id(): string {
@@ -369,13 +393,13 @@ export class MainThreadCommentController extends Disposable {
     return this._label;
   }
 
-  private _reactions: CommentReaction[] | undefined;
+  private _reactions: CoreCommentReaction[] | undefined;
 
   get reactions() {
     return this._reactions;
   }
 
-  set reactions(reactions: CommentReaction[] | undefined) {
+  set reactions(reactions: CoreCommentReaction[] | undefined) {
     this._reactions = reactions;
   }
 
@@ -389,20 +413,25 @@ export class MainThreadCommentController extends Disposable {
   constructor(
     private readonly _proxy: IExtHostComments,
     private readonly _handle: number,
-    private readonly _uniqueId: string,
     private readonly _id: string,
     private readonly _label: string,
     private _features: CommentProviderFeatures,
   ) {
     super();
-    this.addDispose(this.commentsService.registerCommentRangeProvider(_uniqueId, {
+    this.addDispose(this.commentsService.registerCommentRangeProvider(_id, {
       getCommentingRanges: (documentModel) => this.getCommentingRanges(documentModel.uri, CancellationToken.None),
     }));
   }
 
-  // TODO: 还未实现 CommentProviderFeatures
   updateFeatures(features: CommentProviderFeatures) {
-    this._features = features;
+    this._features = {
+      ...this._features,
+      ...features,
+    };
+
+    this.commentsFeatureRegistry.registerProviderFeature(this._id, {
+      placeholder: this._features.options?.placeHolder,
+    });
   }
 
   createCommentThread(
@@ -470,7 +499,18 @@ export class MainThreadCommentController extends Disposable {
     return commentingRanges || [];
   }
 
-  async toggleReaction(uri: URI, thread: CommentThread, comment: Comment, reaction: CommentReaction, token: CancellationToken): Promise<void> {
+  @OnEvent(CommentReactionClick)
+  handleCommentReaction(e: CommentReactionClick) {
+    const { thread, comment, reaction } = e.payload;
+    const threadHandle = thread.data?.commentThreadHandle;
+    const mainThread = this.getKnownThread(threadHandle);
+    const coreComment = mainThread.convertToCoreComment(comment);
+    const coreReaction = mainThread.convertToCoreReaction(reaction);
+
+    this.toggleReaction(thread.uri, mainThread, coreComment, coreReaction);
+  }
+
+  async toggleReaction(uri: URI, thread: CommentThread, comment: CoreComment, reaction: CoreCommentReaction): Promise<void> {
     return this._proxy.$toggleReaction(this._handle, thread.commentThreadHandle, uri.codeUri, comment, reaction);
   }
 

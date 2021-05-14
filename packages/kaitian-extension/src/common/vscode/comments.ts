@@ -5,6 +5,7 @@ import { IRange, CancellationToken } from '@ali/ide-core-common';
 export interface CommentProviderFeatures {
   reactionGroup?: modes.CommentReaction[];
   reactionHandler?: boolean;
+  options?: modes.CommentOptions;
 }
 
 export interface IMainThreadComments {

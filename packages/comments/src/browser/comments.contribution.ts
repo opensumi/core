@@ -1,6 +1,6 @@
 import { Autowired } from '@ali/common-di';
 import { Domain, ClientAppContribution, Disposable, localize, ContributionProvider, Event, ToolbarRegistry, CommandContribution, CommandRegistry, getIcon, TabBarToolbarContribution, IEventBus } from '@ali/ide-core-browser';
-import { ICommentsService, CommentPanelId, CommentsContribution, ICommentsFeatureRegistry, CollapseId, CommentPanelCollapse, CloseThreadId, ICommentThreadTitle } from '../common';
+import { ICommentsService, CommentPanelId, CommentsContribution, ICommentsFeatureRegistry, CollapseId, CommentPanelCollapse, CloseThreadId, ICommentThreadTitle, SwitchCommandReaction, ICommentsThread, CommentReactionPayload, CommentReactionClick } from '../common';
 import { IEditor } from '@ali/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
@@ -60,6 +60,12 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
             widget.toggle();
           }
         }
+      },
+    });
+
+    registry.registerCommand({ id: SwitchCommandReaction }, {
+      execute: (payload: CommentReactionPayload) => {
+        this.eventBus.fire(new CommentReactionClick(payload));
       },
     });
   }

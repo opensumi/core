@@ -34,18 +34,15 @@ export class ExtHostComments implements IExtHostComments {
 
   private readonly _proxy: IMainThreadComments;
 
-  private readonly rpcProtocol: IRPCProtocol;
-
   private _commentControllers: Map<ProviderHandle, ExtHostCommentController> = new Map<ProviderHandle, ExtHostCommentController>();
 
   private _commentControllersByExtension: Map<string, ExtHostCommentController[]> = new Map<string, ExtHostCommentController[]>();
 
   constructor(
-    rpcProtocol: IRPCProtocol,
+    private readonly rpcProtocol: IRPCProtocol,
     commands: IExtHostCommands,
     private readonly _documents: ExtensionDocumentDataManager,
   ) {
-    this.rpcProtocol = rpcProtocol;
     this._proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadComments);
     this.registerArgumentProcessor(commands);
   }
@@ -239,6 +236,18 @@ class ExtHostCommentController implements vscode.CommentController {
   commentingRangeProvider?: vscode.CommentingRangeProvider;
 
   private _reactionHandler?: ReactionHandler;
+
+  private _options: vscode.CommentOptions | undefined;
+
+  get options() {
+    return this._options;
+  }
+
+  set options(options: vscode.CommentOptions | undefined) {
+    this._options = options;
+
+    this._proxy.$updateCommentControllerFeatures(this.handle, { options: this._options });
+  }
 
   get reactionHandler(): ReactionHandler | undefined {
     return this._reactionHandler;

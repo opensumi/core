@@ -56,6 +56,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   constructor(
     public uri: URI,
     public range: IRange,
+    public providerId: string,
     public options: ICommentsThreadOptions,
   ) {
     super();
@@ -74,9 +75,14 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     this.isCollapsed = !!this.options.isCollapsed;
     const threadsLengthContext = this._contextKeyService.createKey<number>('threadsLength', this.commentsService.getThreadsByUri(uri).length);
     const commentsLengthContext = this._contextKeyService.createKey<number>('commentsLength', this.comments.length);
+    // vscode 用于判断 thread 是否为空
+    const commentThreadIsEmptyContext = this._contextKeyService.createKey<boolean>('commentThreadIsEmpty', !this.comments.length);
+    // vscode 用于判断是否为当前 controller 注册
+    this._contextKeyService.createKey<string>('commentController', providerId);
     // 监听 comments 的变化
     autorun(() => {
       commentsLengthContext.set(this.comments.length);
+      commentThreadIsEmptyContext.set(!this.comments.length);
     });
     autorun(() => {
       if (this.isCollapsed) {

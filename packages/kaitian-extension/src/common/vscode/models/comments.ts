@@ -7,13 +7,25 @@ import {
 
 import { ICommand } from './command';
 
+interface CommentOptions {
+  /**
+   * An optional string to show on the comment input box when it's collapsed.
+   */
+  prompt?: string;
+
+  /**
+   * An optional string to show as placeholder in the comment input box when it's focused.
+   */
+  placeHolder?: string;
+}
+
 /**
  * @internal
  */
 export {
   CommentThread, CommentReaction, CommentingRanges,
   Comment, CommentThreadChangedEvent, CommentInput,
-  CommentMode, CommentThreadCollapsibleState,
+  CommentMode, CommentThreadCollapsibleState, CommentOptions,
 };
 
 /**

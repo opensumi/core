@@ -113,8 +113,8 @@ export const MenuActionList: React.FC<{
 
       return (
         <Menu.Item
-          id={menuNode.id}
-          key={menuNode.id}
+          id={`${menuNode.id}-${index}`}
+          key={`${menuNode.id}-${index}`}
           className={styles.menuItem}
           disabled={menuNode.disabled}>
           <MenuAction data={menuNode} disabled={menuNode.disabled} />

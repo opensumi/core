@@ -184,6 +184,31 @@ export interface ICommentAuthorInformation {
   iconPath?: URI | string;
 }
 
+/**
+ * 评论 Reaction
+ */
+export interface CommentReaction {
+  /**
+   * 用于 title 提示
+   */
+  readonly label: string | undefined;
+
+  /**
+   * 显示的图标
+   */
+  readonly iconPath: string | URI;
+
+  /**
+   * 和当前 reaction 相关的用户数量
+   */
+  readonly count: number;
+
+  /**
+   * 点击此 reaction 是否需要反馈
+   */
+  readonly authorHasReacted: boolean;
+}
+
 export interface ICommentsCommentTitle extends ICommentsMenuContext {
   /**
    * 当前 thread
@@ -229,6 +254,10 @@ export interface IComment {
    * 其中 aaa 就是 contextValue 的值
    */
   contextValue?: string;
+  /**
+   * 评论 reaction
+   */
+  reactions?: CommentReaction[];
 }
 
 /**
@@ -316,6 +345,13 @@ export interface MentionsOptions {
   markup?: string;
 }
 
+export interface ICommentProviderFeature {
+  /**
+   * 设置在评论区输入框的配置
+   */
+  placeholder?: string;
+}
+
 export interface ICommentsConfig {
   /**
    * 是否支持单行多个评论
@@ -366,6 +402,14 @@ export interface ICommentsFeatureRegistry {
    * @param render
    */
   registerZoneWidgetRender(render: ZoneWidgerRender): void;
+
+  /**
+   * 注册 Provider Feature
+   * @param provider id
+   * @param feature
+   */
+  registerProviderFeature(providerId: string, feature: ICommentProviderFeature): void;
+
   /**
    * 获取底部面板参数
    */
@@ -391,6 +435,11 @@ export interface ICommentsFeatureRegistry {
    * 获取基础配置
    */
   getConfig(): ICommentsConfig;
+
+  /**
+   * 获取 provider feature
+   * */
+  getProviderFeature(providerId: string): ICommentProviderFeature | undefined;
 }
 
 export const CommentsContribution = Symbol('CommentsContribution');
@@ -415,6 +464,10 @@ export interface ICommentsThread extends IDisposable {
    * thread id
    */
   id: string;
+  /**
+   * provider id
+   */
+  providerId: string;
   /**
    * 评论
    */
@@ -631,8 +684,18 @@ export const CollapseId = 'comments.panel.action.collapse';
 
 export const CloseThreadId = 'comments.thread.action.close';
 
+export const SwitchCommandReaction = 'comments.comment.action.switchCommand';
+
 export class CommentPanelCollapse extends BasicEvent<void> {}
 
 export interface ICommentRangeProvider {
   getCommentingRanges(documentModel: IEditorDocumentModel): MaybePromise<IRange[] | undefined>;
 }
+
+export interface CommentReactionPayload {
+  thread: ICommentsThread;
+  comment: IThreadComment;
+  reaction: CommentReaction;
+}
+
+export class CommentReactionClick extends BasicEvent<CommentReactionPayload> {}
