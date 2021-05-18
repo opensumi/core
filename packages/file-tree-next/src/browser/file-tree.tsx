@@ -223,7 +223,6 @@ export const FileTree = observer(({
           beforeFilterValueChange={beforeFilterValueChange}
           filterAfterClear={() => locationToCurrentFile()}
           filterAutoFocus={true}
-          paddingBottomSize={FILE_TREE_NODE_HEIGHT}
         >
           {(props: INodeRendererWrapProps) => <FileTreeNode
             item={props.item}

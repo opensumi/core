@@ -406,7 +406,6 @@ export class FileTreeModelService {
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
       this._contextMenuFile = undefined;
-      this._selectedFiles = this.selectedFiles.filter((file) => !file.uri.isEqual(this.contextMenuFile!.uri));
     }
     if (target) {
       if (this.selectedFiles.length > 0) {
@@ -1215,6 +1214,7 @@ export class FileTreeModelService {
         }
         return;
       }
+      this.fileTreeContextKey.filesExplorerInputFocused.set(false);
       await commit(newName);
       return true;
     };
@@ -1244,10 +1244,6 @@ export class FileTreeModelService {
         // 卸载输入框时及时更新选中态
         this.selectFileDecoration(this.contextMenuFile, true);
       }
-      // 在焦点元素销毁时，electron与chrome web上处理焦点的方式略有不同
-      // 这里需要明确将FileTree的explorerFocused设置为正确的false
-      this.fileTreeContextKey.filesExplorerFocused.set(false);
-      this.fileTreeContextKey.filesExplorerInputFocused.set(false);
     };
     const handleCancel = () => {
       if (this.fileTreeService.isCompactMode) {
@@ -1271,7 +1267,6 @@ export class FileTreeModelService {
       promptHandle.onCommit(enterCommit);
       promptHandle.onBlur(blurCommit);
       promptHandle.onFocus(handleFocus);
-      promptHandle.onChange(handleChange);
       promptHandle.onDestroy(handleDestroy);
       promptHandle.onCancel(handleCancel);
     }

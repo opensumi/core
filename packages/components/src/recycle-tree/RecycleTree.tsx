@@ -101,12 +101,6 @@ export interface IRecycleTreeProps<T = TreeModel> {
    * @memberof IRecycleTreeProps
    */
   overScanCount?: number;
-  /**
-   * 声明Tree组件底部空白区域大小
-   * @type {number}
-   * @memberof IRecycleTreeProps
-   */
-  paddingBottomSize?: number;
 }
 
 export interface IRecycleTreeError {
@@ -204,8 +198,20 @@ interface IFilterNodeRendererProps {
   template?: React.JSXElementConstructor<any>;
 }
 
-export class RecycleTree extends React.Component<IRecycleTreeProps> {
+const InnerElementType = React.forwardRef((props, ref) => {
+  const { style, ...rest } = props as any;
+  return <div
+    ref={ref!}
+    style={{
+      ...style,
+      height: `${parseFloat(style.height) + RecycleTree.PADDING_BOTTOM_SIZE}px`,
+    }}
+    {...rest}
+  />;
+});
 
+export class RecycleTree extends React.Component<IRecycleTreeProps> {
+  public static PADDING_BOTTOM_SIZE: number = 22;
   private static BATCHED_UPDATE_MAX_DEBOUNCE_MS: number = 100;
   private static TRY_ENSURE_VISIBLE_MAX_TIMES: number = 5;
   private static FILTER_FUZZY_OPTIONS = {
@@ -487,7 +493,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         this.listRef.current?.scrollToItem(root.getIndexAtTreeNode(node as TreeNode | CompositeTreeNode), align);
         this.tryEnsureVisibleTimes = 0;
       } else {
-        this.tryEnsureVisibleTimes ++;
+        this.tryEnsureVisibleTimes++;
         this.tryScrollIntoViewWhileStable(node, align);
       }
     });
@@ -738,7 +744,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       return <div style={style}></div>;
     }
     const itemStyle = overflow === 'ellipsis' ? style : { ...style, width: 'auto', minWidth: '100%' };
-    return <div style={ itemStyle }>
+    return <div style={itemStyle}>
       <NodeRendererWrap
         item={item}
         depth={item.depth}
@@ -760,20 +766,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       className,
       placeholder,
       overScanCount,
-      paddingBottomSize,
     } = this.props;
 
-    const InnerElementType = React.forwardRef((props, ref) => {
-      const { style, ...rest } = props as any;
-      return <div
-        ref={ref!}
-        style={{
-          ...style,
-          height: `${parseFloat(style.height) + (paddingBottomSize || 0)}px`,
-        }}
-        {...rest}
-      />;
-    });
     if (placeholder && this.adjustedRowCount === 0) {
       const Placeholder = placeholder;
       return <Placeholder />;
