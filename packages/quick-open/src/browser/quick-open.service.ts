@@ -436,7 +436,11 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
     if (res && res.length) {
       return res;
     }
-    return fallback && fallback();
+    const fallbackRes = fallback && fallback();
+    if (fallbackRes && fallbackRes.length) {
+      return fallbackRes;
+    }
+    return undefined;
   }
 
   getAutoFocus(lookFor: string): IAutoFocus {
