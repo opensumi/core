@@ -372,11 +372,13 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
    * 给 Extension 使用 | 激活插件
    */
   public async activeExtension(extension: Extension) {
-    // 激活 browserMain 相关部分
-    await this.viewExtensionService.activeExtension(extension, this.nodeExtensionService.protocol);
+    // 优先激活 Node 进程中的插件
     await this.nodeExtensionService.activeExtension(extension);
-    // 激活 workerMain 相关部分
-    await this.workerExtensionService.activeExtension(extension);
+
+    await Promise.all([
+      this.viewExtensionService.activeExtension(extension, this.nodeExtensionService.protocol),
+      this.workerExtensionService.activeExtension(extension),
+    ]);
   }
 
   public async disposeExtensions() {

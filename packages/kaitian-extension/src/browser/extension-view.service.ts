@@ -164,7 +164,6 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
   */
   private async activateExtensionByDeprecatedExtendConfig(extension: Extension) {
     const { extendConfig } = extension;
-    // TODO: 存储插件与 component 的关系，用于 dispose
     this.logger.verbose(`register view by Deprecated config ${extension.id}`);
     const browserScriptURI = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(extendConfig.browser.main).toString()));
     try {
@@ -207,7 +206,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
   }
 
   private getExtensionExtendService(extension: IExtension, id: string) {
-    const protocol = this.createExtensionExtendProtocol2(extension, id);
+    const protocol = this.createExtensionExtendProtocol(extension, id);
 
     this.logger.log(`bind extend service for ${extension.id}:${id}`);
     return {
@@ -216,7 +215,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
     };
   }
 
-  private createExtensionExtendProtocol2(extension: IExtension, componentId: string): IRPCProtocol {
+  private createExtensionExtendProtocol(extension: IExtension, componentId: string): IRPCProtocol {
     const { id: extensionId } = extension;
 
     const extendProtocol = new Proxy<{
