@@ -18,9 +18,10 @@ export interface DebugStackSessionViewProps {
 }
 
 export const DebugStackFramesView = observer((props: DebugStackSessionViewProps) => {
-  const { viewState, frames, thread, indent = 0 } = props;
+  const { viewState, frames: rawFrames, thread, indent = 0 } = props;
   const [selected, setSelected] = React.useState<number | undefined>();
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [frames, setFrames] = React.useState<DebugStackFrame[]>(rawFrames);
   const [framesErrorMessage, setFramesErrorMessage] = React.useState<string>('');
   const [canLoadMore, setCanLoadMore] = React.useState<boolean>(false);
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
@@ -30,13 +31,9 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
     if (!thread) {
       return;
     }
-    const frames = await thread.fetchFrames();
-    if (frames[0]) {
-      const frame = frames[0];
-      thread.currentFrame = frame;
-      setSelected(frame.raw.id);
-      frameOpenSource(frame);
-    }
+    const remainingFramesCount = typeof thread.stoppedDetails?.totalFrames === 'number' ? (thread.stoppedDetails?.totalFrames - thread.frameCount) : undefined;
+    const frames = await thread.fetchFrames(remainingFramesCount);
+    setFrames(frames);
   };
 
   const frameOpenSource = (frame: DebugStackFrame) => {
@@ -53,6 +50,12 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
         setSelected(undefined);
       }
     }));
+
+    if (manager.currentSession) {
+      disposable.push(manager.currentSession.onDidChangeCallStack(() => {
+        setFrames(thread.frames);
+      }));
+    }
 
     return () => {
       disposable.dispose();
