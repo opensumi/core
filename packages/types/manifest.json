@@ -1,57 +1,412 @@
 {
+  "meta": {
+    "@ali/ide-addons": {
+      "version": "2.3.0",
+      "entry": [
+        "node",
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-comments": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-components": {
+      "version": "2.3.0",
+      "entry": []
+    },
+    "@ali/ide-connection": {
+      "version": "2.3.0",
+      "entry": [
+        "node"
+      ]
+    },
+    "@ali/ide-core-browser": {
+      "version": "2.3.0",
+      "entry": [
+        "common"
+      ]
+    },
+    "@ali/ide-core-common": {
+      "version": "2.3.0",
+      "entry": []
+    },
+    "@ali/ide-core-electron-main": {
+      "version": "2.3.0",
+      "entry": []
+    },
+    "@ali/ide-core-node": {
+      "version": "2.3.0",
+      "entry": []
+    },
+    "@ali/ide-debug": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-decoration": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-editor": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-electron-basic": {
+      "version": "2.3.0",
+      "entry": [
+        "browser"
+      ]
+    },
+    "@ali/ide-explorer": {
+      "version": "2.3.0",
+      "entry": [
+        "browser"
+      ]
+    },
+    "@ali/ide-express-file-server": {
+      "version": "2.3.0",
+      "entry": [
+        "node",
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-extension-manager": {
+      "version": "2.3.0",
+      "entry": [
+        "node",
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-extension-storage": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-file-scheme": {
+      "version": "2.3.0",
+      "entry": [
+        "node",
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-file-search": {
+      "version": "2.3.0",
+      "entry": [
+        "node",
+        "common"
+      ]
+    },
+    "@ali/ide-file-service": {
+      "version": "2.3.0",
+      "entry": [
+        "node",
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-file-tree-next": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-i18n": {
+      "version": "2.3.0",
+      "entry": [
+        "browser"
+      ]
+    },
+    "@ali/ide-kaitian-extension": {
+      "version": "2.3.0",
+      "entry": [
+        "node",
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-keymaps": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-logs": {
+      "version": "2.3.0",
+      "entry": [
+        "node",
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-main-layout": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-markdown": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-markers": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-menu-bar": {
+      "version": "2.3.0",
+      "entry": [
+        "browser"
+      ]
+    },
+    "@ali/ide-monaco": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-monaco-enhance": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-opened-editor": {
+      "version": "2.3.0",
+      "entry": [
+        "browser"
+      ]
+    },
+    "@ali/ide-outline": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-output": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-overlay": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-preferences": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-process": {
+      "version": "2.3.0",
+      "entry": [
+        "node",
+        "common"
+      ]
+    },
+    "@ali/ide-quick-open": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-scm": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-search": {
+      "version": "2.3.0",
+      "entry": [
+        "node",
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-startup": {
+      "version": "2.3.0",
+      "entry": [
+        "browser"
+      ]
+    },
+    "@ali/ide-static-resource": {
+      "version": "2.3.0",
+      "entry": [
+        "browser"
+      ]
+    },
+    "@ali/ide-status-bar": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-storage": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-task": {
+      "version": "2.3.0",
+      "entry": [
+        "node",
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-terminal-next": {
+      "version": "2.3.0",
+      "entry": [
+        "node",
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-theme": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-toolbar": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/kaitian": {
+      "version": "2.3.0",
+      "entry": []
+    },
+    "@ali/ide-userstorage": {
+      "version": "2.3.0",
+      "entry": []
+    },
+    "@ali/ide-variable": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-webview": {
+      "version": "2.3.0",
+      "entry": [
+        "browser"
+      ]
+    },
+    "@ali/ide-workspace": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    },
+    "@ali/ide-workspace-edit": {
+      "version": "2.3.0",
+      "entry": [
+        "browser",
+        "common"
+      ]
+    }
+  },
   "packages": {
-    "@ali/ide-addons": "2.2.2",
-    "@ali/ide-comments": "2.2.2",
-    "@ali/ide-components": "2.2.2",
-    "@ali/ide-connection": "2.2.2",
-    "@ali/ide-core-browser": "2.2.2",
-    "@ali/ide-core-common": "2.2.2",
-    "@ali/ide-core-electron-main": "2.2.2",
-    "@ali/ide-core-node": "2.2.2",
-    "@ali/ide-debug": "2.2.2",
-    "@ali/ide-decoration": "2.2.2",
-    "@ali/ide-editor": "2.2.2",
-    "@ali/ide-electron-basic": "2.2.2",
-    "@ali/ide-explorer": "2.2.2",
-    "@ali/ide-express-file-server": "2.2.2",
-    "@ali/ide-extension-manager": "2.2.2",
-    "@ali/ide-extension-storage": "2.2.2",
-    "@ali/ide-file-scheme": "2.2.2",
-    "@ali/ide-file-search": "2.2.2",
-    "@ali/ide-file-service": "2.2.2",
-    "@ali/ide-file-tree-next": "2.2.2",
-    "@ali/ide-i18n": "2.2.2",
-    "@ali/ide-kaitian-extension": "2.2.2",
-    "@ali/ide-keymaps": "2.2.2",
-    "@ali/ide-logs": "2.2.2",
-    "@ali/ide-main-layout": "2.2.2",
-    "@ali/ide-markdown": "2.2.2",
-    "@ali/ide-markers": "2.2.2",
-    "@ali/ide-menu-bar": "2.2.2",
-    "@ali/ide-monaco": "2.2.2",
-    "@ali/ide-monaco-enhance": "2.2.2",
-    "@ali/ide-opened-editor": "2.2.2",
-    "@ali/ide-outline": "2.2.2",
-    "@ali/ide-output": "2.2.2",
-    "@ali/ide-overlay": "2.2.2",
-    "@ali/ide-preferences": "2.2.2",
-    "@ali/ide-process": "2.2.2",
-    "@ali/ide-quick-open": "2.2.2",
-    "@ali/ide-scm": "2.2.2",
-    "@ali/ide-search": "2.2.2",
-    "@ali/ide-startup": "2.2.2",
-    "@ali/ide-static-resource": "2.2.2",
-    "@ali/ide-status-bar": "2.2.2",
-    "@ali/ide-storage": "2.2.2",
-    "@ali/ide-task": "2.2.2",
-    "@ali/ide-terminal-next": "2.2.2",
-    "@ali/ide-theme": "2.2.2",
-    "@ali/ide-toolbar": "2.2.2",
-    "@ali/kaitian": "2.2.2",
-    "@ali/ide-userstorage": "2.2.2",
-    "@ali/ide-variable": "2.2.2",
-    "@ali/ide-webview": "2.2.2",
-    "@ali/ide-workspace": "2.2.2",
-    "@ali/ide-workspace-edit": "2.2.2"
+    "@ali/ide-addons": "2.3.0",
+    "@ali/ide-comments": "2.3.0",
+    "@ali/ide-components": "2.3.0",
+    "@ali/ide-connection": "2.3.0",
+    "@ali/ide-core-browser": "2.3.0",
+    "@ali/ide-core-common": "2.3.0",
+    "@ali/ide-core-electron-main": "2.3.0",
+    "@ali/ide-core-node": "2.3.0",
+    "@ali/ide-debug": "2.3.0",
+    "@ali/ide-decoration": "2.3.0",
+    "@ali/ide-editor": "2.3.0",
+    "@ali/ide-electron-basic": "2.3.0",
+    "@ali/ide-explorer": "2.3.0",
+    "@ali/ide-express-file-server": "2.3.0",
+    "@ali/ide-extension-manager": "2.3.0",
+    "@ali/ide-extension-storage": "2.3.0",
+    "@ali/ide-file-scheme": "2.3.0",
+    "@ali/ide-file-search": "2.3.0",
+    "@ali/ide-file-service": "2.3.0",
+    "@ali/ide-file-tree-next": "2.3.0",
+    "@ali/ide-i18n": "2.3.0",
+    "@ali/ide-kaitian-extension": "2.3.0",
+    "@ali/ide-keymaps": "2.3.0",
+    "@ali/ide-logs": "2.3.0",
+    "@ali/ide-main-layout": "2.3.0",
+    "@ali/ide-markdown": "2.3.0",
+    "@ali/ide-markers": "2.3.0",
+    "@ali/ide-menu-bar": "2.3.0",
+    "@ali/ide-monaco": "2.3.0",
+    "@ali/ide-monaco-enhance": "2.3.0",
+    "@ali/ide-opened-editor": "2.3.0",
+    "@ali/ide-outline": "2.3.0",
+    "@ali/ide-output": "2.3.0",
+    "@ali/ide-overlay": "2.3.0",
+    "@ali/ide-preferences": "2.3.0",
+    "@ali/ide-process": "2.3.0",
+    "@ali/ide-quick-open": "2.3.0",
+    "@ali/ide-scm": "2.3.0",
+    "@ali/ide-search": "2.3.0",
+    "@ali/ide-startup": "2.3.0",
+    "@ali/ide-static-resource": "2.3.0",
+    "@ali/ide-status-bar": "2.3.0",
+    "@ali/ide-storage": "2.3.0",
+    "@ali/ide-task": "2.3.0",
+    "@ali/ide-terminal-next": "2.3.0",
+    "@ali/ide-theme": "2.3.0",
+    "@ali/ide-toolbar": "2.3.0",
+    "@ali/kaitian": "2.3.0",
+    "@ali/ide-userstorage": "2.3.0",
+    "@ali/ide-variable": "2.3.0",
+    "@ali/ide-webview": "2.3.0",
+    "@ali/ide-workspace": "2.3.0",
+    "@ali/ide-workspace-edit": "2.3.0"
   }
 }

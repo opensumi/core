@@ -128,7 +128,6 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       }
 
       const traceMassage = `${error.name || 'Error'}: ${error.message || ''}${stackTraceMessage}`;
-      this.logger.error(traceMassage);
       return traceMassage;
     };
 
@@ -289,15 +288,14 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         error: err.message,
         version: extension.packageJSON?.version,
       });
+
+      this.logger.error(err.message);
     }
   }
 
-  // TODO: 插件销毁流程
   public async activateExtension(id: string) {
     this.logger.debug('kaitian exthost $activateExtension', id);
-    // await this._ready
 
-    // TODO: 处理没有 VSCode 插件的情况
     const extension: IExtensionDescription | undefined = this.extensions.find((ext) => {
       return ext.id === id;
     });
@@ -361,7 +359,11 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
     if (extension.packageJSON.kaitianContributes && extension.packageJSON.kaitianContributes.nodeMain) {
       try {
+        const reportTimer = this.reporterService.time(REPORT_NAME.ACTIVE_EXTENSION);
         extendModule = getNodeRequire()(path.join(extension.path, extension.packageJSON.kaitianContributes.nodeMain));
+        reportTimer.timeEnd(extension.id, {
+          version: extension.packageJSON.version,
+        });
       } catch (err) {
         activationFailed = true;
         activationFailedError = err;
