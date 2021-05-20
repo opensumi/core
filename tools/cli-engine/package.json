@@ -43,7 +43,7 @@
     "yargs-parser": "^18.1.2"
   },
   "devDependencies": {
-    "@ali/ide-startup": "2.1.3",
+    "@ali/ide-startup": "2.2.1",
     "@types/ejs": "^3.0.2",
     "@types/koa-mount": "^4.0.0",
     "@types/react": "^16.9.17",
