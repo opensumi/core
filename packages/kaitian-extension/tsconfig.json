@@ -1,3 +1,0 @@
-{
-  "extends": "../../configs/ts/references/tsconfig.kaitian-extension.json"
-}
