@@ -1,8 +1,10 @@
 import { Uri, Uri as URI, Event, IDisposable, CancellationToken, es5ClassCompat } from '@ali/ide-core-common';
 import { FileSystemProviderCapabilities, FileChange } from '@ali/ide-file-service';
 import { FileOperation } from '@ali/ide-workspace-edit';
+
 import { Disposable } from './ext-types';
 import { UriComponents } from './models';
+import { IWorkspaceEditDto } from './model.api';
 
 /**
  * Enumeration of file change types.
@@ -372,6 +374,11 @@ export interface FileSystemEvents {
 
 export interface IExtHostFileSystemEvent {
   $onFileEvent(events: FileSystemEvents): void;
-  $onWillRunFileOperation(operation: FileOperation, files: SourceTargetPair[], timeout: number, token: CancellationToken): Promise<any>;
+  $onWillRunFileOperation(operation: FileOperation, files: SourceTargetPair[], timeout: number, token: CancellationToken): Promise<IWillRunFileOperationParticipation | undefined>;
   $onDidRunFileOperation(operation: FileOperation, files: SourceTargetPair[]): void;
+}
+
+export interface IWillRunFileOperationParticipation {
+  edit: IWorkspaceEditDto;
+  extensionNames: string[];
 }

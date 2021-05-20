@@ -17,24 +17,17 @@ import { IDialogService } from '@ali/ide-overlay';
 import { Deferred, localize, MessageType } from '@ali/ide-core-common';
 import { RefactorPreview } from './refactor-preview';
 
-export enum FilterEditKind {
-  added,
-  removed,
-}
-
 export const PreviewViewId = 'RefactorPreview';
 
 export interface IRefactorPreviewService {
   edits: Array<WorkspaceTextEdit | WorkspaceFileEdit>;
-  checkedStore: { [id: string]: FilterEditKind };
-
-  generateTextEditId(edit: WorkspaceTextEdit): string;
+  selectedFileOrTextEdits: Set<WorkspaceTextEdit | WorkspaceFileEdit>;
 
   previewEdits(
     edit: WorkspaceEdit,
   ): Promise<Array<WorkspaceTextEdit | WorkspaceFileEdit>>;
 
-  filterEdit(edit: WorkspaceTextEdit, kind: FilterEditKind): void;
+  filterEdit(edit: WorkspaceTextEdit | WorkspaceFileEdit, checked: boolean): void;
 
   applyEdits(): void;
 
@@ -49,8 +42,10 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
   @observable.shallow
   public edits: Array<WorkspaceTextEdit | WorkspaceFileEdit> = [];
 
-  @observable.shallow
-  public checkedStore: { [id: string]: FilterEditKind } = {};
+  public selectedFileOrTextEdits = observable.set<WorkspaceTextEdit | WorkspaceFileEdit>(
+    [],
+    { deep: false },
+  );
 
   @Autowired(IMainLayoutService)
   protected readonly mainLayout: IMainLayoutService;
@@ -69,7 +64,7 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
     this.togglePreviewView(false);
     this.edits = [];
     this.previewDeferred = null;
-    this.checkedStore = {};
+    this.selectedFileOrTextEdits.clear();
   }
 
   private registerRefactorPreviewView() {
@@ -103,12 +98,6 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
     }
   }
 
-  generateTextEditId(textEdit: WorkspaceTextEdit): string {
-    return `${textEdit.resource.toString()}-${
-      textEdit.edit.range.startLineNumber
-    }-${textEdit.edit.range.endColumn}-${textEdit.edit.text}`;
-  }
-
   async previewEdits(
     edit: WorkspaceEdit,
   ): Promise<Array<WorkspaceTextEdit | WorkspaceFileEdit>> {
@@ -136,13 +125,10 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
     this.togglePreviewView(true);
 
     this.edits = edit.edits;
-    this.checkedStore = edit.edits.reduce(
-      (pre: { [id: string]: FilterEditKind }, cur: WorkspaceTextEdit) => {
-        pre[this.generateTextEditId(cur)] = FilterEditKind.added;
-        return pre;
-      },
-      {},
-    );
+    // 默认全选
+    edit.edits.forEach((edit) => {
+      this.selectedFileOrTextEdits.add(edit);
+    });
 
     this.previewDeferred = new Deferred();
 
@@ -150,9 +136,12 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
   }
 
   @action
-  filterEdit(edit: WorkspaceTextEdit, kind: FilterEditKind) {
-    const id = this.generateTextEditId(edit);
-    this.checkedStore[id] = kind;
+  filterEdit(edit: WorkspaceTextEdit | WorkspaceFileEdit, checked: boolean) {
+    if (checked) {
+      this.selectedFileOrTextEdits.add(edit);
+    } else {
+      this.selectedFileOrTextEdits.delete(edit);
+    }
   }
 
   applyEdits(): void {
@@ -162,8 +151,7 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
     }
 
     const candidate = this.edits.filter(
-      (e: WorkspaceTextEdit) =>
-        this.checkedStore[this.generateTextEditId(e)] === FilterEditKind.added,
+      (edit: WorkspaceTextEdit) => this.selectedFileOrTextEdits.has(edit),
     );
 
     this.previewDeferred.resolve(candidate);

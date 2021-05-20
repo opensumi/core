@@ -391,6 +391,9 @@ export const localizationBundle = {
     'preference.debug.toolbar.float.title': 'Run And Debug -> Float Mode',
     'preference.debug.toolbar.float': 'Float mode',
 
+    // workbench
+    'preference.workbench.refactoringChanges.showPreviewStrategy': 'Show preview confirm when triggering some refactoring changes',
+
     'preference.tab.name': 'Settings',
     'preference.noResults': 'No Setting Found Containing \'{0}\'',
     'preference.editSettingsJson': 'Edit in settings.json',
@@ -701,6 +704,9 @@ export const localizationBundle = {
     'refactor-preview.overlay.detail': `Press 'Continue' to discard the previous refactoring and continue with the current refactoring.`,
     'refactor-preview.overlay.continue': 'Continue',
     'refactor-preview.overlay.cancel': 'Cancel',
+    'refactor-preview.file.create': 'Creating',
+    'refactor-preview.file.delete': 'Deleting',
+    'refactor-preview.file.move': 'Moving',
 
     'welcome-view.noOpenRepo': 'No source control providers registered.',
     'welcome-view.noFolderHelp': 'You have not yet opened a folder.\n[Open Folder](command:{0})',
@@ -722,5 +728,14 @@ export const localizationBundle = {
     'authentication.signOut': 'Sign out {0}',
     'authentication.noAccounts': 'You are not signed in to any accounts',
     'authentication.signedOut': 'Successfully signed out.',
+    // refactoring changes related
+    'refactoring-changes.ask.1.create': 'Extension \'{0}\' wants to make refactoring changes with this file creation',
+    'refactoring-changes.ask.1.copy': 'Extension \'{0}\' wants to make refactoring changes with this file copy',
+    'refactoring-changes.ask.1.move': 'Extension \'{0}\' wants to make refactoring changes with this file move',
+    'refactoring-changes.ask.1.delete': 'Extension \'{0}\' wants to make refactoring changes with this file deletion',
+    'refactoring-changes.ask.N.create': '{0} extensions want to make refactoring changes with this file creation',
+    'refactoring-changes.ask.N.copy': '{0} extensions want to make refactoring changes with this file copy',
+    'refactoring-changes.ask.N.move': '{0} extensions want to make refactoring changes with this file move',
+    'refactoring-changes.ask.N.delete': '{0} extensions want to make refactoring changes with this file deletion',
   },
 };

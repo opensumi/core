@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IFileServiceClient } from '@ali/ide-file-service';
-import { URI, Uri, ProgressLocation, CancellationTokenSource, CancellationToken, Disposable, IDisposable, getDebugLogger, raceTimeout, localize, AsyncEmitter, Event, FileStat } from '@ali/ide-core-common';
+import { URI, Uri, CancellationTokenSource, CancellationToken, Disposable, IDisposable, getDebugLogger, AsyncEmitter, Event, FileStat } from '@ali/ide-core-common';
 import { IProgressService } from '@ali/ide-core-browser/lib/progress';
 import { FileOperation, FILE_OPERATION_TIMEOUT, IWorkspaceFileOperationParticipant, IWorkspaceFileService, SourceTargetPair, WorkspaceFileEvent } from '..';
 
@@ -23,35 +23,16 @@ export class WorkspaceFileOperationParticipant extends Disposable {
 
   async participate(files: { source?: Uri, target: Uri }[], operation: FileOperation): Promise<void> {
     const cts = new CancellationTokenSource();
-    return this.progressService.withProgress({
-      location: ProgressLocation.Window,
-      title: this.getProgressLabel(operation),
-    }, async (progress) => {
-      for (const participant of this.participants) {
-        if (cts.token.isCancellationRequested) {
-          break;
-        }
-
-        try {
-          const promise = participant.participate(files, operation, progress, FILE_OPERATION_TIMEOUT, cts.token);
-          await raceTimeout(promise, FILE_OPERATION_TIMEOUT, () => cts.dispose());
-        } catch (err) {
-          getDebugLogger().error(err);
-        }
+    for (const participant of this.participants) {
+      if (cts.token.isCancellationRequested) {
+        break;
       }
-    });
-  }
 
-  getProgressLabel(operation: FileOperation) {
-    switch (operation) {
-      case FileOperation.CREATE:
-        return localize('fileOperation.create', "Running 'File Create' participants...");
-      case FileOperation.DELETE:
-        return localize('fileOperation.delete', "Running 'File Delete' participants...");
-      case FileOperation.COPY:
-        return localize('fileOperation.copy', "Running 'File Copy' participants...");
-      case FileOperation.MOVE:
-        return localize('fileOperation.move', "Running 'File Move' participants...");
+      try {
+        await participant.participate(files, operation, undefined, FILE_OPERATION_TIMEOUT, cts.token);
+      } catch (err) {
+        getDebugLogger().error(err);
+      }
     }
   }
 

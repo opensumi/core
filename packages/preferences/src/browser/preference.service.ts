@@ -267,6 +267,7 @@ export const defaultSettingSections: {
         {id: 'editor.autoSaveDelay', localized: 'preference.editor.autoSaveDelay'},
         {id: 'editor.previewMode', localized: 'preference.editor.previewMode'},
         {id: 'workbench.list.openMode', localized: 'preference.workbench.list.openMode'},
+        {id: 'workbench.refactoringChanges.showPreviewStrategy', localized: 'preference.workbench.refactoringChanges.showPreviewStrategy'},
         {id: 'editor.askIfDiff', localized: 'preference.editor.askIfDiff' },
         {id: 'editor.fontFamily', localized: 'preference.editor.fontFamily'},
         {id: 'editor.minimap', localized: 'preference.editor.minimap'},

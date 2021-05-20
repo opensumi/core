@@ -2,7 +2,7 @@ import { Event, Emitter, Disposable, URI, AsyncEmitter, WaitUntilEvent, Cancella
 import * as vscode from 'vscode';
 import { ExtensionDocumentDataManager, IMainThreadWorkspace, MainThreadAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
 import { WorkspaceEdit } from '../../../common/vscode/ext-types';
-import { FileSystemEvents, IExtHostFileSystemEvent, SourceTargetPair } from '../../../common/vscode/file-system';
+import { FileSystemEvents, IExtHostFileSystemEvent, IWillRunFileOperationParticipation, SourceTargetPair } from '../../../common/vscode/file-system';
 import { IRelativePattern, parse } from '../../../common/vscode/glob';
 import * as TypeConverts from '../../../common/vscode/converter';
 import { IRPCProtocol } from '@ali/ide-connection';
@@ -167,24 +167,21 @@ export class ExtHostFileSystemEvent implements IExtHostFileSystemEvent {
     };
   }
 
-  async $onWillRunFileOperation(operation: FileOperation, files: SourceTargetPair[], timeout: number, token: CancellationToken): Promise<any> {
+  async $onWillRunFileOperation(operation: FileOperation, files: SourceTargetPair[], timeout: number, token: CancellationToken): Promise<IWillRunFileOperationParticipation | undefined> {
     switch (operation) {
       case FileOperation.MOVE:
-        await this._fireWillEvent(this._onWillRenameFile, { files: files.map((f) => ({ oldUri: URI.revive(f.source!), newUri: URI.revive(f.target) })) }, timeout, token);
-        break;
+        return await this._fireWillEvent(this._onWillRenameFile, { files: files.map((f) => ({ oldUri: URI.revive(f.source!), newUri: URI.revive(f.target) })) }, timeout, token);
       case FileOperation.DELETE:
-        await this._fireWillEvent(this._onWillDeleteFile, { files: files.map((f) => URI.revive(f.target)) }, timeout, token);
-        break;
+        return await this._fireWillEvent(this._onWillDeleteFile, { files: files.map((f) => URI.revive(f.target)) }, timeout, token);
       case FileOperation.CREATE:
-        await this._fireWillEvent(this._onWillCreateFile, { files: files.map((f) => URI.revive(f.target)) }, timeout, token);
-        break;
+        return await this._fireWillEvent(this._onWillCreateFile, { files: files.map((f) => URI.revive(f.target)) }, timeout, token);
       default:
-      // ignore, dont send
+        return undefined;
     }
   }
 
-  private async _fireWillEvent<E extends WaitUntilEvent>(emitter: AsyncEmitter<E>, data: Omit<E, 'waitUntil'>, timeout: number, token: CancellationToken): Promise<any> {
-
+  private async _fireWillEvent<E extends WaitUntilEvent>(emitter: AsyncEmitter<E>, data: Omit<E, 'waitUntil'>, timeout: number, token: CancellationToken): Promise<IWillRunFileOperationParticipation | undefined> {
+    const extensionNames = new Set<string>();
     const edits: WorkspaceEdit[] = [];
 
     await emitter.fireAsync(data, token, async (thenable, listener) => {
@@ -193,15 +190,20 @@ export class ExtHostFileSystemEvent implements IExtHostFileSystemEvent {
       const result = await Promise.resolve(thenable);
       if (result instanceof WorkspaceEdit) {
         edits.push(result);
+        extensionNames.add((listener as IExtensionListener<E>).extension?.name || 'Unknown extension');
       }
 
       if (Date.now() - now > timeout) {
-        this.logger.log('SLOW file-participant', ( listener as IExtensionListener<E>).extension?.id);
+        this.logger.log('SLOW file-participant', (listener as IExtensionListener<E>).extension?.id);
       }
     });
 
     if (token.isCancellationRequested) {
-      return;
+      return undefined;
+    }
+
+    if (edits.length === 0) {
+      return undefined;
     }
 
     if (edits.length > 0) {
@@ -211,7 +213,12 @@ export class ExtHostFileSystemEvent implements IExtHostFileSystemEvent {
         const { edits } = TypeConverts.WorkspaceEdit.from(edit, this._extHostDocumentsAndEditors);
         dto.edits = dto.edits.concat(edits);
       }
-      return this._proxy.$tryApplyWorkspaceEdit(dto);
+      return {
+        edit: dto,
+        extensionNames: Array.from(extensionNames),
+      };
+
+      // return this._proxy.$tryApplyWorkspaceEdit(dto);
     }
   }
 

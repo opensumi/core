@@ -1105,7 +1105,7 @@ export class Selection extends Range {
 }
 
 export interface FileOperation {
-  _type: 1;
+  _type: WorkspaceEditType.File;
   from: Uri | undefined;
   to: Uri | undefined;
   options?: FileOperationOptions;
@@ -1113,7 +1113,7 @@ export interface FileOperation {
 }
 
 export interface FileTextEdit {
-  _type: 2;
+  _type: WorkspaceEditType.Text;
   uri: Uri;
   edit: TextEdit;
   metadata?: vscode.WorkspaceEditEntryMetadata;
@@ -1121,25 +1121,31 @@ export interface FileTextEdit {
 
 type WorkspaceEditEntry = FileOperation | FileTextEdit;
 
+export const enum WorkspaceEditType {
+  File = 1,
+  Text = 2,
+  // Cell = 3, // not supported yet
+}
+
 @es5ClassCompat
 export class WorkspaceEdit implements vscode.WorkspaceEdit {
 
   private _edits = new Array<WorkspaceEditEntry>();
 
   renameFile(from: vscode.Uri, to: vscode.Uri, options?: { overwrite?: boolean, ignoreIfExists?: boolean }, metadata?: vscode.WorkspaceEditEntryMetadata): void {
-    this._edits.push({ _type: 1, from, to, options, metadata });
+    this._edits.push({ _type: WorkspaceEditType.File, from, to, options, metadata });
   }
 
   createFile(uri: vscode.Uri, options?: { overwrite?: boolean, ignoreIfExists?: boolean }, metadata?: vscode.WorkspaceEditEntryMetadata): void {
-    this._edits.push({ _type: 1, from: undefined, to: uri, options, metadata });
+    this._edits.push({ _type: WorkspaceEditType.File, from: undefined, to: uri, options, metadata });
   }
 
   deleteFile(uri: vscode.Uri, options?: { recursive?: boolean, ignoreIfNotExists?: boolean }, metadata?: vscode.WorkspaceEditEntryMetadata): void {
-    this._edits.push({ _type: 1, from: uri, to: undefined, options, metadata });
+    this._edits.push({ _type: WorkspaceEditType.File, from: uri, to: undefined, options, metadata });
   }
 
   replace(uri: Uri, range: Range, newText: string, metadata?: vscode.WorkspaceEditEntryMetadata): void {
-    this._edits.push({ _type: 2, uri, edit: new TextEdit(range, newText), metadata });
+    this._edits.push({ _type: WorkspaceEditType.Text, uri, edit: new TextEdit(range, newText), metadata });
   }
 
   insert(resource: Uri, position: Position, newText: string, metadata?: vscode.WorkspaceEditEntryMetadata): void {
@@ -1152,7 +1158,7 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
 
   has(uri: Uri): boolean {
     for (const edit of this._edits) {
-      if (edit && edit._type === 2 && edit.uri.toString() === uri.toString()) {
+      if (edit && edit._type === WorkspaceEditType.Text && edit.uri.toString() === uri.toString()) {
         return true;
       }
     }
@@ -1164,7 +1170,7 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
       // remove all text edits for `uri`
       for (let i = 0; i < this._edits.length; i++) {
         const element = this._edits[i];
-        if (element && element._type === 2 && element.uri.toString() === uri.toString()) {
+        if (element && element._type === WorkspaceEditType.Text && element.uri.toString() === uri.toString()) {
           this._edits[i] = undefined!;
         }
       }
@@ -1173,7 +1179,7 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
       // append edit to the end
       for (const edit of edits) {
         if (edit) {
-          this._edits.push({ _type: 2, uri, edit });
+          this._edits.push({ _type: WorkspaceEditType.Text, uri, edit });
         }
       }
     }
@@ -1182,7 +1188,7 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
   get(uri: Uri): TextEdit[] {
     const res: TextEdit[] = [];
     for (const candidate of this._edits) {
-      if (candidate && candidate._type === 2 && candidate.uri.toString() === uri.toString()) {
+      if (candidate && candidate._type === WorkspaceEditType.Text && candidate.uri.toString() === uri.toString()) {
         res.push(candidate.edit);
       }
     }
@@ -1195,7 +1201,7 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
   entries(): [Uri, TextEdit[]][] {
     const textEdits = new Map<string, [Uri, TextEdit[]]>();
     for (const candidate of this._edits) {
-      if (candidate && candidate._type === 2) {
+      if (candidate && candidate._type === WorkspaceEditType.Text) {
         let textEdit = textEdits.get(candidate.uri.toString());
         if (!textEdit) {
           textEdit = [candidate.uri, []];

@@ -5,7 +5,7 @@ import type { WorkspaceEdit } from '@ali/monaco-editor-core/esm/vs/editor/common
 import { BrowserModule, Domain, MonacoContribution, MonacoService, ServiceNames, ILogger, TabBarToolbarContribution, ToolbarRegistry, localize, CommandContribution, getIcon } from '@ali/ide-core-browser';
 import { CommandRegistry } from '@ali/ide-core-common';
 
-import { IWorkspaceEditService, IWorkspaceFileService } from '../common';
+import { IBulkEditServiceShape, IWorkspaceEditService, IWorkspaceFileService } from '../common';
 import { WorkspaceEditServiceImpl } from './workspace-edit.service';
 import { MonacoBulkEditService } from './bulk-edit.service';
 import { WorkspaceFileService } from './workspace-file.service';
@@ -29,6 +29,10 @@ export class WorkspaceEditModule extends BrowserModule {
       token: IRefactorPreviewService,
       useClass: RefactorPreviewServiceImpl,
     },
+    {
+      token: IBulkEditServiceShape,
+      useClass: MonacoBulkEditService,
+    },
     WorkspaceEditContribution,
   ];
 }
@@ -38,8 +42,8 @@ export class WorkspaceEditContribution implements MonacoContribution, TabBarTool
   @Autowired(MonacoService)
   private monacoService: MonacoService;
 
-  @Autowired()
-  protected readonly bulkEditService: MonacoBulkEditService;
+  @Autowired(IBulkEditServiceShape)
+  protected readonly bulkEditService: IBulkEditServiceShape;
 
   @Autowired(ILogger)
   protected readonly logger: ILogger;
