@@ -3,7 +3,7 @@ const fs = require('fs')
 
 const tsconfigPath = path.join(
   __dirname,
-  "../../configs/ts/references/tsconfig.kaitian-extension.json"
+  '../../configs/ts/references/tsconfig.kaitian-extension.json'
 );
 
 const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), 'utf-8'))
@@ -11,7 +11,7 @@ const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), '
 module.exports = {
   entry: path.join(__dirname, './src/hosted/worker.host-preload.ts'),
   node: {
-    net: "empty"
+    net: 'empty'
   },
   output: {
     filename: 'worker-host.js',
@@ -26,7 +26,7 @@ module.exports = {
     minimize: false
   },
   resolve: {
-    extensions: [".ts", ".tsx", ".js"]
+    extensions: ['.ts', '.tsx', '.js']
   },
   module: {
     rules: [
