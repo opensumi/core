@@ -17,7 +17,7 @@ import {
   IRefactorPreviewService,
 } from './refactor-preview.service';
 import * as styles from './refactor_preview.module.less';
-import { localize } from '../../../main-layout/node_modules/@ali/ide-core-common/src';
+import { localize } from '@ali/ide-core-common/lib/localize';
 import { isWorkspaceFileEdit } from './utils';
 
 interface IRefactorNodeProps {
