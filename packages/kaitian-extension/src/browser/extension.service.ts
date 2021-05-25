@@ -3,8 +3,9 @@ import {
   AppConfig, CommandRegistry, CorePreferences, Deferred, ExtensionActivateEvent,
   getPreferenceLanguageId, IClientApp, ILogger,
 } from '@ali/ide-core-browser';
-import { localize, OnEvent, WithEventBus } from '@ali/ide-core-common';
+import { IExtensionProps, localize, OnEvent, WithEventBus } from '@ali/ide-core-common';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
+import { FileSearchServicePath, IFileSearchService } from '@ali/ide-file-search';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { IIconService, IThemeService } from '@ali/ide-theme';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -82,6 +83,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   @Autowired(AbstractExtInstanceManagementService)
   private readonly extensionInstanceManageService: AbstractExtInstanceManagementService;
 
+  @Autowired(FileSearchServicePath)
+  private readonly fileSearchService: IFileSearchService;
+
   /**
    * 这里的 ready 是区分环境，将 node/worker 区分开使用
    */
@@ -132,7 +136,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   protected async onExtensionEnabled(e: ExtensionDidEnabledEvent) {
     const extension = e.payload;
     await this.updateExtHostData();
-    this.fireActivationEventsIfNeed(extension.packageJSON.activationEvents);
+    await this.fireActivationEventsIfNeed(extension.packageJSON.activationEvents);
   }
 
   /**
@@ -298,7 +302,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   /**
    * 发送 ActivationEvents
    */
-  private fireActivationEventsIfNeed(activationEvents: string[]) {
+  private async fireActivationEventsIfNeed(activationEvents: string[]) {
     if (!Array.isArray(activationEvents) || !activationEvents.length) {
       return;
     }
@@ -320,6 +324,47 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     for (const event of shouldFireEvents) {
       this.logger.verbose(`Fire activation event ${event.topic}:${event.data}`);
       this.activationEventService.fireEvent(event.topic, event.data);
+    }
+    await this.activateByWorkspaceContains(activationEvents);
+  }
+
+  private async activateByWorkspaceContains(activationEvents: string[]) {
+    const paths: string[] = [];
+    const includePatterns: string[] = [];
+    for (const activationEvent of activationEvents) {
+      if (/^workspaceContains:/.test(activationEvent)) {
+        const fileNameOrGlob = activationEvent.substr('workspaceContains:'.length);
+        if (fileNameOrGlob.indexOf('*') >= 0 || fileNameOrGlob.indexOf('?') >= 0) {
+          includePatterns.push(fileNameOrGlob);
+        } else {
+          paths.push(fileNameOrGlob);
+        }
+      }
+    }
+
+    const promises: Promise<boolean>[] = [];
+    if (paths.length) {
+      promises.push(this.workspaceService.containsSome(paths));
+    }
+
+    if (includePatterns.length) {
+      promises.push((async () => {
+        try {
+          const result = await this.fileSearchService.find('', {
+            rootUris: this.workspaceService.tryGetRoots().map((r) => r.uri),
+            includePatterns,
+            limit: 1,
+          });
+          return result.length > 0;
+        } catch (e) {
+          this.logger.error(e);
+          return false;
+        }
+      })());
+    }
+
+    if (promises.length && await Promise.all(promises).then((exists) => exists.some((v) => v))) {
+      this.activationEventService.fireEvent('workspaceContains', [...paths, ...includePatterns][0]);
     }
   }
 
