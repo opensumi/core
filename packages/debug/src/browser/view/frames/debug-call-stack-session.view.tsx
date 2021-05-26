@@ -8,7 +8,6 @@ import { DebugStackOperationView } from './debug-call-stack.operation';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { IDebugSessionManager } from '../../../common';
 import * as styles from './debug-call-stack.module.less';
-import { DebugRequestTypes } from '../../debug-session-connection';
 
 export interface DebugStackSessionViewProps {
   session: DebugSession;
@@ -20,7 +19,8 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
   const { session, viewState, indent } = props;
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
   const [threads, setThreads] = React.useState<DebugThread[]>([]);
-  const [currentThread, setCurrentThread] = React.useState<DebugThread | undefined>();
+  const [otherThreads, setOtherThreads] = React.useState<DebugThread[]>([]);
+  const [multipleThreadPaused, setMultipleThreadPaused] = React.useState<DebugThread[]>([]);
   const [subSession, setSubSession] = React.useState<DebugSession[]>([]);
   const [unfold, setUnfold] = React.useState<boolean>(true);
   const [hover, setHover] = React.useState<boolean>(false);
@@ -48,7 +48,7 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
     setLoading(true);
     const _threads = await session.fetchThreads();
     setLoading(false);
-    setThreads(_threads);
+    setOtherThreads(_threads);
   };
 
   React.useEffect(() => {
@@ -77,10 +77,6 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
       setThreads([...session.threads]);
     }));
 
-    disposable.push(session.onCurrentThreadChange((thread?: DebugThread) => {
-      setCurrentThread(thread);
-    }));
-
     disposable.push(session.onDidThread(async ({ body: { reason } }) => {
       if (!session.supportsThreadIdCorrespond) {
         return;
@@ -91,14 +87,24 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
       }
     }));
 
-    disposable.push(session.onRequest(async (command: keyof DebugRequestTypes) => {
+    disposable.push(session.onDidStop(async () => {
       if (!session.supportsThreadIdCorrespond) {
         return;
       }
 
-      if (command === 'next' || command === 'continue' || command === 'stepIn' || command === 'stepOut') {
-        await fetchOtherThreads();
+      const multipleThreads = Array.from(session.multipleThreadPaused.values());
+      setMultipleThreadPaused(multipleThreads);
+
+      await fetchOtherThreads();
+    }));
+
+    disposable.push(session.onDidContinued(async () => {
+      if (!session.supportsThreadIdCorrespond) {
+        return;
       }
+
+      const multipleThreads = Array.from(session.multipleThreadPaused.values());
+      setMultipleThreadPaused(multipleThreads);
     }));
 
     return () => {
@@ -117,8 +123,9 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
       ? <div className={ styles.debug_stack_item_loading }>
         <span>正在加载线程...</span>
       </div>
-      : threads.map((thread) => thread.raw.id !== currentThread?.raw.id &&
-        <DebugStackThreadView key={ thread.id } indent={ mutipleSession ? 16 : 0 } viewState={ viewState } thread={ thread } session={ session } />);
+      : otherThreads.map((thread) =>
+        !session.hasInMultipleThreadPaused(thread.raw.id) && <DebugStackThreadView key={ thread.id } indent={ mutipleSession ? 16 : 0 } viewState={ viewState } thread={ thread } session={ session } />,
+      );
     }
   };
 
@@ -152,7 +159,8 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
         }
         {
           supportsThreadIdCorrespond && unfold
-          ? currentThread && <DebugStackThreadView key={ currentThread.id } indent={ mutipleSession ? 16 : 0 } viewState={ viewState } thread={ currentThread } session={ session }/>
+          ? multipleThreadPaused.map((t) =>
+            <DebugStackThreadView key={ t.id } indent={ mutipleSession ? 16 : 0 } viewState={ viewState } thread={ t } session={ session }/>)
           : null
         }
         {

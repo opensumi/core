@@ -18,7 +18,7 @@ export interface DebugStackThreadViewProps {
 export const DebugStackThreadView = (props: DebugStackThreadViewProps) => {
   const { thread, viewState, indent, session } = props;
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
-  const [unfold, setUnfold] = React.useState<boolean>(false);
+  const [unfold, setUnfold] = React.useState<boolean>(true);
 
   const mutipleS = manager.sessions.length > 1;
   const mutiple = manager.currentSession?.supportsThreadIdCorrespond ? true : (manager.sessions.length > 1 || manager.sessions[0].threadCount > 1);
@@ -72,8 +72,8 @@ export const DebugStackThreadView = (props: DebugStackThreadViewProps) => {
         </div>
       }
       {
-        (!mutiple || unfold) &&
-        <DebugStackFramesView indent={ mutiple ? mutipleS ? 32 + 14 : 16 + 14 : 8 } viewState={ viewState } thread={ thread } frames={ thread.frames } />
+        (!mutiple || unfold) && thread.frames.length > 0 &&
+        <DebugStackFramesView indent={ mutiple ? mutipleS ? 32 + 14 : 16 + 14 : 8 } viewState={ viewState } thread={ thread } frames={ thread.frames } session={ session } />
       }
     </div>
   );

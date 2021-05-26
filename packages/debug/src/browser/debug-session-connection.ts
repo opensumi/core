@@ -221,7 +221,7 @@ export class DebugSessionConnection implements IDisposable {
     });
 
     if (token) {
-      cancelationListener = token.onCancellationRequested(() => {
+      cancelationListener = token.onCancellationRequested(async () => {
         cancelationListener.dispose();
         const session = this.manager.getSession(this.sessionId);
         if (session && session.capabilities.supportsCancelRequest) {

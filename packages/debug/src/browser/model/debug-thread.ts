@@ -91,7 +91,7 @@ export class DebugThread extends DebugThreadData {
   }
 
   protected pendingFetch = Promise.resolve<DebugStackFrame[]>([]);
-  async fetchFrames(levels: number = 20): Promise<DebugStackFrame[]> {
+  async rawFetchFrames(levels: number = 20): Promise<DebugStackFrame[]> {
     return this.pendingFetch = this.pendingFetch.then(async () => {
       try {
         const start = this.frameCount;
@@ -103,6 +103,13 @@ export class DebugThread extends DebugThreadData {
       }
     });
   }
+
+  async fetchFrames(levels: number = 20): Promise<DebugStackFrame[]> {
+    const frames = await this.rawFetchFrames(levels);
+    this.updateCurrentFrame();
+    return frames;
+  }
+
   protected async doFetchFrames(startFrame: number, levels: number): Promise<DebugProtocol.StackFrame[]> {
     try {
       const response = await this.session.sendRequest('stackTrace',
@@ -133,7 +140,6 @@ export class DebugThread extends DebugThreadData {
       frame.update({ raw });
       result.set(id, frame);
     }
-    this.updateCurrentFrame();
     const values = [...result.values()];
     frontEndTime('doUpdateFrames');
     return values;
