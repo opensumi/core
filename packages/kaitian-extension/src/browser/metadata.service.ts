@@ -2,9 +2,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { IExtension } from '../common';
 import { Disposable, ILogger } from '@ali/ide-core-browser';
 import { IActivationEventService } from './types';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { FileSearchServicePath, IFileSearchService } from '@ali/ide-file-search/lib/common';
-import { getDebugLogger, IEventBus, ExtensionEnabledEvent } from '@ali/ide-core-common';
+import { IEventBus, ExtensionEnabledEvent } from '@ali/ide-core-common';
 import { VSCodeContributeRunner } from './vscode/contributes';
 import { KaitianContributesRunner } from './kaitian/contributes';
 
@@ -16,12 +14,6 @@ export class ExtensionMetadataService extends Disposable {
 
   @Autowired()
   private activationService: IActivationEventService;
-
-  @Autowired(IWorkspaceService)
-  private workspaceService: IWorkspaceService;
-
-  @Autowired(FileSearchServicePath)
-  private fileSearchService: IFileSearchService;
 
   @Autowired(ILogger)
   logger: ILogger;
@@ -46,7 +38,6 @@ export class ExtensionMetadataService extends Disposable {
       ]);
 
       this.registerActivationEvent(extension);
-      this.activateByWorkspaceContains(extension);
     } catch (e) {
       this.logger.error('vscode meta启用插件出错' + extension.name);
       this.logger.error(e);
@@ -70,48 +61,6 @@ export class ExtensionMetadataService extends Disposable {
         activateDisposer.dispose();
       }));
     });
-  }
-
-  private async activateByWorkspaceContains(extension: IExtension) {
-    const { activationEvents = [] } = extension.packageJSON;
-
-    const paths: string[] = [];
-    const includePatterns: string[] = [];
-    for (const activationEvent of activationEvents) {
-      if (/^workspaceContains:/.test(activationEvent)) {
-        const fileNameOrGlob = activationEvent.substr('workspaceContains:'.length);
-        if (fileNameOrGlob.indexOf('*') >= 0 || fileNameOrGlob.indexOf('?') >= 0) {
-          includePatterns.push(fileNameOrGlob);
-        } else {
-          paths.push(fileNameOrGlob);
-        }
-      }
-    }
-
-    const promises: Promise<boolean>[] = [];
-    if (paths.length) {
-      promises.push(this.workspaceService.containsSome(paths));
-    }
-
-    if (includePatterns.length) {
-      promises.push((async () => {
-        try {
-          const result = await this.fileSearchService.find('', {
-            rootUris: this.workspaceService.tryGetRoots().map((r) => r.uri),
-            includePatterns,
-            limit: 1,
-          });
-          return result.length > 0;
-        } catch (e) {
-          getDebugLogger().error(e);
-          return false;
-        }
-      })());
-    }
-
-    if (promises.length && await Promise.all(promises).then((exists) => exists.some((v) => v))) {
-      this.activationService.fireEvent('workspaceContains', [...paths, ...includePatterns][0]);
-    }
   }
 
 }

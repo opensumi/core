@@ -80,6 +80,7 @@ export class DebugSession implements IDebugSession {
   protected exitDeferred = new Deferred<DebugExitEvent>();
 
   protected cancellationMap = new Map<number, CancellationTokenSource[]>();
+  protected readonly toDisposeOnCurrentThread = new DisposableCollection();
 
   constructor(
     readonly id: string,
@@ -432,9 +433,10 @@ export class DebugSession implements IDebugSession {
   }
 
   set currentThread(thread: DebugThread | undefined) {
+    this.toDisposeOnCurrentThread.dispose();
     this._currentThread = thread;
     if (thread) {
-      this.fireDidChange();
+      this.toDisposeOnCurrentThread.push(thread.onDidChanged(() => this.fireDidChange()));
     }
   }
 
