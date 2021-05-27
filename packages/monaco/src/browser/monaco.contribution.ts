@@ -276,7 +276,7 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
         // 转换 monaco 快捷键
         const keybindingStr = raw.parts.map((part) => this.keyCode(part)).join(' ');
         // monaco内优先级计算时为双优先级相加，第一优先级权重 * 100
-        const keybinding = { command, args: item.commandArgs, keybinding: keybindingStr, when: item.when, priority: (item.weight1 ? item.weight1 * 100 : 0) + (item.weight2 || 0)};
+        const keybinding = { command, args: item.commandArgs, keybinding: keybindingStr, when, priority: (item.weight1 ? item.weight1 * 100 : 0) + (item.weight2 || 0)};
 
         keybindings.registerKeybinding(keybinding);
       }
