@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-components",
-  "version": "2.3.3",
+  "version": "2.3.4",
   "description": "@ali/ide-components",
   "main": "lib/index.js",
   "files": [

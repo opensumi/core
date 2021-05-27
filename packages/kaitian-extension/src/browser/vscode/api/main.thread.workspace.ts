@@ -5,11 +5,10 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 import { URI, ILogger, WithEventBus, OnEvent, CancellationToken } from '@ali/ide-core-browser';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
-import { IWorkspaceEditService, IWorkspaceEdit, IResourceTextEdit, IResourceFileEdit, WorkspaceEditDidRenameFileEvent } from '@ali/ide-workspace-edit';
+import { IWorkspaceEditService, WorkspaceEditDidRenameFileEvent } from '@ali/ide-workspace-edit';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { FileSearchServicePath, IFileSearchService } from '@ali/ide-file-search/lib/common';
 import type * as model from '../../../common/vscode/model.api';
-import { ResourceTextEditDto, ResourceFileEditDto } from '../../../common/vscode/model.api';
 
 @Injectable({multiple: true})
 export class MainThreadWorkspace extends WithEventBus implements IMainThreadWorkspace {

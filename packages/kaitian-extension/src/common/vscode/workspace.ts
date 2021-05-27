@@ -4,7 +4,7 @@ import { Uri, UriComponents } from './ext-types';
 import { FileStat } from '@ali/ide-file-service';
 import { EndOfLineSequence } from '@ali/ide-editor/lib/common';
 import type * as model from './model.api';
-import { IWorkspaceEdit, IResourceTextEdit, IResourceFileEdit, WorkspaceEditDidRenameFileEvent } from '@ali/ide-workspace-edit';
+import { IWorkspaceEdit, IResourceTextEdit, IResourceFileEdit } from '@ali/ide-workspace-edit';
 
 export interface IMainThreadWorkspace extends IDisposable {
   $saveAll(): Promise<boolean>;
