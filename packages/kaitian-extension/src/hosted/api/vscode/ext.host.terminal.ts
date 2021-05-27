@@ -4,6 +4,8 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { ITerminalInfo, TerminalDataBufferer, ITerminalChildProcess, ITerminalDimensionsOverride, ITerminalDimensionsDto, ITerminalLaunchError, ITerminalExitEvent, ITerminalLinkDto } from '@ali/ide-terminal-next';
 import { IMainThreadTerminal, MainThreadAPIIdentifier, IExtHostTerminal } from '../../../common/vscode';
 import { userInfo } from 'os';
+import { IExtension } from '../../../common';
+import { EnvironmentVariableMutatorType, ISerializableEnvironmentVariableCollection } from '@ali/ide-terminal-next/lib/common/environmentVariable';
 
 const debugLog = getDebugLogger();
 
@@ -24,6 +26,8 @@ export class ExtHostTerminal implements IExtHostTerminal {
   private readonly _linkProviders: Set<vscode.TerminalLinkProvider> = new Set();
   private readonly _terminalLinkCache: Map<string, Map<number, ICachedLinkEntry>> = new Map();
   private readonly _terminalLinkCancellationSource: Map<string, CancellationTokenSource> = new Map();
+
+  private environmentVariableCollections: Map<string, EnvironmentVariableCollection> = new Map();
 
   private disposables: DisposableStore = new DisposableStore();
 
@@ -339,6 +343,97 @@ export class ExtHostTerminal implements IExtHostTerminal {
   public $acceptProcessRequestCwd(id: string): void {
     this._terminalProcesses.get(id)?.getCwd().then((cwd) => this.proxy.$sendProcessCwd(id, cwd));
   }
+
+  getEnviromentVariableCollection(extension: IExtension) {
+    let collection = this.environmentVariableCollections.get(extension.id);
+    if (!collection) {
+      collection = new EnvironmentVariableCollection();
+      this._setEnvironmentVariableCollection(extension.id, collection);
+    }
+    return collection;
+  }
+
+  private syncEnvironmentVariableCollection(extensionIdentifier: string, collection: EnvironmentVariableCollection): void {
+    const serialized = [...collection.map.entries()];
+    this.proxy.$setEnvironmentVariableCollection(extensionIdentifier, collection.persistent, serialized.length === 0 ? undefined : serialized);
+  }
+
+  private _setEnvironmentVariableCollection(extensionIdentifier: string, collection: EnvironmentVariableCollection): void {
+    this.environmentVariableCollections.set(extensionIdentifier, collection);
+    collection.onDidChangeCollection(() => {
+      // When any collection value changes send this immediately, this is done to ensure
+      // following calls to createTerminal will be created with the new environment. It will
+      // result in more noise by sending multiple updates when called but collections are
+      // expected to be small.
+      this.syncEnvironmentVariableCollection(extensionIdentifier, collection!);
+    });
+  }
+}
+
+/**
+ * EnvironmentVariableCollection
+ * some code copued and modified from
+ * https://github.com/microsoft/vscode/blob/1.55.0/src/vs/workbench/api/common/extHostTerminalService.ts#L696
+ */
+export class EnvironmentVariableCollection implements vscode.EnvironmentVariableCollection {
+  readonly map: Map<string, vscode.EnvironmentVariableMutator> = new Map();
+
+  protected readonly _onDidChangeCollection: Emitter<void> = new Emitter<void>();
+  get onDidChangeCollection(): Event<void> { return this._onDidChangeCollection && this._onDidChangeCollection.event; }
+
+  constructor(serialized?: ISerializableEnvironmentVariableCollection) {
+    this.map = new Map(serialized);
+  }
+
+  private _persistent: boolean = true;
+
+  public get persistent(): boolean {
+    return this._persistent;
+  }
+
+  public set persistent(value: boolean) {
+    this._persistent = value;
+    this._onDidChangeCollection.fire();
+  }
+
+  private _setIfDiffers(variable: string, mutator: vscode.EnvironmentVariableMutator): void {
+    const current = this.map.get(variable);
+    if (!current || current.value !== mutator.value || current.type !== mutator.type) {
+      this.map.set(variable, mutator);
+      this._onDidChangeCollection.fire();
+    }
+  }
+
+  replace(variable: string, value: string): void {
+    this._setIfDiffers(variable, { value, type: EnvironmentVariableMutatorType.Replace });
+  }
+
+  append(variable: string, value: string): void {
+    this._setIfDiffers(variable, { value, type: EnvironmentVariableMutatorType.Append });
+  }
+
+  prepend(variable: string, value: string): void {
+    this._setIfDiffers(variable, { value, type: EnvironmentVariableMutatorType.Prepend });
+  }
+
+  get(variable: string): vscode.EnvironmentVariableMutator | undefined {
+    return this.map.get(variable);
+  }
+
+  forEach(callback: (variable: string, mutator: vscode.EnvironmentVariableMutator, collection: vscode.EnvironmentVariableCollection) => any, thisArg?: any): void {
+    this.map.forEach((value, key) => callback.call(thisArg, key, value, this));
+  }
+
+  delete(variable: string): void {
+    this.map.delete(variable);
+    this._onDidChangeCollection.fire();
+  }
+
+  clear(): void {
+    this.map.clear();
+    this._onDidChangeCollection.fire();
+  }
+
 }
 
 export class Terminal implements vscode.Terminal {

@@ -1,11 +1,13 @@
 import type * as vscode from 'vscode';
 import * as path from 'path';
-import { IExtendProxy, IExtensionHost } from '../../../common';
+import { IExtendProxy, IExtensionHost, IExtensionProps } from '../../../common';
 import { ExtensionMemento, ExtHostStorage } from './ext.host.storage';
 import { Uri } from '@ali/ide-core-common/lib/uri';
 import { ExtensionMode } from '../../../common/vscode/ext-types';
+import { IExtHostTerminal } from '../../../common/vscode';
 
 export interface IKTContextOptions {
+  extension: IExtensionProps;
   extensionId: string;
   extensionPath: string;
   extensionLocation: Uri;
@@ -13,6 +15,7 @@ export interface IKTContextOptions {
   extendProxy?: IExtendProxy;
   isDevelopment?: boolean;
   registerExtendModuleService?: (exportsData: any) => void;
+  exthostTerminal?: IExtHostTerminal;
 }
 
 export interface IKTWorkerExtensionContextOptions extends IKTContextOptions {
@@ -108,12 +111,17 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
 
   private _storage: ExtHostStorage;
 
+  private exthostTerminalService: IExtHostTerminal | undefined;
+
+  private extension: IExtensionProps;
+
   public componentProxy: IExtendProxy | undefined;
 
   public registerExtendModuleService: ((exportsData: any) => void) | undefined;
 
   constructor(options: IKTContextOptions) {
     const {
+      extension,
       extensionId,
       extensionPath,
       storageProxy,
@@ -121,12 +129,13 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
       isDevelopment,
     } = options;
     this._storage = storageProxy;
-
+    this.extension = extension;
     this.extensionPath = extensionPath;
     this._extensionLocation = extensionLocation;
     this._isDevelopment = !!isDevelopment;
     this.workspaceState = new ExtensionMemento(extensionId, false, storageProxy);
     this.globalState = new ExtensionMemento(extensionId, true, storageProxy);
+    this.exthostTerminalService = options.exthostTerminal;
     this.componentProxy = options.extendProxy;
     this.registerExtendModuleService = options.registerExtendModuleService;
   }
@@ -153,6 +162,10 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
 
   get extensionMode() {
     return this._isDevelopment ? ExtensionMode.Development : ExtensionMode.Production;
+  }
+
+  get environmentVariableCollection() {
+    return this.exthostTerminalService?.getEnviromentVariableCollection(this.extension);
   }
 }
 

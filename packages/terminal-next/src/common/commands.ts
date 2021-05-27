@@ -107,4 +107,8 @@ export namespace TERMINAL_COMMANDS {
   export const SELECT_ALL = {
     id: 'terminal.selectAll',
   };
+
+  export const RE_LAUNCH = {
+    id: 'terminal.relaunch',
+  };
 }

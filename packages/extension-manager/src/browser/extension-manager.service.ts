@@ -981,6 +981,10 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
 
   @action
   async uninstallExtension(extension: BaseExtension): Promise<boolean> {
+    this.extensionMomentState.set(extension.extensionId, {
+      isUnInstalling: true,
+    });
+
     const dependedExtsMap = await this.getDependedExtMap();
 
     const dependedExtIds = Array.from(dependedExtsMap.keys());
@@ -1006,9 +1010,6 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
       }
     }
 
-    this.extensionMomentState.set(extension.extensionId, {
-      isUnInstalling: true,
-    });
     // 如果删除成功，且不需要重启，在列表页删除
     const reloadRequire = await this.computeReloadState(extension.path);
     // 调用后台删除插件

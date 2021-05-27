@@ -1,13 +1,13 @@
 import type * as vscode from 'vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { Disposable, PreferenceService, IDisposable } from '@ali/ide-core-browser';
+import { ILogger, Disposable, PreferenceService, IDisposable } from '@ali/ide-core-browser';
 import { ITerminalApiService, ITerminalController, ITerminalInfo, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest, ITerminalDimensions, ITerminalDimensionsDto, ITerminalExternalLinkProvider, ITerminalClient, ITerminalLink } from '@ali/ide-terminal-next';
+import { IEnvironmentVariableService, SerializableEnvironmentVariableCollection, EnvironmentVariableServiceToken } from '@ali/ide-terminal-next/lib/common/environmentVariable';
+import { deserializeEnvironmentVariableCollection } from '@ali/ide-terminal-next/lib/common/environmentVariable';
 import { IMainThreadTerminal, IExtHostTerminal, ExtHostAPIIdentifier } from '../../../common/vscode';
 
-import { ILogger } from '@ali/ide-core-browser';
-
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class MainThreadTerminal implements IMainThreadTerminal {
   private readonly proxy: IExtHostTerminal;
   private readonly _terminalProcessProxies = new Map<string, ITerminalProcessExtHostProxy>();
@@ -19,6 +19,9 @@ export class MainThreadTerminal implements IMainThreadTerminal {
    * priority intersecting links itself.
    */
   private _linkProvider: IDisposable | undefined;
+
+  @Autowired(EnvironmentVariableServiceToken)
+  private environmentVariableService: IEnvironmentVariableService;
 
   @Autowired(ITerminalApiService)
   private terminalApi: ITerminalApiService;
@@ -172,6 +175,25 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   public $stopLinkProvider() {
     this._linkProvider?.dispose();
     this._linkProvider = undefined;
+  }
+
+  $setEnvironmentVariableCollection(
+    extensionIdentifier: string,
+    persistent: boolean,
+    collection: SerializableEnvironmentVariableCollection | undefined,
+  ): void {
+    if (collection) {
+      const translatedCollection = {
+        persistent,
+        map: deserializeEnvironmentVariableCollection(collection),
+      };
+      this.environmentVariableService.set(
+        extensionIdentifier,
+        translatedCollection,
+      );
+    } else {
+      this.environmentVariableService.delete(extensionIdentifier);
+    }
   }
 }
 

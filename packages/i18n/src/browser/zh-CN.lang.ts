@@ -546,6 +546,7 @@ export const localizationBundle = {
     'terminal.search.next': '搜索下一个匹配项',
     'terminal.openWithPath': '在终端中打开',
     'terminal.remove': '终止终端',
+    'terminal.relaunch': '重启终端',
     'terminal.menu.search': '搜索',
     'terminal.menu.split': '拆分终端',
     'terminal.menu.rename': '重命名',
@@ -559,6 +560,9 @@ export const localizationBundle = {
     'terminal.menu.clearAllGroups': '清空所有终端日志',
     'terminal.menu.selectType': '默认终端类型',
     'terminal.menu.moreSettings': '更多设置',
+    'terminal.environment.changed': '终端环境变量已经被部分插件修改',
+    'terminal.environment.changes': '扩展期望对终端的环境变量做以下更改：',
+    'terminal.environment.removal': '扩展期望从现有的终端环境变量中删除以下值：',
 
     'deugger.menu.setValue': '设置变量',
     'deugger.menu.setValue.param': '请输入你要改变变量的值',

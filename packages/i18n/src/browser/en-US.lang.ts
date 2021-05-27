@@ -496,6 +496,10 @@ export const localizationBundle = {
     'terminal.menu.moreSettings': 'More Settings',
     'terminal.menu.clearCurrentGroup': 'Clear Current Terminals',
     'terminal.menu.clearAllGroups': 'Clear All Terminals',
+    'terminal.environment.changed': "Extensions have made changes to this terminal's environment",
+    'terminal.environment.relaunch': 'Relaunch Terminal',
+    'terminal.environment.changes': "Extensions want to make the following changes to the terminal's environment:",
+    'terminal.environment.removal': "Extensions want to remove these existing changes from the terminal's environment:",
 
     'deugger.menu.setValue': 'Set Value',
     'deugger.menu.setValue.param': 'Please input the value of this variable',

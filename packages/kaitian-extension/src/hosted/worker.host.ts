@@ -217,6 +217,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
     };
 
     const context = new KTWorkerExtensionContext({
+      extension,
       extensionId: extension.id,
       extendProxy: componentProxy,
       registerExtendModuleService: registerExtendFn,
