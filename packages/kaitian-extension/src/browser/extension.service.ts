@@ -3,9 +3,9 @@ import {
   AppConfig, CommandRegistry, CorePreferences, Deferred, ExtensionActivateEvent,
   getPreferenceLanguageId, IClientApp, ILogger,
 } from '@ali/ide-core-browser';
-import { IExtensionProps, localize, OnEvent, WithEventBus } from '@ali/ide-core-common';
+import { localize, OnEvent, WithEventBus } from '@ali/ide-core-common';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
-import { FileSearchServicePath, IFileSearchService } from '@ali/ide-file-search';
+import { FileSearchServicePath, IFileSearchService } from '@ali/ide-file-search/lib/common';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { IIconService, IThemeService } from '@ali/ide-theme';
 import { IWorkspaceService } from '@ali/ide-workspace';
