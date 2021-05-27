@@ -8,7 +8,7 @@ import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy, g
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
 import { createAPIFactory as createKaitianAPIFactory } from './api/kaitian/ext.host.api.impl';
-import { MainThreadAPIIdentifier, VSCodeExtensionService, IExtensionDescription, ExtensionIdentifier } from '../common/vscode';
+import { ExtHostAPIIdentifier, MainThreadAPIIdentifier, VSCodeExtensionService, IExtensionDescription, ExtensionIdentifier } from '../common/vscode';
 import { ExtensionContext } from './api/vscode/ext.host.extensions';
 import { KTExtension } from './vscode.extension';
 import { AppConfig } from '@ali/ide-core-node';
@@ -478,13 +478,17 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       return this.registerExtendModuleService(exportsData, extension);
     };
 
+    const exthostTermianl = this.rpcProtocol.get(ExtHostAPIIdentifier.ExtHostTerminal);
+
     const context = new ExtensionContext({
+      extension,
       extensionId,
       extensionPath: modulePath,
       extensionLocation: extension.extensionLocation,
       storageProxy,
       extendProxy,
       registerExtendModuleService: registerExtendFn,
+      exthostTerminal: exthostTermianl,
     });
 
     return Promise.all([

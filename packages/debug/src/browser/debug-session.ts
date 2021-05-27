@@ -48,8 +48,20 @@ export class DebugSession implements IDebugSession {
   private _onVariableChange = new Emitter<void>();
   readonly onVariableChange: Event<void> = this._onVariableChange.event;
 
-  private _onRequest = new Emitter<string>();
-  readonly onRequest: Event<string> = this._onRequest.event;
+  private _onCurrentThreadChange = new Emitter<DebugThread | undefined>();
+  readonly onCurrentThreadChange: Event<DebugThread | undefined> = this._onCurrentThreadChange.event;
+
+  private _onDidStop = new Emitter<DebugProtocol.StoppedEvent>();
+  readonly onDidStop: Event<DebugProtocol.StoppedEvent> = this._onDidStop.event;
+
+  private _onDidContinued = new Emitter<DebugProtocol.ContinuedEvent>();
+  readonly onDidContinued: Event<DebugProtocol.ContinuedEvent> = this._onDidContinued.event;
+
+  private _onDidThread = new Emitter<DebugProtocol.ThreadEvent>();
+  readonly onDidThread: Event<DebugProtocol.ThreadEvent> = this._onDidThread.event;
+
+  private _onRequest = new Emitter<keyof DebugRequestTypes>();
+  readonly onRequest: Event<keyof DebugRequestTypes> = this._onRequest.event;
 
   protected readonly toDispose = new DisposableCollection();
 
@@ -57,6 +69,10 @@ export class DebugSession implements IDebugSession {
 
   get capabilities(): DebugProtocol.Capabilities {
     return this._capabilities;
+  }
+
+  get supportsThreadIdCorrespond(): boolean {
+    return !!this.capabilities.supportsThreadIdCorrespond;
   }
 
   protected updateDeffered: Deferred<void> | null = null;
@@ -93,36 +109,55 @@ export class DebugSession implements IDebugSession {
       }),
       // 更新断点
       this.on('breakpoint', ({ body }) => this.onUpdateBreakpoint(body)),
-      this.on('continued', ({ body: { allThreadsContinued, threadId } }) => {
+      this.on('continued', async (event: DebugProtocol.ContinuedEvent) => {
+        const { body: { allThreadsContinued, threadId } } = event;
+        this.handleCancellation(threadId);
+        if (this.supportsThreadIdCorrespond) {
+          if (threadId) {
+            this._multipleThreadPaused.delete(threadId);
+          } else if (allThreadsContinued !== false) {
+            this._multipleThreadPaused.clear();
+          }
+          await this.updateCurrentThread();
+          this._onDidContinued.fire(event);
+          return;
+        }
+
         // 更新线程
         if (allThreadsContinued !== false) {
           this.clearThreads();
+          this._onDidContinued.fire(event);
           return;
         }
 
         if (threadId) {
           this.clearThread(threadId);
-          const tokens = this.cancellationMap.get(threadId);
-          this.cancellationMap.delete(threadId);
-          if (tokens) {
-            tokens.forEach((t) => t.cancel());
-          }
-        } else {
-          this.cancelAllRequests();
         }
+
+        this._onDidContinued.fire(event);
       }),
-      this.on('stopped', async ({ body }) => {
+      this.on('stopped', async (event: DebugProtocol.StoppedEvent) => {
+        const { body } = event;
         const { threadId } = body;
         const reportTime = this.sessionManager.reportTime(DEBUG_REPORT_NAME.DEBUG_STOPPED, {
           sessionId: this.id,
           threadId,
         });
-        this.updateDeffered = new Deferred();
-        await this.updateThreads(body);
-        await this.updateFrames();
-        this.updateDeffered.resolve();
-        // 下一个 scopes 触发后 action 结束
-        await this.takeCommand('scopes');
+
+        if (this.supportsThreadIdCorrespond === true) {
+          await this.collectPausedThread(body);
+          if (body.threadId && this._multipleThreadPaused.has(body.threadId)) {
+            const pauseThread = this._multipleThreadPaused.get(body.threadId);
+            await this.updateCurrentThread(pauseThread);
+            await this.updateCurrentThreadFramesOnFocus();
+          }
+        } else {
+          this.updateDeffered = new Deferred();
+          await this.updateThreads(body);
+          await this.updateCurrentThreadFramesOnFocus();
+          this.updateDeffered.resolve();
+        }
+
         reportTime('stopped');
         // action 结束后需要清除
         const extra = this.sessionManager.getExtra(this.id, threadId);
@@ -130,8 +165,20 @@ export class DebugSession implements IDebugSession {
           extra.action = undefined;
           this.sessionManager.setExtra(this.id, `${threadId ?? ''}`, extra);
         }
+
+        this._onDidStop.fire(event);
       }),
-      this.on('thread', ({ body: { reason, threadId } }) => {
+      this.on('thread', (event: DebugProtocol.ThreadEvent) => {
+        const { body: { reason, threadId } } = event;
+
+        if (this.supportsThreadIdCorrespond) {
+          // 当 supportsThreadIdCorrespond 开启的时候，只有在 DebugState 为 Stopped 的时候才发送 thread dap 事件
+          if (this.state === DebugState.Stopped) {
+            this._onDidThread.fire(event);
+          }
+          return;
+        }
+
         if (reason === 'started') {
           // 队列更新线程
           this.scheduleUpdateThreads();
@@ -139,6 +186,7 @@ export class DebugSession implements IDebugSession {
           // 清理线程数据
           this.clearThread(threadId);
         }
+        this._onDidThread.fire(event);
       }),
       this.on('terminated', () => {
         this.terminated = true;
@@ -243,7 +291,9 @@ export class DebugSession implements IDebugSession {
       await this.sendRequest('configurationDone', {});
     }
     this.initialized = true;
-    await this.updateThreads(undefined);
+    if (!this.supportsThreadIdCorrespond) {
+      await this.updateThreads(undefined);
+    }
   }
 
   protected async setExceptionBreakpoints(
@@ -376,6 +426,7 @@ export class DebugSession implements IDebugSession {
   }
 
   protected _currentThread: DebugThread | undefined;
+  protected _multipleThreadPaused: Map<number, DebugThread> = new Map();
 
   get currentThread(): DebugThread | undefined {
     return this._currentThread;
@@ -389,6 +440,14 @@ export class DebugSession implements IDebugSession {
     }
   }
 
+  get multipleThreadPaused(): Map<number, DebugThread> {
+    return this._multipleThreadPaused;
+  }
+
+  public hasInMultipleThreadPaused(id: number): boolean {
+    return this._multipleThreadPaused.has(id);
+  }
+
   protected clearThreads(): void {
     const frontEndTime = this.sessionManager.reportTime(DEBUG_REPORT_NAME.DEBUG_UI_FRONTEND_TIME, {
       sessionId: this.id,
@@ -399,7 +458,7 @@ export class DebugSession implements IDebugSession {
       thread.clear();
     });
     this._onDidChangeCallStack.fire();
-    this.updateCurrentThread();
+    this.collocationThread();
     frontEndTime('clearThreads');
   }
 
@@ -414,7 +473,7 @@ export class DebugSession implements IDebugSession {
       thread.clear();
       this._onDidChangeCallStack.fire();
     }
-    this.updateCurrentThread();
+    this.collocationThread();
     frontEndTime('clearThread');
   }
 
@@ -428,6 +487,8 @@ export class DebugSession implements IDebugSession {
     const thread = this.currentThread;
     if (thread) {
       return thread.stopped ? DebugState.Stopped : DebugState.Running;
+    } else if (this.supportsThreadIdCorrespond) {
+      return DebugState.Running;
     }
     return !!this.stoppedThreads.next().value ? DebugState.Stopped : DebugState.Running;
   }
@@ -492,7 +553,6 @@ export class DebugSession implements IDebugSession {
     };
   }
 
-  // protected _threads: DebugThread[] = [];
   protected _threads: Map<number, DebugThread> = new Map();
   get threads(): DebugThread[] {
     return Array.from(this._threads.values());
@@ -515,12 +575,36 @@ export class DebugSession implements IDebugSession {
   }
   protected readonly scheduleUpdateThreads = debounce(() => this.updateThreads(undefined), 100);
   protected pendingThreads = Promise.resolve();
+
+  private async rawFetchThreads(threadId?: number): Promise<DebugProtocol.Thread[]> {
+    const arg = typeof threadId === 'undefined'  ? null : { threadId };
+    const response = await this.sendRequest('threads', arg);
+    if (response && response.body && response.body.threads && Array.isArray(response.body.threads)) {
+      return Promise.resolve(response.body.threads);
+    }
+
+    return Promise.resolve([]);
+  }
+
+  public async fetchThreads(): Promise<DebugThread[]> {
+    const rawThreads = await this.rawFetchThreads();
+    const existing = this._threads;
+    const threads: DebugThread[] = [];
+    for (const raw of rawThreads) {
+      const id = raw.id;
+      const thread = existing.get(id) || new DebugThread(this);
+      threads.push(thread);
+      thread.update({ raw });
+    }
+
+    return Promise.resolve(threads);
+  }
+
   updateThreads(stoppedDetails: StoppedDetails | undefined): Promise<void> {
     return this.pendingThreads = this.pendingThreads.then(async () => {
       try {
-        const response = await this.sendRequest('threads', {});
         // java debugger returns an empty body sometimes
-        const threads = response && response.body && response.body.threads || [];
+        const threads = await this.rawFetchThreads();
         this.doUpdateThreads(threads, stoppedDetails);
       } catch (e) {
         // console.error(e);
@@ -560,11 +644,16 @@ export class DebugSession implements IDebugSession {
       }
     });
 
-    this.updateCurrentThread(stoppedDetails);
+    this.collocationThread(stoppedDetails);
     frontEndTime('doUpdateThreads');
   }
 
-  protected updateCurrentThread(stoppedDetails?: StoppedDetails): void {
+  /**
+   * 两种更新 currentThread 方式
+   * 一. collocationThread: 在 threads 列表里查找
+   * 二. updateCurrentThread: 发送 threads DAP 给 debug server，由 server 去查找并返回。前提是 supportsThreadIdCorrespond 必须为 true
+   */
+  protected collocationThread(stoppedDetails?: StoppedDetails): void {
     const { currentThread } = this;
     let threadId = currentThread && currentThread.raw.id;
     if (stoppedDetails && !stoppedDetails.preserveFocusHint && !!stoppedDetails.threadId) {
@@ -576,19 +665,43 @@ export class DebugSession implements IDebugSession {
     }
   }
 
-  protected async updateFrames(): Promise<void> {
-    const thread = this.currentThread;
-    if (!thread || thread.frameCount) {
-        return;
-    }
-
-    if (this.capabilities.supportsDelayedStackTraceLoading) {
-        await thread.fetchFrames(1);
-        await thread.fetchFrames(19);
+  protected async updateCurrentThread(thread?: DebugThread): Promise<void> {
+    if (thread) {
+      this.currentThread = thread;
+      this._onCurrentThreadChange.fire(this.currentThread);
     } else {
-        await thread.fetchFrames();
+      this.currentThread = undefined;
+      this._onCurrentThreadChange.fire(undefined);
+    }
+  }
+
+  /**
+   * 收集被暂停的线程 map
+   */
+  protected async collectPausedThread(stoppedDetails: StoppedDetails): Promise<Map<number, DebugThread>> {
+    const threads = await this.rawFetchThreads(stoppedDetails?.threadId);
+
+    if (threads.length === 0) {
+      return new Map();
     }
 
+    const debugThread = stoppedDetails.threadId && this._multipleThreadPaused.has(stoppedDetails.threadId) ? this._multipleThreadPaused.get(stoppedDetails.threadId) : new DebugThread(this);
+    const data: Partial<Mutable<DebugThreadData>> = { raw: threads[0] };
+    if (stoppedDetails && (stoppedDetails.allThreadsStopped || stoppedDetails.threadId === threads[0].id)) {
+      data.stoppedDetails = stoppedDetails;
+    }
+
+    if (debugThread) {
+      debugThread.update(data);
+      await this.rawFetchFrames(debugThread);
+      this._multipleThreadPaused.set(debugThread.raw.id, debugThread);
+    }
+
+    return this._multipleThreadPaused;
+  }
+
+  protected async updateCurrentThreadFramesOnFocus(): Promise<void> {
+    await this.rawFetchFrames(this.currentThread);
     this._onDidChangeCallStack.fire();
 
     // set current frame from editor
@@ -602,6 +715,19 @@ export class DebugSession implements IDebugSession {
           this.currentThread.currentFrame = frames[0];
         }
       }
+    }
+  }
+
+  protected async rawFetchFrames(thread?: DebugThread): Promise<void> {
+    if (!thread || thread.frameCount) {
+        return;
+    }
+
+    if (this.capabilities.supportsDelayedStackTraceLoading) {
+        await thread.rawFetchFrames(1);
+        await thread.rawFetchFrames(19);
+    } else {
+        await thread.rawFetchFrames();
     }
   }
 
@@ -710,6 +836,12 @@ export class DebugSession implements IDebugSession {
     let requestToken: CancellationToken | undefined;
 
     if (
+      (['continue', 'next', 'stepIn', 'stepOut', 'threads'] as K[]).some((c) => command === c)
+    ) {
+      this.handleCancellation(this.currentThread?.raw.id);
+    }
+
+    if (
       (['stackTrace', 'scopes', 'variables', 'completions', 'threads'] as K[]).some((c) => command === c)
     ) {
       requestToken = this.currentThread?.raw.id ? this.getNewCancellationToken(this.currentThread?.raw.id, token) : undefined;
@@ -772,6 +904,18 @@ export class DebugSession implements IDebugSession {
   private cancelAllRequests(): void {
     this.cancellationMap.forEach((tokens) => tokens.forEach((t) => t.cancel()));
     this.cancellationMap.clear();
+  }
+
+  public handleCancellation(threadId?: number): void {
+    if (threadId) {
+      const tokens = this.cancellationMap.get(threadId);
+      this.cancellationMap.delete(threadId);
+      if (tokens) {
+        tokens.forEach((t) => t.cancel());
+      }
+    } else {
+      this.cancelAllRequests();
+    }
   }
 
   // Cancellation end

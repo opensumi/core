@@ -3,13 +3,11 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { createHash } from 'crypto';
 import { v4 } from 'uuid';
 import * as address from 'address';
-import { MainThreadAPIIdentifier, IMainThreadEnv, IExtHostTerminal } from '../../../common/vscode';
+import { MainThreadAPIIdentifier, IMainThreadEnv, IExtHostTerminal, IExtensionDescription } from '../../../common/vscode';
 import {
-  // IExtensionProcessService,
   IExtHostEnv,
   ExtHostEnvValues,
 } from '../../../common/vscode';
-import { IExtensionHostService } from '../../../common';
 import { LogLevel } from '../../../common/vscode/ext-types';
 import { Event, Emitter, LogLevel as KTLogLevel, Schemas, URI } from '@ali/ide-core-common';
 
@@ -39,7 +37,7 @@ export const envValue = new Env();
 
 export function createEnvApiFactory(
   rpcProtocol: IRPCProtocol,
-  extensionService: IExtensionHostService,
+  extension: IExtensionDescription,
   envHost: IExtHostEnv,
   exthostTerminal: IExtHostTerminal,
 ): typeof vscode.env {
@@ -69,14 +67,14 @@ export function createEnvApiFactory(
     asExternalUri(target: vscode.Uri): Thenable<vscode.Uri> {
       return envHost.asExternalUri(target);
     },
-    // todo: implements
     get logLevel() {
-      // checkProposedApiEnabled(extension);
       return envHost.logLevel;
     },
     get onDidChangeLogLevel(): Event<LogLevel> {
-      // checkProposedApiEnabled(extension);
       return envHost.logLevelChangeEmitter.event;
+    },
+    get environmentVariableCollection(): vscode.EnvironmentVariableCollection {
+      return exthostTerminal.getEnviromentVariableCollection(extension);
     },
   };
 

@@ -1,4 +1,4 @@
-import type { EndOfLineSequence } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
+import type { languages, editor } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 
 // 内置的api类型声明
 import { Uri as URI, IRange, IDisposable, UriComponents, SymbolTag, CancellationToken } from '@ali/ide-core-common';
@@ -486,7 +486,7 @@ export interface ColorInformation {
 export interface TextEdit {
   range: Range;
   text: string;
-  eol?: EndOfLineSequence;
+  eol?: editor.EndOfLineSequence;
 }
 
 // TODO 放在正确位置 start
@@ -525,8 +525,7 @@ export interface CodeLensList {
   dispose(): void;
 }
 
-export interface WorkspaceEditDto {
-  edits: (ResourceFileEditDto | ResourceTextEditDto)[];
+export interface WorkspaceEditDto extends languages.WorkspaceEdit {
   rejectReason?: string;
 }
 
@@ -539,17 +538,9 @@ export interface FileOperationOptions {
   recursive?: boolean;
 }
 
-export interface ResourceFileEditDto {
-  oldUri: UriComponents;
-  newUri: UriComponents;
-  options: FileOperationOptions;
-}
+export type ResourceFileEditDto = languages.WorkspaceFileEdit;
 
-export interface ResourceTextEditDto {
-  resource: UriComponents;
-  modelVersionId?: number;
-  edit: TextEdit;
-}
+export type ResourceTextEditDto = languages.WorkspaceTextEdit;
 
 export interface DocumentLink {
   range: Range;

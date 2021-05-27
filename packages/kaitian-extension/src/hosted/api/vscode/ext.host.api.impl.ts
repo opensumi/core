@@ -93,7 +93,7 @@ export function createApiFactory(
       ),
       languages: createLanguagesApiFactory(extHostLanguages, extension),
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem, extHostFileSystemEvent, extHostTasks, extension),
-      env: createEnvApiFactory(rpcProtocol, extensionService, extHostEnv, extHostTerminal),
+      env: createEnvApiFactory(rpcProtocol, extension, extHostEnv, extHostTerminal),
       debug: createDebugApiFactory(extHostDebug),
       version: appConfig.customVSCodeEngineVersion || '1.44.2',
       comments: createCommentsApiFactory(extension, extHostComments),

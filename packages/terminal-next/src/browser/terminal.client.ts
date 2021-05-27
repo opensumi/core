@@ -3,9 +3,10 @@ import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { SearchAddon } from 'xterm-addon-search';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { Disposable, Deferred, Emitter, Event, debounce, ILogger, IDisposable, URI } from '@ali/ide-core-common';
+import { Disposable, Deferred, Emitter, Event, debounce, ILogger, IDisposable, URI, IApplicationService } from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+import { IVariableResolverService } from '@ali/ide-variable/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
 import { AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
 import { TerminalKeyBoardInputService } from './terminal.input';
@@ -13,6 +14,7 @@ import { TerminalOptions, ITerminalController, ITerminalClient, ITerminalTheme, 
 import { ITerminalPreference } from '../common/preference';
 import { CorePreferences, QuickPickService } from '@ali/ide-core-browser';
 import { TerminalLinkManager } from './links/link-manager';
+import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
 
 import * as styles from './component/terminal.module.less';
 
@@ -85,6 +87,15 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   @Autowired(ILogger)
   protected readonly logger: ILogger;
 
+  @Autowired(EnvironmentVariableServiceToken)
+  protected readonly environmentService: IEnvironmentVariableService;
+
+  @Autowired(IApplicationService)
+  protected readonly applicationService: IApplicationService;
+
+  @Autowired(IVariableResolverService)
+  variableResolver: IVariableResolverService;
+
   private _onInput = new Emitter<ITerminalDataEvent>();
   onInput: Event<ITerminalDataEvent> = this._onInput.event;
 
@@ -109,6 +120,27 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       ...this.preference.toJSON(),
       ...this.service.getOptions(),
     });
+
+    // 可能存在 env 为 undefined 的情况，做一下初始化
+    if (!this._options.env) {
+      this._options.env = {};
+    }
+
+    this.environmentService.mergedCollection?.applyToProcessEnvironment(
+      this._options.env,
+      this.applicationService.backendOS,
+      this.variableResolver.resolve.bind(this.variableResolver),
+    );
+
+    this.addDispose(this.environmentService.onDidChangeCollections((collection) => {
+      // 环境变量更新只会在新建的终端中生效，已有的终端需要重启才可以生效
+      collection.applyToProcessEnvironment(
+        this._options.env || {},
+        this.applicationService.backendOS,
+        this.variableResolver.resolve.bind(this.variableResolver),
+      );
+    }));
+
     this.addDispose(Disposable.create(() => {
       TerminalClient.WORKSPACE_PATH_CACHED.delete(widget.group.id);
     }));

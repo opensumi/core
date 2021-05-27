@@ -1,5 +1,6 @@
-import { Event, IDisposable } from '@ali/ide-core-common';
+import { Event, IDisposable, IExtensionProps } from '@ali/ide-core-common';
 import { ITerminalInfo, ITerminalDimensionsDto, ITerminalLaunchError, ITerminalDimensions, ITerminalExitEvent, ITerminalLinkDto } from '@ali/ide-terminal-next';
+import { SerializableEnvironmentVariableCollection } from '@ali/ide-terminal-next/lib/common/environmentVariable';
 import type * as vscode from 'vscode';
 
 export interface IMainThreadTerminal {
@@ -26,6 +27,8 @@ export interface IMainThreadTerminal {
   $sendProcessInitialCwd(terminalId: string, cwd: string): void;
   $sendProcessCwd(terminalId: string, initialCwd: string): void;
   $sendOverrideDimensions(terminalId: string, dimensions: ITerminalDimensions | undefined): void;
+
+  $setEnvironmentVariableCollection(extensionIdentifier: string, persistent: boolean, collection: SerializableEnvironmentVariableCollection | undefined): void;
 }
 
 export interface IExtHostTerminal {
@@ -66,4 +69,8 @@ export interface IExtHostTerminal {
   registerLinkProvider(provider: vscode.TerminalLinkProvider): IDisposable;
   $provideLinks(terminalId: string, line: string): Promise<ITerminalLinkDto[]>;
   $activateLink(terminalId: string, linkId: number): void;
+
+  //#region
+  getEnviromentVariableCollection(extension: IExtensionProps): vscode.EnvironmentVariableCollection;
+  //#endregion
 }

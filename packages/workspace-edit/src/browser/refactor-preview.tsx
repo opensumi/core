@@ -1,27 +1,38 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import type { WorkspaceTextEdit } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+import type { WorkspaceTextEdit, WorkspaceFileEdit } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import type { IRange } from '@ali/monaco-editor-core/esm/vs/editor/common/core/range';
 import * as React from 'react';
-import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 
+import * as paths from '@ali/ide-core-common/lib/path';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser/doc-model/types';
-import { URI } from '@ali/ide-core-common/lib/uri';
+import { URI, Uri } from '@ali/ide-core-common/lib/uri';
 import { RecycleList } from '@ali/ide-components/lib/recycle-list';
 import { CheckBox } from '@ali/ide-components/lib/checkbox';
 import { LabelService } from '@ali/ide-core-browser/lib/services/label-service';
 import { ViewState } from '@ali/ide-core-browser/lib/layout';
 
 import {
-  FilterEditKind,
   IRefactorPreviewService,
 } from './refactor-preview.service';
 import * as styles from './refactor_preview.module.less';
+import { localize } from '@ali/ide-core-common/lib/localize';
+import { isWorkspaceFileEdit } from './utils';
 
 interface IRefactorNodeProps {
+  data: WorkspaceTextEdit | WorkspaceFileEdit;
+  onClick: (item: WorkspaceTextEdit | WorkspaceFileEdit) => void;
+}
+
+interface ITextEditNodeProps {
   data: WorkspaceTextEdit;
   onClick: (item: WorkspaceTextEdit) => void;
+}
+
+interface IFileEditNodeProps {
+  data: WorkspaceFileEdit;
+  onClick: (item: WorkspaceFileEdit) => void;
 }
 
 /**
@@ -68,34 +79,24 @@ function splitLeftAndRightPadInTextModel(
   };
 }
 
-const RefactorNode = observer(({ data: item }: IRefactorNodeProps) => {
+const ResourceIcon: React.FC<{ uri: Uri }> = (props) => {
+  const labelService = useInjectable<LabelService>(LabelService);
+  const iconClass = labelService.getIcon(URI.from(props.uri));
+  return <span className={`file-icon ${iconClass}`} />;
+};
+
+const TextEditNode = observer<ITextEditNodeProps>(({ data: item }) => {
   const modelService = useInjectable<IEditorDocumentModelService>(
     IEditorDocumentModelService,
   );
-  const labelService = useInjectable<LabelService>(LabelService);
   const refactorPreviewService = useInjectable<IRefactorPreviewService>(
     IRefactorPreviewService,
   );
 
-  const onCheckboxChange = useCallback(
-    (checked: boolean) => {
-      refactorPreviewService.filterEdit(
-        item,
-        checked ? FilterEditKind.added : FilterEditKind.removed,
-      );
-    },
-    [item],
-  );
-
-  const renderResourceIcon = (node: WorkspaceTextEdit) => {
-    const iconClass = labelService.getIcon(URI.from(node.resource));
-    return <span className={`file-icon ${iconClass}`} />;
-  };
-
   const renderTextEditDiff = () => {
     const model = modelService.getModelReference(URI.from(item.resource));
     if (!model) {
-      return item.edit.text;
+      return <div className={styles.refactor_preview_node_wrapper}>{item.edit.text}</div>;
     }
 
     const textModel = model.instance.getMonacoModel();
@@ -105,33 +106,89 @@ const RefactorNode = observer(({ data: item }: IRefactorNodeProps) => {
     );
 
     return (
-      <p className={styles.refactor_preview_node_diff}>
+      <div className={styles.refactor_preview_node_wrapper}>
         {leftPad}
         <span className={styles.refactor_preview_node_base}>{base}</span>
         <span className={styles.refactor_preview_node_new}>
           {item.edit.text}
         </span>
         {rightPad}
-      </p>
+      </div>
     );
   };
 
   return (
-    <div
-      className={styles.resource_node}
-      key={`${item.resource.path}-${item.edit.text}`}
-    >
+    <div className={styles.resource_node} data-workspace-edit-type='text'>
       <CheckBox
-        checked={refactorPreviewService.checkedStore[refactorPreviewService.generateTextEditId(item)] === FilterEditKind.added}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          onCheckboxChange(e.target.checked)
-        }
+        checked={refactorPreviewService.selectedFileOrTextEdits.has(item)}
+        onChange={(checked: React.ChangeEvent<HTMLInputElement>) => {
+          refactorPreviewService.filterEdit(item, !!checked);
+        }}
       />
-      {renderResourceIcon(item)}
+      <ResourceIcon uri={item.resource as unknown as Uri /* monaco#Uri */} />
       {renderTextEditDiff()}
       <span className={styles.resource_node_path}>{item.resource.path}</span>
     </div>
   );
+});
+
+function mapDescForFileEdit(edit: WorkspaceFileEdit) {
+  if (edit.newUri && edit.oldUri) {
+    // rename
+    return {
+      uri: edit.newUri,
+      desc: localize('refactor-preview.file.move'),
+    };
+  }
+  if (edit.newUri && !edit.oldUri) {
+    // create
+    return {
+      uri: edit.newUri,
+      desc: localize('refactor-preview.file.create'),
+    };
+  }
+  if (!edit.newUri && edit.oldUri) {
+    return {
+      uri: edit.oldUri,
+      desc: localize('refactor-preview.file.delete'),
+    };
+  }
+  return undefined;
+}
+
+const FileEditNode = observer<IFileEditNodeProps>(({ data: item }) => {
+  const refactorPreviewService = useInjectable<IRefactorPreviewService>(
+    IRefactorPreviewService,
+  );
+
+  const editDesc = mapDescForFileEdit(item);
+  if (editDesc === undefined) {
+    return null;
+  }
+
+  const filename = paths.basename(editDesc.uri.fsPath);
+  const dirname = paths.dirname(editDesc.uri.fsPath);
+
+  return (
+    <div className={styles.resource_node} data-workspace-edit-type='file'>
+      <CheckBox
+        checked={refactorPreviewService.selectedFileOrTextEdits.has(item)}
+        onChange={(checked: React.ChangeEvent<HTMLInputElement>) => {
+          refactorPreviewService.filterEdit(item, !!checked);
+        }}
+      />
+      <ResourceIcon uri={editDesc.uri as unknown as Uri /* monaco#Uri */} />
+      <span className={styles.refactor_preview_node_wrapper}>{filename}</span>
+      <span className={styles.resource_node_path}>{dirname} ({editDesc.desc})</span>
+    </div>
+  );
+});
+
+const RefactorNode = observer<IRefactorNodeProps>(({ data, ...restProps }) => {
+  if (isWorkspaceFileEdit(data)) {
+    return <FileEditNode data={data} {...restProps} />;
+  }
+  return <TextEditNode data={data} {...restProps} />;
 });
 
 export const RefactorPreview = observer(

@@ -236,5 +236,19 @@ export class TerminalCommandContribution implements CommandContribution {
         }
       },
     });
+
+    registry.registerCommand(TERMINAL_COMMANDS.RE_LAUNCH, {
+      execute: () => {
+        const groups = this.view.groups;
+        for (const group of groups) {
+          group.widgets.forEach((widget) => {
+            const client = this.terminalController.findClientFromWidgetId(widget.id);
+            if (client) {
+              client.reset();
+            }
+          });
+        }
+      },
+    });
   }
 }

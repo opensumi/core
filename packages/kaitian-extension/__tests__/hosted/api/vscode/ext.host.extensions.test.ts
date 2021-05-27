@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
-import { URI } from '@ali/ide-core-common';
+import { IExtensionProps, URI } from '@ali/ide-core-common';
 import { initMockRPCProtocol } from '../../../__mock__/initRPCProtocol';
 import { KTWorkerExtensionContext } from '../../../../src/hosted/api/vscode/ext.host.extensions';
 import { ExtHostStorage } from '../../../../src/hosted/api/vscode/ext.host.storage';
@@ -36,6 +36,7 @@ describe(`test ${__filename}`, () => {
   beforeAll(async () => {
     rpcProtocol = await initMockRPCProtocol(mockClient);
     context = new KTWorkerExtensionContext({
+      extension: mockExtension as unknown as IExtensionProps,
       isDevelopment: false,
       extensionId: mockExtension.extensionId,
       extendProxy: {},

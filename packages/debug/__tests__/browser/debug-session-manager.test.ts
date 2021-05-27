@@ -50,6 +50,7 @@ describe('DebugSessionManager', () => {
   const mockDebugSession = {
     id: sessionId,
     onDidChange: jest.fn(() => Disposable.create(() => {})),
+    onCurrentThreadChange: jest.fn(() => Disposable.create(() => {})),
     on: jest.fn(),
     start: jest.fn(() => new Promise(() => {})),
     onDidCustomEvent: jest.fn(),

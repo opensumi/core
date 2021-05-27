@@ -307,30 +307,15 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   }
 
   /**
-   * 有可能这里的 id 并非 marketplace 的 identify, 这里统一抹平
-   * 比如某个 vscode 的插件 A，依赖了 vscode 的插件 B，此时就应该在获取依赖时将这个 B id 转为 marketplace 认识的 id
-   * @param extensionId
-   * @param version
-   */
-  private async transform2identify(extensionId, version?): Promise<string> {
-    return this.extensionManagerServer.getExtensionFromMarketPlace(extensionId, version).then((res) => res?.data?.identifier);
-  }
-
-  /**
    * 获取插件缺失的依赖列表，该列表要重新安装
    */
   private async getMissExtDeps(extensionId: string, version?: string) {
     // 获取原始的 package.json deps
     const res = await this.extensionManagerServer.getExtensionDeps(extensionId, version);
     const deps = res?.data?.dependencies?.map((dep) => this.transformDepsDeclaration(dep)) || [];
-    const marketplaceDeps = await Promise.all<{id: string; version: string}>(
+    const marketplaceDeps =
       // 先过滤掉 package.json 里 publisher 和 name 相同的插件
-      deps.filter((dep) => !this.extensions.some((extension) => extension.id === dep.id))
-      .map(async (dep) => ({
-        id: await this.transform2identify(dep.id, dep.version),
-        version: dep.version,
-      })),
-    );
+      deps.filter((dep) => !this.extensions.some((extension) => extension.id === dep.id));
     return marketplaceDeps.filter((dep) => !this.installedIds.includes(dep.id));
   }
 
@@ -345,10 +330,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
       const res = await this.extensionManagerServer.getExtensionDeps(extensionId, version);
       const identifies = await Promise.all(
         res?.data?.dependencies?.map((dep) => {
-          const {
-            id, version,
-          } = this.transformDepsDeclaration(dep);
-          return this.transform2identify(id, version);
+          return this.transformDepsDeclaration(dep).id;
         }) || [],
       );
 
@@ -792,10 +774,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
 
           const { id } = this.transformDepsDeclaration(dep);
 
-          // 这里使用 marketplace 认识的 identifier
-          const identifier = await this.transform2identify(id);
-
-          activeExtsDeps.set(identifier, extProp?.extensionId);
+          activeExtsDeps.set(id, extProp?.extensionId);
         }
       }
     }
@@ -1002,6 +981,10 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
 
   @action
   async uninstallExtension(extension: BaseExtension): Promise<boolean> {
+    this.extensionMomentState.set(extension.extensionId, {
+      isUnInstalling: true,
+    });
+
     const dependedExtsMap = await this.getDependedExtMap();
 
     const dependedExtIds = Array.from(dependedExtsMap.keys());
@@ -1027,9 +1010,6 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
       }
     }
 
-    this.extensionMomentState.set(extension.extensionId, {
-      isUnInstalling: true,
-    });
     // 如果删除成功，且不需要重启，在列表页删除
     const reloadRequire = await this.computeReloadState(extension.path);
     // 调用后台删除插件
@@ -1188,8 +1168,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
     const extensionProps = await this.kaitianExtensionManagerService.getAllExtensionJson();
     for (const prop of extensionProps) {
       for (const dep of prop?.packageJSON?.extensionDependencies || []) {
-        const { id } = this.transformDepsDeclaration(dep);
-        const depId = await this.transform2identify(id);
+        const depId = this.transformDepsDeclaration(dep).id;
         depended.set(
           depId,
           depended.has(depId) ? [...depended.get(depId), prop.extensionId] : [prop.extensionId],
@@ -1205,8 +1184,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
 
     for (const prop of extensionProps) {
       for (const dep of prop?.packageJSON.extensionDependencies || []) {
-        const { id } = this.transformDepsDeclaration(dep);
-        const depId = await this.transform2identify(id);
+        const depId = this.transformDepsDeclaration(dep).id;
         dependencies.set(prop.extensionId,
           dependencies.has(prop.extensionId) ? [...dependencies.get(prop.extensionId), depId] : [depId],
         );

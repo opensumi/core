@@ -2,7 +2,9 @@ import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
+import type * as model from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 
+import { Uri } from '@ali/ide-core-common';
 import { Autowired, Injectable, Optinal } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IReporterService, PreferenceService } from '@ali/ide-core-browser';
@@ -14,8 +16,8 @@ import { applyPatch } from 'diff';
 import { DocumentFilter } from 'vscode-languageserver-protocol';
 import { ExtHostAPIIdentifier, IExtHostLanguages, IMainThreadLanguages, ISuggestDataDto, ISuggestDataDtoField, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
-import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SemanticTokensLegend, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ICallHierarchyItemDto, CallHierarchyItem } from '../../../common/vscode/model.api';
-import { mixin, reviveIndentationRule, reviveOnEnterRules, reviveRegExp, reviveWorkspaceEditDto } from '../../../common/vscode/utils';
+import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SemanticTokensLegend, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ICallHierarchyItemDto, CallHierarchyItem, IWorkspaceEditDto, ResourceTextEditDto, ResourceFileEditDto } from '../../../common/vscode/model.api';
+import { mixin, reviveIndentationRule, reviveOnEnterRules, reviveRegExp } from '../../../common/vscode/utils';
 import { UriComponents } from '../../../common/vscode/ext-types';
 import { ILanguageService } from '@ali/ide-editor';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
@@ -984,7 +986,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
             if (v) {
               timer.timeEnd(extname(model.uri.fsPath));
             }
-            return reviveWorkspaceEditDto(v!);
+            return this.reviveWorkspaceEditDto(v!);
           });
       },
       resolveRenameLocation: supportsResolveLocation
@@ -999,6 +1001,23 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         }
         : undefined,
     };
+  }
+
+  /**
+   * 将 IWorkspaceEditDto 转为 monaco-editor 中的 WorkspaceEdit
+   */
+  private reviveWorkspaceEditDto(data: IWorkspaceEditDto): model.WorkspaceEdit {
+    if (data && data.edits) {
+      for (const edit of data.edits) {
+        if (typeof (edit as ResourceTextEditDto).resource === 'object') {
+          (edit as ResourceTextEditDto).resource = Uri.revive((edit as ResourceTextEditDto).resource);
+        } else {
+          (edit as ResourceFileEditDto).newUri = Uri.revive((edit as ResourceFileEditDto).newUri);
+          (edit as ResourceFileEditDto).oldUri = Uri.revive((edit as ResourceFileEditDto).oldUri);
+        }
+      }
+    }
+    return data as model.WorkspaceEdit;
   }
 
   $registerSelectionRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void {

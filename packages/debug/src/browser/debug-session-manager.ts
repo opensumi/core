@@ -447,6 +447,9 @@ export class DebugSessionManager implements IDebugSessionManager {
         }
         this.fireDidChange(current);
       }));
+      this.toDisposeOnCurrentSession.push(current.onCurrentThreadChange(() => {
+        this.fireDidChange(current);
+      }));
     }
     this.open();
     this.fireDidChange(current);

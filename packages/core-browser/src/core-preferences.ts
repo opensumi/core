@@ -107,6 +107,12 @@ export const corePreferenceSchema: PreferenceSchema = {
       minimum: 0,
       description: 'Controls the number of recently used commands to keep in history for the command palette. Set to 0 to disable command history.',
     },
+    'workbench.refactoringChanges.showPreviewStrategy': {
+      type: 'string',
+      default: 'askMe',
+      enum: ['show', 'hide', 'askMe'],
+      description: '%preference.workbench.refactoringChanges.showPreviewStrategy%',
+    },
 
     'explorer.confirmMove': {
       type: 'boolean',
@@ -296,6 +302,7 @@ export interface CoreConfiguration {
   'application.invalidExthostReload': 'ifRequired' | 'always';
   'workbench.list.openMode': 'singleClick' | 'doubleClick';
   'workbench.commandPalette.history': number;
+  'workbench.refactoringChanges.showPreviewStrategy': string;
   'explorer.confirmDelete': boolean;
   'explorer.fileTree.baseIndent': number;
   'explorer.fileTree.indent': number;

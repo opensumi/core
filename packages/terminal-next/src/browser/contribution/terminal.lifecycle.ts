@@ -2,6 +2,7 @@ import { Autowired } from '@ali/common-di';
 import { Domain, ClientAppContribution } from '@ali/ide-core-browser';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
 import { ITerminalController, ITerminalRestore } from '../../common';
+import { IEnvironmentVariableService, EnvironmentVariableServiceToken } from '../../common/environmentVariable';
 import { TerminalKeyBoardInputService } from '../terminal.input';
 
 @Domain(ClientAppContribution, MainLayoutContribution)
@@ -15,8 +16,12 @@ export class TerminalLifeCycleContribution implements ClientAppContribution, Mai
   @Autowired(ITerminalRestore)
   protected readonly store: ITerminalRestore;
 
+  @Autowired(EnvironmentVariableServiceToken)
+  protected readonly environmentService: IEnvironmentVariableService;
+
   onStart() {
     this.terminalInput.listen();
+    this.environmentService.initEnvironmentVariableCollections();
   }
 
   // 必须等待这个事件返回，否则 tabHandler 无法保证获取

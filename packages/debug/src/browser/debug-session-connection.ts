@@ -57,7 +57,7 @@ export interface DebugRequestTypes {
   'stepOut': [DebugProtocol.StepOutArguments, DebugProtocol.StepOutResponse];
   'terminate': [DebugProtocol.TerminateArguments, DebugProtocol.TerminateResponse];
   'terminateThreads': [DebugProtocol.TerminateThreadsArguments, DebugProtocol.TerminateThreadsResponse];
-  'threads': [{}, DebugProtocol.ThreadsResponse];
+  'threads': [DebugProtocol.ThreadsArguments | null, DebugProtocol.ThreadsResponse];
   'variables': [DebugProtocol.VariablesArguments, DebugProtocol.VariablesResponse];
   'cancel': [DebugProtocol.CancelArguments, DebugProtocol.CancelResponse];
 }
@@ -156,7 +156,7 @@ export class DebugSessionConnection implements IDisposable {
 
     const reportDAP = this.manager.reportTime(DEBUG_REPORT_NAME.DEBUG_ADAPTER_PROTOCOL_TIME, {
       sessionId: this.sessionId,
-      threadId: (args as any).threadId || this.manager.currentThread?.raw.id,
+      threadId: args && (args as DebugProtocol.ThreadsArguments).threadId || this.manager.currentThread?.raw.id,
     });
     const result = await this.doSendRequest(command, args, token);
 
@@ -202,10 +202,12 @@ export class DebugSessionConnection implements IDisposable {
       seq: getSequenceId(),
       type: 'request',
       command,
-      arguments: args,
     };
 
     let cancelationListener: IDisposable;
+    if (args && Object.keys(args).length > 0) {
+      request.arguments = args;
+    }
 
     this.pendingRequests.set(request.seq, (response: any) => {
       if (cancelationListener) {
@@ -219,7 +221,7 @@ export class DebugSessionConnection implements IDisposable {
     });
 
     if (token) {
-      cancelationListener = token.onCancellationRequested(() => {
+      cancelationListener = token.onCancellationRequested(async () => {
         cancelationListener.dispose();
         const session = this.manager.getSession(this.sessionId);
         if (session && session.capabilities.supportsCancelRequest) {

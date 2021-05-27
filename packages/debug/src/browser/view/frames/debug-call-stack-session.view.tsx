@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as cls from 'classnames';
 import { ViewState, getIcon, useInjectable, DisposableCollection } from '@ali/ide-core-browser';
-import { DebugSession } from '../../debug-session';
+import { DebugSession, DebugState } from '../../debug-session';
 import { DebugThread } from '../../model/debug-thread';
 import { DebugStackThreadView } from './debug-call-stack-thread.view';
 import { DebugStackOperationView } from './debug-call-stack.operation';
@@ -19,10 +19,15 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
   const { session, viewState, indent } = props;
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
   const [threads, setThreads] = React.useState<DebugThread[]>([]);
+  const [otherThreads, setOtherThreads] = React.useState<DebugThread[]>([]);
+  const [multipleThreadPaused, setMultipleThreadPaused] = React.useState<DebugThread[]>([]);
   const [subSession, setSubSession] = React.useState<DebugSession[]>([]);
   const [unfold, setUnfold] = React.useState<boolean>(true);
   const [hover, setHover] = React.useState<boolean>(false);
-  const mutiple = manager.sessions.length > 1;
+  const [loading, setLoading] = React.useState<boolean>(true);
+  // 多 session 调试
+  const mutipleSession = manager.sessions.length > 1;
+  const supportsThreadIdCorrespond = session.supportsThreadIdCorrespond;
 
   // 从 manager.sessions 中找出 parentSession id 是当前 session id 的 session
   const findSubSessions = () => {
@@ -36,6 +41,14 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
     }
 
     return subSession;
+  };
+
+  // 加载更多线程信息
+  const fetchOtherThreads = async () => {
+    setLoading(true);
+    const _threads = await session.fetchThreads();
+    setLoading(false);
+    setOtherThreads(_threads);
   };
 
   React.useEffect(() => {
@@ -64,23 +77,70 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
       setThreads([...session.threads]);
     }));
 
+    disposable.push(session.onDidThread(async ({ body: { reason } }) => {
+      if (!session.supportsThreadIdCorrespond) {
+        return;
+      }
+
+      if (session.state === DebugState.Stopped && reason === 'started') {
+        await fetchOtherThreads();
+      }
+    }));
+
+    disposable.push(session.onDidStop(async () => {
+      if (!session.supportsThreadIdCorrespond) {
+        return;
+      }
+
+      const multipleThreads = Array.from(session.multipleThreadPaused.values());
+      setMultipleThreadPaused(multipleThreads);
+
+      await fetchOtherThreads();
+    }));
+
+    disposable.push(session.onDidContinued(async () => {
+      if (!session.supportsThreadIdCorrespond) {
+        return;
+      }
+
+      const multipleThreads = Array.from(session.multipleThreadPaused.values());
+      setMultipleThreadPaused(multipleThreads);
+    }));
+
     return () => {
       disposable.dispose();
     };
   }, []);
 
+  // 渲染 "加载更多线程"
+  const renderLoadMoreThread = () => {
+    if (session.state !== DebugState.Stopped) {
+      return null;
+    }
+
+    if (supportsThreadIdCorrespond && unfold) {
+      return loading
+      ? <div className={ styles.debug_stack_item_loading }>
+        <span>正在加载线程...</span>
+      </div>
+      : otherThreads.map((thread) =>
+        !session.hasInMultipleThreadPaused(thread.raw.id) && <DebugStackThreadView key={ thread.id } indent={ mutipleSession ? 16 : 0 } viewState={ viewState } thread={ thread } session={ session } />,
+      );
+    }
+  };
+
   return (
     <div className={ styles.debug_stack_item }>
       <div style={{paddingLeft: indent * 10 + 'px'}}>
         {
-          mutiple &&
+          mutipleSession &&
           <div
             className={ styles.debug_stack_item_label }
             onMouseEnter={ () => setHover(true) }
             onMouseLeave={ () => setHover(false) }
           >
             {
-              threads.length > 0 &&
+              (supportsThreadIdCorrespond || threads.length > 0) &&
               [
                 <div className={ unfold ? getIcon('down') : getIcon('right') } onClick={ () => setUnfold(!unfold) }></div>,
                 <div className={ cls([getIcon('debug'), styles.debug_session_icon]) }></div>,
@@ -98,14 +158,23 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
           </div>
         }
         {
-          (!mutiple || unfold) &&
+          supportsThreadIdCorrespond && unfold
+          ? multipleThreadPaused.map((t) =>
+            <DebugStackThreadView key={ t.id } indent={ mutipleSession ? 16 : 0 } viewState={ viewState } thread={ t } session={ session }/>)
+          : null
+        }
+        {
+          !supportsThreadIdCorrespond && (!mutipleSession || unfold) &&
           threads.map((thread) =>
-            <DebugStackThreadView key={ thread.id } indent={ mutiple ? 16 : 0 } viewState={ viewState } thread={ thread } session={ session }/>)
+            <DebugStackThreadView key={ thread.id } indent={ mutipleSession ? 16 : 0 } viewState={ viewState } thread={ thread }  session={ session } />)
         }
         {
           subSession.length > 0 && subSession.map((s) => {
             return unfold && <DebugStackSessionView key={s.id} viewState={ viewState } session={ s } indent={1} />;
           })
+        }
+        {
+          renderLoadMoreThread()
         }
       </div>
     </div>

@@ -251,7 +251,7 @@ export const localizationBundle = {
     'debug.console.copyAll': 'Copy All',
     'debug.console.collapseAll': 'Collapse All',
 
-    'debug.stack.loadMore': 'Load More Stack Frames',
+    'debug.stack.loadMore': 'Load All Stack Frames',
     'debug.stack.loading': 'Loading...',
     'debug.breakpoint.deactive': 'Deactivate Breakpoints',
     'debug.breakpoint.active': 'Activate Breakpoints',
@@ -391,6 +391,9 @@ export const localizationBundle = {
     'preference.debug.toolbar.float.title': 'Run And Debug -> Float Mode',
     'preference.debug.toolbar.float': 'Float mode',
 
+    // workbench
+    'preference.workbench.refactoringChanges.showPreviewStrategy': 'Show preview confirm when triggering some refactoring changes',
+
     'preference.tab.name': 'Settings',
     'preference.noResults': 'No Setting Found Containing \'{0}\'',
     'preference.editSettingsJson': 'Edit in settings.json',
@@ -493,6 +496,10 @@ export const localizationBundle = {
     'terminal.menu.moreSettings': 'More Settings',
     'terminal.menu.clearCurrentGroup': 'Clear Current Terminals',
     'terminal.menu.clearAllGroups': 'Clear All Terminals',
+    'terminal.environment.changed': "Extensions have made changes to this terminal's environment",
+    'terminal.environment.relaunch': 'Relaunch Terminal',
+    'terminal.environment.changes': "Extensions want to make the following changes to the terminal's environment:",
+    'terminal.environment.removal': "Extensions want to remove these existing changes from the terminal's environment:",
 
     'deugger.menu.setValue': 'Set Value',
     'deugger.menu.setValue.param': 'Please input the value of this variable',
@@ -701,6 +708,9 @@ export const localizationBundle = {
     'refactor-preview.overlay.detail': `Press 'Continue' to discard the previous refactoring and continue with the current refactoring.`,
     'refactor-preview.overlay.continue': 'Continue',
     'refactor-preview.overlay.cancel': 'Cancel',
+    'refactor-preview.file.create': 'Creating',
+    'refactor-preview.file.delete': 'Deleting',
+    'refactor-preview.file.move': 'Moving',
 
     'welcome-view.noOpenRepo': 'No source control providers registered.',
     'welcome-view.noFolderHelp': 'You have not yet opened a folder.\n[Open Folder](command:{0})',
@@ -722,5 +732,14 @@ export const localizationBundle = {
     'authentication.signOut': 'Sign out {0}',
     'authentication.noAccounts': 'You are not signed in to any accounts',
     'authentication.signedOut': 'Successfully signed out.',
+    // refactoring changes related
+    'refactoring-changes.ask.1.create': 'Extension \'{0}\' wants to make refactoring changes with this file creation',
+    'refactoring-changes.ask.1.copy': 'Extension \'{0}\' wants to make refactoring changes with this file copy',
+    'refactoring-changes.ask.1.move': 'Extension \'{0}\' wants to make refactoring changes with this file move',
+    'refactoring-changes.ask.1.delete': 'Extension \'{0}\' wants to make refactoring changes with this file deletion',
+    'refactoring-changes.ask.N.create': '{0} extensions want to make refactoring changes with this file creation',
+    'refactoring-changes.ask.N.copy': '{0} extensions want to make refactoring changes with this file copy',
+    'refactoring-changes.ask.N.move': '{0} extensions want to make refactoring changes with this file move',
+    'refactoring-changes.ask.N.delete': '{0} extensions want to make refactoring changes with this file deletion',
   },
 };

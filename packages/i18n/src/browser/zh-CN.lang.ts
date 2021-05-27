@@ -235,7 +235,7 @@ export const localizationBundle = {
     'output.enableSmartScroll': '启用/禁用智能滚动',
     'output.enableSmartScrollDesc': '智能滚动会在你点击输出视图时禁用自动滚动，点击最后一行输出时启用自动滚动',
 
-    'debug.stack.loadMore': '加载更多堆栈',
+    'debug.stack.loadMore': '展开全部堆栈',
     'debug.stack.loading': '加载中...',
     'debug.breakpoint.deactive': '关闭所有断点',
     'debug.breakpoint.active': '激活所有断点',
@@ -369,6 +369,9 @@ export const localizationBundle = {
     'preference.general.language.change.refresh.info': '更改语言后需重启后生效，是否立即刷新?',
     'preference.general.language.change.refresh.now': '立即刷新',
     'preference.general.language.change.refresh.later': '稍后自己刷新',
+
+    // workbench
+    'preference.workbench.refactoringChanges.showPreviewStrategy': '触发一些重构变更时，是否需要弹窗确认',
 
     'preference.editor.previewMode': '使用预览模式打开',
     'preference.editor.fontFamily': '字体',
@@ -543,6 +546,7 @@ export const localizationBundle = {
     'terminal.search.next': '搜索下一个匹配项',
     'terminal.openWithPath': '在终端中打开',
     'terminal.remove': '终止终端',
+    'terminal.relaunch': '重启终端',
     'terminal.menu.search': '搜索',
     'terminal.menu.split': '拆分终端',
     'terminal.menu.rename': '重命名',
@@ -556,6 +560,9 @@ export const localizationBundle = {
     'terminal.menu.clearAllGroups': '清空所有终端日志',
     'terminal.menu.selectType': '默认终端类型',
     'terminal.menu.moreSettings': '更多设置',
+    'terminal.environment.changed': '终端环境变量已经被部分插件修改',
+    'terminal.environment.changes': '扩展期望对终端的环境变量做以下更改：',
+    'terminal.environment.removal': '扩展期望从现有的终端环境变量中删除以下值：',
 
     'deugger.menu.setValue': '设置变量',
     'deugger.menu.setValue.param': '请输入你要改变变量的值',
@@ -711,6 +718,9 @@ export const localizationBundle = {
     'refactor-preview.overlay.detail': `点击\"继续\"放弃之前的重构，并继续当前重构。`,
     'refactor-preview.overlay.continue': '继续',
     'refactor-preview.overlay.cancel': '取消',
+    'refactor-preview.file.create': '新建',
+    'refactor-preview.file.delete': '删除',
+    'refactor-preview.file.move': '移动',
 
     'welcome-view.noOpenRepo': '未注册任何源代码管理实现。',
     'welcome-view.noFolderHelp': '没有打开一个目录.\n[打开目录](command:{0})',
@@ -732,5 +742,14 @@ export const localizationBundle = {
     'authentication.signOut': '退出 {0}',
     'authentication.noAccounts': '目前没有登录任何账户',
     'authentication.signedOut': '成功退出',
+    // refactoring changes related
+    'refactoring-changes.ask.1.create': '扩展 \'{0} \' 希望根据当前文件新建行为关联一些重构变更',
+    'refactoring-changes.ask.1.copy': '扩展 \'{0} \' 希望根据当前文件复制行为关联一些重构变更',
+    'refactoring-changes.ask.1.move': '扩展 \'{0} \' 希望根据当前文件移动行为关联一些重构变更',
+    'refactoring-changes.ask.1.delete': '扩展 \'{0} \' 希望根据当前文件删除行为关联一些重构变更',
+    'refactoring-changes.ask.N.create': '{0} 个插件希望根据当前文件新建行为关联一些重构变更',
+    'refactoring-changes.ask.N.copy': '{0} 个插件希望根据当前文件复制行为关联一些重构变更',
+    'refactoring-changes.ask.N.move': '{0} 个插件希望根据当前文件移动行为关联一些重构变更',
+    'refactoring-changes.ask.N.delete': '{0} 个插件希望根据当前文件删除行为关联一些重构变更',
   },
 };

@@ -34,6 +34,7 @@ export class DebugThread extends DebugThreadData {
   }
   set currentFrame(frame: DebugStackFrame | undefined) {
     this._currentFrame = frame;
+    this._onDidChanged.fire();
   }
 
   get stopped(): boolean {
@@ -90,7 +91,7 @@ export class DebugThread extends DebugThreadData {
   }
 
   protected pendingFetch = Promise.resolve<DebugStackFrame[]>([]);
-  async fetchFrames(levels: number = 20): Promise<DebugStackFrame[]> {
+  async rawFetchFrames(levels: number = 20): Promise<DebugStackFrame[]> {
     return this.pendingFetch = this.pendingFetch.then(async () => {
       try {
         const start = this.frameCount;
@@ -102,6 +103,13 @@ export class DebugThread extends DebugThreadData {
       }
     });
   }
+
+  async fetchFrames(levels: number = 20): Promise<DebugStackFrame[]> {
+    const frames = await this.rawFetchFrames(levels);
+    this.updateCurrentFrame();
+    return frames;
+  }
+
   protected async doFetchFrames(startFrame: number, levels: number): Promise<DebugProtocol.StackFrame[]> {
     try {
       const response = await this.session.sendRequest('stackTrace',
@@ -124,15 +132,14 @@ export class DebugThread extends DebugThreadData {
       threadId: this.raw.id,
       threadAmount: this.session.threadCount,
     });
-    const result = new Set<DebugStackFrame>();
+    const result = new Map<number, DebugStackFrame>(this._frames);
     for (const raw of frames) {
       const id = raw.id;
       const frame = this._frames.get(id) || new DebugStackFrame(this, this.session);
       this._frames.set(id, frame);
       frame.update({ raw });
-      result.add(frame);
+      result.set(id, frame);
     }
-    this.updateCurrentFrame();
     const values = [...result.values()];
     frontEndTime('doUpdateFrames');
     return values;
@@ -148,7 +155,6 @@ export class DebugThread extends DebugThreadData {
     this.currentFrame = typeof frameId === 'number' &&
       this._frames.get(frameId) ||
       this._frames.values().next().value;
-    this._onDidChanged.fire();
   }
 
   protected toArgs<T extends object>(arg?: T): { threadId: number } & T {

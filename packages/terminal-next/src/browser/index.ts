@@ -40,6 +40,8 @@ import { TerminalErrorService } from './terminal.error';
 import { TerminalPreference } from './terminal.preference';
 import { TerminalRenderProvider } from './terminal.render';
 import { TerminalNetworkService } from './terminal.network';
+import { EnvironmentVariableServiceToken } from '../common/environmentVariable';
+import { TerminalEnvironmentService } from './terminal.environment.service';
 
 @Injectable()
 export class TerminalNextModule extends BrowserModule {
@@ -104,7 +106,12 @@ export class TerminalNextModule extends BrowserModule {
       token: ITerminalNetwork,
       useClass: TerminalNetworkService,
     },
+    {
+      token: EnvironmentVariableServiceToken,
+      useClass: TerminalEnvironmentService,
+    },
   ];
+
   backServices = [
     {
       servicePath: ITerminalServicePath,
