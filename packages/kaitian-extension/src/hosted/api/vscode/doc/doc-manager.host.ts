@@ -7,6 +7,8 @@ import { TextEdit as TextEditConverter, toRange } from '../../../../common/vscod
 import { TextEdit, Uri } from '../../../../common/vscode/ext-types';
 import type * as model from '../../../../common/vscode/model.api';
 import { ExtHostDocumentData, setWordDefinitionFor } from './ext-data.host';
+import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
+import { isUTF8 } from '@ali/ide-core-common/lib/encoding';
 
 const OPEN_TEXT_DOCUMENT_TIMEOUT = 5000;
 
@@ -131,16 +133,21 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     };
   }
 
-  async $provideTextDocumentContent(path: string) {
+  async $provideTextDocumentContent(path: string, encoding?: string) {
     const uri = Uri.parse(path);
     const scheme = uri.scheme;
     const provider = this._contentProviders.get(scheme);
 
     if (provider) {
       // cancellation token 暂时还没接入，以后可能优化
-      const content = await provider.provideTextDocumentContent(uri, new CancellationTokenSource().token);
+      let content = await provider.provideTextDocumentContent(uri, new CancellationTokenSource().token) || '';
+      if (content && encoding && !isUTF8(encoding)) {
+        // 默认 encoding 为 UTF8，所以仅在非 UTF8 的情况下做转换
+        const buffer = BinaryBuffer.wrap(Buffer.from(content));
+        content = buffer.toString(encoding);
+      }
 
-      return content || '';
+      return content;
     }
 
     throw new Error('new document provider for ' + path);

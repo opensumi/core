@@ -28,7 +28,7 @@ export const TestEditorDocumentProvider: IEditorDocumentModelContentProvider = {
   isReadonly: (uri: URI) => false,
   provideEditorDocumentModelContent: async (uri: URI, encoding) => {
     if (uri.path.toString() === '/loading') {
-      await new Promise((resolve) => setTimeout(() => {
+      await new Promise<void>((resolve) => setTimeout(() => {
         resolve();
       }, 500));
     }

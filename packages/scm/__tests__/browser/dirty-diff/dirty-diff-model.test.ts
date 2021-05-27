@@ -5,7 +5,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { toDisposable, Event, CommandService, positionToRange, URI } from '@ali/ide-core-common';
 import { IDocPersistentCacheProvider } from '@ali/ide-editor';
 import { EditorDocumentModel } from '@ali/ide-editor/src/browser/doc-model/main';
-import { EmptyDocCacheImpl, IEditorDocumentModelService } from '@ali/ide-editor/src/browser';
+import { EmptyDocCacheImpl, IEditorDocumentModel, IEditorDocumentModelService } from '@ali/ide-editor/src/browser';
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
 import { EditorCollectionService } from '@ali/ide-editor';
 
@@ -73,8 +73,11 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
       }));
 
       return {
-        fileTextModel: fileTextModel.instance.getMonacoModel(),
-        gitTextModel: gitTextModel.instance.getMonacoModel(),
+        fileTextModel: fileTextModel.instance,
+        gitTextModel: gitTextModel.instance,
+      } as {
+        fileTextModel: IEditorDocumentModel,
+        gitTextModel: IEditorDocumentModel,
       };
     }
 
@@ -127,7 +130,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
     it('ok: check basic property', async () => {
 
       const { fileTextModel } = await createModel('/test/workspace/abc1.ts');
-      codeEditor.setModel(fileTextModel);
+      codeEditor.setModel(fileTextModel.getMonacoModel());
       const dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
       expect(dirtyDiffModel.modified).toEqual(fileTextModel);
       expect(dirtyDiffModel.original).toBeUndefined();
@@ -142,7 +145,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
 
     it('ok for one repo', async () => {
       const { fileTextModel, gitTextModel } = await createModel('/test/workspace/abc2.ts');
-      codeEditor.setModel(fileTextModel);
+      codeEditor.setModel(fileTextModel.getMonacoModel());
       const dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
       expect(dirtyDiffModel.modified).toEqual(fileTextModel);
 
@@ -162,7 +165,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
         identical: false,
         changes: [change0],
       };
-      fileTextModel.setValue('insert some content for testing');
+      fileTextModel.getMonacoModel().setValue('insert some content for testing');
 
       return Event.toPromise(dirtyDiffModel.onDidChange).then((changes) => {
         expect(changes).toEqual([{
@@ -250,7 +253,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
       const triggerDiffSpy = jest.spyOn<DirtyDiffModel, any>(dirtyDiffModel, 'triggerDiff');
 
       expect(dirtyDiffModel.modified).toEqual(fileTextModel);
-      fileTextModel.setValue('insert some content for testing');
+      fileTextModel.getMonacoModel().setValue('insert some content for testing');
       jest.runAllTimers();
 
       expect(eventSpy).toHaveBeenCalledTimes(0);
@@ -343,7 +346,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
           query: 'ref=""',
         }),
         'test',
-      ]).getMonacoModel();
+      ]);
       const delayerSpy = jest.spyOn(dirtyDiffModel['diffDelayer']!, 'cancel');
 
       dirtyDiffModel['repositoryDisposables'].add(toDisposable(jest.fn()));
@@ -427,7 +430,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
 
       it('dirty editor in zone widget', async () => {
         const { dirtyDiffModel, dirtyDiffWidget } = await createDirtyDiffWidget('/test/workspace/abc11.ts');
-        codeEditor.setModel(dirtyDiffModel.modified);
+        codeEditor.setModel(dirtyDiffModel.modified?.getMonacoModel() ?? null);
         const change0 = {
           originalStartLineNumber: 11,
           originalEndLineNumber: 11,

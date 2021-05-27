@@ -6,6 +6,7 @@ import { PreferenceChange } from '@ali/ide-core-browser';
 import { IEditorFeatureRegistry, IEditorFeatureContribution, EmptyDocCacheImpl, IEditorDocumentModelService } from '@ali/ide-editor/src/browser';
 import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/src/browser/workbench-editor.service';
 import { EditorDocumentModel } from '@ali/ide-editor/src/browser/doc-model/main';
+import { IEditorDocumentModel } from '@ali/ide-editor/src/browser/';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
@@ -66,7 +67,7 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
 
   const editorFeatureContributions = new Set<IEditorFeatureContribution>();
   let monacoEditor: monaco.editor.ICodeEditor;
-  let editorModel: monaco.editor.ITextModel;
+  let editorModel: IEditorDocumentModel;
   let commandService: CommandService;
   let editorService: WorkbenchEditorService;
 
@@ -125,10 +126,9 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
     scmPreferences = injector.get(SCMPreferences);
     commandService = injector.get(CommandService);
     dirtyDiffWorkbenchController = injector.get(IDirtyDiffWorkbenchController);
-    const model = await createModel(`/test/workspace/abc${Math.random()}.ts`);
-    editorModel = model.getMonacoModel();
+    editorModel = await createModel(`/test/workspace/abc${Math.random()}.ts`);
     monacoEditor = monaco.editor!.create(document.createElement('div'), { language: 'typescript' });
-    monacoEditor.setModel(editorModel);
+    monacoEditor.setModel(editorModel.getMonacoModel());
     done();
   });
 
@@ -343,15 +343,18 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
     expect(dirtyDiffWorkbenchController['enabled']).toBeTruthy();
     expect(dirtyDiffWorkbenchController['models'].length).toBe(1);
     const textModel1 = docModel1.getMonacoModel();
-    expect(dirtyDiffWorkbenchController['models'][0]).toEqual(textModel1);
-    expect(dirtyDiffWorkbenchController['items'][textModel1.id]).not.toBeUndefined();
+    // dirtyDiff 里使用的 model 是 EditorDocumentModel
+    // 每个 EditorDocumentModel 持有一个 monaco.editor.ITextModel 对象
+    expect(dirtyDiffWorkbenchController['models'][0]).toEqual(docModel1);
+    expect(dirtyDiffWorkbenchController['models'][0].getMonacoModel()).toEqual(textModel1);
+    expect(dirtyDiffWorkbenchController['items'][docModel1.id]).not.toBeUndefined();
 
     editorService.editorGroups.pop();
     // old models
     dirtyDiffWorkbenchController['models'].push(injector.get(EditorDocumentModel, [
       URI.file('/test/workspace/def1.ts'),
       'test',
-    ]).getMonacoModel());
+    ]));
 
     const docModel2 = injector.get(EditorDocumentModel, [
       URI.file('/test/workspace/def2.ts'),
@@ -381,8 +384,9 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
 
     expect(dirtyDiffWorkbenchController['models'].length).toBe(1);
     const textModel2 = docModel2.getMonacoModel();
-    expect(dirtyDiffWorkbenchController['models'][0]).toEqual(textModel2);
-    expect(dirtyDiffWorkbenchController['items'][textModel2.id].model).not.toBeUndefined();
+    expect(dirtyDiffWorkbenchController['models'][0]).toEqual(docModel2);
+    expect(dirtyDiffWorkbenchController['models'][0].getMonacoModel()).toEqual(textModel2);
+    expect(dirtyDiffWorkbenchController['items'][docModel2.id].model).not.toBeUndefined();
 
     dirtyDiffWorkbenchController['disable']();
     expect(dirtyDiffWorkbenchController['enabled']).toBeFalsy();
@@ -392,7 +396,7 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
     dirtyDiffWorkbenchController['models'].push(injector.get(EditorDocumentModel, [
       URI.file('/test/workspace/def4.ts'),
       'test',
-    ]).getMonacoModel());
+    ]));
     dirtyDiffWorkbenchController['disable']();
     expect(dirtyDiffWorkbenchController['models'].length).toBe(1);
   });

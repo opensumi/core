@@ -48,6 +48,8 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       if (this._modelsToDispose.has(key)) {
         this._modelsToDispose.delete(key);
       }
+      // this.getOrCreateModel 的第二个参数是 encoding, 实际上没地方能传进去
+      // ReferenceManager 的构造参数 factory 只有一个入参
       return this.getOrCreateModel(key);
     });
     this._modelReferenceManager.onReferenceAllDisposed((key: string) => {

@@ -3,6 +3,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { positionToRange, URI, CommandService } from '@ali/ide-core-common';
 import { IDocPersistentCacheProvider } from '@ali/ide-editor';
 import { EditorDocumentModel } from '@ali/ide-editor/src/browser/doc-model/main';
+import { IEditorDocumentModel } from '@ali/ide-editor/src/browser/';
 import { EmptyDocCacheImpl, IEditorDocumentModelService } from '@ali/ide-editor/src/browser';
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
 
@@ -48,7 +49,7 @@ jest.mock('@ali/ide-core-common/src/async', () => ({
 describe('scm/src/browser/dirty-diff/dirty-diff-widget.ts', () => {
   describe('test for DirtyDiffDecorator', () => {
     let injector: MockInjector;
-    let editorModel: monaco.editor.ITextModel;
+    let editorModel: IEditorDocumentModel;
     let commandService: CommandService;
     const fakeExecCmd = jest.fn();
 
@@ -75,8 +76,8 @@ describe('scm/src/browser/dirty-diff/dirty-diff-widget.ts', () => {
       editorModel = injector.get(EditorDocumentModel, [
         URI.file('/test/workspace/abc.ts'),
         'test',
-      ]).getMonacoModel();
-      codeEditor.setModel(editorModel);
+      ]);
+      codeEditor.setModel(editorModel.getMonacoModel());
 
       commandService = injector.get(CommandService);
     });
@@ -162,7 +163,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-widget.ts', () => {
         expect(err.message).toBe('Not found model');
       }
 
-      codeEditor.setModel(editorModel);
+      codeEditor.setModel(editorModel.getMonacoModel());
     });
 
     it('ok for actions', () => {

@@ -1,6 +1,6 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Autowired, Injectable } from '@ali/common-di';
-import { CommandService, Disposable, formatLocalize, IEventBus, ILogger, IRange, IReporterService, isThenable, isUndefinedOrNull, localize, PreferenceService, REPORT_NAME, URI } from '@ali/ide-core-browser';
+import { CommandService, Disposable, Emitter, formatLocalize, IEventBus, ILogger, IRange, IReporterService, isThenable, isUndefinedOrNull, localize, PreferenceService, REPORT_NAME, URI } from '@ali/ide-core-browser';
 import { IMessageService } from '@ali/ide-overlay';
 import * as md5 from 'md5';
 import { EndOfLineSequence, EOL, IDocCache, IDocPersistentCacheProvider, isDocContentCache, parseRangeFrom, SaveReason, IEditorDocumentModelContentChange } from '../../common';
@@ -94,6 +94,9 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   private _isInitOption = true;
 
+  private readonly _onDidChangeEncoding = new Emitter<void>();
+  readonly onDidChangeEncoding = this._onDidChangeEncoding.event;
+
   constructor(public readonly uri: URI, content: string, options: EditorDocumentModelConstructionOptions = {}) {
     super();
 
@@ -115,13 +118,15 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       this.eol = options.eol;
     }
     this._originalEncoding = this._encoding;
-    this._previousVersionId = this.monacoModel.getVersionId(),
-      this._persistVersionId = this.monacoModel.getAlternativeVersionId();
+    this._previousVersionId = this.monacoModel.getVersionId();
+    this._persistVersionId = this.monacoModel.getAlternativeVersionId();
     this.baseContent = content;
 
     this._isInitOption = false;
     this.listenTo(this.monacoModel);
     this.readCacheToApply();
+
+    this.addDispose(this._onDidChangeEncoding);
   }
 
   updateOptions(options) {
@@ -224,6 +229,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
         uri: this.uri,
         encoding: this._encoding,
       }));
+      this._onDidChangeEncoding.fire();
     }
   }
 
@@ -265,6 +271,10 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   get languageId() {
     return this.monacoModel.getModeId();
+  }
+
+  get id() {
+    return this.monacoModel.id;
   }
 
   getMonacoModel(): monaco.editor.ITextModel {
