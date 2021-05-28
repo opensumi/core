@@ -87,7 +87,8 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
       const defaultUri = options.defaultUri || this.defaultUri;
       const res = await electronUi.showOpenDialog(electronEnv.currentWindowId, {
         defaultPath: defaultUri.codeUri.fsPath,
-        title: options.openLabel,
+        title: options.title,
+        buttonLabel: options.openLabel,
         properties,
       });
       if (res && res.length > 0) {

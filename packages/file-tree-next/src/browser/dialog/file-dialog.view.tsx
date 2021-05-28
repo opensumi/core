@@ -199,7 +199,7 @@ export const FileDialog = (
   if (isOpenDialog) {
     return (
       <React.Fragment>
-        <div className={styles.file_dialog_directory_title}>{(options as IOpenDialogOptions).openLabel || localize('dialog.file.openLabel')}</div>
+        <div className={styles.file_dialog_directory_title}>{options.title || localize('dialog.file.openLabel')}</div>
         <div className={styles.file_dialog_directory}>
           {renderDirectorySelection()}
         </div>
@@ -208,7 +208,7 @@ export const FileDialog = (
         </div>
         <div className={styles.buttonWrap}>
           <Button onClick={() => close()} type='secondary' className={styles.button}>{localize('dialog.file.close')}</Button>
-          <Button onClick={() => hide()} type='primary' className={styles.button}>{localize('dialog.file.ok')}</Button>
+          <Button onClick={() => hide()} type='primary' className={styles.button}>{(options as IOpenDialogOptions).openLabel || localize('dialog.file.ok')}</Button>
         </div>
       </React.Fragment>
     );

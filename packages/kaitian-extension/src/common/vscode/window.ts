@@ -168,4 +168,5 @@ export interface IExtOpenDialogOptions extends IExtDialogOptions {
   canSelectFolders?: boolean;
   canSelectMany?: boolean;
   openLabel?: string;
+  title?: string;
 }
