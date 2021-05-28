@@ -64,8 +64,8 @@ describe('vscode MainThreadStatusBar Test', () => {
     statusbar.show();
     // statusbar host 调用 main 有一个 定时器
     setTimeout(() => {
-      expect($setMessage.mock.calls[0][6]).toBe('test');
-      expect($setMessage.mock.calls[0][7]).toBe(undefined);
+      expect($setMessage.mock.calls[0][7]).toBe('test');
+      expect($setMessage.mock.calls[0][8]).toBe(undefined);
       done();
     }, 100);
   });
@@ -83,8 +83,25 @@ describe('vscode MainThreadStatusBar Test', () => {
     statusbar.show();
     // statusbar host 调用 main 有一个 定时器
     setTimeout(() => {
-      expect($setMessage.mock.calls[0][6]).toBe('test');
-      expect($setMessage.mock.calls[0][7]).toStrictEqual(['test2']);
+      expect($setMessage.mock.calls[0][7]).toBe('test');
+      expect($setMessage.mock.calls[0][8]).toStrictEqual(['test2']);
+      done();
+    }, 100);
+  });
+
+  it('support accessibilityInformation', (done) => {
+    // mock mainThread.$setMessage
+    const $setMessage = jest.spyOn(mainThread, '$setMessage');
+
+    const statusbar = extHost.createStatusBarItem();
+    statusbar.accessibilityInformation = {
+      label: '蛋总',
+      role: 'danzong',
+    };
+    statusbar.show();
+    // statusbar host 调用 main 有一个 定时器
+    setTimeout(() => {
+      expect($setMessage.mock.calls[0][6]).toStrictEqual({'label': '蛋总', 'role': 'danzong'});
       done();
     }, 100);
   });

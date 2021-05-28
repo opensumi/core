@@ -104,6 +104,7 @@ export interface IMainThreadStatusBar {
               alignment: number,
               color: string | undefined,
               tooltip: string | undefined,
+              accessibilityInformation: vscode.AccessibilityInformation | undefined,
               command: string | undefined,
               commandArgs: any[] | undefined): Promise<void>;
 

@@ -1,7 +1,7 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar } from '../../../common/vscode';
 import { Injectable, Autowired, Optional } from '@ali/common-di';
-import { CommandService, Disposable } from '@ali/ide-core-browser';
+import { CommandService, Disposable, IAccessibilityInformation } from '@ali/ide-core-browser';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@ali/ide-core-browser/lib/services';
 import * as types from '../../../common/vscode/ext-types';
 
@@ -50,14 +50,19 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
     }));
   }
 
-  async $setMessage(id: string,
-                    text: string | undefined,
-                    priority: number,
-                    alignment: number,
-                    color: string | undefined,
-                    tooltip: string | undefined,
-                    command: string | undefined,
-                    commandArgs: any[] | undefined): Promise<void> {
+  async $setMessage(
+    id: string,
+    text: string | undefined,
+    priority: number,
+    alignment: number,
+    color: string | undefined,
+    tooltip: string | undefined,
+    accessibilityInformation: IAccessibilityInformation | undefined,
+    command: string | undefined,
+    commandArgs: any[] | undefined,
+  ): Promise<void> {
+    // TODO 下面正则可以升级 monaco 从 vs/base/common/codicons 导出
+    const ariaLabel = accessibilityInformation?.label || text && text.replace(/\$\((.*?)\)/g, (_match, codiconName) => ` ${codiconName} `).trim();
     const entry: StatusBarEntry = {
         text: text || '',
         priority,
@@ -66,6 +71,8 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
         tooltip,
         command,
         arguments: commandArgs,
+        role: accessibilityInformation?.role,
+        ariaLabel,
     };
 
     this.entries.set(id, entry);

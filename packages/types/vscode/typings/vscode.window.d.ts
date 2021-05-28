@@ -58,6 +58,10 @@ declare module 'vscode' {
      * [known](#commands.getCommands).
      */
     command: string | Command | undefined;
+    /**
+     * Accessibility information used when screen reader interacts with this StatusBar item
+     */
+    accessibilityInformation?: AccessibilityInformation;
 
     /**
      * Shows the entry in the status bar.

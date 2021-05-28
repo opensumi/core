@@ -28,6 +28,8 @@ export interface StatusBarEntry {
   arguments?: any[];
   priority?: number;
   iconClass?: string;
+  ariaLabel?: string;
+  role?: string;
   onClick?: (e: any) => void;
 }
 
