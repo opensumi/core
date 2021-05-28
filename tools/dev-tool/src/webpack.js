@@ -228,7 +228,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
 
 
 exports.createWebviewWebpackConfig = (entry, dir) => {
-  const port = 9090;
+  const port = 9999;
   return {
     entry,
     node: {

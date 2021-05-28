@@ -151,13 +151,13 @@ export interface ILRULinkListNode<K> {
  */
 export class LRUMap<K, V> extends Map<K, V>{
 
-	private _onDidDelete =  new Emitter<{key: K, value: V}>();
+	private _onDidDelete = new Emitter<{key: K, value: V}>();
 
 	public readonly onDidDelete: Event<{key: K, value: V}> = this._onDidDelete.event;
 
-	private head: ILRULinkListNode<K>  = {key: undefined, prev: undefined, next: undefined};
+	private head: ILRULinkListNode<K> = {key: undefined, prev: undefined, next: undefined};
 
-	private tail: ILRULinkListNode<K>  = {key: undefined, prev: undefined, next: undefined};
+	private tail: ILRULinkListNode<K> = {key: undefined, prev: undefined, next: undefined};
 
 	private map: Map<K, ILRULinkListNode<K>> = new Map();
 
@@ -174,18 +174,16 @@ export class LRUMap<K, V> extends Map<K, V>{
 		if (!this.map.get(key)) {
 			this.map.set(key, {key, prev: undefined, next: undefined});
 		}
-		const node = this.map.get(key);
-		this.putHead(node!);
+		this.putHead(this.map.get(key)!);
 	}
 
-	get(key): V | undefined {
+	get(key: K): V | undefined {
 		const v = super.get(key);
 		if (v) {
 			this.markRecentUsed(key);
 		}
 		return v;
 	}
-
 
 	set(key: K, value: V): this {
 		this.markRecentUsed(key);
@@ -207,7 +205,7 @@ export class LRUMap<K, V> extends Map<K, V>{
 		}
 	}
 
-	deleteNodeFromList(node: ILRULinkListNode<K>) {
+	protected deleteNodeFromList(node: ILRULinkListNode<K>) {
 		if (node.prev) {
 			node.prev.next = node.next;
 		}
@@ -229,7 +227,6 @@ export class LRUMap<K, V> extends Map<K, V>{
 		return super.delete(key);
 	}
 
-
 	shrink() {
 		const toDelete = this.size - this.softLimit;
 		let toDeleteNode: ILRULinkListNode<K> = this.tail;
@@ -242,5 +239,39 @@ export class LRUMap<K, V> extends Map<K, V>{
 			}
 		}
 	}
+}
 
+const NOW = Symbol('now');
+/**
+ * 支持过期时间
+ */
+export class StaleLRUMap<K, V> extends LRUMap<K, V> {
+  constructor(
+    hardLimit: number,
+    softLimit: number,
+    private maxAge: number,
+  ) {
+    super(hardLimit, softLimit);
+  }
+
+  get(key: K): V | undefined {
+		const v = super.get(key);
+    if (v) {
+      if (!this._isStale(v)) {
+        return v;
+      }
+      // 过期则删除该条记录
+      this.delete(key);
+    }
+		return undefined;
+	}
+
+	set(key: K, value: V): this {
+    value[NOW] = Date.now();
+    return super.set(key, value);
+	}
+
+  private _isStale(value: V): boolean {
+    return value[NOW] + this.maxAge <= Date.now();
+  }
 }

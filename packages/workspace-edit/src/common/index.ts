@@ -137,6 +137,7 @@ export interface IWorkspaceFileService {
   move(files: Required<SourceTargetPair>[], options?: { overwrite?: boolean }): Promise<FileStat[]>;
   copy(files: Required<SourceTargetPair>[], options?: { overwrite?: boolean }): Promise<FileStat[]>;
   delete(resources: URI[], options?: { useTrash?: boolean, recursive?: boolean }): Promise<void>;
+
   registerFileOperationParticipant(participant: IWorkspaceFileOperationParticipant): IDisposable;
 }
 
