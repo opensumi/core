@@ -54,6 +54,9 @@ export function createDebugApiFactory(
     startDebugging(folder: vscode.WorkspaceFolder | undefined, nameOrConfig: string | vscode.DebugConfiguration, parentSession?: vscode.DebugSession) {
       return extHostDebugService.startDebugging(folder, nameOrConfig, parentSession);
     },
+    stopDebugging(session?: vscode.DebugSession) {
+      return extHostDebugService.stopDebugging(session);
+    },
     addBreakpoints(breakpoints: vscode.Breakpoint[]) {
       return extHostDebugService.addBreakpoints(breakpoints);
     },
@@ -195,6 +198,10 @@ export class ExtHostDebug implements IExtHostDebugService {
       parentSessionID: parentSessionOrOptions.parentSession ? parentSessionOrOptions.parentSession.id : undefined,
       repl: parentSessionOrOptions.consoleMode === DebugConsoleMode.MergeWithParent ? 'mergeWithParent' : 'separate',
     });
+  }
+
+  public stopDebugging(session?: vscode.DebugSession): Promise<void> {
+    return this.proxy.$stopDebugging(session ? session.id : undefined);
   }
 
   registerDebugConfigurationProvider(type: string, provider: vscode.DebugConfigurationProvider): vscode.Disposable {

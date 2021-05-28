@@ -19,6 +19,7 @@ export interface IMainThreadDebug {
   $addBreakpoints(breakpoints: Breakpoint[]): Promise<void>;
   $removeBreakpoints(breakpoints: Breakpoint[]): Promise<void>;
   $startDebugging(folder: WorkspaceFolder | undefined, nameOrConfiguration: string | DebugConfiguration, options: IStartDebuggingOptions): Promise<boolean>;
+  $stopDebugging(sessionId: DebugSessionUUID | undefined): Promise<void>;
   $customRequest(sessionId: string, command: string, args?: any): Promise<DebugProtocol.Response>;
 }
 
@@ -55,6 +56,7 @@ export interface IExtHostDebugService extends IExtHostDebug {
   removeBreakpoints(breakpoints0: vscode.Breakpoint[]): Promise<void>;
   asDebugSourceUri(source: vscode.DebugProtocolSource, session?: vscode.DebugSession): vscode.Uri;
   startDebugging(folder: vscode.WorkspaceFolder | undefined, nameOrConfig: string | vscode.DebugConfiguration, parentSessionOrOptions?: vscode.DebugSession | vscode.DebugSessionOptions): Promise<boolean>;
+  stopDebugging(session?: vscode.DebugSession): Promise<void>;
   registerDebugConfigurationProvider(type: string, provider: vscode.DebugConfigurationProvider): vscode.Disposable;
   registerDebugAdapterDescriptorFactory(type: string, factory: vscode.DebugAdapterDescriptorFactory): vscode.Disposable;
   registerDebugAdapterTrackerFactory(type: string, factory: vscode.DebugAdapterTrackerFactory): vscode.Disposable;

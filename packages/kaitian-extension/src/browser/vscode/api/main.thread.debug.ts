@@ -303,6 +303,18 @@ export class MainThreadDebug implements IMainThreadDebug {
     return !!session;
   }
 
+  public $stopDebugging(sessionId: string | undefined): Promise<void> {
+    if (sessionId) {
+      const session = this.sessionManager.getSession(sessionId);
+      if (session) {
+        return this.sessionManager.stopSession(session);
+      }
+    } else {	// stop all
+      return this.sessionManager.stopSession(undefined);
+    }
+    throw new Error(`Debug session '${sessionId}' not found`);
+  }
+
   private toCustomApiBreakpoints(sourceBreakpoints: DebugBreakpoint[]): Breakpoint[] {
     return sourceBreakpoints.map((b) => ({
       id: b.id,

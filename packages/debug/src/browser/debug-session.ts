@@ -744,7 +744,7 @@ export class DebugSession implements IDebugSession {
     }
   }
 
-  protected async disconnect(restart?: boolean): Promise<void> {
+  public async disconnect(restart?: boolean): Promise<void> {
     try {
       this.sendRequest('disconnect', { restart });
     } catch (reason) {
