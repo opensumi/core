@@ -1,6 +1,7 @@
 import { Terminal } from 'xterm';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { isElectronEnv, Emitter, ILogger, Event, isWindows } from '@ali/ide-core-common';
+import { OS } from '@ali/ide-core-common/lib/platform';
 import { Emitter as Dispatcher } from 'event-kit';
 import { electronEnv } from '@ali/ide-core-browser';
 import { WSChannelHandler as IWSChanneHandler, RPCService } from '@ali/ide-connection';
@@ -95,6 +96,10 @@ export class TerminalInternalService implements ITerminalInternalService {
 
   onExit(handler: (event: IPtyExitEvent) => void) {
     return this.service.onExit(handler);
+  }
+
+  async getOs() {
+    return this.service.getOs();
   }
 }
 
@@ -223,5 +228,9 @@ export class NodePtyTerminalService extends RPCService implements ITerminalServi
    */
   closeClient(sessionId: string, code?: number, signal?: number) {
     this._onExit.fire({ sessionId, code, signal });
+  }
+
+  async getOs() {
+    return OS;
   }
 }

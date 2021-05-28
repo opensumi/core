@@ -1,6 +1,7 @@
 import * as WebSocket from 'ws';
 import { Terminal } from 'xterm';
 import { uuid, URI, Emitter } from '@ali/ide-core-common';
+import { OS } from '@ali/ide-core-common/lib/platform';
 import { Disposable } from '@ali/ide-core-browser';
 import { ITerminalService, ITerminalConnection, ITerminalError } from '../../src/common';
 import { getPort, localhost, MessageMethod } from './proxy';
@@ -48,6 +49,10 @@ export class MockSocketService implements ITerminalService {
 
   getOptions() {
     return {};
+  }
+
+  async getOs() {
+    return OS;
   }
 
   private _handleStdoutMessage(sessionId: string, handler: (json: any) => void) {

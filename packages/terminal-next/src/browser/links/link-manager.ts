@@ -1,6 +1,7 @@
 import { Terminal, ILinkProvider } from 'xterm';
 import { Injectable, Autowired } from '@ali/common-di';
-import { URI, Disposable, IDisposable, DisposableCollection, isWindows, isOSX, FileUri } from '@ali/ide-core-common';
+import { URI, Disposable, IDisposable, DisposableCollection, isOSX, FileUri } from '@ali/ide-core-common';
+import { OperatingSystem, isWindows } from '@ali/ide-core-common/lib/platform';
 import { posix, win32, IPath } from '@ali/ide-core-common/lib/path';
 import { IOpenerService } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service';
@@ -9,6 +10,7 @@ import { TerminalProtocolLinkProvider } from './protocol-link-provider';
 import { TerminalValidatedLocalLinkProvider, lineAndColumnClause, unixLocalLinkClause, winLocalLinkClause, winDrivePrefix, winLineAndColumnMatchIndex, unixLineAndColumnMatchIndex, lineAndColumnClauseGroupCount } from './validated-local-link-provider';
 import { TerminalExternalLinkProviderAdapter } from './external-link-provider-adapter';
 import { ITerminalClient, ITerminalExternalLinkProvider } from '../../common';
+import { TerminalClient } from '../terminal.client';
 
 export type XtermLinkMatcherHandler = (event: MouseEvent | undefined, link: string) => Promise<void>;
 
@@ -44,6 +46,7 @@ export class TerminalLinkManager extends Disposable {
 
   constructor(
     private _xterm: Terminal,
+    private _client: TerminalClient,
   ) {
     super();
 
@@ -56,7 +59,7 @@ export class TerminalLinkManager extends Disposable {
     const wrappedTextLinkActivateCallback = this._wrapLinkHandler((_, link) => this._handleLocalLink(link));
     const validatedProvider = new TerminalValidatedLocalLinkProvider(
       this._xterm,
-      isWindows,
+      this._client,
       wrappedTextLinkActivateCallback,
       this._wrapLinkHandler.bind(this),
       async (link, cb) => cb(await this._resolvePath(link)),
@@ -102,7 +105,7 @@ export class TerminalLinkManager extends Disposable {
   }
 
   protected get _localLinkRegex(): RegExp {
-    const baseLocalLinkClause = isWindows ? winLocalLinkClause : unixLocalLinkClause;
+    const baseLocalLinkClause = this._client.os === OperatingSystem.Windows ? winLocalLinkClause : unixLocalLinkClause;
     // Append line and column number regex
     return new RegExp(`${baseLocalLinkClause}(${lineAndColumnClause})`);
   }
@@ -135,8 +138,8 @@ export class TerminalLinkManager extends Disposable {
       // Just using fsPath here is unsafe: https://github.com/microsoft/vscode/issues/109076
       // fsPath 是基于当前环境判断 sep 的，连接远程服务时，如果当前系统为 Windows，
       // 而 uri 来自远程 Linux，则会出现生成的链接 sep 不正确，导致打开文件失败。
-      // TODO: 基于 uri 的来源处理 sep
-      this._handleLocalLink(FileUri.fsPath(uri));
+      const fsPath = FileUri.fsPath(uri);
+      this._handleLocalLink(((this._client.os !== OperatingSystem.Windows) && isWindows) ? fsPath.replace(/\\/g, posix.sep) : fsPath);
       return;
     }
 
@@ -149,7 +152,7 @@ export class TerminalLinkManager extends Disposable {
   }
 
   private get osPath(): IPath {
-    if (isWindows) {
+    if (this._client.os === OperatingSystem.Windows) {
       return win32;
     }
     return posix;
@@ -184,7 +187,7 @@ export class TerminalLinkManager extends Disposable {
       link = this.osPath.join(userHome, link.substring(1));
     } else if (link.charAt(0) !== '/' && link.charAt(0) !== '~') {
       // Resolve workspace path . | .. | <relative_path> -> <path>/. | <path>/.. | <path>/<relative_path>
-      if (isWindows) {
+      if (this._client.os === OperatingSystem.Windows) {
         if (!link.match('^' + winDrivePrefix) && !link.startsWith('\\\\?\\')) {
           if (!this._processCwd) {
             // Abort if no workspace is open
@@ -248,7 +251,7 @@ export class TerminalLinkManager extends Disposable {
       return lineColumnInfo;
     }
 
-    const lineAndColumnMatchIndex = isWindows ? winLineAndColumnMatchIndex : unixLineAndColumnMatchIndex;
+    const lineAndColumnMatchIndex = this._client.os === OperatingSystem.Windows ? winLineAndColumnMatchIndex : unixLineAndColumnMatchIndex;
     for (let i = 0; i < lineAndColumnClause.length; i++) {
       const lineMatchIndex = lineAndColumnMatchIndex + (lineAndColumnClauseGroupCount * i);
       const rowNumber = matches[lineMatchIndex];

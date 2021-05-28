@@ -4,6 +4,7 @@ import { FitAddon } from 'xterm-addon-fit';
 import { SearchAddon } from 'xterm-addon-search';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { Disposable, Deferred, Emitter, Event, debounce, ILogger, IDisposable, URI, IApplicationService } from '@ali/ide-core-common';
+import { OperatingSystem, OS } from '@ali/ide-core-common/lib/platform';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { IVariableResolverService } from '@ali/ide-variable/lib/common';
@@ -46,6 +47,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private _show: Deferred<void> | null;
   private _hasOutput = false;
   private _areLinksReady: boolean = false;
+  private _os: OperatingSystem = OS;
   /** end */
 
   @Autowired(INJECTOR_TOKEN)
@@ -230,6 +232,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     return this._areLinksReady;
   }
 
+  get os() {
+    return this._os;
+  }
+
   private _prepareAddons() {
     this._attachAddon = new AttachAddon();
     this._searchAddon = new SearchAddon();
@@ -265,7 +271,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._prepareAddons();
     this._loadAddons();
     this._xtermEvents();
-    this._linkManager = this.injector.get(TerminalLinkManager, [this._term]);
+    this._linkManager = this.injector.get(TerminalLinkManager, [this._term, this]);
     this._linkManager.processCwd = this._workspacePath;
     this.addDispose(this._linkManager);
     this.addDispose(this._term);
@@ -340,6 +346,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     // rAF 在不可见状态下会丢失，所以一定要用 setTimeout
     setTimeout(() => {
       this._layout();
+      this.service.getOs().then((os) => {
+        this._os = os;
+      });
       this.attach();
       if (!this.widget.show) {
         this._show?.promise.then(async () => {
