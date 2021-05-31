@@ -7,7 +7,7 @@ import { createAPIFactory as createKaitianAPIFactory } from './api/worker/worker
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier, KaitianWorkerExtensionService } from '../common/vscode';
 import { ExtensionLogger } from './extension-log';
 import { KTWorkerExtension } from './vscode.extension';
-import { KTWorkerExtensionContext } from './api/vscode/ext.host.extensions';
+import { ExtensionContext } from './api/vscode/ext.host.extensions';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { ActivatedExtension, ActivatedExtensionJSON } from '../common/activator';
 
@@ -216,13 +216,12 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
       return this.registerExtendModuleService(exportsData, extension);
     };
 
-    const context = new KTWorkerExtensionContext({
+    const context = new ExtensionContext({
       extension,
       extensionId: extension.id,
       extendProxy: componentProxy,
       registerExtendModuleService: registerExtendFn,
       extensionPath: extension.realPath,
-      staticServicePath: this.staticServicePath,
       storageProxy: this.storage,
       extensionLocation: extension.extensionLocation,
     });
