@@ -97,12 +97,12 @@ export const DebugHoverView = observer(() => {
     <div className={ styles.debug_hover }>
       {
         model.treeModel ?
-        <div className={ cls(styles.debug_hover_title, shouldRenderVariableTree && styles.has_complex_value) }>
+        <div className={ cls(styles.debug_hover_title, shouldRenderVariableTree && styles.has_complex_value) } title={ model.treeModel.root.name }>
           { model.treeModel.root.name }
         </div>
         :
         model.variable ?
-        <div className={ cls(styles.debug_hover_title, shouldRenderVariableTree && styles.has_complex_value) }>
+        <div className={ cls(styles.debug_hover_title, shouldRenderVariableTree && styles.has_complex_value) } title={ model.variable.name }>
           { model.variable.value }
         </div>
         :
