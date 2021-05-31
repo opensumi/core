@@ -3,7 +3,7 @@ import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { SearchAddon } from 'xterm-addon-search';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { Disposable, Deferred, Emitter, Event, debounce, ILogger, IDisposable, URI, IApplicationService } from '@ali/ide-core-common';
+import { Disposable, Deferred, Emitter, Event, debounce, ILogger, IDisposable, URI, IApplicationService, IReporter, REPORT_NAME } from '@ali/ide-core-common';
 import { OperatingSystem, OS } from '@ali/ide-core-common/lib/platform';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
@@ -89,6 +89,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   @Autowired(ILogger)
   protected readonly logger: ILogger;
 
+  @Autowired(IReporter)
+  reporter: IReporter;
+
   @Autowired(EnvironmentVariableServiceToken)
   protected readonly environmentService: IEnvironmentVariableService;
 
@@ -109,6 +112,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private readonly _onLinksReady = new Emitter<ITerminalClient>();
   onLinksReady: Event<ITerminalClient> = this._onLinksReady.event;
+
+  private readonly _onResponseTime = new Emitter<number>();
+  onResponseTime: Event<number> = this._onResponseTime.event;
 
   async init(widget: IWidget, options: TerminalOptions = {}) {
     this._uid = widget.id;
@@ -249,6 +255,13 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       }),
       this._attachAddon.onExit((code) => {
         this._onExit.fire({ id: this.id, code });
+      }),
+      this._attachAddon.onTime((delta) => {
+        this._onResponseTime.fire(delta);
+        this.reporter.performance(REPORT_NAME.TERMINAL_MEASURE, {
+          duration: delta,
+          msg: 'terminal.response',
+        });
       }),
     ]);
   }

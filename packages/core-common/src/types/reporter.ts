@@ -34,6 +34,7 @@ export enum REPORT_NAME {
   RESOLVE_CODE_LENS = 'resolveCodeLens',
   PROVIDE_ON_TYPE_FORMATTING_EDITS = 'provideOnTypeFormattingEdits',
   PROVIDE_SELECTION_RANGES = 'provideSelectionRanges',
+  TERMINAL_MEASURE = 'terminalMeasure',
 }
 
 export enum REPORT_HOST {
