@@ -1,6 +1,6 @@
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { FileUri, URI, Disposable, StorageProvider } from '@ali/ide-core-common';
+import { FileUri, URI, Disposable, StorageProvider, IApplicationService, isWindows, isLinux, OS } from '@ali/ide-core-common';
 import { FileTreeNextModule } from '../../src';
 import { IFileTreeAPI, IFileTreeService } from '../../src/common';
 import { FileTreeService } from '../../src/browser/file-tree.service';
@@ -146,6 +146,12 @@ describe('FileTree should be work while on single workspace model', () => {
         token: IThemeService,
         useValue: {
           onThemeChange: () => Disposable.create(() => { }),
+        },
+      },
+      {
+        token: IApplicationService,
+        useValue: {
+          backendOS: isWindows ? OS.Type.Windows : isLinux ? OS.Type.Linux : OS.Type.OSX,
         },
       },
       {

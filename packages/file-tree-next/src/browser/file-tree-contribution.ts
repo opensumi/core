@@ -1,4 +1,4 @@
-import { URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, isWindows, IElectronNativeDialogService, ToolbarRegistry, KeybindingRegistry, IWindowService, IClipboardService, PreferenceService, formatLocalize } from '@ali/ide-core-browser';
+import { IApplicationService, URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, IElectronNativeDialogService, ToolbarRegistry, KeybindingRegistry, IWindowService, IClipboardService, PreferenceService, formatLocalize, OS } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileTreeService } from './file-tree.service';
@@ -59,6 +59,9 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
 
   @Autowired(IViewsRegistry)
   private viewsRegistry: IViewsRegistry;
+
+  @Autowired(IApplicationService)
+  private readonly appService: IApplicationService;
 
   private isRendered = false;
 
@@ -474,7 +477,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         const copyUri: URI = uri;
         let pathStr: string = decodeURIComponent(copyUri.path.toString());
         // windows下移除路径前的 /
-        if (isWindows) {
+        if (await this.appService.backendOS === OS.Type.Windows) {
           pathStr = pathStr.slice(1);
         }
         await this.clipboardService.writeText(pathStr);

@@ -11,7 +11,7 @@ import { IDecorationsService } from '@ali/ide-decoration';
 import { MockWorkbenchEditorService } from '@ali/ide-editor/lib/common/mocks/workbench-editor.service';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IDialogService, IMessageService, IWindowDialogService } from '@ali/ide-overlay';
-import { IClipboardService, IContextKeyService, PreferenceService } from '@ali/ide-core-browser';
+import { IApplicationService, IClipboardService, IContextKeyService, isLinux, isWindows, OS, PreferenceService } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
 import { ViewsRegistry } from '@ali/ide-main-layout/lib/browser/views-registry';
 
@@ -116,6 +116,12 @@ describe('FileTreeContribution', () => {
       {
         token: IViewsRegistry,
         useClass: ViewsRegistry,
+      },
+      {
+        token: IApplicationService,
+        useValue: {
+          backendOS: isWindows ? OS.Type.Windows : isLinux ? OS.Type.Linux : OS.Type.OSX,
+        },
       },
     );
 

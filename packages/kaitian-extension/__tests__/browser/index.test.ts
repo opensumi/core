@@ -1,6 +1,6 @@
 import { WSChannelHandler } from '@ali/ide-connection';
-import { CommandRegistry, CommandService, IClientApp, IClipboardService, URI, Uri } from '@ali/ide-core-browser';
-import { uuid } from '@ali/ide-core-common';
+import { CommandRegistry, CommandService, IClientApp, IClipboardService, URI, Uri, isWindows, OS, isLinux } from '@ali/ide-core-browser';
+import { IApplicationService, uuid } from '@ali/ide-core-common';
 import { IFileTreeService } from '@ali/ide-file-tree-next';
 import { FileTreeContribution } from '@ali/ide-file-tree-next/lib/browser/file-tree-contribution';
 import { PreferenceContribution } from '@ali/ide-preferences/lib/browser/preference-contribution';
@@ -62,6 +62,12 @@ describe(__filename, () => {
         useValue: mockService({
           clientId: uuid(),
         }),
+      },
+      {
+        token: IApplicationService,
+        useValue: {
+          backendOS: isWindows ? OS.Type.Windows : isLinux ? OS.Type.Linux : OS.Type.OSX,
+        },
       },
     );
     const commandRegistry = injector.get<CommandRegistry>(CommandRegistry);

@@ -1,6 +1,6 @@
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { URI, Disposable, IContextKeyService, StorageProvider, ILogger } from '@ali/ide-core-browser';
+import { URI, Disposable, IContextKeyService, StorageProvider, ILogger, IApplicationService, isWindows, isLinux, OS } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { Directory, File } from '../../src/common/file-tree-node.define';
 import { TreeNodeType } from '@ali/ide-components';
@@ -144,6 +144,12 @@ describe('FileTreeModelService should be work', () => {
       {
         token: IContextKeyService,
         useClass: MockContextKeyService,
+      },
+      {
+        token: IApplicationService,
+        useValue: {
+          backendOS: isWindows ? OS.Type.Windows : isLinux ? OS.Type.Linux : OS.Type.OSX,
+        },
       },
     );
     const root = {
