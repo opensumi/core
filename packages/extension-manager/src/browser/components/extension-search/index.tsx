@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as styles from './index.module.less';
-import { Input } from '@ali/ide-components';
+import { AutoFocusedInput } from '@ali/ide-main-layout/lib/browser/input';
+import { enableExtensionsContainerId } from '../../../common';
 
 export interface ExtensionSearchProps {
   query: string;
@@ -12,7 +13,8 @@ export const ExtensionSearch: React.FC<ExtensionSearchProps> = ({ query, onChang
 
   return (
     <div className={styles.input}>
-      <Input
+      <AutoFocusedInput
+        containerId={enableExtensionsContainerId}
         placeholder={placeholder}
         value={query}
         onChange={(e) => onChange(e.target.value)}

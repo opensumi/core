@@ -1,6 +1,8 @@
 import { Event, IBaseMarkerManager, IMarker } from '@ali/ide-core-common';
 import { IMatch } from '@ali/ide-core-common/lib/filters';
 
+export const MARKER_CONTAINER_ID = 'ide-markers';
+
 export const IMarkerService = Symbol('IMarkerService');
 export interface IMarkerService {
   /**
