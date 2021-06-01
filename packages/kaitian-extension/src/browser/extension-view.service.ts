@@ -3,7 +3,7 @@ import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { getMockAmdLoader } from './loader';
 import { IRPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
 import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtension, MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER } from '../common';
-import { IExtensionProps, ILogger, replaceLocalizePlaceholder, URI } from '@ali/ide-core-common';
+import { IExtensionProps, ILogger, IReporterService, replaceLocalizePlaceholder, REPORT_NAME, URI } from '@ali/ide-core-common';
 import { AppConfig, IToolbarPopoverRegistry } from '@ali/ide-core-browser';
 import { getShadowRoot } from './shadowRoot';
 import { Path, posix } from '@ali/ide-core-common/lib/path';
@@ -49,6 +49,9 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
 
   @Autowired()
   private readonly staticResourceService: StaticResourceService;
+
+  @Autowired(IReporterService)
+  private readonly reporterService: IReporterService;
 
   private extensions: IExtension[] = [];
 
@@ -337,7 +340,9 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
   }
 
   private async loadBrowserModule<T>(browserPath: string, extension: IExtension, defaultExports: boolean): Promise<any> {
+    const loadTimer = this.reporterService.time(REPORT_NAME.LOAD_EXTENSION_MAIN);
     const pendingFetch = await this.doFetch(decodeURIComponent(browserPath));
+    loadTimer.timeEnd(extension.id);
     const { _module, _exports, _require } = getMockAmdLoader<T>(this.injector, extension, this.nodeExtensionService.protocol);
 
     const initFn = new Function('module', 'exports', 'require', await pendingFetch.text());
@@ -396,7 +401,9 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
     extension: IExtension,
     defaultExports: boolean,
   ): Promise<{ moduleExports: T, proxiedHead: HTMLHeadElement }> {
+    const loadTimer = this.reporterService.time(REPORT_NAME.LOAD_EXTENSION_MAIN);
     const pendingFetch = await this.doFetch(decodeURIComponent(browserPath));
+    loadTimer.timeEnd(extension.id);
     const { _module, _exports, _require } = getMockAmdLoader<T>(this.injector, extension, this.nodeExtensionService.protocol);
     const stylesCollection = [];
     const proxiedHead = document.createElement('head');
