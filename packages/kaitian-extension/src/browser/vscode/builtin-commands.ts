@@ -155,6 +155,12 @@ export const OPEN: Command = {
   id: 'vscode.open',
 };
 
+// 打开文件夹
+export const OPEN_FOLDER: Command = {
+  id: 'vscode.openFolder',
+  delegate: FILE_COMMANDS.OPEN_FOLDER.id,
+};
+
 // 比较内容
 export const DIFF: Command = {
   id: 'vscode.diff',

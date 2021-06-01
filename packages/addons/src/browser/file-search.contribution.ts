@@ -197,7 +197,7 @@ export class FileSearchQuickCommandHandler {
   readonly default: boolean = true;
   readonly prefix: string = '...';
   readonly description: string = localize('file-search.command.fileOpen.description');
-  private prevEditorState: {uri?: URI, range?: IRange} = {};
+  private prevEditorState: { uri?: URI, range?: IRange } = {};
   private prevSelected: URI | undefined;
 
   currentLookFor: string = '';
@@ -253,7 +253,7 @@ export class FileSearchQuickCommandHandler {
   // 保存此时的编辑器uri和光标位置
   private trySaveEditorState() {
     if (this.workbenchEditorService.currentResource) {
-      let currentRange = {startColumn: 1, startLineNumber: 1, endColumn: 1, endLineNumber: 1};
+      let currentRange = { startColumn: 1, startLineNumber: 1, endColumn: 1, endLineNumber: 1 };
       const selections = this.workbenchEditorService.currentEditor?.getSelections();
       if (selections) {
         const {
@@ -302,7 +302,7 @@ export class FileSearchQuickCommandHandler {
         const symbols = this.documentSymbolStore.getDocumentSymbol(targetFile) || [];
         // 将symbol tree节点展开
         const flatSymbols: INormalizedDocumentSymbol[] = [];
-        this.flattenSymbols({children: symbols}, flatSymbols);
+        this.flattenSymbols({ children: symbols }, flatSymbols);
         const items: QuickOpenGroupItem[] = flatSymbols.filter((item) => {
           // 手动匹配symbol并高亮
           const matchRange: Highlight[] = matchesFuzzy(symbolQuery, item.name, true) || [];
