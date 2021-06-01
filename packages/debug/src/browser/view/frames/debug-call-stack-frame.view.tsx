@@ -9,18 +9,21 @@ import { IDebugSessionManager } from '../../../common';
 import { DebugSessionManager } from '../../debug-session-manager';
 import * as styles from './debug-call-stack.module.less';
 import { DebugCallStackService } from './debug-call-stack.service';
+import { DebugSession } from '../../debug-session';
 
 export interface DebugStackSessionViewProps {
   frames: DebugStackFrame[];
+  session: DebugSession;
   thread: DebugThread;
   viewState: ViewState;
   indent?: number;
 }
 
 export const DebugStackFramesView = observer((props: DebugStackSessionViewProps) => {
-  const { viewState, frames, thread, indent = 0 } = props;
+  const { viewState, frames: rawFrames, thread, indent = 0, session } = props;
   const [selected, setSelected] = React.useState<number | undefined>();
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [frames, setFrames] = React.useState<DebugStackFrame[]>([]);
   const [framesErrorMessage, setFramesErrorMessage] = React.useState<string>('');
   const [canLoadMore, setCanLoadMore] = React.useState<boolean>(false);
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
@@ -30,13 +33,9 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
     if (!thread) {
       return;
     }
-    const frames = await thread.fetchFrames();
-    if (frames[0]) {
-      const frame = frames[0];
-      thread.currentFrame = frame;
-      setSelected(frame.raw.id);
-      frameOpenSource(frame);
-    }
+    const remainingFramesCount = typeof thread.stoppedDetails?.totalFrames === 'number' ? (thread.stoppedDetails?.totalFrames - thread.frameCount) : undefined;
+    const frames = await thread.fetchFrames(remainingFramesCount);
+    setFrames(frames);
   };
 
   const frameOpenSource = (frame: DebugStackFrame) => {
@@ -46,6 +45,8 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
   };
 
   React.useEffect(() => {
+    setFrames([...rawFrames]);
+
     const disposable = new DisposableCollection();
 
     disposable.push(manager.onDidChangeActiveDebugSession(({ previous }) => {
@@ -54,20 +55,26 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
       }
     }));
 
+    if (session) {
+      disposable.push(session.onDidChangeCallStack(() => {
+        setFrames([...thread.frames]);
+      }));
+    }
+
     return () => {
       disposable.dispose();
     };
   }, []);
 
   React.useEffect(() => {
-    if (manager.currentThread) {
-      const hasSourceFrame = manager.currentThread.frames.find((e: DebugStackFrame) => !!e.source);
+    if (thread) {
+      const hasSourceFrame = thread.frames.find((e: DebugStackFrame) => !!e.source);
       if (hasSourceFrame) {
         setSelected(hasSourceFrame.raw.id);
         frameOpenSource(hasSourceFrame);
       }
     }
-  }, [manager.currentThread?.frameCount]);
+  }, [thread.frameCount]);
 
   React.useEffect(() => {
     if (thread) {

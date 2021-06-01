@@ -251,7 +251,7 @@ export const localizationBundle = {
     'debug.console.copyAll': 'Copy All',
     'debug.console.collapseAll': 'Collapse All',
 
-    'debug.stack.loadMore': 'Load More Stack Frames',
+    'debug.stack.loadMore': 'Load All Stack Frames',
     'debug.stack.loading': 'Loading...',
     'debug.breakpoint.deactive': 'Deactivate Breakpoints',
     'debug.breakpoint.active': 'Activate Breakpoints',
