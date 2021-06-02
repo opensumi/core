@@ -662,6 +662,10 @@ function convertTags(
     switch (tag) {
       case types.DiagnosticTag.Unnecessary:
         markerTags.push(MarkerTag.Unnecessary);
+        break;
+      case types.DiagnosticTag.Deprecated:
+        markerTags.push(MarkerTag.Deprecated);
+        break;
     }
   }
   return markerTags;
