@@ -114,6 +114,12 @@ export const localizationBundle = {
     'edit.paste': '粘贴',
     'edit.selectAll': '全选',
 
+    'editor.goBack': '向后',
+    'editor.goForward': '前进',
+    'editor.quickOpen': '转到文件...',
+    'editor.editor.goToSymbol': '转到符号...',
+    'editor.goToLine': '转到行...',
+
     'quickopen.command.placeholder': '请输入你要执行的命令',
     'quickopen.command.description': '执行 IDE 预设的命令',
     'quickopen.command.nohandler': '找不到结果',

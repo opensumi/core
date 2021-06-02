@@ -129,6 +129,12 @@ export const localizationBundle = {
     'edit.paste': 'Paste',
     'edit.selectAll': 'Select All',
 
+    'editor.goBack': 'Back',
+    'editor.goForward': 'Forward',
+    'editor.quickOpen': 'Go to File...',
+    'editor.editor.goToSymbol': 'Go to Symbol...',
+    'editor.goToLine': 'Go to Line...',
+
     'editor.tokenize.test': 'Try Tokenize First Selection',
 
     'quickopen.command.placeholder': 'Placeholder',
