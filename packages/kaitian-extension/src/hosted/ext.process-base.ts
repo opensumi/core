@@ -58,6 +58,7 @@ export interface ExtProcessConfig {
   logLevel?: LogLevel;
   builtinCommands?: IBuiltInCommand[];
   customDebugChildProcess?: CustomeChildProcessModule;
+  customVSCodeEngineVersion?: string;
 }
 
 async function initRPCProtocol(extInjector): Promise<any> {
