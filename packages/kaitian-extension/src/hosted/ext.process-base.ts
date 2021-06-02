@@ -23,7 +23,7 @@ setPerformance(performance);
 Error.stackTraceLimit = 100;
 const argv = require('yargs').argv;
 let logger: any = console;
-
+let preload: IExtensionHostService;
 export interface IBuiltInCommand {
   id: string;
   handler: CommandHandler;
@@ -118,7 +118,7 @@ export async function extProcessInit(config: ExtProcessConfig = {}) {
       Preload = Preload.default;
     }
 
-    const preload: IExtensionHostService = new Preload(protocol, logger, extInjector);
+    preload = new Preload(protocol, logger, extInjector);
 
     reporterEmitter.event((reportMessage: ReporterProcessMessage) => {
       if (process && process.send) {
@@ -134,8 +134,6 @@ export async function extProcessInit(config: ExtProcessConfig = {}) {
     logger!.log('preload.init end');
 
     if (process && process.send) {
-      // tslint:disable-next-line
-      const send = process.send;
       process.send('ready');
 
       process.on('message', async (msg) => {
@@ -168,6 +166,9 @@ function getWarnLogger() {
 
 function unexpectedErrorHandler(e) {
   setTimeout(() => {
+    // 上报错误
+    preload && preload.reportUnexpectedError(e);
+    // 记录错误日志
     getErrorLogger()('[Extension-Host]', e.message, e.stack && '\n\n' + e.stack);
   }, 0);
 }

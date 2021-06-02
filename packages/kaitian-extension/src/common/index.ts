@@ -251,6 +251,11 @@ export interface IExtensionHostService extends IExtensionHost {
   close(): Promise<void>;
   getExtendExports(id: string): any;
   extensionsActivator: ExtensionsActivator;
+  /**
+   * 上报插件未捕获异常
+   * @param error
+   */
+  reportUnexpectedError(error: Error): void;
 }
 
 // tslint:disable-next-line: no-empty-interface

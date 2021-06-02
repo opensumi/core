@@ -43,6 +43,8 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
   private reporterService: IReporterService;
 
+  private extensionErrors = new WeakMap<Error, IExtensionDescription | undefined>();
+
   constructor(rpcProtocol: RPCProtocol, logger, private injector: Injector) {
     this.rpcProtocol = rpcProtocol;
     this.storage = new ExtHostStorage(rpcProtocol);
@@ -68,6 +70,19 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     });
 
     Error.stackTraceLimit = 100;
+  }
+
+  /**
+   * 收集插件未捕获异常
+   * @param error
+   */
+  reportUnexpectedError(error: Error): void {
+    // 在此先访问一下 stack 触发 Error.prepareStackTrace 分析的插件异常信息
+    const stackTraceMassage = error.stack;
+    const extension = this.extensionErrors.get(error);
+    if (extension && stackTraceMassage) {
+      this.reportRuntimeError(error, extension, stackTraceMassage);
+    }
   }
 
   public async $getActivatedExtensions(): Promise<ActivatedExtensionJSON[]> {
@@ -122,11 +137,8 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
           extension = this.findExtension(fileName);
         }
       }
-
-      if (extension) {
-        this.reportRuntimeError(error, extension, stackTraceMessage);
-      }
-
+      // 存下当前异常属于哪一个插件以便上报
+      this.extensionErrors.set(error, extension);
       const traceMassage = `${error.name || 'Error'}: ${error.message || ''}${stackTraceMessage}`;
       return traceMassage;
     };
