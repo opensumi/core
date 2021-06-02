@@ -35,6 +35,7 @@ export enum REPORT_NAME {
   PROVIDE_ON_TYPE_FORMATTING_EDITS = 'provideOnTypeFormattingEdits',
   PROVIDE_SELECTION_RANGES = 'provideSelectionRanges',
   TERMINAL_MEASURE = 'terminalMeasure',
+  SEARCH_MEASURE = 'searchMeasure'
 }
 
 export enum REPORT_HOST {
