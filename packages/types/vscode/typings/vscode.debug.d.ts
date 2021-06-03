@@ -60,6 +60,15 @@ declare module 'vscode' {
      * Send a custom request to the debug adapter.
      */
     customRequest(command: string, args?: any): Thenable<any>;
+
+    /**
+		 * Maps a VS Code breakpoint to the corresponding Debug Adapter Protocol (DAP) breakpoint that is managed by the debug adapter of the debug session.
+		 * If no DAP breakpoint exists (either because the VS Code breakpoint was not yet registered or because the debug adapter is not interested in the breakpoint), the value `undefined` is returned.
+		 *
+		 * @param breakpoint A VS Code [breakpoint](#Breakpoint).
+		 * @return A promise that resolves to the Debug Adapter Protocol breakpoint or `undefined`.
+		 */
+		getDebugProtocolBreakpoint(breakpoint: Breakpoint): Thenable<DebugProtocolBreakpoint | undefined>;
   }
 
   /**
@@ -491,6 +500,13 @@ declare module 'vscode' {
   export interface DebugProtocolSource {
     // Properties: see details [here](https://microsoft.github.io/debug-adapter-protocol/specification#Types_Source).
   }
+
+  /**
+	 * A DebugProtocolBreakpoint is an opaque stand-in type for the [Breakpoint](https://microsoft.github.io/debug-adapter-protocol/specification#Types_Breakpoint) type defined in the Debug Adapter Protocol.
+	 */
+	export interface DebugProtocolBreakpoint {
+		// Properties: see details [here](https://microsoft.github.io/debug-adapter-protocol/specification#Types_Breakpoint).
+	}
 
   /**
    * Namespace for debug functionality.

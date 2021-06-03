@@ -40,6 +40,10 @@ export class ExtensionDebugAdapterSession extends StreamDebugAdapter implements 
     return this.debugSession.customRequest(command, args);
   }
 
+  async getDebugProtocolBreakpoint(breakpoint: vscode.Breakpoint): Promise<vscode.DebugProtocolBreakpoint | undefined> {
+    return this.debugSession.getDebugProtocolBreakpoint(breakpoint);
+  }
+
   protected onDebugAdapterError(error: Error): void {
     if (this.tracker.onError) {
       this.tracker.onError(error);

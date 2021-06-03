@@ -268,6 +268,14 @@ export class MainThreadDebug implements IMainThreadDebug {
     throw new Error(`Debug session '${sessionId}' not found`);
   }
 
+  public $getDebugProtocolBreakpoint(sessionId: string, breakpoinId: string): Promise<DebugProtocol.Breakpoint | undefined> {
+    const session = this.sessionManager.getSession(sessionId);
+    if (session) {
+      return Promise.resolve(session.getDebugProtocolBreakpoint(breakpoinId));
+    }
+    return Promise.reject(new Error('debug session not found'));
+  }
+
   async $startDebugging(folder: WorkspaceFolder | undefined, nameOrConfiguration: string | DebugConfiguration, options: IStartDebuggingOptions): Promise<boolean> {
     let configuration: DebugConfiguration | undefined;
     let index = 0;

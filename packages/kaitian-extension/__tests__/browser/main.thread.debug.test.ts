@@ -268,6 +268,15 @@ describe('MainThreadDebug API Test Suite', () => {
     expect(sendCustomRequest).toBeCalledTimes(1);
   });
 
+  it('$getDebugProtocolBreakpoint method should be work', async () => {
+    const getDebugProtocolBreakpoint = jest.fn();
+    mockDebugSessionManager.getSession.mockReturnValueOnce({
+      getDebugProtocolBreakpoint,
+    });
+    await mainThreadDebug.$getDebugProtocolBreakpoint('1', '1');
+    expect(getDebugProtocolBreakpoint).toBeCalledTimes(1);
+  });
+
   it('$startDebugging method should be work', async () => {
     mockDebugConfigurationManager.all.push({
       configuration: {

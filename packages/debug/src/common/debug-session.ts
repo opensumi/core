@@ -1,3 +1,4 @@
+import { DebugProtocol } from '@ali/vscode-debugprotocol';
 import { IDisposable } from '@ali/ide-core-browser';
 import { DebugSessionOptions, InternalDebugSessionOptions } from './debug-session-options';
 import { DebugConfiguration } from './debug-configuration';
@@ -33,6 +34,7 @@ export interface IDebugSession extends IDisposable {
   parentSession: IDebugSession | undefined;
   id: string;
   hasSeparateRepl: () => boolean;
+  getDebugProtocolBreakpoint(breakpointId: string): DebugProtocol.Breakpoint | undefined;
   on: <K extends keyof DebugEventTypes>(kind: K, listener: (e: DebugEventTypes[K]) => any) => IDisposable;
 }
 

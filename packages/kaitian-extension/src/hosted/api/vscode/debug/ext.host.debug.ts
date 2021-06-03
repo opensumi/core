@@ -280,6 +280,7 @@ export class ExtHostDebug implements IExtHostDebugService {
       workspaceFolder: undefined,
       configuration: debugConfiguration,
       customRequest: (command: string, args?: any) => this.proxy.$customRequest(sessionId, command, args),
+      getDebugProtocolBreakpoint: (breakpoint: vscode.Breakpoint): Promise<vscode.DebugProtocolBreakpoint | undefined> => this.proxy.$getDebugProtocolBreakpoint(sessionId, breakpoint.id),
     };
 
     const tracker = await this.createDebugAdapterTracker(debugSession);

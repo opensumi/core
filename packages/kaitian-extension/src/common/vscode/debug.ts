@@ -21,6 +21,7 @@ export interface IMainThreadDebug {
   $startDebugging(folder: WorkspaceFolder | undefined, nameOrConfiguration: string | DebugConfiguration, options: IStartDebuggingOptions): Promise<boolean>;
   $stopDebugging(sessionId: DebugSessionUUID | undefined): Promise<void>;
   $customRequest(sessionId: string, command: string, args?: any): Promise<DebugProtocol.Response>;
+  $getDebugProtocolBreakpoint(id: DebugSessionUUID, breakpoinId: string): Promise<DebugProtocol.Breakpoint | undefined>;
 }
 
 export interface IExtHostDebug {
