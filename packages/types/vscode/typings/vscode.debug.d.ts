@@ -213,6 +213,21 @@ declare module 'vscode' {
   }
 
   /**
+   * Represents a debug adapter running as a Named Pipe (on Windows)/UNIX Domain Socket (on non-Windows) based server.
+   */
+  export class DebugAdapterNamedPipeServer {
+    /**
+     * The path to the NamedPipe/UNIX Domain Socket.
+     */
+    readonly path: string;
+
+    /**
+     * Create a description for a debug adapter running as a socket based server.
+     */
+    constructor(path: string);
+  }
+
+  /**
    * A debug adapter that implements the Debug Adapter Protocol can be registered with VS Code if it implements the DebugAdapter interface.
    */
   export interface DebugAdapter extends Disposable {
@@ -251,6 +266,7 @@ declare module 'vscode' {
   export type DebugAdapterDescriptor =
     | DebugAdapterExecutable
     | DebugAdapterServer
+    | DebugAdapterNamedPipeServer
     | DebugAdapterInlineImplementation;
 
   export interface DebugAdapterDescriptorFactory {
@@ -582,10 +598,10 @@ declare module 'vscode' {
     ): Thenable<boolean>;
 
     /**
-		 * Stop the given debug session or stop all debug sessions if session is omitted.
-		 * @param session The [debug session](#DebugSession) to stop; if omitted all sessions are stopped.
-		 */
-		export function stopDebugging(session?: DebugSession): Thenable<void>;
+     * Stop the given debug session or stop all debug sessions if session is omitted.
+     * @param session The [debug session](#DebugSession) to stop; if omitted all sessions are stopped.
+     */
+    export function stopDebugging(session?: DebugSession): Thenable<void>;
 
     /**
      * Add breakpoints.

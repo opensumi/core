@@ -1605,6 +1605,12 @@ export class DebugAdapterServer {
 }
 
 @es5ClassCompat
+export class DebugAdapterNamedPipeServer implements vscode.DebugAdapterNamedPipeServer {
+  constructor(public readonly path: string) {
+  }
+}
+
+@es5ClassCompat
 export class DebugAdapterInlineImplementation implements vscode.DebugAdapterInlineImplementation {
   readonly implementation: vscode.DebugAdapter;
 

@@ -1,14 +1,14 @@
 import type * as vscode from 'vscode';
 import { IExtHostCommands, IExtHostDebugService, IMainThreadDebug, ExtensionWSChannel, IExtHostConnectionService } from '../../../../common/vscode';
 import { Emitter, Event, uuid, IJSONSchema, IJSONSchemaSnippet } from '@ali/ide-core-common';
-import { Disposable, Uri, DebugConsoleMode, DebugAdapterExecutable, DebugAdapterServer, DebugAdapterInlineImplementation } from '../../../../common/vscode/ext-types';
+import { Disposable, Uri, DebugConsoleMode, DebugAdapterExecutable, DebugAdapterServer, DebugAdapterInlineImplementation, DebugAdapterNamedPipeServer } from '../../../../common/vscode/ext-types';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier } from '../../../../common/vscode/';
 import { ExtensionDebugAdapterSession } from './extension-debug-adapter-session';
 import { Breakpoint } from '../../../../common/vscode/models';
 import { DebugConfiguration, DebugStreamConnection, IDebuggerContribution } from '@ali/ide-debug';
 import { ExtensionDebugAdapterTracker } from './extension-debug-adapter-tracker';
-import { connectDebugAdapter, startDebugAdapter, directDebugAdapter } from './extension-debug-adapter-starter';
+import { connectDebugAdapter, startDebugAdapter, directDebugAdapter, namedPipeDebugAdapter } from './extension-debug-adapter-starter';
 import { resolveDebugAdapterExecutable } from './extension-debug-adapter-excutable-resolver';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { CustomeChildProcessModule } from '../../../ext.process-base';
@@ -444,6 +444,8 @@ export class ExtHostDebug implements IExtHostDebugService {
             return connectDebugAdapter(adapter as DebugAdapterServer);
           case 'executable':
             return startDebugAdapter(adapter as DebugAdapterExecutable);
+          case 'pipeServer':
+            return namedPipeDebugAdapter(adapter as DebugAdapterNamedPipeServer);
           case 'implementation':
             return directDebugAdapter(session.id, (adapter as DebugAdapterInlineImplementation).implementation);
           default: break;
@@ -496,7 +498,7 @@ export class ExtHostDebug implements IExtHostDebugService {
   }
 
   private convertToDto(x: vscode.DebugAdapterDescriptor | undefined | null): {
-    type: 'executable' | 'server' | 'implementation',
+    type: 'executable' | 'server' | 'implementation' | 'pipeServer',
     adapter: vscode.DebugAdapterDescriptor,
   } {
     if (x instanceof DebugAdapterExecutable) {
@@ -507,6 +509,11 @@ export class ExtHostDebug implements IExtHostDebugService {
     } else if (x instanceof DebugAdapterServer) {
       return {
         type: 'server',
+        adapter: x,
+      };
+    } else if (x instanceof DebugAdapterNamedPipeServer) {
+      return {
+        type: 'pipeServer',
         adapter: x,
       };
     } else if (x instanceof DebugAdapterInlineImplementation) {
