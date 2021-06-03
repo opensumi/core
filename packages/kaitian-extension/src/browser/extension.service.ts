@@ -407,6 +407,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     await Promise.all(languagePackExtensions.map((languagePack) => languagePack.contributeIfEnabled()));
     await Promise.all(normalExtensions.map((extension) => extension.contributeIfEnabled()));
 
+    // try fire workspaceContains activateEvent ，这里不要 await
+    Promise.all(extensions.map((extension) => this.activateByWorkspaceContains(extension.packageJSON.activationEvents)))
+      .catch((error) => this.logger.error(error));
+
     this.commandRegistry.beforeExecuteCommand(async (command, args) => {
       await this.activationEventService.fireEvent('onCommand', command);
       return args;
