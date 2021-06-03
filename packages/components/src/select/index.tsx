@@ -63,6 +63,14 @@ export interface ISelectProps<T = string> {
    * 允许 select 的选项框宽度比 select宽度大, 默认 false
    */
   allowOptionsOverflow?: boolean;
+
+  /**
+   * 定义选择组件下拉选择菜单的渲染方式
+   * fixed —— 相对视窗位置
+   * absolute —— 相对于组件位置
+   * 默认值为 fixed
+   */
+  dropdownRenderType?: 'fixed' | 'absolute';
 }
 
 export const Option: React.FC<React.PropsWithChildren<{
@@ -214,6 +222,7 @@ export function Select<T = string>({
   selectedRenderer,
   onBeforeShowOptions,
   allowOptionsOverflow,
+  dropdownRenderType = 'fixed',
 }: ISelectProps<T>) {
   const [open, setOpen] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState('');
@@ -276,8 +285,8 @@ export function Select<T = string>({
       if (!maxHeight || (toBottom < parseInt(maxHeight, 10))) {
         overlayRef.current.style.maxHeight = `${toBottom}px`;
       }
-
-      overlayRef.current.style.top = `${boxRect.top + boxRect.height}px`;
+      overlayRef.current.style.top = dropdownRenderType === 'fixed' ? `${boxRect.top + boxRect.height}px` : `${boxRect.height}px`;
+      overlayRef.current.style.position = dropdownRenderType === 'fixed' ? 'fixed' : 'absolute';
     }
     if (open) {
       const listener = () => {

@@ -24,7 +24,7 @@ import { IMenuRegistry, MenuRegistryImpl } from '@ali/ide-core-browser/src/menu/
 import { EditorActionRegistryImpl } from '@ali/ide-editor/lib/browser/menu/editor.menu';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 import { LayoutService } from '@ali/ide-main-layout/lib/browser/layout.service';
-import { PreferenceSettingsService } from '@ali/ide-preferences/lib/browser/preference.service';
+import { PreferenceSettingsService } from '@ali/ide-preferences/lib/browser/preference-settings.service';
 import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
 import { MonacoSnippetSuggestProvider } from '@ali/ide-monaco/lib/browser/monaco-snippet-suggest-provider';

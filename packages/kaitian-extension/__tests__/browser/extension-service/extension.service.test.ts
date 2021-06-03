@@ -7,7 +7,7 @@ import { IThemeService, getColorRegistry } from '@ali/ide-theme/lib/common';
 import { IMenuRegistry, MenuRegistryImpl, IMenuItem } from '@ali/ide-core-browser/src/menu/next';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { LayoutService } from '@ali/ide-main-layout/lib/browser/layout.service';
-import { PreferenceSettingsService } from '@ali/ide-preferences/lib/browser/preference.service';
+import { PreferenceSettingsService } from '@ali/ide-preferences/lib/browser/preference-settings.service';
 import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { IToolbarRegistry } from '@ali/ide-core-browser/lib/toolbar';
 import { NextToolbarRegistryImpl } from '@ali/ide-core-browser/src/toolbar/toolbar.registry';

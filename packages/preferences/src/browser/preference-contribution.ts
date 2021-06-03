@@ -28,16 +28,18 @@ import {
   ResourceProvider,
   getIcon,
   isString,
+  ISettingSection,
 } from '@ali/ide-core-browser';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
+import { BrowserEditorContribution, EditorComponentRegistry, IResourceOpenResult, WorkbenchEditorService } from '@ali/ide-editor/lib/browser';
 import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { PREF_SCHEME, SettingContribution } from '../common';
 import { PreferenceView } from './preferences.view';
 import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
-import { PreferenceSettingsService, defaultSettingGroup, defaultSettingSections } from './preference.service';
+import { PreferenceSettingsService, defaultSettingGroup, defaultSettingSections } from './preference-settings.service';
+import * as jsoncparser from 'jsonc-parser';
 
 const PREF_PREVIEW_COMPONENT_ID = 'pref-preview';
 
@@ -126,11 +128,19 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   @Autowired(SettingContribution)
   private readonly contributions: ContributionProvider<SettingContribution>;
 
+  @Autowired(WorkbenchEditorService)
+  private readonly workbenchEditorService: WorkbenchEditorService;
+
   private settingGroupsWillRegister: ISettingGroup[] = defaultSettingGroup;
 
-  private settingSectionsWillRegister = defaultSettingSections;
+  private settingSectionsWillRegister: {
+    [key: string]: ISettingSection[],
+  } = defaultSettingSections;
 
   onStart() {
+    /**
+     * 处理各个模块下贡献的 PreferenceSettingSectionContribution， 组成默认的设置面板内容
+     */
     /**
      * 收集 contribution 里对 settingGroupsWillRegister, settingSectionsWillRegister 增删
      */
@@ -172,8 +182,14 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
     });
 
     commands.registerCommand(PREFERENCE_COMMANDS.OPEN_SOURCE_FILE, {
-      execute: async () => {
-        this.openResource();
+      execute: async (scopeOrUrl?: PreferenceScope | URI, prefernceId?: string) => {
+        // 这里可能被 Editor 的 Toolbar 调用
+        // 传入 URI 及 EditorGroup
+        if (!scopeOrUrl || typeof scopeOrUrl !== 'number') {
+          this.openResource();
+        } else {
+          this.openResource(scopeOrUrl as PreferenceScope, prefernceId);
+        }
       },
     });
   }
@@ -255,16 +271,48 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
     });
   }
 
-  async openPreferences(search?: string) {
-    await this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI('/').withScheme(PREF_SCHEME));
+  async openPreferences(search?: string, prefernceId?: string) {
+    await this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI('/').withScheme(PREF_SCHEME), { preview: false });
     if (isString(search)) {
       this.preferenceService.search(search);
     }
   }
 
-  async openResource(scope?: PreferenceScope) {
+  async openResource(scope?: PreferenceScope, preferenceId?: string) {
     const url = await this.preferenceService.getCurrentPreferenceUrl(scope);
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(url));
+    const openResult = await this.commandService.executeCommand<IResourceOpenResult>(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(url));
+    if (openResult && preferenceId) {
+      const editor = this.workbenchEditorService.editorGroups.find((g) => g.name === openResult.groupId)?.currentEditor;
+      if (editor) {
+        const { _commandService: commandService } = editor.monacoEditor as any;
+        let text = editor.monacoEditor.getValue();
+        let lines;
+        let numReturns;
+        let preferenceLine;
+        const { index } = text.match(preferenceId) || {};
+        if (index && index >= 0) {
+          numReturns = text.slice(0, index).match(new RegExp('\n', 'g'))!.length + 1;
+          lines = text.split('\n');
+          preferenceLine = lines[numReturns - 1];
+        } else {
+          // 如果不存在配置项，追加配置项内容
+          const formattingOptions = { tabSize: 2, insertSpaces: true, eol: '' };
+          const edits = jsoncparser.modify(text, [preferenceId], '', { formattingOptions });
+          const content = jsoncparser.applyEdits(text, edits);
+          editor.monacoEditor.setValue(content);
+          text = content;
+          numReturns = text.slice(0, index).match(new RegExp('\n', 'g'))!.length;
+          lines = text.split('\n');
+          preferenceLine = lines[numReturns - 1];
+        }
+        const regStr = `\\s+\\"${preferenceId.replace('/\./g', '\\.')}\\":\\s?\\"`;
+        const match = new RegExp(regStr, 'g').exec(preferenceLine);
+        if (match) {
+          editor.monacoEditor.setPosition({ lineNumber: numReturns, column: match[0].length + 1 });
+          await commandService.executeCommand('editor.action.triggerSuggest');
+        }
+      }
+    }
   }
 
   initialize() {

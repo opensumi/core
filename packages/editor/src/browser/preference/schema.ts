@@ -1107,7 +1107,6 @@ const customEditorSchema: PreferenceSchemaProperties = {
   'editor.minimap': {
     type: 'boolean',
     default: false,
-    description: '%editor.configuration.minimap%',
   },
   'editor.forceReadOnly': {
     type: 'boolean',
@@ -1221,7 +1220,7 @@ const customEditorSchema: PreferenceSchemaProperties = {
   'editor.formatOnSaveTimeout': {
     type: 'number',
     default: 750,
-    description: '%editor.configuration.readonlyFiles%',
+    description: '%editor.configuration.formatOnSaveTimeout%',
   },
   'editor.maxTokenizationLineLength': {
     type: 'integer',
@@ -1236,7 +1235,7 @@ const customEditorSchema: PreferenceSchemaProperties = {
   'editor.quickSuggestionsDelay': {
     type: 'integer',
     default: 100,
-    // description: '%editor.configuration.quickSuggestionsDelay%',
+    description: '%editor.configuration.quickSuggestionsDelay%',
   },
   'editor.quickSuggestionsMaxCount': {
     type: 'integer',
