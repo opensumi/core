@@ -1,7 +1,7 @@
 import type * as vscode from 'vscode';
 import { IExtHostCommands, IExtHostDebugService, IMainThreadDebug, ExtensionWSChannel, IExtHostConnectionService } from '../../../../common/vscode';
 import { Emitter, Event, uuid, IJSONSchema, IJSONSchemaSnippet } from '@ali/ide-core-common';
-import { Disposable, Uri, DebugConsoleMode, DebugAdapterExecutable, DebugAdapterServer, DebugAdapterInlineImplementation, DebugAdapterNamedPipeServer } from '../../../../common/vscode/ext-types';
+import { Disposable, Uri, DebugConsoleMode, DebugAdapterExecutable, DebugAdapterServer, DebugAdapterInlineImplementation, DebugAdapterNamedPipeServer, DebugConfigurationProviderTriggerKind } from '../../../../common/vscode/ext-types';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier } from '../../../../common/vscode/';
 import { ExtensionDebugAdapterSession } from './extension-debug-adapter-session';
@@ -12,6 +12,7 @@ import { connectDebugAdapter, startDebugAdapter, directDebugAdapter, namedPipeDe
 import { resolveDebugAdapterExecutable } from './extension-debug-adapter-excutable-resolver';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { CustomeChildProcessModule } from '../../../ext.process-base';
+import { IDebugConfigurationProvider } from './common';
 
 export function createDebugApiFactory(
   extHostDebugService: IExtHostDebugService,
@@ -42,8 +43,8 @@ export function createDebugApiFactory(
     onDidChangeBreakpoints(listener, thisArgs?, disposables?) {
       return extHostDebugService.onDidChangeBreakpoints(listener, thisArgs, disposables);
     },
-    registerDebugConfigurationProvider(debugType: string, provider: vscode.DebugConfigurationProvider) {
-      return extHostDebugService.registerDebugConfigurationProvider(debugType, provider);
+    registerDebugConfigurationProvider(debugType: string, provider: vscode.DebugConfigurationProvider, triggerKind?: vscode.DebugConfigurationProviderTriggerKind) {
+      return extHostDebugService.registerDebugConfigurationProvider(debugType, provider, triggerKind || DebugConfigurationProviderTriggerKind.Initial);
     },
     registerDebugAdapterDescriptorFactory(debugType: string, factory: vscode.DebugAdapterDescriptorFactory) {
       return extHostDebugService.registerDebugAdapterDescriptorFactory(debugType, factory);
@@ -82,7 +83,7 @@ export class ExtHostDebug implements IExtHostDebugService {
   private sessions = new Map<string, ExtensionDebugAdapterSession>();
   private debuggersContributions = new Map<string, IDebuggerContribution>();
   private contributionPaths = new Map<string, string>();
-  private configurationProviders = new Map<string, Set<vscode.DebugConfigurationProvider>>();
+  private configurationProviders = new Map<string, Set<IDebugConfigurationProvider>>();
   private trackerFactories: [string, vscode.DebugAdapterTrackerFactory][] = [];
   private descriptorFactories = new Map<string, vscode.DebugAdapterDescriptorFactory>();
 
@@ -204,15 +205,27 @@ export class ExtHostDebug implements IExtHostDebugService {
     return this.proxy.$stopDebugging(session ? session.id : undefined);
   }
 
-  registerDebugConfigurationProvider(type: string, provider: vscode.DebugConfigurationProvider): vscode.Disposable {
-    const providers = this.configurationProviders.get(type) || new Set<vscode.DebugConfigurationProvider>();
+  registerDebugConfigurationProvider(type: string, provider: vscode.DebugConfigurationProvider, trigger: vscode.DebugConfigurationProviderTriggerKind): vscode.Disposable {
+    const providers = this.configurationProviders.get(type) || new Set<IDebugConfigurationProvider>();
     this.configurationProviders.set(type, providers);
-    providers.add(provider);
+
+    /**
+     * ********
+     * 由于目前还未实现 debugQuickAccess [https://github.com/microsoft/vscode/blob/414e5dbf1f870bc527ebc587cbbb5f6eee9bfba6/src/vs/workbench/contrib/debug/browser/debugQuickAccess.ts#L19]
+     * 所以对于 DebugConfigurationProviderTriggerKind 的配置不作任何处理
+     */
+    const covertProviders = {
+      type,
+      triggerKind: trigger,
+      ...provider,
+    } as IDebugConfigurationProvider;
+
+    providers.add(covertProviders);
 
     return Disposable.create(() => {
       const providers = this.configurationProviders.get(type);
       if (providers) {
-        providers.delete(provider);
+        providers.delete(covertProviders);
         if (providers.size === 0) {
           this.configurationProviders.delete(type);
         }
