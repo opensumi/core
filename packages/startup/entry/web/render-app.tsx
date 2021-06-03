@@ -13,7 +13,7 @@ export async function renderApp(opts: IClientAppOpts) {
   opts.extWorkerHost = opts.extWorkerHost || process.env.EXTENSION_WORKER_HOST; // `http://127.0.0.1:8080/kaitian/ext/worker-host.js`; // 访问 Host
   // 使用不一样的host名称
   const anotherHostName = process.env.WEBVIEW_HOST || (window.location.hostname === 'localhost' ? '127.0.0.1' : 'localhost');
-  opts.webviewEndpoint = `http://${anotherHostName}:9999`;
+  opts.webviewEndpoint = `http://${anotherHostName}:9090`;
   // opts.editorBackgroundImage = 'https://img.alicdn.com/tfs/TB1Y6vriuL2gK0jSZFmXXc7iXXa-200-200.png';
   opts.editorBackgroundImage = 'https://gw.alipayobjects.com/mdn/rms_104d0d/afts/img/A*j6JzRK8VubgAAAAAAAAAAAAAARQnAQ';
   // 定制Layout
