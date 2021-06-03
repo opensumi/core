@@ -9,6 +9,12 @@ export const UTF8_with_bom = 'utf8bom';
 export const UTF16be = 'utf16be';
 export const UTF16le = 'utf16le';
 
+export function isUTF8(encoding: string | null) {
+  if (encoding) {
+    return toIconvLiteEncoding(encoding) === UTF8;
+  }
+  return false;
+}
 
 const SUPPORT_ENCODINGS_TO_ICONV_ENCODINGS: { [name: string]: string } = {
 	'ibm866': 'cp866',

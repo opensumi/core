@@ -33,7 +33,7 @@ export class WorkspaceEditServiceImpl implements IWorkspaceEditService {
     edit.edits.forEach((edit) => {
       bulkEdit.add(edit);
     });
-    await bulkEdit.apply(this.documentModelService, this.workspaceFileService, this.editorService, this.eventBus);
+    await bulkEdit.apply(this.documentModelService, this.editorService, this.workspaceFileService, this.eventBus);
     this.editStack.push(bulkEdit);
   }
 
@@ -48,10 +48,10 @@ export class BulkEdit {
 
   private edits: WorkspaceEdit[] = [];
 
-  async apply(documentModelService: IEditorDocumentModelService, fileSystemService: IWorkspaceFileService, editorService: WorkbenchEditorService, eventBus: IEventBus) {
+  async apply(documentModelService: IEditorDocumentModelService, editorService: WorkbenchEditorService, workspaceFS: IWorkspaceFileService, eventBus: IEventBus) {
     for (const edit of this.edits) {
       if (edit instanceof ResourceFileEdit) {
-        await edit.apply(editorService, fileSystemService, documentModelService, eventBus);
+        await edit.apply(documentModelService, editorService, workspaceFS, eventBus);
       } else {
         await edit.apply(documentModelService, editorService);
       }
@@ -258,17 +258,17 @@ export class ResourceFileEdit implements IResourceFileEdit {
     }
   }
 
-  async apply(editorService: WorkbenchEditorService, fileServiceClient: IWorkspaceFileService, documentModelService: IEditorDocumentModelService, eventBus: IEventBus) {
+  async apply(documentModelService: IEditorDocumentModelService, editorService: WorkbenchEditorService, workspaceFS: IWorkspaceFileService, eventBus: IEventBus) {
     const options = this.options || {};
 
     if (this.newUri && this.oldUri) {
 
       if (options.copy) {
-        await fileServiceClient.copy([{ source: this.oldUri.codeUri, target: this.newUri.codeUri}], options);
+        await workspaceFS.copy([{ source: this.oldUri.codeUri, target: this.newUri.codeUri}], options);
 
       } else {
         // rename
-        await fileServiceClient.move([{ source: this.oldUri.codeUri, target: this.newUri.codeUri}], options);
+        await workspaceFS.move([{ source: this.oldUri.codeUri, target: this.newUri.codeUri}], options);
 
         await this.notifyEditor(editorService, documentModelService);
 
@@ -284,7 +284,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
       // 删除文件
       try {
         // electron windows下moveToTrash大量文件会导致IDE卡死，如果检测到这个情况就不使用moveToTrash
-        await fileServiceClient.delete([this.oldUri], { useTrash: !(isWindows && this.oldUri.path.name === 'node_modules') });
+        await workspaceFS.delete([this.oldUri], { useTrash: !(isWindows && this.oldUri.path.name === 'node_modules') });
         // 默认recursive
         await editorService.close(this.oldUri, true);
         eventBus.fire(new WorkspaceEditDidDeleteFileEvent({ oldUri: this.oldUri}));
@@ -299,9 +299,9 @@ export class ResourceFileEdit implements IResourceFileEdit {
       // 创建文件
       try {
         if (options.isDirectory) {
-          await fileServiceClient.createFolder(this.newUri);
+          await workspaceFS.createFolder(this.newUri);
         } else {
-          await fileServiceClient.create(this.newUri, '', { overwrite: options.overwrite });
+          await workspaceFS.create(this.newUri, '', { overwrite: options.overwrite });
         }
       } catch (err) {
         if (FileSystemError.FileExists.is(err) && options.ignoreIfExists) {

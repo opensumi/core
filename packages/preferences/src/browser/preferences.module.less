@@ -1,9 +1,9 @@
 
 .preferences {
   height:100%;
-  font-size: 12px;
+  font-size: 13px;
   overflow: hidden;
-  padding: 16px 60px 0 60px;
+  padding: 16px 32px 0 32px;
   box-sizing: border-box;
   .preference_noResults{
     font-size:13px;
@@ -48,15 +48,16 @@
     .preferences_indexes {
       position: absolute;
       width: 155px;
-      padding-top: 10px;
+      padding-top: 16px;
       height: 100%;
       left: 0;
       .index_item_wrapper {
         margin-bottom: 2px;
       }
       .index_item {
-        height: 22px;
-        line-height: 22px;
+        height: 26px;
+        font-size: 14px;
+        line-height: 26px;
         padding-left: 9px;
         cursor: pointer;
         white-space: nowrap;
@@ -83,7 +84,7 @@
           overflow: hidden;
           white-space: nowrap;
           text-overflow: ellipsis;
-          font-size: 12px;
+          font-size: 13px;
           cursor: pointer;
           &:hover {
             color: var(--list-hoverForeground);
@@ -95,20 +96,41 @@
     .preferences_items{
       height:100%;
       user-select: text;
+      padding: 16px 20px 0 10px;
     }
     .preference_section{
-      padding:15px 20px 0 10px;
+      :global(.kt-checkbox-icon) {
+        height: 16px;
+        width: 16px;
+      }
+      :global(.kt-checkbox) {
+        font-size: 13px;
+      }
       .section_title{
         font-size:14px;
         font-weight:bold;
-        margin-bottom:10px;
-        padding:0 15px;
+        padding:10px 15px;
       }
       .preference_item{
-        margin-bottom: 10px;
-        padding:5px 0px 5px 15px;
+        padding: 10px 0px 10px 15px;
         &.modified {
           border-left:3px solid var(--settings-modifiedItemIndicator);
+        }
+        &:hover {
+          color: var(--kt-tree-hoverForeground);
+          background: var(--kt-tree-hoverBackground);
+        }
+
+        &.selected {
+          color: var(--kt-tree-inactiveSelectionForeground) !important;
+          background: var(--kt-tree-inactiveSelectionBackground);
+        }
+      
+        &.focused {
+          outline: 1px solid var(--list-focusOutline);
+          outline-offset: -1px;
+          color: var(--kt-tree-activeSelectionForeground) !important;;
+          background: var(--kt-tree-activeSelectionBackground);
         }
       }
       .key {
@@ -125,6 +147,7 @@
         }
       }
       .desc {
+        font-size: 13px;
         opacity: 0.75;
         color: var(--descriptionForeground);
         margin-bottom: 5px;
@@ -178,7 +201,7 @@
 
   .tabs {
     padding: 0 !important;
-
+    font-size: 14px;
     :global {
       .kt-tab {
         padding-left: 10px;

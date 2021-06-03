@@ -90,5 +90,5 @@ export interface IExtensionHostDocService {
   $fireModelRemovedEvent(event: IExtensionDocumentModelRemovedEvent): void;
   $fireModelSavedEvent(event: IExtensionDocumentModelSavedEvent): void;
   $fireModelWillSaveEvent(e: IExtensionDocumentModelWillSaveEvent): Promise<void>;
-  $provideTextDocumentContent(path: string): Promise<string>;
+  $provideTextDocumentContent(path: string, encoding?: string): Promise<string>;
 }

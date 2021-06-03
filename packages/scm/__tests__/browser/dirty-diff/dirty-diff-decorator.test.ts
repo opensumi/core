@@ -3,6 +3,7 @@ import { Injectable } from '@ali/common-di';
 import { URI } from '@ali/ide-core-common';
 import { OverviewRulerLane, IDocPersistentCacheProvider } from '@ali/ide-editor';
 import { EditorDocumentModel } from '@ali/ide-editor/src/browser/doc-model/main';
+import { IEditorDocumentModel } from '@ali/ide-editor/src/browser/';
 import { EmptyDocCacheImpl } from '@ali/ide-editor/src/browser';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
@@ -24,7 +25,8 @@ class MockSCMPreferencesImpl {
 describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
   describe('test for DirtyDiffDecorator', () => {
     let injector: MockInjector;
-    let editorModel: monaco.editor.ITextModel;
+    let editorModel: IEditorDocumentModel;
+    let monacoModel: monaco.editor.ITextModel;
 
     beforeEach(() => {
       injector = createBrowserInjector([], new MockInjector([
@@ -43,14 +45,15 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
       editorModel = injector.get(EditorDocumentModel, [
         URI.file(`/test/workspace/abcde${Math.random()}.ts`),
         'test',
-      ]).getMonacoModel();
+      ]);
+      monacoModel = editorModel.getMonacoModel();
     });
 
     it('ok for ChangeType#Add', () => {
       const dirtyDiffModel = injector.get(DirtyDiffModel, [editorModel]);
       const dirtyDiffDecorator = injector.get(DirtyDiffDecorator, [editorModel, dirtyDiffModel]);
 
-      const spy = jest.spyOn(editorModel, 'deltaDecorations');
+      const spy = jest.spyOn(monacoModel, 'deltaDecorations');
 
       // ChangeType#Add
       const change0 = {
@@ -95,7 +98,7 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
       const dirtyDiffModel = injector.get(DirtyDiffModel, [editorModel]);
       const dirtyDiffDecorator = injector.get(DirtyDiffDecorator, [editorModel, dirtyDiffModel]);
 
-      const spy = jest.spyOn(editorModel, 'deltaDecorations');
+      const spy = jest.spyOn(monacoModel, 'deltaDecorations');
 
       // ChangeType#Delete
       const change0 = {
@@ -141,7 +144,7 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
       const dirtyDiffModel = injector.get(DirtyDiffModel, [editorModel]);
       const dirtyDiffDecorator = injector.get(DirtyDiffDecorator, [editorModel, dirtyDiffModel]);
 
-      const spy = jest.spyOn(editorModel, 'deltaDecorations');
+      const spy = jest.spyOn(monacoModel, 'deltaDecorations');
       // ChangeType#Modify
       const change0 = {
         originalEndLineNumber: 1,
@@ -170,7 +173,7 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
       expect(dirtyDiffDecorator['decorations'].length).toEqual(1);
 
       // isDisposed#true
-      editorModel['_isDisposed'] = true;
+      monacoModel['_isDisposed'] = true;
       dirtyDiffDecorator.dispose();
       expect(spy).toHaveBeenCalledTimes(1);
       expect(dirtyDiffDecorator['editorModel']).toBeNull();
@@ -183,7 +186,7 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
       const dirtyDiffModel = injector.get(DirtyDiffModel, [editorModel]);
       const dirtyDiffDecorator = injector.get(DirtyDiffDecorator, [editorModel, dirtyDiffModel]);
 
-      const spy = jest.spyOn(editorModel, 'deltaDecorations');
+      const spy = jest.spyOn(monacoModel, 'deltaDecorations');
       // ChangeType#Add
       const change0 = {
         originalEndLineNumber: 0,

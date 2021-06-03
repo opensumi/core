@@ -6,6 +6,7 @@ import { OverviewRulerLane } from '@ali/ide-editor';
 import { IChange } from '@ali/ide-core-common';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 import { themeColorFromId } from '@ali/ide-theme';
+import { IEditorDocumentModel } from '@ali/ide-editor/lib/browser';
 
 import { overviewRulerModifiedForeground, overviewRulerDeletedForeground, overviewRulerAddedForeground } from '../scm-color';
 import { SCMPreferences } from '../scm-preference';
@@ -69,13 +70,13 @@ export class DirtyDiffDecorator extends Disposable {
   private addedOptions: textModel.ModelDecorationOptions;
   private deletedOptions: textModel.ModelDecorationOptions;
   private decorations: string[] = [];
-  private editorModel: monaco.editor.ITextModel | null;
+  private editorModel: IEditorDocumentModel | null;
 
   @Autowired(SCMPreferences)
   private readonly scmPreferences: SCMPreferences;
 
   constructor(
-    @Optional() editorModel: monaco.editor.ITextModel,
+    @Optional() editorModel: IEditorDocumentModel,
     @Optional() private model: DirtyDiffModel,
   ) {
     super();
@@ -129,14 +130,14 @@ export class DirtyDiffDecorator extends Disposable {
       }
     });
 
-    this.decorations = this.editorModel.deltaDecorations(this.decorations, decorations as unknown as monaco.editor.IModelDeltaDecoration[]);
+    this.decorations = this.editorModel.getMonacoModel().deltaDecorations(this.decorations, decorations as unknown as monaco.editor.IModelDeltaDecoration[]);
   }
 
   dispose(): void {
     super.dispose();
 
-    if (this.editorModel && !this.editorModel.isDisposed()) {
-      this.editorModel.deltaDecorations(this.decorations, []);
+    if (this.editorModel && !this.editorModel.getMonacoModel().isDisposed()) {
+      this.editorModel.getMonacoModel().deltaDecorations(this.decorations, []);
     }
 
     this.editorModel = null;

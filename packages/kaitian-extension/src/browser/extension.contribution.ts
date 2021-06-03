@@ -310,6 +310,7 @@ export class KaitianExtensionCommandContribution implements CommandContribution 
       VSCodeBuiltinCommands.EDITOR_SHOW_ALL_SYMBOLS,
       // explorer builtin commands
       VSCodeBuiltinCommands.REVEAL_IN_EXPLORER,
+      VSCodeBuiltinCommands.OPEN_FOLDER,
       // terminal builtin commands
       VSCodeBuiltinCommands.CLEAR_TERMINAL,
       VSCodeBuiltinCommands.TOGGLE_WORKBENCH_VIEW_TERMINAL,

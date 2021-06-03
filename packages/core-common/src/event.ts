@@ -782,7 +782,10 @@ export class AsyncEmitter<T extends WaitUntilEvent> extends Emitter<T> {
       // freeze thenables-collection to enforce sync-calls to
       // wait until and then wait for all thenables to resolve
       Object.freeze(thenables);
-      await Promise.all(thenables).catch(e => onUnexpectedError(e));
+      await Promise.all(
+        // Promise.allSettled 只有 core-js3 才支持，先手动加 catch 处理下
+        thenables.map(thenable => thenable.catch((e) => e)),
+      ).catch(e => onUnexpectedError(e));
     }
   }
 }

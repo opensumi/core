@@ -58,6 +58,10 @@ declare module 'vscode' {
      * [known](#commands.getCommands).
      */
     command: string | Command | undefined;
+    /**
+     * Accessibility information used when screen reader interacts with this StatusBar item
+     */
+    accessibilityInformation?: AccessibilityInformation;
 
     /**
      * Shows the entry in the status bar.
@@ -176,6 +180,13 @@ declare module 'vscode' {
      * ```
      */
     filters?: { [name: string]: string[] };
+    /**
+     * Dialog title.
+     *
+     * This parameter might be ignored, as not all operating systems display a title on open dialogs
+     * (for example, macOS).
+     */
+    title?: string;
   }
 
   /**
@@ -203,6 +214,13 @@ declare module 'vscode' {
      * ```
      */
     filters?: { [name: string]: string[] };
+    /**
+     * Dialog title.
+     *
+     * This parameter might be ignored, as not all operating systems display a title on save dialogs
+     * (for example, macOS).
+     */
+    title?: string;
   }
   export namespace window {
 

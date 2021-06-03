@@ -324,7 +324,9 @@ export class DebugSession implements IDebugSession {
         case 'new':
           if (raw.source && typeof raw.line === 'number' && raw.id && !this.id2Breakpoint.has(raw.id)) {
             const uri = DebugSource.toUri(raw.source);
-            this.breakpoints.addBreakpoint(DebugBreakpoint.create(uri, { line: raw.line, column: raw.column }));
+            const bp = DebugBreakpoint.create(uri, { line: raw.line, column: raw.column });
+            bp.status.set(this.id, raw);
+            this.breakpoints.addBreakpoint(bp);
           }
           break;
         case 'removed':
@@ -744,7 +746,7 @@ export class DebugSession implements IDebugSession {
     }
   }
 
-  protected async disconnect(restart?: boolean): Promise<void> {
+  public async disconnect(restart?: boolean): Promise<void> {
     try {
       this.sendRequest('disconnect', { restart });
     } catch (reason) {
@@ -920,4 +922,24 @@ export class DebugSession implements IDebugSession {
 
   // Cancellation end
 
+  getDebugProtocolBreakpoint(breakpointId: string): DebugProtocol.Breakpoint | undefined {
+    const data = this.breakpoints.getBreakpoints().find((bp) => bp.id === breakpointId);
+    if (data) {
+      const status = data.status.get(this.id);
+      const bp: DebugProtocol.Breakpoint = {
+        id: status?.id,
+        verified: !!status?.verified,
+        message: status?.message,
+        source: status?.source,
+        line: status?.line,
+        column: status?.column,
+        endLine: status?.endLine,
+        endColumn: status?.endColumn,
+        instructionReference: status?.instructionReference,
+        offset: status?.offset,
+      };
+      return bp;
+    }
+    return undefined;
+  }
 }

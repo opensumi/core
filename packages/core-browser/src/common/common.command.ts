@@ -471,13 +471,13 @@ export namespace EDITOR_COMMANDS {
   export const EVEN_EDITOR_GROUPS: Command = {
     id: 'editor.evenEditorGroups',
     category: CATEGORY,
-    label: localize('evenEditorGroups',  '重置编辑器组大小'),  // TODO command注册支持国际化格式
+    label: localize('evenEditorGroups', '重置编辑器组大小'),  // TODO command注册支持国际化格式
   };
 
   export const REVERT_DOCUMENT: Command = {
     id: 'editor.document.revert',
     category: CATEGORY,
-    label: localize('revert',  '还原文档'),  // TODO command注册支持国际化格式
+    label: localize('revert', '还原文档'),  // TODO command注册支持国际化格式
   };
 
   export const REVERT_AND_CLOSE: Command = {
@@ -559,6 +559,16 @@ export namespace EDITOR_COMMANDS {
   export const SEARCH_WORKSPACE_SYMBOL: Command = {
     id: 'editor.workspaceSymbol.quickopen',
     label: '%editor.workspaceSymbol.quickopen%',
+    category: CATEGORY,
+  };
+
+  export const GO_TO_LINE: Command = {
+    id: 'editor.action.gotoLine',
+    category: CATEGORY,
+  };
+
+  export const QUICK_OPEN: Command = {
+    id: 'workbench.action.quickOpen',
     category: CATEGORY,
   };
 }

@@ -58,6 +58,19 @@ export interface ISelectProps<T = string> {
    * 返回 true 表示阻止此次显示
    */
   onBeforeShowOptions?: () => boolean;
+
+  /**
+   * 允许 select 的选项框宽度比 select宽度大, 默认 false
+   */
+  allowOptionsOverflow?: boolean;
+
+  /**
+   * 定义选择组件下拉选择菜单的渲染方式
+   * fixed —— 相对视窗位置
+   * absolute —— 相对于组件位置
+   * 默认值为 fixed
+   */
+  dropdownRenderType?: 'fixed' | 'absolute';
 }
 
 export const Option: React.FC<React.PropsWithChildren<{
@@ -208,6 +221,8 @@ export function Select<T = string>({
   emptyComponent,
   selectedRenderer,
   onBeforeShowOptions,
+  allowOptionsOverflow,
+  dropdownRenderType = 'fixed',
 }: ISelectProps<T>) {
   const [open, setOpen] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState('');
@@ -258,8 +273,20 @@ export function Select<T = string>({
   useEffect(() => {
     if (selectRef.current && overlayRef.current) {
       const boxRect = selectRef.current.getBoundingClientRect();
-      overlayRef.current.style.width = `${boxRect.width}px`;
-      overlayRef.current.style.top = `${boxRect.top + boxRect.height}px`;
+      if (allowOptionsOverflow) {
+        overlayRef.current.style.minWidth = `${boxRect.width}px`;
+        // 防止戳出屏幕
+        overlayRef.current.style.maxWidth = `${window.innerWidth - boxRect.left - 4}px`;
+      } else {
+        overlayRef.current.style.width = `${boxRect.width}px`;
+      }
+      // 防止戳出下方屏幕
+      const toBottom = window.innerHeight - boxRect.bottom;
+      if (!maxHeight || (toBottom < parseInt(maxHeight, 10))) {
+        overlayRef.current.style.maxHeight = `${toBottom}px`;
+      }
+      overlayRef.current.style.top = dropdownRenderType === 'fixed' ? `${boxRect.top + boxRect.height}px` : `${boxRect.height}px`;
+      overlayRef.current.style.position = dropdownRenderType === 'fixed' ? 'fixed' : 'absolute';
     }
     if (open) {
       const listener = () => {
@@ -372,6 +399,7 @@ export function Select<T = string>({
     </p>
 
     {
+      open && (
       (isDataOptions(options) || isDataOptionGroups(options)) ?
       <SelectOptionsList
         optionRenderer={optionRenderer}
@@ -403,7 +431,7 @@ export function Select<T = string>({
         {children && flatChildren(children, Wrapper)}
         <div className='kt-select-overlay' onClick={toggleOpen}></div>
       </div>
-    }
+      )}
   </div>);
 }
 

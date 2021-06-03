@@ -10,6 +10,8 @@ import {
   Deferred,
   Event,
   Emitter,
+  OS,
+  IApplicationService,
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { IFileTreeAPI, IFileTreeService } from '../common';
@@ -23,9 +25,7 @@ import { Path } from '@ali/ide-core-common/lib/path';
 import { observable, action, runInAction } from 'mobx';
 import pSeries = require('p-series');
 import { FileContextKey } from './file-contextkey';
-import { isWindows } from '@ali/ide-core-common/lib/platform';
 import { IIconService } from '@ali/ide-theme';
-
 export interface IMoveChange {
   source: FileChange;
   target: FileChange;
@@ -69,6 +69,9 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   @Autowired(IIconService)
   public readonly iconService: IIconService;
+
+  @Autowired(IApplicationService)
+  private readonly appService: IApplicationService;
 
   private _contextMenuContextKeyService: IContextKeyService;
 
@@ -419,7 +422,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     // 处理a/b/c/d这类目录
     if (namePaths.length > 1) {
       let tempUri = node.uri;
-      if (isWindows) {
+      if (await this.appService.backendOS === OS.Type.Windows) {
         // Windows环境下会多触发一个UPDATED事件
         this._cacheIgnoreFileEvent.set(tempUri.toString(), FileChangeType.UPDATED);
       }
@@ -438,7 +441,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       }
     } else {
       tempName = newName;
-      if (isWindows) {
+      if (await this.appService.backendOS === OS.Type.Windows) {
         // Windows环境下会多触发一个UPDATED事件
         this._cacheIgnoreFileEvent.set(node.uri.toString(), FileChangeType.UPDATED);
       }

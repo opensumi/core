@@ -268,6 +268,14 @@ export class MainThreadDebug implements IMainThreadDebug {
     throw new Error(`Debug session '${sessionId}' not found`);
   }
 
+  public $getDebugProtocolBreakpoint(sessionId: string, breakpoinId: string): Promise<DebugProtocol.Breakpoint | undefined> {
+    const session = this.sessionManager.getSession(sessionId);
+    if (session) {
+      return Promise.resolve(session.getDebugProtocolBreakpoint(breakpoinId));
+    }
+    return Promise.reject(new Error('debug session not found'));
+  }
+
   async $startDebugging(folder: WorkspaceFolder | undefined, nameOrConfiguration: string | DebugConfiguration, options: IStartDebuggingOptions): Promise<boolean> {
     let configuration: DebugConfiguration | undefined;
     let index = 0;
@@ -301,6 +309,18 @@ export class MainThreadDebug implements IMainThreadDebug {
     });
 
     return !!session;
+  }
+
+  public $stopDebugging(sessionId: string | undefined): Promise<void> {
+    if (sessionId) {
+      const session = this.sessionManager.getSession(sessionId);
+      if (session) {
+        return this.sessionManager.stopSession(session);
+      }
+    } else {	// stop all
+      return this.sessionManager.stopSession(undefined);
+    }
+    throw new Error(`Debug session '${sessionId}' not found`);
   }
 
   private toCustomApiBreakpoints(sourceBreakpoints: DebugBreakpoint[]): Breakpoint[] {

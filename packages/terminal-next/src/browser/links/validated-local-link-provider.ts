@@ -1,5 +1,7 @@
 import type { Terminal, IBufferLine } from 'xterm';
 import { URI } from '@ali/ide-core-common';
+import { OperatingSystem } from '@ali/ide-core-common/lib/platform';
+import type { TerminalClient } from '../terminal.client';
 import { TerminalLink } from './link';
 import { XtermLinkMatcherHandler } from './link-manager';
 import { TerminalBaseLinkProvider } from './base';
@@ -43,7 +45,7 @@ const MAX_LENGTH = 2000;
 export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider {
   constructor(
     private readonly _xterm: Terminal,
-    private isWindows: boolean, // 和 os 解耦，以便支持不同的远程系统
+    private readonly _client: TerminalClient,
     private readonly _activateFileCallback: (event: MouseEvent | undefined, link: string) => void,
     private readonly _wrapLinkHandler: (handler: (event: MouseEvent | undefined, link: string) => void) => XtermLinkMatcherHandler,
     private readonly _validationCallback: (link: string, callback: (result: { uri: URI, isDirectory: boolean } | undefined) => void) => void,
@@ -141,7 +143,7 @@ export class TerminalValidatedLocalLinkProvider extends TerminalBaseLinkProvider
   }
 
   protected get _localLinkRegex(): RegExp {
-    const baseLocalLinkClause = this.isWindows ? winLocalLinkClause : unixLocalLinkClause;
+    const baseLocalLinkClause = this._client.os === OperatingSystem.Windows ? winLocalLinkClause : unixLocalLinkClause;
     // Append line and column number regex
     return new RegExp(`${baseLocalLinkClause}(${lineAndColumnClause})`);
   }

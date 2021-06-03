@@ -60,6 +60,15 @@ declare module 'vscode' {
      * Send a custom request to the debug adapter.
      */
     customRequest(command: string, args?: any): Thenable<any>;
+
+    /**
+		 * Maps a VS Code breakpoint to the corresponding Debug Adapter Protocol (DAP) breakpoint that is managed by the debug adapter of the debug session.
+		 * If no DAP breakpoint exists (either because the VS Code breakpoint was not yet registered or because the debug adapter is not interested in the breakpoint), the value `undefined` is returned.
+		 *
+		 * @param breakpoint A VS Code [breakpoint](#Breakpoint).
+		 * @return A promise that resolves to the Debug Adapter Protocol breakpoint or `undefined`.
+		 */
+		getDebugProtocolBreakpoint(breakpoint: Breakpoint): Thenable<DebugProtocolBreakpoint | undefined>;
   }
 
   /**
@@ -213,6 +222,21 @@ declare module 'vscode' {
   }
 
   /**
+   * Represents a debug adapter running as a Named Pipe (on Windows)/UNIX Domain Socket (on non-Windows) based server.
+   */
+  export class DebugAdapterNamedPipeServer {
+    /**
+     * The path to the NamedPipe/UNIX Domain Socket.
+     */
+    readonly path: string;
+
+    /**
+     * Create a description for a debug adapter running as a socket based server.
+     */
+    constructor(path: string);
+  }
+
+  /**
    * A debug adapter that implements the Debug Adapter Protocol can be registered with VS Code if it implements the DebugAdapter interface.
    */
   export interface DebugAdapter extends Disposable {
@@ -251,6 +275,7 @@ declare module 'vscode' {
   export type DebugAdapterDescriptor =
     | DebugAdapterExecutable
     | DebugAdapterServer
+    | DebugAdapterNamedPipeServer
     | DebugAdapterInlineImplementation;
 
   export interface DebugAdapterDescriptorFactory {
@@ -470,11 +495,35 @@ declare module 'vscode' {
   }
 
   /**
+   * A DebugConfigurationProviderTriggerKind specifies when the `provideDebugConfigurations` method of a `DebugConfigurationProvider` is triggered.
+   * Currently there are two situations: to provide the initial debug configurations for a newly created launch.json or
+   * to provide dynamically generated debug configurations when the user asks for them through the UI (e.g. via the "Select and Start Debugging" command).
+   * A trigger kind is used when registering a `DebugConfigurationProvider` with #debug.registerDebugConfigurationProvider.
+   */
+  export enum DebugConfigurationProviderTriggerKind {
+    /**
+     *	`DebugConfigurationProvider.provideDebugConfigurations` is called to provide the initial debug configurations for a newly created launch.json.
+     */
+    Initial = 1,
+    /**
+     * `DebugConfigurationProvider.provideDebugConfigurations` is called to provide dynamically generated debug configurations when the user asks for them through the UI (e.g. via the "Select and Start Debugging" command).
+     */
+    Dynamic = 2
+  }
+
+  /**
    * A DebugProtocolSource is an opaque stand-in type for the [Source](https://microsoft.github.io/debug-adapter-protocol/specification#Types_Source) type defined in the Debug Adapter Protocol.
    */
   export interface DebugProtocolSource {
     // Properties: see details [here](https://microsoft.github.io/debug-adapter-protocol/specification#Types_Source).
   }
+
+  /**
+	 * A DebugProtocolBreakpoint is an opaque stand-in type for the [Breakpoint](https://microsoft.github.io/debug-adapter-protocol/specification#Types_Breakpoint) type defined in the Debug Adapter Protocol.
+	 */
+	export interface DebugProtocolBreakpoint {
+		// Properties: see details [here](https://microsoft.github.io/debug-adapter-protocol/specification#Types_Breakpoint).
+	}
 
   /**
    * Namespace for debug functionality.
@@ -527,15 +576,22 @@ declare module 'vscode' {
 
     /**
      * Register a [debug configuration provider](#DebugConfigurationProvider) for a specific debug type.
+     * The optional [triggerKind](#DebugConfigurationProviderTriggerKind) can be used to specify when the `provideDebugConfigurations` method of the provider is triggered.
+     * Currently two trigger kinds are possible: with the value `Initial` (or if no trigger kind argument is given) the `provideDebugConfigurations` method is used to provide the initial debug configurations to be copied into a newly created launch.json.
+     * With the trigger kind `Dynamic` the `provideDebugConfigurations` method is used to dynamically determine debug configurations to be presented to the user (in addition to the static configurations from the launch.json).
+     * Please note that the `triggerKind` argument only applies to the `provideDebugConfigurations` method: so the `resolveDebugConfiguration` methods are not affected at all.
+     * Registering a single provider with resolve methods for different trigger kinds, results in the same resolve methods called multiple times.
      * More than one provider can be registered for the same type.
      *
      * @param type The debug type for which the provider is registered.
      * @param provider The [debug configuration provider](#DebugConfigurationProvider) to register.
+     * @param triggerKind The [trigger](#DebugConfigurationProviderTrigger) for which the 'provideDebugConfiguration' method of the provider is registered. If `triggerKind` is missing, the value `DebugConfigurationProviderTriggerKind.Initial` is assumed.
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
      */
     export function registerDebugConfigurationProvider(
       debugType: string,
-      provider: DebugConfigurationProvider
+      provider: DebugConfigurationProvider,
+      triggerKind?: DebugConfigurationProviderTriggerKind
     ): Disposable;
 
     /**
@@ -580,6 +636,12 @@ declare module 'vscode' {
       nameOrConfiguration: string | DebugConfiguration,
       parentSessionOrOptions?: DebugSession | DebugSessionOptions
     ): Thenable<boolean>;
+
+    /**
+     * Stop the given debug session or stop all debug sessions if session is omitted.
+     * @param session The [debug session](#DebugSession) to stop; if omitted all sessions are stopped.
+     */
+    export function stopDebugging(session?: DebugSession): Thenable<void>;
 
     /**
      * Add breakpoints.

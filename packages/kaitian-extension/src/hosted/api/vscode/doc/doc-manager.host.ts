@@ -1,14 +1,14 @@
-import type * as vscode from 'vscode';
-import * as TypeConverts from '../../../../common/vscode/converter';
-import {
-  Emitter as EventEmiiter, IDisposable,
-  CancellationTokenSource,
-} from '@ali/ide-core-common';
-import { ExtensionDocumentDataManager, IMainThreadDocumentsShape, MainThreadAPIIdentifier, IExtensionDocumentModelChangedEvent, IExtensionDocumentModelOpenedEvent, IExtensionDocumentModelRemovedEvent, IExtensionDocumentModelSavedEvent, IExtensionDocumentModelOptionsChangedEvent, IExtensionDocumentModelWillSaveEvent, IMainThreadWorkspace } from '../../../../common/vscode';
-import { ExtHostDocumentData, setWordDefinitionFor } from './ext-data.host';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { Uri, TextEdit } from '../../../../common/vscode/ext-types';
+import { CancellationTokenSource, Emitter, IDisposable } from '@ali/ide-core-common';
+import type * as vscode from 'vscode';
+
+import { ExtensionDocumentDataManager, IExtensionDocumentModelChangedEvent, IExtensionDocumentModelOpenedEvent, IExtensionDocumentModelOptionsChangedEvent, IExtensionDocumentModelRemovedEvent, IExtensionDocumentModelSavedEvent, IExtensionDocumentModelWillSaveEvent, IMainThreadDocumentsShape, IMainThreadWorkspace, MainThreadAPIIdentifier } from '../../../../common/vscode';
+import { TextEdit as TextEditConverter, toRange } from '../../../../common/vscode/converter';
+import { TextEdit, Uri } from '../../../../common/vscode/ext-types';
 import type * as model from '../../../../common/vscode/model.api';
+import { ExtHostDocumentData, setWordDefinitionFor } from './ext-data.host';
+import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
+import { isUTF8 } from '@ali/ide-core-common/lib/encoding';
 
 const OPEN_TEXT_DOCUMENT_TIMEOUT = 5000;
 
@@ -21,11 +21,11 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
   private _documents: Map<string, ExtHostDocumentData> = new Map();
   private _contentProviders: Map<string, vscode.TextDocumentContentProvider> = new Map();
 
-  private _onDidOpenTextDocument = new EventEmiiter<vscode.TextDocument>();
-  private _onDidCloseTextDocument = new EventEmiiter<vscode.TextDocument>();
-  private _onDidChangeTextDocument = new EventEmiiter<vscode.TextDocumentChangeEvent>();
-  private _onWillSaveTextDocument = new EventEmiiter<vscode.TextDocumentWillSaveEvent>();
-  private _onDidSaveTextDocument = new EventEmiiter<vscode.TextDocument>();
+  private _onDidOpenTextDocument = new Emitter<vscode.TextDocument>();
+  private _onDidCloseTextDocument = new Emitter<vscode.TextDocument>();
+  private _onDidChangeTextDocument = new Emitter<vscode.TextDocumentChangeEvent>();
+  private _onWillSaveTextDocument = new Emitter<vscode.TextDocumentWillSaveEvent>();
+  private _onDidSaveTextDocument = new Emitter<vscode.TextDocument>();
 
   public onDidOpenTextDocument = this._onDidOpenTextDocument.event;
   public onDidCloseTextDocument = this._onDidCloseTextDocument.event;
@@ -133,16 +133,21 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     };
   }
 
-  async $provideTextDocumentContent(path: string) {
+  async $provideTextDocumentContent(path: string, encoding?: string) {
     const uri = Uri.parse(path);
     const scheme = uri.scheme;
     const provider = this._contentProviders.get(scheme);
 
     if (provider) {
       // cancellation token 暂时还没接入，以后可能优化
-      const content = await provider.provideTextDocumentContent(uri, new CancellationTokenSource().token);
+      let content = await provider.provideTextDocumentContent(uri, new CancellationTokenSource().token) || '';
+      if (content && encoding && !isUTF8(encoding)) {
+        // 默认 encoding 为 UTF8，所以仅在非 UTF8 的情况下做转换
+        const buffer = BinaryBuffer.wrap(Buffer.from(content));
+        content = buffer.toString(encoding);
+      }
 
-      return content || '';
+      return content;
     }
 
     throw new Error('new document provider for ' + path);
@@ -175,7 +180,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
         contentChanges: changes.map((change) => {
           return {
             ...change,
-            range: TypeConverts.toRange(change.range) as any,
+            range: toRange(change.range) as any,
           };
         }),
       });
@@ -243,7 +248,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
   async createWaitUntil(uri: Uri, promise: Promise<TextEdit[] | void>): Promise<void> {
     const res = await promise;
     if (res instanceof Array && res[0] && res[0] instanceof TextEdit) {
-      await this.applyEdit(uri, res.map(TypeConverts.TextEdit.from)[0]);
+      await this.applyEdit(uri, res.map(TextEditConverter.from)[0]);
     }
   }
 

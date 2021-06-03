@@ -1,5 +1,6 @@
 import { Terminal, ILink } from 'xterm';
 import { URI } from '@ali/ide-core-common';
+import { OperatingSystem } from '@ali/ide-core-common/lib/platform';
 import { TerminalValidatedLocalLinkProvider } from '../../../src/browser/links/validated-local-link-provider';
 
 const unixLinks = [
@@ -68,7 +69,8 @@ function format(pattern: string, ...args: any[]) {
 describe('Workbench - TerminalValidatedLocalLinkProvider', () => {
   async function assertLink(text: string, isWindows: boolean, expected: { text: string, range: [number, number][] }[]) {
     const xterm = new Terminal();
-    const provider = new TerminalValidatedLocalLinkProvider(xterm, isWindows, () => {}, (() => {}) as any, (_: string, cb: (result: { uri: URI, isDirectory: boolean } | undefined) => void) => { cb({ uri: URI.file('/'), isDirectory: false }); });
+    const client = { os: isWindows ? OperatingSystem.Windows : OperatingSystem.Linux } as any;
+    const provider = new TerminalValidatedLocalLinkProvider(xterm, client, () => {}, (() => {}) as any, (_: string, cb: (result: { uri: URI, isDirectory: boolean } | undefined) => void) => { cb({ uri: URI.file('/'), isDirectory: false }); });
 
     // Write the text and wait for the parser to finish
     await new Promise<void>((r) => xterm.write(text, r));

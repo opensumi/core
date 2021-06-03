@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IFileServiceClient } from '@ali/ide-file-service';
-import { URI, Uri, ProgressLocation, CancellationTokenSource, CancellationToken, Disposable, IDisposable, getDebugLogger, raceTimeout, localize, AsyncEmitter, Event, FileStat } from '@ali/ide-core-common';
+import { URI, Uri, CancellationTokenSource, CancellationToken, Disposable, IDisposable, getDebugLogger, AsyncEmitter, Event, FileStat } from '@ali/ide-core-common';
 import { IProgressService } from '@ali/ide-core-browser/lib/progress';
 import { FileOperation, FILE_OPERATION_TIMEOUT, IWorkspaceFileOperationParticipant, IWorkspaceFileService, SourceTargetPair, WorkspaceFileEvent } from '..';
 
@@ -23,35 +23,16 @@ export class WorkspaceFileOperationParticipant extends Disposable {
 
   async participate(files: { source?: Uri, target: Uri }[], operation: FileOperation): Promise<void> {
     const cts = new CancellationTokenSource();
-    return this.progressService.withProgress({
-      location: ProgressLocation.Window,
-      title: this.getProgressLabel(operation),
-    }, async (progress) => {
-      for (const participant of this.participants) {
-        if (cts.token.isCancellationRequested) {
-          break;
-        }
-
-        try {
-          const promise = participant.participate(files, operation, progress, FILE_OPERATION_TIMEOUT, cts.token);
-          await raceTimeout(promise, FILE_OPERATION_TIMEOUT, () => cts.dispose());
-        } catch (err) {
-          getDebugLogger().error(err);
-        }
+    for (const participant of this.participants) {
+      if (cts.token.isCancellationRequested) {
+        break;
       }
-    });
-  }
 
-  getProgressLabel(operation: FileOperation) {
-    switch (operation) {
-      case FileOperation.CREATE:
-        return localize('fileOperation.create', "Running 'File Create' participants...");
-      case FileOperation.DELETE:
-        return localize('fileOperation.delete', "Running 'File Delete' participants...");
-      case FileOperation.COPY:
-        return localize('fileOperation.copy', "Running 'File Copy' participants...");
-      case FileOperation.MOVE:
-        return localize('fileOperation.move', "Running 'File Move' participants...");
+      try {
+        await participant.participate(files, operation, undefined, FILE_OPERATION_TIMEOUT, cts.token);
+      } catch (err) {
+        getDebugLogger().error(err);
+      }
     }
   }
 
@@ -64,44 +45,53 @@ export class WorkspaceFileOperationParticipant extends Disposable {
 @Injectable()
 export class WorkspaceFileService implements IWorkspaceFileService {
   @Autowired(IFileServiceClient)
-  fileService: IFileServiceClient;
+  private readonly fileService: IFileServiceClient;
 
   @Autowired(WorkspaceFileOperationParticipant)
-  fileOperationParticipants: WorkspaceFileOperationParticipant;
+  private readonly fileOperationParticipants: WorkspaceFileOperationParticipant;
 
   private correlationIds = 0;
 
   private readonly _onWillRunWorkspaceFileOperation = new AsyncEmitter<WorkspaceFileEvent>();
-  readonly onWillRunWorkspaceFileOperation: Event<WorkspaceFileEvent> = this._onWillRunWorkspaceFileOperation.event;
+  public readonly onWillRunWorkspaceFileOperation: Event<WorkspaceFileEvent> = this._onWillRunWorkspaceFileOperation.event;
 
   private readonly _onDidFailWorkspaceFileOperation = new AsyncEmitter<WorkspaceFileEvent>();
-  readonly onDidFailWorkspaceFileOperation: Event<WorkspaceFileEvent> = this._onDidFailWorkspaceFileOperation.event;
+  public readonly onDidFailWorkspaceFileOperation: Event<WorkspaceFileEvent> = this._onDidFailWorkspaceFileOperation.event;
 
   private readonly _onDidRunWorkspaceFileOperation = new AsyncEmitter<WorkspaceFileEvent>();
-  readonly onDidRunWorkspaceFileOperation: Event<WorkspaceFileEvent> = this._onDidRunWorkspaceFileOperation.event;
+  public readonly onDidRunWorkspaceFileOperation: Event<WorkspaceFileEvent> = this._onDidRunWorkspaceFileOperation.event;
 
-  create(resource: URI, contents?: string, options?: { overwrite?: boolean }) {
+  public create(resource: URI, contents?: string, options?: { overwrite?: boolean }) {
     return this.doCreate(resource, true, contents, options);
   }
 
-  createFolder(resource: URI) {
+  public createFolder(resource: URI) {
     return this.doCreate(resource, false);
   }
 
-  protected async doCreate(resource: URI, isFile: boolean, content?: string, options?: { overwrite?: boolean }) {
-    // file operation participant
-    await this.runOpeartionParticipant([{ target: resource.codeUri }], FileOperation.CREATE);
-    // before events
-    const event = { correlationId: this.correlationIds++, operation: FileOperation.CREATE, files: [{ target: resource.codeUri }] };
-    await this._onWillRunWorkspaceFileOperation.fireAsync(event, CancellationToken.None);
+  public move(files: Required<SourceTargetPair>[], options?: { overwrite?: boolean }): Promise<FileStat[]> {
+    return this.doMoveOrCopy(files, true, options);
+  }
 
-    // now actually create on disk
-    let stat: FileStat;
+  public copy(files: Required<SourceTargetPair>[], options?: { overwrite?: boolean }): Promise<FileStat[]> {
+    return this.doMoveOrCopy(files, false, options);
+  }
+
+  public async delete(resources: URI[], options?: { useTrash?: boolean, recursive?: boolean }): Promise<void> {
+
+    // file operation participant
+    const files = resources.map((target) => ({ target: target.codeUri }));
+    await this.runOperationParticipant(files, FileOperation.DELETE);
+
+    // before events
+    const event = { correlationId: this.correlationIds++, operation: FileOperation.DELETE, files };
+    await this._onWillRunWorkspaceFileOperation.fireAsync(event, CancellationToken.None);
+    // TODO: dirty check
+    // now actually delete from disk
     try {
-      if (isFile) {
-        stat = await this.fileService.createFile(resource.toString(), { overwrite: options?.overwrite, content });
-      } else {
-        stat = await this.fileService.createFolder(resource.toString());
+      for (const resource of resources) {
+        // TODO: support recursive option
+        await this.fileService.delete(resource.toString(), { moveToTrash: options?.useTrash });
       }
     } catch (error) {
 
@@ -113,24 +103,22 @@ export class WorkspaceFileService implements IWorkspaceFileService {
 
     // after event
     await this._onDidRunWorkspaceFileOperation.fireAsync(event, CancellationToken.None);
-
-    return stat;
   }
 
-  move(files: Required<SourceTargetPair>[], options?: { overwrite?: boolean }): Promise<FileStat[]> {
-    return this.doMoveOrCopy(files, true, options);
+  public registerFileOperationParticipant(participant: IWorkspaceFileOperationParticipant): IDisposable {
+    return this.fileOperationParticipants.registerParticipant(participant);
   }
 
-  copy(files: Required<SourceTargetPair>[], options?: { overwrite?: boolean }): Promise<FileStat[]> {
-    return this.doMoveOrCopy(files, false, options);
+  private runOperationParticipant(files: SourceTargetPair[], operation: FileOperation) {
+    return this.fileOperationParticipants.participate(files, operation);
   }
 
-  protected async doMoveOrCopy(files: Required<SourceTargetPair>[], move: boolean, options?: { overwrite?: boolean }): Promise<FileStat[]> {
+  private async doMoveOrCopy(files: Required<SourceTargetPair>[], move: boolean, options?: { overwrite?: boolean }): Promise<FileStat[]> {
     const overwrite = options?.overwrite;
     const stats: FileStat[] = [];
 
     // file operation participant
-    await this.runOpeartionParticipant(files, move ? FileOperation.MOVE : FileOperation.COPY);
+    await this.runOperationParticipant(files, move ? FileOperation.MOVE : FileOperation.COPY);
 
     // before event
     const event = { correlationId: this.correlationIds++, operation: move ? FileOperation.MOVE : FileOperation.COPY, files };
@@ -160,21 +148,20 @@ export class WorkspaceFileService implements IWorkspaceFileService {
     return stats;
   }
 
-  async delete(resources: URI[], options?: { useTrash?: boolean, recursive?: boolean }): Promise<void> {
-
+  private async doCreate(resource: URI, isFile: boolean, content?: string, options?: { overwrite?: boolean }) {
     // file operation participant
-    const files = resources.map((target) => ({ target: target.codeUri }));
-    await this.runOpeartionParticipant(files, FileOperation.DELETE);
-
+    await this.runOperationParticipant([{ target: resource.codeUri }], FileOperation.CREATE);
     // before events
-    const event = { correlationId: this.correlationIds++, operation: FileOperation.DELETE, files };
+    const event = { correlationId: this.correlationIds++, operation: FileOperation.CREATE, files: [{ target: resource.codeUri }] };
     await this._onWillRunWorkspaceFileOperation.fireAsync(event, CancellationToken.None);
-    // TODO: dirty check
-    // now actually delete from disk
+
+    // now actually create on disk
+    let stat: FileStat;
     try {
-      for (const resource of resources) {
-        // TODO: support recursive option
-        await this.fileService.delete(resource.toString(), { moveToTrash: options?.useTrash });
+      if (isFile) {
+        stat = await this.fileService.createFile(resource.toString(), { overwrite: options?.overwrite, content });
+      } else {
+        stat = await this.fileService.createFolder(resource.toString());
       }
     } catch (error) {
 
@@ -186,14 +173,7 @@ export class WorkspaceFileService implements IWorkspaceFileService {
 
     // after event
     await this._onDidRunWorkspaceFileOperation.fireAsync(event, CancellationToken.None);
-  }
 
-  registerFileOperationParticipant(participant: IWorkspaceFileOperationParticipant): IDisposable {
-    return this.fileOperationParticipants.registerParticipant(participant);
+    return stat;
   }
-
-  protected runOpeartionParticipant(files: SourceTargetPair[], operation: FileOperation) {
-    return this.fileOperationParticipants.participate(files, operation);
-  }
-
 }

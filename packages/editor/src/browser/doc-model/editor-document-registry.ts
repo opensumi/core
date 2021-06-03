@@ -106,12 +106,11 @@ export class EditorDocumentModelContentRegistryImpl implements IEditorDocumentMo
     return calculated.provider;
   }
 
-  async getContentForUri(uri: URI, encoding?: string ): Promise<string> {
+  async getContentForUri(uri: URI, encoding?: string): Promise<string> {
     const p = await this.getProvider(uri);
     if (!p) {
       throw new Error();
     }
     return p.provideEditorDocumentModelContent(uri, encoding);
   }
-
 }

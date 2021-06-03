@@ -107,6 +107,12 @@ export const corePreferenceSchema: PreferenceSchema = {
       minimum: 0,
       description: 'Controls the number of recently used commands to keep in history for the command palette. Set to 0 to disable command history.',
     },
+    'workbench.refactoringChanges.showPreviewStrategy': {
+      type: 'string',
+      default: 'askMe',
+      enum: ['show', 'hide', 'askMe'],
+      description: '%preference.workbench.refactoringChanges.showPreviewStrategy%',
+    },
 
     'explorer.confirmMove': {
       type: 'boolean',
@@ -121,12 +127,10 @@ export const corePreferenceSchema: PreferenceSchema = {
     'explorer.fileTree.baseIndent': {
       type: 'number',
       default: FILE_TREE_DEFAULTS.baseIndent,
-      description: '%preference.explorer.fileTree.baseIndent%',
     },
     'explorer.fileTree.indent': {
       type: 'number',
       default: FILE_TREE_DEFAULTS.indent,
-      description: '%preference.explorer.fileTree.indent%',
     },
     'explorer.compactFolders': {
       type: 'boolean',
@@ -135,13 +139,11 @@ export const corePreferenceSchema: PreferenceSchema = {
     },
     'explorer.autoReveal': {
       'type': 'boolean',
-      'description': '%preference.explorer.autoReveal%',
       'default': true,
     },
     'debug.toolbar.float': {
       type: 'boolean',
       default: true,
-      description: '%preference.debug.toolbar.float%',
     },
     'debug.toolbar.top': {
       type: 'number',
@@ -183,7 +185,7 @@ export const corePreferenceSchema: PreferenceSchema = {
     },
     'files.eol': {
       type: 'string',
-      description: '%preference.files.eol%',
+      description: '%preference.files.eolDesc%',
       enum: [
         '\n',
         '\r\n',
@@ -216,12 +218,10 @@ export const corePreferenceSchema: PreferenceSchema = {
     },
     'terminal.fontFamily': {
       type: 'string',
-      description: '%preference.terminal.fontFamilyDesc%',
     },
     'terminal.fontSize': {
       type: 'number',
       default: 12,
-      description: '%preference.terminal.fontSizeDesc%',
     },
     'terminal.fontWeight': {
       type: 'string',
@@ -230,27 +230,23 @@ export const corePreferenceSchema: PreferenceSchema = {
         'bold',
       ],
       default: 400,
-      description: '%preference.terminal.fontWeightDesc%',
     },
     'terminal.lineHeight': {
       type: 'number',
       default: 1,
-      description: '%preference.terminal.lineHeightDesc%',
     },
     'terminal.cursorBlink': {
       type: 'boolean',
       default: false,
-      description: '%preference.terminal.cursorBlinkDesc%',
     },
     'terminal.scrollback': {
       type: 'number',
       default: 5000,
-      description: '%preference.terminal.scrollbackDesc%',
     },
     'terminal.integrated.shellArgs.linux': {
       type: 'array',
       default: [],
-      description: '%preference.terminal.integrated.shellArgs.linux%',
+      description: '%preference.terminal.integrated.shellArgs.linuxDesc%',
     },
     'output.maxChannelLine': {
       type: 'number',
@@ -296,6 +292,7 @@ export interface CoreConfiguration {
   'application.invalidExthostReload': 'ifRequired' | 'always';
   'workbench.list.openMode': 'singleClick' | 'doubleClick';
   'workbench.commandPalette.history': number;
+  'workbench.refactoringChanges.showPreviewStrategy': string;
   'explorer.confirmDelete': boolean;
   'explorer.fileTree.baseIndent': number;
   'explorer.fileTree.indent': number;

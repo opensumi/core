@@ -7,7 +7,7 @@ import { UserPreferenceProvider } from './user-preference-provider';
 import { PreferenceScope, PreferenceConfigurations, PreferenceProvider, IPreferenceSettingsService } from '@ali/ide-core-browser/lib/preferences';
 import { FolderPreferenceProviderFactory, FolderPreferenceProviderOptions, FolderPreferenceProvider } from './folder-preference-provider';
 import { WorkspaceFilePreferenceProviderFactory, WorkspaceFilePreferenceProviderOptions, WorkspaceFilePreferenceProvider } from './workspace-file-preference-provider';
-import { PreferenceSettingsService } from './preference.service';
+import { PreferenceSettingsService } from './preference-settings.service';
 import { UserStorageServiceImpl, UserStorageResolver } from './userstorage';
 import { IUserStorageService, SettingContribution } from '../common';
 

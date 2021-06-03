@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { ExtensionStoragePath, IExtensionStorageService, KeysToAnyValues, KeysToKeysToAnyValue, IExtensionStorageServer, DEFAULT_EXTENSION_STORAGE_DIR_NAME } from '../common' ;
+import { ExtensionStorageUri, IExtensionStorageService, KeysToAnyValues, KeysToKeysToAnyValue, IExtensionStorageServer, DEFAULT_EXTENSION_STORAGE_DIR_NAME } from '../common' ;
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 import { AppConfig } from '@ali/ide-core-browser';
@@ -15,8 +15,8 @@ export class ExtensionStorageService implements IExtensionStorageService {
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
-  private _init: Promise<ExtensionStoragePath>;
-  private _extensionStoragePath: ExtensionStoragePath;
+  private _init: Promise<ExtensionStorageUri>;
+  private _extensionStoragePath: ExtensionStorageUri;
 
   constructor() {
     this._init = this.init();
@@ -30,7 +30,7 @@ export class ExtensionStorageService implements IExtensionStorageService {
     return this._extensionStoragePath;
   }
 
-  public async init(): Promise<ExtensionStoragePath> {
+  public async init(): Promise<ExtensionStorageUri> {
     const roots: FileStat[] = await this.workspaceService.roots;
     const workspace = this.workspaceService.workspace;
     const extensionStorageDirName = this.appConfig.extensionStorageDirName || DEFAULT_EXTENSION_STORAGE_DIR_NAME;

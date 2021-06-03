@@ -61,6 +61,8 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
     private _proxy: IMainThreadStatusBar;
     private _rpcProtocol: IRPCProtocol;
 
+    private _accessibilityInformation?: vscode.AccessibilityInformation;
+
     constructor(rpcProtocol: IRPCProtocol, alignment: vscode.StatusBarAlignment = types.StatusBarAlignment.Left, priority: number = 0) {
       this._rpcProtocol = rpcProtocol;
       this._proxy = this._rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadStatusBar);
@@ -100,6 +102,15 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
         this.update();
     }
 
+    public get accessibilityInformation(): vscode.AccessibilityInformation | undefined {
+      return this._accessibilityInformation;
+    }
+
+    public set accessibilityInformation(accessibilityInformation: vscode.AccessibilityInformation | undefined) {
+      this._accessibilityInformation = accessibilityInformation;
+      this.update();
+    }
+
     public get command(): string | vscode.Command | undefined {
         return this._command;
     }
@@ -134,11 +145,14 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
             const commandId = typeof this.command === 'string' ? this.command : this.command?.command;
             const commandArgs = typeof this.command === 'string' ? undefined : this.command?.arguments;
             // Set to status bar
-            this._proxy.$setMessage(this.id, this.text,
+            this._proxy.$setMessage(
+                this.id,
+                this.text,
                 this.priority,
                 this.alignment,
                 this.getColor(),
                 this.tooltip,
+                this.accessibilityInformation,
                 commandId,
                 commandArgs);
         }, 0);

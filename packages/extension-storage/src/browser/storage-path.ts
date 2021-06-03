@@ -12,7 +12,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
 
   private windowsDataFolders = [StoragePaths.WINDOWS_APP_DATA_DIR, StoragePaths.WINDOWS_ROAMING_DIR];
   // 当没有工作区被打开时，存储路径为undefined
-  private cachedStoragePath: string | undefined;
+  private cachedStoragePath: URI | undefined;
   // 获取最后一次生成的工作区存储路径，初始化前返回对应的Promise
   private deferredWorkspaceStoragePath: Deferred<string>;
   // 获取顶级存储路径， 默认为 ~/.kaitian, 初始化前返回对应的Promise
@@ -32,7 +32,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
     this.storagePathInitialized = false;
   }
 
-  async provideHostLogPath(): Promise<string> {
+  async provideHostLogPath(): Promise<URI> {
     const parentLogsDir = await this.getLogsDirPath();
 
     if (!parentLogsDir) {
@@ -43,10 +43,10 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
     const extensionDirPath = parentLogsDir;
     await this.fileSystem.createFolder(URI.file(extensionDirPath).toString());
 
-    return new URI(extensionDirPath).path.toString();
+    return new URI(extensionDirPath);
   }
 
-  async provideHostStoragePath(workspace: FileStat | undefined, roots: FileStat[], extensionStorageDirName: string): Promise<string | undefined> {
+  async provideHostStoragePath(workspace: FileStat | undefined, roots: FileStat[], extensionStorageDirName: string): Promise<URI | undefined> {
     const parentStorageDir = await this.getWorkspaceStorageDirPath(extensionStorageDirName);
 
     if (!parentStorageDir) {
@@ -72,14 +72,14 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
       await this.fileSystem.createFolder(URI.file(storageDirPath).toString());
     }
 
-    const storagePathString = new URI(storageDirPath).path.toString();
+    const storageUri = new URI(storageDirPath);
     if (!this.storagePathInitialized) {
-      this.deferredWorkspaceStoragePath.resolve(storagePathString);
+      this.deferredWorkspaceStoragePath.resolve(storageUri.path.toString());
       this.deferredStoragePath.resolve(parentStorageDir);
       this.storagePathInitialized = true;
     }
 
-    return this.cachedStoragePath = storagePathString;
+    return this.cachedStoragePath = storageUri;
   }
 
   /**
@@ -87,7 +87,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
    */
   async getLastWorkspaceStoragePath(): Promise<string | undefined> {
     if (this.storagePathInitialized) {
-      return this.cachedStoragePath;
+      return this.cachedStoragePath?.path.toString();
     } else {
       return this.deferredWorkspaceStoragePath.promise;
     }

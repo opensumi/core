@@ -5,7 +5,7 @@ import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import * as React from 'react';
 import { createRef } from 'react';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { Emitter, IEventBus, trim, isUndefined, localize } from '@ali/ide-core-common';
+import { Emitter, IEventBus, trim, isUndefined, localize, IReporterService, IReporterTimer, REPORT_NAME } from '@ali/ide-core-common';
 import * as arrays from '@ali/ide-core-common/lib/arrays';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import {
@@ -113,6 +113,9 @@ export class ContentSearchClientService implements IContentSearchClientService {
   @Autowired(SearchContextKey)
   private readonly searchContextKey: SearchContextKey;
 
+  @Autowired(IReporterService)
+  reporterService: IReporterService;
+
   workbenchEditorService: WorkbenchEditorService;
 
   @observable
@@ -167,6 +170,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
   searchResultCollection: SearchResultCollection = new SearchResultCollection();
 
+  private reporter: { timer: IReporterTimer; value: string } | null = null;
+
   constructor() {
     this.setDefaultIncludeValue();
     this.recoverUIState();
@@ -211,6 +216,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
       this.contentSearchServer.cancel(this.currentSearchId);
       this.cleanOldSearch();
       this.currentSearchId = this.currentSearchId + 1;
+      this.reporter = null;
     }
     let rootDirs: string[] = [];
     this.workspaceService.tryGetRoots().forEach((stat) => {
@@ -270,6 +276,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     });
 
     // 从服务端搜索
+    this.reporter = { timer: this.reporterService.time(REPORT_NAME.SEARCH_MEASURE), value };
     this.contentSearchServer.search(value, rootDirs, searchOptions).then((id) => {
       this.currentSearchId = id;
       this._onSearchResult({
@@ -388,12 +395,21 @@ export class ContentSearchClientService implements IContentSearchClientService {
         this.isSearchDoing = false;
         this.currentSearchId = -1;
       }
+
+      if (searchState === SEARCH_STATE.done && this.reporter) {
+        const { timer, value } = this.reporter;
+        timer.timeEnd(value, {
+          ...this.resultTotal,
+        });
+        this.reporter = null;
+      }
     }
 
     if (error) {
       // 搜索出错
       this.isSearchDoing = false;
       this.searchError = error.toString();
+      this.reporter = null;
     }
 
     transaction(() => {

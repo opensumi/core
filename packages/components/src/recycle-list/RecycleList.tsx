@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FixedSizeList } from 'react-window';
+import { FixedSizeList, VariableSizeList } from 'react-window';
 import { ScrollbarsVirtualList } from '../scrollbars';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import * as cls from 'classnames';
@@ -24,7 +24,7 @@ export interface IRecycleListProps {
    * @type {number}
    * @memberof RecycleTreeProps
    */
-  itemHeight: number;
+  itemHeight?: number;
   /**
    * List外部样式
    * @type {React.CSSProperties}
@@ -70,17 +70,47 @@ export interface IRecycleListProps {
    * 处理 RecycleList API回调
    * @memberof IRecycleListProps
    */
-  onReady?: (api: IRecycleListHandle) => void;
+  onReady?: (api: IRecycleListHandler) => void;
 }
 
-export interface IRecycleListHandle {
+export interface IRecycleListHandler {
   scrollTo: (offset: number) => void;
   scrollToIndex: (index: number) => void;
 }
 
+export const DynamicListContext = React.createContext<
+  Partial<{ setSize: (index: number, size: number) => void }>
+>({});
+
 export class RecycleList extends React.Component<IRecycleListProps> {
 
-  private listRef = React.createRef<FixedSizeList>();
+  private static STABILIZATION_TIME: number = 500;
+
+  private listRef;
+  private sizeMap;
+  private scrollToIndexTimer;
+
+  constructor(props) {
+    super(props);
+    this.listRef = React.createRef<FixedSizeList>();
+    this.sizeMap = React.createRef<{ [key: string]: number }>();
+    this.scrollToIndexTimer = React.createRef<any>();
+    this.sizeMap.current = {};
+  }
+
+  private setSize = (index: number, size: number) => {
+    if (this.sizeMap.current[index] !== size) {
+      this.sizeMap.current = { ...this.sizeMap.current, [index]: size };
+      if (this.listRef.current) {
+        // 清理缓存数据并重新渲染
+        this.listRef.current.resetAfterIndex(0);
+      }
+    }
+  }
+
+  private getSize = (index: number) => {
+    return this.sizeMap?.current[index] || 100;
+  }
 
   public componentDidMount() {
     const { onReady, header, itemHeight } = this.props;
@@ -89,12 +119,31 @@ export class RecycleList extends React.Component<IRecycleListProps> {
         scrollTo: (offset: number) => {
           this.listRef.current?.scrollTo(offset);
         },
-        scrollToIndex: (index: number) => {
+        // custom alignment: center, start, or end
+        scrollToIndex: (index: number, position: string = 'start') => {
           let locationIndex = index;
           if (!!header) {
-            locationIndex ++;
+            locationIndex++;
           }
-          this.listRef.current?.scrollTo(locationIndex * itemHeight);
+          if (typeof itemHeight === 'number') {
+            this.listRef.current?.scrollTo(locationIndex * (itemHeight), position);
+          } else {
+            if (this.scrollToIndexTimer.current) {
+              clearTimeout(this.scrollToIndexTimer.current);
+            }
+            const keys = this.sizeMap.current ? Object.keys(this.sizeMap.current) : [];
+            const offset = keys.slice(0, locationIndex).reduce((p, i) => p + this.getSize(index), 0);
+            this.listRef.current?.scrollToItem(index, position);
+            // 在动态列表情况下，由于渲染抖动问题，可能需要再渲染后尝试再进行一次滚动位置定位
+            this.scrollToIndexTimer.current = setTimeout(() => {
+              const keys = this.sizeMap.current ? Object.keys(this.sizeMap.current) : [];
+              const nextOffset = keys.slice(0, locationIndex).reduce((p, i) => p + this.getSize(index), 0);
+              if (nextOffset !== offset) {
+                this.listRef.current?.scrollToItem(index, position);
+              }
+              this.scrollToIndexTimer.current = null;
+            }, RecycleList.STABILIZATION_TIME);
+          }
         },
       };
       onReady(api);
@@ -139,7 +188,7 @@ export class RecycleList extends React.Component<IRecycleListProps> {
       return <div style={style}></div>;
     }
     return <div style={style}>
-      <Template data={node} index={index}/>
+      <Template data={node} index={index} />
     </div>;
   }
 
@@ -152,6 +201,14 @@ export class RecycleList extends React.Component<IRecycleListProps> {
     return index;
   }
 
+  // 通过计算平均行高来提高准确性
+  // 修复滚动条行为，见: https://github.com/bvaughn/react-window/issues/408
+  private calcEstimatedSize() {
+    const keys = this.sizeMap.current ? Object.keys(this.sizeMap.current) : [];
+    const estimatedHeight = keys.reduce((p, i) => p + this.sizeMap.current[i], 0);
+    return estimatedHeight / keys.length;
+  }
+
   public render() {
     const {
       itemHeight,
@@ -160,8 +217,14 @@ export class RecycleList extends React.Component<IRecycleListProps> {
       width,
       height,
     } = this.props;
+    let List;
+    if (typeof itemHeight === 'number') {
+      List = FixedSizeList;
+    } else {
+      List = VariableSizeList;
+    }
     if (width && height) {
-      return (<FixedSizeList
+      return (<List
         width={width}
         height={height}
         // 这里的数据不是必要的，主要用于在每次更新列表
@@ -175,26 +238,30 @@ export class RecycleList extends React.Component<IRecycleListProps> {
         className={cls(className, 'kt-recycle-list')}
         outerElementType={ScrollbarsVirtualList}>
         {this.renderItem}
-      </FixedSizeList>);
+      </List>);
     }
-    return <AutoSizer>
-      {({height, width}) => (
-        <FixedSizeList
-          width={width}
-          height={height}
-          // 这里的数据不是必要的，主要用于在每次更新列表
-          itemData={[]}
-          itemSize={itemHeight}
-          itemCount={this.adjustedRowCount}
-          getItemKey={this.getItemKey}
-          overscanCount={10}
-          ref={this.listRef}
-          style={style}
-          className={cls(className, 'kt-recycle-list')}
-          outerElementType={ScrollbarsVirtualList}>
-          {this.renderItem}
-        </FixedSizeList>
-      )}
-    </AutoSizer>;
+
+    return <DynamicListContext.Provider value={{ setSize: this.setSize }}>
+      <AutoSizer>
+        {({ height, width }) => (
+          <List
+            width={width}
+            height={height}
+            // 这里的数据不是必要的，主要用于在每次更新列表
+            itemData={[]}
+            itemSize={this.getSize}
+            itemCount={this.adjustedRowCount}
+            getItemKey={this.getItemKey}
+            overscanCount={10}
+            ref={this.listRef}
+            style={style}
+            className={cls(className, 'kt-recycle-list')}
+            outerElementType={ScrollbarsVirtualList}
+            estimatedItemSize={this.calcEstimatedSize()}>
+            {this.renderItem}
+          </List>
+        )}
+      </AutoSizer>
+    </DynamicListContext.Provider>;
   }
 }

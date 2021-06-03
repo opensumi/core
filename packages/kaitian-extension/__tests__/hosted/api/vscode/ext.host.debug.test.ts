@@ -142,7 +142,7 @@ describe('packages/kaitian-extension/__tests__/hosted/api/vscode/ext.host.debug.
   });
 
   it('registerDebugConfigurationProvider method should be work', () => {
-    expect(typeof extHostDebug.registerDebugConfigurationProvider('debug', {}).dispose).toBe('function');
+    expect(typeof extHostDebug.registerDebugConfigurationProvider('debug', {}, 1).dispose).toBe('function');
   });
 
   it('registerDebugAdapterDescriptorFactory method should be work', () => {

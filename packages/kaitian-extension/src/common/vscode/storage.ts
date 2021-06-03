@@ -1,4 +1,4 @@
-import { ExtensionStoragePath } from '@ali/ide-extension-storage';
+import { ExtensionStorageUri } from '@ali/ide-extension-storage';
 export interface KeysToAnyValues { [key: string]: any; }
 export interface KeysToKeysToAnyValue { [key: string]: KeysToAnyValues; }
 
@@ -8,6 +8,6 @@ export interface IMainThreadStorage {
 }
 
 export interface IExtHostStorage {
-  $acceptStoragePath(paths: ExtensionStoragePath): Promise<void>;
+  $acceptStoragePath(paths: ExtensionStorageUri): Promise<void>;
   $updateWorkspaceStorageData(data: KeysToKeysToAnyValue): Promise<void>;
 }

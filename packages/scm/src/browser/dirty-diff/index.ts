@@ -4,6 +4,7 @@ import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di'
 import { Event, IEventBus, CommandService, positionToRange } from '@ali/ide-core-common';
 import { Disposable, DisposableStore, DisposableCollection } from '@ali/ide-core-common/lib/disposable';
 import { WorkbenchEditorService } from '@ali/ide-editor';
+import { IEditorDocumentModel } from '@ali/ide-editor/lib/browser';
 import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import { IDirtyDiffWorkbenchController } from '../../common';
 
@@ -28,7 +29,7 @@ export class DirtyDiffItem {
 export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDiffWorkbenchController {
 
   private enabled = false;
-  private models: monaco.editor.ITextModel[] = [];
+  private models: IEditorDocumentModel[] = [];
   private widgets = new Map<string, DirtyDiffWidget>();
   private items: { [modelId: string]: DirtyDiffItem; } = Object.create(null);
   private readonly transientDisposables = new DisposableStore();
@@ -144,13 +145,13 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
           // const codeEditor = currentEditor.monacoEditor;
           // const controller = DirtyDiffController.get(codeEditor);
           // controller.modelRegistry = this;
-          return currentEditor.currentDocumentModel && currentEditor.currentDocumentModel.getMonacoModel();
+          return currentEditor.currentDocumentModel ;
         }
         return null;
       })
 
       // remove nulls and duplicates
-      .filter((m, i, a) => !!m && !!m.uri && a.indexOf(m, i + 1) === -1) as monaco.editor.ITextModel[];
+      .filter((m, i, a) => !!m && !!m.uri && a.indexOf(m, i + 1) === -1) as IEditorDocumentModel[];
 
     const newModels = models.filter((o) => this.models.every((m) => o !== m));
     const oldModels = this.models.filter((m) => models.every((o) => o !== m));
@@ -161,14 +162,14 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     this.models = models;
   }
 
-  private onModelVisible(editorModel: monaco.editor.ITextModel): void {
+  private onModelVisible(editorModel: IEditorDocumentModel): void {
     const model = this.injector.get(DirtyDiffModel, [editorModel]);
     const decorator = this.injector.get(DirtyDiffDecorator, [editorModel, model]);
 
     this.items[editorModel.id] = new DirtyDiffItem(model, decorator);
   }
 
-  private onModelInvisible(editorModel: monaco.editor.ITextModel): void {
+  private onModelInvisible(editorModel: IEditorDocumentModel): void {
     this.items[editorModel.id].dispose();
     delete this.items[editorModel.id];
   }

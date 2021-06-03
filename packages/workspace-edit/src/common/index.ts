@@ -1,5 +1,6 @@
-import { Uri, URI, IRange, BasicEvent, FileStat, IProgress, IProgressStep, CancellationToken, WaitUntilEvent, IDisposable, Event } from '@ali/ide-core-common';
+import { Uri, URI, IRange, BasicEvent, FileStat, CancellationToken, WaitUntilEvent, IDisposable, Event } from '@ali/ide-core-common';
 import { EndOfLineSequence } from '@ali/ide-editor';
+import type { IBulkEditService } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 
 // 对文件位置(添加，删除，移动, 复制)
 export interface IResourceFileEdit {
@@ -50,6 +51,10 @@ export interface IWorkspaceEditService {
 
 export const IWorkspaceFileService = Symbol('IWorkspaceFileService');
 
+// 区分开 monaco 内部的 IBulkEditServiceShape
+export const IBulkEditServiceShape = Symbol('IBulkEditServiceShape');
+export type IBulkEditServiceShape = IBulkEditService;
+
 export const enum FileOperation {
   CREATE,
   DELETE,
@@ -72,6 +77,22 @@ export interface SourceTargetPair {
   readonly target: Uri;
 }
 
+/**
+ * not supported yet
+ */
+export interface IFileOperationUndoRedoInfo {
+
+  /**
+   * Id of the undo group that the file operation belongs to.
+   */
+  undoRedoGroupId?: number;
+
+  /**
+   * Flag indicates if the operation is an undo.
+   */
+  isUndoing?: boolean;
+}
+
 export interface IWorkspaceFileOperationParticipant {
 
   /**
@@ -81,7 +102,7 @@ export interface IWorkspaceFileOperationParticipant {
   participate(
     files: SourceTargetPair[],
     operation: FileOperation,
-    progress: IProgress<IProgressStep>,
+    undoInfo: IFileOperationUndoRedoInfo | undefined,
     timeout: number,
     token: CancellationToken,
   ): Promise<void>;
@@ -116,6 +137,7 @@ export interface IWorkspaceFileService {
   move(files: Required<SourceTargetPair>[], options?: { overwrite?: boolean }): Promise<FileStat[]>;
   copy(files: Required<SourceTargetPair>[], options?: { overwrite?: boolean }): Promise<FileStat[]>;
   delete(resources: URI[], options?: { useTrash?: boolean, recursive?: boolean }): Promise<void>;
+
   registerFileOperationParticipant(participant: IWorkspaceFileOperationParticipant): IDisposable;
 }
 

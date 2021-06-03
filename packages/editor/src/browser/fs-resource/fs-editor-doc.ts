@@ -1,5 +1,5 @@
 import { IEditorDocumentModelContentProvider } from '../doc-model/types';
-import { Emitter, URI, Event, CorePreferences, IApplicationService, FileChangeType, OS, IEditorDocumentChange, IEditorDocumentModelSaveResult } from '@ali/ide-core-browser';
+import { Emitter, URI, Event, IApplicationService, FileChangeType, OS, IEditorDocumentChange, IEditorDocumentModelSaveResult, PreferenceService, getLanguageIdFromMonaco } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { EditorPreferences } from '../preference/schema';
@@ -21,14 +21,14 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
   @Autowired(IFileServiceClient)
   protected readonly fileServiceClient: IFileServiceClient;
 
-  @Autowired(CorePreferences)
-  protected readonly corePreferences: CorePreferences;
-
   @Autowired(EditorPreferences)
   protected readonly editorPreferences: EditorPreferences;
 
   @Autowired(IApplicationService)
   protected readonly applicationService: IApplicationService;
+
+  @Autowired(PreferenceService)
+  protected readonly preferenceService: PreferenceService;
 
   constructor() {
     this.fileServiceClient.onFilesChanged((changes) => {
@@ -51,9 +51,9 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
     return await this.fileServiceClient.getEncoding(uri.toString());
   }
 
-  async provideEOL() {
+  async provideEOL(uri: URI) {
     const backendOS = await this.applicationService.getBackendOS();
-    const eol = this.corePreferences['files.eol'];
+    const eol = this.preferenceService.get<EOL | 'auto'>('files.eol', 'auto', uri.toString(), getLanguageIdFromMonaco(uri)!)!;
 
     if (eol !== 'auto') {
       return eol;

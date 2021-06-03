@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IEditorDocumentModelContentProvider, EOL} from '@ali/ide-editor/lib/browser';
 import { FILE_SCHEME, FILE_SAVE_BY_CHANGE_THRESHOLD, IFileSchemeDocClient } from '../common';
-import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, CorePreferences, ISchemaStore, IDisposable, Disposable, ISchemaRegistry, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
+import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, ISchemaStore, IDisposable, Disposable, ISchemaRegistry, replaceLocalizePlaceholder, getLanguageIdFromMonaco, PreferenceService } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import * as md5 from 'md5';
 import { BaseFileSystemEditorDocumentProvider } from '@ali/ide-editor/lib/browser/fs-resource/fs-editor-doc';
@@ -16,8 +16,8 @@ export class FileSchemeDocumentProvider extends BaseFileSystemEditorDocumentProv
   @Autowired(IFileSchemeDocClient)
   protected readonly fileSchemeDocClient: IFileSchemeDocClient;
 
-  @Autowired(CorePreferences)
-  protected readonly corePreferences: CorePreferences;
+  @Autowired(PreferenceService)
+  protected readonly preferenceService: PreferenceService;
 
   constructor() {
     super();
@@ -33,7 +33,7 @@ export class FileSchemeDocumentProvider extends BaseFileSystemEditorDocumentProv
 
   async provideEncoding(uri: URI) {
     if (uri.scheme === FILE_SCHEME) {
-      const encoding = this.corePreferences['files.encoding'];
+      const encoding = this.preferenceService.get<string>('files.encoding', undefined, uri.toString(), getLanguageIdFromMonaco(uri)!);
       if (!!encoding) {
         return encoding;
       }

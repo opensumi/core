@@ -291,8 +291,13 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
 
     commands.registerCommand(EDITOR_COMMANDS.OPEN_RESOURCE, {
-      execute: (uri: URI, options?: IResourceOpenOptions) => {
-        this.workbenchEditorService.open(uri, options);
+      execute: async (uri: URI, options?: IResourceOpenOptions) => {
+        const openResult = await this.workbenchEditorService.open(uri, options);
+        if (openResult) {
+          return {
+            groupId: openResult?.group.name,
+          };
+        }
       },
     });
 

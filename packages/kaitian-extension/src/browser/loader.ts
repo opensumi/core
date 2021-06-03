@@ -1,10 +1,4 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-
 import { isElectronEnv } from '@ali/ide-core-common';
-import { createBrowserApi } from './kaitian-browser';
-import { IExtension } from '../common';
-import { IRPCProtocol } from '@ali/ide-connection';
 
 export function getAMDRequire() {
   if (isElectronEnv()) {
@@ -17,21 +11,6 @@ export function getAMDRequire() {
     });
     return (global as any).amdLoader.require;
   }
-}
-
-export function getMockAmdLoader<T>(injector, extension: IExtension, rpcProtocol?: IRPCProtocol) {
-  const _exports: { default?: any } | T = {};
-  const _module = { exports: _exports };
-  const _require = (request: string) => {
-    if (request === 'React') {
-      return React;
-    } else if (request === 'ReactDOM') {
-      return ReactDOM;
-    } else if (request === 'kaitian-browser') {
-      return createBrowserApi(injector, extension, rpcProtocol);
-    }
-  };
-  return { _module, _exports, _require };
 }
 
 export function getWorkerBootstrapUrl(scriptPath: string, label: string, ignoreCors?: boolean): string {

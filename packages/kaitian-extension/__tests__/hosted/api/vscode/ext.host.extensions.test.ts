@@ -1,8 +1,8 @@
 import * as path from 'path';
 import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
-import { URI } from '@ali/ide-core-common';
+import { IExtensionProps, URI } from '@ali/ide-core-common';
 import { initMockRPCProtocol } from '../../../__mock__/initRPCProtocol';
-import { KTWorkerExtensionContext } from '../../../../src/hosted/api/vscode/ext.host.extensions';
+import { ExtensionContext } from '../../../../src/hosted/api/vscode/ext.host.extensions';
 import { ExtHostStorage } from '../../../../src/hosted/api/vscode/ext.host.storage';
 import { ExtensionMode } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
 
@@ -28,21 +28,21 @@ const mockExtension = {
 
 describe(`test ${__filename}`, () => {
   let rpcProtocol: RPCProtocol;
-  let context: KTWorkerExtensionContext;
+  let context: ExtensionContext;
   const mockClient = {
     send: async (msg) => {},
     onMessage: (fn) => {},
   };
   beforeAll(async () => {
     rpcProtocol = await initMockRPCProtocol(mockClient);
-    context = new KTWorkerExtensionContext({
+    context = new ExtensionContext({
+      extension: mockExtension as unknown as IExtensionProps,
       isDevelopment: false,
       extensionId: mockExtension.extensionId,
       extendProxy: {},
       registerExtendModuleService: () => {},
       extensionPath: mockExtension.realPath,
       extensionLocation: mockExtension.extensionLocation,
-      staticServicePath,
       storageProxy: new ExtHostStorage(rpcProtocol),
     });
   });

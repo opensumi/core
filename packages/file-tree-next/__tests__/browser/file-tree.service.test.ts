@@ -1,7 +1,7 @@
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { FileTreeService } from '../../src/browser/file-tree.service';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IContextKeyService, CorePreferences, Disposable, URI, EDITOR_COMMANDS, FILE_COMMANDS, ILoggerManagerClient } from '@ali/ide-core-browser';
+import { IContextKeyService, CorePreferences, Disposable, URI, EDITOR_COMMANDS, FILE_COMMANDS, ILoggerManagerClient, IApplicationService, isWindows, OS, isLinux } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
 import { IWorkspaceService, KAITIAN_MULTI_WORKSPACE_EXT } from '@ali/ide-workspace';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
@@ -118,6 +118,12 @@ describe('FileTree Service should be work alone', () => {
       {
         token: IMessageService,
         useValue: {},
+      },
+      {
+        token: IApplicationService,
+        useValue: {
+          backendOS: isWindows ? OS.Type.Windows : isLinux ? OS.Type.Linux : OS.Type.OSX,
+        },
       },
       {
         token: IContextKeyService,

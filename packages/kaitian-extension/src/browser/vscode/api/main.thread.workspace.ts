@@ -1,15 +1,14 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IMainThreadWorkspace, IExtHostStorage, IExtHostWorkspace } from '../../../common/vscode';
+import { ExtHostAPIIdentifier, IMainThreadWorkspace, IExtHostStorage, IExtHostWorkspace, reviveWorkspaceEditDto } from '../../../common/vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 import { URI, ILogger, WithEventBus, OnEvent, CancellationToken } from '@ali/ide-core-browser';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
-import { IWorkspaceEditService, IWorkspaceEdit, IResourceTextEdit, IResourceFileEdit, WorkspaceEditDidRenameFileEvent } from '@ali/ide-workspace-edit';
+import { IWorkspaceEditService, WorkspaceEditDidRenameFileEvent } from '@ali/ide-workspace-edit';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { FileSearchServicePath, IFileSearchService } from '@ali/ide-file-search/lib/common';
 import type * as model from '../../../common/vscode/model.api';
-import { ResourceTextEditDto, ResourceFileEditDto } from '../../../common/vscode/model.api';
 
 @Injectable({multiple: true})
 export class MainThreadWorkspace extends WithEventBus implements IMainThreadWorkspace {
@@ -116,25 +115,4 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
     this.proxy.$didRenameFile(e.payload.oldUri.codeUri, e.payload.newUri.codeUri);
   }
 
-}
-
-export function reviveWorkspaceEditDto(data: model.WorkspaceEditDto | undefined): IWorkspaceEdit {
-  if (data && data.edits) {
-    for (const edit of data.edits) {
-      if (typeof (edit as ResourceTextEditDto).resource === 'object') {
-        (edit as unknown as IResourceTextEdit).resource = URI.from(( edit as ResourceTextEditDto).resource);
-        (edit as unknown as IResourceTextEdit).options = { openDirtyInEditor: true };
-      } else {
-        const resourceFileEdit = edit as unknown as IResourceFileEdit;
-        resourceFileEdit.newUri = ( edit as ResourceFileEditDto).newUri ? URI.from(( edit as ResourceFileEditDto).newUri!) : undefined;
-        resourceFileEdit.oldUri = ( edit as ResourceFileEditDto).oldUri ? URI.from(( edit as ResourceFileEditDto).oldUri!) : undefined;
-        // 似乎 vscode 的行为默认不会 showInEditor，参考来自 codeMe 插件
-        resourceFileEdit.options = {
-          ...resourceFileEdit.options,
-          showInEditor: false,
-        };
-      }
-    }
-  }
-  return  data as unknown as IWorkspaceEdit;
 }

@@ -1,9 +1,10 @@
 import type * as vscode from 'vscode';
-import { IDisposable, IRange, CancellationToken } from '@ali/ide-core-common';
+import { URI, IDisposable, IRange, CancellationToken } from '@ali/ide-core-common';
 import { Uri, UriComponents } from './ext-types';
 import { FileStat } from '@ali/ide-file-service';
 import { EndOfLineSequence } from '@ali/ide-editor/lib/common';
 import type * as model from './model.api';
+import { IWorkspaceEdit, IResourceTextEdit, IResourceFileEdit } from '@ali/ide-workspace-edit';
 
 export interface IMainThreadWorkspace extends IDisposable {
   $saveAll(): Promise<boolean>;
@@ -132,3 +133,24 @@ export interface WorkspaceRootsChangeEvent {
 }
 
 export interface ITextEdit { range: IRange; text: string; eol?: EndOfLineSequence; }
+
+export function reviveWorkspaceEditDto(data: model.WorkspaceEditDto | undefined): IWorkspaceEdit {
+  if (data && data.edits) {
+    for (const edit of data.edits) {
+      if (typeof (edit as model.ResourceTextEditDto).resource === 'object') {
+        (edit as unknown as IResourceTextEdit).resource = URI.from((edit as model.ResourceTextEditDto).resource);
+        (edit as unknown as IResourceTextEdit).options = { openDirtyInEditor: true };
+      } else {
+        const resourceFileEdit = edit as unknown as IResourceFileEdit;
+        resourceFileEdit.newUri = (edit as model.ResourceFileEditDto).newUri ? URI.from(( edit as model.ResourceFileEditDto).newUri!) : undefined;
+        resourceFileEdit.oldUri = (edit as model.ResourceFileEditDto).oldUri ? URI.from(( edit as model.ResourceFileEditDto).oldUri!) : undefined;
+        // 似乎 vscode 的行为默认不会 showInEditor，参考来自 codeMe 插件
+        resourceFileEdit.options = {
+          ...resourceFileEdit.options,
+          showInEditor: false,
+        };
+      }
+    }
+  }
+  return  data as unknown as IWorkspaceEdit;
+}

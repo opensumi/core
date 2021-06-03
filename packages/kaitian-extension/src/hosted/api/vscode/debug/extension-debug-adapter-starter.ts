@@ -78,3 +78,15 @@ export function directDebugAdapter(id: string, da: vscode.DebugAdapter): DebugSt
   }).listen(0);
   return connectDebugAdapter({ port: (server.address() as net.AddressInfo).port });
 }
+
+/**
+ * 通过 NamedPipe(在 Windows) 或者 UNIX Domain Socket(IPC socket)(非 Windows) 连接到适配器的实现
+ */
+export function namedPipeDebugAdapter(server: vscode.DebugAdapterNamedPipeServer): DebugStreamConnection {
+  const socket = net.createConnection(server.path);
+  return {
+    input: socket,
+    output: socket,
+    dispose: () => socket.end(),
+  };
+}

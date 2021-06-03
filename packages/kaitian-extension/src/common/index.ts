@@ -10,6 +10,7 @@ import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from 
 export { IExtensionProps } from '@ali/ide-core-common';
 
 export * from './ext.host.proxy';
+export * from './require-interceptor';
 
 export interface IExtensionMetaData {
   id: string;
@@ -251,6 +252,11 @@ export interface IExtensionHostService extends IExtensionHost {
   close(): Promise<void>;
   getExtendExports(id: string): any;
   extensionsActivator: ExtensionsActivator;
+  /**
+   * 上报插件未捕获异常
+   * @param error
+   */
+  reportUnexpectedError(error: Error): void;
 }
 
 // tslint:disable-next-line: no-empty-interface

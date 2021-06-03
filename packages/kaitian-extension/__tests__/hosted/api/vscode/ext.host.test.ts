@@ -117,5 +117,19 @@ describe('Extension process test', () => {
         await extHostImpl.$activateExtension(id);
       }).rejects.toThrow('Test caught exception');
     });
+
+    it('should caught runtime unexpected error', async (done) => {
+      const reporter = injector.get(IReporter);
+
+      jest.spyOn((extHostImpl as any), 'findExtension').mockImplementation(() => mockExtensionProps2);
+      jest.spyOn(reporter, 'point').mockImplementation((msg: string, data: any) => {
+        if (msg === REPORT_NAME.RUNTIME_ERROR_EXTENSION) {
+          expect(typeof data.extra.error).toBeTruthy();
+          expect(data.extra.stackTraceMessage).toMatch(/This is unexpected error/);
+          done();
+        }
+      });
+      extHostImpl.reportUnexpectedError(new Error('This is unexpected error'));
+    });
   });
 });

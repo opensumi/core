@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Deferred, URI, ILogger, StoragePaths, ThrottledDelayer, Throttler } from '@ali/ide-core-common';
+import { Deferred, URI, ILogger, StoragePaths, ThrottledDelayer, Throttler, Uri } from '@ali/ide-core-common';
 import { IFileServiceClient, FileStat } from '@ali/ide-file-service';
-import { ExtensionStoragePath, IExtensionStoragePathServer, IExtensionStorageServer, KeysToAnyValues, KeysToKeysToAnyValue, DEFAULT_EXTENSION_STORAGE_DIR_NAME, IExtensionStorageTask } from '../common/';
+import { ExtensionStorageUri, IExtensionStoragePathServer, IExtensionStorageServer, KeysToAnyValues, KeysToKeysToAnyValue, DEFAULT_EXTENSION_STORAGE_DIR_NAME, IExtensionStorageTask } from '../common/';
 import { Path } from '@ali/ide-core-common/lib/path';
 
 @Injectable()
@@ -25,12 +25,12 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
   @Autowired(ILogger)
   protected readonly logger: ILogger;
 
-  public async init(workspace: FileStat | undefined, roots: FileStat[], extensionStorageDirName?: string): Promise<ExtensionStoragePath> {
+  public async init(workspace: FileStat | undefined, roots: FileStat[], extensionStorageDirName?: string): Promise<ExtensionStorageUri> {
     this.storageDelayer = new ThrottledDelayer(ExtensionStorageServer.DEFAULT_FLUSH_DELAY);
     return await this.setupDirectories(workspace, roots, extensionStorageDirName || DEFAULT_EXTENSION_STORAGE_DIR_NAME);
   }
 
-  private async setupDirectories(workspace, roots, extensionStorageDirName): Promise<ExtensionStoragePath> {
+  private async setupDirectories(workspace, roots, extensionStorageDirName): Promise<ExtensionStorageUri> {
     const workspaceDataDirPath = await this.extensionStoragePathsServer.getWorkspaceDataDirPath(extensionStorageDirName);
     await this.fileSystem.createFolder(URI.file(workspaceDataDirPath).toString());
     this.workspaceDataDirPath = workspaceDataDirPath;
@@ -40,14 +40,14 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
 
     this.deferredWorkspaceDataDirPath.resolve(this.workspaceDataDirPath);
 
-    const logPath = await this.extensionStoragePathsServer.provideHostLogPath();
-    const storagePath = await this.extensionStoragePathsServer.provideHostStoragePath(workspace, roots, extensionStorageDirName);
-    const globalStoragePath = this.globalDataPath;
+    const logUri = await this.extensionStoragePathsServer.provideHostLogPath();
+    const storageUri = await this.extensionStoragePathsServer.provideHostStoragePath(workspace, roots, extensionStorageDirName);
+
     // 返回插件storage存储路径信息
     return {
-      logPath,
-      storagePath,
-      globalStoragePath,
+      logUri: logUri.codeUri || undefined,
+      storageUri: storageUri?.codeUri,
+      globalStorageUri: Uri.parse(this.globalDataPath),
     };
   }
 

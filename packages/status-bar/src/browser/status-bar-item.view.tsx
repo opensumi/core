@@ -7,7 +7,7 @@ import { getExternalIcon } from '@ali/ide-core-browser';
 
 // todo: 移除 fa 的相关代码
 export function StatusBarItem(props: StatusBarEntry) {
-  const { iconClass, className, text, onClick, tooltip, command, color } = props;
+  const { iconClass, className, text, onClick, tooltip, command, color, ariaLabel, role = 'button' } = props;
 
   let items: LabelPart[] = [];
   if (text) {
@@ -24,6 +24,7 @@ export function StatusBarItem(props: StatusBarEntry) {
       style={{
         color,
       }}
+      aria-label={ariaLabel}
     >
       {iconClass && <span key={-1} className={cls(styles.icon, iconClass)}></span>}
       {items.map((item, key) => {
@@ -33,7 +34,7 @@ export function StatusBarItem(props: StatusBarEntry) {
           return <span key={key} className={cls(styles.icon, getExternalIcon(item.name), `${item.animation ? 'iconfont-anim-' + item.animation : ''}`)}></span>;
         } else {
           // 22px高度限制用于解决文本超长时文本折叠问题
-          return <span style={{marginLeft: iconClass || hasIcon ? '2px' : 0, height: '22px', lineHeight: '22px' }} key={key}>{replaceLocalizePlaceholder(item)}</span>;
+          return <span style={{marginLeft: iconClass || hasIcon ? '2px' : 0, height: '22px', lineHeight: '22px' }} key={key} aria-label={ariaLabel} role={role}>{replaceLocalizePlaceholder(item)}</span>;
         }
       })}
     </div>

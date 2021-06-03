@@ -1,6 +1,24 @@
 declare module 'vscode' {
 
   /**
+   * Accessibility information which controls screen reader behavior.
+   */
+  export interface AccessibilityInformation {
+    /**
+     * Label to be read out by a screen reader once the item has focus.
+     */
+    label: string;
+
+    /**
+     * Role of the widget which defines how a screen reader interacts with it.
+     * The role should be set in special cases when for example a tree-like element behaves like a checkbox.
+     * If role is not specified VS Code will pick the appropriate role automatically.
+     * More about aria roles can be found here https://w3c.github.io/aria/#widget_roles
+     */
+    role?: string;
+  }
+
+  /**
  * Represents the configuration. It is a merged view of
  *
  * - Default configuration
@@ -2256,6 +2274,11 @@ declare module 'vscode' {
     readonly id: string;
 
     /**
+     * The uri of the directory containing the extension.
+     */
+    readonly extensionUri: Uri;
+
+    /**
      * The absolute file path of the directory containing this extension.
      */
     readonly extensionPath: string;
@@ -2402,6 +2425,117 @@ declare module 'vscode' {
     dispose(): void;
   }
 
+  //#region EnvironmentVariable
+
+	/**
+	 * A type of mutation that can be applied to an environment variable.
+	 */
+	export enum EnvironmentVariableMutatorType {
+		/**
+		 * Replace the variable's existing value.
+		 */
+		Replace = 1,
+		/**
+		 * Append to the end of the variable's existing value.
+		 */
+		Append = 2,
+		/**
+		 * Prepend to the start of the variable's existing value.
+		 */
+		Prepend = 3
+	}
+
+	/**
+	 * A type of mutation and its value to be applied to an environment variable.
+	 */
+	export interface EnvironmentVariableMutator {
+		/**
+		 * The type of mutation that will occur to the variable.
+		 */
+		readonly type: EnvironmentVariableMutatorType;
+
+		/**
+		 * The value to use for the variable.
+		 */
+		readonly value: string;
+	}
+
+	/**
+	 * A collection of mutations that an extension can apply to a process environment.
+	 */
+	export interface EnvironmentVariableCollection {
+		/**
+		 * Whether the collection should be cached for the workspace and applied to the terminal
+		 * across window reloads. When true the collection will be active immediately such when the
+		 * window reloads. Additionally, this API will return the cached version if it exists. The
+		 * collection will be invalidated when the extension is uninstalled or when the collection
+		 * is cleared. Defaults to true.
+		 */
+		persistent: boolean;
+
+		/**
+		 * Replace an environment variable with a value.
+		 *
+		 * Note that an extension can only make a single change to any one variable, so this will
+		 * overwrite any previous calls to replace, append or prepend.
+		 *
+		 * @param variable The variable to replace.
+		 * @param value The value to replace the variable with.
+		 */
+		replace(variable: string, value: string): void;
+
+		/**
+		 * Append a value to an environment variable.
+		 *
+		 * Note that an extension can only make a single change to any one variable, so this will
+		 * overwrite any previous calls to replace, append or prepend.
+		 *
+		 * @param variable The variable to append to.
+		 * @param value The value to append to the variable.
+		 */
+		append(variable: string, value: string): void;
+
+		/**
+		 * Prepend a value to an environment variable.
+		 *
+		 * Note that an extension can only make a single change to any one variable, so this will
+		 * overwrite any previous calls to replace, append or prepend.
+		 *
+		 * @param variable The variable to prepend.
+		 * @param value The value to prepend to the variable.
+		 */
+		prepend(variable: string, value: string): void;
+
+		/**
+		 * Gets the mutator that this collection applies to a variable, if any.
+		 *
+		 * @param variable The variable to get the mutator for.
+		 */
+		get(variable: string): EnvironmentVariableMutator | undefined;
+
+		/**
+		 * Iterate over each mutator in this collection.
+		 *
+		 * @param callback Function to execute for each entry.
+		 * @param thisArg The `this` context used when invoking the handler function.
+		 */
+		forEach(callback: (variable: string, mutator: EnvironmentVariableMutator, collection: EnvironmentVariableCollection) => any, thisArg?: any): void;
+
+		/**
+		 * Deletes this collection's mutator for a variable.
+		 *
+		 * @param variable The variable to delete the mutator for.
+		 */
+		delete(variable: string): void;
+
+		/**
+		 * Clears all mutators from this collection.
+		 */
+		clear(): void;
+	}
+
+  //#endregion
+
   /**
    * An extension context is a collection of utilities private to an
    * extension.
@@ -2434,6 +2568,17 @@ declare module 'vscode' {
      */
     readonly extensionPath: string;
 
+		/**
+		 * The uri of the directory containing the extension.
+		 */
+     readonly extensionUri: Uri;
+
+    /**
+     * Gets the extension's environment variable collection for this workspace, enabling changes
+     * to be applied to terminal environment variables.
+     */
+    readonly environmentVariableCollection: EnvironmentVariableCollection;
+
     /**
      * Get the absolute path of a resource contained in the extension.
      *
@@ -2449,8 +2594,24 @@ declare module 'vscode' {
      *
      * Use [`workspaceState`](#ExtensionContext.workspaceState) or
      * [`globalState`](#ExtensionContext.globalState) to store key value data.
+     * 
+     * @deprecated Use [storagePath](#ExtensionContent.storageUri) instead.
      */
     readonly storagePath: string | undefined;
+
+    /**
+		 * The uri of a workspace specific directory in which the extension
+		 * can store private state. The directory might not exist and creation is
+		 * up to the extension. However, the parent directory is guaranteed to be existent.
+		 * The value is `undefined` when no workspace nor folder has been opened.
+		 *
+		 * Use [`workspaceState`](#ExtensionContext.workspaceState) or
+		 * [`globalState`](#ExtensionContext.globalState) to store key value data.
+		 *
+		 * @see [`workspace.fs`](#FileSystem) for how to read and write files and folders from
+		 *  an uri.
+		 */
+    readonly storageUri: Uri | undefined;
 
     /**
      * An absolute file path in which the extension can store global state.
@@ -2458,15 +2619,42 @@ declare module 'vscode' {
      * up to the extension. However, the parent directory is guaranteed to be existent.
      *
      * Use [`globalState`](#ExtensionContext.globalState) to store key value data.
+     * 
+     * @deprecated Use [globalStoragePath](#ExtensionContent.globalStorageUri) instead.
      */
     readonly globalStoragePath: string;
+
+    /**
+		 * The uri of a directory in which the extension can store global state.
+		 * The directory might not exist on disk and creation is
+		 * up to the extension. However, the parent directory is guaranteed to be existent.
+		 *
+		 * Use [`globalState`](#ExtensionContext.globalState) to store key value data.
+		 *
+		 * @see [`workspace.fs`](#FileSystem) for how to read and write files and folders from
+		 *  an uri.
+		 */
+		readonly globalStorageUri: Uri;
 
     /**
      * An absolute file path of a directory in which the extension can create log files.
      * The directory might not exist on disk and creation is up to the extension. However,
      * the parent directory is guaranteed to be existent.
+     * 
+     * @deprecated Use [logUri](#ExtensionContext.logUri) instead.
      */
     readonly logPath: string;
+
+    /**
+		 * The uri of a directory in which the extension can create log files.
+		 * The directory might not exist on disk and creation is up to the extension. However,
+		 * the parent directory is guaranteed to be existent.
+		 *
+		 * @see [`workspace.fs`](#FileSystem) for how to read and write files and folders from
+		 *  an uri.
+		 */
+    readonly logUri: Uri;
+
     /**
      * The mode the extension is running in. This is specific to the current
      * extension. One extension may be in `ExtensionMode.Development` while

@@ -3,9 +3,11 @@ import { RPCProtocol } from '@ali/ide-connection';
 import { ITerminalApiService, ITerminalController } from '@ali/ide-terminal-next';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
-import { ExtHostTerminal, Terminal } from '../../../../src/hosted/api/vscode/ext.host.terminal';
+import { EnvironmentVariableCollection, ExtHostTerminal, Terminal } from '../../../../src/hosted/api/vscode/ext.host.terminal';
 import { MainThreadTerminal } from '../../../../src/browser/vscode/api/main.thread.terminal';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
+import { IExtension } from '@ali/ide-kaitian-extension';
+import { EnvironmentVariableServiceToken } from '@ali/ide-terminal-next/lib/common/environmentVariable';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -49,6 +51,11 @@ describe(__filename, () => {
         promise: Promise.resolve(),
       },
     }),
+  }, {
+    token: EnvironmentVariableServiceToken,
+    useValue: {
+      set() {},
+    },
   });
 
   extHost = rpcProtocolMain.set(ExtHostAPIIdentifier.ExtHostTerminal, injector.get(ExtHostTerminal, [rpcProtocolMain]));
@@ -163,4 +170,83 @@ describe(__filename, () => {
       }, 0);
     }, 0);
   });
+
+  //#region ExthostTerminal#EnvironmentVariableCollection
+  const mockExtension = {
+    id: 'test-terminal-env',
+  };
+  const collection = extHost.getEnviromentVariableCollection(mockExtension as unknown as IExtension);
+  // @ts-ignore
+  const mocksyncEnvironmentVariableCollection = jest.spyOn(extHost, 'syncEnvironmentVariableCollection');
+
+  it('ExthostTerminal#getEvniromentVariableCollection', () => {
+    expect(collection instanceof EnvironmentVariableCollection).toBeTruthy();
+    expect(collection.map.size).toBe(0);
+    expect(collection.persistent).toBeTruthy();
+  });
+
+  it('EnvironmentVariableCollection#append', () => {
+    collection.append('FOO', 'BAR');
+    const serialized = [[ 'FOO', { value: 'BAR', type: 2 /**EnvironmentVariableMutatorType.Append */ } ]];
+
+    expect(mocksyncEnvironmentVariableCollection).toBeCalled();
+    expect(mocksyncEnvironmentVariableCollection).toBeCalledWith(mockExtension.id, collection);
+    expect([...collection.map.entries()]).toEqual(serialized);
+  });
+
+  it('EnvironmentVariableCollection#replace', () => {
+    collection.replace('FOO', 'BAR2');
+    const serialized = [[ 'FOO', { value: 'BAR2', type: 1 /**EnvironmentVariableMutatorType.Replace */ } ]];
+
+    expect(mocksyncEnvironmentVariableCollection).toBeCalled();
+    expect(mocksyncEnvironmentVariableCollection).toBeCalledWith(mockExtension.id, collection);
+    expect([...collection.map.entries()]).toEqual(serialized);
+  });
+
+  it('EnvironmentVariableCollection#prepend', () => {
+    collection.prepend('FOO', 'BAR3');
+    const serialized = [[ 'FOO', { value: 'BAR3', type: 3 /**EnvironmentVariableMutatorType.Prepend */ } ]];
+
+    expect(mocksyncEnvironmentVariableCollection).toBeCalled();
+    expect(mocksyncEnvironmentVariableCollection).toBeCalledWith(mockExtension.id, collection);
+    expect([...collection.map.entries()]).toEqual(serialized);
+  });
+
+  it('EnvironmentVariableCollection#get', () => {
+    const value = collection.get('FOO');
+    expect(value).toEqual({ value: 'BAR3', type: 3 });
+  });
+
+  it('EnvironmentVariableCollection#forEach', async (done) => {
+    collection.append('ENV1', 'VALUE1');
+    collection.append('ENV2', 'VALUE2');
+    collection.append('ENV3', 'VALUE3');
+
+    const variableSet: string[] = [];
+    const valueSet: string[] = [];
+
+    collection.forEach((variable) => {
+      variableSet.push(variable);
+      valueSet.push(collection.get(variable)?.value!);
+    });
+
+    expect(variableSet).toEqual([ 'FOO', 'ENV1', 'ENV2', 'ENV3' ]);
+    expect(valueSet).toEqual([ 'BAR3', 'VALUE1', 'VALUE2', 'VALUE3' ]);
+    done();
+  });
+
+  it('EnvironmentVariableCollection#delete', () => {
+    collection.delete('FOO');
+    expect(collection.get('FOO')).toBeUndefined();
+  });
+
+  it('EnvironmentVariableCollection#clear', () => {
+    collection.clear();
+    expect(collection.map.size).toBe(0);
+    expect(collection.get('ENV1')).toBeUndefined();
+    expect(collection.get('ENV2')).toBeUndefined();
+    expect(collection.get('ENV3')).toBeUndefined();
+  });
+
+  //#endregion
 });

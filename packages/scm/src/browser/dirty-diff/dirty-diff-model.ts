@@ -8,7 +8,7 @@ import { IDisposable, dispose, Disposable, DisposableStore, toDisposable } from 
 import { first } from '@ali/ide-core-common/lib/async';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import { EditorCollectionService } from '@ali/ide-editor';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { IEditorDocumentModelService, IEditorDocumentModel } from '@ali/ide-editor/lib/browser';
 
 import { SCMService, ISCMRepository, IDirtyDiffModel } from '../../common';
 import { compareChanges, getModifiedEndLineNumber } from './dirty-diff-util';
@@ -16,11 +16,11 @@ import { DirtyDiffWidget } from './dirty-diff-widget';
 
 @Injectable({ multiple: true })
 export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
-  private _originalModel: monaco.editor.ITextModel | null;
-  get original(): monaco.editor.ITextModel | null { return this._originalModel; }
+  private _originalModel: IEditorDocumentModel | null;
+  get original(): IEditorDocumentModel | null { return this._originalModel; }
 
-  private _editorModel: monaco.editor.ITextModel | null;
-  get modified(): monaco.editor.ITextModel | null { return this._editorModel; }
+  private _editorModel: IEditorDocumentModel | null;
+  get modified(): IEditorDocumentModel | null { return this._editorModel; }
 
   private diffDelayer: ThrottledDelayer<IChange[] | null> | null;
   private _originalURIPromise?: Promise<Uri | null>;
@@ -54,13 +54,20 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   }
 
   constructor(
-    @Optional() editorModel: monaco.editor.ITextModel,
+    @Optional() editorModel: IEditorDocumentModel,
   ) {
     super();
     this._editorModel = editorModel;
     this.diffDelayer = new ThrottledDelayer<IChange[]>(200);
 
-    this.addDispose(editorModel.onDidChangeContent(() => this.triggerDiff()));
+    this.addDispose(editorModel.getMonacoModel().onDidChangeContent(() => this.triggerDiff()));
+    this.addDispose(editorModel.onDidChangeEncoding(() => {
+      this.diffDelayer?.cancel();
+      this._originalModel = null;
+      this._originalURIPromise = undefined;
+      this._changes = [];
+      this.triggerDiff();
+    }));
     this.addDispose(this.scmService.onDidAddRepository(this.onDidAddRepository, this));
     this.scmService.repositories.forEach((r) => this.onDidAddRepository(r));
 
@@ -93,15 +100,15 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     return this.diffDelayer
       .trigger(() => this.diff())
       .then((changes) => {
-        if (!this._editorModel || this._editorModel.isDisposed() || !this._originalModel || this._originalModel.isDisposed()) {
+        if (!this._editorModel || this._editorModel.getMonacoModel().isDisposed() || !this._originalModel || this._originalModel.getMonacoModel().isDisposed()) {
           return; // disposed
         }
 
-        if (!changes || this._originalModel.getValueLength() === 0) {
+        if (!changes || this._originalModel.getMonacoModel().getValueLength() === 0) {
           changes = [];
         }
 
-        const diff = sortedDiff(this._changes, changes, compareChanges);
+        const diff = sortedDiff(this.changes, changes, compareChanges);
         this._changes = changes;
 
         if (diff.length > 0) {
@@ -111,29 +118,28 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   }
 
   // 计算 diff
-  private diff(): Promise<IChange[] | null> {
-    return this.getOriginalURIPromise().then((originalURI) => {
-      if (!this._editorModel || this._editorModel.isDisposed() || !originalURI) {
-        return Promise.resolve([]); // disposed
-      }
+  private async diff(): Promise<IChange[] | null> {
+    const originalURI = await this.getOriginalURIPromise();
+    if (!this._editorModel || this._editorModel.getMonacoModel().isDisposed() || !originalURI) {
+      return []; // disposed
+    }
 
-      // 复用 monaco 内部的 canComputeDiff 本质跟 canComputeDirtyDiff 实现一致
-      if (!this.editorWorkerService.canComputeDiff(originalURI as monaco.Uri, this._editorModel.uri)) {
-        return Promise.resolve([]); // Files too large
-      }
+    // 复用 monaco 内部的 canComputeDiff 本质跟 canComputeDirtyDiff 实现一致
+    if (!this.editorWorkerService.canComputeDiff(originalURI as monaco.Uri, this._editorModel.getMonacoModel().uri)) {
+      return []; // Files too large
+    }
 
-      // 复用 monaco 内部的 computeDiff 跟 computeDirtyDiff 参数不一致
-      // 主要是 shouldComputeCharChanges#false, shouldPostProcessCharChanges#false
-      return this.editorWorkerService.computeDiff(
-        originalURI as monaco.Uri,
-        this._editorModel.uri,
-        false,
-        // FIXME - Monaco 20 - ESM
-        // 新版本多了一个 maxComputationTime 参数，参考 VS Code 默认值设置为 1000
-        1000,
-      )
-      .then((ret) => ret && ret.changes);
-    });
+    // 复用 monaco 内部的 computeDiff 跟 computeDirtyDiff 参数不一致
+    // 主要是 shouldComputeCharChanges#false, shouldPostProcessCharChanges#false
+    const ret = await this.editorWorkerService.computeDiff(
+      originalURI as monaco.Uri,
+      this._editorModel.getMonacoModel().uri,
+      false,
+      // FIXME - Monaco 20 - ESM
+      // 新版本多了一个 maxComputationTime 参数，参考 VS Code 默认值设置为 1000
+      1000,
+    );
+    return ret && ret.changes;
   }
 
   private getOriginalURIPromise(): Promise<Uri | null> {
@@ -165,14 +171,14 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
             return null;
           }
 
-          const textEditorModel = docModelRef.instance.getMonacoModel();
+          this._originalModel = docModelRef.instance;
+          this._originalModel.updateEncoding(this._editorModel.encoding);
 
-          this._originalModel = textEditorModel;
+          const textEditorModel = this._originalModel.getMonacoModel();
 
           this.originalModelDisposables.clear();
           this.originalModelDisposables.add(docModelRef);
           this.originalModelDisposables.add(textEditorModel.onDidChangeContent(() => this.triggerDiff()));
-
           return originalUri;
         });
     });
@@ -187,7 +193,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
       return Promise.resolve(null);
     }
 
-    const uri = this._editorModel.uri;
+    const uri = this._editorModel.getMonacoModel().uri;
     // find the first matched scm repository
     return first(this.scmService.repositories.map((r) => () => r.provider.getOriginalResource(uri)));
   }
@@ -261,8 +267,8 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     this._widget = widget;
 
     if (this._originalModel && this._editorModel) {
-      const originalUri = new URI(this._originalModel.uri);
-      const editorUri = new URI(this._editorModel.uri);
+      const originalUri = this._originalModel.uri;
+      const editorUri = this._editorModel.uri;
       return this.editorService.createDiffEditor(widget.getContentNode(), { automaticLayout: true, renderSideBySide: false })
         .then(async (editor) => {
           const original = await this.documentModelManager.createModelReference(originalUri);

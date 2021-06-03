@@ -5,7 +5,7 @@ import { EOL, EndOfLineSequence, IEditorDocumentModelContentChange, SaveReason }
 /**
  * editorDocumentModel is a wrapped concept for monaco's textModel
  */
-export interface IEditorDocumentModel {
+export interface IEditorDocumentModel extends IDisposable {
 
   /**
    * 文档URI
@@ -13,9 +13,20 @@ export interface IEditorDocumentModel {
   readonly uri: URI;
 
   /**
+   * A unique identifier associated with this model.
+   */
+  id: string;
+
+  /**
    * 编码
    */
   encoding: string;
+
+  /**
+   * An event emitted when the model's encoding have changed.
+   * @event
+   */
+  onDidChangeEncoding: Event<void>;
 
   /**
    * 行末结束
@@ -73,7 +84,7 @@ export interface IEditorDocumentModel {
 
   updateContent(content: string, eol?: EOL): void;
 
-  updateEncoding(encoding: string): void;
+  updateEncoding(encoding: string): Promise<void>;
 
   updateOptions(options: IDocModelUpdateOptions);
 

@@ -3,7 +3,7 @@ import { DecorationsManager, Decoration, TreeNodeType, RenamePromptHandle, NewPr
 import { FileTreeService } from '../file-tree.service';
 import { FileTreeModel } from '../file-tree-model';
 import { Directory, File } from '../../common/file-tree-node.define';
-import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, formatLocalize, isValidBasename, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IStorage, Event, ThrottledDelayer, Emitter, ILogger, Deferred } from '@ali/ide-core-browser';
+import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, formatLocalize, isValidBasename, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IStorage, Event, ThrottledDelayer, Emitter, ILogger, Deferred, OS, IApplicationService } from '@ali/ide-core-browser';
 import { FileContextKey } from '../file-contextkey';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
@@ -16,7 +16,6 @@ import * as styles from '../file-tree-node.module.less';
 import { FileStat, FileChangeType } from '@ali/ide-file-service';
 import { ISerializableState, TreeStateWatcher } from '@ali/ide-components/lib/recycle-tree/tree/model/treeState';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { isWindows } from '@ali/ide-components/lib/utils';
 import { FILE_TREE_NODE_HEIGHT } from '../file-tree-node';
 
 export interface IParseStore {
@@ -74,6 +73,9 @@ export class FileTreeModelService {
 
   @Autowired(WorkbenchEditorService)
   private readonly editorService: WorkbenchEditorService;
+
+  @Autowired(IApplicationService)
+  private readonly appService: IApplicationService;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
@@ -1087,7 +1089,7 @@ export class FileTreeModelService {
         if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
           if (this.fileTreeService.isCompactMode && isEmptyDirectory && !Directory.isRoot(parent)) {
             this.fileTreeService.ignoreFileEvent(parent.uri, FileChangeType.UPDATED);
-            if (isWindows) {
+            if (await this.appService.backendOS === OS.Type.Windows) {
               // Windows环境下会多触发一个UPDATED事件
               this.fileTreeService.ignoreFileEvent(parent.uri.resolve(newName), FileChangeType.UPDATED);
             }
@@ -1270,6 +1272,13 @@ export class FileTreeModelService {
       promptHandle.onDestroy(handleDestroy);
       promptHandle.onCancel(handleCancel);
     }
+    // 文件树刷新操作会让重命名/新建输入框销毁
+    // 可能存在部分用户疑惑
+    this.disposableCollection.push(Event.once(this.fileTreeService.onNodeRefreshed)(() => {
+      if (promptHandle && !promptHandle.destroyed) {
+        promptHandle.destroy();
+      }
+    }));
   }
 
   private async getPromptTarget(uri: URI, isCreatingFile?: boolean) {

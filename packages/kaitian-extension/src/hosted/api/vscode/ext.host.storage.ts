@@ -1,8 +1,8 @@
 import { Emitter, IDisposable } from '@ali/ide-core-common';
 import { IMainThreadStorage, IExtHostStorage, KeysToAnyValues, KeysToKeysToAnyValue, MainThreadAPIIdentifier } from '../../../common/vscode';
+import { ExtensionStorageUri } from '@ali/ide-extension-storage/lib/common/storage';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Memento } from '../../../common/vscode/ext-types';
-import { ExtensionStoragePath } from '@ali/ide-extension-storage';
 
 export interface IStorageChangeEvent {
   shared: boolean;
@@ -13,7 +13,7 @@ export class ExtHostStorage implements IExtHostStorage {
   private _onDidChangeStorage = new Emitter<IStorageChangeEvent>();
   readonly onDidChangeStorage = this._onDidChangeStorage.event;
   private proxy: IMainThreadStorage;
-  private _storagePath: ExtensionStoragePath;
+  private _storagePath: ExtensionStorageUri;
 
   constructor(rpc: IRPCProtocol) {
     this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadStorage);
@@ -35,7 +35,7 @@ export class ExtHostStorage implements IExtHostStorage {
     this._onDidChangeStorage.fire({shared: false, data});
   }
 
-  async $acceptStoragePath(paths: ExtensionStoragePath) {
+  async $acceptStoragePath(paths: ExtensionStorageUri) {
     this._storagePath = paths;
   }
 }

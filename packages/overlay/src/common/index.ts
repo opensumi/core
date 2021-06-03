@@ -53,6 +53,7 @@ export interface IWindowDialogService {
 export const IWindowDialogService = Symbol('IWindowDialogService');
 
 export interface IDialogOptions {
+  title?: string;
   defaultUri?: URI;
   filters?: {
     [name: string]: string,

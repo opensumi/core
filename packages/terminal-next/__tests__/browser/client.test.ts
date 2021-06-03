@@ -15,6 +15,7 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs-extra';
+import { EnvironmentVariableServiceToken } from '@ali/ide-terminal-next/lib/common/environmentVariable';
 
 function createDOMContainer() {
   const div = document.createElement('div');
@@ -40,6 +41,14 @@ describe('Terminal Client', () => {
     await fs.ensureDir(root.path.toString());
 
     workspaceService = injector.get(IWorkspaceService);
+
+    injector.addProviders({
+      token: EnvironmentVariableServiceToken,
+      useValue: {
+        mergedCollection: undefined,
+        onDidChangeCollections: () => Disposable.NULL,
+      },
+    });
 
     await workspaceService.setWorkspace({
       uri: root.toString(),

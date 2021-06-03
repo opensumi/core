@@ -1,12 +1,10 @@
 import * as React from 'react';
-import { PreferenceScope, PreferenceService, useInjectable, PreferenceSchemaProvider, PreferenceItem, replaceLocalizePlaceholder, localize, getIcon, PreferenceDataProperty, isElectronRenderer, CommandService, EDITOR_COMMANDS, URI, IPreferenceSettingsService, PreferenceProvider } from '@ali/ide-core-browser';
+import { PreferenceScope, PreferenceService, useInjectable, PreferenceSchemaProvider, PreferenceItem, replaceLocalizePlaceholder, localize, getIcon, PreferenceDataProperty, isElectronRenderer, IPreferenceSettingsService, PreferenceProvider } from '@ali/ide-core-browser';
 import * as styles from './preferences.module.less';
 import * as classnames from 'classnames';
 import { Input, Select, Option, CheckBox, Button, ValidateInput } from '@ali/ide-components';
-import { PreferenceSettingsService } from './preference.service';
+import { PreferenceSettingsService } from './preference-settings.service';
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
-import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-
 import { toPreferenceReadableName } from '../common';
 import { ValidateMessage } from '../../../components/lib';
 
@@ -19,6 +17,8 @@ interface IPreferenceItemProps {
   effectingScope: PreferenceScope;
   hasValueInScope: boolean;
 }
+
+const DESCRIPTION_EXPRESSION_REGEXP = /`#(.+)#`/ig;
 /**
  * 用于展示单个设置项的视图
  * 目前支持类型:
@@ -113,6 +113,35 @@ export const NextPreferenceItem = ({ preferenceName, localizedName, scope }: { p
 
 };
 
+const renderDescriptionExpression = (des: string) => {
+  const preferenceSettingService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
+  const description = replaceLocalizePlaceholder(des);
+  if (!description) {
+    return null;
+  }
+  const match = DESCRIPTION_EXPRESSION_REGEXP.exec(description!);
+  if (!match) {
+    return description;
+  }
+  const {
+    0: expression,
+    1: preferenceId,
+  } = match;
+  const preference = preferenceSettingService.getSectionByPreferenceId(preferenceId);
+  if (preference) {
+    const preferenceTitle = localize(preference.localized);
+    const others: any[] = description.split(expression).map((des: string, index: number) => <span key={`${preferenceId}-${index}`}>{des}</span>);
+    const search = () => {
+      preferenceSettingService.search(preferenceTitle);
+    };
+    const link = <a onClick={search} key={preferenceId}>{preferenceTitle}</a>;
+    others.splice(1, 0, link);
+    return others;
+  } else {
+    return description;
+  }
+};
+
 const SettingStatus = ({ preferenceName, scope, effectingScope, hasValueInScope }: { preferenceName: string, scope: PreferenceScope, effectingScope: PreferenceScope, hasValueInScope: boolean }) => {
   const settingsService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
   return <span className={styles.preference_status}>
@@ -165,7 +194,7 @@ function InputPreferenceItem({ preferenceName, localizedName, currentValue, sche
     <div className={styles.key}>
       {localizedName} <SettingStatus preferenceName={preferenceName} scope={scope} effectingScope={effectingScope} hasValueInScope={hasValueInScope} />
     </div>
-    {schema && schema.description && <div className={styles.desc}>{replaceLocalizePlaceholder(schema.description)}</div>}
+    {schema && schema.description && <div className={styles.desc}>{renderDescriptionExpression(schema.description)}</div>}
     <div className={styles.control_wrap}>
       <div className={styles.text_control}>
         <ValidateInput
@@ -208,7 +237,7 @@ function CheckboxPreferenceItem({ preferenceName, localizedName, currentValue, s
       {
         description ?
           <div>
-            <div className={styles.desc}>{description}</div>
+            <div className={styles.desc}>{renderDescriptionExpression(description)}</div>
           </div> : undefined
       }
     </div>
@@ -252,7 +281,7 @@ function SelectPreferenceItem({ preferenceName, localizedName, currentValue, sch
       <div className={styles.key}>
         {localizedName} <SettingStatus preferenceName={preferenceName} scope={scope} effectingScope={effectingScope} hasValueInScope={hasValueInScope} />
       </div>
-      {schema && schema.description && <div className={styles.desc}>{replaceLocalizePlaceholder(schema.description)}</div>}
+      {schema && schema.description && <div className={styles.desc}>{renderDescriptionExpression(schema.description)}</div>}
       <div className={styles.control_wrap}>
         {isElectronRenderer() ?
           <NativeSelect onChange={(event) => {
@@ -263,7 +292,7 @@ function SelectPreferenceItem({ preferenceName, localizedName, currentValue, sch
           >
             {options}
           </NativeSelect> :
-          <Select maxHeight='300' onChange={handlerValueChange} value={value} className={styles.select_control}>
+          <Select dropdownRenderType='absolute' maxHeight='200' onChange={handlerValueChange} value={value} className={styles.select_control}>
             {options}
           </Select>}
       </div>
@@ -273,26 +302,10 @@ function SelectPreferenceItem({ preferenceName, localizedName, currentValue, sch
 
 function EditInSettingsJsonPreferenceItem({ preferenceName, localizedName, schema, effectingScope, scope, hasValueInScope }: IPreferenceItemProps) {
 
-  const commandService = useInjectable<CommandService>(CommandService);
-  const fileServiceClient = useInjectable<IFileServiceClient>(IFileServiceClient);
-
   const settingsService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
 
   const editSettingsJson = async () => {
-    // TODO 更好的创建方式
-    const openUri = await settingsService.getPreferenceUrl(scope);
-    if (!openUri) {
-      return;
-    }
-    const exist = await fileServiceClient.access(openUri);
-    if (!exist) {
-      try {
-        await fileServiceClient.createFile(openUri, { content: '', overwrite: false });
-      } catch (e) {
-        // TODO: 告诉用户无法创建 settings.json
-      }
-    }
-    commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(openUri));
+    settingsService.openJSON(scope, preferenceName);
   };
 
   return (
@@ -300,7 +313,7 @@ function EditInSettingsJsonPreferenceItem({ preferenceName, localizedName, schem
       <div className={styles.key}>
         {localizedName} <SettingStatus preferenceName={preferenceName} scope={scope} effectingScope={effectingScope} hasValueInScope={hasValueInScope} />
       </div>
-      {schema && schema.description && <div className={styles.desc}>{replaceLocalizePlaceholder(schema.description)}</div>}
+      {schema && schema.description && <div className={styles.desc}>{renderDescriptionExpression(schema.description)}</div>}
       <div className={styles.control_wrap}>
         <a onClick={editSettingsJson}>{localize('preference.editSettingsJson')}</a>
       </div>
@@ -361,7 +374,7 @@ function StringArrayPreferenceItem({ preferenceName, localizedName, currentValue
       <div className={styles.key}>
         {localizedName} <SettingStatus preferenceName={preferenceName} scope={scope} effectingScope={effectingScope} hasValueInScope={hasValueInScope} />
       </div>
-      {schema && schema.description && <div className={styles.desc}>{replaceLocalizePlaceholder(schema.description)}</div>}
+      {schema && schema.description && <div className={styles.desc}>{renderDescriptionExpression(schema.description)}</div>}
       <div className={styles.control_wrap}>
         <ul className={styles.arr_list}>
           {items}

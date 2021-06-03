@@ -462,6 +462,14 @@ export class DebugSessionManager implements IDebugSessionManager {
     }
   }
 
+  async stopSession(session: DebugSession | undefined, disconnect = false): Promise<any> {
+    if (session) {
+      return disconnect ? session.disconnect() : session.terminate();
+    }
+
+    return Promise.all(this.sessions.map((s) => disconnect ? s.disconnect() : s.terminate()));
+  }
+
   /**
    * 根据sessionId销毁进程
    * @param sessionId

@@ -8,7 +8,7 @@ import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy, g
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
 import { createAPIFactory as createKaitianAPIFactory } from './api/kaitian/ext.host.api.impl';
-import { MainThreadAPIIdentifier, VSCodeExtensionService, IExtensionDescription, ExtensionIdentifier } from '../common/vscode';
+import { ExtHostAPIIdentifier, MainThreadAPIIdentifier, VSCodeExtensionService, IExtensionDescription, ExtensionIdentifier } from '../common/vscode';
 import { ExtensionContext } from './api/vscode/ext.host.extensions';
 import { KTExtension } from './vscode.extension';
 import { AppConfig } from '@ali/ide-core-node';
@@ -43,6 +43,8 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
   private reporterService: IReporterService;
 
+  private extensionErrors = new WeakMap<Error, IExtensionDescription | undefined>();
+
   constructor(rpcProtocol: RPCProtocol, logger, private injector: Injector) {
     this.rpcProtocol = rpcProtocol;
     this.storage = new ExtHostStorage(rpcProtocol);
@@ -68,6 +70,19 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     });
 
     Error.stackTraceLimit = 100;
+  }
+
+  /**
+   * 收集插件未捕获异常
+   * @param error
+   */
+  reportUnexpectedError(error: Error): void {
+    // 在此先访问一下 stack 触发 Error.prepareStackTrace 分析的插件异常信息
+    const stackTraceMassage = error.stack;
+    const extension = this.extensionErrors.get(error);
+    if (extension && stackTraceMassage) {
+      this.reportRuntimeError(error, extension, stackTraceMassage);
+    }
   }
 
   public async $getActivatedExtensions(): Promise<ActivatedExtensionJSON[]> {
@@ -122,11 +137,8 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
           extension = this.findExtension(fileName);
         }
       }
-
-      if (extension) {
-        this.reportRuntimeError(error, extension, stackTraceMessage);
-      }
-
+      // 存下当前异常属于哪一个插件以便上报
+      this.extensionErrors.set(error, extension);
       const traceMassage = `${error.name || 'Error'}: ${error.message || ''}${stackTraceMessage}`;
       return traceMassage;
     };
@@ -478,13 +490,17 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       return this.registerExtendModuleService(exportsData, extension);
     };
 
+    const exthostTermianl = this.rpcProtocol.get(ExtHostAPIIdentifier.ExtHostTerminal);
+
     const context = new ExtensionContext({
+      extension,
       extensionId,
       extensionPath: modulePath,
       extensionLocation: extension.extensionLocation,
       storageProxy,
       extendProxy,
       registerExtendModuleService: registerExtendFn,
+      exthostTerminal: exthostTermianl,
     });
 
     return Promise.all([

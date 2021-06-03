@@ -1,4 +1,5 @@
 import { IDisposable } from '@ali/ide-core-common';
+import { OperatingSystem } from '@ali/ide-core-common/lib/platform';
 import { ITerminalOptions, Terminal } from 'xterm';
 import { ITerminalError } from './error';
 import { TerminalOptions } from './pty';
@@ -75,6 +76,10 @@ export interface ITerminalService {
    * @param sessionid
    */
   onExit(handler: (sessionid: IPtyExitEvent) => void): IDisposable;
+  /**
+   * 返回终端环境的 OS
+   */
+  getOs(): Promise<OperatingSystem>;
 }
 
 export const ITerminalInternalService = Symbol('ITerminalInternalService');

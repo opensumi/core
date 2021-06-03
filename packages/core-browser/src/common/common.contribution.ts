@@ -69,12 +69,13 @@ export class ClientCommonContribution implements CommandContribution, Preference
   registerMenus(menus: IMenuRegistry): void {
     // 注册 Menubar
     if (isElectronRenderer()) {
-      menus.registerMenubarItem(MenuId.MenubarAppMenu, { label: localize('app.name', 'KAITIAN Electron'), order: 0});
+      menus.registerMenubarItem(MenuId.MenubarAppMenu, { label: localize('app.name', 'KAITIAN Electron'), order: 0 });
     }
     menus.registerMenubarItem(MenuId.MenubarFileMenu, { label: localize('menu-bar.title.file'), order: 1 });
     menus.registerMenubarItem(MenuId.MenubarEditMenu, { label: localize('menu-bar.title.edit'), order: 2 });
     menus.registerMenubarItem(MenuId.MenubarSelectionMenu, { label: localize('menu-bar.title.selection'), order: 3 });
     menus.registerMenubarItem(MenuId.MenubarViewMenu, { label: localize('menu-bar.title.view'), order: 4 });
+    menus.registerMenubarItem(MenuId.MenubarGoMenu, { label: localize('menu-bar.title.go'), order: 5 });
     menus.registerMenubarItem(MenuId.MenubarHelpMenu, { label: localize('menu-bar.title.help'), order: 999 });
 
     // File 菜单
@@ -111,6 +112,38 @@ export class ClientCommonContribution implements CommandContribution, Preference
       },
       toggledWhen: 'config.editor.autoSave != off',
       group: '4_autosave',
+    }]);
+
+    menus.registerMenuItems(MenuId.MenubarGoMenu, [{
+      command: {
+        id: EDITOR_COMMANDS.GO_BACK.id,
+        label: localize('editor.goBack'),
+      },
+      group: '1_go',
+    }, {
+      command: {
+        id: EDITOR_COMMANDS.GO_FORWARD.id,
+        label: localize('editor.goForward'),
+      },
+      group: '1_go',
+    }, {
+      command: {
+        id: EDITOR_COMMANDS.QUICK_OPEN.id,
+        label: localize('editor.quickOpen'),
+      },
+      group: '2_go_file',
+    }, {
+      command: {
+        id: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL.id,
+        label: localize('editor.workspaceSymbol.quickopen'),
+      },
+      group: '2_go_file',
+    }, {
+      command: {
+        id: EDITOR_COMMANDS.GO_TO_LINE.id,
+        label: localize('editor.goToLine'),
+      },
+      group: '3_go_line',
     }]);
 
     // Edit 菜单

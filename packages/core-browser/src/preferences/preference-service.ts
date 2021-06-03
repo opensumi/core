@@ -90,7 +90,7 @@ export interface PreferenceService extends IDisposable {
 
   getProvider(scope: PreferenceScope): PreferenceProvider | undefined;
 
-  resolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): PreferenceResolveResult<T>;
+  resolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string, language?: string, untilScope?: PreferenceScope): PreferenceResolveResult<T>;
 
   /**
    * 都走 onPreferenceChanged 再用if判断性能太差了
@@ -372,8 +372,8 @@ export class PreferenceServiceImpl implements PreferenceService {
     return { value };
   }
 
-  public resolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string, language?: string): PreferenceResolveResult<T> {
-    const result = this.doResolve(preferenceName, defaultValue, resourceUri, undefined, language);
+  public resolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string, language?: string, untilScope?: PreferenceScope): PreferenceResolveResult<T> {
+    const result = this.doResolve(preferenceName, defaultValue, resourceUri, untilScope, language);
     if (typeof result.value === 'undefined') {
       return this.lookUp(preferenceName);
     }

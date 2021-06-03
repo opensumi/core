@@ -662,6 +662,10 @@ function convertTags(
     switch (tag) {
       case types.DiagnosticTag.Unnecessary:
         markerTags.push(MarkerTag.Unnecessary);
+        break;
+      case types.DiagnosticTag.Deprecated:
+        markerTags.push(MarkerTag.Deprecated);
+        break;
     }
   }
   return markerTags;
@@ -907,16 +911,14 @@ export namespace WorkspaceEdit {
       edits: [],
     };
     for (const entry of (value as types.WorkspaceEdit).allEntries()) {
-      if (entry._type === 1) {
+      if (entry._type === types.WorkspaceEditType.File) {
         // file operation
         result.edits.push({
           oldUri: entry.from,
           newUri: entry.to,
           options: entry.options,
-          // TODO: WorkspaceEdit metadata
-          // metadata: entry.metadata
+          metadata: entry.metadata,
         } as model.ResourceFileEditDto);
-
       } else {
         // text edits
         const doc = documents?.getDocument(entry.uri);
@@ -924,8 +926,7 @@ export namespace WorkspaceEdit {
           resource: entry.uri,
           edit: TextEdit.from(entry.edit),
           modelVersionId: doc?.version,
-          // TODO: WorkspaceEdit metadata
-          // metadata: entry.metadata
+          metadata: entry.metadata,
         } as model.ResourceTextEditDto);
       }
     }

@@ -457,6 +457,11 @@ export interface IResourceOpenOptions {
   replace?: boolean;
 }
 
+export interface IResourceOpenResult {
+  groupId: string;
+  [key: string]: any;
+}
+
 export interface Position {
   /**
    * Line position in a document (zero-based).

@@ -38,7 +38,7 @@ class ExtensionEditorDocumentProvider implements IEditorDocumentModelContentProv
   }
 
   provideEditorDocumentModelContent(uri: URI, encoding?: string): Promise<string> {
-    return this.proxy.$provideTextDocumentContent(uri.toString());
+    return this.proxy.$provideTextDocumentContent(uri.toString(), encoding);
   }
 
   isReadonly(uri: URI): boolean {

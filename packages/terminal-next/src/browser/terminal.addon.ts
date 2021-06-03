@@ -125,6 +125,10 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
   onData: Event<string | ArrayBuffer> = this._onData.event;
   private _onExit = new Emitter<number | undefined>();
   onExit: Event<number | undefined> = this._onExit.event;
+  private _onTime = new Emitter<number>();
+  onTime: Event<number> = this._onTime.event;
+
+  private _lastInputTime = 0;
 
   public setConnection(connection: ITerminalConnection | undefined) {
     if (this._disposeConnection) {
@@ -137,6 +141,11 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
         connection.onData((data: string | ArrayBuffer) => {
           this._terminal.write(typeof data === 'string' ? data : new Uint8Array(data));
           this._onData.fire(data);
+          if (this._lastInputTime) {
+            const delta = Date.now() - this._lastInputTime;
+            this._lastInputTime = 0;
+            this._onTime.fire(delta);
+          }
         }),
       );
       if (connection.onExit) {
@@ -158,6 +167,7 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
     if (!this._connection || this._connection.readonly) {
       return;
     }
+    this._timeResponse();
     this._connection.sendData(data);
   }
 
@@ -169,7 +179,12 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
     for (let i = 0; i < data.length; ++i) {
       buffer[i] = data.charCodeAt(i) & 255;
     }
+    this._timeResponse();
     this._connection.sendData(buffer);
+  }
+
+  private _timeResponse() {
+    this._lastInputTime = Date.now();
   }
 }
 
