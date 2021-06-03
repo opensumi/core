@@ -114,7 +114,7 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
   }
 
   get environmentVariableCollection() {
-    return this.exthostTerminalService?.getEnviromentVariableCollection(this.extension);
+    return this.exthostTerminalService?.getEnviromentVariableCollection(this.extension)!;
   }
 }
 

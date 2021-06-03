@@ -2274,6 +2274,11 @@ declare module 'vscode' {
     readonly id: string;
 
     /**
+     * The uri of the directory containing the extension.
+     */
+    readonly extensionUri: Uri;
+
+    /**
      * The absolute file path of the directory containing this extension.
      */
     readonly extensionPath: string;
@@ -2567,6 +2572,12 @@ declare module 'vscode' {
 		 * The uri of the directory containing the extension.
 		 */
      readonly extensionUri: Uri;
+
+    /**
+     * Gets the extension's environment variable collection for this workspace, enabling changes
+     * to be applied to terminal environment variables.
+     */
+    readonly environmentVariableCollection: EnvironmentVariableCollection;
 
     /**
      * Get the absolute path of a resource contained in the extension.
