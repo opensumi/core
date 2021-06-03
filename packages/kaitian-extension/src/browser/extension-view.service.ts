@@ -1,9 +1,8 @@
 import { warning } from '@ali/ide-components/lib/utils/warning';
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { getMockAmdLoader } from './loader';
 import { IRPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
-import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtension, MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER } from '../common';
-import { IExtensionProps, ILogger, IReporterService, replaceLocalizePlaceholder, REPORT_NAME, URI } from '@ali/ide-core-common';
+import { EXTENSION_EXTEND_SERVICE_PREFIX, IBrowserRequireInterceptorArgs, IExtension, IRequireInterceptorService, MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER, RequireInterceptorContribution } from '../common';
+import { ContributionProvider, IExtensionProps, ILogger, replaceLocalizePlaceholder, URI, IReporterService, REPORT_NAME } from '@ali/ide-core-common';
 import { AppConfig, IToolbarPopoverRegistry } from '@ali/ide-core-browser';
 import { getShadowRoot } from './shadowRoot';
 import { Path, posix } from '@ali/ide-core-common/lib/path';
@@ -50,6 +49,12 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
   @Autowired()
   private readonly staticResourceService: StaticResourceService;
 
+  @Autowired(RequireInterceptorContribution)
+  private readonly requireInterceptorContributionProvider: ContributionProvider<RequireInterceptorContribution>;
+
+  @Autowired(IRequireInterceptorService)
+  private readonly requireInterceptorService: IRequireInterceptorService<IBrowserRequireInterceptorArgs>;
+
   @Autowired(IReporterService)
   private readonly reporterService: IReporterService;
 
@@ -86,7 +91,12 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
   }
 
   // 注册视图插件的公共依赖, 如 React/ReactDOM
-  public activate() {}
+  public activate() {
+    const contributions = this.requireInterceptorContributionProvider.getContributions();
+    for (const contribution of contributions) {
+      contribution.registerRequireInterceptor(this.requireInterceptorService);
+    }
+  }
 
   /**
   * @see [KtViewLocation](#KtViewLocation) view location
@@ -339,11 +349,25 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
     return pendingFetch;
   }
 
+  private getMockAmdLoader<T>(extension: IExtension, rpcProtocol?: IRPCProtocol) {
+    const _exports: { default?: any } | T = {};
+    const _module = { exports: _exports };
+    const _require = (request: string) => {
+      const interceptor = this.requireInterceptorService.getRequireInterceptor(request);
+      return interceptor?.load({
+        injector: this.injector,
+        extension,
+        rpcProtocol,
+      });
+    };
+    return { _module, _exports, _require };
+  }
+
   private async loadBrowserModule<T>(browserPath: string, extension: IExtension, defaultExports: boolean): Promise<any> {
     const loadTimer = this.reporterService.time(REPORT_NAME.LOAD_EXTENSION_MAIN);
     const pendingFetch = await this.doFetch(decodeURIComponent(browserPath));
     loadTimer.timeEnd(extension.id);
-    const { _module, _exports, _require } = getMockAmdLoader<T>(this.injector, extension, this.nodeExtensionService.protocol);
+    const { _module, _exports, _require } = this.getMockAmdLoader<T>(extension, this.nodeExtensionService.protocol);
 
     const initFn = new Function('module', 'exports', 'require', await pendingFetch.text());
 
@@ -404,7 +428,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
     const loadTimer = this.reporterService.time(REPORT_NAME.LOAD_EXTENSION_MAIN);
     const pendingFetch = await this.doFetch(decodeURIComponent(browserPath));
     loadTimer.timeEnd(extension.id);
-    const { _module, _exports, _require } = getMockAmdLoader<T>(this.injector, extension, this.nodeExtensionService.protocol);
+    const { _module, _exports, _require } = this.getMockAmdLoader<T>(extension, this.nodeExtensionService.protocol);
     const stylesCollection = [];
     const proxiedHead = document.createElement('head');
     const proxiedDocument = createProxiedDocument(proxiedHead);

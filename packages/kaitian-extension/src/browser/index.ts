@@ -4,7 +4,7 @@ import { IDebugServer } from '@ali/ide-debug';
 import { DebugSessionContributionRegistry } from '@ali/ide-debug/lib/browser';
 import { FileSearchServicePath } from '@ali/ide-file-search/lib/common';
 
-import { ExtensionHostProfilerServicePath, ExtensionNodeServiceServerPath, ExtensionService, IExtCommandManagement, AbstractExtensionManagementService } from '../common';
+import { ExtensionHostProfilerServicePath, ExtensionNodeServiceServerPath, ExtensionService, IExtCommandManagement, AbstractExtensionManagementService, RequireInterceptorContribution, IRequireInterceptorService, RequireInterceptorService } from '../common';
 import { AbstractNodeExtProcessService, AbstractWorkerExtProcessService, AbstractViewExtProcessService } from '../common/extension.service';
 import { ActivationEventServiceImpl } from './activation.service';
 import { ExtCommandManagementImpl as ExtCommandManagementImpl } from './extension-command-management';
@@ -17,9 +17,11 @@ import { KaitianExtensionClientAppContribution, KaitianExtensionCommandContribut
 import { ExtensionServiceImpl } from './extension.service';
 import { AbstractExtInstanceManagementService, IActivationEventService } from './types';
 import { ExtensionDebugService, ExtensionDebugSessionContributionRegistry } from './vscode/api/debug';
+import { BrowserRequireInterceptorContribution } from './require-interceptor.contribution';
 
 @Injectable()
 export class KaitianExtensionModule extends BrowserModule {
+  contributionProvider = [ RequireInterceptorContribution ];
   providers: Provider[] = [
     {
       token: ExtensionService,
@@ -63,8 +65,13 @@ export class KaitianExtensionModule extends BrowserModule {
       token: AbstractViewExtProcessService,
       useClass: ViewExtProcessService,
     },
+    {
+      token: IRequireInterceptorService,
+      useClass: RequireInterceptorService,
+    },
     KaitianExtensionCommandContribution,
     KaitianExtensionClientAppContribution,
+    BrowserRequireInterceptorContribution,
   ];
 
   backServices = [

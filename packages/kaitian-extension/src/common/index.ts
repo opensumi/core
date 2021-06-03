@@ -10,6 +10,7 @@ import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from 
 export { IExtensionProps } from '@ali/ide-core-common';
 
 export * from './ext.host.proxy';
+export * from './require-interceptor';
 
 export interface IExtensionMetaData {
   id: string;

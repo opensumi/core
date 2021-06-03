@@ -1,4 +1,5 @@
-import { ExtensionService, IExtCommandManagement, AbstractExtensionManagementService } from '../../../src/common';
+import * as ReactDom from 'react-dom';
+import { ExtensionService, IExtCommandManagement, AbstractExtensionManagementService, IRequireInterceptorService } from '../../../src/common';
 import { AbstractExtInstanceManagementService } from '../../../src/browser/types';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { CommandRegistryImpl, CommandRegistry, IPreferenceSettingsService, PreferenceScope, KeybindingRegistryImpl, KeybindingRegistry } from '@ali/ide-core-browser';
@@ -21,14 +22,13 @@ describe('Extension service', () => {
   let extensionManagementService: AbstractExtensionManagementService;
   let injector: MockInjector;
 
-  beforeAll((done) => {
+  beforeAll(() => {
     injector = setupExtensionServiceInjector();
     injector.get(IMainLayoutService).viewReady.resolve();
     extensionService = injector.get(ExtensionService);
     extCommandManagement = injector.get(IExtCommandManagement);
     extInstanceManagementService = injector.get(AbstractExtInstanceManagementService);
     extensionManagementService = injector.get(AbstractExtensionManagementService);
-    done();
   });
 
   describe('activate', () => {
@@ -195,6 +195,17 @@ describe('Extension service', () => {
       disposable.dispose();
       expect(extCommandManagement.getExtensionCommandEnv(commandId)).toBe(undefined);
       done();
+    });
+  });
+
+  describe('load browser require interceptor contribution', () => {
+    it(`should get ReactDOM interceptor`, async () => {
+      // @ts-ignore
+      await extensionService.doActivate();
+      const requireInterceptorService: IRequireInterceptorService = injector.get(IRequireInterceptorService);
+      const interceptor = requireInterceptorService.getRequireInterceptor('ReactDOM');
+      const result = interceptor?.load({});
+      expect(result).toBe(ReactDom);
     });
   });
 });

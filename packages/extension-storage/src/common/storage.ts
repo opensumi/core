@@ -1,7 +1,7 @@
 
 import { KeysToAnyValues, KeysToKeysToAnyValue } from './types';
 import { FileStat } from '@ali/ide-file-service';
-import { URI, Uri } from '@ali/ide-core-common';
+import { Uri } from '@ali/ide-core-common';
 
 export const IExtensionStorageServer = Symbol('ExtensionStorageServer');
 

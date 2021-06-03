@@ -1,7 +1,7 @@
 import { Injectable, Provider } from '@ali/common-di';
 import * as path from 'path';
 import * as fs from 'fs';
-import { ExtensionService, IExtensionNodeClientService, IExtraMetaData, IExtensionMetaData, IExtension, IExtensionProps, ExtensionNodeServiceServerPath, IExtCommandManagement, AbstractExtensionManagementService } from '../../../src/common';
+import { ExtensionService, IExtensionNodeClientService, IExtraMetaData, IExtensionMetaData, IExtension, IExtensionProps, ExtensionNodeServiceServerPath, IExtCommandManagement, AbstractExtensionManagementService, IRequireInterceptorService, RequireInterceptorService, RequireInterceptorContribution } from '../../../src/common';
 import { MockInjector, mockService } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { ExtensionServiceImpl } from '../../../src/browser/extension.service';
@@ -42,6 +42,7 @@ import { MockWorker, MessagePort } from '../../__mock__/worker';
 import { IWebviewService } from '@ali/ide-webview';
 import { ICommentsService } from '@ali/ide-comments';
 import { CommentsService } from '@ali/ide-comments/lib/browser/comments.service';
+import { BrowserRequireInterceptorContribution } from '@ali/ide-kaitian-extension/lib/browser/require-interceptor.contribution';
 
 @Injectable()
 class MockLoggerManagerClient {
@@ -303,8 +304,6 @@ export function setupExtensionServiceInjector() {
       extWorkerHost: path.join(__dirname, '../../../lib/worker-host.js'),
     },
   }]));
-  createContributionProvider(injector, StorageResolverContribution);
-  createContributionProvider(injector, MainLayoutContribution);
   injector.addProviders(
     ...mockKaitianExtensionProviders,
     {
@@ -478,10 +477,16 @@ export function setupExtensionServiceInjector() {
       token: ISchemaRegistry,
       useClass: SchemaRegistry,
     },
+    {
+      token: IRequireInterceptorService,
+      useClass: RequireInterceptorService,
+    },
+    BrowserRequireInterceptorContribution,
   );
 
   createContributionProvider(injector, StorageResolverContribution);
   createContributionProvider(injector, MainLayoutContribution);
+  createContributionProvider(injector, RequireInterceptorContribution);
 
   return injector;
 }
