@@ -329,6 +329,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   private async activateByWorkspaceContains(activationEvents: string[]) {
+    if (!Array.isArray(activationEvents) || !activationEvents.length) {
+      return;
+    }
     const paths: string[] = [];
     const includePatterns: string[] = [];
     for (const activationEvent of activationEvents) {
