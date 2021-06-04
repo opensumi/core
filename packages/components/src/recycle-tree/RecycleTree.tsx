@@ -218,7 +218,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     pre: '<match>',
     post: '</match>',
     extract: (node: TreeNode) => {
-      return node.name;
+      return node?.name;
     },
   };
   private static DEFAULT_OVER_SCAN_COUNT = 50;
