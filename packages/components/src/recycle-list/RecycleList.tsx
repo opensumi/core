@@ -217,34 +217,20 @@ export class RecycleList extends React.Component<IRecycleListProps> {
       width,
       height,
     } = this.props;
-    let List;
-    if (typeof itemHeight === 'number') {
-      List = FixedSizeList;
-    } else {
-      List = VariableSizeList;
-    }
-    if (width && height) {
-      return (<List
-        width={width}
-        height={height}
-        // 这里的数据不是必要的，主要用于在每次更新列表
-        itemData={[]}
-        itemSize={itemHeight}
-        itemCount={this.adjustedRowCount}
-        getItemKey={this.getItemKey}
-        overscanCount={10}
-        ref={this.listRef}
-        style={style}
-        className={cls(className, 'kt-recycle-list')}
-        outerElementType={ScrollbarsVirtualList}>
-        {this.renderItem}
-      </List>);
-    }
+    const isDynamicList = typeof itemHeight !== 'number';
+    const isAutoSizeList = !width || !height;
 
-    return <DynamicListContext.Provider value={{ setSize: this.setSize }}>
-      <AutoSizer>
-        {({ height, width }) => (
-          <List
+    const renderList = () => {
+      let List;
+      if (!isDynamicList) {
+        List = FixedSizeList;
+      } else {
+        List = VariableSizeList;
+      }
+
+      const renderContent = ({width, height}) => {
+        if (isDynamicList) {
+          return <List
             width={width}
             height={height}
             // 这里的数据不是必要的，主要用于在每次更新列表
@@ -259,9 +245,41 @@ export class RecycleList extends React.Component<IRecycleListProps> {
             outerElementType={ScrollbarsVirtualList}
             estimatedItemSize={this.calcEstimatedSize()}>
             {this.renderItem}
-          </List>
-        )}
-      </AutoSizer>
-    </DynamicListContext.Provider>;
+          </List>;
+        } else {
+          return <List
+            width={width}
+            height={height}
+            // 这里的数据不是必要的，主要用于在每次更新列表
+            itemData={[]}
+            itemSize={itemHeight}
+            itemCount={this.adjustedRowCount}
+            getItemKey={this.getItemKey}
+            overscanCount={10}
+            ref={this.listRef}
+            style={style}
+            className={cls(className, 'kt-recycle-list')}
+            outerElementType={ScrollbarsVirtualList}>
+            {this.renderItem}
+          </List>;
+        }
+      };
+
+      if (!isAutoSizeList) {
+        return renderContent({ width, height });
+      } else {
+        return <AutoSizer>
+          { renderContent }
+        </AutoSizer>;
+      }
+    };
+
+    if (!isDynamicList) {
+      return renderList();
+    } else {
+      return <DynamicListContext.Provider value={{ setSize: this.setSize }}>
+        { renderList() }
+      </DynamicListContext.Provider>;
+    }
   }
 }
