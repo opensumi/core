@@ -168,7 +168,7 @@ export function setImmediate(callback: (...args: any[]) => void): number {
 	return _setImmediate!(callback);
 }
 
-export const enum OperatingSystem {
+export enum OperatingSystem {
 	Windows = 1,
 	Macintosh = 2,
 	Linux = 3
