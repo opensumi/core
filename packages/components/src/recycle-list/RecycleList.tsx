@@ -78,92 +78,79 @@ export interface IRecycleListHandler {
   scrollToIndex: (index: number) => void;
 }
 
-export const DynamicListContext = React.createContext<
-  Partial<{ setSize: (index: number, size: number) => void }>
->({});
+export const RECYCLE_LIST_STABILIZATION_TIME: number = 500;
 
-export class RecycleList extends React.Component<IRecycleListProps> {
+export const RecycleList: React.FC<IRecycleListProps> = ({
+  width, height, className, style, data, onReady, itemHeight, header: Header, footer: Footer, template: Template,
+}) => {
 
-  private static STABILIZATION_TIME: number = 500;
+  const listRef = React.useRef<FixedSizeList>();
+  const sizeMap = React.useRef<{ [key: string]: number }>({});
+  const scrollToIndexTimer = React.useRef<any>();
 
-  private listRef;
-  private sizeMap;
-  private scrollToIndexTimer;
-
-  constructor(props) {
-    super(props);
-    this.listRef = React.createRef<FixedSizeList>();
-    this.sizeMap = React.createRef<{ [key: string]: number }>();
-    this.scrollToIndexTimer = React.createRef<any>();
-    this.sizeMap.current = {};
-  }
-
-  private setSize = (index: number, size: number) => {
-    if (this.sizeMap.current[index] !== size) {
-      this.sizeMap.current = { ...this.sizeMap.current, [index]: size };
-      if (this.listRef.current) {
-        // 清理缓存数据并重新渲染
-        this.listRef.current.resetAfterIndex(0);
-      }
-    }
-  }
-
-  private getSize = (index: number) => {
-    return this.sizeMap?.current[index] || 100;
-  }
-
-  public componentDidMount() {
-    const { onReady, header, itemHeight } = this.props;
+  React.useEffect(() => {
     if (typeof onReady === 'function') {
       const api = {
         scrollTo: (offset: number) => {
-          this.listRef.current?.scrollTo(offset);
+          listRef.current?.scrollTo(offset);
         },
         // custom alignment: center, start, or end
         scrollToIndex: (index: number, position: string = 'start') => {
           let locationIndex = index;
-          if (!!header) {
+          if (!!Header) {
             locationIndex++;
           }
           if (typeof itemHeight === 'number') {
-            this.listRef.current?.scrollTo(locationIndex * (itemHeight), position);
+            listRef.current?.scrollTo(locationIndex * (itemHeight), position);
           } else {
-            if (this.scrollToIndexTimer.current) {
-              clearTimeout(this.scrollToIndexTimer.current);
+            if (scrollToIndexTimer.current) {
+              clearTimeout(scrollToIndexTimer.current);
             }
-            const keys = this.sizeMap.current ? Object.keys(this.sizeMap.current) : [];
-            const offset = keys.slice(0, locationIndex).reduce((p, i) => p + this.getSize(index), 0);
-            this.listRef.current?.scrollToItem(index, position);
+            const keys = sizeMap.current ? Object.keys(sizeMap.current) : [];
+            const offset = keys.slice(0, locationIndex).reduce((p, i) => p + getSize(i), 0);
+            listRef.current?.scrollToItem(index, position);
             // 在动态列表情况下，由于渲染抖动问题，可能需要再渲染后尝试再进行一次滚动位置定位
-            this.scrollToIndexTimer.current = setTimeout(() => {
-              const keys = this.sizeMap.current ? Object.keys(this.sizeMap.current) : [];
-              const nextOffset = keys.slice(0, locationIndex).reduce((p, i) => p + this.getSize(index), 0);
+            scrollToIndexTimer.current = setTimeout(() => {
+              const keys = sizeMap.current ? Object.keys(sizeMap.current) : [];
+              const nextOffset = keys.slice(0, locationIndex).reduce((p, i) => p + getSize(i), 0);
               if (nextOffset !== offset) {
-                this.listRef.current?.scrollToItem(index, position);
+                listRef.current?.scrollToItem(index, position);
               }
-              this.scrollToIndexTimer.current = null;
-            }, RecycleList.STABILIZATION_TIME);
+              scrollToIndexTimer.current = null;
+            }, RECYCLE_LIST_STABILIZATION_TIME);
           }
         },
       };
       onReady(api);
     }
-  }
+  }, []);
 
-  private get adjustedRowCount() {
-    const { data, header, footer } = this.props;
+  const setSize = (index: number, size: number) => {
+    if (sizeMap.current[index] !== size) {
+      sizeMap.current = { ...sizeMap.current, [index]: size };
+      if (listRef.current) {
+        // 清理缓存数据并重新渲染
+        listRef.current?.resetAfterIndex(0);
+      }
+    }
+  };
+
+  const getSize = (index: string | number) => {
+    return (sizeMap?.current || [])[index] || 100;
+  };
+
+  const adjustedRowCount = React.useMemo(() => {
     let count = data.length;
-    if (!!header) {
+    if (!!Header) {
       count++;
     }
-    if (!!footer) {
+    if (!!Footer) {
       count++;
     }
     return count;
-  }
+  }, [data]);
 
-  private renderItem = ({ index, style }): JSX.Element => {
-    const { data, template: Template, header: Header, footer: Footer } = this.props;
+  const renderItem = ({ index, style }): JSX.Element => {
     let node;
     if (index === 0) {
       if (Header) {
@@ -172,7 +159,7 @@ export class RecycleList extends React.Component<IRecycleListProps> {
         </div>;
       }
     }
-    if ((index + 1) === this.adjustedRowCount) {
+    if ((index + 1) === adjustedRowCount) {
       if (!!Footer) {
         return <div style={style}>
           <Footer />
@@ -187,36 +174,94 @@ export class RecycleList extends React.Component<IRecycleListProps> {
     if (!node) {
       return <div style={style}></div>;
     }
+
     return <div style={style}>
       <Template data={node} index={index} />
     </div>;
-  }
+  };
 
-  private getItemKey = (index: number) => {
-    const { data } = this.props;
+  const renderDynamicItem = ({ index, style }): JSX.Element => {
+    const rowRoot = React.useRef<null | HTMLDivElement>(null);
+    const observer = React.useRef<any>();
+    const setItemSize = () => {
+      if (rowRoot.current) {
+        let height = 0;
+        // tslint:disable-next-line:prefer-for-of
+        for (let i = 0; i < rowRoot.current.children.length; i++) {
+          height += rowRoot.current.children[i].getBoundingClientRect().height;
+        }
+        setSize(index, height);
+      }
+    };
+    React.useEffect(() => {
+      if (rowRoot.current && listRef.current) {
+        observer.current = new MutationObserver((mutations, observer) => {
+          setItemSize();
+        });
+        const observerOption = {
+          childList: true, // 子节点的变动（新增、删除或者更改）
+          attributes: true, // 属性的变动
+          characterData: true, // 节点内容或节点文本的变动
+
+          subtree: true, // 是否将观察器应用于该节点的所有后代节点
+          attributeFilter: ['class', 'style'], // 观察特定属性
+          attributeOldValue: true, // 观察 attributes 变动时，是否需要记录变动前的属性值
+          characterDataOldValue: true, // 观察 characterData 变动，是否需要记录变动前的值
+        };
+        // 监听子节点属性变化
+        observer.current.observe(rowRoot.current, observerOption);
+        setItemSize();
+      }
+      return () => {
+        observer.current.disconnect();
+      };
+    }, [rowRoot.current]);
+    let node;
+    if (index === 0) {
+      if (Header) {
+        return <div style={style}>
+          <Header />
+        </div>;
+      }
+    }
+    if ((index + 1) === adjustedRowCount) {
+      if (!!Footer) {
+        return <div style={style}>
+          <Footer />
+        </div>;
+      }
+    }
+    if (!!Header) {
+      node = data[index - 1];
+    } else {
+      node = data[index];
+    }
+    if (!node) {
+      return <div style={style}></div>;
+    }
+
+    return <div style={style} ref={rowRoot}>
+      <Template data={node} index={index} />
+    </div>;
+  };
+
+  const getItemKey = (index: number) => {
     const node = data[index];
     if (node && node.id) {
       return node.id;
     }
     return index;
-  }
+  };
 
   // 通过计算平均行高来提高准确性
   // 修复滚动条行为，见: https://github.com/bvaughn/react-window/issues/408
-  private calcEstimatedSize() {
-    const keys = this.sizeMap.current ? Object.keys(this.sizeMap.current) : [];
-    const estimatedHeight = keys.reduce((p, i) => p + this.sizeMap.current[i], 0);
+  const calcEstimatedSize = () => {
+    const keys = sizeMap.current ? Object.keys(sizeMap.current) : [];
+    const estimatedHeight = keys.reduce((p, i) => p + getSize(i), 0);
     return estimatedHeight / keys.length;
-  }
+  };
 
-  public render() {
-    const {
-      itemHeight,
-      style,
-      className,
-      width,
-      height,
-    } = this.props;
+  const render = () => {
     const isDynamicList = typeof itemHeight !== 'number';
     const isAutoSizeList = !width || !height;
 
@@ -228,23 +273,23 @@ export class RecycleList extends React.Component<IRecycleListProps> {
         List = VariableSizeList;
       }
 
-      const renderContent = ({width, height}) => {
+      const renderContent = ({ width, height }) => {
         if (isDynamicList) {
           return <List
             width={width}
             height={height}
             // 这里的数据不是必要的，主要用于在每次更新列表
             itemData={[]}
-            itemSize={this.getSize}
-            itemCount={this.adjustedRowCount}
-            getItemKey={this.getItemKey}
+            itemSize={getSize}
+            itemCount={adjustedRowCount}
+            getItemKey={getItemKey}
             overscanCount={10}
-            ref={this.listRef}
+            ref={listRef}
             style={style}
             className={cls(className, 'kt-recycle-list')}
             outerElementType={ScrollbarsVirtualList}
-            estimatedItemSize={this.calcEstimatedSize()}>
-            {this.renderItem}
+            estimatedItemSize={calcEstimatedSize()}>
+            {renderDynamicItem}
           </List>;
         } else {
           return <List
@@ -253,14 +298,14 @@ export class RecycleList extends React.Component<IRecycleListProps> {
             // 这里的数据不是必要的，主要用于在每次更新列表
             itemData={[]}
             itemSize={itemHeight}
-            itemCount={this.adjustedRowCount}
-            getItemKey={this.getItemKey}
+            itemCount={adjustedRowCount}
+            getItemKey={getItemKey}
             overscanCount={10}
-            ref={this.listRef}
+            ref={listRef}
             style={style}
             className={cls(className, 'kt-recycle-list')}
             outerElementType={ScrollbarsVirtualList}>
-            {this.renderItem}
+            {renderItem}
           </List>;
         }
       };
@@ -269,17 +314,13 @@ export class RecycleList extends React.Component<IRecycleListProps> {
         return renderContent({ width, height });
       } else {
         return <AutoSizer>
-          { renderContent }
+          {renderContent}
         </AutoSizer>;
       }
     };
 
-    if (!isDynamicList) {
-      return renderList();
-    } else {
-      return <DynamicListContext.Provider value={{ setSize: this.setSize }}>
-        { renderList() }
-      </DynamicListContext.Provider>;
-    }
-  }
-}
+    return renderList();
+  };
+
+  return render();
+};

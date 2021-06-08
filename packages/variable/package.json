@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-variable",
-  "version": "2.3.8",
+  "version": "2.4.0",
   "files": [
     "lib"
   ],
@@ -19,14 +19,14 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "2.3.8",
-    "@ali/ide-core-node": "2.3.8",
-    "@ali/ide-quick-open": "2.3.8"
+    "@ali/ide-core-common": "2.4.0",
+    "@ali/ide-core-node": "2.4.0",
+    "@ali/ide-quick-open": "2.4.0"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "2.3.8",
+    "@ali/ide-core-browser": "2.4.0",
     "@ali/ide-dev-tool": "^1.1.0",
-    "@ali/ide-quick-open": "2.3.8",
+    "@ali/ide-quick-open": "2.4.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"

@@ -214,18 +214,15 @@ export class ExtHostDebug implements IExtHostDebugService {
      * 由于目前还未实现 debugQuickAccess [https://github.com/microsoft/vscode/blob/414e5dbf1f870bc527ebc587cbbb5f6eee9bfba6/src/vs/workbench/contrib/debug/browser/debugQuickAccess.ts#L19]
      * 所以对于 DebugConfigurationProviderTriggerKind 的配置不作任何处理
      */
-    const covertProviders = {
-      type,
-      triggerKind: trigger,
-      ...provider,
-    } as IDebugConfigurationProvider;
+    provider['type'] = type;
+    provider['triggerKind'] = trigger;
 
-    providers.add(covertProviders);
+    providers.add(provider as IDebugConfigurationProvider);
 
     return Disposable.create(() => {
       const providers = this.configurationProviders.get(type);
       if (providers) {
-        providers.delete(covertProviders);
+        providers.delete(provider as IDebugConfigurationProvider);
         if (providers.size === 0) {
           this.configurationProviders.delete(type);
         }

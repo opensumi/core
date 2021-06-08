@@ -315,6 +315,11 @@ export class SearchTreeService {
       return;
     }
 
+    this.nodes = this._nodes.map((node) => {
+      node.selected = node.id === file!.id;
+      return node;
+    });
+
     // Click file result line
     const result: ContentSearchResult = file.searchResult!;
     const replaceValue = this.searchBrowserService.replaceValue;

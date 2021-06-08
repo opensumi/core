@@ -13,7 +13,7 @@ import { Input, ComponentContextProvider } from '@ali/ide-components';
 import { Tabs } from '@ali/ide-components';
 import { ISectionItemData, toNormalCase } from '../common';
 import { NextPreferenceItem } from './preferenceItem.view';
-import { RecycleList, DynamicListContext } from '@ali/ide-components';
+import { RecycleList } from '@ali/ide-components';
 import './index.less';
 
 const WorkspaceScope = {
@@ -175,60 +175,14 @@ export const PreferenceItem = ({ data, index }: {
   data: ISectionItemData,
   index: number,
 }) => {
-  const { setSize } = React.useContext(DynamicListContext);
-  const rowRoot = React.useRef<null | HTMLDivElement>(null);
-  const observer = React.useRef<any>();
-
-  React.useEffect(() => {
-    observer.current = new MutationObserver((mutations, observer) => {
-      if (rowRoot.current) {
-        setSize && setSize(index, rowRoot.current.getBoundingClientRect().height);
-      }
-    });
-    if (rowRoot.current) {
-      const observerOption = {
-        childList: true, // 子节点的变动（新增、删除或者更改）
-        attributes: true, // 属性的变动
-        characterData: true, // 节点内容或节点文本的变动
-
-        subtree: true, // 是否将观察器应用于该节点的所有后代节点
-        attributeFilter: ['class', 'style'], // 观察特定属性
-        attributeOldValue: true, // 观察 attributes 变动时，是否需要记录变动前的属性值
-        characterDataOldValue: true, // 观察 characterData 变动，是否需要记录变动前的值
-      };
-      // 监听子节点属性变化
-      observer.current.observe(rowRoot.current, observerOption);
-      setSize && setSize(index, rowRoot.current.getBoundingClientRect().height);
-    }
-    return () => {
-      observer.current.disconnect();
-    };
-  }, []);
-
   if (data.title) {
-    return <div
-      ref={rowRoot}
-    >
-      <div className={styles.section_title} id={`preferenceSection-${data.title}`}>{data.title!}</div>
-    </div>;
+    return <div className={styles.section_title} id={`preferenceSection-${data.title}`}>{data.title!}</div>;
   } else if (data.component) {
-    return <div
-      ref={rowRoot}
-    >
-      <data.component scope={data.scope} />
-    </div>;
+    return <data.component scope={data.scope} />;
   } else if (typeof data.preference === 'string') {
-    return <div
-      ref={rowRoot}
-    >
-      <NextPreferenceItem key={`${index} - ${data.preference} - ${data.scope}`} preferenceName={data.preference} scope={data.scope} />
-    </div>;
+    return <NextPreferenceItem key={`${index} - ${data.preference} - ${data.scope}`} preferenceName={data.preference} scope={data.scope} />;
   } else if (data.preference) {
-    return <div
-      ref={rowRoot}
-    >
-      <NextPreferenceItem key={`${index} - ${data.preference.id} - ${data.scope}`} preferenceName={data.preference.id} localizedName={localize(data.preference.localized)} scope={data.scope} />
-    </div>;
+    return <NextPreferenceItem key={`${index} - ${data.preference.id} - ${data.scope}`} preferenceName={data.preference.id} localizedName={localize(data.preference.localized)} scope={data.scope} />;
   }
 };
 
