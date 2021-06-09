@@ -372,7 +372,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
 
 /**
  * EnvironmentVariableCollection
- * some code copued and modified from
+ * Some code copued and modified from
  * https://github.com/microsoft/vscode/blob/1.55.0/src/vs/workbench/api/common/extHostTerminalService.ts#L696
  */
 export class EnvironmentVariableCollection implements vscode.EnvironmentVariableCollection {

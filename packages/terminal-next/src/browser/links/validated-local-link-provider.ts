@@ -1,3 +1,9 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+// Some code copued and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/workbench/contrib/terminal/browser/links/terminalValidatedLocalLinkProvider.ts
+
 import type { Terminal, IBufferLine } from 'xterm';
 import { URI } from '@ali/ide-core-common';
 import { OperatingSystem } from '@ali/ide-core-common/lib/platform';

@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+// Some code copued and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/charCode.ts
 
 // Names from https://blog.codinghorror.com/ascii-pronunciation-rules-for-programmers/
 
@@ -337,7 +338,7 @@ export const enum CharCode {
   U_Combining_Latin_Small_Letter_T = 0x036D, 						// 	U+036D	Combining Latin Small Letter T
   U_Combining_Latin_Small_Letter_V = 0x036E, 						// 	U+036E	Combining Latin Small Letter V
   U_Combining_Latin_Small_Letter_X = 0x036F, 						// 	U+036F	Combining Latin Small Letter X
-
+  
   /**
    * Unicode Character 'LINE SEPARATOR' (U+2028)
    * http://www.fileformat.info/info/unicode/char/2028/index.htm

@@ -11,7 +11,7 @@ export const EnvironmentVariableServiceToken = Symbol(
  *--------------------------------------------------------------------------------------------*/
 
 /**
- * some code copued and modified from
+ * Some code copued and modified from
  * https://github.com/microsoft/vscode/blob/1.55.0/src/vs/workbench/contrib/terminal/common/environmentVariable.ts
  * https://github.com/microsoft/vscode/blob/1.55.0/src/vs/platform/terminal/common/environmentVariable.ts
  */

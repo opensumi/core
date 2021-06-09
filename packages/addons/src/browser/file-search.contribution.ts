@@ -501,6 +501,8 @@ export class FileSearchQuickCommandHandler {
       return (match === null) ? 0 : match.score;
     }
 
+    // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/file-search/src/browser/quick-file-open.ts
+
     // Get the item's member values for comparison.
     let itemA = a[member]()!;
     let itemB = b[member]()!;

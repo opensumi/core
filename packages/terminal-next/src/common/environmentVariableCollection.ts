@@ -1,14 +1,14 @@
-import { OS } from '@ali/ide-core-common';
-import { IProcessEnvironment } from '@ali/ide-core-common/lib/platform';
-import { IMergedEnvironmentVariableCollection, IExtensionOwnedEnvironmentVariableMutator, IEnvironmentVariableCollection, IMergedEnvironmentVariableCollectionDiff, EnvironmentVariableMutatorType } from './environmentVariable';
 
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-// some code copued and modified from https://github.com/microsoft/vscode/blob/1.55.0/src/vs/workbench/contrib/terminal/common/environmentVariableCollection.ts
+// Some code copued and modified from https://github.com/microsoft/vscode/blob/1.55.0/src/vs/workbench/contrib/terminal/common/environmentVariableCollection.ts
 
+import { OS } from '@ali/ide-core-common';
+import { IProcessEnvironment } from '@ali/ide-core-common/lib/platform';
+import { IMergedEnvironmentVariableCollection, IExtensionOwnedEnvironmentVariableMutator, IEnvironmentVariableCollection, IMergedEnvironmentVariableCollectionDiff, EnvironmentVariableMutatorType } from './environmentVariable';
 export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVariableCollection {
   readonly map: Map<string, IExtensionOwnedEnvironmentVariableMutator[]> = new Map();
 
