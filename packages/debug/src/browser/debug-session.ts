@@ -355,12 +355,9 @@ export class DebugSession implements IDebugSession {
 
   private async setBreakpoints(affected: URI[]) {
     const promises: Promise<void>[] = [];
-    if (!this.breakpoints.breakpointsEnabled) {
-      return;
-    }
     for (const uri of affected) {
       const source = await this.toSource(uri);
-      const enabled = this.breakpoints.getBreakpoints(uri).filter((b) => b.enabled);
+      const enabled = this.breakpoints.getBreakpoints(uri).filter((b) => this.breakpoints.breakpointsEnabled && b.enabled);
 
       promises.push(
         this.sendRequest('setBreakpoints', {

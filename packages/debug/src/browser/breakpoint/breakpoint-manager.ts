@@ -217,6 +217,7 @@ export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
       for (const uri of this.getUris()) {
         this.fireOnDidChangeMarkers(new URI(uri));
       }
+      this.updateBreakpoints(this.getBreakpoints());
     }
   }
 

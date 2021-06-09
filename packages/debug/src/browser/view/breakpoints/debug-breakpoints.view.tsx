@@ -113,7 +113,7 @@ export const BreakpointItem = ({
   const verified = !isDebugMode ? true : (isDebugBreakpoint(data.breakpoint) && isRuntimeBreakpoint(data.breakpoint));
 
   const getBreakpointIcon = () => {
-    const { className } = debugBreakpointsService.getBreakpointDecoration(data.breakpoint as DebugBreakpoint, isDebugMode, enabled);
+    const { className } = debugBreakpointsService.getBreakpointDecoration(data.breakpoint as DebugBreakpoint, isDebugMode, breakpointEnabled && enabled);
     return className;
   };
 
