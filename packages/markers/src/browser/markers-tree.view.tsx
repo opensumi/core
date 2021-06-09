@@ -1,4 +1,4 @@
-import { RecycleTree, TreeNode } from '@ali/ide-core-browser/lib/components';
+import { DeprecatedRecycleTree, TreeNode } from '@ali/ide-core-browser/lib/components';
 import { observer, useComputed } from 'mobx-react-lite';
 import { IMatch } from '@ali/ide-core-common/lib/filters';
 import * as React from 'react';
@@ -182,7 +182,7 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel; viewState: ViewState }>
   }, [selectTag, folding]);
 
   return (
-    <RecycleTree
+    <DeprecatedRecycleTree
       nodes={nodes}
       outline={false}
       scrollContainerStyle={{ width: '100%', height: '100%', key: 'marker-list' }}

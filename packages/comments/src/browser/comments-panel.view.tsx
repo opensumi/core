@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { RecycleTree } from '@ali/ide-core-browser/lib/components';
+import { DeprecatedRecycleTree } from '@ali/ide-core-browser/lib/components';
 import { observer } from 'mobx-react-lite';
 import { useInjectable, isUndefined, ViewState, IEventBus, localize } from '@ali/ide-core-browser';
 import { ICommentsService, ICommentsTreeNode, CommentPanelCollapse, ICommentsFeatureRegistry } from '../common';
@@ -101,7 +101,7 @@ export const CommentsPanel = observer<{ viewState: ViewState; className?: string
     <div className={clx(props.className, styles.comment_panel)}>
       {headerComponent?.component}
       {nodes.length ? (
-        <RecycleTree
+        <DeprecatedRecycleTree
           containerHeight={treeHeight}
           scrollContainerStyle={scrollContainerStyle}
           nodes={nodes}

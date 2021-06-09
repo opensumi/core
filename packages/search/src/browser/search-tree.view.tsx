@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
-import { RecycleTree, TreeNode, TreeViewActionTypes } from '@ali/ide-core-browser/lib/components';
+import { DeprecatedRecycleTree, TreeNode, TreeViewActionTypes } from '@ali/ide-core-browser/lib/components';
 import { ViewState } from '@ali/ide-core-browser';
 import { getIcon, getExternalIcon } from '@ali/ide-core-browser';
 import * as cls from 'classnames';
@@ -121,7 +121,7 @@ export const SearchTree = React.forwardRef((
     <div className={styles.tree}>
       <ResultTotalContent total={resultTotal} searchTreeService={searchTreeService} searchBrowserService={searchBrowserService} />
       {nodes && nodes.length > 0 ?
-        <RecycleTree
+        <DeprecatedRecycleTree
           leftPadding={0}
           onContextMenu={ onContextMenu }
           replace={ replaceValue || '' }

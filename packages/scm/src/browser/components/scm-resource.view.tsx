@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer, useComputed } from 'mobx-react-lite';
 import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { useInjectable } from '@ali/ide-core-browser';
-import { RecycleTree, TreeNode } from '@ali/ide-core-browser/lib/components';
+import { DeprecatedRecycleTree, TreeNode } from '@ali/ide-core-browser/lib/components';
 import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { URI, CommandService, DisposableStore, Event } from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -159,7 +159,7 @@ export const SCMResourceList: React.FC<{
   }, [ repository ]);
 
   return (
-    <RecycleTree
+    <DeprecatedRecycleTree
       alwaysShowActions={viewModel.alwaysShowActions}
       nodes={nodes}
       defaultLeftPadding={8}

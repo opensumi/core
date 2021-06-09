@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { TreeProps, TreeContainer, TreeNode, ExpandableTreeNode, TEMP_FILE_NAME } from '../tree';
 import { PerfectScrollbar } from '../scrollbar';
-import { warning } from '@ali/ide-components/lib/utils';
+import { Deprecated } from '@ali/ide-components/lib/utils';
 import * as fuzzy from 'fuzzy';
 
 export interface RecycleTreeProps extends TreeProps {
@@ -76,7 +76,10 @@ export interface RecycleTreeProps extends TreeProps {
   containerHeight: number;
 }
 
-export const RecycleTree = (
+/**
+ * @deprecated
+ */
+export const DeprecatedRecycleTree = (
   {
     nodes,
     leftPadding,
@@ -249,10 +252,6 @@ export const RecycleTree = (
   }, [nodes, renderedStart, scrollContainerStyle]);
 
   React.useEffect(() => {
-    warning(false, '[Deprecated warning]: The `RecycleTree` component in `@ali/ide-core-browser` was deprecated. Please use the new `RecycleTree` in `@ali/ide-component` instead');
-  }, []);
-
-  React.useEffect(() => {
     if (scrollRef) {
       scrollRef.scrollTop = 0;
     }
@@ -355,4 +354,6 @@ export const RecycleTree = (
   </React.Fragment>;
 };
 
-RecycleTree.displayName = 'RecycleTree';
+DeprecatedRecycleTree.displayName = 'DeprecatedRecycleTree';
+
+export const RecycleTree = Deprecated(DeprecatedRecycleTree, '[Deprecated warning]: The `RecycleTree` component in `@ali/ide-core-browser` was deprecated. Please use the new `RecycleTree` in `@ali/ide-component` instead');
