@@ -10,7 +10,7 @@ import '@ali/ide-core-browser/lib/style/index.less';
 
 import { WebLiteModule } from './web-lite-module';
 
-import * as serviceWorker from './service-worker';
+// import * as serviceWorker from './service-worker';
 
 import '../styles.less';
 import { LayoutComponent } from './modules/view/custom-layout-component';
@@ -41,7 +41,7 @@ const layoutConfig = {
 };
 
 // optional for sw registration
-serviceWorker.register();
+// serviceWorker.register();
 
 renderApp({
   modules: [ ...CommonBrowserModules, WebLiteModule ],

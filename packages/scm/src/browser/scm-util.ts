@@ -5,7 +5,10 @@ export function isSCMResource(element: ISCMResourceGroup | ISCMResource): elemen
   return !!(element as ISCMResource).sourceUri;
 }
 
-export function getSCMResourceContextKey(resource: ISCMResourceGroup | ISCMResource): string {
+/**
+ * @deprecated
+ */
+export function getSCMResourceGroupContextValue(resource: ISCMResourceGroup | ISCMResource): string {
   return isSCMResource(resource) ? resource.resourceGroup.id : resource.id;
 }
 

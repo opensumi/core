@@ -43,6 +43,10 @@ export type SCMRawResource = [
   boolean /*strike through*/,
   boolean /*faded*/,
 
+  string /*context value*/,
+  CommandDto | undefined /*command*/,
+
+  // @deprecated use FileDecoration
   string | undefined /*source*/,
   string | undefined /*letter*/,
   IThemeColor | null /*color*/
@@ -62,7 +66,7 @@ export type SCMRawResourceSplices = [
 export interface IExtHostSCMShape {
   $provideOriginalResource(sourceControlHandle: number, uri: UriComponents, token: CancellationToken): Promise<UriComponents | null>;
   $onInputBoxValueChange(sourceControlHandle: number, value: string): void;
-  $executeResourceCommand(sourceControlHandle: number, groupHandle: number, handle: number): Promise<void>;
+  $executeResourceCommand(sourceControlHandle: number, groupHandle: number, handle: number, preserveFocus: boolean): Promise<void>;
   $validateInput(sourceControlHandle: number, value: string, cursorPosition: number): Promise<[string, number] | undefined>;
   $setSelectedSourceControls(selectedSourceControlHandles: number[]): Promise<void>;
 }

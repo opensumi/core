@@ -1,12 +1,12 @@
 import { SCMService } from '../../src';
 import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '../scm-test-util';
 
-import { isSCMResource, getSCMResourceContextKey, getSCMRepositoryDesc } from '../../src/browser/scm-util';
+import { isSCMResource, getSCMResourceGroupContextValue, getSCMRepositoryDesc } from '../../src/browser/scm-util';
 
 describe('test for scm-util', () => {
   const mockSCMProvider = new MockSCMProvider(0);
   const mockSCMResourceGroup = new MockSCMResourceGroup(mockSCMProvider, 1);
-  const mockSCMResource = new MockSCMResource(mockSCMResourceGroup);
+  const mockSCMResource = new MockSCMResource(mockSCMResourceGroup, undefined, undefined, undefined);
 
   it('isSCMResource', () => {
     expect(isSCMResource(mockSCMResourceGroup)).toBeFalsy();
@@ -14,8 +14,8 @@ describe('test for scm-util', () => {
   });
 
   it('getSCMResourceContextKey', () => {
-    expect(getSCMResourceContextKey(mockSCMResourceGroup)).toBe('scm_resource_group_1');
-    expect(getSCMResourceContextKey(mockSCMResource)).toBe('scm_resource_group_1');
+    expect(getSCMResourceGroupContextValue(mockSCMResourceGroup)).toBe('scm_resource_group_1');
+    expect(getSCMResourceGroupContextValue(mockSCMResource)).toBe('scm_resource_group_1');
   });
 
   it('getSCMRepositoryDesc', () => {

@@ -1,14 +1,16 @@
-import { DisposableCollection, Event } from '@ali/ide-core-common';
-import { Injector } from '@ali/common-di';
 import { IContextKeyService } from '@ali/ide-core-browser';
+import { IMenuRegistry, MenuId, MenuRegistryImpl } from '@ali/ide-core-browser/lib/menu/next';
+import { DisposableCollection, Event } from '@ali/ide-core-common';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 
-import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '../scm-test-util';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
-import { SCMService, ISCMProvider, ISCMResourceGroup, ISCMResource, ISCMRepository } from '../../src';
-import { ViewModelContext, ResourceGroupSplicer } from '../../src/browser/scm-model';
+import { MockSCMProvider, MockSCMResource, MockSCMResourceGroup } from '../scm-test-util';
+
+import { ISCMProvider, ISCMRepository, ISCMResource, ISCMResourceGroup, SCMService } from '../../src';
+import { SCMModule } from '../../src/browser';
+import { ResourceGroupSplicer, ViewModelContext } from '../../src/browser/scm-model';
 
 describe('test for scm.store.ts', () => {
   const toTearDown = new DisposableCollection();
@@ -26,12 +28,15 @@ describe('test for scm.store.ts', () => {
     let injector: MockInjector;
 
     beforeEach(() => {
-      injector = createBrowserInjector([], new Injector([
+      injector = createBrowserInjector([SCMModule], new MockInjector([
         {
           token: IContextKeyService,
           useClass: MockContextKeyService,
         },
-        SCMService,
+        {
+          token: IMenuRegistry,
+          useClass: MenuRegistryImpl,
+        },
       ]));
 
       provider1 = new MockSCMProvider(1, 'git');
@@ -51,7 +56,6 @@ describe('test for scm.store.ts', () => {
       store = injector.get(ViewModelContext);
 
       expect(store.repoList.length).toBe(2);
-      expect(store['scmProviderCtxKey'].get()).toBe('git');
       expect(store.repoList[0].provider).toEqual(provider1);
       expect(store.repoList[1].provider).toEqual(provider2);
 
@@ -61,11 +65,9 @@ describe('test for scm.store.ts', () => {
       repo1.dispose();
       expect(store.repoList.length).toBe(1);
       expect(store.repoList[0].provider).toEqual(provider2);
-      expect(store['scmProviderCtxKey'].get()).toBe('svn');
 
       repo2.dispose();
       expect(store.repoList.length).toBe(0);
-      expect(store['scmProviderCtxKey'].get()).toBe(undefined);
     });
 
     describe('ok', () => {
@@ -83,7 +85,6 @@ describe('test for scm.store.ts', () => {
         repo2 = scmService.registerSCMProvider(provider2);
         expect(store.repoList.length).toBe(2);
         expect(store.repoList[0].provider).toEqual(provider1);
-        expect(store['scmProviderCtxKey'].get()).toBe('git');
 
         // 无效的重复添加
         // (store as any).addRepo(repo1);
@@ -93,11 +94,9 @@ describe('test for scm.store.ts', () => {
         repo1.dispose();
         expect(store.repoList.length).toBe(1);
         expect(store.repoList[0].provider).toEqual(provider2);
-        expect(store['scmProviderCtxKey'].get()).toBe('svn');
 
         repo2.dispose();
         expect(store.repoList.length).toBe(0);
-        expect(store['scmProviderCtxKey'].get()).toBe(undefined);
 
         // 无效的重复删除
         // (store as any).deleteRepo(repo2);
@@ -109,24 +108,20 @@ describe('test for scm.store.ts', () => {
         repo1 = scmService.registerSCMProvider(provider1);
         repo2 = scmService.registerSCMProvider(provider2);
 
-        expect(store['scmProviderCtxKey'].get()).toBe('git');
-
         repo1.setSelected(false);
         repo2.setSelected(true);
         expect(store.selectedRepos).toEqual([repo2]);
         expect(store.selectedRepo).toEqual(repo2);
-        expect(store['scmProviderCtxKey'].get()).toBe('svn');
 
         repo2.setSelected(false);
         repo1.setSelected(true);
         expect(store.selectedRepos).toEqual([repo1]);
         expect(store.selectedRepo).toEqual(repo1);
-        expect(store['scmProviderCtxKey'].get()).toBe('git');
       });
 
       it('spliceSCMList', () => {
         const mockResourceGroup = new MockSCMResourceGroup(provider1, 0);
-        const mockResource = new MockSCMResource(mockResourceGroup);
+        const mockResource = new MockSCMResource(mockResourceGroup, undefined, undefined, undefined);
 
         store.spliceSCMList(0, 0, mockResourceGroup, mockResource);
         expect(store.scmList).toEqual([mockResourceGroup, mockResource]);
@@ -137,22 +132,19 @@ describe('test for scm.store.ts', () => {
       });
 
       it('getSCMMenuService', () => {
-        expect(store.getSCMMenuService(undefined)).toBeUndefined();
-
-        expect(store.getSCMMenuService(repo1)).toBeUndefined();
-        expect(store.getSCMMenuService(repo2)).toBeUndefined();
+        expect(typeof store.menus.getRepositoryMenus).toBe('function');
 
         repo1 = scmService.registerSCMProvider(provider1);
-        repo2 = scmService.registerSCMProvider(provider2);
 
-        expect(store.getSCMMenuService(repo1)).not.toBeUndefined();
-        expect(store.getSCMMenuService(repo2)).not.toBeUndefined();
+        const repoMenu1 = store.menus.getRepositoryMenus(repo1.provider);
+        expect(repoMenu1.titleMenu.menuId).toBe(MenuId.SCMTitle);
+        expect(repoMenu1.inputMenu.menuId).toBe(MenuId.SCMInput);
+        expect(typeof repoMenu1.getResourceGroupMenu).toBe('function');
+        expect(typeof repoMenu1.getResourceMenu).toBe('function');
 
-        repo1.dispose();
-        expect(store.getSCMMenuService(repo1)).toBeUndefined();
-
-        repo2.dispose();
-        expect(store.getSCMMenuService(repo2)).toBeUndefined();
+        // 这个时序很难保障
+        // repo1.dispose();
+        // expect(store.menus.getRepositoryMenus(repo1.provider)).toBeUndefined();
       });
     });
   });
@@ -244,7 +236,7 @@ describe('test for scm.store.ts', () => {
       provider.registerGroup(scmResourceGroup);
       expect(spliceListener).toHaveBeenCalledTimes(2);
 
-      const scmResource = new MockSCMResource(scmResourceGroup);
+      const scmResource = new MockSCMResource(scmResourceGroup, undefined, undefined, undefined);
       scmResourceGroup.splice(0, 0, [scmResource]);
 
       expect(spliceListener).toHaveBeenCalledTimes(3);
@@ -255,7 +247,7 @@ describe('test for scm.store.ts', () => {
       expect((spliceListener.mock.calls[2][0].elements[0] as ISCMResource).resourceGroup.id).toBe('scm_resource_group_1');
 
       // 继续添加一个 scm resource
-      scmResourceGroup.splice(0, 0, [new MockSCMResource(scmResourceGroup)]);
+      scmResourceGroup.splice(0, 0, [new MockSCMResource(scmResourceGroup, undefined, undefined, undefined)]);
       expect(spliceListener).toHaveBeenCalledTimes(4);
       // 删除一个 scmResource
       scmResourceGroup.splice(0, 1, []);

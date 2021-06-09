@@ -64,7 +64,10 @@ export interface ISCMResource {
   readonly resourceGroup: ISCMResourceGroup;
   readonly sourceUri: Uri;
   readonly decorations: ISCMResourceDecorations;
-  open(): Promise<void>;
+  readonly contextValue: string | undefined;
+  readonly command: VSCommand | undefined;
+
+  open(preserveFocus: boolean): Promise<void>;
   // 句柄参数转换
   toJSON(): { [key: string]: number };
 }

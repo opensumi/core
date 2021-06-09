@@ -9,7 +9,7 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '../scm-test-util';
 
 import { SCMModule } from '../../src/browser';
-import { SCMMenus } from '../../src/browser/scm-menu';
+import { ISCMMenus } from '../../src/common';
 
 describe('test for scm-menu.ts', () => {
   let injector: MockInjector;
@@ -80,21 +80,10 @@ describe('test for scm-menu.ts', () => {
       );
     });
 
-    it('ok for no repo', () => {
-      const scmMenus = injector.get(SCMMenus, []);
-      expect(scmMenus['scopedCtxKeyService'].getContextValue('scmProvider')).toBe('');
-
-      const menuNodes = scmMenus.getTitleMenu().getMergedMenuNodes();
-      expect(menuNodes.length).toBe(1);
-      expect(menuNodes[0].label).toBe('fakeCmd0');
-    });
-
     it('ok', () => {
       const repoProvider = new MockSCMProvider(0);
-      const scmMenus = injector.get(SCMMenus, [repoProvider]);
-      expect(scmMenus['scopedCtxKeyService'].getContextValue('scmProvider')).toBe(repoProvider.contextValue);
-
-      const menuNodes = scmMenus.getTitleMenu().getMergedMenuNodes();
+      const scmMenus = injector.get<ISCMMenus>(ISCMMenus);
+      const menuNodes = scmMenus.getRepositoryMenus(repoProvider).titleMenu.getMergedMenuNodes();
       expect(menuNodes.length).toBe(1);
       expect(menuNodes[0].label).toBe('fakeCmd1');
     });
@@ -137,25 +126,30 @@ describe('test for scm-menu.ts', () => {
     const mockProvider0 = new MockSCMProvider(0);
     // prepare data
     const mockSCMResourceGroup0 = new MockSCMResourceGroup(mockProvider0, 0);
-    mockSCMResourceGroup0.splice(mockSCMResourceGroup0.elements.length, 0, [new MockSCMResource(mockSCMResourceGroup0)]);
+    mockSCMResourceGroup0.splice(mockSCMResourceGroup0.elements.length, 0, [
+      new MockSCMResource(mockSCMResourceGroup0, undefined, undefined, undefined),
+    ]);
     mockProvider0.groups.splice(mockProvider0.groups.elements.length, 0, [mockSCMResourceGroup0]);
 
-    const scmMenus = injector.get(SCMMenus, [mockProvider0]);
+    const scmMenus = injector.get<ISCMMenus>(ISCMMenus);
 
-    const menuNodes = scmMenus.getResourceGroupContextActions(mockSCMResourceGroup0);
-    expect(menuNodes.length).toBe(1);
-    expect(menuNodes[0].label).toBe('fakeCmd2');
-
-    const [inlineMenuNodes] = scmMenus
-      .getResourceGroupInlineActions(mockSCMResourceGroup0)!
+    const [inlineMenuNodes, contextMenuNodes] = scmMenus.getRepositoryMenus(mockProvider0)
+      .getResourceGroupMenu(mockSCMResourceGroup0)
       .getGroupedMenuNodes();
+
+    expect(contextMenuNodes.length).toBe(1);
+    expect(contextMenuNodes[0].label).toBe('fakeCmd2');
 
     expect(inlineMenuNodes.length).toBe(1);
     expect(inlineMenuNodes[0].label).toBe('fakeCmd1');
 
     const mockSCMResourceGroup1 = new MockSCMResourceGroup(mockProvider0, 1);
-    expect(scmMenus.getResourceGroupContextActions(mockSCMResourceGroup1).length).toBe(0);
-    expect(scmMenus.getResourceGroupInlineActions(mockSCMResourceGroup1)).toBeUndefined();
+
+    const tupleMenuNodes = scmMenus.getRepositoryMenus(mockProvider0)
+      .getResourceGroupMenu(mockSCMResourceGroup1)
+      .getGroupedMenuNodes();
+
+    expect(tupleMenuNodes).toEqual([[], []]);
   });
 
   it('test menu for Resource context menu', () => {
@@ -195,26 +189,28 @@ describe('test for scm-menu.ts', () => {
     const mockProvider0 = new MockSCMProvider(0);
     // prepare data
     const mockSCMResourceGroup0 = new MockSCMResourceGroup(mockProvider0, 0);
-    const mockSCMResource0 = new MockSCMResource(mockSCMResourceGroup0);
-    mockSCMResourceGroup0.splice(mockSCMResourceGroup0.elements.length, 0, [mockSCMResource0]);
+    const mockSCMResource0 = new MockSCMResource(mockSCMResourceGroup0, undefined, undefined, undefined);
     mockProvider0.groups.splice(mockProvider0.groups.elements.length, 0, [mockSCMResourceGroup0]);
 
-    const scmMenus = injector.get(SCMMenus, [mockProvider0]);
+    const scmMenus = injector.get<ISCMMenus>(ISCMMenus);
 
-    const menuNodes = scmMenus.getResourceContextActions(mockSCMResource0);
-    expect(menuNodes.length).toBe(1);
-    expect(menuNodes[0].label).toBe('fakeCmd2');
-
-    const [inlineMenuNodes] = scmMenus
-      .getResourceInlineActions(mockSCMResourceGroup0)!
+    const [inlineMenuNodes, contextMenuNodes] = scmMenus.getRepositoryMenus(mockProvider0)
+      .getResourceMenu(mockSCMResource0)
       .getGroupedMenuNodes();
 
     expect(inlineMenuNodes.length).toBe(1);
     expect(inlineMenuNodes[0].label).toBe('fakeCmd1');
 
+    expect(contextMenuNodes.length).toBe(1);
+    expect(contextMenuNodes[0].label).toBe('fakeCmd2');
+
     const mockSCMResourceGroup1 = new MockSCMResourceGroup(mockProvider0, 1);
-    const mockSCMResource1 = new MockSCMResource(mockSCMResourceGroup1);
-    expect(scmMenus.getResourceContextActions(mockSCMResource1).length).toBe(0);
-    expect(scmMenus.getResourceInlineActions(mockSCMResourceGroup1)).toBeUndefined();
+    const mockSCMResource2 = new MockSCMResource(mockSCMResourceGroup1, undefined, undefined, undefined);
+
+    const tupleMenuNodes2 = scmMenus.getRepositoryMenus(mockProvider0)
+      .getResourceMenu(mockSCMResource2)
+      .getGroupedMenuNodes();
+
+    expect(tupleMenuNodes2).toEqual([[], []]);
   });
 });

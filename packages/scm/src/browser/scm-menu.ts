@@ -1,182 +1,248 @@
-import { Injectable, Autowired, Optional } from '@ali/common-di';
-import { IDisposable, dispose } from '@ali/ide-core-common/lib/disposable';
+import { Injectable, Autowired, Optional, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { Disposable } from '@ali/ide-core-common/lib/disposable';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import { IContextKeyService } from '@ali/ide-core-browser';
-import { MenuId, MenuNode, TupleMenuNodeResult, AbstractContextMenuService, IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { MenuId, AbstractContextMenuService, IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
 
-import { ISCMProvider, ISCMResource, ISCMResourceGroup } from '../common';
-import { getSCMResourceContextKey } from './scm-util';
-
-interface ISCMResourceGroupMenuEntry extends IDisposable {
-  readonly group: ISCMResourceGroup;
-}
-
-interface ISCMMenus {
-  readonly resourceGroupMenu: IContextMenu;
-  readonly resourceMenu: IContextMenu;
-}
+import { ISCMRepository, ISCMProvider, ISCMResource, ISCMResourceGroup, SCMService, ISCMRepositoryMenus, ISCMMenus } from '../common';
+import { isSCMResource } from './scm-util';
 
 @Injectable({ multiple: true })
-export class SCMMenus implements IDisposable {
-  private titleMenu: IContextMenu;
-  private inputMenu: IContextMenu;
-
-  private readonly resourceGroupMenuEntries: ISCMResourceGroupMenuEntry[] = [];
-  private readonly resourceGroupMenus = new Map<ISCMResourceGroup, ISCMMenus>();
-
-  private readonly disposables: IDisposable[] = [];
-
+class SCMResourceMenus extends Disposable {
   @Autowired(AbstractContextMenuService)
   private readonly menuService: AbstractContextMenuService;
 
-  @Autowired(AbstractContextMenuService)
-  private readonly contextMenuService: AbstractContextMenuService;
+  constructor(@Optional() private contextKeyService: IContextKeyService) {
+    super();
+  }
 
-  @Autowired(IContextKeyService)
-  private readonly contextKeyService: IContextKeyService;
+  private _resourceGroupMenu: IContextMenu | undefined;
+  /**
+   * 获得 SCMResourceGroup Item 的菜单
+   */
+  public get resourceGroupMenu(): IContextMenu {
+    if (!this._resourceGroupMenu) {
+      this._resourceGroupMenu = this.registerDispose(
+        this.menuService.createMenu({
+          id: MenuId.SCMResourceGroupContext,
+          contextKeyService: this.contextKeyService,
+          config: {
+            separator: 'inline',
+          },
+        }),
+      );
+    }
+
+    return this._resourceGroupMenu;
+  }
+
+  // contextValue 为 undefined 的 SCMResource Menu
+  // 不直接以 undefined 为 key 存入的原因是避免有 contextValue 就是 undefined 字符串
+  private resourceMenu: IContextMenu | undefined;
+  private contextualResourceMenu: Map<string /* contextValue 维度缓存 */, IContextMenu> | undefined;
+
+  /**
+   * 传入 resource 可以获得 SCMResource Item 的菜单
+   */
+  public getResourceMenu(resource: ISCMResource): IContextMenu {
+    const contextValue = resource.contextValue;
+    if (typeof contextValue === 'undefined') {
+      if (!this.resourceMenu) {
+        this.resourceMenu = this.registerDispose(
+          this.menuService.createMenu({
+            id: MenuId.SCMResourceContext,
+            contextKeyService: this.contextKeyService,
+            config: {
+              separator: 'inline',
+            },
+          }),
+        );
+      }
+
+      return this.resourceMenu;
+    }
+
+    if (!this.contextualResourceMenu) {
+      this.contextualResourceMenu = new Map();
+    }
+
+    let item = this.contextualResourceMenu.get(contextValue);
+
+    if (!item) {
+      const contextKeyService = this.contextKeyService.createScoped();
+
+      // 设置 scmResourceState
+      if (isSCMResource(resource)) {
+        contextKeyService.createKey('scmResourceState', contextValue);
+      }
+
+      item = this.registerDispose(
+        this.menuService.createMenu({
+          id: MenuId.SCMResourceContext,
+          contextKeyService,
+          config: {
+            separator: 'inline',
+          },
+        }),
+      );
+
+      this.addDispose(contextKeyService);
+
+      this.contextualResourceMenu.set(contextValue, item);
+    }
+
+    return item;
+  }
+
+  public dispose(): void {
+    super.dispose();
+
+    this.resourceGroupMenu?.dispose();
+    this.resourceMenu?.dispose();
+
+    if (this.contextualResourceMenu) {
+      this.contextualResourceMenu.clear();
+      this.contextualResourceMenu = undefined;
+    }
+  }
+}
+
+@Injectable({ multiple: true })
+class SCMRepositoryMenus extends Disposable implements ISCMRepositoryMenus {
+  @Autowired(AbstractContextMenuService)
+  private readonly menuService: AbstractContextMenuService;
+
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
 
   // internal scoped ctx key service
-  private readonly scopedCtxKeyService: IContextKeyService;
+  private readonly scopedContextKeyService: IContextKeyService;
 
-  constructor(@Optional() provider?: ISCMProvider) {
-    this.scopedCtxKeyService = this.contextKeyService.createScoped();
-    const scmProviderKey = this.scopedCtxKeyService.createKey<string | undefined>('scmProvider', undefined);
+  constructor(
+    @Optional() provider: ISCMProvider,
+  ) {
+    super();
+    const globalContextKeyService: IContextKeyService = this.injector.get(IContextKeyService);
+    this.scopedContextKeyService = this.registerDispose(globalContextKeyService.createScoped());
+    this.scopedContextKeyService.createKey('scmProvider', provider.contextValue);
+    this.scopedContextKeyService.createKey('scmProviderRootUri', provider.rootUri?.toString());
+    this.scopedContextKeyService.createKey('scmProviderHasRootUri', !!provider.rootUri);
 
-    if (provider) {
-      scmProviderKey.set(provider.contextValue);
-      this.onDidSpliceGroups({ start: 0, deleteCount: 0, toInsert: provider.groups.elements });
-      provider.groups.onDidSplice(this.onDidSpliceGroups, this, this.disposables);
-    } else {
-      scmProviderKey.set('');
-    }
-
-    this.titleMenu = this.menuService.createMenu({
-      id: MenuId.SCMTitle,
-      contextKeyService: this.scopedCtxKeyService,
-    });
-    this.inputMenu = this.menuService.createMenu({
-      id: MenuId.SCMInput,
-      contextKeyService: this.scopedCtxKeyService,
-    });
-
-    this.disposables.push(this.titleMenu, this.inputMenu);
+    this.onDidSpliceGroups({ start: 0, deleteCount: 0, toInsert: provider.groups.elements });
+    provider.groups.onDidSplice(this.onDidSpliceGroups, this, this.disposables);
   }
 
-  dispose(): void {
-    dispose(this.disposables);
-    dispose(this.resourceGroupMenuEntries);
-    this.resourceGroupMenus.clear();
-  }
-
-  /**
-   * scm/title toolbar
-   */
-  getTitleMenu() {
-    return this.titleMenu;
-  }
-
-  /**
-   * scm/input toolbar
-   */
-  getInputMenu() {
-    return this.inputMenu;
-  }
-
-  /**
-   * scm resource group 中的 ctx-menu
-   */
-  getResourceGroupContextActions(group: ISCMResourceGroup): MenuNode[] {
-    return this.getCtxMenuNodes(MenuId.SCMResourceGroupContext, group);
-  }
-
-  /**
-   * scm resource 中的 ctx-menu
-   */
-  getResourceContextActions(resource: ISCMResource): MenuNode[] {
-    return this.getCtxMenuNodes(MenuId.SCMResourceContext, resource);
-  }
-
-  /**
-   * 获取 resource group 的 inline actions
-   */
-  getResourceGroupInlineActions(group: ISCMResourceGroup): IContextMenu | undefined {
-    if (!this.resourceGroupMenus.has(group)) {
-      return;
-    }
-
-    return this.resourceGroupMenus.get(group)!.resourceGroupMenu;
-  }
-
-  /**
-   * 获取 resource 的 inline actions
-   */
-  getResourceInlineActions(group: ISCMResourceGroup): IContextMenu | undefined {
-    if (!this.resourceGroupMenus.has(group)) {
-      return;
-    }
-
-    return this.resourceGroupMenus.get(group)!.resourceMenu;
-  }
-
-  /**
-   * 获取 scm 文件列表中的 ctx-menu
-   */
-  private getCtxMenuNodes(menuId: MenuId, resource: ISCMResourceGroup | ISCMResource): MenuNode[] {
-    const contextKeyService = this.scopedCtxKeyService.createScoped();
-    contextKeyService.createKey('scmResourceGroup', getSCMResourceContextKey(resource));
-
-    const menus = this.contextMenuService.createMenu({
-      id: menuId,
-      contextKeyService,
-      config: { separator: 'inline' },
-    });
-    const result = menus.getGroupedMenuNodes();
-
-    menus.dispose();
-    contextKeyService.dispose();
-
-    return result[1];
-  }
-
-  // 监听 scm group 的 slice 事件并创建 resource 和 group 的 inline actions
+  private readonly resourceGroups: ISCMResourceGroup[] = [];
   private onDidSpliceGroups({ start, deleteCount, toInsert }: ISplice<ISCMResourceGroup>): void {
-    const menuEntriesToInsert = toInsert.map<ISCMResourceGroupMenuEntry>((group) => {
-      const contextKeyService = this.scopedCtxKeyService.createScoped();
-      contextKeyService.createKey('scmProvider', group.provider.contextValue);
-      contextKeyService.createKey('scmResourceGroup', getSCMResourceContextKey(group));
+    const deleted = this.resourceGroups.splice(start, deleteCount, ...toInsert);
 
-      const resourceGroupMenu = this.menuService.createMenu({
-        id: MenuId.SCMResourceGroupContext,
-        contextKeyService,
-        config: {
-          separator: 'inline',
-        },
-      });
-      const resourceMenu = this.menuService.createMenu({
-        id: MenuId.SCMResourceContext,
-        contextKeyService,
-        config: {
-          separator: 'inline',
-        },
-      });
-
-      this.resourceGroupMenus.set(group, { resourceGroupMenu, resourceMenu });
-
-      return {
-        group,
-        dispose() {
-          contextKeyService.dispose();
-          resourceGroupMenu.dispose();
-          resourceMenu.dispose();
-        },
-      };
-    });
-
-    const deleted = this.resourceGroupMenuEntries.splice(start, deleteCount, ...menuEntriesToInsert);
-
-    for (const entry of deleted) {
-      this.resourceGroupMenus.delete(entry.group);
-      entry.dispose();
+    for (const group of deleted) {
+      const item = this.resourceGroupMenusItems.get(group);
+      item?.dispose();
+      this.resourceGroupMenusItems.delete(group);
     }
+  }
+
+  public dispose(): void {
+    super.dispose();
+    this.resourceGroupMenusItems.forEach((item) => item.dispose());
+  }
+
+  public getResourceGroupMenu(group: ISCMResourceGroup): IContextMenu {
+    return this.getResourceGroupMenus(group).resourceGroupMenu;
+  }
+
+  public getResourceMenu(resource: ISCMResource): IContextMenu {
+    return this.getResourceGroupMenus(resource.resourceGroup).getResourceMenu(resource);
+  }
+
+  private readonly resourceGroupMenusItems = new Map<ISCMResourceGroup, SCMResourceMenus>();
+  private getResourceGroupMenus(group: ISCMResourceGroup) {
+    let result = this.resourceGroupMenusItems.get(group);
+
+    if (!result) {
+      const scopedContextKeyService = this.registerDispose(this.scopedContextKeyService.createScoped());
+      scopedContextKeyService.createKey('scmResourceGroup', group.id);
+
+      result = this.registerDispose(
+        this.injector.get(SCMResourceMenus, [scopedContextKeyService]),
+      );
+      this.resourceGroupMenusItems.set(group, result);
+    }
+
+    return result;
+  }
+
+  /**
+   * SCM Title 的 menu
+   */
+  private _titleMenu: IContextMenu;
+  public get titleMenu(): IContextMenu {
+    if (!this._titleMenu) {
+      this._titleMenu = this.registerDispose(
+        this.menuService.createMenu({
+          id: MenuId.SCMTitle,
+          contextKeyService: this.scopedContextKeyService,
+        }),
+      );
+    }
+
+    return this._titleMenu;
+  }
+
+  /**
+   * SCM Input 的 menu
+   */
+  private _inputMenu: IContextMenu;
+  public get inputMenu(): IContextMenu {
+    if (!this._inputMenu) {
+      this._inputMenu = this.registerDispose(
+        this.menuService.createMenu({
+          id: MenuId.SCMInput,
+          contextKeyService: this.scopedContextKeyService,
+        }),
+      );
+    }
+
+    return this._inputMenu;
+  }
+}
+
+@Injectable()
+export class SCMMenus extends Disposable implements ISCMMenus {
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
+  @Autowired(SCMService)
+  private readonly scmService: SCMService;
+
+  constructor() {
+    super();
+    this.scmService.onDidRemoveRepository(this.onDidRemoveRepository, this, this.disposables);
+  }
+
+  private readonly menus = new Map<ISCMProvider, { menus: SCMRepositoryMenus, dispose: () => void }>();
+
+  private onDidRemoveRepository(repository: ISCMRepository): void {
+    const menus = this.menus.get(repository.provider);
+    menus?.dispose();
+    this.menus.delete(repository.provider);
+  }
+
+  getRepositoryMenus(provider: ISCMProvider): SCMRepositoryMenus {
+    let result = this.menus.get(provider);
+
+    if (!result) {
+      const menus = this.injector.get(SCMRepositoryMenus, [provider]);
+      const dispose = () => {
+        menus.dispose();
+        this.menus.delete(provider);
+      };
+
+      result = { menus, dispose };
+      this.menus.set(provider, result);
+    }
+
+    return result.menus;
   }
 }

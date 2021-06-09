@@ -116,7 +116,12 @@ export class MockSCMResource implements ISCMResource {
 
   get resourceGroup() { return this._resourceGroup; }
 
-  constructor(resourceGroup: ISCMResourceGroup, fsPath?: string) {
+  constructor(
+    resourceGroup: ISCMResourceGroup,
+    fsPath: string | undefined,
+    public readonly contextValue: string | undefined,
+    public readonly command: VSCommand | undefined,
+  ) {
     this._resourceGroup = resourceGroup;
     if (fsPath) {
       this.sourceUri = Uri.file(fsPath);

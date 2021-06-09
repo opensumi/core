@@ -12,7 +12,7 @@ import { ViewModelContext, ResourceGroupSplicer, ISCMDataItem } from '../scm-mod
 import { SCMResourceGroupTreeNode, SCMResourceTreeNode } from '../scm-resource';
 import { isSCMResource } from '../scm-util';
 
-export const SCMResouceList: React.FC<{
+export const SCMResourceList: React.FC<{
   width: number;
   height: number;
   repository: ISCMRepository;
@@ -49,16 +49,18 @@ export const SCMResouceList: React.FC<{
   }, [ repository ]);
 
   const nodes = useComputed(() => {
-    const scmMenuService = viewModel.getSCMMenuService(repository);
-
     return viewModel.scmList.map((item) => {
       let resourceItem: SCMResourceTreeNode | SCMResourceGroupTreeNode;
+      const repoMenus = viewModel.menus.getRepositoryMenus(repository.provider);
       if (isSCMResource(item)) {
-        const inlineMenu = scmMenuService && scmMenuService.getResourceInlineActions(item.resourceGroup);
-        resourceItem = injector.get(SCMResourceTreeNode, [item, inlineMenu]);
+        resourceItem = injector.get(
+          SCMResourceTreeNode,
+          [ item, repoMenus.getResourceMenu(item) ]);
       } else {
-        const inlineMenu = scmMenuService && scmMenuService.getResourceGroupInlineActions(item);
-        resourceItem = new SCMResourceGroupTreeNode(item, inlineMenu);
+        resourceItem = new SCMResourceGroupTreeNode(
+          item,
+          repoMenus.getResourceGroupMenu(item),
+        );
       }
 
       resourceItem.selected = selectedNodeId === resourceItem.id;
@@ -95,7 +97,7 @@ export const SCMResouceList: React.FC<{
 
     // 单击打开/双击 pin
     if (_selectTimes && _selectTimes.current === 1) {
-      item.open();
+      item.open(true);
     }
 
     if (_selectTimer && _selectTimer.current) {
@@ -135,8 +137,8 @@ export const SCMResouceList: React.FC<{
       return;
     }
 
-    const scmMenuService = viewModel.getSCMMenuService(repository);
-    if (!scmMenuService) {
+    const repoMenus = viewModel.menus.getRepositoryMenus(repository.provider);
+    if (!repoMenus) {
       return;
     }
     const item: ISCMDataItem = file.item;
@@ -144,13 +146,13 @@ export const SCMResouceList: React.FC<{
     if (isSCMResource(item)) {
       ctxMenuRenderer.show({
         anchor: { x, y },
-        menuNodes: scmMenuService.getResourceContextActions(item),
+        menuNodes: repoMenus.getResourceMenu(item).getGroupedMenuNodes()[1],
         args: [ file.resourceState ],
       });
     } else {
       ctxMenuRenderer.show({
         anchor: { x, y },
-        menuNodes: scmMenuService.getResourceGroupContextActions(item),
+        menuNodes: repoMenus.getResourceGroupMenu(item).getGroupedMenuNodes()[1],
         args: [ repository.provider.toJSON() ],
       });
     }
@@ -158,6 +160,7 @@ export const SCMResouceList: React.FC<{
 
   return (
     <RecycleTree
+      alwaysShowActions={viewModel.alwaysShowActions}
       nodes={nodes}
       defaultLeftPadding={8}
       prerenderNumber={50}
@@ -173,4 +176,4 @@ export const SCMResouceList: React.FC<{
   );
 });
 
-SCMResouceList.displayName = 'SCMRepoTree';
+SCMResourceList.displayName = 'SCMRepoTree';

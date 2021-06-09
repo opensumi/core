@@ -1,13 +1,12 @@
-import { IDisposable, combinedDisposable, dispose } from '@ali/ide-core-common/lib/disposable';
-import { Disposable, Emitter, Event, getDebugLogger } from '@ali/ide-core-common';
-import { ISplice } from '@ali/ide-core-common/lib/sequence';
-import { observable, action } from 'mobx';
-import { Injector, INJECTOR_TOKEN, Injectable, Autowired } from '@ali/common-di';
+import { Autowired, Injectable } from '@ali/common-di';
+import { PreferenceService } from '@ali/ide-core-browser';
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
-import { IContextKey, IContextKeyService } from '@ali/ide-core-browser';
+import { Disposable, Emitter, Event, getDebugLogger } from '@ali/ide-core-common';
+import { combinedDisposable, dispose, IDisposable } from '@ali/ide-core-common/lib/disposable';
+import { ISplice } from '@ali/ide-core-common/lib/sequence';
+import { action, observable } from 'mobx';
 
-import { ISCMRepository, ISCMResourceGroup, ISCMResource, SCMService } from '../common';
-import { SCMMenus } from './scm-menu';
+import { ISCMMenus, ISCMRepository, ISCMResource, ISCMResourceGroup, SCMService } from '../common';
 
 export interface IGroupItem {
   readonly group: ISCMResourceGroup;
@@ -190,27 +189,39 @@ function isGroupVisible(group: ISCMResourceGroup) {
 
 @Injectable()
 export class ViewModelContext extends Disposable {
-  @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
-
-  @Autowired(IContextKeyService)
-  private readonly contextKeyService: IContextKeyService;
-
   @Autowired(SCMService)
   private readonly scmService: SCMService;
 
-  private scmProviderCtxKey: IContextKey<string | undefined>;
+  @Autowired(ISCMMenus)
+  private readonly _menus: ISCMMenus;
+
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
+  public get menus(): ISCMMenus {
+    return this._menus;
+  }
 
   private logger = getDebugLogger();
 
-  // maybe we must use repo provider id as key
-  private scmMenuMap = observable.map<ISCMRepository['provider']['id'], SCMMenus>();
-
   constructor() {
     super();
-    this.scmProviderCtxKey = this.contextKeyService.createKey<string | undefined>('scmProvider', undefined);
     this.start();
+
+    this.initTreeAlwaysShowActions();
   }
+
+  private initTreeAlwaysShowActions() {
+    this.alwaysShowActions = !!this.preferenceService.get<boolean>('scm.alwaysShowActions');
+    this.preferenceService.onPreferenceChanged((changes) => {
+      if (changes.preferenceName === 'scm.alwaysShowActions') {
+        this.alwaysShowActions = changes.newValue;
+      }
+    }, this, this.disposables);
+  }
+
+  @observable
+  public alwaysShowActions: boolean;
 
   start() {
     this.scmService.onDidAddRepository((repo: ISCMRepository) => {
@@ -244,20 +255,9 @@ export class ViewModelContext extends Disposable {
 
   public titleMenu: IMenu | null;
 
-  public getSCMMenuService(repository: ISCMRepository | undefined) {
-    if (!repository) {
-      return undefined;
-    }
-    return this.scmMenuMap.get(repository.provider.id);
-  }
-
   @action
   public spliceSCMList = (start: number, deleteCount: number, ...toInsert: ISCMDataItem[]) => {
     this.scmList.splice(start, deleteCount, ...toInsert);
-  }
-
-  private setContextKey(selectedRepo) {
-    this.scmProviderCtxKey.set(selectedRepo ? selectedRepo.provider.contextValue : undefined);
   }
 
   @action
@@ -267,9 +267,6 @@ export class ViewModelContext extends Disposable {
       return;
     }
     this.repoList.push(repo);
-    // cache SCMMenus for single repo
-    const scmMenuService = this.injector.get(SCMMenus, [repo.provider]);
-    this.scmMenuMap.set(repo.provider.id, scmMenuService);
 
     // 兜底: 避免由于生命周期导致 start 方法里的监听后置导致数据更新不到
     if (repo.selected && this.repoList.length === 1) {
@@ -285,18 +282,6 @@ export class ViewModelContext extends Disposable {
       return;
     }
     this.repoList.splice(index, 1);
-
-    const providerId = repo.provider.id;
-    const scmMenuService = this.scmMenuMap.get(providerId);
-    if (scmMenuService) {
-      scmMenuService.dispose();
-      this.scmMenuMap.delete(repo.provider.id);
-    }
-
-    // 最后一个 repo 移除时将 scmProvider 重置
-    if (this.repoList.length === 0) {
-      this.setContextKey(undefined);
-    }
   }
 
   @action
@@ -304,7 +289,5 @@ export class ViewModelContext extends Disposable {
     this.selectedRepos.replace(repos);
     const selectedRepo = repos[0];
     this.selectedRepo = selectedRepo;
-    // set context key
-    this.setContextKey(selectedRepo);
   }
 }

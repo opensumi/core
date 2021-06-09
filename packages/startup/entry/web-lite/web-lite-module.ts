@@ -17,6 +17,7 @@ import { LsifServiceImpl } from './services/lsif-service';
 import { BrowserCommonServer } from './overrides/browser-common-server';
 // sample
 import { SampleContribution } from './modules/sample.contribution';
+import { SCMProviderContribution } from './modules/scm-provider/index.contribution';
 
 @Injectable()
 export class WebLiteModule extends BrowserModule {
@@ -42,5 +43,7 @@ export class WebLiteModule extends BrowserModule {
     ViewContribution,
     // sample
     SampleContribution,
+    // scm provider sample
+    SCMProviderContribution,
   ];
 }

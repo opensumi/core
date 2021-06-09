@@ -1,7 +1,7 @@
 import { Autowired } from '@ali/common-di';
 import { Domain, CommandService, CommandContribution, CommandRegistry, EDITOR_COMMANDS, URI } from '@ali/ide-core-browser';
 
-import { VSCodeBuiltinCommands } from '@ali/ide-kaitian-extension/lib/browser/vscode/builtin-commands';
+import * as VSCodeBuiltinCommands from '@ali/ide-kaitian-extension/lib/browser/vscode/builtin-commands';
 import { UriComponents } from '@ali/ide-kaitian-extension/lib/common/vscode/models';
 import { TextDocumentShowOptions, ViewColumn } from '@ali/ide-kaitian-extension/lib/common/vscode';
 import { isLikelyVscodeRange, fromRange, viewColumnToResourceOpenOptions } from '@ali/ide-kaitian-extension/lib/common/vscode/converter';

@@ -84,9 +84,9 @@ export const SCMHeader: React.FC<{
   );
 
   const inputMenu = React.useMemo(() => {
-    const scmMenuService = viewModel.getSCMMenuService(repository);
-    if (scmMenuService) {
-      return scmMenuService.getInputMenu();
+    const menus = viewModel.menus.getRepositoryMenus(repository.provider);
+    if (menus) {
+      return menus.inputMenu;
     }
   }, [repository]);
 

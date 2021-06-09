@@ -3,7 +3,7 @@ import {
   asPromise, comparePaths, sortedDiff, debounce,
   Event, Emitter, getDebugLogger, DisposableStore,
   MutableDisposable, Uri as URI, UriComponents,
-  CancellationToken,
+  CancellationToken, IDisposable,
 } from '@ali/ide-core-common';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import { IRPCProtocol } from '@ali/ide-connection';
@@ -228,6 +228,7 @@ class ExtHostSourceControlResourceGroup implements vscode.SourceControlResourceG
 
   private _resourceStatesMap: Map<ResourceStateHandle, vscode.SourceControlResourceState> = new Map<ResourceStateHandle, vscode.SourceControlResourceState>();
   private _resourceStatesCommandsMap: Map<ResourceStateHandle, vscode.Command> = new Map<ResourceStateHandle, vscode.Command>();
+  private _resourceStatesDisposablesMap = new Map<ResourceStateHandle, IDisposable>();
 
   private _onDidUpdateResourceStates = new Emitter<void>();
   readonly onDidUpdateResourceStates = this._onDidUpdateResourceStates.event;
@@ -274,14 +275,14 @@ class ExtHostSourceControlResourceGroup implements vscode.SourceControlResourceG
     return this._resourceStatesMap.get(handle);
   }
 
-  $executeResourceCommand(handle: number): Promise<void> {
+  $executeResourceCommand(handle: number, preserveFocus: boolean): Promise<void> {
     const command = this._resourceStatesCommandsMap.get(handle);
 
     if (!command) {
       return Promise.resolve(undefined);
     }
 
-    return asPromise(() => this._commands.executeCommand(command.command, ...(command.arguments || [])));
+    return asPromise(() => this._commands.executeCommand(command.command, ...(command.arguments || []), preserveFocus));
   }
 
   _takeResourceStateSnapshot(): SCMRawResourceSplice[] {
@@ -298,9 +299,16 @@ class ExtHostSourceControlResourceGroup implements vscode.SourceControlResourceG
         const lightIconPath = r.decorations && getIconPath(r.decorations.light) || iconPath;
         const darkIconPath = r.decorations && getIconPath(r.decorations.dark) || iconPath;
         const icons: string[] = [];
+        let command: CommandDto | undefined;
 
         if (r.command) {
-          this._resourceStatesCommandsMap.set(handle, r.command);
+          if (r.command.command === 'vscode.open' || r.command.command === 'vscode.diff') {
+            const disposables = new DisposableStore();
+            command = this._commands.converter.toInternal(r.command, disposables);
+            this._resourceStatesDisposablesMap.set(handle, disposables);
+          } else {
+            this._resourceStatesCommandsMap.set(handle, r.command);
+          }
         }
 
         if (lightIconPath) {
@@ -314,12 +322,18 @@ class ExtHostSourceControlResourceGroup implements vscode.SourceControlResourceG
         const tooltip = (r.decorations && r.decorations.tooltip) || '';
         const strikeThrough = r.decorations && !!r.decorations.strikeThrough;
         const faded = r.decorations && !!r.decorations.faded;
+        const contextValue = r.contextValue || '';
 
         const source = r.decorations && r.decorations.source || undefined;
         const letter = r.decorations && r.decorations.letter || undefined;
         const color = r.decorations && r.decorations.color || undefined;
 
-        const rawResource = [handle, sourceUri as UriComponents, icons, tooltip, strikeThrough, faded, source, letter, color] as SCMRawResource;
+        const rawResource = [
+          handle, sourceUri as UriComponents, icons,
+          tooltip, strikeThrough, faded,
+          contextValue, command,
+          source, letter, color, /* 这三个属性后续要通过 File Decoration 实现 */
+        ] as SCMRawResource;
 
         return { rawResource, handle };
       });
@@ -635,7 +649,7 @@ export class ExtHostSCM implements IExtHostSCMShape {
     return Promise.resolve(undefined);
   }
 
-  $executeResourceCommand(sourceControlHandle: number, groupHandle: number, handle: number): Promise<void> {
+  $executeResourceCommand(sourceControlHandle: number, groupHandle: number, handle: number, preserveFocus: boolean): Promise<void> {
     this.logger.log('ExtHostSCM#$executeResourceCommand', sourceControlHandle, groupHandle, handle);
 
     const sourceControl = this._sourceControls.get(sourceControlHandle);
@@ -650,7 +664,7 @@ export class ExtHostSCM implements IExtHostSCMShape {
       return Promise.resolve(undefined);
     }
 
-    return group.$executeResourceCommand(handle);
+    return group.$executeResourceCommand(handle, preserveFocus);
   }
 
   $validateInput(sourceControlHandle: number, value: string, cursorPosition: number): Promise<[string, number] | undefined> {

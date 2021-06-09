@@ -136,14 +136,14 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
       const mockProvider0 = new MockSCMProvider(0);
       // prepare data
       const mockSCMResourceGroup0 = new MockSCMResourceGroup(mockProvider0, 0);
-      mockSCMResourceGroup0.splice(mockSCMResourceGroup0.elements.length, 0, [new MockSCMResource(mockSCMResourceGroup0)]);
+      mockSCMResourceGroup0.splice(mockSCMResourceGroup0.elements.length, 0, [new MockSCMResource(mockSCMResourceGroup0, undefined, undefined, undefined)]);
 
       mockProvider0.groups.splice(mockProvider0.groups.elements.length, 0, [mockSCMResourceGroup0]);
       const repo0 = scmService.registerSCMProvider(mockProvider0);
       mockProvider0.onDidChangeResourcesEmitter.fire();
       expect(fakeSetBadge).toHaveBeenCalledWith('1');
 
-      mockSCMResourceGroup0.splice(mockSCMResourceGroup0.elements.length, 0, [new MockSCMResource(mockSCMResourceGroup0)]);
+      mockSCMResourceGroup0.splice(mockSCMResourceGroup0.elements.length, 0, [new MockSCMResource(mockSCMResourceGroup0, undefined, undefined, undefined)]);
       mockProvider0.onDidChangeEmitter.fire();
       expect(fakeSetBadge).toHaveBeenCalledWith('2');
 

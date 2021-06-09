@@ -11,4 +11,5 @@ export const TOGGLE_DIFF_SIDE_BY_SIDE = {
 
 export * from './scm';
 export * from './scm.service';
+export * from './scm-menus';
 export * from './dirty-diff';

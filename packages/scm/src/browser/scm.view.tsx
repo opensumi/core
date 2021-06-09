@@ -10,7 +10,7 @@ import { InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
 import { ISCMRepository, scmProviderViewId, scmResourceViewId, scmContainerId } from '../common';
 import { ViewModelContext } from './scm-model';
 import { SCMHeader } from './components/scm-header.view';
-import { SCMResouceList } from './components/scm-resource.view';
+import { SCMResourceList } from './components/scm-resource.view';
 import { SCMRepoSelect } from './components/scm-select.view';
 
 import * as styles from './scm.module.less';
@@ -47,7 +47,7 @@ export const SCMRepoPanel: React.FC<{
     <div className={styles.view} ref={$containerRef}>
       <div className={styles.scm}>
         <SCMHeader repository={repository} />
-        <SCMResouceList
+        <SCMResourceList
           width={viewState.width}
           height={viewState.height - 38}
           repository={repository} />
@@ -121,9 +121,8 @@ export const SCMPanel: React.FC<{ viewState: ViewState }> = observer((props) => 
   }, [ hasMultiRepos, selectedRepo ]);
 
   const titleMenu = React.useMemo(() => {
-    const scmMenuService = viewModel.getSCMMenuService(selectedRepo);
-    if (scmMenuService) {
-      return scmMenuService.getTitleMenu();
+    if (selectedRepo) {
+      return viewModel.menus.getRepositoryMenus(selectedRepo?.provider).titleMenu;
     }
   }, [ selectedRepo ]);
 

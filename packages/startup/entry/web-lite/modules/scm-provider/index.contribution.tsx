@@ -1,14 +1,15 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { Domain } from '@ali/ide-core-common';
-import { ClientAppContribution } from '@ali/ide-core-browser';
+import { ClientAppContribution, getIcon } from '@ali/ide-core-browser';
 import { SCMService } from '@ali/ide-scm';
 
 // mock implements
 import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '@ali/ide-scm/__tests__/scm-test-util';
+import { IMenuRegistry, MenuContribution } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable()
-@Domain(ClientAppContribution)
-export class SCMProviderContribution implements ClientAppContribution {
+@Domain(ClientAppContribution, MenuContribution)
+export class SCMProviderContribution implements ClientAppContribution, MenuContribution {
   @Autowired(SCMService)
   private readonly scmService: SCMService;
 
@@ -16,10 +17,68 @@ export class SCMProviderContribution implements ClientAppContribution {
     const mockProvider0 = new MockSCMProvider(0);
     // prepare data
     const mockSCMResourceGroup0 = new MockSCMResourceGroup(mockProvider0, 0);
-    mockSCMResourceGroup0.splice(mockSCMResourceGroup0.elements.length, 0, [new MockSCMResource(mockSCMResourceGroup0, 'a.ts')]);
+    mockSCMResourceGroup0.splice(mockSCMResourceGroup0.elements.length, 0, [
+      new MockSCMResource(mockSCMResourceGroup0, 'a.ts', 'diffable', undefined),
+    ]);
 
     mockProvider0.groups.splice(mockProvider0.groups.elements.length, 0, [mockSCMResourceGroup0]);
-    mockSCMResourceGroup0.splice(mockSCMResourceGroup0.elements.length, 0, [new MockSCMResource(mockSCMResourceGroup0, 'b.ts')]);
+    mockSCMResourceGroup0.splice(mockSCMResourceGroup0.elements.length, 0, [
+      new MockSCMResource(mockSCMResourceGroup0, 'b.ts', 'whatever', undefined),
+    ]);
     this.scmService.registerSCMProvider(mockProvider0);
+  }
+
+  registerMenus(menuRegistry: IMenuRegistry) {
+    // inline
+    menuRegistry.registerMenuItem(
+      'scm/resourceState/context',
+      {
+        command: {
+          id: 'editor.action.quickCommand',
+          label: 'quick-open',
+        },
+        iconClass: getIcon('open'),
+        group: 'inline@1',
+        when: 'scmResourceState == diffable',
+      },
+    );
+
+    menuRegistry.registerMenuItem(
+      'scm/resourceState/context',
+      {
+        command: {
+          id: 'core.about',
+          label: '关于 Kaitian',
+        },
+        when: 'scmResourceState == whatever',
+        iconClass: getIcon('bell'),
+        group: 'inline@2',
+      },
+    );
+
+    // context menu
+    menuRegistry.registerMenuItem(
+      'scm/resourceState/context',
+      {
+        command: {
+          id: 'editor.action.quickCommand',
+          label: 'quick-open',
+        },
+        group: 'navigation',
+        when: 'scmResourceState == diffable',
+      },
+    );
+
+    menuRegistry.registerMenuItem(
+      'scm/resourceState/context',
+      {
+        command: {
+          id: 'core.about',
+          label: '关于 Kaitian',
+        },
+        group: 'navigation',
+        when: 'scmResourceState == whatever',
+      },
+    );
   }
 }
