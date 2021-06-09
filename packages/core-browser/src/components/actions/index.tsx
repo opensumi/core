@@ -357,12 +357,16 @@ export const TitleActionList: React.FC<{
             );
           }
 
+          // submenu 使用 submenu-id 作为 id 唯一值
+          const id = item.id === SubmenuItemNode.ID
+            ? (item as SubmenuItemNode).submenuId
+            : item.id;
           return (
             <InlineActionWidget
-              id={item.id}
+              id={id}
+              key={id}
               className={clsx({ [styles.selected]: item.checked })}
               type={type}
-              key={item.id}
               data={item}
               afterClick={afterClick}
               context={context} />
