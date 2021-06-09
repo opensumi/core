@@ -34,7 +34,6 @@ import {
   Selection,
   ISerializedSignatureHelpProviderMetadata,
   SelectionRange,
-  CompletionItem,
   ICallHierarchyItemDto,
   IOutgoingCallDto,
   IIncomingCallDto,
@@ -45,9 +44,9 @@ import {
   CompletionItemInsertTextRule,
   CompletionItemLabel,
   IMarkdownString,
-  CacheId,
   CompletionItemKind,
   CompletionItemTag,
+  ChainedCacheId,
 } from './model.api';
 import type { editor } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import type {
@@ -215,12 +214,10 @@ export interface IExtHostLanguages {
     position: Position,
     context: CompletionContext,
     token: CancellationToken,
-  );
+  ): Promise<ISuggestResultDto | undefined>;
   $resolveCompletionItem(
     handle: number,
-    resource: UriComponents,
-    position: Position,
-    completion: CompletionItem,
+    id: ChainedCacheId,
     token: CancellationToken,
   ): Promise<ISuggestDataDto | undefined>;
   $releaseCompletionItems(handle: number, id: number): void;
@@ -473,6 +470,13 @@ export interface IExtHostLanguages {
   ): Promise<IEvaluatableExpression | undefined>;
 }
 
+export const enum ISuggestResultDtoField {
+  defaultRanges = 'a',
+  completions = 'b',
+  isIncomplete = 'c',
+  duration = 'd',
+}
+
 export const enum ISuggestDataDtoField {
   label = 'a',
   kind = 'b',
@@ -493,7 +497,13 @@ export const enum ISuggestDataDtoField {
   label2 = 'o',
 }
 
-export type ChainedCacheId = [CacheId, CacheId];
+export interface ISuggestResultDto {
+  [ISuggestResultDtoField.defaultRanges]: { insert: IRange, replace: IRange; };
+  [ISuggestResultDtoField.completions]: ISuggestDataDto[];
+  [ISuggestResultDtoField.isIncomplete]: undefined | true;
+  [ISuggestResultDtoField.duration]: number;
+  x?: number;
+}
 
 export interface ISuggestDataDto {
   [ISuggestDataDtoField.label]: string;

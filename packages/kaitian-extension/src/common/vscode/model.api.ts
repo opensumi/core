@@ -656,6 +656,8 @@ export interface SignatureHelpDto {
 
 export type CacheId = number;
 
+export type ChainedCacheId = [CacheId, CacheId];
+
 export enum CompletionItemKind {
   Method,
   Function,

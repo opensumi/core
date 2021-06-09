@@ -14,7 +14,7 @@ import { ICallHierarchyService } from '@ali/ide-monaco/lib/browser/callHierarchy
 import { IEvaluatableExpressionService } from '@ali/ide-debug/lib/browser/editor/evaluatable-expression';
 import { applyPatch } from 'diff';
 import { DocumentFilter } from 'vscode-languageserver-protocol';
-import { ExtHostAPIIdentifier, IExtHostLanguages, IMainThreadLanguages, ISuggestDataDto, ISuggestDataDtoField, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
+import { ExtHostAPIIdentifier, IExtHostLanguages, IMainThreadLanguages, ISuggestDataDto, ISuggestDataDtoField, ISuggestResultDtoField, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
 import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SemanticTokensLegend, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ICallHierarchyItemDto, CallHierarchyItem, IWorkspaceEditDto, ResourceTextEditDto, ResourceFileEditDto } from '../../../common/vscode/model.api';
 import { mixin, reviveIndentationRule, reviveOnEnterRules, reviveRegExp } from '../../../common/vscode/utils';
@@ -205,15 +205,16 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!result) {
           return undefined!;
         }
-        if (result.items.length) {
+        if (result[ISuggestResultDtoField.completions].length) {
           timer.timeEnd(extname(model.uri.fsPath), {
             extDuration: (result as any)._dur,
           });
         }
-        const suggestions = result.items.map((data) => this.inflateSuggestDto(result.defaultRange, data));
+        const suggestions = result[ISuggestResultDtoField.completions].map((data) => this.inflateSuggestDto(result[ISuggestResultDtoField.defaultRanges], data)) as unknown as monaco.languages.CompletionItem[];
         return {
           suggestions,
-          incomplete: result.isIncomplete,
+          duration: result[ISuggestResultDtoField.duration],
+          incomplete: result[ISuggestResultDtoField.isIncomplete] || false,
           dispose: () => {
             if (typeof (result as any)._id === 'number') {
               setTimeout(() => {
@@ -221,7 +222,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
               }, 0);
             }
           },
-        } as monaco.languages.CompletionList;
+        };
       },
       resolveCompletionItem: supportsResolveDetails
         ? (model, position, suggestion, token) => {
@@ -229,7 +230,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
             return undefined!;
           }
           this.reporter.point(REPORT_NAME.RESOLVE_COMPLETION_ITEM);
-          return this.proxy.$resolveCompletionItem(handle, model.uri, position, suggestion, token)
+          return this.proxy.$resolveCompletionItem(handle, suggestion._id!, token)
             .then((result) => {
               if (!result) {
                 return suggestion;

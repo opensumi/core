@@ -115,7 +115,7 @@ export const ExtHostAPIIdentifier = {
 };
 
 export abstract class VSCodeExtensionNodeService {
-  abstract async getExtHostPath(): Promise<string>;
+  abstract getExtHostPath(): Promise<string>;
 }
 
 export const VSCodeExtensionNodeServiceServerPath = 'VSCodeExtensionNodeServiceServerPath';
