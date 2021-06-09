@@ -396,7 +396,7 @@ export class FileSearchQuickCommandHandler {
   }
 
   private async getRecentlyItems(alreadyCollected, lookFor, token) {
-    const recentlyOpenedFiles = await this.recentFilesManager.getMostRecentlyOpenedFiles() || [];
+    const recentlyOpenedFiles = await this.recentFilesManager.getMostRecentlyOpenedFiles(true) || [];
 
     return await this.getItems(
       recentlyOpenedFiles.filter((uri: string) => {
@@ -425,7 +425,7 @@ export class FileSearchQuickCommandHandler {
     for (const [index, strUri] of uriList.entries()) {
       const uri = new URI(strUri);
       const icon = `file-icon ${await this.labelService.getIcon(uri)}`;
-      const description = await this.workspaceService.asRelativePath(strUri);
+      const description = await this.workspaceService.asRelativePath(uri.withoutFragment());
       const item = new QuickOpenGroupItem({
         uri,
         label: uri.displayName,
@@ -451,9 +451,10 @@ export class FileSearchQuickCommandHandler {
   }
 
   private openFile(uri: URI) {
-    const range = getRangeByInput(this.currentLookFor);
+    const filePath = uri.path.toString();
+    const range = getRangeByInput(uri.fragment ? filePath + '#' + uri.fragment : filePath);
     this.currentLookFor = '';
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { preview: false, range, focus: true });
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri.withoutFragment(), { preview: false, range, focus: true });
   }
 
   private locateSymbol(uri: URI, symbol: INormalizedDocumentSymbol) {

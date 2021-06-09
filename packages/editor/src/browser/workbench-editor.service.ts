@@ -898,7 +898,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   async open(uri: URI, options: IResourceOpenOptions = {}): Promise<IOpenResourceResult> {
     if (uri.scheme === Schemas.file) {
       // 只记录 file 类型的
-      this.recentFilesManager.setMostRecentlyOpenedFile!(uri.toString());
+      this.recentFilesManager.setMostRecentlyOpenedFile!(uri.withoutFragment().toString());
     }
     if (options && options.split) {
       return this.split(options.split, uri, Object.assign({}, options, { split: undefined, preview: false }));
@@ -1002,6 +1002,16 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }
         if (oldResource && this.resourceOpenHistory[this.resourceOpenHistory.length - 1] !== oldResource.uri) {
           this.resourceOpenHistory.push(oldResource.uri);
+          const oldResourceSelections = this.currentCodeEditor?.getSelections();
+          if (oldResourceSelections && oldResourceSelections.length > 0) {
+            this.recentFilesManager.updateMostRecentlyOpenedFile(
+              oldResource.uri.toString(),
+              {
+                lineNumber: oldResourceSelections[0].selectionStartLineNumber,
+                column: oldResourceSelections[0].selectionStartColumn,
+              },
+            );
+          }
         }
         this._currentResource = resource;
         this.notifyTabChanged();

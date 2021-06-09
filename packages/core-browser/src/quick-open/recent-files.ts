@@ -1,13 +1,24 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { RecentStorage } from '../common/common.storage';
 import { WithEventBus } from '..';
-import { OnEvent, FileChangeType } from '@ali/ide-core-common';
+import { OnEvent, FileChangeType, IPosition } from '@ali/ide-core-common';
 import { FilesChangeEvent } from '../fs';
+
+const OPENED_FILE = 'OPENED_FILE';
+
+const FILES_POSITION = 'OPENED_FILES_POSITION';
 
 @Injectable()
 export class RecentFilesManager extends WithEventBus {
   @Autowired(RecentStorage)
   private recentStorage: RecentStorage;
+
+  async updateMostRecentlyOpenedFile(url: string, position: IPosition) {
+    const recentStorage = await this.recentStorage.getScopeStorage();
+    const openedFilesPosition = recentStorage.get<{ [prop: string]: string }>(FILES_POSITION) || {};
+    openedFilesPosition[url] = `#${position.lineNumber},${position.column}`;
+    recentStorage.set(FILES_POSITION, openedFilesPosition);
+  }
 
   async setMostRecentlyOpenedFile(uriString: string, isDelete?: boolean) {
     const recentStorage = await this.recentStorage.getScopeStorage();
@@ -25,12 +36,21 @@ export class RecentFilesManager extends WithEventBus {
     if (fileList.length > 50) {
       fileList = fileList.slice(0, 50);
     }
-    recentStorage.set('OPENED_FILE', fileList);
+    recentStorage.set(OPENED_FILE, fileList);
   }
 
-  async getMostRecentlyOpenedFiles() {
+  async getMostRecentlyOpenedFiles(includingRange?: boolean) {
     const recentStorage = await this.recentStorage.getScopeStorage();
-    const fileList: string[] = recentStorage.get<string[]>('OPENED_FILE') || [];
+    const fileList: string[] = recentStorage.get<string[]>(OPENED_FILE) || [];
+    const openedFilesPosition = recentStorage.get<{ [prop: string]: string }>(FILES_POSITION) || {};
+    if (includingRange) {
+      return fileList.map((url) => {
+        if (openedFilesPosition[url]) {
+          return url + openedFilesPosition[url];
+        }
+        return url;
+      });
+    }
     return fileList;
   }
 
