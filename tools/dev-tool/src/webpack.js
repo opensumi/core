@@ -185,7 +185,8 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         clearConsole: true,
       }),
       new CopyPlugin([
-        { from: path.join(__dirname, '../vendor'), to: dir + '/dist' },
+        { from: path.join(__dirname, '../vendor'), to: path.join(dir, 'dist') },
+        { from: path.join(__dirname, '../resources'), to: path.join(dir, 'dist', 'resources') },
       ]),
       new ForkTsCheckerWebpackPlugin({
         checkSyntacticErrors: true,

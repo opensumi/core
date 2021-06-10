@@ -22,10 +22,32 @@
         z-index: 100;
         transition: opacity 500ms;
         font-size: 32px;
-        background-color: #2a2a2a;
         font-weight: 600;
         font-family: sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #2a2a2a;
+      }
 
+      #loading .logo {
+        width: 120px;
+        height: 120px;
+        background: url('./resources/kaitian.png') center center no-repeat;
+        background-size: 120px;
+        animation: gray-loading-animation 3s infinite;
+      }
+
+      @keyframes gray-loading-animation {
+        0% {
+          opacity: .3;
+        }
+        50% {
+          opacity: 0;
+        }
+        100% {
+          opacity: .3;
+        }
       }
 
       .loading-hidden {
@@ -36,6 +58,6 @@
   </head>
   <body>
     <div id="main"></div>
-    <div id="loading">KAITIAN</div>
+    <div id="loading"> <a class="logo"></a></div>
   </body>
 </html>

@@ -6,7 +6,6 @@ import {
   ComponentContribution,
   ComponentRegistry,
 } from '@ali/ide-core-browser';
-import { Icon } from '@ali/ide-components';
 import * as React from 'react';
 
 const EditorEmptyComponent: React.FC<{
@@ -22,19 +21,13 @@ const EditorEmptyComponent: React.FC<{
       height: '100%',
       fontSize: 20,
     }}>
-      <div>
-        Hello IDE Framework
-        <Icon icon='rundebug' />
-      </div>
-      <ul style={{margin: 0}}>
-        {props.list.map((n) => <li key={n}>{n}</li>)}
-      </ul>
-      <div>
-        Powered by{' '}
-        <a href='http://gitlab.alibaba-inc.com/kaitian/ide-framework' target='_blank' rel='noreferrer'>
-          Kaitian
-        </a>
-      </div>
+      <div style={{
+        background: `url('./resources/kaitian-black.png') center center no-repeat`,
+        height: 120,
+        width: 120,
+        backgroundSize: 120,
+        opacity: 0.3,
+      }}></div>
     </section>
   );
 };
