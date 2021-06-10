@@ -220,9 +220,24 @@ export class ClientCommonContribution implements CommandContribution, Preference
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
+    // 对于 MonacoActionRegistry.COMMON_ACTIONS 我们只做了 command handler 代理
+    // 因此需要增加快捷键代理
+    // 但是在快捷键设置页面会出现两者都存在的情况
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.SELECT_ALL.id,
       keybinding: 'ctrlcmd+a',
+      when: 'editorFocus',
+    });
+
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.UNDO.id,
+      keybinding: 'ctrlcmd+z',
+      when: 'editorFocus',
+    });
+
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.REDO.id,
+      keybinding: 'ctrlcmd+shift+z',
       when: 'editorFocus',
     });
   }
