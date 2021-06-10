@@ -70,7 +70,7 @@ export class CustomEditorContributionPoint extends VSCodeContributePoint<CustomE
             results.push({
               componentId,
               type: 'component',
-              title: customEditor.displayName || customEditor.viewType,
+              title: customEditor.displayName ? this.getLocalizeFromNlsJSON(customEditor.displayName) : customEditor.viewType,
               // TODO: 根据用户配置调整
               weight: priority === 'default' ? Number.MAX_SAFE_INTEGER : 0,
               saveResource: (resource) => {

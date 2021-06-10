@@ -182,6 +182,7 @@ export async function initWorkerTheadAPIProxy(
   const MainThreadUrlsAPI = injector.get(MainThreadUrls, [workerProtocol]);
   const MainthreadCommentsAPI = injector.get(MainthreadComments, [workerProtocol, MainThreadCommandsAPI]);
   const MainThreadThemingAPI = injector.get(MainThreadTheming, [workerProtocol]);
+  const MainThreadCustomEditorAPI = injector.get(MainThreadCustomEditor, [workerProtocol, MainThreadWebviewAPI]);
 
   workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
@@ -202,6 +203,7 @@ export async function initWorkerTheadAPIProxy(
   workerProtocol.set<IMainThreadComments>(MainThreadAPIIdentifier.MainThreadComments, MainthreadCommentsAPI);
   workerProtocol.set<IMainThreadProgress>(MainThreadAPIIdentifier.MainThreadProgress, MainThreadProgressAPI);
   workerProtocol.set<IMainThreadTheming>(MainThreadAPIIdentifier.MainThreadTheming, MainThreadThemingAPI);
+  workerProtocol.set<IMainThreadCustomEditor>(MainThreadAPIIdentifier.MainThreadCustomEditor, MainThreadCustomEditorAPI);
 
   // 作用和 node extension service 等同，用来设置 webview resourceRoots
   await MainThreadWebviewAPI.init();
@@ -224,5 +226,6 @@ export async function initWorkerTheadAPIProxy(
     MainThreadUrlsAPI.dispose();
     MainthreadCommentsAPI.dispose();
     MainThreadThemingAPI.dispose();
+    MainThreadCustomEditorAPI.dispose();
   };
 }
