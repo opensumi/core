@@ -13,7 +13,7 @@ export const FILES_DEFAULTS = {
   filesWatcherExclude: {
     '**/.git/objects/**': true,
     '**/.git/subtree-cache/**': true,
-    '**/node_modules/**': true,
+    '**/node_modules/**/*': true,
   },
   filesExclude: {
     '**/.git': true,

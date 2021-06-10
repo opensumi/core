@@ -15,6 +15,7 @@ import {
   isUndefined,
   DebugLog,
   DisposableCollection,
+  isWindows,
 } from '@ali/ide-core-common';
 import { FileUri, AppConfig } from '@ali/ide-core-node';
 import { NsfwFileSystemWatcherServer } from './file-service-watcher';
@@ -36,6 +37,9 @@ import * as fileType from 'file-type';
 import { ParsedPattern, parse } from '@ali/ide-core-common/lib/utils/glob';
 
 const debugLog = new DebugLog();
+
+const UNIX_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/**/*';
+const WINDOWS_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';
 
 @Injectable({ multiple: true })
 export class DiskFileSystemProvider extends RPCService implements IDiskFileProvider {
@@ -301,9 +305,17 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
 
   // 出于通信成本的考虑，排除文件的逻辑必须放在node层（fs provider层，不同的fs实现的exclude应该不一样）
   setWatchFileExcludes(excludes: string[]) {
-    debugLog.info('set watch file exclude:', excludes);
-    this.watchFileExcludes = excludes;
-    this.watchFileExcludesMatcherList = excludes.map((pattern) => parse(pattern));
+    let watcherExcludes = excludes;
+    // 兼容 Windows 下对 node_modules 默认排除监听的逻辑
+    // 由于 files.watcherExclude 允许用户手动修改，所以只对默认值做处理
+    // 在 Windows 下将 **/node_modules/**/* 替换为 **/node_modules/*/**
+    if (isWindows && excludes.includes(UNIX_DEFAULT_NODE_MODULES_EXCLUDE)) {
+      const idx = watcherExcludes.findIndex((v) => v === UNIX_DEFAULT_NODE_MODULES_EXCLUDE);
+      watcherExcludes = watcherExcludes.splice(idx, 1, WINDOWS_DEFAULT_NODE_MODULES_EXCLUDE);
+    }
+    debugLog.info('set watch file exclude:', watcherExcludes);
+    this.watchFileExcludes = watcherExcludes;
+    this.watchFileExcludesMatcherList = watcherExcludes.map((pattern) => parse(pattern));
   }
 
   getWatchFileExcludes() {

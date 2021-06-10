@@ -410,6 +410,8 @@ export const defaultSettingSections: {
         { id: 'explorer.autoReveal', localized: 'preference.explorer.autoReveal' },
         // 搜索
         { id: 'search.exclude', localized: 'preference.search.exclude.title' },
+        { id: 'files.exclude', localized: 'preference.files.exclude.title' },
+        { id: 'files.watcherExclude', localized: 'preference.files.watcherExclude.title' },
         // 输出
         { id: 'output.maxChannelLine', localized: 'output.maxChannelLine' },
         { id: 'output.enableLogHighlight', localized: 'output.enableLogHighlight' },

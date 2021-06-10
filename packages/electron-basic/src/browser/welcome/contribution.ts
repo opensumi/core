@@ -1,4 +1,4 @@
-import { Domain, URI, localize, ClientAppContribution } from '@ali/ide-core-browser';
+import { Domain, URI, localize, ClientAppContribution, RecentFilesManager } from '@ali/ide-core-browser';
 import { BrowserEditorContribution, EditorComponentRegistry, EditorComponentRenderMode } from '@ali/ide-editor/lib/browser';
 import { ResourceService, IResource, WorkbenchEditorService } from '@ali/ide-editor';
 import { EditorWelcomeComponent } from './welcome';
@@ -10,10 +10,13 @@ import { IWelcomeMetaData } from './common';
 export class WelcomeContribution implements BrowserEditorContribution, ClientAppContribution {
 
   @Autowired(IWorkspaceService)
-  workspaceService: IWorkspaceService;
+  private readonly workspaceService: IWorkspaceService;
 
   @Autowired(WorkbenchEditorService)
-  editorService: WorkbenchEditorService;
+  private readonly editorService: WorkbenchEditorService;
+
+  @Autowired(RecentFilesManager)
+  private readonly recentFilesManager: RecentFilesManager;
 
   registerEditorComponent(registry: EditorComponentRegistry) {
     registry.registerEditorComponent({
@@ -34,7 +37,7 @@ export class WelcomeContribution implements BrowserEditorContribution, ClientApp
     service.registerResourceProvider({
       scheme: 'welcome',
       provideResource: async (uri: URI): Promise<IResource<IWelcomeMetaData>> => {
-        return Promise.all([this.workspaceService.getMostRecentlyUsedWorkspaces(), this.workspaceService.getMostRecentlyOpenedFiles()]).then(([workspaces, files]) => {
+        return Promise.all([this.workspaceService.getMostRecentlyUsedWorkspaces(), this.recentFilesManager.getMostRecentlyOpenedFiles()]).then(([workspaces, files]) => {
           return {
             uri,
             name: localize('welcome.title'),

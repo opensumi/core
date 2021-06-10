@@ -180,14 +180,6 @@ export interface IWorkspaceService {
   getMostRecentlyUsedWorkspace(): Promise<string | undefined>;
   // 设置最近使用的工作区
   setMostRecentlyUsedWorkspace(uri: string): Promise<void>;
-  // 设置最近打开的文件
-  setMostRecentlyOpenedFile(uri: string): Promise<void>;
-  // 获取最近打开的文件
-  getMostRecentlyOpenedFiles(): Promise<string[] | undefined>;
-  // 设置最近搜索关键字
-  setMostRecentlySearchWord(word: string | string[]): Promise<void>;
-  // 获取最近搜索关键字
-  getMostRecentlySearchWord(): Promise<string[] | undefined>;
   // 操作工作区目录
   spliceRoots(start: number, deleteCount?: number,  workspaceToName?: {[key: string]: string}, ...rootsToAdd: URI[]): Promise<URI[]>;
   // 获取相对于工作区的路径
