@@ -1,8 +1,8 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { URI, IFileServiceClient, StorageProvider } from '@ali/ide-core-common';
-import { PreferenceService, CorePreferences, FILES_DEFAULTS, IClientApp, IWindowService } from '@ali/ide-core-browser';
+import { URI, IFileServiceClient, StorageProvider, Disposable } from '@ali/ide-core-common';
+import { PreferenceService, FILES_DEFAULTS, IClientApp, IWindowService } from '@ali/ide-core-browser';
 import { WorkspaceModule } from '../../src/browser';
 import { FileStat, DiskFileServicePath } from '@ali/ide-file-service';
 import { WorkspacePreferences } from '../../src/browser/workspace-preferences';
@@ -20,7 +20,7 @@ describe('WorkspaceService should be work while workspace was a single directory
     isDirectory: true,
   } as FileStat;
   const mockFileSystem = {
-    onFilesChanged: jest.fn(),
+    onFilesChanged: jest.fn(() => Disposable.create(() => {})),
     watchFileChanges: jest.fn(() => ({
       dispose: () => {},
     })),
@@ -44,13 +44,19 @@ describe('WorkspaceService should be work while workspace was a single directory
     createFile: jest.fn(),
     access: (...args) => true,
   };
-  const mockCorePreferences = {
-    onPreferenceChanged: jest.fn(),
-    'files.watcherExclude': FILES_DEFAULTS.filesWatcherExclude,
-    'files.exclude': FILES_DEFAULTS.filesExclude,
+  const mockPreferenceService = {
+    onPreferenceChanged: jest.fn(() => Disposable.create(() => {})),
+    get: (preferenceName: string) => {
+      if (preferenceName === 'files.watcherExclude') {
+        return FILES_DEFAULTS.filesWatcherExclude;
+      } else if (preferenceName === 'files.exclude') {
+        return FILES_DEFAULTS.filesExclude;
+      }
+    },
+    inspect: jest.fn(),
   };
   const mockWorkspacePreferences = {
-    onPreferenceChanged: jest.fn(),
+    onPreferenceChanged: jest.fn(() => Disposable.create(() => {})),
     'workspace.supportMultiRootWorkspace': true,
   };
   let mockStorage = {};
@@ -67,9 +73,6 @@ describe('WorkspaceService should be work while workspace was a single directory
   };
   const mockWindowService = {
     openNewWindow: jest.fn(),
-  };
-  const mockPreferenceService = {
-    inspect: jest.fn(),
   };
   beforeEach(async (done) => {
     injector = createBrowserInjector([
@@ -88,10 +91,6 @@ describe('WorkspaceService should be work while workspace was a single directory
       {
         token: DiskFileServicePath,
         useClass: MockFsProvider,
-      },
-      {
-        token: CorePreferences,
-        useValue: mockCorePreferences,
       },
       {
         token: StorageProvider,
@@ -128,7 +127,7 @@ describe('WorkspaceService should be work while workspace was a single directory
     mockFileSystem.exists.mockReset();
     mockFileSystem.createFile.mockReset();
     mockFileSystem.resolveContent.mockReset();
-    mockCorePreferences.onPreferenceChanged.mockReset();
+    mockPreferenceService.onPreferenceChanged.mockClear();
     mockRecentStorage.get.mockReset();
     mockRecentStorage.set.mockReset();
     mockClientApp.fireOnReload.mockReset();
@@ -137,18 +136,11 @@ describe('WorkspaceService should be work while workspace was a single directory
     injector.disposeOne(IWorkspaceService);
   });
 
-  it('should have enough API', async (done) => {
-    expect(workspaceService.workspace).toBeDefined();
-    expect(mockFileSystem.watchFileChanges).toBeCalledWith(new URI(workspaceService.workspace!.uri));
-    expect(mockFileSystem.onFilesChanged).toBeCalledTimes(1);
-    expect(mockFileSystem.setFilesExcludes).toBeCalledTimes(1);
-    expect(mockFileSystem.setWatchFileExcludes).toBeCalledTimes(1);
-    expect((await workspaceService.roots).length).toBe(1);
-    expect(workspaceService.workspace).toBeDefined();
-    expect(workspaceService.opened).toBeTruthy();
-    expect(workspaceService.isMultiRootWorkspaceEnabled).toBeTruthy();
+  it('should have enough API', () => {
+    expect(workspaceService.workspace).toBeUndefined();
+    expect(workspaceService.opened).toBeFalsy();
+    expect(workspaceService.isMultiRootWorkspaceEnabled).toBeFalsy();
     expect(workspaceService.isMultiRootWorkspaceOpened).toBeFalsy();
-    done();
   });
 
   it('tryGetRoots method should be work', () => {

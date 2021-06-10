@@ -28,10 +28,9 @@ import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE, localize, formatLoca
 import { FileStat } from '@ali/ide-file-service';
 import { FileChangeEvent } from '@ali/ide-file-service/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { WorkspacePreferences } from './workspace-preferences';
-import * as jsoncparser from 'jsonc-parser';
 import { Path } from '@ali/ide-core-common/lib/path';
+import * as jsoncparser from 'jsonc-parser';
 
 @Injectable()
 export class WorkspaceService implements IWorkspaceService {
@@ -63,19 +62,18 @@ export class WorkspaceService implements IWorkspaceService {
   protected readonly appConfig: AppConfig;
 
   @Autowired(StorageProvider)
-  private storageProvider: StorageProvider;
+  private readonly storageProvider: StorageProvider;
 
   private recentGlobalStorage: IStorage;
 
-  @Autowired(CorePreferences)
-  corePreferences: CorePreferences;
-
   @Autowired(IClientApp)
-  clientApp: IClientApp;
+  private readonly clientApp: IClientApp;
 
   protected applicationName: string;
 
   private _whenReady: Deferred<void> = new Deferred();
+
+  protected readonly toDisposableCollection: DisposableCollection = new DisposableCollection();
 
   // 映射工作区显示的文字信息
   private workspaceToName = {};
@@ -93,23 +91,21 @@ export class WorkspaceService implements IWorkspaceService {
     this.applicationName = ClientAppConfigProvider.get().applicationName;
     const wpUriString = this.getDefaultWorkspacePath();
 
-    await this.setFilesPreferences();
+    this.listenPreference();
 
     if (wpUriString) {
       const wpStat = await this.toFileStat(wpUriString);
       await this.setWorkspace(wpStat);
-      this.fileServiceClient.onFilesChanged((event) => {
+      this.toDisposableCollection.push(this.fileServiceClient.onFilesChanged((event) => {
         if (this._workspace && FileChangeEvent.isAffected(event, new URI(this._workspace.uri))) {
           this.updateWorkspace();
         }
-      });
-      this.preferences.onPreferenceChanged((event) => {
-        const multiRootPrefName = 'workspace.supportMultiRootWorkspace';
-        if (event.preferenceName === multiRootPrefName) {
-          this.updateWorkspace();
-        }
-      });
+      }));
+    } else {
+      // 处理空工作区情况
+      this.deferredRoots.resolve([]);
     }
+
     this._whenReady.resolve();
   }
 
@@ -117,25 +113,18 @@ export class WorkspaceService implements IWorkspaceService {
     return home.resolve(this.appConfig.storageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME).resolve(`${UNTITLED_WORKSPACE}.${KAITIAN_MULTI_WORKSPACE_EXT}`).withScheme('file');
   }
 
-  protected async setFilesPreferences() {
+  protected listenPreference() {
     const watchExcludeName = 'files.watcherExclude';
     const filesExcludeName = 'files.exclude';
+    const multiRootPrefName = 'workspace.supportMultiRootWorkspace';
 
-    // TODO 尚不支持多 roots 更新
-    await this.fileServiceClient.setWatchFileExcludes(this.getPreferenceFileExcludes(watchExcludeName));
-    await this.fileServiceClient.setFilesExcludes(
-      this.getPreferenceFileExcludes(filesExcludeName),
-      this._roots.map((stat) => {
-        return stat.uri;
-      }),
-    );
-    this.corePreferences.onPreferenceChanged((e) => {
+    this.toDisposableCollection.push(this.preferenceService.onPreferenceChanged((e) => {
+      // 工作区切换到多工作区时，可能会触发一次所有工作区配置的 Changed
       if (e.preferenceName === watchExcludeName) {
-        this.fileServiceClient.setWatchFileExcludes(this.getPreferenceFileExcludes(watchExcludeName));
-      }
-      if (e.preferenceName === filesExcludeName) {
+        this.fileServiceClient.setWatchFileExcludes(this.getFlattenExcludes(watchExcludeName));
+      } else if (e.preferenceName === filesExcludeName) {
         this.fileServiceClient.setFilesExcludes(
-          this.getPreferenceFileExcludes(filesExcludeName),
+          this.getFlattenExcludes(filesExcludeName),
           this._roots.map((stat) => {
             return stat.uri;
           }),
@@ -143,13 +132,30 @@ export class WorkspaceService implements IWorkspaceService {
           // 通知目录树更新
           this.onWorkspaceChangeEmitter.fire(this._roots);
         });
+      } else if (e.preferenceName === multiRootPrefName) {
+        this.updateWorkspace();
       }
-    });
+    }));
   }
 
-  protected getPreferenceFileExcludes(name: string): string[] {
+  protected async setFileServiceExcludes() {
+    const watchExcludeName = 'files.watcherExclude';
+    const filesExcludeName = 'files.exclude';
+
+    await this.preferenceService.ready;
+    await this.fileServiceClient.setWatchFileExcludes(this.getFlattenExcludes(watchExcludeName));
+    await this.fileServiceClient.setFilesExcludes(
+      this.getFlattenExcludes(filesExcludeName),
+      this._roots.map((stat) => {
+        return stat.uri;
+      }),
+    );
+    this.onWorkspaceChangeEmitter.fire(this._roots);
+  }
+
+  protected getFlattenExcludes(name: string): string[] {
     const excludes: string[] = [];
-    const fileExcludes = this.corePreferences[name];
+    const fileExcludes = this.preferenceService.get<any>(name);
     if (fileExcludes) {
       for (const key of Object.keys(fileExcludes)) {
         if (fileExcludes[key]) {
@@ -166,9 +172,17 @@ export class WorkspaceService implements IWorkspaceService {
   protected getDefaultWorkspacePath(): string | undefined {
     if (this.appConfig.workspaceDir) {
       // 默认读取传入配置路径
-      return URI.file(this.appConfig.workspaceDir).toString();
+      let path: string;
+      try {
+        // 尝试使用 Windows 下带盘符的路径进行解析
+        path = new URL(URI.file(this.appConfig.workspaceDir).codeUri.fsPath).toString();
+      } catch (e) {
+        // 解析失败时仍然使用非 Windows 环境下的解析方式
+        path = URI.file(this.appConfig.workspaceDir).toString();
+      }
+      return path;
     } else {
-      return URI.file('undefined').toString();
+      return undefined;
     }
   }
 
@@ -243,6 +257,8 @@ export class WorkspaceService implements IWorkspaceService {
       this.deferredRoots = new Deferred<FileStat[]>();
       this.deferredRoots.resolve(this._roots);
       this.onWorkspaceChangeEmitter.fire(this._roots);
+      // 重新根据工作区Roots设置 fileExclude 及 watchExclude
+      this.setFileServiceExcludes();
     }
   }
 
@@ -365,18 +381,6 @@ export class WorkspaceService implements IWorkspaceService {
     this.recentGlobalStorage = this.recentGlobalStorage || await this.storageProvider(STORAGE_NAMESPACE.GLOBAL_RECENT_DATA);
     return this.recentGlobalStorage;
   }
-  // TODO RecentStorage相关逻辑迁移到各自的实现内
-  async setMostRecentlyOpenedFile(uriString: string) {
-  }
-  async getMostRecentlyOpenedFiles() {
-    return [''];
-  }
-  async getMostRecentlySearchWord() {
-    return [''];
-  }
-  async setMostRecentlySearchWord(word) {
-
-  }
 
   /**
    * 当已经存在打开的工作区时，返回true
@@ -465,7 +469,7 @@ export class WorkspaceService implements IWorkspaceService {
     }
   }
 
-  async spliceRoots(start: number, deleteCount: number = 0, workspaceToName: {[key: string]: string} = {}, ...rootsToAdd: URI[]): Promise<URI[]> {
+  async spliceRoots(start: number, deleteCount: number = 0, workspaceToName: { [key: string]: string } = {}, ...rootsToAdd: URI[]): Promise<URI[]> {
     if (!this._workspace) {
       throw new Error('There is not active workspace');
     }
@@ -730,5 +734,9 @@ export class WorkspaceService implements IWorkspaceService {
       }
     }
     return decodeURI(path);
+  }
+
+  dispose() {
+    this.toDisposableCollection.dispose();
   }
 }

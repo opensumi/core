@@ -95,7 +95,7 @@ export class RPCProxy {
                 connection.sendNotification(prop, ...args);
               }
 
-              resolve();
+              resolve(null);
             } else {
               let requestResult: Promise<any>;
               if (isSingleArray) {
@@ -172,24 +172,38 @@ export class RPCProxy {
       });
     }
   }
+
   private waitForConnection() {
     this.connectionPromise = new Promise((resolve) => {
       this.connectionPromiseResolve = resolve;
     });
   }
-  private async onRequest(prop: PropertyKey, ...args: any[]) {
-    // if (prop === '$$call') {
-    //   try {
-    //     const method = args[0];
-    //     const methodArgs = args.slice(1).map((arg: any) => {
-    //       return eval(arg);
-    //     });
 
-    //     return eval(`this.proxyService.${method}(...methodArgs)`);
-    //   } catch (e) {}
-    // } else {
+  /**
+   * 对于纯数组参数的情况，收到请求/通知后做展开操作
+   * 因为在通信层会为每个 rpc 调用添加一个 CancellationToken 参数
+   * 如果参数本身是数组, 在方法中如果使用 spread 运算符获取参数(...args)，则会出现 [...args, MutableToken] 这种情况
+   * 所以发送请求时将这类参数统一再用数组包了一层，形如 [[...args]], 参考 {@link RPCProxy.get get} 方法
+   * 此时接收到的数组类参数固定长度为 2，且最后一项一定是 MutableToken
+   * @param args
+   * @returns args
+   */
+  private serializeArguments(args: any[]): any[] {
+    const maybeCancellationToken = args[args.length - 1];
+    if (
+      args.length === 2 &&
+      Array.isArray(args[0]) &&
+      maybeCancellationToken.hasOwnProperty('_isCancelled')
+    ) {
+      return [...args[0], maybeCancellationToken];
+    }
+
+    return args;
+  }
+
+  private async onRequest(prop: PropertyKey, ...args: any[]) {
       try {
-        const result = await this.proxyService[prop](...args);
+        const result = await this.proxyService[prop](...this.serializeArguments(args));
 
         return {
           error: false,
@@ -204,12 +218,11 @@ export class RPCProxy {
           },
         };
       }
-
-    // }
   }
+
   private onNotification(prop: PropertyKey, ...args: any[]) {
     try {
-      this.proxyService[prop](...args);
+      this.proxyService[prop](...this.serializeArguments(args));
     } catch (e) {
       this.logger.warn('notification', e);
     }
