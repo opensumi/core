@@ -1,4 +1,4 @@
-import { IApplicationService, URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, IElectronNativeDialogService, ToolbarRegistry, KeybindingRegistry, IWindowService, IClipboardService, PreferenceService, formatLocalize, OS } from '@ali/ide-core-browser';
+import { IApplicationService, URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, IElectronNativeDialogService, ToolbarRegistry, KeybindingRegistry, IWindowService, IClipboardService, PreferenceService, formatLocalize, OS, isElectronRenderer } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileTreeService } from './file-tree.service';
@@ -559,54 +559,92 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       },
       isVisible: () => {
         return (!!this.fileTreeModelService.contextMenuFile && Directory.is(this.fileTreeModelService.contextMenuFile)) ||
-        (!!this.fileTreeModelService.focusedFile && Directory.is(this.fileTreeModelService.focusedFile));
+          (!!this.fileTreeModelService.focusedFile && Directory.is(this.fileTreeModelService.focusedFile));
       },
       isEnabled: () => {
         return this.fileTreeModelService.pasteStore && this.fileTreeModelService.pasteStore.type !== PasteTypes.NONE;
       },
     });
 
-    commands.registerCommand(FILE_COMMANDS.OPEN_FOLDER, {
-      execute: (options: { newWindow: boolean }) => {
-        const dialogService: IElectronNativeDialogService = this.injector.get(IElectronNativeDialogService);
-        const windowService: IWindowService = this.injector.get(IWindowService);
-        dialogService.showOpenDialog({
-          title: localize('workspace.openDirectory'),
-          properties: [
-            'openDirectory',
-          ],
-        }).then((paths) => {
-          if (paths && paths.length > 0) {
-            windowService.openWorkspace(URI.file(paths[0]), options || { newWindow: true });
+    if (isElectronRenderer()) {
+      commands.registerCommand(FILE_COMMANDS.VSCODE_OPEN_FOLDER, {
+        execute: (uri?: URI, arg?: boolean | { forceNewWindow?: boolean }) => {
+          const windowService: IWindowService = this.injector.get(IWindowService);
+          const options = { newWindow: true };
+          if (typeof arg === 'boolean') {
+            options.newWindow = arg;
+          } else {
+            options.newWindow = typeof arg?.forceNewWindow === 'boolean' ? arg.forceNewWindow : true;
           }
-        });
-      },
-    });
 
-    commands.registerCommand(FILE_COMMANDS.OPEN_WORKSPACE, {
-      execute: (options: { newWindow: boolean }) => {
-        const supportsOpenWorkspace = this.preferenceService.get('application.supportsOpenWorkspace');
-        if (!supportsOpenWorkspace) {
-          return;
-        }
-        const dialogService: IElectronNativeDialogService = this.injector.get(IElectronNativeDialogService);
-        const windowService: IWindowService = this.injector.get(IWindowService);
-        dialogService.showOpenDialog({
-          title: localize('workspace.openWorkspace'),
-          properties: [
-            'openFile',
-          ],
-          filters: [{
-            name: localize('workspace.openWorkspaceTitle'),
-            extensions: [KAITIAN_MULTI_WORKSPACE_EXT],
-          }],
-        }).then((paths) => {
-          if (paths && paths.length > 0) {
-            windowService.openWorkspace(URI.file(paths[0]), options || { newWindow: true });
+          if (uri) {
+            return windowService.openWorkspace(uri, options);
           }
-        });
-      },
-    });
+
+          return this.commandService.executeCommand(FILE_COMMANDS.OPEN_FOLDER.id, options);
+        },
+      });
+
+      commands.registerCommand(FILE_COMMANDS.OPEN_FOLDER, {
+        execute: (options: { newWindow: boolean }) => {
+          const dialogService: IElectronNativeDialogService = this.injector.get(IElectronNativeDialogService);
+          const windowService: IWindowService = this.injector.get(IWindowService);
+          dialogService.showOpenDialog({
+            title: localize('workspace.openDirectory'),
+            properties: [
+              'openDirectory',
+            ],
+          }).then((paths) => {
+            if (paths && paths.length > 0) {
+              windowService.openWorkspace(URI.file(paths[0]), options || { newWindow: true });
+            }
+          });
+        },
+      });
+
+      commands.registerCommand(FILE_COMMANDS.OPEN_WORKSPACE, {
+        execute: (options: { newWindow: boolean }) => {
+          const supportsOpenWorkspace = this.preferenceService.get('application.supportsOpenWorkspace');
+          if (!supportsOpenWorkspace) {
+            return;
+          }
+          const dialogService: IElectronNativeDialogService = this.injector.get(IElectronNativeDialogService);
+          const windowService: IWindowService = this.injector.get(IWindowService);
+          dialogService.showOpenDialog({
+            title: localize('workspace.openWorkspace'),
+            properties: [
+              'openFile',
+            ],
+            filters: [{
+              name: localize('workspace.openWorkspaceTitle'),
+              extensions: [KAITIAN_MULTI_WORKSPACE_EXT],
+            }],
+          }).then((paths) => {
+            if (paths && paths.length > 0) {
+              windowService.openWorkspace(URI.file(paths[0]), options || { newWindow: true });
+            }
+          });
+        },
+      });
+
+      commands.registerCommand(FILE_COMMANDS.REVEAL_IN_EXPLORER, {
+        execute: (uri?: URI) => {
+          const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
+          if (handler && !handler.isVisible) {
+            handler.activate();
+          }
+          if (handler && handler.isCollapsed(ExplorerResourceViewId)) {
+            handler?.setCollapsed(ExplorerResourceViewId, false);
+          }
+          if (!uri && this.workbenchEditorService.currentEditor) {
+            uri = this.workbenchEditorService.currentEditor.currentUri!;
+          }
+          if (uri) {
+            this.fileTreeModelService.location(uri);
+          }
+        },
+      });
+    }
 
     commands.registerCommand(FILE_COMMANDS.FOCUS_FILES, {
       execute: () => {
@@ -673,24 +711,6 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
     commands.registerCommand(FILE_COMMANDS.EXPAND, {
       execute: () => {
         this.fileTreeModelService.expandCurrentFile();
-      },
-    });
-
-    commands.registerCommand(FILE_COMMANDS.REVEAL_IN_EXPLORER, {
-      execute: (uri?: URI) => {
-        const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
-        if (handler && !handler.isVisible) {
-          handler.activate();
-        }
-        if (handler && handler.isCollapsed(ExplorerResourceViewId)) {
-          handler?.setCollapsed(ExplorerResourceViewId, false);
-        }
-        if (!uri && this.workbenchEditorService.currentEditor) {
-          uri = this.workbenchEditorService.currentEditor.currentUri!;
-        }
-        if (uri) {
-          this.fileTreeModelService.location(uri);
-        }
       },
     });
   }

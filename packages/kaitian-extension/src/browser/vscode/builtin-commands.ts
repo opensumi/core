@@ -158,7 +158,7 @@ export const OPEN: Command = {
 // 打开文件夹
 export const OPEN_FOLDER: Command = {
   id: 'vscode.openFolder',
-  delegate: FILE_COMMANDS.OPEN_FOLDER.id,
+  delegate: FILE_COMMANDS.VSCODE_OPEN_FOLDER.id,
 };
 
 // 比较内容

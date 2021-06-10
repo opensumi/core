@@ -26,7 +26,7 @@ describe('FileTreeContribution', () => {
         return tabbarHandlerMap.get(name);
       }
       const handler = {
-        updateViewTitle:  jest.fn(),
+        updateViewTitle: jest.fn(),
         onActivate: jest.fn(),
       };
       tabbarHandlerMap.set(name, handler);
@@ -171,7 +171,7 @@ describe('FileTreeContribution', () => {
       const contribution = mockInjector.get(FileTreeContribution);
       const register = jest.fn();
       contribution.registerCommands({ registerCommand: register } as any);
-      expect(register).toBeCalledTimes(31);
+      expect(register).toBeCalledTimes(28);
     });
 
     it('should registerMenus be work', async () => {

@@ -106,6 +106,11 @@ export namespace FILE_COMMANDS {
     label: '%file.open.folder%',
   };
 
+  export const VSCODE_OPEN_FOLDER: Command = {
+    id: 'filetree.open.vscode_open_folder',
+    category: CATEGORY,
+  };
+
   export const OPEN_WORKSPACE: Command = {
     id: 'filetree.open.workspace',
     category: CATEGORY,
