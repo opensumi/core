@@ -7,6 +7,8 @@ import { DebugSession } from '../../debug-session';
 import throttle = require('lodash.throttle');
 import { DebugConsoleTreeModel } from './debug-console-model';
 
+type ConsoleNodes = DebugConsoleNode | AnsiConsoleNode | DebugVariableContainer;
+
 @Injectable({ multiple: true})
 export class DebugConsoleSession {
 
@@ -22,16 +24,20 @@ export class DebugConsoleSession {
 
   protected fireDidChange: any = throttle(() => this.onDidChangeEmitter.fire(), 50);
 
-  private nodes: (DebugConsoleNode | AnsiConsoleNode | DebugVariableContainer)[] = [];
-
   private onDidChangeEmitter: Emitter<void> = new Emitter();
 
   constructor(@Optional() private session: DebugSession, @Optional() private treeModel: DebugConsoleTreeModel) {
     this.init();
   }
 
+  /**
+   * 这里需要将 tree 的 children 做扁平处理
+   * 因为当用户在控制台输入表达式求值时，得到的结果如果是对象，也需要把这个对象的 children 给扔到 DebugConsoleRoot.updatePresetChildren 方法里去
+   * 否则会出现，对象展开的状态下，有新的日志内容发送过来时，对象的所有子属性都消失的情况，
+   */
   resolveChildren() {
-    return this.nodes;
+    const flattenedBranch = this.treeModel.root.flattenedBranch || [];
+    return flattenedBranch.map((id: number) => this.treeModel.root.getTreeNodeById(id)) as ConsoleNodes[];
   }
 
   async init() {
@@ -43,7 +49,6 @@ export class DebugConsoleSession {
   }
 
   clear(): void {
-    this.nodes = [];
     this.fireDidChange();
   }
 
@@ -63,13 +68,13 @@ export class DebugConsoleSession {
       await node.hardReloadChildren(true);
       if (node.children) {
         for (const child of node.children) {
-          this.nodes.push(child as DebugConsoleNode);
+          this.treeModel.root.insertItem(child as DebugConsoleNode);
         }
       }
     } else if (typeof body.output === 'string') {
       for (const content of body.output.split('\n')) {
         if (!!content) {
-          this.nodes.push(new AnsiConsoleNode(content, this.treeModel?.root, severity, source, line));
+          this.treeModel.root.insertItem(new AnsiConsoleNode(content, this.treeModel?.root, severity, source, line));
         }
       }
     }
@@ -77,9 +82,9 @@ export class DebugConsoleSession {
   }
 
   async execute(value: string): Promise<void> {
-    this.nodes.push(new AnsiConsoleNode(value, this.treeModel.root, MessageType.Info));
+    this.treeModel.root.insertItem(new AnsiConsoleNode(value, this.treeModel.root, MessageType.Info));
     const expression = new DebugConsoleNode(this.session, value, this.treeModel?.root as ExpressionContainer);
-    this.nodes.push(expression);
+    this.treeModel.root.insertItem(expression);
     this.fireDidChange();
   }
 
@@ -88,20 +93,20 @@ export class DebugConsoleSession {
       return;
     }
 
-    const lastItem = this.nodes.slice(-1)[0];
+    const lastItem = this.resolveChildren().slice(-1)[0];
     if (lastItem instanceof AnsiConsoleNode && lastItem.description === this.uncompletedItemContent) {
-      this.nodes.pop();
+      this.resolveChildren().pop();
       this.uncompletedItemContent += value;
     } else {
       this.uncompletedItemContent = value;
     }
 
-    this.nodes.push(new AnsiConsoleNode(this.uncompletedItemContent, this.treeModel?.root, MessageType.Info));
+    this.treeModel.root.insertItem(new AnsiConsoleNode(this.uncompletedItemContent, this.treeModel?.root, MessageType.Info));
     this.fireDidChange();
   }
 
   appendLine(value: string): void {
-    this.nodes.push(new AnsiConsoleNode(value, this.treeModel?.root, MessageType.Info));
+    this.treeModel.root.insertItem(new AnsiConsoleNode(value, this.treeModel?.root, MessageType.Info));
     this.fireDidChange();
   }
 }

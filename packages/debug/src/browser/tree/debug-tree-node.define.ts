@@ -24,7 +24,7 @@ export class ExpressionTreeService {
     if (!parent) {
       return result;
     }
-    if (parent.presetChildren) {
+    if (Array.isArray(parent.presetChildren)) {
       return parent.presetChildren;
     }
     if (!this.session || this.session.terminated) {
