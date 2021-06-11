@@ -2,7 +2,7 @@ import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult, IEditorGroupState, ResourceDecorationChangeEvent, IUntitledOptions, SaveReason, getSplitActionFromDragDrop } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider, Emitter, formatLocalize, IReporterService, ILogger } from '@ali/ide-core-common';
-import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution, ResourceOpenTypeChangedEvent, EditorComponentDisposeEvent, EditorActiveResourceStateChangedEvent } from './types';
+import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution, ResourceOpenTypeChangedEvent, EditorComponentDisposeEvent, EditorActiveResourceStateChangedEvent, CodeEditorDidVisibleEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { FILE_COMMANDS, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, MonacoService, IScopedContextKeyService, IContextKey, RecentFilesManager, PreferenceService, IOpenerService } from '@ali/ide-core-browser';
@@ -825,6 +825,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }));
       }
     }));
+    this.eventBus.fire(new CodeEditorDidVisibleEvent({
+      groupName: this.name,
+      type: 'code',
+      editorId: this.codeEditor.getId(),
+    }));
     this.codeEditorReady.resolve();
   }
 
@@ -862,6 +867,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           resource: this.currentResource!,
         }));
       }
+    }));
+    this.eventBus.fire(new CodeEditorDidVisibleEvent({
+      groupName: this.name,
+      type: 'diff',
+      editorId: this.diffEditor.modifiedEditor.getId(),
     }));
     this.diffEditorReady.resolve();
   }
@@ -1128,24 +1138,26 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           this._domNode?.focus();
           // monaco 编辑器的 focus 多了一步检查，由于此时其实对应编辑器的 dom 的 display 为 none （需要等 React 下一次渲染才会改变为 block）,
           // 会引起 document.activeElement !== editor.textArea.domNode，进而会导致focus失败
-          // 此处我们先简单修复把 focus 放到下一个 eventLoop 做。
-          setTimeout(() => {
-            // 此处必须多做一些检查以免不必要的 focus
-            if (this.disposed) {
-              return;
-            }
-            if (this !== this.workbenchEditorService.currentEditorGroup) {
-              return;
-            }
-            if (this.currentEditor === this.codeEditor && this.codeEditor.currentUri?.isEqual(resource.uri)) {
-              try {
-                this.codeEditor.focus();
-              } catch (e) {
-                // noop
+          // 需要等待真正 append 之后再
+          const disposer = this.eventBus.on(CodeEditorDidVisibleEvent, (e) => {
+            if (e.payload.groupName === this.name && e.payload.type === 'code') {
+              disposer.dispose();
+              // 此处必须多做一些检查以免不必要的 focus
+              if (this.disposed) {
+                return;
+              }
+              if (this !== this.workbenchEditorService.currentEditorGroup) {
+                return;
+              }
+              if (this.currentEditor === this.codeEditor && this.codeEditor.currentUri?.isEqual(resource.uri)) {
+                try {
+                  this.codeEditor.focus();
+                } catch (e) {
+                  // noop
+                }
               }
             }
           });
-
         }
 
         // 可能在diff Editor中修改导致为脏
@@ -1160,18 +1172,22 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         if (options.focus) {
           this._domNode?.focus();
           // 理由见上方 codeEditor.focus 部分
-          setTimeout(() => {
-            if (this.disposed) {
-              return;
-            }
-            if (this !== this.workbenchEditorService.currentEditorGroup) {
-              return;
-            }
-            if (this.currentEditor === this.diffEditor.modifiedEditor) {
-              try {
-                this.diffEditor.focus();
-              } catch (e) {
-                // noop
+
+          const disposer = this.eventBus.on(CodeEditorDidVisibleEvent, (e) => {
+            if (e.payload.groupName === this.name && e.payload.type === 'diff') {
+              disposer.dispose();
+              if (this.disposed) {
+                return;
+              }
+              if (this !== this.workbenchEditorService.currentEditorGroup) {
+                return;
+              }
+              if (this.currentEditor === this.diffEditor.modifiedEditor) {
+                try {
+                  this.diffEditor.focus();
+                } catch (e) {
+                  // noop
+                }
               }
             }
           });

@@ -446,3 +446,9 @@ export interface IEditorFeatureContribution {
 export class ResourceOpenTypeChangedEvent extends BasicEvent<URI> {}
 
 export class EditorComponentDisposeEvent extends BasicEvent<IEditorComponent> {}
+
+export class CodeEditorDidVisibleEvent extends BasicEvent<{
+  type: 'code' | 'diff',
+  groupName: string,
+  editorId: string,
+}> {}

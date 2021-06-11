@@ -12,7 +12,7 @@ import { Scroll } from './component/scroll/scroll';
 import { EditorGrid, SplitDirection } from './grid/grid.service';
 import { NavigationBar } from './navigation.view';
 import { Tabs } from './tab.view';
-import { DragOverPosition, EditorComponentRegistry, EditorComponentRenderMode, EditorGroupFileDropEvent, EditorGroupsResetSizeEvent, EditorSide, IEditorComponent } from './types';
+import { DragOverPosition, EditorComponentRegistry, EditorComponentRenderMode, EditorGroupFileDropEvent, EditorGroupsResetSizeEvent, EditorSide, IEditorComponent, CodeEditorDidVisibleEvent } from './types';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import * as styles from './editor.module.less';
 
@@ -313,6 +313,22 @@ export function EditorGroupBody({ group }: { group: EditorGroup }) {
   const editorHasNoTab = React.useMemo(() => {
     return group.resources.length === 0 || !group.currentResource;
   }, [group.resources.length, group.currentResource]);
+
+  React.useEffect(() => {
+    if (group.currentOpenType?.type === 'code') {
+      eventBus.fire(new CodeEditorDidVisibleEvent({
+        groupName: group.name,
+        type: 'code',
+        editorId: group.codeEditor.getId(),
+      }));
+    } else if (group.currentOpenType?.type === 'diff') {
+      eventBus.fire(new CodeEditorDidVisibleEvent({
+        groupName: group.name,
+        type: 'diff',
+        editorId: group.diffEditor.modifiedEditor.getId(),
+      }));
+    }
+  });
 
   return (
     <div

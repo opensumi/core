@@ -3,7 +3,7 @@ import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILang
 import { EditorCollectionServiceImpl } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { ResourceServiceImpl } from '@ali/ide-editor/lib/browser/resource.service';
-import { EditorComponentRegistry, IEditorDecorationCollectionService, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EmptyDocCacheImpl, IEditorFeatureRegistry, BrowserEditorContribution, EditorGroupChangeEvent } from '@ali/ide-editor/lib/browser';
+import { EditorComponentRegistry, IEditorDecorationCollectionService, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EmptyDocCacheImpl, IEditorFeatureRegistry, BrowserEditorContribution, EditorGroupChangeEvent, CodeEditorDidVisibleEvent } from '@ali/ide-editor/lib/browser';
 import { IDocPersistentCacheProvider } from '@ali/ide-editor/lib/common';
 import { EditorComponentRegistryImpl } from '@ali/ide-editor/lib/browser/component';
 import { EditorDecorationCollectionService } from '@ali/ide-editor/lib/browser/editor.decoration.service';
@@ -22,7 +22,6 @@ import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.
 import { isEditStack, isEOLStack } from '@ali/ide-editor/lib/browser/doc-model/editor-is-fn';
 import { IMessageService } from '@ali/ide-overlay';
 import { IConfigurationService } from '@ali/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
-import { delay } from '../../../terminal-next/__tests__/browser/utils';
 
 const injector = createBrowserInjector([]);
 
@@ -146,6 +145,7 @@ describe('workbench editor service tests', () => {
   const resourceService: ResourceService = injector.get(ResourceService);
   const editorComponentRegistry: EditorComponentRegistry = injector.get(EditorComponentRegistry);
   const editorDocModelRegistry: IEditorDocumentModelContentRegistry = injector.get(IEditorDocumentModelContentRegistry);
+  const eventBus: IEventBus = injector.get(IEventBus);
 
   const disposer = new Disposable();
   beforeAll(() => {
@@ -251,7 +251,11 @@ describe('workbench editor service tests', () => {
     const focused = jest.fn();
     editorService.currentEditorGroup.codeEditor.monacoEditor.onDidFocusEditorText(focused);
     await editorService.open(testCodeUri, { focus: true});
-    await delay(100);
+    eventBus.fire(new CodeEditorDidVisibleEvent({
+      groupName: editorService.currentEditorGroup.name,
+      editorId: editorService.currentEditorGroup.codeEditor.getId(),
+      type: 'code',
+    }));
 
     expect(focused).toBeCalled();
 

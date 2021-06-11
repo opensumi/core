@@ -441,12 +441,9 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
     this.disableSelectionEmitter();
     this.monacoEditor.setModel(model);
     if (range) {
-      // 对于第一次打开的文件，选区不能定位到屏幕中间，需要延迟一下等编辑器准备好后触发
-      setTimeout(() => {
-        this.enableSelectionEmitter();
-        this.monacoEditor.revealRangeInCenter(range);
-        this.monacoEditor.setSelection(range);
-      });
+      this.enableSelectionEmitter();
+      this.monacoEditor.revealRangeInCenter(range);
+      this.monacoEditor.setSelection(range);
     } else {
       this.enableSelectionEmitter();
       this.restoreState();
