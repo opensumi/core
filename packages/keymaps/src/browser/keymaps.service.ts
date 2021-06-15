@@ -238,7 +238,8 @@ export class KeymapService implements IKeymapService {
       }
       return this.storeKeybindings;
     } catch (error) {
-      return error;
+      this.logger.warn(`ParseKeybindings fail: ${error.stack}`);
+      return [];
     }
   }
 
@@ -592,7 +593,7 @@ export class KeymapService implements IKeymapService {
         return [];
       }
       // 可能匹配了高亮结果，需要还原部分数据
-      const keybindings = this.keybindings.filter((kb) => this.getRaw(kb.keybinding) === keybinding );
+      const keybindings = this.keybindings.filter((kb) => this.getRaw(kb.keybinding) === keybinding);
       // 只返回全匹配快捷键，不返回包含关系快捷键（包含关系会在保存前提示冲突）
       if (keybindings.length > 0) {
         return keybindings.map((binding) => {
