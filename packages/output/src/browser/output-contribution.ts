@@ -1,7 +1,7 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Autowired } from '@ali/common-di';
 import { Disposable, CommandContribution, CommandRegistry, Command, localize, PreferenceSchema } from '@ali/ide-core-common';
-import { getIcon, PreferenceContribution, MonacoContribution } from '@ali/ide-core-browser';
+import { getIcon, PreferenceContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 
@@ -16,8 +16,8 @@ const OUTPUT_CLEAR: Command = {
   label: localize('output.channel.clear', '清理日志'),
 };
 const OUTPUT_CONTAINER_ID = 'ide-output';
-@Domain(CommandContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MonacoContribution)
-export class OutputContribution extends Disposable implements CommandContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MonacoContribution {
+@Domain(CommandContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution)
+export class OutputContribution extends Disposable implements CommandContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution {
 
   @Autowired()
   private readonly outputService: OutputService;
@@ -27,7 +27,7 @@ export class OutputContribution extends Disposable implements CommandContributio
 
   schema: PreferenceSchema = outputPreferenceSchema;
 
-  onMonacoLoaded() {
+  initialize() {
     this.addDispose(
       monaco.languages.registerLinkProvider('log', this.outputLinkProvider),
     );

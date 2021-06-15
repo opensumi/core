@@ -150,7 +150,10 @@ describe('workbench editor service tests', () => {
   const disposer = new Disposable();
   beforeAll(() => {
     injector.mockCommand('explorer.location');
-    (editorService as unknown as WorkbenchEditorServiceImpl).prepareContextKeyService(injector.get(IContextKeyService));
+    const globalContextKeyService: IContextKeyService = injector.get(IContextKeyService);
+    const editorContextKeyService = globalContextKeyService.createScoped();
+    editorService.setEditorContextKeyService(editorContextKeyService);
+    (editorService as unknown as WorkbenchEditorServiceImpl).prepareContextKeyService();
     disposer.addDispose(resourceService.registerResourceProvider(TestResourceProvider));
     disposer.addDispose(editorComponentRegistry.registerEditorComponent(TestResourceComponent));
     disposer.addDispose(editorComponentRegistry.registerEditorComponentResolver('test', TestResourceResolver));

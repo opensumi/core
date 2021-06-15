@@ -1,32 +1,34 @@
 import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
-import { CompletionProviderRegistry } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
-import { StandaloneCommandService } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
 import { OpenerService } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/openerService';
+import { CompletionProviderRegistry } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { CodeEditorServiceImpl } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/codeEditorServiceImpl';
 import * as monacoActions from '@ali/monaco-editor-core/esm/vs/platform/actions/common/actions';
 import * as monacoKeybindings from '@ali/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingsRegistry';
 import { SimpleKeybinding } from '@ali/monaco-editor-core/esm/vs/base/common/keyCodes';
 import { EditorContextKeys } from '@ali/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
+import { StandaloneCommandService } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
 import { ContextKeyExpr, ContextKeyExprType, ContextKeyOrExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import {
   PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, ISchemaRegistry, Disposable,
   CommandRegistry, IMimeService, CorePreferences, ClientAppContribution, CommandContribution, ContributionProvider,
   Domain, MonacoService, MonacoContribution, ServiceNames, KeybindingContribution, KeybindingRegistry, Keystroke,
-  KeyCode, Key, KeyModifier, isOSX, IContextKeyService, IOpenerService,
+  KeyCode, Key, KeyModifier, isOSX, IContextKeyService, IOpenerService, MonacoOverrideServiceRegistry, FormattingSelectorType,
 } from '@ali/ide-core-browser';
 import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId, IMenuItem, ISubmenuItem } from '@ali/ide-core-browser/lib/menu/next';
 import { IThemeService } from '@ali/ide-theme';
-import { getDebugLogger, URI, ILogger } from '@ali/ide-core-common';
+import { URI, ILogger } from '@ali/ide-core-common';
 
 import { MonacoCommandService, MonacoCommandRegistry, MonacoActionRegistry } from './monaco.command.service';
 import { MonacoMenus } from './monaco-menu';
 import { TextmateService } from './textmate.service';
 import { MonacoSnippetSuggestProvider } from './monaco-snippet-suggest-provider';
 import { KeyCode as MonacoKeyCode } from '@ali/monaco-editor-core';
+import { FormattingConflicts } from '@ali/monaco-editor-core/esm/vs/editor/contrib/format/format';
 
-@Domain(ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution, KeybindingContribution)
-export class MonacoClientContribution implements ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution, KeybindingContribution {
+@Domain(ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution)
+export class MonacoClientContribution implements ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution {
   @Autowired()
   monacoService: MonacoService;
 
@@ -78,31 +80,160 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
+  @Autowired(MonacoOverrideServiceRegistry)
+  private readonly overrideServicesRegistry: MonacoOverrideServiceRegistry;
+
   private KEY_CODE_MAP = [];
 
   async initialize() {
-    // 从 cdn 加载 monaco 和依赖的 vscode 代码
+    // 保留这个空的 loadMonaco 行为
     await this.monacoService.loadMonaco();
-    // 执行所有 contribution 的 onMonacoLoaded 事件，用来添加 overrideService
+    // 注册 monaco 模块原有的 override services
+    // 由于历史原因，这部分实现在 monaco 模块，后需要迁移到 editor 模块
+    this.registerOverrideServices();
+
+    // 执行所有 MonacoContribution
     for (const contribution of this.monacoContributionProvider.getContributions()) {
+      // onMonacoLoaded 待废弃, 暂时也会触发 onMonacoLoaded 事件，待集成方改造以后去除
       if (contribution.onMonacoLoaded) {
+        // tslint:disable-next-line:no-console
+        console.warn(
+          !!contribution.onMonacoLoaded,
+          `MonacoContribution#onMonacoLoaded was deprecated.`,
+        );
         contribution.onMonacoLoaded(this.monacoService);
       }
+
+      // 执行所有 MonacoContribution 的 registerOverrideService 方法，用来注册 overrideService
+      if (contribution.registerOverrideService) {
+        contribution.registerOverrideService(this.overrideServicesRegistry);
+      }
+
+      // 注册 Monaco 内置的格式化选择器，触发 Select 操作时使用 KAITIAN 自己实现的选择器
+      if (contribution.registerMonacoDefaultFormattingSelector) {
+        contribution.registerMonacoDefaultFormattingSelector(this.registryDefaultFormattingSelector);
+      }
+
+      // onContextKeyServiceReady 待废弃, 暂时也会触发 onContextKeyServiceReady 事件，待集成方改造以后去除
+      if (contribution.onContextKeyServiceReady) {
+        // tslint:disable-next-line:no-console
+        console.warn(
+          !!contribution.onContextKeyServiceReady,
+          `MonacoContribution#onContextKeyServiceReady was deprecated.`,
+        );
+        contribution.onContextKeyServiceReady(this.injector.get(IContextKeyService));
+      }
     }
+
+    // 执行所有 SchemaContribution
     for (const contribution of this.schemaContributionProvider.getContributions()) {
       contribution.registerSchema(this.jsonContributionRegistry);
     }
+
+    // 监听 Schema 改变的事件
     this.setSchemaPreferenceListener(this.schemaStore);
+
+    // 监听 preferences 更新事件，同步更新 mime
+    this.setPreferencesChangeListener();
+
     // monaco 的 keycode 和 ide 之间的映射
-    // 依赖 Monaco 加载完毕
     this.KEY_CODE_MAP = require('./monaco.keycode-map').KEY_CODE_MAP;
+
+    // 修改一些 Monaco 内置 Services 的行为
+    this.patchMonacoInternalServices();
+
+    // 注册/拦截 Monaco 内置的菜单
+    this.patchMonacoInternalMenus();
+
   }
 
   onDidStart() {
-    // FIXME - Monaco 20 - ESM
     // DefaultEndOfLine 类型冲突
     // @ts-ignore
-    CompletionProviderRegistry.register(this.snippetSuggestProvider.registedLanguageIds, this.snippetSuggestProvider);
+    CompletionProviderRegistry.register(this.snippetSuggestProvider.registeredLanguageIds, this.snippetSuggestProvider);
+  }
+
+  private registerOverrideServices() {
+    const codeEditorService = this.overrideServicesRegistry.getRegisteredService<CodeEditorServiceImpl>(ServiceNames.CODE_EDITOR_SERVICE);
+
+    // Monaco CommandService
+    const standaloneCommandService = new StandaloneCommandService(StaticServices.instantiationService.get());
+    // 给 monacoCommandService 设置委托，执行 monaco 命令使用 standaloneCommandService 执行
+    this.monacoCommandService.setDelegate(standaloneCommandService);
+    // 替换 monaco 内部的 commandService
+    this.overrideServicesRegistry.registerOverrideService(
+      ServiceNames.COMMAND_SERVICE,
+      this.monacoCommandService,
+    );
+
+    // Monaco OpenerService
+    const monacoOpenerService = new OpenerService(codeEditorService!, this.monacoCommandService);
+    monacoOpenerService.registerOpener({
+      open: (uri) => this.interceptOpen(new URI(uri.toString())),
+    });
+    this.overrideServicesRegistry.registerOverrideService(ServiceNames.OPENER_SERVICE, monacoOpenerService);
+  }
+
+  private patchMonacoInternalServices() {
+    this.patchMonacoThemeService();
+
+    const codeEditorService = this.overrideServicesRegistry.getRegisteredService(ServiceNames.CODE_EDITOR_SERVICE);
+    // 替换 StaticServices 上挂载的 codeEditorService 实例
+    (StaticServices as unknown as any).codeEditorService = {
+      get: () => {
+        return codeEditorService;
+      },
+    };
+  }
+
+  private patchMonacoInternalMenus() {
+    const menuRegistry = this.injector.get(IMenuRegistry) as IMenuRegistry;
+    const monacoMenuRegistry = monacoActions.MenuRegistry;
+    // editor/context
+    monacoMenuRegistry.getMenuItems(monacoActions.MenuId.EditorContext).forEach((item) => {
+      const menuItem = transformMonacoMenuItem(item);
+      /**
+       * monaco 中 editor/context 是一个数字枚举值
+       * kaitian 中是一个 字符串
+       * 这里做了一层代理转换 (下方也有代理注册)
+      */
+      menuRegistry.registerMenuItem(MenuId.EditorContext as unknown as string, menuItem);
+    });
+
+    // editor/context submenu contextPeek
+    monacoMenuRegistry.getMenuItems(monacoActions.MenuId.EditorContextPeek).forEach((item) => {
+      const menuItem = transformMonacoMenuItem(item);
+      menuRegistry.registerMenuItem(monacoActions.MenuId.EditorContextPeek as unknown as string, menuItem);
+    });
+
+    const originalAppendItem = monacoMenuRegistry.appendMenuItem;
+    monacoMenuRegistry.appendMenuItem = (menuId, item) => {
+      const disposer = new Disposable();
+      disposer.addDispose(originalAppendItem.apply(monacoMenuRegistry, [menuId, item]));
+      /**
+       * monaco 中 editor/context 是一个数字枚举值
+       * kaitian 中是一个 字符串
+       * 这里做了一层代理注册
+      */
+      if (menuId === monacoActions.MenuId.EditorContext) {
+        disposer.addDispose(menuRegistry.registerMenuItem(MenuId.EditorContext, transformMonacoMenuItem(item)));
+      } else {
+        disposer.addDispose(menuRegistry.registerMenuItem(menuId as unknown as string, transformMonacoMenuItem(item)));
+      }
+      return disposer;
+    };
+  }
+
+  private registryDefaultFormattingSelector(selector: FormattingSelectorType) {
+    (FormattingConflicts as unknown as any)._selectors.unshift(selector);
+  }
+
+  protected setPreferencesChangeListener() {
+    this.corePreferences.onPreferenceChanged((e) => {
+      if (e.preferenceName === 'files.associations') {
+        this.mimeService.updateMime();
+      }
+    });
   }
 
   protected setSchemaPreferenceListener(registry: ISchemaStore) {
@@ -147,77 +278,6 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
       }
       return theme;
     };
-  }
-
-  onMonacoLoaded(monacoService: MonacoService) {
-    this.patchMonacoThemeService();
-    const { MonacoCodeService } = require('@ali/ide-editor/lib/browser/editor.override');
-    const codeEditorService = this.injector.get(MonacoCodeService);
-    // 该类从 vs/editor/standalone/browser/simpleServices 中获取
-    const standaloneCommandService = new StandaloneCommandService(StaticServices.instantiationService.get());
-    // 给 monacoCommandService 设置委托，执行 monaco 命令使用 standaloneCommandService 执行
-    this.monacoCommandService.setDelegate(standaloneCommandService);
-    // 替换 monaco 内部的 commandService
-    monacoService.registerOverride(ServiceNames.COMMAND_SERVICE, this.monacoCommandService);
-
-    const monacoOpenerService = new OpenerService(codeEditorService, this.monacoCommandService);
-    monacoOpenerService.registerOpener({
-      open: (uri) => this.interceptOpen(new URI(uri.toString())),
-    });
-
-    monacoService.registerOverride(ServiceNames.OPENER_SERVICE, monacoOpenerService);
-    // workbench-editor.service.ts 内部做了 registerOverride
-    // monacoService.registerOverride(ServiceNames.CONTEXT_KEY_SERVICE, (this.contextKeyService as any).contextKeyService);
-
-    for (const contribution of this.monacoContributionProvider.getContributions()) {
-      if (contribution.onContextKeyServiceReady) {
-        contribution.onContextKeyServiceReady(this.injector.get(IContextKeyService));
-      }
-    }
-    const menuRegistry = this.injector.get(IMenuRegistry) as IMenuRegistry;
-    const monacoMenuRegistry = monacoActions.MenuRegistry;
-    // editor/context
-    monacoMenuRegistry.getMenuItems(monacoActions.MenuId.EditorContext).forEach((item) => {
-      const menuItem = transformMonacoMenuItem(item);
-      /**
-       * monaco 中 editor/context 是一个数字枚举值
-       * kaitian 中是一个 字符串
-       * 这里做了一层代理转换 (下方也有代理注册)
-      */
-      menuRegistry.registerMenuItem(MenuId.EditorContext as unknown as string, menuItem);
-    });
-
-    // editor/context submenu contextPeek
-    monacoMenuRegistry.getMenuItems(monacoActions.MenuId.EditorContextPeek).forEach((item) => {
-      const menuItem = transformMonacoMenuItem(item);
-      menuRegistry.registerMenuItem(monacoActions.MenuId.EditorContextPeek as unknown as string, menuItem);
-    });
-
-    const originalAppendItem = monacoMenuRegistry.appendMenuItem;
-    monacoMenuRegistry.appendMenuItem = (menuId, item) => {
-      const disposer = new Disposable();
-      disposer.addDispose(originalAppendItem.apply(monacoMenuRegistry, [menuId, item]));
-      /**
-       * monaco 中 editor/context 是一个数字枚举值
-       * kaitian 中是一个 字符串
-       * 这里做了一层代理注册
-      */
-      if (menuId === monacoActions.MenuId.EditorContext) {
-        disposer.addDispose(menuRegistry.registerMenuItem(MenuId.EditorContext, transformMonacoMenuItem(item)));
-      } else {
-        disposer.addDispose(menuRegistry.registerMenuItem(menuId as unknown as string, transformMonacoMenuItem(item)));
-      }
-      return disposer;
-    };
-    this.corePreferences.onPreferenceChanged((e) => {
-      if (e.preferenceName === 'files.associations') {
-        // FIXME- Monaco 20 - ESM
-        // 暂时无效，0.17 版本没有暴露出 mime clearTextMimes 方法
-        this.mimeService.updateMime();
-      }
-    });
-
-    getDebugLogger().info('monaco loaded');
   }
 
   registerCommands(commands: CommandRegistry) {

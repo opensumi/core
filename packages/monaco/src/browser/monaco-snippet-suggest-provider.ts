@@ -21,7 +21,7 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
 
   private static readonly _maxPrefix = 10000;
 
-  get registedLanguageIds() {
+  get registeredLanguageIds() {
     const allLanguageIds: string[] = [];
     this.pendingSnippets.forEach((_, key) => {
       if (key !== '*') {

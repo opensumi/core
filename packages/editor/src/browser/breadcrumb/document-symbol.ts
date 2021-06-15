@@ -1,4 +1,3 @@
-import { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { Injectable, Autowired } from '@ali/common-di';
 import { WithEventBus, MaybeNull, OnEvent, BasicEvent, URI, CancellationTokenSource } from '@ali/ide-core-browser';
@@ -53,10 +52,10 @@ export class DocumentSymbolStore extends WithEventBus {
       return;
     }
     try {
-      const supports = await modes.DocumentSymbolProviderRegistry.all(modelRef.instance.getMonacoModel() as unknown as ITextModel);
+      const supports = await modes.DocumentSymbolProviderRegistry.all(modelRef.instance.getMonacoModel());
       let result: MaybeNull<DocumentSymbol[]>;
       for (const support of supports) {
-        result = await support.provideDocumentSymbols(modelRef.instance.getMonacoModel() as unknown as ITextModel, new CancellationTokenSource().token);
+        result = await support.provideDocumentSymbols(modelRef.instance.getMonacoModel(), new CancellationTokenSource().token);
         if (result) {
           break;
         }

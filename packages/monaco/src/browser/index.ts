@@ -1,6 +1,6 @@
 import MonacoServiceImpl from './monaco.service';
 import { Provider, Injectable } from '@ali/common-di';
-import { BrowserModule, MonacoService, MonacoContribution, IContextKeyService, ISchemaStore, JsonSchemaContribution, ISchemaRegistry, IMimeService } from '@ali/ide-core-browser';
+import { BrowserModule, MonacoService, MonacoContribution, IContextKeyService, ISchemaStore, JsonSchemaContribution, ISchemaRegistry, IMimeService, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
 import { MonacoClientContribution } from './monaco.contribution';
 import { SchemaStore, SchemaRegistry } from './schema-registry';
 import { MonacoMimeService } from './monaco-mime';
@@ -9,6 +9,7 @@ import { CallHierarchyService, ICallHierarchyService } from './callHierarchy/cal
 import { CallHierarchyContribution } from './callHierarchy/callHierarchy.contribution';
 import { IConfigurationService } from '@ali/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 import { ConfigurationService } from './monaco.context-key.service';
+import { MonacoOverrideServiceRegistryImpl } from './override.service.registry';
 
 @Injectable()
 export class MonacoModule extends BrowserModule {
@@ -24,6 +25,10 @@ export class MonacoModule extends BrowserModule {
     {
       token: ISchemaStore,
       useClass: SchemaStore,
+    },
+    {
+      token: MonacoOverrideServiceRegistry,
+      useClass: MonacoOverrideServiceRegistryImpl,
     },
     {
       token: ISchemaRegistry,

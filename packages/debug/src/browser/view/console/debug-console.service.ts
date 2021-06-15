@@ -125,8 +125,7 @@ export class DebugConsoleService {
     const docModel = await this.documentService.createModelReference(this.consoleInputUri);
     const model = docModel.instance.getMonacoModel();
     model.updateOptions({ tabSize: 2 });
-    // Note: 这里 monaco.editor.ITextModel 与 ITextModel 类型冲突，所以使用了 assertion
-    this._consoleModel = model as unknown as ITextModel;
+    this._consoleModel = model;
     this.inputEditor.monacoEditor.setModel(model);
 
     setTimeout(() => {

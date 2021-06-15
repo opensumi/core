@@ -1,10 +1,8 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { FormattingConflicts } from '@ali/monaco-editor-core/esm/vs/editor/contrib/format/format';
-import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import {  IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService, IClipboardService, QuickOpenContribution, IQuickOpenHandlerRegistry, PrefixQuickOpenService } from '@ali/ide-core-browser';
+import {  IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService, IClipboardService, QuickOpenContribution, IQuickOpenHandlerRegistry, PrefixQuickOpenService, MonacoOverrideServiceRegistry, IContextKeyService } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { isElectronEnv, isWindows, isOSX, PreferenceScope } from '@ali/ide-core-common';
+import { isElectronEnv, isWindows, isOSX, PreferenceScope, ILogger } from '@ali/ide-core-common';
 import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { SUPPORTED_ENCODINGS } from '@ali/ide-core-common/lib/const';
 
@@ -61,6 +59,12 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
   @Autowired()
   monacoService: MonacoService;
 
+  @Autowired(IOpenerService)
+  private readonly openerService: IOpenerService;
+
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
+
   @Autowired()
   private editorOpener: EditorOpener;
 
@@ -84,21 +88,42 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
   }
 
-  onMonacoLoaded(monacoService: MonacoService) {
+  registerOverrideService(registry: MonacoOverrideServiceRegistry): void {
     const { MonacoCodeService, MonacoContextViewService } = require('./editor.override');
-    const codeEditorService = this.injector.get(MonacoCodeService);
-    monacoService.registerOverride(ServiceNames.CODE_EDITOR_SERVICE, codeEditorService);
-    monacoService.registerOverride(ServiceNames.CONTEXT_VIEW_SERVICE, this.injector.get(MonacoContextViewService));
     const { MonacoTextModelService } = require('./doc-model/override');
-    const textModelService = this.injector.get(MonacoTextModelService);
-    monacoService.registerOverride(ServiceNames.TEXT_MODEL_SERVICE, textModelService);
+    const codeEditorService = this.injector.get(MonacoCodeService);
+
+    // Monaco Editor ContextKeyService
+    // 经过这个Override, 所有编辑器的 contextKeyService 都是 editorContextKeyService 的孩子
+    const globalContextKeyService: IContextKeyService = this.injector.get(IContextKeyService);
+    const editorContextKeyService = globalContextKeyService.createScoped();
+    this.workbenchEditorService.setEditorContextKeyService(editorContextKeyService);
+    registry.registerOverrideService(ServiceNames.CONTEXT_KEY_SERVICE, (editorContextKeyService as any).contextKeyService);
+
+    // Monaco CodeEditorService
+    registry.registerOverrideService(ServiceNames.CODE_EDITOR_SERVICE, codeEditorService);
+
+    // Monaco ContextViewService
+    registry.registerOverrideService(ServiceNames.CONTEXT_VIEW_SERVICE, this.injector.get(MonacoContextViewService));
+
+    // Monaco TextModelService
+    registry.registerOverrideService(ServiceNames.TEXT_MODEL_SERVICE, this.injector.get(MonacoTextModelService));
+
+  }
+
+  registerMonacoDefaultFormattingSelector(register): void {
     const formatSelector = this.injector.get(FormattingSelector);
-    (FormattingConflicts as unknown as any)._selectors.unshift(formatSelector.select.bind(formatSelector) as any);
-    (StaticServices as unknown as any).codeEditorService = {
-      get: () => {
-        return codeEditorService;
-      },
-    }; // TODO 可能其他服务也要做类似的事情
+    register(formatSelector.select.bind(formatSelector));
+  }
+
+  protected async interceptOpen(uri: URI) {
+    try {
+      await this.openerService.open(uri);
+      return true;
+    } catch (e) {
+      this.logger.error(e);
+      return false;
+    }
   }
 
   onWillStop(app: IClientApp) {

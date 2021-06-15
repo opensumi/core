@@ -1,9 +1,9 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Disposable } from '@ali/ide-core-browser';
+import { Disposable, MonacoOverrideServiceRegistry, ServiceNames } from '@ali/ide-core-browser';
 import { Deferred, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 
-import { MonacoService, ServiceNames } from '../common';
+import { MonacoService } from '../common';
 import { TextmateService } from './textmate.service';
 
 @Injectable()
@@ -14,6 +14,9 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   @Autowired()
   private textMateService: TextmateService;
 
+  @Autowired(MonacoOverrideServiceRegistry)
+  private readonly overrideServiceRegistry: MonacoOverrideServiceRegistry;
+
   private loadingPromise!: Promise<any>;
 
   private _onMonacoLoaded = new EventEmitter<boolean>();
@@ -23,8 +26,6 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   get monacoLoaded(): Promise<void> {
     return this._monacoLoaded.promise;
   }
-
-  private overrideServices = {};
 
   constructor() {
     super();
@@ -49,7 +50,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       // @ts-ignore
       'editor.rename.enablePreview': true,
       ...options,
-    }, { ...this.overrideServices, ...overrides});
+    }, { ...this.overrideServiceRegistry.all(), ...overrides});
     return editor;
   }
 
@@ -68,16 +69,26 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       renderLineHighlight: 'none',
       ignoreTrimWhitespace: false,
       ...options,
-    } as any, { ...this.overrideServices, ...overrides});
+    } as any, { ...this.overrideServiceRegistry.all(), ...overrides});
     return editor;
   }
 
   public registerOverride(serviceName: ServiceNames, service: any) {
-    this.overrideServices[serviceName] = service;
+    // tslint:disable-next-line:no-console
+    console.warn(
+      true,
+      `MonacoService#getOverride will be deprecated, please use MonacoOverrideServiceRegistry#getRegisteredService instead.`,
+    );
+    this.overrideServiceRegistry.registerOverrideService(serviceName, service);
   }
 
   public getOverride(serviceName: ServiceNames) {
-    return this.overrideServices[serviceName];
+    // tslint:disable-next-line:no-console
+    console.warn(
+      true,
+      `MonacoService#getOverride will be deprecated, please use MonacoOverrideServiceRegistry#getRegisteredService instead.`,
+    );
+    return this.overrideServiceRegistry.getRegisteredService(serviceName);
   }
 
   /**

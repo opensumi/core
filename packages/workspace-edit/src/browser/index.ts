@@ -2,7 +2,7 @@ import { Provider, Injectable, Autowired } from '@ali/common-di';
 import type { IBulkEditOptions } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 import type { WorkspaceEdit } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 
-import { BrowserModule, Domain, MonacoContribution, MonacoService, ServiceNames, ILogger, TabBarToolbarContribution, ToolbarRegistry, localize, CommandContribution, getIcon } from '@ali/ide-core-browser';
+import { BrowserModule, Domain, MonacoContribution, ServiceNames, ILogger, TabBarToolbarContribution, ToolbarRegistry, localize, CommandContribution, getIcon, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
 import { CommandRegistry } from '@ali/ide-core-common';
 
 import { IBulkEditServiceShape, IWorkspaceEditService, IWorkspaceFileService } from '../common';
@@ -39,8 +39,6 @@ export class WorkspaceEditModule extends BrowserModule {
 
 @Domain(MonacoContribution, TabBarToolbarContribution, CommandContribution)
 export class WorkspaceEditContribution implements MonacoContribution, TabBarToolbarContribution, CommandContribution {
-  @Autowired(MonacoService)
-  private monacoService: MonacoService;
 
   @Autowired(IBulkEditServiceShape)
   protected readonly bulkEditService: IBulkEditServiceShape;
@@ -65,8 +63,9 @@ export class WorkspaceEditContribution implements MonacoContribution, TabBarTool
     }
   }
 
-  onMonacoLoaded() {
-    this.monacoService.registerOverride(ServiceNames.BULK_EDIT_SERVICE, this.bulkEditService);
+  registerOverrideService(registry: MonacoOverrideServiceRegistry) {
+    // Monaco BulkEditService
+    registry.registerOverrideService(ServiceNames.BULK_EDIT_SERVICE, this.bulkEditService);
     this.bulkEditService.setPreviewHandler(this.previewEdit.bind(this));
   }
 

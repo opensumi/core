@@ -16,16 +16,19 @@ export abstract class MonacoService {
   public abstract onMonacoLoaded: Event<boolean>;
   public abstract monacoLoaded: Promise<void>;
 
-  public abstract async createCodeEditor(
+  public abstract createCodeEditor(
     monacoContainer: HTMLElement,
     options?: monaco.editor.IEditorConstructionOptions,
-    overrides?: {[key: string]: any},
+    overrides?: { [key: string]: any },
   ): Promise<monaco.editor.IStandaloneCodeEditor>;
 
-  public abstract async loadMonaco(): Promise<void>;
+  public abstract loadMonaco(): Promise<void>;
 
-  public abstract async createDiffEditor(monacoContainer: HTMLElement,
-                                         options?: monaco.editor.IDiffEditorConstructionOptions, overrides?: {[key: string]: any}): Promise<monaco.editor.IDiffEditor>;
+  public abstract createDiffEditor(
+    monacoContainer: HTMLElement,
+    options?: monaco.editor.IDiffEditorConstructionOptions,
+    overrides?: { [key: string]: any },
+  ): Promise<monaco.editor.IDiffEditor>;
 
   public abstract registerOverride(serviceName: ServiceNames, service: any): void;
 
@@ -34,11 +37,36 @@ export abstract class MonacoService {
   public abstract getOverride(serviceName: ServiceNames): any;
 }
 
+export abstract class MonacoOverrideServiceRegistry {
+  abstract registerOverrideService(serviceId: ServiceNames, service: any): void;
+
+  abstract getRegisteredService<S>(serviceId: ServiceNames): S | undefined;
+
+  abstract all(): { [serviceId: string]: any };
+}
+
 export const MonacoContribution = Symbol('MonacoContribution');
 
+export type FormattingSelectorType = (
+  formatters: Array<monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider>,
+  document: monaco.editor.ITextModel,
+) => monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider;
+
 export interface MonacoContribution {
+  /**
+   * @deprecated 请勿依赖 onMonacoLoaded
+   * @param monacoService
+   */
   onMonacoLoaded?(monacoService: MonacoService);
+   /**
+   * @deprecated 请勿依赖 onContextKeyServiceReady
+   * @param contextKeyService
+   */
   onContextKeyServiceReady?(contextKeyService: IContextKeyService);
+
+  registerOverrideService?(registry: MonacoOverrideServiceRegistry): void;
+
+  registerMonacoDefaultFormattingSelector?(registry: (selector: FormattingSelectorType) => void): void;
 }
 
 export const Extensions = {
@@ -96,4 +124,4 @@ export interface SuggestEventPayload {
   eventType: 'onDidSelect' | 'onDidHide' | 'onDidShow' | 'onDidFocus';
   data: suggest.ISelectedSuggestion | suggest.SuggestWidget;
 }
-export class SuggestEvent extends BasicEvent<SuggestEventPayload> {}
+export class SuggestEvent extends BasicEvent<SuggestEventPayload> { }

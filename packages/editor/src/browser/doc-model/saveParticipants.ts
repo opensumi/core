@@ -1,9 +1,8 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
-import { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 import { CodeActionKind } from '@ali/monaco-editor-core/esm/vs/editor/contrib/codeAction/types';
 import { getCodeActions } from '@ali/monaco-editor-core/esm/vs/editor/contrib/codeAction/codeAction';
-import { ClientAppContribution, WithEventBus, Domain, OnEvent, PreferenceService, CommandService, MonacoService, ServiceNames, ILogger } from '@ali/ide-core-browser';
+import { ClientAppContribution, WithEventBus, Domain, OnEvent, PreferenceService, CommandService, MonacoService, ServiceNames, ILogger, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EditorDocumentModelWillSaveEvent, IEditorDocumentModelService } from './types';
 import { SaveReason } from '../types';
@@ -17,8 +16,11 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
   @Autowired(MonacoService)
   monacoService: MonacoService;
 
+  @Autowired(MonacoOverrideServiceRegistry)
+  private readonly overrideServiceRegistry: MonacoOverrideServiceRegistry;
+
   get bulkEditService(): any {
-    return this.monacoService.getOverride(ServiceNames.BULK_EDIT_SERVICE);
+    return this.overrideServiceRegistry.getRegisteredService(ServiceNames.BULK_EDIT_SERVICE);
   }
 
   @Autowired(CommandService)
@@ -96,7 +98,7 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
   private async applyCodeActions(actionsToRun: readonly modes.CodeAction[]) {
     for (const action of actionsToRun) {
       if (action.edit) {
-        await this.bulkEditService.apply(action.edit);
+        await this.bulkEditService?.apply(action.edit);
       }
       if (action.command) {
         await this.commandService.executeCommand(action.command.id, ...(action.command.arguments || []));
@@ -105,7 +107,7 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
   }
 
   private async getActionsToRun(model: monaco.editor.ITextModel, codeActionKind: CodeActionKind, token: monaco.CancellationToken) {
-    return getCodeActions(model as unknown as ITextModel, model.getFullModelRange(), {
+    return getCodeActions(model, model.getFullModelRange(), {
       type: modes.CodeActionTriggerType.Auto,
       filter: { include: codeActionKind, includeSourceActions: true },
     }, token);

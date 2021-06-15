@@ -1,9 +1,9 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Domain, CommandContribution, ContributionProvider, KeybindingContribution, CommandRegistry, KeybindingRegistry, localize } from '@ali/ide-core-browser';
-import { ClientAppContribution, MonacoService, MonacoContribution } from '@ali/ide-core-browser';
+import { ClientAppContribution } from '@ali/ide-core-browser';
 import { MenuId, MenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
 
-import { QuickOpenService, PrefixQuickOpenService } from './quick-open.model';
+import { PrefixQuickOpenService } from './quick-open.model';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from './prefix-quick-open.service';
 import { QuickCommandHandler } from './quick-open.command.service';
 import { HelpQuickOpenHandler } from './quick-open.help.service';
@@ -11,28 +11,14 @@ import { QUICK_OPEN_COMMANDS } from '../common';
 
 // 连接 monaco 内部的 quick-open
 // 作为 contribution provider 的职责
-@Domain(ClientAppContribution, MonacoContribution)
-export class CoreQuickOpenContribution implements ClientAppContribution, MonacoContribution {
-  @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
+@Domain(ClientAppContribution)
+export class CoreQuickOpenContribution implements ClientAppContribution {
 
   @Autowired()
   private readonly quickOpenHandlerRegistry: QuickOpenHandlerRegistry;
 
   @Autowired(QuickOpenContribution)
   private readonly quickOpenContributionProvider: ContributionProvider<QuickOpenContribution>;
-
-  // 串联 monaco 内部的 quick-open 组件
-  onMonacoLoaded(monacoService: MonacoService) {
-
-     // 加载依赖 monaco 的其他组件
-    const { MonacoQuickOpenService } = require('./quick-open.service');
-
-    this.injector.addProviders({
-       token: QuickOpenService,
-       useClass: MonacoQuickOpenService,
-     });
-  }
 
   // contribution provider 的职责
   onStart() {

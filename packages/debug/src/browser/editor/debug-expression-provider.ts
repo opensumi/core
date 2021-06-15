@@ -1,5 +1,4 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IEvaluatableExpressionService } from './evaluatable-expression';
 import { CancellationTokenSource, coalesce, IRange } from '@ali/ide-core-common';
@@ -14,9 +13,9 @@ export class DebugExpressionProvider {
     let matchingExpression: string | undefined;
     let rng: IRange | undefined;
 
-    if (this.evaluatableExpressionService.hasEvaluatableExpressProvider(model as unknown as ITextModel)) {
+    if (this.evaluatableExpressionService.hasEvaluatableExpressProvider(model)) {
       const cancellationSource = new CancellationTokenSource();
-      const supports = this.evaluatableExpressionService.getSupportedEvaluatableExpressionProvider(model as unknown as ITextModel);
+      const supports = this.evaluatableExpressionService.getSupportedEvaluatableExpressionProvider(model);
 
       const pos = new monaco.Position(
         selection.startLineNumber,
@@ -24,7 +23,7 @@ export class DebugExpressionProvider {
       );
 
       const promises = supports.map((support) => {
-        return Promise.resolve(support.provideEvaluatableExpression(model as unknown as ITextModel, pos, cancellationSource.token)).then((expression) => {
+        return Promise.resolve(support.provideEvaluatableExpression(model, pos, cancellationSource.token)).then((expression) => {
           return expression;
         }, () => {
           return undefined;

@@ -1,6 +1,6 @@
 import { Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { WSChannelHandler } from '@ali/ide-connection/lib/browser/ws-channel-handler';
-import { EDITOR_COMMANDS, UriComponents, ClientAppContribution, CommandContribution, CommandRegistry, CommandService, Domain, electronEnv, FILE_COMMANDS, formatLocalize, getIcon, IAsyncResult, IClientApp, IContextKeyService, IEventBus, IPreferenceSettingsService, isElectronEnv, localize, MonacoContribution, QuickOpenGroupItem, QuickOpenItem, QuickOpenItemOptions, QuickOpenService, replaceLocalizePlaceholder, URI, ILogger } from '@ali/ide-core-browser';
+import { EDITOR_COMMANDS, UriComponents, ClientAppContribution, CommandContribution, CommandRegistry, CommandService, Domain, electronEnv, FILE_COMMANDS, formatLocalize, getIcon, IAsyncResult, IClientApp, IContextKeyService, IEventBus, IPreferenceSettingsService, isElectronEnv, localize, QuickOpenGroupItem, QuickOpenItem, QuickOpenItemOptions, QuickOpenService, replaceLocalizePlaceholder, URI, ILogger } from '@ali/ide-core-browser';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@ali/ide-core-browser/lib/services/status-bar-service';
 import { IWindowDialogService } from '@ali/ide-overlay';
 import { IWebviewService } from '@ali/ide-webview';
@@ -14,8 +14,8 @@ import * as VSCodeBuiltinCommands from './vscode/builtin-commands';
 import { AbstractExtInstanceManagementService, ExtensionApiReadyEvent, ExtHostEvent, IActivationEventService, Serializable } from './types';
 import { fromRange, isLikelyVscodeRange, viewColumnToResourceOpenOptions } from '../common/vscode/converter';
 
-@Domain(ClientAppContribution, MonacoContribution)
-export class KaitianExtensionClientAppContribution implements ClientAppContribution, MonacoContribution {
+@Domain(ClientAppContribution)
+export class KaitianExtensionClientAppContribution implements ClientAppContribution {
   @Autowired(IPreferenceSettingsService)
   private readonly preferenceSettingsService: IPreferenceSettingsService;
 

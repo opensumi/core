@@ -5,7 +5,7 @@ import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as Ev
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution, ResourceOpenTypeChangedEvent, EditorComponentDisposeEvent, EditorActiveResourceStateChangedEvent, CodeEditorDidVisibleEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
-import { FILE_COMMANDS, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, MonacoService, IScopedContextKeyService, IContextKey, RecentFilesManager, PreferenceService, IOpenerService } from '@ali/ide-core-browser';
+import { FILE_COMMANDS, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, IScopedContextKeyService, IContextKey, RecentFilesManager, PreferenceService, IOpenerService } from '@ali/ide-core-browser';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
 import { isUndefinedOrNull, Schemas, REPORT_NAME } from '@ali/ide-core-common';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
@@ -19,9 +19,6 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   _onDidEditorGroupsChanged = new EventEmitter<void>();
   onDidEditorGroupsChanged: Event<void> = this._onDidEditorGroupsChanged.event;
-
-  @Autowired()
-  private monacoService: MonacoService;
 
   private _sortedEditorGroups: EditorGroup[] | undefined = [];
 
@@ -73,6 +70,10 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   constructor() {
     super();
     this.initialize();
+  }
+
+  setEditorContextKeyService(contextKeyService: IScopedContextKeyService): void {
+    this.editorContextKeyService = contextKeyService;
   }
 
   setCurrentGroup(editorGroup) {
@@ -273,13 +274,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   }
 
-  prepareContextKeyService(contextKeyService: IContextKeyService) {
-    // 为编辑器创建一个scopedContextService
-    const editorContextKeyService = contextKeyService.createScoped(this._domNode);
-    this.editorContextKeyService = editorContextKeyService;
-
-    // 经过这个Override, 所有编辑器的contextKeyService都是editorContextKeyService的孩子
-    this.monacoService.registerOverride(ServiceNames.CONTEXT_KEY_SERVICE, (this.editorContextKeyService as any).contextKeyService);
+  prepareContextKeyService() {
     // contextKeys
     const getLanguageFromModel = (uri: URI) => {
       let result: string | null = null;

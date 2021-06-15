@@ -1,4 +1,4 @@
-import { BrowserModule } from '@ali/ide-core-browser';
+import { BrowserModule, QuickOpenService } from '@ali/ide-core-browser';
 import { Injectable, Provider } from '@ali/common-di';
 
 import { CoreQuickOpenContribution, QuickOpenFeatureContribution } from './quick-open.contribution';
@@ -6,6 +6,7 @@ import { PrefixQuickOpenServiceImpl, QuickOpenContribution } from './prefix-quic
 import { PrefixQuickOpenService, QuickPickService, IQuickInputService } from './quick-open.model';
 import { QuickPickServiceImpl } from './quick-pick.service';
 import { QuickInputService } from './quick-input-service';
+import { MonacoQuickOpenService } from './quick-open.service';
 
 @Injectable()
 export class CoreQuickOpenModule extends BrowserModule {
@@ -13,6 +14,10 @@ export class CoreQuickOpenModule extends BrowserModule {
     {
       token: PrefixQuickOpenService,
       useClass: PrefixQuickOpenServiceImpl,
+    },
+    {
+      token: QuickOpenService,
+      useClass: MonacoQuickOpenService,
     },
     {
       token: QuickPickService,

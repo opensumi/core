@@ -6,6 +6,7 @@ import { URI, Event, BasicEvent, IDisposable, MaybeNull, IRange, ISelection, ILi
 import { IResource } from './resource';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
 import { IEditorDocumentModel, IEditorDocumentModelRef } from '../browser';
+import { IScopedContextKeyService } from '@ali/ide-core-browser';
 
 export interface CursorStatus {
   position: MaybeNull<IPosition>;
@@ -322,20 +323,20 @@ export abstract class WorkbenchEditorService {
    * @param uri 只关闭指定的 uri
    * @param force 不进行关闭前提醒（不执行 shouldCloseResource)
    */
-  abstract async closeAll(uri?: URI, force?: boolean): Promise<void>;
+  abstract closeAll(uri?: URI, force?: boolean): Promise<void>;
 
   /**
    * 打开指定的 uri
    * @param uri
    * @param options 打开的选项
    */
-  abstract async open(uri: URI, options?: IResourceOpenOptions): Promise<IOpenResourceResult>;
+  abstract open(uri: URI, options?: IResourceOpenOptions): Promise<IOpenResourceResult>;
 
   /**
    * 打开多个 uri
    * @param uri
    */
-  abstract async openUris(uri: URI[]): Promise<void>;
+  abstract openUris(uri: URI[]): Promise<void>;
 
   /**
    * 保存全部
@@ -348,7 +349,7 @@ export abstract class WorkbenchEditorService {
    * @param uri
    * @param force
    */
-  abstract async close(uri: any, force?: boolean): Promise<void>;
+  abstract close(uri: any, force?: boolean): Promise<void>;
 
   /**
    * 获得当前打开的 uri
@@ -360,6 +361,8 @@ export abstract class WorkbenchEditorService {
    * @param options
    */
   abstract createUntitledResource(options?: IUntitledOptions): Promise<IOpenResourceResult>;
+
+  abstract setEditorContextKeyService(contextKeyService: IScopedContextKeyService): void;
 }
 
 export interface IUntitledOptions extends IResourceOpenOptions {

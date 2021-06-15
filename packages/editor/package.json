@@ -21,6 +21,7 @@
   "dependencies": {
     "@ali/ide-core-common": "2.4.1",
     "@ali/ide-core-node": "2.4.1",
+    "@ali/ide-monaco": "2.4.1",
     "@ali/ide-theme": "2.4.1",
     "@ali/ide-workspace": "2.4.1",
     "@ali/ide-overlay": "2.4.1",

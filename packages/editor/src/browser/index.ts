@@ -1,4 +1,4 @@
-import { BrowserModule, Domain, ClientAppContribution, ContributionProvider, MonacoContribution, IContextKeyService, PreferenceService, createPreferenceProxy } from '@ali/ide-core-browser';
+import { BrowserModule, Domain, ClientAppContribution, ContributionProvider, PreferenceService, createPreferenceProxy } from '@ali/ide-core-browser';
 import { EditorView } from './editor.view';
 import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILanguageService } from '../common';
 import { EditorCollectionServiceImpl } from './editor-collection.service';
@@ -20,7 +20,6 @@ import { CompareService, CompareEditorContribution } from './diff/compare';
 import { BreadCrumbServiceImpl } from './breadcrumb';
 import { EditorContextMenuBrowserEditorContribution } from './menu/editor.context';
 import { EditorFeatureRegistryImpl } from './feature';
-import { MainLayoutContribution } from '@ali/ide-main-layout';
 import { EditorPreferenceContribution } from './preference/contribution';
 import { SaveParticipantsContribution } from './doc-model/saveParticipants';
 import { EditorPreferences, editorPreferenceSchema } from './preference/schema';
@@ -111,8 +110,8 @@ export class EditorModule extends BrowserModule {
 
 }
 
-@Domain(ClientAppContribution, MonacoContribution, MainLayoutContribution)
-export class EditorClientAppContribution implements ClientAppContribution, MonacoContribution, MainLayoutContribution {
+@Domain(ClientAppContribution)
+export class EditorClientAppContribution implements ClientAppContribution {
 
   @Autowired()
   resourceService!: ResourceService;
@@ -160,12 +159,8 @@ export class EditorClientAppContribution implements ClientAppContribution, Monac
     await this.workbenchEditorService.initialize();
   }
 
-  async onDidRender() {
-
-  }
-
-  onContextKeyServiceReady(contextKeyService: IContextKeyService) {
-    this.workbenchEditorService.prepareContextKeyService(contextKeyService);
+  async onDidStart() {
+    this.workbenchEditorService.prepareContextKeyService();
   }
 
 }

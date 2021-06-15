@@ -5,7 +5,6 @@ import { ICallHierarchyService, CallHierarchyProviderRegistry } from './callHier
 import { CallHierarchyItem } from '../../common';
 import { BrowserEditorContribution, IEditorFeatureRegistry, IEditor } from '@ali/ide-editor/lib/browser';
 import { RawContextKey } from '@ali/ide-core-browser/lib/raw-context-key';
-import { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 
 export const executePrepareCallHierarchyCommand = {
   id: '_executePrepareCallHierarchy',
@@ -22,7 +21,7 @@ export const executeProvideOutgoingCallsCommand = {
 const _ctxHasCallHierarchyProvider = new RawContextKey<boolean>('editorHasCallHierarchyProvider', false);
 
 @Domain(CommandContribution, BrowserEditorContribution)
-export class CallHierarchyContribution implements CommandContribution {
+export class CallHierarchyContribution implements CommandContribution, BrowserEditorContribution {
 
   private ctxHasProvider: IContextKey<boolean>;
 
@@ -59,7 +58,7 @@ export class CallHierarchyContribution implements CommandContribution {
       contribute: (editor: IEditor) => {
         const monacoEditor = editor.monacoEditor;
         return Event.any<any>(monacoEditor.onDidChangeModel, monacoEditor.onDidChangeModelLanguage, CallHierarchyProviderRegistry.onDidChange)(() => {
-          this.ctxHasProvider.set(monacoEditor.hasModel() && CallHierarchyProviderRegistry.has(monacoEditor.getModel() as unknown as ITextModel));
+          this.ctxHasProvider.set(monacoEditor.hasModel() && CallHierarchyProviderRegistry.has(monacoEditor.getModel()));
         });
       },
     });

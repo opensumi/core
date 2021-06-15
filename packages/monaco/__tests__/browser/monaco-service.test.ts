@@ -2,6 +2,8 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MonacoService, ServiceNames } from '../../src/common';
 import MonacoServiceImpl from '../../src/browser/monaco.service';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
+import { MonacoOverrideServiceRegistryImpl } from '../../src/browser/override.service.registry';
 
 let injector: MockInjector;
 
@@ -10,10 +12,13 @@ describe(' monaco service test', () => {
   injector = createBrowserInjector([]);
   (global as any).amdLoader = {require: null};
 
-  injector.addProviders({
+  injector.addProviders(...[{
     token: MonacoService,
     useClass: MonacoServiceImpl,
-  });
+  }, {
+    token: MonacoOverrideServiceRegistry,
+    useClass: MonacoOverrideServiceRegistryImpl,
+  }]);
 
   (global as any).amdLoader = {require: null};
 

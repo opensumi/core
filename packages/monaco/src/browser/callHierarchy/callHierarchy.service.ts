@@ -70,7 +70,7 @@ export class CallHierarchyService implements ICallHierarchyService {
 
     try {
       const model = await CallHierarchyModel.create(
-        textModel as unknown as ITextModel,
+        textModel,
         position,
         CancellationToken.None,
       );

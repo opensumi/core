@@ -7,6 +7,8 @@ import { MonacoCommandService, MonacoCommandRegistry, MonacoActionRegistry } fro
 import { WorkbenchEditorService, EditorCollectionService } from '@ali/ide-editor';
 import { ILoggerManagerClient, Emitter, CommandRegistry } from '@ali/ide-core-common';
 import { CommandsRegistry, ICommandEvent } from '@ali/monaco-editor-core/esm/vs/platform/commands/common/commands';
+import { MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
+import { MonacoOverrideServiceRegistryImpl } from '../../src/browser/override.service.registry';
 
 describe(' monaco command service test', () => {
   let injector: MockInjector;
@@ -22,7 +24,12 @@ describe(' monaco command service test', () => {
     injector.addProviders({
       token: MonacoService,
       useClass: MonacoServiceImpl,
-    }, {
+    },
+    {
+      token: MonacoOverrideServiceRegistry,
+      useClass: MonacoOverrideServiceRegistryImpl,
+    },
+    {
       token: EditorCollectionService,
       useValue: {
         currentEditor: {

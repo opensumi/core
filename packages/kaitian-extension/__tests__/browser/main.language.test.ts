@@ -1,5 +1,4 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 import * as monacoModes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 
 /* tslint:disable no-console */
@@ -147,9 +146,9 @@ describe('ExtHostLanguageFeatures', () => {
       }
     }));
     setTimeout(async () => {
-      const provider = monacoModes.CodeLensProviderRegistry.ordered(model as unknown as ITextModel)[0];
+      const provider = monacoModes.CodeLensProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideCodeLenses(model as unknown as ITextModel, CancellationToken.None))!;
+      const value = (await provider.provideCodeLenses(model, CancellationToken.None))!;
       expect(value.lenses.length).toEqual(1);
       done();
     }, 0);
@@ -167,8 +166,8 @@ describe('ExtHostLanguageFeatures', () => {
       }
     }));
     setTimeout(async () => {
-      const provider = monacoModes.CodeLensProviderRegistry.ordered(model as unknown as ITextModel)[0];
-      const value = (await provider.provideCodeLenses(model as unknown as ITextModel, CancellationToken.None))!;
+      const provider = monacoModes.CodeLensProviderRegistry.ordered(model)[0];
+      const value = (await provider.provideCodeLenses(model, CancellationToken.None))!;
       expect(value.lenses.length).toEqual(1);
       const symbol = value.lenses[0];
       expect(symbol!.command!.id).toEqual('id');
@@ -183,8 +182,8 @@ describe('ExtHostLanguageFeatures', () => {
       }
     }));
     setTimeout(async () => {
-      const provider = monacoModes.CodeLensProviderRegistry.ordered(model as unknown as ITextModel)[0];
-      const value = (await provider.provideCodeLenses(model as unknown as ITextModel, CancellationToken.None))!;
+      const provider = monacoModes.CodeLensProviderRegistry.ordered(model)[0];
+      const value = (await provider.provideCodeLenses(model, CancellationToken.None))!;
       expect(value.lenses.length).toEqual(1);
       const symbol = value.lenses[0];
       expect(symbol.command).toBeUndefined();
@@ -198,9 +197,9 @@ describe('ExtHostLanguageFeatures', () => {
       }
     }));
     setTimeout(async () => {
-      const provider = monacoModes.DefinitionProviderRegistry.ordered(model as unknown as ITextModel)[0];
+      const provider = monacoModes.DefinitionProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideDefinition(model as unknown as ITextModel, { lineNumber: 1, column: 1 } as any, CancellationToken.None))!;
+      const value = (await provider.provideDefinition(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None))!;
       // @ts-ignore
       expect(value.length).toEqual(1);
       expect(value[0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
@@ -219,9 +218,9 @@ describe('ExtHostLanguageFeatures', () => {
       }
     }));
     setTimeout(async () => {
-      const provider = monacoModes.ImplementationProviderRegistry.ordered(model as unknown as ITextModel)[0];
+      const provider = monacoModes.ImplementationProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = await provider.provideImplementation(model as unknown as ITextModel, { lineNumber: 1, column: 1 } as any, CancellationToken.None);
+      const value = await provider.provideImplementation(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None);
       // @ts-ignore
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
@@ -235,9 +234,9 @@ describe('ExtHostLanguageFeatures', () => {
       }
     }));
     setTimeout(async () => {
-      const provider = monacoModes.TypeDefinitionProviderRegistry.ordered(model as unknown as ITextModel)[0];
+      const provider = monacoModes.TypeDefinitionProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = await provider.provideTypeDefinition(model as unknown as ITextModel, { lineNumber: 1, column: 1 } as any, CancellationToken.None);
+      const value = await provider.provideTypeDefinition(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None);
       // @ts-ignore
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
@@ -251,9 +250,9 @@ describe('ExtHostLanguageFeatures', () => {
       }
     }));
     setTimeout(async () => {
-      const provider = monacoModes.HoverProviderRegistry.ordered(model as unknown as ITextModel)[0];
+      const provider = monacoModes.HoverProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideHover(model as unknown as ITextModel, { lineNumber: 1, column: 1 } as any, CancellationToken.None))!;
+      const value = (await provider.provideHover(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None))!;
       expect(value.range).toStrictEqual({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 5 });
       done();
     }, 0);
@@ -265,9 +264,9 @@ describe('ExtHostLanguageFeatures', () => {
       }
     }));
     setTimeout(async () => {
-      const provider = monacoModes.HoverProviderRegistry.ordered(model as unknown as ITextModel)[0];
+      const provider = monacoModes.HoverProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideHover(model as unknown as ITextModel, { lineNumber: 1, column: 1 } as any, CancellationToken.None))!;
+      const value = (await provider.provideHover(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None))!;
       expect(value.range).toStrictEqual({ startLineNumber: 4, startColumn: 1, endLineNumber: 9, endColumn: 8 });
       done();
     }, 0);
@@ -280,9 +279,9 @@ describe('ExtHostLanguageFeatures', () => {
       }
     }));
     setTimeout(async () => {
-      const provider = monacoModes.DocumentHighlightProviderRegistry.ordered(model as unknown as ITextModel)[0];
+      const provider = monacoModes.DocumentHighlightProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = await provider.provideDocumentHighlights(model as unknown as ITextModel, { lineNumber: 1, column: 2 } as any, CancellationToken.None);
+      const value = await provider.provideDocumentHighlights(model, { lineNumber: 1, column: 2 } as any, CancellationToken.None);
       // @ts-ignore
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 5 });
@@ -300,10 +299,10 @@ describe('ExtHostLanguageFeatures', () => {
       }
     }));
     setTimeout(async () => {
-      const provider = monacoModes.ReferenceProviderRegistry.ordered(model as unknown as ITextModel)[0];
+      const provider = monacoModes.ReferenceProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
       // FIXME 第三个参数context mock
-      const value = await provider.provideReferences(model as unknown as ITextModel, { lineNumber: 1, column: 2 } as any, {} as any, CancellationToken.None);
+      const value = await provider.provideReferences(model, { lineNumber: 1, column: 2 } as any, {} as any, CancellationToken.None);
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 });
       expect(value![0].uri.toString()).toEqual(model.uri.toString());
@@ -324,9 +323,9 @@ describe('ExtHostLanguageFeatures', () => {
     }));
 
     setTimeout(async () => {
-      const provider = monacoModes.CodeActionProviderRegistry.ordered(model as unknown as ITextModel)[0];
+      const provider = monacoModes.CodeActionProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideCodeActions(model as unknown as ITextModel, model.getFullModelRange(), {} as any, CancellationToken.None))!;
+      const value = (await provider.provideCodeActions(model, model.getFullModelRange(), {} as any, CancellationToken.None))!;
       expect(value.actions.length).toEqual(2);
       const [first, second] = value.actions;
       expect(first.title).toEqual('Testing1');
@@ -350,9 +349,9 @@ describe('ExtHostLanguageFeatures', () => {
     }));
 
     setTimeout(async () => {
-      const provider = monacoModes.CodeActionProviderRegistry.ordered(model as unknown as ITextModel)[0];
+      const provider = monacoModes.CodeActionProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideCodeActions(model as unknown as ITextModel, model.getFullModelRange(), {} as any, CancellationToken.None))!;
+      const value = (await provider.provideCodeActions(model, model.getFullModelRange(), {} as any, CancellationToken.None))!;
       expect(value.actions.length).toEqual(1);
       const first = value.actions[0] as monaco.languages.CodeAction;
       expect(first.title).toEqual('Testing1');
@@ -374,9 +373,9 @@ describe('ExtHostLanguageFeatures', () => {
     }));
 
     setTimeout(async () => {
-      const provider = monacoModes.CodeActionProviderRegistry.ordered(model as unknown as ITextModel)[0];
+      const provider = monacoModes.CodeActionProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideCodeActions(model as unknown as ITextModel, model.getFullModelRange(), {} as any, CancellationToken.None))!;
+      const value = (await provider.provideCodeActions(model, model.getFullModelRange(), {} as any, CancellationToken.None))!;
       expect(value.actions.length).toEqual(1);
       done();
     }, 0);
@@ -394,9 +393,9 @@ describe('ExtHostLanguageFeatures', () => {
     }));
 
     setTimeout(async () => {
-      const provider = monacoModes.RenameProviderRegistry.ordered(model as unknown as ITextModel)[0];
+      const provider = monacoModes.RenameProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideRenameEdits(model as unknown as ITextModel, { lineNumber: 1, column: 1 } as any, 'newName', CancellationToken.None))!;
+      const value = (await provider.provideRenameEdits(model, { lineNumber: 1, column: 1 } as any, 'newName', CancellationToken.None))!;
       expect((value as monaco.languages.WorkspaceEdit).edits.length).toEqual(1);
       done();
     }, 0);
@@ -416,9 +415,9 @@ describe('ExtHostLanguageFeatures', () => {
     }, []));
 
     setTimeout(async () => {
-      const provider = monacoModes.SignatureHelpProviderRegistry.ordered(model as unknown as ITextModel)[0];
+      const provider = monacoModes.SignatureHelpProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = await provider.provideSignatureHelp(model as unknown as ITextModel, { lineNumber: 1, column: 1 } as any, CancellationToken.None, { triggerKind: modes.SignatureHelpTriggerKind.Invoke, isRetrigger: false });
+      const value = await provider.provideSignatureHelp(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None, { triggerKind: modes.SignatureHelpTriggerKind.Invoke, isRetrigger: false });
       expect(value).toBeTruthy();
       done();
     }, 0);
@@ -434,9 +433,9 @@ describe('ExtHostLanguageFeatures', () => {
     }, []));
 
     setTimeout(async () => {
-      const provider = monacoModes.CompletionProviderRegistry.ordered(model as unknown as ITextModel)[0];
+      const provider = monacoModes.CompletionProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideCompletionItems(model as unknown as ITextModel, { lineNumber: 1, column: 1 } as any, { triggerKind: 0 }, CancellationToken.None))!;
+      const value = (await provider.provideCompletionItems(model, { lineNumber: 1, column: 1 } as any, { triggerKind: 0 }, CancellationToken.None))!;
       expect(value.incomplete).toEqual(true);
       done();
     }, 0);
@@ -462,9 +461,9 @@ describe('ExtHostLanguageFeatures', () => {
     }));
 
     setTimeout(async () => {
-      const provider = monacoModes.DocumentRangeFormattingEditProviderRegistry.ordered(model as unknown as ITextModel)[0];
+      const provider = monacoModes.DocumentRangeFormattingEditProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideDocumentRangeFormattingEdits(model as unknown as ITextModel, { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 } as any, { insertSpaces: true, tabSize: 4 }, CancellationToken.None))!;
+      const value = (await provider.provideDocumentRangeFormattingEdits(model, { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 } as any, { insertSpaces: true, tabSize: 4 }, CancellationToken.None))!;
       expect(value.length).toEqual(1);
       const [first] = value;
       expect(first.text).toEqual('testing');
@@ -485,9 +484,9 @@ describe('ExtHostLanguageFeatures', () => {
     }, [';']));
 
     setTimeout(async () => {
-      const provider = monacoModes.OnTypeFormattingEditProviderRegistry.ordered(model as unknown as ITextModel)[0];
+      const provider = monacoModes.OnTypeFormattingEditProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideOnTypeFormattingEdits(model as unknown as ITextModel, { lineNumber: 1, column: 2 } as any, ';', { insertSpaces: true, tabSize: 2 }, CancellationToken.None))!;
+      const value = (await provider.provideOnTypeFormattingEdits(model, { lineNumber: 1, column: 2 } as any, ';', { insertSpaces: true, tabSize: 2 }, CancellationToken.None))!;
       expect(value.length).toEqual(1);
       const [first] = value;
       expect(first.text).toEqual(';');
@@ -505,9 +504,9 @@ describe('ExtHostLanguageFeatures', () => {
     }));
 
     setTimeout(async () => {
-      const provider = monacoModes.LinkProviderRegistry.ordered(model as unknown as ITextModel)[0];
+      const provider = monacoModes.LinkProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const { links } = (await provider.provideLinks(model as unknown as ITextModel, CancellationToken.None))!;
+      const { links } = (await provider.provideLinks(model, CancellationToken.None))!;
       expect(links.length).toEqual(1);
       const [first] = links;
       expect(first.url!.toString()).toEqual('foo:bar#3');
@@ -528,9 +527,9 @@ describe('ExtHostLanguageFeatures', () => {
     }));
 
     setTimeout(async () => {
-      const provider = monacoModes.ColorProviderRegistry.ordered(model as unknown as ITextModel)[0];
+      const provider = monacoModes.ColorProviderRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const value = (await provider.provideDocumentColors(model as unknown as ITextModel, CancellationToken.None))!;
+      const value = (await provider.provideDocumentColors(model, CancellationToken.None))!;
       expect(value.length).toEqual(1);
       const [first] = value;
       expect(first.color).toStrictEqual({ red: 0.1, green: 0.2, blue: 0.3, alpha: 0.4 });
@@ -548,9 +547,9 @@ describe('ExtHostLanguageFeatures', () => {
       }
     }));
     setTimeout(async () => {
-      const provider = monacoModes.SelectionRangeRegistry.ordered(model as unknown as ITextModel)[0];
+      const provider = monacoModes.SelectionRangeRegistry.ordered(model)[0];
       expect(provider).toBeDefined();
-      const ranges = await provider.provideSelectionRanges(model as unknown as ITextModel, [{ lineNumber: 1, column: 17 }] as any, CancellationToken.None);
+      const ranges = await provider.provideSelectionRanges(model, [{ lineNumber: 1, column: 17 }] as any, CancellationToken.None);
       expect(ranges?.length).toEqual(1);
       expect(ranges![0].length).toBeGreaterThan(1);
       done();
@@ -825,14 +824,14 @@ An error case:
 
     setTimeout(() => {
       expect(mockedMainthreadFunc).toBeCalled();
-      expect(evaluatableExpressionService.hasEvaluatableExpressProvider(textModel as unknown as ITextModel)).toBeTruthy();
+      expect(evaluatableExpressionService.hasEvaluatableExpressProvider(textModel)).toBeTruthy();
       done();
     }, 0);
 
   });
 
   it('provideEvaluatableExpression should be work', async (done) => {
-    const providers = evaluatableExpressionService.getSupportedEvaluatableExpressionProvider(textModel as unknown as ITextModel);
+    const providers = evaluatableExpressionService.getSupportedEvaluatableExpressionProvider(textModel);
 
     expect(providers.length).toBe(1);
     expect(providers[0].provideEvaluatableExpression).toBeDefined();
@@ -841,7 +840,7 @@ An error case:
 
     const mockProvideFunc = jest.spyOn(expressionProvider, 'provideEvaluatableExpression');
     const tokenSource = new monaco.CancellationTokenSource();
-    const expression = await providers[0].provideEvaluatableExpression(textModel as unknown as ITextModel, pos, tokenSource.token);
+    const expression = await providers[0].provideEvaluatableExpression(textModel, pos, tokenSource.token);
 
     expect(mockProvideFunc).toBeCalled();
     expect(expression?.range).toEqual({

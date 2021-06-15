@@ -26,7 +26,7 @@ import { EditorFeatureRegistryImpl } from '@ali/ide-editor/lib/browser/feature';
 import { EditorGroupChangeEvent, EditorVisibleChangeEvent, EditorGroupIndexChangedEvent, EditorSelectionChangeEvent } from '@ali/ide-editor/lib/browser/types';
 import { MonacoService } from '@ali/ide-monaco';
 import MonacoServiceImpl from '@ali/ide-monaco/lib/browser/monaco.service';
-import { CorePreferences } from '@ali/ide-core-browser';
+import { CorePreferences, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
 import { ResourceServiceImpl } from '@ali/ide-editor/lib/browser/resource.service';
 import { LanguageService } from '@ali/ide-editor/lib/browser/language/language.service';
 import { useMockStorage } from '../../../core-browser/lib/mocks/storage';
@@ -43,6 +43,7 @@ import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.
 import { IResource, IEditorOpenType } from '@ali/ide-editor';
 import { IConfigurationService, IConfigurationChangeEvent, ConfigurationTarget } from '@ali/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 import * as TypeConverts from '@ali/ide-kaitian-extension/lib/common/vscode/converter';
+import { MonacoOverrideServiceRegistryImpl } from '@ali/ide-monaco/lib/browser/override.service.registry';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -151,6 +152,9 @@ describe('MainThreadEditor Test Suites', () => {
         token: IContextKeyService,
         useClass: MockContextKeyService,
       }, {
+        token: MonacoOverrideServiceRegistry,
+        useClass: MonacoOverrideServiceRegistryImpl,
+      }, {
         token: CommonServerPath,
         useValue: {
           getBackendOS: () => Promise.resolve(OS.type()),
@@ -188,7 +192,10 @@ describe('MainThreadEditor Test Suites', () => {
     const resourceService: ResourceService = injector.get(ResourceService);
     resourceService.registerResourceProvider(injector.get(FileSystemResourceProvider));
     const extensionService: ExtensionService = injector.get(ExtensionService);
-    (workbenchEditorService as WorkbenchEditorServiceImpl).prepareContextKeyService(injector.get(IContextKeyService));
+    const globalContextKeyService: IContextKeyService = injector.get(IContextKeyService);
+    const editorContextKeyService = globalContextKeyService.createScoped();
+    workbenchEditorService.setEditorContextKeyService(editorContextKeyService);
+    (workbenchEditorService as WorkbenchEditorServiceImpl).prepareContextKeyService();
     extensionService.eagerExtensionsActivated.resolve();
     eventBus = injector.get(IEventBus);
     (workbenchEditorService as any).contributionsReady.resolve();

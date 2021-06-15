@@ -44,4 +44,8 @@ export class MockWorkbenchEditorService extends WorkbenchEditorService {
   createUntitledResource(options?: IUntitledOptions): Promise<IOpenResourceResult> {
     throw new Error('Method not implemented.');
   }
+
+  setEditorContextKeyService() {
+    throw new Error('Method not implemented.');
+  }
 }

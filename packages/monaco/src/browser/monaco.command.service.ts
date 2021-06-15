@@ -4,7 +4,7 @@ import { EditorExtensionsRegistry } from '@ali/monaco-editor-core/esm/vs/editor/
 import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { CommandsRegistry } from '@ali/monaco-editor-core/esm/vs/platform/commands/common/commands';
 import { Injectable, Autowired } from '@ali/common-di';
-import { Command, Emitter, CommandRegistry, CommandHandler, ILogger, EDITOR_COMMANDS, CommandService, isElectronRenderer, IReporterService, REPORT_NAME, MonacoService, ServiceNames, memoize, Uri } from '@ali/ide-core-browser';
+import { Command, Emitter, CommandRegistry, CommandHandler, ILogger, EDITOR_COMMANDS, CommandService, isElectronRenderer, IReporterService, REPORT_NAME, ServiceNames, memoize, Uri, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
 
 import { WorkbenchEditorService, EditorCollectionService } from '@ali/ide-editor';
 import { Event } from '@ali/monaco-editor-core/esm/vs/base/common/event';
@@ -239,14 +239,14 @@ export class MonacoActionRegistry {
   @Autowired()
   monacoCommandRegistry: MonacoCommandRegistry;
 
-  @Autowired(MonacoService)
-  private readonly monacoService: MonacoService;
+  @Autowired(MonacoOverrideServiceRegistry)
+  private readonly overrideServiceRegistry: MonacoOverrideServiceRegistry;
 
   @memoize
   get globalInstantiationService() {
-    const codeEditorService = this.monacoService.getOverride(ServiceNames.CODE_EDITOR_SERVICE);
-    const textModelService = this.monacoService.getOverride(ServiceNames.TEXT_MODEL_SERVICE);
-    const contextKeyService = this.monacoService.getOverride(ServiceNames.CONTEXT_KEY_SERVICE);
+    const codeEditorService = this.overrideServiceRegistry.getRegisteredService(ServiceNames.CODE_EDITOR_SERVICE);
+    const textModelService = this.overrideServiceRegistry.getRegisteredService(ServiceNames.TEXT_MODEL_SERVICE);
+    const contextKeyService = this.overrideServiceRegistry.getRegisteredService(ServiceNames.CONTEXT_KEY_SERVICE);
     const [, globalInstantiationService] = StaticServices.init({
       codeEditorService,
       textModelService,
