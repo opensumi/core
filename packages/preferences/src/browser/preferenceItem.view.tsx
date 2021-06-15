@@ -326,31 +326,40 @@ function EditInSettingsJsonPreferenceItem({ preferenceName, localizedName, schem
 function StringArrayPreferenceItem({ preferenceName, localizedName, currentValue, schema, effectingScope, scope, hasValueInScope }: IPreferenceItemProps) {
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
   const [value, setValue] = React.useState<string[]>([]);
+  const [inputValue, setInputValue] = React.useState<string>();
+  const [editValue, setEditValue] = React.useState<string>();
+  const [currentEditIndex, setCurrentEditIndex] = React.useState<number>(-1);
 
   React.useEffect(() => {
     setValue(currentValue || []);
   }, [currentValue]);
+
+  React.useEffect(() => {
+    if (currentEditIndex >= 0) {
+      setEditValue(value[currentEditIndex]);
+    } else {
+      setEditValue('');
+    }
+  }, [currentEditIndex]);
 
   const handleValueChange = ((value) => {
     setValue(value);
     preferenceService.set(preferenceName, value, scope);
   });
 
-  let editEl;
   const addItem = () => {
-    if (editEl.value) {
+    if (inputValue) {
       const newValue = value.slice(0);
-      const rawValue = editEl.value;
-      // FIXME: 这里的Input状态管理存在问题，后续修复，目前先解决样式问题
-      editEl.value = '';
-      if (newValue.indexOf(rawValue) > -1) {
+      if (newValue.indexOf(inputValue) > -1) {
         return;
       }
-      newValue.push(rawValue);
+      newValue.push(inputValue);
+      setInputValue('');
       handleValueChange(newValue);
     }
   };
-  const removeItem = (idx) => {
+
+  const removeItem = (idx: number) => {
     const newValue = value.slice(0);
     newValue.splice(idx, 1);
     if (newValue.length) {
@@ -360,34 +369,85 @@ function StringArrayPreferenceItem({ preferenceName, localizedName, currentValue
     }
   };
 
-  const items: any[] = [];
-  (currentValue || []).map((item, idx) => {
-    items.push(
-      <li className={styles.arr_items} key={`${idx} - ${JSON.stringify(item)}`}>
-        <div onClick={() => { removeItem(idx); }} className={classnames(getIcon('delete'), styles.rm_icon, styles.arr_item)}></div>
-        <div className={styles.arr_item}>{typeof item === 'string' ? item : JSON.stringify(item)}</div>
-      </li>);
+  const editItem = (index: number) => {
+    setCurrentEditIndex(index);
+  };
+
+  const handleInputValueChange = (value: string) => {
+    setInputValue(value);
+  };
+
+  const items = value.map((item, idx) => {
+    if (currentEditIndex >= 0 && currentEditIndex === idx) {
+      return <li className={styles.array_items} key={`${idx} - ${JSON.stringify(item)}`}></li>;
+    } else {
+      return <li className={styles.array_items} key={`${idx} - ${JSON.stringify(item)}`}>
+        <div className={styles.array_item}>{typeof item === 'string' ? item : JSON.stringify(item)}</div>
+        <div className={styles.operate}>
+          <Button type='icon' title={localize('preference.stringArray.operate.edit')} onClick={() => { editItem(idx); }} className={classnames(getIcon('edit'), styles.array_item)}></Button>
+          <Button type='icon' title={localize('preference.stringArray.operate.delete')} onClick={() => { removeItem(idx); }} className={classnames(getIcon('delete'), styles.array_item)}></Button>
+        </div>
+      </li>;
+    }
   });
 
-  return (
-    <div className={styles.preference_line}>
-      <div className={styles.key}>
-        {localizedName} <SettingStatus preferenceName={preferenceName} scope={scope} effectingScope={effectingScope} hasValueInScope={hasValueInScope} />
-      </div>
-      {schema && schema.description && <div className={styles.desc}>{renderDescriptionExpression(schema.description)}</div>}
-      <div className={styles.control_wrap}>
-        <ul className={styles.arr_list}>
-          {items}
-        </ul>
-        <div className={styles.preferences_flex_row}>
-          <Input
-            type='text'
-            className={styles.text_control}
-            ref={(el) => { editEl = el; }}
-          />
-          <Button className={styles.add_button} onClick={addItem}>{localize('preference.array.additem', '添加')}</Button>
-        </div>
+  const renderEditInput = () => {
+    const commit = () => {
+      const newValue = value.slice(0);
+      if (editValue) {
+        newValue[currentEditIndex] = editValue!;
+      } else {
+        newValue.splice(currentEditIndex, 1);
+      }
+      setValue(newValue);
+      preferenceService.set(preferenceName, newValue, scope);
+      setCurrentEditIndex(-1);
+    };
+
+    const handleEditValueChange = (value: string) => {
+      setEditValue(value);
+    };
+
+    if (currentEditIndex >= 0) {
+      return <div
+        className={styles.array_edit_wrapper}
+        style={{
+          top: currentEditIndex * 24,
+        }}
+      >
+        <Input
+          type='text'
+          className={styles.array_edit_input}
+          value={editValue}
+          onValueChange={handleEditValueChange}
+          onPressEnter={commit}
+          addonAfter={[<div className={styles.array_edit_input_tip}>
+            {localize('preference.stringArray.operate.editTip')}
+          </div>]}
+        />
+      </div>;
+    }
+  };
+
+  return <div className={styles.preference_line}>
+    <div className={styles.key}>
+      {localizedName} <SettingStatus preferenceName={preferenceName} scope={scope} effectingScope={effectingScope} hasValueInScope={hasValueInScope} />
+    </div>
+    {schema && schema.description && <div className={styles.desc}>{renderDescriptionExpression(schema.description)}</div>}
+    <div className={styles.control_wrap}>
+      <ul className={styles.array_items_wrapper}>
+        {items}
+        {renderEditInput()}
+      </ul>
+      <div className={styles.preferences_flex_row}>
+        <Input
+          type='text'
+          className={styles.text_control}
+          value={inputValue}
+          onValueChange={handleInputValueChange}
+        />
+        <Button className={styles.add_button} onClick={addItem}>{localize('preference.array.additem', '添加')}</Button>
       </div>
     </div>
-  );
+  </div>;
 }

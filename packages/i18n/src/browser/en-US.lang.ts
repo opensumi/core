@@ -343,6 +343,9 @@ export const localizationBundle = {
     'preference.editorTitle.openWorkspaceSource': 'Open Workspace Setting (JSON)',
     'preference.editorTitle.openPreference': 'Open Setting',
     'preference.view.saveLayoutWithWorkspace.title': 'Controls whether the layout should bind with workspace',
+    'preference.stringArray.operate.delete': 'Delete',
+    'preference.stringArray.operate.edit': 'Edit',
+    'preference.stringArray.operate.editTip': 'Press ↲',
 
     // Terminal
     'preference.terminal.type': 'Default Shell Type',

@@ -342,6 +342,9 @@ export const localizationBundle = {
     'preference.editorTitle.openWorkspaceSource': '打开工作区设置（JSON）',
     'preference.editorTitle.openPreference': '打开设置（可视化）',
     'preference.view.saveLayoutWithWorkspace.title': '控制是否将布局信息与工作区绑定',
+    'preference.stringArray.operate.delete': '删除',
+    'preference.stringArray.operate.edit': '修改',
+    'preference.stringArray.operate.editTip': '按回车确认',
 
     // 终端
     'preference.terminal.type': '默认终端类型',

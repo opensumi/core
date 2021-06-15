@@ -96,7 +96,7 @@
     .preferences_items{
       height:100%;
       user-select: text;
-      padding: 16px 20px 0 10px;
+      padding: 16px 0 0 10px;
     }
     .preference_section{
       :global(.kt-checkbox-icon) {
@@ -164,19 +164,60 @@
       }
       .add_button {
         margin-left: 10px;
-        padding: 0 5px!important;
+        padding: 0 8px!important;
       }
-      .arr_list {
+      .array_items_wrapper {
+        width: 550px;
         padding-left: 0;
+        position: relative;
+        .array_edit_wrapper {
+          position: absolute;
+          height: 24px;
+          width: 100%;
+          top: 0;
+          left: 0;
+        }
+        .array_edit_input {
+          height: 24px;
+          width: 100%;
+        }
+        .array_edit_input_tip {
+          height: 24px;
+          line-height: 24px;
+          opacity: .3;
+        }
       }
-      .arr_items {
+      .array_items {
         list-style: none;
+        height: 24px;
+        line-height: 24px;
+        text-indent: 5px;
+        font-size: 12px;
+        color: var(--foreground);
+        position: relative;
+        cursor: pointer;
+        .operate {
+          display: none;
+          position: absolute;
+          right: 10px;
+          top: 0;
+          height: 24px;
+          align-items: center;
+          justify-content: center;
+        }
+        &:hover {
+          color: var(--list-hoverForeground);
+          background-color: var(--list-hoverBackground);
+          .operate {
+            display: flex;
+          }
+        }
       }
-      .arr_item {
+
+      .array_item {
         display: inline-block;
       }
       .rm_icon {
-        margin-right: 4px;
         cursor: pointer;
       }
       .text_control {
