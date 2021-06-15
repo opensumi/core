@@ -502,6 +502,7 @@ export interface ISuggestResultDto {
   [ISuggestResultDtoField.completions]: ISuggestDataDto[];
   [ISuggestResultDtoField.isIncomplete]: undefined | true;
   [ISuggestResultDtoField.duration]: number;
+  /** 缓存在插件进程的评论列表 id */
   x?: number;
 }
 

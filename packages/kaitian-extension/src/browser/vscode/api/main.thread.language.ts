@@ -216,9 +216,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           duration: result[ISuggestResultDtoField.duration],
           incomplete: result[ISuggestResultDtoField.isIncomplete] || false,
           dispose: () => {
-            if (typeof (result as any)._id === 'number') {
+            if (result.x) {
               setTimeout(() => {
-                this.proxy.$releaseCompletionItems(handle, (result as any)._id);
+                this.proxy.$releaseCompletionItems(handle, result.x!);
               }, 0);
             }
           },
