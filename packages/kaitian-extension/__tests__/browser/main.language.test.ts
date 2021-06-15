@@ -13,7 +13,7 @@ import * as modes from '../../src/common/vscode/model.api';
 import { RPCProtocol } from '@ali/ide-connection';
 import { Emitter, CancellationToken, MonacoService, DisposableCollection } from '@ali/ide-core-browser';
 import { ExtensionDocumentDataManagerImpl } from '../../src/hosted/api/vscode/doc';
-import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../src/common/vscode';
+import { ExtHostAPIIdentifier, IExtensionDescription, MainThreadAPIIdentifier } from '../../src/common/vscode';
 import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
 import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.commands';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -452,7 +452,10 @@ describe('ExtHostLanguageFeatures', () => {
 
   // });
   test('Format Range, data conversion', async (done) => {
-    disposables.push(extHost.registerDocumentRangeFormattingEditProvider('test', defaultSelector, new class implements vscode.DocumentRangeFormattingEditProvider {
+    disposables.push(extHost.registerDocumentRangeFormattingEditProvider({
+      id: 'test',
+      displayName: 'Test Formatting Provider',
+    } as unknown as IExtensionDescription, defaultSelector, new class implements vscode.DocumentRangeFormattingEditProvider {
       provideDocumentRangeFormattingEdits(): any {
         return [new types.TextEdit(new types.Range(0, 0, 0, 0), 'testing')];
       }

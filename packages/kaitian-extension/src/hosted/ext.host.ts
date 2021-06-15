@@ -151,6 +151,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     // node 层 extension 实例和 vscode 保持一致，并继承 IExtensionProps
     this.extensions = extensions.map((item) => ({
       ...item,
+      displayName: item.packageJSON.displayName,
       isUnderDevelopment: !!item.isDevelopment,
       publisher: item.packageJSON?.publisher,
       version: item.packageJSON?.version,

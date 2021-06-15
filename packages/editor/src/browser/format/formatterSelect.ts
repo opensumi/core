@@ -29,8 +29,8 @@ export class FormattingSelector {
 
     const elements: {[key: string]: IProvider} = {};
     formatters.forEach((provider: IProvider) => {
-      if (provider.displayName) {
-        elements[provider.displayName] = provider;
+      if (provider.extensionId) {
+        elements[provider.extensionId] = provider;
       }
     });
 
@@ -44,9 +44,10 @@ export class FormattingSelector {
         return formatters[0];
     }
 
-    const selected = await this.quickPickService.show(Object.keys(elements), {
-      placeholder: localize('editor.format.chooseFormatter'),
-    });
+    const selected = await this.quickPickService.show(
+      Object.keys(elements).map((k) => ({ label: elements[k].displayName!, value: elements[k].extensionId })),
+      { placeholder: localize('editor.format.chooseFormatter') },
+    );
     if (selected) {
       const config = this.preferenceService.get<{[key: string]: string}>('editor.preferredFormatter') || {};
       this.preferenceService.set('editor.preferredFormatter', {...config, [languageId]: selected}, PreferenceScope.User);

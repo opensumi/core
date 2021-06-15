@@ -63,6 +63,7 @@ import { IMarkerData, IRange, Uri, UriComponents } from '@ali/ide-core-common';
 import { CompletionContext } from './model.api';
 import { IEvaluatableExpression } from '@ali/ide-debug/lib/common/evaluatable-expression';
 import { ISingleEditOperation } from '@ali/ide-editor';
+import { IExtensionDescription } from './extension';
 
 export interface IMainThreadLanguages {
   $unregister(handle: number): void;
@@ -100,12 +101,12 @@ export interface IMainThreadLanguages {
   ): void;
   $registerDocumentFormattingProvider(
     handle: number,
-    displayName: string,
+    extension: IExtensionDescription,
     selector: SerializedDocumentFilter[],
   ): void;
   $registerRangeFormattingProvider(
     handle: number,
-    displayName: string,
+    extension: IExtensionDescription,
     selector: SerializedDocumentFilter[],
   ): void;
   $registerOnTypeFormattingProvider(
@@ -285,7 +286,7 @@ export interface IExtHostLanguages {
   ): Promise<DocumentHighlight[] | undefined>;
 
   registerDocumentRangeFormattingEditProvider(
-    displayName: string,
+    extension: IExtensionDescription,
     selector: DocumentSelector,
     provider: DocumentRangeFormattingEditProvider,
   ): Disposable;
@@ -297,7 +298,7 @@ export interface IExtHostLanguages {
   ): Promise<SingleEditOperation[] | undefined>;
 
   registerDocumentFormattingEditProvider(
-    displayName: string,
+    extension: IExtensionDescription,
     selector: DocumentSelector,
     provider: DocumentFormattingEditProvider,
   ): Disposable;

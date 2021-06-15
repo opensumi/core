@@ -16,6 +16,7 @@ import { applyPatch } from 'diff';
 import { DocumentFilter } from 'vscode-languageserver-protocol';
 import { ExtHostAPIIdentifier, IExtHostLanguages, IMainThreadLanguages, ISuggestDataDto, ISuggestDataDtoField, ISuggestResultDtoField, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
+import { IExtensionDescription } from '../../../common/vscode/extension';
 import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SemanticTokensLegend, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ICallHierarchyItemDto, CallHierarchyItem, IWorkspaceEditDto, ResourceTextEditDto, ResourceFileEditDto } from '../../../common/vscode/model.api';
 import { mixin, reviveIndentationRule, reviveOnEnterRules, reviveRegExp } from '../../../common/vscode/utils';
 import { UriComponents } from '../../../common/vscode/ext-types';
@@ -518,9 +519,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
-  $registerDocumentFormattingProvider(handle: number, displayName: string, selector: SerializedDocumentFilter[]) {
+  $registerDocumentFormattingProvider(handle: number, extension: IExtensionDescription, selector: SerializedDocumentFilter[]) {
     const languageSelector = fromLanguageSelector(selector);
-    const documentFormattingEditProvider = this.createDocumentFormattingEditProvider(handle, displayName, languageSelector);
+    const documentFormattingEditProvider = this.createDocumentFormattingEditProvider(handle, extension, languageSelector);
     const disposable = new DisposableCollection();
     for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
@@ -530,9 +531,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
-  createDocumentFormattingEditProvider( handle: number, displayName: string, selector: LanguageSelector | undefined): monaco.languages.DocumentFormattingEditProvider {
+  createDocumentFormattingEditProvider(handle: number, extension: IExtensionDescription, selector: LanguageSelector | undefined): monaco.languages.DocumentFormattingEditProvider {
     return {
-      displayName,
+      displayName: extension.displayName,
+      extensionId: extension.id,
       provideDocumentFormattingEdits: async (model, options) => {
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined!;
@@ -552,9 +554,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
-  $registerRangeFormattingProvider(handle: number, displayName: string, selector: SerializedDocumentFilter[]) {
+  $registerRangeFormattingProvider(handle: number, extension: IExtensionDescription, selector: SerializedDocumentFilter[]) {
     const languageSelector = fromLanguageSelector(selector);
-    const documentHighlightProvider = this.createDocumentRangeFormattingEditProvider(handle, displayName, languageSelector);
+    const documentHighlightProvider = this.createDocumentRangeFormattingEditProvider(handle, extension, languageSelector);
     const disposable = new DisposableCollection();
     for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
@@ -564,9 +566,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
-  createDocumentRangeFormattingEditProvider(handle: number, displayName: string, selector: LanguageSelector | undefined): monaco.languages.DocumentRangeFormattingEditProvider {
+  createDocumentRangeFormattingEditProvider(handle: number, extension: IExtensionDescription, selector: LanguageSelector | undefined): monaco.languages.DocumentRangeFormattingEditProvider {
     return {
-      displayName,
+      displayName: extension.displayName,
+      extensionId: extension.id,
       provideDocumentRangeFormattingEdits: async (model, range, options) => {
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined!;

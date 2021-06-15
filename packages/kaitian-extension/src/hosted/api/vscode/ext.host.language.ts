@@ -200,10 +200,10 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, ex
       return extHostLanguages.registerOnTypeFormattingEditProvider(selector, provider, [firstTriggerCharacter].concat(moreTriggerCharacter));
     },
     registerDocumentRangeFormattingEditProvider(selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable {
-      return extHostLanguages.registerDocumentRangeFormattingEditProvider(extension.id, selector,  provider);
+      return extHostLanguages.registerDocumentRangeFormattingEditProvider(extension, selector,  provider);
     },
     registerDocumentFormattingEditProvider(selector: DocumentSelector, provider: DocumentFormattingEditProvider): Disposable {
-      return extHostLanguages.registerDocumentFormattingEditProvider(extension.id, selector, provider);
+      return extHostLanguages.registerDocumentFormattingEditProvider(extension, selector, provider);
     },
     registerSelectionRangeProvider(selector: DocumentSelector, provider: SelectionRangeProvider): Disposable {
       return extHostLanguages.registerSelectionRangeProvider(selector, provider);
@@ -441,9 +441,9 @@ export class ExtHostLanguages implements IExtHostLanguages {
   // ### Document Highlight Provider end
 
   // ### Document Formatting Provider begin
-  registerDocumentFormattingEditProvider(displayName: string, selector: DocumentSelector, provider: DocumentFormattingEditProvider): Disposable {
+  registerDocumentFormattingEditProvider(extension: IExtensionDescription, selector: DocumentSelector, provider: DocumentFormattingEditProvider): Disposable {
     const callId = this.addNewAdapter(new FormattingAdapter(provider, this.documents));
-    this.proxy.$registerDocumentFormattingProvider(callId, displayName, this.transformDocumentSelector(selector));
+    this.proxy.$registerDocumentFormattingProvider(callId, extension, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
 
@@ -453,9 +453,9 @@ export class ExtHostLanguages implements IExtHostLanguages {
   // ### Document Formatting Provider end
 
   // ### Document Range Formatting Provider begin
-  registerDocumentRangeFormattingEditProvider(displayName: string, selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable {
+  registerDocumentRangeFormattingEditProvider(extension: IExtensionDescription, selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable {
     const callId = this.addNewAdapter(new RangeFormattingAdapter(provider, this.documents));
-    this.proxy.$registerRangeFormattingProvider(callId, displayName, this.transformDocumentSelector(selector));
+    this.proxy.$registerRangeFormattingProvider(callId, extension, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
 

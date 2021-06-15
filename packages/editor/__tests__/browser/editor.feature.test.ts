@@ -77,8 +77,8 @@ describe('editor status bar item test', () => {
 
   it('formatter select test', async ( done ) => {
     injector.mockService(QuickPickService, {
-      show: (strings: string[]) => {
-        return  strings[0];
+      show: (strings: any[]) => {
+        return  strings[0].value;
       },
     });
     const config = {};
@@ -104,10 +104,12 @@ describe('editor status bar item test', () => {
     const selector: FormattingSelector = injector.get(FormattingSelector);
 
     await selector.select([{
-      displayName: 'testFormatter',
+      displayName: 'Test Formatter',
+      extensionId: 'testFormatter',
       provideDocumentFormattingEdits: jest.fn(),
     }, {
-      displayName: 'testFormatter2',
+      displayName: 'Test Formatter2',
+      extensionId: 'testFormatter2',
       provideDocumentFormattingEdits: jest.fn(),
     }], {
       uri: new URI('file:///test/test.js').codeUri,
