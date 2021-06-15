@@ -175,7 +175,13 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
       return <div style={style}></div>;
     }
 
-    return <div style={style}>
+    // ref: https://developers.google.com/web/fundamentals/accessibility/semantics-aria/aria-labels-and-relationships
+    const ariaInfo = {
+      'aria-setsize': adjustedRowCount,
+      'aria-posinset': index,
+    };
+
+    return <div style={style} role='listitem' {...ariaInfo}>
       <Template data={node} index={index} />
     </div>;
   };

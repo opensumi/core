@@ -296,6 +296,7 @@ class ExtHostTreeView<T> implements IDisposable {
           tooltip: treeItem.tooltip,
           collapsibleState: treeItem.collapsibleState,
           contextValue: treeItem.contextValue,
+          accessibilityInformation: treeItem.accessibilityInformation,
           command: treeItem.command ? this.commands.converter.toInternal(treeItem.command, this.disposable) : undefined,
         } as TreeViewItem;
 

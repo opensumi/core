@@ -2,6 +2,7 @@ import { TreeNode, CompositeTreeNode, ITree } from '@ali/ide-components';
 import { TreeViewDataProvider } from '../main.thread.treeview';
 import { ICommand } from '../../../../common/vscode/models';
 import { MenuNode } from '@ali/ide-core-browser/lib/menu/next';
+import { IAccessibilityInformation } from '@ali/ide-core-common';
 
 export class ExtensionTreeRoot extends CompositeTreeNode {
 
@@ -55,6 +56,7 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
     public contextValue: string = '',
     public treeItemId: string = '',
     public actions: MenuNode[],
+    private _accessibilityInformation?: IAccessibilityInformation,
     expanded?: boolean,
     id?: number,
   ) {
@@ -82,6 +84,13 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
     return this._whenReady;
   }
 
+  get accessibilityInformation() {
+    return {
+      role: this._accessibilityInformation?.role || 'treeitem',
+      label: this._accessibilityInformation?.label || this.displayName,
+    };
+  }
+
   dispose() {
     super.dispose();
   }
@@ -101,6 +110,7 @@ export class ExtensionTreeNode extends TreeNode {
     public contextValue: string = '',
     public treeItemId: string = '',
     public actions: MenuNode[],
+    private _accessibilityInformation?: IAccessibilityInformation,
     id?: number,
   ) {
     super(tree as ITree, parent, undefined, { name }, { disableCache: true });
@@ -118,7 +128,11 @@ export class ExtensionTreeNode extends TreeNode {
     return this._displayName;
   }
 
-  dispose() {
-    super.dispose();
+  get accessibilityInformation() {
+    return {
+      role: this._accessibilityInformation?.role || 'treeitem',
+      label: this._accessibilityInformation?.label || this.displayName,
+    };
   }
+
 }

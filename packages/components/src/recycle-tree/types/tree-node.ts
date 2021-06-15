@@ -1,3 +1,8 @@
+export interface IAccessibilityInformation {
+  label: string;
+  role?: string;
+}
+
 export interface ITreeNode {
   /**
    * 唯一标识id
@@ -32,6 +37,10 @@ export interface ITreeNode {
    * 父节点，但为undefined时，表示该节点为根节点
    */
   readonly parent: ICompositeTreeNode | undefined;
+  /**
+   * 节点无障碍信息
+   */
+  readonly accessibilityInformation?: IAccessibilityInformation;
   /**
    * 移动函数
    */

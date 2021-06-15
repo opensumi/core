@@ -3,7 +3,7 @@ import {
   UriComponents,
   ICommand,
 } from './models';
-import { Event, IDisposable } from '@ali/ide-core-common';
+import { Event, IDisposable, IAccessibilityInformation } from '@ali/ide-core-common';
 import { TreeItemCollapsibleState, ThemeIcon } from './ext-types';
 import { ThemeType } from '@ali/ide-theme';
 
@@ -58,6 +58,7 @@ export class TreeViewItem {
 
   command?: ICommand;
 
+  accessibilityInformation?: IAccessibilityInformation;
 }
 
 export interface TreeView<T> extends IDisposable {

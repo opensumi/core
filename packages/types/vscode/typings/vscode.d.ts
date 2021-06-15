@@ -1591,6 +1591,13 @@ declare module 'vscode' {
      * This will show action `extension.deleteFolder` only for items with `contextValue` is `folder`.
      */
     contextValue?: string;
+    
+    /**
+		 * Accessibility information used when screen reader interacts with this tree item.
+		 * Generally, a TreeItem has no need to set the `role` of the accessibilityInformation;
+		 * however, there are cases where a TreeItem is not displayed in a tree-like way where setting the `role` may make sense.
+		 */
+     accessibilityInformation?: AccessibilityInformation;
 
     /**
      * @param label A human-readable string describing this item

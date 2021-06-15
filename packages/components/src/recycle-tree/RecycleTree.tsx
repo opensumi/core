@@ -744,7 +744,26 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       return <div style={style}></div>;
     }
     const itemStyle = overflow === 'ellipsis' ? style : { ...style, width: 'auto', minWidth: '100%' };
-    return <div style={itemStyle}>
+    let ariaInfo;
+    // ref: https://developers.google.com/web/fundamentals/accessibility/semantics-aria/aria-labels-and-relationships
+    if (CompositeTreeNode.is(item)) {
+      ariaInfo = {
+        'aria-label': item.accessibilityInformation.label,
+        'aria-expanded': item.expanded,
+        'aria-level': item.depth,
+        'aria-setsize': item.parent?.children?.length,
+        'aria-posinset': index,
+      };
+    } else if (TreeNode.is(item)) {
+      ariaInfo = {
+        'aria-label': item.accessibilityInformation.label,
+        'aria-level': item.depth,
+        'aria-setsize': item.parent?.children?.length,
+        'aria-posinset': index,
+      };
+    }
+
+    return <div style={itemStyle} role={item.accessibilityInformation.role || 'treeiem'} {...ariaInfo}>
       <NodeRendererWrap
         item={item}
         depth={item.depth}

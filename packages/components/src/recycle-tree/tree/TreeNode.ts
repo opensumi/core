@@ -1,4 +1,4 @@
-import { IWatcherCallback, IWatchTerminator, IWatcherInfo, ITreeNodeOrCompositeTreeNode, ITreeNode, ICompositeTreeNode, TreeNodeEvent, IWatcherEvent, MetadataChangeType, ITreeWatcher, IMetadataChange, ITree, WatchEvent, TreeNodeType } from '../types';
+import { IWatcherCallback, IWatchTerminator, IWatcherInfo, ITreeNodeOrCompositeTreeNode, ITreeNode, ICompositeTreeNode, TreeNodeEvent, IWatcherEvent, MetadataChangeType, ITreeWatcher, IMetadataChange, ITree, WatchEvent, TreeNodeType, IAccessibilityInformation } from '../types';
 import { Event, Emitter, DisposableCollection, Path } from '../../utils';
 
 /**
@@ -130,6 +130,13 @@ export class TreeNode implements ITreeNode {
       return new Path(`/${this.name}`).toString();
     }
     return new Path(this.parent.path).join(this.name).toString();
+  }
+
+  get accessibilityInformation(): IAccessibilityInformation {
+    return {
+      label: this.name,
+      role: 'treeitem',
+    };
   }
 
   public getMetadata(withKey: string): any {
