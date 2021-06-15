@@ -342,6 +342,8 @@ export const localizationBundle = {
     'preference.editorTitle.openUserSource': 'Open User Setting (JSON)',
     'preference.editorTitle.openWorkspaceSource': 'Open Workspace Setting (JSON)',
     'preference.editorTitle.openPreference': 'Open Setting',
+    'preference.view.saveLayoutWithWorkspace.title': 'Controls whether the layout should bind with workspace',
+
     // Terminal
     'preference.terminal.type': 'Default Shell Type',
     'preference.terminal.typeDesc': 'To change the default type of create a new terminal',

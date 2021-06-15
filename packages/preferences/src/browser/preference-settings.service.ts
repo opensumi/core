@@ -428,6 +428,8 @@ export const defaultSettingSections: {
         { id: 'explorer.compactFolders', localized: 'preference.explorer.compactFolders.title' },
         // 运行与调试
         { id: 'debug.toolbar.float', localized: 'preference.debug.toolbar.float.title' },
+        // 布局信息
+        { id: 'view.saveLayoutWithWorkspace', localized: 'preference.view.saveLayoutWithWorkspace.title' },
       ],
     },
   ],

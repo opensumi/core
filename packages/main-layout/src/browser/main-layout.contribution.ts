@@ -105,21 +105,27 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
   protected keybindingRegistry: KeybindingRegistry;
 
   async initialize() {
+    // 全局只要初始化一次
+    await this.layoutState.initStorage();
+
     const componentContributions = this.contributionProvider.getContributions();
     for (const contribution of componentContributions) {
-      contribution.registerComponent(this.componentRegistry);
+      if (contribution.registerComponent) {
+        contribution.registerComponent(this.componentRegistry);
+      }
     }
     const rendererContributions = this.rendererContributionProvider.getContributions();
     for (const contribution of rendererContributions) {
-      contribution.registerRenderer(slotRendererRegistry);
+      if (contribution.registerRenderer) {
+        contribution.registerRenderer(slotRendererRegistry);
+      }
     }
     const contributions = this.toolBarContributionProvider.getContributions();
     for (const contribution of contributions) {
-      contribution.registerToolbarItems(this.toolBarRegistry);
+      if (contribution.registerToolbarItems) {
+        contribution.registerToolbarItems(this.toolBarRegistry);
+      }
     }
-
-    // 全局只要初始化一次
-    await this.layoutState.initStorage();
   }
 
   async onStart() {

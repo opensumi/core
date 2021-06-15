@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector, createBrowserApp } from '../../../../tools/dev-tool/src/injector-helper';
-import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, IContextKeyService, CommandRegistry, ILoggerManagerClient, ViewContainerOptions } from '@ali/ide-core-browser';
+import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, IContextKeyService, CommandRegistry, ILoggerManagerClient, ViewContainerOptions, PreferenceService, Disposable } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
@@ -83,7 +83,7 @@ describe('main layout test', () => {
       },
     );
 
-    injector.addProviders(
+    injector.overrideProviders(
       {
         token: IMainLayoutService,
         useClass: LayoutService,
@@ -99,6 +99,14 @@ describe('main layout test', () => {
       {
         token: IWorkspaceService,
         useClass: MockWorkspaceService,
+      },
+      {
+        token: PreferenceService,
+        useValue: {
+          ready: Promise.resolve(),
+          get: () => undefined,
+          onPreferenceChanged: () => Disposable.create(() => {}),
+        },
       },
       {
         token: ILoggerManagerClient,

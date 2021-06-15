@@ -341,6 +341,8 @@ export const localizationBundle = {
     'preference.editorTitle.openUserSource': '打开全局设置（JSON）',
     'preference.editorTitle.openWorkspaceSource': '打开工作区设置（JSON）',
     'preference.editorTitle.openPreference': '打开设置（可视化）',
+    'preference.view.saveLayoutWithWorkspace.title': '控制是否将布局信息与工作区绑定',
+
     // 终端
     'preference.terminal.type': '默认终端类型',
     'preference.terminal.typeDesc': '控制打开终端所使用的默认 Shell 类型。',

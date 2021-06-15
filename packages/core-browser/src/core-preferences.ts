@@ -284,6 +284,10 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: 'iconAndText',
       description: '%preference.toolbar.buttonDisplay%',
     },
+    'view.saveLayoutWithWorkspace': {
+      type: 'boolean',
+      default: false,
+    },
   },
 };
 
@@ -309,6 +313,7 @@ export interface CoreConfiguration {
   'general.language': string;
   'general.theme': string;
   'terminal.integrated.shellArgs.linux': string[];
+  'view.saveLayoutWithWorkspace': boolean;
 }
 
 export const CorePreferences = Symbol('CorePreferences');
