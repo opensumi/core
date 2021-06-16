@@ -1905,6 +1905,28 @@ declare module 'vscode' {
     static file(path: string): Uri;
 
     /**
+     * Create a new uri which path is the result of joining
+     * the path of the base uri with the provided path segments.
+     *
+     * - Note 1: `joinPath` only affects the path component
+     * and all other components (scheme, authority, query, and fragment) are
+     * left as they are.
+     * - Note 2: The base uri must have a path; an error is thrown otherwise.
+     *
+     * The path segments are normalized in the following ways:
+     * - sequences of path separators (`/` or `\`) are replaced with a single separator
+     * - for `file`-uris on windows, the backslash-character (`\`) is considered a path-separator
+     * - the `..`-segment denotes the parent segment, the `.` denotes the current segment
+     * - paths have a root which always remains, for instance on windows drive-letters are roots
+     * so that is true: `joinPath(Uri.file('file:///c:/root'), '../../other').fsPath === 'c:/other'`
+     *
+     * @param base An uri. Must have a path.
+     * @param pathSegments One more more path fragments
+     * @returns A new uri which path is joined with the given fragments
+     */
+     static joinPath(base: Uri, ...pathSegments: string[]): Uri;
+
+    /**
      * Use the `file` and `parse` factory functions to create new `Uri` objects.
      */
     private constructor(scheme: string, authority: string, path: string, query: string, fragment: string);
@@ -1999,6 +2021,7 @@ declare module 'vscode' {
      * @return An object.
      */
     toJSON(): any;
+
   }
 
   /**
@@ -2601,7 +2624,7 @@ declare module 'vscode' {
      *
      * Use [`workspaceState`](#ExtensionContext.workspaceState) or
      * [`globalState`](#ExtensionContext.globalState) to store key value data.
-     * 
+     *
      * @deprecated Use [storagePath](#ExtensionContent.storageUri) instead.
      */
     readonly storagePath: string | undefined;
@@ -2626,7 +2649,7 @@ declare module 'vscode' {
      * up to the extension. However, the parent directory is guaranteed to be existent.
      *
      * Use [`globalState`](#ExtensionContext.globalState) to store key value data.
-     * 
+     *
      * @deprecated Use [globalStoragePath](#ExtensionContent.globalStorageUri) instead.
      */
     readonly globalStoragePath: string;
@@ -2647,7 +2670,7 @@ declare module 'vscode' {
      * An absolute file path of a directory in which the extension can create log files.
      * The directory might not exist on disk and creation is up to the extension. However,
      * the parent directory is guaranteed to be existent.
-     * 
+     *
      * @deprecated Use [logUri](#ExtensionContext.logUri) instead.
      */
     readonly logPath: string;

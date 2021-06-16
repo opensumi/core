@@ -1,5 +1,5 @@
-import { IMainThreadWebview, IExtHostWebview, MainThreadAPIIdentifier, IWebviewPanelViewState, IWebviewOptions, Webview, WebviewPanel, IWebviewPanelOptions, ViewColumn, WebviewPanelOnDidChangeViewStateEvent, WebviewPanelSerializer } from '../../../common/vscode';
-import { Emitter, Event, IExtensionInfo } from '@ali/ide-core-common';
+import { IMainThreadWebview, IExtHostWebview, MainThreadAPIIdentifier, IWebviewPanelViewState, IWebviewOptions, Webview, WebviewPanel, IWebviewPanelOptions, ViewColumn, WebviewPanelOnDidChangeViewStateEvent, WebviewPanelSerializer, WebviewView, WebviewHandle, IMainThreadWebviewView, IExtHostWebviewView, IExtensionDescription, WebviewViewProvider } from '../../../common/vscode';
+import { Emitter, Event, IExtensionInfo, Disposable as IDEDisposable, CancellationToken } from '@ali/ide-core-common';
 import { Uri, Disposable } from '../../../common/vscode/ext-types';
 import { IRPCProtocol } from '@ali/ide-connection';
 
@@ -250,6 +250,7 @@ export class ExtHostWebviewService implements IExtHostWebview {
 
   private readonly _proxy: IMainThreadWebview;
   private readonly _webviewPanels = new Map<string, ExtHostWebviewPanel>();
+  private readonly _localWebviews = new Map<string, ExtHostWebview>();
   private readonly _serializers = new Map<string, WebviewPanelSerializer>();
   private resourceRoots: string[] = [];
 
@@ -297,10 +298,16 @@ export class ExtHostWebviewService implements IExtHostWebview {
     return panel;
   }
 
-  $pipeBrowserHostedWebview(handle: string, viewType: string) {
+  $pipeBrowserHostedWebviewPanel(handle: string, viewType: string) {
     const webview = new ExtHostWebview(handle, this._proxy, {}, this.resourceRoots);
     const panel = new ExtHostWebviewPanel(handle, this._proxy, viewType, '', ViewColumn.One, {}, webview);
     this._webviewPanels.set(handle, panel);
+  }
+
+  createLocalWebview(handle: string) {
+    const webview = new ExtHostWebview(handle, this._proxy, {}, this.resourceRoots);
+    this._localWebviews.set(handle, webview);
+    return webview;
   }
 
   public registerWebviewPanelSerializer(
@@ -320,14 +327,15 @@ export class ExtHostWebviewService implements IExtHostWebview {
     });
   }
 
+  private getExtHostWebview(handle: string): ExtHostWebview | undefined {
+    return this._localWebviews.get(handle) || this.getWebviewPanel(handle)?.webview;
+  }
+
   public $onMessage(
     handle: string,
     message: any,
   ): void {
-    const panel = this.getWebviewPanel(handle);
-    if (panel) {
-      panel.webview._onMessageEmitter.fire(message);
-    }
+    this.getExtHostWebview(handle)?._onMessageEmitter.fire(message);
   }
 
   public $onDidChangeWebviewPanelViewState(
@@ -376,5 +384,196 @@ export class ExtHostWebviewService implements IExtHostWebview {
 
   public getWebviewPanel(handle: string): ExtHostWebviewPanel | undefined {
     return this._webviewPanels.get(handle);
+  }
+
+}
+
+class ExtHostWebviewView extends IDEDisposable implements WebviewView {
+
+  readonly #handle: WebviewHandle;
+  readonly #proxy: IMainThreadWebviewView;
+
+  readonly #viewType: string;
+  readonly #webview: ExtHostWebview;
+
+  #isDisposed = false;
+  #isVisible: boolean;
+  #title: string | undefined;
+  #description: string | undefined;
+
+  constructor(
+    handle: WebviewHandle,
+    proxy: IMainThreadWebviewView,
+    viewType: string,
+    title: string | undefined,
+    webview: ExtHostWebview,
+    isVisible: boolean,
+  ) {
+    super();
+
+    this.#viewType = viewType;
+    this.#title = title;
+    this.#handle = handle;
+    this.#proxy = proxy;
+    this.#webview = webview;
+    this.#isVisible = isVisible;
+
+    this.addDispose(this.#onDidChangeVisibility);
+    this.addDispose(this.#onDidDispose);
+  }
+
+  public dispose() {
+    if (this.#isDisposed) {
+      return;
+    }
+
+    this.#isDisposed = true;
+    this.#onDidDispose.fire();
+
+    this.#webview.dispose();
+
+    super.dispose();
+  }
+
+  readonly #onDidChangeVisibility = new Emitter<void>();
+  public readonly onDidChangeVisibility = this.#onDidChangeVisibility.event;
+
+  readonly #onDidDispose = new Emitter<void>();
+  public readonly onDidDispose = this.#onDidDispose.event;
+
+  public get title(): string | undefined {
+    this.assertNotDisposed();
+    return this.#title;
+  }
+
+  public set title(value: string | undefined) {
+    this.assertNotDisposed();
+    if (this.#title !== value) {
+      this.#title = value;
+      this.#proxy.$setWebviewViewTitle(this.#handle, value);
+    }
+  }
+
+  public get description(): string | undefined {
+    this.assertNotDisposed();
+    return this.#description;
+  }
+
+  public set description(value: string | undefined) {
+    this.assertNotDisposed();
+    if (this.#description !== value) {
+      this.#description = value;
+      this.#proxy.$setWebviewViewDescription(this.#handle, value);
+    }
+  }
+
+  public get visible(): boolean { return this.#isVisible; }
+
+  public get webview(): Webview { return this.#webview; }
+
+  public get viewType(): string { return this.#viewType; }
+
+  /* internal */ _setVisible(visible: boolean) {
+    if (visible === this.#isVisible || this.#isDisposed) {
+      return;
+    }
+
+    this.#isVisible = visible;
+    this.#onDidChangeVisibility.fire();
+  }
+
+  public show(preserveFocus?: boolean): void {
+    this.assertNotDisposed();
+    this.#proxy.$show(this.#handle, !!preserveFocus);
+  }
+
+  private assertNotDisposed() {
+    if (this.#isDisposed) {
+      throw new Error('Webview is disposed');
+    }
+  }
+
+}
+
+export class ExtHostWebviewViews implements IExtHostWebviewView {
+
+  private readonly _proxy: IMainThreadWebviewView;
+
+  private readonly _viewProviders = new Map<string, {
+    readonly provider: WebviewViewProvider;
+    readonly extension: IExtensionDescription;
+  }>();
+
+  private readonly _webviewViews = new Map<WebviewHandle, ExtHostWebviewView>();
+
+  constructor(
+    rpcProtocol: IRPCProtocol,
+    private readonly _extHostWebview: ExtHostWebviewService,
+  ) {
+    this._proxy = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadWebviewView);
+  }
+
+  public registerWebviewViewProvider(
+    extension: IExtensionDescription,
+    viewType: string,
+    provider: WebviewViewProvider,
+    webviewOptions?: {
+      retainContextWhenHidden?: boolean,
+    },
+  ): Disposable {
+    if (this._viewProviders.has(viewType)) {
+      throw new Error(`View provider for '${viewType}' already registered`);
+    }
+
+    this._viewProviders.set(viewType, { provider, extension });
+    this._proxy.$registerWebviewViewProvider(extension, viewType, webviewOptions);
+
+    return new Disposable(() => {
+      this._viewProviders.delete(viewType);
+      this._proxy.$unregisterWebviewViewProvider(viewType);
+    });
+  }
+
+  async $resolveWebviewView(
+    webviewHandle: string,
+    viewType: string,
+    title: string | undefined,
+    state: any,
+    cancellation: CancellationToken,
+  ): Promise<void> {
+    const entry = this._viewProviders.get(viewType);
+    if (!entry) {
+      throw new Error(`No view provider found for '${viewType}'`);
+    }
+
+    const { provider } = entry;
+
+    const webview = this._extHostWebview.createLocalWebview(webviewHandle);
+    const revivedView = new ExtHostWebviewView(webviewHandle, this._proxy, viewType, title, webview, true);
+
+    this._webviewViews.set(webviewHandle, revivedView);
+
+    await provider.resolveWebviewView(revivedView, { state }, cancellation);
+  }
+
+  async $onDidChangeWebviewViewVisibility(
+    webviewHandle: string,
+    visible: boolean,
+  ) {
+    const webviewView = this.getWebviewView(webviewHandle);
+    webviewView._setVisible(visible);
+  }
+
+  async $disposeWebviewView(webviewHandle: string) {
+    this._webviewViews.delete(webviewHandle);
+    this._extHostWebview.getWebviewPanel(webviewHandle)?.dispose();
+  }
+
+  private getWebviewView(handle: string): ExtHostWebviewView {
+    const entry = this._webviewViews.get(handle);
+    if (!entry) {
+      throw new Error('No webview found');
+    }
+    return entry;
   }
 }

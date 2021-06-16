@@ -62,6 +62,7 @@ describe('MainThreadDecorationAPI Test Suites ', () => {
         {} as any,
         {} as any,
         {} as any,
+        {} as any,
         extHostDecorations,
         {} as any,
         {} as any,

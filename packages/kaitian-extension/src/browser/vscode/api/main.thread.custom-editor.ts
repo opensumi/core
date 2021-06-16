@@ -133,7 +133,7 @@ export class MainThreadCustomEditor extends WithEventBus implements IMainThreadC
             docRef.dispose();
           }
         });
-        this.webview.pipeBrowserHostedWebview(webview, {
+        this.webview.pipeBrowserHostedWebviewPanel(webview, {
           uri,
           openTypeId,
         }, viewType, editor.options.webviewOptions || {}, editor.extensionInfo);
@@ -143,7 +143,7 @@ export class MainThreadCustomEditor extends WithEventBus implements IMainThreadC
         if (!webview) {
           throw new Error(`failed to find webview ${webviewPanelId}`);
         }
-        this.webview.pipeBrowserHostedWebview(webview, {
+        this.webview.pipeBrowserHostedWebviewPanel(webview, {
           uri,
           openTypeId,
         }, viewType, editor.options.webviewOptions || {}, editor.extensionInfo);

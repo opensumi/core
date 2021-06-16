@@ -139,6 +139,17 @@ export function addElement<T>(array: Array<T>, element:T, unshift: boolean = fal
 	}
 }
 
+export function addMapElement<K,T>(map: Map<K,T>, key:K, element:T): IDisposable {
+	map.set(key, element);
+	return {
+		dispose: () => {
+			if (map.get(key) === element) {
+        map.delete(key);
+      }
+		}
+	}
+}
+
 export interface ILRULinkListNode<K> {
 		key: K | undefined,
 		next: ILRULinkListNode<K> | undefined,

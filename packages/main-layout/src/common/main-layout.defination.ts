@@ -71,6 +71,7 @@ export interface IMainLayoutService {
   getAccordionService(containerId: string, noRestore?: boolean): AccordionService;
   // 某一位置是否可见
   isVisible(location: string): boolean;
+  isViewVisible(viewId: string): boolean;
   getExtraMenu(): IContextMenu;
 }
 
@@ -106,3 +107,8 @@ export interface IViewContentDescriptor {
   readonly order?: number;
   readonly precondition?: ContextKeyExpr | undefined;
 }
+
+export class ViewCollapseChangedEvent extends BasicEvent<{
+  viewId: string;
+  collapsed: boolean
+}> {}

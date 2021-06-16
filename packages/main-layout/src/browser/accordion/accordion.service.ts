@@ -6,6 +6,7 @@ import { AbstractContextMenuService, AbstractMenuService, IMenu, IMenuRegistry, 
 import { RESIZE_LOCK } from '@ali/ide-core-browser/lib/components';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { IProgressService } from '@ali/ide-core-browser/lib/progress';
+import { ViewCollapseChangedEvent } from '../../common';
 
 export interface SectionState {
   collapsed: boolean;
@@ -392,6 +393,11 @@ export class AccordionService extends WithEventBus {
         this.setSize(i, 0, false, noAnimation);
       }
     }
+
+    this.eventBus.fire(new ViewCollapseChangedEvent({
+      viewId,
+      collapsed: viewState.collapsed,
+    }));
   }
 
   protected setSize(index: number, targetSize: number, isIncrement?: boolean, noAnimation?: boolean): number {

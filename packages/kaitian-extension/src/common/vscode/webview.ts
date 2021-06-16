@@ -1,4 +1,4 @@
-import { Event, IExtensionInfo, Uri } from '@ali/ide-core-common';
+import { Event, IExtensionInfo, Uri, CancellationToken, BasicEvent } from '@ali/ide-core-common';
 import { ViewColumn } from './editor';
 import type * as vscode from 'vscode';
 
@@ -51,6 +51,32 @@ export interface IMainThreadWebview {
 
 }
 
+export interface IWebviewExtensionDescription {
+  readonly id: string;
+}
+
+export type WebviewHandle = string;
+
+export interface IMainThreadWebviewView {
+  $registerWebviewViewProvider(extension: IWebviewExtensionDescription, viewType: string, options?: { retainContextWhenHidden?: boolean }): void;
+  $unregisterWebviewViewProvider(viewType: string): void;
+
+  $setWebviewViewTitle(handle: WebviewHandle, value: string | undefined): void;
+  $setWebviewViewDescription(handle: WebviewHandle, value: string | undefined): void;
+
+  $show(handle: WebviewHandle, preserveFocus: boolean): void;
+}
+
+export interface IExtHostWebviewView {
+
+  $resolveWebviewView(webviewHandle: WebviewHandle, viewType: string, title: string | undefined, state: any, cancellation: CancellationToken): Promise<void>;
+
+  $onDidChangeWebviewViewVisibility(webviewHandle: WebviewHandle, visible: boolean): void;
+
+  $disposeWebviewView(webviewHandle: WebviewHandle): void;
+
+}
+
 export interface IExtHostWebview {
   $init(): void;
   $onMessage(id: string, message: any): void;
@@ -62,7 +88,7 @@ export interface IExtHostWebview {
    * browser主动创建了一个webview，把它交给 exthost 创建 webviewPanel
    * @param id
    */
-  $pipeBrowserHostedWebview(id: string, viewType: string): void;
+  $pipeBrowserHostedWebviewPanel(id: string, viewType: string): void;
 }
 
 export interface Webview {
@@ -196,3 +222,137 @@ export interface WebviewPanelSerializer {
    */
   deserializeWebviewPanel(webviewPanel: WebviewPanel, state: any): Thenable<void>;
 }
+
+/**
+ * A webview based view.
+ */
+export interface WebviewView {
+  /**
+   * Identifies the type of the webview view, such as `'hexEditor.dataView'`.
+   */
+  readonly viewType: string;
+
+  /**
+   * The underlying webview for the view.
+   */
+  readonly webview: Webview;
+
+  /**
+   * View title displayed in the UI.
+   *
+   * The view title is initially taken from the extension `package.json` contribution.
+   */
+  title?: string;
+
+  /**
+   * Human-readable string which is rendered less prominently in the title.
+   */
+  description?: string;
+
+  /**
+   * Event fired when the view is disposed.
+   *
+   * Views are disposed when they are explicitly hidden by a user (this happens when a user
+   * right clicks in a view and unchecks the webview view).
+   *
+   * Trying to use the view after it has been disposed throws an exception.
+   */
+  readonly onDidDispose: Event<void>;
+
+  /**
+   * Tracks if the webview is currently visible.
+   *
+   * Views are visible when they are on the screen and expanded.
+   */
+  readonly visible: boolean;
+
+  /**
+   * Event fired when the visibility of the view changes.
+   *
+   * Actions that trigger a visibility change:
+   *
+   * - The view is collapsed or expanded.
+   * - The user switches to a different view group in the sidebar or panel.
+   *
+   * Note that hiding a view using the context menu instead disposes of the view and fires `onDidDispose`.
+   */
+  readonly onDidChangeVisibility: Event<void>;
+
+  /**
+   * Reveal the view in the UI.
+   *
+   * If the view is collapsed, this will expand it.
+   *
+   * @param preserveFocus When `true` the view will not take focus.
+   */
+  show(preserveFocus?: boolean): void;
+}
+
+/**
+ * Additional information the webview view being resolved.
+ *
+ * @param T Type of the webview's state.
+ */
+interface WebviewViewResolveContext<T = unknown> {
+  /**
+   * Persisted state from the webview content.
+   *
+   * To save resources, VS Code normally deallocates webview documents (the iframe content) that are not visible.
+   * For example, when the user collapse a view or switches to another top level activity in the sidebar, the
+   * `WebviewView` itself is kept alive but the webview's underlying document is deallocated. It is recreated when
+   * the view becomes visible again.
+   *
+   * You can prevent this behavior by setting `retainContextWhenHidden` in the `WebviewOptions`. However this
+   * increases resource usage and should be avoided wherever possible. Instead, you can use persisted state to
+   * save off a webview's state so that it can be quickly recreated as needed.
+   *
+   * To save off a persisted state, inside the webview call `acquireVsCodeApi().setState()` with
+   * any json serializable object. To restore the state again, call `getState()`. For example:
+   *
+   * ```js
+   * // Within the webview
+   * const vscode = acquireVsCodeApi();
+   *
+   * // Get existing state
+   * const oldState = vscode.getState() || { value: 0 };
+   *
+   * // Update state
+   * setState({ value: oldState.value + 1 })
+   * ```
+   *
+   * VS Code ensures that the persisted state is saved correctly when a webview is hidden and across
+   * editor restarts.
+   */
+  readonly state: T | undefined;
+}
+
+/**
+ * Provider for creating `WebviewView` elements.
+ */
+export interface WebviewViewProvider {
+  /**
+   * Revolves a webview view.
+   *
+   * `resolveWebviewView` is called when a view first becomes visible. This may happen when the view is
+   * first loaded or when the user hides and then shows a view again.
+   *
+   * @param webviewView Webview view to restore. The provider should take ownership of this view. The
+   *    provider must set the webview's `.html` and hook up all webview events it is interested in.
+   * @param context Additional metadata about the view being resolved.
+   * @param token Cancellation token indicating that the view being provided is no longer needed.
+   *
+   * @return Optional thenable indicating that the view has been fully resolved.
+   */
+  resolveWebviewView(webviewView: WebviewView, context: WebviewViewResolveContext, token: CancellationToken): Thenable<void> | void;
+}
+
+export interface WebviewViewOptions { retainContextWhenHidden?: boolean | undefined; }
+
+export class WebviewViewResolverRegistrationEvent extends BasicEvent<{
+  viewType: string,
+  options: WebviewViewOptions,
+}> {}
+
+export class WebviewViewResolverRegistrationRemovalEvent extends BasicEvent<{
+  viewType: string,
+}> {}

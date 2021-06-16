@@ -102,7 +102,8 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
     if (this.iframe) {
       this.iframe.remove();
       this._onRemove.fire();
-      this.dispose();
+      // remove 只是视图被销毁，但是html，state等内容保留，因此这里之前是改坏了
+      // this.dispose();
       this.clear();
       this._needReload = true;
     }

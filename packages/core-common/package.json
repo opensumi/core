@@ -24,6 +24,6 @@
     "shortid": "^2.2.14",
     "strip-json-comments": "3.0.1",
     "tslib": "^1.9.3",
-    "vscode-uri": "^2.1.2"
+    "vscode-uri": "^3.0.2"
   }
 }

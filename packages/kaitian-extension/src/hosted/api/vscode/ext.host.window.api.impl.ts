@@ -2,12 +2,12 @@ import type * as vscode from 'vscode';
 import {
   IExtHostMessage, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions,
   IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState, IExtHostStatusBar,
-  IExtHostQuickOpen, IExtHostOutput, IExtHostTerminal, IExtHostWindow, IMainThreadWindow, MainThreadAPIIdentifier, IExtOpenDialogOptions, IExtSaveDialogOptions, IExtHostUrls,
+  IExtHostQuickOpen, IExtHostOutput, IExtHostTerminal, IExtHostWindow, IMainThreadWindow, MainThreadAPIIdentifier, IExtOpenDialogOptions, IExtSaveDialogOptions, IExtHostUrls, WebviewViewProvider,
 } from '../../../common/vscode';
 import { MessageType, IDisposable, CancellationToken, Emitter, IExtensionInfo } from '@ali/ide-core-common';
 
 import { ExtensionHostEditorService } from './editor/editor.host';
-import { ExtHostWebviewService } from './ext.host.api.webview';
+import { ExtHostWebviewService, ExtHostWebviewViews } from './ext.host.api.webview';
 import * as types from '../../../common/vscode/ext-types';
 import { Uri, Disposable } from '../../../common/vscode/ext-types';
 import { IExtHostDecorationsShape } from '../../../common/vscode/decoration';
@@ -23,6 +23,7 @@ export function createWindowApiFactory(
   extHostEditors: ExtensionHostEditorService,
   extHostMessage: IExtHostMessage,
   extHostWebviews: ExtHostWebviewService,
+  extHostWebviewView: ExtHostWebviewViews,
   extHostTreeView: IExtHostTreeView,
   extHostWindowState: IExtHostWindowState,
   extHostDecorations: IExtHostDecorationsShape,
@@ -179,6 +180,9 @@ export function createWindowApiFactory(
     },
     registerTerminalLinkProvider(handler: vscode.TerminalLinkProvider): vscode.Disposable {
       return extHostTerminal.registerLinkProvider(handler);
+    },
+    registerWebviewViewProvider(viewId: string, provider: WebviewViewProvider, options?: {webviewOptions: {retainContextWhenHidden: boolean}}) {
+      return extHostWebviewView.registerWebviewViewProvider(extension, viewId, provider, options?.webviewOptions);
     },
   };
 }

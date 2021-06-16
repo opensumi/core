@@ -87,8 +87,7 @@ import {
   IExtensionDescription,
 } from '../../../common/vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
-import { UriComponents } from 'vscode-uri';
-import { Uri } from '@ali/ide-core-common';
+import { Uri, UriComponents } from '@ali/ide-core-common';
 import { Disposable } from '../../../common/vscode/ext-types';
 import { CompletionAdapter } from './language/completion';
 import { DefinitionAdapter } from './language/definition';

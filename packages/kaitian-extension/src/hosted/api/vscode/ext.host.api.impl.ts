@@ -19,7 +19,7 @@ import { ExtHostFileSystem } from './ext.host.file-system';
 import { OverviewRulerLane } from '@ali/ide-editor';
 import { ExtHostMessage } from './ext.host.message';
 import { ExtHostTreeViews } from './ext.host.treeview';
-import { ExtHostWebviewService } from './ext.host.api.webview';
+import { ExtHostWebviewService, ExtHostWebviewViews } from './ext.host.api.webview';
 import { ExtHostSCM } from './ext.host.scm';
 import { ExtHostWindowState } from './ext.host.window-state';
 import { ExtHostDecorations } from './ext.host.decoration';
@@ -60,7 +60,8 @@ export function createApiFactory(
   const extHostWorkspace = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWorkspace, new ExtHostWorkspace(rpcProtocol, extHostMessage, extHostDocs)) as ExtHostWorkspace;
   const extHostPreference = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostPreference, new ExtHostPreference(rpcProtocol, extHostWorkspace)) as ExtHostPreference;
   const extHostTreeView = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostTreeView, new ExtHostTreeViews(rpcProtocol, extHostCommands));
-  const extHostWebview = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWebivew, new ExtHostWebviewService(rpcProtocol)) as ExtHostWebviewService;
+  const extHostWebview = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWebview, new ExtHostWebviewService(rpcProtocol)) as ExtHostWebviewService;
+  const extHostWebviewView = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWebviewView, new ExtHostWebviewViews(rpcProtocol, extHostWebview)) as ExtHostWebviewViews;
   const extHostSCM = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostSCM, new ExtHostSCM(rpcProtocol, extHostCommands)) as ExtHostSCM;
   const extHostWindowState = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWindowState, new ExtHostWindowState(rpcProtocol));
   const extHostDecorations = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostDecorations, new ExtHostDecorations(rpcProtocol));
@@ -86,7 +87,7 @@ export function createApiFactory(
       authentication: createAuthenticationApiFactory(extension, extHostAuthentication),
       commands: createCommandsApiFactory(extHostCommands, extHostEditors, extension),
       window: createWindowApiFactory(
-        extension, extHostEditors, extHostMessage, extHostWebview,
+        extension, extHostEditors, extHostMessage, extHostWebview, extHostWebviewView,
         extHostTreeView, extHostWindowState, extHostDecorations, extHostStatusBar,
         extHostQuickOpen, extHostOutput, extHostTerminal, extHostWindow, extHostProgress,
         extHostUrls, extHostTheming, extHostCustomEditor,

@@ -21,8 +21,7 @@
   "dependencies": {
     "@ali/ide-connection": "2.4.1",
     "@ali/ide-core-common": "2.4.1",
-    "socket.io": "^2.2.0",
-    "vscode-uri": "1.0.6"
+    "socket.io": "^2.2.0"
   },
   "devDependencies": {
     "@types/socket.io": "^2.1.2",

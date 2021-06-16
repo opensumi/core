@@ -119,7 +119,7 @@ describe('MainThread CustomEditor Test', () => {
       cancellationToken: new CancellationTokenSource().token,
     }));
 
-    expect(mainThreadWebviewMock.pipeBrowserHostedWebview).toBeCalledWith(webview, {
+    expect(mainThreadWebviewMock.pipeBrowserHostedWebviewPanel).toBeCalledWith(webview, {
       uri: fileUri,
       openTypeId,
     }, viewType, {}, testExtInfo);
@@ -170,7 +170,7 @@ describe('MainThread CustomEditor Test', () => {
       cancellationToken: new CancellationTokenSource().token,
     }));
 
-    expect(mainThreadWebviewMock.pipeBrowserHostedWebview).toBeCalledWith(webview, {
+    expect(mainThreadWebviewMock.pipeBrowserHostedWebviewPanel).toBeCalledWith(webview, {
       uri: fileUri,
       openTypeId,
     }, viewType, {}, testExtInfo);

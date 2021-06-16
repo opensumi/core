@@ -1,11 +1,16 @@
 import type * as vscode from 'vscode';
-import { Uri } from '@ali/ide-core-common';
+import { Uri, UriUtils } from '@ali/ide-core-common';
 import { illegalArgument } from './utils';
 import { FileOperationOptions, CompletionItemLabel } from './model.api';
 import { startsWithIgnoreCase, uuid, es5ClassCompat, isStringArray } from '@ali/ide-core-common';
 import { escapeCodicons } from './models/html-content';
 
 export { UriComponents } from './models/uri';
+
+// vscode 中的 uri 存在 static 方法。。内容是 vscode-uri 的 Utils 中的内容...
+Object.keys(UriUtils).forEach((funcName) => {
+  Uri[funcName] = UriUtils[funcName];
+});
 
 export { Uri };
 export enum ProgressLocation {

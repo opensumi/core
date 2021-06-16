@@ -14,7 +14,7 @@ import { IMainThreadEnv, IExtHostEnv } from './env';
 import { IMainThreadStorage, IExtHostStorage } from './storage';
 import { ExtHostStorage } from '../../hosted/api/vscode/ext.host.storage';
 import { IMainThreadLanguages } from './languages';
-import { IMainThreadWebview, IExtHostWebview } from './webview';
+import { IMainThreadWebview, IExtHostWebview, IMainThreadWebviewView, IExtHostWebviewView } from './webview';
 import { IExtHostTreeView, IMainThreadTreeView } from './treeview';
 import { IMainThreadSCMShape, IExtHostSCMShape } from './scm';
 import { IExtHostDecorationsShape, IMainThreadDecorationsShape } from './decoration';
@@ -61,6 +61,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadStorage: createExtHostContextProxyIdentifier<IMainThreadStorage>('MainThreadStorage'),
   MainThreadFileSystem: createExtHostContextProxyIdentifier<IMainThreadFileSystemShape>('MainThreadFileSystem'),
   MainThreadWebview: createExtHostContextProxyIdentifier<IMainThreadWebview>('MainThreadWebview'),
+  MainThreadWebviewView: createExtHostContextProxyIdentifier<IMainThreadWebviewView>('MainThreadWebviewView'),
   MainThreadTreeView: createExtHostContextProxyIdentifier<IMainThreadTreeView>('MainThreadTreeView'),
   MainThreadSCM: createExtHostContextProxyIdentifier<IMainThreadSCMShape>('MainThreadSCM'),
   MainThreadWindowState: createExtHostContextProxyIdentifier<MainThreadWindowState>('MainThreadWindowState'),
@@ -95,7 +96,8 @@ export const ExtHostAPIIdentifier = {
   ExtHostOutput: createExtHostContextProxyIdentifier<IExtHostOutput>('ExtHostOutput'),
   ExtHostFileSystem: createExtHostContextProxyIdentifier<ExtHostFileSystem>('ExtHostFileSystem'),
   ExtHostFileSystemEvent: createExtHostContextProxyIdentifier<ExtHostFileSystemEvent>('ExtHostFileSystemEvent'),
-  ExtHostWebivew: createExtHostContextProxyIdentifier<IExtHostWebview>('ExtHostWebivew'),
+  ExtHostWebview: createExtHostContextProxyIdentifier<IExtHostWebview>('ExtHostWebview'),
+  ExtHostWebviewView: createExtHostContextProxyIdentifier<IExtHostWebviewView>('ExtHostWebviewView'),
   ExtHostTreeView: createExtHostContextProxyIdentifier<IExtHostTreeView>('ExtHostTreeView'),
   ExtHostSCM: createExtHostContextProxyIdentifier<IExtHostSCMShape>('ExtHostSCM'),
   ExtHostWindowState: createExtHostContextProxyIdentifier<IExtHostWindowState>('ExtHostWindowState'),

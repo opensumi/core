@@ -145,6 +145,15 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return !!tabbarService.currentContainerId;
   }
 
+  isViewVisible(viewId: string): boolean {
+    const tabbarHandler = this.getTabbarHandler(viewId);
+    if (!tabbarHandler || !tabbarHandler.isActivated()) {
+      return false;
+    }
+    const viewState = tabbarHandler.accordionService.getViewState(viewId);
+    return !viewState.collapsed && !viewState.hidden;
+  }
+
   toggleSlot(location: string, show?: boolean | undefined, size?: number | undefined): void {
     const tabbarService = this.getTabbarService(location);
     if (!tabbarService) {

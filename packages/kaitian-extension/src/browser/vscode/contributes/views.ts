@@ -3,9 +3,10 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
 import { DisposableCollection } from '@ali/ide-core-browser';
+import { ExtensionWebviewView } from '../../components/extension-webview-view';
 
 export interface ViewsContribution {
-  [key: string]: ViewItem;
+  [key: string]: Array<ViewItem>;
 }
 
 export interface ViewItem {
@@ -14,9 +15,10 @@ export interface ViewItem {
   when: string;
   weight?: number;
   priority?: number;
+  type?: 'tree' | 'webview';
 }
 
-export type ViewsSchema = Array<ViewsContribution>;
+export type ViewsSchema = ViewsContribution;
 
 @Injectable()
 @Contributes('views')
@@ -29,11 +31,11 @@ export class ViewsContributionPoint extends VSCodeContributePoint<ViewsSchema> {
 
   contribute() {
     for (const location of Object.keys(this.json)) {
-      const views = this.json[location].map((view) => {
+      const views = this.json[location].map((view: ViewItem) => {
         return {
           ...view,
           name: this.getLocalizeFromNlsJSON(view.name),
-          component: WelcomeView,
+          component: view.type === 'webview' ? ExtensionWebviewView : WelcomeView,
         };
       });
       for (const view of views) {

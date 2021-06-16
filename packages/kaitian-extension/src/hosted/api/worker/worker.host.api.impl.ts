@@ -20,7 +20,7 @@ import { ExtHostTasks } from '../vscode/tasks/ext.host.tasks';
 import { ExtHostTerminal } from '../vscode/ext.host.terminal';
 import { ExtHostOutput } from '../vscode/ext.host.output';
 import { createWindowApiFactory, ExtHostWindow } from '../vscode/ext.host.window.api.impl';
-import { ExtHostWebviewService } from '../vscode/ext.host.api.webview';
+import { ExtHostWebviewService, ExtHostWebviewViews } from '../vscode/ext.host.api.webview';
 import { ExtHostTreeViews } from '../vscode/ext.host.treeview';
 import { ExtHostWindowState } from '../vscode/ext.host.window-state';
 import { ExtHostDecorations } from '../vscode/ext.host.decoration';
@@ -51,7 +51,8 @@ export function createAPIFactory(
   const extHostFileSystemEvent = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostFileSystemEvent, new ExtHostFileSystemEvent(rpcProtocol, extHostDocs));
   const extHostPreference = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostPreference, new ExtHostPreference(rpcProtocol, extHostWorkspace)) as ExtHostPreference;
   const extHostOutput = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostOutput, new ExtHostOutput(rpcProtocol)) as ExtHostOutput;
-  const extHostWebview = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWebivew, new ExtHostWebviewService(rpcProtocol)) as ExtHostWebviewService;
+  const extHostWebview = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWebview, new ExtHostWebviewService(rpcProtocol)) as ExtHostWebviewService;
+  const extHostWebviewView = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWebviewView, new ExtHostWebviewViews(rpcProtocol, extHostWebview)) as ExtHostWebviewViews;
   const extHostTreeView = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostTreeView, new ExtHostTreeViews(rpcProtocol, extHostCommands));
   const extHostWindowState = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWindowState, new ExtHostWindowState(rpcProtocol));
   const extHostDecorations = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostDecorations, new ExtHostDecorations(rpcProtocol));
@@ -84,7 +85,7 @@ export function createAPIFactory(
       extensions: createExtensionsApiFactory(extensionService),
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem, extHostFileSystemEvent, extHostTasks, extension),
       window: createWindowApiFactory(
-        extension, extHostEditors, extHostMessage, extHostWebview,
+        extension, extHostEditors, extHostMessage, extHostWebview, extHostWebviewView,
         extHostTreeView, extHostWindowState, extHostDecorations, extHostStatusBar,
         extHostQuickOpen, extHostOutput, extHostTerminal, extHostWindow, extHostProgress,
         extHostUrls, extHostTheming, extHostCustomEditor,

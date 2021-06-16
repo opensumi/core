@@ -2,7 +2,15 @@ import { URI as Uri } from 'vscode-uri';
 import { Path } from './path';
 import { IRelativePattern, match } from './utils/glob';
 
-export { URI as Uri, UriComponents } from 'vscode-uri';
+export { URI as Uri, Utils as UriUtils } from 'vscode-uri';
+// 3.0 的 vscode-uri 没有导出这个
+export interface UriComponents {
+  scheme: string;
+  authority: string;
+  path: string;
+  query: string;
+  fragment: string;
+}
 
 export class URI {
   static from(components: {

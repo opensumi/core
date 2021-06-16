@@ -18,6 +18,7 @@ import {
   IMainThreadTheming,
   IMainThreadCustomEditor,
   IMainThreadAuthentication,
+  IMainThreadWebviewView,
 } from '../../../common/vscode'; // '../../common';
 import { MainThreadCommands } from './main.thread.commands';
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
@@ -35,7 +36,7 @@ import { MainThreadQuickOpen } from './main.thread.quickopen';
 import { MainThreadStorage } from './main.thread.storage';
 import { MainThreadOutput } from './main.thread.output';
 import { MainThreadFileSystem } from './main.thread.file-system';
-import { MainThreadWebview } from './main.thread.api.webview';
+import { MainThreadWebview, MainThreadWebviewView } from './main.thread.api.webview';
 import { MainThreadSCM } from './main.thread.scm';
 import { MainThreadTreeView } from './main.thread.treeview';
 import { MainThreadDecorations } from './main.thread.decoration';
@@ -76,6 +77,7 @@ export async function createApiFactory(
   const MainThreadFileSystemAPI = injector.get(MainThreadFileSystem, [rpcProtocol]);
   const MainThreadFileSystemEventAPI = injector.get(MainThreadFileSystemEvent, [rpcProtocol]);
   const MainThreadWebviewAPI = injector.get(MainThreadWebview, [rpcProtocol]);
+  const MainThreadWebviewViewAPI = injector.get(MainThreadWebviewView, [rpcProtocol, MainThreadWebviewAPI]);
   const MainThreadSCMAPI = injector.get(MainThreadSCM, [rpcProtocol]);
   const MainThreadTreeViewAPI = injector.get(MainThreadTreeView, [rpcProtocol]);
   const MainThreadDecorationsAPI = injector.get(MainThreadDecorations, [rpcProtocol]);
@@ -107,6 +109,7 @@ export async function createApiFactory(
   rpcProtocol.set<IMainThreadOutput>(MainThreadAPIIdentifier.MainThreadOutput, MainThreadOutputAPI);
   rpcProtocol.set<MainThreadFileSystem>(MainThreadAPIIdentifier.MainThreadFileSystem, MainThreadFileSystemAPI);
   rpcProtocol.set<IMainThreadWebview>(MainThreadAPIIdentifier.MainThreadWebview, MainThreadWebviewAPI);
+  rpcProtocol.set<IMainThreadWebviewView>(MainThreadAPIIdentifier.MainThreadWebviewView, MainThreadWebviewViewAPI);
   rpcProtocol.set<MainThreadSCM>(MainThreadAPIIdentifier.MainThreadSCM, MainThreadSCMAPI);
   rpcProtocol.set<MainThreadTreeView>(MainThreadAPIIdentifier.MainThreadTreeView, MainThreadTreeViewAPI);
   rpcProtocol.set<MainThreadDecorations>(MainThreadAPIIdentifier.MainThreadDecorations, MainThreadDecorationsAPI);
