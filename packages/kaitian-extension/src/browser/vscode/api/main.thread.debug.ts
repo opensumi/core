@@ -299,6 +299,7 @@ export class MainThreadDebug implements IMainThreadDebug {
       noDebug: false,
       parentSession: this.sessionManager.getSession(options.parentSessionID),
       repl: options.repl,
+      compact: options.compact,
     };
 
     const session = await this.sessionManager.start({

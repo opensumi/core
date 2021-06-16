@@ -193,11 +193,13 @@ export class ExtHostDebug implements IExtHostDebugService {
     if (!parentSessionOrOptions || (typeof parentSessionOrOptions === 'object' && 'configuration' in parentSessionOrOptions)) {
       return this.proxy.$startDebugging(folder, nameOrConfig, {
         parentSessionID: parentSessionOrOptions ? parentSessionOrOptions.id : undefined,
+        compact: parentSessionOrOptions && !!(parentSessionOrOptions as vscode.DebugSessionOptions).compact,
       });
     }
     return this.proxy.$startDebugging(folder, nameOrConfig, {
       parentSessionID: parentSessionOrOptions.parentSession ? parentSessionOrOptions.parentSession.id : undefined,
       repl: parentSessionOrOptions.consoleMode === DebugConsoleMode.MergeWithParent ? 'mergeWithParent' : 'separate',
+      compact: parentSessionOrOptions && !!(parentSessionOrOptions as vscode.DebugSessionOptions).compact,
     });
   }
 

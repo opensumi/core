@@ -10,6 +10,8 @@ export type DebugSessionUUID = string;
 export interface IStartDebuggingOptions {
   parentSessionID?: DebugSessionUUID;
   repl?: 'separate' | 'mergeWithParent';
+  noDebug?: boolean;
+  compact?: boolean;
 }
 
 export interface IMainThreadDebug {

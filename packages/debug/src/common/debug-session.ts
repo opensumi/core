@@ -10,6 +10,7 @@ export interface IDebugSessionOptions {
   noDebug?: boolean;
   parentSession?: IDebugSession;
   repl?: IDebugSessionReplMode;
+  compact?: boolean;
 }
 
 export const IDebugSession = Symbol('DebugSession');
@@ -35,6 +36,7 @@ export interface IDebugSession extends IDisposable {
   id: string;
   hasSeparateRepl: () => boolean;
   getDebugProtocolBreakpoint(breakpointId: string): DebugProtocol.Breakpoint | undefined;
+  compact: boolean;
   on: <K extends keyof DebugEventTypes>(kind: K, listener: (e: DebugEventTypes[K]) => any) => IDisposable;
 }
 

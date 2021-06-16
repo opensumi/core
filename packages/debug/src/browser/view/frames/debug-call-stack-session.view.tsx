@@ -129,6 +129,34 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
     }
   };
 
+  const isIncompressible = (stat: DebugSession) => {
+    if (stat.threads.some((t) => t.frameCount > 0)) {
+      return false;
+    }
+
+    const sub = findSubSessions();
+    if (sub.length !== 1) {
+      return false;
+    }
+
+    if (!sub[0].compact) {
+      return false;
+    }
+
+    return true;
+  };
+
+  if (isIncompressible(session)) {
+    const sub = findSubSessions();
+    return (
+      <div className={ styles.debug_stack_item }>
+        {
+          sub.map((s) => <DebugStackSessionView key={s.id} viewState={ viewState } session={ s } indent={1} />)
+        }
+      </div>
+    );
+  }
+
   return (
     <div className={ styles.debug_stack_item }>
       <div style={{paddingLeft: indent * 10 + 'px'}}>

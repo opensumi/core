@@ -218,6 +218,10 @@ export class DebugSession implements IDebugSession {
     return this.options.parentSession;
   }
 
+  get compact(): boolean {
+    return !!this.options.compact;
+  }
+
   async start(): Promise<void> {
     await this.workbenchEditorService.saveAll();
     await this.initialize();
