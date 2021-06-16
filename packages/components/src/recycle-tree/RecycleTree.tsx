@@ -748,7 +748,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     // ref: https://developers.google.com/web/fundamentals/accessibility/semantics-aria/aria-labels-and-relationships
     if (CompositeTreeNode.is(item)) {
       ariaInfo = {
-        'aria-label': item.accessibilityInformation.label,
+        'aria-label': item.accessibilityInformation?.label,
         'aria-expanded': item.expanded,
         'aria-level': item.depth,
         'aria-setsize': item.parent?.children?.length,
@@ -756,14 +756,14 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       };
     } else if (TreeNode.is(item)) {
       ariaInfo = {
-        'aria-label': item.accessibilityInformation.label,
+        'aria-label': item.accessibilityInformation?.label,
         'aria-level': item.depth,
         'aria-setsize': item.parent?.children?.length,
         'aria-posinset': index,
       };
     }
 
-    return <div style={itemStyle} role={item.accessibilityInformation.role || 'treeiem'} {...ariaInfo}>
+    return <div style={itemStyle} role={item.accessibilityInformation?.role || 'treeiem'} {...ariaInfo}>
       <NodeRendererWrap
         item={item}
         depth={item.depth}
