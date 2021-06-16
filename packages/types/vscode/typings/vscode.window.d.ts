@@ -351,6 +351,39 @@ declare module 'vscode' {
      */
     export function registerWebviewPanelSerializer(viewType: string, serializer: WebviewPanelSerializer): Disposable;
     /**
+     * Register a new provider for webview views.
+     *
+     * @param viewId Unique id of the view. This should match the `id` from the
+     *   `views` contribution in the package.json.
+     * @param provider Provider for the webview views.
+     *
+     * @return Disposable that unregisters the provider.
+     */
+    export function registerWebviewViewProvider(viewId: string, provider: WebviewViewProvider, options?: {
+      /**
+       * Content settings for the webview created for this view.
+       */
+      readonly webviewOptions?: {
+        /**
+         * Controls if the webview element itself (iframe) is kept around even when the view
+         * is no longer visible.
+         *
+         * Normally the webview's html context is created when the view becomes visible
+         * and destroyed when it is hidden. Extensions that have complex state
+         * or UI can set the `retainContextWhenHidden` to make VS Code keep the webview
+         * context around, even when the webview moves to a background tab. When a webview using
+         * `retainContextWhenHidden` becomes hidden, its scripts and other dynamic content are suspended.
+         * When the view becomes visible again, the context is automatically restored
+         * in the exact same state it was in originally. You cannot send messages to a
+         * hidden webview, even with `retainContextWhenHidden` enabled.
+         *
+         * `retainContextWhenHidden` has a high memory overhead and should only be used if
+         * your view's context cannot be quickly saved and restored.
+         */
+        readonly retainContextWhenHidden?: boolean;
+      };
+    }): Disposable;
+    /**
      * Register a provider for custom editors for the `viewType` contributed by the `customEditors` extension point.
      *
      * When a custom editor is opened, VS Code fires an `onCustomEditor:viewType` activation event. Your extension
@@ -659,6 +692,9 @@ declare module 'vscode' {
     readonly webviewPanel: WebviewPanel;
   }
 
+  /**
+ * A webview based view.
+ */
   /**
  * A webview based view.
  */
