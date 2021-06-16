@@ -87,8 +87,8 @@ import {
   IExtensionDescription,
 } from '../../../common/vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
-import { Uri, UriComponents } from '@ali/ide-core-common';
-import { Disposable } from '../../../common/vscode/ext-types';
+import { IExtensionLogger, Uri, UriComponents } from '@ali/ide-core-common';
+import { CancellationError, Disposable } from '../../../common/vscode/ext-types';
 import { CompletionAdapter } from './language/completion';
 import { DefinitionAdapter } from './language/definition';
 import { DeclarationAdapter } from './language/declaration';
@@ -256,7 +256,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
   private adaptersMap = new Map<number, Adapter>();
   private diagnostics: Diagnostics;
 
-  constructor(rpcProtocol: IRPCProtocol, private documents: ExtensionDocumentDataManager, private commands: ExtHostCommands) {
+  constructor(rpcProtocol: IRPCProtocol, private documents: ExtensionDocumentDataManager, private commands: ExtHostCommands, private logService: IExtensionLogger) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadLanguages);
     this.diagnostics = new Diagnostics(this.proxy);
@@ -280,12 +280,20 @@ export class ExtHostLanguages implements IExtHostLanguages {
   }
 
   // tslint:disable-next-line:no-any
-  private withAdapter<A, R>(handle: number, constructor: ConstructorOf<A>, callback: (adapter: A) => Promise<R>): Promise<R> {
+  private withAdapter<A, R>(handle: number, constructor: ConstructorOf<A>, callback: (adapter: A) => Promise<R>, allowCancellationError: boolean = false): Promise<R> {
     const adapter = this.adaptersMap.get(handle);
     if (!(adapter instanceof constructor)) {
       return Promise.reject(new Error('no adapter found'));
     }
-    return callback(adapter as A);
+    const p = callback(adapter as A);
+
+    p.catch((err) => {
+      const isExpectedError = allowCancellationError && (err instanceof CancellationError);
+      if (!isExpectedError) {
+        this.logService.error(err);
+      }
+    });
+    return p;
   }
 
   private withDurationRecord(action)  {
@@ -715,7 +723,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
   }
 
   $provideDocumentSemanticTokens(handle: number, resource: Uri, previousResultId: number, token: CancellationToken): Promise<Uint8Array | null> {
-    return this.withAdapter(handle, DocumentSemanticTokensAdapter, (adapter) => adapter.provideDocumentSemanticTokens(Uri.revive(resource), previousResultId, token));
+    return this.withAdapter(handle, DocumentSemanticTokensAdapter, (adapter) => adapter.provideDocumentSemanticTokens(Uri.revive(resource), previousResultId, token), true);
   }
 
   $releaseDocumentSemanticTokens(handle: number, semanticColoringResultId: number): void {

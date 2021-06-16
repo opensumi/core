@@ -24,6 +24,7 @@ import { IDocPersistentCacheProvider } from '@ali/ide-editor';
 import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from '@ali/ide-debug/lib/browser/editor/evaluatable-expression';
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
 import { TestEditorDocumentProvider } from '@ali/ide-editor/__tests__/browser/test-providers';
+import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -113,7 +114,7 @@ describe('ExtHostLanguageFeatures', () => {
     const mainCommands = injector.get(MainThreadCommands, [rpcProtocolMain]);
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadCommands, mainCommands);
 
-    extHost = new ExtHostLanguages(rpcProtocolExt, extHostDocuments, commands);
+    extHost = new ExtHostLanguages(rpcProtocolExt, extHostDocuments, commands, mockService({}));
     rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostLanguages, extHost);
 
     mainThread = rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadLanguages, injector.get(MainThreadLanguages, [rpcProtocolMain]));

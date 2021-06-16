@@ -1,4 +1,4 @@
-import { Disposable, IJSONSchema, IDisposable, Deferred, localize, Uri, MaybePromise } from '@ali/ide-core-common';
+import { Disposable, IJSONSchema, IDisposable, Deferred, localize, Uri, MaybePromise, IExtensionLogger } from '@ali/ide-core-common';
 import { createExtHostContextProxyIdentifier } from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { Extension } from '../hosted/vscode.extension';
@@ -230,6 +230,7 @@ export const EXTENSION_EXTEND_SERVICE_PREFIX = 'extension_extend_service';
 export const MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER = createExtHostContextProxyIdentifier('mock_extension_extend_proxy_identifier');
 
 export interface IExtensionHost {
+  logger: IExtensionLogger;
   $activateExtension(id: string): Promise<void>;
   /**
    * 更新插件进程内的插件相关数据

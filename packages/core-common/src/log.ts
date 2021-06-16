@@ -28,6 +28,14 @@ export enum SupportLogNamespace {
   OTHER = 'other',
 }
 
+interface ICoreLogger {
+  verbose(...args: any[]): void;
+  debug(...args: any[]): void;
+  log(...args: any[]): void;
+  warn(...args: any[]): void;
+  error(...args: any[]): void;
+}
+
 export interface BaseLogServiceOptions {
   /**
    * 对应存储日志的文件名
@@ -109,7 +117,7 @@ export interface ILogServiceManager {
   dispose();
 }
 
-export interface IBaseLogService {
+export interface IBaseLogService extends ICoreLogger {
 
   /**
    * 获取当前的log level
@@ -120,14 +128,7 @@ export interface IBaseLogService {
    * 设置 log level
    */
   setLevel(level: LogLevel): void;
-
-  verbose(...args: any[]): void;
-  debug(...args: any[]): void;
-  log(...args: any[]): void;
-  warn(...args: any[]): void;
-  error(...args: any[]): void;
   critical(...args: any[]): void;
-
 
   /**
    * 直接发送log 消息，在此函数内部分发到上面的 log、error方法
@@ -161,18 +162,15 @@ export interface ILogService extends IBaseLogService {
 
 export const LogServiceForClientPath =  'LogServiceForClientPath';
 
-export interface ILogServiceClient {
+export interface ILogServiceClient extends ICoreLogger {
   getLevel():Promise<LogLevel>;
   setLevel(level: LogLevel): Promise<void>;
-
-  verbose(...args: any[]): Promise<void>;
-  debug(...args: any[]): Promise<void>;
-  log(...args: any[]): Promise<void>;
-  warn(...args: any[]): Promise<void>;
-  error(...args: any[]): Promise<void>;
-  critical(...args: any[]): Promise<void>;
-
+  critical(...args: any[]): void;
   dispose(): Promise<void>;
+}
+
+export interface IExtensionLogger extends ICoreLogger {
+
 }
 
 export const ILoggerManagerClient = Symbol(`ILoggerManagerClient`);
@@ -191,12 +189,7 @@ export interface ILoggerManagerClient {
 /**
  * DebugLog
  */
-export interface IDebugLog {
-  verbose(...args: any[]): void;
-  log(...args: any[]): void;
-  error(...args: any[]): void;
-  warn(...args: any[]): void;
-  debug(...args: any[]): void;
+export interface IDebugLog extends ICoreLogger {
   info(...args: any[]): void;
 
   destroy(): void;

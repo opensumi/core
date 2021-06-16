@@ -21,27 +21,27 @@ export class MainThreadExtensionLog implements IMainThreadExtensionLog {
     return this.logger.setLevel(level);
   }
 
-  $verbose(...args: any[]) {
+  async $verbose(...args: any[]) {
     return this.logger.verbose(...args);
   }
 
-  $debug(...args: any[]) {
+  async $debug(...args: any[]) {
     return this.logger.debug(...args);
   }
 
-  $log(...args: any[]) {
+  async $log(...args: any[]) {
     return this.logger.log(...args);
   }
 
-  $warn(...args: any[]) {
+  async $warn(...args: any[]) {
     return this.logger.warn(...args);
   }
 
-  $error(...args: any[]) {
+  async $error(...args: any[]) {
     return this.logger.error(...args);
   }
 
-  $critical(...args: any[]) {
+  async $critical(...args: any[]) {
     return this.logger.critical(...args);
   }
 

@@ -1591,12 +1591,12 @@ declare module 'vscode' {
      * This will show action `extension.deleteFolder` only for items with `contextValue` is `folder`.
      */
     contextValue?: string;
-    
+
     /**
-		 * Accessibility information used when screen reader interacts with this tree item.
-		 * Generally, a TreeItem has no need to set the `role` of the accessibilityInformation;
-		 * however, there are cases where a TreeItem is not displayed in a tree-like way where setting the `role` may make sense.
-		 */
+     * Accessibility information used when screen reader interacts with this tree item.
+     * Generally, a TreeItem has no need to set the `role` of the accessibilityInformation;
+     * however, there are cases where a TreeItem is not displayed in a tree-like way where setting the `role` may make sense.
+     */
      accessibilityInformation?: AccessibilityInformation;
 
     /**
@@ -2262,6 +2262,20 @@ declare module 'vscode' {
     constructor(range: Range, message: string, severity?: DiagnosticSeverity);
   }
   /**
+   * An error type that should be used to signal cancellation of an operation.
+   *
+   * This type can be used in response to a [cancellation token](#CancellationToken)
+   * being cancelled or when an operation is being cancelled by the
+   * executor of that operation.
+   */
+  export class CancellationError extends Error {
+
+    /**
+     * Creates a new cancellation error.
+     */
+    constructor();
+  }
+  /**
    * Represents a type which can release resources, such
    * as event listening or a timer.
    */
@@ -2457,112 +2471,112 @@ declare module 'vscode' {
 
   //#region EnvironmentVariable
 
-	/**
-	 * A type of mutation that can be applied to an environment variable.
-	 */
-	export enum EnvironmentVariableMutatorType {
-		/**
-		 * Replace the variable's existing value.
-		 */
-		Replace = 1,
-		/**
-		 * Append to the end of the variable's existing value.
-		 */
-		Append = 2,
-		/**
-		 * Prepend to the start of the variable's existing value.
-		 */
-		Prepend = 3
-	}
+  /**
+   * A type of mutation that can be applied to an environment variable.
+   */
+  export enum EnvironmentVariableMutatorType {
+    /**
+     * Replace the variable's existing value.
+     */
+    Replace = 1,
+    /**
+     * Append to the end of the variable's existing value.
+     */
+    Append = 2,
+    /**
+     * Prepend to the start of the variable's existing value.
+     */
+    Prepend = 3
+  }
 
-	/**
-	 * A type of mutation and its value to be applied to an environment variable.
-	 */
-	export interface EnvironmentVariableMutator {
-		/**
-		 * The type of mutation that will occur to the variable.
-		 */
-		readonly type: EnvironmentVariableMutatorType;
+  /**
+   * A type of mutation and its value to be applied to an environment variable.
+   */
+  export interface EnvironmentVariableMutator {
+    /**
+     * The type of mutation that will occur to the variable.
+     */
+    readonly type: EnvironmentVariableMutatorType;
 
-		/**
-		 * The value to use for the variable.
-		 */
-		readonly value: string;
-	}
+    /**
+     * The value to use for the variable.
+     */
+    readonly value: string;
+  }
 
-	/**
-	 * A collection of mutations that an extension can apply to a process environment.
-	 */
-	export interface EnvironmentVariableCollection {
-		/**
-		 * Whether the collection should be cached for the workspace and applied to the terminal
-		 * across window reloads. When true the collection will be active immediately such when the
-		 * window reloads. Additionally, this API will return the cached version if it exists. The
-		 * collection will be invalidated when the extension is uninstalled or when the collection
-		 * is cleared. Defaults to true.
-		 */
-		persistent: boolean;
+  /**
+   * A collection of mutations that an extension can apply to a process environment.
+   */
+  export interface EnvironmentVariableCollection {
+    /**
+     * Whether the collection should be cached for the workspace and applied to the terminal
+     * across window reloads. When true the collection will be active immediately such when the
+     * window reloads. Additionally, this API will return the cached version if it exists. The
+     * collection will be invalidated when the extension is uninstalled or when the collection
+     * is cleared. Defaults to true.
+     */
+    persistent: boolean;
 
-		/**
-		 * Replace an environment variable with a value.
-		 *
-		 * Note that an extension can only make a single change to any one variable, so this will
-		 * overwrite any previous calls to replace, append or prepend.
-		 *
-		 * @param variable The variable to replace.
-		 * @param value The value to replace the variable with.
-		 */
-		replace(variable: string, value: string): void;
+    /**
+     * Replace an environment variable with a value.
+     *
+     * Note that an extension can only make a single change to any one variable, so this will
+     * overwrite any previous calls to replace, append or prepend.
+     *
+     * @param variable The variable to replace.
+     * @param value The value to replace the variable with.
+     */
+    replace(variable: string, value: string): void;
 
-		/**
-		 * Append a value to an environment variable.
-		 *
-		 * Note that an extension can only make a single change to any one variable, so this will
-		 * overwrite any previous calls to replace, append or prepend.
-		 *
-		 * @param variable The variable to append to.
-		 * @param value The value to append to the variable.
-		 */
-		append(variable: string, value: string): void;
+    /**
+     * Append a value to an environment variable.
+     *
+     * Note that an extension can only make a single change to any one variable, so this will
+     * overwrite any previous calls to replace, append or prepend.
+     *
+     * @param variable The variable to append to.
+     * @param value The value to append to the variable.
+     */
+    append(variable: string, value: string): void;
 
-		/**
-		 * Prepend a value to an environment variable.
-		 *
-		 * Note that an extension can only make a single change to any one variable, so this will
-		 * overwrite any previous calls to replace, append or prepend.
-		 *
-		 * @param variable The variable to prepend.
-		 * @param value The value to prepend to the variable.
-		 */
-		prepend(variable: string, value: string): void;
+    /**
+     * Prepend a value to an environment variable.
+     *
+     * Note that an extension can only make a single change to any one variable, so this will
+     * overwrite any previous calls to replace, append or prepend.
+     *
+     * @param variable The variable to prepend.
+     * @param value The value to prepend to the variable.
+     */
+    prepend(variable: string, value: string): void;
 
-		/**
-		 * Gets the mutator that this collection applies to a variable, if any.
-		 *
-		 * @param variable The variable to get the mutator for.
-		 */
-		get(variable: string): EnvironmentVariableMutator | undefined;
+    /**
+     * Gets the mutator that this collection applies to a variable, if any.
+     *
+     * @param variable The variable to get the mutator for.
+     */
+    get(variable: string): EnvironmentVariableMutator | undefined;
 
-		/**
-		 * Iterate over each mutator in this collection.
-		 *
-		 * @param callback Function to execute for each entry.
-		 * @param thisArg The `this` context used when invoking the handler function.
-		 */
-		forEach(callback: (variable: string, mutator: EnvironmentVariableMutator, collection: EnvironmentVariableCollection) => any, thisArg?: any): void;
+    /**
+     * Iterate over each mutator in this collection.
+     *
+     * @param callback Function to execute for each entry.
+     * @param thisArg The `this` context used when invoking the handler function.
+     */
+    forEach(callback: (variable: string, mutator: EnvironmentVariableMutator, collection: EnvironmentVariableCollection) => any, thisArg?: any): void;
 
-		/**
-		 * Deletes this collection's mutator for a variable.
-		 *
-		 * @param variable The variable to delete the mutator for.
-		 */
-		delete(variable: string): void;
+    /**
+     * Deletes this collection's mutator for a variable.
+     *
+     * @param variable The variable to delete the mutator for.
+     */
+    delete(variable: string): void;
 
-		/**
-		 * Clears all mutators from this collection.
-		 */
-		clear(): void;
-	}
+    /**
+     * Clears all mutators from this collection.
+     */
+    clear(): void;
+  }
 
   //#endregion
 
@@ -2598,9 +2612,9 @@ declare module 'vscode' {
      */
     readonly extensionPath: string;
 
-		/**
-		 * The uri of the directory containing the extension.
-		 */
+    /**
+     * The uri of the directory containing the extension.
+     */
      readonly extensionUri: Uri;
 
     /**
@@ -2630,17 +2644,17 @@ declare module 'vscode' {
     readonly storagePath: string | undefined;
 
     /**
-		 * The uri of a workspace specific directory in which the extension
-		 * can store private state. The directory might not exist and creation is
-		 * up to the extension. However, the parent directory is guaranteed to be existent.
-		 * The value is `undefined` when no workspace nor folder has been opened.
-		 *
-		 * Use [`workspaceState`](#ExtensionContext.workspaceState) or
-		 * [`globalState`](#ExtensionContext.globalState) to store key value data.
-		 *
-		 * @see [`workspace.fs`](#FileSystem) for how to read and write files and folders from
-		 *  an uri.
-		 */
+     * The uri of a workspace specific directory in which the extension
+     * can store private state. The directory might not exist and creation is
+     * up to the extension. However, the parent directory is guaranteed to be existent.
+     * The value is `undefined` when no workspace nor folder has been opened.
+     *
+     * Use [`workspaceState`](#ExtensionContext.workspaceState) or
+     * [`globalState`](#ExtensionContext.globalState) to store key value data.
+     *
+     * @see [`workspace.fs`](#FileSystem) for how to read and write files and folders from
+     *  an uri.
+     */
     readonly storageUri: Uri | undefined;
 
     /**
@@ -2655,16 +2669,16 @@ declare module 'vscode' {
     readonly globalStoragePath: string;
 
     /**
-		 * The uri of a directory in which the extension can store global state.
-		 * The directory might not exist on disk and creation is
-		 * up to the extension. However, the parent directory is guaranteed to be existent.
-		 *
-		 * Use [`globalState`](#ExtensionContext.globalState) to store key value data.
-		 *
-		 * @see [`workspace.fs`](#FileSystem) for how to read and write files and folders from
-		 *  an uri.
-		 */
-		readonly globalStorageUri: Uri;
+     * The uri of a directory in which the extension can store global state.
+     * The directory might not exist on disk and creation is
+     * up to the extension. However, the parent directory is guaranteed to be existent.
+     *
+     * Use [`globalState`](#ExtensionContext.globalState) to store key value data.
+     *
+     * @see [`workspace.fs`](#FileSystem) for how to read and write files and folders from
+     *  an uri.
+     */
+    readonly globalStorageUri: Uri;
 
     /**
      * An absolute file path of a directory in which the extension can create log files.
@@ -2676,13 +2690,13 @@ declare module 'vscode' {
     readonly logPath: string;
 
     /**
-		 * The uri of a directory in which the extension can create log files.
-		 * The directory might not exist on disk and creation is up to the extension. However,
-		 * the parent directory is guaranteed to be existent.
-		 *
-		 * @see [`workspace.fs`](#FileSystem) for how to read and write files and folders from
-		 *  an uri.
-		 */
+     * The uri of a directory in which the extension can create log files.
+     * The directory might not exist on disk and creation is up to the extension. However,
+     * the parent directory is guaranteed to be existent.
+     *
+     * @see [`workspace.fs`](#FileSystem) for how to read and write files and folders from
+     *  an uri.
+     */
     readonly logUri: Uri;
 
     /**

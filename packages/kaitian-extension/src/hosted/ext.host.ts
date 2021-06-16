@@ -3,7 +3,7 @@ import type * as vscode from 'vscode';
 
 import { Injector } from '@ali/common-di';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
-import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, REPORT_NAME, IExtensionProps, Uri, timeout, ReporterService, IReporter } from '@ali/ide-core-common';
+import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, REPORT_NAME, IExtensionProps, Uri, timeout, ReporterService, IReporter, IExtensionLogger } from '@ali/ide-core-common';
 import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy, getExtensionId } from '../common';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
@@ -26,7 +26,6 @@ export function getNodeRequire() {
 }
 
 export default class ExtensionHostServiceImpl implements IExtensionHostService {
-  private logger: any; // ExtensionLogger;
   private extensions: IExtensionDescription[];
   private rpcProtocol: RPCProtocol;
 
@@ -45,7 +44,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
   private extensionErrors = new WeakMap<Error, IExtensionDescription | undefined>();
 
-  constructor(rpcProtocol: RPCProtocol, logger, private injector: Injector) {
+  constructor(rpcProtocol: RPCProtocol, public logger: IExtensionLogger, private injector: Injector) {
     this.rpcProtocol = rpcProtocol;
     this.storage = new ExtHostStorage(rpcProtocol);
     const reporter = injector.get(IReporter);
@@ -64,7 +63,6 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
     this.vscodeExtAPIImpl = new Map();
     this.kaitianExtAPIImpl = new Map();
-    this.logger = logger; // new ExtensionLogger(rpcProtocol);
     this.reporterService = new ReporterService(reporter, {
       host: REPORT_HOST.EXTENSION,
     });

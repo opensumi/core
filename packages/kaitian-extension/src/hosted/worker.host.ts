@@ -38,7 +38,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
 
   private kaitianAPIFactory: any;
   private kaitianExtAPIImpl: Map<string, any> = new Map();
-  private logger: ExtensionLogger;
+  public logger: ExtensionLogger;
 
   private initDeferred =  new Deferred();
 

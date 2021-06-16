@@ -1741,7 +1741,7 @@ export enum DebugConsoleMode {
 
 export enum DebugConfigurationProviderTriggerKind {
   /**
-   *	`DebugConfigurationProvider.provideDebugConfigurations` is called to provide the initial debug configurations for a newly created launch.json.
+   *  `DebugConfigurationProvider.provideDebugConfigurations` is called to provide the initial debug configurations for a newly created launch.json.
    */
   Initial = 1,
   /**
@@ -2837,6 +2837,15 @@ export class EvaluatableExpression implements vscode.EvaluatableExpression {
 @es5ClassCompat
 export class TimelineItem implements vscode.TimelineItem {
   constructor(public label: string, public timestamp: number) { }
+}
+
+const canceledName = 'Canceled';
+
+export class CancellationError extends Error {
+  constructor() {
+    super(canceledName);
+    this.name = this.message;
+  }
 }
 
 //#endregion Timeline
