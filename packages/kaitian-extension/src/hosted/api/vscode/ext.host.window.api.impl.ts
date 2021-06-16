@@ -66,13 +66,13 @@ export function createWindowApiFactory(
 
     },
     showInformationMessage(message: string, first: vscode.MessageOptions | string | vscode.MessageItem, ...rest: (string | vscode.MessageItem)[]) {
-      return extHostMessage.showMessage(MessageType.Info, message, first, extension.name, ...rest);
+      return extHostMessage.showMessage(MessageType.Info, message, first, extension.displayName || extension.name, ...rest);
     },
     showWarningMessage(message: string, first: vscode.MessageOptions | string | vscode.MessageItem, ...rest: Array<string | vscode.MessageItem>) {
-      return extHostMessage.showMessage(MessageType.Warning, message, first, extension.name, ...rest);
+      return extHostMessage.showMessage(MessageType.Warning, message, first, extension.displayName || extension.name, ...rest);
     },
     showErrorMessage(message: string, first: vscode.MessageOptions | string | vscode.MessageItem, ...rest: Array<string | vscode.MessageItem>) {
-      return extHostMessage.showMessage(MessageType.Error, message, first, extension.name, ...rest);
+      return extHostMessage.showMessage(MessageType.Error, message, first, extension.displayName || extension.name, ...rest);
     },
     registerTreeDataProvider<T>(viewId: string, treeDataProvider: vscode.TreeDataProvider<T>) {
       return extHostTreeView.registerTreeDataProvider(viewId, treeDataProvider);
