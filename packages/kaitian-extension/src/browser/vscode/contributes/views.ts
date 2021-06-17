@@ -44,8 +44,8 @@ export class ViewsContributionPoint extends VSCodeContributePoint<ViewsSchema> {
         });
         this.disposableCollection.push({
           dispose: () => {
-            const handler = this.mainlayoutService.getTabbarHandler(handlerId)!;
-            handler.disposeView(view.id);
+            const handler = this.mainlayoutService.getTabbarHandler(handlerId);
+            handler?.disposeView(view.id);
           },
         });
       }
