@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { PreferenceScope, PreferenceService, useInjectable, PreferenceSchemaProvider, PreferenceItem, replaceLocalizePlaceholder, localize, getIcon, PreferenceDataProperty, isElectronRenderer, IPreferenceSettingsService, PreferenceProvider } from '@ali/ide-core-browser';
+import { PreferenceScope, PreferenceService, useInjectable, PreferenceSchemaProvider, PreferenceItem, replaceLocalizePlaceholder, localize, getIcon, PreferenceDataProperty, isElectronRenderer, IPreferenceSettingsService, PreferenceProvider, DisposableCollection } from '@ali/ide-core-browser';
 import * as styles from './preferences.module.less';
 import * as classnames from 'classnames';
 import { Input, Select, Option, CheckBox, Button, ValidateInput } from '@ali/ide-components';
@@ -19,6 +19,8 @@ interface IPreferenceItemProps {
 }
 
 const DESCRIPTION_EXPRESSION_REGEXP = /`#(.+)#`/ig;
+const NONE_SELECT_OPTION = 'none';
+
 /**
  * 用于展示单个设置项的视图
  * 目前支持类型:
@@ -39,27 +41,36 @@ export const NextPreferenceItem = ({ preferenceName, localizedName, scope }: { p
 
   const preferenceProvider: PreferenceProvider = preferenceService.getProvider(scope)!;
 
-  // 获得当前的schema
-  const schema = schemaProvider.getPreferenceProperty(preferenceName);
-
   // 获得这个设置项的当前值
   const { value: inherited, effectingScope } = settingsService.getPreference(preferenceName, scope);
   const [value, setValue] = React.useState<boolean | string | string[]>(preferenceProvider.get<boolean | string | string[]>(preferenceName)!);
+  const [schema, setSchema] = React.useState<PreferenceItem>();
 
-  let inheritedValue = inherited;
   // 当这个设置项被外部变更时，更新局部值
   React.useEffect(() => {
-    const disposer = preferenceProvider.onDidPreferencesChanged((e) => {
+    // 获得当前的schema
+    const schemas = schemaProvider.getPreferenceProperty(preferenceName);
+    setSchema(schemas);
+
+    const disposableCollection = new DisposableCollection();
+    // 监听配置变化
+    disposableCollection.push(preferenceProvider.onDidPreferencesChanged((e) => {
       if (e.default && e.default.hasOwnProperty(preferenceName)) {
-        const newValue = e.default[preferenceName].newValue;
+        let newValue = e.default[preferenceName].newValue;
         if (!newValue) {
-          inheritedValue = settingsService.getPreference(preferenceName, scope).value;
+          newValue = settingsService.getPreference(preferenceName, scope).value;
         }
         setValue(newValue);
       }
-    });
+    }));
+
+    disposableCollection.push(settingsService.onDidEnumLabelsChange(() => {
+      const schemas = schemaProvider.getPreferenceProperty(preferenceName);
+      setSchema(schemas);
+    }));
+
     return () => {
-      disposer.dispose();
+      disposableCollection.dispose();
     };
   }, []);
 
@@ -68,31 +79,36 @@ export const NextPreferenceItem = ({ preferenceName, localizedName, scope }: { p
   }
 
   const renderPreferenceItem = () => {
-    if (schema) {
+    let renderSchema = schema;
+    if (!renderSchema) {
+      // 渲染阶段可能存在还没获取到 schema 的情况
+      renderSchema = schemaProvider.getPreferenceProperty(preferenceName)!;
+    }
+    if (renderSchema) {
       const props = {
         preferenceName,
         scope,
         effectingScope,
-        schema,
-        currentValue: value === undefined ? inheritedValue : value,
+        schema: renderSchema!,
+        currentValue: value === undefined ? inherited : value,
         localizedName,
         hasValueInScope: value !== undefined,
       };
 
-      switch (schema.type) {
+      switch (renderSchema!.type) {
         case 'boolean':
           return <CheckboxPreferenceItem {...props} />;
         case 'integer':
         case 'number':
           return <InputPreferenceItem {...props} isNumber={true} />;
         case 'string':
-          if (schema.enum) {
+          if (renderSchema.enum) {
             return <SelectPreferenceItem {...props} />;
           } else {
             return <InputPreferenceItem {...props} />;
           }
         case 'array':
-          if (schema.items && schema.items.type === 'string') {
+          if (renderSchema.items && renderSchema.items.type === 'string') {
             return <StringArrayPreferenceItem {...props} />;
           } else {
             return <EditInSettingsJsonPreferenceItem {...props} />;
@@ -101,7 +117,6 @@ export const NextPreferenceItem = ({ preferenceName, localizedName, scope }: { p
           return <EditInSettingsJsonPreferenceItem {...props} />;
       }
     }
-    return <div></div>;
   };
 
   return <div className={classnames({
@@ -256,25 +271,23 @@ function SelectPreferenceItem({ preferenceName, localizedName, currentValue, sch
     setValue(currentValue);
   }, [currentValue]);
 
-  if (!Array.isArray(optionEnum) || !optionEnum.length) {
-    return <div></div>;
-  }
-
   const handlerValueChange = ((value) => {
     setValue(value);
     preferenceService.set(preferenceName, value, scope);
   });
-
   // enum 本身为 string[] | number[]
   const labels = settingsService.getEnumLabels(preferenceName);
-  const options = optionEnum && optionEnum.map((item, idx) =>
+  const options = optionEnum && optionEnum.length > 0 ? optionEnum.map((item, idx) =>
     isElectronRenderer() ?
       <option value={item} key={`${idx} - ${item}`}>{
         replaceLocalizePlaceholder((labels[item] || item).toString())
       }</option> :
       <Option value={item} label={replaceLocalizePlaceholder((labels[item] || item).toString())} key={`${idx} - ${item}`}>{
         replaceLocalizePlaceholder((labels[item] || item).toString())
-      }</Option>);
+      }</Option>) :
+      isElectronRenderer() ?
+      <option value={localize('preference.stringArray.none')} key={NONE_SELECT_OPTION} disabled>{localize('preference.stringArray.none')}</option> :
+      <Option value={localize('preference.stringArray.none')} key={NONE_SELECT_OPTION} label={localize('preference.stringArray.none')} disabled>{localize('preference.stringArray.none')}</Option>;
 
   return (
     <div className={styles.preference_line} >

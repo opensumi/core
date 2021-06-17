@@ -132,7 +132,6 @@ export const ExtensionTabBarTreeView = observer(({
     wrapperRef.current?.addEventListener('blur', handleBlur, true);
     return () => {
       wrapperRef.current?.removeEventListener('blur', handleBlur, true);
-      model.handleTreeBlur();
     };
   }, [wrapperRef.current]);
 

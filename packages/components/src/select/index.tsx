@@ -132,7 +132,7 @@ function getLabelWithChildrenProps<T = string>(value: T | undefined, children: R
     }
     return null;
   });
-  return currentOption ? (currentOption.props?.label || currentOption.props?.value) : nodes[0].props?.value;
+  return currentOption ? (currentOption.props?.label || currentOption.props?.value) : nodes[0].props?.label || nodes[0].props?.value;
 }
 
 export function isDataOptions<T = any>(options: Array<React.ReactNode | { label: string, value: T}> | undefined): options is Array<{ label: string, value: T, iconClass?: string}> {

@@ -1,9 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages, PreferenceService, localize, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
-import { IPreferenceViewDesc, IPreferenceSettingsService, ISettingGroup, ISettingSection, PreferenceProviderProvider } from '@ali/ide-core-browser';
-import { getIcon } from '@ali/ide-core-browser';
-import { CommandService, getDebugLogger, isString } from '@ali/ide-core-common';
+import { IPreferenceViewDesc, IPreferenceSettingsService, ISettingGroup, ISettingSection, PreferenceProviderProvider, Emitter, CommandService, getDebugLogger, isString, getIcon, PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages, PreferenceService, localize, replaceLocalizePlaceholder, ThrottledDelayer } from '@ali/ide-core-browser';
 import { toPreferenceReadableName, PreferenceSettingId } from '../common';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { IRecycleListHandler } from '@ali/ide-components';
@@ -11,6 +8,7 @@ import { PREFERENCE_COMMANDS } from './preference-contribution';
 
 @Injectable()
 export class PreferenceSettingsService implements IPreferenceSettingsService {
+  private static DEFAULT_CHANGE_DELAY: number = 500;
 
   @Autowired(PreferenceService)
   protected readonly preferenceService: PreferenceService;
@@ -53,6 +51,9 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
 
   private _listHandler: IRecycleListHandler;
 
+  private onDidEnumLabelsChangeEmitter: Emitter<void> = new Emitter();
+  private enumLabelsChangeDelayer =  new ThrottledDelayer<void>(PreferenceSettingsService.DEFAULT_CHANGE_DELAY);
+
   constructor() {
     this.setEnumLabels('general.language', new Proxy({}, {
       get: (target, key) => {
@@ -64,6 +65,10 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
       '\r\n': 'CRLF',
       'auto': 'auto',
     });
+  }
+
+  get onDidEnumLabelsChange() {
+    return this.onDidEnumLabelsChangeEmitter.event;
   }
 
   private isContainSearchValue(value: string, search: string) {
@@ -236,6 +241,12 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
    * @param labels 枚举项
    */
   setEnumLabels(preferenceName: string, labels: { [key: string]: string }) {
+    if (this.enumLabelsChangeDelayer && !this.enumLabelsChangeDelayer.isTriggered()) {
+      this.enumLabelsChangeDelayer.cancel();
+    }
+    this.enumLabelsChangeDelayer.trigger(async () => {
+      this.onDidEnumLabelsChangeEmitter.fire();
+    });
     this.enumLabels.set(preferenceName, labels);
   }
 
@@ -340,8 +351,7 @@ export const defaultSettingSections: {
         { id: 'editor.autoSave', localized: 'preference.editor.autoSave' },
         { id: 'editor.autoSaveDelay', localized: 'preference.editor.autoSaveDelay' },
         { id: 'editor.previewMode', localized: 'preference.editor.previewMode' },
-        { id: 'workbench.refactoringChanges.showPreviewStrategy', localized: 'preference.workbench.refactoringChanges.showPreviewStrategy' },
-        { id: 'workbench.list.openMode', localized: 'preference.workbench.list.openMode' },
+        { id: 'workbench.refactoringChanges.showPreviewStrategy', localized: 'preference.workbench.refactoringChanges.showPreviewStrategy.title' },
         { id: 'editor.askIfDiff', localized: 'preference.editor.askIfDiff' },
         // 光标样式
         { id: 'editor.cursorStyle', localized: 'preference.editor.cursorStyle' },

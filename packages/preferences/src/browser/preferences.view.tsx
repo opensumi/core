@@ -195,6 +195,8 @@ export const PreferenceBody = ({ items, onReady }: {
     data={items}
     template={PreferenceItem as any}
     className={styles.preference_section}
+    // 防止底部选择框无法查看的临时处理方式
+    paddingBottomSize={100}
   />;
 };
 

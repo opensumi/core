@@ -346,6 +346,7 @@ export const localizationBundle = {
     'preference.stringArray.operate.delete': 'Delete',
     'preference.stringArray.operate.edit': 'Edit',
     'preference.stringArray.operate.editTip': 'Press ↲',
+    'preference.stringArray.none': 'None',
 
     // Terminal
     'preference.terminal.type': 'Default Shell Type',
@@ -397,6 +398,7 @@ export const localizationBundle = {
 
     // workbench
     'preference.workbench.refactoringChanges.showPreviewStrategy': 'Show preview confirm when triggering some refactoring changes',
+    'preference.workbench.refactoringChanges.showPreviewStrategy.title': 'Refactor Confirm',
 
     'preference.tab.name': 'Settings',
     'preference.noResults': 'No Setting Found Containing \'{0}\'',

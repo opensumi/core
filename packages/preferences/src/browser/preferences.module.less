@@ -56,7 +56,7 @@
       }
       .index_item {
         height: 26px;
-        font-size: 14px;
+        font-size: 13px;
         line-height: 26px;
         padding-left: 9px;
         cursor: pointer;
@@ -110,9 +110,14 @@
         font-size:14px;
         font-weight:bold;
         padding:10px 15px;
+        &:hover {
+          color: var(--kt-tree-hoverForeground);
+          background: var(--kt-tree-hoverBackground);
+        }
       }
       .preference_item{
-        padding: 10px 0px 10px 15px;
+        padding: 15px 0px 15px 15px;
+        border-left: 3px solid transparent;
         &.modified {
           border-left:3px solid var(--settings-modifiedItemIndicator);
         }
@@ -120,12 +125,10 @@
           color: var(--kt-tree-hoverForeground);
           background: var(--kt-tree-hoverBackground);
         }
-
         &.selected {
           color: var(--kt-tree-inactiveSelectionForeground) !important;
           background: var(--kt-tree-inactiveSelectionBackground);
         }
-      
         &.focused {
           outline: 1px solid var(--list-focusOutline);
           outline-offset: -1px;
@@ -242,7 +245,7 @@
 
   .tabs {
     padding: 0 !important;
-    font-size: 14px;
+    font-size: 13px;
     :global {
       .kt-tab {
         padding-left: 10px;

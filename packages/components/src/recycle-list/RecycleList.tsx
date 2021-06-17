@@ -67,6 +67,12 @@ export interface IRecycleListProps {
    */
   footer?: React.ComponentType<any>;
   /**
+   * List 底部边距大小，默认值为 0
+   * @type {React.ComponentType<any>}
+   * @memberof IRecycleListProps
+   */
+  paddingBottomSize?: number;
+  /**
    * 处理 RecycleList API回调
    * @memberof IRecycleListProps
    */
@@ -79,9 +85,10 @@ export interface IRecycleListHandler {
 }
 
 export const RECYCLE_LIST_STABILIZATION_TIME: number = 500;
+export const RECYCLE_LIST_OVER_SCAN_COUNT: number = 50;
 
 export const RecycleList: React.FC<IRecycleListProps> = ({
-  width, height, className, style, data, onReady, itemHeight, header: Header, footer: Footer, template: Template,
+  width, height, className, style, data, onReady, itemHeight, header: Header, footer: Footer, template: Template, paddingBottomSize,
 }) => {
 
   const listRef = React.useRef<FixedSizeList>();
@@ -209,7 +216,6 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
           attributes: true, // 属性的变动
           characterData: true, // 节点内容或节点文本的变动
 
-          subtree: true, // 是否将观察器应用于该节点的所有后代节点
           attributeFilter: ['class', 'style'], // 观察特定属性
           attributeOldValue: true, // 观察 attributes 变动时，是否需要记录变动前的属性值
           characterDataOldValue: true, // 观察 characterData 变动，是否需要记录变动前的值
@@ -267,6 +273,19 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
     return estimatedHeight / keys.length;
   };
 
+  // 为 List 添加下边距
+  const InnerElementType = React.forwardRef((props, ref) => {
+    const { style, ...rest } = props as any;
+    return <div
+      ref={ref!}
+      style={{
+        ...style,
+        height: `${parseFloat(style.height) + (paddingBottomSize ? paddingBottomSize : 0)}px`,
+      }}
+      {...rest}
+    />;
+  });
+
   const render = () => {
     const isDynamicList = typeof itemHeight !== 'number';
     const isAutoSizeList = !width || !height;
@@ -289,10 +308,14 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
             itemSize={getSize}
             itemCount={adjustedRowCount}
             getItemKey={getItemKey}
-            overscanCount={10}
+            overscanCount={RECYCLE_LIST_OVER_SCAN_COUNT}
             ref={listRef}
-            style={style}
+            style={{
+              transform: 'translate3d(0px, 0px, 0px)',
+              ...style,
+            }}
             className={cls(className, 'kt-recycle-list')}
+            innerElementType={InnerElementType}
             outerElementType={ScrollbarsVirtualList}
             estimatedItemSize={calcEstimatedSize()}>
             {renderDynamicItem}
@@ -306,10 +329,14 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
             itemSize={itemHeight}
             itemCount={adjustedRowCount}
             getItemKey={getItemKey}
-            overscanCount={10}
+            overscanCount={RECYCLE_LIST_OVER_SCAN_COUNT}
             ref={listRef}
-            style={style}
+            style={{
+              transform: 'translate3d(0px, 0px, 0px)',
+              ...style,
+            }}
             className={cls(className, 'kt-recycle-list')}
+            innerElementType={InnerElementType}
             outerElementType={ScrollbarsVirtualList}>
             {renderItem}
           </List>;

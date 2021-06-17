@@ -42,6 +42,7 @@ export const corePreferenceSchema: PreferenceSchema = {
     'general.theme': {
       type: 'string',
       default: 'vs-dark',
+      enum: [],
       description: '%preference.description.general.theme%',
     },
     'general.askReloadOnLanguageChange': {
@@ -52,6 +53,7 @@ export const corePreferenceSchema: PreferenceSchema = {
     'general.icon': {
       type: 'string',
       default: 'vs-minimal',
+      enum: [],
       description: '%preference.description.general.icon%',
     },
     'workbench.colorCustomizations': {

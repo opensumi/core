@@ -345,6 +345,7 @@ export const localizationBundle = {
     'preference.stringArray.operate.delete': '删除',
     'preference.stringArray.operate.edit': '修改',
     'preference.stringArray.operate.editTip': '按回车确认',
+    'preference.stringArray.none': '暂无可选值',
 
     // 终端
     'preference.terminal.type': '默认终端类型',
@@ -377,6 +378,7 @@ export const localizationBundle = {
 
     // workbench
     'preference.workbench.refactoringChanges.showPreviewStrategy': '触发一些重构变更时，是否需要弹窗确认',
+    'preference.workbench.refactoringChanges.showPreviewStrategy.title': '重构确认方式',
 
     'preference.editor.previewMode': '使用预览模式打开',
     'preference.editor.fontFamily': '字体',
