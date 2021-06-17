@@ -596,7 +596,9 @@ export class DebugModel implements IDebugModel {
   }
 
   protected createHintDecorations(event: monaco.editor.IEditorMouseEvent): monaco.editor.IModelDeltaDecoration[] {
-    if (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
+    if (event.target
+      && (event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN)
+      || event.target.type === monaco.editor.MouseTargetType.GUTTER_LINE_NUMBERS) {
       const lineNumber = event.target.position!.lineNumber;
       if (!!this.breakpointManager.getBreakpoint(this.uri, lineNumber)) {
         return [];

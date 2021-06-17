@@ -53,7 +53,7 @@ export const enum WrappingIndent {
 export const EDITOR_DEFAULTS = {
   inDiffEditor: false,
   wordSeparators: USUAL_WORD_SEPARATORS,
-  lineNumbersMinChars: 5,
+  lineNumbersMinChars: 3,
   lineDecorationsWidth: 10,
   readOnly: false,
   mouseStyle: 'text',

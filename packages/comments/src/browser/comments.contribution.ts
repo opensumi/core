@@ -130,6 +130,7 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
           return {
             // 让编辑器的 lineDecorationsWidth 宽一点，以便放下评论 icon
             lineDecorationsWidth: 25,
+            lineNumbersMinChars: 5,
           };
         } else {
           return {};

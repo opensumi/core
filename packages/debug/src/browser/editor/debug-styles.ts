@@ -1,12 +1,6 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-export enum TrackedRangeStickiness {
-  AlwaysGrowsWhenTypingAtEdges = 0,
-  NeverGrowsWhenTypingAtEdges = 1,
-  GrowsOnlyWhenTypingBefore = 2,
-  GrowsOnlyWhenTypingAfter = 3,
-}
 
-export const STICKINESS = TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges;
+export const STICKINESS = monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges;
 
 export const BREAK_PONINT_HOVER_MARGIN: monaco.editor.IModelDecorationOptions = {
   glyphMarginClassName: 'kaitian-debug-hover',
