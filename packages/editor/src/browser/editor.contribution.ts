@@ -77,6 +77,9 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
   @Autowired(PrefixQuickOpenService)
   private readonly prefixQuickOpenService: PrefixQuickOpenService;
 
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-editor', {
       id: 'ide-editor',
@@ -293,6 +296,12 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       command: EDITOR_COMMANDS.COMPONENT_REDO.id,
       keybinding: 'shift+ctrlcmd+z',
       when: 'inEditorComponent',
+    });
+
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.TOGGLE_WORD_WRAP.id,
+      keybinding: 'alt+z',
+      when: 'editorFocus',
     });
   }
 
@@ -875,6 +884,20 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     commands.registerCommand(EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL, {
       execute: () => this.prefixQuickOpenService.open('#'),
     });
+
+    commands.registerCommand(EDITOR_COMMANDS.TOGGLE_WORD_WRAP, {
+      execute: () => {
+        const wordWrap = this.preferenceService.get<string>('editor.wordWrap');
+
+        if (wordWrap) {
+          const values: string[] = ['off', 'on'];
+          const index = values.indexOf(wordWrap) + 1;
+          if (index > -1) {
+            this.preferenceService.set('editor.wordWrap', values[index % values.length], PreferenceScope.User);
+          }
+        }
+      },
+    });
   }
 
   registerMenus(menus: IMenuRegistry) {
@@ -1049,4 +1072,5 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
       },
     });
   }
+
 }

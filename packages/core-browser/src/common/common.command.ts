@@ -576,6 +576,11 @@ export namespace EDITOR_COMMANDS {
     id: 'workbench.action.quickOpen',
     category: CATEGORY,
   };
+
+  export const TOGGLE_WORD_WRAP: Command = {
+    id: 'editor.toggleWorldWrap',
+    category: CATEGORY,
+  };
 }
 
 export namespace SEARCH_COMMANDS {
