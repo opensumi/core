@@ -24,11 +24,11 @@ export class DebugHoverSource {
     return this._expression;
   }
 
-  async evaluate(expression: string): Promise<boolean> {
+  async evaluate(expression: string): Promise<ExpressionVariable> {
     const evaluated = await this.doEvaluate(expression);
     this._expression = evaluated;
     this.onDidChangeEmitter.fire(evaluated);
-    return !!evaluated;
+    return evaluated;
   }
 
   protected async doEvaluate(expression: string): Promise<ExpressionVariable> {

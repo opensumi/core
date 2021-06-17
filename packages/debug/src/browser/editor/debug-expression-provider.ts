@@ -1,4 +1,5 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IEvaluatableExpressionService } from './evaluatable-expression';
 import { CancellationTokenSource, coalesce, IRange } from '@ali/ide-core-common';
@@ -9,7 +10,7 @@ export class DebugExpressionProvider {
   @Autowired(IEvaluatableExpressionService)
   protected readonly evaluatableExpressionService: IEvaluatableExpressionService;
 
-  async get(model: monaco.editor.IModel, selection: monaco.IRange): Promise<string | undefined> {
+  async get(model: ITextModel, selection: monaco.IRange): Promise<string | undefined> {
     let matchingExpression: string | undefined;
     let rng: IRange | undefined;
 

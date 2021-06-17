@@ -1,6 +1,7 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 import { Injectable, Autowired } from '@ali/common-di';
 import { DisposableCollection, Disposable, AppConfig, ConfigProvider, IReporterService } from '@ali/ide-core-browser';
 import { DebugSessionManager } from '../debug-session-manager';
@@ -140,6 +141,10 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
     this.editor.removeContentWidget(this);
   }
 
+  protected layoutContentWidget(): void {
+    this.editor.layoutContentWidget(this);
+  }
+
   protected async doShow(options: ShowDebugHoverOptions | undefined = this.options): Promise<void> {
     if (!this.isEditorFrame()) {
       return;
@@ -154,7 +159,7 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
     }
 
     this.options = options;
-    const expression = await this.expressionProvider.get(this.editor.getModel()!, options.selection);
+    const expression = await this.expressionProvider.get(this.editor.getModel()! as unknown as ITextModel, options.selection);
     if (!expression) {
       return;
     }
@@ -171,7 +176,7 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
     ReactDOM.render((<ConfigProvider value={ this.configContext } >
       <DebugHoverView />
     </ConfigProvider>), this.getDomNode(), () => {
-      this.editor.layoutContentWidget(this);
+      this.layoutContentWidget();
     });
   }
 }

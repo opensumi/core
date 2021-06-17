@@ -1,18 +1,21 @@
 import * as React from 'react';
-import { useInjectable, localize } from '@ali/ide-core-browser';
+import { useInjectable } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import * as styles from './debug-hover.module.less';
 import * as cls from 'classnames';
 import { DebugHoverTreeModelService, IDebugHoverUpdateData } from './debug-hover-tree.model.service';
-import { IRecycleTreeHandle, RecycleTree, INodeRendererWrapProps } from '@ali/ide-components';
+import { IRecycleTreeHandle, RecycleTree, INodeRendererWrapProps, TreeNodeEvent } from '@ali/ide-components';
 import { DebugHoverModel } from './debug-hover-model';
 import { ExpressionNode, ExpressionContainer, DebugHoverVariableRoot, DebugVariable } from '../tree/debug-tree-node.define';
 import { DebugVariableRenderedNode, DEBUG_VARIABLE_TREE_NODE_HEIGHT } from '../view/variables/debug-variables.view';
+import { IDisposable } from '@ali/ide-core-common';
 
 export const DebugHoverView = observer(() => {
   const debugHoverTreeModelService: DebugHoverTreeModelService = useInjectable(DebugHoverTreeModelService);
+  const DEFAULT_LAYOUT_HEIGHT: number = 250;
 
   const [model, setModel] = React.useState<{ treeModel?: DebugHoverModel, variable?: DebugVariable}>({});
+  const [treeLayoutHeight, setTreeLayoutHeight] = React.useState<number>(DEFAULT_LAYOUT_HEIGHT);
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   React.useEffect(() => {
@@ -28,6 +31,21 @@ export const DebugHoverView = observer(() => {
       debugHoverTreeModelService.removeNodeDecoration();
     };
   }, []);
+
+  React.useEffect(() => {
+    let disposable: IDisposable;
+    setTreeLayoutHeight(DEFAULT_LAYOUT_HEIGHT);
+
+    if (model.treeModel) {
+      disposable = model.treeModel.root.watcher.on(TreeNodeEvent.DidChangeExpansionState, (data) => {
+        const treeHeight = Math.max(DEFAULT_LAYOUT_HEIGHT, ~~model.treeModel?.root.branchSize! * 22);
+        setTreeLayoutHeight(Math.min(500, treeHeight));
+      });
+    }
+    return () => {
+      disposable?.dispose();
+    };
+  }, [model.treeModel]);
 
   const ensureLoaded = async () => {
     if (debugHoverTreeModelService.treeModel) {
@@ -67,8 +85,7 @@ export const DebugHoverView = observer(() => {
       ref={wrapperRef}
     >
       <RecycleTree
-        height={250}
-        width={300}
+        height={treeLayoutHeight}
         itemHeight={DEBUG_VARIABLE_TREE_NODE_HEIGHT}
         onReady={handleTreeReady}
         model={model.treeModel!}
@@ -107,7 +124,7 @@ export const DebugHoverView = observer(() => {
         </div>
         :
         <div className={ styles.debug_hover_title }>
-          {localize('debug.hover.not.available')}
+          {DebugHoverVariableRoot.NOT_AVAILABLE}
         </div>
       }
       {

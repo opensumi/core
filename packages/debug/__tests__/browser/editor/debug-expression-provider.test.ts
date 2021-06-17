@@ -1,6 +1,7 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { DebugExpressionProvider } from '@ali/ide-debug/lib/browser/editor';
+import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from '@ali/ide-debug/lib/browser/editor/evaluatable-expression';
 
 describe('Debug Expression Provider', () => {
@@ -30,7 +31,7 @@ describe('Debug Expression Provider', () => {
   });
 
   it('get method should be work', async () => {
-    const expression = await debugExpressionProvider.get(textModel, selection);
+    const expression = await debugExpressionProvider.get(textModel as unknown as ITextModel, selection);
     expect(mockedGetLineContent).toBeCalledWith(selection.startLineNumber);
     expect(expression).toBe('test.a');
   });

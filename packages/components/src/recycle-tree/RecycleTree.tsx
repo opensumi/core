@@ -20,7 +20,7 @@ export interface IModelChange {
 export type IRecycleTreeOverflow = 'ellipsis' | 'auto';
 
 export interface IRecycleTreeSize {
-  width: number;
+  width?: number;
   height: number;
 }
 
@@ -39,7 +39,7 @@ export interface IRecycleTreeProps<T = TreeModel> {
    * @type {number}
    * @memberof RecycleTreeProps
    */
-  width: number;
+  width?: number;
   /**
    * 节点高度
    * @type {number}
