@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { Disposable, IDisposable, ScopedKeybinding, KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeybindingService, ILogger, Event, KeybindingWeight, ThrottledDelayer } from '@ali/ide-core-browser';
+import { Disposable, DisposableCollection, IDisposable, ScopedKeybinding, KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeybindingService, ILogger, Event, KeybindingWeight, ThrottledDelayer } from '@ali/ide-core-browser';
 import { KeymapsParser } from './keymaps-parser';
 import * as fuzzy from 'fuzzy';
 import { KEYMAPS_FILE_NAME, IKeymapService, KEYMAPS_SCHEME, KeybindingItem } from '../common';
@@ -67,6 +67,7 @@ export class KeymapService implements IKeymapService {
   protected readonly toRestoreDefaultKeybindingMap: Map<string, IDisposable> = new Map();
 
   private searchDelayer = new ThrottledDelayer(KeymapService.DEFAULT_SEARCH_DELAY);
+  private disposableCollection: DisposableCollection = new DisposableCollection();
 
   /**
    * fuzzy搜索参数，pre及post用于包裹搜索结果
@@ -99,6 +100,12 @@ export class KeymapService implements IKeymapService {
       await this.resource.whenReady;
     }
     await this.reconcile();
+    if (this.resource.onDidChangeContents) {
+      this.disposableCollection.push(this.resource.onDidChangeContents(() => {
+        // 快捷键绑定文件内容变化，重新更新快捷键信息
+        this.reconcile();
+      }));
+    }
   }
 
   async openResource() {
@@ -119,13 +126,18 @@ export class KeymapService implements IKeymapService {
     }
   }
 
-  dispose() {
+  private disposeRegistedKeybinding() {
     for (const [, value] of this.toUnregisterUserKeybindingMap) {
       value.dispose();
     }
     for (const [, value] of this.toRestoreDefaultKeybindingMap) {
       value.dispose();
     }
+  }
+
+  dispose() {
+    this.disposeRegistedKeybinding();
+    this.disposableCollection.dispose();
   }
 
   /**
@@ -151,7 +163,7 @@ export class KeymapService implements IKeymapService {
       };
     });
     // 重新注册快捷键前取消注册先前的快捷键
-    this.dispose();
+    this.disposeRegistedKeybinding();
     bindings.forEach((kb: Keybinding) => {
       this.unregisterDefaultKeybinding(kb, true);
       this.registerUserKeybinding(kb);
@@ -232,10 +244,8 @@ export class KeymapService implements IKeymapService {
    */
   protected async parseKeybindings(): Promise<Keybinding[]> {
     try {
-      if (!this.storeKeybindings) {
-        const content = await this.resource.readContents();
-        this.storeKeybindings = this.parser.parse(content);
-      }
+      const content = await this.resource.readContents();
+      this.storeKeybindings = this.parser.parse(content);
       return this.storeKeybindings;
     } catch (error) {
       this.logger.warn(`ParseKeybindings fail: ${error.stack}`);

@@ -25,6 +25,7 @@ describe('KeymapsService should be work', () => {
     readContents: jest.fn(() => keybindingContent),
     saveContents: jest.fn(),
     getFsPath: jest.fn(() => 'file://keymaps.json'),
+    onDidChangeContents: jest.fn(() => Disposable.create(() => {})),
     whenReady: Promise.resolve(),
   };
   const mockKeybindingService = {
@@ -102,6 +103,7 @@ describe('KeymapsService should be work', () => {
     it('should ready to work after init', async (done) => {
 
       expect(resourceProvider).toBeCalledWith(new URI().withScheme(USER_STORAGE_SCHEME).withPath(KEYMAPS_FILE_NAME));
+      expect(mockResource.onDidChangeContents).toBeCalledTimes(1);
 
       expect(typeof keymapsService.init).toBe('function');
       expect(typeof keymapsService.dispose).toBe('function');
