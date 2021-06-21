@@ -350,7 +350,6 @@ export const defaultSettingSections: {
         // 自动保存
         { id: 'editor.autoSave', localized: 'preference.editor.autoSave' },
         { id: 'editor.autoSaveDelay', localized: 'preference.editor.autoSaveDelay' },
-        { id: 'editor.previewMode', localized: 'preference.editor.previewMode' },
         { id: 'workbench.refactoringChanges.showPreviewStrategy', localized: 'preference.workbench.refactoringChanges.showPreviewStrategy.title' },
         { id: 'editor.askIfDiff', localized: 'preference.editor.askIfDiff' },
         // 光标样式
