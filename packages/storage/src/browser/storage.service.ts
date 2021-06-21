@@ -18,7 +18,6 @@ export abstract class StorageServer implements IStorageServer {
   public deferredStorageDirPath = new Deferred<string>();
   public databaseStorageDirPath: string | undefined;
 
-  public storageName: string;
   public _cache: any = {};
 
   public onDidChangeEmitter = new Emitter<StorageChange>();
@@ -78,7 +77,7 @@ export class WorkspaceStorageServer extends StorageServer {
     const storagePath = await this.getStoragePath(storageName);
 
     if (!storagePath) {
-      this.logger.error(`Storage [${this.storageName}] is invalid.`);
+      this.logger.error(`Storage [${storageName}] is invalid.`);
     } else {
       const uriString = new URI(storagePath).toString();
       if (await this.fileSystem.access(uriString)) {
@@ -86,7 +85,7 @@ export class WorkspaceStorageServer extends StorageServer {
         try {
           items = JSON.parse(data.content);
         } catch (error) {
-          this.logger.error(`Storage [${this.storageName}] content can not be parse. Error: ${error.stack}`);
+          this.logger.error(`Storage [${storageName}] content can not be parse. Error: ${error.stack}`);
           items = {};
         }
       }
@@ -200,7 +199,7 @@ export class GlobalStorageServer extends StorageServer {
     const storagePath = await this.getStoragePath(storageName);
 
     if (!storagePath) {
-      this.logger.error(`Storage [${this.storageName}] is invalid.`);
+      this.logger.error(`Storage [${storageName}] is invalid.`);
     } else {
       const uriString = new URI(storagePath).toString();
       if (await this.fileSystem.access(uriString)) {
@@ -208,7 +207,7 @@ export class GlobalStorageServer extends StorageServer {
         try {
           items = JSON.parse(data.content);
         } catch (error) {
-          this.logger.error(`Storage [${this.storageName}] content can not be parse. Error: ${error.stack}`);
+          this.logger.error(`Storage [${storageName}] content can not be parse. Error: ${error.stack}`);
           items = {};
         }
       }

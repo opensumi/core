@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-monaco",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "files": [
     "lib"
   ],
@@ -19,13 +19,13 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-browser": "2.4.1",
-    "@ali/ide-core-common": "2.4.1",
-    "@ali/ide-core-node": "2.4.1",
-    "@ali/ide-editor": "2.4.1",
-    "@ali/ide-file-service": "2.4.1",
-    "@ali/ide-workspace": "2.4.1",
-    "@ali/ide-theme": "2.4.1",
+    "@ali/ide-core-browser": "2.5.0",
+    "@ali/ide-core-common": "2.5.0",
+    "@ali/ide-core-node": "2.5.0",
+    "@ali/ide-editor": "2.5.0",
+    "@ali/ide-file-service": "2.5.0",
+    "@ali/ide-workspace": "2.5.0",
+    "@ali/ide-theme": "2.5.0",
     "monaco-editor-core": "^0.20.0",
     "@ali/monaco-editor-core": "0.20.1-patch.22",
     "vscode-oniguruma": "1.3.1"
