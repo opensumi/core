@@ -100,6 +100,8 @@ export async function bindConnectionService(injector: Injector, modules: ModuleC
   } = initRPCService(clientCenter);
 
   const backServiceArr: BackService[] = [];
+  // 存放依赖前端后端服务，后端服务实例化后再去实例化这些 token
+  const dependClientBackServices: BackService[] = [];
 
   for (const module of modules) {
     const moduleInstance = injector.get(module) as BasicModule;
@@ -120,10 +122,16 @@ export async function bindConnectionService(injector: Injector, modules: ModuleC
     } as Provider;
 
     injector.addProviders(injectService);
-
+    // 这里不进行初始化，先收集依赖，等所有 servicePath 实例化完后在做实例化，防止循环依赖
     if (backService.clientToken) {
-      const clientService = injector.get(backService.clientToken);
-      rpcService.onRequestService(clientService);
+      dependClientBackServices.push(backService);
     }
+  }
+
+  for (const backService of dependClientBackServices) {
+    const { servicePath } = backService;
+    const rpcService = getRPCService(servicePath);
+    const clientService = injector.get(backService.clientToken!);
+    rpcService.onRequestService(clientService);
   }
 }

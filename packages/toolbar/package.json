@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-toolbar",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "files": [
     "lib"
   ],
@@ -19,11 +19,11 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "2.5.0",
-    "@ali/ide-core-node": "2.5.0"
+    "@ali/ide-core-common": "2.5.1",
+    "@ali/ide-core-node": "2.5.1"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "2.5.0",
+    "@ali/ide-core-browser": "2.5.1",
     "@ali/ide-dev-tool": "^1.1.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
