@@ -26,7 +26,6 @@
     "@ali/ide-core-node": "2.5.2",
     "@ali/ide-process": "2.5.2",
     "@ali/ide-task": "2.5.2",
-    "ansi-to-react": "^5.0.0",
     "btoa": "^1.2.1"
   },
   "devDependencies": {

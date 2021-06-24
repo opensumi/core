@@ -13,6 +13,7 @@ import { DebugSession } from '../../debug-session';
 import { IDebugSessionManager } from '../../../common';
 import { AnsiConsoleNode } from '../../tree';
 import { DidChangeActiveDebugSession } from '../../debug-session-manager';
+import { LinkDetector } from '../../debug-link-detector';
 
 export interface IDebugConsoleHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -47,6 +48,9 @@ export class DebugConsoleModelService {
 
   @Autowired(IClipboardService)
   private readonly clipboardService: IClipboardService;
+
+  @Autowired(LinkDetector)
+  private readonly linkDetector: LinkDetector;
 
   private _activeDebugSessionModel: IDebugConsoleModel | undefined;
   private debugSessionModelMap: Map<string, IDebugConsoleModel> = new Map();
@@ -490,7 +494,7 @@ export class DebugConsoleModelService {
       return ;
     }
     const parent: DebugConsoleRoot = this.treeModel.root as DebugConsoleRoot;
-    const textNode = new AnsiConsoleNode(value, parent);
+    const textNode = new AnsiConsoleNode(value, parent, this.linkDetector);
     this.dispatchWatchEvent(parent, parent.path, { type: WatchEvent.Added, node: textNode, id: parent.id });
     const expressionNode = new DebugConsoleNode(this.manager.currentSession, value, parent as ExpressionContainer);
     await expressionNode.evaluate();

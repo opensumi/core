@@ -229,6 +229,7 @@ export const localizationBundle = {
     'debug.console.copy': '复制',
     'debug.console.copyAll': '复制全部',
     'debug.console.collapseAll': '折叠全部',
+    'debug.console.followLink': '按住 {0} 并单击可访问链接',
 
     'output.tabbar.title': '输出',
     'output.channel.none': '<还没有任何输出>',

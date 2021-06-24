@@ -256,6 +256,7 @@ export const localizationBundle = {
     'debug.console.copy': 'Copy',
     'debug.console.copyAll': 'Copy All',
     'debug.console.collapseAll': 'Collapse All',
+    'debug.console.followLink': '{0} + click to follow link',
 
     'debug.stack.loadMore': 'Load All Stack Frames',
     'debug.stack.loading': 'Loading...',
