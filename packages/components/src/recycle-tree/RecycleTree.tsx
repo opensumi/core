@@ -10,7 +10,7 @@ import { TreeNodeType, TreeNodeEvent } from './types';
 import { ScrollbarsVirtualList } from '../scrollbars';
 import * as fuzzy from 'fuzzy';
 
-export type IRecycleTreeAlign = 'start' | 'center' | 'end' | 'auto';
+export type IRecycleTreeAlign = 'smart' | 'start' | 'center' | 'end' | 'auto';
 
 export interface IModelChange {
   preModel: TreeModel;
@@ -446,7 +446,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
   }
 
-  private ensureVisible = async (pathOrTreeNode: string | TreeNode | CompositeTreeNode, align: IRecycleTreeAlign = 'auto', untilStable: boolean = false): Promise<TreeNode | undefined> => {
+  private ensureVisible = async (pathOrTreeNode: string | TreeNode | CompositeTreeNode, align: IRecycleTreeAlign = 'smart', untilStable: boolean = false): Promise<TreeNode | undefined> => {
     const { root } = this.props.model;
     const node = typeof pathOrTreeNode === 'string'
       ? await root.forceLoadTreeNodeAtPath(pathOrTreeNode)

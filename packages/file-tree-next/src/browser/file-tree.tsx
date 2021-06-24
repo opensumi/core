@@ -27,7 +27,7 @@ export const FileTree = observer(({
   const [model, setModel ] = React.useState<TreeModel>();
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
-  const { width, height } = viewState;
+  const { height } = viewState;
 
   const { decorationService, labelService, iconService, filterMode, locationToCurrentFile, indent, baseIndent } = useInjectable<FileTreeService>(IFileTreeService);
   const fileTreeModelService = useInjectable<FileTreeModelService>(FileTreeModelService);
@@ -214,7 +214,6 @@ export const FileTree = observer(({
       } else if (!!model) {
         return <FilterableRecycleTree
           height={height}
-          width={width}
           itemHeight={FILE_TREE_NODE_HEIGHT}
           onReady={handleTreeReady}
           model={model}
