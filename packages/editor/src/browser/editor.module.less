@@ -108,8 +108,22 @@
       font-style: normal;
     }
   }
+
+  .kt_editor_wrap_mode_action {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+  }
+
+  .kt_editor_wrap_container {
+    .kt_editor_tabs_content {
+      flex-wrap: wrap;
+    }
+  }
+  .last_in_row {
+    flex-grow: 1;
+  }
   .kt_editor_tabs_content {
-    height: @TAB_HEIGHT;
     display:flex;
     background: var(--editorGroupHeader-tabsBackground);
     position: relative;
@@ -137,10 +151,10 @@
       flex-shrink: 0;
       padding: 0 12px;
       border-right:1px solid var(--tab-border);
-      line-height: 1.5em;
+      height: @TAB_HEIGHT;
+      line-height: @TAB_HEIGHT;
       font-size: var(--tab-fontSize);
       min-width: var(--tab-min-size);
-      max-width: var(--tab-max-size);
       cursor: pointer;
       color: var(--tab-inactiveForeground);
       background: var(--tab-inactiveBackground);

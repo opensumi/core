@@ -417,6 +417,8 @@ export const localizationBundle = {
     'preference.files.eol': 'Files EOL',
     'preference.files.eolDesc': 'Control files eol',
     'keymaps.tab.name': 'Keyboard Shortcuts',
+
+    'preference.editor.wrapTab': 'Wrap Editor Tabs',
     'preference.editor.preferredFormatter': 'Default Formatter',
     'preference.editor.previewMode': 'Preview Mode',
     'preference.editor.fontFamily': 'Font Family',
@@ -427,6 +429,8 @@ export const localizationBundle = {
     'preference.editor.autoSave': 'Editor Auto Save',
     'preference.editor.autoSaveDelay': 'Auto Save Delay',
     'preference.editor.detectIndentation': 'Auto Detect Indentation',
+
+    'editor.configuration.wrapTab': 'Controls whether to wrap editor tabs instead of scroll mode when tabs are beyond the visible area.',
     'editor.configuration.askIfDiff': 'When saving files, throw error if the file on disk has a newer version.',
     'editor.configuration.autoSave': 'Controls how dirty files are auto saved.',
     'editor.configuration.autoSaveDelay': 'Controls the delay in ms after which a dirty file is saved automatically. Only applies when Editor Auto Save is set to \'Save After Delay\'.',

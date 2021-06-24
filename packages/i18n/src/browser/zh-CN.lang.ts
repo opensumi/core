@@ -380,6 +380,7 @@ export const localizationBundle = {
     'preference.workbench.refactoringChanges.showPreviewStrategy': '触发一些重构变更时，是否需要弹窗确认',
     'preference.workbench.refactoringChanges.showPreviewStrategy.title': '重构确认方式',
 
+    'preference.editor.wrapTab': '编辑器 Tab 自动换行',
     'preference.editor.previewMode': '使用预览模式打开',
     'preference.editor.fontFamily': '字体',
     'preference.editor.minimap': '显示 Minimap',
@@ -409,6 +410,7 @@ export const localizationBundle = {
     'preference.editor.preferredFormatter': '默认格式化器',
     'preference.array.additem': '添加',
 
+    'editor.configuration.wrapTab': '控制当编辑器 Tab 超过可用空间时，是否使用换行来代替滚动模式。',
     'editor.configuration.renderLineHighlight': '控制编辑器的当前行突出显示方式。',
     'editor.configuration.formatOnSaveTimeout': '控制保存时格式化的超时时间（毫秒）。仅当 `#editor.formatOnSave#` 启用时生效。',
     'editor.configuration.autoSave': '控制如何自动保存文件。',

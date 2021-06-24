@@ -432,6 +432,8 @@ export const defaultSettingSections: {
   view: [
     {
       preferences: [
+        // 编辑器外观
+        { id: 'editor.wrapTab', localized: 'preference.editor.wrapTab' },
         // 资源管理器
         { id: 'explorer.fileTree.baseIndent', localized: 'preference.explorer.fileTree.baseIndent.title' },
         { id: 'explorer.fileTree.indent', localized: 'preference.explorer.fileTree.indent.title' },
