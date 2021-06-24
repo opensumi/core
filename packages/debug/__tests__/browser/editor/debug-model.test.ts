@@ -239,6 +239,9 @@ describe('Debug Model', () => {
           lineNumber: 1,
         },
       },
+      event: {
+        altKey: false,
+      },
     } as monaco.editor.IEditorMouseEvent);
     expect(mockDebugHoverWidget.show).toBeCalledTimes(1);
     debugModel.onMouseMove({
@@ -247,6 +250,9 @@ describe('Debug Model', () => {
         position: {
           lineNumber: 1,
         },
+      },
+      event: {
+        altKey: false,
       },
     } as monaco.editor.IEditorMouseEvent);
     expect(mockDebugHoverWidget.hide).toBeCalledTimes(1);

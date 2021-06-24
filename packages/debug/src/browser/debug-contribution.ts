@@ -31,6 +31,7 @@ import { FloatingClickWidget } from './components/floating-click-widget';
 import { PreferenceService } from '@ali/ide-core-browser';
 import { DebugBreakpointZoneWidget } from './editor/debug-breakpoint-zone-widget';
 import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
+import { KeybindingRegistry } from '@ali/ide-core-browser';
 
 const LAUNCH_JSON_REGEX = /launch\.json$/;
 
@@ -572,7 +573,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
     registry.registerSchema(`${launchSchemaUri}/default`, launchSchema, ['launch.json']);
   }
 
-  registerKeybindings(keybindings) {
+  registerKeybindings(keybindings: KeybindingRegistry) {
     keybindings.registerKeybinding({
       command: DEBUG_COMMANDS.START.id,
       keybinding: 'f5',
