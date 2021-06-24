@@ -3,10 +3,43 @@ import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone
 import type { IModeService } from '@ali/monaco-editor-core/esm/vs/editor/common/services/modeService';
 import type { IModelService } from '@ali/monaco-editor-core/esm/vs/editor/common/services/modelService';
 import { Autowired, Injectable } from '@ali/common-di';
-import { URI, DataUri, Emitter, addElement, IDisposable, LRUMap, Event, WithEventBus, BasicEvent, Disposable } from '@ali/ide-core-common';
+import { URI, Emitter, addElement, IDisposable, LRUMap, Event, WithEventBus, BasicEvent, Disposable } from '@ali/ide-core-common';
+import { getIcon } from '../style/icon/icon';
 import classnames from 'classnames';
 
-import { getIcon } from '../style/icon/icon';
+/**
+ * Data URI related helpers.
+ */
+export namespace DataUri {
+
+  export const META_DATA_LABEL = 'label';
+  export const META_DATA_DESCRIPTION = 'description';
+  export const META_DATA_SIZE = 'size';
+  export const META_DATA_MIME = 'mime';
+
+  export function parseMetaData(dataUri: monaco.Uri): Map<string, string> {
+    const metadata = new Map<string, string>();
+    const uriPath = dataUri.path;
+    // Given a URI of:  data:image/png;size:2313;label:SomeLabel;description:SomeDescription;base64,77+9UE5...
+    // the metadata is: size:2313;label:SomeLabel;description:SomeDescription
+    const meta = uriPath.substring(uriPath.indexOf(';') + 1, uriPath.lastIndexOf(';'));
+    meta.split(';').forEach((property) => {
+      const [key, value] = property.split(':');
+      if (key && value) {
+        metadata.set(key, value);
+      }
+    });
+
+    // Given a URI of:  data:image/png;size:2313;label:SomeLabel;description:SomeDescription;base64,77+9UE5...
+    // the mime is: image/png
+    const mime = uriPath.substring(0, uriPath.indexOf(';'));
+    if (mime) {
+      metadata.set(META_DATA_MIME, mime);
+    }
+
+    return metadata;
+  }
+}
 
 export interface ILabelProvider {
 

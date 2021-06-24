@@ -34,7 +34,11 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
     for (const provider of this.providers.values()) {
       readyPromises.push(provider.ready.catch((e) => this.logger.error(e)));
     }
-    Promise.all(readyPromises).then(() => this._ready.resolve());
+    if (readyPromises.length > 0 ) {
+      Promise.all(readyPromises).then(() => this._ready.resolve());
+    } else {
+      this._ready.resolve();
+    }
   }
 
   /**

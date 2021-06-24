@@ -6,6 +6,7 @@ import { ExpressionContainer, AnsiConsoleNode, DebugConsoleNode, DebugVariableCo
 import { DebugSession } from '../../debug-session';
 import throttle = require('lodash.throttle');
 import { DebugConsoleTreeModel } from './debug-console-model';
+import { LinkDetector } from '../../debug-link-detector';
 
 type ConsoleNodes = DebugConsoleNode | AnsiConsoleNode | DebugVariableContainer;
 
@@ -14,6 +15,9 @@ export class DebugConsoleSession {
 
   @Autowired(ILogger)
   private logger: ILogger;
+
+  @Autowired(LinkDetector)
+  private linkDetector: LinkDetector;
 
   // 缓冲未完成的append进来的内容
   protected uncompletedItemContent: string | undefined;
@@ -74,7 +78,7 @@ export class DebugConsoleSession {
     } else if (typeof body.output === 'string') {
       for (const content of body.output.split('\n')) {
         if (!!content) {
-          this.treeModel.root.insertItem(new AnsiConsoleNode(content, this.treeModel?.root, severity, source, line));
+          this.treeModel.root.insertItem(new AnsiConsoleNode(content, this.treeModel?.root, this.linkDetector, severity, source, line));
         }
       }
     }
@@ -82,7 +86,7 @@ export class DebugConsoleSession {
   }
 
   async execute(value: string): Promise<void> {
-    this.treeModel.root.insertItem(new AnsiConsoleNode(value, this.treeModel.root, MessageType.Info));
+    this.treeModel.root.insertItem(new AnsiConsoleNode(value, this.treeModel.root, this.linkDetector, MessageType.Info));
     const expression = new DebugConsoleNode(this.session, value, this.treeModel?.root as ExpressionContainer);
     this.treeModel.root.insertItem(expression);
     this.fireDidChange();
@@ -101,12 +105,12 @@ export class DebugConsoleSession {
       this.uncompletedItemContent = value;
     }
 
-    this.treeModel.root.insertItem(new AnsiConsoleNode(this.uncompletedItemContent, this.treeModel?.root, MessageType.Info));
+    this.treeModel.root.insertItem(new AnsiConsoleNode(this.uncompletedItemContent, this.treeModel?.root, this.linkDetector, MessageType.Info));
     this.fireDidChange();
   }
 
   appendLine(value: string): void {
-    this.treeModel.root.insertItem(new AnsiConsoleNode(value, this.treeModel?.root, MessageType.Info));
+    this.treeModel.root.insertItem(new AnsiConsoleNode(value, this.treeModel?.root, this.linkDetector, MessageType.Info));
     this.fireDidChange();
   }
 }

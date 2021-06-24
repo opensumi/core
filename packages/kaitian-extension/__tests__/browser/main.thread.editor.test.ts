@@ -1,5 +1,5 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { Emitter, IFileServiceClient, DefaultResourceProvider, IEventBus, CommonServerPath, OS, IApplicationService } from '@ali/ide-core-common';
+import { Emitter, IFileServiceClient, IEventBus, CommonServerPath, OS, IApplicationService } from '@ali/ide-core-common';
 import { URI, IContextKeyService } from '@ali/ide-core-browser';
 import { injectMockPreferences } from '@ali/ide-core-browser/src/mocks/preference';
 import * as path from 'path';
@@ -29,13 +29,13 @@ import MonacoServiceImpl from '@ali/ide-monaco/lib/browser/monaco.service';
 import { CorePreferences, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
 import { ResourceServiceImpl } from '@ali/ide-editor/lib/browser/resource.service';
 import { LanguageService } from '@ali/ide-editor/lib/browser/language/language.service';
-import { useMockStorage } from '../../../core-browser/lib/mocks/storage';
+import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { BaseFileSystemEditorDocumentProvider } from '@ali/ide-editor/lib/browser/fs-resource/fs-editor-doc';
 import { FileSystemResourceProvider } from '@ali/ide-editor/lib/browser/fs-resource/fs-resource';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
-import { FileResourceResolver } from '@ali/ide-file-service/lib/browser/file-service-contribution';
+import { FileServiceContribution } from '@ali/ide-file-service/lib/browser/file-service-contribution';
 import { TestEditorDocumentProvider, TestResourceResolver } from '../../../editor/__tests__/browser/test-providers';
 import { EditorComponentRegistryImpl } from '@ali/ide-editor/lib/browser/component';
 import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser/types';
@@ -93,10 +93,7 @@ describe('MainThreadEditor Test Suites', () => {
   beforeAll(async (done) => {
     injector = createBrowserInjector([EditorModule]);
     injector.addProviders(...[
-      {
-        token: DefaultResourceProvider,
-        useClass: DefaultResourceProvider,
-      },
+      FileServiceContribution,
       {
         token: WorkbenchEditorService,
         useClass: WorkbenchEditorServiceImpl,
@@ -148,7 +145,7 @@ describe('MainThreadEditor Test Suites', () => {
       }, {
         token: IDialogService,
         useValue: {},
-      }, FileResourceResolver, {
+      }, {
         token: IContextKeyService,
         useClass: MockContextKeyService,
       }, {

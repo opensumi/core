@@ -13,11 +13,11 @@ import {
   URI,
   Emitter,
   isUndefined,
-  DebugLog,
   DisposableCollection,
   isWindows,
-} from '@ali/ide-core-common';
-import { FileUri, AppConfig } from '@ali/ide-core-node';
+  getDebugLogger,
+  FileUri,
+} from '@ali/ide-core-node';
 import { NsfwFileSystemWatcherServer } from './file-service-watcher';
 import {
   FileChangeEvent,
@@ -31,12 +31,10 @@ import {
   IDiskFileProvider,
   FileAccess,
 } from '../common/';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable } from '@ali/common-di';
 import { RPCService } from '@ali/ide-connection';
 import * as fileType from 'file-type';
 import { ParsedPattern, parse } from '@ali/ide-core-common/lib/utils/glob';
-
-const debugLog = new DebugLog();
 
 const UNIX_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/**/*';
 const WINDOWS_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';
@@ -57,9 +55,6 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
     'ogg',
     'webm',
   ];
-
-  @Autowired(AppConfig)
-  appConfig: AppConfig;
 
   constructor() {
     super();
@@ -107,22 +102,15 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
     disposable.dispose();
   }
 
-  stat(uri: UriComponents): Thenable<FileStat> {
+  async stat(uri: UriComponents) {
     const _uri = Uri.revive(uri);
-    return new Promise(async (resolve, reject) => {
-      this.doGetStat(_uri, 1)
-        .then((stat) => {
-          if (stat) {
-            resolve(stat);
-          } else {
-            reject(FileSystemError.FileNotFound(uri.path));
-          }
-        })
-        .catch((e) => {
-          debugLog.error(e);
-          reject(e);
-        });
-    });
+    try {
+      const stat = await this.doGetStat(_uri, 1);
+      return stat;
+    } catch (e) {
+      getDebugLogger().error(e);
+      throw e;
+    }
   }
 
   async readDirectory(uri: UriComponents): Promise<[string, FileType][]> {
@@ -205,7 +193,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
     try {
       await writeFileAtomic(FileUri.fsPath(new URI(_uri)), buffer);
     } catch (e) {
-      debugLog.warn('writeFileAtomicSync 出错，使用 fs', e);
+      getDebugLogger().warn('writeFileAtomicSync 出错，使用 fs', e);
       await fse.writeFile(FileUri.fsPath(new URI(_uri)), buffer);
     }
   }
@@ -221,7 +209,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
       throw FileSystemError.FileNotFound(uri.path);
     }
     if (!isUndefined(options.recursive)) {
-      debugLog.warn(`DiskFileSystemProvider not support options.recursive!`);
+      getDebugLogger().warn(`DiskFileSystemProvider not support options.recursive!`);
     }
     // Windows 10.
     // Deleting an empty directory throws `EPERM error` instead of `unlinkDir`.
@@ -313,7 +301,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
       const idx = watcherExcludes.findIndex((v) => v === UNIX_DEFAULT_NODE_MODULES_EXCLUDE);
       watcherExcludes = watcherExcludes.splice(idx, 1, WINDOWS_DEFAULT_NODE_MODULES_EXCLUDE);
     }
-    debugLog.info('set watch file exclude:', watcherExcludes);
+    getDebugLogger().info('set watch file exclude:', watcherExcludes);
     this.watchFileExcludes = watcherExcludes;
     this.watchFileExcludesMatcherList = watcherExcludes.map((pattern) => parse(pattern));
   }

@@ -8,7 +8,6 @@ import { BreakpointWidgetInputFocus, DebugCallStackItemTypeKey } from './context
 import { DebugConfigurationManager } from './debug-configuration-manager';
 import { DebugContribution } from './debug-contribution';
 import { injectDebugPreferences } from './debug-preferences';
-import { DebugResourceResolverContribution } from './debug-resource';
 import { DebugService } from './debug-service';
 import { DebugSessionContribution, DebugSessionContributionRegistry, DebugSessionContributionRegistryImpl, DebugSessionFactory, DefaultDebugSessionFactory } from './debug-session-contribution';
 import { DebugSessionManager } from './debug-session-manager';
@@ -93,7 +92,6 @@ export class DebugModule extends BrowserModule {
     },
     // contributions
     LaunchPreferencesContribution,
-    DebugResourceResolverContribution,
     DebugContribution,
     DebugConsoleContribution,
     VariablesPanelContribution,
@@ -127,7 +125,6 @@ export * from './debug-configuration-manager';
 export * from './debug-configuration-model';
 export * from './debug-contribution';
 export * from './debug-preferences';
-export * from './debug-resource';
 export * from './debug-schema-updater';
 export * from './debug-session';
 export * from './debug-session-connection';

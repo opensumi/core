@@ -15,7 +15,6 @@ export * from './utils';
 export * from './uuid'
 export * from './types';
 export * from './application-props';
-export * from './resource';
 export * from './application-error';
 export * from './cancellation';
 export * from './functional';

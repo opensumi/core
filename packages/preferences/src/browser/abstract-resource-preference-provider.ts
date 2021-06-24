@@ -1,6 +1,6 @@
 import * as jsoncparser from 'jsonc-parser';
 import { Injectable, Autowired } from '@ali/common-di';
-import { JSONUtils, URI, ResourceProvider, Disposable, isUndefined, PreferenceProviderDataChanges, ILogger, IResolvedPreferences, Throttler } from '@ali/ide-core-browser';
+import { JSONUtils, URI, Disposable, isUndefined, PreferenceProviderDataChanges, ILogger, IResolvedPreferences, Throttler } from '@ali/ide-core-browser';
 import {
   PreferenceProvider,
   PreferenceSchemaProvider,
@@ -8,7 +8,8 @@ import {
   PreferenceProviderDataChange,
   PreferenceConfigurations,
 } from '@ali/ide-core-browser';
-import { IPreferenceTask } from '../common';
+import { IPreferenceTask, USER_STORAGE_SCHEME } from '../common';
+import { FILE_SCHEME, IFileServiceClient } from '@ali/ide-file-service';
 
 // vscode 对语言的setting是根据这种格式来的
 // "[json]": { "editor.formatter": "xxxx" }
@@ -24,14 +25,14 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     languageSpecific: {},
   };
 
-  @Autowired(ResourceProvider)
-  protected readonly resourceProvider: ResourceProvider;
-
   @Autowired(PreferenceSchemaProvider)
   protected readonly schemaProvider: PreferenceSchemaProvider;
 
   @Autowired(PreferenceConfigurations)
   protected readonly configurations: PreferenceConfigurations;
+
+  @Autowired(IFileServiceClient)
+  protected readonly fileSystem: IFileServiceClient;
 
   @Autowired(ILogger)
   private logger: ILogger;
@@ -41,27 +42,38 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
 
   constructor() {
     super();
-    this.init();
+    this.listen();
+  }
+
+  protected listen() {
+    if (this.fileSystem.handlesScheme(FILE_SCHEME) && this.fileSystem.handlesScheme(USER_STORAGE_SCHEME)) {
+      this.init();
+    } else {
+      const disposable = this.fileSystem.onFileProviderChanged((scheme: string[]) => {
+        if (this.fileSystem.handlesScheme(FILE_SCHEME) && this.fileSystem.handlesScheme(USER_STORAGE_SCHEME)) {
+          this.init();
+          disposable.dispose();
+        }
+      });
+    }
   }
 
   protected async init(): Promise<void> {
     const uri = this.getUri();
-    this.resource = this.resourceProvider(uri);
+    this.resource = this.fileSystem.getFileStat(uri.toString());
     // 尝试读取preferences初始内容
     this.readPreferences()
       .then(() => this._ready.resolve())
       .catch(() => this._ready.resolve());
 
     const resource = await this.resource;
-    if (resource.whenReady) {
-      await resource.whenReady;
-    }
-    this.toDispose.push(resource);
-    if (resource.onDidChangeContents) {
+    if (resource) {
+      const watcher = await this.fileSystem.watchFileChanges(uri);
       // 配置文件改变时，重新读取配置
-      this.toDispose.push(resource.onDidChangeContents(() => {
+      this.toDispose.push(watcher);
+      watcher.onFilesChanged((e) => {
         return this.readPreferences();
-      }));
+      });
     }
     this.toDispose.push(Disposable.create(() => this.reset()));
   }
@@ -108,28 +120,30 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
   }
 
   async resolvePreferenceTasks(tasks: IPreferenceTask[]) {
-    const resource = await this.resource;
+    const uri = this.getUri();
+    // 读取配置时同时更新一下资源信息，防止写入时对异步写入情况的错误判断
+    this.resource = this.fileSystem.getFileStat(uri.toString());
+    let resource = await this.resource;
     let content = ((await this.readContents()) || '').trim();
 
     // 将多次配置修改合并为一次文件内容变更
     for (const task of tasks) {
       const { path, value } = task;
-      if (!resource.saveContents) {
-        return false;
-      }
-      if (!content && value === undefined) {
+      if ((!content || path.length === 0) && isUndefined(value)) {
         continue;
       }
-      if (path.length || value !== undefined) {
-        const formattingOptions = { tabSize: 2, insertSpaces: true, eol: '' };
-        const edits = jsoncparser.modify(content, path, value, { formattingOptions });
-        content = jsoncparser.applyEdits(content, edits);
-      }
+      const formattingOptions = { tabSize: 2, insertSpaces: true, eol: '' };
+      const edits = jsoncparser.modify(content, path, value, { formattingOptions });
+      content = jsoncparser.applyEdits(content, edits);
     }
 
     try {
-      await resource.saveContents!(content);
-      await this.readPreferences();
+      if (!resource) {
+        // 当资源不存在又需要写入数据时，创建对应文件
+        resource = await this.fileSystem.createFile(uri.toString());
+      }
+      await this.fileSystem.setContent(resource, content);
+      await this.readPreferences(content);
       return true;
     } catch (e) {
       this.logger.error(`${e.toString()}`);
@@ -167,8 +181,8 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
   }
 
   protected loaded = false;
-  protected async readPreferences(): Promise<void> {
-    const newContent = await this.readContents();
+  protected async readPreferences(content?: string): Promise<void> {
+    const newContent = content || await this.readContents();
     this.loaded = !isUndefined(newContent);
     const newPrefs = newContent ? this.getParsedContent(newContent) : {default: {}, languageSpecific: {}};
     this.handlePreferenceChanges(newPrefs);
@@ -176,8 +190,9 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
 
   protected async readContents(): Promise<string | undefined> {
     try {
-      const resource = await this.resource;
-      return await resource.readContents();
+      const uri = this.getUri();
+      const { content } = await this.fileSystem.readFile(uri.toString());
+      return content.toString();
     } catch {
       return undefined;
     }
@@ -216,7 +231,7 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     if (this.configurations.getPath(this.getUri()) !== this.configurations.getPaths()[0]) {
       return true;
     }
-    return preferenceValue === undefined || this.schemaProvider.validate(preferenceName, preferenceValue).valid;
+    return isUndefined(preferenceValue) || this.schemaProvider.validate(preferenceName, preferenceValue).valid;
   }
 
   protected parse(content: string): any {
@@ -280,8 +295,8 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
           continue;
         }
       }
-      if ((newValue === undefined && oldValue !== newValue)
-        || (oldValue === undefined && newValue !== oldValue) // JSONUtils.deepEqual() does not support handling `undefined`
+      if ((isUndefined(newValue) && oldValue !== newValue)
+        || (isUndefined(oldValue) && newValue !== oldValue) // JSONUtils.deepEqual() does not support handling `undefined`
         || !JSONUtils.deepEqual(oldValue, newValue)) {
         changes[prefName] = {
           preferenceName: prefName, newValue, oldValue, scope: this.getScope(), domain: this.getDomain(),

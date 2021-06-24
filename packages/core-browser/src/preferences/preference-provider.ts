@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { IDisposable, DisposableCollection, Emitter, Event, URI, Deferred, JSONUtils, JSONValue, Resource, isEmptyObject } from '@ali/ide-core-common';
+import { IDisposable, DisposableCollection, Emitter, Event, URI, Deferred, JSONUtils, JSONValue, isEmptyObject, FileStat } from '@ali/ide-core-common';
 import { PreferenceScope } from '@ali/ide-core-common/lib/preferences/preference-scope';
 import { getExternalPreferenceProvider, getAllExternalProviders } from './early-preferences';
 export interface IResolvedPreferences {
@@ -67,7 +67,7 @@ export abstract class PreferenceProvider implements IDisposable {
 
   protected readonly _ready = new Deferred<void>();
 
-  public resource: Promise<Resource>;
+  public resource: Promise<FileStat | void>;
 
   private _scope: PreferenceScope;
 
@@ -323,7 +323,7 @@ export abstract class PreferenceProvider implements IDisposable {
         }
       }
     }
-    return this.doSetPreference(preferenceName, value, resourceUri, language);
+    return await this.doSetPreference(preferenceName, value, resourceUri, language);
   }
 
   protected abstract doSetPreference(preferenceName: string, value: any, resourceUri?: string, language?: string): Promise<boolean>;

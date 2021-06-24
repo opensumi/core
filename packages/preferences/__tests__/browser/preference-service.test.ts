@@ -1,35 +1,23 @@
-import { BrowserModule, Domain, PreferenceContribution, URI, FileUri, PreferenceProviderProvider, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, injectPreferenceConfigurations, injectPreferenceSchemaProvider } from '@ali/ide-core-browser';
+import { BrowserModule, Domain, PreferenceContribution, URI, FileUri, PreferenceProviderProvider, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, injectPreferenceConfigurations, injectPreferenceSchemaProvider, IEventBus } from '@ali/ide-core-browser';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IFileServiceClient, IDiskFileProvider, IShadowFileProvider } from '@ali/ide-file-service';
+import { IFileServiceClient, IDiskFileProvider } from '@ali/ide-file-service';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { PreferencesModule } from '@ali/ide-preferences/lib/browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { Injectable, Provider } from '@ali/common-di';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
-import { FileResourceResolver } from '@ali/ide-file-service/lib/browser/file-service-contribution';
+import { FileServiceContribution } from '@ali/ide-file-service/lib/browser/file-service-contribution';
 import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
-import { ShadowFileSystemProvider } from '@ali/ide-file-service/lib/browser/shadow-file-system.provider';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs-extra';
+import { UserStorageContribution } from '@ali/ide-preferences/lib/browser/userstorage';
+import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
 
 @Injectable()
 export class AddonModule extends BrowserModule {
   providers: Provider[] = [
     EditorPreferenceContribution,
-    FileResourceResolver,
-    {
-      token: IShadowFileProvider,
-      useClass: ShadowFileSystemProvider,
-    },
-    {
-      token: IDiskFileProvider,
-      useClass: DiskFileSystemProvider,
-    },
-    {
-      token: IFileServiceClient,
-      useClass: FileServiceClient,
-    },
+    UserStorageContribution,
   ];
 }
 
@@ -77,9 +65,44 @@ describe('PreferenceService should be work', () => {
     });
 
     injector = createBrowserInjector([
+      FileServiceClientModule,
       AddonModule,
       PreferencesModule,
     ]);
+
+    injector.overrideProviders({
+      token: IWorkspaceService,
+      useValue: {
+        isMultiRootWorkspaceOpened: false,
+        workspace: {
+          uri: root.toString(),
+          isDirectory: true,
+          lastModification: (new Date()).getTime(),
+        },
+        roots: Promise.resolve([
+          {
+            uri: root.toString(),
+            isDirectory: true,
+            lastModification: (new Date()).getTime(),
+          },
+        ]),
+        onWorkspaceChanged: () => {},
+        onWorkspaceLocationChanged: () => {},
+        tryGetRoots: () => [
+          {
+            uri: root!.toString(),
+            isDirectory: true,
+            lastModification: (new Date()).getTime(),
+          },
+        ],
+      },
+    });
+
+    injector.overrideProviders({
+      token: IDiskFileProvider,
+      useClass: DiskFileSystemProvider,
+    });
+
     // 覆盖文件系统中的getCurrentUserHome方法，便于用户设置测试
     injector.mock(IFileServiceClient, 'getCurrentUserHome', () => {
       return {
@@ -88,6 +111,8 @@ describe('PreferenceService should be work', () => {
         lastModification: new Date().getTime(),
       };
     });
+
+    injector.mock(IEventBus, 'fireAndAwait', () => {});
 
     mockWorkspaceService = {
       roots: [root.toString()],
@@ -132,7 +157,16 @@ describe('PreferenceService should be work', () => {
       useClass: PreferenceServiceImpl,
     });
 
+    // PreferenceService 的初始化时机要更早
     preferenceService = injector.get(PreferenceService);
+
+    const fileServiceContribution = injector.get(FileServiceContribution);
+    const userStorageContribution = injector.get(UserStorageContribution);
+
+    await fileServiceContribution.initialize();
+    await userStorageContribution.initialize();
+
+    await preferenceService.ready;
 
     done();
   });
@@ -147,7 +181,7 @@ describe('PreferenceService should be work', () => {
 
   describe('01 #Init', () => {
 
-    it('should have enough API', async () => {
+    it('should have enough API', () => {
       expect(typeof preferenceService.ready).toBe('object');
       expect(typeof preferenceService.dispose).toBe('function');
       expect(typeof preferenceService.get).toBe('function');
@@ -164,7 +198,6 @@ describe('PreferenceService should be work', () => {
 
     it('preferenceChanged event should emit once while setting preference', async (done) => {
       const testPreferenceName = 'editor.fontSize';
-      await preferenceService.ready;
       const dispose = preferenceService.onPreferenceChanged((change) => {
         // 在文件夹目录情况下，设置配置仅会触发一次工作区配置变化事件
         if (change.preferenceName === testPreferenceName && change.scope === PreferenceScope.Workspace) {

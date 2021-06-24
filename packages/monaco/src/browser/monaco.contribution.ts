@@ -144,7 +144,6 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
 
     // 注册/拦截 Monaco 内置的菜单
     this.patchMonacoInternalMenus();
-
   }
 
   onDidStart() {

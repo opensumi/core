@@ -15,10 +15,10 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/filesystem/src/common/filesystem.ts
 
-import { FileSystemWatcherServer, DidFilesChangedParams, WatchOptions, TextDocumentContentChangeEvent } from '@ali/ide-core-common'
+import { FileSystemWatcherServer, DidFilesChangedParams, WatchOptions } from '@ali/ide-core-common'
 import { ApplicationError, Event, IDisposable, Uri, URI, isUndefinedOrNull, hasProperty, isFunction, FileChangeEvent } from '@ali/ide-core-common';
 import { FileSystemProvider, FileStat } from '@ali/ide-core-common/lib/types/file';
-
+import { Range } from 'vscode-languageserver-types';
 export { FileSystemProviderCapabilities, FileSystemProvider, FileType, FileStat } from '@ali/ide-core-common/lib/types/file';
 export * from '@ali/ide-core-common/lib/types/file-watch';
 
@@ -27,6 +27,22 @@ export const IDiskFileProvider = Symbol('IDiskFileProvider');
 export const IShadowFileProvider = Symbol('IShadowFileProvider');
 
 export const IFileService = Symbol('IFileService');
+
+
+export interface TextDocumentContentChangeEvent {
+  /**
+   * The range of the document that changed.
+   */
+  range?: Range;
+  /**
+   * The length of the range that got replaced.
+   */
+  rangeLength?: number;
+  /**
+   * The new text of the document.
+   */
+  text: string;
+}
 
 export interface IFileService extends FileSystemWatcherServer {
 
@@ -343,3 +359,5 @@ export function notEmpty<T>(value: T | undefined): value is T {
 export function isErrnoException(error: any | NodeJS.ErrnoException): error is NodeJS.ErrnoException {
   return (error as NodeJS.ErrnoException).code !== undefined && (error as NodeJS.ErrnoException).errno !== undefined;
 }
+
+export const FILE_SCHEME = 'file';

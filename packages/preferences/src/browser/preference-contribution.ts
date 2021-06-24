@@ -25,7 +25,6 @@ import {
   IDisposable,
   addElement,
   Command,
-  ResourceProvider,
   getIcon,
   isString,
   ISettingSection,
@@ -121,9 +120,6 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
 
   @Autowired(IPreferenceSettingsService)
   private readonly preferenceService: PreferenceSettingsService;
-
-  @Autowired(ResourceProvider)
-  protected readonly resourceProvider: ResourceProvider;
 
   @Autowired(SettingContribution)
   private readonly contributions: ContributionProvider<SettingContribution>;

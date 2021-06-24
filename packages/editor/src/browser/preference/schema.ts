@@ -1104,6 +1104,11 @@ const customEditorSchema: PreferenceSchemaProperties = {
     default: true,
     description: '%editor.configuration.preview%',
   },
+  'editor.wrapTab': {
+    type: 'boolean',
+    default: true,
+    description: '%editor.configuration.wrapTab%',
+  },
   'editor.minimap': {
     type: 'boolean',
     default: false,

@@ -2,12 +2,14 @@ import { ElectronMainApp } from '@ali/ide-core-electron-main';
 import { URI } from '@ali/ide-core-common';
 import { join } from 'path';
 // import { ElectronMainWorkspaceModule } from '@ali/ide-workspace/lib/electron-main';
+import { WebviewElectronMainModule } from '@ali/ide-webview/lib/electron-main';
 
 const electronApp = new ElectronMainApp({
   browserNodeIntegrated: false,
   browserUrl: URI.file(join(__dirname, '../browser/index.html')).toString(),
   modules: [
     // ElectronMainWorkspaceModule,
+    WebviewElectronMainModule,
   ],
   nodeEntry: join(__dirname, '../node/index.js'),
   extensionEntry: join(__dirname, '../extension/index.js'),

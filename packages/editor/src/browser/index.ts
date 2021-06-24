@@ -137,7 +137,7 @@ export class EditorClientAppContribution implements ClientAppContribution {
   @Autowired(BrowserEditorContribution)
   private readonly contributions: ContributionProvider<BrowserEditorContribution>;
 
-  async onStart() {
+  async initialize() {
     for (const contribution of this.contributions.getContributions()) {
       if (contribution.registerResource) {
         contribution.registerResource(this.resourceService);

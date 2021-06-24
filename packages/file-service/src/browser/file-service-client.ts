@@ -1,8 +1,8 @@
 
 import { Injectable, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
-import { FileStat, FileDeleteOptions, FileMoveOptions, IBrowserFileSystemRegistry, IFileSystemProvider, FileSystemProvider, FileSystemError, FileAccess, IDiskFileProvider, containsExtraFileMethod } from '../common';
+import { FileStat, FileDeleteOptions, FileMoveOptions, IBrowserFileSystemRegistry, IFileSystemProvider, FileSystemProvider, FileSystemError, FileAccess, IDiskFileProvider, containsExtraFileMethod, FILE_SCHEME } from '../common';
 import { TextDocument } from 'vscode-languageserver-types';
-import { URI, Emitter, Event, isElectronRenderer, IEventBus, FileUri, DisposableCollection, IDisposable, TextDocumentContentChangeEvent } from '@ali/ide-core-common';
+import { URI, Emitter, Event, isElectronRenderer, IEventBus, FileUri, DisposableCollection, IDisposable } from '@ali/ide-core-common';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import { Uri } from '@ali/ide-core-common';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
@@ -15,6 +15,7 @@ import {
   FileCreateOptions,
   FileCopyOptions,
   IFileServiceWatcher,
+  TextDocumentContentChangeEvent,
 } from '../common';
 import { FileSystemWatcher } from './watcher';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
@@ -43,7 +44,7 @@ export class BrowserFileSystemRegistryImpl implements IBrowserFileSystemRegistry
 @Injectable()
 export class FileServiceClient implements IFileServiceClient {
   protected readonly onFileChangedEmitter = new Emitter<FileChangeEvent>();
-  readonly onFilesChanged: Event<FileChangeEvent> = this.onFileChangedEmitter.event;
+  protected readonly onFileProviderChangedEmitter = new Emitter<string[]>();
   protected filesExcludesMatcherList: ParsedPattern[] = [];
 
   protected watcherId: number = 0;
@@ -79,7 +80,13 @@ export class FileServiceClient implements IFileServiceClient {
 
   corePreferences: CorePreferences;
 
-  constructor() {}
+  get onFilesChanged(): Event<FileChangeEvent> {
+    return this.onFileChangedEmitter.event;
+  }
+
+  get onFileProviderChanged(): Event<string[]> {
+    return this.onFileProviderChangedEmitter.event;
+  }
 
   handlesScheme(scheme: string) {
     return this.registry.providers.has(scheme) || this.fsProviders.has(scheme);
@@ -113,6 +120,9 @@ export class FileServiceClient implements IFileServiceClient {
     const provider = await this.getProvider(_uri.scheme);
     try {
       const stat = await provider.stat(_uri.codeUri);
+      if (!stat) {
+        throw FileSystemError.FileNotFound(_uri.codeUri.toString(), 'File not found.');
+      }
       return this.filterStat(stat, withChildren);
     } catch (err) {
       if (FileSystemError.FileNotFound.is(err)) {
@@ -126,6 +136,9 @@ export class FileServiceClient implements IFileServiceClient {
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
 
+    if (!stat) {
+      throw FileSystemError.FileNotFound(file.uri, 'File not found.');
+    }
     if (stat.isDirectory) {
       throw FileSystemError.FileIsDirectory(file.uri, 'Cannot set the content.');
     }
@@ -141,6 +154,9 @@ export class FileServiceClient implements IFileServiceClient {
     const _uri = this.convertUri(file.uri);
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
+    if (!stat) {
+      throw FileSystemError.FileNotFound(file.uri, 'File not found.');
+    }
     if (stat.isDirectory) {
       throw FileSystemError.FileIsDirectory(file.uri, 'Cannot set the content.');
     }
@@ -150,11 +166,13 @@ export class FileServiceClient implements IFileServiceClient {
     if (contentChanges.length === 0) {
       return stat;
     }
-    const content = await provider.readFile(_uri.codeUri);
-    // TODO: encoding & buffer support
+    const content = await provider.readFile(_uri.codeUri) as Uint8Array;
     const newContent = this.applyContentChanges(BinaryBuffer.wrap(content).toString(options?.encoding), contentChanges);
     await provider.writeFile(_uri.codeUri, BinaryBuffer.fromString(newContent).buffer, { create: false, overwrite: true, encoding: options?.encoding });
     const newStat = await provider.stat(_uri.codeUri);
+    if (!newStat) {
+      throw FileSystemError.FileNotFound(_uri.codeUri.toString(), 'File not found.');
+    }
     return newStat;
   }
 
@@ -181,8 +199,8 @@ export class FileServiceClient implements IFileServiceClient {
     if (result) {
       return result;
     }
-
-    return await provider.stat(_uri.codeUri);
+    const stat = await provider.stat(_uri.codeUri);
+    return stat as FileStat;
   }
 
   async move(sourceUri: string, targetUri: string, options?: FileMoveOptions): Promise<FileStat> {
@@ -195,7 +213,9 @@ export class FileServiceClient implements IFileServiceClient {
     if (result) {
       return result;
     }
-    return await provider.stat(_targetUri.codeUri);
+
+    const stat = await provider.stat(_targetUri.codeUri);
+    return stat as FileStat;
   }
 
   async copy(sourceUri: string, targetUri: string, options?: FileCopyOptions): Promise<FileStat> {
@@ -218,7 +238,8 @@ export class FileServiceClient implements IFileServiceClient {
     if (result) {
       return result;
     }
-    return await provider.stat(_targetUri.codeUri);
+    const stat = await provider.stat(_targetUri.codeUri);
+    return stat as FileStat;
   }
 
   async getFsPath(uri: string) {
@@ -267,12 +288,12 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   async setWatchFileExcludes(excludes: string[]) {
-    const provider = await this.getProvider('file');
+    const provider = await this.getProvider(FILE_SCHEME);
     return await provider.setWatchFileExcludes(excludes);
   }
 
   async getWatchFileExcludes() {
-    const provider = await this.getProvider('file');
+    const provider = await this.getProvider(FILE_SCHEME);
     return await provider.getWatchFileExcludes();
   }
 
@@ -301,7 +322,7 @@ export class FileServiceClient implements IFileServiceClient {
   async delete(uriString: string, options?: FileDeleteOptions) {
     if (isElectronRenderer() && options && options.moveToTrash) {
       const uri = new URI(uriString);
-      if (uri.scheme === 'file') {
+      if (uri.scheme === FILE_SCHEME) {
         return (this.injector.get(IElectronMainUIService) as IElectronMainUIService).moveToTrash(uri.codeUri.fsPath);
       }
     }
@@ -338,6 +359,7 @@ export class FileServiceClient implements IFileServiceClient {
       },
     });
     this._providerChanged.add(scheme);
+    this.onFileProviderChangedEmitter.fire(Array.from(this._providerChanged));
     return this.toDisposable;
   }
 
@@ -366,7 +388,7 @@ export class FileServiceClient implements IFileServiceClient {
 
   // TODO: file scheme only?
   async getCurrentUserHome() {
-    const provider = await this.getProvider('file');
+    const provider = await this.getProvider(FILE_SCHEME);
     return provider.getCurrentUserHome();
   }
 
