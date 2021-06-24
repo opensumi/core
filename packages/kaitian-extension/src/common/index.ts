@@ -104,7 +104,7 @@ export abstract class IExtCommandManagement {
  */
 export abstract class AbstractExtensionManagementService {
   /**
-   * @deprecated 建议直接用 getExtensions 后自行 map#toJSON 即可
+   * @deprecated 建议直接用 AbstractExtInstanceManagementService#getExtensionInstances 后自行 map#toJSON 即可
    */
   abstract getAllExtensionJson(): IExtensionProps[];
 
