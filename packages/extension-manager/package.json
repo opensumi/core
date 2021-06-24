@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-extension-manager",
-  "version": "2.5.2",
+  "version": "2.5.3",
   "files": [
     "lib"
   ],
@@ -20,17 +20,17 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-components": "2.5.2",
-    "@ali/ide-core-common": "2.5.2",
-    "@ali/ide-core-node": "2.5.2",
-    "@ali/ide-editor": "2.5.2",
+    "@ali/ide-components": "2.5.3",
+    "@ali/ide-core-common": "2.5.3",
+    "@ali/ide-core-node": "2.5.3",
+    "@ali/ide-editor": "2.5.3",
     "@ali/ide-extension-installer": "^2.1.0",
-    "@ali/ide-kaitian-extension": "2.5.2",
-    "@ali/ide-main-layout": "2.5.2",
-    "@ali/ide-markdown": "2.5.2",
-    "@ali/ide-overlay": "2.5.2",
-    "@ali/ide-static-resource": "2.5.2",
-    "@ali/ide-theme": "2.5.2",
+    "@ali/ide-kaitian-extension": "2.5.3",
+    "@ali/ide-main-layout": "2.5.3",
+    "@ali/ide-markdown": "2.5.3",
+    "@ali/ide-overlay": "2.5.3",
+    "@ali/ide-static-resource": "2.5.3",
+    "@ali/ide-theme": "2.5.3",
     "compare-versions": "^3.5.1",
     "fs-extra": "^8.1.0",
     "lodash.uniqby": "^4.7.0",
@@ -38,8 +38,8 @@
     "urllib": "^2.34.1"
   },
   "devDependencies": {
-    "@ali/ide-components": "2.5.2",
-    "@ali/ide-core-browser": "2.5.2",
+    "@ali/ide-components": "2.5.3",
+    "@ali/ide-core-browser": "2.5.3",
     "@ali/ide-dev-tool": "^1.1.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
