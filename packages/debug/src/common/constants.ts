@@ -7,3 +7,4 @@ export const DEBUG_BREAKPOINTS_ID = 'debug-breakpoints';
 export const DEBUG_WELCOME_ID = 'debug-welcome';
 export const DEBUG_STACK_ID = 'debug-stack';
 export const DEBUG_FLOATING_CLICK_WIDGET = 'debug.overlayWidget.floatingClickWidget';
+export const DEBUG_SCHEME = 'debug';

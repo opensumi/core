@@ -1,4 +1,4 @@
-import { URI, Event, IFileServiceClient as IFileServiceClientToken, IDisposable, TextDocumentContentChangeEvent } from '@ali/ide-core-common';
+import { URI, Event, IFileServiceClient as IFileServiceClientToken, IDisposable } from '@ali/ide-core-common';
 import { FileStat,
   FileMoveOptions,
   FileDeleteOptions,
@@ -6,6 +6,7 @@ import { FileStat,
   FileCreateOptions,
   FileCopyOptions,
   FileSystemProvider,
+  TextDocumentContentChangeEvent,
 } from './files';
 import { IFileServiceWatcher } from './watcher';
 import { DidFilesChangedParams, FileChangeEvent } from '@ali/ide-core-common';
@@ -16,6 +17,8 @@ export const IFileServiceClient = IFileServiceClientToken;
 export interface IFileServiceClient {
 
   onFilesChanged: Event<FileChangeEvent>;
+
+  onFileProviderChanged: Event<string[]>;
 
   registerProvider(scheme: string, provider: FileSystemProvider): IDisposable;
 
@@ -43,9 +46,9 @@ export interface IFileServiceClient {
 
   getFileType(uri: string): Promise<string|undefined>;
 
-  setContent(file: FileStat, content: string | Uint8Array, options?: FileSetContentOptions): Promise<FileStat>;
+  setContent(file: FileStat, content: string | Uint8Array, options?: FileSetContentOptions): Promise<void | FileStat>;
 
-  updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: FileSetContentOptions): Promise<FileStat>;
+  updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: FileSetContentOptions): Promise<void | FileStat>;
 
   createFile(uri: string, options?: FileCreateOptions): Promise<FileStat>;
 

@@ -1,28 +1,24 @@
 import { Injectable } from '@ali/common-di';
 import { enableJSDOM } from '@ali/ide-core-browser/lib/mocks/jsdom';
-const disableJSDOM = enableJSDOM();
-
 import * as path from 'path';
 import * as fs from 'fs-extra';
+import * as os from 'os';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { PreferenceService, ClientAppConfigProvider, FileUri, Disposable, DisposableCollection, ILogger, ResourceProvider, PreferenceScope, injectPreferenceSchemaProvider, DefaultResourceProvider, ILoggerManagerClient } from '@ali/ide-core-browser';
+import { PreferenceService, ClientAppConfigProvider, FileUri, Disposable, DisposableCollection, ILogger, PreferenceScope, ILoggerManagerClient, URI } from '@ali/ide-core-browser';
 import { AppConfig } from '@ali/ide-core-node';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IMessageService } from '@ali/ide-overlay';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { LaunchPreferencesContribution } from '../../src/browser/preferences/launch-preferences-contribution';
-import { FolderPreferenceProvider } from '@ali/ide-preferences/lib/browser/folder-preference-provider';
-import { LaunchFolderPreferenceProvider } from '../../src/browser/preferences/launch-folder-preference-provider';
-import { injectPreferenceProviders, createPreferenceProviders } from '@ali/ide-preferences/lib/browser';
+import { PreferencesModule } from '@ali/ide-preferences/lib/browser';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
-import { IFileServiceClient, FileServicePath, FileStat, IDiskFileProvider, IShadowFileProvider } from '@ali/ide-file-service';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
-import { FileSystemNodeOptions, FileService } from '@ali/ide-file-service/lib/node';
-import { MockUserStorageResolver } from '@ali/ide-preferences/lib/common/mocks';
-import { FileResourceResolver } from '@ali/ide-file-service/lib/browser/file-service-contribution';
+import { IFileServiceClient, IDiskFileProvider } from '@ali/ide-file-service';
+import { FileServiceContribution } from '@ali/ide-file-service/lib/browser/file-service-contribution';
 import { WorkspacePreferences } from '@ali/ide-workspace/lib/browser/workspace-preferences';
 import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
-disableJSDOM();
+import { UserStorageContribution, UserStorageServiceImpl } from '@ali/ide-preferences/lib/browser/userstorage';
+import { IUserStorageService } from '@ali/ide-preferences';
+import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
+import { DebugContribution, DebugModule } from '@ali/ide-debug/lib/browser';
 
 @Injectable()
 export class MockLoggerManagerClient {
@@ -32,7 +28,7 @@ export class MockLoggerManagerClient {
       debug() { },
       error() { },
       verbose() { },
-      warn() {},
+      warn() { },
     };
   }
 }
@@ -379,7 +375,7 @@ describe('Launch Preferences', () => {
 
       const configPaths = Array.isArray(configMode) ? configMode : [configMode];
 
-      const rootPath = path.resolve(__dirname, '..', '..', '..', 'launch-preference-test-temp');
+      const rootPath = path.join(os.tmpdir(), 'launch-preference-test');
       const rootUri = FileUri.create(rootPath).toString();
 
       let injector: MockInjector;
@@ -395,31 +391,34 @@ describe('Launch Preferences', () => {
           uriScheme: 'test',
         });
 
-        fs.removeSync(rootPath);
-        fs.ensureDirSync(rootPath);
-        toTearDown.push(Disposable.create(() => fs.removeSync(rootPath)));
+        await fs.ensureDir(rootPath);
 
         if (settings) {
           for (const configPath of configPaths) {
             const settingsPath = path.resolve(rootPath, configPath, 'settings.json');
-            fs.ensureFileSync(settingsPath);
-            fs.writeFileSync(settingsPath, JSON.stringify(settings), 'utf-8');
+            await fs.ensureFile(settingsPath);
+            await fs.writeJSON(settingsPath, settings);
           }
         }
         if (launch) {
           for (const configPath of configPaths) {
             const launchPath = path.resolve(rootPath, configPath, 'launch.json');
-            fs.ensureFileSync(launchPath);
-            fs.writeFileSync(launchPath, JSON.stringify(launch), 'utf-8');
+            await fs.ensureFile(launchPath);
+            await fs.writeJSON(launchPath, launch);
           }
         }
 
-        injector = createBrowserInjector([]);
+        injector = createBrowserInjector([
+          FileServiceClientModule,
+          PreferencesModule,
+          DebugModule,
+        ]);
 
-        // 注册额外的Folder SectionName，如‘launch’
-        injector.addProviders(LaunchPreferencesContribution);
-
-        injector.addProviders(
+        injector.overrideProviders(
+          {
+            token: IUserStorageService,
+            useClass: UserStorageServiceImpl,
+          },
           {
             token: ILogger,
             useValue: {},
@@ -430,54 +429,20 @@ describe('Launch Preferences', () => {
           },
           {
             token: AppConfig,
-            useValue: {},
-          },
-          {
-            token: 'FileServiceOptions',
-            useValue: FileSystemNodeOptions.DEFAULT,
+            useValue: {
+              preferenceDirName: '.kaitian',
+            },
           },
           {
             token: IDiskFileProvider,
             useClass: DiskFileSystemProvider,
           },
           {
-            token: IShadowFileProvider,
-            useValue: {},
-          },
-          {
-            token: FileServicePath,
-            useClass: FileService,
-          },
-          {
-            token: IFileServiceClient,
-            useClass: FileServiceClient,
-          },
-          {
             token: ILoggerManagerClient,
             useClass: MockLoggerManagerClient,
           },
-          {
-            token: ResourceProvider,
-            useFactory: () => {
-              return (uri) => {
-                return injector.get(DefaultResourceProvider).get(uri);
-              };
-            },
-          },
-          MockUserStorageResolver,
-          FileResourceResolver,
+          UserStorageContribution,
         );
-        // TODO: 为了mock实例提前获取
-        injector.get(FileServicePath);
-        // 替换文件监听函数实现
-        injector.mock(FileServicePath, 'watchFileChanges', () => { });
-        const fsClient: IFileServiceClient = injector.get(IFileServiceClient);
-        const diskProvider = injector.get(IDiskFileProvider);
-        const shadowProvider = injector.get(IShadowFileProvider);
-        fsClient.registerProvider('file', diskProvider);
-        fsClient.registerProvider('debug', shadowProvider);
-
-        injectPreferenceSchemaProvider(injector);
 
         injector.addProviders({
           token: IWorkspaceService,
@@ -485,59 +450,71 @@ describe('Launch Preferences', () => {
         }, {
           token: WorkspacePreferences,
           useValue: {
-            onPreferenceChanged: () => {},
+            onPreferenceChanged: () => { },
           },
         });
 
-        // TODO: 为了mock实例提前获取
-        injector.get(IWorkspaceService);
-
-        injector.mock(IWorkspaceService, 'getDefaultWorkspacePath', () => rootUri);
-        injector.mock(IWorkspaceService, 'roots', [{
-          uri: rootUri,
-          lastModification: 0,
-          isDirectory: true,
-        }] as FileStat[]);
-        injector.mock(IWorkspaceService, 'tryGetRoots', () => [{
-          uri: rootUri,
-          lastModification: 0,
-          isDirectory: true,
-        }] as FileStat[]);
-        injector.mock(IWorkspaceService, 'workspace', {
-          uri: rootUri,
-          lastModification: 0,
-          isDirectory: true,
-        } as FileStat);
-
-        // 引入USER/WORKSPACE?FOLDER配置
-        injector.addProviders(
-          ...createPreferenceProviders(),
-        );
-        injectPreferenceProviders(injector);
-
-        // 注册launch.json配置文件定义
-        injector.addProviders({
-          token: FolderPreferenceProvider,
-          useClass: LaunchFolderPreferenceProvider,
-          dropdownForTag: true,
-          tag: 'launch',
+        injector.overrideProviders({
+          token: IWorkspaceService,
+          useValue: {
+            isMultiRootWorkspaceOpened: false,
+            workspace: {
+              uri: rootUri,
+              isDirectory: true,
+              lastModification: (new Date()).getTime(),
+            },
+            roots: Promise.resolve([
+              {
+                uri: rootUri,
+                isDirectory: true,
+                lastModification: (new Date()).getTime(),
+              },
+            ]),
+            onWorkspaceChanged: () => {},
+            onWorkspaceLocationChanged: () => {},
+            tryGetRoots: () => [
+              {
+                uri: rootUri,
+                isDirectory: true,
+                lastModification: (new Date()).getTime(),
+              },
+            ],
+          },
         });
 
-        const impl = injector.get(PreferenceService);
-        toTearDown.push(impl);
+        // 覆盖文件系统中的getCurrentUserHome方法，便于用户设置测试
+        injector.mock(IFileServiceClient, 'getCurrentUserHome', () => {
+          return {
+            uri: new URI(rootPath).resolve('userhome').toString(),
+            isDirectory: true,
+            lastModification: new Date().getTime(),
+          };
+        });
 
-        preferences = impl;
-        toTearDown.push(Disposable.create(() => preferences = undefined!));
+        preferences = injector.get(PreferenceService);
+
+        const fileServiceContribution = injector.get(FileServiceContribution);
+        const userStorageContribution = injector.get(UserStorageContribution);
+        const debugContribution = injector.get(DebugContribution);
+
+        await fileServiceContribution.initialize();
+        await userStorageContribution.initialize();
+        await debugContribution.initialize();
 
         await preferences.ready;
-        await injector.get(IWorkspaceService).roots;
+        toTearDown.push(Disposable.create(() => injector.disposeAll()));
       };
 
-      beforeEach(() => {
-        return initializeInjector();
+      beforeEach(async (done) => {
+        await initializeInjector();
+        done();
       });
 
-      afterEach(() => toTearDown.dispose());
+      afterEach(async (done) => {
+        await fs.remove(rootPath);
+        toTearDown.dispose();
+        done();
+      });
 
       const settingsLaunch = settings ? settings.launch : undefined;
 
@@ -697,9 +674,6 @@ describe('Launch Preferences', () => {
           expect(actualWorkspaceValue).toEqual(expected);
         });
       }
-
     });
-
   }
-
 });

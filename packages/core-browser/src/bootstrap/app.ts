@@ -13,10 +13,6 @@ import {
   isOSX, ContributionProvider,
   MaybePromise,
   createContributionProvider,
-  DefaultResourceProvider,
-  ResourceProvider,
-  ResourceResolverContribution,
-  InMemoryResourceResolver,
   StorageProvider,
   DefaultStorageProvider,
   StorageResolverContribution,
@@ -292,9 +288,6 @@ export class ClientApp implements IClientApp {
     // 注册PreferenceService
     this.injectPreferenceService(this.injector, defaultPreferences);
 
-    // 注册资源处理服务
-    this.injectResourceProvider(this.injector);
-
     // 注册存储服务
     this.injectStorageProvider(this.injector);
 
@@ -310,6 +303,7 @@ export class ClientApp implements IClientApp {
         }
       }
     }
+
   }
 
   get contributions(): ClientAppContribution[] {
@@ -509,24 +503,6 @@ export class ClientApp implements IClientApp {
         defaultPreference.setPreference(key, defaultPreferences[key]);
       }
     }
-  }
-
-  injectResourceProvider(injector: Injector) {
-    injector.addProviders({
-      token: DefaultResourceProvider,
-      useClass: DefaultResourceProvider,
-    });
-    injector.addProviders({
-      token: ResourceProvider,
-      useFactory: () => {
-        return (uri) => {
-          return injector.get(DefaultResourceProvider).get(uri);
-        };
-      },
-    });
-    createContributionProvider(injector, ResourceResolverContribution);
-    // 添加默认的内存资源处理contribution
-    injector.addProviders(InMemoryResourceResolver);
   }
 
   injectStorageProvider(injector: Injector) {

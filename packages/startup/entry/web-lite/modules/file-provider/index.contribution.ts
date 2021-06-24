@@ -1,16 +1,13 @@
 import { Autowired } from '@ali/common-di';
 import {
   Domain,
-  ResourceResolverContribution,
   URI,
   FsProviderContribution,
   AppConfig,
 } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { FileResource } from '@ali/ide-file-service/lib/browser/file-service-contribution';
 import { BrowserFsProvider, AbstractHttpFileService } from './browser-fs-provider';
 import { IFileServiceClient } from '@ali/ide-file-service';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { StaticResourceContribution, StaticResourceService } from '@ali/ide-static-resource/lib/browser/static.definition';
 import { IWorkspaceService } from '@ali/ide-workspace';
 
@@ -19,11 +16,8 @@ import { IMetaService } from '../../services/meta-service/base';
 const EXPRESS_SERVER_PATH = window.location.href;
 
 // file 文件资源 远程读取
-@Domain(ResourceResolverContribution, StaticResourceContribution, FsProviderContribution)
-export class FileProviderContribution implements ResourceResolverContribution, StaticResourceContribution, FsProviderContribution {
-
-  @Autowired(IFileServiceClient)
-  private readonly fileSystem: FileServiceClient;
+@Domain(StaticResourceContribution, FsProviderContribution)
+export class FileProviderContribution implements StaticResourceContribution, FsProviderContribution {
 
   @Autowired(AbstractHttpFileService)
   private httpImpl: AbstractHttpFileService;
@@ -36,15 +30,6 @@ export class FileProviderContribution implements ResourceResolverContribution, S
 
   @Autowired(IMetaService)
   private readonly metaService: IMetaService;
-
-  async resolve(uri: URI): Promise<FileResource | void> {
-    if (uri.scheme !== 'file') {
-      return ;
-    }
-    const resource = new FileResource(uri, this.fileSystem);
-    await resource.init();
-    return resource;
-  }
 
   registerProvider(registry: IFileServiceClient) {
     // 处理 file 协议的文件部分

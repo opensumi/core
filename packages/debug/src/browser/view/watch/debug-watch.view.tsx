@@ -27,16 +27,17 @@ export const DebugWatchView = observer(({
   const debugWatchModelService = useInjectable<DebugWatchModelService>(DebugWatchModelService);
 
   React.useEffect(() => {
-    initTreeModel();
+    return initTreeModel();
   }, []);
 
-  const initTreeModel = async () => {
+  const initTreeModel = () => {
     const treeModel = debugWatchModelService.treeModel;
     if (treeModel) {
-      await treeModel.root.ensureLoaded();
-      setModel(treeModel);
+      treeModel.root.ensureLoaded().then(() => {
+        setModel(treeModel);
+      });
     }
-    debugWatchModelService.onDidUpdateTreeModel(async (model: TreeModel) => {
+    const disposable = debugWatchModelService.onDidUpdateTreeModel(async (model: TreeModel) => {
       if (model) {
         await model.root.ensureLoaded();
       }
@@ -44,6 +45,7 @@ export const DebugWatchView = observer(({
     });
     return () => {
       debugWatchModelService.removeNodeDecoration();
+      disposable.dispose();
     };
   };
 

@@ -8,7 +8,7 @@ import { PreferenceScope, PreferenceConfigurations, PreferenceProvider, IPrefere
 import { FolderPreferenceProviderFactory, FolderPreferenceProviderOptions, FolderPreferenceProvider } from './folder-preference-provider';
 import { WorkspaceFilePreferenceProviderFactory, WorkspaceFilePreferenceProviderOptions, WorkspaceFilePreferenceProvider } from './workspace-file-preference-provider';
 import { PreferenceSettingsService } from './preference-settings.service';
-import { UserStorageServiceImpl, UserStorageResolver } from './userstorage';
+import { UserStorageContribution, UserStorageServiceImpl } from './userstorage';
 import { IUserStorageService, SettingContribution } from '../common';
 
 @Injectable()
@@ -24,8 +24,8 @@ export class PreferencesModule extends BrowserModule {
       token: IPreferenceSettingsService,
       useClass: PreferenceSettingsService,
     },
-    UserStorageResolver,
     PreferenceContribution,
+    UserStorageContribution,
   ];
 
   preferences = injectPreferenceProviders;

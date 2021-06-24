@@ -140,7 +140,7 @@ export interface FileSystemProvider {
    * @return The file metadata about the file.
    * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
    */
-  stat(uri: Uri): Thenable<FileStat>;
+  stat(uri: Uri): Promise<FileStat | void>;
 
   /**
    * Retrieve all entries of a [directory](#FileType.Directory).
@@ -149,7 +149,7 @@ export interface FileSystemProvider {
    * @return An array of name/type-tuples or a thenable that resolves to such.
    * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
    */
-  readDirectory(uri: Uri): [string, FileType][] | Thenable<[string, FileType][]>;
+  readDirectory(uri: Uri): [string, FileType][] | Promise<[string, FileType][]>;
 
   /**
    * Create a new directory (Note, that new files are created via `write`-calls).
@@ -159,7 +159,7 @@ export interface FileSystemProvider {
    * @throws [`FileExists`](#FileSystemError.FileExists) when `uri` already exists.
    * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
    */
-  createDirectory(uri: Uri): void | Thenable<void | FileStat>;
+  createDirectory(uri: Uri): void | Promise<void | FileStat>;
 
   /**
    * Read the entire contents of a file.
@@ -168,7 +168,7 @@ export interface FileSystemProvider {
    * @return An array of bytes or a thenable that resolves to such.
    * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
    */
-  readFile(uri: Uri, encoding?: string): Uint8Array | Thenable<Uint8Array>
+  readFile(uri: Uri, encoding?: string): Uint8Array | void | Promise<Uint8Array | void>
 
   /**
    * Write data to a file, replacing its entire contents.
@@ -189,7 +189,7 @@ export interface FileSystemProvider {
    * @param uri The resource that is to be deleted.
    * @param options Defines if deletion of folders is recursive.
    */
-  delete(uri: Uri, options: { recursive: boolean, moveToTrash?: boolean }): void | Thenable<void>;
+  delete(uri: Uri, options: { recursive: boolean, moveToTrash?: boolean }): void | Promise<void>;
 
   /**
    * Rename a file or folder.
@@ -202,7 +202,7 @@ export interface FileSystemProvider {
    * @throws [`FileExists`](#FileSystemError.FileExists) when `newstring` exists and when the `overwrite` option is not `true`.
    * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
    */
-  rename(oldstring: Uri, newstring: Uri, options: { overwrite: boolean }): void | Thenable<void | FileStat>;
+  rename(oldstring: Uri, newstring: Uri, options: { overwrite: boolean }): void | Promise<void | FileStat>;
 
 }
 

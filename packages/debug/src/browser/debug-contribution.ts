@@ -1,6 +1,6 @@
 import { Domain, ClientAppContribution, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution, CommandService, IReporterService, formatLocalize } from '@ali/ide-core-browser';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser';
+import { ComponentContribution, ComponentRegistry, KeybindingRegistry } from '@ali/ide-core-browser';
 import { DebugBreakpointView } from './view/breakpoints/debug-breakpoints.view';
 import { DebugVariableView } from './view/variables/debug-variables.view';
 import { DebugCallStackView } from './view/frames/debug-call-stack.view';
@@ -21,7 +21,7 @@ import { DebugViewModel } from './view/debug-view-model';
 import { DebugSession } from './debug-session';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
-import { IDebugSessionManager, launchSchemaUri, DEBUG_CONTAINER_ID, DEBUG_WATCH_ID, DEBUG_VARIABLES_ID, DEBUG_STACK_ID, DEBUG_BREAKPOINTS_ID, DEBUG_FLOATING_CLICK_WIDGET, DEBUG_REPORT_NAME, DEBUG_WELCOME_ID } from '../common';
+import { IDebugSessionManager, launchSchemaUri, DEBUG_CONTAINER_ID, DEBUG_WATCH_ID, DEBUG_VARIABLES_ID, DEBUG_STACK_ID, DEBUG_BREAKPOINTS_ID, DEBUG_FLOATING_CLICK_WIDGET, DEBUG_REPORT_NAME, DEBUG_WELCOME_ID, DEBUG_SCHEME } from '../common';
 import { DebugConsoleService } from './view/console/debug-console.service';
 import { DebugToolbarService } from './view/configuration/debug-toolbar.service';
 import { MenuContribution, MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
@@ -31,7 +31,8 @@ import { FloatingClickWidget } from './components/floating-click-widget';
 import { PreferenceService } from '@ali/ide-core-browser';
 import { DebugBreakpointZoneWidget } from './editor/debug-breakpoint-zone-widget';
 import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
-import { KeybindingRegistry } from '@ali/ide-core-browser';
+import { IFileServiceClient, IShadowFileProvider } from '@ali/ide-file-service';
+import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 
 const LAUNCH_JSON_REGEX = /launch\.json$/;
 
@@ -205,6 +206,12 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   @Autowired(IViewsRegistry)
   private viewsRegistry: IViewsRegistry;
 
+  @Autowired(IShadowFileProvider)
+  private shadowFileServiceProvider: IShadowFileProvider;
+
+  @Autowired(IFileServiceClient)
+  protected readonly fileSystem: FileServiceClient;
+
   private firstSessionStart: boolean = true;
 
   get selectedBreakpoint(): SelectedBreakpoint | undefined {
@@ -215,7 +222,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   registerEditorComponent(registry: EditorComponentRegistry) {
     registry.registerEditorSideWidget({
       id: DEBUG_FLOATING_CLICK_WIDGET,
-      component: FloatingClickWidget,
+      component: FloatingClickWidget as any,
       displaysOnResource: (r) => {
         const { configUri } = this.preferences.resolve('launch');
         if (!configUri) {
@@ -271,6 +278,10 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
       titleComponent: DebugConfigurationView,
       activateKeyBinding: 'ctrlcmd+shift+d',
     });
+  }
+
+  async initialize() {
+    this.fileSystem.registerProvider(DEBUG_SCHEME, this.shadowFileServiceProvider);
   }
 
   async onStart() {

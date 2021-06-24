@@ -94,7 +94,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
   }
 
   protected init(): void {
-    this.preferenceContributions.getContributions().forEach((contrib) => {
+    this.preferenceContributions?.getContributions().forEach((contrib) => {
       this.doSetSchema(contrib.schema);
     });
     this.combinedSchema.additionalProperties = false;

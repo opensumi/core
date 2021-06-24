@@ -36,9 +36,9 @@ describe('PreferenceSettingService should be work', () => {
     };
 
     mockResource = {
-      getFsPath: jest.fn(() => {
-        return new URI('settings.json');
-      }),
+      uri: new URI('settings.json').toString(),
+      isDirectory: false,
+      lastModification: new Date().getTime(),
     };
 
     mockUserPreferenceProvider = {
@@ -166,14 +166,13 @@ describe('PreferenceSettingService should be work', () => {
     });
 
     it('getPreferenceUrl', async () => {
-      await preferenceSettingsService.getPreferenceUrl(PreferenceScope.User);
-      expect(mockResource.getFsPath).toBeCalledTimes(1);
+      const uri = await preferenceSettingsService.getPreferenceUrl(PreferenceScope.User);
+      expect(uri).toBe(mockResource.uri);
     });
 
     it('getCurrentPreferenceUrl', async () => {
-      mockResource.getFsPath.mockClear();
-      await preferenceSettingsService.getCurrentPreferenceUrl();
-      expect(mockResource.getFsPath).toBeCalledTimes(1);
+      const uri = await preferenceSettingsService.getCurrentPreferenceUrl();
+      expect(uri).toBe(mockResource.uri);
       expect(mockFileServiceClient.access).toBeCalledTimes(1);
       expect(mockFileServiceClient.createFile).toBeCalledTimes(1);
       expect(mockFileServiceClient.setContent).toBeCalledTimes(1);

@@ -1,7 +1,7 @@
 import { IFileServiceClient } from '../file-service-client';
-import { URI, Emitter, Event, FileUri, IDisposable, TextDocumentContentChangeEvent } from '@ali/ide-core-common';
+import { URI, Emitter, Event, FileUri, IDisposable } from '@ali/ide-core-common';
 import { FileChangeEvent, DidFilesChangedParams, FileChange } from '..';
-import { FileSetContentOptions, FileStat, FileMoveOptions, FileCreateOptions, FileCopyOptions, FileDeleteOptions, FileSystemProvider } from '../files';
+import { FileSetContentOptions, FileStat, FileMoveOptions, FileCreateOptions, FileCopyOptions, FileDeleteOptions, FileSystemProvider, TextDocumentContentChangeEvent } from '../files';
 import { IFileServiceWatcher } from '../watcher';
 import { Injectable } from '@ali/common-di';
 import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
@@ -28,6 +28,9 @@ export class MockFileServiceClient implements IFileServiceClient {
 
   protected readonly onFileChangedEmitter = new Emitter<FileChangeEvent>();
   readonly onFilesChanged: Event<FileChangeEvent> = this.onFileChangedEmitter.event;
+
+  protected readonly onFileProviderChangedEmitter = new Emitter<string[]>();
+  readonly onFileProviderChanged: Event<string[]> = this.onFileProviderChangedEmitter.event;
 
   handlesScheme(scheme: string) {
     return true;

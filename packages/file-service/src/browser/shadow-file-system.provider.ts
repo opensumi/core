@@ -23,13 +23,13 @@ export class ShadowFileSystemProvider implements FileSystemProvider {
     watch(uri: Uri, options: { recursive: boolean; excludes: string[]; }): number {
         throw new Error('Method not implemented.');
     }
-    stat(uri: Uri): Thenable<FileStat> {
+    stat(uri: Uri): Promise<FileStat> {
       return Promise.resolve({
         uri: uri.toString(),
         lastModification: 0,
       } as FileStat);
     }
-    readDirectory(uri: Uri): [string, FileType][] | Thenable<[string, FileType][]> {
+    readDirectory(uri: Uri): [string, FileType][] | Promise<[string, FileType][]> {
         throw new Error('Method not implemented.');
     }
     createDirectory(uri: Uri) {

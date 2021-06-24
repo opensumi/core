@@ -1,33 +1,36 @@
 import { KeymapService } from '@ali/ide-keymaps/lib/browser/keymaps.service';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { KeymapsParser } from '@ali/ide-keymaps/lib/browser/keymaps-parser';
-import { ResourceProvider, KeybindingRegistry, KeybindingService, URI, EDITOR_COMMANDS, Disposable, KeybindingScope, localize } from '@ali/ide-core-browser';
-import { KEYMAPS_FILE_NAME } from '@ali/ide-keymaps';
-import { USER_STORAGE_SCHEME } from '@ali/ide-preferences';
+import { KeybindingRegistry, KeybindingService, URI, EDITOR_COMMANDS, Disposable, KeybindingScope, localize, ILogger, FileUri, BrowserModule, AppConfig } from '@ali/ide-core-browser';
+import { IUserStorageService } from '@ali/ide-preferences';
 import { KeymapsModule } from '@ali/ide-keymaps/lib/browser';
-import { IFileServiceClient } from '@ali/ide-file-service';
+import { IDiskFileProvider, IFileServiceClient } from '@ali/ide-file-service';
+import { Injectable, Provider } from '@ali/common-di';
+import { UserStorageContribution, UserStorageServiceImpl } from '@ali/ide-preferences/lib/browser/userstorage';
+import * as os from 'os';
+import * as path from 'path';
+import * as fs from 'fs-extra';
+import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
+import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
+import { FileServiceContribution } from '@ali/ide-file-service/lib/browser/file-service-contribution';
+
+@Injectable()
+export class AddonModule extends BrowserModule {
+  providers: Provider[] = [
+    UserStorageContribution,
+  ];
+}
 
 describe('KeymapsService should be work', () => {
   let keymapsService: KeymapService;
   let injector: MockInjector;
-  const keybindingContent = JSON.stringify([{
+  const keybindingContent = [{
     when: 'editorFocus && textInputFocus && !editorReadonly',
     command: 'editor.action.deleteLines',
     keybinding: '⌘+⇧+L',
-  }]);
+  }];
+  const preferenceDirName = '.kaitian';
 
-  const mockKeymapsParser = {
-    parse: jest.fn(() => JSON.parse(keybindingContent)),
-  };
-
-  const mockResource = {
-    readContents: jest.fn(() => keybindingContent),
-    saveContents: jest.fn(),
-    getFsPath: jest.fn(() => 'file://keymaps.json'),
-    onDidChangeContents: jest.fn(() => Disposable.create(() => {})),
-    whenReady: Promise.resolve(),
-  };
   const mockKeybindingService = {
     convert: jest.fn(),
     clearConvert: jest.fn(),
@@ -38,7 +41,6 @@ describe('KeymapsService should be work', () => {
       return '';
     }),
   };
-  const resourceProvider = jest.fn(() => mockResource);
   const mockKeybindingRegistry = {
     getKeybindingsForCommand: jest.fn(() => {
       return [{
@@ -47,30 +49,35 @@ describe('KeymapsService should be work', () => {
       }];
     }),
     unregisterKeybinding: jest.fn(),
-    registerKeybinding: jest.fn(() => Disposable.create(() => {})),
+    registerKeybinding: jest.fn(() => Disposable.create(() => { })),
     acceleratorFor: jest.fn(() => (['CMD+C'])),
     validateKeybindingInScope: jest.fn(() => true),
   };
-  const mockFileServiceClient = {
-    access: jest.fn(() => false),
-    createFile: jest.fn(),
-    setContent: jest.fn(),
-  };
+
+  let userhome: URI | null;
+
   let onKeybindingsChanged;
-  beforeAll(() => {
+  beforeAll(async (done) => {
+
+    userhome = FileUri.create(path.join(os.tmpdir(), 'keymaps-service-test'));
+
+    await fs.createFile(path.join(userhome.path.toString(), preferenceDirName, 'keymaps.json'));
+    await fs.writeJSON(path.join(userhome.path.toString(), preferenceDirName, 'keymaps.json'), keybindingContent);
+
     injector = createBrowserInjector([
+      FileServiceClientModule,
+      AddonModule,
       KeymapsModule,
     ]);
 
-    // mock used instance
     injector.overrideProviders(
       {
-        token: KeymapsParser,
-        useValue: mockKeymapsParser,
+        token: IUserStorageService,
+        useClass: UserStorageServiceImpl,
       },
       {
-        token: ResourceProvider,
-        useValue: {},
+        token: IDiskFileProvider,
+        useClass: DiskFileSystemProvider,
       },
       {
         token: KeybindingService,
@@ -81,30 +88,52 @@ describe('KeymapsService should be work', () => {
         useValue: mockKeybindingRegistry,
       },
       {
-        token: IFileServiceClient,
-        useValue: mockFileServiceClient,
+        token: ILogger,
+        useValue: console,
+      },
+      {
+        token: AppConfig,
+        useValue: {
+          preferenceDirName,
+        },
       },
     );
 
-    injector.overrideProviders({
-      token: ResourceProvider,
-      useValue: resourceProvider,
+    // 覆盖文件系统中的getCurrentUserHome方法，便于用户设置测试
+    injector.mock(IFileServiceClient, 'getCurrentUserHome', () => {
+      return {
+        uri: userhome!.toString(),
+        isDirectory: true,
+        lastModification: new Date().getTime(),
+      };
     });
+
     onKeybindingsChanged = jest.fn();
     injector.mock(KeybindingRegistry, 'onKeybindingsChanged', onKeybindingsChanged);
 
+    const fileServiceContribution = injector.get(FileServiceContribution);
+    const userStorageContribution = injector.get(UserStorageContribution);
+
+    await fileServiceContribution.initialize();
+    await userStorageContribution.initialize();
+
     keymapsService = injector.get(KeymapService);
 
-    keymapsService.init();
+    await keymapsService.init();
 
+    done();
+  });
+
+  afterAll(async () => {
+    if (userhome) {
+      await fs.remove(userhome.path.toString());
+    }
+    userhome = null;
+    injector.disposeAll();
   });
 
   describe('01 #Init', () => {
     it('should ready to work after init', async (done) => {
-
-      expect(resourceProvider).toBeCalledWith(new URI().withScheme(USER_STORAGE_SCHEME).withPath(KEYMAPS_FILE_NAME));
-      expect(mockResource.onDidChangeContents).toBeCalledTimes(1);
-
       expect(typeof keymapsService.init).toBe('function');
       expect(typeof keymapsService.dispose).toBe('function');
       expect(typeof keymapsService.reconcile).toBe('function');
@@ -195,7 +224,6 @@ describe('KeymapsService should be work', () => {
       };
       await keymapsService.resetKeybinding(keybinding);
       expect(mockKeybindingRegistry.registerKeybinding).toBeCalledTimes(5);
-      expect(mockResource.saveContents).toBeCalledTimes(2);
       done();
     });
 
@@ -206,7 +234,7 @@ describe('KeymapsService should be work', () => {
         when: 'focus' as any,
       };
       mockKeybindingService.convertMonacoWhen.mockClear();
-      const result =  keymapsService.getWhen(keybinding);
+      const result = keymapsService.getWhen(keybinding);
       expect(result).toBe(keybinding.when);
       expect(mockKeybindingService.convertMonacoWhen).toBeCalledTimes(1);
     });

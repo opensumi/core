@@ -15,12 +15,11 @@ import {
   DisposableCollection,
   isArray,
   isEmptyObject,
-  TextDocumentContentChangeEvent,
 } from '@ali/ide-core-common';
 import { FileUri, INodeLogger, AppConfig } from '@ali/ide-core-node';
 import { RPCService } from '@ali/ide-connection'
 import { parse, ParsedPattern, match } from '@ali/ide-core-common/lib/utils/glob';
-import { FileChangeEvent } from '../common';
+import { FileChangeEvent, TextDocumentContentChangeEvent } from '../common';
 import { FileSystemManage } from './file-system-manage';
 import { getEncodingInfo, decode, encode, UTF8 } from './encoding';
 import {
@@ -38,7 +37,6 @@ import {
   containsExtraFileMethod,
   IDiskFileProvider,
 } from '../common';
-import { NsfwFileSystemWatcherOption } from './file-service-watcher';
 
 export abstract class FileSystemNodeOptions {
 
@@ -156,6 +154,9 @@ export class FileService extends RPCService implements IFileService {
     const provider = await this.getProvider(_uri.scheme);
     try {
       const stat = await provider.stat(_uri.codeUri);
+      if (!stat) {
+        return undefined;
+      }
       return this.filterStat(stat);
     } catch (err) {
       if (FileSystemError.FileNotFound.is(err)) {
@@ -174,7 +175,9 @@ export class FileService extends RPCService implements IFileService {
     const _uri = this.getUri(uri);
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
-
+    if (!stat) {
+      throw FileSystemError.FileNotFound(uri, 'File not found.');
+    }
     if (stat.isDirectory) {
       throw FileSystemError.FileIsDirectory(uri, 'Cannot resolve the content.');
     }
@@ -187,7 +190,9 @@ export class FileService extends RPCService implements IFileService {
     const _uri = this.getUri(file.uri);
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
-
+    if (!stat) {
+      throw FileSystemError.FileNotFound(file.uri, 'File not found.');
+    }
     if (stat.isDirectory) {
       throw FileSystemError.FileIsDirectory(file.uri, 'Cannot set the content.');
     }
@@ -198,6 +203,9 @@ export class FileService extends RPCService implements IFileService {
     const buffer = encode(content, encoding);
     await provider.writeFile(_uri.codeUri, buffer, { create: false, overwrite: true, encoding });
     const newStat = await provider.stat(_uri.codeUri);
+    if (!newStat) {
+      throw FileSystemError.FileNotFound(_uri.codeUri.toString(), 'File not found.');
+    }
     return newStat;
   }
 
@@ -205,6 +213,9 @@ export class FileService extends RPCService implements IFileService {
     const _uri = this.getUri(file.uri);
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
+    if (!stat) {
+      throw FileSystemError.FileNotFound(file.uri, 'File not found.');
+    }
     if (stat.isDirectory) {
       throw FileSystemError.FileIsDirectory(file.uri, 'Cannot set the content.');
     }
@@ -222,6 +233,9 @@ export class FileService extends RPCService implements IFileService {
     const newBuffer = encode(newContent, encoding);
     await provider.writeFile(_uri.codeUri, newBuffer, { create: false, overwrite: true, encoding });
     const newStat = await provider.stat(_uri.codeUri);
+    if (!newStat) {
+      throw FileSystemError.FileNotFound(_uri.codeUri.toString(), 'File not found.');
+    }
     return newStat;
   }
 
@@ -235,7 +249,8 @@ export class FileService extends RPCService implements IFileService {
     if (result) {
       return result;
     }
-    return await provider.stat(_targetUri.codeUri);
+    const stat = await provider.stat(_targetUri.codeUri);
+    return stat as FileStat;
   }
 
   async copy(
@@ -262,7 +277,8 @@ export class FileService extends RPCService implements IFileService {
     if(result) {
       return result;
     }
-    return await provider.stat(_targetUri.codeUri);
+    const stat = await provider.stat(_targetUri.codeUri);
+    return stat as FileStat;
   }
 
   async createFile(uri: string, options: FileCreateOptions = {}): Promise<FileStat> {
@@ -291,7 +307,8 @@ export class FileService extends RPCService implements IFileService {
       return result;
     }
 
-    return provider.stat(_uri.codeUri);
+    const stat = await provider.stat(_uri.codeUri);
+    return stat as FileStat;
   }
 
   /**
