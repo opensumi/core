@@ -42,7 +42,7 @@ export const NextPreferenceItem = ({ preferenceName, localizedName, scope }: { p
 
   // 获得这个设置项的当前值
   const { value: inherited, effectingScope } = settingsService.getPreference(preferenceName, scope);
-  const [value, setValue] = React.useState<boolean | string | string[]>(preferenceProvider.get<boolean | string | string[]>(preferenceName)!);
+  const [value, setValue] = React.useState<boolean | string | string[] | undefined>(preferenceProvider.get<boolean | string | string[]>(preferenceName)!);
   const [schema, setSchema] = React.useState<PreferenceItem>();
 
   // 当这个设置项被外部变更时，更新局部值
@@ -55,11 +55,10 @@ export const NextPreferenceItem = ({ preferenceName, localizedName, scope }: { p
     // 监听配置变化
     disposableCollection.push(preferenceProvider.onDidPreferencesChanged((e) => {
       if (e.default && e.default.hasOwnProperty(preferenceName)) {
-        let newValue = e.default[preferenceName].newValue;
-        if (!newValue) {
-          newValue = settingsService.getPreference(preferenceName, scope).value;
+        if (e.default[preferenceName].scope === scope) {
+          const newValue = e.default[preferenceName].newValue;
+          setValue(newValue);
         }
-        setValue(newValue);
       }
     }));
 
