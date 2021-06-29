@@ -6,6 +6,8 @@ import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.com
 import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../src/common/vscode';
 import { MockLoggerManagerClient } from '../__mock__/loggermanager';
+import { ICommandServiceToken } from '@ali/ide-monaco/lib/browser/contrib/command';
+import { MonacoCommandService } from '@ali/ide-editor/lib/browser/monaco-contrib/command/command.service';
 
 describe('MainThreadCommandAPI Test Suites ', () => {
   let extHostCommands: ExtHostCommands;
@@ -13,6 +15,9 @@ describe('MainThreadCommandAPI Test Suites ', () => {
   const injector = createBrowserInjector([], new Injector([{
     token: ILoggerManagerClient,
     useClass: MockLoggerManagerClient,
+  }, {
+    token: ICommandServiceToken,
+    useClass: MonacoCommandService,
   }, {
     token: CommandRegistry,
     useClass: CommandRegistryImpl,

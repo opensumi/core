@@ -10,7 +10,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { IReporterService, PreferenceService } from '@ali/ide-core-browser';
 import { DisposableCollection, Emitter, IMarkerData, IRange, LRUMap, MarkerManager, REPORT_NAME, URI } from '@ali/ide-core-common';
 import { extname } from '@ali/ide-core-common/lib/path';
-import { ICallHierarchyService } from '@ali/ide-monaco/lib/browser/callHierarchy/callHierarchy.service';
+import { ICallHierarchyService } from '@ali/ide-monaco/lib/browser/contrib/callHierarchy';
 import { IEvaluatableExpressionService } from '@ali/ide-debug/lib/browser/editor/evaluatable-expression';
 import { applyPatch } from 'diff';
 import { DocumentFilter } from 'vscode-languageserver-protocol';
@@ -46,6 +46,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   @Autowired(ICallHierarchyService)
   protected readonly callHierarchyService: ICallHierarchyService;
+
   @Autowired(IEvaluatableExpressionService)
   protected readonly evaluatableExpressionService: IEvaluatableExpressionService;
 
@@ -92,7 +93,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     }
   }
 
-  isLanguageFeatureEnabled(model: monaco.editor.ITextModel) {
+  isLanguageFeatureEnabled(model: ITextModel) {
     const uriString = model.uri.toString();
     if (!this.languageFeatureEnabled.has(uriString)) {
       this.languageFeatureEnabled.set(uriString, model.getValueLength() < ( this.preference.get<number>('editor.languageFeatureEnabledMaxSize') || 2 * 1024 * 1024));
@@ -121,11 +122,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   protected createHoverProvider(handle: number, selector?: LanguageSelector): modes.HoverProvider {
     return {
       provideHover: (model, position, token) => {
-        // model.ITextModel 与 monaco.editor.ITextModel getOptions EOL部分不兼容，不影响逻辑
-        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model as unknown as monaco.editor.ITextModel))) {
+        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
-        if (!this.isLanguageFeatureEnabled(model as unknown as monaco.editor.ITextModel)) {
+        if (!this.isLanguageFeatureEnabled(model)) {
           return undefined!;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_HOVER);
@@ -193,7 +193,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     // NOTE monaco.languages.registerCompletionItemProvider api显示只能传string，实际内部实现支持DocumentSelector
     this.disposables.set(handle, monaco.languages.registerCompletionItemProvider(fromLanguageSelector(selector)! as any, {
       triggerCharacters,
-      provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position, context, token: monaco.CancellationToken) => {
+      provideCompletionItems: async (model: ITextModel, position: monaco.Position, context, token: monaco.CancellationToken) => {
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined!;
         }

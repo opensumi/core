@@ -7,6 +7,7 @@ import { IEditorDocumentModelService, IEditorDocumentModelRef } from '@ali/ide-e
 
 import { OutputPreferences } from './output-preference';
 import { ContentChangeEvent, ContentChangeEventPayload, ContentChangeType } from '../common';
+import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 const DEFAULT_MAX_CHANNEL_LINE = 50000;
 
@@ -33,7 +34,7 @@ export class OutputChannel extends Disposable {
 
   public outputModel: IEditorDocumentModelRef;
 
-  private monacoModel: monaco.editor.ITextModel;
+  private monacoModel: ITextModel;
 
   public modelReady: Deferred<boolean> = new Deferred();
 

@@ -10,7 +10,7 @@ import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { WorkbenchEditorService } from '../common';
 import { URI, IRange } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
-import { IMonacoImplEditor, BrowserCodeEditor } from './editor-collection.service';
+import { BrowserCodeEditor } from './editor-collection.service';
 
 @Injectable()
 export class MonacoCodeService extends CodeEditorServiceImpl {
@@ -25,8 +25,7 @@ export class MonacoCodeService extends CodeEditorServiceImpl {
   // FIXME - Monaco 20 - ESM
   getActiveCodeEditor(): IMonacoCodeEditor | null {
     if (this.workbenchEditorService.currentEditor) {
-      // Note: 这里 monaco.editor.ICodeEditor 与 CodeEditorServiceImpl 中引用的 ICodeEditor 类型冲突，所以使用 assertion
-      return (this.workbenchEditorService.currentEditor as IMonacoImplEditor).monacoEditor as unknown as IMonacoCodeEditor;
+      return this.workbenchEditorService.currentEditor.monacoEditor;
     }
     return null;
   }
@@ -39,13 +38,13 @@ export class MonacoCodeService extends CodeEditorServiceImpl {
    * @param sideBySide ？
    */
   // @ts-ignore
-  async openCodeEditor(input: monaco.editor.IResourceInput, source?: monaco.editor.ICodeEditor,
-                       sideBySide?: boolean): Promise<monaco.editor.IStandaloneCodeEditor | undefined> {
+  async openCodeEditor(input: monaco.editor.IResourceInput, source?: IMonacoCodeEditor,
+                       sideBySide?: boolean): Promise<IMonacoCodeEditor | undefined> {
     const resourceUri = new URI(input.resource.toString());
     let editorGroup = this.workbenchEditorService.currentEditorGroup;
     let index: number | undefined;
     if (source) {
-      editorGroup = this.workbenchEditorService.editorGroups.find((g) => g.currentEditor && (g.currentEditor as IMonacoImplEditor).monacoEditor === source) || editorGroup;
+      editorGroup = this.workbenchEditorService.editorGroups.find((g) => g.currentEditor && g.currentEditor.monacoEditor === source) || editorGroup;
       index = editorGroup.resources.findIndex((r) => editorGroup.currentResource && r.uri === editorGroup.currentResource.uri);
       if (index >= 0) {
         index ++;

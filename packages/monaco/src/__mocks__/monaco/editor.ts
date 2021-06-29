@@ -29,11 +29,11 @@ enum MouseTargetType {
   OUTSIDE_EDITOR = 13,
 }
 
-export function createMockedMonacoEditorApi(): typeof monaco.editor {
+export function createMockedMonacoEditorApi(): any {
 
   const models = new Map<string, MockedMonacoModel>();
 
-  const mockedMonacoEditorApi: Partial<typeof monaco.editor> = {
+  const mockedMonacoEditorApi = {
     onDidCreateEditor: quickEvent('onDidCreateEditor'),
     create: (dom, options, override) => {
       const editor = new MockedStandaloneCodeEditor(dom, options, override);

@@ -1,8 +1,9 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { URI, Emitter, Event, Schemas, WithEventBus, IEditorDocumentChange, IEditorDocumentModelSaveResult, localize, AppConfig, CommandService, OS, IApplicationService, PreferenceService, getLanguageIdFromMonaco } from '@ali/ide-core-browser';
 import * as path from '@ali/ide-core-common/lib/path';
+import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
-import { IResourceProvider, WorkbenchEditorService, EOL } from '../common';
+import { IResourceProvider, WorkbenchEditorService } from '../common';
 import { IEditorDocumentModelService, IEditorDocumentModelContentProvider } from './doc-model/types';
 
 @Injectable()

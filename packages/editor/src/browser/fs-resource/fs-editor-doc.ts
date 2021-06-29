@@ -3,7 +3,7 @@ import { Emitter, URI, Event, IApplicationService, FileChangeType, OS, IEditorDo
 import { Injectable, Autowired } from '@ali/common-di';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { EditorPreferences } from '../preference/schema';
-import { EOL } from '../types';
+import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 /**
  * 通用的用来处理 FileSystem 提供的文档

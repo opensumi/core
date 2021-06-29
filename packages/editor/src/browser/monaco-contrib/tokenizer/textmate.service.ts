@@ -1,18 +1,18 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import { TextmateRegistry } from './textmate-registry';
+import { monaco } from '@ali/ide-monaco/lib/browser/monaco-api';
+import { FoldingRules, IAutoClosingPair, IAutoClosingPairConditional, IndentationRule, LanguageConfiguration } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import { Injectable, Autowired } from '@ali/common-di';
 import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger, ExtensionActivateEvent, getDebugLogger, MonacoService, electronEnv } from '@ali/ide-core-browser';
+import { CommentRule, GrammarsContribution, ITextmateTokenizerService, LanguagesContribution, ScopeMap } from '@ali/ide-monaco/lib/browser/contrib/tokenizer';
 import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap, INITIAL } from 'vscode-textmate';
 import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { URI } from '@ali/ide-core-common';
-import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IThemeData } from '@ali/ide-theme';
 import { OnigScanner, loadWASM, OnigString } from 'vscode-oniguruma';
 
 import { createTextmateTokenizer, TokenizerOption } from './textmate-tokenizer';
-import { LanguagesContribution, FoldingRules, IndentationRules, GrammarsContribution, ScopeMap, ILanguageConfiguration, IAutoClosingPairConditional, CommentRule } from '../common';
+import { TextmateRegistry } from './textmate-registry';
+import { IEditorDocumentModelService } from '../../doc-model/types';
 
 let wasmLoaded = false;
 
@@ -54,15 +54,12 @@ function isCharacterPair(something: CharacterPair | null): boolean {
 }
 
 @Injectable()
-export class TextmateService extends WithEventBus {
+export class TextmateService extends WithEventBus implements ITextmateTokenizerService {
   @Autowired()
   private textmateRegistry: TextmateRegistry;
 
   @Autowired(IFileServiceClient)
   private fileServiceClient: IFileServiceClient;
-
-  @Autowired(WorkbenchEditorService)
-  private editorService: WorkbenchEditorService;
 
   @Autowired(PreferenceService)
   preferenceService: PreferenceService;
@@ -72,6 +69,9 @@ export class TextmateService extends WithEventBus {
 
   @Autowired()
   private readonly monacoService: MonacoService;
+
+  @Autowired(IEditorDocumentModelService)
+  editorDocumentModelService: IEditorDocumentModelService;
 
   public grammarRegistry: Registry;
 
@@ -114,7 +114,7 @@ export class TextmateService extends WithEventBus {
       this.activateLanguage(language.id);
     });
 
-    let configuration: ILanguageConfiguration | undefined;
+    let configuration: LanguageConfiguration | undefined;
     if (typeof language.resolvedConfiguration === 'object') {
       configuration = await language.resolvedConfiguration;
     } else if (language.configuration) {
@@ -125,7 +125,7 @@ export class TextmateService extends WithEventBus {
       const ret = await this.fileServiceClient.resolveContent(configurationPath.toString());
       const content = ret.content;
       if (content) {
-        const jsonContent = this.safeParseJSON<ILanguageConfiguration>(content);
+        const jsonContent = this.safeParseJSON<LanguageConfiguration>(content);
         if (jsonContent) {
           configuration = jsonContent;
         }
@@ -135,7 +135,7 @@ export class TextmateService extends WithEventBus {
     if (configuration) {
       // FIXME: type for wordPattern/indentationRules @寻壑
       monaco.languages.setLanguageConfiguration(language.id, {
-        wordPattern: this.createRegex(configuration.wordPattern as string),
+        wordPattern: this.createRegex(configuration.wordPattern),
         autoClosingPairs: this.extractValidAutoClosingPairs(language.id, configuration),
         brackets: this.extractValidBrackets(language.id, configuration),
         comments: this.extractValidCommentRule(language.id, configuration),
@@ -146,12 +146,11 @@ export class TextmateService extends WithEventBus {
     }
 
     if (this.initialized) {
-      const modelService = StaticServices.modelService.get();
-      const uris = this.editorService.getAllOpenedUris();
+      const uris = this.editorDocumentModelService.getAllModels().map((m) => m.uri);
       for (const uri of uris) {
-        const model = modelService.getModel(monaco.Uri.parse(uri.codeUri.toString()));
-        if (model) {
-          const langId = model.getModeId();
+        const model = this.editorDocumentModelService.getModelReference(URI.parse(uri.codeUri.toString()));
+        if (model && model.instance) {
+          const langId = model.instance.getMonacoModel().getModeId();
           if (language.id === langId) {
             await this.activateLanguage(langId);
             break;
@@ -261,7 +260,7 @@ export class TextmateService extends WithEventBus {
   }
 
   // 字符串转正则
-  private createRegex(value: string | undefined): RegExp | undefined {
+  private createRegex(value: string | RegExp | undefined): RegExp | undefined {
     if (typeof value === 'string') {
       return new RegExp(value, '');
     }
@@ -280,11 +279,11 @@ export class TextmateService extends WithEventBus {
   }
 
   // 将foldingRule里的字符串转为正则
-  private convertFolding(folding?: FoldingRules): monaco.languages.FoldingRules | undefined {
+  private convertFolding(folding?: FoldingRules): FoldingRules | undefined {
     if (!folding) {
       return undefined;
     }
-    const result: monaco.languages.FoldingRules = {
+    const result: FoldingRules = {
       offSide: folding.offSide,
     };
 
@@ -300,16 +299,21 @@ export class TextmateService extends WithEventBus {
   }
 
   // 字符串定义转正则
-  private convertIndentationRules(rules?: IndentationRules): monaco.languages.IndentationRule | undefined {
+  private convertIndentationRules(rules?: IndentationRule): IndentationRule | undefined {
     if (!rules) {
       return undefined;
     }
-    return {
+    const result: IndentationRule = {
       decreaseIndentPattern: this.createRegex(rules.decreaseIndentPattern)!,
       increaseIndentPattern: this.createRegex(rules.increaseIndentPattern)!,
-      indentNextLinePattern: this.createRegex(rules.indentNextLinePattern),
-      unIndentedLinePattern: this.createRegex(rules.unIndentedLinePattern),
     };
+    if (rules.indentNextLinePattern) {
+      result.indentNextLinePattern = this.createRegex(rules.indentNextLinePattern);
+    }
+    if (rules.unIndentedLinePattern) {
+      result.unIndentedLinePattern = this.createRegex(rules.unIndentedLinePattern);
+    }
+    return rules;
   }
 
   private convertEmbeddedLanguages(languages?: ScopeMap): IEmbeddedLanguagesMap | undefined {
@@ -359,7 +363,7 @@ export class TextmateService extends WithEventBus {
     return result;
   }
 
-  private extractValidSurroundingPairs(languageId: string, configuration: ILanguageConfiguration): monaco.languages.IAutoClosingPair[] | undefined {
+  private extractValidSurroundingPairs(languageId: string, configuration: LanguageConfiguration): IAutoClosingPair[] | undefined {
     if (!configuration) { return; }
     const source = configuration.surroundingPairs;
     if (typeof source === 'undefined') {
@@ -370,11 +374,11 @@ export class TextmateService extends WithEventBus {
       return;
     }
 
-    let result: monaco.languages.IAutoClosingPair[] | undefined;
+    let result: IAutoClosingPair[] | undefined;
     for (let i = 0, len = source.length; i < len; i++) {
       const pair = source[i];
       if (Array.isArray(pair)) {
-        if (!isCharacterPair(pair as [string, string])) {
+        if (!isCharacterPair(pair as unknown as [string, string])) {
           this.logger.warn(`[${languageId}: language configuration: expected \`surroundingPairs[${i}]\` to be an array of two strings or an object.`);
           continue;
         }
@@ -400,7 +404,7 @@ export class TextmateService extends WithEventBus {
     return result;
   }
 
-  private extractValidBrackets(languageId: string, configuration: ILanguageConfiguration): CharacterPair[] | undefined {
+  private extractValidBrackets(languageId: string, configuration: LanguageConfiguration): CharacterPair[] | undefined {
     const source = configuration.brackets;
     if (typeof source === 'undefined') {
       return undefined;
@@ -424,7 +428,7 @@ export class TextmateService extends WithEventBus {
     return result;
   }
 
-  private extractValidAutoClosingPairs(languageId: string, configuration: ILanguageConfiguration): IAutoClosingPairConditional[] | undefined {
+  private extractValidAutoClosingPairs(languageId: string, configuration: LanguageConfiguration): IAutoClosingPairConditional[] | undefined {
     const source = configuration.autoClosingPairs;
     if (typeof source === 'undefined') {
       return undefined;
@@ -438,7 +442,7 @@ export class TextmateService extends WithEventBus {
     for (let i = 0, len = source.length; i < len; i++) {
       const pair = source[i];
       if (Array.isArray(pair)) {
-        if (!isCharacterPair(pair)) {
+        if (!isCharacterPair(pair as unknown as [string, string])) {
           this.logger.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}]\` to be an array of two strings or an object.`);
           continue;
         }
@@ -470,7 +474,7 @@ export class TextmateService extends WithEventBus {
     return result;
   }
 
-  private extractValidCommentRule(languageId: string, configuration: ILanguageConfiguration): CommentRule | undefined {
+  private extractValidCommentRule(languageId: string, configuration: LanguageConfiguration): CommentRule | undefined {
     const source = configuration.comments;
     if (typeof source === 'undefined') {
       return undefined;

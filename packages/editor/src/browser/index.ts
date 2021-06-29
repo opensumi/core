@@ -24,6 +24,12 @@ import { EditorPreferenceContribution } from './preference/contribution';
 import { SaveParticipantsContribution } from './doc-model/saveParticipants';
 import { EditorPreferences, editorPreferenceSchema } from './preference/schema';
 import { FileSystemResourceContribution } from './fs-resource';
+import { ICallHierarchyService } from '@ali/ide-monaco/lib/browser/contrib/callHierarchy';
+import { CallHierarchyContribution, CallHierarchyService } from './monaco-contrib';
+import { ICommandServiceToken, IMonacoActionRegistry, IMonacoCommandsRegistry } from '@ali/ide-monaco/lib/browser/contrib/command';
+import { MonacoActionRegistry, MonacoCommandRegistry, MonacoCommandService } from './monaco-contrib/command/command.service';
+import { TextmateService } from './monaco-contrib/tokenizer/textmate.service';
+import { ITextmateTokenizer } from '@ali/ide-monaco/lib/browser/contrib/tokenizer';
 export * from './preference/schema';
 export * from './types';
 export * from './doc-model/types';
@@ -94,6 +100,26 @@ export class EditorModule extends BrowserModule {
         return createPreferenceProxy(preferences, editorPreferenceSchema);
       },
     },
+    {
+      token: ICallHierarchyService,
+      useClass: CallHierarchyService,
+    },
+    {
+      token: ICommandServiceToken,
+      useClass: MonacoCommandService,
+    },
+    {
+      token: IMonacoCommandsRegistry,
+      useClass: MonacoCommandRegistry,
+    },
+    {
+      token: IMonacoActionRegistry,
+      useClass: MonacoActionRegistry,
+    },
+    {
+      token: ITextmateTokenizer,
+      useClass: TextmateService,
+    },
     EditorPreferenceContribution,
     DefaultDiffEditorContribution,
     EditorClientAppContribution,
@@ -103,6 +129,7 @@ export class EditorModule extends BrowserModule {
     EditorAutoSaveEditorContribution,
     SaveParticipantsContribution,
     FileSystemResourceContribution,
+    CallHierarchyContribution,
   ];
   contributionProvider = BrowserEditorContribution;
 

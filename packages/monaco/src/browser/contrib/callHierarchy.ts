@@ -1,11 +1,8 @@
 import type { Uri as URI, IRange, SymbolKind, SymbolTag, IPosition, CancellationToken } from '@ali/ide-core-common';
 import type { ProviderResult } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
-
-export const enum CallHierarchyDirection {
-  CallsTo = 'incomingCalls',
-  CallsFrom = 'outgoingCalls',
-}
+import type { Position } from '@ali/monaco-editor-core/esm/vs/editor/common/core/position';
+import { LanguageFeatureRegistry } from '@ali/monaco-editor-core/esm/vs/editor/common/modes/languageFeatureRegistry';
 
 export interface CallHierarchyItem {
   _sessionId: string;
@@ -51,3 +48,17 @@ export interface CallHierarchyProvider {
     token: CancellationToken,
   ): ProviderResult<OutgoingCall[]>;
 }
+
+export const CallHierarchyProviderRegistry = new LanguageFeatureRegistry<CallHierarchyProvider>();
+
+export interface ICallHierarchyService {
+  registerCallHierarchyProvider: (selector: any, provider: CallHierarchyProvider) => void;
+
+  prepareCallHierarchyProvider: (resource: URI, position: Position) => Promise<CallHierarchyItem[]>;
+
+  provideIncomingCalls: (item: CallHierarchyItem) => ProviderResult<IncomingCall[]>;
+
+  provideOutgoingCalls: (item: CallHierarchyItem) => ProviderResult<OutgoingCall[]>;
+}
+
+export const ICallHierarchyService = Symbol('ICallHierarchyService');

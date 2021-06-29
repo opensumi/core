@@ -6,6 +6,7 @@ import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { IRange, Uri, localize, ILogger } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { isPatternInWord } from '@ali/ide-core-common/lib/filters';
+import { ITextModel } from './monaco-api/types';
 
 @Injectable()
 export class MonacoSnippetSuggestProvider implements monaco.languages.CompletionItemProvider {
@@ -31,7 +32,7 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
     return allLanguageIds;
   }
 
-  async provideCompletionItems(model: monaco.editor.ITextModel, position: monaco.Position, context: monaco.languages.CompletionContext, token: monaco.CancellationToken): Promise<monaco.languages.CompletionList | undefined> {
+  async provideCompletionItems(model: ITextModel, position: monaco.Position, context: monaco.languages.CompletionContext, token: monaco.CancellationToken): Promise<monaco.languages.CompletionList | undefined> {
     if (position.column >= MonacoSnippetSuggestProvider._maxPrefix) {
       // 如果单行过长则忽略
       return undefined;
@@ -105,7 +106,7 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
     return { suggestions };
   }
 
-  resolveCompletionItem(_: monaco.editor.ITextModel, __: monaco.Position, item: monaco.languages.CompletionItem, token: monaco.CancellationToken) {
+  resolveCompletionItem(_: ITextModel, __: monaco.Position, item: monaco.languages.CompletionItem, token: monaco.CancellationToken) {
     return Promise.resolve(item);
   }
 

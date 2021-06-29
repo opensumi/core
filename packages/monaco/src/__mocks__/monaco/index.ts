@@ -1,4 +1,3 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { IDiffComputationResult } from '@ali/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
 import { Uri } from '@ali/ide-core-common';
 
@@ -8,7 +7,7 @@ import { createMockedMonacoLanguageApi } from './language';
 import { createMockedMonacoRangeApi } from './range';
 import { createMockedMonacoPositionApi } from './position';
 
-export function createMockedMonaco(): Partial<typeof monaco> {
+export function createMockedMonaco() {
   const mockEditor = createMockedMonacoEditorApi();
 
   return {

@@ -3,11 +3,12 @@ import { IResourceTextEdit, IWorkspaceEditService, IWorkspaceEdit, IResourceFile
 import { URI, IEventBus, isWindows, isUndefined } from '@ali/ide-core-browser';
 import { FileSystemError } from '@ali/ide-file-service/lib/common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { EndOfLineSequence, WorkbenchEditorService, EOL } from '@ali/ide-editor';
+import { WorkbenchEditorService } from '@ali/ide-editor';
 import { runInAction } from 'mobx';
 import { IEditorDocumentModelService, IResource, isDiffResource } from '@ali/ide-editor/lib/browser';
 import { EditorGroup } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { Range } from '@ali/monaco-editor-core/esm/vs/editor/common/core/range';
+import { EndOfLineSequence, EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 type WorkspaceEdit = ResourceTextEditTask | ResourceFileEdit;
 

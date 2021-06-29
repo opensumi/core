@@ -1,3 +1,4 @@
+import type { ICodeEditor as IMonacoCodeEditor } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { orderBy } from 'lodash';
 import { Disposable } from '@ali/ide-core-common';
@@ -13,7 +14,7 @@ export class FoldedCodeWidget extends ZoneWidget {
   }
 
   constructor(
-    protected readonly editor: monaco.editor.ICodeEditor,
+    protected readonly editor: IMonacoCodeEditor,
     protected readonly index: number,
     protected provider: IFoldedCodeWidgetContentProvider,
   ) {
@@ -67,7 +68,7 @@ export class FoldedCodeWidgetGroup extends Disposable {
   }
 
   constructor(
-    protected readonly editor: monaco.editor.ICodeEditor,
+    protected readonly editor: IMonacoCodeEditor,
     protected provider: IFoldedCodeWidgetContentProvider,
   ) {
     super();

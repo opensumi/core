@@ -6,11 +6,12 @@ import { URI, IEventBus } from '@ali/ide-core-browser';
 
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
-import { EOL, IDocPersistentCacheProvider } from '../../../src/common';
+import { IDocPersistentCacheProvider } from '../../../src/common';
 import { EditorDocumentModel, EditorDocumentModelConstructionOptions } from '../../../src/browser/doc-model/main';
 import { EditorDocumentModelOptionChangedEvent, EditorDocumentModelContentChangedEvent } from '../../../src/browser/doc-model/types';
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
 import { EmptyDocCacheImpl } from '@ali/ide-editor/lib/browser/doc-cache';
+import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 describe('EditorDocumentModel', () => {
   let injector: MockInjector;

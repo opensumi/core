@@ -5,7 +5,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelOptionExternalUpdatedEvent, EditorDocumentModelCreationEvent, IPreferredModelOptions } from './types';
 import { EditorDocumentModel } from './editor-document-model';
 import { mapToSerializable, serializableToMap } from '@ali/ide-core-common/lib/map';
-import { EOL } from '../../common';
+import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 export const EDITOR_DOCUMENT_MODEL_STORAGE: URI = URI.from({scheme: STORAGE_SCHEMA.SCOPE, path: 'editor-doc'});
 export const EDITOR_DOC_OPTIONS_PREF_KEY = 'editor_doc_pref';

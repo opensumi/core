@@ -441,7 +441,7 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
 
 }
 
-export class MockedStandaloneCodeEditor extends MockedCodeEditor implements monaco.editor.IStandaloneCodeEditor {
+export class MockedStandaloneCodeEditor extends MockedCodeEditor {
 
   constructor(public dom, public options, public override) {
     super(dom, options, override);

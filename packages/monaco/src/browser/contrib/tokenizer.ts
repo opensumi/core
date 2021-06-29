@@ -1,7 +1,16 @@
 import { URI } from '@ali/ide-core-common';
-import { FoldingRules, IAutoClosingPair, IAutoClosingPairConditional, LanguageConfiguration } from '../browser/monaco-api/types';
+import { FoldingRules, IAutoClosingPair, IAutoClosingPairConditional, LanguageConfiguration } from '../monaco-api/types';
 
-export * from '@ali/ide-core-browser/lib/monaco';
+export const ITextmateTokenizer = Symbol('ITextmateTokenizer');
+
+export interface ITextmateTokenizerService {
+  initialized: boolean;
+  init(): void;
+  setTheme(theme: any /**应为 @ali/ide-theme#IThemeData */): void;
+  registerGrammar(grammar: GrammarsContribution, extPath: URI): Promise<void>;
+  registerLanguage(language: LanguagesContribution, extPath: URI): Promise<void>;
+  testTokenize(line: string, languageId: string): void;
+}
 
 export interface LanguagesContribution {
   id: string;

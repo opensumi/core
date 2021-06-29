@@ -1,17 +1,17 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { GrammarsContribution } from '@ali/ide-monaco';
-import { TextmateService } from '@ali/ide-monaco/lib/browser/textmate.service';
 import { localize, URI } from '@ali/ide-core-common';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
+import { ITextmateTokenizer, ITextmateTokenizerService } from '@ali/ide-monaco/lib/browser/contrib/tokenizer';
 
 export type GrammarSchema = Array<GrammarsContribution>;
 
 @Injectable()
 @Contributes('grammars')
 export class GrammarsContributionPoint extends VSCodeContributePoint<GrammarSchema> {
-  @Autowired()
-  textMateService: TextmateService;
+  @Autowired(ITextmateTokenizer)
+  textMateService: ITextmateTokenizerService;
 
   contribute() {
     for (const grammar of this.json) {

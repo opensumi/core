@@ -1,4 +1,4 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import type { ICodeEditor as IMonacoCodeEditor } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import { ZoneWidget } from '@ali/ide-monaco-enhance/lib/browser';
 import { basename } from '@ali/ide-core-common/lib/utils/paths';
 import { IDirtyDiffModel, OPEN_DIRTY_DIFF_WIDGET } from '../../common';
@@ -30,7 +30,7 @@ export class DirtyDiffWidget extends ZoneWidget {
     return URI.from(this.editor.getModel()!.uri);
   }
 
-  constructor(editor: monaco.editor.ICodeEditor, dirtyModel: IDirtyDiffModel, readonly commandService: CommandService) {
+  constructor(editor: IMonacoCodeEditor, dirtyModel: IDirtyDiffModel, readonly commandService: CommandService) {
     super(editor);
 
     this._model = dirtyModel;

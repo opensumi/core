@@ -7,7 +7,7 @@ import type * as vscode from 'vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 import { IndentAction, SymbolKind } from './ext-types';
 import { IMarkdownString } from './models/html-content';
-import { CallHierarchyItem } from '@ali/ide-monaco/lib/common';
+import { CallHierarchyItem } from '@ali/ide-monaco/lib/browser/contrib/callHierarchy';
 export { IMarkdownString, SymbolTag, CallHierarchyItem };
 
 export interface IRawColorInfo {

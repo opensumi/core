@@ -1,7 +1,10 @@
+import type { ICodeEditor, IDiffEditor } from '@ali/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import type { IEditorConstructionOptions } from '@ali/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
+import { IDiffEditorConstructionOptions } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 import * as suggest from '@ali/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestWidget';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Event, IJSONSchema, IContextKeyService, IDisposable, BasicEvent } from '..';
-
 export enum ServiceNames {
   CODE_EDITOR_SERVICE = 'codeEditorService',
   TEXT_MODEL_SERVICE = 'textModelService',
@@ -18,17 +21,17 @@ export abstract class MonacoService {
 
   public abstract createCodeEditor(
     monacoContainer: HTMLElement,
-    options?: monaco.editor.IEditorConstructionOptions,
+    options?: IEditorConstructionOptions,
     overrides?: { [key: string]: any },
-  ): Promise<monaco.editor.IStandaloneCodeEditor>;
+  ): Promise<ICodeEditor>;
 
   public abstract loadMonaco(): Promise<void>;
 
   public abstract createDiffEditor(
     monacoContainer: HTMLElement,
-    options?: monaco.editor.IDiffEditorConstructionOptions,
+    options?: IDiffEditorConstructionOptions,
     overrides?: { [key: string]: any },
-  ): Promise<monaco.editor.IDiffEditor>;
+  ): Promise<IDiffEditor>;
 
   public abstract registerOverride(serviceName: ServiceNames, service: any): void;
 
@@ -49,7 +52,7 @@ export const MonacoContribution = Symbol('MonacoContribution');
 
 export type FormattingSelectorType = (
   formatters: Array<monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider>,
-  document: monaco.editor.ITextModel,
+  document: ITextModel,
 ) => monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider;
 
 export interface MonacoContribution {
