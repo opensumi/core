@@ -1,6 +1,6 @@
 import { Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { WSChannelHandler } from '@ali/ide-connection/lib/browser/ws-channel-handler';
-import { EDITOR_COMMANDS, UriComponents, ClientAppContribution, CommandContribution, CommandRegistry, CommandService, Domain, electronEnv, FILE_COMMANDS, formatLocalize, getIcon, IAsyncResult, IClientApp, IContextKeyService, IEventBus, IPreferenceSettingsService, isElectronEnv, localize, QuickOpenGroupItem, QuickOpenItem, QuickOpenItemOptions, QuickOpenService, replaceLocalizePlaceholder, URI, ILogger } from '@ali/ide-core-browser';
+import { EDITOR_COMMANDS, UriComponents, ClientAppContribution, CommandContribution, CommandRegistry, CommandService, Domain, electronEnv, FILE_COMMANDS, formatLocalize, getIcon, IAsyncResult, IClientApp, IContextKeyService, IEventBus, IPreferenceSettingsService, isElectronEnv, localize, QuickOpenItem, QuickOpenService, replaceLocalizePlaceholder, URI, ILogger } from '@ali/ide-core-browser';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@ali/ide-core-browser/lib/services/status-bar-service';
 import { IWindowDialogService } from '@ali/ide-overlay';
 import { IWebviewService } from '@ali/ide-webview';
@@ -322,7 +322,7 @@ export class KaitianExtensionCommandContribution implements CommandContribution 
     });
   }
 
-  private asQuickOpenItems(activated: { node?: ActivatedExtension[] | undefined; worker?: ActivatedExtension[] | undefined; }): QuickOpenItem<QuickOpenItemOptions>[] {
+  private asQuickOpenItems(activated: { node?: ActivatedExtension[] | undefined; worker?: ActivatedExtension[] | undefined; }): QuickOpenItem[] {
     const nodes = activated.node ? activated.node.map((e, i) => this.toQuickOpenItem(e, 'node', i === 0)) : [];
     const workers = activated.worker ? activated.worker.map((e, i) => this.toQuickOpenItem(e, 'worker', i === 0)) : [];
     return [
@@ -331,9 +331,9 @@ export class KaitianExtensionCommandContribution implements CommandContribution 
     ];
   }
 
-  private toQuickOpenItem(e: ActivatedExtension, host: ExtensionHostType, firstItem: boolean): QuickOpenItem<QuickOpenItemOptions> {
+  private toQuickOpenItem(e: ActivatedExtension, host: ExtensionHostType, firstItem: boolean): QuickOpenItem {
     const extension = this.extensionInstanceManageService.getExtensionInstanceByExtId(e.id);
-    return new QuickOpenGroupItem({
+    return new QuickOpenItem({
       groupLabel: firstItem ? host : undefined,
       showBorder: !!firstItem,
       label: replaceLocalizePlaceholder(e.displayName, e.id),

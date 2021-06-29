@@ -1,7 +1,6 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { Mode } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/common/quickOpen';
 import { ITaskDefinitionRegistry, IProblemMatcherRegistry, Event, IProblemPatternRegistry, Emitter } from '@ali/ide-core-common';
-import { Disposable, Uri, PreferenceService, localize, IDisposable, QuickOpenItem, QuickOpenGroupItem, QuickOpenService, formatLocalize, getIcon, IStringDictionary, isString } from '@ali/ide-core-browser';
+import { Disposable, Uri, PreferenceService, localize, IDisposable, QuickOpenItem, QuickOpenService, formatLocalize, getIcon, IStringDictionary, isString, Mode } from '@ali/ide-core-browser';
 import { ITaskService, WorkspaceFolderTaskResult, ITaskProvider, ITaskSystem, ITaskSummary } from '../common';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { OutputService } from '@ali/ide-output/lib/browser/output.service';
@@ -215,7 +214,6 @@ export class TaskService extends Disposable implements ITaskService {
 
   private toQuickOpenItem = (task: Task | ConfiguringTask): QuickOpenItem => {
     return new QuickOpenItem({
-      vlaue: task,
       label: task._label || '',
       detail: task instanceof ContributedTask ? `${task.command.name || ''} ${task.command.args ? task.command.args?.join(' ') : ''}` : undefined,
       run: (mode: Mode) => {
@@ -228,8 +226,8 @@ export class TaskService extends Disposable implements ITaskService {
     });
   }
 
-  private toQuickOpenGroupItem(showBorder: boolean, run, type?: string): QuickOpenGroupItem {
-    return new QuickOpenGroupItem({ groupLabel: showBorder ? '贡献' : undefined, run, showBorder, label: type, value: { type, grouped: true }, iconClass: getIcon('folder') });
+  private toQuickOpenGroupItem(showBorder: boolean, run, type?: string): QuickOpenItem {
+    return new QuickOpenItem({ groupLabel: showBorder ? '贡献' : undefined, run, showBorder, label: type, value: { type, grouped: true }, iconClass: getIcon('folder') });
   }
 
   private combineQuickItems(contributedTaskSet: TaskSet[], workspaceTasks: Map<string, WorkspaceFolderTaskResult>) {

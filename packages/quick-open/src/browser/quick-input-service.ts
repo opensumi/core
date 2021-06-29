@@ -1,8 +1,8 @@
-import { Mode } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/common/quickOpen';
 import { Injectable, Autowired } from '@ali/common-di';
-import { QuickInputOptions, IQuickInputService, QuickOpenItem, QuickOpenService } from '@ali/ide-core-browser/lib/quick-open';
+import { QuickInputOptions, IQuickInputService, QuickOpenItem, QuickOpenService, Mode } from '@ali/ide-core-browser/lib/quick-open';
 import { QuickTitleBar } from './quick-title-bar';
-import { Deferred, MessageType, localize, Emitter, Event } from '@ali/ide-core-common';
+import { Deferred, localize, Emitter, Event } from '@ali/ide-core-common';
+import { VALIDATE_TYPE } from '@ali/ide-core-browser/lib/components';
 
 @Injectable()
 export class QuickInputService implements IQuickInputService {
@@ -21,7 +21,7 @@ export class QuickInputService implements IQuickInputService {
     const validateInput = options && options.validateInput;
 
     if (options && this.quickTitleBar.shouldShowTitleBar(options.title, options.step)) {
-      this.quickTitleBar.attachTitleBar(this.quickOpenService.widgetNode, options.title, options.step, options.totalSteps, options.buttons);
+      this.quickTitleBar.attachTitleBar(options.title, options.step, options.totalSteps, options.buttons);
     }
 
     this.quickOpenService.open({
@@ -30,7 +30,7 @@ export class QuickInputService implements IQuickInputService {
         const error = validateInput && lookFor !== undefined ? await validateInput(lookFor) : undefined;
         label = error || prompt;
         if (error) {
-          this.quickOpenService.showDecoration(MessageType.Error);
+          this.quickOpenService.showDecoration(VALIDATE_TYPE.ERROR);
         } else {
           this.quickOpenService.hideDecoration();
         }

@@ -1,0 +1,145 @@
+.container {
+  position: absolute;
+	width: 600px;
+  z-index: 2000;
+  font-size: 13px;
+	left: 50%;
+	margin-left: -300px;
+  :global(.scrollbar-decoration) {
+    display: none;
+  }
+  box-shadow: var(--widget-shadow) 0px 5px 8px;
+}
+
+.container,
+.quickopen_list {
+  color: var(--quickInput-foreground);
+  background-color: var(--quickInput-background);
+}
+
+.quickopen_list {
+  cursor: pointer;
+}
+
+.validate_error {
+  color: var(--inputValidation-errorForeground);
+  background-color: var(--inputValidation-errorBackground);
+
+  .item_selected, .item_selected:hover, .item:hover{
+    background-color: var(--inputValidation-errorBackground);
+  }
+}
+
+.item {
+  display: flex;
+  white-space: nowrap;
+  padding: 0 10px;
+  &:hover {
+    background: var(--kt-tree-hoverBackground);
+    .item_action {
+      display: block;
+    }
+  }
+}
+
+.item_border {
+  border-top: 1px solid var(--pickerGroup-border);
+}
+
+.item_selected {
+  background-color: var(--list-focusBackground);
+  &:hover {
+    background-color: var(--list-focusBackground);
+  }
+  .item_action {
+    display: block;
+  }
+}
+
+.item_icon {
+  align-self: center;
+  margin-right: 8px;
+}
+
+.item_label_highlight {
+  font-weight: bold;
+}
+
+.item_group_label, .item_action {
+  color: var(--textLink-foreground);
+  margin-left: 6px;
+}
+
+.item_action {
+  display: none;
+  height: 22px;
+  &:hover {
+    color: var(--textLink-activeForeground);
+  }
+}
+
+.item_label_description_label {
+  color: var(--descriptionForeground);
+}
+
+.item_label_highlight,
+.item_label_description_highlight  {
+  color: var(--list-highlightForeground);
+}
+
+.item_label_description, .item_label_detail {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item_label_description,
+.item_label_detail {
+  font-size: 12px;
+}
+
+.item_label_description {
+  margin-left: 6px;
+}
+
+.item_label_container {
+  flex: 1;
+  width: 100%;
+  line-height: 22px;
+  overflow: hidden;
+}
+
+.item_label {
+  display: flex;
+  align-items: baseline;
+}
+
+.item_keybinding {
+  display: flex;
+  font-size: 11px;
+}
+
+.item_key_sequence {
+  margin-right: 6px;
+  &:last-child {
+    margin-right: 0;
+  }
+}
+
+.input {
+  margin: 6px;
+}
+
+.title_bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--titlebar-background);
+  padding: 4px;
+}
+
+.title_bar_button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

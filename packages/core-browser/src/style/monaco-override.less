@@ -32,24 +32,6 @@
   }
 }
 
-// 需要覆盖掉 monaco quickopen 默认的图表
-.quick-open-overlay .monaco-quick-open-widget .quick-open-tree .quick-open-entry .quick-open-row .quick-open-entry-icon {
-  position: relative;
-  background-image: none;
-  margin-right: 8px;
-
-  // 让 icon 位于容器中间
-  &:before {
-    font-size: 16px;
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 16px;
-    height: 16px;
-    line-height: 16px;
-  }
-}
-
 .quick-open-overlay .monaco-tree .monaco-tree-row > .content.actions > .primary-action-bar .action-label {
   margin-right: 4px;
   margin-left: 4px;
@@ -58,15 +40,6 @@
   width: 16px;
   height: 16px;
   font-size: 16px;
-}
-
-// 覆盖 monaco quickopen input 的 outline
-.monaco-quick-open-widget .quick-open-input input {
-  outline: none;
-}
-
-.monaco-quick-open-widget .quick-open-tree .results-group {
-  color: var(--textLink-foreground) !important;
 }
 
 // monaco editor 内部 menu 的分割线

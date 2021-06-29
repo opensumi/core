@@ -1,7 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Mode } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/common/quickOpen';
 import { QuickOpenHandler, QuickOpenHandlerRegistry } from './prefix-quick-open.service';
-import { QuickOpenItem, PrefixQuickOpenService, QuickOpenModel } from './quick-open.model';
+import { QuickOpenItem, PrefixQuickOpenService, QuickOpenModel, Mode } from '@ali/ide-core-browser/lib/quick-open';
 import { CommandService, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 
 @Injectable()

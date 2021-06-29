@@ -3,7 +3,7 @@ import { renderApp } from '@ali/ide-startup/entry/web/render-app';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { BrowserModule, CommandRegistry, CommandService, ILogger } from '@ali/ide-core-browser';
-import { QuickPickService, IQuickInputService } from '../src/browser/quick-open.model';
+import { QuickPickService, IQuickInputService } from '@ali/ide-core-browser/lib/quick-open';
 import { QuickOpenModule } from '../src/browser';
 import { QUICK_OPEN_COMMANDS } from '../src/common';
 import { MonacoModule } from '@ali/ide-monaco/lib/browser';
