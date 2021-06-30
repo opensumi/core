@@ -205,7 +205,8 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   },
   'editor.fixedOverflowWidgets': {
     'type': 'boolean',
-    'description': localize('fixedOverflowWidgets', 'Display overflow widgets as fixed. Defaults to false.'),
+    'default': EDITOR_DEFAULTS.viewInfo.fixedOverflowWidgets,
+    'description': localize('fixedOverflowWidgets', 'Display overflow widgets as fixed.'),
   },
   'editor.revealHorizontalRightPadding': {
     'type': 'number',
