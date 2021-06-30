@@ -1,4 +1,4 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import type { ICodeEditor as IMonacoCodeEditor, IPosition } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import { IChange, Command } from '@ali/ide-core-common';
 
 export interface IDirtyDiffModel {
@@ -9,7 +9,7 @@ export interface IDirtyDiffModel {
 
 export const IDirtyDiffWorkbenchController = Symbol('DirtyDiffWorkbenchController');
 export interface IDirtyDiffWorkbenchController {
-  toggleDirtyDiffWidget(codeEditor: monaco.editor.ICodeEditor, position: monaco.IPosition): void;
+  toggleDirtyDiffWidget(codeEditor: IMonacoCodeEditor, position: IPosition): void;
 }
 
 export const OPEN_DIRTY_DIFF_WIDGET: Command = {

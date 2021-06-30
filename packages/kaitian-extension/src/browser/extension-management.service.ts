@@ -108,7 +108,7 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
   }
 
   /**
-   * @deprecated 建议直接用 getExtensions 后自行 map#toJSON 即可
+   * @deprecated 建议直接用 AbstractExtInstanceManagementService#getExtensionInstances 后自行 map#toJSON 即可
    */
   public getAllExtensionJson(): IExtensionProps[] {
     // 备注: 这里的 getAllExtensions 跟 extensionMap 没有关系

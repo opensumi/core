@@ -1,4 +1,5 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { monaco as monacoAPI } from '@ali/ide-monaco/lib/browser/monaco-api';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
 import { MonacoService, Emitter, URI } from '@ali/ide-core-browser';
@@ -47,7 +48,7 @@ describe('editor collection service test', () => {
       useValue: mockConfigurationService,
       override: true,
     });
-    const mockEditor = monaco.editor.create(document.createElement('div'));
+    const mockEditor = monacoAPI.editor.create(document.createElement('div'));
     const codeEditor = injector.get(BrowserCodeEditor, [mockEditor]);
     const updateOptions = jest.spyOn(codeEditor, 'updateOptions');
     const getSelections = jest.spyOn(codeEditor, 'getSelections');

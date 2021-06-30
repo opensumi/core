@@ -69,8 +69,18 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  cursor: pointer;
   user-select: none;
+
+  a {
+    color: currentColor !important;
+    cursor: text;
+    &.link {
+      text-decoration: underline;
+    }
+    &.pointer {
+      cursor: pointer;
+    }
+  }
 
   &:hover {
     color: var(--kt-tree-hoverForeground);

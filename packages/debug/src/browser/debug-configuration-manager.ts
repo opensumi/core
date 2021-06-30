@@ -29,6 +29,7 @@ import { FileSystemError } from '@ali/ide-file-service';
 import { DebugConfiguration } from '../common';
 import { WorkbenchEditorService, IOpenResourceResult } from '@ali/ide-editor';
 import { DebugPreferences } from './debug-preferences';
+import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 // tslint:disable-next-line:no-empty-interface
 export interface WillProvideDebugConfiguration extends WaitUntilEvent {
@@ -469,7 +470,7 @@ export class DebugConfigurationManager {
    * 判断当前文档是否支持断点
    * @param model
    */
-  canSetBreakpointsIn(model: monaco.editor.ITextModel) {
+  canSetBreakpointsIn(model: ITextModel) {
     if (!model) {
       return false;
     }

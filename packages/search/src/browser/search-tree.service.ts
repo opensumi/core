@@ -20,6 +20,7 @@ import {
 } from '../common';
 import { SearchPreferences } from './search-preferences';
 import * as styles from './search.module.less';
+import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 const REPLACE_PREVIEW = 'replacePreview';
 
@@ -31,7 +32,7 @@ const toReplaceResource = (fileResource: URI): URI => {
 export class RangeHighlightDecorations implements IDisposable {
 
   private _decorationId: string | null = null;
-  private _model: monaco.editor.ITextModel | null = null;
+  private _model: ITextModel | null = null;
   private readonly _modelDisposables = new DisposableStore();
 
   @Autowired(IEditorDocumentModelService)
@@ -44,8 +45,8 @@ export class RangeHighlightDecorations implements IDisposable {
     this._decorationId = null;
   }
 
-  highlightRange(resource: URI | monaco.editor.ITextModel, range: IRange, ownerId: number = 0): void {
-    let model: monaco.editor.ITextModel | null = null;
+  highlightRange(resource: URI | ITextModel, range: IRange, ownerId: number = 0): void {
+    let model: ITextModel | null = null;
     if (URI.isUri(resource)) {
       const modelRef = this.documentModelManager.getModelReference(resource);
       if (modelRef) {
@@ -60,13 +61,13 @@ export class RangeHighlightDecorations implements IDisposable {
     }
   }
 
-  private doHighlightRange(model: monaco.editor.ITextModel, range: IRange) {
+  private doHighlightRange(model: ITextModel, range: IRange) {
     this.removeHighlightRange();
     this._decorationId = model.deltaDecorations([], [{ range, options: RangeHighlightDecorations._RANGE_HIGHLIGHT_DECORATION }])[0];
     this.setModel(model);
   }
 
-  private setModel(model: monaco.editor.ITextModel) {
+  private setModel(model: ITextModel) {
     if (this._model !== model) {
       this.clearModelListeners();
       this._model = model;

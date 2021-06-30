@@ -1,9 +1,9 @@
 
-import { IMarker, MarkerSeverity, ResourceGlobMatcher, URI } from '@ali/ide-core-common';
+import { IMarker, MarkerSeverity, URI } from '@ali/ide-core-common';
 import { IFilter, matchesFuzzy, matchesFuzzy2, matchesPrefix } from '@ali/ide-core-common/lib/filters';
 import { getEmptyExpression, IExpression, splitGlobAware } from '@ali/ide-core-common/lib/utils/glob';
 import * as strings from '@ali/ide-core-common/lib/utils/strings';
-import { IFilterOptions, IRenderableMarker, IRenderableMarkerModel, MarkerItemBuilder, MarkerModelBuilder } from '../common';
+import { IFilterOptions, IRenderableMarker, IRenderableMarkerModel, MarkerItemBuilder, MarkerModelBuilder, ResourceGlobMatcher } from '../common';
 import Messages from './messages';
 
 /**

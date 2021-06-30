@@ -1,10 +1,10 @@
 import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Domain, Command, ClientAppContribution, PreferenceService, JsonSchemaContribution, ISchemaRegistry } from '@ali/ide-core-browser';
+import { CommandContribution, CommandRegistry, Domain, Command, JsonSchemaContribution, ISchemaRegistry } from '@ali/ide-core-browser';
 import { ITaskService } from '../common';
 import { schema, taskSchemaUri } from './task.schema';
 
-@Domain(ClientAppContribution, CommandContribution, JsonSchemaContribution)
-export class TaskContribution implements ClientAppContribution, CommandContribution, JsonSchemaContribution {
+@Domain(CommandContribution, JsonSchemaContribution)
+export class TaskContribution implements CommandContribution, JsonSchemaContribution {
   static readonly RUN_TASK_COMMAND: Command = {
     id: 'workbench.action.tasks.runTask',
     label: '运行任务',
@@ -12,18 +12,10 @@ export class TaskContribution implements ClientAppContribution, CommandContribut
   };
 
   @Autowired(ITaskService)
-  taskService: ITaskService;
-
-  @Autowired(PreferenceService)
-  preferences: PreferenceService;
+  private readonly taskService: ITaskService;
 
   registerSchema(registry: ISchemaRegistry) {
     registry.registerSchema(taskSchemaUri, schema, ['tasks.json']);
-  }
-
-  initialize() {
-    this.preferences.onPreferenceChanged((e) => {
-    });
   }
 
   registerCommands(commandRegister: CommandRegistry) {

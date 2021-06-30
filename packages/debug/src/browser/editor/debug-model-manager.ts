@@ -1,3 +1,4 @@
+import type { ICodeEditor as IMonacoCodeEditor } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Disposable, URI, Emitter, Event, DisposableCollection } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
@@ -112,7 +113,7 @@ export class DebugModelManager extends Disposable {
   }
 
   protected push(codeEditor: ICodeEditor): void {
-    const monacoEditor = (codeEditor as any).monacoEditor as monaco.editor.ICodeEditor;
+    const monacoEditor = (codeEditor as any).monacoEditor;
     codeEditor.onRefOpen((ref) => {
       const uriString = ref.instance.uri.toString();
       const debugModel = this.models.get(uriString) || [];
@@ -167,7 +168,7 @@ export class DebugModelManager extends Disposable {
     return model;
   }
 
-  handleMouseEvent(uri: URI, type: DebugModelSupportedEventType, event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent, monacoEditor: monaco.editor.ICodeEditor) {
+  handleMouseEvent(uri: URI, type: DebugModelSupportedEventType, event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent, monacoEditor: IMonacoCodeEditor) {
     const debugModel = this.models.get(uri.toString());
     if (!debugModel) {
       return;

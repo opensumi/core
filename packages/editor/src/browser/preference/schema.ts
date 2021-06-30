@@ -205,7 +205,8 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   },
   'editor.fixedOverflowWidgets': {
     'type': 'boolean',
-    'description': localize('fixedOverflowWidgets', 'Display overflow widgets as fixed. Defaults to false.'),
+    'default': EDITOR_DEFAULTS.viewInfo.fixedOverflowWidgets,
+    'description': localize('fixedOverflowWidgets', 'Display overflow widgets as fixed.'),
   },
   'editor.revealHorizontalRightPadding': {
     'type': 'number',
@@ -1103,6 +1104,11 @@ const customEditorSchema: PreferenceSchemaProperties = {
     type: 'boolean',
     default: true,
     description: '%editor.configuration.preview%',
+  },
+  'editor.wrapTab': {
+    type: 'boolean',
+    default: false,
+    description: '%editor.configuration.wrapTab%',
   },
   'editor.minimap': {
     type: 'boolean',

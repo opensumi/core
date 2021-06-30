@@ -19,6 +19,7 @@ import {
 import * as styles from './refactor_preview.module.less';
 import { localize } from '@ali/ide-core-common/lib/localize';
 import { isWorkspaceFileEdit } from './utils';
+import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 interface IRefactorNodeProps {
   data: WorkspaceTextEdit | WorkspaceFileEdit;
@@ -51,7 +52,7 @@ interface IFileEditNodeProps {
  */
 function splitLeftAndRightPadInTextModel(
   range: IRange,
-  textModel: monaco.editor.ITextModel,
+  textModel: ITextModel,
 ) {
   const lineContent = textModel.getLineContent(range.startLineNumber);
   const base = textModel.getValueInRange(range);

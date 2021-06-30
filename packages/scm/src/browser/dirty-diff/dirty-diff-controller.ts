@@ -1,4 +1,5 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import type { ICodeEditor as IMonacoCodeEditor } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+
 /* istanbul ignore file */
 // 文件没有使用
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
@@ -7,7 +8,7 @@ export class DirtyDiffController extends Disposable {
 
   private static readonly ID = 'editor.contrib.dirtydiff';
 
-  static get(editor: monaco.editor.ICodeEditor): DirtyDiffController {
+  static get(editor: IMonacoCodeEditor): DirtyDiffController {
     // return editor.getContribution<DirtyDiffController>(DirtyDiffController.ID);
     return editor.getContribution<any>(DirtyDiffController.ID);
   }

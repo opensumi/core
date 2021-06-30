@@ -17,13 +17,13 @@
 
 import { localize, QuickOpenActionProvider } from '@ali/ide-core-browser';
 import { DisposableCollection, IDisposable, Disposable, ILogger } from '@ali/ide-core-common';
-import { IQuickOpenHandlerRegistry, QuickOpenHandler, QuickOpenOptions, QuickOpenService, QuickOpenItem, PrefixQuickOpenService } from './quick-open.model';
+import { IQuickOpenHandlerRegistry, QuickOpenHandler, QuickOpenOptions, QuickOpenService, QuickOpenItem, PrefixQuickOpenService } from '@ali/ide-core-browser/lib/quick-open';
 import { Injectable, Autowired } from '@ali/common-di';
 import { QuickTitleBar } from './quick-title-bar';
 /**
  * @deprecated import from `@ali/ide-core-browser/lib/quick-open` instead
  */
-export { QuickOpenContribution, QuickOpenHandler, IQuickOpenHandlerRegistry } from './quick-open.model';
+export { QuickOpenContribution, QuickOpenHandler, IQuickOpenHandlerRegistry } from '@ali/ide-core-browser/lib/quick-open';
 
 @Injectable()
 export class QuickOpenHandlerRegistry extends Disposable implements IQuickOpenHandlerRegistry {

@@ -1,8 +1,7 @@
 import { URI } from '@ali/ide-core-common';
+import { FoldingRules, IAutoClosingPair, IAutoClosingPairConditional, LanguageConfiguration } from '../browser/monaco-api/types';
 
 export * from '@ali/ide-core-browser/lib/monaco';
-
-export * from './callHierarchy';
 
 export interface LanguagesContribution {
   id: string;
@@ -24,7 +23,7 @@ export interface LanguagesContribution {
    * 其中的值为 configuration 指向的 json 配置文件的内容
    * 主要解决无需多个插件即可注册多个 language 进来
    */
-  resolvedConfiguration?: ILanguageConfiguration;
+  resolvedConfiguration?: LanguageConfiguration;
 }
 
 export interface ScopeMap {
@@ -46,17 +45,6 @@ export interface GrammarsContribution {
    * 主要解决无需多个插件即可注册多个 grammar 进来
    */
   resolvedConfiguration?: object;
-}
-
-// TODO 这些声明最后都要聚拢到插件声明
-export interface FoldingMarkers {
-  start: string;
-  end: string;
-}
-
-export interface FoldingRules {
-  offSide?: boolean;
-  markers?: FoldingMarkers;
 }
 
 export interface IndentationRules {
@@ -96,15 +84,6 @@ export interface CommentRule {
  * opening and closing brackets.
  */
 export type CharacterPair = [string, string];
-
-export interface IAutoClosingPair {
-  open: string;
-  close: string;
-}
-
-export interface IAutoClosingPairConditional extends IAutoClosingPair {
-  notIn?: string[];
-}
 
 interface IRegExp {
   pattern: string;

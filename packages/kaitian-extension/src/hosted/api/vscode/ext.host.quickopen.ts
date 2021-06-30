@@ -8,6 +8,8 @@ type Item = string | vscode.QuickPickItem;
 
 export class ExtHostQuickOpen implements IExtHostQuickOpen {
 
+  private _onDidSelectItem?: (handle: number) => void;
+
   private proxy: IMainThreadQuickOpen;
   private validateInputHandler: undefined | ((input: string) => MaybePromise<string | null | undefined>);
 
@@ -25,7 +27,18 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
   showQuickPick(promiseOrItems: vscode.QuickPickItem[] | Promise<vscode.QuickPickItem[]>, options?: (vscode.QuickPickOptions & { canSelectMany: true; }) | undefined, token?: CancellationToken | undefined): Promise<vscode.QuickPickItem[] | undefined>;
   showQuickPick(promiseOrItems: string[] | Promise<string[]>, options?: vscode.QuickPickOptions | undefined, token?: CancellationToken | undefined): Promise<string | undefined>;
   async showQuickPick(promiseOrItems: Item[] | Promise<Item[]>, options?: vscode.QuickPickOptions, token: CancellationToken = CancellationToken.None): Promise<Item | Item[] | undefined> {
+    // clear state from last invocation
+    this._onDidSelectItem = undefined;
+    const sessionId = (options as any)?._sessionId ?? ++this.currentQuick;
     const items = await promiseOrItems;
+
+    // handle selection changes
+    if (options && typeof options.onDidSelectItem === 'function') {
+      this._onDidSelectItem = (handle) => {
+        options.onDidSelectItem!(items[handle]);
+      };
+    }
+
     const pickItems = items.map((item, index) => {
 
       if (typeof item === 'string') {
@@ -35,7 +48,6 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
         };
       } else {
         const quickPickItem: QuickPickItem<number> = {
-          // QuickPickItem
           label: item.label,
           description: item.description,
           detail: item.detail,
@@ -46,7 +58,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
       }
     });
 
-    const quickPickPromise = this.proxy.$showQuickPick(pickItems, options && {
+    const quickPickPromise = this.proxy.$showQuickPick(sessionId, pickItems, options && {
       placeholder: options.placeHolder,
       fuzzyMatchDescription: options.matchOnDescription,
       fuzzyMatchDetail: options.matchOnDetail,
@@ -68,10 +80,13 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
       }
     }
 
-    if (result && options && typeof options.onDidSelectItem === 'function') {
-      options.onDidSelectItem(Array.isArray(result) ? result[0] : result);
-    }
     return result;
+  }
+
+  $onItemSelected(handle: number): void {
+    if (this._onDidSelectItem) {
+      this._onDidSelectItem(handle);
+    }
   }
 
   async showWorkspaceFolderPick(options: vscode.WorkspaceFolderPickOptions, token: CancellationToken = CancellationToken.None) {
@@ -79,15 +94,15 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
     if (!workspaceFolders) {
       return undefined;
     }
+    const session = ++this.currentQuick;
     const pickItems = workspaceFolders.map((folder: vscode.WorkspaceFolder) => {
       const quickPickItem: QuickPickItem<number> = {
-        // QuickPickItem
         label: folder.name,
         value: folder.index, // handle
       };
       return quickPickItem;
     });
-    const quickPickPromise = this.proxy.$showQuickPick(pickItems, options && {
+    const quickPickPromise = this.proxy.$showQuickPick(session, pickItems, options && {
       placeholder: options.placeHolder,
       ignoreFocusOut: options.ignoreFocusOut,
     });
@@ -100,17 +115,24 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
   }
 
   createQuickPick<T extends vscode.QuickPickItem>(): vscode.QuickPick<T> {
-    this.currentQuick++;
-    const newQuickPick = new QuickPickExt(this, this.currentQuick);
-    this.createdQuicks.set(this.currentQuick, newQuickPick);
+    const session = ++this.currentQuick;
+    const newQuickPick = new QuickPickExt(this, session);
+    this.createdQuicks.set(session, newQuickPick);
     return newQuickPick as QuickPickExt<T>;
   }
 
   createInputBox(): vscode.InputBox {
-    this.currentQuick++;
-    const newInputBox = new QuickInputExt(this, this.currentQuick);
-    this.createdQuicks.set(this.currentQuick, newInputBox);
+    const session = ++this.currentQuick;
+    const newInputBox = new QuickInputExt(this, session);
+    this.createdQuicks.set(session, newInputBox);
     return newInputBox;
+  }
+
+  $onDidChangeValue(sessionId: number, value: string): void {
+    const session = this.createdQuicks.get(sessionId);
+    if (session) {
+      session._fireDidChangeValue(value);
+    }
   }
 
   $onDidTriggerButton(btnHandler: number): void {
@@ -242,6 +264,11 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
     return this.onDidTriggerButtonEmitter.event;
   }
 
+  _fireDidChangeValue(value: string) {
+    this.value = value;
+    this.onDidChangeValueEmitter.fire(value);
+  }
+
   get onDidHide(): Event<void> {
     return this.onDidHideEmitter.event;
   }
@@ -273,19 +300,18 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
 
     this.quickOpen.showQuickPick(this.items.map((item) => item as T), {
       canPickMany: this.canSelectMany,
-      // tslint:disable-next-line:no-any
-      onDidSelectItem(item: T | string): any {
-        if (typeof item !== 'string') {
-          selectItem(item);
-        }
-        hide();
-      },
       title: this.title,
       step: this.step,
       totalSteps: this.totalSteps,
       buttons: this.buttons,
       placeHolder: this.placeholder,
-    } as QuickPickOptions );
+      _sessionId: this.quickPickIndex,
+    } as QuickPickOptions ).then((item) => {
+      if (typeof item !== 'string') {
+        selectItem(Array.isArray(item) ? item[0] : item);
+      }
+      hide();
+    });
   }
 
 }
@@ -329,6 +355,11 @@ class QuickInputExt implements vscode.InputBox {
     this.disposableCollection.push(this.onDidChangeValueEmitter = new Emitter());
     this.disposableCollection.push(this.onDidTriggerButtonEmitter = new Emitter());
     this.disposableCollection.push(this.onDidHideEmitter = new Emitter());
+  }
+
+  _fireDidChangeValue(value: string) {
+    this.value = value;
+    this.onDidChangeValueEmitter.fire(value);
   }
 
   get onDidChangeValue(): Event<string> {

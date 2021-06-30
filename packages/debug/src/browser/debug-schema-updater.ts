@@ -1,15 +1,11 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { InMemoryResourceResolver, deepClone, IJSONSchema, ISchemaRegistry } from '@ali/ide-core-browser';
+import { deepClone, IJSONSchema, ISchemaRegistry } from '@ali/ide-core-browser';
 import { DebugServer, IDebugServer } from '../common/debug-service';
 import { DebugConfigurationManager } from './debug-configuration-manager';
 import { launchSchemaUri } from '../common';
 
 @Injectable()
 export class DebugSchemaUpdater {
-
-  @Autowired(InMemoryResourceResolver)
-  protected readonly inmemoryResources: InMemoryResourceResolver;
-
   @Autowired(IDebugServer)
   protected readonly debug: DebugServer;
 

@@ -1,7 +1,8 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { URI, MaybePromise, IRef, IDisposable, Event, IRange, BasicEvent, IEditOperation, IEditorDocumentChange, IEditorDocumentModelSaveResult} from '@ali/ide-core-browser';
-import { EOL, EndOfLineSequence, IEditorDocumentModelContentChange, SaveReason } from '../../common';
+import { IEditorDocumentModelContentChange, SaveReason } from '../../common';
+import { EndOfLineSequence, EOL, ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 /**
  * editorDocumentModel is a wrapped concept for monaco's textModel
  */
@@ -66,7 +67,7 @@ export interface IEditorDocumentModel extends IDisposable {
   /**
    * 获得monaco的TextModel
    */
-  getMonacoModel(): monaco.editor.ITextModel;
+  getMonacoModel(): ITextModel;
 
   /**
    *  保存文档, 如果文档不可保存，则不会有任何反应

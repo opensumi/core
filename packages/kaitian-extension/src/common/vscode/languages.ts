@@ -48,7 +48,6 @@ import {
   CompletionItemTag,
   ChainedCacheId,
 } from './model.api';
-import type { editor } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import type {
   CodeActionContext,
   CodeActionList,
@@ -64,6 +63,7 @@ import { CompletionContext } from './model.api';
 import { IEvaluatableExpression } from '@ali/ide-debug/lib/common/evaluatable-expression';
 import { ISingleEditOperation } from '@ali/ide-editor';
 import { IExtensionDescription } from './extension';
+import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 export interface IMainThreadLanguages {
   $unregister(handle: number): void;
@@ -561,7 +561,7 @@ export namespace MonacoModelIdentifier {
     };
   }
   export function fromModel(
-    model: editor.IReadOnlyModel,
+    model: ITextModel,
   ): MonacoModelIdentifier {
     return {
       uri: model.uri,

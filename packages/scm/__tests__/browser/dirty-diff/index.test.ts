@@ -1,4 +1,6 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import type { ICodeEditor as IMonacoCodeEditor } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+import { monaco as monacoAPI } from '@ali/ide-monaco/lib/browser/monaco-api';
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { DisposableCollection, PreferenceScope, Uri, URI, Emitter, CommandService, toDisposable } from '@ali/ide-core-common';
 import { WorkbenchEditorService, IDocPersistentCacheProvider } from '@ali/ide-editor';
@@ -66,7 +68,7 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
   let scmPreferences: MockPreferenceService;
 
   const editorFeatureContributions = new Set<IEditorFeatureContribution>();
-  let monacoEditor: monaco.editor.ICodeEditor;
+  let monacoEditor: IMonacoCodeEditor;
   let editorModel: IEditorDocumentModel;
   let commandService: CommandService;
   let editorService: WorkbenchEditorService;
@@ -127,7 +129,7 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
     commandService = injector.get(CommandService);
     dirtyDiffWorkbenchController = injector.get(IDirtyDiffWorkbenchController);
     editorModel = await createModel(`/test/workspace/abc${Math.random()}.ts`);
-    monacoEditor = monaco.editor!.create(document.createElement('div'), { language: 'typescript' });
+    monacoEditor = monacoAPI.editor!.create(document.createElement('div'), { language: 'typescript' });
     monacoEditor.setModel(editorModel.getMonacoModel());
     done();
   });

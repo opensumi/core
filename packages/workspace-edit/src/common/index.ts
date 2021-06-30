@@ -1,5 +1,5 @@
 import { Uri, URI, IRange, BasicEvent, FileStat, CancellationToken, WaitUntilEvent, IDisposable, Event } from '@ali/ide-core-common';
-import { EndOfLineSequence } from '@ali/ide-editor';
+import { EndOfLineSequence } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import type { IBulkEditService } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 
 // 对文件位置(添加，删除，移动, 复制)

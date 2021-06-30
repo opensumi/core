@@ -1,4 +1,4 @@
-import type { editor } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import type { ICodeEditor as IMonacoCodeEditor } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import type { ITextModelUpdateOptions } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 import type { IEditorOptions } from '@ali/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { Injectable } from '@ali/common-di';
@@ -88,7 +88,7 @@ export interface IEditor {
   /**
    * 获得包裹的 monaco 编辑器
    */
-  monacoEditor: editor.ICodeEditor;
+  monacoEditor: IMonacoCodeEditor;
 
   onDispose: Event<void>;
 }
@@ -502,30 +502,6 @@ export interface ISingleEditOperation {
    * i.e. forceMoveMarkers = true => if `range` is collapsed, all markers at the position will be moved.
    */
   forceMoveMarkers?: boolean;
-}
-
-/**
- * End of line character preference.
- */
-export const enum EndOfLineSequence {
-  /**
-   * Use line feed (\n) as the end of line character.
-   */
-  LF = 0,
-  /**
-   * Use carriage return and line feed (\r\n) as the end of line character.
-   */
-  CRLF = 1,
-}
-
-/**
- * End of line character preference.
- */
-export const enum EOL {
-
-  LF = '\n',
-
-  CRLF = '\r\n',
 }
 
 /**

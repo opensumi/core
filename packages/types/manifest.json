@@ -336,7 +336,8 @@
     "@ali/ide-webview": {
       "version": "2.5.4",
       "entry": [
-        "browser"
+        "browser",
+        "common"
       ]
     },
     "@ali/ide-workspace": {

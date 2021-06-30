@@ -266,8 +266,9 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   async getPreferenceUrl(scope: PreferenceScope) {
     const preferenceProvider: PreferenceProvider = this.providerProvider(scope);
     const resource = await preferenceProvider.resource;
-    if (resource && resource.getFsPath) {
-      return await resource.getFsPath();
+
+    if (resource) {
+      return resource.uri;
     } else {
       return preferenceProvider.getConfigUri()?.toString();
     }
@@ -431,6 +432,8 @@ export const defaultSettingSections: {
   view: [
     {
       preferences: [
+        // 编辑器外观
+        { id: 'editor.wrapTab', localized: 'preference.editor.wrapTab' },
         // 资源管理器
         { id: 'explorer.fileTree.baseIndent', localized: 'preference.explorer.fileTree.baseIndent.title' },
         { id: 'explorer.fileTree.indent', localized: 'preference.explorer.fileTree.indent.title' },

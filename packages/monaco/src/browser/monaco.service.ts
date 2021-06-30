@@ -1,18 +1,22 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import type { ICodeEditor, IDiffEditor } from './monaco-api/types';
+import { monaco } from './monaco-api';
+// import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Disposable, MonacoOverrideServiceRegistry, ServiceNames } from '@ali/ide-core-browser';
 import { Deferred, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 
 import { MonacoService } from '../common';
-import { TextmateService } from './textmate.service';
+import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
+import { IEditorConstructionOptions } from '@ali/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { IDiffEditorConstructionOptions } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 @Injectable()
 export default class MonacoServiceImpl extends Disposable implements MonacoService  {
   @Autowired(INJECTOR_TOKEN)
   protected injector: Injector;
 
-  @Autowired()
-  private textMateService: TextmateService;
+  @Autowired(ITextmateTokenizer)
+  private textMateService: ITextmateTokenizerService;
 
   @Autowired(MonacoOverrideServiceRegistry)
   private readonly overrideServiceRegistry: MonacoOverrideServiceRegistry;
@@ -33,9 +37,9 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
 
   public async createCodeEditor(
     monacoContainer: HTMLElement,
-    options?: monaco.editor.IEditorConstructionOptions,
+    options?: IEditorConstructionOptions,
     overrides: {[key: string]: any} = {},
-  ): Promise<monaco.editor.IStandaloneCodeEditor> {
+  ): Promise<ICodeEditor> {
     const editor =  monaco.editor.create(monacoContainer, {
       // @ts-ignore
       'semanticHighlighting.enabled': true,
@@ -56,9 +60,9 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
 
   public async createDiffEditor(
     monacoContainer: HTMLElement,
-    options?: monaco.editor.IDiffEditorConstructionOptions,
+    options?: IDiffEditorConstructionOptions,
     overrides: {[key: string]: any} = {},
-  ): Promise<monaco.editor.IDiffEditor> {
+  ): Promise<IDiffEditor> {
     const editor =  monaco.editor.createDiffEditor(monacoContainer, {
       glyphMargin: true,
       lightbulb: {

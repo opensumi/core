@@ -459,6 +459,11 @@ export class DebugModel implements IDebugModel {
   protected showHover(mouseEvent: monaco.editor.IEditorMouseEvent): void {
     const targetType = mouseEvent.target.type;
     const stopKey = isOSX ? 'metaKey' : 'ctrlKey';
+    const isAlt = mouseEvent.event.altKey;
+
+    if (isAlt) {
+      return;
+    }
 
     if (targetType === monaco.editor.MouseTargetType.CONTENT_WIDGET && mouseEvent.target.detail === this.debugHoverWidget.getId() && !(mouseEvent.event as any)[stopKey]) {
       return;

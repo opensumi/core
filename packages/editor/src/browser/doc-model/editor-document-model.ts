@@ -1,9 +1,10 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+// import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { monaco } from '@ali/ide-monaco/lib/browser/monaco-api';
 import { Autowired, Injectable } from '@ali/common-di';
-import { CommandService, Disposable, Emitter, formatLocalize, IEventBus, ILogger, IRange, IReporterService, isThenable, isUndefinedOrNull, localize, PreferenceService, REPORT_NAME, URI } from '@ali/ide-core-browser';
+import { CommandService, Disposable, Emitter, formatLocalize, IEventBus, ILogger, IRange, IReporterService, isThenable, isUndefinedOrNull, localize, PreferenceService, REPORT_NAME, Uri, URI } from '@ali/ide-core-browser';
 import { IMessageService } from '@ali/ide-overlay';
 import * as md5 from 'md5';
-import { EndOfLineSequence, EOL, IDocCache, IDocPersistentCacheProvider, isDocContentCache, parseRangeFrom, SaveReason, IEditorDocumentModelContentChange } from '../../common';
+import { IDocCache, IDocPersistentCacheProvider, isDocContentCache, parseRangeFrom, SaveReason, IEditorDocumentModelContentChange } from '../../common';
 import { CompareResult, ICompareService } from '../types';
 import { EditorDocumentError } from './editor-document-error';
 import { IEditorDocumentModelServiceImpl, SaveTask } from './save-task';
@@ -12,6 +13,7 @@ import { EditorDocumentModelContentChangedEvent, EditorDocumentModelOptionChange
 import debounce = require('lodash.debounce');
 import { EditorPreferences } from '../preference/schema';
 import { createEditorPreferenceProxy } from '../preference/util';
+import { EOL, EndOfLineSequence, ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 export interface EditorDocumentModelConstructionOptions {
   eol?: EOL;
@@ -64,7 +66,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   @Autowired(PreferenceService)
   preferences: PreferenceService;
 
-  private monacoModel: monaco.editor.ITextModel;
+  private monacoModel: ITextModel;
 
   public _encoding: string = 'utf8';
 
@@ -111,7 +113,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     this.alwaysDirty = !!options.alwaysDirty;
     this.closeAutoSave = !!options.closeAutoSave;
 
-    this.monacoModel = monaco.editor.createModel(content, options.languageId, monaco.Uri.parse(uri.toString()));
+    this.monacoModel = monaco.editor.createModel(content, options.languageId, Uri.parse(uri.toString()));
     this.editorPreferences = createEditorPreferenceProxy(this.preferences, this.uri.toString(), this.languageId);
     this.updateOptions({});
     if (options.eol) {
@@ -143,7 +145,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     }
   }
 
-  private listenTo(monacoModel: monaco.editor.ITextModel) {
+  private listenTo(monacoModel: ITextModel) {
     monacoModel.onDidChangeContent((e) => {
       if (e.changes && e.changes.length > 0) {
         this.dirtyChanges.push({
@@ -277,7 +279,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     return this.monacoModel.id;
   }
 
-  getMonacoModel(): monaco.editor.ITextModel {
+  getMonacoModel(): ITextModel {
     return this.monacoModel;
   }
 

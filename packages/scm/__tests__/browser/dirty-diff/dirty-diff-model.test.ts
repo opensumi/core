@@ -1,4 +1,5 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import type { ICodeEditor as IMonacoCodeEditor } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import type { IDiffComputationResult } from '@ali/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
@@ -61,7 +62,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
     let repo: ISCMRepository;
     let commandService: CommandService;
     let provider: MockSCMProvider;
-    let codeEditor: monaco.editor.ICodeEditor;
+    let codeEditor: IMonacoCodeEditor;
 
     async function createModel(filePath: string) {
       const modelManager = injector.get(IEditorDocumentModelService);

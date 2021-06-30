@@ -14,7 +14,7 @@ export enum VALIDATE_TYPE {
 }
 
 export interface ValidateMessage {
-  message: string | void;
+  message?: string | void;
   type: VALIDATE_TYPE;
 }
 

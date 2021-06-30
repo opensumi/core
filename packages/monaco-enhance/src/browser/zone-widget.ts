@@ -1,3 +1,4 @@
+import type { ICodeEditor as IMonacoCodeEditor } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Disposable, IDisposable, Event, Emitter, IRange, uuid } from '@ali/ide-core-common';
 import { DomListener } from '@ali/ide-core-browser';
@@ -76,7 +77,7 @@ export abstract class ZoneWidget extends Disposable {
   protected onDomNodeTop = this._onDomNodeTop.event;
 
   constructor(
-    protected readonly editor: monaco.editor.ICodeEditor,
+    protected readonly editor: IMonacoCodeEditor,
   ) {
     super();
     this._container = document.createElement('div');
@@ -217,7 +218,7 @@ export abstract class ResizeZoneWidget extends ZoneWidget {
   protected _isShow = false;
 
   constructor(
-    protected readonly editor: monaco.editor.ICodeEditor,
+    protected readonly editor: IMonacoCodeEditor,
     private range: monaco.IRange,
   ) {
     super(editor);

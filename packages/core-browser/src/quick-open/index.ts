@@ -1,9 +1,22 @@
-import { Mode } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/common/quickOpen';
-import { HideReason } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/browser/quickOpenWidget';
-
-import { URI, MessageType, MaybePromise, IDisposable, Event } from '@ali/ide-core-common';
+import { VALIDATE_TYPE } from '@ali/ide-components';
+import { URI, MaybePromise, IDisposable, Event } from '@ali/ide-core-common';
 
 import { Keybinding } from '../keybinding';
+
+export enum Mode {
+  /**
+   * select 状态时触发
+   */
+  PREVIEW = 0,
+  /**
+   * 鼠标选择或者回车选择会触发
+   */
+  OPEN = 1,
+  /**
+   * 键盘 → 键或者鼠标中键会触发
+   */
+  OPEN_IN_BACKGROUND = 2,
+}
 
 /**
  * 高亮显示的范围
@@ -19,14 +32,6 @@ export interface Highlight {
  * 该类型使用 monaco-editor-core/esm 中导入的版本
  */
 export { Mode as QuickOpenMode };
-
-/**
- * 隐藏原因
- * * 元素选择 ELEMENT_SELECTED 0
- * * 失去焦点 FOCUS_LOST 1
- * * 取消输入 CANCELED 2
- */
-export { HideReason };
 
 export interface QuickTitleButton {
   icon: string; // a background image coming from a url
@@ -84,16 +89,6 @@ export interface QuickOpenItemOptions {
    */
   keybinding?: Keybinding;
   /**
-   * 点击 QuickOpen 要执行的方法
-   * @param mode
-   */
-  run?(mode: Mode): boolean;
-}
-/**
- * QuickOpen 分组
- */
-export interface QuickOpenGroupItemOptions extends QuickOpenItemOptions {
-  /**
    * 分组文案
    */
   groupLabel?: string;
@@ -101,12 +96,24 @@ export interface QuickOpenGroupItemOptions extends QuickOpenItemOptions {
    * 是否显示 border
    */
   showBorder?: boolean;
+  /**
+   * 点击 QuickOpen 要执行的方法
+   * @param mode
+   */
+  run?(mode: Mode): boolean;
+  value?: any;
 }
 
-export class QuickOpenItem<T extends QuickOpenItemOptions = QuickOpenItemOptions> {
+export class QuickOpenItem {
+
+  private labelHighlights?: Highlight[];
+
+  private descriptionHighlights?: Highlight[];
+
+  private detailHighlights?: Highlight[];
 
   constructor(
-    protected options: T = {} as T,
+    protected options: QuickOpenItemOptions,
   ) { }
 
   getTooltip(): string | undefined {
@@ -142,22 +149,32 @@ export class QuickOpenItem<T extends QuickOpenItemOptions = QuickOpenItemOptions
   getKeybinding(): Keybinding | undefined {
     return this.options.keybinding;
   }
+  setHighlights(labelHighlights?: Highlight[], descriptionHighlights?: Highlight[], detailHighlights?: Highlight[]) {
+    this.labelHighlights = labelHighlights;
+    this.descriptionHighlights = descriptionHighlights;
+    this.detailHighlights = detailHighlights;
+  }
+  getHighlights(): [Highlight[] | undefined, Highlight[] | undefined, Highlight[] | undefined] {
+    return [this.labelHighlights, this.descriptionHighlights, this.detailHighlights];
+  }
   run(mode: Mode): boolean {
     if (!this.options.run) {
       return false;
     }
     return this.options.run(mode);
   }
-}
-
-export class QuickOpenGroupItem<T extends QuickOpenGroupItemOptions = QuickOpenGroupItemOptions> extends QuickOpenItem<T> {
-
   getGroupLabel(): string | undefined {
     return this.options.groupLabel;
   }
   showBorder(): boolean {
     return this.options.showBorder || false;
   }
+}
+
+export enum HideReason {
+  ELEMENT_SELECTED = 0,
+  FOCUS_LOST = 1,
+  CANCELED = 2,
 }
 
 export interface QuickOpenModel {
@@ -169,13 +186,9 @@ export const QuickOpenService = Symbol('QuickOpenService');
 export interface QuickOpenService {
   open(model: QuickOpenModel, options?: QuickOpenOptions): void;
   hide(reason?: HideReason): void;
-  showDecoration(type: MessageType): void;
+  showDecoration(type: VALIDATE_TYPE): void;
   hideDecoration(): void;
   refresh(): void;
-  /**
-   * Dom node of the QuickOpenWidget
-   */
-  widgetNode: HTMLElement;
 }
 
 export type QuickOpenOptions = Partial<QuickOpenOptions.Resolved>;
@@ -203,12 +216,24 @@ export namespace QuickOpenOptions {
      * 占位符
      */
     readonly placeholder: string;
-    readonly valueSelection: Readonly<[number, number]>;
+    readonly valueSelection: [number, number];
     /**
      * 关闭回调
      * @param canceled 是否是取消关闭
      */
     onClose(canceled: boolean): void;
+
+    /**
+     * select 状态时触发回调
+     * @param item
+     * @param index
+     */
+    onSelect(item: QuickOpenItem, index: number): void;
+    /**
+     * 在输入框修改文字时触发
+     * @param value
+     */
+    onChangeValue(value: string): void;
     /**
      * 是否模糊匹配标签
      * 使用 vscode filter matchesFuzzy 方法
@@ -255,7 +280,9 @@ export namespace QuickOpenOptions {
     prefix: '',
     placeholder: '',
     onClose: () => { /* no-op*/ },
-    valueSelection: [-1, -1] as Readonly<[number, number]>,
+    onSelect: () => { /* no-op*/ },
+    onChangeValue: () => { /* no-op*/ },
+    valueSelection: [-1, -1],
     fuzzyMatchLabel: false,
     fuzzyMatchDetail: false,
     fuzzyMatchDescription: false,
@@ -270,11 +297,6 @@ export namespace QuickOpenOptions {
   export function resolve(options: QuickOpenOptions = {}, source: Resolved = defaultOptions): Resolved {
     return Object.assign({}, source, options);
   }
-}
-
-export interface QuickOpenGroupItemOptions extends QuickOpenItemOptions {
-  groupLabel?: string;
-  showBorder?: boolean;
 }
 
 export interface QuickPickItem<T> {
@@ -315,7 +337,7 @@ export interface QuickPickOptions extends QuickOpenOptions {
   /**
    * Buttons that are displayed on the title panel
    */
-  buttons?: ReadonlyArray<QuickTitleButton>;
+  buttons?: QuickTitleButton[];
 
   /**
    * Set to `true` to keep the input box open when focus moves to another part of the editor or to another window.
@@ -336,7 +358,7 @@ export interface QuickPickService {
   show<T>(elements: (string | QuickPickItem<T>)[], options?: QuickPickOptions): Promise<T | string | undefined>;
   hide(reason?: HideReason): void;
   readonly onDidAccept: Event<void>;
-  readonly onDidChangeActiveItems: Event<QuickOpenItem<QuickOpenItemOptions>[]>;
+  readonly onDidChangeActiveItems: Event<QuickOpenItem[]>;
 }
 
 export const PrefixQuickOpenService = Symbol('PrefixQuickOpenService');
@@ -380,7 +402,7 @@ export interface QuickInputOptions {
   /**
    * Buttons that are displayed on the title panel
    */
-  buttons?: ReadonlyArray<QuickTitleButton>;
+  buttons?: QuickTitleButton[];
 
   /**
    * Text for when there is a problem with the current input value

@@ -1,13 +1,10 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { ICommandEvent, ICommandService } from '@ali/monaco-editor-core/esm/vs/platform/commands/common/commands';
-import { EditorExtensionsRegistry } from '@ali/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
-import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import { CommandsRegistry } from '@ali/monaco-editor-core/esm/vs/platform/commands/common/commands';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Command, Emitter, CommandRegistry, CommandHandler, ILogger, EDITOR_COMMANDS, CommandService, isElectronRenderer, IReporterService, REPORT_NAME, ServiceNames, memoize, Uri, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
 
-import { WorkbenchEditorService, EditorCollectionService } from '@ali/ide-editor';
-import { Event } from '@ali/monaco-editor-core/esm/vs/base/common/event';
+import { CommandsRegistry as MonacoCommandsRegistry, EditorExtensionsRegistry, ICommandEvent, ICommandService, IMonacoActionRegistry, IMonacoCommandService, IMonacoCommandsRegistry, MonacoEditorCommandHandler } from '@ali/ide-monaco/lib/browser/contrib/command';
+import { StaticServices } from '@ali/ide-monaco/lib/browser/monaco-api/services';
+import { Event, ICodeEditor, IEvent } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+import { EditorCollectionService, WorkbenchEditorService } from '../../types';
 
 /**
  * vscode 会有一些别名 command，如果直接执行这些别名 command 会报错，做一个转换
@@ -33,16 +30,8 @@ export enum MonacoCommandType {
 
 export type MonacoCommand = Command & { type: MonacoCommandType };
 
-/**
- * monaco 处理函数
- */
-export interface MonacoEditorCommandHandler {
-  execute(editor: monaco.editor.ICodeEditor, ...args: any[]): any;
-  isEnabled?(editor: monaco.editor.ICodeEditor, ...args: any[]): boolean;
-}
-
 @Injectable()
-export class MonacoCommandService implements ICommandService {
+export class MonacoCommandService implements IMonacoCommandService {
   _serviceBrand: undefined;
 
   // TODO - Monaco 20 - ESM
@@ -51,10 +40,10 @@ export class MonacoCommandService implements ICommandService {
   private delegate: ICommandService;
   /**
    * 事件触发器，在执行命令的时候会触发
-   * @type {monaco.Emitter<ICommandEvent>}
+   * @type {Emitter<ICommandEvent>}
    * @memberof MonacoCommandService
    */
-  _onWillExecuteCommand: monaco.Emitter<ICommandEvent> = new Emitter<ICommandEvent>();
+  _onWillExecuteCommand: Emitter<ICommandEvent> = new Emitter<ICommandEvent>();
 
   @Autowired(ILogger)
   private logger: ILogger;
@@ -76,7 +65,7 @@ export class MonacoCommandService implements ICommandService {
     this.delegate = delegate;
   }
 
-  get onWillExecuteCommand(): monaco.IEvent<ICommandEvent> {
+  get onWillExecuteCommand(): IEvent<ICommandEvent> {
     return this._onWillExecuteCommand.event;
   }
 
@@ -106,16 +95,16 @@ export class MonacoCommandService implements ICommandService {
 }
 
 @Injectable()
-export class MonacoCommandRegistry {
+export class MonacoCommandRegistry implements IMonacoCommandsRegistry {
 
   @Autowired(CommandRegistry)
-  protected commands: CommandRegistry;
+  private commands: CommandRegistry;
 
   @Autowired(WorkbenchEditorService)
-  protected workbenchEditorService: WorkbenchEditorService;
+  private workbenchEditorService: WorkbenchEditorService;
 
   @Autowired(EditorCollectionService)
-  editorCollectionService: EditorCollectionService;
+  private editorCollectionService: EditorCollectionService;
 
   /**
    * 校验 command id 是否是 monaco id
@@ -192,7 +181,7 @@ export class MonacoCommandRegistry {
    * 获取当前活动的编辑器
    * 此处的活动编辑器和 workbenchEditorService.currentEditor 的概念不同，对于diffEditor，需要获取确实的那个editor而不是modifiedEditor
    */
-  protected getActiveCodeEditor(): monaco.editor.ICodeEditor | undefined {
+  protected getActiveCodeEditor(): ICodeEditor | undefined {
     // 先从editor-collection的焦点追踪，contextMenu追踪中取
     if (this.editorCollectionService.currentEditor) {
       return this.editorCollectionService.currentEditor.monacoEditor;
@@ -210,7 +199,7 @@ export class MonacoCommandRegistry {
 }
 
 @Injectable()
-export class MonacoActionRegistry {
+export class MonacoActionRegistry implements IMonacoActionRegistry {
 
   private static COMMON_ACTIONS = new Map<string, string>( [
     ['undo', EDITOR_COMMANDS.UNDO.id],
@@ -220,7 +209,7 @@ export class MonacoActionRegistry {
 
   private static CONVERT_MONACO_COMMAND_ARGS = new Map<string, (...args: any[]) => any[]>([
     [
-      'editor.action.showReferences', (uri, ...args) => [monaco.Uri.parse(uri), ...args],
+      'editor.action.showReferences', (uri, ...args) => [Uri.parse(uri), ...args],
     ],
   ]);
 
@@ -262,7 +251,7 @@ export class MonacoActionRegistry {
 
   @memoize
   get monacoCommands() {
-    return CommandsRegistry.getCommands();
+    return MonacoCommandsRegistry.getCommands();
   }
 
   registerMonacoActions() {
@@ -293,12 +282,12 @@ export class MonacoActionRegistry {
   }
 
   /**
-   * monaco 内部会判断 uri 执行是否是 monaco.Uri 实例，执行改类命令统一转换一下
+   * monaco 内部会判断 uri 执行是否是 Uri 实例，执行改类命令统一转换一下
    * @param args
    */
   private processInternalCommandArgument(commandId: string, args: any[] = []): any[] {
     if (this.isInternalExecuteCommand(commandId)) {
-      return args.map((arg) => arg instanceof Uri ? monaco.Uri.revive(arg) : arg);
+      return args.map((arg) => arg instanceof Uri ? Uri.revive(arg) : arg);
     } else if (MonacoActionRegistry.CONVERT_MONACO_COMMAND_ARGS.has(commandId)) {
       return MonacoActionRegistry.CONVERT_MONACO_COMMAND_ARGS.get(commandId)!(...args);
     }
@@ -355,7 +344,7 @@ export class MonacoActionRegistry {
    * @param id 要执行的 action
    * @param editor 执行 action 的 editor，默认为当前 editor
    */
-  protected runAction(id: string, editor: monaco.editor.ICodeEditor): Promise<void> {
+  protected runAction(id: string, editor: ICodeEditor): Promise<void> {
     if (editor) {
       const action = editor.getAction(id);
       if (action) {
@@ -372,7 +361,7 @@ export class MonacoActionRegistry {
    */
   protected newKeyboardHandler(action: string): MonacoEditorCommandHandler {
     return {
-        execute: (editor, ...args) => editor.trigger('keyboard', action, args),
+      execute: (editor, ...args) => editor.trigger('keyboard', action, args),
     };
   }
 }

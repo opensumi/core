@@ -21,7 +21,8 @@
   },
   "dependencies": {
     "@ali/ide-core-common": "2.5.4",
-    "@ali/ide-core-node": "2.5.4"
+    "@ali/ide-core-node": "2.5.4",
+    "@ali/ide-monaco": "2.5.4"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "2.5.4",

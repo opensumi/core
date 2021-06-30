@@ -22,7 +22,6 @@
     "@ali/ide-core-browser": "2.5.4",
     "@ali/ide-core-common": "2.5.4",
     "@ali/ide-core-node": "2.5.4",
-    "@ali/ide-editor": "2.5.4",
     "@ali/ide-file-service": "2.5.4",
     "@ali/ide-workspace": "2.5.4",
     "@ali/ide-theme": "2.5.4",

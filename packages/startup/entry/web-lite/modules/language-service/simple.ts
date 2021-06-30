@@ -18,7 +18,7 @@ import { Disposable } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-typ
 import { DefinitionAdapter } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/language/definition';
 import { HoverAdapter } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/language/hover';
 import { ReferenceAdapter } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/language/reference';
-import { Adapter } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.language.ts';
+import { Adapter } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.language';
 
 import { ExtHostDocumentData } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/doc/ext-data.host';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
@@ -26,6 +26,7 @@ import { DocumentFilter } from 'vscode-languageserver-protocol';
 import { fromLanguageSelector } from '@ali/ide-kaitian-extension/lib/common/vscode/converter';
 import { MonacoModelIdentifier, testGlob } from '@ali/ide-kaitian-extension/lib/common/vscode';
 import { LanguageSelector } from '@ali/ide-kaitian-extension/lib/common/vscode/model.api';
+import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 @Injectable()
 class LiteDocumentDataManager implements Partial<ExtensionDocumentDataManager> {
@@ -333,7 +334,7 @@ export class SimpleLanguageService implements Partial<IExtHostLanguages> {
     return selector === model.languageId;
   }
 
-  isLanguageFeatureEnabled(model: monaco.editor.ITextModel) {
+  isLanguageFeatureEnabled(model: ITextModel) {
     const uriString = model.uri.toString();
     if (!this.languageFeatureEnabled.has(uriString)) {
       this.languageFeatureEnabled.set(uriString, model.getValueLength() < 2 * 1024 * 1024);

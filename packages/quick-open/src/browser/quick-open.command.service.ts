@@ -1,8 +1,7 @@
-import { Mode } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/common/quickOpen';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { localize, IContextKeyService, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { CommandRegistry, Command, CommandService, Deferred } from '@ali/ide-core-common';
-import { QuickOpenModel, QuickOpenItem, QuickOpenGroupItemOptions, QuickOpenGroupItem, QuickOpenItemOptions } from './quick-open.model';
+import { QuickOpenModel, QuickOpenItem, QuickOpenItemOptions, Mode } from '@ali/ide-core-browser/lib/quick-open';
 import { KeybindingRegistry, Keybinding } from '@ali/ide-core-browser';
 import { QuickOpenHandler } from './prefix-quick-open.service';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -37,7 +36,7 @@ export class QuickCommandHandler implements QuickOpenHandler {
 
   private initDeferred = new Deferred<void>();
 
-  private items: QuickOpenItem<QuickOpenItemOptions>[];
+  private items: QuickOpenItem[];
 
   constructor() {
     // 提前加载工作空间里最近命令的数据
@@ -162,7 +161,7 @@ export class QuickCommandHandler implements QuickOpenHandler {
 }
 
 @Injectable({ multiple: true })
-export class CommandQuickOpenItem extends QuickOpenGroupItem {
+export class CommandQuickOpenItem extends QuickOpenItem {
 
   @Autowired(CommandService)
   commandService: CommandService;
@@ -178,7 +177,7 @@ export class CommandQuickOpenItem extends QuickOpenGroupItem {
 
   constructor(
     protected readonly command: Command,
-    protected readonly commandOptions?: QuickOpenGroupItemOptions,
+    protected readonly commandOptions: QuickOpenItemOptions,
   ) {
     super(commandOptions);
   }

@@ -6,6 +6,7 @@ import { format } from '@ali/ide-core-common/lib/utils/strings';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { join } from '@ali/ide-core-common/lib/path';
 import { Disposable } from '@ali/ide-core-common/lib';
+import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 export interface IResourceCreator {
   toResource: (folderRelativePath: string) => string | undefined;
@@ -70,7 +71,7 @@ class OutputLinkComputer {
     return patterns;
   }
 
-  public computeLinks(model: monaco.editor.ITextModel) {
+  public computeLinks(model: ITextModel) {
     const links: monaco.languages.ILink[] = [];
     const lines = model.getValue().split(/\r\n|\r|\n/);
 
@@ -167,7 +168,7 @@ export class OutputLinkProvider extends Disposable implements monaco.languages.L
 
   }
 
-  provideLinks(model: monaco.editor.ITextModel): monaco.languages.ProviderResult<monaco.languages.ILinksList> {
+  provideLinks(model: ITextModel): monaco.languages.ProviderResult<monaco.languages.ILinksList> {
     return { links: this.linkComputer.computeLinks(model) };
   }
 

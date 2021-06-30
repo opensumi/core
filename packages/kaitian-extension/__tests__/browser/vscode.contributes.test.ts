@@ -17,9 +17,10 @@ import { MockExtNodeClientService } from '../__mock__/extension.service.client';
 import { IIconService, IThemeService } from '@ali/ide-theme';
 import { IconService } from '@ali/ide-theme/lib/browser';
 import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
-import { TextmateService } from '@ali/ide-monaco/lib/browser/textmate.service';
+import { ITextmateTokenizer } from '@ali/ide-monaco/lib/browser/contrib/tokenizer';
 import { MonacoService } from '@ali/ide-core-browser/lib/monaco';
 import { setupExtensionServiceInjector } from './extension-service/extension-service-mock-helper';
+import { TextmateService } from '@ali/ide-editor/lib/browser/monaco-contrib/tokenizer/textmate.service';
 
 const extension = {
   ...mockExtensionProps,
@@ -119,7 +120,7 @@ describe('VSCodeContributeRunner', () => {
         },
       },
       {
-        token: TextmateService,
+        token: ITextmateTokenizer,
         useClass: TextmateService,
       },
       {

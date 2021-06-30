@@ -2,6 +2,7 @@ import { IWebview, IWebviewContentOptions } from './types';
 import { Disposable, DomListener, getDebugLogger, IDisposable, AppConfig, electronEnv } from '@ali/ide-core-browser';
 import { AbstractWebviewPanel } from './abstract-webview';
 import { Injectable, Autowired } from '@ali/common-di';
+import { WebviewScheme } from '../common';
 
 @Injectable({multiple: true})
 export class ElectronWebviewWebviewPanel extends AbstractWebviewPanel implements IWebview {
@@ -21,7 +22,7 @@ export class ElectronWebviewWebviewPanel extends AbstractWebviewPanel implements
     super(id, options);
 
     this.webview = document.createElement('webview');
-    this.webview.src = 'data:text/html;charset=utf-8,%3C%21DOCTYPE%20html%3E%0D%0A%3Chtml%20lang%3D%22en%22%20style%3D%22width%3A%20100%25%3B%20height%3A%20100%25%22%3E%0D%0A%3Chead%3E%0D%0A%09%3Ctitle%3EVirtual%20Document%3C%2Ftitle%3E%0D%0A%3C%2Fhead%3E%0D%0A%3Cbody%20style%3D%22margin%3A%200%3B%20overflow%3A%20hidden%3B%20width%3A%20100%25%3B%20height%3A%20100%25%22%3E%0D%0A%3C%2Fbody%3E%0D%0A%3C%2Fhtml%3E';
+    this.webview.src = `${WebviewScheme}://index.html`;
     this.webview.preload = electronEnv.webviewPreload;
     this.webview.style.border = 'none';
     this.webview.style.width = '100%';

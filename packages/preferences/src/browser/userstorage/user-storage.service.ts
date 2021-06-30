@@ -1,114 +1,14 @@
 
-import { DisposableCollection, ILogger, Emitter, Event, URI, AppConfig } from '@ali/ide-core-browser';
+import { DisposableCollection, ILogger, Emitter, URI, AppConfig, Uri, FileType, FileChangeEvent } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
-import { USER_STORAGE_SCHEME, UserStorageChangeEvent, IUserStorageService } from '../../common';
-import { FileChangeEvent } from '@ali/ide-file-service/lib/common';
+import { USER_STORAGE_SCHEME, IUserStorageService } from '../../common';
+import { FileSetContentOptions } from '@ali/ide-file-service/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 
 export const DEFAULT_USER_STORAGE_FOLDER = '.kaitian';
 
 @Injectable()
 export class UserStorageServiceImpl implements IUserStorageService {
-
-  protected readonly toDispose = new DisposableCollection();
-  protected readonly onUserStorageChangedEmitter = new Emitter<UserStorageChangeEvent>();
-  private userStorageFolder: URI;
-  private _whenReady: Promise<void>;
-
-  @Autowired(IFileServiceClient)
-  protected readonly fileServiceClient: IFileServiceClient;
-  @Autowired(ILogger)
-  protected readonly logger: ILogger;
-  @Autowired(AppConfig)
-  protected readonly appConfig: AppConfig;
-
-  constructor() {
-    this._whenReady = this.init();
-  }
-
-  get whenReady() {
-    return this._whenReady;
-  }
-
-  async init() {
-    // 请求用户路径并存储
-    const home = await this.fileServiceClient.getCurrentUserHome();
-    if (home) {
-      const userStorageFolderUri = new URI(home.uri).resolve(this.appConfig.userPreferenceDirName || this.appConfig.preferenceDirName || DEFAULT_USER_STORAGE_FOLDER);
-      if (!await this.fileServiceClient.access(userStorageFolderUri.toString())) {
-        await this.fileServiceClient.createFolder(userStorageFolderUri.toString());
-      }
-      const disposable = await this.fileServiceClient.watchFileChanges(userStorageFolderUri, ['**/logs/**']);
-      this.toDispose.push(disposable),
-      this.toDispose.push(this.fileServiceClient.onFilesChanged((changes) => this.onDidFilesChanged(changes)));
-      this.userStorageFolder = userStorageFolderUri;
-    }
-    this.toDispose.push(this.onUserStorageChangedEmitter);
-  }
-
-  dispose(): void {
-    this.toDispose.dispose();
-  }
-
-  protected async onDidFilesChanged(event: FileChangeEvent) {
-    await this.whenReady;
-    const uris: URI[] = [];
-    if (this.userStorageFolder) {
-      for (const change of event) {
-        const changeUri = new URI(change.uri);
-        if (this.userStorageFolder.isEqualOrParent(changeUri)) {
-          const userStorageUri = UserStorageServiceImpl.toUserStorageUri(this.userStorageFolder, changeUri);
-          uris.push(userStorageUri);
-        }
-      }
-      if (uris.length > 0) {
-        this.onUserStorageChangedEmitter.fire({ uris });
-      }
-    }
-  }
-
-  async readContents(uri: URI): Promise<string> {
-    await this.whenReady;
-    const folderUri = this.userStorageFolder;
-    if (folderUri) {
-      const filesystemUri = UserStorageServiceImpl.toFilesystemURI(folderUri, uri);
-      const exists = await this.fileServiceClient.access(filesystemUri.toString());
-
-      if (exists) {
-        return this.fileServiceClient.resolveContent(filesystemUri.toString()).then(({ content }) => content);
-      }
-    }
-    return '';
-  }
-
-  async saveContents(uri: URI, content: string): Promise<void> {
-    const folderUri = await this.userStorageFolder;
-    if (!folderUri) {
-      return;
-    }
-    const filesystemUri = UserStorageServiceImpl.toFilesystemURI(folderUri, uri);
-
-    const fileStat = await this.fileServiceClient.getFileStat(filesystemUri.toString());
-    if (fileStat) {
-      await this.fileServiceClient.setContent(fileStat, content);
-    } else {
-      await this.fileServiceClient.createFile(filesystemUri.toString(), { content });
-    }
-  }
-
-  async getFsPath(uri: URI) {
-    const folderUri = await this.userStorageFolder;
-    if (folderUri) {
-      const filesystemUri = UserStorageServiceImpl.toFilesystemURI(folderUri, uri);
-      return filesystemUri.toString();
-    }
-    return undefined;
-  }
-
-  get onUserStorageChanged(): Event<UserStorageChangeEvent> {
-    return this.onUserStorageChangedEmitter.event;
-  }
-
   /**
    * 基于用户存储路径创建文件路径
    * @param userStorageFolderUri 存储目录路径，如 file://home/user/
@@ -138,5 +38,127 @@ export class UserStorageServiceImpl implements IUserStorageService {
    */
   public static toFilesystemURI(userStorageFolderUri: URI, userStorageUri: URI): URI {
     return userStorageFolderUri.withPath(userStorageFolderUri.path.join(userStorageUri.path.toString()));
+  }
+
+  protected readonly toDispose = new DisposableCollection();
+  protected readonly onDidChangeFileEmitter = new Emitter<FileChangeEvent>();
+  private _whenReady: Promise<void>;
+  private userStorageFolder: URI;
+
+  @Autowired(IFileServiceClient)
+  protected readonly fileServiceClient: IFileServiceClient;
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
+  @Autowired(AppConfig)
+  protected readonly appConfig: AppConfig;
+
+  constructor() {
+    this._whenReady = this.init();
+  }
+
+  get whenReady() {
+    return this._whenReady;
+  }
+
+  get onDidChangeFile() {
+    return this.onDidChangeFileEmitter.event;
+  }
+
+  async init() {
+    // 请求用户路径并存储
+    const home = await this.fileServiceClient.getCurrentUserHome();
+    if (home) {
+      const userStorageFolderUri = new URI(home.uri).resolve(this.appConfig.userPreferenceDirName || this.appConfig.preferenceDirName || DEFAULT_USER_STORAGE_FOLDER);
+      if (!await this.fileServiceClient.access(userStorageFolderUri.toString())) {
+        await this.fileServiceClient.createFolder(userStorageFolderUri.toString());
+      }
+      this.userStorageFolder = userStorageFolderUri;
+    }
+    this.toDispose.push(this.onDidChangeFileEmitter);
+  }
+
+  readDirectory(uri: Uri): [string, FileType][] | Promise<[string, FileType][]> {
+    throw new Error('Method not implemented.');
+  }
+
+  createDirectory(uri: Uri) {
+    throw new Error('Method not implemented.');
+  }
+
+  async watch(uri: Uri, options: { recursive: boolean; excludes: string[] } = { recursive: false, excludes: ['**/logs/**']}) {
+    await this.whenReady;
+    const target = UserStorageServiceImpl.toFilesystemURI(this.userStorageFolder, URI.from(uri));
+    const watcher = await this.fileServiceClient.watchFileChanges(target.parent, options.excludes);
+    this.toDispose.push(watcher);
+    this.toDispose.push(watcher.onFilesChanged((changes) => {
+      const effectedChanges: FileChangeEvent = [];
+      for (const change of changes) {
+        // 在UserStorage的监听模式下，只会存在一个独立的 Change 事件
+        // 故在获取到变更事件时直接推出遍历
+        if (change.uri === target.toString()) {
+          effectedChanges.push(change);
+        }
+      }
+      if (effectedChanges.length > 0) {
+        this.onDidChangeFileEmitter.fire(effectedChanges.map((change) => ({
+          uri: UserStorageServiceImpl.toUserStorageUri(this.userStorageFolder, new URI(change.uri)).toString(),
+          type: change.type,
+        })));
+      }
+    }));
+    return watcher.watchId;
+  }
+
+  async readFile(uri: Uri) {
+    await this.whenReady;
+    const target = UserStorageServiceImpl.toFilesystemURI(this.userStorageFolder, URI.from(uri));
+    try {
+      const { content } = await this.fileServiceClient.readFile(target.toString());
+      return content.buffer;
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
+
+  async writeFile(uri: Uri, content: Uint8Array, options?: FileSetContentOptions) {
+    await this.whenReady;
+    const target = UserStorageServiceImpl.toFilesystemURI(this.userStorageFolder, URI.from(uri));
+    try {
+      const fileStat = await this.fileServiceClient.getFileStat(target.toString());
+      if (fileStat) {
+        await this.fileServiceClient.setContent(fileStat, content, options);
+      } else {
+        throw new Error(`Write ${uri.toString()} Fail.`);
+      }
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
+
+  delete(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean; }) {
+    throw new Error('Method not implemented.');
+  }
+
+  rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean; }) {
+    throw new Error('Method not implemented.');
+  }
+
+  copy(source: Uri, destination: Uri, options: { overwrite: boolean; }) {
+    throw new Error('Method not implemented.');
+  }
+
+  async stat(uri: Uri) {
+    await this.whenReady;
+    const target = UserStorageServiceImpl.toFilesystemURI(this.userStorageFolder, URI.from(uri));
+    const stat = await this.fileServiceClient.getFileStat(target.toString());
+    if (stat) {
+      return stat;
+    }
+  }
+
+  async access(uri: Uri, mode: number) {
+    await this.whenReady;
+    const target = UserStorageServiceImpl.toFilesystemURI(this.userStorageFolder, URI.from(uri));
+    return this.fileServiceClient.access(target.toString(), mode);
   }
 }

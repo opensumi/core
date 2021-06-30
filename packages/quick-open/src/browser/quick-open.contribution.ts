@@ -2,8 +2,7 @@ import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Domain, CommandContribution, ContributionProvider, KeybindingContribution, CommandRegistry, KeybindingRegistry, localize } from '@ali/ide-core-browser';
 import { ClientAppContribution } from '@ali/ide-core-browser';
 import { MenuId, MenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
-
-import { PrefixQuickOpenService } from './quick-open.model';
+import { PrefixQuickOpenService } from '@ali/ide-core-browser/lib/quick-open';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from './prefix-quick-open.service';
 import { QuickCommandHandler } from './quick-open.command.service';
 import { HelpQuickOpenHandler } from './quick-open.help.service';

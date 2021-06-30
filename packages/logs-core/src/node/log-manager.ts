@@ -9,7 +9,6 @@ import {
   BaseLogServiceOptions,
   LoggerManagerInitOptions,
   Archive,
-  DebugLog,
 } from '../common/';
 import { getLogFolder, cleanOldLogs, cleanAllLogs, cleanExpiredLogs, getLogZipArchiveByFolder } from './utils';
 import { LogService, DEFAULT_LOG_FOLDER } from './log.service';

@@ -184,7 +184,7 @@ export class TreeNode implements ITreeNode {
     this._depth = to.depth + 1;
 
     if (didChangeParent || name !== this.name) {
-      this.name = name;
+      this.addMetadata('name', name);
       if (didChangeParent) {
         this._watcher.notifyWillChangeParent(this, prevParent, to);
       }
@@ -649,7 +649,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
     if (this.children) {
       for (let i = 0; i < this.children.length; i++) {
-        if (this.children[i].name === item.name) {
+        // path / id 是节点唯一标识
+        if (this.children[i].path === item.path) {
           this.children[i] = item;
           return;
         }

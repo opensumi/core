@@ -3,7 +3,7 @@ import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 // tslint:disable:no-console
 import { MockedMonacoUri } from '../common/uri';
 import { Disposable, Emitter, Event } from '@ali/ide-core-common';
-import { EOL, EndOfLineSequence } from '@ali/ide-editor';
+import { EndOfLineSequence, EOL } from '../../../browser/monaco-api/types';
 
 let id = 1;
 
