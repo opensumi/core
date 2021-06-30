@@ -18,6 +18,7 @@ export const RecycleTreeAdaptiveDecorator: AdaptiveTreeHoc<
 > = (recycleTreeComp) => (props: IRecycleTreeProps) => {
   const { model, itemHeight, onReady } = props;
   const ref = React.useRef<TreeModel>();
+  const destroyWhileBlur = React.useRef<boolean>(false);
 
   const [currentHeight, setCurrentHeight] = React.useState<number>(0);
 
@@ -33,11 +34,16 @@ export const RecycleTreeAdaptiveDecorator: AdaptiveTreeHoc<
       ...handle,
       promptNewTreeNode: async (at) => {
         const promptHandle = await handle.promptNewTreeNode(at);
-        if (ref.current) {
+        if (ref.current?.root.branchSize) {
           setCurrentHeight(ref.current.root.branchSize * itemHeight + itemHeight);
+        } else {
+          // 添加节点时，如果不存在 ref.current，即不存在可渲染节点
+          // 补全高度便于插入输入框
+          setCurrentHeight(itemHeight);
         }
+        destroyWhileBlur.current = false;
         promptHandle.onDestroy(() => {
-          if (ref.current) {
+          if (ref.current?.root.branchSize) {
             setCurrentHeight(ref.current.root.branchSize * itemHeight);
           }
         });
@@ -45,23 +51,33 @@ export const RecycleTreeAdaptiveDecorator: AdaptiveTreeHoc<
           if (ref.current) {
             setCurrentHeight(ref.current.root.branchSize * itemHeight);
           }
+        });
+        promptHandle.onBlur(() => {
+          return destroyWhileBlur.current;
         });
         return promptHandle;
       },
       promptNewCompositeTreeNode: async (at) => {
         const promptHandle = await handle.promptNewCompositeTreeNode(at);
-        if (ref.current) {
+        if (ref.current?.root.branchSize) {
           setCurrentHeight(ref.current.root.branchSize * itemHeight + itemHeight);
+        } else {
+          // 添加节点时，如果不存在 ref.current，即不存在可渲染节点
+          // 补全高度便于插入输入框
+          setCurrentHeight(itemHeight);
         }
         promptHandle.onDestroy(() => {
-          if (ref.current) {
+          if (ref.current?.root.branchSize) {
             setCurrentHeight(ref.current.root.branchSize * itemHeight);
           }
         });
         promptHandle.onCancel(() => {
-          if (ref.current) {
+          if (ref.current?.root.branchSize) {
             setCurrentHeight(ref.current.root.branchSize * itemHeight);
           }
+        });
+        promptHandle.onBlur(() => {
+          return destroyWhileBlur.current;
         });
         return promptHandle;
       },
@@ -75,6 +91,15 @@ export const RecycleTreeAdaptiveDecorator: AdaptiveTreeHoc<
       ref.current.root.watcher.on(TreeNodeEvent.DidChangeExpansionState, handleExpansionChange);
     }
   }, [model]);
+
+  React.useEffect(() => {
+    // currentHeight 更新时，有概率让整个 Tree 重绘
+    // 导致 prompt 的 blur 事件触发
+    // 这里等待 100 ms 后再将 prompt 失去焦点后关闭的逻辑打开
+    setTimeout(() => {
+      destroyWhileBlur.current = true;
+    }, 100);
+  }, [currentHeight]);
 
   return (
     <>

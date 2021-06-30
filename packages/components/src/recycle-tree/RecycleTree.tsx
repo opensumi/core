@@ -101,6 +101,11 @@ export interface IRecycleTreeProps<T = TreeModel> {
    * @memberof IRecycleTreeProps
    */
   overScanCount?: number;
+  /**
+   * 是否保留 Tree 底部空白，大小为 22 px
+   * 默认值为：false
+   */
+  leaveBottomBlank?: boolean;
 }
 
 export interface IRecycleTreeError {
@@ -184,6 +189,7 @@ export interface IRecycleTreeHandle {
    * @param pathOrTreeNode 节点或者节点路径
    */
   onOnceDidUpdate: Event<void>;
+
   /**
    * 监听渲染报错
    *
@@ -785,11 +791,18 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       className,
       placeholder,
       overScanCount,
+      leaveBottomBlank,
     } = this.props;
 
     if (placeholder && this.adjustedRowCount === 0) {
       const Placeholder = placeholder;
       return <Placeholder />;
+    }
+    let addonProps = {};
+    if (leaveBottomBlank) {
+      addonProps = {
+        innerElementType: InnerElementType,
+      };
     }
     return (
       <FixedSizeList
@@ -809,7 +822,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         }}
         className={className}
         outerElementType={ScrollbarsVirtualList}
-        innerElementType={InnerElementType}>
+        {...addonProps}>
         {this.renderItem}
       </FixedSizeList>);
   }
