@@ -6,9 +6,10 @@ import { useInjectable, ViewState, getIcon } from '@ali/ide-core-browser';
 import { DebugConsoleService } from './debug-console.service';
 import { RecycleTree, IRecycleTreeHandle, TreeNodeType, INodeRendererWrapProps, ClasslistComposite, INodeRendererProps, CompositeTreeNode, TreeNode } from '@ali/ide-components';
 import { IDebugConsoleModel } from './debug-console-tree.model.service';
-import { DebugConsoleNode, AnsiConsoleNode, DebugConsoleVariableContainer, DebugVariableContainer } from '../../tree';
+import { DebugConsoleNode, AnsiConsoleNode, DebugConsoleVariableContainer, DebugVariableContainer, TreeWithLinkWrapper } from '../../tree';
 import { Loading } from '@ali/ide-core-browser/lib/components/loading';
 import { DebugConsoleFilterService } from './debug-console-filter.service';
+import { LinkDetector } from '../../debug-link-detector';
 
 export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState }) => {
   const debugConsoleService = useInjectable<DebugConsoleService>(DebugConsoleService);
@@ -165,6 +166,8 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
   itemType,
 }: IDebugConsoleNodeRenderedProps) => {
 
+  const linkDetector: LinkDetector = useInjectable<LinkDetector>(LinkDetector);
+
   const handleClick = (ev: React.MouseEvent) => {
     onClick(ev, item, CompositeTreeNode.is(item) ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode);
   };
@@ -223,7 +226,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
       addonClass.push(styles.string);
     }
     return <div className={cls(styles.debug_console_node_segment_grow, styles.debug_console_node_description, ...addonClass)}>
-      {description}
+      <TreeWithLinkWrapper html={ linkDetector.linkify(description) }></TreeWithLinkWrapper>
     </div>;
   };
 
