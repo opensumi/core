@@ -219,10 +219,9 @@ export class ClientApp implements IClientApp {
     // 在 connect 之后立即初始化数据，保证其它 module 能同步获取数据
     await this.injector.get(IApplicationService).initializeData();
     // 在 contributions 执行完 onStart 上报一次耗时
-    await this.measure('Contributions.start', () => this.startContributions());
+    await this.measure('Contributions.start', () => this.startContributions(container));
     this.stateService.state = 'started_contributions';
     this.registerEventListeners();
-    await this.measure('ClientApp.renderApp', () => this.renderApp(container));
     this.stateService.state = 'ready';
 
     measureReporter.timeEnd('Framework.ready');
@@ -310,9 +309,15 @@ export class ClientApp implements IClientApp {
     return this.contributionsProvider.getContributions();
   }
 
-  protected async startContributions() {
+  protected async startContributions(container) {
     await this.measure('Contributions.initialize', () => this.initializeContributions());
+
+    // FIXME: 放在 startContribution 里不是很贴切
+    await this.measure('RenderApp.render', () => this.renderApp(container));
+
     await this.measure('Contributions.onStart', () => this.onStartContributions());
+
+    await this.runContributionsPhase(this.contributions, 'onDidStart');
   }
 
   /**
@@ -362,9 +367,6 @@ export class ClientApp implements IClientApp {
 
     const eventBus = this.injector.get(IEventBus);
     eventBus.fire(new RenderedEvent());
-
-    // run contribution#onDidStart
-    await this.runContributionsPhase(this.contributions, 'onDidStart');
   }
 
   protected async measure<T>(name: string, fn: () => MaybePromise<T>): Promise<T> {
