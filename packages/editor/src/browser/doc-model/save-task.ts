@@ -1,6 +1,6 @@
 import { URI, Deferred, IEditorDocumentChange, IEditorDocumentModelSaveResult } from '@ali/ide-core-browser';
+import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import { IEditorDocumentModelService } from './types';
-import { EOL } from '../../common';
 
 export interface IEditorDocumentModelServiceImpl extends IEditorDocumentModelService {
 

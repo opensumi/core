@@ -1,10 +1,12 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { INativeMenuTemplate, Domain, isWindows } from '@ali/ide-core-common';
+import { INativeMenuTemplate, Domain, isWindows, IDisposable } from '@ali/ide-core-common';
 import { ElectronMainContribution, ElectronMainApiRegistry, ElectronMainApiProvider } from '../../types';
 import { Menu, MenuItemConstructorOptions, BrowserWindow } from 'electron';
 
 @Injectable()
 export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick' | 'menuClose'> {
+
+  private windowAppMenuDisposers = new Map<number, IDisposable>();
 
   showContextMenu(template: INativeMenuTemplate, webContentsId: number) {
     let menu: Electron.Menu | undefined = this.buildMenu(template, webContentsId + '-context');
@@ -18,12 +20,23 @@ export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick'
 
   setApplicationMenu(template: INativeMenuTemplate, windowId: number) {
     const menu = this.buildMenu(template, windowId + '-app');
-    const window = BrowserWindow.getAllWindows().find((w) => w.id === windowId);
+    const window = BrowserWindow.fromId(windowId);
     if (window) {
       if (!isWindows) {
-        window.on('focus' , () => {
+        const listener = () => {
           Menu.setApplicationMenu(menu);
-        });
+        };
+        if (this.windowAppMenuDisposers.has(windowId)) {
+          this.windowAppMenuDisposers.get(windowId)!.dispose();
+        }
+        const disposer: IDisposable = {
+          dispose: () => {
+            this.windowAppMenuDisposers.delete(windowId);
+            window.removeListener('focus', listener);
+          },
+        };
+        this.windowAppMenuDisposers.set(windowId, disposer);
+        window.on('focus' , listener);
         if (window.isFocused()) {
           Menu.setApplicationMenu(menu);
         }

@@ -6,7 +6,7 @@ import { isElectronEnv, isWindows, isOSX, PreferenceScope, ILogger } from '@ali/
 import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { SUPPORTED_ENCODINGS } from '@ali/ide-core-common/lib/const';
 
-import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider, IEditor, SaveReason, EOL } from '../common';
+import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider, IEditor, SaveReason } from '../common';
 import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorFeatureRegistry } from './types';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
 import { EditorStatusBarService } from './editor.status-bar.service';
@@ -20,6 +20,7 @@ import { EditorSuggestWidgetContribution } from './view/suggest-widget';
 import { EditorOpener } from './editor-opener';
 import { WorkspaceSymbolQuickOpenHandler } from './language/workspace-symbol-quickopen';
 import { AUTO_SAVE_MODE } from '../common/editor';
+import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 interface ResourceArgs {
   group: EditorGroup;

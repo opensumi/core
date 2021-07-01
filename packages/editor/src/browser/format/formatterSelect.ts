@@ -3,6 +3,7 @@ import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired } from '@ali/common-di';
 import { QuickPickService, localize, PreferenceService, URI, PreferenceScope } from '@ali/ide-core-browser';
 import { IEditorDocumentModelService } from '../doc-model/types';
+import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 type IProvider = monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider;
 
@@ -18,7 +19,7 @@ export class FormattingSelector {
   @Autowired(IEditorDocumentModelService)
   private modelService: IEditorDocumentModelService;
 
-  async select(formatters: Array<monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider>, document: monaco.editor.ITextModel) {
+  async select(formatters: Array<monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider>, document: ITextModel) {
     const docRef = this.modelService.getModelReference(URI.from(document.uri.toJSON()));
     if (!docRef) {
       return;

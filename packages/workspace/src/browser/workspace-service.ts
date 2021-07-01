@@ -518,6 +518,9 @@ export class WorkspaceService implements IWorkspaceService {
       const edits = jsoncparser.format(data, undefined, { tabSize: 2, insertSpaces: true, eol: '' });
       const result = jsoncparser.applyEdits(data, edits);
       const stat = await this.fileServiceClient.setContent(workspaceFile, result);
+      if (!stat) {
+        return undefined;
+      }
       return stat;
     }
   }

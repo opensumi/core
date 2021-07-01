@@ -6,5 +6,5 @@ export namespace QUICK_OPEN_COMMANDS {
   };
 }
 
-export * from '../browser/quick-open.model';
+export * from '@ali/ide-core-browser/lib/quick-open';
 export * from '../browser/quick-open-action-provider';

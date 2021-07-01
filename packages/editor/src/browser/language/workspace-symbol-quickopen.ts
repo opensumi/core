@@ -106,7 +106,7 @@ export class SymbolInformationQuickOpenItem extends QuickOpenItem {
     private readonly token: CancellationToken,
     private relativePath: string,
   ) {
-    super();
+    super({});
   }
 
   getLabel(): string {

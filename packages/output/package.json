@@ -24,6 +24,7 @@
     "@ali/ide-main-layout": "2.5.5",
     "@ali/ide-components": "2.5.5",
     "@ali/ide-editor": "2.5.5",
+    "@ali/ide-monaco": "2.5.5",
     "@ali/ide-workspace": "2.5.5",
     "anser": "^1.4.9",
     "escape-carriage": "^1.3.0"

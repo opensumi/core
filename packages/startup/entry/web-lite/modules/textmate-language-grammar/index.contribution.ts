@@ -1,8 +1,8 @@
 import { Autowired } from '@ali/common-di';
 import { Disposable, Domain } from '@ali/ide-core-common';
-import { TextmateService } from '@ali/ide-monaco/lib/browser/textmate.service';
 import { ClientAppContribution } from '@ali/ide-core-browser';
 import type { loadLanguageAndGrammar } from '@ali/kaitian-textmate-languages';
+import { ITextmateTokenizer, ITextmateTokenizerService } from '@ali/ide-monaco/lib/browser/contrib/tokenizer';
 
 const languages = [
   'html',
@@ -15,8 +15,9 @@ const languages = [
 
 @Domain(ClientAppContribution)
 export class TextmateLanguageGrammarContribution extends Disposable implements ClientAppContribution {
-  @Autowired(TextmateService)
-  private readonly textMateService: TextmateService;
+
+  @Autowired(ITextmateTokenizer)
+  private readonly textMateService: ITextmateTokenizerService;
 
   // 由于使用了预加载 monaco, 导致 lang/grammar contribute 提前
   // 由于依赖了 kt-ext fs provider 注册，因此这里从 onMonacoLoad 改为 onStart

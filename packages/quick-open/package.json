@@ -19,6 +19,7 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
+    "@ali/ide-components": "2.5.5",
     "@ali/ide-core-browser": "2.5.5",
     "@ali/ide-core-common": "2.5.5",
     "@ali/ide-monaco": "2.5.5",

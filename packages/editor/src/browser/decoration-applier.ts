@@ -1,3 +1,4 @@
+import type { ICodeEditor as IMonacoCodeEditor } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Autowired, Injectable } from '@ali/common-di';
 import { IEditorDecorationCollectionService, IDynamicModelDecorationProperty, IThemedCssStyle, EditorDecorationChangeEvent, EditorDecorationTypeRemovedEvent, DidApplyEditorDecorationFromProvider } from './types';
@@ -20,7 +21,7 @@ export class MonacoEditorDecorationApplier extends Disposable {
 
   private decorations: Map<string, { decorations: string[], dispose: () => void } > = new Map();
 
-  constructor(private editor: monaco.editor.ICodeEditor) {
+  constructor(private editor: IMonacoCodeEditor) {
     super();
     this.applyDecorationFromProvider();
     this.editor.onDidChangeModel(() => {

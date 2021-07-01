@@ -1,9 +1,10 @@
+import type { ICodeEditor as IMonacoCodeEditor, ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import { RenderLineNumbersType } from '@ali/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { IMainThreadEditorsService, IExtensionHostEditorService, ExtHostAPIIdentifier, IEditorChangeDTO, IResolvedTextEditorConfiguration, TextEditorRevealType, ITextEditorUpdateConfiguration, TextEditorCursorStyle } from '../../../common/vscode';
-import { WorkbenchEditorService, IEditorGroup, IResource, IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions, EditorCollectionService, IDecorationRenderOptions, IThemeDecorationRenderOptions } from '@ali/ide-editor';
+import { WorkbenchEditorService, IEditorGroup, IResource, IUndoStopOptions, ISingleEditOperation, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions, EditorCollectionService, IDecorationRenderOptions, IThemeDecorationRenderOptions } from '@ali/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { WithEventBus, MaybeNull, IRange, ILineChange, URI, ISelection } from '@ali/ide-core-common';
 import { EditorGroupChangeEvent, IEditorDecorationCollectionService, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent } from '@ali/ide-editor/lib/browser';
@@ -13,6 +14,7 @@ import debounce = require('lodash.debounce');
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { viewColumnToResourceOpenOptions } from '../../../common/vscode/converter';
+import { EndOfLineSequence } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 @Injectable({multiple: true})
 export class MainThreadEditorService extends WithEventBus implements IMainThreadEditorsService {
@@ -262,7 +264,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
   async $applyEdits(id: string, documentVersionId: number, edits: ISingleEditOperation[], options: { setEndOfLine: EndOfLineSequence | undefined; undoStopBefore: boolean; undoStopAfter: boolean; }): Promise<boolean> {
     const editor = this.getEditor(id);
     if (editor && editor.currentDocumentModel) {
-      const model: monaco.editor.ITextModel = editor.currentDocumentModel.getMonacoModel();
+      const model: ITextModel = editor.currentDocumentModel.getMonacoModel();
       if (model && model.getVersionId() === documentVersionId) {
         if (typeof options.setEndOfLine !== 'undefined') {
           model.pushEOL(options.setEndOfLine as any);
@@ -312,7 +314,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     return Promise.resolve();
   }
 
-  public setConfiguration(codeEditor: monaco.editor.ICodeEditor, newConfiguration: ITextEditorUpdateConfiguration): void {
+  public setConfiguration(codeEditor: IMonacoCodeEditor, newConfiguration: ITextEditorUpdateConfiguration): void {
     if (codeEditor.getModel()) {
       this._setIndentConfiguration(codeEditor.getModel()!, newConfiguration);
     }
@@ -375,7 +377,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     return Promise.resolve([]);
   }
 
-  private _setIndentConfiguration(model: monaco.editor.ITextModel, newConfiguration: ITextEditorUpdateConfiguration): void {
+  private _setIndentConfiguration(model: ITextModel, newConfiguration: ITextEditorUpdateConfiguration): void {
     const creationOpts = StaticServices.modelService.get().getCreationOptions((model as any).getLanguageIdentifier().language, model.uri, (model as any).isForSimpleWidget);
 
     if (newConfiguration.tabSize === 'auto' || newConfiguration.insertSpaces === 'auto') {
@@ -421,7 +423,7 @@ function getGroupIdFromTextEditorId(id: string): string {
   return id.substr(0, id.indexOf('.'));
 }
 
-function getEditorOption(editor: monaco.editor.ICodeEditor): IResolvedTextEditorConfiguration {
+function getEditorOption(editor: IMonacoCodeEditor): IResolvedTextEditorConfiguration {
   const modelOptions = editor.getModel()!.getOptions();
   return {
     tabSize: modelOptions.tabSize,

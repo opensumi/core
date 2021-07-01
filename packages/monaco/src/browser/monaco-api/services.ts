@@ -34,3 +34,7 @@ export function createStaticServiceApi() {
     editorWorkerService: StaticServices.editorWorkerService.get(),
   });
 }
+
+export {
+  StaticServices,
+};

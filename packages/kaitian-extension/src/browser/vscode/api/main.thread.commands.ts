@@ -2,8 +2,8 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadCommands, IExtHostCommands, ArgumentProcessor } from '../../../common/vscode';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { CommandRegistry, ILogger, IContextKeyService, IDisposable } from '@ali/ide-core-browser';
-import { MonacoCommandService } from '@ali/ide-monaco/lib/browser/monaco.command.service';
 import { URI, isNonEmptyArray, Disposable, IExtensionInfo } from '@ali/ide-core-common';
+import { ICommandServiceToken, IMonacoCommandService } from '@ali/ide-monaco/lib/browser/contrib/command';
 
 export interface IExtCommandHandler extends IDisposable {
   execute: (...args: any[]) => Promise<any>;
@@ -19,8 +19,8 @@ export class MainThreadCommands implements IMainThreadCommands {
   @Autowired(CommandRegistry)
   commandRegistry: CommandRegistry;
 
-  @Autowired()
-  monacoCommandService: MonacoCommandService;
+  @Autowired(ICommandServiceToken)
+  monacoCommandService: IMonacoCommandService;
 
   @Autowired(ILogger)
   logger: ILogger;

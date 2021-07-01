@@ -10,6 +10,8 @@ import { EditorContextKeys } from '@ali/monaco-editor-core/esm/vs/editor/common/
 import { StandaloneCommandService } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
 import { ContextKeyExpr, ContextKeyExprType, ContextKeyOrExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { KeyCode as MonacoKeyCode } from '@ali/monaco-editor-core';
+import { FormattingConflicts } from '@ali/monaco-editor-core/esm/vs/editor/contrib/format/format';
 import {
   PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, ISchemaRegistry, Disposable,
   CommandRegistry, IMimeService, CorePreferences, ClientAppContribution, CommandContribution, ContributionProvider,
@@ -20,12 +22,10 @@ import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId, IMenuI
 import { IThemeService } from '@ali/ide-theme';
 import { URI, ILogger } from '@ali/ide-core-common';
 
-import { MonacoCommandService, MonacoCommandRegistry, MonacoActionRegistry } from './monaco.command.service';
+import { ICommandServiceToken, IMonacoActionRegistry, IMonacoCommandService, IMonacoCommandsRegistry } from './contrib/command';
 import { MonacoMenus } from './monaco-menu';
-import { TextmateService } from './textmate.service';
 import { MonacoSnippetSuggestProvider } from './monaco-snippet-suggest-provider';
-import { KeyCode as MonacoKeyCode } from '@ali/monaco-editor-core';
-import { FormattingConflicts } from '@ali/monaco-editor-core/esm/vs/editor/contrib/format/format';
+import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
 
 @Domain(ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution)
 export class MonacoClientContribution implements ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution {
@@ -38,17 +38,17 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
   @Autowired(JsonSchemaContribution)
   schemaContributionProvider: ContributionProvider<JsonSchemaContribution>;
 
-  @Autowired()
-  monacoCommandService: MonacoCommandService;
+  @Autowired(ICommandServiceToken)
+  monacoCommandService: IMonacoCommandService;
 
-  @Autowired()
-  monacoCommandRegistry: MonacoCommandRegistry;
+  @Autowired(IMonacoCommandsRegistry)
+  monacoCommandRegistry: IMonacoCommandsRegistry;
 
-  @Autowired()
-  monacoActionRegistry: MonacoActionRegistry;
+  @Autowired(IMonacoActionRegistry)
+  monacoActionRegistry: IMonacoActionRegistry;
 
-  @Autowired()
-  private textmateService!: TextmateService;
+  @Autowired(ITextmateTokenizer)
+  private textmateService!: ITextmateTokenizerService;
 
   @Autowired(IThemeService)
   themeService: IThemeService;
@@ -144,7 +144,6 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
 
     // 注册/拦截 Monaco 内置的菜单
     this.patchMonacoInternalMenus();
-
   }
 
   onDidStart() {

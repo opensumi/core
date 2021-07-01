@@ -1,6 +1,6 @@
 import { Injectable, Autowired, Injector, Optional } from '@ali/common-di';
-import { MonacoCommandService } from '@ali/ide-monaco/lib/browser/monaco.command.service';
 import { ILogger, CommandRegistry, IExtensionInfo } from '@ali/ide-core-common';
+import { ICommandServiceToken, IMonacoCommandService } from '@ali/ide-monaco/lib/browser/contrib/command';
 import { IExtension } from '../../common';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtHostCommands } from '../../common/vscode/command';
@@ -9,8 +9,8 @@ import { ExtHostAPIIdentifier } from '../../common/vscode';
 @Injectable()
 export class KaitianBrowserCommand {
 
-  @Autowired()
-  private readonly monacoCommandService: MonacoCommandService;
+  @Autowired(ICommandServiceToken)
+  private readonly monacoCommandService: IMonacoCommandService;
 
   @Autowired(CommandRegistry)
   private readonly commandRegistry: CommandRegistry;

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FixedSizeList, VariableSizeList } from 'react-window';
+import { FixedSizeList, VariableSizeList, ScrollToAlign } from 'react-window';
 import { ScrollbarsVirtualList } from '../scrollbars';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import * as cls from 'classnames';
@@ -19,6 +19,22 @@ export interface IRecycleListProps {
    * @memberof RecycleTreeProps
    */
   width?: number;
+  /**
+   * 最大容器高度
+   * 当容器内容高度大于该值时列表将不再增长，而是出现滚动条
+   * maxHeight 匹配优先级高于 height 属性
+   * @type {number}
+   * @memberof RecycleTreeProps
+   */
+  maxHeight?: number;
+  /**
+   * 最小容器高度
+   * 当容器内容高度小于该值时将不再收缩，而是固定高度，一般需要配合 maxHeight一起使用
+   * maxHeight 匹配优先级高于 height 属性
+   * @type {number}
+   * @memberof RecycleTreeProps
+   */
+  minHeight?: number;
   /**
    * 节点高度
    * @type {number}
@@ -81,14 +97,14 @@ export interface IRecycleListProps {
 
 export interface IRecycleListHandler {
   scrollTo: (offset: number) => void;
-  scrollToIndex: (index: number) => void;
+  scrollToIndex: (index: number, position?: ScrollToAlign) => void;
 }
 
 export const RECYCLE_LIST_STABILIZATION_TIME: number = 500;
 export const RECYCLE_LIST_OVER_SCAN_COUNT: number = 50;
 
 export const RecycleList: React.FC<IRecycleListProps> = ({
-  width, height, className, style, data, onReady, itemHeight, header: Header, footer: Footer, template: Template, paddingBottomSize,
+  width, height, maxHeight, minHeight, className, style, data, onReady, itemHeight, header: Header, footer: Footer, template: Template, paddingBottomSize ,
 }) => {
 
   const listRef = React.useRef<FixedSizeList>();
@@ -108,7 +124,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
             locationIndex++;
           }
           if (typeof itemHeight === 'number') {
-            listRef.current?.scrollTo(locationIndex * (itemHeight), position);
+            listRef.current?.scrollToItem(locationIndex, position);
           } else {
             if (scrollToIndexTimer.current) {
               clearTimeout(scrollToIndexTimer.current);
@@ -143,8 +159,28 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
   };
 
   const getSize = (index: string | number) => {
-    return (sizeMap?.current || [])[index] || 100;
+    return (sizeMap?.current || [])[index] || itemHeight || 100;
   };
+
+  const getMaxListHeight = React.useCallback(() => {
+    if (maxHeight) {
+      let height = 0;
+      for (let i = 0; i < data.length; i++) {
+        height += getSize(i);
+      }
+      if (height > maxHeight) {
+        return maxHeight;
+      } else {
+        return height;
+      }
+    }
+  }, [maxHeight, data]);
+
+  const getMinListHeight = React.useCallback(() => {
+    if (minHeight) {
+      return minHeight;
+    }
+  }, [minHeight, data]);
 
   const adjustedRowCount = React.useMemo(() => {
     let count = data.length;
@@ -299,10 +335,18 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
       }
 
       const renderContent = ({ width, height }) => {
+        const maxH = getMaxListHeight();
+        const minH = getMinListHeight();
+        let currentHeight = height;
+        if (minH) {
+          currentHeight = Math.min(height, minH);
+        } else if (maxH) {
+          currentHeight = maxH;
+        }
         if (isDynamicList) {
           return <List
             width={width}
-            height={height}
+            height={currentHeight}
             // 这里的数据不是必要的，主要用于在每次更新列表
             itemData={[]}
             itemSize={getSize}
@@ -323,7 +367,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
         } else {
           return <List
             width={width}
-            height={height}
+            height={currentHeight}
             // 这里的数据不是必要的，主要用于在每次更新列表
             itemData={[]}
             itemSize={itemHeight}

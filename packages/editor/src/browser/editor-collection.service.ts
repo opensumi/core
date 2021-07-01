@@ -1,3 +1,4 @@
+import type { ICodeEditor as IMonacoCodeEditor, IDiffEditor as IMonacoDiffEditor } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ILineChange, URI, WithEventBus, OnEvent, Emitter as EventEmitter, ISelection, Disposable, removeUndefined } from '@ali/ide-core-common';
@@ -147,13 +148,10 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
 
 }
 
-export interface IMonacoImplEditor extends IEditor {
+// tslint:disable-next-line:no-empty-interface
+export interface IMonacoImplEditor extends IEditor {}
 
-  monacoEditor: monaco.editor.ICodeEditor;
-
-}
-
-export function insertSnippetWithMonacoEditor(editor: monaco.editor.ICodeEditor, template: string, ranges: IRange[], opts: IUndoStopOptions ) {
+export function insertSnippetWithMonacoEditor(editor: IMonacoCodeEditor, template: string, ranges: IRange[], opts: IUndoStopOptions ) {
 
   const snippetController = editor.getContribution('snippetController2') as any;
   const selections: ISelection[] = ranges.map((r) => new monaco.Selection(r.startLineNumber, r.startColumn, r.endLineNumber, r.endColumn));
@@ -164,7 +162,7 @@ export function insertSnippetWithMonacoEditor(editor: monaco.editor.ICodeEditor,
 
 }
 
-function updateOptionsWithMonacoEditor(monacoEditor: monaco.editor.ICodeEditor, editorOptions: monaco.editor.IEditorOptions, modelOptions: monaco.editor.ITextModelUpdateOptions) {
+function updateOptionsWithMonacoEditor(monacoEditor: IMonacoCodeEditor, editorOptions: monaco.editor.IEditorOptions, modelOptions: monaco.editor.ITextModelUpdateOptions) {
   monacoEditor.updateOptions(editorOptions);
   if (monacoEditor.getModel()) {
     monacoEditor.getModel()!.updateOptions(modelOptions);
@@ -215,7 +213,7 @@ export abstract class BaseMonacoEditorWrapper extends Disposable implements IEdi
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
-  constructor(public readonly monacoEditor: monaco.editor.ICodeEditor, private type: EditorType) {
+  constructor(public readonly monacoEditor: IMonacoCodeEditor, private type: EditorType) {
     super();
     this.decorationApplier = this.injector.get(MonacoEditorDecorationApplier, [this.monacoEditor]);
     this.addDispose(this.monacoEditor.onDidChangeModel(() => {
@@ -371,7 +369,7 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
   }
 
   constructor(
-    public readonly monacoEditor: monaco.editor.IStandaloneCodeEditor,
+    public readonly monacoEditor: IMonacoCodeEditor,
     options: any = {},
   ) {
     super(monacoEditor, EditorType.CODE);
@@ -519,7 +517,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
     }
   }
 
-  constructor(public readonly monacoDiffEditor: monaco.editor.IDiffEditor, private specialOptions: any = {}) {
+  constructor(public readonly monacoDiffEditor: IMonacoDiffEditor, private specialOptions: any = {}) {
     super();
     this.wrapEditors();
     this.addDispose(this.configurationService.onDidChangeConfiguration((e) => {
@@ -673,7 +671,7 @@ class DiffEditorPart extends BaseMonacoEditorWrapper implements IEditor {
     return this.getDocumentModel();
   }
 
-  constructor(monacoEditor: monaco.editor.ICodeEditor, private getDocumentModel: () => IEditorDocumentModel | null, type: EditorType) {
+  constructor(monacoEditor: IMonacoCodeEditor, private getDocumentModel: () => IEditorDocumentModel | null, type: EditorType) {
     super(monacoEditor, type);
   }
 

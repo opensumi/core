@@ -6,6 +6,7 @@ import { ClientAppContribution, WithEventBus, Domain, OnEvent, PreferenceService
 import { Injectable, Autowired } from '@ali/common-di';
 import { EditorDocumentModelWillSaveEvent, IEditorDocumentModelService } from './types';
 import { SaveReason } from '../types';
+import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 @Injectable()
 export class CodeActionOnSaveParticipant extends WithEventBus {
@@ -83,7 +84,7 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
     });
   }
 
-  private async applyOnSaveActions(model: monaco.editor.ITextModel, actions: CodeActionKind[], token: monaco.CancellationToken) {
+  private async applyOnSaveActions(model: ITextModel, actions: CodeActionKind[], token: monaco.CancellationToken) {
     for (const codeActionKind of actions) {
       try {
         const actionsToRun = await this.getActionsToRun(model, codeActionKind, token);
@@ -106,7 +107,7 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
     }
   }
 
-  private async getActionsToRun(model: monaco.editor.ITextModel, codeActionKind: CodeActionKind, token: monaco.CancellationToken) {
+  private async getActionsToRun(model: ITextModel, codeActionKind: CodeActionKind, token: monaco.CancellationToken) {
     return getCodeActions(model, model.getFullModelRange(), {
       type: modes.CodeActionTriggerType.Auto,
       filter: { include: codeActionKind, includeSourceActions: true },

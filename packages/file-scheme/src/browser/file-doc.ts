@@ -1,10 +1,11 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { IEditorDocumentModelContentProvider, EOL} from '@ali/ide-editor/lib/browser';
+import { IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
 import { FILE_SCHEME, FILE_SAVE_BY_CHANGE_THRESHOLD, IFileSchemeDocClient } from '../common';
 import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, ISchemaStore, IDisposable, Disposable, ISchemaRegistry, replaceLocalizePlaceholder, getLanguageIdFromMonaco, PreferenceService } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import * as md5 from 'md5';
 import { BaseFileSystemEditorDocumentProvider } from '@ali/ide-editor/lib/browser/fs-resource/fs-editor-doc';
+import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 // TODO 这块其实应该放到file service当中
 @Injectable()

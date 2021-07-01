@@ -222,6 +222,7 @@ export const FileTree = observer(({
           beforeFilterValueChange={beforeFilterValueChange}
           filterAfterClear={() => locationToCurrentFile()}
           filterAutoFocus={true}
+          leaveBottomBlank={true}
         >
           {(props: INodeRendererWrapProps) => <FileTreeNode
             item={props.item}

@@ -1,6 +1,5 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { matchesFuzzy } from '@ali/monaco-editor-core/esm/vs/base/common/filters';
-import { Mode } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/common/quickOpen';
 /**
  * 用于快速打开，检索文件
  */
@@ -22,16 +21,16 @@ import {
   EDITOR_COMMANDS,
   QuickOpenActionProvider,
   QuickOpenItem,
-  QuickOpenService,
   PreferenceService,
   getSymbolIcon,
   Highlight,
+  Mode,
 } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { KeybindingContribution, KeybindingRegistry, ILogger } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
-import { QuickOpenGroupItem, QuickOpenModel, QuickOpenOptions, PrefixQuickOpenService, QuickOpenBaseAction } from '@ali/ide-quick-open';
+import { QuickOpenModel, QuickOpenOptions, PrefixQuickOpenService, QuickOpenBaseAction } from '@ali/ide-quick-open';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { EditorGroupSplitAction, WorkbenchEditorService } from '@ali/ide-editor';
 import { DocumentSymbolStore, IDummyRoot, INormalizedDocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
@@ -108,9 +107,6 @@ class FileSearchActionLeftRight extends QuickOpenBaseAction {
       range: getRangeByInput(this.injector.get(FileSearchQuickCommandHandler).currentLookFor),
       focus: true,
     });
-    // 隐藏 quickopen
-    // 目前需要主动调用，后面改为失去焦点自动 @蛋总
-    this.injector.get(QuickOpenService).hide();
   }
 }
 
@@ -209,12 +205,12 @@ export class FileSearchQuickCommandHandler {
         this.cancelIndicator = new CancellationTokenSource();
         const token = this.cancelIndicator.token;
         const alreadyCollected = new Set<string>();
-        let findResults: QuickOpenGroupItem[] = [];
+        let findResults: QuickOpenItem[] = [];
 
         lookFor = lookFor.trim().replace(/\s/g, '');
         this.currentLookFor = lookFor;
         const validLookFor = getValidateInput(lookFor);
-        const recentlyResultList: QuickOpenGroupItem[] = await this.getRecentlyItems(alreadyCollected, validLookFor, token);
+        const recentlyResultList: QuickOpenItem[] = await this.getRecentlyItems(alreadyCollected, validLookFor, token);
 
         if (lookFor) {
           this.logger.debug('lookFor', lookFor, validLookFor);
@@ -277,7 +273,7 @@ export class FileSearchQuickCommandHandler {
   }
 
   private async getFindOutItems(alreadyCollected: Set<string>, lookFor: string, token: CancellationToken) {
-    let results: QuickOpenGroupItem[];
+    let results: QuickOpenItem[];
     // 有@时进入查找symbol逻辑
     if (lookFor.indexOf('@') > -1) {
       // save current editor state
@@ -303,7 +299,7 @@ export class FileSearchQuickCommandHandler {
         // 将symbol tree节点展开
         const flatSymbols: INormalizedDocumentSymbol[] = [];
         this.flattenSymbols({ children: symbols }, flatSymbols);
-        const items: QuickOpenGroupItem[] = flatSymbols.filter((item) => {
+        const items: QuickOpenItem[] = flatSymbols.filter((item) => {
           // 手动匹配symbol并高亮
           const matchRange: Highlight[] = matchesFuzzy(symbolQuery, item.name, true) || [];
           if (matchRange) {
@@ -311,7 +307,7 @@ export class FileSearchQuickCommandHandler {
           }
           return matchRange && matchRange.length;
         }).map((symbol) => {
-          return new QuickOpenGroupItem({
+          return new QuickOpenItem({
             uri: targetFile,
             label: symbol.name,
             iconClass: getSymbolIcon(symbol.kind),
@@ -420,13 +416,13 @@ export class FileSearchQuickCommandHandler {
     uriList: string[],
     options: { [key: string]: any },
   ) {
-    const items: QuickOpenGroupItem[] = [];
+    const items: QuickOpenItem[] = [];
 
     for (const [index, strUri] of uriList.entries()) {
       const uri = new URI(strUri);
-      const icon = `file-icon ${await this.labelService.getIcon(uri)}`;
+      const icon = `file-icon ${await this.labelService.getIcon(uri.withoutFragment())}`;
       const description = await this.workspaceService.asRelativePath(uri.withoutFragment());
-      const item = new QuickOpenGroupItem({
+      const item = new QuickOpenItem({
         uri,
         label: uri.displayName,
         tooltip: strUri,
@@ -473,8 +469,8 @@ export class FileSearchQuickCommandHandler {
    * @param member the `QuickOpenItem` object member for comparison.
    */
   private compareItems(
-    a: QuickOpenGroupItem,
-    b: QuickOpenGroupItem,
+    a: QuickOpenItem,
+    b: QuickOpenItem,
     member: 'getLabel' | 'getUri' = 'getLabel'): number {
 
     /**

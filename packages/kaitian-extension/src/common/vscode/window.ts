@@ -18,7 +18,7 @@ export interface IExtHostMessage {
 }
 
 export interface IMainThreadQuickOpen {
-  $showQuickPick(items: QuickPickItem<number>[], options?: QuickPickOptions): Promise<number | undefined>;
+  $showQuickPick(session: number, items: QuickPickItem<number>[], options?: QuickPickOptions): Promise<number | undefined>;
   $hideQuickPick(): void;
   $showQuickInput(options: QuickInputOptions, validateInput: boolean): Promise<string | undefined>;
   $hideQuickinput(): void;
@@ -26,6 +26,7 @@ export interface IMainThreadQuickOpen {
 
 export interface IExtHostQuickOpen {
   $onDidTriggerButton(handler: number): void;
+  $onItemSelected(handler: number): void;
   showQuickPick(promiseOrItems: vscode.QuickPickItem[] | Promise<vscode.QuickPickItem[]>, options?: vscode.QuickPickOptions, token?: CancellationToken): Promise<vscode.QuickPickItem | undefined>;
   showQuickPick(promiseOrItems: vscode.QuickPickItem[] | Promise<vscode.QuickPickItem[]>, options?: vscode.QuickPickOptions & { canSelectMany: true; }, token?: CancellationToken): Promise<vscode.QuickPickItem[] | undefined>;
   showQuickPick(promiseOrItems: string[] | Promise<string[]>, options?: QuickPickOptions, token?: CancellationToken): Promise<string | undefined>;
@@ -36,6 +37,7 @@ export interface IExtHostQuickOpen {
   showInputBox(options?: QuickInputOptions, token?: CancellationToken): PromiseLike<string | undefined>;
   hideInputBox(): void;
   $validateInput(input: string): MaybePromise<string | null | undefined>;
+  $onDidChangeValue(sessionId: number, value: string): void;
 }
 
 export interface QuickInputTitleButtonHandle extends QuickTitleButton {

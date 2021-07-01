@@ -6,6 +6,16 @@ import { readFile } from 'fs-extra';
 @Domain(ElectronMainContribution)
 export class ProtocolElectronMainContribution implements ElectronMainContribution {
 
+  /**
+   * 由于 registerSchemesAsPrivileged 只能调用一次，所有 contribution 都往这个里面塞
+   */
+  static schemePrivileges: Electron.CustomScheme[] = [{
+    scheme: 'vscode-resource',
+    privileges: {
+      secure: true,
+    },
+  }];
+
   onStart() {
     protocol.registerBufferProtocol('vscode-resource', async (req, callback: any) => {
       try {
@@ -27,12 +37,7 @@ export class ProtocolElectronMainContribution implements ElectronMainContributio
     if (protocol.registerSchemesAsPrivileged) {
       // 旧版本electron可能没有这个api
       // electron >= 5.x
-      protocol.registerSchemesAsPrivileged([{
-        scheme: 'vscode-resource',
-        privileges: {
-          secure: true,
-        },
-      }]);
+      protocol.registerSchemesAsPrivileged(ProtocolElectronMainContribution.schemePrivileges);
     } else if ((protocol as any).registerStandardSchemes) {
       // electron < 5.x
       (protocol as any).registerStandardSchemes(['vscode-resource'], {

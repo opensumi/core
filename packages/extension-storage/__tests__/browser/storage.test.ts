@@ -55,6 +55,7 @@ describe('Extension Storage Server -- Setup directory should be worked', () => {
 
   afterEach(() => {
     track.cleanupSync();
+    injector.disposeAll();
   });
 
   it('Extension Path Server should setup directory correctly', async (done) => {
@@ -134,7 +135,9 @@ describe('Extension Storage Server -- Data operation should be worked', () => {
 
   afterEach(() => {
     track.cleanupSync();
+    injector.disposeAll();
   });
+
   it('Global -- set value can be work', async (done) => {
     const isGlobal = true;
     const key = 'test';

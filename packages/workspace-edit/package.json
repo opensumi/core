@@ -25,7 +25,8 @@
     "@ali/ide-file-service": "2.5.5",
     "@ali/ide-overlay": "2.5.5",
     "@ali/ide-main-layout": "2.5.5",
-    "@ali/ide-components": "2.5.5"
+    "@ali/ide-components": "2.5.5",
+    "@ali/ide-monaco": "2.5.5"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "2.5.5",

@@ -171,6 +171,15 @@ export class ExpressionContainer extends CompositeTreeNode {
   get badge() {
     return this.source ? `${this.source.name}:${this.line}` : '';
   }
+
+  get path(): string {
+    /**
+     * 默认实现中，path 是通过 name 进行组装
+     * 而在调试场景中，为了保证每个节点的唯一性，需要为每个节点指定唯一的 path 值
+     * 故这里使用 id 作为 path 值
+     */
+    return String(this.id);
+  }
 }
 
 export namespace ExpressionContainer {
@@ -464,10 +473,6 @@ export class DebugConsoleVariableContainer extends DebugVariableContainer {
     return DebugConsoleVariableContainer.uniqueID;
   }
 
-  get name(): string {
-    return String(this.id);
-  }
-
   get description() {
     if (this.variable) {
       return this.variable.value;
@@ -488,7 +493,6 @@ export class DebugConsoleNode extends ExpressionContainer {
     return !!node && !!(node as DebugConsoleNode).expression;
   }
 
-  private _displayName: string;
   private _available: boolean;
   private _description: string;
 
@@ -517,7 +521,7 @@ export class DebugConsoleNode extends ExpressionContainer {
         if (typeof expression === 'string') {
           const body = await this.session.evaluate(expression, context);
           if (body) {
-            this._displayName = expression;
+            this.name = expression;
             this._description = body.result;
             this.variablesReference = body.variablesReference;
             this.namedVariables = body.namedVariables;
@@ -527,21 +531,13 @@ export class DebugConsoleNode extends ExpressionContainer {
         }
       } catch (err) {
         this._available = false;
-        this._displayName = expression;
+        this.name = expression;
         this._description = err.message;
       }
     } else {
       this._available = false;
-      this._displayName = expression;
+      this.name = expression;
     }
-  }
-
-  get displayName() {
-    return this._displayName || this.name;
-  }
-
-  get name() {
-    return `log_${this.id}`;
   }
 }
 
@@ -560,10 +556,6 @@ export class DebugConsoleRoot extends ExpressionContainer {
 
   get expanded() {
     return true;
-  }
-
-  get name() {
-    return `consoleRoot_${this.id}`;
   }
 
   updatePresetChildren(presets: (AnsiConsoleNode | DebugConsoleNode | DebugVariableContainer)[]) {
@@ -588,10 +580,6 @@ export class DebugWatchRoot extends ExpressionContainer {
     return true;
   }
 
-  get name() {
-    return `watchRoot_${this.id}`;
-  }
-
   updatePresetChildren(presets: DebugWatchNode[]) {
     this.presetChildren = presets;
   }
@@ -611,10 +599,6 @@ export class DebugVariableRoot extends DebugVariableContainer {
   get expanded() {
     return true;
   }
-
-  get name() {
-    return `variableRoot_${this.id}`;
-  }
 }
 
 export class DebugHoverVariableRoot extends ExpressionContainer {
@@ -632,10 +616,6 @@ export class DebugHoverVariableRoot extends ExpressionContainer {
 
   get name() {
     return this._value;
-  }
-
-  get path() {
-    return `hoverRoot_${this.id}`;
   }
 
   protected _available = false;

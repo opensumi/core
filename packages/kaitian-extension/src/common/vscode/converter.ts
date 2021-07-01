@@ -4,7 +4,7 @@ import type * as vscode from 'vscode';
 import * as types from './ext-types';
 import * as model from './model.api';
 import { URI, Uri, UriComponents, ISelection, IMarkerData, IRelatedInformation, MarkerTag, MarkerSeverity, ProgressLocation as MainProgressLocation, parse, cloneAndChange } from '@ali/ide-core-common';
-import { EndOfLineSequence, IDecorationRenderOptions, IThemeDecorationRenderOptions, IContentDecorationRenderOptions, TrackedRangeStickiness } from '@ali/ide-editor/lib/common';
+import { IDecorationRenderOptions, IThemeDecorationRenderOptions, IContentDecorationRenderOptions, TrackedRangeStickiness } from '@ali/ide-editor/lib/common';
 import { IEvaluatableExpression } from '@ali/ide-debug/lib/common/evaluatable-expression';
 import { SymbolInformation, Range as R, Position as P, SymbolKind as S } from 'vscode-languageserver-types';
 import { ExtensionDocumentDataManager } from './doc';
@@ -17,6 +17,7 @@ import {
 } from './models';
 import * as marked from 'marked';
 import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
+import { EndOfLineSequence } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 export interface TextEditorOpenOptions extends vscode.TextDocumentShowOptions {
   background?: boolean;

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useInjectable, getIcon } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { ViewState } from '@ali/ide-core-browser';
-import { INodeRendererProps, ClasslistComposite, IRecycleTreeHandle, TreeNodeType, RecycleTree, INodeRendererWrapProps, TreeModel, CompositeTreeNode, RecycleTreeAdaptiveDecorator, PromptHandle } from '@ali/ide-components';
+import { INodeRendererProps, ClasslistComposite, IRecycleTreeHandle, TreeNodeType, RecycleTree, INodeRendererWrapProps, TreeModel, CompositeTreeNode, PromptHandle } from '@ali/ide-components';
 import { ExpressionContainer, ExpressionNode, DebugVariableContainer, DebugVariable, DebugWatchNode } from '../../tree/debug-tree-node.define';
 import { DebugWatchModelService } from './debug-watch-tree.model.service';
 import * as styles from './debug-watch.module.less';
@@ -11,15 +11,12 @@ import { Loading } from '@ali/ide-core-browser/lib/components/loading';
 
 export const DEBUG_WATCH_TREE_FIELD_NAME = 'DEBUG_WATCH_TREE_FIELD';
 
-// AdaptiveTree 会根据Tree折叠展开状态自适应视图高度
-export const AdaptiveTree = RecycleTreeAdaptiveDecorator(RecycleTree);
-
 export const DebugWatchView = observer(({
   viewState,
 }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const DEBUG_VARIABLE_ITEM_HEIGHT = 22;
 
-  const { width, height } = viewState;
+  const { height } = viewState;
 
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
   const [model, setModel] = React.useState<TreeModel>();
@@ -27,16 +24,17 @@ export const DebugWatchView = observer(({
   const debugWatchModelService = useInjectable<DebugWatchModelService>(DebugWatchModelService);
 
   React.useEffect(() => {
-    initTreeModel();
+    return initTreeModel();
   }, []);
 
-  const initTreeModel = async () => {
+  const initTreeModel = () => {
     const treeModel = debugWatchModelService.treeModel;
     if (treeModel) {
-      await treeModel.root.ensureLoaded();
-      setModel(treeModel);
+      treeModel.root.ensureLoaded().then(() => {
+        setModel(treeModel);
+      });
     }
-    debugWatchModelService.onDidUpdateTreeModel(async (model: TreeModel) => {
+    const disposable = debugWatchModelService.onDidUpdateTreeModel(async (model: TreeModel) => {
       if (model) {
         await model.root.ensureLoaded();
       }
@@ -44,6 +42,7 @@ export const DebugWatchView = observer(({
     });
     return () => {
       debugWatchModelService.removeNodeDecoration();
+      disposable.dispose();
     };
   };
 
@@ -93,9 +92,8 @@ export const DebugWatchView = observer(({
     if (!model) {
       return <span />;
     } else {
-      return <AdaptiveTree
+      return <RecycleTree
         height={height}
-        width={width}
         itemHeight={DEBUG_VARIABLE_ITEM_HEIGHT}
         onReady={handleTreeReady}
         model={model!}
@@ -116,7 +114,7 @@ export const DebugWatchView = observer(({
             leftPadding={8}
           />;
         }}
-      </AdaptiveTree>;
+      </RecycleTree>;
     }
   };
 

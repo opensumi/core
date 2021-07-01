@@ -1,4 +1,3 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable } from '@ali/common-di';
 import { URI } from '@ali/ide-core-common';
 import { OverviewRulerLane, IDocPersistentCacheProvider } from '@ali/ide-editor';
@@ -12,6 +11,7 @@ import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { SCMPreferences } from '../../../src/browser/scm-preference';
 import { DirtyDiffDecorator } from '../../../src/browser/dirty-diff/dirty-diff-decorator';
 import { DirtyDiffModel } from '../../../src/browser/dirty-diff/dirty-diff-model';
+import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 const fakeScmDiffDecorationsGetter = jest.fn();
 
@@ -26,7 +26,7 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
   describe('test for DirtyDiffDecorator', () => {
     let injector: MockInjector;
     let editorModel: IEditorDocumentModel;
-    let monacoModel: monaco.editor.ITextModel;
+    let monacoModel: ITextModel;
 
     beforeEach(() => {
       injector = createBrowserInjector([], new MockInjector([

@@ -3,10 +3,13 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MonacoService } from '../../src/common';
 import MonacoServiceImpl from '../../src/browser/monaco.service';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { TextmateService } from '../../src/browser/textmate.service';
+import { TextmateService } from '@ali/ide-editor/lib/browser/monaco-contrib/tokenizer/textmate.service';
 import { Injectable } from '@ali/common-di';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { IEventBus, EventBusImpl, URI } from '@ali/ide-core-browser';
+import { ITextmateTokenizer } from '@ali/ide-monaco/lib/browser/contrib/tokenizer';
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser/doc-model/types';
+import { EditorDocumentModelServiceImpl } from '@ali/ide-editor/lib/browser/doc-model/editor-document-model-service';
 
 @Injectable()
 class MockFileServiceClient {
@@ -130,8 +133,12 @@ describe('textmate service test', () => {
       useClass: EventBusImpl,
     },
     {
-      token: TextmateService,
+      token: ITextmateTokenizer,
       useClass: TextmateService,
+    },
+    {
+      token: IEditorDocumentModelService,
+      useClass: EditorDocumentModelServiceImpl,
     },
     {
       token: IFileServiceClient,

@@ -160,7 +160,6 @@ describe('DebugVariableRoot —— DebugVariable —— DebugVariableContainer',
     expect(typeof containerNode.setValue).toBe('function');
 
     expect(root.expanded).toBeTruthy();
-    expect(root.name).toBe(`variableRoot_${root.id}`);
   });
 
   it('static method should be work', () => {
@@ -230,7 +229,6 @@ describe('DebugWatchRoot —— DebugWatchNode', () => {
     expect(node.available).toBeFalsy();
 
     expect(root.expanded).toBeTruthy();
-    expect(root.name).toBe(`watchRoot_${root.id}`);
   });
 
   it('evaluate method should be work', async (done) => {
@@ -287,16 +285,13 @@ describe('DebugConsoleRoot —— DebugConsoleNode —— DebugConsoleVariableCo
   it('should have correct property', () => {
     expect(node.available).toBeFalsy();
     expect(node.description).toBeUndefined();
-    expect(node.name).toBe(`log_${node.id}`);
 
-    expect(containerNode.name).toBe(String(containerNode.id));
     expect(containerNode.uniqueID).toBe(DebugConsoleVariableContainer.uniqueID);
     expect(containerNode.value).toBe(mockContainerNodeOptions.variable.value);
     expect(containerNode.description).toBe(mockContainerNodeOptions.variable.value);
     expect(containerNode.tooltip).toBe(mockContainerNodeOptions.variable.value);
 
     expect(root.expanded).toBeTruthy();
-    expect(root.name).toBe(`consoleRoot_${root.id}`);
 
   });
 
@@ -343,7 +338,6 @@ describe('DebugHoverVariableRoot', () => {
   it('should have correct property', () => {
     expect(root.expanded).toBeTruthy();
     expect(root.available).toBeFalsy();
-    expect(root.path).toBe(`hoverRoot_${root.id}`);
   });
 
   it('evaluate method should be work', async (done) => {

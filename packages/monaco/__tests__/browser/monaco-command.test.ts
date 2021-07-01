@@ -3,12 +3,12 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MonacoService } from '../../src/common';
 import MonacoServiceImpl from '../../src/browser/monaco.service';
-import { MonacoCommandService, MonacoCommandRegistry, MonacoActionRegistry } from '../../src/browser/monaco.command.service';
 import { WorkbenchEditorService, EditorCollectionService } from '@ali/ide-editor';
 import { ILoggerManagerClient, Emitter, CommandRegistry } from '@ali/ide-core-common';
 import { CommandsRegistry, ICommandEvent } from '@ali/monaco-editor-core/esm/vs/platform/commands/common/commands';
 import { MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
 import { MonacoOverrideServiceRegistryImpl } from '../../src/browser/override.service.registry';
+import { MonacoActionRegistry, MonacoCommandRegistry, MonacoCommandService } from '@ali/ide-editor/lib/browser/monaco-contrib/command/command.service';
 
 describe(' monaco command service test', () => {
   let injector: MockInjector;

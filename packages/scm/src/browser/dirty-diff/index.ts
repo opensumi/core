@@ -1,3 +1,4 @@
+import type { ICodeEditor as IMonacoCodeEditor, ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { EditorGroupChangeEvent, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di';
@@ -174,7 +175,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     delete this.items[editorModel.id];
   }
 
-  public toggleDirtyDiffWidget(codeEditor: monaco.editor.ICodeEditor, position: monaco.IPosition) {
+  public toggleDirtyDiffWidget(codeEditor: IMonacoCodeEditor, position: monaco.IPosition) {
     const model = codeEditor.getModel();
     if (model && position) {
       let widget = this.widgets.get(codeEditor.getId());
@@ -202,7 +203,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     }
   }
 
-  private _doMouseDown(codeEditor: monaco.editor.ICodeEditor, { target }: monaco.editor.IEditorMouseEvent) {
+  private _doMouseDown(codeEditor: IMonacoCodeEditor, { target }: monaco.editor.IEditorMouseEvent) {
     if (!target) {
       return;
     }
@@ -234,7 +235,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     }
   }
 
-  private attachEvents(codeEditor: monaco.editor.ICodeEditor) {
+  private attachEvents(codeEditor: IMonacoCodeEditor) {
     const disposeCollection = new DisposableCollection();
 
     disposeCollection.push(codeEditor.onMouseDown((event) => {
@@ -258,7 +259,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     return disposeCollection;
   }
 
-  private getModel(editorModel: monaco.editor.ITextModel): DirtyDiffModel | null {
+  private getModel(editorModel: ITextModel): DirtyDiffModel | null {
     const item = this.items[editorModel.id];
 
     if (!item) {

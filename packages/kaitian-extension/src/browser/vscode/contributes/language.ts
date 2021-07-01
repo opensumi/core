@@ -1,17 +1,17 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { LanguagesContribution } from '@ali/ide-monaco';
-import { TextmateService } from '@ali/ide-monaco/lib/browser/textmate.service';
 import { localize, URI } from '@ali/ide-core-common';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
+import { ITextmateTokenizer, ITextmateTokenizerService } from '@ali/ide-monaco/lib/browser/contrib/tokenizer';
 
 export type LanguagesSchema = Array<LanguagesContribution>;
 
 @Injectable()
 @Contributes('languages')
 export class LanguagesContributionPoint extends VSCodeContributePoint<LanguagesSchema> {
-  @Autowired()
-  private readonly textMateService: TextmateService;
+  @Autowired(ITextmateTokenizer)
+  private readonly textMateService: ITextmateTokenizerService;
 
   async contribute() {
     for (const language of this.json) {

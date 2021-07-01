@@ -25,6 +25,7 @@
     "@ali/ide-editor": "2.5.5",
     "@ali/ide-file-service": "2.5.5",
     "@ali/ide-overlay": "2.5.5",
+    "@ali/ide-monaco": "2.5.5",
     "@ali/ide-static-resource": "2.5.5"
   },
   "devDependencies": {

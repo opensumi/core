@@ -1,5 +1,5 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
+import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IEvaluatableExpressionService } from './evaluatable-expression';
 import { CancellationTokenSource, coalesce, IRange } from '@ali/ide-core-common';

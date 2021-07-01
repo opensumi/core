@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { Disposable, DisposableCollection, IDisposable, ScopedKeybinding, KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeybindingService, ILogger, Event, KeybindingWeight, ThrottledDelayer } from '@ali/ide-core-browser';
+import { Disposable, IDisposable, ScopedKeybinding, KeybindingRegistry, URI, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeybindingService, ILogger, Event, KeybindingWeight, ThrottledDelayer, FileStat, DisposableCollection } from '@ali/ide-core-browser';
 import { KeymapsParser } from './keymaps-parser';
 import * as fuzzy from 'fuzzy';
 import { KEYMAPS_FILE_NAME, IKeymapService, KEYMAPS_SCHEME, KeybindingItem } from '../common';
@@ -27,9 +27,6 @@ export class KeymapService implements IKeymapService {
   @Autowired(KeybindingRegistry)
   protected readonly keyBindingRegistry: KeybindingRegistry;
 
-  @Autowired(ResourceProvider)
-  protected readonly resourceProvider: ResourceProvider;
-
   @Autowired(KeymapsParser)
   protected readonly parser: KeymapsParser;
 
@@ -53,7 +50,7 @@ export class KeymapService implements IKeymapService {
 
   private currentSearchValue: string;
 
-  protected resource: Resource;
+  protected resource: FileStat | undefined;
 
   protected readonly keymapChangeEmitter = new Emitter<void>();
 
@@ -95,24 +92,24 @@ export class KeymapService implements IKeymapService {
   keybindings: KeybindingItem[] = [];
 
   async init() {
-    this.resource = await this.resourceProvider(new URI().withScheme(USER_STORAGE_SCHEME).withPath(KEYMAPS_FILE_NAME));
-    if (this.resource.whenReady) {
-      await this.resource.whenReady;
-    }
+    const uri = new URI().withScheme(USER_STORAGE_SCHEME).withPath(KEYMAPS_FILE_NAME);
+    this.resource = await this.filesystem.getFileStat(uri.toString());
     await this.reconcile();
-    if (this.resource.onDidChangeContents) {
-      this.disposableCollection.push(this.resource.onDidChangeContents(() => {
+    if (this.resource) {
+      const watcher = await this.filesystem.watchFileChanges(uri);
+      this.disposableCollection.push(watcher);
+      watcher.onFilesChanged(() => {
         // 快捷键绑定文件内容变化，重新更新快捷键信息
         this.reconcile();
-      }));
+      });
     }
   }
 
   async openResource() {
-    if (!this.resource || !this.resource!.getFsPath) {
+    if (!this.resource || !this.resource!.uri) {
       return;
     }
-    const fsPath = await this.resource.getFsPath();
+    const fsPath = await this.resource.uri;
     if (!fsPath) {
       return;
     }
@@ -244,8 +241,12 @@ export class KeymapService implements IKeymapService {
    */
   protected async parseKeybindings(): Promise<Keybinding[]> {
     try {
-      const content = await this.resource.readContents();
-      this.storeKeybindings = this.parser.parse(content);
+      const resource = await this.resource;
+      if (!resource) {
+        return [];
+      }
+      const { content } = await this.filesystem.readFile(resource.uri);
+      this.storeKeybindings = this.parser.parse(content.toString());
       return this.storeKeybindings;
     } catch (error) {
       this.logger.warn(`ParseKeybindings fail: ${error.stack}`);
@@ -297,13 +298,13 @@ export class KeymapService implements IKeymapService {
   }
 
   private async saveKeybinding(keybindings: Keybinding[]) {
-    if (!this.resource.saveContents) {
+    if (!this.resource) {
       return;
     }
     this.storeKeybindings = keybindings;
     this.updateKeybindings();
     // 存储前清理多余属性
-    await this.resource.saveContents(JSON.stringify(keybindings.map((kb) => {
+    await this.filesystem.setContent(this.resource, JSON.stringify(keybindings.map((kb) => {
       return {
         when: kb.when,
         command: kb.command,
@@ -327,7 +328,7 @@ export class KeymapService implements IKeymapService {
    * @memberof KeymapsService
    */
   resetKeybinding = async (item: Keybinding) => {
-    if (!this.resource.saveContents) {
+    if (!this.resource) {
       return;
     }
     const keybindings: Keybinding[] = this.storeKeybindings;

@@ -1,6 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Mode } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/common/quickOpen';
-import { QuickOpenService, QuickOpenItem, QuickOpenGroupItem, QuickOpenItemOptions, QuickPickService, QuickPickOptions, QuickPickItem, HideReason } from '@ali/ide-core-browser/lib/quick-open';
+import { QuickOpenService, QuickOpenItem, QuickOpenItemOptions, QuickPickService, QuickPickOptions, QuickPickItem, HideReason, Mode } from '@ali/ide-core-browser/lib/quick-open';
 import { getIcon, getIconClass, getExternalIcon } from '@ali/ide-core-browser';
 import { QuickTitleBar } from './quick-title-bar';
 import { Emitter, Event } from '@ali/ide-core-common';
@@ -19,12 +18,8 @@ export class QuickPickServiceImpl implements QuickPickService {
   async show<T>(elements: (string | QuickPickItem<T>)[], options?: QuickPickOptions): Promise<T | undefined> {
     return new Promise<T | undefined>((resolve) => {
       const items = this.toItems(elements, resolve);
-      if (items.length === 0) {
-        resolve(undefined);
-        return;
-      }
-      if (options && this.quickOpenService.widgetNode && this.quickTitleBar.shouldShowTitleBar(options.title, options.step)) {
-        this.quickTitleBar.attachTitleBar(this.quickOpenService.widgetNode, options.title, options.step, options.totalSteps, options.buttons);
+      if (options && this.quickTitleBar.shouldShowTitleBar(options.title, options.step)) {
+        this.quickTitleBar.attachTitleBar(options.title, options.step, options.totalSteps, options.buttons);
       }
       const prefix = options && options.value ? options.value : '';
       this.quickOpenService.open({
@@ -54,7 +49,7 @@ export class QuickPickServiceImpl implements QuickPickService {
     for (const element of elements) {
       const options = this.toItemOptions(element, resolve);
       if (groupLabel) {
-        items.push(new QuickOpenGroupItem(Object.assign(options, { groupLabel, showBorder: true })));
+        items.push(new QuickOpenItem(Object.assign(options, { groupLabel, showBorder: true })));
         groupLabel = undefined;
       } else {
         items.push(new QuickOpenItem(options));
@@ -93,7 +88,7 @@ export class QuickPickServiceImpl implements QuickPickService {
   private readonly onDidAcceptEmitter: Emitter<void> = new Emitter();
   readonly onDidAccept: Event<void> = this.onDidAcceptEmitter.event;
 
-  private readonly onDidChangeActiveItemsEmitter: Emitter<QuickOpenItem<QuickOpenItemOptions>[]> = new Emitter<QuickOpenItem<QuickOpenItemOptions>[]>();
-  readonly onDidChangeActiveItems: Event<QuickOpenItem<QuickOpenItemOptions>[]> = this.onDidChangeActiveItemsEmitter.event;
+  private readonly onDidChangeActiveItemsEmitter: Emitter<QuickOpenItem[]> = new Emitter<QuickOpenItem[]>();
+  readonly onDidChangeActiveItems: Event<QuickOpenItem[]> = this.onDidChangeActiveItemsEmitter.event;
 
 }

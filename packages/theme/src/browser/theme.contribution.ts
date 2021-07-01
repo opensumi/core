@@ -1,5 +1,4 @@
-import { Mode } from '@ali/monaco-editor-core/esm/vs/base/parts/quickopen/common/quickOpen';
-import { Domain, CommandContribution, CommandRegistry, Command, localize, PreferenceService, replaceLocalizePlaceholder, PreferenceScope, QuickOpenService, QuickOpenGroupItem, QuickOpenOptions, QuickOpenItem } from '@ali/ide-core-browser';
+import { Domain, CommandContribution, CommandRegistry, Command, localize, PreferenceService, replaceLocalizePlaceholder, PreferenceScope, QuickOpenService, QuickOpenOptions, QuickOpenItem, Mode } from '@ali/ide-core-browser';
 import { IThemeService, IIconService, BuiltinThemeComparator, getThemeTypeName, BuiltinTheme } from '../common';
 import { Autowired } from '@ali/common-di';
 import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -129,11 +128,7 @@ export class ThemeContribution implements MenuContribution, CommandContribution 
             return false;
           },
         };
-        if (item.groupLabel) {
-          items.push(new QuickOpenGroupItem(Object.assign(baseOption, {groupLabel: item.groupLabel, showBorder: index !== 0 && true})));
-        } else {
-          items.push(new QuickOpenItem(baseOption));
-        }
+        items.push(new QuickOpenItem(Object.assign(baseOption, {groupLabel: item.groupLabel, showBorder: !!item.groupLabel && index !== 0})));
       });
       this.quickOpenService.open({
         onType: (_, acceptor) => acceptor(items),

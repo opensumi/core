@@ -17,7 +17,8 @@ import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
 import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.commands';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
-import { ICallHierarchyService, CallHierarchyService } from '@ali/ide-monaco/lib/browser/callHierarchy/callHierarchy.service';
+import { ICallHierarchyService } from '@ali/ide-monaco/lib/browser/contrib';
+import { CallHierarchyService } from '@ali/ide-editor/lib/browser/monaco-contrib';
 import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry, EmptyDocCacheImpl } from '@ali/ide-editor/src/browser';
 import { EditorDocumentModelServiceImpl, EditorDocumentModelContentRegistryImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
 import { IDocPersistentCacheProvider } from '@ali/ide-editor';
@@ -780,7 +781,7 @@ An error case:
       await 0;
 
       expect(mockMainThreadFunc).toBeCalled();
-      const prepareCallHierarchyItems =  await callHierarchyService.prepareCallHierarchyProvider(new URI(model.uri), new Position(1, 1));
+      const prepareCallHierarchyItems =  await callHierarchyService.prepareCallHierarchyProvider(model.uri, new Position(1, 1));
       expect(prepareCallHierarchyItems.length).toBe(1);
       expect(prepareCallHierarchyItems[0].kind).toBe(types.SymbolKind.Object);
       const provideIncomingCalls =  await callHierarchyService.provideIncomingCalls(prepareCallHierarchyItems[0]);
