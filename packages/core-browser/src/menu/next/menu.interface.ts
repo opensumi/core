@@ -96,14 +96,17 @@ export class MenuItemNode extends MenuNode {
     if (commandId) {
       const keybindings = this.keybindings.getKeybindingsForCommand(commandId);
       if (keybindings.length > 0) {
-        const isKeyCombination = Array.isArray(keybindings[0].resolved) && keybindings[0].resolved.length > 1;
-        let keybinding = this.keybindings.acceleratorFor(keybindings[0], isOSX ? '' : '+').join(' ');
+        // 取 priority 最高的 keybinding 作展示
+        const highPriorityKeybinding = keybindings.reduce((a, b) => (a.priority || 0) > (b.priority || 0) ? a : b);
+
+        const isKeyCombination = Array.isArray(highPriorityKeybinding.resolved) && highPriorityKeybinding.resolved.length > 1;
+        let keybinding = this.keybindings.acceleratorFor(highPriorityKeybinding, isOSX ? '' : '+').join(' ');
         if (isKeyCombination) {
           keybinding = `[${keybinding}]`;
         }
         return {
           keybinding,
-          rawKeybinding: keybindings[0].keybinding,
+          rawKeybinding: highPriorityKeybinding.keybinding,
           isKeyCombination,
         };
       }

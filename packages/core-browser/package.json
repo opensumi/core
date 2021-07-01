@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-browser",
-  "version": "2.5.4",
+  "version": "2.5.5",
   "description": "@ali/ide-core-browser",
   "files": [
     "lib"
@@ -19,9 +19,9 @@
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
-    "@ali/ide-components": "2.5.4",
-    "@ali/ide-connection": "2.5.4",
-    "@ali/ide-core-common": "2.5.4",
+    "@ali/ide-components": "2.5.5",
+    "@ali/ide-connection": "2.5.5",
+    "@ali/ide-core-common": "2.5.5",
     "ajv": "^6.10.0",
     "antd": "^3.20.3",
     "classnames": "2.2.6",
