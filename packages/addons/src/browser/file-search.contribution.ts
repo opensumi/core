@@ -16,6 +16,7 @@ import {
 } from '@ali/ide-core-common';
 import {
   localize,
+  formatLocalize,
   CommandService,
   URI,
   EDITOR_COMMANDS,
@@ -216,7 +217,17 @@ export class FileSearchQuickCommandHandler {
           this.logger.debug('lookFor', lookFor, validLookFor);
           findResults = await this.getFindOutItems(alreadyCollected, validLookFor, token);
         }
-        acceptor(recentlyResultList.concat(findResults), this.fileSearchActionProvider);
+        const concatResults = recentlyResultList.concat(findResults);
+        if (concatResults.length) {
+          acceptor(concatResults, this.fileSearchActionProvider);
+        } else {
+          acceptor([
+            new QuickOpenItem({
+              label: localize(lookFor.indexOf('@') > -1 ? 'fileSymbolResults.notfound' : 'fileResults.notfound'),
+              run: () => false,
+            }),
+          ]);
+        }
       },
     };
   }
@@ -284,7 +295,7 @@ export class FileSearchQuickCommandHandler {
       let targetFile: URI | undefined;
       // 默认采用缓存的结果，无缓存的结果则分析输入查找（直接粘贴 fileName@symbolName 场景）
       if (this.prevSelected) {
-        targetFile = this.prevSelected;
+        targetFile = this.prevSelected.withoutFragment();
       } else if (fileQuery) {
         const files = await this.getQueryFiles(fileQuery, alreadyCollected, token);
         if (files.length) {
@@ -295,7 +306,7 @@ export class FileSearchQuickCommandHandler {
       }
       if (targetFile) {
         // TODO: store ready event
-        const symbols = this.documentSymbolStore.getDocumentSymbol(targetFile) || [];
+        const symbols = await this.documentSymbolStore.getDocumentSymbolAsync(targetFile) || [];
         // 将symbol tree节点展开
         const flatSymbols: INormalizedDocumentSymbol[] = [];
         this.flattenSymbols({ children: symbols }, flatSymbols);
@@ -306,13 +317,14 @@ export class FileSearchQuickCommandHandler {
             (item as any).labelHighlights = matchRange;
           }
           return matchRange && matchRange.length;
-        }).map((symbol) => {
+        }).map((symbol, index) => {
           return new QuickOpenItem({
             uri: targetFile,
             label: symbol.name,
             iconClass: getSymbolIcon(symbol.kind),
             description: (symbol.parent as INormalizedDocumentSymbol)?.name,
             labelHighlights: (symbol as any).labelHighlights,
+            groupLabel: index === 0 ? formatLocalize('fileSymbolResults', flatSymbols.length) : '',
             showBorder: false,
             run: (mode: Mode) => {
               if (mode === Mode.PREVIEW) {
@@ -421,7 +433,7 @@ export class FileSearchQuickCommandHandler {
     for (const [index, strUri] of uriList.entries()) {
       const uri = new URI(strUri);
       const icon = `file-icon ${await this.labelService.getIcon(uri.withoutFragment())}`;
-      const description = await this.workspaceService.asRelativePath(uri.withoutFragment());
+      const description = await this.workspaceService.asRelativePath(uri.parent.withoutFragment());
       const item = new QuickOpenItem({
         uri,
         label: uri.displayName,
@@ -574,7 +586,11 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
   protected readonly quickOpenService: PrefixQuickOpenService;
 
   registerQuickOpenHandlers(quickOpenHandlerRegistry: QuickOpenHandlerRegistry) {
-    quickOpenHandlerRegistry.registerHandler(this.fileSearchQuickCommandHandler);
+    quickOpenHandlerRegistry.registerHandler(this.fileSearchQuickCommandHandler, {
+      title: localize('quickopen.tab.file'),
+      commandId: quickFileOpen.id,
+      order: 1,
+    });
   }
 
   registerCommands(commands: CommandRegistry): void {

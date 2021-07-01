@@ -52,6 +52,9 @@
       "path": "./references/tsconfig.monaco.json"
     },
     {
+      "path": "./references/tsconfig.quick-open.json"
+    },
+    {
       "path": "./references/tsconfig.editor.json"
     },
     {
@@ -59,9 +62,6 @@
     },
     {
       "path": "./references/tsconfig.scm.json"
-    },
-    {
-      "path": "./references/tsconfig.quick-open.json"
     },
     {
       "path": "./references/tsconfig.variable.json"

@@ -190,7 +190,7 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
       </div>
       { keybinding && <KeybindingView keybinding={keybinding} /> }
       { groupLabel && <span title={groupLabel} className={styles.item_group_label}>{groupLabel}</span> }
-      { actions?.map((action) => (<span onMouseDown={() => runQuickOpenItemAction(action)} title={action.tooltip || action.label} className={clx(styles.item_action, action.class)}></span>))}
+      { actions?.map((action) => (<span key={action.id} onMouseDown={() => runQuickOpenItemAction(action)} title={action.tooltip || action.label} className={clx(styles.item_action, action.class)}></span>))}
     </div>
   );
 });
@@ -330,6 +330,14 @@ export const QuickOpenView = observer(() => {
         }
         break;
       }
+      case Key.TAB.keyCode: {
+        if (widget.toggleTab) {
+          event.preventDefault();
+          event.stopPropagation();
+          widget.toggleTab();
+        }
+        break;
+      }
     }
   }, []);
 
@@ -337,6 +345,7 @@ export const QuickOpenView = observer(() => {
     <div className={styles.container} onKeyDown={onKeydown} onBlur={onBlur}>
       <QuickOpenHeader />
       <QuickOpenInput />
+      {widget.renderTab?.()}
       <QuickOpenList onReady={onListReady}/>
     </div>
   ) : null;

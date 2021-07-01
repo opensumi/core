@@ -264,12 +264,23 @@ describe('WorkspaceService should be work while workspace was a single directory
   });
 
   it('asRelativePath method should be work', async (done) => {
+    // file://authority/path 为 unc path 其 fsPath 为 //authority/path
+    // @link https://www3.trustwave.com/support/kb/KnowledgebaseArticle10870.aspx
+    const workspaceUri = new URI('file:///root');
     const newWorkspaceUri = workspaceUri.resolve('new_folder');
     injector.mock(IWorkspaceService, 'roots', [
-      workspaceStat,
+      {
+        uri: workspaceUri.toString(),
+        lastModification: new Date().getTime(),
+        isDirectory: true,
+      },
     ]);
     const result = await workspaceService.asRelativePath(newWorkspaceUri);
     expect(result).toBe('new_folder');
+    expect(await workspaceService.asRelativePath(newWorkspaceUri.codeUri.fsPath)).toBe('new_folder');
+    const outWorkspacePath = '/other/test.js';
+    expect(await workspaceService.asRelativePath(outWorkspacePath)).toBe(outWorkspacePath);
+
     done();
   });
 });

@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { VALIDATE_TYPE } from '@ali/ide-components';
 import { URI, MaybePromise, IDisposable, Event } from '@ali/ide-core-common';
 
@@ -201,7 +202,7 @@ export namespace QuickOpenOptions {
      */
     enableSeparateSubstringMatching?: boolean;
   }
-  export interface Resolved {
+  export interface Resolved extends QuickOpenTabOptions {
 
     /**
      * 启用状态
@@ -527,13 +528,38 @@ export interface QuickOpenHandler {
   /**
    * 获取面板的参数，用于额外设置 QuickOpen
    */
-  getOptions(): QuickOpenOptions;
+  getOptions(): Omit<QuickOpenOptions, keyof QuickOpenTabOptions>;
   /** quick-open 内部切换不会执行，最终关闭才会执行 */
   onClose?: (canceled: boolean) => void;
 }
 
+export interface QuickOpenTabOptions {
+  /**
+   * render tab
+   */
+  renderTab?(): React.ReactNode;
+  /**
+   * 切换 tab
+   */
+  toggleTab?(): void;
+}
+
+interface QuickOpenTabBase {
+  title: string;
+  order: number;
+  commandId: string;
+}
+
+export interface QuickOpenTab extends QuickOpenTabBase {
+  prefix: string;
+}
+
+export interface QuickOpenTabConfig extends QuickOpenTabBase {
+  sub?: Record<string, QuickOpenTabBase>;
+}
+
 export interface IQuickOpenHandlerRegistry {
-  registerHandler(handler: QuickOpenHandler): IDisposable;
+  registerHandler(handler: QuickOpenHandler, tab?: QuickOpenTabConfig): IDisposable;
 }
 
 export * from './recent-files';

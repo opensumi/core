@@ -1,16 +1,23 @@
+import { SymbolKind as SymbolKindEnum } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { MockInjector, mockService } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { WorkspaceSymbolQuickOpenHandler } from '../../../src/browser/language/workspace-symbol-quickopen';
 import { ILanguageService, WorkspaceSymbolProvider, WorkspaceSymbolParams, WorkbenchEditorService } from '../../../src/common';
 import { SymbolInformation, Location } from 'vscode-languageserver-types';
-import { SymbolKind } from '@ali/ide-core-common';
 import { IWorkspaceService } from '@ali/ide-workspace';
 
 class MockWorkspaceSymbolProvider implements WorkspaceSymbolProvider {
   provideWorkspaceSymbols(params: WorkspaceSymbolParams, token): Thenable<SymbolInformation[]> {
     return Promise.resolve([{
       name: 'test',
-      kind: SymbolKind.Function,
+      kind: SymbolKindEnum.Function,
+      location: Location.create('', {
+        start: { line: 5, character: 23 },
+        end : { line: 6, character : 0 },
+      }),
+    }, {
+      name: 'App',
+      kind: SymbolKindEnum.Class,
       location: Location.create('', {
         start: { line: 5, character: 23 },
         end : { line: 6, character : 0 },
@@ -18,14 +25,25 @@ class MockWorkspaceSymbolProvider implements WorkspaceSymbolProvider {
     }]);
   }
   resolveWorkspaceSymbol(symbol: SymbolInformation, token): Thenable<SymbolInformation> {
-    return Promise.resolve({
-      name: 'test',
-      kind: SymbolKind.Function,
-      location: Location.create('', {
-        start: { line: 5, character: 23 },
-        end : { line: 6, character : 0 },
-      }),
-    });
+    if (symbol.name === 'test') {
+      return Promise.resolve({
+        name: 'test',
+        kind: SymbolKindEnum.Function,
+        location: Location.create('', {
+          start: { line: 5, character: 23 },
+          end : { line: 6, character : 0 },
+        }),
+      });
+    } else {
+      return Promise.resolve({
+        name: 'App',
+        kind: SymbolKindEnum.Class,
+        location: Location.create('', {
+          start: { line: 5, character: 23 },
+          end : { line: 6, character : 0 },
+        }),
+      });
+    }
   }
 }
 
@@ -70,6 +88,18 @@ describe('workspace-symbol-quickopen', () => {
       if (item.length) {
         expect(item[0].getLabel()).toBe('test');
         expect(item[0].getIconClass()).toBe('codicon codicon-symbol-function');
+        done();
+      }
+    });
+  });
+
+  it('onType for class', (done) => {
+    const model = workspaceSymbolQuickOpenHandler.getModel();
+    model.onType('#test', (item) => {
+      if (item.length) {
+        expect(item.length).toBe(1);
+        expect(item[0].getLabel()).toBe('App');
+        expect(item[0].getIconClass()).toBe('codicon codicon-symbol-class');
         done();
       }
     });

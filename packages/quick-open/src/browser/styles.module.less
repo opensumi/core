@@ -2,7 +2,7 @@
   position: absolute;
 	width: 600px;
   z-index: 2000;
-  font-size: 13px;
+  font-size: 12px;
 	left: 50%;
 	margin-left: -300px;
   :global(.scrollbar-decoration) {
@@ -32,12 +32,16 @@
 
 .item {
   display: flex;
+  align-items: center;
   white-space: nowrap;
   padding: 0 10px;
   &:hover {
     background: var(--kt-tree-hoverBackground);
     .item_action {
       display: block;
+      &:hover {
+        transform: scale(1.2);
+      }
     }
   }
 }
@@ -73,6 +77,7 @@
 .item_action {
   display: none;
   height: 22px;
+  line-height: 22px;
   &:hover {
     color: var(--textLink-activeForeground);
   }

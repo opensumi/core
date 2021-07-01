@@ -567,6 +567,12 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
   };
 
+  export const SEARCH_WORKSPACE_SYMBOL_CLASS: Command = {
+    id: 'editor.workspaceSymbolClass.quickopen',
+    label: '%editor.workspaceClassSymbol.quickopen%',
+    category: CATEGORY,
+  };
+
   export const GO_TO_LINE: Command = {
     id: 'editor.action.gotoLine',
     category: CATEGORY,

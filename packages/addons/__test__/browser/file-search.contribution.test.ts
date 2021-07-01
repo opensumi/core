@@ -1,7 +1,13 @@
+import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { CommandService, CommandServiceImpl, CommandRegistryImpl, CommandRegistry, DisposableCollection } from '@ali/ide-core-common';
-import { KeybindingRegistry, KeybindingRegistryImpl } from '@ali/ide-core-browser';
+import { KeybindingRegistry, KeybindingRegistryImpl, RecentFilesManager, ILogger, PreferenceService } from '@ali/ide-core-browser';
+import { WorkbenchEditorService } from '@ali/ide-editor';
 import { PrefixQuickOpenService } from '@ali/ide-quick-open';
 import { QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
+import { FileSearchServicePath } from '@ali/ide-file-search/lib/common';
+import { IWorkspaceService } from '@ali/ide-workspace';
+import { DocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -111,5 +117,141 @@ describe('test for browser/file-search.contribution.ts', () => {
   it('get validate input', () => {
     const validate = getValidateInput('package.json(1,1)');
     expect(validate).toBe('package.json');
+  });
+});
+
+describe('file-search-quickopen', () => {
+
+  let injector: MockInjector;
+  let fileSearchQuickOpenHandler: FileSearchQuickCommandHandler;
+
+  const testDS: DocumentSymbol[] = [
+    {
+      name: 'test1',
+      detail: 'test1Detail',
+      tags: [],
+      kind: modes.SymbolKind.Class,
+      containerName: 'test Class',
+      range: {
+        startColumn: 1,
+        endColumn: 10,
+        startLineNumber: 1,
+        endLineNumber: 10,
+      },
+      selectionRange: {
+        startColumn: 1,
+        endColumn: 10,
+        startLineNumber: 1,
+        endLineNumber: 10,
+      },
+      children: [
+        {
+          name: 'test1Method',
+          detail: 'test1MethodDetail',
+          kind: modes.SymbolKind.Method,
+          containerName: 'test1Method',
+          tags: [],
+          range: {
+            startColumn: 4,
+            endColumn: 5,
+            startLineNumber: 2,
+            endLineNumber: 4,
+          },
+          selectionRange: {
+            startColumn: 4,
+            endColumn: 5,
+            startLineNumber: 2,
+            endLineNumber: 4,
+          },
+        },
+      ],
+    },
+  ];
+
+  modes.DocumentSymbolProviderRegistry['all'] = () => {
+    return [{
+      provideDocumentSymbols: () => {
+        return testDS;
+      },
+    }];
+  };
+
+  beforeEach(() => {
+    injector = createBrowserInjector([]);
+    injector.addProviders(
+      FileSearchQuickCommandHandler,
+      {
+        token: CommandService,
+        useValue: {},
+      },
+      {
+        token: FileSearchServicePath,
+        useValue: {
+          find: () => [
+            '/file/a',
+            '/file/b',
+          ],
+        },
+      },
+      {
+        token: WorkbenchEditorService,
+        useValue: {},
+      },
+      {
+        token: IWorkspaceService,
+        useValue: {
+          asRelativePath: () => '',
+          roots: [],
+        },
+      },
+      {
+        token: RecentFilesManager,
+        useValue: {
+          getMostRecentlyOpenedFiles: () => [],
+        },
+      },
+    );
+    injector.mockService(PreferenceService, {});
+    injector.mockService(ILogger, {});
+    injector.mockService(IEditorDocumentModelService, {
+      createModelReference: (uri) => {
+        return {
+          instance: {
+            uri,
+            getMonacoModel: () => {
+              return {
+                uri,
+                getLanguageIdentifier: () => 'javascript',
+              };
+            },
+          },
+          dispose: jest.fn(),
+        };
+      },
+    });
+    fileSearchQuickOpenHandler = injector.get(FileSearchQuickCommandHandler);
+  });
+
+  afterEach(() => {
+    injector.disposeAll();
+  });
+
+  it('onType', (done) => {
+    const model = fileSearchQuickOpenHandler.getModel();
+    model.onType('a', (item) => {
+      expect(item.length).toBe(2);
+      expect(item[0].getLabel()).toBe('a');
+      done();
+    });
+  });
+
+  it('onType for symbols', (done) => {
+    const model = fileSearchQuickOpenHandler.getModel();
+    model.onType('a@', (item) => {
+      expect(item.length).toBe(2);
+      expect(item[0].getLabel()).toBe('test1');
+      expect(item[0].getIconClass()).toBe('codicon codicon-symbol-class');
+      done();
+    });
   });
 });

@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { matchesFuzzy } from '@ali/monaco-editor-core/esm/vs/base/common/filters';
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { AppConfig, compareAnything, ConfigProvider, IContextKey, IContextKeyService, KeybindingRegistry, QuickOpenActionProvider } from '@ali/ide-core-browser';
+import { AppConfig, compareAnything, ConfigProvider, IContextKey, IContextKeyService, KeybindingRegistry, QuickOpenActionProvider, QuickOpenTabOptions } from '@ali/ide-core-browser';
 import { HideReason, Highlight, QuickOpenItem, QuickOpenModel as IKaitianQuickOpenModel, QuickOpenOptions, QuickOpenService } from '@ali/ide-core-browser/lib/quick-open';
 import { MonacoContextKeyService } from '@ali/ide-monaco/lib/browser/monaco.context-key.service';
 import { QuickOpenWidget } from './quick-open.widget';
@@ -10,7 +10,7 @@ import { IAutoFocus, IQuickOpenModel, QuickOpenContext } from './quick-open.type
 import { VALIDATE_TYPE } from '@ali/ide-core-browser/lib/components';
 import { QuickOpenView } from './quick-open.view';
 
-export interface IKaitianQuickOpenControllerOpts {
+export interface IKaitianQuickOpenControllerOpts extends QuickOpenTabOptions {
   inputAriaLabel: string;
   getAutoFocus(searchValue: string): IAutoFocus;
   valueSelection?: [number, number];
@@ -94,6 +94,8 @@ export class MonacoQuickOpenService implements QuickOpenService {
       password: opts.password,
       inputEnable: opts.enabled ?? true,
       valueSelection: opts.valueSelection,
+      renderTab: opts.renderTab,
+      toggleTab: opts.toggleTab,
     });
 
     this.inQuickOpenContextKey.set(true);
@@ -225,6 +227,14 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
 
   get valueSelection(): [number, number] | undefined {
     return this.options.valueSelection;
+  }
+
+  get renderTab() {
+    return this.options.renderTab;
+  }
+
+  get toggleTab() {
+    return this.options.toggleTab;
   }
 
   onClose(cancelled: boolean): void {

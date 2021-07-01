@@ -87,6 +87,9 @@ export class QuickOpenWidget implements IQuickOpenWidget {
     return this._autoFocus;
   }
 
+  public renderTab?: () => React.ReactNode;
+  public toggleTab?: () => void;
+
   constructor(
     public callbacks: IQuickOpenCallbacks,
   ) {
@@ -100,6 +103,8 @@ export class QuickOpenWidget implements IQuickOpenWidget {
     this._isPassword = options.password;
     this._inputEnable = options.inputEnable;
     this._valueSelection = options.valueSelection;
+    this.renderTab = options.renderTab;
+    this.toggleTab = options.toggleTab;
     this.callbacks.onType(prefix);
   }
 

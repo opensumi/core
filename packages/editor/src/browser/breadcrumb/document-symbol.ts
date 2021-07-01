@@ -1,6 +1,6 @@
 import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { Injectable, Autowired } from '@ali/common-di';
-import { WithEventBus, MaybeNull, OnEvent, BasicEvent, URI, CancellationTokenSource } from '@ali/ide-core-browser';
+import { WithEventBus, MaybeNull, OnEvent, BasicEvent, URI, CancellationTokenSource, Deferred, CancellationToken } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '../../common';
 import { IEditorDocumentModelService, EditorDocumentModelContentChangedEvent } from '../doc-model/types';
 import debounce = require('lodash.debounce');
@@ -20,6 +20,8 @@ export class DocumentSymbolStore extends WithEventBus {
   private pendingUpdate = new Set<string>();
 
   private debounced = new Map<string, () => any>();
+
+  private symbolDeferred = new Map<string, Deferred<void>>();
 
   constructor() {
     super();
@@ -41,6 +43,25 @@ export class DocumentSymbolStore extends WithEventBus {
     return this.documentSymbols.get(uri.toString());
   }
 
+  /**
+   * 等待获取文件 symbol，否则文件搜索一个未打开过的文件 symbols 为空
+   */
+  async getDocumentSymbolAsync(uri: URI, token?: CancellationToken): Promise<INormalizedDocumentSymbol[] | undefined> {
+    const uriStr = uri.toString();
+    if (token) {
+      token.onCancellationRequested(() => {
+        this.symbolDeferred.get(uriStr)?.resolve();
+        this.symbolDeferred.delete(uriStr);
+      });
+    }
+    if ((!this.documentSymbols.has(uriStr) || this.pendingUpdate.has(uriStr)) && !this.symbolDeferred.has(uriStr)) {
+      this.symbolDeferred.set(uriStr, new Deferred());
+      this.updateDocumentSymbolCache(uri);
+    }
+    await this.symbolDeferred.get(uriStr)?.promise;
+    return this.documentSymbols.get(uriStr);
+  }
+
   async createDocumentSymbolCache(uri: URI) {
     this.updateDocumentSymbolCache(uri);
   }
@@ -49,6 +70,7 @@ export class DocumentSymbolStore extends WithEventBus {
     this.pendingUpdate.delete(uri.toString());
     const modelRef = await this.editorDocumentModelRegistry.createModelReference(uri);
     if (!modelRef) {
+      this.symbolDeferred.get(uri.toString())?.resolve();
       return;
     }
     try {
@@ -68,6 +90,7 @@ export class DocumentSymbolStore extends WithEventBus {
     } finally {
       modelRef.dispose();
     }
+    this.symbolDeferred.get(uri.toString())?.resolve();
   }
 
   updateDocumentSymbolCache(uri: URI) {

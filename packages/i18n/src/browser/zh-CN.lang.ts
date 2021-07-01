@@ -105,9 +105,12 @@ export const localizationBundle = {
     'editor.failToOpen': '打开文件 {0} 失败, 请确认文件是否存在。详细错误信息: {1}',
 
     'editor.workspaceSymbol.quickopen': '搜索工作区符号',
+    'editor.workspaceSymbolClass.quickopen': '搜索工作区类',
     'editor.workspaceSymbol.description': '跳转工作区符号',
     'editor.workspaceSymbol.search': '请输入要搜索的符号',
+    'editor.workspaceSymbolClass.search': '请输入要搜索的类',
     'editor.workspaceSymbol.notfound': '没有匹配的工作区符号',
+    'editor.workspaceSymbolClass.notfound': '没有匹配的工作区类',
 
     'edit.cut': '剪切',
     'edit.copy': '复制',
@@ -124,6 +127,13 @@ export const localizationBundle = {
     'quickopen.command.description': '执行 IDE 预设的命令',
     'quickopen.command.nohandler': '找不到结果',
     'quickopen.quickinput.prompt': "请按 '回车(Enter)' 确认你的输入或者按 '取消(Esc)' 取消输入",
+    'quickopen.tab.file': '文件',
+    'quickopen.tab.class': '类',
+    'quickopen.tab.symbol': '符号',
+    'quickopen.tab.command': '指令',
+    'quickopen.tab.tip.prefix': '按',
+    'quickopen.tab.tip.suffix': '切换搜索类别',
+    'quickOpen.openSide': '在侧边打开',
 
     'explorer.title': '资源管理器',
 
@@ -170,6 +180,9 @@ export const localizationBundle = {
     'file-search.quickOpen.upDown': '在底部打开',
     'search.fileReplaceChanges': '{0} ↔ {1} (替换预览)',
     'fileResults': '文件结果',
+    'fileResults.notfound': '没有匹配的文件',
+    'fileSymbolResults': '符号（{0}）',
+    'fileSymbolResults.notfound': '没有匹配的符号',
     'historyMatches': '最近打开',
     'replaceAll.occurrences.files.message': '已将 {1} 个文件中出现的 {0} 处替换为“{2}”。',
     'search.replace.toggle.button.title': '切换替换',

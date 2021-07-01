@@ -28,6 +28,7 @@
     "@ali/ide-file-service": "2.5.5",
     "@ali/ide-components": "2.5.5",
     "@ali/ide-main-layout": "2.5.5",
+    "@ali/ide-quick-open": "2.5.5",
     "lodash.flattendeep": "^4.4.0",
     "md5": "^2.2.1"
   },

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { QuickOpenItem, HideReason, QuickOpenActionProvider } from '@ali/ide-core-browser';
+import { QuickOpenItem, HideReason, QuickOpenActionProvider, QuickOpenTabOptions } from '@ali/ide-core-browser';
 import { VALIDATE_TYPE } from '@ali/ide-core-browser/lib/components';
 
 export const QuickOpenContext = React.createContext<{
@@ -66,14 +66,14 @@ export interface IAutoFocus {
   autoFocusPrefixMatch?: string;
 }
 
-export interface QuickOpenInputOptions {
+export interface QuickOpenInputOptions extends QuickOpenTabOptions {
   placeholder?: string;
   password?: boolean;
   inputEnable?: boolean;
   valueSelection?: [number, number];
 }
 
-export interface IQuickOpenWidget {
+export interface IQuickOpenWidget extends QuickOpenTabOptions {
   inputValue: string;
   selectIndex: number;
   validateType?: VALIDATE_TYPE;

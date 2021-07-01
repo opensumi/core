@@ -66,7 +66,11 @@ export class QuickOpenFeatureContribution implements CommandContribution, Keybin
   }
 
   registerQuickOpenHandlers(handlers: QuickOpenHandlerRegistry): void {
-    handlers.registerHandler(this.quickCommandHandler);
+    handlers.registerHandler(this.quickCommandHandler, {
+      title: localize('quickopen.tab.command'),
+      commandId: QUICK_OPEN_COMMANDS.OPEN.id,
+      order: 4,
+    });
     handlers.registerHandler(this.helpQuickOpenHandler);
   }
 }

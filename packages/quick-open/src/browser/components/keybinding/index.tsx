@@ -1,23 +1,27 @@
 import * as React from 'react';
 import { Keybinding, KeybindingRegistry, useInjectable } from '@ali/ide-core-browser';
+import clx from 'classnames';
 import * as styles from './styles.module.less';
 
 export const KeybindingView: React.FC<{
   keybinding: Keybinding;
-}> = ({ keybinding }) => {
+  className?: string;
+  sequenceClassName?: string;
+  keyClassName?: string;
+}> = ({ keybinding, className, sequenceClassName, keyClassName }) => {
   const keybindingRegistry: KeybindingRegistry = useInjectable(KeybindingRegistry);
   const keyMaps = React.useMemo(() => {
     return keybindingRegistry.acceleratorFor(keybinding, ' ');
   }, [ keybinding ]);
   return (
-    <div className={styles.keybinding}>
+    <div className={clx(styles.keybinding, className)}>
       {
         keyMaps ? keyMaps.map((value, i) => {
           const keys = value.split(' ');
           return (
-            <div key={`${value}_${i}`} title={value} className={styles.key_sequence}>
+            <div key={`${value}_${i}`} title={value} className={clx(styles.key_sequence, sequenceClassName)}>
               {
-                keys.map((key, j) => (<span className={styles.key} key={`${key}_${i}_${j}`}>{key}</span>))
+                keys.map((key, j) => (<span className={clx(styles.key, keyClassName)} key={`${key}_${i}_${j}`}>{key}</span>))
               }
             </div>
           );

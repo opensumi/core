@@ -1,10 +1,42 @@
+import { SymbolKind as SymbolKindEnum } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { Injectable, Autowired } from '@ali/common-di';
-import { QuickOpenHandler, QuickOpenModel, CancellationTokenSource, QuickOpenItem, CancellationToken, URI, QuickOpenMode, getSymbolIcon } from '@ali/ide-core-browser';
-import { WorkspaceSymbolProvider, ILanguageService, WorkspaceSymbolParams, WorkbenchEditorService } from '../../common';
+import { QuickOpenHandler, QuickOpenModel, CancellationTokenSource, QuickOpenItem, CancellationToken, URI, QuickOpenMode, getSymbolIcon, getIcon } from '@ali/ide-core-browser';
+import { WorkspaceSymbolProvider, ILanguageService, WorkspaceSymbolParams, WorkbenchEditorService, EditorGroupSplitAction } from '../../common';
 import type { SymbolInformation, Range } from 'vscode-languageserver-types';
 import { ILogger, localize } from '@ali/ide-core-common';
 import { IWorkspaceService } from '@ali/ide-workspace';
+import { QuickOpenBaseAction, QuickOpenActionProvider } from '@ali/ide-quick-open';
 import * as flattenDeep from 'lodash.flattendeep';
+
+@Injectable()
+class WorkspaceSymbolOpenSideAction extends QuickOpenBaseAction {
+  constructor() {
+    super({
+      id: 'workspace-symbol:splitToRight',
+      tooltip: localize('quickOpen.openSide'),
+      class: getIcon('embed'),
+    });
+  }
+
+  async run(item: SymbolInformationQuickOpenItem): Promise<void> {
+    await item.openSide();
+  }
+}
+
+@Injectable()
+class WorkspaceSymbolActionProvider implements QuickOpenActionProvider {
+
+  @Autowired()
+  workspaceSymbolOpenSideActionOpen: WorkspaceSymbolOpenSideAction;
+
+  hasActions(): boolean {
+    return true;
+  }
+
+  getActions() {
+    return [this.workspaceSymbolOpenSideActionOpen];
+  }
+}
 
 @Injectable()
 export class WorkspaceSymbolQuickOpenHandler implements QuickOpenHandler {
@@ -21,6 +53,9 @@ export class WorkspaceSymbolQuickOpenHandler implements QuickOpenHandler {
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorService;
 
+  @Autowired()
+  private readonly workspaceSymbolActionProvider: WorkspaceSymbolActionProvider;
+
   prefix = '#';
 
   get description() {
@@ -31,13 +66,20 @@ export class WorkspaceSymbolQuickOpenHandler implements QuickOpenHandler {
 
   getModel(): QuickOpenModel {
     return {
-      onType: (lookFor: string, acceptor: (items: QuickOpenItem[]) => void) => {
+      onType: (lookFor: string, acceptor: (items: QuickOpenItem[], actionProvider?: QuickOpenActionProvider | undefined) => void) => {
         if (lookFor === '') {
           acceptor([new QuickOpenItem({
             label: localize('editor.workspaceSymbol.search'),
             run: () => false,
           })]);
           return;
+        }
+
+        if (lookFor === '#') {
+          return void acceptor([new QuickOpenItem({
+            label: localize('editor.workspaceSymbolClass.search'),
+            run: () => false,
+          })]);
         }
 
         if (this.languageService.workspaceSymbolProviders.length === 0) {
@@ -48,6 +90,8 @@ export class WorkspaceSymbolQuickOpenHandler implements QuickOpenHandler {
           return;
         }
 
+        const isSearchClass = lookFor[0] === '#';
+
         const items: QuickOpenItem[] = [];
         // 先传一个空数组占位
         acceptor(items);
@@ -56,24 +100,27 @@ export class WorkspaceSymbolQuickOpenHandler implements QuickOpenHandler {
         this.cancellationSource = newCancellationSource;
 
         const param: WorkspaceSymbolParams = {
-          query: lookFor,
+          query: isSearchClass ? lookFor.slice(1) : lookFor,
         };
         Promise.all(this.languageService.workspaceSymbolProviders.map(async (provider) => {
-          const symbols = await provider.provideWorkspaceSymbols(param, newCancellationSource.token);
+          let symbols = await provider.provideWorkspaceSymbols(param, newCancellationSource.token);
+          if (isSearchClass) {
+            symbols = symbols?.filter((symbol) => symbol.kind === SymbolKindEnum.Class);
+          }
           if (symbols && symbols.length && !newCancellationSource.token.isCancellationRequested) {
             const quickOpenItems = await Promise.all(symbols.map(async (symbol) => {
-              const relativePath = await this.workspaceService.asRelativePath(symbol.location.uri) || '';
+              const relativePath = await this.workspaceService.asRelativePath(new URI(symbol.location.uri).parent) || '';
               return new SymbolInformationQuickOpenItem(symbol, provider, this.workbenchEditorService, newCancellationSource.token, relativePath);
             }));
             items.push(...quickOpenItems);
-            acceptor(items);
+            acceptor(items, this.workspaceSymbolActionProvider);
           }
           return symbols;
         })).then((symbolsArr) => {
           const symbols = flattenDeep(symbolsArr);
           if (symbols.length === 0) {
             acceptor([new QuickOpenItem({
-              label: localize('editor.workspaceSymbol.notfound'),
+              label: localize(isSearchClass ? 'editor.workspaceSymbolClass.notfound' : 'editor.workspaceSymbol.notfound'),
               run: () => false,
             })]);
           }
@@ -157,5 +204,17 @@ export class SymbolInformationQuickOpenItem extends QuickOpenItem {
       });
     }
     return true;
+  }
+
+  openSide() {
+    const uri = this.getUri();
+    return this.provider.resolveWorkspaceSymbol(this.symbol, this.token).then((resolvedSymbol) => {
+      this.workbenchEditorService.open(uri, {
+        preview: false,
+        split: EditorGroupSplitAction.Right,
+        range: this.fromRange(resolvedSymbol ? resolvedSymbol.location.range : this.symbol.location.range),
+        focus: true,
+      });
+    });
   }
 }

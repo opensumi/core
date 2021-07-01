@@ -252,6 +252,10 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       command: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL.id,
       keybinding: isElectronEnv() ? 'ctrlcmd+t' : 'ctrlcmd+o',
     });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL_CLASS.id,
+      keybinding: isElectronEnv() ? 'ctrlcmd+alt+t' : 'ctrlcmd+alt+o',
+    });
     if (isElectronEnv()) {
       keybindings.registerKeybinding({
         command: EDITOR_COMMANDS.NEXT.id,
@@ -886,6 +890,10 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       execute: () => this.prefixQuickOpenService.open('#'),
     });
 
+    commands.registerCommand(EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL_CLASS, {
+      execute: () => this.prefixQuickOpenService.open('##'),
+    });
+
     commands.registerCommand(EDITOR_COMMANDS.TOGGLE_WORD_WRAP, {
       execute: () => {
         const wordWrap = this.preferenceService.get<string>('editor.wordWrap');
@@ -968,9 +976,21 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
   }
 
   registerQuickOpenHandlers(handlers: IQuickOpenHandlerRegistry): void {
-    handlers.registerHandler(this.workspaceSymbolQuickOpenHandler);
+    handlers.registerHandler(this.workspaceSymbolQuickOpenHandler, {
+      title: localize('quickopen.tab.symbol'),
+      order: 3,
+      commandId: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL.id,
+      sub: {
+        // 将类单独作为一个 tab，Java 场景比较常见，其它技术栈可能不一定
+        // TODO: 看是否需要用配置来开启
+        '#': {
+          title: localize('quickopen.tab.class'),
+          order: 2,
+          commandId: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL_CLASS.id,
+        },
+      },
+    });
   }
-
 }
 
 @Domain(BrowserEditorContribution, CommandContribution)

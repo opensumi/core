@@ -707,11 +707,12 @@ export class WorkspaceService implements IWorkspaceService {
    * @param includeWorkspaceFolder
    */
   async asRelativePath(pathOrUri: string | URI, includeWorkspaceFolder?: boolean) {
+    // path 为 uri.path 非 uri.toString()
     let path: string | undefined;
     if (typeof pathOrUri === 'string') {
       path = pathOrUri;
     } else if (typeof pathOrUri !== 'undefined') {
-      path = pathOrUri.toString();
+      path = pathOrUri.codeUri.fsPath;
     }
     if (!path) {
       return path;
@@ -724,16 +725,16 @@ export class WorkspaceService implements IWorkspaceService {
       }
     }
     for (const root of roots) {
-      const rootUri = root.uri;
-      const isRelative = path && path.indexOf(rootUri) >= 0;
+      const rootPath = new URI(root.uri).codeUri.fsPath;
+      const isRelative = path && path.indexOf(rootPath) >= 0;
       if (isRelative) {
-        if (path === rootUri) {
+        if (path === rootPath) {
           return '';
         }
-        if (rootUri.slice(-1) === '/') {
-          return decodeURI(path.replace(rootUri, ''));
+        if (rootPath.slice(-1) === '/') {
+          return decodeURI(path.replace(rootPath, ''));
         }
-        return decodeURI(path.replace(rootUri + '/', ''));
+        return decodeURI(path.replace(rootPath + '/', ''));
       }
     }
     return decodeURI(path);

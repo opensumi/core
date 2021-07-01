@@ -551,8 +551,7 @@ export class SearchTreeService {
       const uri = searchResultArray[0];
       const resultList = searchResultArray[1];
       const _uri = new URI(uri);
-      const dirPath = _uri.parent.toString();
-      const description = await workspaceService.asRelativePath(dirPath) ?? dirPath;
+      const description = await workspaceService.asRelativePath(_uri.parent);
 
       if (!resultList || resultList.length < 1) {
         continue;
