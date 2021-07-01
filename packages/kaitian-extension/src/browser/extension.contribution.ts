@@ -172,7 +172,12 @@ export class KaitianExtensionCommandContribution implements CommandContribution 
         const activated = await this.extensionService.getActivatedExtensions();
         this.quickOpenService.open({
           onType: (lookFor: string, acceptor) => acceptor(this.asQuickOpenItems(activated)),
-        }, { placeholder: '运行中的插件' });
+        }, {
+          placeholder: '运行中的插件',
+          fuzzyMatchLabel: {
+            enableSeparateSubstringMatching: true,
+          },
+        });
       },
     });
 
