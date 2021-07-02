@@ -406,6 +406,9 @@ export const localizationBundle = {
     'preference.debug.allowBreakpointsEverywhere': 'Allow setting breakpoints in any file.',
     'preference.debug.toolbar.float.title': 'Run And Debug: Float Mode',
     'preference.debug.toolbar.float': 'Float mode',
+    'preference.debug.console.filter.mode': 'Debug console filter mode',
+    'preference.debug.console.filter.mode.filter': 'filter',
+    'preference.debug.console.filter.mode.matcher': 'matcher',
 
     // workbench
     'preference.workbench.refactoringChanges.showPreviewStrategy': 'Show preview confirm when triggering some refactoring changes',

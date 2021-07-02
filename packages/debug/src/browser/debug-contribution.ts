@@ -1,4 +1,4 @@
-import { Domain, ClientAppContribution, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution, CommandService, IReporterService, formatLocalize } from '@ali/ide-core-browser';
+import { Domain, ClientAppContribution, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution, CommandService, IReporterService, formatLocalize, CoreConfiguration } from '@ali/ide-core-browser';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { ComponentContribution, ComponentRegistry, KeybindingRegistry } from '@ali/ide-core-browser';
 import { DebugBreakpointView } from './view/breakpoints/debug-breakpoints.view';
@@ -33,6 +33,7 @@ import { DebugBreakpointZoneWidget } from './editor/debug-breakpoint-zone-widget
 import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
 import { IFileServiceClient, IShadowFileProvider } from '@ali/ide-file-service';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { IPreferenceSettingsService } from '@ali/ide-core-browser';
 
 const LAUNCH_JSON_REGEX = /launch\.json$/;
 
@@ -211,6 +212,9 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
 
   @Autowired(IFileServiceClient)
   protected readonly fileSystem: FileServiceClient;
+
+  @Autowired(IPreferenceSettingsService)
+  protected readonly preferenceSettings: IPreferenceSettingsService;
 
   private firstSessionStart: boolean = true;
 
@@ -675,5 +679,9 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
 
   registerEditorFeature(registry: IEditorFeatureRegistry) {
     registry.registerEditorFeatureContribution(this.editorHoverContribution);
+    this.preferenceSettings.setEnumLabels(('debug.console.filter.mode' as keyof CoreConfiguration), {
+      filter: localize('preference.debug.console.filter.mode.filter'),
+      matcher: localize('preference.debug.console.filter.mode.matcher'),
+    } as { [key in CoreConfiguration['debug.console.filter.mode']]: string });
   }
 }

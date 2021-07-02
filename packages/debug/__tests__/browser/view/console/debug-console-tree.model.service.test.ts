@@ -361,9 +361,21 @@ describe('Debug Console Tree Model', () => {
 
   it('repl filter service', () => {
     debugConsoleFilterService.setFilterText('KTTQL');
-    expect(debugConsoleFilterService.filter({ description: 'KATATAQALA' } as any)).toEqual(false);
-    expect(debugConsoleFilterService.filter({ description: 'KTTQLLLLLL' } as any)).toEqual(true);
-    expect(debugConsoleFilterService.filter({ description: '🐜' } as any)).toEqual(false);
-    expect(debugConsoleFilterService.filter({ description: '早上好我的工友们 KTTQL' } as any)).toEqual(true);
+    expect(debugConsoleFilterService.filter('KATATAQALA')).toEqual(false);
+    expect(debugConsoleFilterService.filter('KTTQLLLLLL')).toEqual(true);
+    expect(debugConsoleFilterService.filter('🐜')).toEqual(false);
+    expect(debugConsoleFilterService.filter('早上好我的工友们 KTTQL')).toEqual(true);
+  });
+
+  it('repl findMatches service', () => {
+    debugConsoleFilterService.setFilterText('T');
+    const matches = debugConsoleFilterService.findMatches('KTTQL吧, YYDS');
+    expect(matches.length).toEqual(2);
+    expect(matches[0].startIndex).toEqual(1);
+
+    debugConsoleFilterService.setFilterText('吧');
+    const matches2 = debugConsoleFilterService.findMatches('KTTQL吧, YYDS');
+    expect(matches2.length).toEqual(1);
+    expect(matches2[0].startIndex).toEqual(5);
   });
 });

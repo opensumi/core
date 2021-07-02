@@ -6,14 +6,17 @@ import { useInjectable, ViewState, getIcon } from '@ali/ide-core-browser';
 import { DebugConsoleService } from './debug-console.service';
 import { RecycleTree, IRecycleTreeHandle, TreeNodeType, INodeRendererWrapProps, ClasslistComposite, INodeRendererProps, CompositeTreeNode, TreeNode } from '@ali/ide-components';
 import { IDebugConsoleModel } from './debug-console-tree.model.service';
-import { DebugConsoleNode, AnsiConsoleNode, DebugConsoleVariableContainer, DebugVariableContainer, TreeWithLinkWrapper } from '../../tree';
+import { DebugConsoleNode, AnsiConsoleNode, DebugVariableContainer, TreeWithLinkWrapper } from '../../tree';
 import { Loading } from '@ali/ide-core-browser/lib/components/loading';
 import { DebugConsoleFilterService } from './debug-console-filter.service';
 import { LinkDetector } from '../../debug-link-detector';
+import { PreferenceService, CoreConfiguration } from '@ali/ide-core-browser';
+import { isSingleCharacter } from '../../debugUtils';
 
 export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState }) => {
   const debugConsoleService = useInjectable<DebugConsoleService>(DebugConsoleService);
   const debugConsoleFilterService = useInjectable<DebugConsoleFilterService>(DebugConsoleFilterService);
+  const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const { tree } = debugConsoleService;
   const debugInputRef = React.createRef<HTMLDivElement>();
   const { height, width } = viewState;
@@ -83,6 +86,10 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
     enactiveNodeDecoration();
   };
 
+  const filterMode = (): CoreConfiguration['debug.console.filter.mode'] => {
+    return preferenceService.get('debug.console.filter.mode') || 'filter';
+  };
+
   const fuzzyOptions = () => {
     return {
       pre: '<match>',
@@ -109,7 +116,8 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
         width={width}
         itemHeight={DEBUG_CONSOLE_TREE_NODE_HEIGHT}
         onReady={handleTreeReady}
-        filter={filterValue}
+        overScanCount={10}
+        filter={filterMode() === 'filter' ? filterValue : ''}
         filterProvider={{ fuzzyOptions, filterAlways: true}}
         model={model!.treeModel}
         overflow={ 'auto' }
@@ -120,6 +128,8 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
             item={props.item}
             itemType={props.itemType}
             decorations={decorations}
+            filterValue={filterValue}
+            filterMode={filterMode()}
             onClick={handleTwistierClick}
             onTwistierClick={handleTwistierClick}
             onContextMenu={handlerContextMenu}
@@ -144,9 +154,11 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
 });
 
 export interface IDebugConsoleNodeProps {
-  item: any ;
+  item: any;
   defaultLeftPadding?: number;
   leftPadding?: number;
+  filterValue?: string;
+  filterMode?: CoreConfiguration['debug.console.filter.mode'];
   decorations?: ClasslistComposite;
   onClick: (ev: React.MouseEvent, item: AnsiConsoleNode | DebugConsoleNode | TreeNode, type: TreeNodeType) => void;
   onTwistierClick: (ev: React.MouseEvent, item: AnsiConsoleNode | DebugConsoleNode | TreeNode, type: TreeNodeType) => void;
@@ -160,12 +172,15 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
   decorations,
   defaultLeftPadding,
   leftPadding,
+  filterValue,
+  filterMode,
   onClick,
   onTwistierClick,
   onContextMenu,
   itemType,
 }: IDebugConsoleNodeRenderedProps) => {
 
+  const debugConsoleFilterService = useInjectable<DebugConsoleFilterService>(DebugConsoleFilterService);
   const linkDetector: LinkDetector = useInjectable<LinkDetector>(LinkDetector);
 
   const handleClick = (ev: React.MouseEvent) => {
@@ -181,30 +196,74 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     }
   };
 
-  const paddingLeft = `${(defaultLeftPadding || 8) + (item.depth || 0) * (leftPadding || 0)}px`;
+  const acquireVariableName = () => {
+    if (AnsiConsoleNode.is(item)) {
+      return '';
+    }
+    return (DebugConsoleNode.is(item) ? '' : (item as any).name) + (item.description && !DebugConsoleNode.is(item) ? ': ' : '');
+  };
 
-  const editorNodeStyle = {
-    height: DEBUG_CONSOLE_TREE_NODE_HEIGHT,
-    lineHeight: `${DEBUG_CONSOLE_TREE_NODE_HEIGHT}px`,
-    paddingLeft,
-  } as React.CSSProperties;
+  const renderSelectionFilter = () => {
+    const desc = acquireVariableName() + item.description;
+    const matchers = debugConsoleFilterService.findMatches(desc || '');
+    const fValueSplit = (filterValue || '').split('');
+    const calcWidth = () => {
+      let singleCharLen = 0;
+      let doubleCharLen = 0;
+      fValueSplit.forEach((s) => {
+        if (isSingleCharacter(s)) {
+          singleCharLen += 1;
+        } else {
+          doubleCharLen += 1;
+        }
+      });
+      // 单字节字符 8 的宽度，双字节字符 14 的宽度
+      return singleCharLen * DEBUG_CONSOLE_SINGLE_CHAR_LEN + doubleCharLen * DEBUG_CONSOLE_DOUBLE_CHAR_LEN;
+    };
+    const calcLeft = (index: number) => {
+      let singleCharLen = 0;
+      let doubleCharLen = 0;
+      if (index > 0) {
+        Array.from({length: index}).forEach((_, i) => {
+          if (isSingleCharacter(desc[i])) {
+            singleCharLen += 1;
+          } else {
+            doubleCharLen += 1;
+          }
+        });
+        return singleCharLen * DEBUG_CONSOLE_SINGLE_CHAR_LEN + doubleCharLen * DEBUG_CONSOLE_DOUBLE_CHAR_LEN;
+      }
+      return 0;
+    };
+    const matStyles: React.CSSProperties[] = matchers.map((m) => {
+      return {
+        height: 16,
+        top: 3,
+        width: calcWidth(),
+        left: calcLeft(m.startIndex),
+      };
+    });
+
+    return matStyles.map((s) => <div key={s.left} className={styles.block} style={s}></div>);
+  };
 
   const renderDisplayName = (node: DebugConsoleNode | AnsiConsoleNode) => {
     if (AnsiConsoleNode.is(node)) {
       return null;
     }
     return <div
-      className={cls(styles.debug_console_node_segment, !DebugConsoleNode.is(node) && styles.debug_console_node_display_name, styles.debug_console_variable, !DebugConsoleVariableContainer.is(node) && (item as DebugConsoleNode).description ? styles.name : styles.info)}
+      className={cls(styles.debug_console_node_segment, !DebugConsoleNode.is(node) && styles.debug_console_node_display_name, styles.debug_console_variable, (item as DebugConsoleNode).description ? styles.name : styles.info)}
     >
-      {DebugConsoleVariableContainer.is(node) ? node.description : DebugConsoleNode.is(node) ? '' : (node as any).name}
-      {!DebugConsoleVariableContainer.is(node) && (node as DebugConsoleNode).description && !DebugConsoleNode.is(node) ? ':' : ''}
+      {
+        <TreeWithLinkWrapper html={ linkDetector.linkify(acquireVariableName())}></TreeWithLinkWrapper>
+      }
     </div>;
   };
 
   const renderDescription = (node: DebugConsoleNode | AnsiConsoleNode) => {
     const booleanRegex = /^true|false$/i;
     const stringRegex = /^(['"]).*\1$/;
-    const description = (node as DebugConsoleNode).description ? (node as DebugConsoleNode).description.replace('function', 'f') : '';
+    const description = (node as DebugConsoleNode).description || '';
     const addonClass = [styles.debug_console_variable];
     if (AnsiConsoleNode.is(node)) {
       return <div
@@ -212,9 +271,6 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
       >
        {(node as AnsiConsoleNode).template()}
       </div>;
-    }
-    if (DebugConsoleVariableContainer.is(node)) {
-      return null;
     }
     if (item.variableType === 'number' || item.variableType === 'boolean' || item.variableType === 'string') {
       addonClass.push(styles[item.variableType]);
@@ -292,7 +348,11 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
         styles.debug_console_node,
         decorations ? decorations.classlist : null,
       )}
-      style={editorNodeStyle}
+      style={{
+        height: DEBUG_CONSOLE_TREE_NODE_HEIGHT,
+        lineHeight: `${DEBUG_CONSOLE_TREE_NODE_HEIGHT}px`,
+        paddingLeft: `${(defaultLeftPadding || 8) + (item.depth || 0) * (leftPadding || 0)}px`,
+      }}
       data-id={item.id}
     >
       <div className={cls(styles.debug_console_node_content)}>
@@ -305,9 +365,14 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
         </div>
         {renderStatusTail()}
       </div>
+      <div className={styles.debug_console_selection}>
+        { filterMode === 'matcher' && renderSelectionFilter()}
+      </div>
     </div>
   );
 };
 
+const DEBUG_CONSOLE_SINGLE_CHAR_LEN = 8;
+const DEBUG_CONSOLE_DOUBLE_CHAR_LEN = 14;
 export const DEBUG_CONSOLE_TREE_NODE_HEIGHT = 22;
 export const DEBUG_CONSOLE_TREE_FIELD_NAME = 'DEBUG_CONSOLE_TREE_FIELD';

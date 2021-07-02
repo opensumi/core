@@ -1,16 +1,21 @@
 import { Injectable } from '@ali/common-di';
 import { Emitter, Event } from '@ali/ide-core-browser';
 import { DebugConsoleFilterModel } from './debug-console-filter.model';
-import { AnsiConsoleNode, DebugConsoleNode, DebugConsoleVariableContainer, DebugVariableContainer } from '../../tree';
+import * as strings from '@ali/ide-core-common';
+import { matchAll } from '../../debugUtils';
 const Ansi = require('anser');
 
-export interface IDebugConsoleFilter<T> {
-  filter: (treeNode: T) => boolean;
+export interface IDebugConsoleFilter {
+  filter: (t: string) => boolean;
+}
+
+export interface IFilterMatches {
+  startIndex: number;
+  count: number;
 }
 
 @Injectable()
-export class DebugConsoleFilterService
-  implements IDebugConsoleFilter<DebugConsoleNode | AnsiConsoleNode | DebugConsoleVariableContainer> {
+export class DebugConsoleFilterService implements IDebugConsoleFilter {
   private readonly filterModel: DebugConsoleFilterModel;
 
   constructor() {
@@ -37,8 +42,30 @@ export class DebugConsoleFilterService
     return this;
   }
 
-  public filter(treeNode: DebugConsoleNode | AnsiConsoleNode | DebugVariableContainer): boolean {
-    const ansiToText = Ansi.ansiToText(treeNode.description);
+  public filter(text: string): boolean {
+    const ansiToText = Ansi.ansiToText(text);
     return this._filterText === '' || this.filterModel.filter(ansiToText);
+  }
+
+  public findMatches(text: string): IFilterMatches[] {
+    const regexp = new RegExp(strings.convertSimple2RegExpPattern(this._filterText.toLowerCase()), 'g');
+    if (this._filterText.trim() === '') {
+      return [];
+    }
+
+    const matchs = matchAll(text.toLowerCase(), regexp);
+    const textLen = this._filterText.length;
+    if (textLen === 0) {
+      return [];
+    }
+
+    const res: IFilterMatches[] = matchs.map((m) => {
+      return {
+        startIndex: m.index !== undefined ? m.index : -1,
+        count: textLen,
+      };
+    });
+
+    return res.filter((r) => r.startIndex >= 0);
   }
 }

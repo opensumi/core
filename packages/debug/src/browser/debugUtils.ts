@@ -1,8 +1,22 @@
 import { equalsIgnoreCase } from '@ali/ide-core-browser';
 import { DebugConfiguration } from '../common';
 
+export function isSingleCharacter(text: string): boolean {
+  const pattern = new RegExp('[\u4E00-\u9FA5]+');
+  return !pattern.test(text);
+}
+
 export function isExtensionHostDebugging(config: DebugConfiguration) {
   return config.type && equalsIgnoreCase(config.type === 'vslsShare' ? (config as any).adapterProxy.configuration.type : config.type, 'extensionhost');
+}
+
+export function matchAll(str: string, regexp: RegExp) {
+  let match: RegExpExecArray | null;
+  const res: RegExpExecArray[] = [];
+  while ((match = regexp.exec(str)) !== null) {
+    res.push(match);
+  }
+  return res;
 }
 
 /**

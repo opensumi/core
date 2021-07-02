@@ -71,11 +71,34 @@
   position: relative;
   user-select: none;
 
+  .link_detector_container {
+    span {
+      width: 8px;
+      display: inline-block;
+      &.double_placeholder {
+        width: 14px;
+      }
+    }
+  }
+
+  .debug_console_selection {
+    position: absolute;
+    top: 0;
+    z-index: 1;
+    pointer-events: none;
+    & .block {
+      position: absolute;
+      background-color: rgba(225, 255, 255, 0.25);
+    }
+  }
+
   a {
     color: currentColor !important;
     cursor: text;
     &.link {
-      text-decoration: underline;
+      // 这里 a 标签的父元素的 dispaly 如果是 inline-block 的话，text-decoration 属性会失效，采用 border-bottom 代替
+      // text-decoration: underline;
+      border-bottom: 1px solid currentColor;
     }
     &.pointer {
       cursor: pointer;
@@ -185,7 +208,7 @@
 }
 
 .debug_console_node_display_name {
-  margin-right: 6px;
+  // margin-right: 6px;
   display: inline;
   white-space:pre;
   .compact_name {

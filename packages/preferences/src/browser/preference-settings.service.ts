@@ -426,6 +426,8 @@ export const defaultSettingSections: {
         { id: 'output.maxChannelLine', localized: 'output.maxChannelLine' },
         { id: 'output.enableLogHighlight', localized: 'output.enableLogHighlight' },
         { id: 'output.enableSmartScroll', localized: 'output.enableSmartScroll' },
+        // 调试
+        { id: 'debug.console.filter.mode', localized: 'preference.debug.console.filter.mode' },
       ],
     },
   ],

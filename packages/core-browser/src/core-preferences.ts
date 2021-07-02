@@ -157,6 +157,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: 30,
       description: '%preference.debug.toolbar.height%',
     },
+    'debug.console.filter.mode': {
+      type: 'string',
+      enum: ['filter', 'matcher'],
+      default: 'filter',
+    },
     'files.exclude': {
       type: 'object',
       description: '%preference.files.exclude%',
@@ -297,6 +302,7 @@ export interface CoreConfiguration {
   'application.confirmExit': 'never' | 'ifRequired' | 'always';
   'application.invalidExthostReload': 'ifRequired' | 'always';
   'workbench.list.openMode': 'singleClick' | 'doubleClick';
+  'debug.console.filter.mode': 'filter' | 'matcher';
   'workbench.commandPalette.history': number;
   'workbench.refactoringChanges.showPreviewStrategy': string;
   'explorer.confirmDelete': boolean;

@@ -1,4 +1,4 @@
-import { matchesFuzzy } from '@ali/ide-core-common';
+import { matchesFuzzy } from '@ali/ide-core-common/lib/filters';
 import { Injectable } from '@ali/common-di';
 import { splitGlobAware } from '@ali/ide-core-common/lib/utils/glob';
 

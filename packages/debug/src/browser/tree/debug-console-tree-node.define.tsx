@@ -28,7 +28,7 @@ export class AnsiConsoleNode extends TreeNode {
   constructor(
     public readonly description: string,
     // 该节点默认只存在于根节点下
-    parent: CompositeTreeNode,
+    public readonly parent: CompositeTreeNode,
     public readonly linkDetector: LinkDetector,
     public readonly severity?: MessageType,
     public readonly source?: DebugProtocol.Source,
