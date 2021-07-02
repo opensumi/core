@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import * as fs from 'fs-extra';
 import { IExtensionManagerServer, PREFIX, RequestHeaders, BaseExtension, IExtensionManager, IExtensionManagerRequester, IMarketplaceExtensionInfo, IExtensionVersion } from '../common';
 import * as urllib from 'urllib';
-import { AppConfig, URI, INodeLogger, isElectronEnv} from '@ali/ide-core-node';
+import { AppConfig, URI, INodeLogger, isElectronEnv, memoize} from '@ali/ide-core-node';
 import * as pkg from '@ali/ide-core-node/package.json';
 import * as qs from 'querystring';
 import { ExtensionInstaller, IExtensionInstaller, Extension as InstallerExtension, ExtensionRelease as InstallerExtensionRelease } from '@ali/ide-extension-installer';
@@ -71,17 +71,16 @@ export class ExtensionManagerRequester implements IExtensionManagerRequester {
 }
 
 @Injectable()
-class IDEExtensionInstaller implements IExtensionInstaller {
+export class IDEExtensionInstaller implements IExtensionInstaller {
   @Autowired(IExtensionManagerRequester)
   extensionManagerRequester: IExtensionManagerRequester;
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
-  private installer: ExtensionInstaller;
-
-  constructor() {
-    this.installer = new ExtensionInstaller({
+  @memoize
+  get installer(): ExtensionInstaller {
+    return  new ExtensionInstaller({
       accountId: this.appConfig.marketplace.accountId,
       masterKey: this.appConfig.marketplace.masterKey,
       api: this.appConfig.marketplace.endpoint,
