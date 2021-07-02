@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Command, Emitter, CommandRegistry, CommandHandler, ILogger, EDITOR_COMMANDS, CommandService, isElectronRenderer, IReporterService, REPORT_NAME, ServiceNames, memoize, Uri, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
+import { Command, Emitter, CommandRegistry, CommandHandler, HANDLER_NOT_FOUND, ILogger, EDITOR_COMMANDS, CommandService, isElectronRenderer, IReporterService, REPORT_NAME, ServiceNames, memoize, Uri, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
 
 import { CommandsRegistry as MonacoCommandsRegistry, EditorExtensionsRegistry, ICommandEvent, ICommandService, IMonacoActionRegistry, IMonacoCommandService, IMonacoCommandsRegistry, MonacoEditorCommandHandler } from '@ali/ide-monaco/lib/browser/contrib/command';
 import { StaticServices } from '@ali/ide-monaco/lib/browser/monaco-api/services';
@@ -75,15 +75,15 @@ export class MonacoCommandService implements IMonacoCommandService {
    * @param commandId
    * @param args
    */
-  executeCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined> {
+  async executeCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined> {
     this.logger.debug('command: ' + commandId);
     this._onWillExecuteCommand.fire({ commandId, args });
-    const handler = this.commandRegistry.getActiveHandler(commandId, ...args);
-    if (handler) {
-      try {
-        return this.commandService.executeCommand(commandId, ...args);
-      } catch (err) {
-        return Promise.reject(err);
+    try {
+      return await this.commandService.executeCommand(commandId, ...args);
+    } catch (err) {
+      // 如果不是 handler 未找到直接抛错，否则执行 delegate 逻辑
+      if (err?.name !== HANDLER_NOT_FOUND) {
+        throw err;
       }
     }
     if (this.delegate) {

@@ -11,8 +11,14 @@ export class ExtensionHostManager implements IExtensionHostManager {
 
   private readonly processMap = new Map<number, cp.ChildProcess>();
 
+  constructor() {
+    this.init();
+  }
+
   init() {
-    // noop
+    // 这个 debug 插件 https://github.com/microsoft/vscode/blob/1.44.2/extensions/debug-auto-launch/src/extension.ts#L120
+    // 依赖了 vscode pid 来查找子进程
+    process.env['VSCODE_PID'] = String(process.pid);
   }
   fork(modulePath: string, ...args: any[]) {
     const extProcess = cp.fork(modulePath, ...args);

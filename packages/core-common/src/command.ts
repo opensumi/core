@@ -136,6 +136,8 @@ export type PostCommandInterceptor = (command: string, result: any) => MaybeProm
 export const CommandService = Symbol('CommandService');
 export const CommandRegistry = Symbol('CommandRegistry');
 
+export const HANDLER_NOT_FOUND = 'HANDLER_NOT_FOUND';
+
 /**
  * 命令执行模块
  */
@@ -269,11 +271,13 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
     if(command && command.delegate) {
       return this.executeCommand<T>(command.delegate, ...args);
     }
+    // 把 before 在 handler 判断前置，对于 onCommand 激活的插件如果没有在 contributes 配置，那么 handler 是不存在的，也就无法激活
+    // 如 node debug 插件 https://github.com/microsoft/vscode-node-debug/blob/main/package.json
+    for (const preCommand of this.preCommandInterceptors) {
+      args = await preCommand(commandId, args);
+    }
     const handler = this.getActiveHandler(commandId, ...args);
     if (handler) {
-      for (const preCommand of this.preCommandInterceptors) {
-        args = await preCommand(commandId, args);
-      }
       let result = await handler.execute(...args);
       const commandInterceptor = this.postCommandInterceptor.get(commandId);
       if (commandInterceptor) {
@@ -292,9 +296,11 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
     } catch(e) {
       argsMessage = 'args cannot be convert to JSON';
     }
-    throw new Error(
+    const err = new Error(
       `The command '${commandId}' cannot be executed. There are no active handlers available for the command.${argsMessage}`
     );
+    err.name = HANDLER_NOT_FOUND;
+    throw err;
   }
 
   /**
