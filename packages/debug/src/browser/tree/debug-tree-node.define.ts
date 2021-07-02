@@ -9,7 +9,6 @@ export class ExpressionTreeService {
     private session?: DebugSession,
     private source?: DebugProtocol.Source,
     private line?: number | string) {
-
   }
 
   async resolveChildren(parent?: ExpressionContainer): Promise<(ExpressionContainer | ExpressionNode | DebugVirtualVariable)[]> {
@@ -281,6 +280,14 @@ export class DebugVariable extends ExpressionNode {
     }
   }
 
+  public getRawScope(): DebugProtocol.Scope | undefined {
+    let parent = this.parent;
+    while (parent !== undefined && !(parent instanceof DebugScope)) {
+      parent = parent?.parent;
+    }
+    return parent!.getRawScope();
+  }
+
 }
 
 export class DebugVariableContainer extends ExpressionContainer {
@@ -369,6 +376,14 @@ export class DebugVariableContainer extends ExpressionContainer {
     } catch (error) {
       throw error;
     }
+  }
+
+  public getRawScope(): DebugProtocol.Scope | undefined {
+    let parent = this.parent;
+    while (parent !== undefined && !(parent instanceof DebugScope)) {
+      parent = parent?.parent;
+    }
+    return parent!.getRawScope();
   }
 }
 

@@ -321,7 +321,6 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
         this.commandService.tryExecuteCommand('statusbar.changeColor', 'var(--statusBar-foreground)');
       }
     });
-
     await this.configurations.load();
     await this.breakpointManager.load();
     this.configurations.onDidChange(() => this.configurations.save());

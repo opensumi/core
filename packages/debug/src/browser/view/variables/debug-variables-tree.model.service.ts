@@ -1,24 +1,66 @@
+import { DebugProtocol } from '@ali/vscode-debugprotocol';
+import { isEqual } from 'lodash';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNodeEvent } from '@ali/ide-components';
+import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, TreeNodeEvent } from '@ali/ide-components';
 import { Emitter, IContextKeyService, ThrottledDelayer, Deferred, Event, DisposableCollection, IClipboardService } from '@ali/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { DebugVariablesModel } from './debug-variables-model';
-import { Path } from '@ali/ide-core-common/lib/path';
-import pSeries = require('p-series');
-import { ExpressionContainer, ExpressionNode, DebugVariableRoot, DebugVariableContainer, DebugVariable } from '../../tree/debug-tree-node.define';
+import { ExpressionContainer, ExpressionNode, DebugVariableRoot, DebugVariableContainer, DebugVariable, DebugScope } from '../../tree/debug-tree-node.define';
 import { DebugViewModel } from '../debug-view-model';
 import { DebugSession } from '../../debug-session';
 
 import * as styles from './debug-variables.module.less';
-import { DebugStackFrame } from '../../model';
 
 export interface IDebugVariablesHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
 }
 
+export type DebugVariableWithRawScope = DebugScope | DebugVariableContainer;
+
+class KeepExpandedScopesModel {
+  private _keepExpandedScopesMap = new Map<DebugProtocol.Scope, Array<number>>();
+  constructor() { }
+
+  private getMirrorScope(item: DebugVariableWithRawScope) {
+    return Array.from(this._keepExpandedScopesMap.keys()).find((f) => isEqual(f, item.getRawScope()));
+  }
+
+  set(item: DebugVariableWithRawScope): void {
+    const scope = item.getRawScope();
+    if (scope) {
+      const keepScope = this.getMirrorScope(item);
+      if (keepScope) {
+        const kScopeVars = this._keepExpandedScopesMap.get(keepScope)!;
+        let nScopeVars: number[];
+        if (item.expanded) {
+          nScopeVars = Array.from(new Set([...kScopeVars, item.variablesReference]));
+        } else {
+          nScopeVars = kScopeVars.filter((v) => v !== item.variablesReference);
+        }
+        this._keepExpandedScopesMap.set(keepScope, nScopeVars);
+      } else {
+        this._keepExpandedScopesMap.set(scope, item.expanded ? [item.variablesReference] : []);
+      }
+    }
+  }
+
+  get(item: DebugVariableWithRawScope): number[] {
+    const keepScope = this.getMirrorScope(item);
+    if (keepScope) {
+      return this._keepExpandedScopesMap.get(keepScope) || [];
+    } else {
+      return [];
+    }
+  }
+
+  clear(): void {
+    this._keepExpandedScopesMap.clear();
+  }
+
+}
+
 @Injectable()
 export class DebugVariablesModelService {
-  private static DEFAULT_FLUSH_EVENT_DELAY = 100;
   private static DEFAULT_TRIGGER_DELAY = 200;
 
   @Autowired(INJECTOR_TOKEN)
@@ -40,14 +82,11 @@ export class DebugVariablesModelService {
   private readonly clipboardService: IClipboardService;
 
   private _activeTreeModel: DebugVariablesModel | undefined;
-  private allTreeModel: Map<DebugStackFrame, DebugVariablesModel> = new Map();
 
   private _decorations: DecorationsManager;
   private _debugVariablesTreeHandle: IDebugVariablesHandle;
 
   public flushEventQueueDeferred: Deferred<void> | null;
-  private _eventFlushTimeout: number;
-  private _changeEventDispatchQueue: string[] = [];
 
   // 装饰器
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
@@ -70,6 +109,8 @@ export class DebugVariablesModelService {
   private flushDispatchChangeDelayer =  new ThrottledDelayer<void>(DebugVariablesModelService.DEFAULT_TRIGGER_DELAY);
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
+
+  private keepExpandedScopesModel: KeepExpandedScopesModel = new KeepExpandedScopesModel();
 
   constructor() {
     this.listenViewModelChange();
@@ -132,24 +173,44 @@ export class DebugVariablesModelService {
       this.flushDispatchChangeDelayer.cancel();
       this.flushDispatchChangeDelayer.trigger(async () => {
         if (this.viewModel && this.viewModel.currentSession && !this.viewModel.currentSession.terminated) {
-          if (this.viewModel.currentSession?.currentFrame && this.allTreeModel.has(this.viewModel.currentSession?.currentFrame)) {
-            const currentTreeModel = this.allTreeModel.get(this.viewModel.currentSession?.currentFrame);
-            if (this._activeTreeModel !== currentTreeModel) {
-              // 当前TreeModel与激活态TreeModel不一致时，更新变量树model
-              this._activeTreeModel = currentTreeModel;
-            }
-          } else {
-            const currentTreeModel = await this.initTreeModel(this.viewModel.currentSession);
-            if (this.viewModel.currentSession?.currentFrame && currentTreeModel) {
-              this.allTreeModel.set(this.viewModel.currentSession?.currentFrame, currentTreeModel);
+          const currentTreeModel = await this.initTreeModel(this.viewModel.currentSession);
+          this._activeTreeModel = currentTreeModel;
+          await this._activeTreeModel?.root.ensureLoaded();
+          /**
+           * 如果变量面板全部都是折叠状态
+           * 则需要找到当前 scope 作用域的 expensive 为 false 的变量列表，并默认展开它们
+           * PS: 一般的情况下有 Local
+           * */
+          const scopes = this._activeTreeModel?.root.children as Array<DebugVariableWithRawScope> || [];
+          if (scopes.length > 0 && scopes.every((s: DebugScope) =>  !s.expanded)) {
+            for (const s of scopes) {
+              if ((s as DebugScope).getRawScope().expensive === false && !s.expanded) {
+                await this.toggleDirectory(s);
+              }
             }
           }
+
+          const execExpands = async (data: Array<DebugVariableWithRawScope>) => {
+            for (const s of data) {
+              const cacheExpands = this.keepExpandedScopesModel.get(s);
+              if (cacheExpands.includes(s.variablesReference)) {
+                await s.setExpanded(true);
+                if (Array.isArray(s.children)) {
+                  await execExpands(s.children as Array<DebugVariableWithRawScope>);
+                }
+              }
+            }
+          };
+
+          scopes.forEach(async (s) => {
+            if (Array.isArray(s.children)) {
+              await execExpands(s.children as Array<DebugVariableWithRawScope>);
+            }
+          });
+
         } else {
-          // 进程退出时，默认移除对应堆栈下的TreeModel
-          if (this.viewModel.currentSession?.currentFrame) {
-            this.allTreeModel.delete(this.viewModel.currentSession?.currentFrame);
-          }
           this._activeTreeModel = undefined;
+          this.keepExpandedScopesModel.clear();
         }
 
         this.onDidUpdateTreeModelEmitter.fire(this._activeTreeModel);
@@ -291,7 +352,10 @@ export class DebugVariablesModelService {
   }
 
   handleTreeHandler(handle: IDebugVariablesHandle) {
-    this._debugVariablesTreeHandle = handle;
+    this._debugVariablesTreeHandle = {
+      ...handle,
+      getModel: () => this.treeModel!,
+    };
   }
 
   handleTreeBlur = () => {
@@ -307,86 +371,19 @@ export class DebugVariablesModelService {
   handleTwistierClick = (item: ExpressionContainer | ExpressionNode, type: TreeNodeType) => {
     if (type === TreeNodeType.CompositeTreeNode) {
       this.activeNodeDecoration(item, false);
-      this.toggleDirectory(item as ExpressionContainer);
+      this.toggleDirectory(item as (DebugVariableWithRawScope));
     } else {
       this.activeNodeDecoration(item);
     }
   }
 
-  toggleDirectory = async (item: ExpressionContainer) => {
+  toggleDirectory = async (item: DebugVariableWithRawScope) => {
     if (item.expanded) {
-      this.treeHandle.collapseNode(item);
+      item.setCollapsed();
     } else {
-      this.treeHandle.expandNode(item);
+      await item.setExpanded(true);
     }
-  }
-
-  /**
-   * 刷新指定下的所有子节点
-   */
-  async refresh(node?: ExpressionContainer) {
-    if (!node) {
-      if (!!this.treeModel) {
-        node = this.treeModel.root as ExpressionContainer;
-      } else {
-        return;
-      }
-    }
-    if (!ExpressionContainer.is(node) && (node as ExpressionContainer).parent) {
-      node = (node as ExpressionContainer).parent as ExpressionContainer;
-    }
-    // 这里也可以直接调用node.refresh，但由于文件树刷新事件可能会较多
-    // 队列化刷新动作减少更新成本
-    this.queueChangeEvent(node.path, () => {
-      this.onDidRefreshedEmitter.fire();
-    });
-  }
-
-  // 队列化Changed事件
-  private queueChangeEvent(path: string, callback: any) {
-    if (!this.flushEventQueueDeferred) {
-      this.flushEventQueueDeferred = new Deferred<void>();
-      clearTimeout(this._eventFlushTimeout);
-      this._eventFlushTimeout = setTimeout(async () => {
-        await this.flushEventQueue()!;
-        this.flushEventQueueDeferred?.resolve();
-        this.flushEventQueueDeferred = null;
-        callback();
-      }, DebugVariablesModelService.DEFAULT_FLUSH_EVENT_DELAY) as any;
-    }
-    if (this._changeEventDispatchQueue.indexOf(path) === -1) {
-      this._changeEventDispatchQueue.push(path);
-    }
-  }
-
-  public flushEventQueue = () => {
-    let promise: Promise<any>;
-    if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
-      return;
-    }
-    this._changeEventDispatchQueue.sort((pathA, pathB) => {
-      const pathADepth = Path.pathDepth(pathA);
-      const pathBDepth = Path.pathDepth(pathB);
-      return pathADepth - pathBDepth;
-    });
-    const roots = [this._changeEventDispatchQueue[0]];
-    for (const path of this._changeEventDispatchQueue) {
-      if (roots.some((root) => path.indexOf(root) === 0)) {
-        continue;
-      } else {
-        roots.push(path);
-      }
-    }
-    promise = pSeries(roots.map((path) => async () => {
-      const watcher = this.treeModel?.root?.watchEvents.get(path);
-      if (watcher && typeof watcher.callback === 'function') {
-        await watcher.callback({ type: WatchEvent.Changed, path });
-      }
-      return null;
-    }));
-    // 重置更新队列
-    this._changeEventDispatchQueue = [];
-    return promise;
+    this.keepExpandedScopesModel.set(item);
   }
 
   async copyValue(node: DebugVariableContainer | DebugVariable) {

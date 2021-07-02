@@ -104,8 +104,6 @@ describe('Debug Variables Tree Model', () => {
     expect(typeof debugVariablesModelService.handleTreeBlur).toBe('function');
     expect(typeof debugVariablesModelService.handleTwistierClick).toBe('function');
     expect(typeof debugVariablesModelService.toggleDirectory).toBe('function');
-    expect(typeof debugVariablesModelService.refresh).toBe('function');
-    expect(typeof debugVariablesModelService.flushEventQueue).toBe('function');
     expect(debugVariablesModelService.flushEventQueuePromise).toBeUndefined();
     expect(debugVariablesModelService.treeHandle).toBeUndefined();
     expect(debugVariablesModelService.decorations).toBeUndefined();
@@ -169,9 +167,9 @@ describe('Debug Variables Tree Model', () => {
   });
 
   it('handleTreeHandler method should be work', () => {
-    const treeHandle = { ensureVisible: () => { } } as any;
+    const treeHandle = { ensureVisible: () => { }, getModel: () => debugVariablesModelService.treeModel! } as any;
     debugVariablesModelService.handleTreeHandler(treeHandle);
-    expect(debugVariablesModelService.treeHandle).toEqual(treeHandle);
+    expect(debugVariablesModelService.treeHandle.getModel()).toEqual(treeHandle.getModel());
   });
 
   it('handleTreeBlur method should be work', () => {
@@ -193,13 +191,13 @@ describe('Debug Variables Tree Model', () => {
 
   it('handleTwistierClick method should be work', () => {
     const treeHandle = { collapseNode: jest.fn(), expandNode: jest.fn() } as any;
-    let mockNode = { expanded: false };
+    let mockNode = { expanded: false, setExpanded: () => {}, setCollapsed: () => {}, getRawScope: () => {} };
     debugVariablesModelService.handleTreeHandler(treeHandle);
     debugVariablesModelService.toggleDirectory(mockNode as any);
-    expect(treeHandle.expandNode).toBeCalledTimes(1);
-    mockNode = { expanded: true };
+    expect(treeHandle.expandNode).toBeCalledTimes(0);
+    mockNode = { expanded: true, setExpanded: () => {}, setCollapsed: () => {}, getRawScope: () => {} };
     debugVariablesModelService.toggleDirectory(mockNode as any);
-    expect(treeHandle.collapseNode).toBeCalledTimes(1);
+    expect(treeHandle.collapseNode).toBeCalledTimes(0);
   });
 
   it('handleContextMenu method should be work', () => {
@@ -217,12 +215,5 @@ describe('Debug Variables Tree Model', () => {
     expect(mockEvent.stopPropagation).toBeCalledTimes(1);
     expect(mockEvent.preventDefault).toBeCalledTimes(1);
 
-  });
-
-  it('refresh method should be work', async (done) => {
-    debugVariablesModelService.onDidRefreshed(() => {
-      done();
-    });
-    debugVariablesModelService.refresh(debugVariablesModelService.treeModel?.root as any);
   });
 });
