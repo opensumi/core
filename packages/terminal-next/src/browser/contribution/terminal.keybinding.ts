@@ -2,6 +2,7 @@ import { Domain, isWindows } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry } from '@ali/ide-core-browser';
 import { TERMINAL_COMMANDS } from '../../common';
 import { IsTerminalFocused } from '@ali/ide-core-browser/lib/contextkey';
+import { RawContextKey } from '@ali/ide-core-browser/lib/raw-context-key';
 
 @Domain(KeybindingContribution)
 export class TerminalKeybindinngContribution implements KeybindingContribution {
@@ -24,12 +25,14 @@ export class TerminalKeybindinngContribution implements KeybindingContribution {
     registry.registerKeybinding({
       command: TERMINAL_COMMANDS.COPY.id,
       keybinding: isWindows ? 'ctrlcmd+shift+c' : 'ctrlcmd+c',
-      when: IsTerminalFocused.raw,
+      // http 协议无法访问 navigator.clipboard，使用 xterm 原生快捷键
+      when: RawContextKey.and(IsTerminalFocused.raw, 'locationProtocol != http'),
     });
     registry.registerKeybinding({
       command: TERMINAL_COMMANDS.PASTE.id,
       keybinding: isWindows ? 'ctrlcmd+shift+v' : 'ctrlcmd+v',
-      when: IsTerminalFocused.raw,
+      // http 协议无法访问 navigator.clipboard，使用 xterm 原生快捷键
+      when: RawContextKey.and(IsTerminalFocused.raw, 'locationProtocol != http'),
     });
     registry.registerKeybinding({
       command: TERMINAL_COMMANDS.SELECT_ALL.id,

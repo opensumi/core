@@ -11,6 +11,7 @@ import { MenuContribution, IMenuRegistry, MenuId } from '../menu/next';
 import { KeybindingContribution, KeybindingRegistry } from '../keybinding';
 
 export const inputFocusedContextKey = 'inputFocus';
+export const locationProtocolContextKey = 'locationProtocol';
 
 @Domain(CommandContribution, ClientAppContribution, PreferenceContribution, MenuContribution, KeybindingContribution)
 export class ClientCommonContribution implements CommandContribution, PreferenceContribution, ClientAppContribution, MenuContribution, KeybindingContribution {
@@ -29,6 +30,7 @@ export class ClientCommonContribution implements CommandContribution, Preference
   private appConfig: AppConfig;
 
   onStart() {
+    this.contextKeyService.createKey(locationProtocolContextKey, window.location.protocol.split(':')[0]);
     this.inputFocusedContext = this.contextKeyService.createKey(inputFocusedContextKey, false);
     window.addEventListener('focusin', this.updateInputContextKeys.bind(this));
   }
