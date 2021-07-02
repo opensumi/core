@@ -19,6 +19,7 @@ import { UserStorageContribution, UserStorageServiceImpl } from '@ali/ide-prefer
 import { IUserStorageService } from '@ali/ide-preferences';
 import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
 import { DebugContribution, DebugModule } from '@ali/ide-debug/lib/browser';
+import { EditorCollectionService } from '@ali/ide-editor/lib/browser';
 
 @Injectable()
 export class MockLoggerManagerClient {
@@ -359,6 +360,9 @@ describe('Launch Preferences', () => {
     });
 
   }
+  const mockEditorCollectionService = {
+    onCodeEditorCreate: jest.fn(() => Disposable.create(() => {})),
+  };
 
   function testConfigSuite({
     configMode, expectation, inspectExpectation, settings, launch, only,
@@ -440,6 +444,10 @@ describe('Launch Preferences', () => {
           {
             token: ILoggerManagerClient,
             useClass: MockLoggerManagerClient,
+          },
+          {
+            token: EditorCollectionService,
+            useValue: mockEditorCollectionService,
           },
           UserStorageContribution,
         );

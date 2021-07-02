@@ -282,6 +282,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
 
   async initialize() {
     this.fileSystem.registerProvider(DEBUG_SCHEME, this.shadowFileServiceProvider);
+    this.debugEditorController.init();
   }
 
   async onStart() {
@@ -320,7 +321,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
         this.commandService.tryExecuteCommand('statusbar.changeColor', 'var(--statusBar-foreground)');
       }
     });
-    this.debugEditorController.init();
+
     await this.configurations.load();
     await this.breakpointManager.load();
     this.configurations.onDidChange(() => this.configurations.save());
