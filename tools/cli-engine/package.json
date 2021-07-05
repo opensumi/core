@@ -1,6 +1,6 @@
 {
   "name": "@ali/kaitian-cli-engine",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "Integration engine runtime for kaitian-cli and kaitian extension",
   "main": "",
   "files": [
@@ -26,13 +26,13 @@
   },
   "dependencies": {
     "@ali/common-di": "^5.0.0",
-    "@ali/ide-core-browser": "2.6.0",
-    "@ali/ide-core-common": "2.6.0",
-    "@ali/ide-core-node": "2.6.0",
-    "@ali/ide-express-file-server": "2.6.0",
-    "@ali/ide-i18n": "2.6.0",
-    "@ali/ide-kaitian-extension": "2.6.0",
-    "@ali/ide-startup": "2.6.0",
+    "@ali/ide-core-browser": "2.6.1",
+    "@ali/ide-core-common": "2.6.1",
+    "@ali/ide-core-node": "2.6.1",
+    "@ali/ide-express-file-server": "2.6.1",
+    "@ali/ide-i18n": "2.6.1",
+    "@ali/ide-kaitian-extension": "2.6.1",
+    "@ali/ide-startup": "2.6.1",
     "@koa/cors": "^3.0.0",
     "chalk": "^4.0.0",
     "ejs": "^2.7.4",
@@ -92,5 +92,5 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "readme": "ERROR: No README data found!",
-  "_id": "@ali/kaitian-cli-engine@2.5.4"
+  "_id": "@ali/kaitian-cli-engine@2.6.0"
 }
