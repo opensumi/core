@@ -120,8 +120,8 @@ export class KeymapsContribution implements CommandContribution, KeybindingContr
     });
   }
 
-  async onStart() {
-    await this.keymapService.init();
+  onStart() {
+    this.keymapService.init();
   }
 
   registerResource(resourceService: ResourceService) {

@@ -289,7 +289,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
     this.debugEditorController.init();
   }
 
-  async onStart() {
+  onStart() {
     this.viewsRegistry.registerViewWelcomeContent(DEBUG_WELCOME_ID, {
       content: formatLocalize('welcome-view.noLaunchJson', DEBUG_COMMANDS.START.id),
       when: 'default',
@@ -325,8 +325,8 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
         this.commandService.tryExecuteCommand('statusbar.changeColor', 'var(--statusBar-foreground)');
       }
     });
-    await this.configurations.load();
-    await this.breakpointManager.load();
+    this.configurations.load();
+    this.breakpointManager.load();
     this.configurations.onDidChange(() => this.configurations.save());
     this.breakpointManager.onDidChangeBreakpoints(() => this.breakpointManager.save());
     this.breakpointManager.onDidChangeExceptionsBreakpoints(() => this.breakpointManager.save());
