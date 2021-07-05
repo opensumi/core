@@ -626,25 +626,25 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
           });
         },
       });
-
-      commands.registerCommand(FILE_COMMANDS.REVEAL_IN_EXPLORER, {
-        execute: (uri?: URI) => {
-          const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
-          if (handler && !handler.isVisible) {
-            handler.activate();
-          }
-          if (handler && handler.isCollapsed(ExplorerResourceViewId)) {
-            handler?.setCollapsed(ExplorerResourceViewId, false);
-          }
-          if (!uri && this.workbenchEditorService.currentEditor) {
-            uri = this.workbenchEditorService.currentEditor.currentUri!;
-          }
-          if (uri) {
-            this.fileTreeModelService.location(uri);
-          }
-        },
-      });
     }
+
+    commands.registerCommand(FILE_COMMANDS.REVEAL_IN_EXPLORER, {
+      execute: (uri?: URI) => {
+        const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
+        if (handler && !handler.isVisible) {
+          handler.activate();
+        }
+        if (handler && handler.isCollapsed(ExplorerResourceViewId)) {
+          handler?.setCollapsed(ExplorerResourceViewId, false);
+        }
+        if (!uri && this.workbenchEditorService.currentEditor) {
+          uri = this.workbenchEditorService.currentEditor.currentUri!;
+        }
+        if (uri) {
+          this.fileTreeModelService.location(uri);
+        }
+      },
+    });
 
     commands.registerCommand(FILE_COMMANDS.FOCUS_FILES, {
       execute: () => {
