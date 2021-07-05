@@ -73,11 +73,6 @@ export class QuickOpenWidget implements IQuickOpenWidget {
   }
 
   @computed
-  public get itemHeight(): number {
-    return this.items.some((item) => item.getDetail()) ? 44 : 22;
-  }
-
-  @computed
   get actionProvider() {
     return this._actionProvider;
   }
