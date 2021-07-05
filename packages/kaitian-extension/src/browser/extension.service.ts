@@ -424,13 +424,14 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
    * 给 Extension 使用 | 激活插件
    */
   public async activeExtension(extension: Extension) {
-    // 优先激活 Node 进程中的插件
-    await this.nodeExtensionService.activeExtension(extension);
-
+    // 优先激活 Node 和 Worker 进程中的插件
+    // 这个时序下，不允许存在 Node/Worker 互相依赖的情况
+    // 插件 Browser 中可以依赖 Node/Worker
     await Promise.all([
-      this.viewExtensionService.activeExtension(extension, this.nodeExtensionService.protocol),
+      this.nodeExtensionService.activeExtension(extension),
       this.workerExtensionService.activeExtension(extension),
     ]);
+    await this.viewExtensionService.activeExtension(extension, this.nodeExtensionService.protocol);
   }
 
   public async disposeExtensions() {
