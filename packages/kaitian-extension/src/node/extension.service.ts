@@ -1,25 +1,53 @@
-import * as path from 'path';
 import * as net from 'net';
-import * as fs from 'fs-extra';
+import * as path from 'path';
 import * as util from 'util';
-import { Injectable, Autowired } from '@ali/common-di';
-import { ExtensionScanner } from './extension.scanner';
-import { IExtensionMetaData, IExtensionNodeService, IExtraMetaData, IExtensionNodeClientService, ProcessMessageType, IExtensionHostManager, OutputType, ICreateProcessOptions } from '../common';
-import { Deferred, isDevelopment, INodeLogger, AppConfig, isWindows, isElectronNode, ReporterProcessMessage, IReporter, IReporterService, REPORT_TYPE, PerformanceData, REPORT_NAME } from '@ali/ide-core-node';
-import { Event, Emitter, timeout, IReporterTimer, isUndefined, SupportLogNamespace, getDebugLogger } from '@ali/ide-core-common';
+import * as fs from 'fs-extra';
 import type * as cp from 'child_process';
-
-import {
-  commonChannelPathHandler,
-
-  SocketMessageReader,
-  SocketMessageWriter,
-
-  WSChannel,
-} from '@ali/ide-connection';
-import { WebSocketMessageReader, WebSocketMessageWriter } from '@ali/ide-connection/lib/common/message';
+import { Injectable, Autowired } from '@ali/common-di';
 import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
-import { getShellPath } from '@ali/ide-core-node';
+import { WebSocketMessageReader, WebSocketMessageWriter } from '@ali/ide-connection/lib/common/message';
+import { commonChannelPathHandler, SocketMessageReader, SocketMessageWriter, WSChannel } from '@ali/ide-connection';
+import {
+  Deferred,
+  isWindows,
+  AppConfig,
+  IReporter,
+  INodeLogger,
+  REPORT_TYPE,
+  REPORT_NAME,
+  getShellPath,
+  isDevelopment,
+  isElectronNode,
+  PerformanceData,
+  IReporterService,
+  ReporterProcessMessage,
+} from '@ali/ide-core-node';
+import {
+  Event,
+  Emitter,
+  timeout,
+  isUndefined,
+  findFreePort,
+  IReporterTimer,
+  getDebugLogger,
+  SupportLogNamespace,
+  ExtensionConnectOption,
+  ExtensionConnectModeOption,
+} from '@ali/ide-core-common';
+
+import { ExtensionScanner } from './extension.scanner';
+import {
+  OutputType,
+  IExtraMetaData,
+  KT_APP_CONFIG_KEY,
+  IExtensionMetaData,
+  ProcessMessageType,
+  IExtensionNodeService,
+  IExtensionHostManager,
+  ICreateProcessOptions,
+  KT_PROCESS_SOCK_OPTION_KEY,
+  IExtensionNodeClientService,
+} from '../common';
 
 @Injectable()
 export class ExtensionNodeServiceImpl implements IExtensionNodeService {
@@ -64,7 +92,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   public setConnectionServiceClient(clientId: string, serviceClient: IExtensionNodeClientService) {
     this.clientServiceMap.set(clientId, serviceClient);
   }
-  private extServerListenPaths: Map<string, string> = new Map();
+
+  private extServerListenOptions: Map<string, net.ListenOptions> = new Map();
 
   private electronMainThreadListenPaths: Map<string, string> = new Map();
 
@@ -87,12 +116,24 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     return normalizedIpcHandlerPath(name, true, this.appConfig.extHostIPCSockPath);
   }
 
-  public getExtServerListenPath(clientId: string): string {
-    if (!this.extServerListenPaths.has(clientId)) {
-      this.extServerListenPaths.set(clientId, this.getIPCHandlerPath(`ext_process`));
+  public async getExtServerListenOption(clientId: string, extensionConnectOption?: ExtensionConnectOption): Promise<net.ListenOptions> {
+    if (!this.extServerListenOptions.has(clientId)) {
+      const { mode = ExtensionConnectModeOption.IPC, host } = extensionConnectOption || {};
+      const options: net.ListenOptions = {};
+
+      if (mode === ExtensionConnectModeOption.IPC) {
+        options.path = this.getIPCHandlerPath(`ext_process`);
+      } else {
+        options.port = await findFreePort(this.inspectPort, 10, 5000);
+        options.host = host;
+      }
+
+      this.extServerListenOptions.set(clientId, options);
     }
-    return this.extServerListenPaths.get(clientId)!;
+
+    return this.extServerListenOptions.get(clientId)!;
   }
+
   public getElectronMainThreadListenPath(clientId: string): string {
     if (!this.electronMainThreadListenPaths.has(clientId)) {
       this.electronMainThreadListenPaths.set(clientId, this.getIPCHandlerPath(`main_thread`));
@@ -200,12 +241,15 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       };
     }
     const forkArgs: string[] = [];
+    const extServerListenOption = await this.getExtServerListenOption(clientId, options?.extensionConnectOption);
+
     let extProcessPath: string = '';
     forkOptions.execArgv = [];
 
+    forkArgs.push(`--${KT_PROCESS_SOCK_OPTION_KEY}=${JSON.stringify(extServerListenOption)}`);
+
     if (process.env.KTELECTRON) {
       extProcessPath = this.appConfig.extHost || process.env.EXTENSION_HOST_ENTRY as string;
-      forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(clientId)}`);
     } else {
       preloadPath = process.env.EXT_MODE === 'js' ? path.join(__dirname, '../../lib/hosted/ext.host.js') : path.join(__dirname, '../hosted/ext.host' + path.extname(module.filename));
       if (process.env.EXT_MODE !== 'js' && module.filename.endsWith('.ts')) {
@@ -213,7 +257,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       }
 
       forkArgs.push(`--kt-process-preload=${preloadPath}`);
-      forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(clientId)}`);
       if (this.appConfig.extHost) {
         this.logger.log(`extension host path ${this.appConfig.extHost}`);
         extProcessPath = this.appConfig.extHost;
@@ -223,7 +266,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     }
 
     // 注意只能传递可以序列化的数据
-    forkArgs.push(`--kt-app-config=${JSON.stringify({
+    forkArgs.push(`--${KT_APP_CONFIG_KEY}=${JSON.stringify({
       logDir: this.appConfig.logDir,
       logLevel: this.appConfig.logLevel,
       extLogServiceClassPath: this.appConfig.extLogServiceClassPath,
@@ -280,7 +323,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     const extProcessInitDeferred = new Deferred<void>();
     this.clientExtProcessInitDeferredMap.set(clientId, extProcessInitDeferred);
 
-    this._getExtHostConnection2(clientId);
+    this._getExtHostConnection2(clientId, options);
 
     this.processHandshake(extProcessId, forkTimer, clientId);
   }
@@ -520,15 +563,16 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     }
   }
 
-  private async _getExtHostConnection2(clientId: string) {
-    const extServerListenPath = this.getExtServerListenPath(clientId);
+  private async _getExtHostConnection2(clientId: string, options?: ICreateProcessOptions) {
+    const extServerListenOptions = await this.getExtServerListenOption(clientId, options?.extensionConnectOption);
     // TODO: 先使用单个 server，再尝试单个 server 与多个进程进行连接
     const extServer = net.createServer();
+
     this.clientExtProcessExtConnectionServer.set(clientId, extServer);
 
     try {
-      if (!isWindows) {
-        await fs.unlink(extServerListenPath);
+      if (!isWindows && extServerListenOptions.path) {
+        await fs.unlink(extServerListenOptions.path);
       }
     } catch (e) { }
 
@@ -543,8 +587,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         };
         resolve(connectionObj);
       });
-      extServer.listen(extServerListenPath, () => {
-        this.logger.log(`${clientId} kaitian ext server listen on ${extServerListenPath}`);
+
+      extServer.listen(extServerListenOptions, () => {
+        this.logger.log(`${clientId} kaitian ext server listen on ${JSON.stringify(extServerListenOptions)}`);
       });
     });
 

@@ -133,6 +133,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
   private async createExtProcess() {
     await this.extensionNodeClient.createProcess(this.clientId, {
       enableDebugExtensionHost: this.appConfig.enableDebugExtensionHost,
+      extensionConnectOption: this.appConfig.extensionConnectOption,
     });
 
     return this.initExtProtocol();

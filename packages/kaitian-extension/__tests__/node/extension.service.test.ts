@@ -171,12 +171,17 @@ describe('Extension Serivce', () => {
     });
   });
 
-  describe('getExtServerListenPath', () => {
-    it('should create ext server listenPath', () => {
+  describe('getExtServerListenOption', () => {
+    it('should create ext server listen option', async () => {
       const mockExtClientId = 'mock_id' + Math.random();
 
-      const listenPath = extensionService.getExtServerListenPath(mockExtClientId);
-      expect(path.dirname(listenPath)).toBe(path.join(os.tmpdir(), 'kaitian-ipc'));
+      const { port, path: listenPath } = await extensionService.getExtServerListenOption(mockExtClientId);
+
+      if (port) {
+        expect(typeof port).toBe('number');
+      } else {
+        expect(path.dirname(listenPath)).toBe(path.join(os.tmpdir(), 'kaitian-ipc'));
+      }
     });
   });
 });

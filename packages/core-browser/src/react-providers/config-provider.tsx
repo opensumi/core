@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Injector } from '@ali/common-di';
-import { ExtensionCandiDate } from '@ali/ide-core-common';
+import { ExtensionCandiDate, ExtensionConnectOption } from '@ali/ide-core-common';
 import { LayoutConfig } from '../bootstrap';
 
 export const AppConfig = Symbol('AppConfig');
@@ -109,6 +109,10 @@ export interface AppConfig {
    * 可选项为 "include" | "omit" | "same-origin"
    */
   extensionFetchCredentials?: RequestCredentials;
+  /**
+   * 插件进程连接时候一些配置选项
+   */
+  extensionConnectOption?: ExtensionConnectOption;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({

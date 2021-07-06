@@ -7,6 +7,21 @@ export class ExtensionCandiDate {
   isDevelopment: boolean;
 }
 
+export enum ExtensionConnectModeOption {
+  'TCP',
+  'IPC',
+}
+
+/**
+ * 插件进程连接时候一些配置选项
+ */
+export type ExtensionConnectOption = {
+  // 两种连接模式参考 nodejs net 模块
+  mode: ExtensionConnectModeOption;
+  // 如果 mode 为 TCP，字段表示套接字应连接到的主机地址，不传默认为'localhost'
+  host?: string;
+};
+
 /**
  * 将插件路径转换为 ExtensionCandidate 对象
  * @param extensionPath 插件路径

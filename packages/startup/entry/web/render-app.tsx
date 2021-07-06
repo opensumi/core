@@ -21,6 +21,7 @@ export async function renderApp(opts: IClientAppOpts) {
     'https://gw.alipayobjects.com/mdn/rms_104d0d/afts/img/A*j6JzRK8VubgAAAAAAAAAAAAAARQnAQ';
   // 定制Layout
   opts.layoutComponent = ToolbarActionBasedLayout;
+
   const app = new ClientApp(opts);
 
   app.fireOnReload = (forcedReload: boolean) => {

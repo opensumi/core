@@ -1,22 +1,22 @@
-import { ConstructorOf } from '@ali/common-di';
-import { Emitter, ReporterProcessMessage, LogLevel, IReporter } from '@ali/ide-core-common';
 import * as net from 'net';
 import * as Stream from 'stream';
 import { performance } from 'perf_hooks';
-import {
-  createSocketConnection,
-  RPCServiceCenter,
-  initRPCService,
-  RPCProtocol,
-} from '@ali/ide-connection';
-import { ExtensionLogger2 } from './extension-log2';
-import { ProcessMessageType, IExtensionHostService } from '../common';
-import { isPromiseCanceledError } from '@ali/ide-core-common/lib/errors';
-import { Injector } from '@ali/common-di';
+import { ConstructorOf, Injector } from '@ali/common-di';
 import { AppConfig, ILogService } from '@ali/ide-core-node';
+import { isPromiseCanceledError } from '@ali/ide-core-common/lib/errors';
+import { Emitter, ReporterProcessMessage, LogLevel, IReporter } from '@ali/ide-core-common';
+import {
+  RPCProtocol,
+  initRPCService,
+  RPCServiceCenter,
+  createSocketConnection,
+} from '@ali/ide-connection';
+
 import { CommandHandler } from '../common/vscode';
-import { setPerformance } from './api/vscode/language/util';
+import { ExtensionLogger2 } from './extension-log2';
 import { ExtensionReporter } from './extension-reporter';
+import { setPerformance } from './api/vscode/language/util';
+import { ProcessMessageType, IExtensionHostService, KT_PROCESS_SOCK_OPTION_KEY, KT_APP_CONFIG_KEY } from '../common';
 
 setPerformance(performance);
 
@@ -64,7 +64,7 @@ export interface ExtProcessConfig {
 async function initRPCProtocol(extInjector): Promise<any> {
   const extCenter = new RPCServiceCenter();
   const { getRPCService } = initRPCService(extCenter);
-  const extConnection = net.createConnection(argv['kt-process-sockpath']);
+  const extConnection = net.createConnection(JSON.parse(argv[KT_PROCESS_SOCK_OPTION_KEY] || {}));
 
   extCenter.setConnection(createSocketConnection(extConnection));
 
@@ -82,7 +82,7 @@ async function initRPCProtocol(extInjector): Promise<any> {
   });
 
   logger = new ExtensionLogger2(extInjector); // new ExtensionLogger(extProtocol);
-  logger.log('process extConnection path', argv['kt-process-sockpath']);
+  logger.log('process extConnection path', argv['KT_PROCESS_SOCK_OPTION_KEY']);
   return {extProtocol, logger};
 }
 
@@ -100,7 +100,7 @@ function patchProcess() {
 }
 
 export async function extProcessInit(config: ExtProcessConfig = {}) {
-  const extAppConfig = JSON.parse(argv['kt-app-config'] || '{}');
+  const extAppConfig = JSON.parse(argv[KT_APP_CONFIG_KEY] || '{}');
   const { injector, ...extConfig } = config;
   const extInjector = injector || new Injector();
   const reporterEmitter = new Emitter<ReporterProcessMessage>();

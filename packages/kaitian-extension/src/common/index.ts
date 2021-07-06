@@ -1,4 +1,4 @@
-import { Disposable, IJSONSchema, IDisposable, Deferred, localize, Uri, MaybePromise, IExtensionLogger } from '@ali/ide-core-common';
+import { Disposable, IJSONSchema, IDisposable, Deferred, localize, Uri, MaybePromise, IExtensionLogger, ExtensionConnectOption } from '@ali/ide-core-common';
 import { createExtHostContextProxyIdentifier } from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { Extension } from '../hosted/vscode.extension';
@@ -45,6 +45,10 @@ export interface ICreateProcessOptions {
    * 启用插件进程的 Debug 模式
    */
   enableDebugExtensionHost?: boolean;
+  /**
+   * 插件进程连接时候一些配置选项
+   */
+  extensionConnectOption?: ExtensionConnectOption;
 }
 
 export const IExtensionNodeService = Symbol('IExtensionNodeService');
@@ -55,7 +59,7 @@ export interface IExtensionNodeService {
   ensureProcessReady(clientId: string): Promise<boolean>;
   getElectronMainThreadListenPath(clientId: string);
   getElectronMainThreadListenPath2(clientId: string);
-  getExtServerListenPath(clientId: string);
+  getExtServerListenOption(clientId: string);
   getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData): Promise<IExtensionMetaData | undefined>;
   setConnectionServiceClient(clientId: string, serviceClient: IExtensionNodeClientService);
   disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
@@ -330,3 +334,10 @@ export interface IExtensionHostManager {
   disposeProcess(pid: number): MaybePromise<void>;
   dispose(): MaybePromise<void>;
 }
+
+/**
+ * 以下都是 fork 新的插件子进程的时候，传入的命令行参数的 key
+ */
+export const KT_PROCESS_SOCK_OPTION_KEY = 'kt-process-sock-option';
+export const KT_PROCESS_PRELOAD_KEY = 'kt-process-preload';
+export const KT_APP_CONFIG_KEY = 'kt-app-config';
