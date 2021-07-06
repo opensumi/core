@@ -114,7 +114,7 @@ export class WatchPanelContribution implements ClientAppContribution, MenuContri
     });
   }
 
-  async onStart() {
-    await this.debugWatchModelService.load();
+  onStart() {
+    this.debugWatchModelService.load();
   }
 }

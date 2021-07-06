@@ -78,7 +78,6 @@ export interface IQuickOpenWidget extends QuickOpenTabOptions {
   selectIndex: number;
   validateType?: VALIDATE_TYPE;
   readonly MAX_HEIGHT: number;
-  readonly itemHeight: number;
   readonly isShow: boolean;
   readonly items: QuickOpenItem[];
   readonly callbacks: IQuickOpenCallbacks;

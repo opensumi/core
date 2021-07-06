@@ -171,7 +171,7 @@ describe('FileTreeContribution', () => {
       const contribution = mockInjector.get(FileTreeContribution);
       const register = jest.fn();
       contribution.registerCommands({ registerCommand: register } as any);
-      expect(register).toBeCalledTimes(28);
+      expect(register).toBeCalledTimes(29);
     });
 
     it('should registerMenus be work', async () => {

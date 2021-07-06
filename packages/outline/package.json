@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-outline",
-  "version": "2.5.5",
+  "version": "2.6.1",
   "files": [
     "lib"
   ],
@@ -21,13 +21,13 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@ali/ide-core-common": "2.5.5",
-    "@ali/ide-core-browser": "2.5.5",
-    "@ali/ide-components": "2.5.5",
-    "@ali/ide-editor": "2.5.5",
-    "@ali/ide-explorer": "2.5.5",
-    "@ali/ide-main-layout": "2.5.5",
-    "@ali/ide-theme": "2.5.5",
+    "@ali/ide-core-common": "2.6.1",
+    "@ali/ide-core-browser": "2.6.1",
+    "@ali/ide-components": "2.6.1",
+    "@ali/ide-editor": "2.6.1",
+    "@ali/ide-explorer": "2.6.1",
+    "@ali/ide-main-layout": "2.6.1",
+    "@ali/ide-theme": "2.6.1",
     "@ali/ide-dev-tool": "^1.1.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",

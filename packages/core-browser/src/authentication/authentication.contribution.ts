@@ -8,8 +8,8 @@ export class AuthenticationContribution implements ClientAppContribution, Comman
   @Autowired(IAuthenticationService)
   protected readonly authenticationService: IAuthenticationService;
 
-  async onStart() {
-    await this.authenticationService.initialize();
+  onStart() {
+    this.authenticationService.initialize();
   }
 
   registerCommands(commands: CommandRegistry) {

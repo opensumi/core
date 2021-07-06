@@ -197,6 +197,12 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
 
 export const QuickOpenList: React.FC<{ onReady: (api: IRecycleListHandler) => void }> = observer(({ onReady }) => {
   const { widget } = React.useContext(QuickOpenContext);
+
+  const getSize = React.useCallback((index) => {
+    const item = widget.items[index];
+    return !!item?.getDetail() ? 44 : 22;
+  }, [widget.items]);
+
   return widget.items.length > 0 ? (
     <RecycleList
       onReady={onReady}
@@ -205,7 +211,7 @@ export const QuickOpenList: React.FC<{ onReady: (api: IRecycleListHandler) => vo
       })}
       data={widget.items}
       template={QuickOpenItemView}
-      itemHeight={widget.itemHeight}
+      getSize={getSize}
       maxHeight={widget.items.length ? widget.MAX_HEIGHT : 0}
     />
   ) : null;

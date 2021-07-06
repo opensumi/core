@@ -93,6 +93,11 @@ export interface IRecycleListProps {
    * @memberof IRecycleListProps
    */
   onReady?: (api: IRecycleListHandler) => void;
+  /**
+   * 如果为不定高 Item 时可以指定动态获取 item Size
+   * https://react-window.vercel.app/#/examples/list/variable-size
+   */
+  getSize?: (index: number) => number;
 }
 
 export interface IRecycleListHandler {
@@ -104,7 +109,7 @@ export const RECYCLE_LIST_STABILIZATION_TIME: number = 500;
 export const RECYCLE_LIST_OVER_SCAN_COUNT: number = 50;
 
 export const RecycleList: React.FC<IRecycleListProps> = ({
-  width, height, maxHeight, minHeight, className, style, data, onReady, itemHeight, header: Header, footer: Footer, template: Template, paddingBottomSize ,
+  width, height, maxHeight, minHeight, className, style, data, onReady, itemHeight, header: Header, footer: Footer, template: Template, paddingBottomSize, getSize: customGetSize,
 }) => {
 
   const listRef = React.useRef<FixedSizeList>();
@@ -158,9 +163,12 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
     }
   };
 
-  const getSize = (index: string | number) => {
+  const getSize = React.useCallback((index: string | number) => {
+    if (customGetSize) {
+      return customGetSize(Number(index));
+    }
     return (sizeMap?.current || [])[index] || itemHeight || 100;
-  };
+  }, [itemHeight, customGetSize]);
 
   const getMaxListHeight = React.useCallback(() => {
     if (maxHeight) {

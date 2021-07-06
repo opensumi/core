@@ -6,7 +6,7 @@ import { CommandOpener } from './command-opener';
 import { HttpOpener } from './http-opener';
 
 @Domain(OpenerContribution)
-export class DefaultOpnerContribution implements OpenerContribution {
+export class DefaultOpenerContribution implements OpenerContribution {
 
   @Autowired()
   private readonly commandOpener: CommandOpener;

@@ -124,11 +124,12 @@ export class UserStorageServiceImpl implements IUserStorageService {
     await this.whenReady;
     const target = UserStorageServiceImpl.toFilesystemURI(this.userStorageFolder, URI.from(uri));
     try {
-      const fileStat = await this.fileServiceClient.getFileStat(target.toString());
+      let fileStat = await this.fileServiceClient.getFileStat(target.toString());
       if (fileStat) {
         await this.fileServiceClient.setContent(fileStat, content, options);
       } else {
-        throw new Error(`Write ${uri.toString()} Fail.`);
+        fileStat = await this.fileServiceClient.createFile(target.toString());
+        await this.fileServiceClient.setContent(fileStat, content, options);
       }
     } catch (e) {
       throw new Error(e);
