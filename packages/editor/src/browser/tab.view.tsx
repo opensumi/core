@@ -98,7 +98,10 @@ export const Tabs = ({ group }: ITabsProps) => {
 
   React.useEffect(() => {
     if (!wrapMode) {
-      scrollToCurrent();
+      // TODO: 需要一个更好的解决方案
+      setTimeout(() => {
+        scrollToCurrent();
+      }, 200);
     }
   }, [wrapMode, tabContainer.current]);
 
