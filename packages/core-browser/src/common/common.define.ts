@@ -40,6 +40,14 @@ export interface ClientAppContribution {
   onStop?(app: IClientApp): MaybePromise<void>;
 
   /**
+   * 用于处理一些副作用清理工作，通过调用 clientApp.dispose 触发
+   * 与 onStop 不同的是，onStop 仅适用于非阻塞性的工作
+   * onDisposeEffect 适用于一些耗时较长的阻塞性任务，适用于将 IDE 作为大组件优雅卸载的场景
+   * 但 onDisposeEffect 在 Electron 下可能会阻塞窗口关闭(例如需要1s以上时间关闭)
+   */
+  onDisposeSideEffects?(app: IClientApp): MaybePromise<void>;
+
+  /**
    *
    */
   onReconnect?(app: IClientApp): void;

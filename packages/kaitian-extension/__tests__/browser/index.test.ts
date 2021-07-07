@@ -109,7 +109,7 @@ describe(__filename, () => {
   it('close page expects disposeClientExtProcess to be called', () => {
     const extensionNodeClientService = injector.get<IExtensionNodeClientService>(ExtensionNodeServiceServerPath);
     // trigger close
-    kaitianExtensionClientAppContribution.onStop();
+    kaitianExtensionClientAppContribution.onDisposeSideEffects();
     expect(extensionNodeClientService.disposeClientExtProcess).toBeCalled();
   });
 

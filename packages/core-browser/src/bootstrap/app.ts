@@ -28,6 +28,7 @@ import {
   IEventBus,
   asExtensionCandidate,
   IApplicationService,
+  IDisposable,
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
@@ -92,7 +93,7 @@ if (typeof (window as any).ResizeObserver === 'undefined') {
   (window as any).ResizeObserver = ResizeObserver;
 }
 
-export class ClientApp implements IClientApp {
+export class ClientApp implements IClientApp, IDisposable {
 
   browserModules: BrowserModule[] = [];
 
@@ -561,7 +562,7 @@ export class ClientApp implements IClientApp {
     registerLocalStorageProvider('general.language', workspaceDir);
   }
 
-  public dispose() {
+  public async dispose() {
     window.removeEventListener('beforeunload', this._handleBeforeUpload);
     window.removeEventListener('unload', this._handleUnload);
     window.removeEventListener('resize', this._handleResize);
@@ -570,6 +571,16 @@ export class ClientApp implements IClientApp {
     window.removeEventListener('keydown', this._handleKeydown, true);
     if (isOSX) {
       document.body.removeEventListener('wheel', this._handleWheel);
+    }
+
+    for (const contribution of this.contributions) {
+      if (contribution.onDisposeSideEffects) {
+        try {
+          await contribution.onDisposeSideEffects(this);
+        } catch (error) {
+          this.logger.error('Could not dispose contribution', error);
+        }
+      }
     }
   }
 
