@@ -4,7 +4,7 @@ import { ElectronAppConfig, ICodeWindow, ICodeWindowOptions } from './types';
 import { BrowserWindow, shell, ipcMain, BrowserWindowConstructorOptions } from 'electron';
 import { ChildProcess, fork, ForkOptions } from 'child_process';
 import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
-import { ExtensionCandiDate } from '@ali/ide-core-common';
+import { ExtensionCandidate } from '@ali/ide-core-common';
 import treeKill = require('tree-kill');
 import { app } from 'electron';
 import * as qs from 'querystring';
@@ -28,7 +28,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   private extensionDir: string = this.appConfig.extensionDir;
 
-  private extensionCandidate: ExtensionCandiDate[] = [];
+  private extensionCandidate: ExtensionCandidate[] = [];
 
   private query: qs.ParsedUrlQuery;
 
@@ -137,7 +137,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
     this.extensionDir = URI.file(extensionDir).toString();
   }
 
-  setExtensionCandidate(extensionCandidate: ExtensionCandiDate[]) {
+  setExtensionCandidate(extensionCandidate: ExtensionCandidate[]) {
     this.extensionCandidate = extensionCandidate;
   }
 

@@ -9,7 +9,7 @@ import { MainThreadEnv } from '@ali/ide-kaitian-extension/lib/browser/vscode/api
 import { IMainThreadEnv, MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@ali/ide-kaitian-extension/lib/common/vscode';
 import ExtensionHostServiceImpl from '@ali/ide-kaitian-extension/lib/hosted/ext.host';
 import { LoggerManagerClient } from '@ali/ide-logs/lib/browser/log-manage';
-import { ClientAppConfigProvider } from '@ali/ide-core-browser';
+import { AppConfig } from '@ali/ide-core-browser';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -48,8 +48,12 @@ class MockLogServiceForClient {
 describe('MainThreadEnvAPI Test Suites ', () => {
   const injector = createBrowserInjector([], new Injector([]));
   let extHostEnvAPI: ReturnType<typeof createEnvApiFactory>;
+  const appConfig = {
+    appName: 'kaitian',
+    uriScheme: 'kaitian',
+  };
   beforeAll((done) => {
-    injector.addProviders(...[{
+    injector.overrideProviders(...[{
       token: ExtensionHostServiceImpl,
       useValue: {},
     }, {
@@ -58,6 +62,9 @@ describe('MainThreadEnvAPI Test Suites ', () => {
     }, {
       token: ILoggerManagerClient,
       useClass: LoggerManagerClient,
+    }, {
+      token: AppConfig,
+      useValue: appConfig,
     }]);
     const extHostEnv = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostEnv, new ExtHostEnv(rpcProtocolExt));
     const extHostTerminal = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostTerminal, new ExtHostTerminal(rpcProtocolExt));
@@ -86,8 +93,8 @@ describe('MainThreadEnvAPI Test Suites ', () => {
   });
 
   it('should hava correct env', (done) => {
-    expect(extHostEnvAPI.appName).toBe(ClientAppConfigProvider.get().applicationName);
-    expect(extHostEnvAPI.uriScheme).toBe(ClientAppConfigProvider.get().uriScheme);
+    expect(extHostEnvAPI.appName).toBe(appConfig.appName);
+    expect(extHostEnvAPI.uriScheme).toBe(appConfig.uriScheme);
     expect(extHostEnvAPI.language).toBe(getLanguageId());
     expect(extHostEnvAPI.sessionId).toBe(envValue.sessionId);
     expect(extHostEnvAPI.machineId).toBe(envValue.machineId);

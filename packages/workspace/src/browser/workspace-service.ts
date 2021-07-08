@@ -9,7 +9,6 @@ import {
   UNTITLED_WORKSPACE,
 } from '../common';
 import {
-  ClientAppConfigProvider,
   Deferred,
   ILogger,
   PreferenceService,
@@ -87,8 +86,8 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   protected async doInit(): Promise<void> {
-    // TODO 用户可配置
-    this.applicationName = ClientAppConfigProvider.get().applicationName;
+    // 这里的 `appName` 存在默认值
+    this.applicationName = this.appConfig.appName!;
     const wpUriString = this.getDefaultWorkspacePath();
 
     this.listenPreference();

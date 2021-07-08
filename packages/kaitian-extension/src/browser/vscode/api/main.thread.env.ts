@@ -4,7 +4,7 @@ import { IRPCProtocol, WSChannelHandler } from '@ali/ide-connection';
 import { ILoggerManagerClient } from '@ali/ide-logs/lib/browser';
 import { IMainThreadEnv, IExtHostEnv, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { UIKind, UriComponents } from '../../../common/vscode/ext-types';
-import { ClientAppConfigProvider, IOpenerService, IClipboardService, electronEnv, IExternalUriService } from '@ali/ide-core-browser';
+import { IOpenerService, IClipboardService, electronEnv, IExternalUriService, AppConfig } from '@ali/ide-core-browser';
 import { getLanguageId, URI, isElectronEnv } from '@ali/ide-core-common';
 import { HttpOpener } from '@ali/ide-core-browser/lib/opener/http-opener';
 
@@ -28,12 +28,13 @@ export class MainThreadEnv implements IMainThreadEnv {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  private readonly appConfig = ClientAppConfigProvider.get();
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
 
   // 检测下支持的协议，以防打开内部协议
   // 支持 http/https/mailto/projectScheme 协议
   private isSupportedLink(uri: URI) {
-    return HttpOpener.standardSupportedLinkSchemes.has(uri.scheme) || uri.scheme === ClientAppConfigProvider.get().uriScheme;
+    return HttpOpener.standardSupportedLinkSchemes.has(uri.scheme) || uri.scheme === this.appConfig.uriScheme;
   }
 
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
@@ -43,7 +44,7 @@ export class MainThreadEnv implements IMainThreadEnv {
       this.proxy.$fireChangeLogLevel(level);
     });
     this.setLogLevel();
-    const { applicationName: appName, uriScheme } = this.appConfig;
+    const { appName, uriScheme } = this.appConfig;
     this.proxy.$setEnvValues({
       appName,
       uriScheme,

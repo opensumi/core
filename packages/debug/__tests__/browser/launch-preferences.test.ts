@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { PreferenceService, ClientAppConfigProvider, FileUri, Disposable, DisposableCollection, ILogger, PreferenceScope, ILoggerManagerClient, URI } from '@ali/ide-core-browser';
+import { PreferenceService, FileUri, Disposable, DisposableCollection, ILogger, PreferenceScope, ILoggerManagerClient, URI } from '@ali/ide-core-browser';
 import { AppConfig } from '@ali/ide-core-node';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IMessageService } from '@ali/ide-overlay';
@@ -390,10 +390,6 @@ describe('Launch Preferences', () => {
 
       const initializeInjector = async () => {
         toTearDown.push(Disposable.create(enableJSDOM()));
-        ClientAppConfigProvider.set({
-          applicationName: 'test',
-          uriScheme: 'test',
-        });
 
         await fs.ensureDir(rootPath);
 

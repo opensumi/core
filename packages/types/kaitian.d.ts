@@ -251,7 +251,7 @@ declare module 'kaitian' {
      * ]);
      * ```
      */
-    export function setExtensionCandidate(extensionCandidate: ExtensionCandiDate[]): Promise<void>;
+    export function setExtensionCandidate(extensionCandidate: ExtensionCandidate[]): Promise<void>;
   }
 
   /**
@@ -283,7 +283,7 @@ declare module 'kaitian' {
     WORKER_HOST = 2,
   }
 
-  export interface ExtensionCandiDate {
+  export interface ExtensionCandidate {
     path: string;
     isBuintin: boolean;
   }

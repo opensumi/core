@@ -1,5 +1,5 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtensionCandiDate } from '@ali/ide-core-common';
+import { ExtensionCandidate } from '@ali/ide-core-common';
 
 import { IExtHostLifeCycle, IMainThreadLifeCycle } from '../../../common/kaitian/lifecycle';
 import { MainThreadKaitianAPIIdentifier } from '../../../common/kaitian';
@@ -13,7 +13,7 @@ export function createLifeCycleApi(
     setExtensionDir: (dir: string) => {
       lifeCycle.setExtensionDir(dir);
     },
-    setExtensionCandidate: (exts: ExtensionCandiDate[]) => {
+    setExtensionCandidate: (exts: ExtensionCandidate[]) => {
       lifeCycle.setExtensionCandidate(exts);
     },
   };
@@ -33,7 +33,7 @@ export class ExtHostLifeCycle implements IExtHostLifeCycle {
     this.proxy.$setExtensionDir(path);
   }
 
-  public setExtensionCandidate(candidate: ExtensionCandiDate[]) {
+  public setExtensionCandidate(candidate: ExtensionCandidate[]) {
     this.proxy.$setExtensionCandidate(candidate);
   }
 }

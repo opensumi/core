@@ -37,7 +37,6 @@ import {
   PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId, registerLocalStorageProvider,
 } from '../preferences';
 import { injectCorePreferences } from '../core-preferences';
-import { ClientAppConfigProvider } from '../application';
 import { CorePreferences } from '../core-preferences';
 import { renderClientApp, IAppRenderer } from './app.view';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
@@ -65,8 +64,7 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   connectionProtocols?: string[];
   iconStyleSheets?: IconInfo[];
   useCdnIcon?: boolean;
-  editorBackgroudImage?: string;
-  defaultPreferences?: IPreferences;
+  editorBackgroundImage?: string;
   /**
    * 插件开发模式下指定的插件路径
    */
@@ -81,18 +79,15 @@ export interface LayoutConfig {
   };
 }
 
-// 设置全局应用信息
-ClientAppConfigProvider.set({
-  applicationName: 'KAITIAN',
-  uriScheme: 'KT_KAITIAN',
-});
-
 // 添加resize observer polyfill
 if (typeof (window as any).ResizeObserver === 'undefined') {
   (window as any).ResizeObserver = ResizeObserver;
 }
 
 export class ClientApp implements IClientApp {
+
+  public static DEFAULT_APPLICATION_NAME: string = 'KAITIAN';
+  public static DEFAULT_URI_SCHEME: string = 'kaitian';
 
   browserModules: BrowserModule[] = [];
 
@@ -125,11 +120,10 @@ export class ClientApp implements IClientApp {
     const {
       modules, contributions, modulesInstances,
       connectionPath, connectionProtocols, iconStyleSheets,
-      useCdnIcon, editorBackgroudImage, defaultPreferences,
+      useCdnIcon, editorBackgroundImage, defaultPreferences,
       allowSetDocumentTitleFollowWorkspaceDir = true,
       ...restOpts // rest part 为 AppConfig
     } = opts;
-
     this.initEarlyPreference(opts.workspaceDir || '');
     setLanguageId(getPreferenceLanguageId(defaultPreferences));
     this.injector = opts.injector || new Injector();
@@ -137,7 +131,11 @@ export class ClientApp implements IClientApp {
     this.modules.forEach((m) => this.resolveModuleDeps(m));
     // moduleInstance必须第一个是layout模块
     this.browserModules = opts.modulesInstances || [];
+
     this.config = {
+      appName: ClientApp.DEFAULT_APPLICATION_NAME,
+      uriScheme: ClientApp.DEFAULT_URI_SCHEME,
+      // 如果通过 config 传入了 appName 及 uriScheme，则优先使用
       ...restOpts,
       // 一些转换和 typo 修复
       workspaceDir: opts.workspaceDir || '',
@@ -145,7 +143,7 @@ export class ClientApp implements IClientApp {
       injector: this.injector,
       wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
       layoutConfig: opts.layoutConfig as LayoutConfig,
-      editorBackgroundImage: opts.editorBackgroundImage || editorBackgroudImage,
+      editorBackgroundImage: opts.editorBackgroundImage || editorBackgroundImage,
       allowSetDocumentTitleFollowWorkspaceDir,
     };
 

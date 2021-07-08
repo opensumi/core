@@ -1,6 +1,6 @@
 import { IDisposable } from './disposable';
 import * as Electron from 'electron';
-import { ExtensionCandiDate } from './types';
+import { ExtensionCandidate } from './types';
 
 export interface IElectronMainApi<Events> {
 
@@ -128,7 +128,7 @@ export interface IElectronMainLifeCycleService extends IElectronMainApi<void> {
   openWorkspace(workspace: string, options?: any);
 
   setExtensionDir(path: string, windowId: number);
-  setExtensionCandidate(candidate: ExtensionCandiDate[], windowId: number): void;
+  setExtensionCandidate(candidate: ExtensionCandidate[], windowId: number): void;
 }
 
 export const IElectronMainLifeCycleService = Symbol('IElectronMainLifeCycleService');

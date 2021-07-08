@@ -23,7 +23,7 @@ import { BreakpointManager, BreakpointsChangeEvent, IRuntimeBreakpoint, DebugBre
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { DebugModelManager } from './editor/debug-model-manager';
-import { CancellationTokenSource, CancellationToken } from '@ali/ide-core-common';
+import { CancellationTokenSource, CancellationToken, Disposable } from '@ali/ide-core-common';
 import { ITerminalApiService, TerminalOptions } from '@ali/ide-terminal-next';
 import { ExpressionContainer } from './tree/debug-tree-node.define';
 
@@ -201,12 +201,10 @@ export class DebugSession implements IDebugSession {
           this.setExceptionBreakpoints(args);
         }
       }),
-      {
-        dispose: () => {
-          // 清除断点的运行时状态
-          this.breakpoints.clearAllStatus(this.id);
-        },
-      },
+      Disposable.create(() => {
+        // 清除断点的运行时状态
+        this.breakpoints.clearAllStatus(this.id);
+      }),
     ]);
   }
 

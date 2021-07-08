@@ -6,8 +6,8 @@ import { PreferenceProvider, PreferenceProviderDataChange, IResolvedPreferences 
 import {
   PreferenceSchema, PreferenceSchemaProperties, PreferenceDataSchema, PreferenceItem, PreferenceSchemaProperty, PreferenceDataProperty, JsonType,
 } from '@ali/ide-core-common/lib/preferences/preference-schema';
-import { ClientAppConfigProvider, ClientAppConfig } from '../application';
 import { PreferenceConfigurations, injectPreferenceConfigurations } from './preference-configurations';
+import { AppConfig } from '../react-providers';
 
 export { PreferenceSchema, PreferenceSchemaProperties, PreferenceDataSchema, PreferenceItem, PreferenceSchemaProperty, PreferenceDataProperty, JsonType };
 
@@ -43,19 +43,6 @@ export namespace OverridePreferenceName {
 const OVERRIDE_PROPERTY = '\\[(.*)\\]$';
 export const OVERRIDE_PROPERTY_PATTERN = new RegExp(OVERRIDE_PROPERTY);
 
-// const OVERRIDE_PATTERN_WITH_SUBSTITUTION = '\\[(${0})\\]$';
-
-export interface FrontendApplicationPreferenceConfig extends ClientAppConfig {
-  preferences: {
-    [preferenceName: string]: any,
-  };
-}
-export namespace FrontendApplicationPreferenceConfig {
-  export function is(config: ClientAppConfig): config is FrontendApplicationPreferenceConfig {
-    return 'preferences' in config && typeof config.preferences === 'object';
-  }
-}
-
 @Injectable()
 export class PreferenceSchemaProvider extends PreferenceProvider {
 
@@ -71,6 +58,9 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
 
   @Autowired(ILogger)
   protected readonly logger: ILogger;
+
+  @Autowired(AppConfig)
+  protected readonly appConfig: AppConfig;
 
   protected readonly onDidPreferenceSchemaChangedEmitter = new Emitter<void>();
   public readonly onDidPreferenceSchemaChanged: Event<void> = this.onDidPreferenceSchemaChangedEmitter.event;
@@ -141,9 +131,8 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
   // tslint:disable-next-line:unified-signatures
   protected getDefaultValue(property: PreferenceItem, preferenceName: string): any;
   protected getDefaultValue(property: PreferenceItem, preferenceName?: string): any {
-    const config = ClientAppConfigProvider.get();
-    if (preferenceName && FrontendApplicationPreferenceConfig.is(config) && preferenceName in config.preferences) {
-      return config.preferences[preferenceName];
+    if (preferenceName && this.appConfig.defaultPreferences && preferenceName in this.appConfig.defaultPreferences) {
+      return this.appConfig.defaultPreferences[preferenceName];
     }
     if (property.defaultValue !== undefined) {
       return property.defaultValue;

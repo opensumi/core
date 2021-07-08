@@ -1,15 +1,28 @@
 import * as React from 'react';
 import { Injector } from '@ali/common-di';
-import { ExtensionCandiDate, ExtensionConnectOption } from '@ali/ide-core-common';
-import { LayoutConfig } from '../bootstrap';
+import { ExtensionCandidate, ExtensionConnectOption } from '@ali/ide-core-common';
+import { IPreferences, LayoutConfig } from '../bootstrap';
 
 export const AppConfig = Symbol('AppConfig');
 export interface AppConfig {
   /**
    * APP的名称
+   * 默认值为 `ClientApp.DEFAULT_APPLICATION_NAME` 即 `KAITIAN`
    */
   appName?: string;
+  /**
+   * 默认内部的 uriScheme，用于桌面版 app 的唤起
+   * 同时也默认为 vscode.env.uriScheme 的值
+   * 默认值为 `ClientApp.DEFAULT_URI_SCHEME` 即 `kaitian`
+   */
+  uriScheme?: string;
+  /**
+   * 打开的工作区路径
+   */
   workspaceDir: string;
+  /**
+   * 插件目录路径
+   */
   extensionDir?: string;
   /**
    * 设置全局存储的文件夹名称
@@ -37,19 +50,40 @@ export interface AppConfig {
    * 全局插件数据存储目录名称，默认 .kaitian
    */
   extensionStorageDirName?: string;
+  /**
+   * 默认配置
+   */
+  defaultPreferences?: IPreferences;
+  /**
+   * DI Handler
+   */
   injector: Injector;
+  /**
+   * ws 通信路径
+   */
   wsPath: string;
+  /**
+   * 布局配置
+   */
   layoutConfig: LayoutConfig;
   layoutComponent?: React.FC;
-
+  /**
+   * 面板大小，宽度/高度
+   */
   panelSizes?: {[slotLocation: string]: number};
+  /**
+   * 默认面板
+   */
   defaultPanels?: {[slotLocation: string]: string};
   /**
    * 用于挂载webview的iframe地址
    */
   webviewEndpoint?: string;
   extWorkerHost?: string;
-  extensionCandidate?: ExtensionCandiDate[];
+  /**
+   * 额外指定的插件路径，一般用于内置插件
+   */
+  extensionCandidate?: ExtensionCandidate[];
   staticServicePath?: string;
 
   extensionDevelopmentHost?: boolean;

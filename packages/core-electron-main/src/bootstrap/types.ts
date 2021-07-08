@@ -2,7 +2,7 @@ import { BrowserWindowConstructorOptions } from 'electron';
 import { ConstructorOf } from '@ali/ide-core-common';
 import { ElectronMainModule } from '../electron-main-module';
 import { IDisposable } from '@ali/ide-core-common/lib/disposable';
-import { ExtensionCandiDate } from '@ali/ide-core-common';
+import { ExtensionCandidate } from '@ali/ide-core-common';
 
 export interface ElectronAppConfig {
 
@@ -57,7 +57,7 @@ export interface ElectronAppConfig {
   /**
    * 额外插件目录
    */
-  extensionCandidate: ExtensionCandiDate[];
+  extensionCandidate: ExtensionCandidate[];
 
   /**
    * 覆盖 browser 层的初始化值
@@ -120,12 +120,12 @@ export interface ICodeWindow {
 
   setExtensionDir(extensionDir: string);
 
-  setExtensionCandidate(extensionCandidate: ExtensionCandiDate[]);
+  setExtensionCandidate(extensionCandidate: ExtensionCandidate[]);
 }
 
 export interface ICodeWindowOptions {
   extensionDir?: string;
-  extensionCandidate?: ExtensionCandiDate[];
+  extensionCandidate?: ExtensionCandidate[];
   query?: { [key: string]: string | string[]; };
 }
 

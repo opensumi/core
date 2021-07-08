@@ -1,7 +1,7 @@
 import { BasicEvent } from '../event-bus';
 import { Uri } from '../uri'
 
-export class ExtensionCandiDate {
+export class ExtensionCandidate {
   path: string;
   isBuiltin: boolean;
   isDevelopment: boolean;
@@ -27,7 +27,7 @@ export type ExtensionConnectOption = {
  * @param extensionPath 插件路径
  * @param isDevelopment 是否为开发模式下加载的插件
  */
-export function asExtensionCandidate(extensionPath: string, isDevelopment: boolean = false): ExtensionCandiDate {
+export function asExtensionCandidate(extensionPath: string, isDevelopment: boolean = false): ExtensionCandidate {
   return { path: extensionPath, isBuiltin: true, isDevelopment };
 }
 

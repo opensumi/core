@@ -1,7 +1,7 @@
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IMainThreadUrls, IExtHostUrls, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { IOpenerService, IDisposable, IOpener, URI, ClientAppConfigProvider, MaybePromise, ILogger } from '@ali/ide-core-browser';
+import { IOpenerService, IDisposable, IOpener, URI, MaybePromise, ILogger, AppConfig } from '@ali/ide-core-browser';
 import { IActivationEventService } from '../../types';
 
 class ExtennsionUrlHandler {
@@ -27,10 +27,11 @@ class ExtensionOpener implements IOpener, IDisposable {
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
+  @Autowired(AppConfig)
+  private readonly config: AppConfig;
+
   @Autowired()
   private activationEventService: IActivationEventService;
-
-  private projectScheme = ClientAppConfigProvider.get().uriScheme;
 
   private extensionUrlHandlers = new Map<string, ExtennsionUrlHandler>();
 
@@ -51,7 +52,7 @@ class ExtensionOpener implements IOpener, IDisposable {
   }
 
   handleScheme(scheme: string): MaybePromise<boolean> {
-    return scheme === this.projectScheme;
+    return scheme === this.config.uriScheme;
   }
 
   registerExtensionHandler(handle: number, extensionId: string, proxy: IExtHostUrls): IDisposable {

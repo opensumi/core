@@ -1,6 +1,6 @@
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { AppConfig, Disposable, getPreferenceLanguageId, StorageProvider, STORAGE_NAMESPACE } from '@ali/ide-core-browser';
-import { ExtensionCandiDate as ExtensionCandidate } from '@ali/ide-core-common';
+import { ExtensionCandidate as ExtensionCandidate } from '@ali/ide-core-common';
 
 import { ExtensionNodeServiceServerPath, EXTENSION_ENABLE, IExtensionMetaData, IExtensionNodeClientService } from '../common';
 import { Extension } from './extension';
