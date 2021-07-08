@@ -313,12 +313,23 @@ export class ClientApp implements IClientApp, IDisposable {
   protected async startContributions(container) {
     await this.measure('Contributions.initialize', () => this.initializeContributions());
 
+    // 初始化命令、快捷键与菜单
+    await this.initializeCoreRegistry();
     // FIXME: 放在 startContribution 里不是很贴切
     await this.measure('RenderApp.render', () => this.renderApp(container));
 
     await this.measure('Contributions.onStart', () => this.onStartContributions());
 
     await this.runContributionsPhase(this.contributions, 'onDidStart');
+  }
+
+  /**
+   * 初始化核心模板
+   */
+  private async initializeCoreRegistry() {
+    this.commandRegistry.initialize();
+    await this.keybindingRegistry.initialize();
+    this.nextMenuRegistry.initialize();
   }
 
   /**
@@ -336,10 +347,6 @@ export class ClientApp implements IClientApp, IDisposable {
    * run contribution#onStart
    */
   private async onStartContributions() {
-    this.commandRegistry.onStart();
-    this.keybindingRegistry.onStart();
-    this.nextMenuRegistry.onStart();
-
     await this.runContributionsPhase(this.contributions, 'onStart');
   }
 

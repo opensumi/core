@@ -322,7 +322,7 @@ export class MenuRegistryImpl extends CoreMenuRegistryImpl {
   protected readonly contributions: ContributionProvider<MenuContribution>;
 
   // MenuContribution
-  onStart() {
+  initialize() {
     for (const contrib of this.contributions.getContributions()) {
       if (contrib.registerNextMenus) {
         contrib.registerNextMenus(this);

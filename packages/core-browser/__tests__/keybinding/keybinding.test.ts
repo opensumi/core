@@ -75,7 +75,7 @@ describe('KeybindingRegistry', () => {
   describe('01 #Init', () => {
     test('should ready to work after init', async (done) => {
 
-      expect(typeof keybindingRegistry.onStart).toBe('function');
+      expect(typeof keybindingRegistry.initialize).toBe('function');
       expect(typeof keybindingRegistry.registerKeybinding).toBe('function');
       expect(typeof keybindingRegistry.registerKeybindings).toBe('function');
       expect(typeof keybindingRegistry.unregisterKeybinding).toBe('function');

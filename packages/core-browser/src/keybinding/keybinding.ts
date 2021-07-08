@@ -137,7 +137,7 @@ export interface KeybindingContribution {
 
 export const KeybindingRegistry = Symbol('KeybindingRegistry');
 export interface KeybindingRegistry {
-  onStart(): Promise<any>;
+  initialize(): Promise<any>;
   registerKeybinding(binding: Keybinding, scope?: KeybindingScope): IDisposable;
   registerKeybindings(bindings: Keybinding[], scope?: KeybindingScope): IDisposable;
   unregisterKeybinding(keyOrBinding: Keybinding | string, scope?: KeybindingScope): void;
@@ -219,7 +219,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   @Autowired(IStatusBarService)
   protected readonly statusBar: IStatusBarService;
 
-  public async onStart(): Promise<void> {
+  public async initialize(): Promise<void> {
     await this.keyboardLayoutService.initialize();
     this.keyboardLayoutService.onKeyboardLayoutChanged((newLayout) => {
       this.clearResolvedKeybindings();
