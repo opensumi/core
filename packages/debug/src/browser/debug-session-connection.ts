@@ -128,16 +128,24 @@ export class DebugSessionConnection implements IDisposable {
     this.toDispose.dispose();
   }
 
+  /**
+   * 通过 Connection 模块创建可与 Node 进程通信的链接
+   * @returns IWebSocket
+   */
   protected async createConnection(): Promise<IWebSocket> {
     if (this.disposed) {
       throw new Error('Connection has been already disposed.');
     } else {
       const connection = await this.connectionFactory(this.sessionId);
       connection.onClose((code, reason) => {
-        // TODO: 处理connection的dispose
         this.fire('exited', { code, reason });
       });
+
       connection.onMessage((data) => this.handleMessage(data));
+
+      this.toDispose.push(Disposable.create(() => {
+        connection.close();
+      }));
       return connection;
     }
   }
