@@ -154,6 +154,10 @@ export class FileTreeService extends Tree implements IFileTreeService {
       this.refresh();
     }));
 
+    this.toDispose.push(this.workspaceService.onWorkspaceFileExcludeChanged(() => {
+      this.refresh();
+    }));
+
     this.toDispose.push(Disposable.create(() => {
       this._cacheNodesMap.clear();
       this._roots = null;

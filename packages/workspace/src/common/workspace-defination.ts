@@ -166,6 +166,10 @@ export interface IWorkspaceService {
   // 工作区改变事件
   onWorkspaceChanged: Event<FileStat[]>;
   /**
+   * 工作区的 files.exclude 配置发生变化
+   */
+  onWorkspaceFileExcludeChanged: Event<void>;
+  /**
    * 操作中的工作区改变事件
    * 如：用户添加目录到当前workspace中触发
    */

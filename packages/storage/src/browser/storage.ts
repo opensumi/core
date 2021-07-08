@@ -28,7 +28,7 @@ export class Storage implements IStorage {
 
   private storageName: string;
 
-  private _whenReady: Promise<any>;
+  private _whenReady: Promise<void>;
 
   constructor(
     private readonly database: IStorageServer,

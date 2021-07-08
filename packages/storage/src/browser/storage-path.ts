@@ -14,22 +14,42 @@ export class StoragePathServer implements IStoragePathServer {
   private deferredWorkspaceStoragePath: Deferred<string>;
   private deferredGlobalStoragePath: Deferred<string>;
 
-  private deferredEnsureStoragePath: Deferred<void>;
   // 当初始化完成时为true
   private workspaceStoragePathInitialized: boolean;
   private globalStoragePathInitialized: boolean;
+
+  private _userHome: Promise<string>;
 
   @Autowired(IFileServiceClient)
   private readonly fileSystem: IFileServiceClient;
 
   constructor() {
+    this.init();
+  }
+
+  async init() {
     this.deferredWorkspaceStoragePath = new Deferred<string>();
     this.deferredGlobalStoragePath = new Deferred<string>();
     this.workspaceStoragePathInitialized = false;
     this.globalStoragePathInitialized = false;
+
+    this._userHome = this.getUserHomeDir();
+  }
+
+  get userHome() {
+    return this._userHome;
+  }
+
+  async ensureStorageDir(uri: string) {
+    if (await this.fileSystem.access(uri)) {
+      await this.fileSystem.createFolder(uri);
+    }
   }
 
   async provideWorkspaceStorageDirPath(storageDirName: string): Promise<string | undefined> {
+    if (this.cachedWorkspaceStoragePath) {
+      return this.cachedWorkspaceStoragePath;
+    }
     const storagePathString = await this.getBaseStorageDirPath(storageDirName);
     const uriString = URI.file(storagePathString).resolve(StoragePaths.DEFAULT_DATA_DIR_NAME).toString();
 
@@ -37,39 +57,31 @@ export class StoragePathServer implements IStoragePathServer {
       throw new Error('Unable to get parent storage directory');
     }
 
-    if (!await this.fileSystem.access(uriString)) {
-      if (this.deferredEnsureStoragePath) {
-        await this.deferredEnsureStoragePath;
-      } else {
-        this.deferredEnsureStoragePath = new Deferred();
-        await this.fileSystem.createFolder(uriString);
-        this.deferredEnsureStoragePath.resolve();
-      }
-    }
-
     if (!this.workspaceStoragePathInitialized) {
-      this.deferredWorkspaceStoragePath.resolve(uriString);
-      this.workspaceStoragePathInitialized = true;
+      await this.ensureStorageDir(uriString);
     }
 
+    this.deferredWorkspaceStoragePath.resolve(uriString);
+    this.workspaceStoragePathInitialized = true;
     return this.cachedWorkspaceStoragePath = uriString;
   }
 
   async provideGlobalStorageDirPath(storageDirName: string): Promise<string | undefined> {
+    if (this.cachedGlobalStoragePath) {
+      return this.cachedGlobalStoragePath;
+    }
     const storagePathString = await this.getBaseStorageDirPath(storageDirName);
     const uriString = URI.file(storagePathString).toString();
     if (!storagePathString) {
       throw new Error('Unable to get parent storage directory');
     }
 
-    if (!await this.fileSystem.access(uriString)) {
-      await this.fileSystem.createFolder(uriString);
+    if (!this.globalStoragePathInitialized) {
+      await this.ensureStorageDir(uriString);
     }
 
-    if (!this.globalStoragePathInitialized) {
-      this.deferredGlobalStoragePath.resolve(uriString);
-      this.globalStoragePathInitialized = true;
-    }
+    this.deferredGlobalStoragePath.resolve(uriString);
+    this.globalStoragePathInitialized = true;
 
     return this.cachedGlobalStoragePath = uriString;
   }
@@ -86,7 +98,7 @@ export class StoragePathServer implements IStoragePathServer {
    * 获取工作区存储路径
    */
   async getDataDirPath(storageDirName?: string): Promise<string> {
-    const homeDir = await this.getUserHomeDir();
+    const homeDir = await this.userHome;
     const storageDir = storageDirName || StoragePaths.DEFAULT_STORAGE_DIR_NAME;
     const dirPath = new Path(homeDir).join(...(isWindows ? this.windowsDataFolders : ['']), storageDir);
     return dirPath.toString();
@@ -100,8 +112,8 @@ export class StoragePathServer implements IStoragePathServer {
     if (!homeDirStat) {
       throw new Error('Unable to get user home directory');
     }
-    const homeDirPath = await this.fileSystem.getFsPath(homeDirStat.uri);
-    return homeDirPath!;
+    const userHome = await this.fileSystem.getFsPath(homeDirStat.uri) || '';
+    return userHome;
   }
 
   /**

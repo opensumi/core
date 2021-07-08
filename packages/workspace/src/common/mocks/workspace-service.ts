@@ -68,6 +68,9 @@ export class MockWorkspaceService implements IWorkspaceService {
   _onWorkspaceLocationChanged: Emitter<FileStat | undefined> = new Emitter();
   onWorkspaceLocationChanged = this._onWorkspaceLocationChanged.event;
 
+  _onWorkspaceFileExcludeChangeEmitter: Emitter<void> = new Emitter();
+  onWorkspaceFileExcludeChanged = this._onWorkspaceFileExcludeChangeEmitter.event;
+
   async setMostRecentlyUsedWorkspace(): Promise<void> {
     return;
   }

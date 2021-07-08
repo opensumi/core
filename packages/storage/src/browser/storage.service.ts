@@ -81,9 +81,9 @@ export class WorkspaceStorageServer extends StorageServer {
     } else {
       const uriString = new URI(storagePath).toString();
       if (await this.fileSystem.access(uriString)) {
-        const data = await this.fileSystem.resolveContent(uriString);
+        const data = await this.fileSystem.readFile(uriString);
         try {
-          items = JSON.parse(data.content);
+          items = JSON.parse(data.content.toString());
         } catch (error) {
           this.logger.error(`Storage [${storageName}] content can not be parse. Error: ${error.stack}`);
           items = {};

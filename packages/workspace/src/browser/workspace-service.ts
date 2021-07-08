@@ -130,7 +130,7 @@ export class WorkspaceService implements IWorkspaceService {
           }),
         ).then(() => {
           // 通知目录树更新
-          this.onWorkspaceChangeEmitter.fire(this._roots);
+          this.onWorkspaceFileExcludeChangeEmitter.fire();
         });
       } else if (e.preferenceName === multiRootPrefName) {
         this.updateWorkspace();
@@ -150,7 +150,7 @@ export class WorkspaceService implements IWorkspaceService {
         return stat.uri;
       }),
     );
-    this.onWorkspaceChangeEmitter.fire(this._roots);
+    this.onWorkspaceFileExcludeChangeEmitter.fire();
   }
 
   protected getFlattenExcludes(name: string): string[] {
@@ -202,6 +202,11 @@ export class WorkspaceService implements IWorkspaceService {
   protected readonly onWorkspaceChangeEmitter = new Emitter<FileStat[]>();
   get onWorkspaceChanged(): Event<FileStat[]> {
     return this.onWorkspaceChangeEmitter.event;
+  }
+
+  protected readonly onWorkspaceFileExcludeChangeEmitter = new Emitter<void>();
+  get onWorkspaceFileExcludeChanged(): Event<void> {
+    return this.onWorkspaceFileExcludeChangeEmitter.event;
   }
 
   // 操作中的工作区改变事件
