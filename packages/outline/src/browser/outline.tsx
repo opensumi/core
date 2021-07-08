@@ -59,9 +59,12 @@ export const OutlinePanel = observer(({
   };
 
   React.useEffect(() => {
-    outlineModelService.onDidUpdateTreeModel(async (model?: OutlineTreeModel) => {
+    const disposable = outlineModelService.onDidUpdateTreeModel(async (model?: OutlineTreeModel) => {
       setModel(model);
     });
+    return () => {
+      disposable.dispose();
+    };
   }, []);
 
   React.useEffect(() => {
