@@ -69,8 +69,12 @@ export const ElectronHeaderBar = observer(({ Icon }: React.PropsWithChildren<{ I
       return null;
     }
 
+    const initialProps = {
+      className: 'menubarWrapper',
+    };
+
     return <>
-      <ComponentRenderer Component={componentRegistry.getComponentRegistryInfo('@ali/ide-menu-bar')!.views[0].component!} />
+      <ComponentRenderer Component={componentRegistry.getComponentRegistryInfo('@ali/ide-menu-bar')!.views[0].component!} initialProps={initialProps} />
     </>;
   };
 
