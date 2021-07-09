@@ -85,7 +85,7 @@ export class FileTreeModelService {
   private _treeModel: FileTreeModel;
   private _dndService: DragAndDropService;
 
-  private _whenReady: Promise<void>;
+  private _whenReady: Deferred<void> = new Deferred();
 
   private _decorations: DecorationsManager;
   private _fileTreeHandle: IFileTreeHandle;
@@ -136,10 +136,6 @@ export class FileTreeModelService {
   private treeStateWatcher: TreeStateWatcher;
   private willSelectedNodePath: string | null;
 
-  constructor() {
-    this._whenReady = this.initTreeModel();
-  }
-
   get onDidFocusedFileChange(): Event<URI | void> {
     return this.onDidFocusedFileChangeEmitter.event;
   }
@@ -169,7 +165,7 @@ export class FileTreeModelService {
   }
 
   get whenReady() {
-    return this._whenReady;
+    return this._whenReady.promise;
   }
 
   // 既是选中态，也是焦点态节点
@@ -308,6 +304,7 @@ export class FileTreeModelService {
     // 即找到插入节点位置为 0，导致重复问题
     this.fileTreeService.startWatchFileEvent();
     this.onFileTreeModelChangeEmitter.fire(this._treeModel);
+    this._whenReady.resolve();
   }
 
   initDecorations(root) {

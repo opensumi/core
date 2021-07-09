@@ -201,6 +201,7 @@ describe('FileTree should be work while on single workspace model', () => {
     injector.mock(FileTreeModelService, 'fileTreeHandle', mockTreeHandle);
 
     fileTreeModelService = injector.get(FileTreeModelService);
+    fileTreeModelService.initTreeModel();
     // wait for init fileTree model
     await fileTreeModelService.whenReady;
     // make sure the root has been loaded

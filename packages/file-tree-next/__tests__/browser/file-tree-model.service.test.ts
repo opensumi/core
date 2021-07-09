@@ -164,6 +164,7 @@ describe('FileTreeModelService should be work', () => {
     };
 
     fileTreeModelService = injector.get(FileTreeModelService);
+    fileTreeModelService.initTreeModel();
     await fileTreeModelService.whenReady;
     done();
   });

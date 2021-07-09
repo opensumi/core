@@ -65,6 +65,10 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
 
   private isRendered = false;
 
+  initialize() {
+    this.fileTreeModelService.initTreeModel();
+  }
+
   async onStart() {
     // TODO: workspace、remote模式内容不同
     this.viewsRegistry.registerViewWelcomeContent(ExplorerResourceViewId, {
