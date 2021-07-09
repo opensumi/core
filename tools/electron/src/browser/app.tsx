@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
-import { App, BrowserModule, ClientApp, IClientAppOpts, electronEnv, URI } from '@ali/ide-core-browser';
+import { App, BrowserModule, ClientApp, IClientAppOpts, electronEnv, URI, IEventBus, RenderedEvent } from '@ali/ide-core-browser';
 import { Injector, Domain } from '@ali/common-di';
 import { createSocketConnection } from '@ali/ide-connection';
 
@@ -41,15 +41,15 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
   };
 
   const netConnection = await (window as any).createRPCNetConnection();
-  await app.start(document.getElementById('main')!, 'electron', createSocketConnection(netConnection));
 
-  console.log('app.start done');
-  const loadingDom = document.getElementById('loading');
-  if (loadingDom) {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    loadingDom.classList.add('loading-hidden');
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    loadingDom.remove();
-  }
+  const eventBus: IEventBus = injector.get(IEventBus);
+  eventBus.on(RenderedEvent, () => {
+    const loadingDom = document.getElementById('loading');
+    if (loadingDom) {
+      loadingDom.classList.add('loading-hidden');
+      loadingDom.remove();
+    }
+  });
+  app.start(document.getElementById('main')!, 'electron', createSocketConnection(netConnection));
 
 }
