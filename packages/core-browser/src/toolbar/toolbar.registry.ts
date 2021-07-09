@@ -1,5 +1,5 @@
 
-import { IToolbarRegistry, IToolbarActionGroup, IToolbarAction, IToolbarActionGroupForRender, IToolbarActionPosition, ToolbarActionsChangedEvent, ToolBarActionContribution, ToolbarActionGroupsChangedEvent } from './types';
+import { IToolbarRegistry, IToolbarActionGroup, IToolbarAction, IToolbarActionGroupForRender, IToolbarActionPosition, ToolbarActionsChangedEvent, ToolBarActionContribution, ToolbarActionGroupsChangedEvent, ToolbarRegistryReadyEvent } from './types';
 import { IDisposable, Emitter, WithEventBus, ContributionProvider, Domain } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ClientAppContribution } from '../common';
@@ -43,6 +43,10 @@ export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarReg
   preferenceService: PreferenceService;
 
   private _inited = false;
+
+  isReady() {
+    return this._inited;
+  }
 
   get defaultLocation(): string {
     if (this._preferredDefaultLocation && this.locations.indexOf(this._preferredDefaultLocation) > -1) {
@@ -96,6 +100,7 @@ export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarReg
     this._onLocationAdded.event((locationName) => {
       // TODO:
     });
+    this.eventBus.fire(new ToolbarRegistryReadyEvent());
   }
 
   hasLocation(locationName: string) {

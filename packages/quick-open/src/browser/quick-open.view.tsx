@@ -288,6 +288,9 @@ export const QuickOpenView = observer(() => {
   React.useEffect(() => {
     // smart 效果可以还原 vscode quickopen 上下切换的效果
     listApi.current?.scrollToIndex(widget.selectIndex, 'smart');
+    if (widget.items.length === 0) {
+      return;
+    }
     // 执行 run in background
     const item = widget.items[widget.selectIndex];
     if (!item) {

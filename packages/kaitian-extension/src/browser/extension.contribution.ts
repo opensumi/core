@@ -57,7 +57,7 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
     });
   }
 
-  onStop() {
+  onDisposeSideEffects() {
     // IDE 关闭或者重启时销毁插件进程
     this.extensionService.disposeExtensions();
   }

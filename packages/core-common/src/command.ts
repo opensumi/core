@@ -241,7 +241,7 @@ export interface CommandRegistry extends CoreCommandRegistry {
    * 从 ContributionProvide 中拿到执行命令 Contributuon
    * 执行注册操作
    */
-  onStart(): void;
+  initialize(): void;
 }
 
 // 不带 contribution 的 CommandRegistry
@@ -610,7 +610,7 @@ export class CommandRegistryImpl extends CoreCommandRegistryImpl implements Comm
   /**
    * 执行 CommandContribution 的注册方法
    */
-  onStart(): void {
+  initialize(): void {
     const contributions = this.contributionProvider.getContributions();
     for (const contrib of contributions) {
       contrib.registerCommands(this);

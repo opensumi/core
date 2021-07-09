@@ -119,6 +119,8 @@
   .kt_editor_wrap_container {
     .kt_editor_tabs_content {
       flex-wrap: wrap;
+      width: 100%;
+      background: var(--editorGroupHeader-tabsBackground);
     }
   }
   .last_in_row {
@@ -126,7 +128,6 @@
   }
   .kt_editor_tabs_content {
     display: inline-flex;
-    background: var(--editorGroupHeader-tabsBackground);
     position: relative;
     &.kt_on_drag_over {
       background-color: var(--editorGroup-dropBackground);

@@ -311,11 +311,10 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
 
   // 通过计算平均行高来提高准确性
   // 修复滚动条行为，见: https://github.com/bvaughn/react-window/issues/408
-  const calcEstimatedSize = () => {
-    const keys = sizeMap.current ? Object.keys(sizeMap.current) : [];
-    const estimatedHeight = keys.reduce((p, i) => p + getSize(i), 0);
-    return estimatedHeight / keys.length;
-  };
+  const calcEstimatedSize = React.useMemo(() => {
+    const estimatedHeight = data.reduce((p, i) => p + getSize(i), 0);
+    return estimatedHeight / data.length;
+  }, [data]);
 
   // 为 List 添加下边距
   const InnerElementType = React.forwardRef((props, ref) => {
@@ -369,7 +368,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
             className={cls(className, 'kt-recycle-list')}
             innerElementType={InnerElementType}
             outerElementType={ScrollbarsVirtualList}
-            estimatedItemSize={calcEstimatedSize()}>
+            estimatedItemSize={calcEstimatedSize}>
             {renderDynamicItem}
           </List>;
         } else {

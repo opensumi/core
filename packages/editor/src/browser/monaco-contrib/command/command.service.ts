@@ -1,3 +1,4 @@
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Command, Emitter, CommandRegistry, CommandHandler, HANDLER_NOT_FOUND, ILogger, EDITOR_COMMANDS, CommandService, isElectronRenderer, IReporterService, REPORT_NAME, ServiceNames, memoize, Uri, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
 
@@ -287,7 +288,7 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
    */
   private processInternalCommandArgument(commandId: string, args: any[] = []): any[] {
     if (this.isInternalExecuteCommand(commandId)) {
-      return args.map((arg) => arg instanceof Uri ? Uri.revive(arg) : arg);
+      return args.map((arg) => arg instanceof Uri ? monaco.Uri.revive(arg) : arg);
     } else if (MonacoActionRegistry.CONVERT_MONACO_COMMAND_ARGS.has(commandId)) {
       return MonacoActionRegistry.CONVERT_MONACO_COMMAND_ARGS.get(commandId)!(...args);
     }

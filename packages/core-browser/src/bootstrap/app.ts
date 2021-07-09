@@ -28,6 +28,7 @@ import {
   IEventBus,
   asExtensionCandidate,
   IApplicationService,
+  IDisposable,
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
@@ -84,7 +85,7 @@ if (typeof (window as any).ResizeObserver === 'undefined') {
   (window as any).ResizeObserver = ResizeObserver;
 }
 
-export class ClientApp implements IClientApp {
+export class ClientApp implements IClientApp, IDisposable {
 
   public static DEFAULT_APPLICATION_NAME: string = 'KAITIAN';
   public static DEFAULT_URI_SCHEME: string = 'kaitian';
@@ -310,12 +311,23 @@ export class ClientApp implements IClientApp {
   protected async startContributions(container) {
     await this.measure('Contributions.initialize', () => this.initializeContributions());
 
+    // 初始化命令、快捷键与菜单
+    await this.initializeCoreRegistry();
     // FIXME: 放在 startContribution 里不是很贴切
     await this.measure('RenderApp.render', () => this.renderApp(container));
 
     await this.measure('Contributions.onStart', () => this.onStartContributions());
 
     await this.runContributionsPhase(this.contributions, 'onDidStart');
+  }
+
+  /**
+   * 初始化核心模板
+   */
+  private async initializeCoreRegistry() {
+    this.commandRegistry.initialize();
+    await this.keybindingRegistry.initialize();
+    this.nextMenuRegistry.initialize();
   }
 
   /**
@@ -333,10 +345,6 @@ export class ClientApp implements IClientApp {
    * run contribution#onStart
    */
   private async onStartContributions() {
-    this.commandRegistry.onStart();
-    this.keybindingRegistry.onStart();
-    this.nextMenuRegistry.onStart();
-
     await this.runContributionsPhase(this.contributions, 'onStart');
   }
 
@@ -559,7 +567,7 @@ export class ClientApp implements IClientApp {
     registerLocalStorageProvider('general.language', workspaceDir);
   }
 
-  public dispose() {
+  public async dispose() {
     window.removeEventListener('beforeunload', this._handleBeforeUpload);
     window.removeEventListener('unload', this._handleUnload);
     window.removeEventListener('resize', this._handleResize);
@@ -568,6 +576,16 @@ export class ClientApp implements IClientApp {
     window.removeEventListener('keydown', this._handleKeydown, true);
     if (isOSX) {
       document.body.removeEventListener('wheel', this._handleWheel);
+    }
+
+    for (const contribution of this.contributions) {
+      if (contribution.onDisposeSideEffects) {
+        try {
+          await contribution.onDisposeSideEffects(this);
+        } catch (error) {
+          this.logger.error('Could not dispose contribution', error);
+        }
+      }
     }
   }
 
