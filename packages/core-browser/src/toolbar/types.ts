@@ -42,6 +42,8 @@ export interface IToolbarRegistry {
 
   getAllLocations(): string[];
 
+  isReady(): boolean;
+
 }
 
 export interface IToolbarActionGroupForRender {
@@ -180,6 +182,8 @@ export interface IToolbarAction {
 }
 
 // events
+export class ToolbarRegistryReadyEvent extends BasicEvent<void> {}
+
 export class ToolbarActionsChangedEvent extends BasicEvent<{ position: IToolbarActionPosition }> { }
 
 export class ToolbarActionGroupsChangedEvent extends BasicEvent<{ location: string }> { }

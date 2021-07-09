@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { useInjectable } from '../react-hooks';
-import { IToolbarRegistry, ToolbarActionGroupsChangedEvent, IToolbarAction, ISize, ToolbarActionsChangedEvent, IToolbarLocationProps, IToolbarLocationPreference, IToolbarActionElementProps } from './types';
+import { IToolbarRegistry, ToolbarActionGroupsChangedEvent, IToolbarAction, ISize, ToolbarActionsChangedEvent, IToolbarLocationProps, IToolbarLocationPreference, IToolbarActionElementProps, ToolbarRegistryReadyEvent } from './types';
 import { IEventBus, Disposable, Emitter } from '@ali/ide-core-common';
 import { ConfigContext, ConfigProvider, AppConfig } from '../react-providers';
 import { getIcon } from '../style/icon/icon';
@@ -42,6 +42,8 @@ export const ToolbarLocation = (props: IToolbarLocationProps & React.HTMLAttribu
   };
   setIgnoreActions((preferenceService.get<{[location: string]: string[]}>('toolbar.ignoreActions', {}) || {})[location] || []);
 
+  const shouldListenInitialization = !registry.isReady();
+
   React.useEffect(() => {
     if (container.current) {
       const disposer = new Disposable();
@@ -54,6 +56,11 @@ export const ToolbarLocation = (props: IToolbarLocationProps & React.HTMLAttribu
           renderToolbarLocation(container.current, location, preferences, registry, context, ignoreActions);
         }
       };
+      if (shouldListenInitialization) {
+        disposer.addDispose(eventBus.once(ToolbarRegistryReadyEvent, (e) => {
+          updateNow();
+        }));
+      }
       disposer.addDispose(eventBus.on(ToolbarActionGroupsChangedEvent, (e) => {
         if (e.payload.location === location) {
           debouncedUpdate();
