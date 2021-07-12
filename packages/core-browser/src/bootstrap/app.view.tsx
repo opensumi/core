@@ -47,10 +47,13 @@ export function App(props: AppProps) {
 
 export type IAppRenderer = (app: React.ReactElement) => Promise<void>;
 
-const defaultAppRender = (dom: HTMLElement): IAppRenderer => {
+const defaultAppRender = (dom: HTMLElement, onDidRendered?: () => void): IAppRenderer => {
   return (app) => {
     return new Promise((resolve) => {
       ReactDom.render(app, dom, () => {
+        if (onDidRendered && typeof onDidRendered === 'function') {
+          onDidRendered();
+        }
         resolve();
       });
     });
@@ -71,7 +74,7 @@ export function renderClientApp(app: IClientApp, container: HTMLElement | IAppRe
 
   const render = typeof container === 'function'
     ? container
-    : defaultAppRender(container);
+    : defaultAppRender(container, app.config.didRendered);
 
   return render(IdeApp);
 }

@@ -1,5 +1,8 @@
+// tslint:disable no-console
+console.log('StartRender', Date.now());
+console.time('Render');
 import { Injector } from '@ali/common-di';
-import { ClientApp, IClientAppOpts, IEventBus, RenderedEvent } from '@ali/ide-core-browser';
+import { ClientApp, IClientAppOpts } from '@ali/ide-core-browser';
 import { ToolbarActionBasedLayout } from '@ali/ide-core-browser/lib/components';
 
 export async function renderApp(opts: IClientAppOpts) {
@@ -22,20 +25,21 @@ export async function renderApp(opts: IClientAppOpts) {
   // 定制Layout
   opts.layoutComponent = ToolbarActionBasedLayout;
 
+  opts.didRendered = () => {
+    const loadingDom = document.getElementById('loading');
+    if (loadingDom) {
+      loadingDom.classList.add('loading-hidden');
+      loadingDom.remove();
+      console.log('FinishRender', Date.now());
+      console.timeEnd('Render');
+    }
+  };
+
   const app = new ClientApp(opts);
 
   app.fireOnReload = (forcedReload: boolean) => {
     window.location.reload(forcedReload);
   };
-
-  const eventBus: IEventBus = injector.get(IEventBus);
-  eventBus.on(RenderedEvent, () => {
-    const loadingDom = document.getElementById('loading');
-    if (loadingDom) {
-      loadingDom.classList.add('loading-hidden');
-      loadingDom.remove();
-    }
-  });
 
   app.start(document.getElementById('main')!, 'web');
 }

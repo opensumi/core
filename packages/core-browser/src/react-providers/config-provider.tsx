@@ -147,6 +147,12 @@ export interface AppConfig {
    * 插件进程连接时候一些配置选项
    */
   extensionConnectOption?: ExtensionConnectOption;
+
+  /**
+   * 当 DOM 首次渲染完成后调用
+   * 此时表示 IDE 界面已经完成渲染并可以操作
+   */
+  didRendered?: () => void;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
