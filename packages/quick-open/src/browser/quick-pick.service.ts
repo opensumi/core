@@ -18,7 +18,7 @@ export class QuickPickServiceImpl implements QuickPickService {
   async show<T>(elements: (string | QuickPickItem<T>)[], options?: QuickPickOptions): Promise<T | undefined> {
     return new Promise<T | undefined>((resolve) => {
       const items = this.toItems(elements, resolve);
-      if (options && this.quickTitleBar.shouldShowTitleBar(options.title, options.step)) {
+      if (options && this.quickTitleBar.shouldShowTitleBar(options.title, options.step, options.buttons)) {
         this.quickTitleBar.attachTitleBar(options.title, options.step, options.totalSteps, options.buttons);
       }
       const prefix = options && options.value ? options.value : '';

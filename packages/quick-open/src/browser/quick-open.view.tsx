@@ -25,9 +25,25 @@ const QuickOpenHeaderButton: React.FC<{
 export const QuickOpenHeader = observer(() => {
   const quickTitleBar = useInjectable<QuickTitleBar>(QuickTitleBar);
   const titleText = React.useMemo(() => {
-    return quickTitleBar.step && quickTitleBar.totalSteps
-      ? `${quickTitleBar.title}(${quickTitleBar.step}/${quickTitleBar.totalSteps})`
-      : quickTitleBar.title;
+    const getSteps = () => {
+      if (quickTitleBar.step && quickTitleBar.totalSteps) {
+        return `${quickTitleBar.step}/${quickTitleBar.totalSteps}`;
+      }
+      if (quickTitleBar.step) {
+        return String(quickTitleBar.step);
+      }
+      return '';
+    };
+    if (quickTitleBar.title && quickTitleBar.step) {
+      return `${quickTitleBar.title} (${getSteps()})`;
+    }
+    if (quickTitleBar.title) {
+      return quickTitleBar.title;
+    }
+    if (quickTitleBar.step) {
+      return getSteps();
+    }
+    return '';
   }, [quickTitleBar.title, quickTitleBar.step, quickTitleBar.totalSteps]);
 
   const onSelectButton = React.useCallback((event: React.MouseEvent<HTMLButtonElement, MouseEvent>, button: QuickTitleButton) => {

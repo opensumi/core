@@ -20,7 +20,7 @@ export class QuickInputService implements IQuickInputService {
     let currentText = '';
     const validateInput = options && options.validateInput;
 
-    if (options && this.quickTitleBar.shouldShowTitleBar(options.title, options.step)) {
+    if (options && this.quickTitleBar.shouldShowTitleBar(options.title, options.step, options.buttons)) {
       this.quickTitleBar.attachTitleBar(options.title, options.step, options.totalSteps, options.buttons);
     }
 

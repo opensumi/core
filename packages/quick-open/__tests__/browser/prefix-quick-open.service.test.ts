@@ -5,6 +5,7 @@ import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { QuickOpenService, QuickOpenModel, QuickOpenOptions, QuickOpenItem } from '@ali/ide-core-browser/lib/quick-open';
 import { quickFileOpen } from '@ali/ide-addons/lib/browser/file-search.contribution';
 import { IIconService, IThemeService } from '@ali/ide-theme';
+import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 
 import { QuickOpenHandlerRegistry, PrefixQuickOpenServiceImpl } from '../../src/browser/prefix-quick-open.service';
 import { QuickTitleBar } from '../../src/browser/quick-title-bar';
@@ -92,6 +93,13 @@ describe(__filename, () => {
       {
         token: IIconService,
         useValue: mockService({}),
+      },
+      {
+        token: CorePreferences,
+        useValue: {
+          'workbench.quickOpen.preserveInput': true,
+        },
+        override: true,
       },
       {
         token: QuickOpenService,

@@ -279,6 +279,7 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
   }
 
   private toOpenModel(lookFor: string, items: QuickOpenItem[], actionProvider?: QuickOpenActionProvider): IQuickOpenModel {
+    const originLookFor = lookFor;
 
     if (this.options.skipPrefix) {
       lookFor = lookFor.substr(this.options.skipPrefix);
@@ -292,6 +293,11 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
 
     if (this.options.fuzzySort) {
       entries.sort((a, b) => this.compareEntries(a, b, lookFor));
+    }
+
+    const { getPlaceholderItem } = this.options;
+    if (!entries.length && getPlaceholderItem) {
+      entries.push(getPlaceholderItem(lookFor, originLookFor));
     }
     return {
       items: entries,

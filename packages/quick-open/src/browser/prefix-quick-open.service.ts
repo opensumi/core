@@ -19,6 +19,7 @@ import { localize, QuickOpenActionProvider } from '@ali/ide-core-browser';
 import { DisposableCollection, IDisposable, Disposable, ILogger } from '@ali/ide-core-common';
 import { IQuickOpenHandlerRegistry, QuickOpenHandler, QuickOpenTabConfig, QuickOpenTab, QuickOpenOptions, QuickOpenService, QuickOpenItem, PrefixQuickOpenService } from '@ali/ide-core-browser/lib/quick-open';
 import { Injectable, Autowired } from '@ali/common-di';
+import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { QuickTitleBar } from './quick-title-bar';
 import { QuickOpenTabs } from './components/quick-open-tabs';
 /**
@@ -136,6 +137,9 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
   @Autowired(QuickTitleBar)
   protected readonly quickTitleBar: QuickTitleBar;
 
+  @Autowired(CorePreferences)
+  private readonly corePreferences: CorePreferences;
+
   private activePrefix: string = '';
 
   private currentLookFor: string = '';
@@ -143,21 +147,23 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
   open(prefix: string): void {
     const handler = this.handlers.getHandlerOrDefault(prefix);
     // 恢复同一 tab 上次的输入，连续输入相同的快捷键也可以保留历史输入
-    if (handler && handler === this.currentHandler && this.currentLookFor &&
+    let shouldSelect = false;
+    if (this.corePreferences['workbench.quickOpen.preserveInput'] && handler && handler === this.currentHandler && this.currentLookFor &&
       // 同一 handler，不同 tab 切换需要重置
       this.handlers.getTabByHandler(handler, this.currentLookFor) === this.handlers.getTabByHandler(handler, prefix)
     ) {
       prefix = this.currentLookFor;
+      shouldSelect = true;
     } else {
       this.currentLookFor = '';
     }
-    this.setCurrentHandler(prefix, handler);
+    this.setCurrentHandler(prefix, handler, shouldSelect);
   }
 
   protected toDisposeCurrent = new DisposableCollection();
   protected currentHandler: QuickOpenHandler | undefined;
 
-  protected async setCurrentHandler(prefix: string, handler: QuickOpenHandler | undefined): Promise<void> {
+  protected async setCurrentHandler(prefix: string, handler: QuickOpenHandler | undefined, select?: boolean): Promise<void> {
     if (handler !== this.currentHandler) {
       this.toDisposeCurrent.dispose();
       this.currentHandler = handler;
@@ -182,11 +188,12 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
     if (this.handlers.isDefaultHandler(handler) && prefix.startsWith(handler.prefix)) {
       optionsPrefix = prefix.substr(handler.prefix.length);
     }
-    const skipPrefix = this.handlers.isDefaultHandler(handler) ? 0 : handler.prefix.length;
+    const skipPrefix = this.handlers.isDefaultHandler(handler) ? 0 : (this.handlers.getTabByHandler(handler, prefix)?.prefix ?? handler.prefix).length;
     const handlerOptions = handler.getOptions();
     this.doOpen({
       prefix: optionsPrefix,
       skipPrefix,
+      valueSelection: select ? [skipPrefix, prefix.length] : undefined,
       ...handlerOptions,
       onClose: (canceled: boolean) => {
         if (handlerOptions.onClose) {
@@ -200,9 +207,13 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
       renderTab: () => React.createElement(QuickOpenTabs, {
         tabs: this.handlers.getSortedTabs(),
         activePrefix: this.activePrefix,
-        onChange: (prefix) => void this.open(prefix),
+        onChange: (prefix) => {
+          handler.onToggle?.();
+          this.open(prefix);
+        },
       }),
       toggleTab: () => {
+        handler.onToggle?.();
         const tabs = this.handlers.getSortedTabs();
         let nextTab: QuickOpenTab | null = null;
         if (this.activePrefix) {

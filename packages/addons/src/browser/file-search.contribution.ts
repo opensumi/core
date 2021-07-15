@@ -13,6 +13,8 @@ import {
   Schemas,
   CancellationToken,
   IRange,
+  IReporterService,
+  REPORT_NAME,
 } from '@ali/ide-core-common';
 import {
   localize,
@@ -190,6 +192,9 @@ export class FileSearchQuickCommandHandler {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
+  @Autowired(IReporterService)
+  reporterService: IReporterService;
+
   private cancelIndicator = new CancellationTokenSource();
   readonly default: boolean = true;
   readonly prefix: string = '...';
@@ -211,23 +216,28 @@ export class FileSearchQuickCommandHandler {
         lookFor = lookFor.trim().replace(/\s/g, '');
         this.currentLookFor = lookFor;
         const validLookFor = getValidateInput(lookFor);
+        const timer = this.reporterService.time(REPORT_NAME.QUICK_OPEN_MEASURE);
         const recentlyResultList: QuickOpenItem[] = await this.getRecentlyItems(alreadyCollected, validLookFor, token);
 
         if (lookFor) {
           this.logger.debug('lookFor', lookFor, validLookFor);
           findResults = await this.getFindOutItems(alreadyCollected, validLookFor, token);
         }
-        const concatResults = recentlyResultList.concat(findResults);
-        if (concatResults.length) {
-          acceptor(concatResults, this.fileSearchActionProvider);
-        } else {
-          acceptor([
-            new QuickOpenItem({
-              label: localize(lookFor.indexOf('@') > -1 ? 'fileSymbolResults.notfound' : 'fileResults.notfound'),
-              run: () => false,
-            }),
-          ]);
+
+        if (token.isCancellationRequested) {
+          return;
         }
+
+        const concatResults = recentlyResultList.concat(findResults);
+        acceptor(concatResults, concatResults.length ? this.fileSearchActionProvider : undefined);
+
+        timer.timeEnd(lookFor.indexOf('@') > -1 ? 'file-symbol' : 'file', {
+          lookFor,
+          stat: {
+            recently: recentlyResultList.length,
+            find: findResults.length,
+          },
+        });
       },
     };
   }
@@ -242,6 +252,10 @@ export class FileSearchQuickCommandHandler {
       fuzzyMatchDescription: {
         enableSeparateSubstringMatching: true,
       },
+      getPlaceholderItem: (lookFor: string) => new QuickOpenItem({
+        label: localize(lookFor.indexOf('@') > -1 ? 'fileSymbolResults.notfound' : 'fileResults.notfound'),
+        run: () => false,
+      }),
     };
   }
 
@@ -255,6 +269,11 @@ export class FileSearchQuickCommandHandler {
     }
     this.prevSelected = undefined;
     this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
+    this.cancelIndicator.cancel();
+  }
+
+  onToggle() {
+    this.cancelIndicator.cancel();
   }
 
   // 保存此时的编辑器uri和光标位置

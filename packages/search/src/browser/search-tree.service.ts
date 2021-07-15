@@ -181,6 +181,8 @@ export class SearchTreeService {
 
   private lastSelectTime: number = Number(new Date());
 
+  private lastFocusedNode: ISearchTreeItem | null = null;
+
   private readonly disposables: IDisposable[] = [];
 
   private userhomePath: URI | null;
@@ -316,8 +318,10 @@ export class SearchTreeService {
       return;
     }
 
+    this.lastFocusedNode = file;
     this.nodes = this._nodes.map((node) => {
-      node.selected = node.id === file!.id;
+      node.selected = node.id === file.id;
+      node.focused = node.id === file.id;
       return node;
     });
 
@@ -378,6 +382,17 @@ export class SearchTreeService {
       this.rangeHighlightDecorations.highlightRange(uri, new monaco.Range(result.line, result.matchStart, result.line, result.matchStart + result.matchLength));
     }
 
+  }
+
+  @action.bound
+  onBlur() {
+    if (this.lastFocusedNode) {
+      this.lastFocusedNode = null;
+      this.nodes = this._nodes.map((node) => {
+        node.focused = false;
+        return node;
+      });
+    }
   }
 
   @action.bound

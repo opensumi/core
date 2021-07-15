@@ -103,7 +103,7 @@ export const SearchTree = React.forwardRef((
   const searchTreeService: SearchTreeService = injector.get(SearchTreeService);
 
   const { replaceValue, resultTotal } = searchBrowserService;
-  const { onContextMenu, commandActuator, onSelect, updateNodes } = searchTreeService;
+  const { onContextMenu, commandActuator, onSelect, updateNodes, onBlur } = searchTreeService;
 
   // 请勿在tsx中操作 setNodes，应该使用 searchTreeService.setNodes
   searchTreeService._setNodes = setNodes;
@@ -118,7 +118,7 @@ export const SearchTree = React.forwardRef((
   }, [resultTotal.resultNum]);
 
   return (
-    <div className={styles.tree}>
+    <div className={styles.tree} onBlur={onBlur}>
       <ResultTotalContent total={resultTotal} searchTreeService={searchTreeService} searchBrowserService={searchBrowserService} />
       {nodes && nodes.length > 0 ?
         <DeprecatedRecycleTree

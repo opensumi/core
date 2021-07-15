@@ -27,7 +27,11 @@ export const QuickOpenTabs: React.FC<Props> = ({ tabs, activePrefix, onChange })
               key={prefix}
               className={styles.quickopen_tabs_item}
               onMouseDown={(e) => e.preventDefault()} // 使 input 不失去 focus
-              onClick={() => void onChange(prefix)}
+              onClick={() => {
+                if (prefix !== activePrefix) {
+                  onChange(prefix);
+                }
+              }}
             >
               <div className={clx(styles.quickopen_tabs_item_text, { [styles.selected]: activePrefix === prefix } )}>{title}</div>
               {keybinding && <KeybindingView keybinding={keybinding} className={styles.keybinding} keyClassName={styles.tab_key} />}

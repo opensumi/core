@@ -208,6 +208,7 @@ export const localizationBundle = {
 
     'quickopen.recent-commands': 'recently used',
     'quickopen.other-commands': 'other commands',
+    'quickopen.commands.notfound': 'No commands matchings',
     'mSelection': 'Selection',
     'selection.all': 'Select All',
 

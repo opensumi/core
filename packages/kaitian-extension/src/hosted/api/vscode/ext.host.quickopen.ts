@@ -195,9 +195,6 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
     this._activeItems = [];
     this._placeholder = '';
     this._buttons = [];
-    this.step = 0;
-    this.title = '';
-    this.totalSteps = 0;
     this.value = '';
     this.disposableCollection = new DisposableCollection();
     this.disposableCollection.push(this.onDidHideEmitter = new Emitter());

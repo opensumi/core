@@ -275,6 +275,11 @@ export namespace QuickOpenOptions {
     readonly showItemsWithoutHighlight: boolean;
 
     selectIndex(lookFor: string): number;
+
+    /**
+     * 结果为空显示的 item，应该用此方法实现空占位，不用 accept，accept 结果可能会被 fuzzy 处理导致高亮
+     */
+    getPlaceholderItem?: (lookFor: string, originLookFor: string) => QuickOpenItem;
   }
   export const defaultOptions: Resolved = Object.freeze({
     enabled: true,
@@ -531,6 +536,10 @@ export interface QuickOpenHandler {
   getOptions(): Omit<QuickOpenOptions, keyof QuickOpenTabOptions>;
   /** quick-open 内部切换不会执行，最终关闭才会执行 */
   onClose?: (canceled: boolean) => void;
+  /**
+   * 切换时执行
+   */
+  onToggle?: () => void;
 }
 
 export interface QuickOpenTabOptions {

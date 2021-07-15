@@ -109,8 +109,8 @@ export const localizationBundle = {
     'editor.workspaceSymbol.description': '跳转工作区符号',
     'editor.workspaceSymbol.search': '请输入要搜索的符号',
     'editor.workspaceSymbolClass.search': '请输入要搜索的类',
-    'editor.workspaceSymbol.notfound': '没有匹配的工作区符号',
-    'editor.workspaceSymbolClass.notfound': '没有匹配的工作区类',
+    'editor.workspaceSymbol.notfound': '没有匹配的符号',
+    'editor.workspaceSymbolClass.notfound': '没有匹配的类',
 
     'edit.cut': '剪切',
     'edit.copy': '复制',
@@ -196,6 +196,7 @@ export const localizationBundle = {
 
     'quickopen.recent-commands': '最近使用',
     'quickopen.other-commands': '其他命令',
+    'quickopen.commands.notfound': '没有匹配的指令',
     'mSelection': '选择',
     'selection.all': '选择全部',
 

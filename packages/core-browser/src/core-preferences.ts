@@ -115,6 +115,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       enum: ['show', 'hide', 'askMe'],
       description: '%preference.workbench.refactoringChanges.showPreviewStrategy%',
     },
+    'workbench.quickOpen.preserveInput': {
+      type: 'boolean',
+      default: true,
+      description: '%workbench.quickOpen.preserveInput%',
+    },
 
     'explorer.confirmMove': {
       type: 'boolean',
@@ -305,6 +310,7 @@ export interface CoreConfiguration {
   'debug.console.filter.mode': 'filter' | 'matcher';
   'workbench.commandPalette.history': number;
   'workbench.refactoringChanges.showPreviewStrategy': string;
+  'workbench.quickOpen.preserveInput': boolean;
   'explorer.confirmDelete': boolean;
   'explorer.fileTree.baseIndent': number;
   'explorer.fileTree.indent': number;

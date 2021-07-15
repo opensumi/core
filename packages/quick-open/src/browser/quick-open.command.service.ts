@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { localize, IContextKeyService, EDITOR_COMMANDS } from '@ali/ide-core-browser';
-import { CommandRegistry, Command, CommandService, Deferred } from '@ali/ide-core-common';
+import { CommandRegistry, Command, CommandService, Deferred, IReporterService, REPORT_NAME } from '@ali/ide-core-common';
 import { QuickOpenModel, QuickOpenItem, QuickOpenItemOptions, Mode } from '@ali/ide-core-browser/lib/quick-open';
 import { KeybindingRegistry, Keybinding } from '@ali/ide-core-browser';
 import { QuickOpenHandler } from './prefix-quick-open.service';
@@ -34,6 +34,9 @@ export class QuickCommandHandler implements QuickOpenHandler {
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;
 
+  @Autowired(IReporterService)
+  reporterService: IReporterService;
+
   private initDeferred = new Deferred<void>();
 
   private items: QuickOpenItem[];
@@ -62,6 +65,9 @@ export class QuickCommandHandler implements QuickOpenHandler {
     return {
       onType: (lookFor: string, acceptor: (items: QuickOpenItem[]) => void) => {
         acceptor(this.items);
+        this.reporterService.point(REPORT_NAME.QUICK_OPEN_MEASURE, 'command', {
+          lookFor,
+        });
       },
     };
   }
@@ -78,6 +84,10 @@ export class QuickCommandHandler implements QuickOpenHandler {
       // 关闭模糊排序，否则会按照 label 长度排序
       // 按照 CommandRegistry 默认排序
       fuzzySort: false,
+      getPlaceholderItem: () => new QuickOpenItem({
+        label: localize('quickopen.commands.notfound'),
+        run: () => false,
+      }),
     };
   }
 

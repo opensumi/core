@@ -3,10 +3,9 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { QuickOpenHandler, QuickOpenModel, CancellationTokenSource, QuickOpenItem, CancellationToken, URI, QuickOpenMode, getSymbolIcon, getIcon } from '@ali/ide-core-browser';
 import { WorkspaceSymbolProvider, ILanguageService, WorkspaceSymbolParams, WorkbenchEditorService, EditorGroupSplitAction } from '../../common';
 import type { SymbolInformation, Range } from 'vscode-languageserver-types';
-import { ILogger, localize } from '@ali/ide-core-common';
+import { ILogger, localize, IReporterService, REPORT_NAME } from '@ali/ide-core-common';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { QuickOpenBaseAction, QuickOpenActionProvider } from '@ali/ide-quick-open';
-import * as flattenDeep from 'lodash.flattendeep';
 
 @Injectable()
 class WorkspaceSymbolOpenSideAction extends QuickOpenBaseAction {
@@ -56,6 +55,9 @@ export class WorkspaceSymbolQuickOpenHandler implements QuickOpenHandler {
   @Autowired()
   private readonly workspaceSymbolActionProvider: WorkspaceSymbolActionProvider;
 
+  @Autowired(IReporterService)
+  reporterService: IReporterService;
+
   prefix = '#';
 
   get description() {
@@ -93,8 +95,6 @@ export class WorkspaceSymbolQuickOpenHandler implements QuickOpenHandler {
         const isSearchClass = lookFor[0] === '#';
 
         const items: QuickOpenItem[] = [];
-        // 先传一个空数组占位
-        acceptor(items);
         this.cancellationSource.cancel();
         const newCancellationSource = new CancellationTokenSource();
         this.cancellationSource = newCancellationSource;
@@ -102,6 +102,7 @@ export class WorkspaceSymbolQuickOpenHandler implements QuickOpenHandler {
         const param: WorkspaceSymbolParams = {
           query: isSearchClass ? lookFor.slice(1) : lookFor,
         };
+        const timer = this.reporterService.time(REPORT_NAME.QUICK_OPEN_MEASURE);
         Promise.all(this.languageService.workspaceSymbolProviders.map(async (provider) => {
           let symbols = await provider.provideWorkspaceSymbols(param, newCancellationSource.token);
           if (isSearchClass) {
@@ -116,16 +117,21 @@ export class WorkspaceSymbolQuickOpenHandler implements QuickOpenHandler {
             acceptor(items, this.workspaceSymbolActionProvider);
           }
           return symbols;
-        })).then((symbolsArr) => {
-          const symbols = flattenDeep(symbolsArr);
-          if (symbols.length === 0) {
-            acceptor([new QuickOpenItem({
-              label: localize(isSearchClass ? 'editor.workspaceSymbolClass.notfound' : 'editor.workspaceSymbol.notfound'),
-              run: () => false,
-            })]);
-          }
-        }).catch((e) => {
+        })).catch((e) => {
           this.logger.log(e);
+        }).finally(() => {
+          if (!newCancellationSource.token.isCancellationRequested) {
+            // 无数据清空历史数据
+            if (!items.length) {
+              acceptor([]);
+            }
+            timer.timeEnd(isSearchClass ? 'class' : 'symbol', {
+              lookFor,
+              stat: {
+                symbol: items.length,
+              },
+            });
+          }
         });
       },
     };
@@ -139,9 +145,20 @@ export class WorkspaceSymbolQuickOpenHandler implements QuickOpenHandler {
       showItemsWithoutHighlight: true,
       // 不搜索文件路径
       fuzzyMatchDescription: false,
+      getPlaceholderItem: (lookFor: string, originLookFor: string) => new QuickOpenItem({
+        label: localize(originLookFor.startsWith('##') ? 'editor.workspaceSymbolClass.notfound' : 'editor.workspaceSymbol.notfound'),
+        run: () => false,
+      }),
     };
   }
 
+  onClose() {
+    this.cancellationSource.cancel();
+  }
+
+  onToggle() {
+    this.cancellationSource.cancel();
+  }
 }
 
 export class SymbolInformationQuickOpenItem extends QuickOpenItem {
