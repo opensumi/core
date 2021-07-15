@@ -16,9 +16,9 @@
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/core/src/browser/keyboard/keyboard-layout-service.ts
 
 import { Injectable, Autowired } from '@ali/common-di';
-import { IWindowsKeyMapping } from '@ali/ide-core-common/lib/keyboard/keymap.interface';
 import { isWindows, Emitter, Event } from '@ali/ide-core-common';
-import { NativeKeyboardLayout, KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
+import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeymapInfo, IWindowsKeyMapping } from '@ali/ide-core-common/lib/keyboard';
+import { KeyValidator } from './keyboard-layout-provider';
 import { KeyCode, Key } from './keys';
 
 export interface KeyboardLayout {
@@ -42,9 +42,12 @@ export class KeyboardLayoutService {
   @Autowired(KeyboardLayoutChangeNotifierService)
   protected readonly layoutChangeNotifier: KeyboardLayoutChangeNotifierService;
 
+  @Autowired(KeyValidator)
+  protected readonly keyValidator: KeyValidator;
+
   private currentLayout?: KeyboardLayout;
 
-  protected updateLayout(newLayout: NativeKeyboardLayout): KeyboardLayout {
+  protected updateLayout(newLayout: KeymapInfo): KeyboardLayout {
     const transformed = this.transformNativeLayout(newLayout);
     this.currentLayout = transformed;
     this.keyboardLayoutChanged.fire(transformed);
@@ -60,7 +63,9 @@ export class KeyboardLayoutService {
   public async initialize(): Promise<void> {
     this.layoutChangeNotifier.onDidChangeNativeLayout((newLayout) => this.updateLayout(newLayout));
     const initialLayout = await this.layoutProvider.getNativeLayout();
-    this.updateLayout(initialLayout);
+    if (initialLayout) {
+      this.updateLayout(initialLayout);
+    }
   }
 
   /**
@@ -87,7 +92,7 @@ export class KeyboardLayoutService {
 
   /**
    * 根据键盘键值返回对应字符串，主要用于UI展示
-   * 如 shift展示为⇧
+   * 如 shift 展示为 ⇧
    */
   public getKeyboardCharacter(key: Key): string {
     const layout = this.currentLayout;
@@ -101,15 +106,11 @@ export class KeyboardLayoutService {
   }
 
   /**
-   * 当KeybindingRegistry处理KeyboardEvent时调用。
-   * 如果键盘布局有验证函数用于支持KeyCode验证，运行校验程序。
+   * 当 KeybindingRegistry 处理 KeyboardEvent 时调用。
+   * 用于对制定了 autodetect 模式下的键盘布局逻辑进行布局信息判断
    */
   public validateKeyCode(keyCode: KeyCode): void {
-    // tslint:disable-next-line:no-any
-    const provider = this.layoutProvider as any;
-    if (typeof provider.validateKeyCode === 'function') {
-      provider.validateKeyCode(keyCode);
-    }
+    this.keyValidator.validateKeyCode(keyCode);
   }
 
   protected transformKeyCode(inCode: KeyCode, mappedCode: KeyCode, keyNeedsShift: boolean): KeyCode | undefined {
@@ -128,7 +129,7 @@ export class KeyboardLayoutService {
     });
   }
 
-  protected transformNativeLayout(nativeLayout: NativeKeyboardLayout): KeyboardLayout {
+  protected transformNativeLayout(nativeLayout: KeymapInfo): KeyboardLayout {
     const key2KeyCode: KeyCode[] = new Array(2 * (Key.MAX_KEY_CODE + 1));
     const code2Character: { [code: string]: string } = {};
     const mapping = nativeLayout.mapping;
@@ -136,7 +137,7 @@ export class KeyboardLayoutService {
       if (mapping.hasOwnProperty(code)) {
         const keyMapping = mapping[code];
         const mappedKey = Key.getKey(code);
-        if (this.isValidKey(mappedKey)) {
+        if (mappedKey && this.shouldIncludeKey(code)) {
           if (isWindows) {
             this.addWindowsKeyMapping(key2KeyCode, mappedKey, (keyMapping as IWindowsKeyMapping).vkey, keyMapping.value);
           } else {
@@ -162,13 +163,16 @@ export class KeyboardLayoutService {
     return { key2KeyCode, code2Character };
   }
 
-  protected isValidKey(key?: Key): key is Key {
-    return key !== undefined
-      && key !== Key.ADD
-      && key !== Key.SUBTRACT
-      && key !== Key.MULTIPLY
-      && key !== Key.DIVIDE
-      && key !== Key.DECIMAL;
+  private shouldIncludeKey(code: string): boolean {
+    /**
+     * FIXME: 这里没有很好的考虑到 `NumLock` 影响下的交互
+     * 如果 `NumLock` 为关闭状态，部分用户在 Windows 下的一些交互可能存在疑惑
+     * 如，`Numpad3` 本身在 `NumLock` 关闭状态下指向 `PageDown`
+     * 当在此处的逻辑处理下，`Numpad3` 只会被处理为 `Key.DIGIT3`
+     * 该行为在 Mac 下无影响，因为 Mac 会把所有小键盘按键均作为输出值使用
+     * 参考：https://github.com/microsoft/vscode/blob/436725c584e4422e6764a3c19970f7d1d7f6971c/src/vs/workbench/services/keybinding/browser/keybindingService.ts#L622
+     */
+    return !code.startsWith('Numpad');
   }
 
   private addKeyMapping(key2KeyCode: KeyCode[], mappedKey: Key, value: string, shift: boolean, alt: boolean): void {
@@ -206,7 +210,6 @@ export class KeyboardLayoutService {
       return key.keyCode;
     }
   }
-
 }
 
 /**
@@ -428,9 +431,9 @@ const VKEY_TO_KEY: { [value: string]: Key } = {
   VK_NUMPAD7: Key.DIGIT7,
   VK_NUMPAD8: Key.DIGIT8,
   VK_NUMPAD9: Key.DIGIT9,
-  VK_MULTIPLY: Key.MULTIPLY,
-  VK_ADD: Key.ADD,
-  VK_SUBTRACT: Key.SUBTRACT,
-  VK_DECIMAL: Key.DECIMAL,
-  VK_DIVIDE: Key.DIVIDE,
+  VK_MULTIPLY: Key.NUMPAD_MULTIPLY,
+  VK_ADD: Key.NUMPAD_ADD,
+  VK_SUBTRACT: Key.NUMPAD_SUBTRACT,
+  VK_DECIMAL: Key.NUMPAD_DECIMAL,
+  VK_DIVIDE: Key.NUMPAD_DIVIDE,
 };

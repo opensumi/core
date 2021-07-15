@@ -781,5 +781,10 @@ export const localizationBundle = {
     'refactoring-changes.ask.N.copy': '{0} 个插件希望根据当前文件复制行为关联一些重构变更',
     'refactoring-changes.ask.N.move': '{0} 个插件希望根据当前文件移动行为关联一些重构变更',
     'refactoring-changes.ask.N.delete': '{0} 个插件希望根据当前文件删除行为关联一些重构变更',
+
+    'keyboard.chooseKeyboardLayout': '选择布局文件配置',
+    'keyboard.autoDetect.label': '自动检测',
+    'keyboard.autoDetect.description': '（当前：\'{0} \'）',
+    'keyboard.autoDetect.detail': '尝试通过浏览器及按键信息进行布局自动检测',
   },
 };

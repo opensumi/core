@@ -1,6 +1,6 @@
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { ContextKeyExprType, IContextKeyService, KeybindingContribution, KeybindingRegistry, KeybindingRegistryImpl, Keybinding, KeybindingScope, ILogger, BrowserKeyboardLayoutImpl, KeybindingService, SpecialCases, isOSX } from '@ali/ide-core-browser';
+import { ContextKeyExprType, IContextKeyService, KeybindingContribution, KeybindingRegistry, KeybindingRegistryImpl, Keybinding, KeybindingScope, ILogger, BrowserKeyboardLayoutImpl, KeybindingService, SpecialCases } from '@ali/ide-core-browser';
 import { GlobalBrowserStorageService, IStatusBarService } from '../../src/services';
 import { KeybindingsResultCollection } from '../../src';
 import { KeyboardLayoutChangeNotifierService, KeyboardNativeLayoutService } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
@@ -451,34 +451,32 @@ describe('KeybindingService', () => {
       const event = new window.Event('keydown', {bubbles: true});
       event.initEvent('keydown', true, true);
       (event as any).keyCode = 27;
-      (event as any).easyString = 'Escape';
       (event as any).code = 'Escape';
       (event as any).character = 'Escape';
-      (event as any).key = {
-        code: 'Escape',
-        easyString: 'Escape',
-        keyCode: 27,
-      };
       (event as any).charCode = 27;
       let text = keybindingService.convert(event as any);
-      keybindingService.clearConvert();
       expect(text).toBe('Escape');
+      keybindingService.clearConvert();
       // ctrl + s
       const ctrlSEvent = new window.Event('keydown', {bubbles: true});
       ctrlSEvent.initEvent('keydown', true, true);
       (ctrlSEvent as any).keyCode = 83;
-      (ctrlSEvent as any).easyString = 's';
       (ctrlSEvent as any).code = 'KeyS';
-      (ctrlSEvent as any).key = {
-        code: 's',
-        easyString: 's',
-        keyCode: 83,
-      };
       (ctrlSEvent as any).charCode = 83;
       (ctrlSEvent as any).character = 's';
-      (ctrlSEvent as any).meta = true;
+      (ctrlSEvent as any).ctrlKey = true;
       text = keybindingService.convert(ctrlSEvent as any);
-      expect(text).toBe(`${ isOSX ? SpecialCases.MACMETA : SpecialCases.META.replace(/^\S/, function(s) {return s.toUpperCase(); })}+S`);
+      expect(text).toBe(`${SpecialCases.CTRL.replace(/^\S/, function(s) {return s.toUpperCase(); })}+S`);
+      keybindingService.clearConvert();
+      // Numpad_add
+      const numpadAddEvent = new window.Event('keydown', {bubbles: true});
+      numpadAddEvent.initEvent('keydown', true, true);
+      (numpadAddEvent as any).keyCode = 107;
+      (numpadAddEvent as any).code = 'NumpadAdd';
+      (numpadAddEvent as any).key = '+';
+      (numpadAddEvent as any).charCode = 0;
+      text = keybindingService.convert(numpadAddEvent as any);
+      expect(text).toBe('Numpad_add');
       keybindingService.clearConvert();
     });
 
@@ -504,7 +502,7 @@ describe('KeybindingService', () => {
       };
       (ctrlSEvent as any).charCode = 83;
       (ctrlSEvent as any).character = 's';
-      (ctrlSEvent as any).ctrl = true;
+      (ctrlSEvent as any).ctrlKey = true;
       keybindingService.run(ctrlSEvent as any);
       expect(testFn).toBeCalled();
       handle.dispose();

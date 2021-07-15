@@ -1,5 +1,4 @@
 import { enableJSDOM } from '@ali/ide-core-browser/lib/mocks/jsdom';
-const disableJSDOM = enableJSDOM();
 import { URI, Disposable, DisposableCollection, IFileServiceClient, IContextKeyService } from '@ali/ide-core-browser';
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
 import { DebugModel, DebugModelManager } from '@ali/ide-debug/lib/browser/editor';
@@ -13,8 +12,6 @@ import { IMessageService } from '@ali/ide-overlay';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { ITerminalApiService } from '@ali/ide-terminal-next';
-
-disableJSDOM();
 
 process.on('unhandledRejection', (reason, promise) => {
   // console.error(reason);

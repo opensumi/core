@@ -368,6 +368,13 @@ export namespace KeyCode {
           return Key.INTL_BACKSLASH;
         }
       }
+      // https://code.alipay.com/kaitian/ide-framework/issues/3
+      if (code.startsWith('Numpad') && event.key) {
+        const k = Key.getKey(event.key);
+        if (k) {
+          return k;
+        }
+      }
       const key = Key.getKey(code);
       if (key) {
         return key;
@@ -497,6 +504,7 @@ export namespace SpecialCases {
   export const ARROW_DOWN = '↓';
   export const BACKSPACE = '⌫';
   export const ENTER = '⏎';
+  export const NUMPAD = 'numpad';
 }
 
 export namespace Key {
@@ -562,6 +570,17 @@ export namespace Key {
   export const DIGIT8: Key = { code: 'Digit8', keyCode: 56, easyString: '8' };
   export const DIGIT9: Key = { code: 'Digit9', keyCode: 57, easyString: '9' };
 
+  export const NUMPAD0: Key = { code: 'Numpad0', keyCode: 48, easyString: 'numpad0' };
+  export const NUMPAD1: Key = { code: 'Numpad1', keyCode: 49, easyString: 'numpad1' };
+  export const NUMPAD2: Key = { code: 'Numpad2', keyCode: 50, easyString: 'numpad2' };
+  export const NUMPAD3: Key = { code: 'Numpad3', keyCode: 51, easyString: 'numpad3' };
+  export const NUMPAD4: Key = { code: 'Numpad4', keyCode: 52, easyString: 'numpad4' };
+  export const NUMPAD5: Key = { code: 'Numpad5', keyCode: 53, easyString: 'numpad5' };
+  export const NUMPAD6: Key = { code: 'Numpad6', keyCode: 54, easyString: 'numpad6' };
+  export const NUMPAD7: Key = { code: 'Numpad7', keyCode: 55, easyString: 'numpad7' };
+  export const NUMPAD8: Key = { code: 'Numpad8', keyCode: 56, easyString: 'numpad8' };
+  export const NUMPAD9: Key = { code: 'Numpad9', keyCode: 57, easyString: 'numpad9' };
+
   export const KEY_A: Key = { code: 'KeyA', keyCode: 65, easyString: 'a' };
   export const KEY_B: Key = { code: 'KeyB', keyCode: 66, easyString: 'b' };
   export const KEY_C: Key = { code: 'KeyC', keyCode: 67, easyString: 'c' };
@@ -589,11 +608,11 @@ export namespace Key {
   export const KEY_Y: Key = { code: 'KeyY', keyCode: 89, easyString: 'y' };
   export const KEY_Z: Key = { code: 'KeyZ', keyCode: 90, easyString: 'z' };
 
-  export const MULTIPLY: Key = { code: 'NumpadMultiply', keyCode: 106, easyString: 'multiply' };
-  export const ADD: Key = { code: 'NumpadAdd', keyCode: 107, easyString: 'add' };
-  export const DECIMAL: Key = { code: 'NumpadDecimal', keyCode: 108, easyString: 'decimal' };
-  export const SUBTRACT: Key = { code: 'NumpadSubtract', keyCode: 109, easyString: 'subtract' };
-  export const DIVIDE: Key = { code: 'NumpadDivide', keyCode: 111, easyString: 'divide' };
+  export const NUMPAD_MULTIPLY: Key = { code: 'NumpadMultiply', keyCode: 106, easyString: 'numpad_multiply' };
+  export const NUMPAD_ADD: Key = { code: 'NumpadAdd', keyCode: 107, easyString: 'numpad_add' };
+  export const NUMPAD_DECIMAL: Key = { code: 'NumpadDecimal', keyCode: 108, easyString: 'numpad_decimal' };
+  export const NUMPAD_SUBTRACT: Key = { code: 'NumpadSubtract', keyCode: 109, easyString: 'numpad_subtract' };
+  export const NUMPAD_DIVIDE: Key = { code: 'NumpadDivide', keyCode: 111, easyString: 'numpad_divide' };
 
   export const F1: Key = { code: 'F1', keyCode: 112, easyString: 'f1' };
   export const F2: Key = { code: 'F2', keyCode: 113, easyString: 'f2' };
@@ -677,7 +696,7 @@ export namespace Key {
   CODE_TO_KEY.MetaRight = Key.OS_RIGHT; // Chrome, Safari
   KEY_CODE_TO_KEY[93] = Key.OS_RIGHT;      // Chrome, Safari, Edge
   KEY_CODE_TO_KEY[225] = Key.ALT_RIGHT;    // Linux
-  KEY_CODE_TO_KEY[110] = Key.DECIMAL;      // Mac, Windows
+  KEY_CODE_TO_KEY[110] = Key.NUMPAD_DECIMAL;      // Mac, Windows
   KEY_CODE_TO_KEY[59] = Key.SEMICOLON;     // Firefox
   KEY_CODE_TO_KEY[61] = Key.EQUAL;         // Firefox
   KEY_CODE_TO_KEY[173] = Key.MINUS;        // Firefox

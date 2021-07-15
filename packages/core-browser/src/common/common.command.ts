@@ -710,3 +710,13 @@ export namespace WORKSPACE_COMMANDS {
     category: CATEGORY,
   };
 }
+
+export namespace KEYBOARD_COMMANDS {
+  const CATEGORY = 'keyboard';
+
+  export const CHOOSE_KEYBOARD_LAYOUT: Command = {
+    id: 'keyboard.chooseKeyboardLayout',
+    label: '%keyboard.chooseKeyboardLayout%',
+    category: CATEGORY,
+  };
+}

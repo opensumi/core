@@ -30,6 +30,7 @@ global.window = jsdom.window;
 global.DOMParser = jsdom.window.DOMParser;
 global.HTMLDivElement = jsdom.window.HTMLDivElement;
 global.MutationObserver = jsdom.window.MutationObserver;
+global.KeyboardEvent = jsdom.window.KeyboardEvent;
 global.requestAnimationFrame = fn => setTimeout(fn, 16);
 jsdom.window.requestAnimationFrame = fn => setTimeout(fn, 16);
 jsdom.window.cancelAnimationFrame = () => { };

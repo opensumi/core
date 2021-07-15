@@ -1,8 +1,14 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { IKeyboardLayoutInfo } from '@ali/ide-core-common/lib/keyboard/keymap.interface';
-import { isOSX, Emitter, Deferred, ILogger } from '@ali/ide-core-common';
-import { NativeKeyboardLayout, KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeyValidator, KeyValidationInput } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
+import { isOSX, Emitter, Deferred, ILogger, isWindows } from '@ali/ide-core-common';
+import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeyValidationInput, IKeymapInfo, ILinuxKeyboardLayoutInfo, IMacKeyboardLayoutInfo, KeymapInfo, getKeyboardLayoutId } from '@ali/ide-core-common/lib/keyboard';
 import { GlobalBrowserStorageService } from '../services';
+import { KeyCode } from './keys';
+
+export const KeyValidator = Symbol('KeyValidator');
+
+export interface KeyValidator {
+  validateKeyCode(keyCode: KeyCode): void;
+}
 
 export type KeyboardLayoutSource = 'navigator.keyboard' | 'user-choice' | 'pressed-keys';
 
@@ -16,18 +22,18 @@ export class BrowserKeyboardLayoutImpl implements KeyboardNativeLayoutService, K
   private readonly browserStorageService: GlobalBrowserStorageService;
 
   protected readonly initialized = new Deferred();
-  protected readonly nativeLayoutChanged = new Emitter<NativeKeyboardLayout>();
+  protected readonly nativeLayoutChanged = new Emitter<KeymapInfo>();
 
   get onDidChangeNativeLayout() {
     return this.nativeLayoutChanged.event;
   }
 
-  protected readonly tester = new KeyboardTester(loadAllLayouts());
+  protected readonly tester = new KeyboardTester();
   protected source: KeyboardLayoutSource = 'pressed-keys';
-  protected currentLayout: KeyboardLayoutData = DEFAULT_LAYOUT_DATA;
+  protected currentLayout: KeymapInfo | null;
 
   get allLayoutData() {
-    return this.tester.candidates.slice();
+    return this.tester.keymapInfos.slice();
   }
 
   get currentLayoutData() {
@@ -42,46 +48,75 @@ export class BrowserKeyboardLayoutImpl implements KeyboardNativeLayoutService, K
     this.initialize();
   }
 
+  get whenReady() {
+    return this.initialized.promise;
+  }
+
   protected async initialize(): Promise<void> {
     this.loadState();
     const keyboard = (navigator as NavigatorExtension).keyboard;
     if (keyboard && keyboard.addEventListener) {
       keyboard.addEventListener('layoutchange', async () => {
         const newLayout = await this.getNativeLayout();
-        this.nativeLayoutChanged.fire(newLayout);
+        if (newLayout) {
+          this.nativeLayoutChanged.fire(newLayout);
+        }
       });
     }
     this.initialized.resolve();
   }
 
-  async getNativeLayout(): Promise<NativeKeyboardLayout> {
-    await this.initialized.promise;
-    if (this.source === 'user-choice') {
-      return this.currentLayout.raw;
+  /**
+   * 获取当前合适的用户键盘布局
+   * 用户选择或是自动检测
+   */
+  async getNativeLayout(): Promise<KeymapInfo | void> {
+    await this.whenReady;
+    if (this.source === 'user-choice' && this.currentLayout) {
+      return this.currentLayout;
     }
     const [layout, source] = await this.autodetect();
-    this.setCurrent(layout, source);
-    return layout.raw;
+    if (layout) {
+      this.setCurrent(layout, source);
+      return layout;
+    }
   }
 
   /**
-   * Set user-chosen keyboard layout data.
+   * 设置 user-choice 的键盘数据
    */
-  async setLayoutData(layout: KeyboardLayoutData | 'autodetect'): Promise<KeyboardLayoutData> {
+  async setLayoutData(layout: KeymapInfo | 'autodetect'): Promise<KeymapInfo | null> {
     if (layout === 'autodetect') {
       if (this.source === 'user-choice') {
         const [newLayout, source] = await this.autodetect();
-        this.setCurrent(newLayout, source);
-        this.nativeLayoutChanged.fire(newLayout.raw);
-        return newLayout;
+        if (newLayout) {
+          this.setCurrent(newLayout, source);
+          this.nativeLayoutChanged.fire(newLayout);
+          return newLayout;
+        }
       }
       return this.currentLayout;
     } else {
       if (this.source !== 'user-choice' || layout !== this.currentLayout) {
         this.setCurrent(layout, 'user-choice');
-        this.nativeLayoutChanged.fire(layout.raw);
+        this.nativeLayoutChanged.fire(layout);
       }
       return layout;
+    }
+  }
+
+  /**
+   * 将 KeyCode 校验转化为 KeyValidationInput 校验
+   */
+  validateKeyCode(keyCode: KeyCode): void {
+    if (keyCode.key && keyCode.character) {
+      this.validateKey({
+        code: keyCode.key.code,
+        character: keyCode.character,
+        shiftKey: keyCode.shift,
+        ctrlKey: keyCode.ctrl,
+        altKey: keyCode.alt,
+      });
     }
   }
 
@@ -90,7 +125,7 @@ export class BrowserKeyboardLayoutImpl implements KeyboardNativeLayoutService, K
    * 匹配度越高得分越高可参考（KeyboardTester实现）。
    * 如果得分最高的键盘布局发生改吧，触发键盘布局变化事件。
    */
-  validateKey(keyCode: KeyValidationInput): void {
+  private validateKey(keyCode: KeyValidationInput): void {
     if (this.source !== 'pressed-keys') {
       return;
     }
@@ -99,24 +134,23 @@ export class BrowserKeyboardLayoutImpl implements KeyboardNativeLayoutService, K
       return;
     }
     const layout = this.selectLayout();
-    if (layout !== this.currentLayout && layout !== DEFAULT_LAYOUT_DATA) {
+    if (layout && layout !== this.currentLayout) {
       this.setCurrent(layout, 'pressed-keys');
-      this.nativeLayoutChanged.fire(layout.raw);
+      this.nativeLayoutChanged.fire(layout);
     }
   }
 
-  protected setCurrent(layout: KeyboardLayoutData, source: KeyboardLayoutSource): void {
+  protected setCurrent(layout: KeymapInfo, source: KeyboardLayoutSource): void {
     this.currentLayout = layout;
     this.source = source;
     this.saveState();
     if (this.tester.inputCount && (source === 'pressed-keys' || source === 'navigator.keyboard')) {
       const from = source === 'pressed-keys' ? 'pressed keys' : 'browser API';
-      const hardware = layout.hardware === 'mac' ? 'Mac' : 'PC';
-      this.logger.debug(`Detected keyboard layout from ${from}: ${layout.name} (${hardware})`);
+      this.logger.debug(`Detected keyboard layout from ${from}: ${JSON.stringify(layout.layout)}`);
     }
   }
 
-  protected async autodetect(): Promise<[KeyboardLayoutData, KeyboardLayoutSource]> {
+  protected async autodetect(): Promise<[KeymapInfo | null, KeyboardLayoutSource]> {
     const keyboard = (navigator as NavigatorExtension).keyboard;
     if (keyboard && keyboard.getLayoutMap) {
       try {
@@ -141,94 +175,69 @@ export class BrowserKeyboardLayoutImpl implements KeyboardNativeLayoutService, K
   }
 
   /**
-   * Select a layout based on the current tester state and the operating system
-   * and language detected from the browser.
+   * 根据当前检测到的语言 navigator.language
+   * 及浏览器中获取到的操作系统信息选择合适的键盘布局
    */
-  protected selectLayout(): KeyboardLayoutData {
-    const candidates = this.tester.candidates;
+  protected selectLayout(): KeymapInfo | null {
+    const keymapInfos = this.tester.keymapInfos;
     const scores = this.tester.scores;
     const topScore = this.tester.topScore;
     const language = navigator.language;
-    let matchingOScount = 0;
     let topScoringCount = 0;
-    for (let i = 0; i < candidates.length; i++) {
+    for (let i = 0; i < keymapInfos.length; i++) {
       if (scores[i] === topScore) {
-        const candidate = candidates[i];
-        if (osMatches(candidate.hardware)) {
-          if (language && language.startsWith(candidate.language)) {
+        const candidate = keymapInfos[i];
+        if (isOSX) {
+          if (language && language.startsWith((candidate.layout as IMacKeyboardLayoutInfo).lang)) {
             return candidate;
           }
-          matchingOScount++;
+        } else if (!isWindows) {
+          // windows 环境不需要考虑
+          if (language && language.startsWith((candidate.layout as ILinuxKeyboardLayoutInfo).layout)) {
+            return candidate;
+          }
         }
         topScoringCount++;
       }
     }
-    if (matchingOScount >= 1) {
-      return candidates.find((c, i) => scores[i] === topScore && osMatches(c.hardware))!;
-    }
     if (topScoringCount >= 1) {
-      return candidates.find((_, i) => scores[i] === topScore)!;
+      return keymapInfos.find((_, i) => scores[i] === topScore)!;
     }
-    return DEFAULT_LAYOUT_DATA;
+    return this.tester.getUSStandardLayout();
   }
 
   protected saveState(): void {
     const data: LayoutProviderState = {
       tester: this.tester.getState(),
       source: this.source,
-      currentLayout: this.currentLayout !== DEFAULT_LAYOUT_DATA ? getLayoutId(this.currentLayout) : undefined,
+      currentLayoutId: this.currentLayout ? getKeyboardLayoutId(this.currentLayout?.layout) : undefined,
     };
     // 全局只需要共用一份存储即可
     return this.browserStorageService.setData('keyboard', data);
   }
 
-  protected loadState(): void {
+  protected loadState() {
     const data = this.browserStorageService.getData<LayoutProviderState>('keyboard');
     if (data) {
       this.tester.setState(data.tester || {});
       this.source = data.source || 'pressed-keys';
-      if (data.currentLayout) {
-        const layout = this.tester.candidates.find((c) => getLayoutId(c) === data.currentLayout);
+      if (data.currentLayoutId) {
+        const layout = this.tester.keymapInfos.find((c) => getKeyboardLayoutId(c.layout) === data.currentLayoutId);
         if (layout) {
           this.currentLayout = layout;
         }
       } else {
-        this.currentLayout = DEFAULT_LAYOUT_DATA;
+        this.currentLayout = this.tester.getUSStandardLayout();
       }
     }
   }
 
 }
 
-export interface KeyboardLayoutData {
-  name: string;
-  hardware: 'pc' | 'mac';
-  language: string;
-  raw: NativeKeyboardLayout;
-}
-
-function osMatches(hardware: 'pc' | 'mac'): boolean {
-  return isOSX ? hardware === 'mac' : hardware === 'pc';
-}
-
-/**
- * This is the fallback keyboard layout selected when nothing else matches.
- * It has an empty mapping, so user inputs are handled like with a standard US keyboard.
- */
-export const DEFAULT_LAYOUT_DATA: KeyboardLayoutData = {
-  name: 'US',
-  hardware: isOSX ? 'mac' : 'pc',
-  language: 'en',
-  raw: {
-    info: {} as IKeyboardLayoutInfo,
-    mapping: {},
-  },
-};
-
 export interface LayoutProviderState {
   tester?: KeyboardTesterState;
   source?: KeyboardLayoutSource;
-  currentLayout?: string;
+  currentLayoutId?: string;
 }
 
 export interface KeyboardTesterState {
@@ -238,9 +247,7 @@ export interface KeyboardTesterState {
 }
 
 /**
- * Holds score values for all known keyboard layouts. Scores are updated
- * by comparing key codes with the corresponding character produced by
- * the user's keyboard.
+ * 通过对比用户输入 Key Codes 得到的解析结果，处理所有已知键盘布局分数
  */
 export class KeyboardTester {
 
@@ -249,12 +256,24 @@ export class KeyboardTester {
 
   private readonly testedInputs = new Map<string, string>();
 
+  private _keymapInfos: KeymapInfo[] = [];
+  protected readonly initialized = new Deferred();
+
   get inputCount() {
     return this.testedInputs.size;
   }
 
-  constructor(readonly candidates: KeyboardLayoutData[]) {
-    this.scores = this.candidates.map(() => 0);
+  get keymapInfos() {
+    return this._keymapInfos;
+  }
+
+  constructor() {
+    const platform = isWindows ? 'win' : isOSX ? 'darwin' : 'linux';
+    const module = require('./layouts/layout.contribution.' + platform);
+    const keymapInfos: IKeymapInfo[] = module.KeyboardLayoutContribution.INSTANCE.layoutInfos;
+    this._keymapInfos.push(...keymapInfos.map((info) => (new KeymapInfo(info.layout, info.secondaryLayouts, info.mapping, info.isUserKeyboardLayout))));
+    this.initialized.resolve(true);
+    this.scores = this.keymapInfos.map(() => 0);
   }
 
   reset(): void {
@@ -281,15 +300,17 @@ export class KeyboardTester {
       if (this.testedInputs.get(inputKey) === input.character) {
         return false;
       } else {
-        // The same input keystroke leads to a different character:
-        // probably a keyboard layout change, so forget all previous scores
+        /**
+         * 相同的按键输入输出了不同的字符
+         * 可能发生了键盘布局变化，重置所有计算后的分数
+         */
         this.reset();
       }
     }
 
     const scores = this.scores;
-    for (let i = 0; i < this.candidates.length; i++) {
-      scores[i] += this.testCandidate(this.candidates[i], input, property);
+    for (let i = 0; i < this.keymapInfos.length; i++) {
+      scores[i] += this.testCandidate(this.keymapInfos[i], input, property);
       if (scores[i] > this.topScore) {
         this.topScore = scores[i];
       }
@@ -299,9 +320,9 @@ export class KeyboardTester {
   }
 
   protected testCandidate(
-    candidate: KeyboardLayoutData, input: KeyValidationInput,
+    candidate: KeymapInfo, input: KeyValidationInput,
     property: 'value' | 'withShift' | 'withAltGr' | 'withShiftAltGr'): number {
-    const keyMapping = candidate.raw.mapping[input.code];
+    const keyMapping = candidate.mapping[input.code];
     if (keyMapping && keyMapping[property]) {
       return keyMapping[property] === input.character ? 1 : 0;
     } else {
@@ -312,7 +333,7 @@ export class KeyboardTester {
   getState(): KeyboardTesterState {
     const scores: { [id: string]: number } = {};
     for (let i = 0; i < this.scores.length; i++) {
-      scores[getLayoutId(this.candidates[i])] = this.scores[i];
+      scores[getKeyboardLayoutId(this.keymapInfos[i].layout)] = this.scores[i];
     }
     const testedInputs: { [key: string]: string } = {};
     for (const [key, character] of this.testedInputs.entries()) {
@@ -328,7 +349,7 @@ export class KeyboardTester {
   setState(state: KeyboardTesterState): void {
     this.reset();
     if (state.scores) {
-      const layoutIds = this.candidates.map(getLayoutId);
+      const layoutIds = this.keymapInfos.map((info) => getKeyboardLayoutId(info.layout));
       for (const id in state.scores) {
         if (state.scores.hasOwnProperty(id)) {
           const index = layoutIds.indexOf(id);
@@ -350,6 +371,15 @@ export class KeyboardTester {
     }
   }
 
+  getUSStandardLayout() {
+    const usStandardLayouts = this.keymapInfos.filter((layout) => layout.layout.isUSStandard);
+
+    if (usStandardLayouts.length) {
+      return usStandardLayouts[0];
+    }
+    return null;
+  }
+
 }
 
 /**
@@ -365,81 +395,3 @@ interface Keyboard {
 }
 
 type KeyboardLayoutMap = Map<string, string>;
-
-function getLayoutId(layout: KeyboardLayoutData): string {
-  return `${layout.language}-${layout.name.replace(' ', '_')}-${layout.hardware}`;
-}
-
-/**
- * Keyboard layout files are expexted to have the following name scheme:
- *     `language-name-hardware.json`
- *
- * - `language`: A language subtag according to IETF BCP 47
- * - `name`:     Display name of the keyboard layout (without dashes)
- * - `hardware`: `pc` or `mac`
- */
-function loadLayout(fileName: string): KeyboardLayoutData {
-  const [language, name, hardware] = fileName.split('-');
-  return {
-    name: name.replace('_', ' '),
-    hardware: hardware as 'pc' | 'mac',
-    language,
-    raw: require('./layouts/' + fileName + '.json'),
-  };
-}
-
-function loadAllLayouts(): KeyboardLayoutData[] {
-  // The order of keyboard layouts is relevant for autodetection. Layouts with
-  // lower index have a higher chance of being selected.
-  // The current ordering approach is to sort by estimated number of developers
-  // in the respective country (taken from the Stack Overflow Developer Survey),
-  // but keeping all layouts of the same language together.
-  return [
-    'en-US-pc',
-    'en-US-mac',
-    'en-Dvorak-pc',
-    'en-Dvorak-mac',
-    'en-Dvorak_Lefthanded-pc',
-    'en-Dvorak_Lefthanded-mac',
-    'en-Dvorak_Righthanded-pc',
-    'en-Dvorak_Righthanded-mac',
-    'en-Colemak-mac',
-    'en-British-pc',
-    'en-British-mac',
-    'de-German-pc',
-    'de-German-mac',
-    'de-Swiss_German-pc',
-    'de-Swiss_German-mac',
-    'fr-French-pc',
-    'fr-French-mac',
-    'fr-Canadian_French-pc',
-    'fr-Canadian_French-mac',
-    'fr-Swiss_French-pc',
-    'fr-Swiss_French-mac',
-    'pt-Portuguese-pc',
-    'pt-Portuguese-mac',
-    'pt-Brazilian-mac',
-    'pl-Polish-pc',
-    'pl-Polish-mac',
-    'nl-Dutch-pc',
-    'nl-Dutch-mac',
-    'es-Spanish-pc',
-    'es-Spanish-mac',
-    'it-Italian-pc',
-    'it-Italian-mac',
-    'sv-Swedish-pc',
-    'sv-Swedish-mac',
-    'tr-Turkish_Q-pc',
-    'tr-Turkish_Q-mac',
-    'cs-Czech-pc',
-    'cs-Czech-mac',
-    'ro-Romanian-pc',
-    'ro-Romanian-mac',
-    'da-Danish-pc',
-    'da-Danish-mac',
-    'nb-Norwegian-pc',
-    'nb-Norwegian-mac',
-    'hu-Hungarian-pc',
-    'hu-Hungarian-mac',
-  ].map(loadLayout);
-}

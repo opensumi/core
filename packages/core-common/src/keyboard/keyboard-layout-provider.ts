@@ -15,7 +15,7 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/core/src/browser/keyboard/browser-keyboard-layout-provider.ts
 
-import { IKeyboardLayoutInfo, IKeyboardMapping } from './keymap.interface';
+import { KeymapInfo } from './keymap';
 import { Event } from '../event';
 
 export const keyboardPath = '/services/keyboard';
@@ -23,13 +23,17 @@ export const keyboardPath = '/services/keyboard';
 export const KeyboardNativeLayoutService = Symbol('KeyboardNativeLayoutService');
 
 export interface KeyboardNativeLayoutService {
-  getNativeLayout(): Promise<NativeKeyboardLayout>;
+  getNativeLayout(): Promise<KeymapInfo | void>;
+  allLayoutData: KeymapInfo[];
+  currentLayoutData: KeymapInfo | null;
+  currentLayoutSource: string;
+  setLayoutData(layout: KeymapInfo | 'autodetect'): Promise<KeymapInfo | null>
 }
 
 export const KeyboardLayoutChangeNotifierService = Symbol('KeyboardLayoutChangeNotifierService');
 
 export interface KeyboardLayoutChangeNotifierService {
-  onDidChangeNativeLayout: Event<NativeKeyboardLayout>;
+  onDidChangeNativeLayout: Event<KeymapInfo>;
 }
 
 export interface KeyValidationInput {
@@ -38,15 +42,4 @@ export interface KeyValidationInput {
   shiftKey?: boolean;
   ctrlKey?: boolean;
   altKey?: boolean;
-}
-
-export const KeyValidator = Symbol('KeyValidator');
-
-export interface KeyValidator {
-  validateKey(input: KeyValidationInput): void;
-}
-
-export interface NativeKeyboardLayout {
-  info: IKeyboardLayoutInfo;
-  mapping: IKeyboardMapping;
 }

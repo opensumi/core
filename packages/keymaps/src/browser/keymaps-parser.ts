@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable } from '@ali/common-di';
 import * as Ajv from 'ajv';
 import * as parser from 'jsonc-parser';
 import { Keybinding } from '@ali/ide-core-browser';
@@ -23,7 +23,7 @@ export const keymapsSchema = {
       args: {},
     },
     required: ['command', 'keybinding'],
-    optional: ['context', 'when', 'args'],
+    optional: [ 'when', 'args'],
     additionalProperties: false,
   },
 };

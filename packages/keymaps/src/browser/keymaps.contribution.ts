@@ -13,6 +13,11 @@ import {
   MaybePromise,
   localize,
   getIcon,
+  KeyboardNativeLayoutService,
+  KEYBOARD_COMMANDS,
+  getKeyboardLayoutId,
+  KeymapInfo,
+  formatLocalize,
 } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
@@ -20,6 +25,7 @@ import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { KEYMAPS_SCHEME, IKeymapService } from '../common';
 import { KeymapsView } from './keymaps.view';
 import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { QuickPickItem, QuickPickService } from '@ali/ide-quick-open';
 
 const KEYMAPS_PREVIEW_COMPONENT_ID = 'keymaps-preview';
 
@@ -67,6 +73,12 @@ export namespace KEYMAP_COMMANDS {
 @Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution)
 export class KeymapsContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution {
 
+  @Autowired(QuickPickService)
+  private readonly quickPickService: QuickPickService;
+
+  @Autowired(KeyboardNativeLayoutService)
+  private readonly layoutProvider: KeyboardNativeLayoutService;
+
   @Autowired(IFileServiceClient)
   protected readonly filesystem: IFileServiceClient;
 
@@ -86,6 +98,11 @@ export class KeymapsContribution implements CommandContribution, KeybindingContr
     commands.registerCommand(KEYMAP_COMMANDS.OPEN_SOURCE_FILE, {
       execute: async () => {
         this.keymapService.openResource();
+      },
+    });
+    commands.registerCommand(KEYBOARD_COMMANDS.CHOOSE_KEYBOARD_LAYOUT, {
+      execute: () => {
+        this.chooseLayout();
       },
     });
   }
@@ -146,5 +163,34 @@ export class KeymapsContribution implements CommandContribution, KeybindingContr
       ]);
 
     });
+  }
+
+  protected async chooseLayout() {
+    const current = this.layoutProvider.currentLayoutData;
+    const autodetect: QuickPickItem<'autodetect'> = {
+      label: localize('keyboard.autoDetect.label'),
+      description: current && this.layoutProvider.currentLayoutSource !== 'user-choice' ? formatLocalize('keyboard.autoDetect.description', getKeyboardLayoutId(current.layout)) : undefined,
+      detail: localize('keyboard.autoDetect.detail'),
+      value: 'autodetect',
+    };
+    const otherLayouts = this.layoutProvider.allLayoutData
+      .map((layout) => this.toQuickPickValue(layout, current === layout));
+
+    let layouts: QuickPickItem<KeymapInfo | 'autodetect'>[];
+    layouts = [
+      autodetect,
+      ...otherLayouts,
+    ];
+    const chosen = await this.quickPickService.show(layouts, { placeholder: 'Choose a keyboard layout' });
+    if (chosen) {
+      return this.layoutProvider.setLayoutData(chosen);
+    }
+  }
+
+  protected toQuickPickValue(layout: KeymapInfo, isCurrent: boolean): QuickPickItem<KeymapInfo> {
+    return {
+      label: getKeyboardLayoutId(layout.layout),
+      value: layout,
+    };
   }
 }

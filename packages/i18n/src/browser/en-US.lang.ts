@@ -770,5 +770,10 @@ export const localizationBundle = {
     'refactoring-changes.ask.N.copy': '{0} extensions want to make refactoring changes with this file copy',
     'refactoring-changes.ask.N.move': '{0} extensions want to make refactoring changes with this file move',
     'refactoring-changes.ask.N.delete': '{0} extensions want to make refactoring changes with this file deletion',
+
+    'keyboard.chooseKeyboardLayout': 'Choose keyboard layout',
+    'keyboard.autoDetect.label': 'Auto Detect',
+    'keyboard.autoDetect.description': '(Current: \'{0} \')',
+    'keyboard.autoDetect.detail': 'Try to detect the keyboard layout from browser information and pressed keys.',
   },
 };

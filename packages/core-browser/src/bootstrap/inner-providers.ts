@@ -31,7 +31,7 @@ import { ApplicationService } from '../application/application.service';
 import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
 
 import { KeybindingContribution, KeybindingService, KeybindingRegistryImpl, KeybindingRegistry } from '../keybinding';
-import { BrowserKeyboardLayoutImpl } from '../keyboard';
+import { BrowserKeyboardLayoutImpl, KeyValidator } from '../keyboard';
 
 import { Logger, ILogger } from '../logger';
 import { ComponentRegistry, ComponentRegistryImpl, ComponentContribution, TabBarToolbarContribution } from '../layout';
@@ -105,7 +105,15 @@ export function injectInnerProviders(injector: Injector) {
     },
     {
       token: KeyboardLayoutChangeNotifierService,
-      useClass: BrowserKeyboardLayoutImpl,
+      useFactory: (inject: Injector) => {
+        return inject.get(KeyboardNativeLayoutService);
+      },
+    },
+    {
+      token: KeyValidator,
+      useFactory: (inject: Injector) => {
+        return inject.get(KeyboardNativeLayoutService);
+      },
     },
     ClientAppStateService,
     {

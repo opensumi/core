@@ -26,6 +26,7 @@
     "@ali/ide-core-browser": "2.6.2",
     "@ali/ide-overlay": "2.6.2",
     "@ali/ide-preferences": "2.6.2",
+    "@ali/ide-quick-open": "2.6.2",
     "@ali/ide-dev-tool": "^1.2.1",
     "@ali/ide-file-service": "2.6.2",
     "@ali/ide-editor": "2.6.2",
