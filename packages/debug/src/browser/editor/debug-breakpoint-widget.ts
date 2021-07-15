@@ -1,9 +1,10 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Disposable, positionToRange } from '@ali/ide-core-common';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { DebugEditor } from '../../common';
 import { DebugBreakpointZoneWidget, DebugBreakpointWidgetContext } from './debug-breakpoint-zone-widget';
 import { BreakpointWidgetInputFocus } from '../contextkeys';
+import { DebugBreakpointsService } from '../view/breakpoints/debug-breakpoints.service';
 
 export enum TopStackType {
   exception,
@@ -18,6 +19,12 @@ export class DebugBreakpointWidget extends Disposable {
 
   @Autowired(BreakpointWidgetInputFocus)
   private readonly breakpointWidgetInputFocus: BreakpointWidgetInputFocus;
+
+  @Autowired(DebugBreakpointsService)
+  protected debugBreakpointsService: DebugBreakpointsService;
+
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
 
   static LINE_HEIGHT_NUMBER = 2;
 
@@ -44,7 +51,7 @@ export class DebugBreakpointWidget extends Disposable {
   show(position: monaco.Position, contexts?: DebugBreakpointWidgetContext, defaultContext: DebugBreakpointZoneWidget.Context = 'condition') {
     this.dispose();
     this._position = position;
-    this.addDispose(this.zone = new DebugBreakpointZoneWidget(this.editor, { ...contexts }, defaultContext));
+    this.addDispose(this.zone = this.injector.get(DebugBreakpointZoneWidget, [this.editor, { ...contexts }, defaultContext]));
     this.addDispose(this.zone.onDidChangeBreakpoint(({ context, value }) => {
       if (contexts) {
         contexts[context] = value;

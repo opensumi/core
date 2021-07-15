@@ -1,9 +1,12 @@
+import { IWorkspaceService } from '@ali/ide-workspace';
 import type { Position } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { Disposable } from '@ali/ide-core-browser';
+import { Disposable, IFileServiceClient } from '@ali/ide-core-browser';
 import { BreakpointWidgetInputFocus } from '@ali/ide-debug/lib/browser';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { DebugBreakpointWidget } from '@ali/ide-debug/lib/browser/editor';
-import { DebugEditor } from '@ali/ide-debug';
+import { DebugEditor, IDebugSessionManager } from '@ali/ide-debug';
+import { IContextKeyService } from '@ali/ide-core-browser';
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 
 describe('Debug Breakpoint Widget', () => {
   const mockInjector = createBrowserInjector([]);
@@ -22,6 +25,26 @@ describe('Debug Breakpoint Widget', () => {
     });
     mockInjector.overrideProviders({
       token: BreakpointWidgetInputFocus,
+      useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: IWorkspaceService,
+      useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: IDebugSessionManager,
+      useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: IContextKeyService,
+      useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: IEditorDocumentModelService,
+      useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: IFileServiceClient,
       useValue: {},
     });
     debugBreakpointWidget = mockInjector.get(DebugBreakpointWidget);

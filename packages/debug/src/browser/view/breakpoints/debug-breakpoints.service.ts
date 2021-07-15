@@ -1,15 +1,17 @@
+import { ICodeEditor, EditorCollectionService, getSimpleEditorOptions } from '@ali/ide-editor';
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action, runInAction } from 'mobx';
 import { DebugViewModel } from '../debug-view-model';
 import { DebugBreakpoint, DebugExceptionBreakpoint, isDebugBreakpoint, isDebugExceptionBreakpoint, BreakpointManager, DebugDecorator } from '../../breakpoint';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { URI, WithEventBus, OnEvent, IContextKeyService, IReporterService } from '@ali/ide-core-browser';
+import { URI, WithEventBus, OnEvent, IContextKeyService, IReporterService, Schemas } from '@ali/ide-core-browser';
 import { BreakpointItem } from './debug-breakpoints.view';
 import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@ali/ide-workspace-edit';
 import { IDebugSessionManager } from '../../../common/debug-session';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { DEBUG_REPORT_NAME } from '../../../common';
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 
 @Injectable()
 export class DebugBreakpointsService extends WithEventBus {
@@ -34,6 +36,18 @@ export class DebugBreakpointsService extends WithEventBus {
 
   @Autowired(IReporterService)
   protected readonly reporterService: IReporterService;
+
+  @Autowired(EditorCollectionService)
+  protected readonly editorService: EditorCollectionService;
+
+  @Autowired(IEditorDocumentModelService)
+  protected readonly documentService: IEditorDocumentModelService;
+
+  private _inputEditor: ICodeEditor;
+
+  public get inputEditor(): ICodeEditor {
+    return this._inputEditor;
+  }
 
   @observable
   public nodes: BreakpointItem[] = [];
@@ -161,5 +175,24 @@ export class DebugBreakpointsService extends WithEventBus {
     } else {
       this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_BREAKPOINT, 'unenabled');
     }
+  }
+
+  public async createBreakpointInput(container: HTMLElement): Promise<ICodeEditor> {
+    this._inputEditor = await this.editorService.createCodeEditor(container!, {
+      ...getSimpleEditorOptions(),
+      scrollbar: {
+        horizontal: 'hidden',
+        vertical: 'hidden',
+        handleMouseWheel: false,
+      },
+      acceptSuggestionOnEnter: 'on',
+      renderIndentGuides: false,
+    });
+    const docModel = await this.documentService.createModelReference(new URI('debug/breakpoint/expression/input').withScheme(Schemas.walkThroughSnippet));
+
+    const model = docModel.instance.getMonacoModel();
+    model.updateOptions({ tabSize: 2 });
+    this._inputEditor.monacoEditor.setModel(model);
+    return Promise.resolve(this.inputEditor);
   }
 }

@@ -1,3 +1,4 @@
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { Disposable, URI, IFileServiceClient, IEventBus, EventBusImpl } from '@ali/ide-core-common';
 import { IDebugSessionManager } from '@ali/ide-debug';
@@ -80,6 +81,10 @@ describe('Debug Breakpoints Service', () => {
     });
     mockInjector.overrideProviders({
       token: IWorkspaceStorageService,
+      useValue: {},
+    });
+    mockInjector.overrideProviders({
+      token: IEditorDocumentModelService,
       useValue: {},
     });
 

@@ -290,7 +290,7 @@ export const localizationBundle = {
     'debug.expression.condition.placeholder': '在表达式结果为真时中断。按 \"Enter\" 键确认，\"Esc\" 键取消。',
     'debug.expression.condition': '表达式',
     'debug.expression.hitCondition': '命中次数',
-    'debug.expression.logMessage': '记录消息',
+    'debug.expression.logMessage': '日志消息',
     'debug.menu.delete.breakpoint': '删除断点',
     'debug.menu.edit.breakpoint': '编辑断点',
     'debug.menu.disable.breakpoint': '禁用断点',
