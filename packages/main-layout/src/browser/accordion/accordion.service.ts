@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IContextKey, OnEvent, WithEventBus, ResizeEvent, DisposableCollection, ContextKeyChangeEvent, Event, Emitter } from '@ali/ide-core-browser';
+import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IContextKey, OnEvent, WithEventBus, ResizeEvent, DisposableCollection, ContextKeyChangeEvent, Event, Emitter, IScopedContextKeyService } from '@ali/ide-core-browser';
 import { action, observable } from 'mobx';
 import { SplitPanelManager, SplitPanelService } from '@ali/ide-core-browser/lib/components/layout/split-panel.service';
 import { AbstractContextMenuService, AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -72,7 +72,7 @@ export class AccordionService extends WithEventBus {
   private toDispose: Map<string, DisposableCollection> = new Map();
 
   private topViewKey: IContextKey<string>;
-  private scopedCtxKeyService = this.contextKeyService.createScoped();
+  private scopedCtxKeyService: IScopedContextKeyService;
 
   private beforeAppendViewEmitter = new Emitter<string>();
   public onBeforeAppendViewEvent = this.beforeAppendViewEmitter.event;
@@ -86,6 +86,7 @@ export class AccordionService extends WithEventBus {
   constructor(public containerId: string, private noRestore?: boolean) {
     super();
     this.splitPanelService = this.splitPanelManager.getService(containerId);
+    this.scopedCtxKeyService = this.contextKeyService.createScoped();
     this.scopedCtxKeyService.createKey('triggerWithSection', true);
     this.menuRegistry.registerMenuItem(this.menuId, {
       command: {

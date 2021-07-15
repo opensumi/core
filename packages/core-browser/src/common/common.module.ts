@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { BrowserModule } from '..';
+import { BrowserModule } from '../browser-module';
 import { ClientCommonContribution } from './common.contribution';
 import { OpenerContribution } from '../opener';
 import { DefaultOpenerContribution, OpenerContributionClient } from '../opener/opener.contribution';

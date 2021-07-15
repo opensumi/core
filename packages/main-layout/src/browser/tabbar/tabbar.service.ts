@@ -1,11 +1,11 @@
-import { toDisposable, WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService, getTabbarCtxKey, IContextKey, DisposableCollection, IScopedContextKeyService } from '@ali/ide-core-browser';
+import { toDisposable, WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService, getTabbarCtxKey, IContextKey, DisposableCollection, IScopedContextKeyService, Deferred } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action, observe, computed } from 'mobx';
 import { AbstractContextMenuService, AbstractMenuService, IContextMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { TOGGLE_BOTTOM_PANEL_COMMAND, EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL } from '../main-layout.contribution';
 import { ResizeHandle } from '@ali/ide-core-browser/lib/components';
 import debounce = require('lodash.debounce');
-import { TabBarRegistrationEvent, IMainLayoutService } from '../../common';
+import { TabBarRegistrationEvent, IMainLayoutService, SUPPORT_ACCORDION_LOCATION } from '../../common';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { IProgressService } from '@ali/ide-core-browser/lib/progress';
 
@@ -36,7 +36,9 @@ export class TabbarService extends WithEventBus {
   public prevSize?: number;
   public commonTitleMenu: IContextMenu;
 
-  resizeHandle: {
+  public viewReady = new Deferred<void>();
+
+  resizeHandle?: {
     setSize: (targetSize?: number) => void,
     setRelativeSize: (prev: number, next: number) => void,
     getSize: () => number,
@@ -100,10 +102,11 @@ export class TabbarService extends WithEventBus {
   private disposableMap: Map<string, DisposableCollection> = new Map();
   private tabInMoreKeyMap: Map<string, IContextKey<boolean>> = new Map();
 
-  private scopedCtxKeyService: IScopedContextKeyService = this.contextKeyService.createScoped();
+  private scopedCtxKeyService: IScopedContextKeyService;
 
-  constructor(public location: string, public noAccordion?: boolean) {
+  constructor(public location: string) {
     super();
+    this.scopedCtxKeyService = this.contextKeyService.createScoped();
     this.scopedCtxKeyService.createKey('triggerWithTab', true);
     this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
@@ -116,8 +119,6 @@ export class TabbarService extends WithEventBus {
     this.activatedKey = this.contextKeyService.createKey(getTabbarCtxKey(this.location), '');
     if (this.location === 'bottom') {
       this.registerPanelMenus();
-      // TODO: 底部支持多视图
-      this.noAccordion = true;
     }
   }
 
@@ -321,7 +322,7 @@ export class TabbarService extends WithEventBus {
   }
 
   doExpand(expand: boolean) {
-    const {setRelativeSize} = this.resizeHandle;
+    const {setRelativeSize} = this.resizeHandle!;
     if (expand) {
       if (!this.isLatter) {
         setRelativeSize(1, 0);
@@ -335,7 +336,7 @@ export class TabbarService extends WithEventBus {
   }
 
   get isExpanded(): boolean {
-    const {getRelativeSize} = this.resizeHandle;
+    const {getRelativeSize} = this.resizeHandle!;
     const relativeSizes = getRelativeSize().join(',');
     return this.isLatter ? relativeSizes === '0,1' : relativeSizes === '1,0';
   }
@@ -574,7 +575,7 @@ export class TabbarService extends WithEventBus {
   @OnEvent(ResizeEvent)
   protected onResize(e: ResizeEvent) {
     if (e.payload.slotLocation === this.location) {
-      if (!this.currentContainerId) {
+      if (!this.currentContainerId || !this.resizeHandle) {
         // 折叠时不监听变化
         return;
       }
@@ -597,7 +598,7 @@ export class TabbarService extends WithEventBus {
   }
 
   private handleChange(currentId, previousId) {
-    const {getSize, setSize, lockSize} = this.resizeHandle;
+    const {getSize, setSize, lockSize} = this.resizeHandle!;
     this.onCurrentChangeEmitter.fire({previousId, currentId});
     const isCurrentExpanded = this.shouldExpand(currentId);
     if (this.shouldExpand(this.previousContainerId) || isCurrentExpanded) {
@@ -614,7 +615,7 @@ export class TabbarService extends WithEventBus {
         } else {
           lockSize(false);
         }
-        if (!this.noAccordion) {
+        if (SUPPORT_ACCORDION_LOCATION.has(this.location)) {
           this.tryRestoreAccordionSize(currentId);
         }
         this.activatedKey.set(currentId);
@@ -643,7 +644,7 @@ export class TabbarService extends WithEventBus {
   }
 
   protected handleFullExpanded(currentId: string, isCurrentExpanded?: boolean) {
-    const { setRelativeSize, setSize } = this.resizeHandle;
+    const { setRelativeSize, setSize } = this.resizeHandle!;
     if (currentId) {
       if (isCurrentExpanded) {
         if (!this.isLatter) {

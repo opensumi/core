@@ -51,12 +51,20 @@ export class LayoutState {
   }
 
   private debounceSave = debounce((key, state) => {
-    if (this.saveLayoutWithWorkspace) {
-      LAYOUT_STATE.isScoped(key) || LAYOUT_STATE.isLayout(key) ? this.layoutStorage.set(key, state) : this.globalLayoutStorage.set(key, state);
-    } else {
-      LAYOUT_STATE.isScoped(key) ? this.layoutStorage.set(key, state) : this.globalLayoutStorage.set(key, state);
-    }
+    this.setStorageValue(key, state, LAYOUT_STATE.isScoped(key) || (this.saveLayoutWithWorkspace && LAYOUT_STATE.isLayout(key)));
   }, 60);
+
+  private setStorageValue(key: string, state: object, scope?: boolean) {
+    if (scope) {
+      this.layoutStorage.set(key, state);
+    } else {
+      this.globalLayoutStorage.set(key, state);
+    }
+    if (LAYOUT_STATE.isLayout(key)) {
+      localStorage.setItem(key, JSON.stringify(state));
+    }
+  }
+
 }
 
 export namespace LAYOUT_STATE {

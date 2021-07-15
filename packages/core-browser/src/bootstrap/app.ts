@@ -29,6 +29,7 @@ import {
   asExtensionCandidate,
   IApplicationService,
   IDisposable,
+  Deferred,
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
@@ -89,6 +90,11 @@ export class ClientApp implements IClientApp, IDisposable {
 
   public static DEFAULT_APPLICATION_NAME: string = 'KAITIAN';
   public static DEFAULT_URI_SCHEME: string = 'kaitian';
+
+  /**
+   * 应用是否完成初始化
+   */
+  appInitialized: Deferred<void> = new Deferred();
 
   browserModules: BrowserModule[] = [];
 
@@ -309,12 +315,13 @@ export class ClientApp implements IClientApp, IDisposable {
   }
 
   protected async startContributions(container) {
-    await this.measure('Contributions.initialize', () => this.initializeContributions());
-
     // 初始化命令、快捷键与菜单
     await this.initializeCoreRegistry();
-    // FIXME: 放在 startContribution 里不是很贴切
+
+    // 先渲染 layout，模块视图的时序由layout控制
     await this.measure('RenderApp.render', () => this.renderApp(container));
+
+    await this.measure('Contributions.initialize', () => this.initializeContributions());
 
     await this.measure('Contributions.onStart', () => this.onStartContributions());
 
@@ -337,6 +344,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.logger.verbose('startContributions clientAppContributions', this.contributions);
 
     await this.runContributionsPhase(this.contributions, 'initialize');
+    this.appInitialized.resolve();
 
     this.logger.verbose('contributions.initialize done');
   }

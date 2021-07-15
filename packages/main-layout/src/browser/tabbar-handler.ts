@@ -124,6 +124,6 @@ export class TabBarHandler {
   }
 
   setResizeLock(lock?: boolean) {
-    this.tabbarService.resizeHandle.lockSize(lock);
+    this.tabbarService.resizeHandle!.lockSize(lock);
   }
 }

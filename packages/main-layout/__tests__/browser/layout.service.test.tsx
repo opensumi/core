@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { createBrowserInjector, createBrowserApp } from '../../../../tools/dev-tool/src/injector-helper';
-import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, IContextKeyService, CommandRegistry, ILoggerManagerClient, ViewContainerOptions, PreferenceService, Disposable } from '@ali/ide-core-browser';
+import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, IContextKeyService, CommandRegistry, ILoggerManagerClient, ViewContainerOptions, PreferenceService, Disposable, ClientApp } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
@@ -27,28 +26,6 @@ describe('main layout test', () => {
   const layoutNode = document.createElement('div');
   document.getElementById('main')!.appendChild(layoutNode);
 
-  const config: Partial<AppConfig> = {
-    layoutConfig: {
-      [SlotLocation.main]: {
-        modules: [testToken],
-      },
-      [SlotLocation.top]: {
-        modules: [testToken],
-      },
-      [SlotLocation.left]: {
-        modules: [testToken],
-      },
-      [SlotLocation.right]: {
-        modules: [uniqueToken],
-      },
-      [SlotLocation.bottom]: {
-        modules: [testToken],
-      },
-      [SlotLocation.statusBar]: {
-        modules: [testToken],
-      },
-    },
-  };
   const timeoutIds: Set<NodeJS.Timer> = new Set();
 
   beforeAll(async (done) => {
@@ -74,14 +51,30 @@ describe('main layout test', () => {
       return this;
     };
 
-    injector = createBrowserInjector([]);
+    injector = new MockInjector();
 
-    injector.overrideProviders(
-      {
-        token: AppConfig,
-        useValue: config,
+    const config: Partial<AppConfig> = {
+      layoutConfig: {
+        [SlotLocation.main]: {
+          modules: [testToken],
+        },
+        [SlotLocation.top]: {
+          modules: [testToken],
+        },
+        [SlotLocation.left]: {
+          modules: [testToken],
+        },
+        [SlotLocation.right]: {
+          modules: [uniqueToken],
+        },
+        [SlotLocation.bottom]: {
+          modules: [testToken],
+        },
+        [SlotLocation.statusBar]: {
+          modules: [testToken],
+        },
       },
-    );
+    };
 
     injector.overrideProviders(
       {
@@ -155,11 +148,23 @@ describe('main layout test', () => {
       hidden: false,
     });
     await act(async () => {
-      await createBrowserApp([
-        MainLayoutModule,
-      ], injector);
+      const app = new ClientApp({
+        modules: [
+          MainLayoutModule,
+        ],
+        injector,
+        ...config,
+      });
+      app.start(document.getElementById('main')!).then(async () => {
+        // await rendered.promise;
+        await service.viewReady.promise;
+        done();
+      });
       service = injector.get(IMainLayoutService);
-      done();
+      // 测试环境下，readDom 的 render 回调的时候不知道为啥 render 还没执行到 tabbarRenderer，需要兼容下，先初始化好tababrService
+      service.getTabbarService('left');
+      service.getTabbarService('right');
+      service.getTabbarService('bottom');
     });
   });
   afterAll(() => {

@@ -1,13 +1,14 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WithEventBus, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent, AppConfig, ComponentRegistry, ILogger, CommandRegistry, CommandService } from '@ali/ide-core-browser';
-import { MainLayoutContribution, IMainLayoutService, ViewComponentOptions } from '../common';
+import { WithEventBus, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent, AppConfig, ComponentRegistry, ILogger, CommandRegistry, CommandService, OnEvent } from '@ali/ide-core-browser';
+import { MainLayoutContribution, IMainLayoutService, ViewComponentOptions, SUPPORT_ACCORDION_LOCATION } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
 import { IMenuRegistry, AbstractContextMenuService, MenuId, AbstractMenuService, IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { AccordionService } from './accordion/accordion.service';
 import debounce = require('lodash.debounce');
-import { Deferred } from '@ali/ide-core-common/lib';
+import { Deferred } from '@ali/ide-core-common';
+import { ThemeChangedEvent } from '@ali/ide-theme';
 
 @Injectable()
 export class LayoutService extends WithEventBus implements IMainLayoutService {
@@ -82,9 +83,15 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       }
     }
     this.restoreState();
+    const list: Array<Promise<void>> = [];
     // 渲染之后注册的tab不再恢复状态
-    this.tabbarServices.forEach((service) => service.restoreState());
-    this.viewReady.resolve();
+    this.tabbarServices.forEach((service) => {
+      service.restoreState();
+      list.push(service.viewReady.promise);
+    });
+    Promise.all(list).then(() => {
+      this.viewReady.resolve();
+    });
   }
 
   setFloatSize(size: number) {}
@@ -95,6 +102,18 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       size: service.prevSize,
     };
     this.layoutState.setState(LAYOUT_STATE.MAIN, this.state);
+  }
+
+  @OnEvent(ThemeChangedEvent)
+  onThemeChange(e: ThemeChangedEvent) {
+    const theme = e.payload.theme;
+    localStorage.setItem('theme', JSON.stringify({
+      menuBarBackground: theme.getColor('kt.menubar.background')?.toString(),
+      sideBarBackground: theme.getColor('sideBar.background')?.toString(),
+      editorBackground: theme.getColor('editor.background')?.toString(),
+      panelBackground: theme.getColor('panel.background')?.toString(),
+      statusBarBackground: theme.getColor('statusBar.background')?.toString(),
+    }));
   }
 
   restoreState() {
@@ -171,19 +190,18 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       tabbarService.currentContainerId = tabbarService.currentContainerId ? '' : tabbarService.previousContainerId || tabbarService.containersMap.keys().next().value;
     }
     if (tabbarService.currentContainerId && size) {
-      tabbarService.resizeHandle.setSize(size);
+      tabbarService.resizeHandle?.setSize(size);
     }
   }
 
-  // TODO: noAccordion应该由视图决定，service不需要关心
-  getTabbarService(location: string, noAccordion?: boolean) {
-    const service = this.tabbarServices.get(location) || this.injector.get(TabbarService, [location, noAccordion]);
+  getTabbarService(location: string) {
+    const service = this.tabbarServices.get(location) || this.injector.get(TabbarService, [location]);
     if (!this.tabbarServices.get(location)) {
       service.onCurrentChange(({currentId}) => {
         this.storeState(service, currentId);
         // onView 也支持监听 containerId
         this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onView', data: currentId }));
-        if (currentId && !service.noAccordion) {
+        if (currentId && SUPPORT_ACCORDION_LOCATION.has(service.location)) {
           const accordionService = this.getAccordionService(currentId);
           accordionService.expandedViews.forEach((view) => {
             this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onView', data: view.id }));

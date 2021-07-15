@@ -25,16 +25,7 @@ export async function renderApp(opts: IClientAppOpts) {
   // 定制Layout
   opts.layoutComponent = ToolbarActionBasedLayout;
 
-  opts.didRendered = () => {
-    const loadingDom = document.getElementById('loading');
-    if (loadingDom) {
-      loadingDom.classList.add('loading-hidden');
-      loadingDom.remove();
-      console.log('FinishRender', Date.now());
-      console.timeEnd('Render');
-    }
-  };
-
+  // KAITIAN 本身应该不需要 loading 动画
   const app = new ClientApp(opts);
 
   app.fireOnReload = (forcedReload: boolean) => {

@@ -223,10 +223,10 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
   function getElementSize(element: any) {
     if (element.props.savedSize) {
       return element.props.savedSize / totalSize * 100 + '%';
+    } else if (element.props.defaultSize !== undefined) {
+      return element.props.defaultSize + 'px';
     } else if (element.props.flex) {
       return element.props.flex / totalFlexNum * 100 + '%';
-    } else if (element.props.defaultSize) {
-      return element.props.defaultSize + 'px';
     } else {
       return 1 / totalFlexNum * 100 + '%';
     }

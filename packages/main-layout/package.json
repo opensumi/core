@@ -23,6 +23,7 @@
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
     "@ali/ide-core-common": "2.6.2",
+    "@ali/ide-theme": "2.6.2",
     "@ali/ide-components": "2.6.2"
   },
   "devDependencies": {

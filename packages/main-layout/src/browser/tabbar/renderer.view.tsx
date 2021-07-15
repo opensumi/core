@@ -26,9 +26,10 @@ export const TabRendererBase: React.FC<{
   direction?: Layout.direction;
   TabbarView: React.FC;
   TabpanelView: React.FC;
+  // @deprecated
   noAccordion?: boolean;
-}> = (({ className, components, direction = 'left-to-right', TabbarView, side, TabpanelView, noAccordion, ...restProps }) => {
-  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side, noAccordion);
+}> = (({ className, components, direction = 'left-to-right', TabbarView, side, TabpanelView, ...restProps }) => {
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const eventBus = useInjectable<IEventBus>(IEventBus);
   const resizeHandle = React.useContext(PanelContext);
   const rootRef = React.useRef<HTMLDivElement>(null);
@@ -39,6 +40,7 @@ export const TabRendererBase: React.FC<{
     });
     tabbarService.updatePanelVisibility(components.length > 0);
     tabbarService.registerResizeHandle(resizeHandle);
+    tabbarService.viewReady.resolve();
   }, []);
   React.useEffect(() => {
     if (rootRef.current) {

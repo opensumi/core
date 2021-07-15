@@ -4,7 +4,7 @@ import { TabBarHandler } from '../browser/tabbar-handler';
 import { TabbarService } from '../browser/tabbar/tabbar.service';
 import { AccordionService } from '../browser/accordion/accordion.service';
 import { IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
-import { Deferred, Event } from '@ali/ide-core-common/lib';
+import { Deferred, Event } from '@ali/ide-core-common';
 import { ContextKeyExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 export interface ComponentCollection {
@@ -67,7 +67,7 @@ export interface IMainLayoutService {
   setFloatSize(size: number): void;
   // force reveal a view ignoring its when clause
   revealView(viewId: string): void;
-  getTabbarService(location: string, noAccordion?: boolean): TabbarService;
+  getTabbarService(location: string): TabbarService;
   getAccordionService(containerId: string, noRestore?: boolean): AccordionService;
   // 某一位置是否可见
   isVisible(location: string): boolean;
@@ -112,3 +112,5 @@ export class ViewCollapseChangedEvent extends BasicEvent<{
   viewId: string;
   collapsed: boolean
 }> {}
+
+export const SUPPORT_ACCORDION_LOCATION = new Set([SlotLocation.left, SlotLocation.right]);

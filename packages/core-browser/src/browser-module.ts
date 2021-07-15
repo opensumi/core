@@ -1,10 +1,11 @@
-import { BasicModule, CommandRegistry } from '@ali/ide-core-common';
+import { BasicModule, CommandRegistry, Deferred } from '@ali/ide-core-common';
 import { AppConfig } from './react-providers';
 import { Injector, Autowired } from '@ali/common-di';
 
 export const IClientApp = Symbol('CLIENT_APP_TOKEN');
 
 export interface IClientApp {
+  appInitialized: Deferred<void>;
   browserModules: BrowserModule<any>[];
   injector: Injector;
   config: AppConfig;

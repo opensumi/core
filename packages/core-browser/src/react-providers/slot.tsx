@@ -3,12 +3,13 @@
  */
 
 import * as React from 'react';
-import { getDebugLogger, isDevelopment } from '@ali/ide-core-common';
+import { getDebugLogger } from '@ali/ide-core-common';
 import { LayoutConfig } from '../bootstrap';
 import { useInjectable } from '../react-hooks';
 import { ComponentRegistry, ComponentRegistryInfo } from '../layout';
-import { AppConfig } from './config-provider';
+import { ConfigContext } from './config-provider';
 import { Button } from '@ali/ide-components';
+import { IClientApp } from '../browser-module';
 
 const logger = getDebugLogger();
 export type SlotLocation = string;
@@ -78,26 +79,17 @@ export class ErrorBoundary extends React.Component {
 
   render() {
     if (this.state.errorInfo) {
-      if (isDevelopment()) {
-        return (
-          <div>
-            <h2>模块渲染异常</h2>
-            <details style={{ whiteSpace: 'pre-wrap' }}>
-              {this.state.error && (this.state.error as any).toString()}
-              <br />
-              {(this.state.errorInfo as any).componentStack}
-            </details>
-            <Button onClick={() => this.update()}>重新加载</Button>
-          </div>
-        );
-      } else {
-        return (
-          <div>
-            <p>模块渲染异常</p>
-            <Button onClick={() => this.update()}>重新加载</Button>
-          </div>
-        );
-      }
+      return (
+        <div>
+          <h2>模块渲染异常</h2>
+          <details style={{ whiteSpace: 'pre-wrap' }}>
+            {this.state.error && (this.state.error as any).toString()}
+            <br />
+            {(this.state.errorInfo as any).componentStack}
+          </details>
+          <Button onClick={() => this.update()}>重新加载</Button>
+        </div>
+      );
     }
     return this.props.children;
   }
@@ -105,14 +97,14 @@ export class ErrorBoundary extends React.Component {
 
 export const allSlot: {slot: string, dom: HTMLElement}[] = [];
 
-export const SlotDecorator: React.FC<{slot: string }> = ({slot, ...props}) => {
+export const SlotDecorator: React.FC<{ slot: string, color?: string }> = ({slot, ...props}) => {
   const ref = React.useRef<HTMLElement>();
   React.useEffect(() => {
     if (ref.current) {
       allSlot.push({slot, dom: ref.current});
     }
   }, [ref]);
-  return <div ref={(ele) => ref.current = ele!} className='resize-wrapper'>{props.children}</div>;
+  return <div ref={(ele) => ref.current = ele!} className='resize-wrapper' style={props.color ? {backgroundColor: props.color} : {}}>{props.children}</div>;
 };
 
 export interface RendererProps { components: ComponentRegistryInfo[]; }
@@ -146,23 +138,33 @@ export const slotRendererRegistry = new SlotRendererRegistry();
 
 export function SlotRenderer({ slot, ...props }: any) {
   const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
-  const layoutConfig = useInjectable<AppConfig>(AppConfig).layoutConfig;
-  const componentKeys = layoutConfig[slot]?.modules;
+  const appConfig = React.useContext(ConfigContext);
+  const clientApp = useInjectable<IClientApp>(IClientApp);
+  const componentKeys = appConfig.layoutConfig[slot]?.modules;
   if (!componentKeys || !componentKeys.length) {
     getDebugLogger().warn(`${slot}位置未声明任何视图`);
   }
-  const componentInfos: ComponentRegistryInfo[] = [];
-  componentKeys.forEach((token) => {
-    const info = componentRegistry.getComponentRegistryInfo(token);
-    if (!info) {
-      getDebugLogger().warn(`${token}对应的组件不存在，请检查`);
-    } else {
-      componentInfos.push(info);
-    }
-  });
+  const [componentInfos, setInfos] = React.useState<ComponentRegistryInfo[]>([]);
+  const updateComponentInfos = React.useCallback(() => {
+    const infos: ComponentRegistryInfo[] = [];
+    componentKeys.forEach((token) => {
+      const info = componentRegistry.getComponentRegistryInfo(token);
+      if (!info) {
+        getDebugLogger().warn(`${token}对应的组件不存在，请检查`);
+      } else {
+        infos.push(info);
+      }
+    });
+    setInfos(infos);
+  }, []);
+  React.useEffect(() => {
+    // 对于嵌套在模块视图的SlotRenderer，渲染时应用已启动
+    clientApp.appInitialized.promise.then(updateComponentInfos);
+  }, []);
+
   const Renderer = slotRendererRegistry.getSlotRenderer(slot);
   return <ErrorBoundary>
-    <SlotDecorator slot={slot}>
+    <SlotDecorator slot={slot} color={props.color}>
       <Renderer components={componentInfos} {...props} />
     </SlotDecorator>
   </ErrorBoundary>;
