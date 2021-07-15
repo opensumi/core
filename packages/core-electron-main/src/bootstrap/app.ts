@@ -256,10 +256,15 @@ class ElectronMainLifeCycleApi implements IElectronMainApiProvider<void> {
 
       if (codeWindow.isReloading) {
         codeWindow.isReloading = false;
-        codeWindow.startNode().then(() => {
-          window.webContents.reload();
-        });
+
+        // reload 的情况下不需要等待 startNode 执行完
+        // 所以可以同时执行 startNode 和 reload 前端
+        codeWindow.startNode();
+        window.webContents.reload();
       } else {
+        // 正常关闭窗口的情况下，需要回收子进程，耗时可能会比较长
+        // 这里先隐藏窗口，体感会更快
+        window.hide();
         codeWindow.clear().finally(() => {
           window.close();
         });
