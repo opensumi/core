@@ -6,11 +6,13 @@ import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/l
 export const THEME_TOGGLE_COMMAND: Command = {
   id: 'theme.toggle',
   label: '%theme.toggle%',
+  alias: 'Color Theme',
 };
 
 export const ICON_THEME_TOGGLE_COMMAND: Command = {
   id: 'theme.icon.toggle',
   label: '%theme.icon.toggle%',
+  alias: 'File Icon Theme',
 };
 
 @Domain(MenuContribution, CommandContribution)
@@ -103,14 +105,14 @@ export class ThemeContribution implements MenuContribution, CommandContribution 
   protected async updateTopPreference(key: string, value: string) {
     const effectiveScope = this.preferenceService.resolve(key).scope;
     // 最小就更新 User 的值
-    if ( typeof effectiveScope === 'undefined' || effectiveScope <= PreferenceScope.User) {
+    if (typeof effectiveScope === 'undefined' || effectiveScope <= PreferenceScope.User) {
       await this.preferenceService.set(key, value, PreferenceScope.User);
     } else {
       await this.preferenceService.set(key, value, effectiveScope);
     }
   }
 
-  protected showPickWithPreview(pickItems: {label: string; value: string, groupLabel?: string}[], options: QuickOpenOptions, onFocusChange: (value: string) => void) {
+  protected showPickWithPreview(pickItems: { label: string; value: string, groupLabel?: string }[], options: QuickOpenOptions, onFocusChange: (value: string) => void) {
     return new Promise((resolve: (value: string | undefined) => void) => {
       const items: QuickOpenItem[] = [];
       pickItems.forEach((item, index) => {
@@ -128,7 +130,7 @@ export class ThemeContribution implements MenuContribution, CommandContribution 
             return false;
           },
         };
-        items.push(new QuickOpenItem(Object.assign(baseOption, {groupLabel: item.groupLabel, showBorder: !!item.groupLabel && index !== 0})));
+        items.push(new QuickOpenItem(Object.assign(baseOption, { groupLabel: item.groupLabel, showBorder: !!item.groupLabel && index !== 0 })));
       });
       this.quickOpenService.open({
         onType: (_, acceptor) => acceptor(items),
