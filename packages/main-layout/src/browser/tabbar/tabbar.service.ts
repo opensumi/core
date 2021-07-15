@@ -1,4 +1,4 @@
-import { toDisposable, WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService, getTabbarCtxKey, IContextKey, DisposableCollection, IScopedContextKeyService } from '@ali/ide-core-browser';
+import { toDisposable, WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService, getTabbarCtxKey, IContextKey, DisposableCollection, IScopedContextKeyService } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action, observe, computed } from 'mobx';
 import { AbstractContextMenuService, AbstractMenuService, IContextMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -96,7 +96,6 @@ export class TabbarService extends WithEventBus {
   private moreMenuId = `tabbar/${this.location}/more`;
   private isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
   private activatedKey: IContextKey<string>;
-  private rendered = false;
   private sortedContainers: Array<ComponentRegistryInfo> = [];
   private disposableMap: Map<string, DisposableCollection> = new Map();
   private tabInMoreKeyMap: Map<string, IContextKey<boolean>> = new Map();
@@ -200,41 +199,16 @@ export class TabbarService extends WithEventBus {
     this.updatePanelVisibility(this.containersMap.size > 0);
     // 需要立刻设置state，lazy 逻辑会导致computed 的 visibleContainers 可能在计算时触发变更，抛出mobx invariant错误
     // 另外由于containersMap不是observable, 这边setState来触发visibaleContainers更新
-    if (this.rendered) {
-      // 渲染后状态已恢复，使用状态内的顺序或插到最后
-      if (!this.storedState[containerId]) {
-        // kaitian拓展都在渲染后注册
-        // 注册策略： 此时 componnentInfo 的 priority 代表的是从后往前的 index;
-        // 比如 priority 如果为 0, 则会在最后
-        // 如果已有元素长度为 9, priority为 8， 则会在第1个元素之后
-        let insertIndex = Math.floor(this.sortedContainers.length - (componentInfo.options!.priority || 0));
-        if (insertIndex > this.sortedContainers.length) {
-          insertIndex = this.sortedContainers.length;
-        } else if (insertIndex < 0) {
-          insertIndex = 0;
-        }
-        this.sortedContainers.splice(insertIndex, 0, componentInfo);
-        for (let i = insertIndex; i < this.sortedContainers.length; i++) {
-          const info = this.sortedContainers[i];
-          const containerId = info.options!.containerId;
-          const prevState = this.getContainerState(containerId) || {}; // 保留原有的hidden状态
-          this.state.set(info.options!.containerId, {hidden: prevState.hidden , priority: i});
-        }
-      } else {
-        this.state.set(componentInfo.options!.containerId, this.storedState[containerId]);
-      }
-    } else {
-      // 渲染前根据priority排序
-      let insertIndex = this.sortedContainers.findIndex((item) => (item.options!.priority || 1) <= (componentInfo.options!.priority || 1));
-      if (insertIndex === -1) {
-        insertIndex = this.sortedContainers.length;
-      }
-      this.sortedContainers.splice(insertIndex, 0, componentInfo);
-      for (let i = insertIndex; i < this.sortedContainers.length; i++) {
-        const info = this.sortedContainers[i];
-        const prevState = this.getContainerState(containerId) || {}; // 保留原有的hidden状态
-        this.state.set(info.options!.containerId, {hidden: prevState.hidden, priority: i});
-      }
+    // 注册时直接根据priority排序，restoreState时恢复到记录的状态（对于集成侧在onDidStart之后注册的视图，不提供顺序状态恢复能力）
+    let insertIndex = this.sortedContainers.findIndex((item) => (item.options!.priority || 1) <= (componentInfo.options!.priority || 1));
+    if (insertIndex === -1) {
+      insertIndex = this.sortedContainers.length;
+    }
+    this.sortedContainers.splice(insertIndex, 0, componentInfo);
+    for (let i = insertIndex; i < this.sortedContainers.length; i++) {
+      const info = this.sortedContainers[i];
+      const prevState = this.getContainerState(containerId) || {}; // 保留原有的hidden状态
+      this.state.set(info.options!.containerId, {hidden: prevState.hidden, priority: i});
     }
     disposables.push(this.registerSideEffects(componentInfo));
     this.eventBus.fire(new TabBarRegistrationEvent({tabBarId: containerId}));
@@ -590,12 +564,6 @@ export class TabbarService extends WithEventBus {
       }
     }
     this.storeState();
-  }
-
-  @OnEvent(RenderedEvent)
-  protected async onDidRender() {
-    this.restoreState();
-    this.rendered = true;
   }
 
   protected shouldExpand(containerId: string) {

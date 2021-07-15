@@ -1,9 +1,9 @@
 import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, CommandService } from '@ali/ide-core-common/lib/command';
-import { Domain, IEventBus, ContributionProvider, localize, OnEvent, WithEventBus } from '@ali/ide-core-common';
+import { Domain, IEventBus, ContributionProvider, localize, WithEventBus } from '@ali/ide-core-common';
 import { IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererContribution, SlotRendererRegistry, slotRendererRegistry, KeybindingRegistry } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '../common';
-import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, ToolbarRegistry, RenderedEvent } from '@ali/ide-core-browser/lib/layout';
+import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { RightTabRenderer, LeftTabRenderer, NextBottomTabRenderer } from './tabbar/renderer.view';
 import { getIcon } from '@ali/ide-core-browser';
@@ -138,6 +138,10 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
       iconClass: getIcon('experiment'),
       fromExtension: true,
     }, SlotLocation.left);
+  }
+
+  async onDidStart() {
+    this.mainLayoutService.didMount();
   }
 
   registerRenderer(registry: SlotRendererRegistry) {
@@ -305,11 +309,6 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
       when: '!leftPanelVisible',
       group: '5_panel',
     });
-  }
-
-  @OnEvent(RenderedEvent)
-  didMount() {
-    this.mainLayoutService.didMount();
   }
 
   protected registerSideToggleKey() {

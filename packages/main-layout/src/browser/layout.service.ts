@@ -43,7 +43,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   private handleMap: Map<string, TabBarHandler> = new Map();
 
-  private services: Map<string, TabbarService> = new Map();
+  private tabbarServices: Map<string, TabbarService> = new Map();
 
   private accordionServices: Map<string, AccordionService> = new Map();
 
@@ -82,6 +82,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       }
     }
     this.restoreState();
+    // 渲染之后注册的tab不再恢复状态
+    this.tabbarServices.forEach((service) => service.restoreState());
     this.viewReady.resolve();
   }
 
@@ -110,7 +112,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         size: undefined,
       },
     });
-    for (const service of this.services.values()) {
+    for (const service of this.tabbarServices.values()) {
       const {currentId, size} = this.state[service.location] || {};
       service.prevSize = size;
       let defaultContainer = service.visibleContainers[0] && service.visibleContainers[0].options!.containerId;
@@ -175,8 +177,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   // TODO: noAccordion应该由视图决定，service不需要关心
   getTabbarService(location: string, noAccordion?: boolean) {
-    const service = this.services.get(location) || this.injector.get(TabbarService, [location, noAccordion]);
-    if (!this.services.get(location)) {
+    const service = this.tabbarServices.get(location) || this.injector.get(TabbarService, [location, noAccordion]);
+    if (!this.tabbarServices.get(location)) {
       service.onCurrentChange(({currentId}) => {
         this.storeState(service, currentId);
         // onView 也支持监听 containerId
@@ -189,7 +191,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         }
       });
       service.onSizeChange(() => debounce(() => this.storeState(service, service.currentContainerId), 200)());
-      this.services.set(location, service);
+      this.tabbarServices.set(location, service);
     }
     return service;
   }
@@ -226,7 +228,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     let activityHandler = this.handleMap.get(containerId);
     if (!activityHandler) {
       let location: string | undefined;
-      for (const service of this.services.values()) {
+      for (const service of this.tabbarServices.values()) {
         if (service.getContainer(containerId)) {
           location = service.location;
           break;
@@ -375,7 +377,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   disposeContainer(containerId: string) {
     let location: string | undefined;
-    for (const service of this.services.values()) {
+    for (const service of this.tabbarServices.values()) {
       if (service.getContainer(containerId)) {
         location = service.location;
         break;
