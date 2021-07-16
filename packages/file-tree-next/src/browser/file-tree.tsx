@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
 import { ViewState, useInjectable, isOSX, URI } from '@ali/ide-core-browser';
 import { RecycleTreeFilterDecorator, RecycleTree, TreeNodeType, INodeRendererWrapProps, IRecycleTreeFilterHandle, TreeModel } from '@ali/ide-components';
 import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
@@ -17,8 +16,8 @@ export const FILE_TREE_FILTER_DELAY = 500;
 
 const FilterableRecycleTree = RecycleTreeFilterDecorator(RecycleTree);
 
-export const FileTree = observer(({
-  viewState,
+export const FileTree = ({
+ viewState,
 }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const [isReady, setIsReady] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -28,7 +27,6 @@ export const FileTree = observer(({
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   const { height } = viewState;
-
   const { decorationService, labelService, iconService, filterMode, locationToCurrentFile, indent, baseIndent } = useInjectable<FileTreeService>(IFileTreeService);
   const fileTreeModelService = useInjectable<FileTreeModelService>(FileTreeModelService);
 
@@ -274,4 +272,4 @@ export const FileTree = observer(({
   >
     {renderFileTree()}
   </div>;
-});
+};

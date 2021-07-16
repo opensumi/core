@@ -1,9 +1,9 @@
 import * as React from 'react';
 import * as cls from 'classnames';
 import * as styles from './styles.module.less';
-import { getIcon, ErrorBoundary } from '@ali/ide-core-browser';
+import { getIcon, ErrorBoundary, useViewState } from '@ali/ide-core-browser';
 import { Layout, PanelContext } from '@ali/ide-core-browser/lib/components';
-import { useInjectable, ViewUiStateManager } from '@ali/ide-core-browser';
+import { useInjectable } from '@ali/ide-core-browser';
 import { InlineActionBar, InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
 import { isIMenu, IMenu, IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@ali/ide-core-browser/lib/progress';
@@ -55,26 +55,7 @@ export const AccordionSection = (
     onContextMenuHandler,
   }: CollapsePanelProps,
 ) => {
-  const viewStateManager = useInjectable<ViewUiStateManager>(ViewUiStateManager);
-  const contentRef = React.useRef<HTMLDivElement | null>();
-  React.useEffect(() => {
-    if (contentRef.current) {
-      const ResizeObserver = (window as any).ResizeObserver;
-      let lastFrame: number | null;
-      const resizeObserver = new ResizeObserver((entries) => {
-        if (lastFrame) {
-          window.cancelAnimationFrame(lastFrame);
-        }
-        lastFrame = window.requestAnimationFrame(() => {
-          viewStateManager.updateSize(viewId, entries[0].contentRect.height, entries[0].contentRect.width);
-        });
-      });
-      resizeObserver.observe(contentRef.current);
-      return () => {
-        resizeObserver.unobserve(contentRef.current);
-      };
-    }
-  }, [contentRef]);
+  const contentRef = React.useRef<HTMLDivElement | null>(null);
 
   const [headerFocused, setHeaderFocused] = React.useState(false);
 
@@ -103,8 +84,7 @@ export const AccordionSection = (
     setHeaderFocused(false);
   };
 
-  const viewState = viewStateManager.getState(viewId);
-
+  const viewState = useViewState(viewId, contentRef, true);
   const progressService: IProgressService = useInjectable(IProgressService);
   const indicator = progressService.getIndicator(viewId)!;
 
@@ -138,7 +118,7 @@ export const AccordionSection = (
       <div
         className={ cls([styles.kt_split_panel_body, {[styles.hide]: !expanded}]) }
         style={ bodyStyle }
-        ref={(ele) =>  contentRef.current = ele}
+        ref={contentRef}
       >
         <ProgressBar className={styles.progressBar} progressModel={indicator.progressModel} />
         <ErrorBoundary>

@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
 import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
 import { Input, ValidateInput, CheckBox, Popover, PopoverTriggerType, PopoverPosition } from '@ali/ide-components';
@@ -43,7 +42,7 @@ function getExcludeRuleContent(excludeList: string[]) {
   );
 }
 
-export const Search = observer(({
+export const Search = ({
   viewState,
 }: React.PropsWithChildren<{ viewState: ViewState }>,
 ) => {
@@ -255,4 +254,4 @@ export const Search = observer(({
       }
     </div >
   );
-});
+};

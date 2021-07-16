@@ -7,6 +7,7 @@ import { RESIZE_LOCK } from '@ali/ide-core-browser/lib/components';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { IProgressService } from '@ali/ide-core-browser/lib/progress';
 import { ViewCollapseChangedEvent } from '../../common';
+import { debounce } from 'lodash';
 
 export interface SectionState {
   collapsed: boolean;
@@ -108,6 +109,7 @@ export class AccordionService extends WithEventBus {
       (last, event) =>  last || event.payload.affectsSome(this.viewWhenContextkeys),
       50,
     )((e) => e && this.handleContextKeyChange(), this));
+    this.listenWindowResize();
   }
 
   restoreState() {
@@ -115,7 +117,9 @@ export class AccordionService extends WithEventBus {
     const defaultState: {[containerId: string]: SectionState} = {};
     this.visibleViews.forEach((view) => defaultState[view.id] = { collapsed: false, hidden: false });
     const restoredState = this.layoutState.getState(LAYOUT_STATE.getContainerSpace(this.containerId), defaultState);
-    this.state = restoredState;
+    if (restoredState !== defaultState) {
+      this.state = restoredState;
+    }
     this.popViewKeyIfOnlyOneViewVisible();
     this.restoreSize();
     this.rendered = true;
@@ -225,6 +229,7 @@ export class AccordionService extends WithEventBus {
 
   @OnEvent(ResizeEvent)
   protected onResize(e: ResizeEvent) {
+    // 监听来自resize组件的事件
     if (e.payload.slotLocation) {
       if (this.state[e.payload.slotLocation]) {
         const id = e.payload.slotLocation;
@@ -236,6 +241,33 @@ export class AccordionService extends WithEventBus {
         }
       }
     }
+  }
+
+  protected listenWindowResize() {
+    // 监听窗口resize事件
+    const doUpdate = debounce(() => {
+      let largestViewId: string | undefined;
+      Object.keys(this.state).forEach((id) => {
+        if (!(this.state[id].hidden || this.state[id].collapsed)) {
+          if (!largestViewId) {
+            largestViewId = id;
+          } else {
+            if ((this.state[id].size || 0) > (this.state[largestViewId].size || 0)) {
+              largestViewId = id;
+            }
+          }
+        }
+      });
+      if (largestViewId) {
+        if (this.expandedViews.length > 1) {
+          const diffSize = this.splitPanelService.rootNode.clientHeight - Object.keys(this.state).reduce((acc, id) => acc + (this.state[id].collapsed ? this.headerSize : (this.state[id].hidden ? 0 : this.state[id].size!)), 0);
+          this.state[largestViewId].size! += diffSize;
+        }
+        this.toggleOpen(largestViewId, false);
+      }
+    }, 16);
+    window.addEventListener('resize', doUpdate);
+    this.addDispose({dispose: () => window.removeEventListener('resize', doUpdate)});
   }
 
   private createRevealContextKey(viewId: string) {
@@ -360,8 +392,9 @@ export class AccordionService extends WithEventBus {
 
   public getViewState(viewId: string) {
     let viewState = this.state[viewId];
+    const view = this.views.find((item) => item.id === viewId);
     if (!viewState) {
-      this.state[viewId] = { collapsed: false, hidden: false };
+      this.state[viewId] = { collapsed: view?.collapsed || false, hidden: view?.hidden || false };
       viewState = this.state[viewId]!;
     }
     return viewState;

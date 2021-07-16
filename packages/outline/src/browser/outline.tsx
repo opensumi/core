@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
-import { observer } from 'mobx-react-lite';
 import { ViewState } from '@ali/ide-core-browser';
 import { localize } from '@ali/ide-core-browser';
 import { RecycleTree, IRecycleTreeHandle, INodeRendererWrapProps, TreeNodeType } from '@ali/ide-components';
@@ -10,7 +9,7 @@ import { OutlineModelService } from './services/outline-model.service';
 import { OUTLINE_TREE_NODE_HEIGHT, OutlineNode } from './outline-node';
 import { OutlineTreeModel } from './services/outline-model';
 
-export const OutlinePanel = observer(({
+export const OutlinePanel = ({
   viewState,
 }: React.PropsWithChildren<{viewState: ViewState}>) => {
   const [model, setModel] = React.useState<OutlineTreeModel | undefined>();
@@ -117,4 +116,4 @@ export const OutlinePanel = observer(({
   >
     { renderContent() }
   </div>;
-});
+};

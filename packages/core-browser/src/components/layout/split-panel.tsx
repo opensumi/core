@@ -65,14 +65,10 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
   // convert children to list
   const childList = React.Children.toArray(children);
   const totalFlexNum = childList.reduce((accumulator, item) => accumulator + (getProp(item, 'flex') !== undefined ? item['props'].flex : 1), 0);
-  let totalSize: number = useDomSize ? 0 : childList.reduce((accumulator, item) => accumulator + (getProp(item, 'savedSize') !== undefined ? item['props'].savedSize : 0), 0);
   const elements: React.ReactNodeArray = [];
   const resizeDelegates = React.useRef<IResizeHandleDelegate[]>([]);
   const eventBus = useInjectable<IEventBus>(IEventBus);
   const rootRef = React.useRef<HTMLElement>();
-  if (useDomSize && rootRef.current) {
-    totalSize = rootRef.current.clientHeight;
-  }
 
   const splitPanelService = useInjectable<SplitPanelManager>(SplitPanelManager).getService(id);
   const maxLockState = React.useRef(childList.map(() => false));
@@ -207,11 +203,13 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
           }}
           id={getProp(element, 'id') /* @deprecated: query by data-view-id */}
           style={{
-            [Layout.getSizeProperty(direction)]: getElementSize(element),
+            // 手风琴场景，固定尺寸和flex尺寸混合布局；需要在resize flex模式下禁用
+            ...(element['props'].flex && !element['props'].savedSize) && !childList.find((item) => item!['props'].flexGrow) ? {flex: element['props'].flex} : {[Layout.getSizeProperty(direction)]: getElementSize(element)},
             // 相对尺寸带来的问题，必须限制最小最大尺寸
             [Layout.getMinSizeProperty(direction)]: getProp(element, 'minSize') ? element['props'].minSize + 'px' : '-1px',
             [Layout.getMaxSizeProperty(direction)]: maxLocks[index] && getProp(element, 'minSize') ? element['props'].minSize + 'px' : 'unset',
-            flexGrow: getProp(element, 'flexGrow') !== undefined ? element['props'].flexGrow : 'unset',
+            // resize flex模式下应用flexGrow
+            ...getProp(element, 'flexGrow') !== undefined ? {flexGrow: element['props'].flexGrow} : {},
             display: hides[index] ? 'none' : 'block',
           }}>
           {element}
@@ -222,7 +220,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
 
   function getElementSize(element: any) {
     if (element.props.savedSize) {
-      return element.props.savedSize / totalSize * 100 + '%';
+      return element.props.savedSize + 'px';
     } else if (element.props.defaultSize !== undefined) {
       return element.props.defaultSize + 'px';
     } else if (element.props.flex) {

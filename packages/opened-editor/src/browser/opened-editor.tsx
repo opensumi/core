@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
-import { observer } from 'mobx-react-lite';
 import { ViewState } from '@ali/ide-core-browser';
 import { localize } from '@ali/ide-core-browser';
 import { RecycleTree, IRecycleTreeHandle, INodeRendererWrapProps, TreeNodeType } from '@ali/ide-components';
@@ -10,7 +9,7 @@ import { EditorFile, EditorFileGroup } from './opened-editor-node.define';
 
 import * as styles from './index.module.less';
 
-export const ExplorerOpenEditorPanel = observer(({
+export const ExplorerOpenEditorPanel = ({
   viewState,
 }: React.PropsWithChildren<{viewState: ViewState}>) => {
   const OPEN_EDITOR_NODE_HEIGHT = 22;
@@ -128,4 +127,4 @@ export const ExplorerOpenEditorPanel = observer(({
   >
     { renderContent() }
   </div>;
-});
+};

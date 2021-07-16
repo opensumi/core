@@ -61,7 +61,7 @@ export const AccordionContainer: React.FC<{
         initialProps={view.initialProps}
         titleMenu={titleMenu}
         titleMenuContext={view.titleMenuContext}
-        savedSize={nextSize}
+        savedSize={collapsed ? headerSize : nextSize}
         flex={view.weight || 1}>
         {view.component}
       </AccordionSection>;

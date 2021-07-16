@@ -1,7 +1,9 @@
 import { SlotLocation, AppConfig } from '../react-providers';
 import { Autowired, Injectable } from '@ali/common-di';
-import { BasicEvent, getDebugLogger, MaybeNull } from '@ali/ide-core-common';
+import { BasicEvent, getDebugLogger, IEventBus, MaybeNull } from '@ali/ide-core-common';
 import { IMenu, IContextMenu } from '../menu/next';
+import { useInjectable } from '../react-hooks';
+import React = require('react');
 
 export class VisibleChangedPayload {
 
@@ -156,6 +158,10 @@ export interface ComponentContribution {
 export const ComponentContribution = Symbol('ComponentContribution');
 
 export class ResizePayload {
+  /**
+   * Resize事件，会在用户拖动resize或窗口resize时触发
+   * @param slotLocation 可能为slot或viewId
+   */
   constructor(public slotLocation: SlotLocation) {
   }
 }
@@ -170,6 +176,44 @@ export interface ViewState {
   height: number;
 }
 
+export const useViewState = (location: string, containerRef: React.MutableRefObject<HTMLElement | null | undefined>, manualObserve?: boolean): ViewState => {
+  const eventBus = useInjectable<IEventBus>(IEventBus);
+  const [viewState, setViewState] = React.useState({width: 0, height: 0});
+  React.useEffect(() => {
+    let lastFrame: number | null;
+    const disposer = eventBus.on(ResizeEvent, (e) => {
+      if (!manualObserve && e.payload.slotLocation === location) {
+        if (lastFrame) {
+          window.cancelAnimationFrame(lastFrame);
+        }
+        lastFrame = window.requestAnimationFrame(() => {
+          if (containerRef.current && containerRef.current.clientHeight && containerRef.current.clientWidth) {
+            setViewState({height: containerRef.current.clientHeight || 0, width: containerRef.current.clientWidth || 0});
+          }
+        });
+      }
+    });
+    return () => {
+      disposer.dispose();
+    };
+  }, [containerRef.current]);
+
+  React.useEffect(() => {
+    // TODO: 统一收敛到 resizeEvent 内
+    if (manualObserve && containerRef.current) {
+      const ResizeObserver = (window as any).ResizeObserver;
+      const doUpdate = (entries) => {
+        setViewState({width: entries[0].contentRect.width, height: entries[0].contentRect.height});
+      };
+      const resizeObserver = new ResizeObserver(doUpdate);
+      resizeObserver.observe(containerRef.current);
+      return () => {
+        resizeObserver.unobserve(containerRef.current);
+      };
+    }
+  }, []);
+  return viewState;
+};
+
 export * from './accordion/view-context-key.registry';
-export * from './accordion/view-container-state';
 export * from './accordion/tab-bar-toolbar';

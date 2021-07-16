@@ -394,6 +394,11 @@ export class TabbarService extends WithEventBus {
         this.state.set(containerId, this.storedState[containerId]);
       }
     }
+    this.visibleContainers.forEach((container) => {
+      if (SUPPORT_ACCORDION_LOCATION.has(this.location)) {
+        this.tryRestoreAccordionSize(container.options!.containerId);
+      }
+    });
   }
 
   protected doInsertTab(containers: ComponentRegistryInfo[], sourceIndex: number, targetIndex: number) {
@@ -615,9 +620,6 @@ export class TabbarService extends WithEventBus {
         } else {
           lockSize(false);
         }
-        if (SUPPORT_ACCORDION_LOCATION.has(this.location)) {
-          this.tryRestoreAccordionSize(currentId);
-        }
         this.activatedKey.set(currentId);
       } else {
         setSize(this.barSize);
@@ -637,10 +639,8 @@ export class TabbarService extends WithEventBus {
     }
     const accordionService = this.layoutService.getAccordionService(containerId);
     // 需要保证此时tab切换已完成dom渲染
-    setTimeout(() => {
-      accordionService.restoreState();
-      this.accordionRestored.add(containerId);
-    }, 0);
+    accordionService.restoreState();
+    this.accordionRestored.add(containerId);
   }
 
   protected handleFullExpanded(currentId: string, isCurrentExpanded?: boolean) {

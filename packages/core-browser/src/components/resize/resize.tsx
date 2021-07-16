@@ -498,8 +498,11 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     if (prevEle.classList.contains(RESIZE_LOCK) || nextEle.classList.contains(RESIZE_LOCK)) {
       return;
     }
-    nextEle.style.height = next * 100 + '%';
-    prevEle.style.height = prev * 100 + '%';
+    // 有固定尺寸时删除flex属性
+    nextEle.style.height = next + 'px';
+    prevEle.style.height = prev + 'px';
+    nextEle.style.flex = 'unset';
+    prevEle.style.flex = 'unset';
     if (props.onResize && nextEle && prevEle) {
       props.onResize(prevEle, nextEle);
     }
@@ -590,7 +593,6 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     if (requestFrame.current) {
       window.cancelAnimationFrame(requestFrame.current);
     }
-    const parentHeight = ref.current!.parentElement!.offsetHeight;
     requestFrame.current = window.requestAnimationFrame(() => {
       const prevMinResize = cachedPrevElement.current!.dataset.minResize || 0;
       const nextMinResize = cachedNextElement.current!.dataset.minResize || 0;
@@ -602,7 +604,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
       if (props.flexMode) {
         flexModeSetSize(prevHeight, nextHeight);
       } else {
-        setDomSize(prevHeight / parentHeight, nextHeight / parentHeight, cachedPrevElement.current!, cachedNextElement.current!);
+        setDomSize(prevHeight, nextHeight, cachedPrevElement.current!, cachedNextElement.current!);
       }
     });
   });

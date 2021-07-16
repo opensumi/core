@@ -5,7 +5,6 @@ import { useInjectable, ViewState, CommandService, EDITOR_COMMANDS, URI } from '
 import * as styles from './debug-breakpoints.module.less';
 import * as cls from 'classnames';
 import { CheckBox } from '@ali/ide-components';
-import { observer } from 'mobx-react-lite';
 import { DebugBreakpoint, DebugExceptionBreakpoint, isDebugBreakpoint, isRuntimeBreakpoint, getStatus, ISourceBreakpoint } from '../../breakpoint';
 import { Badge, RecycleList } from '@ali/ide-components';
 import { DebugSessionManager } from '../../debug-session-manager';
@@ -18,7 +17,7 @@ export interface BreakpointItem {
   breakpoint: DebugBreakpoint | DebugExceptionBreakpoint;
 }
 
-export const DebugBreakpointView = observer(({
+export const DebugBreakpointView = ({
   viewState,
 }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const {
@@ -46,7 +45,7 @@ export const DebugBreakpointView = observer(({
       style={ containerStyle }
     />
   </div>;
-});
+};
 
 export const BreakpointItem = ({
   data,
