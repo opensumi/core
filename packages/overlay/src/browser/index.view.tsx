@@ -3,25 +3,33 @@ import { observer } from 'mobx-react-lite';
 
 import { CtxMenu } from './ctx-menu/ctx-menu.view';
 import { Dialog } from './dialog.view';
-import { ComponentRenderer, ComponentRegistry, SlotLocation, useInjectable, AppConfig } from '@ali/ide-core-browser';
+import { ComponentRenderer, ComponentRegistry, SlotLocation, useInjectable, AppConfig, IClientApp } from '@ali/ide-core-browser';
 import './styles.module.less';
 
 export const Overlay = observer(() => {
   const componentRegistry: ComponentRegistry = useInjectable(ComponentRegistry);
-  const extraComponents: React.ComponentType[] = [];
+  const clientApp = useInjectable(IClientApp);
+  const [extraComponents, setExtra] = React.useState<React.ComponentType[]>([]);
   const appConfig: AppConfig = useInjectable(AppConfig);
-  if (appConfig.layoutConfig[SlotLocation.extra]?.modules) {
-    appConfig.layoutConfig[SlotLocation.extra].modules.forEach((name) => {
-      const info = componentRegistry.getComponentRegistryInfo(name);
-      if (info) {
-        (info.views || []).forEach((v) => {
-          if (v.component) {
-            extraComponents.push(v.component!);
+  React.useEffect(() => {
+    // 对于嵌套在模块视图的SlotRenderer，渲染时应用已启动
+    clientApp.appInitialized.promise.then(() => {
+      if (appConfig.layoutConfig[SlotLocation.extra]?.modules) {
+        const components: React.ComponentType[] = [];
+        appConfig.layoutConfig[SlotLocation.extra].modules.forEach((name) => {
+          const info = componentRegistry.getComponentRegistryInfo(name);
+          if (info) {
+            (info.views || []).forEach((v) => {
+              if (v.component) {
+                components.push(v.component!);
+              }
+            });
           }
         });
+        setExtra(components);
       }
     });
-  }
+  }, []);
 
   return (
     <div id='ide-overlay' className='ide-overlay'>
