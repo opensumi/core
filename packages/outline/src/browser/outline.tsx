@@ -58,6 +58,7 @@ export const OutlinePanel = ({
   };
 
   React.useEffect(() => {
+    setModel(outlineModelService.treeModel);
     const disposable = outlineModelService.onDidUpdateTreeModel(async (model?: OutlineTreeModel) => {
       setModel(model);
     });
@@ -87,7 +88,7 @@ export const OutlinePanel = ({
     onTwistierClick={handleTwistierClicked}
     defaultLeftPadding={8}
     leftPadding={8}
-  />, [outlineModelService.treeModel]);
+  />, [model]);
 
   const renderContent = () => {
     if (!model) {
@@ -98,7 +99,7 @@ export const OutlinePanel = ({
         width={width}
         itemHeight={OUTLINE_TREE_NODE_HEIGHT}
         onReady={handleTreeReady}
-        model={outlineModelService.treeModel}
+        model={model}
         placeholder={() => {
           return <span className={styles.outline_empty_text}>{localize('outline.noinfo')}</span>;
         }}

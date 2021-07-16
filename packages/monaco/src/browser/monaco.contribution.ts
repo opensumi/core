@@ -136,9 +136,6 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
     // 监听 preferences 更新事件，同步更新 mime
     this.setPreferencesChangeListener();
 
-    // monaco 的 keycode 和 ide 之间的映射
-    this.KEY_CODE_MAP = require('./monaco.keycode-map').KEY_CODE_MAP;
-
     // 修改一些 Monaco 内置 Services 的行为
     this.patchMonacoInternalServices();
 
@@ -301,6 +298,9 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
+    // monaco 的 keycode 和 ide 之间的映射
+    this.KEY_CODE_MAP = require('./monaco.keycode-map').KEY_CODE_MAP;
+
     const monacoKeybindingsRegistry = monacoKeybindings.KeybindingsRegistry;
     const editorFocus = EditorContextKeys.focus;
 

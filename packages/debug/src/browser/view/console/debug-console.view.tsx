@@ -114,7 +114,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
       defaultLeftPadding={14}
       leftPadding={8}
     />;
-  }, [model!.treeModel]);
+  }, [model]);
 
   const renderOutputContent = () => {
     if (!model) {
