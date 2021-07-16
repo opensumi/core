@@ -78,6 +78,18 @@ export const OutlinePanel = observer(({
     };
   }, [wrapperRef.current]);
 
+  const renderTreeNode = React.useCallback((props: INodeRendererWrapProps) => <OutlineNode
+    item={props.item}
+    itemType={props.itemType}
+    decorationService={decorationService}
+    commandService={commandService}
+    decorations={outlineModelService.decorations.getDecorations(props.item as any)}
+    onClick={handleItemClicked}
+    onTwistierClick={handleTwistierClicked}
+    defaultLeftPadding={8}
+    leftPadding={8}
+  />, [outlineModelService.treeModel]);
+
   const renderContent = () => {
     if (!model) {
       return <span className={styles.outline_empty_text}>{localize('outline.noinfo')}</span>;
@@ -92,17 +104,7 @@ export const OutlinePanel = observer(({
           return <span className={styles.outline_empty_text}>{localize('outline.noinfo')}</span>;
         }}
       >
-        {(props: INodeRendererWrapProps) => <OutlineNode
-            item={props.item}
-            itemType={props.itemType}
-            decorationService={decorationService}
-            commandService={commandService}
-            decorations={outlineModelService.decorations.getDecorations(props.item as any)}
-            onClick={handleItemClicked}
-            onTwistierClick={handleTwistierClicked}
-            defaultLeftPadding={8}
-            leftPadding={8}
-          />}
+        {renderTreeNode}
       </RecycleTree>;
     }
   };

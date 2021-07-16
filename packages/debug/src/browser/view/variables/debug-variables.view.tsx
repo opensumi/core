@@ -73,6 +73,20 @@ export const DebugVariableView = observer(({
     enactiveNodeDecoration();
   };
 
+  const renderVariableNode = React.useCallback((props: INodeRendererWrapProps) => {
+    const decorations = debugVariablesModelService.decorations.getDecorations(props.item as any);
+    return <DebugVariableRenderedNode
+      item={props.item}
+      itemType={props.itemType}
+      decorations={decorations}
+      onClick={handleTwistierClick}
+      onTwistierClick={handleTwistierClick}
+      onContextMenu={handlerContextMenu}
+      defaultLeftPadding={8}
+      leftPadding={8}
+    />;
+  }, [model]);
+
   const renderContent = () => {
     if (!model) {
       return <span></span>;
@@ -88,19 +102,7 @@ export const DebugVariableView = observer(({
         }}
         overflow={ 'auto' }
       >
-        {(props: INodeRendererWrapProps) => {
-          const decorations = debugVariablesModelService.decorations.getDecorations(props.item as any);
-          return <DebugVariableRenderedNode
-            item={props.item}
-            itemType={props.itemType}
-            decorations={decorations}
-            onClick={handleTwistierClick}
-            onTwistierClick={handleTwistierClick}
-            onContextMenu={handlerContextMenu}
-            defaultLeftPadding={8}
-            leftPadding={8}
-          />;
-        }}
+        {renderVariableNode}
       </RecycleTree>;
     }
   };

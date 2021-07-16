@@ -135,6 +135,20 @@ export const ExtensionTabBarTreeView = observer(({
     };
   }, [wrapperRef.current]);
 
+  const renderTreeNode = React.useCallback((props: INodeRendererProps) => {
+    return <TreeViewNode
+      item={props.item as any}
+      itemType={props.itemType}
+      decorations={model.decorations.getDecorations(props.item as any)}
+      onClick={handleItemClicked}
+      onTwistierClick={handleTwistierClick}
+      onContextMenu={handlerContextMenu}
+      defaultLeftPadding={8}
+      leftPadding={8}
+      treeViewId={treeViewId}
+    />;
+  }, [model.treeModel]);
+
   const renderTreeView = () => {
     if (!isReady) {
       return <ProgressBar loading />;
@@ -149,19 +163,7 @@ export const ExtensionTabBarTreeView = observer(({
           onReady={handleTreeReady}
           model={model.treeModel}
         >
-          {(props: INodeRendererProps) => {
-            return <TreeViewNode
-              item={props.item as any}
-              itemType={props.itemType}
-              decorations={model.decorations.getDecorations(props.item as any)}
-              onClick={handleItemClicked}
-              onTwistierClick={handleTwistierClick}
-              onContextMenu={handlerContextMenu}
-              defaultLeftPadding={8}
-              leftPadding={8}
-              treeViewId={treeViewId}
-            />;
-          }}
+          {renderTreeNode}
         </RecycleTree>;
       }
     }

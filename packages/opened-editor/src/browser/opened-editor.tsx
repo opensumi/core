@@ -87,6 +87,19 @@ export const ExplorerOpenEditorPanel = observer(({
     };
   }, [wrapperRef.current]);
 
+  const renderTreeNode = React.useCallback((props: INodeRendererWrapProps) => <EditorTreeNode
+    item={props.item}
+    itemType={props.itemType}
+    decorationService={decorationService}
+    labelService={labelService}
+    commandService={commandService}
+    decorations={openedEditorModelService.decorations.getDecorations(props.item as any)}
+    onClick={handleItemClicked}
+    onContextMenu={handlerContextMenu}
+    defaultLeftPadding={22}
+    leftPadding={0}
+  />, [openedEditorModelService.treeModel]);
+
   const renderContent = () => {
     if (!isReady) {
       return <span className={styles.opened_editor_empty_text}>{localize('opened.editors.empty')}</span>;
@@ -101,18 +114,7 @@ export const ExplorerOpenEditorPanel = observer(({
           return <span className={styles.opened_editor_empty_text}>{localize('opened.editors.empty')}</span>;
         }}
       >
-        {(props: INodeRendererWrapProps) => <EditorTreeNode
-            item={props.item}
-            itemType={props.itemType}
-            decorationService={decorationService}
-            labelService={labelService}
-            commandService={commandService}
-            decorations={openedEditorModelService.decorations.getDecorations(props.item as any)}
-            onClick={handleItemClicked}
-            onContextMenu={handlerContextMenu}
-            defaultLeftPadding={22}
-            leftPadding={0}
-          />}
+        {renderTreeNode}
       </RecycleTree>;
     }
   };

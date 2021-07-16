@@ -100,6 +100,22 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
     };
   };
 
+  const renderOutputNode = React.useCallback((props: INodeRendererWrapProps) => {
+    const decorations = tree.decorations.getDecorations(props.item as any);
+    return <DebugConsoleRenderedNode
+      item={props.item}
+      itemType={props.itemType}
+      decorations={decorations}
+      filterValue={filterValue}
+      filterMode={filterMode()}
+      onClick={handleTwistierClick}
+      onTwistierClick={handleTwistierClick}
+      onContextMenu={handlerContextMenu}
+      defaultLeftPadding={14}
+      leftPadding={8}
+    />;
+  }, [model!.treeModel]);
+
   const renderOutputContent = () => {
     if (!model) {
       return null;
@@ -122,21 +138,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
         model={model!.treeModel}
         overflow={ 'auto' }
       >
-        {(props: INodeRendererWrapProps) => {
-          const decorations = tree.decorations.getDecorations(props.item as any);
-          return <DebugConsoleRenderedNode
-            item={props.item}
-            itemType={props.itemType}
-            decorations={decorations}
-            filterValue={filterValue}
-            filterMode={filterMode()}
-            onClick={handleTwistierClick}
-            onTwistierClick={handleTwistierClick}
-            onContextMenu={handlerContextMenu}
-            defaultLeftPadding={14}
-            leftPadding={8}
-          />;
-        }}
+        {renderOutputNode}
       </RecycleTree>
     </div>;
   };

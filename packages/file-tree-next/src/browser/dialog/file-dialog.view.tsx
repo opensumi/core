@@ -158,6 +158,17 @@ export const FileDialog = (
     setIsReady(true);
   };
 
+  const renderDialogTreeNode = React.useCallback((props: INodeRendererProps) => <FileTreeDialogNode
+    item={props.item}
+    itemType={props.itemType}
+    labelService={model.labelService}
+    decorations={model.decorations.getDecorations(props.item as any)}
+    onClick={handleItemClicked}
+    onTwistierClick={handleTwistierClick}
+    defaultLeftPadding={8}
+    leftPadding={8}
+  />, [model.treeModel]);
+
   const renderDialogTree = () => {
     if (!isReady) {
       return <ProgressBar loading />;
@@ -169,16 +180,7 @@ export const FileDialog = (
         onReady={handleTreeReady}
         model={model.treeModel}
       >
-        {(props: INodeRendererProps) => <FileTreeDialogNode
-          item={props.item}
-          itemType={props.itemType}
-          labelService={model.labelService}
-          decorations={model.decorations.getDecorations(props.item as any)}
-          onClick={handleItemClicked}
-          onTwistierClick={handleTwistierClick}
-          defaultLeftPadding={8}
-          leftPadding={8}
-        />}
+        {renderDialogTreeNode}
       </RecycleTree>;
     }
   };

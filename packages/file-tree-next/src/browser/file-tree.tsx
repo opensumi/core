@@ -207,6 +207,29 @@ export const FileTree = observer(({
     handleContextMenu(ev, node, activeUri);
   }, []);
 
+  // 直接渲染节点不建议通过 Inline 的方式进行渲染
+  // 否则每次更新时均会带来比较大的重绘成本
+  // 参考：https://github.com/bvaughn/react-window/issues/413#issuecomment-848597993
+  const renderFileTreeNode = React.useCallback((props: INodeRendererWrapProps) => <FileTreeNode
+    item={props.item}
+    itemType={props.itemType}
+    template={(props as any).template}
+    decorationService={decorationService}
+    labelService={labelService}
+    dndService={fileTreeModelService.dndService}
+    decorations={fileTreeModelService.decorations.getDecorations(props.item as any)}
+    onClick={handleItemClicked}
+    onDoubleClick={handleItemDoubleClicked}
+    onTwistierClick={handleTwistierClick}
+    onContextMenu={handlerContextMenu}
+    defaultLeftPadding={baseIndent}
+    leftPadding={indent}
+    hasPrompt = {props.hasPrompt}
+    hasFolderIcons={iconTheme.hasFolderIcons}
+    hasFileIcons={iconTheme.hasFileIcons}
+    hidesExplorerArrows={iconTheme.hidesExplorerArrows}
+  />, [model]);
+
   const renderFileTree = () => {
     if (isReady) {
       if (isLoading) {
@@ -224,25 +247,7 @@ export const FileTree = observer(({
           filterAutoFocus={true}
           leaveBottomBlank={true}
         >
-          {(props: INodeRendererWrapProps) => <FileTreeNode
-            item={props.item}
-            itemType={props.itemType}
-            template={(props as any).template}
-            decorationService={decorationService}
-            labelService={labelService}
-            dndService={fileTreeModelService.dndService}
-            decorations={fileTreeModelService.decorations.getDecorations(props.item as any)}
-            onClick={handleItemClicked}
-            onDoubleClick={handleItemDoubleClicked}
-            onTwistierClick={handleTwistierClick}
-            onContextMenu={handlerContextMenu}
-            defaultLeftPadding={baseIndent}
-            leftPadding={indent}
-            hasPrompt = {props.hasPrompt}
-            hasFolderIcons={iconTheme.hasFolderIcons}
-            hasFileIcons={iconTheme.hasFileIcons}
-            hidesExplorerArrows={iconTheme.hidesExplorerArrows}
-          />}
+          {renderFileTreeNode}
         </FilterableRecycleTree>;
       } else {
         return <WelcomeView viewId='file-explorer-next' />;

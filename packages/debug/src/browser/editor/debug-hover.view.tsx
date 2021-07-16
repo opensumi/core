@@ -75,6 +75,19 @@ export const DebugHoverView = observer(() => {
 
   const shouldRenderVariableTree = !!model.treeModel && !!(model.treeModel.root as DebugHoverVariableRoot).variablesReference;
 
+  const  renderVariableTreeNode = React.useCallback((props: INodeRendererWrapProps) => {
+    const decorations = debugHoverTreeModelService.decorations.getDecorations(props.item as any);
+    return <DebugVariableRenderedNode
+      item={props.item}
+      itemType={props.itemType}
+      decorations={decorations}
+      onClick={handleTwistierClick}
+      onTwistierClick={handleTwistierClick}
+      defaultLeftPadding={0}
+      leftPadding={4}
+    />;
+  }, [model.treeModel]);
+
   const renderVariableTree = () => {
     if (!shouldRenderVariableTree) {
       return null;
@@ -94,18 +107,7 @@ export const DebugHoverView = observer(() => {
         }}
         overflow={ 'auto' }
       >
-        {(props: INodeRendererWrapProps) => {
-          const decorations = debugHoverTreeModelService.decorations.getDecorations(props.item as any);
-          return <DebugVariableRenderedNode
-            item={props.item}
-            itemType={props.itemType}
-            decorations={decorations}
-            onClick={handleTwistierClick}
-            onTwistierClick={handleTwistierClick}
-            defaultLeftPadding={0}
-            leftPadding={4}
-          />;
-        }}
+        {renderVariableTreeNode}
       </RecycleTree>
     </div>;
   };

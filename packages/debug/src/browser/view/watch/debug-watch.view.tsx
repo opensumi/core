@@ -88,6 +88,20 @@ export const DebugWatchView = observer(({
     enactiveNodeDecoration();
   };
 
+  const renderWatchNode = React.useCallback((props: INodeRendererWrapProps) => {
+    const decorations = debugWatchModelService.decorations.getDecorations(props.item as any);
+    return <DebugWatchRenderedNode
+      item={props.item}
+      itemType={props.itemType}
+      decorations={decorations}
+      onClick={handleTwistierClick}
+      onTwistierClick={handleTwistierClick}
+      onContextMenu={handlerContextMenu}
+      defaultLeftPadding={12}
+      leftPadding={8}
+    />;
+  }, [model]);
+
   const renderContent = () => {
     if (!model) {
       return <span />;
@@ -101,19 +115,7 @@ export const DebugWatchView = observer(({
           return <span />;
         }}
       >
-        {(props: INodeRendererWrapProps) => {
-          const decorations = debugWatchModelService.decorations.getDecorations(props.item as any);
-          return <DebugWatchRenderedNode
-            item={props.item}
-            itemType={props.itemType}
-            decorations={decorations}
-            onClick={handleTwistierClick}
-            onTwistierClick={handleTwistierClick}
-            onContextMenu={handlerContextMenu}
-            defaultLeftPadding={12}
-            leftPadding={8}
-          />;
-        }}
+        {renderWatchNode}
       </RecycleTree>;
     }
   };
