@@ -1,7 +1,9 @@
+import { KeyCode as KeyCodeEnum } from '@ali/monaco-editor-core/esm/vs/base/common/keyCodes';
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button, IRecycleListHandler, RecycleList, ValidateInput, VALIDATE_TYPE } from '@ali/ide-components';
 import { HideReason, QuickOpenAction, QuickOpenItem, QuickOpenMode, QuickTitleButton } from '@ali/ide-core-browser/lib/quick-open';
+import { KEY_CODE_MAP } from '@ali/ide-monaco/lib/browser/monaco.keycode-map';
 import clx from 'classnames';
 import * as styles from './styles.module.less';
 
@@ -317,6 +319,10 @@ export const QuickOpenView = observer(() => {
   }, [widget.items, widget.selectIndex]);
 
   const onKeydown = React.useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
+    // 处于 composition 的输入，不做处理，否则在按 enter 后会直接打开选择的第一个文件，并且快捷键完全失效
+    if (KEY_CODE_MAP[event.nativeEvent.keyCode] === KeyCodeEnum.KEY_IN_COMPOSITION) {
+      return;
+    }
     const { key } = KeyCode.createKeyCode(event.nativeEvent);
     if (!key) {
       return;
