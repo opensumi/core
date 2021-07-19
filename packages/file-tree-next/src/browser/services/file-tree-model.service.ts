@@ -220,6 +220,7 @@ export class FileTreeModelService {
     // 根据是否为多工作区创建不同根节点
     const root = (await this.fileTreeService.resolveChildren())[0];
     if (!root) {
+      this._whenReady.resolve();
       return;
     }
     this._treeModel = this.injector.get<any>(FileTreeModel, [root]);
