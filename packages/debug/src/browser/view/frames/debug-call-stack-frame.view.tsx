@@ -104,7 +104,7 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
       if (isLabel || isSubtle) {
         return;
       }
-      manager.currentSession = frame.session;
+      manager.updateCurrentSession(frame.session);
 
       frame.session.currentThread = frame.thread;
       setSelected(frame.raw.id);

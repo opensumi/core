@@ -10,7 +10,7 @@ import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from
 import { IDebugSessionManager } from '../../../common/debug-session';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { DEBUG_REPORT_NAME } from '../../../common';
+import { DEBUG_REPORT_NAME, CONTEXT_IN_DEBUG_MODE_KEY } from '../../../common';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 
 @Injectable()
@@ -79,9 +79,9 @@ export class DebugBreakpointsService extends WithEventBus {
       this.updateBreakpoints();
     });
     this.contextKeyService.onDidChangeContext((e) => {
-      if (e.payload.affectsSome(new Set(['inDebugMode']))) {
+      if (e.payload.affectsSome(new Set([CONTEXT_IN_DEBUG_MODE_KEY]))) {
         runInAction(() => {
-          this.inDebugMode = this.contextKeyService.getContextValue('inDebugMode') || false;
+          this.inDebugMode = this.contextKeyService.getContextValue(CONTEXT_IN_DEBUG_MODE_KEY) || false;
         });
       }
     });
@@ -109,7 +109,7 @@ export class DebugBreakpointsService extends WithEventBus {
   @action
   async updateRoots() {
     this.enable = this.breakpoints.breakpointsEnabled;
-    this.inDebugMode = this.contextKeyService.getContextValue('inDebugMode') || false;
+    this.inDebugMode = this.contextKeyService.getContextValue(CONTEXT_IN_DEBUG_MODE_KEY) || false;
     const roots = await this.workspaceService.roots;
     this.roots = roots.map((file) => new URI(file.uri));
   }

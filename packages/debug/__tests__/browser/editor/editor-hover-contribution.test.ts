@@ -1,19 +1,19 @@
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { Disposable, IContextKeyService, IFileServiceClient } from '@ali/ide-core-browser';
+import { Disposable, IContextKeyService, IFileServiceClient, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { EditorHoverContribution } from '@ali/ide-debug/lib/browser/editor/editor-hover-contribution';
+import { DebugEditorContribution } from '@ali/ide-debug/lib/browser/editor/debug-editor-contribution';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { DebugModelFactory, IDebugServer } from '@ali/ide-debug';
 import { QuickPickService } from '@ali/ide-core-browser';
 import { DebugPreferences } from '@ali/ide-debug/lib/browser';
+import { IDebugSessionManager } from './../../../src/common/debug-session';
 
 describe('Editor Hover Contribution', () => {
   const mockInjector = createBrowserInjector([]);
-  let contribution: EditorHoverContribution;
+  let contribution: DebugEditorContribution;
 
   const mockContextKeyService = {
     onDidChangeContext: jest.fn(() => Disposable.create(() => {})),
-    match: jest.fn(),
   };
   beforeAll(() => {
     mockInjector.overrideProviders(
@@ -49,9 +49,19 @@ describe('Editor Hover Contribution', () => {
         token: DebugPreferences,
         useValue: {},
       },
+      {
+        token: IDebugSessionManager,
+        useValue: {
+          onDidChangeActiveDebugSession: jest.fn(() => Disposable.create(() => {})),
+        },
+      },
+      {
+        token: MonacoOverrideServiceRegistry,
+        useValue: {},
+      },
     );
 
-    contribution = mockInjector.get(EditorHoverContribution);
+    contribution = mockInjector.get(DebugEditorContribution);
   });
 
   it('should have enough API', () => {
@@ -65,11 +75,15 @@ describe('Editor Hover Contribution', () => {
         updateOptions: jest.fn(),
         onKeyDown: jest.fn(() => Disposable.create(() => {})),
         onKeyUp: jest.fn(() => Disposable.create(() => {})),
+        onDidChangeModelContent: jest.fn(() => Disposable.create(() => {})),
+        onDidChangeModel: jest.fn(() => Disposable.create(() => {})),
+        removeDecorations: jest.fn(() => Disposable.create(() => {})),
+        getVisibleRanges: jest.fn(() => Disposable.create(() => {})),
+        getModel: jest.fn(() => Disposable.create(() => {})),
+        setDecorations: jest.fn(() => Disposable.create(() => {})),
       },
     };
     contribution.contribute(mockEditor as any);
     expect(mockContextKeyService.onDidChangeContext).toBeCalledTimes(1);
-    expect(mockContextKeyService.match).toBeCalledTimes(1);
-    expect(mockEditor.monacoEditor.updateOptions).toBeCalledTimes(1);
   });
 });

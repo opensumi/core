@@ -6,7 +6,7 @@ import { Schemas, URI, CommandRegistry, Emitter, Event } from '@ali/ide-core-com
 import { IEditorDocumentModelService, IEditorDocumentModelContentProvider, ICodeEditor, getSimpleEditorOptions } from '@ali/ide-editor/lib/browser';
 import { EditorCollectionService } from '@ali/ide-editor';
 import { IContextKeyService } from '@ali/ide-core-browser';
-import { DEBUG_CONSOLE_CONTAINER_ID, IDebugSessionManager } from '../../../common';
+import { DEBUG_CONSOLE_CONTAINER_ID, IDebugSessionManager, CONTEXT_IN_DEBUG_MODE_KEY } from '../../../common';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugConsoleModelService } from './debug-console-tree.model.service';
 
@@ -55,12 +55,12 @@ export class DebugConsoleService {
 
   private inputEditor?: ICodeEditor;
 
-  static keySet = new Set(['inDebugMode']);
+  static keySet = new Set([CONTEXT_IN_DEBUG_MODE_KEY]);
 
   constructor() {
     this.contextKeyService.onDidChangeContext((e) => {
       if (e.payload.affectsSome(DebugConsoleService.keySet)) {
-        const inDebugMode = this.contextKeyService.match('inDebugMode');
+        const inDebugMode = this.contextKeyService.match(CONTEXT_IN_DEBUG_MODE_KEY);
         if (inDebugMode) {
           this.enable();
         } else {

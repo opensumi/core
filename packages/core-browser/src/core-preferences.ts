@@ -275,6 +275,10 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: true,
       description: '%output.enableSmartScrollDesc%',
     },
+    'debug.inline.values': {
+      type: 'boolean',
+      default: false,
+    },
     'toolbar.ignoreActions': {
       type: 'object',
       patternProperties: {

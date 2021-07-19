@@ -61,6 +61,7 @@ import globToRegExp = require('glob-to-regexp');
 import { IMarkerData, IRange, Uri, UriComponents } from '@ali/ide-core-common';
 import { CompletionContext } from './model.api';
 import { IEvaluatableExpression } from '@ali/ide-debug/lib/common/evaluatable-expression';
+import { InlineValueContext, InlineValue } from '@ali/ide-debug/lib/common/inline-values';
 import { ISingleEditOperation } from '@ali/ide-editor';
 import { IExtensionDescription } from './extension';
 import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
@@ -184,6 +185,15 @@ export interface IMainThreadLanguages {
   $registerEvaluatableExpressionProvider(
     handle: number,
     selector: SerializedDocumentFilter[],
+  ): void;
+  $registerInlineValuesProvider(
+    handle: number,
+    selector: SerializedDocumentFilter[],
+    eventHandle: number | undefined,
+  ): void;
+  $emitInlineValuesEvent(
+    eventHandle: number,
+    event?: any,
   ): void;
 }
 
@@ -469,6 +479,19 @@ export interface IExtHostLanguages {
     position: Position,
     token: CancellationToken,
   ): Promise<IEvaluatableExpression | undefined>;
+
+  $provideInlineValues(
+    handle: number,
+    resource: UriComponents,
+    range: IRange,
+    context: InlineValueContext,
+    token: CancellationToken,
+  ): Promise<InlineValue[] | undefined>;
+}
+
+export interface IInlineValueContextDto {
+  frameId: number;
+  stoppedLocation: IRange;
 }
 
 export const enum ISuggestResultDtoField {

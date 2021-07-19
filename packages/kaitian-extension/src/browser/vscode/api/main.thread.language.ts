@@ -24,6 +24,8 @@ import { ILanguageService } from '@ali/ide-editor';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { DocumentRangeSemanticTokensProviderImpl, DocumentSemanticTokensProvider } from './semantic-tokens/semantic-token-provider';
 import { CancellationToken } from 'vscode';
+import { InlineValueContext, InlineValuesProvider, InlineValue } from '@ali/ide-debug/lib/common/inline-values';
+import { InlineValuesProviderRegistry } from '@ali/ide-debug/lib/browser/editor/inline-values';
 
 const PATCH_PREFIX = 'Index: a\n===================================================================\n--- a\n+++ a\n';
 
@@ -1131,4 +1133,29 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handler, this.evaluatableExpressionService.registerEvaluatableExpressionProvider(selector, provider));
   }
   //#endregion EvaluatableExpression
+
+  //#region Inline Values
+  $registerInlineValuesProvider(handler: number, selector: SerializedDocumentFilter[], eventHandle: number | undefined): void {
+    const provider = {
+      provideInlineValues: (model: ITextModel, viewPort: IRange, context: InlineValueContext, token: CancellationToken): Promise<InlineValue[] | undefined> => {
+        return this.proxy.$provideInlineValues(handler, model.uri, viewPort, context, token);
+      },
+    } as InlineValuesProvider;
+
+    if (typeof eventHandle === 'number') {
+      const emitter = new Emitter<void>();
+      this.disposables.set(eventHandle, emitter);
+      provider.onDidChangeInlineValues = emitter.event;
+    }
+
+    this.disposables.set(handler, InlineValuesProviderRegistry.register(selector, provider));
+  }
+
+  $emitInlineValuesEvent(eventHandle: number, event?: any): void {
+    const obj = this.disposables.get(eventHandle);
+    if (obj instanceof Emitter) {
+      obj.fire(event);
+    }
+  }
+  //#endregion Inline Values
 }

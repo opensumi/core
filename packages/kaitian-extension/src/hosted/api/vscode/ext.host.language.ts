@@ -1,3 +1,4 @@
+import { InlineValue } from '@ali/ide-debug/lib/common/inline-values';
 import type { CodeActionContext, CodeActionList } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { ConstructorOf } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
@@ -42,6 +43,7 @@ import {
   SemanticTokensLegend,
   DocumentRangeSemanticTokensProvider,
   EvaluatableExpressionProvider,
+  InlineValuesProvider,
 } from 'vscode';
 import {
   SerializedDocumentFilter,
@@ -85,6 +87,7 @@ import {
   IExtHostLanguages,
   ISuggestDataDto,
   IExtensionDescription,
+  IInlineValueContextDto,
 } from '../../../common/vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 import { IExtensionLogger, Uri, UriComponents } from '@ali/ide-core-common';
@@ -116,6 +119,7 @@ import { CallHierarchyAdapter } from './language/callhierarchy';
 import { ExtHostCommands } from './ext.host.command';
 import { DocumentRangeSemanticTokensAdapter, DocumentSemanticTokensAdapter } from './language/semantic-tokens';
 import { EvaluatableExpressionAdapter } from './language/evaluatableExpression';
+import { InlineValuesAdapter } from './language/inline-values';
 
 export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, extension: IExtensionDescription) {
 
@@ -219,6 +223,9 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, ex
     registerEvaluatableExpressionProvider(selector: DocumentSelector, provider: EvaluatableExpressionProvider): Disposable {
       return extHostLanguages.registerEvaluatableExpressionProvider(extension, selector, provider);
     },
+    registerInlineValuesProvider(selector: DocumentSelector, provider: InlineValuesProvider): Disposable {
+      return extHostLanguages.registerInlineValuesProvider(extension, selector, provider);
+    },
   };
 }
 
@@ -247,7 +254,8 @@ export type Adapter =
   CallHierarchyAdapter |
   DocumentSemanticTokensAdapter |
   DocumentRangeSemanticTokensAdapter |
-  EvaluatableExpressionAdapter;
+  EvaluatableExpressionAdapter |
+  InlineValuesAdapter;
 
 export class ExtHostLanguages implements IExtHostLanguages {
   private readonly proxy: IMainThreadLanguages;
@@ -753,4 +761,25 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.withAdapter(handle, EvaluatableExpressionAdapter, (adapter) => adapter.provideEvaluatableExpression(Uri.revive(resource), position, token));
   }
   //#endregion EvaluatableExpression
+
+  //#region Inline Values
+  registerInlineValuesProvider(extension: IExtensionDescription, selector: DocumentSelector, provider: InlineValuesProvider): Disposable {
+
+    const eventHandle = typeof provider.onDidChangeInlineValues === 'function' ? this.nextCallId() : undefined;
+    const handle = this.addNewAdapter(new InlineValuesAdapter(this.documents, provider), extension);
+
+    this.proxy.$registerInlineValuesProvider(handle, this.transformDocumentSelector(selector), eventHandle);
+    let result = this.createDisposable(handle);
+
+    if (eventHandle !== undefined) {
+      const subscription = provider.onDidChangeInlineValues!((_) => this.proxy.$emitInlineValuesEvent(eventHandle));
+      result = Disposable.from(result, subscription);
+    }
+    return result;
+  }
+
+  $provideInlineValues(handle: number, resource: Uri, range: Range, context: IInlineValueContextDto, token: CancellationToken): Promise<InlineValue[] | undefined> {
+    return this.withAdapter(handle, InlineValuesAdapter, (adapter) => adapter.provideInlineValues(Uri.revive(resource), range, context, token), undefined);
+  }
+  //#endregion Inline Values
 }

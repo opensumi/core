@@ -410,6 +410,7 @@ export const localizationBundle = {
     'preference.debug.console.filter.mode': 'Debug console filter mode',
     'preference.debug.console.filter.mode.filter': 'filter',
     'preference.debug.console.filter.mode.matcher': 'matcher',
+    'preference.debug.inline.values': 'Show variable values inline in editor while debugging.',
 
     // workbench
     'preference.workbench.refactoringChanges.showPreviewStrategy': 'Show preview confirm when triggering some refactoring changes',

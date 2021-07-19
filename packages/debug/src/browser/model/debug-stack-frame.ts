@@ -4,6 +4,7 @@ import { DebugThread } from './debug-thread';
 import { DebugSource } from './debug-source';
 import { IResourceOpenOptions } from '@ali/ide-editor';
 import { IRange } from '@ali/ide-core-browser';
+import { Range } from '@ali/monaco-editor-core/esm/vs/editor/common/core/range';
 import { DebugScope, ExpressionContainer } from '../tree/debug-tree-node.define';
 
 export class DebugStackFrameData {
@@ -78,5 +79,24 @@ export class DebugStackFrame extends DebugStackFrameData {
     } catch (e) {
       return [];
     }
+  }
+
+  public range(): IRange {
+    const rs = this.raw;
+    return new Range(rs.line, rs.column, rs.endLine || rs.line, rs.endColumn || rs.column);
+  }
+
+  public async getMostSpecificScopes(range: IRange): Promise<DebugScope[]> {
+    const scopes = this.scopes ? await this.scopes : await this.doGetScopes();
+    const nonExpensiveScopes = scopes.filter((s) => !s.getRawScope().expensive);
+    const haveRangeInfo = nonExpensiveScopes.some((s) => !!s.range());
+    if (!haveRangeInfo) {
+      return nonExpensiveScopes;
+    }
+
+    const scopesContainingRange = nonExpensiveScopes
+      .filter((scope) => scope.range() && Range.containsRange(scope.range()!, range))
+      .sort((first, second) => (first.range()!.endLineNumber - first.range()!.startLineNumber) - (second.range()!.endLineNumber - second.range()!.startLineNumber));
+    return scopesContainingRange.length ? scopesContainingRange : nonExpensiveScopes;
   }
 }

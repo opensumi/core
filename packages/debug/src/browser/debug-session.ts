@@ -63,6 +63,9 @@ export class DebugSession implements IDebugSession {
   private _onRequest = new Emitter<keyof DebugRequestTypes>();
   readonly onRequest: Event<keyof DebugRequestTypes> = this._onRequest.event;
 
+  private _onDidExitAdapter = new Emitter<void>();
+  readonly onDidExitAdapter: Event<void> = this._onDidExitAdapter.event;
+
   protected readonly toDispose = new DisposableCollection();
 
   protected _capabilities: DebugProtocol.Capabilities = {};
@@ -751,6 +754,8 @@ export class DebugSession implements IDebugSession {
     } catch (reason) {
       this.fireExited(reason);
       return;
+    } finally {
+      this._onDidExitAdapter.fire();
     }
     const timeout = 500;
     if (!await this.exited(timeout)) {

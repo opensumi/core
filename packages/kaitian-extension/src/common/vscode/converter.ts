@@ -3,6 +3,7 @@ import { RenderLineNumbersType } from '@ali/monaco-editor-core/esm/vs/editor/com
 import type * as vscode from 'vscode';
 import * as types from './ext-types';
 import * as model from './model.api';
+import * as debugModel from '@ali/ide-debug';
 import { URI, Uri, UriComponents, ISelection, IMarkerData, IRelatedInformation, MarkerTag, MarkerSeverity, ProgressLocation as MainProgressLocation, parse, cloneAndChange } from '@ali/ide-core-common';
 import { IDecorationRenderOptions, IThemeDecorationRenderOptions, IContentDecorationRenderOptions, TrackedRangeStickiness } from '@ali/ide-editor/lib/common';
 import { IEvaluatableExpression } from '@ali/ide-debug/lib/common/evaluatable-expression';
@@ -18,6 +19,7 @@ import {
 import * as marked from 'marked';
 import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
 import { EndOfLineSequence } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+import { IInlineValueContextDto } from './languages';
 
 export interface TextEditorOpenOptions extends vscode.TextDocumentShowOptions {
   background?: boolean;
@@ -1764,5 +1766,65 @@ export namespace EvaluatableExpression {
 
   export function to(info: IEvaluatableExpression): types.EvaluatableExpression {
     return new types.EvaluatableExpression(toRange(info.range), info.expression);
+  }
+}
+export namespace InlineValue {
+  export function from(inlineValue: vscode.InlineValue): debugModel.InlineValue {
+    if (inlineValue instanceof types.InlineValueText) {
+      return {
+        type: 'text',
+        range: Range.from(inlineValue.range),
+        text: inlineValue.text,
+      } as debugModel.InlineValueText;
+    } else if (inlineValue instanceof types.InlineValueVariableLookup) {
+      return {
+        type: 'variable',
+        range: Range.from(inlineValue.range),
+        variableName: inlineValue.variableName,
+        caseSensitiveLookup: inlineValue.caseSensitiveLookup,
+      } as debugModel.InlineValueVariableLookup;
+    } else if (inlineValue instanceof types.InlineValueEvaluatableExpression) {
+      return {
+        type: 'expression',
+        range: Range.from(inlineValue.range),
+        expression: inlineValue.expression,
+      } as debugModel.InlineValueExpression;
+    } else {
+      throw new Error(`Unknown 'InlineValue' type`);
+    }
+  }
+
+  export function to(inlineValue: debugModel.InlineValue): vscode.InlineValue {
+    switch (inlineValue.type) {
+      case 'text':
+        return {
+          range: Range.to(inlineValue.range),
+          text: inlineValue.text,
+        } as vscode.InlineValueText;
+      case 'variable':
+        return {
+          range: Range.to(inlineValue.range),
+          variableName: inlineValue.variableName,
+          caseSensitiveLookup: inlineValue.caseSensitiveLookup,
+        } as vscode.InlineValueVariableLookup;
+      case 'expression':
+        return {
+          range: Range.to(inlineValue.range),
+          expression: inlineValue.expression,
+        } as vscode.InlineValueEvaluatableExpression;
+    }
+  }
+}
+
+export namespace InlineValueContext {
+  export function from(inlineValueContext: vscode.InlineValueContext): IInlineValueContextDto {
+    return {
+      frameId: inlineValueContext.frameId,
+      stoppedLocation: Range.from(inlineValueContext.stoppedLocation),
+    } as IInlineValueContextDto;
+  }
+
+  export function to(inlineValueContext: IInlineValueContextDto): types.InlineValueContext {
+    return new types.InlineValueContext(inlineValueContext.frameId, Range.to(inlineValueContext.stoppedLocation));
   }
 }

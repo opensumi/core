@@ -2849,3 +2849,53 @@ export class CancellationError extends Error {
 }
 
 //#endregion Timeline
+
+//#region Inline Values
+
+@es5ClassCompat@es5ClassCompat
+export class InlineValueText implements vscode.InlineValueText {
+  readonly range: Range;
+  readonly text: string;
+
+  constructor(range: Range, text: string) {
+    this.range = range;
+    this.text = text;
+  }
+}
+
+@es5ClassCompat
+export class InlineValueVariableLookup implements vscode.InlineValueVariableLookup {
+  readonly range: Range;
+  readonly variableName?: string;
+  readonly caseSensitiveLookup: boolean;
+
+  constructor(range: Range, variableName?: string, caseSensitiveLookup: boolean = true) {
+    this.range = range;
+    this.variableName = variableName;
+    this.caseSensitiveLookup = caseSensitiveLookup;
+  }
+}
+
+@es5ClassCompat
+export class InlineValueEvaluatableExpression implements vscode.InlineValueEvaluatableExpression {
+  readonly range: Range;
+  readonly expression?: string;
+
+  constructor(range: Range, expression?: string) {
+    this.range = range;
+    this.expression = expression;
+  }
+}
+
+@es5ClassCompat
+export class InlineValueContext implements vscode.InlineValueContext {
+
+  readonly frameId: number;
+  readonly stoppedLocation: vscode.Range;
+
+  constructor(frameId: number, range: Range) {
+    this.frameId = frameId;
+    this.stoppedLocation = range;
+  }
+}
+//#endregion Inline Values

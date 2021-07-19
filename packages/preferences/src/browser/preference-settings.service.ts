@@ -428,6 +428,7 @@ export const defaultSettingSections: {
         { id: 'output.enableSmartScroll', localized: 'output.enableSmartScroll' },
         // 调试
         { id: 'debug.console.filter.mode', localized: 'preference.debug.console.filter.mode' },
+        { id: 'debug.inline.values', localized: 'preference.debug.inline.values' },
       ],
     },
   ],

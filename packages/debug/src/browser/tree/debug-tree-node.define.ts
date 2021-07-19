@@ -3,6 +3,8 @@ import { DebugSession } from '../debug-session';
 import { MessageType, localize } from '@ali/ide-core-browser';
 import { TreeNode, CompositeTreeNode, ITree, ITreeNodeOrCompositeTreeNode } from '@ali/ide-components';
 import { AnsiConsoleNode } from './debug-console-tree-node.define';
+import { IRange } from '@ali/ide-core-common';
+import { Range } from '@ali/monaco-editor-core/esm/vs/editor/common/core/range';
 
 export class ExpressionTreeService {
   constructor(
@@ -404,6 +406,11 @@ export class DebugScope extends ExpressionContainer {
 
   public getRawScope(): DebugProtocol.Scope {
     return this.raw;
+  }
+
+  public range(): IRange | undefined {
+    const rs = this.getRawScope();
+    return rs.line && rs.column && rs.endLine && rs.endColumn ? new Range(rs.line, rs.column, rs.endLine, rs.endColumn) : undefined;
   }
 }
 

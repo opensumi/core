@@ -8,3 +8,7 @@ export const DEBUG_WELCOME_ID = 'debug-welcome';
 export const DEBUG_STACK_ID = 'debug-stack';
 export const DEBUG_FLOATING_CLICK_WIDGET = 'debug.overlayWidget.floatingClickWidget';
 export const DEBUG_SCHEME = 'debug';
+
+export const CONTEXT_DEBUG_STOPPED_KEY = 'debugStopped';
+export const CONTEXT_IN_DEBUG_MODE_KEY = 'inDebugMode';
+export const CONTEXT_DEBUG_TYPE_KEY = 'debugType';

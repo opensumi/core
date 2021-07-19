@@ -29,6 +29,7 @@
     "btoa": "^1.2.1"
   },
   "devDependencies": {
+    "@ali/ide-kaitian-extension": "2.6.2",
     "@ali/ide-core-browser": "2.6.2",
     "@ali/ide-dev-tool": "^1.1.0",
     "@ali/ide-workspace-edit": "2.6.2",

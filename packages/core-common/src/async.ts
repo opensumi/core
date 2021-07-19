@@ -439,5 +439,75 @@ export function timeout(millis: number, token?: CancellationToken): CancelablePr
 export function raceCancellation<T>(promise: Promise<T>, token: CancellationToken): Promise<T | undefined>;
 export function raceCancellation<T>(promise: Promise<T>, token: CancellationToken, defaultValue: T): Promise<T>;
 export function raceCancellation<T>(promise: Promise<T>, token: CancellationToken, defaultValue?: T): Promise<T | undefined> {
-	return Promise.race([promise, new Promise<T | undefined>(resolve => token.onCancellationRequested(() => resolve(defaultValue)))]);
+  return Promise.race([promise, new Promise<T | undefined>(resolve => token.onCancellationRequested(() => resolve(defaultValue)))]);
+}
+
+export class RunOnceScheduler {
+
+  protected runner: ((...args: unknown[]) => void) | null;
+
+  private timeoutToken: any;
+  private timeout: number;
+  private timeoutHandler: () => void;
+
+  constructor(runner: (...args: any[]) => void, delay: number) {
+    this.timeoutToken = -1;
+    this.runner = runner;
+    this.timeout = delay;
+    this.timeoutHandler = this.onTimeout.bind(this);
+  }
+
+  /**
+   * Dispose RunOnceScheduler
+   */
+  dispose(): void {
+    this.cancel();
+    this.runner = null;
+  }
+
+  /**
+   * Cancel current scheduled runner (if any).
+   */
+  cancel(): void {
+    if (this.isScheduled()) {
+      clearTimeout(this.timeoutToken);
+      this.timeoutToken = -1;
+    }
+  }
+
+  /**
+   * Cancel previous runner (if any) & schedule a new runner.
+   */
+  schedule(delay = this.timeout): void {
+    this.cancel();
+    this.timeoutToken = setTimeout(this.timeoutHandler, delay);
+  }
+
+  get delay(): number {
+    return this.timeout;
+  }
+
+  set delay(value: number) {
+    this.timeout = value;
+  }
+
+  /**
+   * Returns true if scheduled.
+   */
+  isScheduled(): boolean {
+    return this.timeoutToken !== -1;
+  }
+
+  private onTimeout() {
+    this.timeoutToken = -1;
+    if (this.runner) {
+      this.doRun();
+    }
+  }
+
+  protected doRun(): void {
+    if (this.runner) {
+      this.runner();
+    }
+  }
 }

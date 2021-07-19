@@ -121,7 +121,7 @@ export class DebugViewModel implements IDisposable {
     return this.has(currentSession) && currentSession || this.session;
   }
   set currentSession(currentSession: DebugSession | undefined) {
-    this.manager.currentSession = currentSession;
+    this.manager.updateCurrentSession(currentSession);
   }
 
   get state(): DebugState {

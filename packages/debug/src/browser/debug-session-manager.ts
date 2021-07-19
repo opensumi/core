@@ -19,7 +19,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { DebugSession, DebugState } from './debug-session';
 import { WaitUntilEvent, Emitter, Event, URI, IContextKey, DisposableCollection, IContextKeyService, formatLocalize, Uri, IReporterService, uuid } from '@ali/ide-core-browser';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
-import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions, DEBUG_REPORT_NAME, IDebugSessionManager, DebugSessionExtra, DebugThreadExtra } from '../common';
+import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions, DEBUG_REPORT_NAME, IDebugSessionManager, DebugSessionExtra, DebugThreadExtra, CONTEXT_DEBUG_STOPPED_KEY, CONTEXT_IN_DEBUG_MODE_KEY, CONTEXT_DEBUG_TYPE_KEY } from '../common';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { IMessageService } from '@ali/ide-overlay';
 import { IVariableResolverService } from '@ali/ide-variable';
@@ -133,9 +133,9 @@ export class DebugSessionManager implements IDebugSessionManager {
   }
 
   protected init(): void {
-    this.debugTypeKey = this.contextKeyService.createKey<string>('debugType', undefined);
-    this.inDebugModeKey = this.contextKeyService.createKey<boolean>('inDebugMode', this.inDebugMode);
-    this.debugStopped = this.contextKeyService.createKey<boolean>('debugStopped', false);
+    this.debugTypeKey = this.contextKeyService.createKey<string>(CONTEXT_DEBUG_TYPE_KEY, undefined);
+    this.inDebugModeKey = this.contextKeyService.createKey<boolean>(CONTEXT_IN_DEBUG_MODE_KEY, this.inDebugMode);
+    this.debugStopped = this.contextKeyService.createKey<boolean>(CONTEXT_DEBUG_STOPPED_KEY, false);
 
     this.modelManager.onModelChanged((event) => {
       const { newModelUrl } = event;
@@ -407,7 +407,7 @@ export class DebugSessionManager implements IDebugSessionManager {
     configuration.__restart = restart;
     return this.start(options);
   }
-  protected updateCurrentSession(session: DebugSession | undefined) {
+  public updateCurrentSession(session: DebugSession | undefined) {
     this.currentSession = session || this.sessions[0];
   }
 

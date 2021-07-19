@@ -25,8 +25,8 @@ import { IDebugSessionManager, launchSchemaUri, DEBUG_CONTAINER_ID, DEBUG_WATCH_
 import { DebugConsoleService } from './view/console/debug-console.service';
 import { DebugToolbarService } from './view/configuration/debug-toolbar.service';
 import { MenuContribution, MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
-import { BrowserEditorContribution, IEditorFeatureRegistry, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
-import { EditorHoverContribution } from './editor/editor-hover-contribution';
+import { BrowserEditorContribution, IEditorFeatureRegistry, EditorComponentRegistry, IEditor } from '@ali/ide-editor/lib/browser';
+import { DebugEditorContribution } from './editor/debug-editor-contribution';
 import { FloatingClickWidget } from './components/floating-click-widget';
 import { PreferenceService } from '@ali/ide-core-browser';
 import { DebugBreakpointZoneWidget } from './editor/debug-breakpoint-zone-widget';
@@ -195,8 +195,8 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   @Autowired(DebugToolbarService)
   protected readonly debugToolbarService: DebugToolbarService;
 
-  @Autowired(EditorHoverContribution)
-  private editorHoverContribution: EditorHoverContribution;
+  @Autowired(DebugEditorContribution)
+  private debugEditorContribution: DebugEditorContribution;
 
   @Autowired(PreferenceService)
   protected readonly preferences: PreferenceService;
@@ -678,7 +678,15 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   }
 
   registerEditorFeature(registry: IEditorFeatureRegistry) {
-    registry.registerEditorFeatureContribution(this.editorHoverContribution);
+    registry.registerEditorFeatureContribution({
+      contribute: (editor: IEditor) => {
+        return this.debugEditorContribution.contribute(editor);
+      },
+    });
+    // 这里是为了通过 MonacoOverrideServiceRegistry 来获取 codeEditorService ，但由于存在时序问题，所以加个 setTimeout 0
+    setTimeout(() => {
+      this.debugEditorContribution.registerDecorationType();
+    }, 0);
     this.preferenceSettings.setEnumLabels(('debug.console.filter.mode' as keyof CoreConfiguration), {
       filter: localize('preference.debug.console.filter.mode.filter'),
       matcher: localize('preference.debug.console.filter.mode.matcher'),

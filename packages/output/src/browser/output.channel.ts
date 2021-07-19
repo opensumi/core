@@ -1,5 +1,5 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { Disposable, uuid, URI, localize, Deferred, IEventBus, removeAnsiEscapeCodes } from '@ali/ide-core-common';
+import { Disposable, uuid, URI, localize, Deferred, IEventBus, removeAnsiEscapeCodes, Schemas } from '@ali/ide-core-common';
 import { Optional, Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { PreferenceService } from '@ali/ide-core-browser';
@@ -70,7 +70,7 @@ export class OutputChannel extends Disposable {
       }
     }));
 
-    const uri = new URI(`walkThroughSnippet://output/${name || uuid()}`);
+    const uri = new URI(`${Schemas.walkThroughSnippet}://output/${name || uuid()}`);
     this.documentService.createModelReference(uri)
       .then((model) => {
         this.outputModel = model;
