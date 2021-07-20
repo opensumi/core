@@ -46,7 +46,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
   protected readonly _onBlur = new Emitter<void>();
   readonly onBlur: Event<void> = this._onBlur.event;
 
-  private input: ICodeEditor | null;
+  private input: ICodeEditor | undefined;
 
   get values() {
     return {
@@ -80,8 +80,9 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
   public hide(): void {
     if (this.input) {
       this.input.dispose();
+      this.input = undefined;
     }
-    super.hide();
+    super.dispose();
   }
 
   public show(where: monaco.IRange, heightInLines: number): void {
