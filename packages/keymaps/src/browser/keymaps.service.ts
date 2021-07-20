@@ -262,7 +262,7 @@ export class KeymapService implements IKeymapService {
    */
   @action
   setKeybinding = (keybinding: Keybinding) => {
-    const keybindings: Keybinding[] = this.storeKeybindings;
+    const keybindings: Keybinding[] = this.storeKeybindings || [];
     let updated = false;
     for (const kb of keybindings) {
       if (kb.command === keybinding.command) {
