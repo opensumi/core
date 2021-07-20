@@ -55,28 +55,30 @@ export class TabbarBrowserContributionRunner extends AbstractKaitianBrowserContr
       kaitianExtendService: extendService,
       kaitianExtendSet: extendProtocol,
     };
-    if (kind === 'add') {
-      const { component, titleComponent } = view;
-      this.layoutService.collectTabbarComponent(
-        [{
-          id: containerId,
-        }],
-        {
-          ...view,
-          iconClass: view.icon ? getIcon(view.icon) : view.iconPath ? this.iconService.fromIcon(this.extension.path, view.iconPath) : '',
-          containerId,
-          component,
-          titleComponent,
-          titleProps: initialProps,
-          initialProps,
-          fromExtension: true,
-        },
-        position!,
-      );
-    } else {
-      this.layoutService.replaceViewComponent(view, initialProps);
-      view.titleComponent && this.layoutService.getTabbarHandler(containerId)?.setTitleComponent(view.titleComponent, initialProps);
-    }
+    this.layoutService.viewReady.promise.then(() => {
+      if (kind === 'add') {
+        const { component, titleComponent } = view;
+        this.layoutService.collectTabbarComponent(
+          [{
+            id: containerId,
+          }],
+          {
+            ...view,
+            iconClass: view.icon ? getIcon(view.icon) : view.iconPath ? this.iconService.fromIcon(this.extension.path, view.iconPath) : '',
+            containerId,
+            component,
+            titleComponent,
+            titleProps: initialProps,
+            initialProps,
+            fromExtension: true,
+          },
+          position!,
+        );
+      } else {
+        this.layoutService.replaceViewComponent(view, initialProps);
+        view.titleComponent && this.layoutService.getTabbarHandler(containerId)?.setTitleComponent(view.titleComponent, initialProps);
+      }
+    });
 
     return {
       dispose: () => {

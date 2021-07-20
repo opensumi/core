@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WithEventBus, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent, AppConfig, ComponentRegistry, ILogger, CommandRegistry, CommandService, OnEvent } from '@ali/ide-core-browser';
+import { WithEventBus, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent, AppConfig, ComponentRegistry, ILogger, CommandRegistry, CommandService, OnEvent, slotRendererRegistry } from '@ali/ide-core-browser';
 import { MainLayoutContribution, IMainLayoutService, ViewComponentOptions, SUPPORT_ACCORDION_LOCATION } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
@@ -87,7 +87,10 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     // 渲染之后注册的tab不再恢复状态
     this.tabbarServices.forEach((service) => {
       service.restoreState();
-      list.push(service.viewReady.promise);
+      // 仅确保tabbar视图加载完毕
+      if (slotRendererRegistry.isTabbar(service.location)) {
+        list.push(service.viewReady.promise);
+      }
     });
     Promise.all(list).then(() => {
       this.viewReady.resolve();
