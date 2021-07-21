@@ -1,11 +1,12 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { Disposable, IDisposable, ScopedKeybinding, KeybindingRegistry, URI, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeybindingService, ILogger, Event, KeybindingWeight, ThrottledDelayer, FileStat, DisposableCollection } from '@ali/ide-core-browser';
+import { Disposable, IDisposable, ScopedKeybinding, KeybindingRegistry, URI, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeybindingService, ILogger, Event, KeybindingWeight, ThrottledDelayer, FileStat, DisposableCollection, ProgressLocation, IProgress, IProgressStep } from '@ali/ide-core-browser';
 import { KeymapsParser } from './keymaps-parser';
 import * as fuzzy from 'fuzzy';
 import { KEYMAPS_FILE_NAME, IKeymapService, KEYMAPS_SCHEME, KeybindingItem } from '../common';
 import { USER_STORAGE_SCHEME } from '@ali/ide-preferences';
 import { IFileServiceClient } from '@ali/ide-file-service';
+import { IProgressService } from '@ali/ide-core-browser/lib/progress';
 
 // contextKey.ContextKeyExprType 引入
 export const enum ContextKeyExprType {
@@ -23,6 +24,7 @@ export const enum ContextKeyExprType {
 export class KeymapService implements IKeymapService {
 
   static DEFAULT_SEARCH_DELAY: number = 500;
+  static KEYMAP_FILE_URI: URI = new URI().withScheme(USER_STORAGE_SCHEME).withPath(KEYMAPS_FILE_NAME);
 
   @Autowired(KeybindingRegistry)
   protected readonly keyBindingRegistry: KeybindingRegistry;
@@ -47,6 +49,9 @@ export class KeymapService implements IKeymapService {
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
+
+  @Autowired(IProgressService)
+  private readonly progressService: IProgressService;
 
   private currentSearchValue: string;
 
@@ -92,11 +97,10 @@ export class KeymapService implements IKeymapService {
   keybindings: KeybindingItem[] = [];
 
   async init() {
-    const uri = new URI().withScheme(USER_STORAGE_SCHEME).withPath(KEYMAPS_FILE_NAME);
-    this.resource = await this.filesystem.getFileStat(uri.toString());
+    this.resource = await this.filesystem.getFileStat(KeymapService.KEYMAP_FILE_URI.toString());
     await this.reconcile();
     if (this.resource) {
-      const watcher = await this.filesystem.watchFileChanges(uri);
+      const watcher = await this.filesystem.watchFileChanges(KeymapService.KEYMAP_FILE_URI);
       this.disposableCollection.push(watcher);
       watcher.onFilesChanged(() => {
         // 快捷键绑定文件内容变化，重新更新快捷键信息
@@ -247,11 +251,11 @@ export class KeymapService implements IKeymapService {
       }
       const { content } = await this.filesystem.readFile(resource.uri);
       this.storeKeybindings = this.parser.parse(content.toString());
-      return this.storeKeybindings;
     } catch (error) {
       this.logger.warn(`ParseKeybindings fail: ${error.stack}`);
-      return [];
+      this.storeKeybindings = [];
     }
+    return this.storeKeybindings;
   }
 
   /**
@@ -260,49 +264,66 @@ export class KeymapService implements IKeymapService {
    * @returns {Promise<void>}
    * @memberof KeymapsService
    */
-  @action
   setKeybinding = (keybinding: Keybinding) => {
-    const keybindings: Keybinding[] = this.storeKeybindings || [];
-    let updated = false;
-    for (const kb of keybindings) {
-      if (kb.command === keybinding.command) {
-        updated = true;
-        this.unregisterUserKeybinding(kb);
-        kb.keybinding = keybinding.keybinding;
-        this.registerUserKeybinding({
-          ...kb,
-          priority: KeybindingWeight.WorkbenchContrib * 100,
+    this.progressService.withProgress({
+      location: ProgressLocation.Notification,
+    }, (progress: IProgress<IProgressStep>) => {
+      return new Promise<any>(async (resolve, reject) => {
+        progress.report({ message: localize('keymaps.keybinding.loading'), increment: 0, total: 100 });
+        const keybindings: Keybinding[] = this.storeKeybindings || [];
+        let updated = false;
+        for (const kb of keybindings) {
+          if (kb.command === keybinding.command) {
+            updated = true;
+            this.unregisterUserKeybinding(kb);
+            kb.keybinding = keybinding.keybinding;
+            this.registerUserKeybinding({
+              ...kb,
+              priority: KeybindingWeight.WorkbenchContrib * 100,
+            });
+          }
+        }
+        if (!updated) {
+          const defaultBinding: KeybindingItem = this.keybindings.find((kb: KeybindingItem) => kb.id === keybinding.command && this.getRaw(kb.when) === keybinding.when)!;
+          if (defaultBinding && defaultBinding.keybinding) {
+            this.unregisterDefaultKeybinding({
+              when: this.getRaw(defaultBinding.when),
+              command: defaultBinding.id,
+              keybinding: this.getRaw(defaultBinding.keybinding),
+            });
+          }
+          // 不能额外传入keybinding的resolved值
+          const item: Keybinding = {
+            when: keybinding.when,
+            command: keybinding.command,
+            keybinding: keybinding.keybinding,
+          };
+          keybindings.push(item);
+          this.registerUserKeybinding(item);
+        }
+        // 后置存储流程
+        this.saveKeybinding(keybindings).then(() => {
+          resolve(undefined);
+          progress.report({ message: localize('keymaps.keybinding.success'), increment: 99 });
+        }).catch((e: any) => {
+          reject(e);
+          progress.report({ message: localize('keymaps.keybinding.fail'), increment: 99 });
+        }).finally(() => {
+          setTimeout(() => {
+            // 3s 后再隐藏进度条
+            progress.report({ increment: 100 });
+          }, 3000);
         });
-      }
-    }
-    if (!updated) {
-      const defaultBinding: KeybindingItem = this.keybindings.find((kb: KeybindingItem) => kb.id === keybinding.command && this.getRaw(kb.when) === keybinding.when)!;
-      if (defaultBinding && defaultBinding.keybinding) {
-        this.unregisterDefaultKeybinding({
-          when: this.getRaw(defaultBinding.when),
-          command: defaultBinding.id,
-          keybinding: this.getRaw(defaultBinding.keybinding),
-        });
-      }
-      // 不能额外传入keybinding的resolved值
-      const item: Keybinding = {
-        when: keybinding.when,
-        command: keybinding.command,
-        keybinding: keybinding.keybinding,
-      };
-      keybindings.push(item);
-      this.registerUserKeybinding(item);
-    }
-    // 后置存储流程
-    this.saveKeybinding(keybindings);
+      });
+    }, () => {});
   }
 
   private async saveKeybinding(keybindings: Keybinding[]) {
-    if (!this.resource) {
-      return;
-    }
     this.storeKeybindings = keybindings;
     this.updateKeybindings();
+    if (!this.resource) {
+      this.resource = await this.filesystem.createFile(KeymapService.KEYMAP_FILE_URI.toString());
+    }
     try {
       // 存储前清理多余属性
       await this.filesystem.setContent(this.resource, JSON.stringify(keybindings.map((kb) => {
@@ -446,7 +467,11 @@ export class KeymapService implements IKeymapService {
 
     const otherItems: KeybindingItem[] = sorted.filter((a: KeybindingItem) => !a.keybinding && a.hasCommandLabel);
 
-    return [...keyItems, ...otherItems];
+    // 让带有 Label 的快捷键命令排序靠前
+    const withLabelItems = keyItems.filter((keybinding) => keybinding.hasCommandLabel);
+    const withoutLabelItems = keyItems.filter((keybinding) => !keybinding.hasCommandLabel);
+
+    return [...withLabelItems, ...withoutLabelItems, ...otherItems];
   }
 
   // 字典排序

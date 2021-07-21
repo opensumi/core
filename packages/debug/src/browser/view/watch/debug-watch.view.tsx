@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useInjectable, getIcon } from '@ali/ide-core-browser';
+import { useInjectable, getIcon, DisposableCollection, Disposable } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { ViewState } from '@ali/ide-core-browser';
 import { INodeRendererProps, ClasslistComposite, IRecycleTreeHandle, TreeNodeType, RecycleTree, INodeRendererWrapProps, TreeModel, CompositeTreeNode, PromptHandle } from '@ali/ide-components';
@@ -29,20 +29,29 @@ export const DebugWatchView = observer(({
 
   const initTreeModel = () => {
     const treeModel = debugWatchModelService.treeModel;
+    let shouldUpdate = true;
+    const disposableCollection = new DisposableCollection();
+    disposableCollection.push(Disposable.create(() => {
+      shouldUpdate = false;
+    }));
     if (treeModel) {
       treeModel.root.ensureLoaded().then(() => {
-        setModel(treeModel);
+        if (shouldUpdate) {
+          setModel(treeModel);
+        }
       });
     }
-    const disposable = debugWatchModelService.onDidUpdateTreeModel(async (model: TreeModel) => {
+    disposableCollection.push(debugWatchModelService.onDidUpdateTreeModel(async (model: TreeModel) => {
       if (model) {
         await model.root.ensureLoaded();
       }
-      setModel(model);
-    });
+      if (shouldUpdate) {
+        setModel(model);
+      }
+    }));
     return () => {
       debugWatchModelService.removeNodeDecoration();
-      disposable.dispose();
+      disposableCollection.dispose();
     };
   };
 
