@@ -12,7 +12,10 @@ import { ICtxMenuRenderer } from './renderer/ctxmenu/base';
 export type TupleMenuNodeResult = [ MenuNode[], MenuNode[] ];
 
 export interface IMenuNodeOptions {
-  args?: any[]; // 固定参数可从这里传入
+  /**
+   * 固定参数可从这里传入
+   */
+  args?: any[];
   contextDom?: HTMLElement;
 }
 

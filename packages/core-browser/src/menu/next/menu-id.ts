@@ -36,6 +36,7 @@ export enum MenuId {
   SCMChangeTitle = 'scm/change/title',
   SCMResourceContext = 'scm/resourceState/context',
   SCMResourceGroupContext = 'scm/resourceGroup/context',
+  SCMResourceFolderContext = 'scm/resourceFolder/context',
   SCMSourceControl = 'scm/sourceControl',
   SCMTitle = 'scm/title',
   SCMInput = 'scm/input',

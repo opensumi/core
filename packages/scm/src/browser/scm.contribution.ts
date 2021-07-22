@@ -1,19 +1,20 @@
 import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, PreferenceSchema, localize, URI, PreferenceScope } from '@ali/ide-core-common';
-import { ClientAppContribution, PreferenceContribution, PreferenceService } from '@ali/ide-core-browser';
+import { ClientAppContribution, PreferenceContribution, PreferenceService, getExternalIcon } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { IViewsRegistry, MainLayoutContribution } from '@ali/ide-main-layout';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 
-import { SCMPanel } from './scm.view';
-import { scmContainerId, IDirtyDiffWorkbenchController, OPEN_DIRTY_DIFF_WIDGET, GOTO_NEXT_CHANGE, GOTO_PREVIOUS_CHANGE, TOGGLE_DIFF_SIDE_BY_SIDE, scmResourceViewId } from '../common';
+import { SCMViewContainer } from './scm-view-container';
+import { scmContainerId, IDirtyDiffWorkbenchController, OPEN_DIRTY_DIFF_WIDGET, GOTO_NEXT_CHANGE, GOTO_PREVIOUS_CHANGE, TOGGLE_DIFF_SIDE_BY_SIDE, scmResourceViewId, SET_SCM_TREE_VIEW_MODE, SET_SCM_LIST_VIEW_MODE, SCMViewModelMode } from '../common';
 import { SCMBadgeController, SCMStatusBarController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
 import { getIcon } from '@ali/ide-core-browser';
 import { WorkbenchEditorService, EditorCollectionService, IEditor } from '@ali/ide-editor/lib/common';
 import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { SCMTreeService } from './components/scm-resource-tree/scm-tree.service';
 
 export const SCM_ACCEPT_INPUT: Command = {
   id: 'scm.acceptInput',
@@ -46,8 +47,11 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
+  @Autowired()
+  private readonly scmTreeService: SCMTreeService;
+
   @Autowired(IViewsRegistry)
-  viewsRegistry: IViewsRegistry;
+  private readonly viewsRegistry: IViewsRegistry;
 
   onStart() {
     this.viewsRegistry.registerViewWelcomeContent(scmResourceViewId, {
@@ -111,6 +115,17 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
         this.preferenceService.set('diffEditor.renderSideBySide', newValue, PreferenceScope.User);
       },
     });
+
+    commands.registerCommand(SET_SCM_TREE_VIEW_MODE, {
+      execute: () => {
+        this.scmTreeService.changeTreeMode(true);
+      },
+    });
+    commands.registerCommand(SET_SCM_LIST_VIEW_MODE, {
+      execute: () => {
+        this.scmTreeService.changeTreeMode(false);
+      },
+    });
   }
 
   registerComponent(registry: ComponentRegistry) {
@@ -119,7 +134,7 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
       title: localize('scm.title'),
       priority: 8,
       containerId: scmContainerId,
-      component: SCMPanel,
+      component: SCMViewContainer,
       activateKeyBinding: 'ctrlcmd+shift+g',
     });
   }
@@ -150,6 +165,26 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
       },
       when: 'isInDiffEditor',
       group: '1_internal',
+    });
+    menuRegistry.registerMenuItem(MenuId.SCMTitle, {
+      command: {
+        id: SET_SCM_TREE_VIEW_MODE.id,
+        label: localize('setTreeViewMode', 'View as Tree'),
+      },
+      iconClass: getExternalIcon('list-tree'),
+      when: `config.scm.defaultViewMode == ${SCMViewModelMode.List}`,
+      group: 'navigation',
+      order: -1,
+    });
+    menuRegistry.registerMenuItem(MenuId.SCMTitle, {
+      command: {
+        id: SET_SCM_LIST_VIEW_MODE.id,
+        label: localize('setListViewMode', 'View as List'),
+      },
+      iconClass: getExternalIcon('list-flat'),
+      when: `config.scm.defaultViewMode == ${SCMViewModelMode.Tree}`,
+      group: 'navigation',
+      order: -1,
     });
   }
 

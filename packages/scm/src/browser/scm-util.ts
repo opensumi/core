@@ -2,7 +2,11 @@ import { basename } from '@ali/ide-core-common/lib/path';
 import { ISCMResourceGroup, ISCMResource, ISCMRepository } from '../common';
 
 export function isSCMResource(element: ISCMResourceGroup | ISCMResource): element is ISCMResource {
-  return !!(element as ISCMResource).sourceUri;
+  return !!(element as ISCMResource).sourceUri && isSCMResourceGroup((element as ISCMResource).resourceGroup);
+}
+
+export function isSCMResourceGroup(element: ISCMResourceGroup | ISCMResource): element is ISCMResourceGroup {
+  return !!(element as ISCMResourceGroup).provider && !!(element as ISCMResourceGroup).elements;
 }
 
 /**

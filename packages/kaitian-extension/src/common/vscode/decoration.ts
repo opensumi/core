@@ -9,13 +9,16 @@ export interface DecorationRequest {
   readonly uri: UriComponents;
 }
 
-export type DecorationData = [number, boolean, string, string, ThemeColor, string];
+// 去掉了第一个 weight 字段和最后一个 source 字段
+// type DecorationData = [number, boolean, string, string, ThemeColor, string];
+
+export type DecorationData = [boolean, string, string, ThemeColor];
 export interface DecorationReply {
   [id: number]: DecorationData;
 }
 
 export interface IExtHostDecorationsShape {
-  registerDecorationProvider(provider: vscode.DecorationProvider, extensionId: string): vscode.Disposable;
+  registerFileDecorationProvider(provider: vscode.FileDecorationProvider | vscode.DecorationProvider, extensionId: string): vscode.Disposable;
   $provideDecorations(requests: DecorationRequest[], token: CancellationToken): Promise<DecorationReply>;
 }
 

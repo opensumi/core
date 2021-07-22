@@ -21,13 +21,14 @@
   "dependencies": {
     "@ali/ide-core-browser": "2.7.3",
     "@ali/ide-core-common": "2.7.3",
+    "@ali/ide-decoration": "2.7.3",
     "@ali/ide-editor": "2.7.3",
     "@ali/ide-monaco": "2.7.3",
     "@ali/ide-main-layout": "2.7.3",
     "@ali/ide-monaco-enhance": "2.7.3",
     "@ali/ide-status-bar": "2.7.3",
     "@ali/ide-components": "2.7.3",
-    "@ali/ide-theme": "2.7.3"
+    "@ali/ide-theme": "2.7.2"
   },
   "devDependencies": {
     "@ali/ide-dev-tool": "^1.1.0",

@@ -273,17 +273,17 @@
       "@ali/ide-monaco-enhance/lib/*": [
         "../packages/monaco-enhance/src/*"
       ],
-      "@ali/ide-scm": [
-        "../packages/scm/src/index.ts"
-      ],
-      "@ali/ide-scm/lib/*": [
-        "../packages/scm/src/*"
-      ],
       "@ali/ide-decoration": [
         "../packages/decoration/src/index.ts"
       ],
       "@ali/ide-decoration/lib/*": [
         "../packages/decoration/src/*"
+      ],
+      "@ali/ide-scm": [
+        "../packages/scm/src/index.ts"
+      ],
+      "@ali/ide-scm/lib/*": [
+        "../packages/scm/src/*"
       ],
       "@ali/ide-debug": [
         "../packages/debug/src/index.ts"

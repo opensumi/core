@@ -161,8 +161,19 @@ declare module 'vscode' {
 
   //#region Joh: decorations
 
-  //todo@joh -> make class
-  export interface DecorationData {
+  //#region old file-decorations
+  export interface SourceControlResourceDecorations {
+    source?: string;
+    letter?: string;
+    color?: ThemeColor;
+  }
+
+
+  /**
+   * @deprecated
+   * please use `FileDecoration`
+   */
+  export class Decoration {
     letter?: string;
     title?: string;
     color?: ThemeColor;
@@ -171,29 +182,41 @@ declare module 'vscode' {
     source?: string; // hacky... we should remove it and use equality under the hood
   }
 
-  export interface SourceControlResourceDecorations {
-    source?: string;
-    letter?: string;
-    color?: ThemeColor;
-  }
-
-  //#region file-decorations: https://github.com/microsoft/vscode/issues/54938
-
-  export class Decoration {
-    letter?: string;
-    title?: string;
-    color?: ThemeColor;
-    priority?: number;
-    bubble?: boolean;
-  }
+  /**
+   * @deprecated
+   * please use `FileDecorationProvider`
+   */
 
   export interface DecorationProvider {
     onDidChangeDecorations: Event<undefined | Uri | Uri[]>;
-    provideDecoration(uri: Uri, token: CancellationToken): ProviderResult<DecorationData>;
+    provideDecoration(uri: Uri, token: CancellationToken): ProviderResult<Decoration>;
   }
 
   export namespace window {
+    /**
+     * @deprecated
+     * please use `registerDecorationProvider`
+     */
     export function registerDecorationProvider(provider: DecorationProvider): Disposable;
+  }
+
+  //#endregion
+
+  //#region file-decorations: https://github.com/microsoft/vscode/issues/54938
+  export class FileDecoration {
+    badge?: string;
+    tooltip?: string;
+    color?: ThemeColor;
+    propagate?: boolean;
+  }
+
+  export interface FileDecorationProvider {
+    onDidChange: Event<undefined | Uri | Uri[]>;
+    provideFileDecoration(uri: Uri, token: CancellationToken): ProviderResult<FileDecoration>;
+  }
+
+  export namespace window {
+    export function registerDecorationProvider(provider: FileDecorationProvider): Disposable;
   }
 
   //#endregion

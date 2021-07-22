@@ -1,5 +1,6 @@
 import { Injector } from '@ali/common-di';
 import { PreferenceService, PreferenceProxy, createPreferenceProxy, PreferenceSchema, localize } from '@ali/ide-core-browser';
+import { SCMViewModelMode } from '../common';
 
 // 这里都是 scm 相关配置项注册
 /* istanbul ignore file */
@@ -41,6 +42,17 @@ export const scmPreferenceSchema: PreferenceSchema = {
       description: localize('alwaysShowActions', 'Controls whether inline actions are always visible in the Source Control view.'),
       default: false,
     },
+    'scm.defaultViewMode': {
+      type: 'string',
+      enum: [SCMViewModelMode.Tree, SCMViewModelMode.List],
+      description: localize('scm.defaultViewMode', 'Controls the default Source Control repository view mode.'),
+      default: SCMViewModelMode.List,
+    },
+    'scm.listView.compactFolders': {
+      type: 'boolean',
+      description: localize('scmListViewCompactFolders', 'Controls whether the source control view should render folders in a compact form. In such a form, single child folders will be compressed in a combined tree element.'),
+      default: true,
+    },
   },
 };
 
@@ -51,6 +63,8 @@ export interface SCMConfiguration {
   'scm.diffDecorationsGutterWidth': number;
   'scm.alwaysShowActions': boolean;
   'scm.alwaysShowDiffWidget': boolean;
+  'scm.defaultViewMode': SCMViewModelMode;
+  'scm.listView.compactFolders': boolean;
 }
 
 export const SCMPreferences = Symbol('SCMPreferences');

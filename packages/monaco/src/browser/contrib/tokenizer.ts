@@ -9,6 +9,7 @@ export interface ITextmateTokenizerService {
   setTheme(theme: any /**应为 @ali/ide-theme#IThemeData */): void;
   registerGrammar(grammar: GrammarsContribution, extPath: URI): Promise<void>;
   registerLanguage(language: LanguagesContribution, extPath: URI): Promise<void>;
+  registerLanguages(language: LanguagesContribution[], extPath: URI): Promise<void>;
   testTokenize(line: string, languageId: string): void;
 }
 

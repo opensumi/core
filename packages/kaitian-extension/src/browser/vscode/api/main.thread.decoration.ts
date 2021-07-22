@@ -91,14 +91,13 @@ export class MainThreadDecorations implements IMainThreadDecorationsShape {
           if (!data) {
             return undefined;
           }
-          const [weight, bubble, tooltip, letter, themeColor, source] = data;
+          const [propagate, tooltip, badge, themeColor] = data;
           return {
-            weight: weight || 0,
-            bubble: bubble || false,
-            color: themeColor && themeColor.id,
+            weight: 10, /* 向下兼容 */
+            bubble: propagate || false,
+            color: themeColor?.id,
             tooltip,
-            letter,
-            source,
+            letter: badge,
           } as IDecorationData;
         });
       },

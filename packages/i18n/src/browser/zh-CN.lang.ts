@@ -244,6 +244,7 @@ export const localizationBundle = {
     'debug.console.copyAll': '复制全部',
     'debug.console.collapseAll': '折叠全部',
     'debug.console.followLink': '按住 {0} 并单击可访问链接',
+    'debug.console.input.placeholder': '请发起调试会话来对表达式求值',
 
     'output.tabbar.title': '输出',
     'output.channel.none': '<还没有任何输出>',

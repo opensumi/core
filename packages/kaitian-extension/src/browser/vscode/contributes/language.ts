@@ -14,9 +14,7 @@ export class LanguagesContributionPoint extends VSCodeContributePoint<LanguagesS
   private readonly textMateService: ITextmateTokenizerService;
 
   async contribute() {
-    for (const language of this.json) {
-      await this.textMateService.registerLanguage(language, URI.from(this.extension.uri!));
-    }
+    await this.textMateService.registerLanguages(this.json, URI.from(this.extension.uri!));
   }
 
   // copied from vscode

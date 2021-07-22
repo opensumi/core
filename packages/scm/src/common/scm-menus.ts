@@ -6,6 +6,7 @@ export interface ISCMRepositoryMenus {
   readonly inputMenu: IContextMenu;
   getResourceGroupMenu(group: ISCMResourceGroup): IContextMenu;
   getResourceMenu(resource: ISCMResource): IContextMenu;
+  getResourceFolderMenu(group: ISCMResourceGroup): IContextMenu;
 }
 
 export const ISCMMenus = Symbol('ISCMMenus');

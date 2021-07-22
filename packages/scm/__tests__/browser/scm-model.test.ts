@@ -123,11 +123,11 @@ describe('test for scm.store.ts', () => {
         const mockResourceGroup = new MockSCMResourceGroup(provider1, 0);
         const mockResource = new MockSCMResource(mockResourceGroup, undefined, undefined, undefined);
 
-        store.spliceSCMList(0, 0, mockResourceGroup, mockResource);
+        store['spliceSCMList'](0, 0, mockResourceGroup, mockResource);
         expect(store.scmList).toEqual([mockResourceGroup, mockResource]);
 
         const mockResourceGroup1 = new MockSCMResourceGroup(provider1, 1);
-        store.spliceSCMList(1, 1, mockResourceGroup1);
+        store['spliceSCMList'](1, 1, mockResourceGroup1);
         expect(store.scmList).toEqual([mockResourceGroup, mockResourceGroup1]);
       });
 

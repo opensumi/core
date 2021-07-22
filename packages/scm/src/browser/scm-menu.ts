@@ -36,6 +36,26 @@ class SCMResourceMenus extends Disposable {
     return this._resourceGroupMenu;
   }
 
+  private _resourceFolderMenu: IContextMenu | undefined;
+  /**
+   * 获得 SCMResourceFolder Item 的菜单
+   */
+  public get resourceFolderMenu(): IContextMenu {
+    if (!this._resourceFolderMenu) {
+      this._resourceFolderMenu = this.registerDispose(
+        this.menuService.createMenu({
+          id: MenuId.SCMResourceFolderContext,
+          contextKeyService: this.contextKeyService,
+          config: {
+            separator: 'inline',
+          },
+        }),
+      );
+    }
+
+    return this._resourceFolderMenu;
+  }
+
   // contextValue 为 undefined 的 SCMResource Menu
   // 不直接以 undefined 为 key 存入的原因是避免有 contextValue 就是 undefined 字符串
   private resourceMenu: IContextMenu | undefined;
@@ -154,6 +174,10 @@ class SCMRepositoryMenus extends Disposable implements ISCMRepositoryMenus {
 
   public getResourceMenu(resource: ISCMResource): IContextMenu {
     return this.getResourceGroupMenus(resource.resourceGroup).getResourceMenu(resource);
+  }
+
+  public getResourceFolderMenu(group: ISCMResourceGroup): IContextMenu {
+    return this.getResourceGroupMenus(group).resourceFolderMenu;
   }
 
   private readonly resourceGroupMenusItems = new Map<ISCMResourceGroup, SCMResourceMenus>();

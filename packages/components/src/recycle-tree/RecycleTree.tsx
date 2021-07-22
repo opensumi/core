@@ -106,6 +106,10 @@ export interface IRecycleTreeProps<T = TreeModel> {
    * 默认值为：false
    */
   leaveBottomBlank?: boolean;
+  /**
+   * 指定如何获取 item key
+   */
+  getItemKey?: (node: INodeRendererProps) => string | number;
 }
 
 export interface IRecycleTreeError {
@@ -624,14 +628,9 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   private getItemKey = (index: number) => {
     const node = this.getItemAtIndex(index);
-    if (node && node.item) {
-      if (!node.item.id) {
-        return index;
-      }
-      return node.item.id;
-    } else {
-      return index;
-    }
+    const { getItemKey } = this.props;
+    const id = getItemKey ? getItemKey(node) : undefined;
+    return id ?? node?.item?.id ?? index;
   }
 
   // 过滤Root节点展示
