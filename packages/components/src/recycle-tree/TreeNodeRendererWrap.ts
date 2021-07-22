@@ -3,12 +3,12 @@ import { TreeNode, CompositeTreeNode } from './tree/TreeNode';
 import { RenamePromptHandle, NewPromptHandle } from './prompt';
 import { TreeNodeType } from './types';
 
-interface ITreeNodeRendererProps {
+export interface ITreeNodeRendererProps {
   item: TreeNode;
   itemType: TreeNodeType.TreeNode;
 }
 
-interface ICompositeTreeNodeRendererProps {
+export interface ICompositeTreeNodeRendererProps {
   item: CompositeTreeNode;
   itemType: TreeNodeType.CompositeTreeNode;
 }

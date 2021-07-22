@@ -1,8 +1,7 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { PreferenceService } from '@ali/ide-core-browser';
-import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { Disposable, Emitter, Event, getDebugLogger } from '@ali/ide-core-common';
-import { combinedDisposable, dispose, IDisposable } from '@ali/ide-core-common/lib/disposable';
+import { combinedDisposable, dispose, DisposableStore, IDisposable, toDisposable } from '@ali/ide-core-common/lib/disposable';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import { action, observable } from 'mobx';
 
@@ -204,20 +203,60 @@ export class ViewModelContext extends Disposable {
 
   private logger = getDebugLogger();
 
+  private toDisposableListener: IDisposable | null;
+
+  private _onDidSCMListChangeEmitter: Emitter<void> = new Emitter();
+  public onDidSCMListChange = this._onDidSCMListChangeEmitter.event;
+
   constructor() {
     super();
     this.start();
 
     this.initTreeAlwaysShowActions();
+
+    this.scmService.onDidChangeSelectedRepositories(this._handleSelectedRepoChanged, this, this.disposables);
+    this._handleSelectedRepoChanged(this.scmService.selectedRepositories);
+  }
+
+  private _handleSelectedRepoChanged(repos: ISCMRepository[]) {
+    const [selectedRepo] = repos;
+    if (!selectedRepo) {
+      // handle all repo deleted
+      return;
+    }
+    if (this.toDisposableListener) {
+      this.toDisposableListener.dispose();
+      this.toDisposableListener = null;
+    }
+    this.toDisposableListener = this.listenToCurrentRepo(selectedRepo);
+  }
+
+  private listenToCurrentRepo(repository: ISCMRepository): IDisposable {
+    const disposables = new DisposableStore();
+    const resourceGroup = new ResourceGroupSplicer(repository);
+
+    // 只处理当前 repository 的事件
+    const repoOnDidSplice = Event.filter(resourceGroup.onDidSplice, (e) => e.target === repository);
+    disposables.add(repoOnDidSplice(({ index, deleteCount, elements }) => {
+      this.spliceSCMList(index, deleteCount, ...elements);
+    }));
+
+    resourceGroup.run();
+
+    disposables.add(resourceGroup);
+    return toDisposable(() => {
+      disposables.clear();
+    });
   }
 
   private initTreeAlwaysShowActions() {
     this.alwaysShowActions = !!this.preferenceService.get<boolean>('scm.alwaysShowActions');
-    this.preferenceService.onPreferenceChanged((changes) => {
-      if (changes.preferenceName === 'scm.alwaysShowActions') {
-        this.alwaysShowActions = changes.newValue;
-      }
-    }, this, this.disposables);
+    this.disposables.push(
+      this.preferenceService.onSpecificPreferenceChange(
+        'scm.alwaysShowActions',
+        (changes) => this.alwaysShowActions = changes.newValue,
+      ),
+    );
   }
 
   @observable
@@ -250,14 +289,11 @@ export class ViewModelContext extends Disposable {
   @observable
   public selectedRepo: ISCMRepository | undefined;
 
-  @observable
-  public scmList = observable.array<ISCMDataItem>([]);
+  public scmList = new Array<ISCMDataItem>();
 
-  public titleMenu: IMenu | null;
-
-  @action
-  public spliceSCMList = (start: number, deleteCount: number, ...toInsert: ISCMDataItem[]) => {
+  private spliceSCMList = (start: number, deleteCount: number, ...toInsert: ISCMDataItem[]) => {
     this.scmList.splice(start, deleteCount, ...toInsert);
+    this._onDidSCMListChangeEmitter.fire();
   }
 
   @action

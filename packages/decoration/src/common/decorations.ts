@@ -23,11 +23,6 @@ export interface IDecorationData {
    * Decoration 是否冒泡，类似文件的 Decoration 是否传给文件夹
    */
   readonly bubble?: boolean;
-  /**
-   * @deprecated
-   * hacky... we should remove it and use equality under the hood
-   */
-  readonly source?: string;
 }
 
 export interface IDecorationsProvider {

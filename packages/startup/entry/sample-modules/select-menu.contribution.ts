@@ -42,7 +42,7 @@ export class SelectMenuContribution implements CommandContribution, MenuContribu
 
     menuRegistry.registerMenuItem(MenuId.EditorTitle, testSubmenuDesc);
 
-    menuRegistry.registerMenuItem(MenuId.SCMTitle, testSubmenuDesc);
+    // menuRegistry.registerMenuItem(MenuId.SCMTitle, testSubmenuDesc);
 
     menuRegistry.registerMenuItem(testSubmenuId, {
       command: FILE_COMMANDS.NEW_FILE.id,

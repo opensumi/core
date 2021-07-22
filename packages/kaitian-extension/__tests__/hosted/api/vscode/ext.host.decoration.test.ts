@@ -76,7 +76,7 @@ describe('ExtHostFileSystem', () => {
       onDidChangeDecorations = this.onDidChangeDecorationsEmitter.event;
       provideDecoration(uri: Uri, token: CancellationToken) {
         callCounter += 1;
-        return new Promise<vscode.DecorationData>((resolve) => {
+        return new Promise<vscode.Decoration>((resolve) => {
           setTimeout(() => {
             return resolve({
               letter: 'A',
@@ -91,7 +91,7 @@ describe('ExtHostFileSystem', () => {
       }
     };
 
-    const disposable = service.registerDecorationProvider(
+    const disposable = service.registerFileDecorationProvider(
       extDecoProvider,
       'mock-ext-async-id',
     );
@@ -115,12 +115,10 @@ describe('ExtHostFileSystem', () => {
     // trigger -> async
     expect(result).toEqual({
       121: [
-        1,
         false,
         'Modified changes',
         'A',
         { id: 'green' },
-        'async',
       ],
     });
     expect(callCounter).toBe(1);
@@ -153,7 +151,7 @@ describe('ExtHostFileSystem', () => {
       }
     };
 
-    const disposable = service.registerDecorationProvider(
+    const disposable = service.registerFileDecorationProvider(
       extDecoProvider,
       'mock-ext-sync-id',
     );
@@ -174,12 +172,10 @@ describe('ExtHostFileSystem', () => {
     // trigger -> sync
     expect(result).toEqual({
       121: [
-        1,
         false,
         'Modified changes',
         'S',
         { id: 'green' },
-        'sync',
       ],
     });
     expect(callCounter).toBe(1);
@@ -213,7 +209,7 @@ describe('ExtHostFileSystem', () => {
       onDidChangeDecorationsEmitter = new Emitter<Uri[]>();
       onDidChangeDecorations = this.onDidChangeDecorationsEmitter.event;
       provideDecoration(uri: Uri, token: CancellationToken) {
-        return new Promise<vscode.DecorationData>((resolve) => {
+        return new Promise<vscode.Decoration>((resolve) => {
           setTimeout(() => {
             return resolve({
               letter: 'A',
@@ -228,12 +224,12 @@ describe('ExtHostFileSystem', () => {
       }
     };
 
-    const disposable1 = service.registerDecorationProvider(
+    const disposable1 = service.registerFileDecorationProvider(
       extDecoProvider1,
       'mock-ext-id-1',
     );
 
-    const disposable2 = service.registerDecorationProvider(
+    const disposable2 = service.registerFileDecorationProvider(
       extDecoProvider2,
       'mock-ext-id-2',
     );
@@ -265,20 +261,16 @@ describe('ExtHostFileSystem', () => {
     // trigger -> async
     expect(result).toEqual({
       121: [
-        1,
         false,
         'Modified changes',
         'S',
         { id: 'green' },
-        'sync',
       ],
       122: [
-        1,
         false,
         'Modified changes',
         'A',
         { id: 'green' },
-        'async',
       ],
     });
 
@@ -306,7 +298,7 @@ describe('ExtHostFileSystem', () => {
       }
     };
 
-    service.registerDecorationProvider(
+    service.registerFileDecorationProvider(
       extDecoProvider,
       'mock-ext-sync-id',
     );
@@ -322,12 +314,10 @@ describe('ExtHostFileSystem', () => {
     // trigger -> sync
     expect(result).toEqual({
       121: [
-        1,
         false,
         'Modified changes',
         'TWO',
         { id: 'green' },
-        'sync',
       ],
     });
     expect(warnSpy.mock.calls[0][1]).toBe(
@@ -343,7 +333,7 @@ describe('ExtHostFileSystem', () => {
       }
     };
 
-    service.registerDecorationProvider(
+    service.registerFileDecorationProvider(
       extDecoProvider,
       'mock-ext-sync-id',
     );

@@ -112,6 +112,7 @@ export const FileTree = ({
 
   React.useEffect(() => {
     ensureIsReady();
+    // FIXME: @魁武 可能会有内存泄露
     iconService.onThemeChange((theme) => {
       setIconTheme(theme);
     });

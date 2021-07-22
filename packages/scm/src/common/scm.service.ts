@@ -122,7 +122,7 @@ export class SCMService {
 
   private readonly logger = getDebugLogger();
 
-  registerSCMProvider(provider: ISCMProvider): ISCMRepository {
+  public registerSCMProvider(provider: ISCMProvider): ISCMRepository {
     this.logger.log('SCMService#registerSCMProvider');
 
     if (this._providerIds.has(provider.id)) {

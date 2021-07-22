@@ -21,6 +21,7 @@
   "dependencies": {
     "@ali/ide-core-browser": "2.7.2",
     "@ali/ide-core-common": "2.7.2",
+    "@ali/ide-decoration": "2.7.2",
     "@ali/ide-editor": "2.7.2",
     "@ali/ide-monaco": "2.7.2",
     "@ali/ide-main-layout": "2.7.2",

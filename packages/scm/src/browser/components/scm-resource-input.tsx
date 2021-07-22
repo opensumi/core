@@ -14,7 +14,7 @@ import {
 } from '../../common';
 import { ViewModelContext } from '../scm-model';
 
-import * as styles from './scm-header.module.less';
+import * as styles from './scm-resource-input.module.less';
 
 export function convertValidationType(type: InputValidationType) {
   return ['info', 'warning', 'error'][type];
@@ -24,7 +24,7 @@ function getPlaceholder(repository: ISCMRepository) {
   return format(repository.input.placeholder, isOSX ? '⌘Enter' : 'Ctrl+Enter');
 }
 
-export const SCMHeader: React.FC<{
+export const SCMResourceInput: React.FC<{
   repository: ISCMRepository;
 }> = ({ repository }) => {
   const commandService = useInjectable<CommandService>(CommandService);
@@ -117,3 +117,5 @@ export const SCMHeader: React.FC<{
     </div>
   );
 };
+
+SCMResourceInput.displayName = 'SCMResourceInput';

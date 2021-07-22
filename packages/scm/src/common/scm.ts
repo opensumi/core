@@ -6,7 +6,6 @@ export interface VSCommand {
   id: string;
   title: string;
   tooltip?: string;
-  // tslint:disable-next-line:no-any
   arguments?: any[];
 }
 
@@ -78,7 +77,7 @@ export interface ISCMResourceGroup extends ISequence<ISCMResource> {
   readonly id: string;
   readonly hideWhenEmpty: boolean;
   readonly onDidChange: Event<void>;
-// 句柄参数转换
+  // 句柄参数转换
   toJSON(): { [key: string]: number };
 }
 
