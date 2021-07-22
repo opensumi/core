@@ -70,6 +70,11 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
         }
       });
     });
+    this.labelService.onDidChange((uri) => {
+      if (uri.codeUri.fsPath && this.involvedFiles.effects(uri.codeUri.fsPath)) {
+        this.eventBus.fire(new ResourceNeedUpdateEvent(uri));
+      }
+    });
   }
 
   async getFileStat(uri: string) {

@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Event, Disposable } from '@ali/ide-core-common';
+import { Event, Disposable, ConstructorOf, BasicEvent, IEventBus } from '@ali/ide-core-common';
+import { useInjectable } from './injectable-hooks';
 
 /**
  * 在事件来临时更新当前元素
@@ -27,4 +28,26 @@ export function useUpdateOnEvent<T = any>(event: Event<T>, dependencies: any[] =
       disposer.dispose();
     };
   }, dependencies );
+}
+
+export function useUpdateOnEventBusEvent<T = any>(eventType: ConstructorOf<BasicEvent<T>>, dependencies: any[] = [], condition?: (payload: T) => boolean) {
+  const [, updateState] = React.useState();
+  const forceUpdate = React.useCallback(() => updateState({}), []);
+  const eventBus: IEventBus = useInjectable(IEventBus);
+
+  React.useEffect(() => {
+    const disposer = new Disposable();
+    disposer.addDispose(eventBus.on(eventType, (event: BasicEvent<T>) => {
+      if (!condition) {
+        forceUpdate();
+      } else {
+        if (condition(event.payload)) {
+          forceUpdate();
+        }
+      }
+    }));
+    return () => {
+      disposer.dispose();
+    };
+  }, dependencies);
 }

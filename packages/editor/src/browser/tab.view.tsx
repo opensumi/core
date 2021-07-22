@@ -1,7 +1,7 @@
 
 import * as React from 'react';
-import { useInjectable, useUpdateOnEvent } from '@ali/ide-core-browser/lib/react-hooks';
-import { IResource, ResourceService, IEditorGroup, WorkbenchEditorService } from '../common';
+import { useInjectable, useUpdateOnEvent, useUpdateOnEventBusEvent } from '@ali/ide-core-browser/lib/react-hooks';
+import { IResource, ResourceService, IEditorGroup, WorkbenchEditorService, ResourceDidUpdateEvent } from '../common';
 import * as styles from './editor.module.less';
 import classnames from 'classnames';
 import { getIcon, MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent, URI, Disposable, DomListener, PreferenceService, DisposableCollection, Event } from '@ali/ide-core-browser';
@@ -40,6 +40,9 @@ export const Tabs = ({ group }: ITabsProps) => {
   const slotLocation = React.useMemo(() => getSlotLocation(pkgName, configContext.layoutConfig), []);
 
   useUpdateOnGroupTabChange(group);
+  useUpdateOnEventBusEvent(ResourceDidUpdateEvent, [...group.resources], (uri) => {
+    return group.resources.findIndex((r) => r.uri.isEqual(uri)) !== -1;
+  });
 
   React.useEffect(() => {
     const disposer = new Disposable();
