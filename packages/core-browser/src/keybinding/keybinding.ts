@@ -584,6 +584,9 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
       return keyString.toUpperCase();
     } else if (keyString.length > 1) {
       return keyString.charAt(0).toUpperCase() + keyString.slice(1);
+    } else if (keyString === ' ') {
+      // 空格需要额外使用特殊字符进行展示，否则直接输出 `' '` 会比较疑惑
+      return SpecialCases.SPACE.charAt(0).toUpperCase() + SpecialCases.SPACE.slice(1);
     } else {
       return keyString;
     }

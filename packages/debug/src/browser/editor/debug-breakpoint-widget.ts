@@ -71,6 +71,6 @@ export class DebugBreakpointWidget extends Disposable {
   }
 
   hide() {
-    this.zone?.dispose();
+    this.zone?.hide();
   }
 }

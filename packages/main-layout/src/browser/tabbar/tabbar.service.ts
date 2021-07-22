@@ -133,7 +133,10 @@ export class TabbarService extends WithEventBus {
     }
   }, 60);
 
-  public updatePanelVisibility(show: boolean) {
+  public updatePanelVisibility(show?: boolean) {
+    if (show === undefined) {
+      show = this.containersMap.size > 0;
+    }
     this.updatePanel(show);
   }
 

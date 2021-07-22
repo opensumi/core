@@ -504,6 +504,7 @@ export namespace SpecialCases {
   export const ARROW_DOWN = '↓';
   export const BACKSPACE = '⌫';
   export const ENTER = '⏎';
+  export const SPACE = 'space';
   export const NUMPAD = 'numpad';
 }
 

@@ -3,6 +3,7 @@ import { isOSX, Emitter, Deferred, ILogger, isWindows } from '@ali/ide-core-comm
 import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeyValidationInput, IKeymapInfo, ILinuxKeyboardLayoutInfo, IMacKeyboardLayoutInfo, KeymapInfo, getKeyboardLayoutId } from '@ali/ide-core-common/lib/keyboard';
 import { GlobalBrowserStorageService } from '../services';
 import { KeyCode } from './keys';
+import { KeyboardLayoutContribution, requireRegister } from './layouts/layout.contribution';
 
 export const KeyValidator = Symbol('KeyValidator');
 
@@ -268,9 +269,8 @@ export class KeyboardTester {
   }
 
   constructor() {
-    const platform = isWindows ? 'win' : isOSX ? 'darwin' : 'linux';
-    const module = require('./layouts/layout.contribution.' + platform);
-    const keymapInfos: IKeymapInfo[] = module.KeyboardLayoutContribution.INSTANCE.layoutInfos;
+    requireRegister();
+    const keymapInfos: IKeymapInfo[] = KeyboardLayoutContribution.INSTANCE.layoutInfos;
     this._keymapInfos.push(...keymapInfos.map((info) => (new KeymapInfo(info.layout, info.secondaryLayouts, info.mapping, info.isUserKeyboardLayout))));
     this.initialized.resolve(true);
     this.scores = this.keymapInfos.map(() => 0);

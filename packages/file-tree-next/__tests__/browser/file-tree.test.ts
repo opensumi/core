@@ -309,15 +309,15 @@ describe('FileTree should be work while on single workspace model', () => {
       // first, file should be selected
       handleItemToggleClick(directoryNode, TreeNodeType.CompositeTreeNode);
       let dirDecoration = decorations.getDecorations(directoryNode);
-      expect(dirDecoration?.classlist).toEqual([styles.mod_selected]);
-      // second, file should be selected
+      expect(dirDecoration?.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
+      // second, file should be unselected
+      handleItemToggleClick(directoryNode, TreeNodeType.CompositeTreeNode);
+      dirDecoration = decorations.getDecorations(directoryNode);
+      expect(dirDecoration?.classlist).toEqual([]);
+      // third, file should be selected again
       handleItemToggleClick(directoryNode, TreeNodeType.CompositeTreeNode);
       dirDecoration = decorations.getDecorations(directoryNode);
       expect(dirDecoration?.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
-      // third, file should be remove focused
-      handleItemToggleClick(directoryNode, TreeNodeType.CompositeTreeNode);
-      dirDecoration = decorations.getDecorations(directoryNode);
-      expect(dirDecoration?.classlist).toEqual([styles.mod_selected]);
       // testing range 0 -> 2 item
       handleItemClick(directoryNode, TreeNodeType.CompositeTreeNode);
       const fileNode = rootNode.getTreeNodeAtIndex(2) as Directory;

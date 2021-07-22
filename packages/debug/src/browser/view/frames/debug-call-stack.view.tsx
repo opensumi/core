@@ -1,11 +1,12 @@
 import * as React from 'react';
+import { observer } from 'mobx-react-lite';
 import { useInjectable, ViewState } from '@ali/ide-core-browser';
 import { DebugStackSessionView } from './debug-call-stack-session.view';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { IDebugSessionManager, IDebugSession } from '../../../common';
 import { DebugSession } from '../../debug-session';
 
-export const DebugCallStackView = ({
+export const DebugCallStackView = observer(({
   viewState,
 }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
@@ -40,4 +41,4 @@ export const DebugCallStackView = ({
       }
     </div>
   );
-};
+});

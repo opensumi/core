@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import './en.linux';
-import './es.linux';
-import './de.linux';
-import './fr.linux';
-import './ru.linux';
-
-export { KeyboardLayoutContribution } from './_.contribution';
+export const requireRegister = () => {
+  require('./en.linux');
+  require('./es.linux');
+  require('./de.linux');
+  require('./fr.linux');
+  require('./ru.linux');
+};

@@ -12,7 +12,7 @@ import { LayoutService } from '@ali/ide-main-layout/lib/browser/layout.service';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { MainLayoutModuleContribution } from '@ali/ide-main-layout/lib/browser/main-layout.contribution';
 import { act } from 'react-dom/test-utils';
-import { CommonServerPath, OS } from '@ali/ide-core-common';
+import { CommonServerPath, Deferred, OS } from '@ali/ide-core-common';
 
 const MockView = (props) => <div>Test view{props.message && <p id='test-unique-id'>has prop.message</p>}</div>;
 jest.useFakeTimers();
@@ -24,6 +24,7 @@ describe('main layout test', () => {
   const uniqueToken = 'unique_component_token';
   const testContainerId = 'unique_container_id';
   const layoutNode = document.createElement('div');
+  const rendered = new Deferred();
   document.getElementById('main')!.appendChild(layoutNode);
 
   const timeoutIds: Set<NodeJS.Timer> = new Set();
@@ -153,10 +154,11 @@ describe('main layout test', () => {
           MainLayoutModule,
         ],
         injector,
+        didRendered: () => rendered.resolve(),
         ...config,
       });
       app.start(document.getElementById('main')!).then(async () => {
-        // await rendered.promise;
+        await rendered.promise;
         await service.viewReady.promise;
         done();
       });

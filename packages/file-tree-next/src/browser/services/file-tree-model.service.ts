@@ -476,15 +476,25 @@ export class FileTreeModelService {
     this.treeModel.dispatchChange();
   }
 
-  // 选中当前指定节点，添加装饰器属性
-  activeFileSelectedDecoration = (target: File | Directory) => {
-    if (this._selectedFiles.indexOf(target) > -1) {
-      return;
+  // 判断节点是否选中，进行状态反转
+  toggleFileSelectedDecoration = (target: File | Directory) => {
+    const index = this._selectedFiles.indexOf(target);
+    if (index > -1) {
+      if (this.focusedFile === target) {
+        this.focusedDecoration.removeTarget(this.focusedFile);
+        this._focusedFile = undefined;
+      }
+      this._selectedFiles.splice(index, 1);
+      this.selectedDecoration.removeTarget(target);
+    } else {
+      this._selectedFiles.push(target);
+      this.selectedDecoration.addTarget(target);
+      if (this.focusedFile) {
+        this.focusedDecoration.removeTarget(this.focusedFile);
+      }
+      this._focusedFile = target;
+      this.focusedDecoration.addTarget(target);
     }
-    this._selectedFiles.push(target);
-    this.selectedDecoration.addTarget(target);
-    // 选中状态变化
-    this.onDidSelectedFileChangeEmitter.fire(this._selectedFiles.map((file) => file.uri));
     // 通知视图更新
     this.treeModel.dispatchChange();
   }
@@ -676,17 +686,8 @@ export class FileTreeModelService {
       return;
     }
 
-    // 选中的节点不是选中状态时，默认先更新节点为选中状态
-    // 后续点击切换焦点状态
-    if (this.selectedFiles.indexOf(item) > -1) {
-      if (this.focusedFile === item) {
-        this.enactiveFileDecoration();
-      } else {
-        this.activeFileFocusedDecoration(item);
-      }
-    } else {
-      this.activeFileSelectedDecoration(item);
-    }
+    // 根据节点的选中态进行复选操作
+    this.toggleFileSelectedDecoration(item);
   }
 
   handleItemClick = (item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
@@ -852,7 +853,7 @@ export class FileTreeModelService {
     if (this.corePreferences['explorer.confirmDelete']) {
       const ok = localize('file.confirm.delete.ok');
       const cancel = localize('file.confirm.delete.cancel');
-      const deleteFilesMessage = `[${uris.map((uri) => uri.displayName).join(',')}]`;
+      const deleteFilesMessage = `[ ${uris.slice(0, 5).map((uri) => uri.displayName).join(',')}${uris.length > 5 && ' ...'} ]`;
       const confirm = await this.dialogService.warning(formatLocalize('file.confirm.delete', deleteFilesMessage), [cancel, ok]);
       if (confirm !== ok) {
         return;

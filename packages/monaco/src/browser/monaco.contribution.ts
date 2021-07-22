@@ -83,7 +83,7 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
   @Autowired(MonacoOverrideServiceRegistry)
   private readonly overrideServicesRegistry: MonacoOverrideServiceRegistry;
 
-  private KEY_CODE_MAP = [];
+  private KEY_CODE_MAP;
 
   async initialize() {
     // 保留这个空的 loadMonaco 行为
@@ -298,14 +298,16 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
-    // monaco 的 keycode 和 ide 之间的映射
-    this.KEY_CODE_MAP = require('./monaco.keycode-map').KEY_CODE_MAP;
-
+    if (!this.KEY_CODE_MAP) {
+      // monaco 的 keycode 和 ide 之间的映射
+      this.KEY_CODE_MAP = require('./monaco.keycode-map').KEY_CODE_MAP;
+    }
     const monacoKeybindingsRegistry = monacoKeybindings.KeybindingsRegistry;
     const editorFocus = EditorContextKeys.focus;
 
+    const defaultItems = monacoKeybindingsRegistry.getDefaultKeybindings();
     // 将 Monaco 的 Keybinding 同步到 ide 中
-    for (const item of monacoKeybindingsRegistry.getDefaultKeybindings()) {
+    for (const item of defaultItems) {
       const command = this.monacoCommandRegistry.validate(item.command);
       if (command) {
         const raw = item.keybinding;

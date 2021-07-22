@@ -8,7 +8,6 @@ import { localize, useInjectable, KeybindingScope, NO_KEYBINDING_NAME, KeyCode, 
 import { KeymapService } from './keymaps.service';
 import { IKeymapService, KeybindingItem } from '../common';
 import { getIcon } from '@ali/ide-core-browser';
-import { IMessageService } from '@ali/ide-overlay';
 import { RecycleList } from '@ali/ide-components';
 
 export const KeymapsView: ReactEditorComponent<null> = observer(() => {
@@ -30,8 +29,6 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
 
   const [search, setSearch] = React.useState<string>('');
 
-  const message: IMessageService = useInjectable(IMessageService);
-
   const template = ({
     data,
     index,
@@ -39,7 +36,6 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
     const {
       id,
       command,
-      context,
       when,
       source,
       keybinding,
@@ -81,7 +77,6 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
         });
         setIsEditing(false);
         clearCovert();
-        message.info(localize('keymaps.keybinding.success'));
       }
     };
 
@@ -232,7 +227,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
         }
       </div>
       <div className={styles.keybinding_list_item_box}>
-        <div className={styles.limit_warp} title={getRaw(context || when || '—')} dangerouslySetInnerHTML={{ __html: context || when || '—' }}></div>
+        <div className={styles.limit_warp} title={getRaw(when || '—')} dangerouslySetInnerHTML={{ __html: when || '—' }}></div>
       </div>
       <div className={styles.keybinding_list_item_box}>
         <div title={getRaw(source)} dangerouslySetInnerHTML={{ __html: source || '' }}></div>

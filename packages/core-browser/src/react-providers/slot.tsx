@@ -123,7 +123,9 @@ export class SlotRendererRegistry {
     </ErrorBoundary>;
   }
 
-  rendererRegistry: Map<string, Renderer> = new Map();
+  protected tabbarLocation = new Set<string>();
+
+  protected rendererRegistry: Map<string, Renderer> = new Map();
 
   registerSlotRenderer(slot: string, renderer: Renderer) {
     this.rendererRegistry.set(slot, renderer);
@@ -132,15 +134,29 @@ export class SlotRendererRegistry {
   getSlotRenderer(slot: string): Renderer {
     return this.rendererRegistry.get(slot) || SlotRendererRegistry.DefaultRenderer;
   }
+
+  addTabbar(slot: string) {
+    if (!this.tabbarLocation.has(slot)) {
+      this.tabbarLocation.add(slot);
+    }
+  }
+
+  isTabbar(slot: string) {
+    return this.tabbarLocation.has(slot);
+  }
+
 }
 
 export const slotRendererRegistry = new SlotRendererRegistry();
 
-export function SlotRenderer({ slot, ...props }: any) {
+export function SlotRenderer({ slot, isTabbar, ...props }: any) {
   const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
   const appConfig = React.useContext(ConfigContext);
   const clientApp = useInjectable<IClientApp>(IClientApp);
   const componentKeys = appConfig.layoutConfig[slot]?.modules;
+  if (isTabbar) {
+    slotRendererRegistry.addTabbar(slot);
+  }
   if (!componentKeys || !componentKeys.length) {
     getDebugLogger().warn(`${slot}位置未声明任何视图`);
   }

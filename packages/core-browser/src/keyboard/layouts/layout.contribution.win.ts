@@ -3,27 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import './en.win'; // 40%
-import './es-latin.win';
-import './en-in.win';
-import './de.win';
-import './en-uk.win';
-import './fr.win';
-import './pt-br.win';
-import './es.win';
-import './en-intl.win';
-import './ru.win';
-import './pl.win';
-import './it.win';
-import './sv.win';
-import './tr.win';
-import './pt.win';
-import './dk.win';
-import './no.win';
-import './thai.win';
-import './hu.win';
-import './de-swiss.win';
-import './en-belgian.win';
-import './cz.win';
-
-export { KeyboardLayoutContribution } from './_.contribution';
+export const requireRegister = () => {
+  require('./en.win'); // 40%
+  require('./es-latin.win');
+  require('./en-in.win');
+  require('./de.win');
+  require('./en-uk.win');
+  require('./fr.win');
+  require('./pt-br.win');
+  require('./es.win');
+  require('./en-intl.win');
+  require('./ru.win');
+  require('./pl.win');
+  require('./it.win');
+  require('./sv.win');
+  require('./tr.win');
+  require('./pt.win');
+  require('./dk.win');
+  require('./no.win');
+  require('./thai.win');
+  require('./hu.win');
+  require('./de-swiss.win');
+  require('./en-belgian.win');
+  require('./cz.win');
+};

@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useInjectable, getIcon } from '@ali/ide-core-browser';
+import { observer } from 'mobx-react-lite';
 import { ViewState } from '@ali/ide-core-browser';
 import { INodeRendererProps, ClasslistComposite, IRecycleTreeHandle, TreeNodeType, RecycleTree, INodeRendererWrapProps, TreeModel, CompositeTreeNode } from '@ali/ide-components';
 import { ExpressionContainer, ExpressionNode, DebugVariableContainer, DebugVariable } from '../../tree/debug-tree-node.define';
@@ -10,7 +11,7 @@ import { Loading } from '@ali/ide-core-browser/lib/components/loading';
 
 export const DEBUG_VARIABLE_TREE_FIELD_NAME = 'DEBUG_VARIABLE_TREE_FIELD';
 
-export const DebugVariableView = ({
+export const DebugVariableView = observer(({
   viewState,
 }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const DEBUG_VARIABLE_ITEM_HEIGHT = 22;
@@ -117,7 +118,7 @@ export const DebugVariableView = ({
   >
     {renderContent()}
   </div>;
-};
+});
 
 export interface IDebugVariableNodeProps {
   item: any;
