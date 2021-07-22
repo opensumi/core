@@ -78,6 +78,8 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
     // 空白区域点击，取消焦点状态
     const { enactiveNodeDecoration } = tree;
     enactiveNodeDecoration();
+
+    debugConsoleService.focusInput();
   };
 
   const handleOuterBlur = (ev: React.FocusEvent) => {
