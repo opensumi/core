@@ -85,7 +85,11 @@ function serializeLabelOptions(options?: ILabelOptions): string {
 }
 
 @Injectable()
-export class DefaultUriLabelProvider implements ILabelProvider {
+export class DefaultUriLabelProvider extends Disposable implements ILabelProvider {
+
+  private _onDidChange = this.registerDispose(new Emitter<URI>());
+
+  public onDidChange = this._onDidChange.event;
 
   public canHandle(uri: object, options?: ILabelOptions): number {
     if (uri instanceof URI) {
@@ -96,7 +100,14 @@ export class DefaultUriLabelProvider implements ILabelProvider {
 
   // TODO 运行时获取
   public getIcon(uri: URI, options?: ILabelOptions): string {
-    const iconClass = getIconClass(uri, options);
+    const { iconClass, onDidChange } = getIconClass(uri, options);
+    if ( onDidChange ) {
+      const disposer = onDidChange(() => {
+        this._onDidChange.fire(uri);
+        disposer.dispose();
+      });
+      this.addDispose(disposer);
+    }
     return iconClass || getIcon('ellipsis');
   }
 
@@ -159,6 +170,7 @@ export class LabelService extends WithEventBus {
   }
 
   public registerLabelProvider(provider: ILabelProvider): IDisposable {
+    const currentProvided = Array.from(this.cachedProviderMap.keys());
     this.cachedProviderMap.clear();
     const disposer = new Disposable();
     if (provider.onDidChange) {
@@ -173,6 +185,13 @@ export class LabelService extends WithEventBus {
         this.cachedProviderMap.clear();
       },
     });
+    /**
+     * 对于已经提供过 icon label的，通知一遍已经改变
+     */
+    currentProvided.forEach((uriString) => {
+      this.onDidChangeEmitter.fire(new URI(uriString));
+    });
+
     return disposer;
   }
 
@@ -207,7 +226,10 @@ export class LabelService extends WithEventBus {
 
 let modeService: any;
 let modelService: any;
-const getIconClass = (resource: URI, options?: ILabelOptions) => {
+const getIconClass = (resource: URI, options?: ILabelOptions): {
+  iconClass: string,
+  onDidChange?: Event<void>,
+} => {
   const classes = options && options.isDirectory ? ['folder-icon'] : ['file-icon'];
   let name: string | undefined;
   // 获取资源的路径和名称，data-uri单独处理
@@ -218,6 +240,7 @@ const getIconClass = (resource: URI, options?: ILabelOptions) => {
     name = cssEscape(basenameOrAuthority(resource).toLowerCase());
   }
 
+  let _onDidChange: Emitter<void> | undefined;
   // 文件夹图标
   if (options && options.isDirectory) {
     classes.push(`${name}-name-folder-icon`);
@@ -241,11 +264,23 @@ const getIconClass = (resource: URI, options?: ILabelOptions) => {
     const detectedModeId = detectModeId(modelService, modeService, monaco.Uri.file(resource.withoutQuery().toString()));
     if (detectedModeId) {
       classes.push(`${cssEscape(detectedModeId)}-lang-file-icon`);
+    } else {
+      _onDidChange = new Emitter<void>();
+      StaticServices.modeService.get().onDidCreateMode(() => {
+        if (!!detectModeId(modelService, modeService, monaco.Uri.file(resource.withoutQuery().toString()))) {
+          _onDidChange?.fire();
+          _onDidChange?.dispose();
+        }
+      });
     }
   }
   // 统一的图标类
   classes.push('icon-label');
-  return classnames(classes);
+  return {
+    iconClass: classnames(classes),
+    // 对于首次没找到的，添加一个检测新语言注册的 change 事件
+    onDidChange: _onDidChange?.event,
+  };
 };
 
 export function cssEscape(str: string): string {
