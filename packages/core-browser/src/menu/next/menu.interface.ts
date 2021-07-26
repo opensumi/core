@@ -158,10 +158,12 @@ export class SubmenuItemNode extends MenuNode {
 @Injectable({ multiple: true })
 export class ComponentMenuItemNode extends MenuNode {
   static readonly ID = 'menu.item.node.component';
+  static nodeIndex = -1;
 
   readonly item: IComponentMenuItem;
   private _options: IMenuNodeOptions;
   readonly component: React.ComponentType<IComponentMenuItemProps>;
+  readonly nodeId: string;
 
   constructor(
     @Optional() item: IComponentMenuItem,
@@ -173,6 +175,8 @@ export class ComponentMenuItemNode extends MenuNode {
       id: ComponentMenuItemNode.ID,
       label: '',
     });
+    ComponentMenuItemNode.nodeIndex++;
+    this.nodeId = String(ComponentMenuItemNode.nodeIndex);
     this.item = item;
     this.component = item.component;
     this._options = options;
