@@ -1,22 +1,20 @@
 .debug_console {
   width: 100%;
   height: 100%;
-  padding-bottom: 26px;
+  display: flex;
+  flex-direction: column;
+  // padding-bottom: 26px;
 }
 
 .variable_repl_bar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  padding-left: 20px;
+  display: flex;
   border-top: 1px solid hsla(0, 0%, 50%, .35);
   width: 100%;
   overflow: hidden;
-  height: 24px;
+  min-height: 24px;
   background-color: var(--editor-background);
 
   .variable_repl_editor {
-    height: 26px;
     width: 100%;
     z-index: 99;
     margin-top: -5px;
@@ -38,11 +36,19 @@
     }
   }
 
-  &:before {
-    left: 8px;
-    position: absolute;
-    content: "\276f";
-    line-height: 22px;
+  .variable_repl_bar_icon {
+    position: relative;
+    padding: 0 6px 0 8px;
+    min-width: 16px;
+    min-height: 100%;
+    display: flex;
+    flex-shrink: 0;
+    justify-content: center;
+    font-weight: 600;
+
+    &:before {
+      content: "\276f";
+    }
   }
 }
 
@@ -179,6 +185,7 @@
 }
 
 .debug_console_output {
+  flex: 1;
   :global(.kt-recycle-tree) {
     width: 100% !important;
   }

@@ -21,6 +21,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   const debugInputRef = React.createRef<HTMLDivElement>();
   const { height, width } = viewState;
   const [model, setModel] = React.useState<IDebugConsoleModel>();
+  const [consoleHeight, setConsoleHeight] = React.useState<number>(26);
   const [filterValue, setFilterValue] = React.useState<string>('');
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
@@ -35,12 +36,18 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
       }
       setModel(model);
     });
+
     const filterDispose = debugConsoleFilterService.onDidValueChange((value: string) => {
       setFilterValue(value);
+    });
+
+    const inputDispose = debugConsoleService.onInputHeightChange((height: number) => {
+      setConsoleHeight(height);
     });
     return () => {
       tree.removeNodeDecoration();
       filterDispose.dispose();
+      inputDispose.dispose();
     };
   }, []);
 
@@ -122,15 +129,8 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
     if (!model) {
       return null;
     }
-    return <div
-      className={styles.debug_console_output}
-      tabIndex={-1}
-      onBlur={handleOuterBlur}
-      ref={wrapperRef}
-      data-name={DEBUG_CONSOLE_TREE_FIELD_NAME}
-    >
-      <RecycleTree
-        height={height - 26}
+    return <RecycleTree
+        height={Math.max(height - consoleHeight, 26)}
         width={width}
         itemHeight={DEBUG_CONSOLE_TREE_NODE_HEIGHT}
         onReady={handleTreeReady}
@@ -141,8 +141,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
         overflow={ 'auto' }
       >
         {renderOutputNode}
-      </RecycleTree>
-    </div>;
+    </RecycleTree>;
   };
 
   return <div
@@ -150,8 +149,17 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
     onContextMenu={handleOuterContextMenu}
     onClick={handleOuterClick}
   >
-    {renderOutputContent()}
-    <div className={styles.variable_repl_bar}>
+    <div
+      className={styles.debug_console_output}
+      tabIndex={-1}
+      onBlur={handleOuterBlur}
+      ref={wrapperRef}
+      data-name={DEBUG_CONSOLE_TREE_FIELD_NAME}
+    >
+      {renderOutputContent()}
+    </div>
+    <div className={styles.variable_repl_bar} style={{ maxHeight: height - 26 + 'px' }}>
+      <div className={styles.variable_repl_bar_icon}></div>
       <div className={styles.variable_repl_editor} ref={debugInputRef}></div>
     </div>
   </div>;

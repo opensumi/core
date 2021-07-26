@@ -22,9 +22,9 @@ const firstUpperCase = (str: string) => {
 const consoleInputMonacoOptions: monaco.editor.IEditorOptions = {
   ...getSimpleEditorOptions(),
   scrollbar: {
-    horizontal: 'hidden',
+    horizontal: 'visible',
     vertical: 'hidden',
-    handleMouseWheel: false,
+    handleMouseWheel: true,
   },
   acceptSuggestionOnEnter: 'on',
   renderIndentGuides: false,
@@ -60,7 +60,6 @@ export class DebugConsoleService {
   @Autowired(MonacoOverrideServiceRegistry)
   private readonly overrideServicesRegistry: MonacoOverrideServiceRegistry;
 
-  protected _isCommandOrCtrl: boolean = false;
   protected _consoleInputElement: HTMLDivElement | null = null;
   protected _updateDisposable: monaco.IDisposable | null = null;
   protected _consoleModel: ITextModel;
@@ -75,7 +74,7 @@ export class DebugConsoleService {
 
   private inputEditor?: ICodeEditor;
 
-  static keySet = new Set([CONTEXT_IN_DEBUG_MODE_KEY]);
+  public static keySet = new Set([CONTEXT_IN_DEBUG_MODE_KEY]);
 
   constructor() {
     this.contextKeyService.onDidChangeContext((e) => {
@@ -94,32 +93,23 @@ export class DebugConsoleService {
   private _onConsoleInputValueChange = new Emitter<URI>();
   public onConsoleInputValueChange: Event<URI> = this._onConsoleInputValueChange.event;
 
-  get isVisible() {
+  private _onInputHeightChange = new Emitter<number>();
+  public onInputHeightChange: Event<number> = this._onInputHeightChange.event;
+
+  public get isVisible() {
     const bottomPanelHandler = this.mainLayoutService.getTabbarHandler(DEBUG_CONSOLE_CONTAINER_ID);
     return bottomPanelHandler && bottomPanelHandler.isVisible;
   }
 
-  get tree(): DebugConsoleModelService {
+  public get tree(): DebugConsoleModelService {
     return this.debugConsoleModelService;
   }
 
-  activate() {
+  public activate() {
     const bottomPanelHandler = this.mainLayoutService.getTabbarHandler(DEBUG_CONSOLE_CONTAINER_ID);
     if (bottomPanelHandler && !bottomPanelHandler.isVisible) {
       bottomPanelHandler.activate();
     }
-  }
-
-  execute = (value: string) => {
-    return this.debugConsoleModelService.execute(value);
-  }
-
-  get consoleInputUri() {
-    return new URI('debug/console/input').withScheme(Schemas.walkThroughSnippet);
-  }
-
-  get consoleInputElement() {
-    return this._consoleInputElement;
   }
 
   public focusInput(): void {
@@ -136,16 +126,24 @@ export class DebugConsoleService {
     this.inputEditor = await this.editorService.createCodeEditor(this._consoleInputElement!, { ...consoleInputMonacoOptions });
     const editor = this.inputEditor.monacoEditor;
     editor.onKeyDown(async (e: monaco.IKeyboardEvent) => {
-      if (e.keyCode === monaco.KeyCode.Enter) {
+      if (e.keyCode === monaco.KeyCode.Enter && e.shiftKey === false) {
         const value = editor.getValue();
-        await this.execute(value);
+        await this.tree.execute(value);
         editor.setValue('');
       }
     });
 
-    this.registerCompletion();
     this.registerDecorationType();
     await this.createConsoleInput();
+    this.setMode();
+  }
+
+  public get consoleInputValue() {
+    return (this._consoleModel && this._consoleModel.getValue()) || '';
+  }
+
+  private get consoleInputUri() {
+    return new URI('debug/console/input').withScheme(Schemas.walkThroughSnippet);
   }
 
   private async createConsoleInput() {
@@ -153,24 +151,48 @@ export class DebugConsoleService {
       return;
     }
 
+    const { monacoEditor } = this.inputEditor;
+
     const docModel = await this.documentService.createModelReference(this.consoleInputUri);
     const model = docModel.instance.getMonacoModel();
     model.updateOptions({ tabSize: 2 });
     this._consoleModel = model;
-    this.inputEditor.monacoEditor.setModel(model);
+    monacoEditor.setModel(model);
 
     setTimeout(() => {
-      this.inputEditor?.monacoEditor.layout();
+      this.layoutBody();
     }, 0);
 
-    this.inputEditor.monacoEditor.onDidFocusEditorText(() => this.updateInputDecoration());
-    this.inputEditor.monacoEditor.onDidBlurEditorText(() => this.updateInputDecoration());
+    monacoEditor.onDidFocusEditorText(() => this.updateInputDecoration());
+    monacoEditor.onDidBlurEditorText(() => this.updateInputDecoration());
+    monacoEditor.onDidChangeModelContent(() => {
+      const lineNum = monacoEditor.getModel()!.getLineCount();
+      this.layoutBody(lineNum * 18);
+    });
+
+    this.manager.onDidChangeActiveDebugSession(() => {
+      this.registerCompletion();
+      this.setMode();
+    });
 
     await this.updateInputDecoration();
   }
 
-  get consoleInputValue() {
-    return (this._consoleModel && this._consoleModel.getValue()) || '';
+  private layoutBody(height?: number, width?: number): void {
+    if (!this.inputEditor) {
+      return;
+    }
+
+    const { monacoEditor } = this.inputEditor;
+
+    const h = Math.max(height || 26, monacoEditor.getContentHeight());
+
+    monacoEditor.layout({
+      width: width || this._consoleInputElement?.offsetWidth!,
+      height: h,
+    });
+
+    this._onInputHeightChange.fire(h);
   }
 
   private updateReadOnly(readOnly: boolean): void {
@@ -206,13 +228,45 @@ export class DebugConsoleService {
     this.inputEditor.monacoEditor.setDecorations(DECORATION_KEY, decorations as any[]);
   }
 
+  private setMode(): void {
+    if (!this.inputEditor) {
+      return;
+    }
+
+    const session = this.manager.currentSession;
+    if (!session) {
+      return;
+    }
+
+    const model = session.currentEditor();
+
+    if (model) {
+      this.inputEditor.monacoEditor.getModel()!.setMode(model.getModel()?.getLanguageIdentifier()!);
+    }
+  }
+
   private registerDecorationType(): void {
     const codeEditorService = this.overrideServicesRegistry.getRegisteredService(ServiceNames.CODE_EDITOR_SERVICE) as MonacoCodeService;
     codeEditorService.registerDecorationType(DECORATION_KEY, {});
   }
 
   private registerCompletion(): void {
-    this._updateDisposable = monaco.languages.registerCompletionItemProvider('plaintext', {
+    if (this._updateDisposable) {
+      this._updateDisposable.dispose();
+      this._updateDisposable = null;
+    }
+
+    const session = this.manager.currentSession;
+    if (!session) {
+      return;
+    }
+
+    const model = session.currentEditor();
+    if (!model) {
+      return;
+    }
+
+    this._updateDisposable = monaco.languages.registerCompletionItemProvider(model.getModel()?.getLanguageIdentifier().language!, {
       triggerCharacters: ['.'],
       provideCompletionItems: async (model, position, ctx) => {
         //  仅在支持自动补全查询的调试器中启用补全逻辑
