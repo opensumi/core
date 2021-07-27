@@ -54,7 +54,7 @@ export abstract class IDecorationsService extends Disposable {
   abstract registerDecorationsProvider(provider: IDecorationsProvider): IDisposable;
 
   /**
-   * 通过传入 Uri 和选型获取 Decoration
+   * 通过传入 Uri 和选项获取 Decoration 数据
    */
   abstract getDecoration(uri: Uri, includeChildren: boolean, overwrite?: IDecorationData): IDecoration | undefined;
 }
