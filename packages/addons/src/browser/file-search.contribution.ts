@@ -479,7 +479,11 @@ export class FileSearchQuickCommandHandler {
 
   private openFile(uri: URI) {
     const filePath = uri.path.toString();
-    const range = getRangeByInput(uri.fragment ? filePath + '#' + uri.fragment : filePath);
+    // 优先从输入上获取 line 和 column
+    let range = getRangeByInput(this.currentLookFor);
+    if (!range || (!range.startLineNumber && !range.startColumn)) {
+      range = getRangeByInput(uri.fragment ? filePath + '#' + uri.fragment : filePath);
+    }
     this.currentLookFor = '';
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri.withoutFragment(), { preview: false, range, focus: true });
   }
