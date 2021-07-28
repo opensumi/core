@@ -35,11 +35,11 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     super();
   }
 
-  public async createCodeEditor(
+  public createCodeEditor(
     monacoContainer: HTMLElement,
     options?: IEditorConstructionOptions,
     overrides: {[key: string]: any} = {},
-  ): Promise<ICodeEditor> {
+  ): ICodeEditor {
     const editor =  monaco.editor.create(monacoContainer, {
       // @ts-ignore
       'semanticHighlighting.enabled': true,
@@ -58,11 +58,11 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     return editor;
   }
 
-  public async createDiffEditor(
+  public createDiffEditor(
     monacoContainer: HTMLElement,
     options?: IDiffEditorConstructionOptions,
     overrides: {[key: string]: any} = {},
-  ): Promise<IDiffEditor> {
+  ): IDiffEditor {
     const editor =  monaco.editor.createDiffEditor(monacoContainer, {
       glyphMargin: true,
       lightbulb: {

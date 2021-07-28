@@ -55,9 +55,9 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     }));
   }
 
-  async createCodeEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): Promise<ICodeEditor> {
+  createCodeEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): ICodeEditor {
     const mergedOptions = { ...getConvertedMonacoOptions(this.configurationService).editorOptions, ...options };
-    const monacoCodeEditor = await this.monacoService.createCodeEditor(dom, mergedOptions, overrides);
+    const monacoCodeEditor = this.monacoService.createCodeEditor(dom, mergedOptions, overrides);
     const editor = this.injector.get(BrowserCodeEditor, [monacoCodeEditor, options]);
 
     this._onCodeEditorCreate.fire(editor);
@@ -100,10 +100,10 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     }
   }
 
-  public async createDiffEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): Promise<IDiffEditor> {
+  public createDiffEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): IDiffEditor {
     const preferenceOptions = getConvertedMonacoOptions(this.configurationService);
     const mergedOptions = {...preferenceOptions.editorOptions, ...preferenceOptions.diffOptions, ...options};
-    const monacoDiffEditor = await this.monacoService.createDiffEditor(dom, mergedOptions, overrides);
+    const monacoDiffEditor = this.monacoService.createDiffEditor(dom, mergedOptions, overrides);
     const editor = this.injector.get(BrowserDiffEditor, [monacoDiffEditor, options]);
     this._onDiffEditorCreate.fire(editor);
     return editor;

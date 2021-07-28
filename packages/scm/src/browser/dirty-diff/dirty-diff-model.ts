@@ -254,7 +254,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     return { change, count: index + 1 };
   }
 
-  onClickDecoration(widget: DirtyDiffWidget, range: monaco.IRange) {
+  async onClickDecoration(widget: DirtyDiffWidget, range: monaco.IRange) {
     if (this._widget) {
       if (this._widget === widget) {
         this._widget.dispose();
@@ -269,45 +269,43 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     if (this._originalModel && this._editorModel) {
       const originalUri = this._originalModel.uri;
       const editorUri = this._editorModel.uri;
-      return this.editorService.createDiffEditor(widget.getContentNode(), { automaticLayout: true, renderSideBySide: false })
-        .then(async (editor) => {
-          const original = await this.documentModelManager.createModelReference(originalUri);
-          const edit = await this.documentModelManager.createModelReference(editorUri);
+      const editor = this.editorService.createDiffEditor(widget.getContentNode(), { automaticLayout: true, renderSideBySide: false });
+      const original = await this.documentModelManager.createModelReference(originalUri);
+      const edit = await this.documentModelManager.createModelReference(editorUri);
 
-          editor.compare(original, edit);
+      editor.compare(original, edit);
 
-          editor.modifiedEditor.monacoEditor.updateOptions({ readOnly: true });
-          editor.originalEditor.monacoEditor.updateOptions({ readOnly: true });
+      editor.modifiedEditor.monacoEditor.updateOptions({ readOnly: true });
+      editor.originalEditor.monacoEditor.updateOptions({ readOnly: true });
 
-          editor.modifiedEditor.monacoEditor.revealLineInCenter(
-            range.startLineNumber - Math.round(DirtyDiffModel.heightInLines / 2));
+      editor.modifiedEditor.monacoEditor.revealLineInCenter(
+        range.startLineNumber - Math.round(DirtyDiffModel.heightInLines / 2));
 
-          widget.addDispose(editor.originalEditor.monacoEditor.onDidChangeModelContent(() => {
-            widget.relayout(DirtyDiffModel.heightInLines);
-          }));
+      widget.addDispose(editor.originalEditor.monacoEditor.onDidChangeModelContent(() => {
+        widget.relayout(DirtyDiffModel.heightInLines);
+      }));
 
-          widget.addDispose(this.onDidChange(() => {
-            const { change, count } = this.getChangeFromRange(range) || {};
-            refreshWidget(count, change);
-          }));
+      widget.addDispose(this.onDidChange(() => {
+        const { change, count } = this.getChangeFromRange(range) || {};
+        refreshWidget(count, change);
+      }));
 
-          const { change, count } = this.getChangeFromRange(range) || {};
-          if (count && change) {
-            refreshWidget(count, change);
-          }
+      const { change, count } = this.getChangeFromRange(range) || {};
+      if (count && change) {
+        refreshWidget(count, change);
+      }
 
-          function refreshWidget(current: number, currentChange: IChange) {
-            widget.updateCurrent(current);
-            widget.show(
-              positionToRange(currentChange.modifiedEndLineNumber || currentChange.modifiedStartLineNumber),
-              DirtyDiffModel.heightInLines,
-            );
-          }
+      function refreshWidget(current: number, currentChange: IChange) {
+        widget.updateCurrent(current);
+        widget.show(
+          positionToRange(currentChange.modifiedEndLineNumber || currentChange.modifiedStartLineNumber),
+          DirtyDiffModel.heightInLines,
+        );
+      }
 
-          widget.onDispose(() => {
-            this._widget = null;
-          });
-        });
+      widget.onDispose(() => {
+        this._widget = null;
+      });
     }
   }
 

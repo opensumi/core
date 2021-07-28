@@ -147,7 +147,7 @@ export abstract class EditorCollectionService {
    * @param options
    * @param overrides
    */
-  public abstract async createCodeEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): Promise<ICodeEditor>;
+  public abstract createCodeEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): ICodeEditor;
 
   /**
    * 创建一个 monaco diffEditor 实例
@@ -155,7 +155,7 @@ export abstract class EditorCollectionService {
    * @param options
    * @param overrides
    */
-  public abstract async createDiffEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): Promise<IDiffEditor>;
+  public abstract createDiffEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): IDiffEditor;
 
   public abstract listEditors(): IEditor[];
   public abstract listDiffEditors(): IDiffEditor[];

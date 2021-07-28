@@ -184,6 +184,8 @@ export type IEditorDocumentModelRef = IRef<IEditorDocumentModel>;
 
 export interface IEditorDocumentModelService {
 
+  hasLanguage(languageId: string): boolean;
+
   createModelReference(uri: URI, reason?: string): Promise<IEditorDocumentModelRef>;
 
   /**

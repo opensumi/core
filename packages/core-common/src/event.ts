@@ -941,3 +941,53 @@ export class Relay<T> implements IDisposable {
     this.emitter.dispose();
   }
 }
+
+/**
+ * 同步执行的 Ready， 对 ready 的实时响应比 promise 快，多用在需要快速响应初始化回调的场景
+ */
+export class ReadyEvent<T = void> implements IDisposable {
+
+  private _isReady = false;
+
+  private _param: T | undefined = undefined;
+
+  private _emitter = new Emitter<T>();
+
+  onceReady(cb: (param:T) => any): Promise<any> {
+    if (this._isReady) {
+      try {
+        return Promise.resolve(cb(this._param!));
+      } catch(e) {
+        return Promise.reject(e);
+      }
+    } else {
+      return new Promise<any>((resolve, reject) =>{
+        this._emitter.event((param) => {
+          try {
+            resolve(cb(param));
+          } catch(e) {
+            reject(e);
+          }
+        });
+      })
+
+    }
+  }
+
+  ready(param: T) {
+    if (!this._isReady) {
+      this._isReady = true;
+      this._param = param;
+    }
+    this._emitter.fire(param);
+    this._emitter.dispose;
+    this._emitter = null as any;
+  }
+
+  dispose() {
+    if (this._emitter) {
+      this._emitter.dispose();
+    }
+  }
+
+}
