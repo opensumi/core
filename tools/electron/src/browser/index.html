@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <script>
+      const theme = localStorage.getItem('theme');
+        try {
+          const themeObj = JSON.parse(theme);
+          if (themeObj.editorBackground) {
+            document.documentElement.style.backgroundColor = themeObj.editorBackground;
+          }
+        } catch(e) {
+          // do nothing
+        }
+    </script>
     <meta charset="UTF-8">
     <title>CloudIDE</title>
     <style>
@@ -35,10 +46,8 @@
         opacity: 0;
       }
     </style>
-    <script src="./loader.js"></script>
   </head>
   <body>
     <div id="main"></div>
-    <div id="loading"></div>
   </body>
 </html>

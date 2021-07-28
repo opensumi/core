@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
+import cls from 'classnames';
 import * as styles from './header.module.less';
 import { useInjectable, MaybeNull, ComponentRenderer, ComponentRegistry, Disposable, DomListener, AppConfig, replaceLocalizePlaceholder, electronEnv, isOSX, IWindowService } from '@ali/ide-core-browser';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
@@ -57,6 +58,9 @@ const useMaximize = () => {
   };
 };
 
+// Big Sur increases title bar height
+const isNewMacHeaderBar = () => isOSX && (parseFloat(electronEnv.osRelease) >= 20);
+
 export const ElectronHeaderBar = observer(({ Icon }: React.PropsWithChildren<{ Icon?: React.FunctionComponent }>) => {
   const windowService: IWindowService = useInjectable(IWindowService);
   const componentRegistry: ComponentRegistry = useInjectable(ComponentRegistry);
@@ -98,7 +102,7 @@ export const ElectronHeaderBar = observer(({ Icon }: React.PropsWithChildren<{ I
     return <div><TitleInfo hidden={true} /></div>;
   }
 
-  return <div className={styles.header} onDoubleClick={async () => {
+  return <div className={cls(styles.header, isNewMacHeaderBar() ? styles.macNewHeader : null)} onDoubleClick={async () => {
     if (await getMaximized()) {
       windowService.unmaximize();
     } else {
