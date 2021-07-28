@@ -359,6 +359,7 @@ export const defaultSettingSections: {
         { id: 'editor.fontSize', localized: 'preference.editor.fontSize' },
         { id: 'editor.fontWeight', localized: 'preference.editor.fontWeight' },
         { id: 'editor.fontFamily', localized: 'preference.editor.fontFamily' },
+        { id: 'editor.lineHeight', localized: 'preference.editor.lineHeight' },
         // 缩进
         { id: 'editor.detectIndentation', localized: 'preference.editor.detectIndentation' },
         { id: 'editor.tabSize', localized: 'preference.editor.tabSize' },

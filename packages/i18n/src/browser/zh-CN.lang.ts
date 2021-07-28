@@ -103,6 +103,8 @@ export const localizationBundle = {
     'editor.closeToRight': '关闭到右侧',
     'editor.cannotSaveWithoutDirectory': '请选择要保存的路径',
     'editor.failToOpen': '打开文件 {0} 失败, 请确认文件是否存在。详细错误信息: {1}',
+    'editor.lineHeight': '行高',
+    'editor.lineHeight.description': '控制行高。\r\n - 使用 0 根据字号自动计算行高。\r\n - 介于 0 和 8 之间的值将用作字号的乘数。\r\n - 大于 8 的值将用作有效值。',
 
     'editor.workspaceSymbol.quickopen': '搜索工作区符号',
     'editor.workspaceSymbolClass.quickopen': '搜索工作区类',

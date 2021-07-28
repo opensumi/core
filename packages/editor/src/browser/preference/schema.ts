@@ -1228,6 +1228,11 @@ const customEditorSchema: PreferenceSchemaProperties = {
     default: 750,
     description: '%editor.configuration.formatOnSaveTimeout%',
   },
+  'editor.lineHeight': {
+    type: 'number',
+    default: 0,
+    description: '%editor.lineHeight.description%',
+  },
   'editor.maxTokenizationLineLength': {
     type: 'integer',
     default: 10000,
