@@ -163,13 +163,28 @@ export class KeymapService implements IKeymapService {
         keybinding: kb.keybinding,
       };
     });
+    const added: Keybinding[] = [];
+    const removed: Keybinding[] = [];
     // 重新注册快捷键前取消注册先前的快捷键
     this.disposeRegistedKeybinding();
     bindings.forEach((kb: Keybinding) => {
+      if (kb.command.startsWith('-')) {
+        removed.push(kb);
+      } else {
+        added.push(kb);
+      }
+    });
+    // 卸载快捷键的语法仅对默认快捷键生效，故这里不需要进行额外操作
+    added.map((kb) => {
       this.unregisterDefaultKeybinding(kb, true);
       this.registerUserKeybinding(kb);
     });
-
+    // 卸载默认快捷键
+    removed.map((kb) => {
+      // 去除开头的 '-' 便于查找默认快捷键
+      kb.command = kb.command.slice(1);
+      this.unregisterDefaultKeybinding(kb, true);
+    });
     this.updateKeybindings();
   }
 
