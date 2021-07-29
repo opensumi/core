@@ -71,8 +71,6 @@
 }
 
 .debug_console_node {
-  height: 22px;
-  line-height: 22px;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -211,14 +209,13 @@
 
 .debug_console_node_segment {
   flex-grow: 0;
-  white-space: nowrap;
+  white-space: inherit;
   color: inherit;
 }
 
 .debug_console_node_display_name {
-  // margin-right: 6px;
   display: inline;
-  white-space:pre;
+  white-space: inherit;
   .compact_name {
     color: inherit;
     display: inline;
@@ -238,7 +235,7 @@
 
 .debug_console_node_description {
   display: inline;
-  transform: scale(0.96);
+  white-space: inherit;
   color: var(--descriptionForeground);
 }
 
@@ -285,7 +282,7 @@
 
 // variable
 .debug_console_variable {
-  white-space: nowrap;
+  white-space: inherit;
   overflow: hidden;
   text-overflow: ellipsis;
   overflow: visible;

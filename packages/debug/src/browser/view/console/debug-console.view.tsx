@@ -10,8 +10,12 @@ import { DebugConsoleNode, AnsiConsoleNode, DebugVariableContainer, TreeWithLink
 import { Loading } from '@ali/ide-core-browser/lib/components/loading';
 import { DebugConsoleFilterService } from './debug-console-filter.service';
 import { LinkDetector } from '../../debug-link-detector';
-import { PreferenceService, CoreConfiguration } from '@ali/ide-core-browser';
+import { PreferenceService, PreferenceChange, CoreConfiguration } from '@ali/ide-core-browser';
 import { isSingleCharacter } from '../../debugUtils';
+import { Disposable } from '@ali/ide-core-common';
+import { debounce } from 'lodash';
+
+declare const ResizeObserver: any;
 
 export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState }) => {
   const debugConsoleService = useInjectable<DebugConsoleService>(DebugConsoleService);
@@ -23,6 +27,8 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   const [model, setModel] = React.useState<IDebugConsoleModel>();
   const [consoleHeight, setConsoleHeight] = React.useState<number>(26);
   const [filterValue, setFilterValue] = React.useState<string>('');
+  const [isWordWrap, setIsWordWrap] = React.useState<boolean>(true);
+  const disposer = new Disposable();
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   React.useEffect(() => {
@@ -30,26 +36,56 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   }, [debugInputRef.current]);
 
   React.useEffect(() => {
-    tree.onDidUpdateTreeModel(async (model: IDebugConsoleModel) => {
+    disposer.addDispose(tree.onDidUpdateTreeModel(async (model: IDebugConsoleModel) => {
       if (model) {
         await model.treeModel!.root.ensureLoaded();
       }
       setModel(model);
-    });
+    }));
 
-    const filterDispose = debugConsoleFilterService.onDidValueChange((value: string) => {
+    disposer.addDispose(debugConsoleFilterService.onDidValueChange((value: string) => {
       setFilterValue(value);
-    });
+    }));
 
-    const inputDispose = debugConsoleService.onInputHeightChange((height: number) => {
+    disposer.addDispose(debugConsoleService.onInputHeightChange((height: number) => {
       setConsoleHeight(height);
-    });
+    }));
+
+    disposer.addDispose(preferenceService.onSpecificPreferenceChange('debug.console.wordWrap', (change: PreferenceChange) => {
+      const { newValue } = change;
+      setIsWordWrap(newValue);
+    }));
+
     return () => {
       tree.removeNodeDecoration();
-      filterDispose.dispose();
-      inputDispose.dispose();
+      disposer.dispose();
     };
   }, []);
+
+  React.useEffect(() => {
+    if (wrapperRef.current && isWordWrap) {
+      let animationFrame: number;
+      const layoutDebounce = debounce(() => tree.treeHandle?.layoutItem(), 10);
+      const resizeObserver = new ResizeObserver(() => {
+        animationFrame = window.requestAnimationFrame(() => layoutDebounce());
+      });
+      resizeObserver.observe(wrapperRef.current);
+      return () => {
+        resizeObserver.unobserve(wrapperRef.current!);
+        if (animationFrame) {
+          window.cancelAnimationFrame(animationFrame);
+        }
+      };
+    }
+  }, [wrapperRef.current]);
+
+  React.useEffect(() => {
+    if (model && isWordWrap) {
+      disposer.addDispose(model.treeModel.state.onChangeScrollOffset(() => {
+        tree.treeHandle.layoutItem();
+      }));
+    }
+  }, [model, isWordWrap]);
 
   const handleTreeReady = (handle: IRecycleTreeHandle) => {
     tree.handleTreeHandler({
@@ -121,9 +157,10 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
       onTwistierClick={handleTwistierClick}
       onContextMenu={handlerContextMenu}
       defaultLeftPadding={14}
+      isWordWrap={isWordWrap}
       leftPadding={8}
     />;
-  }, [model, filterValue]);
+  }, [model, filterValue, isWordWrap]);
 
   const renderOutputContent = () => {
     if (!model) {
@@ -139,6 +176,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
         filterProvider={{ fuzzyOptions, filterAlways: true}}
         model={model!.treeModel}
         overflow={ 'auto' }
+        supportDynamicHeights={isWordWrap}
       >
         {renderOutputNode}
     </RecycleTree>;
@@ -172,6 +210,7 @@ export interface IDebugConsoleNodeProps {
   filterValue?: string;
   filterMode?: CoreConfiguration['debug.console.filter.mode'];
   decorations?: ClasslistComposite;
+  isWordWrap?: boolean;
   onClick: (ev: React.MouseEvent, item: AnsiConsoleNode | DebugConsoleNode | TreeNode, type: TreeNodeType) => void;
   onTwistierClick: (ev: React.MouseEvent, item: AnsiConsoleNode | DebugConsoleNode | TreeNode, type: TreeNodeType) => void;
   onContextMenu?: (ev: React.MouseEvent, item: AnsiConsoleNode | DebugConsoleNode | TreeNode, type: TreeNodeType) => void;
@@ -189,6 +228,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
   onClick,
   onTwistierClick,
   onContextMenu,
+  isWordWrap,
   itemType,
 }: IDebugConsoleNodeRenderedProps) => {
 
@@ -361,8 +401,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
         decorations ? decorations.classlist : null,
       )}
       style={{
-        height: DEBUG_CONSOLE_TREE_NODE_HEIGHT,
-        lineHeight: `${DEBUG_CONSOLE_TREE_NODE_HEIGHT}px`,
+        // height: DEBUG_CONSOLE_TREE_NODE_HEIGHT + 'px',
         paddingLeft: `${(defaultLeftPadding || 8) + (item.depth || 0) * (leftPadding || 0)}px`,
       }}
       data-id={item.id}
@@ -371,6 +410,9 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
         {renderTwice(item)}
         <div
           className={styles.debug_console_node_overflow_wrap}
+          style={{
+            whiteSpace: isWordWrap ? 'pre-wrap' : 'nowrap',
+          }}
         >
           {renderDisplayName(item)}
           {renderDescription(item)}

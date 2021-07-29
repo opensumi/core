@@ -355,6 +355,7 @@ export const localizationBundle = {
     'preference.debug.console.filter.mode': '调试控制台筛选器模式',
     'preference.debug.console.filter.mode.filter': '过滤模式',
     'preference.debug.console.filter.mode.matcher': '匹配模式',
+    'preference.debug.console.wordWrap': '控制是否应在调试控制台中换行',
     'preference.debug.inline.values': '当处于调试过程中时，在编辑器中内联显示变量值',
     'preference.explorer.compactFolders': '文件夹紧凑模式下，单个子文件夹将被压缩在组合的树元素中，对 Java 包结构很有用。',
     'preference.explorer.compactFolders.title': '资源管理器：文件夹紧凑模式',
