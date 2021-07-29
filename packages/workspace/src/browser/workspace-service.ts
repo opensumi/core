@@ -81,6 +81,10 @@ export class WorkspaceService implements IWorkspaceService {
     this.doInit();
   }
 
+  public async initFileServiceExclude() {
+    await this.setFileServiceExcludes();
+  }
+
   public get whenReady() {
     return this._whenReady.promise;
   }

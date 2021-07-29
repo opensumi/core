@@ -24,6 +24,10 @@ export class MockWorkspaceService implements IWorkspaceService {
     await this.setWorkspace();
   }
 
+  async initFileServiceExclude() {
+    // do nothing
+  }
+
   async setWorkspace(workspaceStat?: FileStat | undefined) {
     await this.updateWorkspace(workspaceStat);
   }
