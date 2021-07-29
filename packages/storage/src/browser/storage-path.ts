@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IStoragePathServer } from '../common';
 import { IFileServiceClient } from '@ali/ide-file-service';
-import { StoragePaths, Deferred, URI, isWindows } from '@ali/ide-core-common';
+import { StoragePaths, Deferred, URI, isWindows, ILogger } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 
 @Injectable()
@@ -18,10 +18,15 @@ export class StoragePathServer implements IStoragePathServer {
   private workspaceStoragePathInitialized: boolean;
   private globalStoragePathInitialized: boolean;
 
+  private ensureStorageDirPromisies: Map<string, Promise<void>> = new Map();
+
   private _userHome: Promise<string>;
 
   @Autowired(IFileServiceClient)
   private readonly fileSystem: IFileServiceClient;
+
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
 
   constructor() {
     this.init();
@@ -41,9 +46,25 @@ export class StoragePathServer implements IStoragePathServer {
   }
 
   async ensureStorageDir(uri: string) {
-    if (await this.fileSystem.access(uri)) {
-      await this.fileSystem.createFolder(uri);
+    let promise = this.ensureStorageDirPromisies.get(uri);
+    if (promise) {
+      return await promise;
+    } else {
+      promise = this.doEnsureStorageDir(uri);
+      this.ensureStorageDirPromisies.set(uri, promise);
+      return await promise;
     }
+  }
+
+  private async doEnsureStorageDir(uri: string) {
+    try {
+      if (!await this.fileSystem.access(uri)) {
+        await this.fileSystem.createFolder(uri);
+      }
+    } catch (e) {
+      this.logger.error(e);
+    }
+    this.ensureStorageDirPromisies.delete(uri);
   }
 
   async provideWorkspaceStorageDirPath(storageDirName: string): Promise<string | undefined> {
