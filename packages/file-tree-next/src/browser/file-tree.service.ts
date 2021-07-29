@@ -96,7 +96,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   private _isCompactMode: boolean;
 
-  public flushEventQueueDeferred: Deferred<void> | null;
+  private willRefreshDeferred: Deferred<void> | null;
+  private flushEventQueueDeferred: Deferred<void> | null;
 
   private requestFlushEventSignalEmitter: Emitter<void> = new Emitter();
 
@@ -116,8 +117,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
     return this.onWorkspaceChangeEmitter.event;
   }
 
-  get flushEventQueuePromise() {
-    return this.flushEventQueueDeferred && this.flushEventQueueDeferred.promise;
+  get willRefreshPromise() {
+    return this.willRefreshDeferred?.promise;
   }
 
   get cacheFiles() {
@@ -665,6 +666,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
    * 刷新指定下的所有子节点
    */
   async refresh(node: Directory = this.root as Directory, needReload: boolean = true) {
+    this.willRefreshDeferred = new Deferred();
     if (!node) {
       return;
     }
@@ -679,6 +681,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
     // 队列化刷新动作减少更新成本
     this.queueChangeEvent(node.path, () => {
       this.onNodeRefreshedEmitter.fire(node);
+      this.willRefreshDeferred?.resolve();
+      this.willRefreshDeferred = null;
     });
   }
 
@@ -690,7 +694,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
         this.flushEventQueueDeferred = new Deferred<void>();
         // 询问是否此时可进行刷新事件
         await this.requestFlushEventSignalEmitter.fireAndAwait();
-        await this.flushEventQueue()!;
+        await this.flushEventQueue();
         this.flushEventQueueDeferred?.resolve();
         this.flushEventQueueDeferred = null;
         callback();

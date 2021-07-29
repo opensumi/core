@@ -130,6 +130,8 @@ export class FileTreeModelService {
   private onDidSelectedFileChangeEmitter: Emitter<URI[]> = new Emitter();
   private onFileTreeModelChangeEmitter: Emitter<TreeModel> = new Emitter();
 
+  private locationQueueDeferred: Deferred<void> | null;
+  private _locationDispatchQueue: (URI | string)[] = [];
   private locationDeferred: Deferred<void> | null;
   private collapsedAllDeferred: Deferred<void> | null;
 
@@ -245,6 +247,9 @@ export class FileTreeModelService {
       });
     }));
     this.disposableCollection.push(this.fileTreeService.onNodeRefreshed((node) => {
+      if (!this.refreshedActionDelayer.isTriggered) {
+        this.refreshedActionDelayer.cancel();
+      }
       this.refreshedActionDelayer.trigger(async () => {
         // 当无选中节点时，选中编辑器中激活的节点
         if (Directory.isRoot(node) && this.selectedFiles.length === 0) {
@@ -317,10 +322,9 @@ export class FileTreeModelService {
     this._decorations.addDecoration(this.loadingDecoration);
   }
 
-  // 确保文件树操作前没有额外的操作影响
+  // 在文件树完成刷新操作后再进行下一步动作
   private async ensurePerformedEffect() {
-    await this.fileTreeService.flushEventQueuePromise;
-    this.refreshedActionDelayer.cancel();
+    await this.fileTreeService?.willRefreshPromise;
   }
 
   /**
@@ -1484,26 +1488,52 @@ export class FileTreeModelService {
     }
     // 确保在刷新等动作执行完后进行定位
     await this.ensurePerformedEffect();
-    return this.locationDelayer.trigger(async () => {
-      this.locationDeferred = new Deferred();
-      let path;
-      if (typeof pathOrUri === 'string') {
-        path = pathOrUri;
-      } else {
-        path = await this.fileTreeService.getFileTreeNodePathByUri(pathOrUri)!;
+
+    return this.queueLocation(pathOrUri);
+  }
+
+  private queueLocation(path: URI | string) {
+    if (!this.locationQueueDeferred) {
+      if (!this.locationDelayer.isTriggered) {
+        this.locationDelayer.cancel();
       }
-      if (path) {
-        if (!this.fileTreeHandle) {
-          return;
-        }
-        const node = await this.fileTreeHandle.ensureVisible(path, 'center', true) as File;
-        if (node) {
-          this.selectFileDecoration(node);
-        }
+      this.locationDelayer.trigger(async () => {
+        this.locationQueueDeferred = new Deferred<void>();
+        await this.doLocation();
+        this.locationQueueDeferred?.resolve();
+        this.locationQueueDeferred = null;
+      });
+    }
+    if (this._locationDispatchQueue.indexOf(path) === -1) {
+      this._locationDispatchQueue.push(path);
+    }
+  }
+
+  private async doLocation() {
+    if (!this._locationDispatchQueue || this._locationDispatchQueue.length === 0) {
+      return;
+    }
+    // 只需要处理最后一个定位节点
+    const pathOrUri = this._locationDispatchQueue[this._locationDispatchQueue.length - 1];
+    this.locationDeferred = new Deferred();
+    let path;
+    if (typeof pathOrUri === 'string') {
+      path = pathOrUri;
+    } else {
+      path = await this.fileTreeService.getFileTreeNodePathByUri(pathOrUri)!;
+    }
+    if (path) {
+      if (!this.fileTreeHandle) {
+        return;
       }
-      this.locationDeferred.resolve();
-      this.locationDeferred = null;
-    });
+      const node = await this.fileTreeHandle.ensureVisible(path, 'smart', true) as File;
+      if (node) {
+        this.selectFileDecoration(node);
+      }
+    }
+    this.locationDeferred.resolve();
+    this.locationDeferred = null;
+    this._locationDispatchQueue = [];
   }
 
   public locationOnShow = (uri: URI) => {

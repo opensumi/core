@@ -452,7 +452,13 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
   }
 
+  private _isEnsuring: boolean = false;
   private ensureVisible = async (pathOrTreeNode: string | TreeNode | CompositeTreeNode, align: IRecycleTreeAlign = 'smart', untilStable: boolean = false): Promise<TreeNode | undefined> => {
+    if (this._isEnsuring) {
+      // 同一时间段只能让一次定位节点的操作生效
+      return;
+    }
+    this._isEnsuring = true;
     const { root } = this.props.model;
     const node = typeof pathOrTreeNode === 'string'
       ? await root.forceLoadTreeNodeAtPath(pathOrTreeNode)
@@ -473,6 +479,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     } else {
       this.tryScrollIntoView(node as TreeNode, align);
     }
+    this._isEnsuring = false;
     return node as TreeNode;
   }
 
