@@ -42,7 +42,7 @@ export class Extension extends WithEventBus implements IExtension {
   @Autowired(AbstractExtInstanceManagementService)
   private readonly extensionInstanceManageService: AbstractExtInstanceManagementService;
 
-  public readonly displayName?: string;
+  private pkgLocalizedField = new Map<string, string>();
 
   constructor(
     @Optional(metaDataSymbol) private extensionData: IExtensionMetaData,
@@ -59,7 +59,6 @@ export class Extension extends WithEventBus implements IExtension {
     this.id = this.extensionData.id;
     this.extensionId = this.extensionData.extensionId;
     this.name = this.packageJSON.name;
-    this.displayName = replaceLocalizePlaceholder(this.packageJSON.displayName, this.id);
     this.extraMetadata = this.extensionData.extraMetadata;
     this.path = this.extensionData.path;
     this.uri = this.extensionData.uri;
@@ -72,6 +71,18 @@ export class Extension extends WithEventBus implements IExtension {
     // 对于 node 层 extension.scanner 标准下 uri 为 file，纯前端下为自定义实现的 kt-ext，因此可直接使用
     // 不太确定为啥这里的 uri 类型为可选
     this.extensionLocation = this.staticResourceService.resolveStaticResource(URI.from(this.uri!)).codeUri;
+  }
+
+  localize(key: string) {
+    // 因为可能在没加载语言包之前就会获取 packageJson 的内容
+    // 所以这里缓存的值可以会为 undefined 或者空字符串，这两者都属于无效内容
+    // 对于无效内容要重新获取
+    if (!this.pkgLocalizedField.get(key)) {
+      const nlsValue = replaceLocalizePlaceholder(this.packageJSON[key], this.id);
+      this.pkgLocalizedField.set(key, nlsValue!);
+      return nlsValue || this.packageJSON[key];
+    }
+    return this.pkgLocalizedField.get(key);
   }
 
   get activated() {
@@ -181,7 +192,7 @@ export class Extension extends WithEventBus implements IExtension {
       id: this.id,
       extensionId: this.extensionId,
       name: this.name,
-      displayName: this.displayName,
+      displayName: this.localize('displayName'),
       activated: this.activated,
       enabled: this.enabled,
       packageJSON: this.packageJSON,

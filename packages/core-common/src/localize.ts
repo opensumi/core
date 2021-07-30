@@ -2,7 +2,8 @@ import { format, mnemonicButtonLabel } from './utils/strings';
 
 export type ILocalizationKey = string; //ts不支持symbol作为key
 
-let _currentLanguageId: string = 'zh-CN';
+// 在当前模块中作为某种语言的标识，需要全小写以屏蔽差异
+let _currentLanguageId: string = 'zh-cn';
 
 const localizationRegistryMap = new Map<string, ILocalizationRegistry>();
 
@@ -33,6 +34,10 @@ export interface ILocalizationContents {
   [key: string]: string;
 }
 
+function normalize(key?: string): string | undefined {
+  return key?.toLowerCase();
+}
+
 interface ILocalizationRegistry {
 
   registerLocalizationBundle(bundle: ILocalizationBundle): void;
@@ -49,12 +54,13 @@ class LocalizationRegistry implements ILocalizationRegistry {
   public readonly localizationInfo: Map<string, ILocalizationInfo> = new Map();
 
   registerLocalizationBundle(bundle: ILocalizationBundle): void {
-    const existingMessages = this.getContents(bundle.languageId);
+    const languageId = normalize(bundle.languageId);
+    const existingMessages = this.getContents(languageId);
     Object.keys(bundle.contents).forEach((key: ILocalizationKey)=> {
       existingMessages[key] = mnemonicButtonLabel(bundle.contents[key], true); // 暂时去除所有注记符
     });
-    if (!this.localizationInfo.has(bundle.languageId)) {
-      this.localizationInfo.set(bundle.languageId, Object.assign({}, bundle, {contents: undefined}));
+    if (!this.localizationInfo.has(languageId!)) {
+      this.localizationInfo.set(languageId!, Object.assign({}, bundle, {contents: undefined}));
     }
   }
 
@@ -64,7 +70,7 @@ class LocalizationRegistry implements ILocalizationRegistry {
   }
 
   private getContents(languageId: string = 'zh-CN'): ILocalizationContents {
-    languageId = languageId.toLowerCase();
+    languageId = normalize(languageId)!;
     if (!this.localizationMap.has(languageId)) {
       this.localizationMap.set(languageId, {})
     }
@@ -89,8 +95,8 @@ export function getCurrentLanguageInfo(scope: string = 'host'): ILocalizationInf
   return getLocalizationRegistry(scope).localizationInfo.get(_currentLanguageId)!;
 }
 
-export function setLanguageId(language): void {
-  _currentLanguageId = language;
+export function setLanguageId(languageId: string): void {
+  _currentLanguageId = normalize(languageId)!;
 }
 
 export function getAvailableLanguages(scope: string = 'host'): ILocalizationInfo[] {
@@ -105,17 +111,19 @@ function getLocalizationRegistry(scope: string): LocalizationRegistry {
 }
 
 /**
- * 含有占位符标识的 key 转换
- * @param label
+ * 含有占位符标识的字段转换，字段为 falsy 的时候返回该字段
+ * 占位符找不到时返回 fallback 值(默认为undefined)
+ * @param label 要转换的字段
+ * @param scope 默认为 host
+ * @param fallback 默认为 undefined
  */
-export function replaceLocalizePlaceholder(label?: string, scope?: string): string | undefined {
-  if (!label) {
-    return undefined;
-  }
-  const nlsRegex = /^%([\w\d.-]+)%$/i;
-  const result = nlsRegex.exec(label);
-  if (result) {
-    return localize(result[1], undefined, scope);
+export function replaceLocalizePlaceholder(label?: string, scope?: string, fallback: string | undefined = undefined): string | undefined {
+  if (label) {
+    const nlsRegex = /^%([\w\d.-]+)%$/i;
+    const result = nlsRegex.exec(label);
+    if (result) {
+      return localize(result[1], fallback, scope);
+    }
   }
   return label;
 }
