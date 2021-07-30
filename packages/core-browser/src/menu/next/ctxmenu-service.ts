@@ -15,7 +15,7 @@ export class ContextMenuServiceImpl implements AbstractContextMenuService {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  createMenu(payload: CreateMenuPayload): IContextMenu {
+  public createMenu(payload: CreateMenuPayload): IContextMenu {
     return this.injector.get(ContextMenu, [ payload ]);
   }
 }
@@ -26,7 +26,7 @@ export class ContextMenu extends Disposable implements IContextMenu {
   private readonly menuService: AbstractMenuService;
 
   private readonly _onDidMenuChange = new Emitter<string>();
-  get onDidChange(): Event<string> {
+  public get onDidChange(): Event<string> {
     return this._onDidMenuChange.event;
   }
 
@@ -63,7 +63,7 @@ export class ContextMenu extends Disposable implements IContextMenu {
 
     this._build();
 
-    // 监听内部的 onMenuChange 刷新单个 menubarItem 下的所有节点
+    // 监听内部的 onMenuChange 刷新单个 menu 下的所有节点
     this.addDispose(Event.debounce(
       Event.filter(this.onMenuChange, (menuId) => menuId === this._menuId),
       () => { },

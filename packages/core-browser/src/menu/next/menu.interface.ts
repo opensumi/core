@@ -246,7 +246,7 @@ export interface IContextMenu extends IDisposable {
 }
 
 export abstract class AbstractMenuService {
-  abstract createMenu(id: MenuId | string, contextKeyService?: IContextKeyService): IMenu;
+  public abstract createMenu(id: MenuId | string, contextKeyService?: IContextKeyService): IMenu;
 }
 
 export interface CreateMenuPayload {
@@ -256,5 +256,5 @@ export interface CreateMenuPayload {
 }
 
 export abstract class AbstractContextMenuService {
-  abstract createMenu(payload: CreateMenuPayload): IContextMenu;
+  public abstract createMenu(payload: CreateMenuPayload): IContextMenu;
 }
