@@ -1,6 +1,6 @@
 import { Injectable, Optional, Autowired } from '@ali/common-di';
 import { JSONType, ExtensionService, IExtension, IExtensionProps, IExtensionMetaData } from '../common';
-import { getDebugLogger, registerLocalizationBundle, getCurrentLanguageInfo, Uri, Deferred, URI, WithEventBus } from '@ali/ide-core-common';
+import { getDebugLogger, registerLocalizationBundle, getCurrentLanguageInfo, Uri, Deferred, URI, WithEventBus, replaceLocalizePlaceholder } from '@ali/ide-core-common';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { ExtensionMetadataService } from './metadata.service';
 import { AbstractExtInstanceManagementService, ExtensionDidActivatedEvent, ExtensionWillActivateEvent } from './types';
@@ -42,6 +42,8 @@ export class Extension extends WithEventBus implements IExtension {
   @Autowired(AbstractExtInstanceManagementService)
   private readonly extensionInstanceManageService: AbstractExtInstanceManagementService;
 
+  public readonly displayName: string;
+
   constructor(
     @Optional(metaDataSymbol) private extensionData: IExtensionMetaData,
     @Optional(Symbol()) public isUseEnable: boolean,
@@ -57,6 +59,7 @@ export class Extension extends WithEventBus implements IExtension {
     this.id = this.extensionData.id;
     this.extensionId = this.extensionData.extensionId;
     this.name = this.packageJSON.name;
+    this.displayName = replaceLocalizePlaceholder(this.packageJSON.displayName, this.id);
     this.extraMetadata = this.extensionData.extraMetadata;
     this.path = this.extensionData.path;
     this.uri = this.extensionData.uri;
@@ -118,7 +121,7 @@ export class Extension extends WithEventBus implements IExtension {
         registerLocalizationBundle({
           languageId: 'default',
           languageName: 'en-US',
-          localizedLanguageName: '英文(默认)',
+          localizedLanguageName: 'English',
           contents: this.defaultPkgNlsJSON as any,
         }, this.id);
       }
@@ -178,6 +181,7 @@ export class Extension extends WithEventBus implements IExtension {
       id: this.id,
       extensionId: this.extensionId,
       name: this.name,
+      displayName: this.displayName,
       activated: this.activated,
       enabled: this.enabled,
       packageJSON: this.packageJSON,

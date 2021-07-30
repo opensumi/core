@@ -953,23 +953,10 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
    * @param extension
    */
   private getI18nInfo(extension: IExtension): { description: string, displayName: string} {
-    let displayName;
-    let description;
-
-    displayName = replaceLocalizePlaceholder(extension.packageJSON.displayName, extension.id) ||
-      extension.packageNlsJSON && extension.packageNlsJSON.displayName ||
-      extension.defaultPkgNlsJSON && extension.defaultPkgNlsJSON.displayName ||
-      extension.packageJSON.displayName;
-    description = replaceLocalizePlaceholder(extension.packageJSON.description, extension.id) ||
-      extension.packageNlsJSON && extension.packageNlsJSON.description ||
-      extension.defaultPkgNlsJSON && extension.defaultPkgNlsJSON.description ||
-      extension.packageJSON.description;
-
     return {
-      description,
-      displayName,
+      displayName: replaceLocalizePlaceholder(extension.packageJSON.displayName, extension.id),
+      description: replaceLocalizePlaceholder(extension.packageJSON.description, extension.id),
     };
-
   }
 
   private getIconFromExtension(extension: IExtension): string {

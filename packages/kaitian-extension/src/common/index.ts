@@ -1,4 +1,4 @@
-import { Disposable, IJSONSchema, IDisposable, Deferred, localize, Uri, MaybePromise, IExtensionLogger, ExtensionConnectOption } from '@ali/ide-core-common';
+import { Disposable, IJSONSchema, IDisposable, Deferred, Uri, MaybePromise, IExtensionLogger, ExtensionConnectOption } from '@ali/ide-core-common';
 import { createExtHostContextProxyIdentifier } from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { Extension } from '../hosted/vscode.extension';
@@ -6,6 +6,7 @@ import { Emitter, IExtensionProps } from '@ali/ide-core-common';
 import { IExtensionContributions, IMainThreadCommands } from './vscode';
 import { IKaitianExtensionContributions } from './kaitian/extension';
 import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from './activator';
+import { replaceLocalizePlaceholder } from '@ali/ide-core-common';
 
 export { IExtensionProps } from '@ali/ide-core-common';
 
@@ -214,12 +215,7 @@ export abstract class VSCodeContributePoint<T extends JSONType = JSONType> exten
   abstract contribute();
 
   protected getLocalizeFromNlsJSON(title: string) {
-    const nlsRegex = /^%([\w\d.-]+)%$/i;
-    const result = nlsRegex.exec(title);
-    if (result) {
-      return localize(result[1], undefined, this.extension.id);
-    }
-    return title;
+    return replaceLocalizePlaceholder(title, this.extension.id);
   }
 }
 

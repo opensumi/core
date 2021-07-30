@@ -29,8 +29,8 @@ export interface ILocalizationInfo {
   localizedLanguageName: string;
 }
 
-export interface ILocalizationContents{
-  [key : string ]: string;
+export interface ILocalizationContents {
+  [key: string]: string;
 }
 
 interface ILocalizationRegistry {
@@ -108,10 +108,11 @@ function getLocalizationRegistry(scope: string): LocalizationRegistry {
  * 含有占位符标识的 key 转换
  * @param label
  */
-export function replaceLocalizePlaceholder(label?: string, env?: string): string | undefined {
-  if (label) {
-    return label.replace(/%(.*?)%/g, (_, p) => localize(p, undefined, env).replace(/\"/g,'\\"')) ;
+export function replaceLocalizePlaceholder(label: string, scope?: string): string {
+  const nlsRegex = /^%([\w\d.-]+)%$/i;
+  const result = nlsRegex.exec(label);
+  if (result) {
+    return localize(result[1], undefined, scope);
   }
+  return label;
 }
-
-
