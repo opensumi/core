@@ -954,8 +954,8 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
    */
   private getI18nInfo(extension: IExtension): { description: string, displayName: string} {
     return {
-      displayName: replaceLocalizePlaceholder(extension.packageJSON.displayName, extension.id),
-      description: replaceLocalizePlaceholder(extension.packageJSON.description, extension.id),
+      displayName: replaceLocalizePlaceholder(extension.packageJSON.displayName, extension.id)!,
+      description: replaceLocalizePlaceholder(extension.packageJSON.description, extension.id)!,
     };
   }
 

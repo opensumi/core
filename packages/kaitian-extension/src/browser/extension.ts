@@ -42,7 +42,7 @@ export class Extension extends WithEventBus implements IExtension {
   @Autowired(AbstractExtInstanceManagementService)
   private readonly extensionInstanceManageService: AbstractExtInstanceManagementService;
 
-  public readonly displayName: string;
+  public readonly displayName?: string;
 
   constructor(
     @Optional(metaDataSymbol) private extensionData: IExtensionMetaData,

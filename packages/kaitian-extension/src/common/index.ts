@@ -214,8 +214,8 @@ export abstract class VSCodeContributePoint<T extends JSONType = JSONType> exten
 
   abstract contribute();
 
-  protected getLocalizeFromNlsJSON(title: string) {
-    return replaceLocalizePlaceholder(title, this.extension.id);
+  protected getLocalizeFromNlsJSON(title: string): string {
+    return replaceLocalizePlaceholder(title, this.extension.id)!;
   }
 }
 

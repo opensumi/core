@@ -108,7 +108,10 @@ function getLocalizationRegistry(scope: string): LocalizationRegistry {
  * 含有占位符标识的 key 转换
  * @param label
  */
-export function replaceLocalizePlaceholder(label: string, scope?: string): string {
+export function replaceLocalizePlaceholder(label?: string, scope?: string): string | undefined {
+  if (!label) {
+    return undefined;
+  }
   const nlsRegex = /^%([\w\d.-]+)%$/i;
   const result = nlsRegex.exec(label);
   if (result) {
