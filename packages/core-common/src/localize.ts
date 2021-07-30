@@ -55,18 +55,20 @@ class LocalizationRegistry implements ILocalizationRegistry {
 
   registerLocalizationBundle(bundle: ILocalizationBundle): void {
     const languageId = normalize(bundle.languageId);
+    if (!languageId) {
+      return;
+    }
     const existingMessages = this.getContents(languageId);
     Object.keys(bundle.contents).forEach((key: ILocalizationKey)=> {
       existingMessages[key] = mnemonicButtonLabel(bundle.contents[key], true); // 暂时去除所有注记符
     });
-    if (!this.localizationInfo.has(languageId!)) {
-      this.localizationInfo.set(languageId!, Object.assign({}, bundle, {contents: undefined}));
+    if (!this.localizationInfo.has(languageId)) {
+      this.localizationInfo.set(languageId, Object.assign({}, bundle, {contents: undefined}));
     }
   }
 
   getLocalizeString(key: ILocalizationKey, defaultLabel?: string | null): string {
-    const defaultMessage = this.getContents('default')[key as keyof ILocalizationContents]
-    return this.getContents(_currentLanguageId)[key as keyof ILocalizationContents] || defaultMessage || defaultLabel || '';
+    return this.getContents(_currentLanguageId)[key] || this.getContents('default')[key] || defaultLabel || '';
   }
 
   private getContents(languageId: string = 'zh-CN'): ILocalizationContents {
