@@ -7,6 +7,7 @@ import { ExtensionServiceImpl } from '../../src/browser/extension.service';
 import { ExtensionService } from '../../src/common';
 import { Extension } from '../../src/browser/extension';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
+import '@ali/ide-i18n/lib/browser';
 
 const mockExtension: IExtensionMetaData = {
   id: 'test.kaitian-extension',

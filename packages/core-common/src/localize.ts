@@ -71,8 +71,11 @@ class LocalizationRegistry implements ILocalizationRegistry {
     return this.getContents(_currentLanguageId)[key] || this.getContents('default')[key] || defaultLabel || '';
   }
 
-  private getContents(languageId: string = 'zh-CN'): ILocalizationContents {
-    languageId = normalize(languageId)!;
+  private getContents(languageId: string | undefined = 'zh-CN'): ILocalizationContents {
+    languageId = normalize(languageId);
+    if (!languageId) {
+      return {};
+    }
     if (!this.localizationMap.has(languageId)) {
       this.localizationMap.set(languageId, {})
     }
