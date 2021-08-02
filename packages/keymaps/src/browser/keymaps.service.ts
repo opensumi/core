@@ -189,7 +189,7 @@ export class KeymapService implements IKeymapService {
   }
 
   private unregisterUserKeybinding(kb: Keybinding) {
-    const key = this.toStoreKey(kb);
+    const key = this.toUniqueKey(kb);
     if (this.toUnregisterUserKeybindingMap.has(key)) {
       const disposeable = this.toUnregisterUserKeybindingMap.get(key);
       disposeable?.dispose();
@@ -198,7 +198,7 @@ export class KeymapService implements IKeymapService {
   }
 
   private registerUserKeybinding(kb: Keybinding) {
-    const key = this.toStoreKey(kb);
+    const key = this.toUniqueKey(kb);
     this.toUnregisterUserKeybindingMap.set(key, this.keybindingRegistry.registerKeybinding(kb, KeybindingScope.USER));
   }
 
@@ -213,7 +213,7 @@ export class KeymapService implements IKeymapService {
           keybinding: rawKd.keybinding,
         };
         this.keybindingRegistry.unregisterKeybinding(targetKd);
-        const key = this.toStoreKey(targetKd);
+        const key = this.toUniqueKey(targetKd);
         // 存储可恢复默认快捷键注册的函数
         this.toRestoreDefaultKeybindingMap.set(key, Disposable.create(() => {
           this.keybindingRegistry.registerKeybinding(targetKd);
@@ -223,7 +223,7 @@ export class KeymapService implements IKeymapService {
       // 当直接从快捷键编辑面板直接修改默认快捷键的时候
       // 由于卸载是定向的快捷键，有明确的快捷键，不需要进行command对应到快捷键的查找，可直接卸载
       this.keybindingRegistry.unregisterKeybinding(kd);
-      const key = this.toStoreKey(kd);
+      const key = this.toUniqueKey(kd);
       // 存储可恢复默认快捷键注册的函数
       this.toRestoreDefaultKeybindingMap.set(key, Disposable.create(() => {
         this.keybindingRegistry.registerKeybinding(kd);
@@ -232,13 +232,13 @@ export class KeymapService implements IKeymapService {
   }
 
   private restoreDefaultKeybinding(kb: Keybinding) {
-    const key = this.toStoreKey(kb);
+    const key = this.toUniqueKey(kb);
     const restore = this.toRestoreDefaultKeybindingMap.get(key);
     restore?.dispose();
   }
 
-  private toStoreKey(kb: Keybinding) {
-    return `${kb.command}-${kb.when}`;
+  private toUniqueKey(kb: Keybinding) {
+    return `${kb.command}${kb.when ? `-${kb.when}` : '-'}${kb.keybinding ? `-${kb.keybinding}` : '-'}`;
   }
   /**
    * 更新keybindings列表

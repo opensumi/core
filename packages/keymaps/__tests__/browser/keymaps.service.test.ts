@@ -45,7 +45,7 @@ describe('KeymapsService should be work', () => {
     getKeybindingsForCommand: jest.fn(() => {
       return [{
         command: 'test.command',
-        keybindings: 'cmd+c',
+        keybinding: 'cmd+c',
       }];
     }),
     unregisterKeybinding: jest.fn(),

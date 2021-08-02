@@ -5,18 +5,15 @@ import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone
 import { CodeEditorServiceImpl } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/codeEditorServiceImpl';
 import * as monacoActions from '@ali/monaco-editor-core/esm/vs/platform/actions/common/actions';
 import * as monacoKeybindings from '@ali/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingsRegistry';
-import { SimpleKeybinding } from '@ali/monaco-editor-core/esm/vs/base/common/keyCodes';
 import { EditorContextKeys } from '@ali/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import { StandaloneCommandService } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
 import { ContextKeyExpr, ContextKeyExprType, ContextKeyOrExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { KeyCode as MonacoKeyCode } from '@ali/monaco-editor-core';
 import { FormattingConflicts } from '@ali/monaco-editor-core/esm/vs/editor/contrib/format/format';
 import {
   PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, ISchemaRegistry, Disposable,
   CommandRegistry, IMimeService, CorePreferences, ClientAppContribution, CommandContribution, ContributionProvider,
-  Domain, MonacoService, MonacoContribution, ServiceNames, KeybindingContribution, KeybindingRegistry, Keystroke,
-  KeyCode, Key, KeyModifier, isOSX, IContextKeyService, IOpenerService, MonacoOverrideServiceRegistry, FormattingSelectorType,
+  Domain, MonacoService, MonacoContribution, ServiceNames, KeybindingContribution, KeybindingRegistry, IContextKeyService, IOpenerService, MonacoOverrideServiceRegistry, FormattingSelectorType,
 } from '@ali/ide-core-browser';
 import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId, IMenuItem, ISubmenuItem } from '@ali/ide-core-browser/lib/menu/next';
 import { IThemeService } from '@ali/ide-theme';
@@ -26,6 +23,7 @@ import { ICommandServiceToken, IMonacoActionRegistry, IMonacoCommandService, IMo
 import { MonacoMenus } from './monaco-menu';
 import { MonacoSnippetSuggestProvider } from './monaco-snippet-suggest-provider';
 import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
+import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
 
 @Domain(ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution)
 export class MonacoClientContribution implements ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution {
@@ -82,8 +80,6 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
 
   @Autowired(MonacoOverrideServiceRegistry)
   private readonly overrideServicesRegistry: MonacoOverrideServiceRegistry;
-
-  private KEY_CODE_MAP;
 
   async initialize() {
     // 保留这个空的 loadMonaco 行为
@@ -156,6 +152,12 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
     const standaloneCommandService = new StandaloneCommandService(StaticServices.instantiationService.get());
     // 给 monacoCommandService 设置委托，执行 monaco 命令使用 standaloneCommandService 执行
     this.monacoCommandService.setDelegate(standaloneCommandService);
+    // 替换 monaco 内部的 commandService
+    this.overrideServicesRegistry.registerOverrideService(
+      ServiceNames.COMMAND_SERVICE,
+      this.monacoCommandService,
+    );
+
     // 替换 monaco 内部的 commandService
     this.overrideServicesRegistry.registerOverrideService(
       ServiceNames.COMMAND_SERVICE,
@@ -298,10 +300,6 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
-    if (!this.KEY_CODE_MAP) {
-      // monaco 的 keycode 和 ide 之间的映射
-      this.KEY_CODE_MAP = require('./monaco.keycode-map').KEY_CODE_MAP;
-    }
     const monacoKeybindingsRegistry = monacoKeybindings.KeybindingsRegistry;
     const editorFocus = EditorContextKeys.focus;
 
@@ -335,47 +333,13 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
           }
         }
         // 转换 monaco 快捷键
-        const keybindingStr = raw.parts.map((part) => this.keyCode(part)).join(' ');
+        const keybindingStr = raw.parts.map((part) => MonacoResolvedKeybinding.keyCode(part)).join(' ');
         // monaco内优先级计算时为双优先级相加，第一优先级权重 * 100
         const keybinding = { command, args: item.commandArgs, keybinding: keybindingStr, when, priority: (item.weight1 ? item.weight1 * 100 : 0) + (item.weight2 || 0)};
 
         keybindings.registerKeybinding(keybinding);
       }
     }
-  }
-
-  protected keyCode(keybinding: SimpleKeybinding): KeyCode {
-    const keyCode = keybinding.keyCode;
-    const sequence: Keystroke = {
-      first: Key.getKey(this.monaco2BrowserKeyCode(keyCode & 0xff)),
-      modifiers: [],
-    };
-    if (keybinding.ctrlKey) {
-      if (isOSX) {
-        sequence.modifiers!.push(KeyModifier.MacCtrl);
-      } else {
-        sequence.modifiers!.push(KeyModifier.CtrlCmd);
-      }
-    }
-    if (keybinding.shiftKey) {
-      sequence.modifiers!.push(KeyModifier.Shift);
-    }
-    if (keybinding.altKey) {
-      sequence.modifiers!.push(KeyModifier.Alt);
-    }
-    if (keybinding.metaKey && sequence.modifiers!.indexOf(KeyModifier.CtrlCmd) === -1) {
-      sequence.modifiers!.push(KeyModifier.CtrlCmd);
-    }
-    return KeyCode.createKeyCode(sequence);
-  }
-
-  protected monaco2BrowserKeyCode(keyCode: MonacoKeyCode): number {
-    for (let i = 0; i < this.KEY_CODE_MAP.length; i++) {
-      if (this.KEY_CODE_MAP[i] === keyCode) {
-        return i;
-      }
-    }
-    return -1;
   }
 
   protected async interceptOpen(uri: URI) {
