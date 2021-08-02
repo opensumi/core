@@ -240,7 +240,7 @@ describe('FileTree Service should be work alone', () => {
     fileTreeService.toggleFilterMode();
     expect(mockLocation).toBeCalledTimes(1);
     // enableFilterMode
-    fileTreeService.enableFilterMode();
+    fileTreeService.toggleFilterMode();
     expect(fileTreeService.filterMode).toBeTruthy();
     // locationToCurrentFile
     fileTreeService.locationToCurrentFile();

@@ -41,6 +41,7 @@ describe('Debug Model', () => {
         onDidLayoutChange: jest.fn(() => Disposable.create(() => {})),
         onDidChangeContent: jest.fn(() => Disposable.create(() => {})),
       })),
+      onDidChangeModel: () => Disposable.create(() => {}),
       onDidChangeModelContent: () => Disposable.create(() => {}),
       onKeyDown: jest.fn(() => Disposable.create(() => {})),
       getPosition: jest.fn(() => ({lineNumber: 2, column: 1})),
@@ -123,7 +124,7 @@ describe('Debug Model', () => {
 
   it('debugModel should be init success', () => {
     expect(mockEditor.onKeyDown).toBeCalledTimes(1);
-    expect(mockEditor.getModel).toBeCalledTimes(2);
+    expect(mockEditor.getModel).toBeCalledTimes(4);
     expect(mockBreakpointManager.onDidChange).toBeCalledTimes(1);
   });
 
@@ -171,6 +172,7 @@ describe('Debug Model', () => {
   });
 
   it('toggleBreakpoint should be work', () => {
+    mockBreakpointManager.getBreakpoints.mockClear();
     debugModel.toggleBreakpoint({lineNumber: 1, column: 2});
     expect(mockBreakpointManager.getBreakpoints).toBeCalledTimes(1);
     expect(mockBreakpointManager.delBreakpoint).toBeCalledTimes(1);

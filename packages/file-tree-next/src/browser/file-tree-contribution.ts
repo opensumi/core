@@ -685,7 +685,9 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
 
     commands.registerCommand(FILE_COMMANDS.FILTER_OPEN, {
       execute: () => {
-        return this.fileTreeService.enableFilterMode();
+        if (!this.fileTreeService.filterMode) {
+          this.fileTreeService.toggleFilterMode();
+        }
       },
     });
 
