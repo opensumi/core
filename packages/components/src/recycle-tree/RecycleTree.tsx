@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FixedSizeList } from 'react-window';
+import { FixedSizeList, VariableSizeList, shouldComponentUpdate } from 'react-window';
 import { TreeModel } from './tree/model/TreeModel';
 import { TreeNode, CompositeTreeNode, spliceArray } from './tree';
 import { RenamePromptHandle, PromptHandle } from './prompt';
@@ -106,6 +106,18 @@ export interface IRecycleTreeProps<T = TreeModel> {
    * 默认值为：false
    */
   leaveBottomBlank?: boolean;
+  /**
+   * 指定如何获取 item key
+   */
+  getItemKey?: (node: INodeRendererProps) => string | number;
+
+  /**
+   * 支持根据内容动态调整高度
+   * 最低不能少于 22 px
+   * 默认值为: false
+   *
+   */
+  supportDynamicHeights?: boolean;
 }
 
 export interface IRecycleTreeError {
@@ -196,6 +208,11 @@ export interface IRecycleTreeHandle {
    * @param pathOrTreeNode 节点或者节点路径
    */
   onError: Event<IRecycleTreeError>;
+
+  /**
+   * 自适应每条 item 的布局（暂时只计算高度）
+   */
+  layoutItem: () => void;
 }
 
 interface IFilterNodeRendererProps {
@@ -218,6 +235,7 @@ const InnerElementType = React.forwardRef((props, ref) => {
 
 export class RecycleTree extends React.Component<IRecycleTreeProps> {
   public static PADDING_BOTTOM_SIZE: number = 22;
+  private static DEFAULT_ITEM_HEIGHT: number = 22;
   private static BATCHED_UPDATE_MAX_DEBOUNCE_MS: number = 100;
   private static TRY_ENSURE_VISIBLE_MAX_TIMES: number = 5;
   private static FILTER_FUZZY_OPTIONS = {
@@ -232,7 +250,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private _promptHandle: NewPromptHandle | RenamePromptHandle;
 
   private idxToRendererPropsCache: Map<number, INodeRendererProps> = new Map();
-  private listRef = React.createRef<FixedSizeList>();
+  private dynamicSizeMap = new Map();
+  private listRef = React.createRef<FixedSizeList | VariableSizeList>();
   private disposables: DisposableCollection = new DisposableCollection();
 
   private onErrorEmitter = new Emitter<IRecycleTreeError>();
@@ -342,6 +361,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       // model变化时，在渲染前清理缓存
       this.idxToRendererPropsCache.clear();
       this.idToFilterRendererPropsCache.clear();
+      this.dynamicSizeMap.clear();
     }
   }
 
@@ -528,6 +548,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         collapseNode: this.collapseNode,
         ensureVisible: this.ensureVisible,
         getModel: () => this.props.model,
+        layoutItem: this.layoutItem,
         getCurrentSize: () => ({
           width: this.props.width,
           height: this.props.height,
@@ -537,7 +558,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         onOnceDidUpdate: Event.once(this.onDidUpdateEmitter.event),
         onError: this.onErrorEmitter.event,
       };
-
       onReady(api);
     }
   }
@@ -631,14 +651,9 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   private getItemKey = (index: number) => {
     const node = this.getItemAtIndex(index);
-    if (node && node.item) {
-      if (!node.item.id) {
-        return index;
-      }
-      return node.item.id;
-    } else {
-      return index;
-    }
+    const { getItemKey } = this.props;
+    const id = getItemKey ? getItemKey(node) : undefined;
+    return id ?? node?.item?.id ?? index;
   }
 
   // 过滤Root节点展示
@@ -747,8 +762,10 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   }
 
   private renderItem = ({ index, style }): JSX.Element => {
-    const { children, overflow = 'ellipsis' } = this.props;
+    this.shouldComponentUpdate = shouldComponentUpdate.bind(this);
+    const { children, overflow = 'ellipsis', supportDynamicHeights } = this.props;
     const node = this.getItemAtIndex(index) as IFilterNodeRendererProps;
+    const wrapRef = React.useRef(null);
     if (!node) {
       return <></>;
     }
@@ -756,7 +773,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     if (!item) {
       return <div style={style}></div>;
     }
-    const itemStyle = overflow === 'ellipsis' ? style : { ...style, width: 'auto', minWidth: '100%' };
+
     let ariaInfo;
     // ref: https://developers.google.com/web/fundamentals/accessibility/semantics-aria/aria-labels-and-relationships
     if (CompositeTreeNode.is(item)) {
@@ -776,7 +793,26 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       };
     }
 
-    return <div style={itemStyle} role={item.accessibilityInformation?.role || 'treeiem'} {...ariaInfo}>
+    const calcDynamicHeight = () => {
+      if (!supportDynamicHeights) {
+        return RecycleTree.DEFAULT_ITEM_HEIGHT;
+      }
+
+      let size: number = 0;
+      if (wrapRef.current) {
+        const ref = wrapRef.current as unknown as HTMLDivElement;
+        size = Array.from(ref.children).reduce((pre, cur: HTMLElement) => pre + cur.getBoundingClientRect().height, 0);
+      }
+      if (size) {
+        this.dynamicSizeMap.set(index, size);
+      }
+
+      return Math.max(size, RecycleTree.DEFAULT_ITEM_HEIGHT);
+    };
+
+    const itemStyle = overflow === 'ellipsis' ? style : { ...style, width: 'auto', minWidth: '100%', height: `${calcDynamicHeight()}px` };
+
+    return <div ref={wrapRef} style={itemStyle} role={item.accessibilityInformation?.role || 'treeiem'} {...ariaInfo}>
       <NodeRendererWrap
         item={item}
         depth={item.depth}
@@ -789,6 +825,24 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     </div>;
   }
 
+  private layoutItem = () => {
+    if (!this.props.supportDynamicHeights) {
+      return;
+    }
+
+    if (this.listRef && this.listRef.current && this.listRef.current._getRangeToRender) {
+      // _getRangeToRender 是 react-window 的内部方法，用于获取可视区域的下标范围
+      const range = this.listRef.current._getRangeToRender();
+      if (range) {
+        const start = range[0];
+        const end = range[1];
+        Array.from({ length: end - start }).forEach((_, i) => {
+          this.listRef.current.resetAfterIndex(start + i);
+        });
+      }
+    }
+  }
+
   public render() {
     const {
       itemHeight,
@@ -799,6 +853,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       placeholder,
       overScanCount,
       leaveBottomBlank,
+      supportDynamicHeights,
     } = this.props;
 
     if (placeholder && this.adjustedRowCount === 0) {
@@ -811,15 +866,18 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         innerElementType: InnerElementType,
       };
     }
+
+    const List = supportDynamicHeights ? VariableSizeList : FixedSizeList;
+
     return (
-      <FixedSizeList
+      <List
         width={width}
         height={height}
         // 这里的数据不是必要的，主要用于在每次更新列表
         itemData={[]}
-        itemSize={itemHeight}
+        itemSize={supportDynamicHeights ? (index: number) => (this.dynamicSizeMap.get(index) || itemHeight) : itemHeight }
         itemCount={this.adjustedRowCount}
-        getItemKey={this.getItemKey}
+        itemKey={this.getItemKey}
         overscanCount={overScanCount || RecycleTree.DEFAULT_OVER_SCAN_COUNT}
         ref={this.listRef}
         onScroll={this.handleListScroll}
@@ -831,6 +889,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         outerElementType={ScrollbarsVirtualList}
         {...addonProps}>
         {this.renderItem}
-      </FixedSizeList>);
+      </List>);
   }
 }

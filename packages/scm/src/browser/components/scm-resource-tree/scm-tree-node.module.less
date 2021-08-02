@@ -1,0 +1,195 @@
+
+.scm_tree_node {
+  height: 22px;
+  line-height: 22px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--kt-tree-hoverForeground);
+    background: var(--kt-tree-hoverBackground);
+    &::before {
+      display: none !important;
+    }
+  }
+
+  &.mod_selected {
+    color: var(--kt-tree-inactiveSelectionForeground) !important;
+    background: var(--kt-tree-inactiveSelectionBackground);
+    .expansion_toggle, .scm_tree_node_description  {
+      color: var(--kt-tree-inactiveSelectionForeground) !important;
+    }
+  }
+
+  &.mod_focused {
+    outline: 1px solid var(--list-focusOutline);
+    outline-offset: -1px;
+    color: var(--kt-tree-activeSelectionForeground) !important;;
+    background: var(--kt-tree-activeSelectionBackground);
+    .expansion_toggle, .scm_tree_node_description {
+      color: var(--kt-tree-activeSelectionForeground) !important;;
+    }
+    .scm_tree_node_display_name {
+      .compact_name {
+        &.active {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+
+  &.mod_actived {
+    outline: 1px solid var(--list-focusOutline);
+    outline-offset: -1px;
+    .expansion_toggle {
+      color: var(--kt-tree-activeSelectionForeground) !important;
+    }
+  }
+
+  &_description {
+    display: inline;
+    transform: scale(0.96);
+    color: var(--descriptionForeground);
+  }
+
+  &_content {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+
+    match {
+      background-color: var(--editor-findMatchHighlightBackground);
+    }
+  }
+
+  &_status {
+    opacity: .75;
+    text-align: center;
+    font-size: 12px;
+    padding-right: 0;
+  }
+
+  &_segment {
+    flex-grow: 0;
+    white-space: nowrap;
+    color: inherit;
+    &_grow {
+      flex-grow: 1 !important;
+      text-align: left;
+      z-index: 10;
+      padding-right: 5px;
+
+      &.overflow_visible {
+        overflow: visible !important;
+      }
+    }
+  }
+
+  &_display_name {
+    margin-right: 6px;
+    display: inline;
+    white-space:pre;
+    .compact_name {
+      color: inherit;
+      display: inline;
+      &:focus,
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+    .compact_name_separator {
+      margin: 0 2px;
+      opacity: .5;
+    }
+  }
+
+  &_description {
+    display: inline;
+    transform: scale(0.96);
+    color: var(--descriptionForeground);
+  }
+
+  &_overflow_wrap {
+    flex: 1;
+    flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+  }
+
+  &_flex_wrap {
+    display: flex;
+    flex-direction: row;
+  }
+
+  &_segment_grow {
+    flex-grow: 1 !important;
+    text-align: left;
+    z-index: 10;
+    padding-right: 5px;
+
+    &.overflow_visible {
+      overflow: visible !important;
+    }
+  }
+
+  &_tail {
+    text-align: center;
+    margin-right: 10px;
+    position: relative;
+    height: 22px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.scm_tree_node_actions {
+  margin-right: 10px;
+  display: none;
+}
+
+:global(.scm-show-actions), // 对应偏好设置项 scm.alwaysShowActions
+.scm_tree_node:hover {
+  .scm_tree_node_actions {
+    display: block;
+  }
+}
+
+.expansion_toggle {
+  min-width: 20px;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--descriptionForeground);
+  font-size: 16px;
+  &.mod_collapsed {
+    &:before {
+      display: block;
+    }
+  }
+
+  &:not(.mod_collapsed) {
+    &:before {
+      display: block;
+      transform: rotate(90deg);
+    }
+  }
+}
+
+.file_icon {
+  position: relative;
+  color: var(--icon-foreground);
+  margin-right: 4px;
+  &:before {
+    font-size: 16px;
+    text-align: center;
+  }
+}
+
+.file_icon:global(&.fileIcon:before) {
+  font-size: 18px;
+}

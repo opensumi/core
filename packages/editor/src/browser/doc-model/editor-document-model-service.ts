@@ -1,5 +1,5 @@
 import * as md5 from 'md5';
-import { URI, IRef, ReferenceManager, IEditorDocumentChange, IEditorDocumentModelSaveResult, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_SCHEMA, ILogger, PreferenceService } from '@ali/ide-core-browser';
+import { URI, IRef, ReferenceManager, IEditorDocumentChange, IEditorDocumentModelSaveResult, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_SCHEMA, ILogger, PreferenceService, ReadyEvent, memoize } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 
 import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelOptionExternalUpdatedEvent, EditorDocumentModelCreationEvent, IPreferredModelOptions } from './types';
@@ -40,7 +40,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
 
   private  preferredModelOptions = new Map<string, IPreferredModelOptions>();
 
-  private _ready: Promise<void> | undefined;
+  private _ready = new ReadyEvent<void>();
 
   constructor() {
     super();
@@ -107,49 +107,46 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
   }
 
   async changeModelOptions(uri: URI, options: IPreferredModelOptions) {
-    await this.ready;
-    if (this.preferredModelOptions.has(uri.toString())) {
-      options = {
-        ...this.preferredModelOptions.get(uri.toString()),
-        ...options,
-      };
-    }
-    this.preferredModelOptions.set(uri.toString(), options);
-    const docRef = this.getModelReference(uri);
-    if (docRef) {
-      if (options.encoding && options.encoding !== docRef.instance.encoding) {
-        docRef.instance.updateEncoding(options.encoding);
+    return this.onceReady(() => {
+      if (this.preferredModelOptions.has(uri.toString())) {
+        options = {
+          ...this.preferredModelOptions.get(uri.toString()),
+          ...options,
+        };
       }
-      if (options.languageId && options.languageId !== docRef.instance.languageId) {
-        docRef.instance.languageId = options.languageId;
+      this.preferredModelOptions.set(uri.toString(), options);
+      const docRef = this.getModelReference(uri);
+      if (docRef) {
+        if (options.encoding && options.encoding !== docRef.instance.encoding) {
+          docRef.instance.updateEncoding(options.encoding);
+        }
+        if (options.languageId && options.languageId !== docRef.instance.languageId) {
+          docRef.instance.languageId = options.languageId;
+        }
+        if (options.eol && options.eol !== docRef.instance.eol) {
+          docRef.instance.eol = options.eol;
+        }
+        docRef.dispose();
       }
-      if (options.eol && options.eol !== docRef.instance.eol) {
-        docRef.instance.eol = options.eol;
-      }
-      docRef.dispose();
-    }
-    return this.persistOptionsPreference();
+      return this.persistOptionsPreference();
+    });
   }
 
   persistOptionsPreference() {
     return this.storage.set(EDITOR_DOC_OPTIONS_PREF_KEY, JSON.stringify(mapToSerializable(this.preferredModelOptions)));
   }
 
-  get ready() {
-    if (!this._ready) {
-      this._ready = new Promise(async (resolve) => {
-        this.storage = await this.getStorage(EDITOR_DOCUMENT_MODEL_STORAGE);
-        if (this.storage.get(EDITOR_DOC_OPTIONS_PREF_KEY)) {
-          try {
-            this.preferredModelOptions = serializableToMap(JSON.parse(this.storage.get(EDITOR_DOC_OPTIONS_PREF_KEY)!));
-          } catch (e) {
-            this.logger.error(e);
-          }
-        }
-        resolve();
-      });
+  @memoize
+  async initialize() {
+    this.storage = await this.getStorage(EDITOR_DOCUMENT_MODEL_STORAGE);
+    if (this.storage.get(EDITOR_DOC_OPTIONS_PREF_KEY)) {
+      try {
+        this.preferredModelOptions = serializableToMap(JSON.parse(this.storage.get(EDITOR_DOC_OPTIONS_PREF_KEY)!));
+      } catch (e) {
+        this.logger.error(e);
+      }
     }
-    return this._ready;
+    this._ready.ready();
   }
 
   @OnEvent(EditorDocumentModelOptionExternalUpdatedEvent)
@@ -189,6 +186,10 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     return Array.from(this.editorDocModels.values());
   }
 
+  hasLanguage(langaugeId) {
+    return this.getAllModels().findIndex((m) => m.languageId === langaugeId) !== -1;
+  }
+
   async getOrCreateModel(uri: string, encoding?: string): Promise<EditorDocumentModel> {
     if (this.editorDocModels.has(uri)) {
       return this.editorDocModels.get(uri)!;
@@ -196,10 +197,15 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     return this.createModel(uri, encoding);
   }
 
+  private get onceReady() {
+    this.initialize();
+    return this._ready.onceReady.bind(this._ready);
+  }
+
   private createModel(uri: string, encoding?: string): Promise<EditorDocumentModel> {
-    // 防止异步重复调用
+  // 防止异步重复调用
     if (!this.creatingEditorModels.has(uri)) {
-      const promise = this.doCreateModel(uri, encoding).then((model) => {
+      const promise = this.onceReady(() => this.doCreateModel(uri, encoding)).then((model) => {
         this.creatingEditorModels.delete(uri);
         return model;
       }, (e) => {
@@ -212,7 +218,6 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
   }
 
   private async doCreateModel(uriString: string, encoding?: string): Promise<EditorDocumentModel> {
-    await this.ready;
     const uri = new URI(uriString);
     const provider = await this.contentRegistry.getProvider(uri);
 

@@ -250,7 +250,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
             menuId,
             {
               submenu: item.submenu,
-              label: submenuDesc.label,
+              label: this.getLocalizeFromNlsJSON(submenuDesc.label),
               when: item.when,
               group,
               order,

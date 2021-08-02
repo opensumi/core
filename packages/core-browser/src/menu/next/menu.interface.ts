@@ -12,7 +12,10 @@ import { ICtxMenuRenderer } from './renderer/ctxmenu/base';
 export type TupleMenuNodeResult = [ MenuNode[], MenuNode[] ];
 
 export interface IMenuNodeOptions {
-  args?: any[]; // 固定参数可从这里传入
+  /**
+   * 固定参数可从这里传入
+   */
+  args?: any[];
   contextDom?: HTMLElement;
 }
 
@@ -155,10 +158,12 @@ export class SubmenuItemNode extends MenuNode {
 @Injectable({ multiple: true })
 export class ComponentMenuItemNode extends MenuNode {
   static readonly ID = 'menu.item.node.component';
+  static nodeIndex = -1;
 
   readonly item: IComponentMenuItem;
   private _options: IMenuNodeOptions;
   readonly component: React.ComponentType<IComponentMenuItemProps>;
+  readonly nodeId: string;
 
   constructor(
     @Optional() item: IComponentMenuItem,
@@ -170,6 +175,8 @@ export class ComponentMenuItemNode extends MenuNode {
       id: ComponentMenuItemNode.ID,
       label: '',
     });
+    ComponentMenuItemNode.nodeIndex++;
+    this.nodeId = String(ComponentMenuItemNode.nodeIndex);
     this.item = item;
     this.component = item.component;
     this._options = options;
@@ -239,7 +246,7 @@ export interface IContextMenu extends IDisposable {
 }
 
 export abstract class AbstractMenuService {
-  abstract createMenu(id: MenuId | string, contextKeyService?: IContextKeyService): IMenu;
+  public abstract createMenu(id: MenuId | string, contextKeyService?: IContextKeyService): IMenu;
 }
 
 export interface CreateMenuPayload {
@@ -249,5 +256,5 @@ export interface CreateMenuPayload {
 }
 
 export abstract class AbstractContextMenuService {
-  abstract createMenu(payload: CreateMenuPayload): IContextMenu;
+  public abstract createMenu(payload: CreateMenuPayload): IContextMenu;
 }

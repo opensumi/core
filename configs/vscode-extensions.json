@@ -203,7 +203,8 @@
     ],
     "kaitian": [
       {
-        "name": "git"
+        "name": "git",
+        "version": "1.50.1-patch.4"
       },
       {
         "name": "vscode-language-pack-zh-hans"

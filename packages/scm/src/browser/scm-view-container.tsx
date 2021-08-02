@@ -9,22 +9,20 @@ import { InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
 
 import { ISCMRepository, scmProviderViewId, scmResourceViewId, scmContainerId } from '../common';
 import { ViewModelContext } from './scm-model';
-import { SCMHeader } from './components/scm-header.view';
-import { SCMResourceList } from './components/scm-resource.view';
-import { SCMRepoSelect } from './components/scm-select.view';
+
+import { SCMResourceInput } from './components/scm-resource-input';
+import { SCMResourceTree } from './components/scm-resource-tree';
+import { SCMProviderList } from './components/scm-provider-list';
 
 import * as styles from './scm.module.less';
 import { getSCMRepositoryDesc } from './scm-util';
 import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
 
-export const SCMRepoPanel: React.FC<{
+export const SCMResourcesView: React.FC<{
   repository: ISCMRepository;
   viewState: ViewState;
-}> = observer(({ repository, viewState }) => {
-  if (!repository || ! repository.provider) {
-    return null;
-  }
-
+  hasMultiRepos?: boolean;
+}> = observer(({ repository, viewState, hasMultiRepos }) => {
   const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
   const $containerRef = React.useRef<HTMLDivElement>(null);
   const $that = React.useRef<{ ctx?: IContextKeyService }>({});
@@ -43,38 +41,47 @@ export const SCMRepoPanel: React.FC<{
     }
   }, [repository]);
 
+  const extraPaddingTop = hasMultiRepos ? 10 : 0;
   return (
     <div className={styles.view} ref={$containerRef}>
-      <div className={styles.scm}>
-        <SCMHeader repository={repository} />
-        <SCMResourceList
+      <div className={styles.scm} style={{paddingTop: extraPaddingTop}}>
+        <SCMResourceInput repository={repository} />
+        <SCMResourceTree
           width={viewState.width}
-          height={viewState.height - 38}
-          repository={repository} />
+          height={viewState.height - 38 - extraPaddingTop} />
       </div>
     </div>
   );
 });
 
-SCMRepoPanel.displayName = 'SCMRepoPanel';
+SCMResourcesView.displayName = 'SCMResourcesView';
 
-export const SCMResourceView: React.FC<{ viewState: ViewState }> = observer((props) => {
+export const SCMResourcesViewWrapper: React.FC<{ viewState: ViewState }> = observer((props) => {
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
 
   if (!viewModel.selectedRepos.length) {
     return <WelcomeView viewId='scm_view' />;
   }
 
+  const hasMultiRepos = viewModel.repoList.length > 1;
   const selectedRepo = viewModel.selectedRepos[0];
-  return <SCMRepoPanel repository={selectedRepo} viewState={props.viewState} />;
+
+  if (!selectedRepo || ! selectedRepo.provider) {
+    return null;
+  }
+
+  return <SCMResourcesView
+    hasMultiRepos={hasMultiRepos}
+    repository={selectedRepo}
+    viewState={props.viewState} />;
 });
 
-SCMResourceView.displayName = 'SCMResourceView';
+SCMResourcesViewWrapper.displayName = 'SCMResourcesViewWrapper';
 
 /**
  * 多 repo 列表
  */
-export const SCMProviderList: React.FC<{ viewState: ViewState }> = observer((props) => {
+export const SCMProvidersView: React.FC<{ viewState: ViewState }> = observer((props) => {
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
   const selectedRepo = viewModel.selectedRepos[0];
 
@@ -82,7 +89,7 @@ export const SCMProviderList: React.FC<{ viewState: ViewState }> = observer((pro
     <div className={styles.view}>
       {
         viewModel.repoList.length > 1 && (
-          <SCMRepoSelect
+          <SCMProviderList
             viewState={props.viewState}
             repositoryList={viewModel.repoList}
             selectedRepository={selectedRepo} />
@@ -92,9 +99,9 @@ export const SCMProviderList: React.FC<{ viewState: ViewState }> = observer((pro
   );
 });
 
-SCMProviderList.displayName = 'SCMProviderList';
+SCMProvidersView.displayName = 'SCMProvidersView';
 
-export const SCMPanel: React.FC<{ viewState: ViewState }> = observer((props) => {
+export const SCMViewContainer: React.FC<{ viewState: ViewState }> = observer((props) => {
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
 
   const repoList = viewModel.repoList;
@@ -129,18 +136,20 @@ export const SCMPanel: React.FC<{ viewState: ViewState }> = observer((props) => 
   // control views
   const views: View[] = React.useMemo(() => {
     const scmProviderViewConfig: View = {
-      component: SCMProviderList,
+      component: SCMProvidersView,
       id: scmProviderViewId,
       name: localize('scm.provider.title'),
       initialProps: { viewState: props.viewState },
+      priority: 0,
     };
 
     const scmRepoViewConfig: View = {
-      component: SCMResourceView,
+      component: SCMResourcesViewWrapper,
       id: scmResourceViewId,
       name: repoViewTitle,
       titleMenu: hasMultiRepos && titleMenu || undefined,
       titleMenuContext: selectedRepo && selectedRepo.provider && [selectedRepo.provider],
+      priority: 1,
     };
 
     return (hasMultiRepos ? [scmProviderViewConfig] : []).concat(scmRepoViewConfig);
@@ -165,4 +174,4 @@ export const SCMPanel: React.FC<{ viewState: ViewState }> = observer((props) => 
   );
 });
 
-SCMPanel.displayName = 'SCMPanel';
+SCMViewContainer.displayName = 'SCMViewContainer';

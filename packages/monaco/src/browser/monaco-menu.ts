@@ -10,7 +10,7 @@ export namespace MonacoMenus {
     id: '1_selection_group',
     actions: [
       EDITOR_COMMANDS.SELECT_ALL.id,
-      'editor.action.smartSelect.grow',
+      'editor.action.smartSelect.expand',
       'editor.action.smartSelect.shrink',
     ],
   };

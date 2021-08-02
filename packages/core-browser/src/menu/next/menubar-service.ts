@@ -30,12 +30,12 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
    * 带了 menuId 只需要刷新单个 MenuBarItem
   */
   private readonly _onDidMenuBarChange = new Emitter<void>();
-  get onDidMenubarChange(): Event<void> {
+  public get onDidMenubarChange(): Event<void> {
     return this._onDidMenuBarChange.event;
   }
 
   private readonly _onDidMenuChange = new Emitter<string>();
-  get onDidMenuChange(): Event<string> {
+  public get onDidMenuChange(): Event<string> {
     return this._onDidMenuChange.event;
   }
 

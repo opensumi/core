@@ -161,8 +161,19 @@ declare module 'vscode' {
 
   //#region Joh: decorations
 
-  //todo@joh -> make class
-  export interface DecorationData {
+  //#region old file-decorations
+  export interface SourceControlResourceDecorations {
+    source?: string;
+    letter?: string;
+    color?: ThemeColor;
+  }
+
+
+  /**
+   * @deprecated
+   * please use `FileDecoration`
+   */
+  export class Decoration {
     letter?: string;
     title?: string;
     color?: ThemeColor;
@@ -171,29 +182,100 @@ declare module 'vscode' {
     source?: string; // hacky... we should remove it and use equality under the hood
   }
 
-  export interface SourceControlResourceDecorations {
-    source?: string;
-    letter?: string;
-    color?: ThemeColor;
-  }
-
-  //#region file-decorations: https://github.com/microsoft/vscode/issues/54938
-
-  export class Decoration {
-    letter?: string;
-    title?: string;
-    color?: ThemeColor;
-    priority?: number;
-    bubble?: boolean;
-  }
+  /**
+   * @deprecated
+   * please use `FileDecorationProvider`
+   */
 
   export interface DecorationProvider {
     onDidChangeDecorations: Event<undefined | Uri | Uri[]>;
-    provideDecoration(uri: Uri, token: CancellationToken): ProviderResult<DecorationData>;
+    provideDecoration(uri: Uri, token: CancellationToken): ProviderResult<Decoration>;
   }
 
   export namespace window {
+    /**
+     * @deprecated
+     * please use `registerDecorationProvider`
+     */
     export function registerDecorationProvider(provider: DecorationProvider): Disposable;
+  }
+
+  //#endregion
+
+  //#region file-decorations: https://github.com/microsoft/vscode/issues/54938
+	/**
+	 * A file decoration represents metadata that can be rendered with a file.
+	 */
+  export class FileDecoration {
+
+  /**
+   * A very short string that represents this decoration.
+   */
+    badge?: string;
+
+  /**
+   * A human-readable tooltip for this decoration.
+   */
+    tooltip?: string;
+
+  /**
+   * The color of this decoration.
+   */
+    color?: ThemeColor;
+
+  /**
+   * A flag expressing that this decoration should be
+   * propagated to its parents.
+   */
+    propagate?: boolean;
+
+  /**
+   * Creates a new decoration.
+   *
+   * @param badge A letter that represents the decoration.
+   * @param tooltip The tooltip of the decoration.
+   * @param color The color of the decoration.
+   */
+    constructor(badge?: string, tooltip?: string, color?: ThemeColor);
+  }
+
+	/**
+	 * The decoration provider interfaces defines the contract between extensions and
+	 * file decorations.
+	 */
+  export interface FileDecorationProvider {
+
+  /**
+   * An optional event to signal that decorations for one or many files have changed.
+   *
+   * *Note* that this event should be used to propagate information about children.
+   *
+   * @see {@link EventEmitter}
+   */
+    onDidChange: Event<undefined | Uri | Uri[]>;
+
+  /**
+   * Provide decorations for a given uri.
+   *
+   * *Note* that this function is only called when a file gets rendered in the UI.
+   * This means a decoration from a descendent that propagates upwards must be signaled
+   * to the editor via the {@link FileDecorationProvider.onDidChangeFileDecorations onDidChangeFileDecorations}-event.
+   *
+   * @param uri The uri of the file to provide a decoration for.
+   * @param token A cancellation token.
+   * @returns A decoration or a thenable that resolves to such.
+   */
+    provideFileDecoration(uri: Uri, token: CancellationToken): ProviderResult<FileDecoration>;
+  }
+
+  export namespace window {
+    /**
+     * Register a file decoration provider.
+     *
+     * @param provider A {@link FileDecorationProvider}.
+     * @return A {@link Disposable} that unregisters the provider.
+     */
+    export function registerFileDecorationProvider(provider: FileDecorationProvider): Disposable;
   }
 
   //#endregion

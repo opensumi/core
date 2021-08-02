@@ -161,6 +161,9 @@ export class EditorClientAppContribution implements ClientAppContribution {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
+  @Autowired(IEditorDocumentModelService)
+  modelService: EditorDocumentModelServiceImpl;
+
   @Autowired(BrowserEditorContribution)
   private readonly contributions: ContributionProvider<BrowserEditorContribution>;
 
@@ -183,7 +186,7 @@ export class EditorClientAppContribution implements ClientAppContribution {
       }
     }
     this.workbenchEditorService.contributionsReady.resolve();
-    await this.workbenchEditorService.initialize();
+    await Promise.all([this.workbenchEditorService.initialize(), this.modelService.initialize()]);
   }
 
   async onDidStart() {

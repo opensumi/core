@@ -1,4 +1,4 @@
-
+import * as React from 'react';
 import { Autowired } from '@ali/common-di';
 import { COMMON_COMMANDS, FILE_COMMANDS, getIcon } from '@ali/ide-core-browser';
 import { IMenuRegistry, ISubmenuItem, MenuId, MenuContribution } from '@ali/ide-core-browser/lib/menu/next';
@@ -42,7 +42,13 @@ export class SelectMenuContribution implements CommandContribution, MenuContribu
 
     menuRegistry.registerMenuItem(MenuId.EditorTitle, testSubmenuDesc);
 
-    menuRegistry.registerMenuItem(MenuId.SCMTitle, testSubmenuDesc);
+    menuRegistry.registerMenuItem(MenuId.EditorTitle, {
+      component: () => React.createElement('div', { style: { margin: '0 2px' } }, '✨'),
+      order: 0,
+      group: 'navigation',
+    });
+
+    // menuRegistry.registerMenuItem(MenuId.SCMTitle, testSubmenuDesc);
 
     menuRegistry.registerMenuItem(testSubmenuId, {
       command: FILE_COMMANDS.NEW_FILE.id,

@@ -23,7 +23,7 @@ export abstract class MonacoService {
     monacoContainer: HTMLElement,
     options?: IEditorConstructionOptions,
     overrides?: { [key: string]: any },
-  ): Promise<ICodeEditor>;
+  ): ICodeEditor;
 
   public abstract loadMonaco(): Promise<void>;
 
@@ -31,7 +31,7 @@ export abstract class MonacoService {
     monacoContainer: HTMLElement,
     options?: IDiffEditorConstructionOptions,
     overrides?: { [key: string]: any },
-  ): Promise<IDiffEditor>;
+  ): IDiffEditor;
 
   public abstract registerOverride(serviceName: ServiceNames, service: any): void;
 

@@ -114,6 +114,8 @@ export const localizationBundle = {
     'editor.changeLanguageId': 'Select Language Mode',
     'editor.configuration.maxTokenizationLineLength': 'Lines above this length will not be tokenized for performance reasons',
     'editor.configuration.quickSuggestionsDelay': 'Quick suggestions show delay (in ms) Defaults to 100 (ms)',
+    'editor.lineHeight': 'Line Height',
+    'editor.lineHeight.description': 'Controls the line height.\r\nUse 0 to automatically compute the line height from the font size.\r\nValues between 0 and 8 will be used as a multiplier with the font size.\r\nValues greater than or equal to 8 will be used as effective values.',
     'status-bar.label.line': 'Ln',
     'status-bar.label.column': 'Col',
     'status-bar.label.selected': 'Selected',
@@ -268,6 +270,7 @@ export const localizationBundle = {
     'debug.console.copyAll': 'Copy All',
     'debug.console.collapseAll': 'Collapse All',
     'debug.console.followLink': '{0} + click to follow link',
+    'debug.console.input.placeholder': 'Please start a debug session to evaluate expressions',
 
     'debug.stack.loadMore': 'Load All Stack Frames',
     'debug.stack.loading': 'Loading...',
@@ -410,6 +413,7 @@ export const localizationBundle = {
     'preference.debug.console.filter.mode': 'Debug console filter mode',
     'preference.debug.console.filter.mode.filter': 'filter',
     'preference.debug.console.filter.mode.matcher': 'matcher',
+    'preference.debug.console.wordWrap': 'Controls if the lines should wrap in the debug console.',
     'preference.debug.inline.values': 'Show variable values inline in editor while debugging.',
 
     // workbench

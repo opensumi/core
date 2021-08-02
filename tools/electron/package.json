@@ -36,12 +36,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "node-pty": "0.10.0-beta18",
+    "node-pty": "0.10.0",
     "vscode-oniguruma": "1.3.1",
     "spdlog": "^0.9.0",
     "@ali/vscode-ripgrep": "^1.3.1-release",
     "yargs": "^13.2.4",
-    "nsfw": "2.1.0",
+    "nsfw": "2.1.1",
     "getmac": "^1.4.6"
   },
   "resolutions": {

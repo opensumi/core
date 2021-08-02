@@ -1,4 +1,6 @@
 import { monaco } from '@ali/ide-monaco/lib/browser/monaco-api';
+import { ModesRegistry } from '@ali/monaco-editor-core/esm/vs/editor/common/modes/modesRegistry';
+import type { ILanguageExtensionPoint } from '@ali/monaco-editor-core/esm/vs/editor/common/services/modeService';
 import { FoldingRules, IAutoClosingPair, IAutoClosingPairConditional, IndentationRule, LanguageConfiguration } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import { Injectable, Autowired } from '@ali/common-di';
 import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger, ExtensionActivateEvent, getDebugLogger, MonacoService, electronEnv } from '@ali/ide-core-browser';
@@ -81,6 +83,8 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
 
   public initialized = false;
 
+  private dynamicLanguages: ILanguageExtensionPoint[] = [];
+
   /**
    * start contribution 做初始化
    */
@@ -99,8 +103,13 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
   }
 
   async registerLanguage(language: LanguagesContribution, extPath: URI) {
+    return this.registerLanguages([language], extPath);
+  }
+
+  async registerLanguages(languages: LanguagesContribution[], extPath: URI) {
     await this.monacoService.monacoLoaded;
-    monaco.languages.register({
+
+    this.dynamicLanguages.push(...languages.map((language) => ({
       id: language.id,
       aliases: language.aliases,
       extensions: language.extensions,
@@ -108,42 +117,52 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
       filenames: language.filenames,
       firstLine: language.firstLine,
       mimetypes: language.mimetypes,
-    });
+    })));
 
-    monaco.languages.onLanguage(language.id, () => {
-      this.activateLanguage(language.id);
-    });
+    ModesRegistry.setDynamicLanguages(this.dynamicLanguages);
 
-    let configuration: LanguageConfiguration | undefined;
-    if (typeof language.resolvedConfiguration === 'object') {
-      configuration = await language.resolvedConfiguration;
-    } else if (language.configuration) {
-      // remove `./` prefix
-      const langPath = language.configuration.replace(/^\.\//, '');
-      // http 的不作支持
-      const configurationPath = extPath.resolve(langPath);
-      const ret = await this.fileServiceClient.resolveContent(configurationPath.toString());
-      const content = ret.content;
-      if (content) {
-        const jsonContent = this.safeParseJSON<LanguageConfiguration>(content);
-        if (jsonContent) {
-          configuration = jsonContent;
+    const languageIds: string[] = [];
+
+    await Promise.all(languages.map(async (language) => {
+      this.addDispose(
+        monaco.languages.onLanguage(language.id, () => {
+          this.activateLanguage(language.id);
+        }),
+      );
+
+      let configuration: LanguageConfiguration | undefined;
+      if (typeof language.resolvedConfiguration === 'object') {
+        configuration = await language.resolvedConfiguration;
+      } else if (language.configuration) {
+        // remove `./` prefix
+        const langPath = language.configuration.replace(/^\.\//, '');
+        // http 的不作支持
+        const configurationPath = extPath.resolve(langPath);
+        const ret = await this.fileServiceClient.resolveContent(configurationPath.toString());
+        const content = ret.content;
+        if (content) {
+          const jsonContent = this.safeParseJSON<LanguageConfiguration>(content);
+          if (jsonContent) {
+            configuration = jsonContent;
+          }
         }
       }
-    }
 
-    if (configuration) {
-      // FIXME: type for wordPattern/indentationRules @寻壑
-      monaco.languages.setLanguageConfiguration(language.id, {
-        wordPattern: this.createRegex(configuration.wordPattern),
-        autoClosingPairs: this.extractValidAutoClosingPairs(language.id, configuration),
-        brackets: this.extractValidBrackets(language.id, configuration),
-        comments: this.extractValidCommentRule(language.id, configuration),
-        folding: this.convertFolding(configuration.folding),
-        surroundingPairs: this.extractValidSurroundingPairs(language.id, configuration),
-        indentationRules: this.convertIndentationRules(configuration.indentationRules as any),
-      });
-    }
+      if (configuration) {
+        // FIXME: type for wordPattern/indentationRules @寻壑
+        monaco.languages.setLanguageConfiguration(language.id, {
+          wordPattern: this.createRegex(configuration.wordPattern),
+          autoClosingPairs: this.extractValidAutoClosingPairs(language.id, configuration),
+          brackets: this.extractValidBrackets(language.id, configuration),
+          comments: this.extractValidCommentRule(language.id, configuration),
+          folding: this.convertFolding(configuration.folding),
+          surroundingPairs: this.extractValidSurroundingPairs(language.id, configuration),
+          indentationRules: this.convertIndentationRules(configuration.indentationRules as any),
+        });
+      }
+
+      languageIds.push(language.id);
+    }));
 
     if (this.initialized) {
       const uris = this.editorDocumentModelService.getAllModels().map((m) => m.uri);
@@ -151,7 +170,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
         const model = this.editorDocumentModelService.getModelReference(URI.parse(uri.codeUri.toString()));
         if (model && model.instance) {
           const langId = model.instance.getMonacoModel().getModeId();
-          if (language.id === langId) {
+          if (languageIds.includes(langId)) {
             await this.activateLanguage(langId);
             break;
           }
@@ -539,7 +558,11 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
       },
     });
     for (const { id: languageId } of monaco.languages.getLanguages()) {
-      monaco.languages.onLanguage(languageId, () => this.activateLanguage(languageId));
+      if (this.editorDocumentModelService.hasLanguage(languageId)) {
+        this.activateLanguage(languageId);
+      } else {
+        monaco.languages.onLanguage(languageId, () => this.activateLanguage(languageId));
+      }
     }
   }
 

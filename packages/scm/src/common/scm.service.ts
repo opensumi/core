@@ -105,24 +105,24 @@ class SCMRepository implements ISCMRepository {
 @Injectable()
 export class SCMService {
   private _selectedRepositories: ISCMRepository[] = [];
-  get selectedRepositories(): ISCMRepository[] { return [...this._selectedRepositories]; }
+  public get selectedRepositories(): ISCMRepository[] { return [...this._selectedRepositories]; }
 
   private _providerIds = new Set<string>();
   private _repositories: ISCMRepository[] = [];
-  get repositories(): ISCMRepository[] { return [...this._repositories]; }
+  public get repositories(): ISCMRepository[] { return [...this._repositories]; }
 
   private _onDidChangeSelectedRepositories = new Emitter<ISCMRepository[]>();
-  readonly onDidChangeSelectedRepositories: Event<ISCMRepository[]> = this._onDidChangeSelectedRepositories.event;
+  public readonly onDidChangeSelectedRepositories: Event<ISCMRepository[]> = this._onDidChangeSelectedRepositories.event;
 
   private _onDidAddProvider = new Emitter<ISCMRepository>();
-  readonly onDidAddRepository: Event<ISCMRepository> = this._onDidAddProvider.event;
+  public readonly onDidAddRepository: Event<ISCMRepository> = this._onDidAddProvider.event;
 
   private _onDidRemoveProvider = new Emitter<ISCMRepository>();
-  readonly onDidRemoveRepository: Event<ISCMRepository> = this._onDidRemoveProvider.event;
+  public readonly onDidRemoveRepository: Event<ISCMRepository> = this._onDidRemoveProvider.event;
 
   private readonly logger = getDebugLogger();
 
-  registerSCMProvider(provider: ISCMProvider): ISCMRepository {
+  public registerSCMProvider(provider: ISCMProvider): ISCMRepository {
     this.logger.log('SCMService#registerSCMProvider');
 
     if (this._providerIds.has(provider.id)) {

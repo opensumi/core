@@ -1,10 +1,10 @@
-import { ResolvedKeybinding, ResolvedKeybindingPart, SimpleKeybinding } from '@ali/monaco-editor-core/esm/vs/base/common/keyCodes';
+import { ChordKeybinding, ResolvedKeybinding, ResolvedKeybindingPart, SimpleKeybinding } from '@ali/monaco-editor-core/esm/vs/base/common/keyCodes';
 import { AriaLabelProvider, Modifiers, UILabelProvider } from '@ali/monaco-editor-core/esm/vs/base/common/keybindingLabels';
 import { USLayoutResolvedKeybinding } from '@ali/monaco-editor-core/esm/vs/platform/keybinding/common/usLayoutResolvedKeybinding';
-import * as platform from '@ali/monaco-editor-core/esm/vs/base/common/platform';
-import { KeySequence, KeybindingRegistry } from '@ali/ide-core-browser';
+import { KeySequence, KeybindingRegistry, Key, isOSX, KeyModifier, KeyCode, Keystroke } from '@ali/ide-core-browser';
 import { KEY_CODE_MAP } from './monaco.keycode-map';
-
+import { KeyCode as MonacoKeyCode } from '@ali/monaco-editor-core';
+import * as platform from '@ali/monaco-editor-core/esm/vs/base/common/platform';
 export class MonacoResolvedKeybinding extends ResolvedKeybinding {
 
   protected readonly parts: { key: string | null, modifiers: Modifiers }[];
@@ -65,21 +65,6 @@ export class MonacoResolvedKeybinding extends ResolvedKeybinding {
     });
   }
 
-  // FIXME: @蛋总 这个貌似并没有被调用
-  protected toKeybinding(index: number): SimpleKeybinding | null {
-    if (index >= this.keySequence.length) {
-      return null;
-    }
-    const keyCode = this.keySequence[index];
-    return new SimpleKeybinding(
-      keyCode.ctrl,
-      keyCode.shift,
-      keyCode.alt,
-      keyCode.meta,
-      KEY_CODE_MAP[keyCode.key!.keyCode],
-    );
-  }
-
   public getParts(): ResolvedKeybindingPart[] {
     return this.parts.map((part) => new ResolvedKeybindingPart(
       part.modifiers.ctrlKey,
@@ -96,4 +81,41 @@ export class MonacoResolvedKeybinding extends ResolvedKeybinding {
     return '';
   }
 
+  static keyCode(keybinding: SimpleKeybinding): KeyCode {
+    const keyCode = keybinding.keyCode;
+    const sequence: Keystroke = {
+      first: Key.getKey(this.monaco2BrowserKeyCode(keyCode & 0xff)),
+      modifiers: [],
+    };
+    if (keybinding.ctrlKey) {
+      if (isOSX) {
+        sequence.modifiers!.push(KeyModifier.MacCtrl);
+      } else {
+        sequence.modifiers!.push(KeyModifier.CtrlCmd);
+      }
+    }
+    if (keybinding.shiftKey) {
+      sequence.modifiers!.push(KeyModifier.Shift);
+    }
+    if (keybinding.altKey) {
+      sequence.modifiers!.push(KeyModifier.Alt);
+    }
+    if (keybinding.metaKey && sequence.modifiers!.indexOf(KeyModifier.CtrlCmd) === -1) {
+      sequence.modifiers!.push(KeyModifier.CtrlCmd);
+    }
+    return KeyCode.createKeyCode(sequence);
+  }
+
+  static keySequence(keybinding: ChordKeybinding): KeySequence {
+    return keybinding.parts.map((part) => this.keyCode(part));
+  }
+
+  static monaco2BrowserKeyCode(keyCode: MonacoKeyCode): number {
+    for (let i = 0; i < KEY_CODE_MAP.length; i++) {
+      if (KEY_CODE_MAP[i] === keyCode) {
+        return i;
+      }
+    }
+    return -1;
+  }
 }

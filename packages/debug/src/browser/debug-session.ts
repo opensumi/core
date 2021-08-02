@@ -26,6 +26,7 @@ import { DebugModelManager } from './editor/debug-model-manager';
 import { CancellationTokenSource, CancellationToken, Disposable } from '@ali/ide-core-common';
 import { ITerminalApiService, TerminalOptions } from '@ali/ide-terminal-next';
 import { ExpressionContainer } from './tree/debug-tree-node.define';
+import { DebugEditor } from './../common/debug-editor';
 
 export enum DebugState {
   Inactive,
@@ -926,7 +927,7 @@ export class DebugSession implements IDebugSession {
 
   // Cancellation end
 
-  getDebugProtocolBreakpoint(breakpointId: string): DebugProtocol.Breakpoint | undefined {
+  public getDebugProtocolBreakpoint(breakpointId: string): DebugProtocol.Breakpoint | undefined {
     const data = this.breakpoints.getBreakpoints().find((bp) => bp.id === breakpointId);
     if (data) {
       const status = data.status.get(this.id);
@@ -945,5 +946,9 @@ export class DebugSession implements IDebugSession {
       return bp;
     }
     return undefined;
+  }
+
+  public currentEditor(): DebugEditor | undefined {
+    return this.modelManager.model?.editor;
   }
 }

@@ -353,6 +353,7 @@ export const TitleActionList: React.FC<{
               <CustomActionWidget
                 context={context}
                 data={item as ComponentMenuItemNode}
+                key={(item as ComponentMenuItemNode).nodeId}
               />
             );
           }

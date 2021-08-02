@@ -395,7 +395,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
         injector.overrideProviders({
           token: EditorCollectionService,
           useValue: {
-            createDiffEditor: async () => {
+            createDiffEditor: () => {
               return {
                 compare: mockCompare,
                 originalEditor: { monacoEditor: originalMonacoEditor },

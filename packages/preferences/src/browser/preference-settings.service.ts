@@ -359,6 +359,7 @@ export const defaultSettingSections: {
         { id: 'editor.fontSize', localized: 'preference.editor.fontSize' },
         { id: 'editor.fontWeight', localized: 'preference.editor.fontWeight' },
         { id: 'editor.fontFamily', localized: 'preference.editor.fontFamily' },
+        { id: 'editor.lineHeight', localized: 'preference.editor.lineHeight' },
         // 缩进
         { id: 'editor.detectIndentation', localized: 'preference.editor.detectIndentation' },
         { id: 'editor.tabSize', localized: 'preference.editor.tabSize' },
@@ -428,6 +429,7 @@ export const defaultSettingSections: {
         { id: 'output.enableSmartScroll', localized: 'output.enableSmartScroll' },
         // 调试
         { id: 'debug.console.filter.mode', localized: 'preference.debug.console.filter.mode' },
+        { id: 'debug.console.wordWrap', localized: 'preference.debug.console.wordWrap' },
         { id: 'debug.inline.values', localized: 'preference.debug.inline.values' },
       ],
     },

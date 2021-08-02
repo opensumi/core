@@ -241,6 +241,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
     modelContentRegistry.registerEditorDocumentModelContentProvider(injector.get(FileSchemeDocumentProvider));
     workspaceService = injector.get(IWorkspaceService);
     eventBus = injector.get(IEventBus);
+    await (injector.get(IEditorDocumentModelService) as EditorDocumentModelServiceImpl).initialize();
     done();
   });
   afterAll(() => {

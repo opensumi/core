@@ -137,7 +137,7 @@ describe('MainThreadDecorationAPI Test Suites ', () => {
     const extDecoProvider2 = new class implements vscode.DecorationProvider {
       onDidChangeDecorations = Event.None;
       provideDecoration(uri: Uri, token: CancellationToken) {
-        return new Promise<vscode.DecorationData>((resolve) => {
+        return new Promise<vscode.Decoration>((resolve) => {
           setTimeout(() => {
             return resolve({
               letter: 'A',

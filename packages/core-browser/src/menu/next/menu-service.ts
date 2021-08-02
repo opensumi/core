@@ -15,9 +15,9 @@ export class MenuServiceImpl implements AbstractMenuService {
   private readonly injector: Injector;
 
   @Autowired(IContextKeyService)
-  globalCtxKeyService: IContextKeyService;
+  private readonly globalCtxKeyService: IContextKeyService;
 
-  createMenu(id: MenuId | string, contextKeyService?: IContextKeyService): IMenu {
+  public createMenu(id: MenuId | string, contextKeyService?: IContextKeyService): IMenu {
     return this.injector.get(Menu, [id, contextKeyService || this.globalCtxKeyService]);
   }
 }
@@ -25,7 +25,7 @@ export class MenuServiceImpl implements AbstractMenuService {
 @Injectable()
 class Menu extends Disposable implements IMenu {
   private readonly _onDidChange = new Emitter<IMenu | undefined>();
-  get onDidChange(): Event<IMenu | undefined> {
+  public get onDidChange(): Event<IMenu | undefined> {
     return this._onDidChange.event;
   }
 
@@ -52,16 +52,14 @@ class Menu extends Disposable implements IMenu {
     super();
     this._build();
 
-    // rebuild this menu whenever the menu registry reports an
-    // event for this MenuId
+    // rebuild this menu whenever the menu registry reports an event for this MenuId
     this.addDispose(Event.debounce(
       Event.filter(this.menuRegistry.onDidChangeMenu, (menuId) => menuId === this.id),
       () => { },
       50,
     )(this._build, this));
 
-    // when context keys change we need to check if the menu also
-    // has changed
+    // when context keys change we need to check if the menu also has changed
     this.addDispose(Event.debounce<ContextKeyChangeEvent, boolean>(
       this.contextKeyService.onDidChangeContext,
       (last, event) => last || event.payload.affectsSome(this._contextKeys),
@@ -109,7 +107,7 @@ class Menu extends Disposable implements IMenu {
     this._onDidChange.fire(this);
   }
 
-  getMenuNodes(config: IMenuNodeOptions = {}): Array<[MenuId | string, Array<MenuItemNode | SubmenuItemNode | ComponentMenuItemNode>]> {
+  public getMenuNodes(config: IMenuNodeOptions = {}): Array<[MenuId | string, Array<MenuItemNode | SubmenuItemNode | ComponentMenuItemNode>]> {
     const result: [MenuId | string, Array<MenuItemNode | SubmenuItemNode | ComponentMenuItemNode>][] = [];
     for (const group of this._menuGroups) {
       const [id, items] = group;

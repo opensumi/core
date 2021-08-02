@@ -105,7 +105,7 @@ export class OutputService extends WithEventBus {
   }
 
   public async initOuputMonacoInstance(container: HTMLDivElement) {
-    this.outputEditor = (await this.editorCollectionService.createCodeEditor(container, {
+    this.outputEditor = this.editorCollectionService.createCodeEditor(container, {
       automaticLayout: true,
       minimap: {
         enabled: false,
@@ -124,7 +124,7 @@ export class OutputService extends WithEventBus {
       glyphMargin: false,
       scrollBeyondLastLine: false,
       scrollBeyondLastColumn: 0,
-    }));
+    });
 
     this.addDispose(this.outputEditor.monacoEditor.onMouseUp((e) => {
       /**

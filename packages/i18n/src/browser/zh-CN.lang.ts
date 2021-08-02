@@ -103,6 +103,8 @@ export const localizationBundle = {
     'editor.closeToRight': '关闭到右侧',
     'editor.cannotSaveWithoutDirectory': '请选择要保存的路径',
     'editor.failToOpen': '打开文件 {0} 失败, 请确认文件是否存在。详细错误信息: {1}',
+    'editor.lineHeight': '行高',
+    'editor.lineHeight.description': '控制行高。\r\n - 使用 0 根据字号自动计算行高。\r\n - 介于 0 和 8 之间的值将用作字号的乘数。\r\n - 大于 8 的值将用作有效值。',
 
     'editor.workspaceSymbol.quickopen': '搜索工作区符号',
     'editor.workspaceSymbolClass.quickopen': '搜索工作区类',
@@ -244,6 +246,7 @@ export const localizationBundle = {
     'debug.console.copyAll': '复制全部',
     'debug.console.collapseAll': '折叠全部',
     'debug.console.followLink': '按住 {0} 并单击可访问链接',
+    'debug.console.input.placeholder': '请发起调试会话来对表达式求值',
 
     'output.tabbar.title': '输出',
     'output.channel.none': '<还没有任何输出>',
@@ -352,6 +355,7 @@ export const localizationBundle = {
     'preference.debug.console.filter.mode': '调试控制台筛选器模式',
     'preference.debug.console.filter.mode.filter': '过滤模式',
     'preference.debug.console.filter.mode.matcher': '匹配模式',
+    'preference.debug.console.wordWrap': '控制是否应在调试控制台中换行',
     'preference.debug.inline.values': '当处于调试过程中时，在编辑器中内联显示变量值',
     'preference.explorer.compactFolders': '文件夹紧凑模式下，单个子文件夹将被压缩在组合的树元素中，对 Java 包结构很有用。',
     'preference.explorer.compactFolders.title': '资源管理器：文件夹紧凑模式',

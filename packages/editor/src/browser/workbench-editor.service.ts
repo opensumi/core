@@ -1,7 +1,7 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult, IEditorGroupState, ResourceDecorationChangeEvent, IUntitledOptions, SaveReason, getSplitActionFromDragDrop } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider, Emitter, formatLocalize, IReporterService, ILogger } from '@ali/ide-core-common';
+import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider, Emitter, formatLocalize, IReporterService, ILogger, ReadyEvent } from '@ali/ide-core-common';
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution, ResourceOpenTypeChangedEvent, EditorComponentDisposeEvent, EditorActiveResourceStateChangedEvent, CodeEditorDidVisibleEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
@@ -512,10 +512,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   public grid: EditorGrid;
 
-  private codeEditorReady: Deferred<any> = new Deferred<any>();
-
-  private diffEditorReady: Deferred<any> = new Deferred<any>();
-
   private holdDocumentModelRefs: Map<string, IEditorDocumentModelRef> = new Map();
 
   private readonly toDispose: monaco.IDisposable[] = [];
@@ -543,6 +539,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   private resourceOpenHistory: URI[] = [];
 
   private _domNode: MaybeNull<HTMLElement> = null;
+
+  private codeEditorReady = new ReadyEvent();
+
+  private diffEditorReady = new ReadyEvent();
+
+  private _restoringState: boolean = false;
 
   constructor(public readonly name: string) {
     super();
@@ -729,6 +731,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   private notifyTabChanged() {
+    if (this._restoringState) {
+      return;
+    }
     this._onDidEditorGroupTabChanged.fire();
   }
 
@@ -782,8 +787,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
-  async createEditor(dom: HTMLElement) {
-    this.codeEditor = await this.collectionService.createCodeEditor(dom, {}, {
+  createEditor(dom: HTMLElement) {
+    this.codeEditor = this.collectionService.createCodeEditor(dom, {}, {
       [ServiceNames.CONTEXT_KEY_SERVICE]:  (this.contextKeyService as any).contextKeyService,
     });
     setTimeout(() => {
@@ -825,11 +830,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       type: 'code',
       editorId: this.codeEditor.getId(),
     }));
-    this.codeEditorReady.resolve();
+    this.codeEditorReady.ready();
   }
 
-  async createDiffEditor(dom: HTMLElement) {
-    this.diffEditor = await this.collectionService.createDiffEditor(dom, {}, {
+  createDiffEditor(dom: HTMLElement) {
+    this.diffEditor = this.collectionService.createDiffEditor(dom, {}, {
       [ServiceNames.CONTEXT_KEY_SERVICE]: (this.contextKeyService as any).contextKeyService,
     });
     setTimeout(() => {
@@ -868,7 +873,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       type: 'diff',
       editorId: this.diffEditor.modifiedEditor.getId(),
     }));
-    this.diffEditorReady.resolve();
+    this.diffEditorReady.ready();
   }
 
   async split(action: EditorGroupSplitAction, uri: URI, options?: IResourceOpenOptions) {
@@ -1118,75 +1123,77 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
 
       if (activeOpenType.type === 'code') {
-        await this.codeEditorReady.promise;
-        await this.codeEditor.open(await this.getDocumentModelRef(resource.uri), options.range ? new monaco.Range(options.range.startLineNumber!, options.range.startColumn!, options.range.endLineNumber!, options.range.endColumn!) : undefined);
-        setTimeout(() => {
-          if (options.scrollTop) {
-            this.codeEditor.monacoEditor.setScrollTop(options.scrollTop!);
-          }
-          if (options.scrollLeft) {
-            this.codeEditor.monacoEditor.setScrollLeft(options.scrollLeft!);
-          }
-        }, 0);
+        const documentRef = await this.getDocumentModelRef(resource.uri);
+        await this.codeEditorReady.onceReady(async () => {
+          await this.codeEditor.open(documentRef, options.range ? new monaco.Range(options.range.startLineNumber!, options.range.startColumn!, options.range.endLineNumber!, options.range.endColumn!) : undefined);
+          setTimeout(() => {
+            if (options.scrollTop) {
+              this.codeEditor.monacoEditor.setScrollTop(options.scrollTop!);
+            }
+            if (options.scrollLeft) {
+              this.codeEditor.monacoEditor.setScrollLeft(options.scrollLeft!);
+            }
+          }, 0);
 
-        if (options.focus) {
-          this._domNode?.focus();
-          // monaco 编辑器的 focus 多了一步检查，由于此时其实对应编辑器的 dom 的 display 为 none （需要等 React 下一次渲染才会改变为 block）,
-          // 会引起 document.activeElement !== editor.textArea.domNode，进而会导致focus失败
-          // 需要等待真正 append 之后再
-          const disposer = this.eventBus.on(CodeEditorDidVisibleEvent, (e) => {
-            if (e.payload.groupName === this.name && e.payload.type === 'code') {
-              disposer.dispose();
-              // 此处必须多做一些检查以免不必要的 focus
-              if (this.disposed) {
-                return;
-              }
-              if (this !== this.workbenchEditorService.currentEditorGroup) {
-                return;
-              }
-              if (this.currentEditor === this.codeEditor && this.codeEditor.currentUri?.isEqual(resource.uri)) {
-                try {
-                  this.codeEditor.focus();
-                } catch (e) {
-                  // noop
+          if (options.focus) {
+            this._domNode?.focus();
+            // monaco 编辑器的 focus 多了一步检查，由于此时其实对应编辑器的 dom 的 display 为 none （需要等 React 下一次渲染才会改变为 block）,
+            // 会引起 document.activeElement !== editor.textArea.domNode，进而会导致focus失败
+            // 需要等待真正 append 之后再
+            const disposer = this.eventBus.on(CodeEditorDidVisibleEvent, (e) => {
+              if (e.payload.groupName === this.name && e.payload.type === 'code') {
+                disposer.dispose();
+                // 此处必须多做一些检查以免不必要的 focus
+                if (this.disposed) {
+                  return;
+                }
+                if (this !== this.workbenchEditorService.currentEditorGroup) {
+                  return;
+                }
+                if (this.currentEditor === this.codeEditor && this.codeEditor.currentUri?.isEqual(resource.uri)) {
+                  try {
+                    this.codeEditor.focus();
+                  } catch (e) {
+                    // noop
+                  }
                 }
               }
-            }
-          });
-        }
-
+            });
+          }
+        });
         // 可能在diff Editor中修改导致为脏
-        if (this.codeEditor.currentDocumentModel!.dirty) {
+        if (documentRef.instance!.dirty) {
           this.pinPreviewed(resource.uri);
         }
       } else if (activeOpenType.type === 'diff') {
         const diffResource = resource as IDiffResource;
-        await this.diffEditorReady.promise;
         const [original, modified] = await Promise.all([this.getDocumentModelRef(diffResource.metadata!.original), this.getDocumentModelRef(diffResource.metadata!.modified)]);
-        await this.diffEditor.compare(original, modified, options, resource.uri);
-        if (options.focus) {
-          this._domNode?.focus();
-          // 理由见上方 codeEditor.focus 部分
+        await this.diffEditorReady.onceReady( async () => {
+          await this.diffEditor.compare(original, modified, options, resource.uri);
+          if (options.focus) {
+            this._domNode?.focus();
+            // 理由见上方 codeEditor.focus 部分
 
-          const disposer = this.eventBus.on(CodeEditorDidVisibleEvent, (e) => {
-            if (e.payload.groupName === this.name && e.payload.type === 'diff') {
-              disposer.dispose();
-              if (this.disposed) {
-                return;
-              }
-              if (this !== this.workbenchEditorService.currentEditorGroup) {
-                return;
-              }
-              if (this.currentEditor === this.diffEditor.modifiedEditor) {
-                try {
-                  this.diffEditor.focus();
-                } catch (e) {
-                  // noop
+            const disposer = this.eventBus.on(CodeEditorDidVisibleEvent, (e) => {
+              if (e.payload.groupName === this.name && e.payload.type === 'diff') {
+                disposer.dispose();
+                if (this.disposed) {
+                  return;
+                }
+                if (this !== this.workbenchEditorService.currentEditorGroup) {
+                  return;
+                }
+                if (this.currentEditor === this.diffEditor.modifiedEditor) {
+                  try {
+                    this.diffEditor.focus();
+                  } catch (e) {
+                    // noop
+                  }
                 }
               }
-            }
-          });
-        }
+            });
+          }
+        });
       } else if (activeOpenType.type === 'component') {
         const component = this.editorComponentRegistry.getEditorComponent(activeOpenType.componentId as string);
         const initialProps = this.editorComponentRegistry.getEditorInitialProps(activeOpenType.componentId as string);
@@ -1582,6 +1589,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   async restoreState(state: IEditorGroupState) {
+    this._restoringState = true;
     this.previewURI = state.uris[state.previewIndex] ? null : new URI(state.uris[state.previewIndex]);
     for (const uri of state.uris) {
       await this.doOpen(new URI(uri), { disableNavigate: true, backend: true, preview: false, deletedPolicy: 'skip' });
@@ -1601,6 +1609,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }
       }
     }
+    this._restoringState = false;
+    this.notifyTabChanged();
   }
 
   async saveAll(includeUntitled?: boolean, reason?: SaveReason) {

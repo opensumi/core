@@ -223,8 +223,8 @@ export abstract class ResizeZoneWidget extends ZoneWidget {
   ) {
     super(editor);
     this.lineHeight = this.editor.getOption(monaco.editor.EditorOption.lineHeight);
-    this.addDispose(this.editor.onDidChangeConfiguration(({ hasChanged }) => {
-      if (hasChanged(monaco.editor.EditorOption.lineHeight)) {
+    this.addDispose(this.editor.onDidChangeConfiguration((e) => {
+      if (e.hasChanged(monaco.editor.EditorOption.lineHeight)) {
         this.lineHeight = this.editor.getOption(monaco.editor.EditorOption.lineHeight);
         if (this.wrap) {
           this.resizeZoneWidget();

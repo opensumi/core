@@ -530,14 +530,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param separator
    */
   public acceleratorForKeyCode(keyCode: KeyCode, separator: string = ' '): string {
-    const keyCodeResult: any[] = [];
-    if (keyCode.meta) {
-      if (isOSX) {
-        keyCodeResult.push(SpecialCases.MACMETA);
-      } else {
-        keyCodeResult.push(this.capitalizeFirstLetter(SpecialCases.META));
-      }
-    }
+    const keyCodeResult: string[] = [];
     if (keyCode.ctrl) {
       keyCodeResult.push(this.capitalizeFirstLetter(SpecialCases.CTRL));
     }
@@ -546,6 +539,13 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
     }
     if (keyCode.shift) {
       keyCodeResult.push(this.capitalizeFirstLetter(SpecialCases.SHIFT));
+    }
+    if (keyCode.meta) {
+      if (isOSX) {
+        keyCodeResult.push(SpecialCases.MACMETA);
+      } else {
+        keyCodeResult.push(this.capitalizeFirstLetter(SpecialCases.META));
+      }
     }
     if (keyCode.key) {
       keyCodeResult.push(this.acceleratorForKey(keyCode.key));
@@ -794,10 +794,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
       clearTimeout(this.keySequenceTimer);
     }
     const keyCode = KeyCode.createKeyCode(event);
-    // 当传入的Keycode仅为修饰符，忽略，等待下次输入
-    if (keyCode.isModifierOnly()) {
-      return;
-    }
 
     this.keyboardLayoutService.validateKeyCode(keyCode);
     this.keySequence.push(keyCode);

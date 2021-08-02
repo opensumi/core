@@ -13,6 +13,9 @@ export class ProtocolElectronMainContribution implements ElectronMainContributio
     scheme: 'vscode-resource',
     privileges: {
       secure: true,
+      bypassCSP: true,
+      standard: true,
+      supportFetchAPI: true,
     },
   }];
 

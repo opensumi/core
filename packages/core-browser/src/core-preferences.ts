@@ -279,6 +279,10 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: false,
     },
+    'debug.console.wordWrap': {
+      type: 'boolean',
+      default: true,
+    },
     'toolbar.ignoreActions': {
       type: 'object',
       patternProperties: {

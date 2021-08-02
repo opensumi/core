@@ -61,6 +61,9 @@
       "path": "./references/tsconfig.monaco-enhance.json"
     },
     {
+      "path": "./references/tsconfig.decoration.json"
+    },
+    {
       "path": "./references/tsconfig.scm.json"
     },
     {
@@ -68,9 +71,6 @@
     },
     {
       "path": "./references/tsconfig.workspace-edit.json"
-    },
-    {
-      "path": "./references/tsconfig.decoration.json"
     },
     {
       "path": "./references/tsconfig.menu-bar.json"

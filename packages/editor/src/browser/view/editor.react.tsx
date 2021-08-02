@@ -29,19 +29,14 @@ export const CodeEditor = (props: ICodeEditorProps) => {
       if (editor) {
         editor.dispose();
       }
-      editorCollectionService.createCodeEditor(container.current, {
+      const e = editorCollectionService.createCodeEditor(container.current, {
         automaticLayout: true,
         ...props.options,
-      }).then((e) => {
-        if (canceled) {
-          e.dispose();
-          return;
-        }
-        setEditor(e);
-        if (documentModelRef) {
-          e.open(documentModelRef);
-        }
       });
+      setEditor(e);
+      if (documentModelRef) {
+        e.open(documentModelRef);
+      }
     }
     return () => {
       canceled = true;

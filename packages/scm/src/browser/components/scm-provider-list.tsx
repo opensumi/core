@@ -10,7 +10,7 @@ import { ICtxMenuRenderer, MenuId, AbstractContextMenuService } from '@ali/ide-c
 import { ISCMRepository } from '../../common';
 import { getSCMRepositoryDesc } from '../scm-util';
 
-import * as styles from './scm-select.module.less';
+import * as styles from './scm-provider-list.module.less';
 
 const SCMProvider: React.FC<{
   repository: ISCMRepository;
@@ -60,7 +60,7 @@ const SCMProvider: React.FC<{
   );
 };
 
-export const SCMRepoSelect: React.FC<{
+export const SCMProviderList: React.FC<{
   repositoryList: ISCMRepository[];
   selectedRepository?: ISCMRepository;
   viewState: ViewState;
@@ -110,3 +110,5 @@ export const SCMRepoSelect: React.FC<{
     </div>
   );
 };
+
+SCMProviderList.displayName = 'SCMProviderList';

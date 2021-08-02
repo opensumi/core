@@ -130,9 +130,6 @@ class MainThreadSCMProvider implements ISCMProvider {
   private _onDidChange = new Emitter<void>();
   readonly onDidChange: Event<void> = this._onDidChange.event;
 
-  @Autowired(SCMService)
-  protected scmService: SCMService;
-
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
@@ -274,7 +271,7 @@ class MainThreadSCMProvider implements ISCMProvider {
 @Injectable({ multiple: true })
 export class MainThreadSCM extends Disposable implements IMainThreadSCMShape {
   @Autowired(SCMService)
-  protected scmService: SCMService;
+  private readonly scmService: SCMService;
 
   private readonly _proxy: IExtHostSCMShape;
   private _repositories = new Map<number, ISCMRepository>();
