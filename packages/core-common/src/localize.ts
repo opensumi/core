@@ -1,8 +1,8 @@
 import { format, mnemonicButtonLabel } from './utils/strings';
 
-export type ILocalizationKey = string; //ts不支持symbol作为key
+export type ILocalizationKey = string; // ts不支持symbol作为key
 
-// 在当前模块中作为某种语言的标识，需要全小写以屏蔽差异
+// 仅在当前模块中作为用户使用语言的标识，需要全小写以屏蔽差异
 let _currentLanguageId: string = 'zh-cn';
 
 const localizationRegistryMap = new Map<string, ILocalizationRegistry>();
@@ -117,7 +117,7 @@ function getLocalizationRegistry(scope: string): LocalizationRegistry {
 
 /**
  * 含有占位符标识的字段转换，字段为 falsy 的时候返回该字段
- * 占位符找不到时返回 fallback 值(默认为undefined)
+ * 占位符找不到时返回 fallback 值(默认为 undefined)
  * @param label 要转换的字段
  * @param scope 默认为 host
  * @param fallback 默认为 undefined
