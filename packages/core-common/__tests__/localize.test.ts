@@ -73,5 +73,7 @@ describe('localize test', () => {
 
     expect(replaceLocalizePlaceholder('someMessage')).toEqual('someMessage');
     expect(replaceLocalizePlaceholder('%someMessage%')).toEqual('因为相信，所以看见');
+    expect(replaceLocalizePlaceholder('%NotExists%')).toEqual('');
+    expect(replaceLocalizePlaceholder('%NotExists%', 'host','fallback')).toEqual('fallback');
   })
 })
