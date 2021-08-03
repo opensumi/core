@@ -30,6 +30,7 @@ export const FileTree = ({
   const filetreeService = useInjectable<FileTreeService>(IFileTreeService);
   const { decorationService, labelService, iconService, locationToCurrentFile, filterMode: defaultFilterMode, indent: defaultIndent, baseIndent: defaultBaseIndent } = filetreeService;
   const fileTreeModelService = useInjectable<FileTreeModelService>(FileTreeModelService);
+  const fileTreeService = useInjectable<FileTreeService>(IFileTreeService);
 
   const [treeIndent, setTreeIndent] = React.useState<ITreeIndent>({
     indent: defaultIndent,
@@ -129,6 +130,7 @@ export const FileTree = ({
       setFilterMode(flag);
     }));
     return () => {
+      disposable.dispose();
       fileTreeModelService.removeFileDecoration();
       disposable.dispose();
     };
@@ -139,6 +141,9 @@ export const FileTree = ({
       fileTreeModelService.handleTreeBlur();
     };
     wrapperRef.current?.addEventListener('blur', handleBlur, true);
+    if (wrapperRef.current) {
+      fileTreeService.initContextKey(wrapperRef.current);
+    }
     return () => {
       wrapperRef.current?.removeEventListener('blur', handleBlur, true);
       fileTreeModelService.handleTreeBlur();

@@ -82,13 +82,6 @@ export class MonacoQuickOpenService implements QuickOpenService {
     this.opts = opts;
     const widget = this.widget;
 
-    const activeContext = window.document.activeElement || undefined;
-
-    if (!activeContext || !this.container.contains(activeContext)) {
-      this.previousActiveElement = activeContext;
-      this.monacoContextKeyService.activeContext = activeContext instanceof HTMLElement ? activeContext : undefined;
-    }
-
     widget.show(this.opts.prefix || '', {
       placeholder: opts.inputAriaLabel,
       password: opts.password,
@@ -135,7 +128,6 @@ export class MonacoQuickOpenService implements QuickOpenService {
           }
         },
         onHide: () => {
-          this.monacoContextKeyService.activeContext = undefined;
           this.inQuickOpenContextKey.set(false);
         },
         onSelect: (item: QuickOpenItem, index: number) => {

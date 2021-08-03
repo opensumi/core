@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import {
   CommandService,
   IContextKeyService,
@@ -68,14 +68,16 @@ export class FileTreeService extends Tree implements IFileTreeService {
   @Autowired(IFileServiceClient)
   private readonly fileServiceClient: IFileServiceClient;
 
-  @Autowired(FileContextKey)
-  private readonly fileTreeContextKey: FileContextKey;
-
   @Autowired(IIconService)
   public readonly iconService: IIconService;
 
   @Autowired(IApplicationService)
   private readonly appService: IApplicationService;
+
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
+  private fileContextKey: FileContextKey;
 
   private _contextMenuContextKeyService: IContextKeyService;
 
@@ -159,6 +161,10 @@ export class FileTreeService extends Tree implements IFileTreeService {
     this._isCompactMode = value;
   }
 
+  get contextKey() {
+    return this.fileContextKey;
+  }
+
   async init() {
     this._roots = await this.workspaceService.roots;
 
@@ -203,6 +209,12 @@ export class FileTreeService extends Tree implements IFileTreeService {
         this.refresh();
       }
     }));
+  }
+
+  initContextKey(dom: HTMLDivElement) {
+    if (!this.fileContextKey) {
+      this.fileContextKey = this.injector.get(FileContextKey, [dom]);
+    }
   }
 
   public startWatchFileEvent() {
@@ -806,7 +818,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
   public toggleFilterMode() {
     this._filterMode = !this.filterMode;
     this.onFilterModeChangeEmitter.fire(this.filterMode);
-    this.fileTreeContextKey.filesExplorerFilteredContext.set(this.filterMode);
+    this.fileContextKey.filesExplorerFilteredContext.set(this.filterMode);
     // 清理掉输入值
     if (this.filterMode === false) {
       // 退出时若需要做 filter 值清理以及聚焦操作

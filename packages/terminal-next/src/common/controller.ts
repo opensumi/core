@@ -25,6 +25,7 @@ export interface ITerminalController extends Disposable {
   clients: Map<string, ITerminalClient>;
   activeClient?: ITerminalClient;
   themeBackground: string;
+  initContextKey(dom: HTMLDivElement): void;
   firstInitialize(): void;
   recovery(history: ITerminalBrowserHistory): Promise<void>;
   reconnect(): Promise<void>;

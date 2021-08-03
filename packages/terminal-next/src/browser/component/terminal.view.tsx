@@ -17,6 +17,7 @@ export default observer(() => {
   const { errors } = errorService;
   const { groups, currentGroupIndex, currentGroupId } = view;
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   search.onOpen(() => {
     if (inputRef.current) {
@@ -55,8 +56,15 @@ export default observer(() => {
     search.close();
   };
 
+  React.useEffect(() => {
+    if (wrapperRef.current) {
+      controller.initContextKey(wrapperRef.current);
+    }
+  }, [wrapperRef.current]);
+
   return (
     <div
+      ref={ wrapperRef }
       className={ styles.terminalWrapper }
       style={ { backgroundColor: controller.themeBackground } }
       data-group-current={ currentGroupId }

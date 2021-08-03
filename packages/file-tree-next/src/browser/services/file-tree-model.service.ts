@@ -65,9 +65,6 @@ export class FileTreeModelService {
   @Autowired(LabelService)
   private readonly labelService: LabelService;
 
-  @Autowired(FileContextKey)
-  private readonly fileTreeContextKey: FileContextKey;
-
   @Autowired(IMessageService)
   private readonly messageService: IMessageService;
 
@@ -218,6 +215,10 @@ export class FileTreeModelService {
     return this._contextMenuResourceContext;
   }
 
+  get contextKey() {
+    return this.fileTreeService.contextKey;
+  }
+
   async initTreeModel() {
     // 根据是否为多工作区创建不同根节点
     const root = (await this.fileTreeService.resolveChildren())[0];
@@ -336,7 +337,7 @@ export class FileTreeModelService {
    */
   private setFileTreeContextKey(file: Directory | File) {
     const isSingleFolder = !this.fileTreeService.isMultipleWorkspace;
-    this.fileTreeContextKey.explorerFolder.set((isSingleFolder && !file) || !!file && Directory.is(file));
+    this.contextKey?.explorerFolder.set((isSingleFolder && !file) || !!file && Directory.is(file));
     this.currentContextUriContextKey.set(file.uri.toString());
     this.currentRelativeUriContextKey.set(((this.treeModel.root as Directory).uri.relative(file.uri) || '').toString());
     this.contextMenuResourceContext.set(file.uri);
@@ -607,36 +608,36 @@ export class FileTreeModelService {
 
   setExplorerCompressedContextKey(node?: File | Directory, activeUri?: URI) {
     if (node && activeUri) {
-      this.fileTreeContextKey.explorerCompressedFocusContext.set(true);
+      this.contextKey?.explorerCompressedFocusContext.set(true);
       const compressedNamePath = new Path(node.name);
       if (compressedNamePath.name === activeUri.displayName) {
         // 压缩节点末尾位置选中
-        this.fileTreeContextKey.explorerCompressedLastFocusContext.set(true);
-        this.fileTreeContextKey.explorerCompressedFirstFocusContext.set(false);
+        this.contextKey?.explorerCompressedLastFocusContext.set(true);
+        this.contextKey?.explorerCompressedFirstFocusContext.set(false);
       } else if (compressedNamePath.root && compressedNamePath.root.name === activeUri.displayName) {
         // 压缩节点开头位置选中
-        this.fileTreeContextKey.explorerCompressedLastFocusContext.set(false);
-        this.fileTreeContextKey.explorerCompressedFirstFocusContext.set(true);
+        this.contextKey?.explorerCompressedLastFocusContext.set(false);
+        this.contextKey?.explorerCompressedFirstFocusContext.set(true);
       } else {
         // 压缩节点中间位置选中
-        this.fileTreeContextKey.explorerCompressedLastFocusContext.set(false);
-        this.fileTreeContextKey.explorerCompressedFirstFocusContext.set(false);
+        this.contextKey?.explorerCompressedLastFocusContext.set(false);
+        this.contextKey?.explorerCompressedFirstFocusContext.set(false);
       }
     } else if (node) {
       // 默认情况下，如果一个节点为压缩节点，末尾位置选中
       if (node.name.indexOf(Path.separator) > 0) {
-        this.fileTreeContextKey.explorerCompressedFocusContext.set(true);
-        this.fileTreeContextKey.explorerCompressedFirstFocusContext.set(false);
-        this.fileTreeContextKey.explorerCompressedLastFocusContext.set(true);
+        this.contextKey?.explorerCompressedFocusContext.set(true);
+        this.contextKey?.explorerCompressedFirstFocusContext.set(false);
+        this.contextKey?.explorerCompressedLastFocusContext.set(true);
       } else {
-        this.fileTreeContextKey.explorerCompressedFocusContext.set(false);
-        this.fileTreeContextKey.explorerCompressedFirstFocusContext.set(false);
-        this.fileTreeContextKey.explorerCompressedLastFocusContext.set(false);
+        this.contextKey?.explorerCompressedFocusContext.set(false);
+        this.contextKey?.explorerCompressedFirstFocusContext.set(false);
+        this.contextKey?.explorerCompressedLastFocusContext.set(false);
       }
     } else {
-      this.fileTreeContextKey.explorerCompressedFocusContext.set(false);
-      this.fileTreeContextKey.explorerCompressedFirstFocusContext.set(false);
-      this.fileTreeContextKey.explorerCompressedLastFocusContext.set(false);
+      this.contextKey?.explorerCompressedFocusContext.set(false);
+      this.contextKey?.explorerCompressedFirstFocusContext.set(false);
+      this.contextKey?.explorerCompressedLastFocusContext.set(false);
     }
   }
 
@@ -655,7 +656,7 @@ export class FileTreeModelService {
     if (this._isDisposed) {
       return;
     }
-    this.fileTreeContextKey.filesExplorerFocused.set(false);
+    this.contextKey?.filesExplorerFocused.set(false);
     // 失去焦点状态时，清理右键菜单的选中态
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
@@ -666,7 +667,7 @@ export class FileTreeModelService {
 
   handleTreeFocus = () => {
     // 激活面板
-    this.fileTreeContextKey.filesExplorerFocused.set(true);
+    this.contextKey?.filesExplorerFocused.set(true);
   }
 
   handleItemRangeClick = (item: File | Directory, type: TreeNodeType) => {
@@ -905,9 +906,9 @@ export class FileTreeModelService {
       this.fileTreeService.deleteAffectedNodeByPath(effectNode.path);
     } else if (effectNode) {
       // 清空节点路径焦点态
-      this.fileTreeContextKey.explorerCompressedFocusContext.set(false);
-      this.fileTreeContextKey.explorerCompressedFirstFocusContext.set(false);
-      this.fileTreeContextKey.explorerCompressedLastFocusContext.set(false);
+      this.contextKey?.explorerCompressedFocusContext.set(false);
+      this.contextKey?.explorerCompressedFirstFocusContext.set(false);
+      this.contextKey?.explorerCompressedLastFocusContext.set(false);
       // 说明是异常情况或子路径删除
       this.fileTreeService.refresh((effectNode as File).parent as Directory);
     }
@@ -1197,7 +1198,7 @@ export class FileTreeModelService {
           }
         }
       }
-      this.fileTreeContextKey.filesExplorerInputFocused.set(false);
+      this.contextKey?.filesExplorerInputFocused.set(false);
       return true;
     };
 
@@ -1211,15 +1212,15 @@ export class FileTreeModelService {
       }
       if (!newName) {
         // 清空节点路径焦点态
-        this.fileTreeContextKey.explorerCompressedFocusContext.set(false);
-        this.fileTreeContextKey.explorerCompressedFirstFocusContext.set(false);
-        this.fileTreeContextKey.explorerCompressedLastFocusContext.set(false);
+        this.contextKey?.explorerCompressedFocusContext.set(false);
+        this.contextKey?.explorerCompressedFirstFocusContext.set(false);
+        this.contextKey?.explorerCompressedLastFocusContext.set(false);
         if (this.fileTreeService.isCompactMode && promptHandle instanceof NewPromptHandle) {
           this.fileTreeService.refresh(promptHandle.parent as Directory);
         }
         return;
       }
-      this.fileTreeContextKey.filesExplorerInputFocused.set(false);
+      this.contextKey?.filesExplorerInputFocused.set(false);
       await commit(newName);
       return true;
     };
@@ -1242,7 +1243,7 @@ export class FileTreeModelService {
       return true;
     };
     const handleFocus = async () => {
-      this.fileTreeContextKey.filesExplorerInputFocused.set(true);
+      this.contextKey?.filesExplorerInputFocused.set(true);
     };
     const handleDestroy = () => {
       if (this.contextMenuFile) {
@@ -1374,7 +1375,7 @@ export class FileTreeModelService {
           this.cutDecoration.removeTarget(file as File);
         }
       });
-      this.fileTreeContextKey.explorerResourceCut.set(false);
+      this.contextKey?.explorerResourceCut.set(false);
     }
     // 通知视图更新
     this.treeModel.dispatchChange();
@@ -1417,7 +1418,7 @@ export class FileTreeModelService {
         });
         this.fileTreeService.refresh();
       }
-      this.fileTreeContextKey.explorerResourceCut.set(false);
+      this.contextKey?.explorerResourceCut.set(false);
       // 更新视图
       this.treeModel.dispatchChange();
       this._pasteStore = {
@@ -1445,7 +1446,7 @@ export class FileTreeModelService {
 
   public cutFile = async (from: URI[]) => {
     if (from.length > 0) {
-      this.fileTreeContextKey.explorerResourceCut.set(true);
+      this.contextKey?.explorerResourceCut.set(true);
     }
     // 清理上一次剪切文件
     if (this._pasteStore && this._pasteStore.type === PasteTypes.CUT) {

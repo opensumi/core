@@ -686,7 +686,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
     commands.registerCommand(FILE_COMMANDS.FILTER_OPEN, {
       execute: () => {
         if (!this.fileTreeService.filterMode) {
-          this.fileTreeService.toggleFilterMode();
+          return this.fileTreeService.toggleFilterMode();
         }
       },
     });
@@ -729,67 +729,67 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
     bindings.registerKeybinding({
       command: FILE_COMMANDS.COPY_FILE.id,
       keybinding: 'ctrlcmd+c',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus && !inputFocus`,
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`,
     });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.PASTE_FILE.id,
       keybinding: 'ctrlcmd+v',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw} && !editorFocus && !inputFocus`,
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw}`,
     });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.CUT_FILE.id,
       keybinding: 'ctrlcmd+x',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus && !inputFocus`,
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`,
     });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.RENAME_FILE.id,
       keybinding: 'enter',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw} && !editorFocus && !inputFocus`,
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw}`,
     });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.DELETE_FILE.id,
       keybinding: 'ctrlcmd+backspace',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw} && !editorFocus && !inputFocus`,
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw}`,
     });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.FILTER_OPEN.id,
       keybinding: 'ctrlcmd+f',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus && !inputFocus`,
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`,
     });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.FILTER_CLOSE.id,
       keybinding: 'esc',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus && !inputFocus`,
+      when: `${FilesExplorerFocusedContext.raw} && ${FilesExplorerInputFocusedContext.raw}`,
     });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.NEXT.id,
       keybinding: 'down',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus && !inputFocus`,
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`,
     });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.PREV.id,
       keybinding: 'up',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus && !inputFocus`,
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`,
     });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.EXPAND.id,
       keybinding: 'right',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus && !inputFocus`,
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`,
     });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.COLLAPSE.id,
       keybinding: 'left',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus && !inputFocus`,
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`,
     });
 
     bindings.registerKeybinding({

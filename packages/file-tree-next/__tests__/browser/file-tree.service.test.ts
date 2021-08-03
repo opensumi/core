@@ -1,4 +1,5 @@
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { enableJSDOM } from '@ali/ide-core-browser/lib/mocks/jsdom';
 import { FileTreeService } from '../../src/browser/file-tree.service';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IContextKeyService, CorePreferences, Disposable, URI, EDITOR_COMMANDS, FILE_COMMANDS, ILoggerManagerClient, IApplicationService, isWindows, OS, isLinux } from '@ali/ide-core-browser';
@@ -55,6 +56,17 @@ describe('FileTree Service should be work alone', () => {
     directory.constructor = new TempDirectory().constructor;
     return directory;
   };
+
+  let disableJSDOM;
+
+  beforeAll(() => {
+    disableJSDOM = enableJSDOM();
+  });
+
+  afterAll(() => {
+    disableJSDOM();
+  });
+
   beforeEach(() => {
     injector = createBrowserInjector([]);
     onPreferenceChanged = jest.fn((valueChangeHandle) => {
@@ -155,6 +167,7 @@ describe('FileTree Service should be work alone', () => {
       },
     );
     fileTreeService = injector.get(IFileTreeService);
+    fileTreeService.initContextKey(document.createElement('div'));
   });
 
   afterEach(() => {

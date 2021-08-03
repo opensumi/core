@@ -263,8 +263,6 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
     );
   }
 
-  activeContext?: HTMLElement;
-
   createKey<T>(key: string, defaultValue: T | undefined): IContextKey<T> {
     return this.contextKeyService.createKey(key, defaultValue);
   }
@@ -331,8 +329,7 @@ export class MonacoContextKeyService extends BaseContextKeyService implements IC
   match(expression: string | ContextKeyExpr | undefined, context?: HTMLElement): boolean {
     try {
       // keybinding 将 html target 传递过来完成激活区域的 context 获取和匹配
-      // thiea 中是通过 activeElement 来搞 quickopen 的上下文的, 见 thiea/packages/monaco/src/browser/monaco-quick-open-service.ts
-      const ctx = context || this.activeContext || (window.document.activeElement instanceof HTMLElement ? window.document.activeElement : undefined);
+      const ctx = context || (window.document.activeElement instanceof HTMLElement ? window.document.activeElement : undefined);
       let parsed: ContextKeyExpr | undefined;
       if (typeof expression === 'string') {
         parsed = this.parse(expression);
@@ -340,18 +337,15 @@ export class MonacoContextKeyService extends BaseContextKeyService implements IC
         parsed = expression;
       }
 
-      // what's this?
-      // this contextKeyService 即当前 ctx key service 节点的 contextKeyService 啊
-      // 当前这个 ctx key service 即为根 ctx key service
+      // 如果匹配表达式时没有传入合适的 DOM，则使用全局 ContextKeyService 进行表达式匹配
       if (!ctx) {
-        // KeybindingResolver.contextMatchesRules 的 context 来自于 this._myContextId
         return this.contextKeyService.contextMatchesRules(parsed as any);
       }
 
-      // 自行指定 KeybindingResolver.contextMatchesRules 的 context，来自于当前的 ctx 元素的 context
+      // 自行指定 KeybindingResolver.contextMatchesRules 的 Context，来自于当前的激活元素的 Context
       // 如果 ctx 为 null 则返回 0 (应该是根 contextKeyService 的 context_id 即为 global 的 ctx key service)
-      // 找到 ctx dom 上的 context_id 属性 则直接返回
-      // 如果找不到 ctx dom 上的 context_id 返回 NaN
+      // 找到 ctx DOM 上的 context_id 属性 则直接返回
+      // 如果找不到 ctx DOM 上的 context_id 返回 NaN
       // 如果遍历到父节点为 html 时，其 parentElement 为 null，也会返回 0
       const keyContext = this.contextKeyService.getContext(ctx);
       return KeybindingResolver.contextMatchesRules(keyContext, parsed as any);

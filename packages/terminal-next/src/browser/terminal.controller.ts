@@ -1,5 +1,5 @@
 import { observable } from 'mobx';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { WithEventBus, Emitter, Deferred, Event, IDisposable, DisposableStore } from '@ali/ide-core-common';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
@@ -55,11 +55,13 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   @Autowired(ITerminalErrorService)
   protected readonly errorService: ITerminalErrorService;
 
-  @Autowired(TerminalContextKey)
-  protected readonly terminalContextKey: TerminalContextKey;
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
 
   @Autowired(AppConfig)
   config: AppConfig;
+
+  private terminalContextKey: TerminalContextKey;
 
   @observable
   themeBackground: string;
@@ -202,11 +204,18 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
   }
 
+  initContextKey(dom: HTMLDivElement) {
+    if (!this.terminalContextKey) {
+      this.terminalContextKey = this.injector.get(TerminalContextKey, [dom]);
+      this.terminalContextKey.isTerminalFocused.set(this._focus);
+      this.terminalContextKey.isTerminalViewInitialized.set(true);
+    }
+  }
+
   firstInitialize() {
+
     this._tabbarHandler = this.layoutService.getTabbarHandler(TerminalContainerId)!;
     this.themeBackground = this.terminalTheme.terminalTheme.background || '';
-    this.terminalContextKey.isTerminalFocused.set(this._focus);
-    this.terminalContextKey.isTerminalViewInitialized.set(true);
 
     this.addDispose(this.terminalView.onWidgetCreated((widget) => {
       this._createClientOrIgnore(widget, {});

@@ -18,8 +18,8 @@ export class FileContextKey {
   public readonly explorerCompressedFirstFocusContext: IContextKey<boolean>;
   public readonly explorerCompressedLastFocusContext: IContextKey<boolean>;
 
-  constructor(@Optional() contextKeyService: IContextKeyService) {
-    contextKeyService = contextKeyService || this.globalContextKeyService;
+  constructor(@Optional() dom: HTMLDivElement) {
+    const contextKeyService = this.globalContextKeyService.createScoped(dom);
     this.explorerFolder = ExplorerFolderContext.bind(contextKeyService);
     this.explorerFocused = ExplorerFocusedContext.bind(contextKeyService);
     this.explorerResourceCut = ExplorerResourceCut.bind(contextKeyService);
@@ -31,6 +31,5 @@ export class FileContextKey {
     this.explorerCompressedFocusContext = ExplorerCompressedFocusContext.bind(contextKeyService);
     this.explorerCompressedFirstFocusContext = ExplorerCompressedFirstFocusContext.bind(contextKeyService);
     this.explorerCompressedLastFocusContext = ExplorerCompressedLastFocusContext.bind(contextKeyService);
-
   }
 }
