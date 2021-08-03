@@ -159,13 +159,11 @@ export class ExtensionScanner {
   ) { }
 
   public async run(): Promise<IExtensionMetaData[]> {
-
     const scan = this.scan.map((dir) => {
       return resolvePath(dir);
     });
 
     await Promise.all(
-
       scan.map((dir) => {
         return this.scanDir(dir);
       }).concat(
@@ -237,7 +235,6 @@ export class ExtensionScanner {
   }
 
   public async getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData): Promise<IExtensionMetaData | undefined> {
-
     if (this.results.has(extensionPath)) {
       return;
     }

@@ -399,10 +399,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     for (const extension of extensions) {
       if (isLanguagePackExtension(extension.packageJSON)) {
         languagePackExtensions.push(extension);
-        continue;
       } else {
         normalExtensions.push(extension);
-        continue;
       }
     }
 

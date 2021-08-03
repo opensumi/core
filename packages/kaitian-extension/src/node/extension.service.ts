@@ -340,7 +340,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   private async processHandshake(extProcessId: number, forkTimer: IReporterTimer, clientId: string): Promise<void> {
     const extProcessInitDeferred = this.clientExtProcessInitDeferredMap.get(clientId);
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       const initHandler = (msg) => {
         if (msg === 'ready') {
           const duration = forkTimer.timeEnd();
@@ -427,7 +427,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         this.logger.error(e);
       }
 
-      await new Promise((resolve) => {
+      await new Promise<void>((resolve) => {
         mainThreadServer.listen(mainThreadListenPath, () => {
           this.logger.log(`electron mainThread listen on ${mainThreadListenPath}`);
           resolve();

@@ -56,6 +56,7 @@ export interface IExtensionInfo {
 
 export interface IExtensionProps extends IExtensionInfo {
   readonly name: string;
+  readonly displayName?: string;
   readonly activated: boolean;
   readonly enabled: boolean;
   readonly packageJSON: JSONType;
