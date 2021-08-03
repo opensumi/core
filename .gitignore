@@ -111,3 +111,6 @@ releaselog.md
 .devcontainer
 .devcontainer.Dockerfile
 .devcontainer.yml
+
+tools/electron/app
+tools/electron/extensions

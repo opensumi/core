@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-electron",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Kaitian IDE Electron 实践层",
   "main": "./app/dist/main/index.js",
   "scripts": {
@@ -48,6 +48,7 @@
     "y18n": "4.0.0"
   },
   "devDependencies": {
+    "@ali/ide-extension-installer": "^2.3.0",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.0.3",
     "css-loader": "^2.1.1",

@@ -1,15 +1,26 @@
+import { app } from 'electron';
 import { ElectronMainApp } from '@ali/ide-core-electron-main';
 import { URI } from '@ali/ide-core-common';
 import { join } from 'path';
-// import { ElectronMainWorkspaceModule } from '@ali/ide-workspace/lib/electron-main';
+import { MainModule } from './services';
 import { WebviewElectronMainModule } from '@ali/ide-webview/lib/electron-main';
+// import { ElectronMainWorkspaceModule } from '@ali/ide-workspace/lib/electron-main';
+
+const getExtensionDir = () => {
+  const appPath = app.getAppPath();
+  if (appPath.indexOf('app.asar') > -1) {
+    return join(appPath, './../extensions');
+  }
+  return join(appPath, './extensions'); // 相对于app的路径
+};
 
 const electronApp = new ElectronMainApp({
   browserNodeIntegrated: false,
   browserUrl: URI.file(join(__dirname, '../browser/index.html')).toString(),
   modules: [
-    // ElectronMainWorkspaceModule,
+    MainModule,
     WebviewElectronMainModule,
+    // ElectronMainWorkspaceModule,
   ],
   nodeEntry: join(__dirname, '../node/index.js'),
   extensionEntry: join(__dirname, '../extension/index.js'),
@@ -17,10 +28,9 @@ const electronApp = new ElectronMainApp({
   webviewPreload: join(__dirname, '../webview/host-preload.js'),
   plainWebviewPreload: join(__dirname, '../webview/plain-preload.js'),
   browserPreload: join(__dirname, '../browser/preload.js'),
-  extensionDir: join(__dirname, '../../../../extensions'), // 相对于app/dist的路径
+  extensionDir: getExtensionDir(),
   extensionCandidate: [],
   overrideWebPreferences: {},
-  overrideBrowserOptions: {},
 });
 
 electronApp.init().then(() => {

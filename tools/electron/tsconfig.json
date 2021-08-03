@@ -1,17 +1,18 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es5",
+    "target": "es2019",
+    "jsx": "react",
     "moduleResolution": "node",
-    "rootDir": "src",
+    "esModuleInterop": true,
     "baseUrl": "src",
     "strict": true,
     "strictPropertyInitialization": false,
-    "declaration": false,
+    "declaration": true,
     "sourceMap": true,
     "removeComments": true,
-    "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "importHelpers": true,
     "resolveJsonModule": true,
     "noFallthroughCasesInSwitch": true,
@@ -20,8 +21,8 @@
     "noEmitOnError": false,
     "noImplicitAny": false,
     "skipLibCheck": true,
-    "outDir": "dist",
-    "jsx": "react",
+    "outDir": "app",
+    "rootDir": "src",
     "lib": [
       "dom",
       "esnext"

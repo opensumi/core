@@ -2,12 +2,18 @@ const path = require('path');
 const rimraf = require('rimraf');
 const mkdirp = require('mkdirp');
 const log = require('debug')('download-vscode-extension');
-const { install } = require('@alipay/cloud-ide-ext-vscode-extension-builder');
+const { ExtensionInstaller } = require('@ali/ide-extension-installer');
+const extensionInstaller = new ExtensionInstaller({
+  accountId: 'nGJBcqs1D-ma32P3mBftgsfq',
+  masterKey: '-nzxLbuqvrKh8arE0grj2f1H',
+  ignoreIncreaseCount: true,
+  retry: 3,
+});
 
 // 放置 vscode extension 的目录
 const targetDir = path.resolve(__dirname, '../extensions/');
 // vscode extension 的 tar 包 oss 地址
-const { extensions } = require(path.resolve(__dirname, '../config/vscode-extensions.json'));
+const { extensions } = require(path.resolve(__dirname, '../../../configs/vscode-extensions.json'));
 
 // 限制并发数，运行promise
 const parallelRunPromise = (lazyPromises, n) => {
@@ -55,8 +61,10 @@ const downloadVscodeExtensions = async () => {
     for (const item of items) {
       const { name, version } = item;
       promises.push(async () => {
-        log('开始安装：%s', name);
-        await install(publisher, name, version, targetDir);
+        console.log(`开始安装：${targetDir} ${publisher}.${name}@${version || 'latest'}`);
+        await extensionInstaller.install({ publisher, dist: targetDir, ...item }).catch((e) => {
+          console.log(`${name} 插件安装失败: ${e.message}`);
+        });
       });
     }
   }
