@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FixedSizeList, VariableSizeList, shouldComponentUpdate } from 'react-window';
+import { FixedSizeList, VariableSizeList, shouldComponentUpdate, ListProps } from 'react-window';
 import { TreeModel } from './tree/model/TreeModel';
 import { TreeNode, CompositeTreeNode, spliceArray } from './tree';
 import { RenamePromptHandle, PromptHandle } from './prompt';
@@ -653,7 +653,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     const node = this.getItemAtIndex(index);
     const { getItemKey } = this.props;
     const id = getItemKey ? getItemKey(node) : undefined;
-    return id ?? node?.item?.id ?? index;
+    return id ?? index;
   }
 
   // 过滤Root节点展示
@@ -830,14 +830,15 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       return;
     }
 
-    if (this.listRef && this.listRef.current && this.listRef.current._getRangeToRender) {
+    if (this.listRef && this.listRef.current && '_getRangeToRender' in this.listRef.current) {
       // _getRangeToRender 是 react-window 的内部方法，用于获取可视区域的下标范围
+      // @ts-ignore
       const range = this.listRef.current._getRangeToRender();
       if (range) {
         const start = range[0];
         const end = range[1];
         Array.from({ length: end - start }).forEach((_, i) => {
-          this.listRef.current.resetAfterIndex(start + i);
+          (this.listRef.current as VariableSizeList<any>).resetAfterIndex(start + i);
         });
       }
     }
@@ -845,6 +846,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   public render() {
     const {
+      children,
       itemHeight,
       width,
       height,
@@ -860,35 +862,33 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       const Placeholder = placeholder;
       return <Placeholder />;
     }
-    let addonProps = {};
+    const addonProps: {[key in keyof ListProps]: any} = {
+      children,
+      height,
+      width,
+      itemData: [],
+      itemCount: this.adjustedRowCount,
+      itemKey: this.getItemKey,
+      overscanCount: overScanCount || RecycleTree.DEFAULT_OVER_SCAN_COUNT,
+      onScroll: this.handleListScroll,
+      style: {
+        transform: 'translate3d(0px, 0px, 0px)',
+        ...style,
+      },
+      className,
+      outerElementType: ScrollbarsVirtualList,
+    };
     if (leaveBottomBlank) {
-      addonProps = {
-        innerElementType: InnerElementType,
-      };
+      addonProps.innerElementType = InnerElementType;
     }
 
-    const List = supportDynamicHeights ? VariableSizeList : FixedSizeList;
-
     return (
-      <List
-        width={width}
-        height={height}
-        // 这里的数据不是必要的，主要用于在每次更新列表
-        itemData={[]}
-        itemSize={supportDynamicHeights ? (index: number) => (this.dynamicSizeMap.get(index) || itemHeight) : itemHeight }
-        itemCount={this.adjustedRowCount}
-        itemKey={this.getItemKey}
-        overscanCount={overScanCount || RecycleTree.DEFAULT_OVER_SCAN_COUNT}
-        ref={this.listRef}
-        onScroll={this.handleListScroll}
-        style={{
-          transform: 'translate3d(0px, 0px, 0px)',
-          ...style,
-        }}
-        className={className}
-        outerElementType={ScrollbarsVirtualList}
-        {...addonProps}>
+      supportDynamicHeights
+      ? <VariableSizeList ref={this.listRef as React.RefObject<VariableSizeList>} itemSize={(index: number) => (this.dynamicSizeMap.get(index) || itemHeight)} {...addonProps}>
         {this.renderItem}
-      </List>);
+      </VariableSizeList>
+      : <FixedSizeList ref={this.listRef as React.RefObject<FixedSizeList>} itemSize={itemHeight} {...addonProps}>
+        {this.renderItem}
+      </FixedSizeList>);
   }
 }

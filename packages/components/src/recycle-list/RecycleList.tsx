@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FixedSizeList, VariableSizeList, ScrollToAlign } from 'react-window';
+import { FixedSizeList, VariableSizeList, Align } from 'react-window';
 import { ScrollbarsVirtualList } from '../scrollbars';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import * as cls from 'classnames';
@@ -102,7 +102,7 @@ export interface IRecycleListProps {
 
 export interface IRecycleListHandler {
   scrollTo: (offset: number) => void;
-  scrollToIndex: (index: number, position?: ScrollToAlign) => void;
+  scrollToIndex: (index: number, position?: Align) => void;
 }
 
 export const RECYCLE_LIST_STABILIZATION_TIME: number = 500;
@@ -112,7 +112,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
   width, height, maxHeight, minHeight, className, style, data, onReady, itemHeight, header: Header, footer: Footer, template: Template, paddingBottomSize, getSize: customGetSize,
 }) => {
 
-  const listRef = React.useRef<FixedSizeList>();
+  const listRef = React.useRef<FixedSizeList | VariableSizeList>();
   const sizeMap = React.useRef<{ [key: string]: number }>({});
   const scrollToIndexTimer = React.useRef<any>();
 
@@ -123,7 +123,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
           listRef.current?.scrollTo(offset);
         },
         // custom alignment: center, start, or end
-        scrollToIndex: (index: number, position: string = 'start') => {
+        scrollToIndex: (index: number, position: Align = 'start') => {
           let locationIndex = index;
           if (!!Header) {
             locationIndex++;
@@ -158,7 +158,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
       sizeMap.current = { ...sizeMap.current, [index]: size };
       if (listRef.current) {
         // 清理缓存数据并重新渲染
-        listRef.current?.resetAfterIndex(0);
+        (listRef.current as VariableSizeList<any>)?.resetAfterIndex(0);
       }
     }
   };
