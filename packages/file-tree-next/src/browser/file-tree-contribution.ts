@@ -66,7 +66,10 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
   private isRendered = false;
 
   initialize() {
-    this.fileTreeModelService.initTreeModel();
+    // 等待排除配置初始化结束后再初始化文件树
+    this.workspaceService.initFileServiceExclude().then(() => {
+      this.fileTreeModelService.initTreeModel();
+    });
   }
 
   async onStart() {
@@ -682,7 +685,9 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
 
     commands.registerCommand(FILE_COMMANDS.FILTER_OPEN, {
       execute: () => {
-        return this.fileTreeService.enableFilterMode();
+        if (!this.fileTreeService.filterMode) {
+          this.fileTreeService.toggleFilterMode();
+        }
       },
     });
 

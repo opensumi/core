@@ -196,7 +196,8 @@ export interface IWorkspaceService {
   isMultiRootWorkspaceEnabled: boolean;
   // 设置新的工作区
   setWorkspace(workspaceStat: FileStat | undefined): Promise<void>;
-
+  // 初始化文件服务中 `files.exclude` 和 `watche.exclude` 配置
+  initFileServiceExclude(): Promise<void>;
 }
 
 export const IWorkspaceStorageService = Symbol('IWorkspaceStorageService');

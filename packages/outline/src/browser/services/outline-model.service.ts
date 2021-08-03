@@ -524,7 +524,7 @@ export class OutlineModelService {
     if (!this.outlineTreeHandle) {
       return;
     }
-    node = await this.outlineTreeHandle.ensureVisible(node, 'center') as OutlineTreeNode;
+    node = await this.outlineTreeHandle.ensureVisible(node, 'smart') as OutlineTreeNode;
   }
 
   public collapseAll = async () => {

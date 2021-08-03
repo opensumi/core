@@ -686,8 +686,6 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       if (this._branchSize === 1) {
         // 在空Tree中插入节点时，相对插入位置为0
         relativeInsertionIndex = 0;
-      } else {
-        return;
       }
     }
     // 非空Tree情况下需要+1，为了容纳自身节点位置，在插入节点下方插入新增节点

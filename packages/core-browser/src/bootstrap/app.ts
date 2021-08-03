@@ -315,13 +315,13 @@ export class ClientApp implements IClientApp, IDisposable {
   }
 
   protected async startContributions(container) {
-    // 初始化命令、快捷键与菜单
-    await this.initializeCoreRegistry();
-
     // 先渲染 layout，模块视图的时序由layout控制
     await this.measure('RenderApp.render', () => this.renderApp(container));
 
     await this.measure('Contributions.initialize', () => this.initializeContributions());
+
+    // 初始化命令、快捷键与菜单
+    await this.initializeCoreRegistry();
 
     await this.measure('Contributions.onStart', () => this.onStartContributions());
 

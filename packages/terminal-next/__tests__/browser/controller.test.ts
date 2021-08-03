@@ -9,11 +9,12 @@ import { injector } from './inject';
 
 describe('Terminal Controller', () => {
   let controller: ITerminalController;
-
+  let server;
+  let proxy;
   beforeAll(() => {
     resetPort();
-    createWsServer();
-    createProxyServer();
+    server = createWsServer();
+    proxy = createProxyServer();
     controller = injector.get(ITerminalController);
   });
 
@@ -26,7 +27,7 @@ describe('Terminal Controller', () => {
   });
 
   afterAll(() => {
-    // server.close();
-    // proxy.close();
+    server.close();
+    proxy.close();
   });
 });

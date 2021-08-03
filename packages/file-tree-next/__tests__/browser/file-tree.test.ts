@@ -29,6 +29,10 @@ import * as path from 'path';
 import * as styles from '../../src/browser/file-tree-node.module.less';
 import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
 
+function sleep(time: number) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
+
 describe('FileTree should be work while on single workspace model', () => {
   let track;
   let injector: MockInjector;
@@ -375,7 +379,8 @@ describe('FileTree should be work while on single workspace model', () => {
       const { location, decorations } = fileTreeModelService;
       mockTreeHandle.ensureVisible = jest.fn(() => fileNode);
       await location(fileNode.uri);
-      expect(mockTreeHandle.ensureVisible).toBeCalledWith(await fileTreeService.getFileTreeNodePathByUri(fileNode.uri), 'center', true);
+      await sleep(500);
+      expect(mockTreeHandle.ensureVisible).toBeCalledWith(await fileTreeService.getFileTreeNodePathByUri(fileNode.uri), 'smart', true);
       const fileDecoration = decorations.getDecorations(fileNode);
       expect(fileDecoration?.classlist).toEqual([styles.mod_selected]);
       done();
@@ -389,7 +394,8 @@ describe('FileTree should be work while on single workspace model', () => {
       mockTreeHandle.ensureVisible = jest.fn(() => fileNode);
       locationOnShow(fileNode.uri);
       await performLocationOnHandleShow();
-      expect(mockTreeHandle.ensureVisible).toBeCalledWith(await fileTreeService.getFileTreeNodePathByUri(fileNode.uri), 'center', true);
+      await sleep(500);
+      expect(mockTreeHandle.ensureVisible).toBeCalledWith(await fileTreeService.getFileTreeNodePathByUri(fileNode.uri), 'smart', true);
       const fileDecoration = decorations.getDecorations(fileNode);
       expect(fileDecoration?.classlist).toEqual([styles.mod_selected]);
       done();

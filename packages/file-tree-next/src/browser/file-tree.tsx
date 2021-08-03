@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { ViewState, useInjectable, isOSX, URI } from '@ali/ide-core-browser';
+import { ViewState, useInjectable, isOSX, URI, DisposableCollection } from '@ali/ide-core-browser';
 import { RecycleTreeFilterDecorator, RecycleTree, TreeNodeType, INodeRendererWrapProps, IRecycleTreeFilterHandle, TreeModel } from '@ali/ide-components';
 import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
 import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
-import { FileTreeService } from './file-tree.service';
+import { FileTreeService, ITreeIndent } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
 import { Directory, File } from '../common/file-tree-node.define';
 import * as cls from 'classnames';
@@ -27,9 +27,15 @@ export const FileTree = ({
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   const { height } = viewState;
-  const { decorationService, labelService, iconService, filterMode, locationToCurrentFile, indent, baseIndent } = useInjectable<FileTreeService>(IFileTreeService);
+  const filetreeService = useInjectable<FileTreeService>(IFileTreeService);
+  const { decorationService, labelService, iconService, locationToCurrentFile, filterMode: defaultFilterMode, indent: defaultIndent, baseIndent: defaultBaseIndent } = filetreeService;
   const fileTreeModelService = useInjectable<FileTreeModelService>(FileTreeModelService);
 
+  const [treeIndent, setTreeIndent] = React.useState<ITreeIndent>({
+    indent: defaultIndent,
+    baseIndent: defaultBaseIndent,
+  });
+  const [filterMode, setFilterMode] = React.useState<boolean>(defaultFilterMode);
   const [iconTheme, setIconTheme ] = React.useState<{
     hasFolderIcons: boolean;
     hasFileIcons: boolean;
@@ -112,12 +118,19 @@ export const FileTree = ({
 
   React.useEffect(() => {
     ensureIsReady();
-    // FIXME: @魁武 可能会有内存泄露
-    iconService.onThemeChange((theme) => {
+    const disposable = new DisposableCollection();
+    disposable.push(iconService.onThemeChange((theme) => {
       setIconTheme(theme);
-    });
+    }));
+    disposable.push(filetreeService.onTreeIndentChange(({indent, baseIndent}) => {
+      setTreeIndent({indent, baseIndent});
+    }));
+    disposable.push(filetreeService.onFilterModeChange((flag) => {
+      setFilterMode(flag);
+    }));
     return () => {
       fileTreeModelService.removeFileDecoration();
+      disposable.dispose();
     };
   }, []);
 
@@ -221,13 +234,13 @@ export const FileTree = ({
     onDoubleClick={handleItemDoubleClicked}
     onTwistierClick={handleTwistierClick}
     onContextMenu={handlerContextMenu}
-    defaultLeftPadding={baseIndent}
-    leftPadding={indent}
+    defaultLeftPadding={treeIndent.baseIndent}
+    leftPadding={treeIndent.indent}
     hasPrompt = {props.hasPrompt}
     hasFolderIcons={iconTheme.hasFolderIcons}
     hasFileIcons={iconTheme.hasFileIcons}
     hidesExplorerArrows={iconTheme.hidesExplorerArrows}
-  />, [model]);
+  />, [model, treeIndent, iconTheme]);
 
   const renderFileTree = () => {
     if (isReady) {

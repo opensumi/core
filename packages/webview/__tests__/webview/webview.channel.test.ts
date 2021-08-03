@@ -16,7 +16,7 @@ describe('electron webview test', () => {
     }
   };
 
-  it('electron webview test',  async (done) => {
+  it.skip('electron webview test',  async (done) => {
     (manager as any).init();
     const styles = {'test': 'red'};
     await ipcRenderer.emit('styles', {}, {styles});
@@ -30,7 +30,7 @@ describe('electron webview test', () => {
 describe('web iframe webview test', () => {
   const manager = new WebviewPanelManager(new WebIframeChannel());
 
-  it('iframe webview test',  () => {
+  it.skip('iframe webview test',  () => {
     (manager as any).init();
   });
 });

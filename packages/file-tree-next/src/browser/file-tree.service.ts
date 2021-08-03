@@ -22,13 +22,17 @@ import { Directory, File } from '../common/file-tree-node.define';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { observable, action, runInAction } from 'mobx';
 import pSeries = require('p-series');
 import { FileContextKey } from './file-contextkey';
 import { IIconService } from '@ali/ide-theme';
 export interface IMoveChange {
   source: FileChange;
   target: FileChange;
+}
+
+export interface ITreeIndent {
+  indent: number;
+  baseIndent: number;
 }
 
 @Injectable()
@@ -96,28 +100,46 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   private _isCompactMode: boolean;
 
-  public flushEventQueueDeferred: Deferred<void> | null;
+  private willRefreshDeferred: Deferred<void> | null;
+  private flushEventQueueDeferred: Deferred<void> | null;
 
   private requestFlushEventSignalEmitter: Emitter<void> = new Emitter();
 
   private readonly onWorkspaceChangeEmitter = new Emitter<Directory>();
+  private readonly onTreeIndentChangeEmitter = new Emitter<ITreeIndent>();
+  private readonly onFilterModeChangeEmitter = new Emitter<boolean>();
 
-  @observable
   // 筛选模式开关
-  filterMode: boolean = false;
+  private _filterMode: boolean = false;
+  private _baseIndent: number;
+  private _indent: number;
 
-  @observable
-  baseIndent: number;
+  get filterMode() {
+    return this._filterMode;
+  }
 
-  @observable
-  indent: number;
+  get baseIndent() {
+    return this._baseIndent;
+  }
+
+  get indent() {
+    return this._indent;
+  }
 
   get onWorkspaceChange() {
     return this.onWorkspaceChangeEmitter.event;
   }
 
-  get flushEventQueuePromise() {
-    return this.flushEventQueueDeferred && this.flushEventQueueDeferred.promise;
+  get onTreeIndentChange() {
+    return this.onTreeIndentChangeEmitter.event;
+  }
+
+  get onFilterModeChange() {
+    return this.onFilterModeChangeEmitter.event;
+  }
+
+  get willRefreshPromise() {
+    return this.willRefreshDeferred?.promise;
   }
 
   get cacheFiles() {
@@ -140,8 +162,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
   async init() {
     this._roots = await this.workspaceService.roots;
 
-    this.baseIndent = this.corePreferences['explorer.fileTree.baseIndent'] || 8;
-    this.indent = this.corePreferences['explorer.fileTree.indent'] || 8;
+    this._baseIndent = this.corePreferences['explorer.fileTree.baseIndent'] || 8;
+    this._indent = this.corePreferences['explorer.fileTree.indent'] || 8;
     this._isCompactMode = this.corePreferences['explorer.compactFolders'] as boolean;
 
     this.toDispose.push(this.workspaceService.onWorkspaceChanged((roots) => {
@@ -165,12 +187,16 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
     this.toDispose.push(this.corePreferences.onPreferenceChanged((change) => {
       if (change.preferenceName === 'explorer.fileTree.baseIndent') {
-        runInAction(() => {
-          this.baseIndent = change.newValue as number || 8;
+        this._baseIndent = change.newValue as number || 8;
+        this.onTreeIndentChangeEmitter.fire({
+          indent: this.indent,
+          baseIndent: this.baseIndent,
         });
       } else if (change.preferenceName === 'explorer.fileTree.indent') {
-        runInAction(() => {
-          this.indent = change.newValue as number || 8;
+        this._indent = change.newValue as number || 8;
+        this.onTreeIndentChangeEmitter.fire({
+          indent: this.indent,
+          baseIndent: this.baseIndent,
         });
       } else if (change.preferenceName === 'explorer.compactFolders') {
         this._isCompactMode = change.newValue as boolean;
@@ -665,6 +691,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
    * 刷新指定下的所有子节点
    */
   async refresh(node: Directory = this.root as Directory, needReload: boolean = true) {
+    this.willRefreshDeferred = new Deferred();
     if (!node) {
       return;
     }
@@ -679,6 +706,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
     // 队列化刷新动作减少更新成本
     this.queueChangeEvent(node.path, () => {
       this.onNodeRefreshedEmitter.fire(node);
+      this.willRefreshDeferred?.resolve();
+      this.willRefreshDeferred = null;
     });
   }
 
@@ -690,7 +719,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
         this.flushEventQueueDeferred = new Deferred<void>();
         // 询问是否此时可进行刷新事件
         await this.requestFlushEventSignalEmitter.fireAndAwait();
-        await this.flushEventQueue()!;
+        await this.flushEventQueue();
         this.flushEventQueueDeferred?.resolve();
         this.flushEventQueueDeferred = null;
         callback();
@@ -774,24 +803,15 @@ export class FileTreeService extends Tree implements IFileTreeService {
   /**
    * 开关筛选输入框
    */
-  @action.bound
   public toggleFilterMode() {
-    this.filterMode = !this.filterMode;
+    this._filterMode = !this.filterMode;
+    this.onFilterModeChangeEmitter.fire(this.filterMode);
     this.fileTreeContextKey.filesExplorerFilteredContext.set(this.filterMode);
     // 清理掉输入值
     if (this.filterMode === false) {
       // 退出时若需要做 filter 值清理以及聚焦操作
       this.commandService.executeCommand(FILE_COMMANDS.LOCATION.id);
     }
-  }
-
-  /**
-   * 开启筛选模式
-   */
-  @action.bound
-  public enableFilterMode() {
-    this.fileTreeContextKey.filesExplorerFilteredContext.set(true);
-    this.filterMode = true;
   }
 
   public locationToCurrentFile = () => {
