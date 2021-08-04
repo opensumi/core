@@ -16,6 +16,7 @@ import {
   CommandService,
   COMMON_COMMANDS,
   RecentStorage,
+  PreferenceService,
 } from '@ali/ide-core-browser';
 import { GlobalBrowserStorageService } from '@ali/ide-core-browser/lib/services/storage-service';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -115,6 +116,9 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
   @Autowired(IReporterService)
   reporterService: IReporterService;
+
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
 
   workbenchEditorService: WorkbenchEditorService;
 
@@ -226,6 +230,9 @@ export class ContentSearchClientService implements IContentSearchClientService {
       }
       return rootDirs.push(uri.toString());
     });
+
+    // 由于查询的限制，暂时只支持单一 workspace 的编码参数
+    searchOptions.encoding = this.preferenceService.get<string>('files.encoding', undefined, rootDirs[0]?.toString());
 
     // TODO: 当前无法在不同 cwd 内根据各自 include 搜素，因此如果多 workspaceFolders，此处可能返回比实际要多的结果
     // 同时 searchId 设计原因只能针对单服务，多个 search 服务无法对同一个 searchId 返回结果

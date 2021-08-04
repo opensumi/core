@@ -260,6 +260,11 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
         }
       }
     }
+
+    if (options && options.encoding && options.encoding !== 'utf8') {
+      args.push('--encoding', options.encoding);
+    }
+
     if (options && options.useRegExp || options && options.matchWholeWord) {
       args.push('--regexp');
     } else {

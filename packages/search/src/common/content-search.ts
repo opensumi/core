@@ -37,6 +37,11 @@ export interface ContentSearchOptions {
    * Glob pattern for matching files and directories to exclude the search.
    */
   exclude?: string[];
+  /**
+   * Interpret files using this encoding.
+   * See the setting `"files.encoding"`
+   */
+  encoding?: string;
 }
 
 export interface IContentSearchServer {
