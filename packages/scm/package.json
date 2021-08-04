@@ -28,7 +28,7 @@
     "@ali/ide-monaco-enhance": "2.7.5",
     "@ali/ide-status-bar": "2.7.5",
     "@ali/ide-components": "2.7.5",
-    "@ali/ide-theme": "2.7.2"
+    "@ali/ide-theme": "2.7.5"
   },
   "devDependencies": {
     "@ali/ide-dev-tool": "^1.1.0",
