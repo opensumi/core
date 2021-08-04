@@ -6,7 +6,7 @@ import * as flatten from 'lodash.flatten';
 import { Path } from '@ali/ide-core-common/lib/path';
 import * as compareVersions from 'compare-versions';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, localize, IClientApp } from '@ali/ide-core-browser';
+import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, localize, IClientApp, AppConfig } from '@ali/ide-core-browser';
 import { getLanguageId, IReporterService, REPORT_NAME, formatLocalize, IEventBus, memoize, Disposable } from '@ali/ide-core-common';
 import { IMenu, AbstractMenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { IContextKeyService } from '@ali/ide-core-browser';
@@ -16,6 +16,8 @@ import { EditorPreferences } from '@ali/ide-editor/lib/browser';
 import uniqBy = require('lodash.uniqby');
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { ExtensionDidActivatedEvent } from '@ali/ide-kaitian-extension/lib/browser/types';
+import { IFileServiceClient } from '@ali/ide-file-service';
+import { IStoragePathServer } from '@ali/ide-storage';
 
 @Injectable()
 export class ExtensionManagerService extends Disposable implements IExtensionManagerService {
@@ -97,6 +99,14 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   @Autowired(IMainLayoutService)
   private readonly layoutService: IMainLayoutService;
 
+  @Autowired(IFileServiceClient)
+  protected readonly filesystem: IFileServiceClient;
+
+  @Autowired(AppConfig)
+  protected readonly appConfig: AppConfig;
+
+  @Autowired(IStoragePathServer)
+  protected readonly dataStoragePathServer: IStoragePathServer;
   // 是否显示内置插件
   private isShowBuiltinExtensions: boolean = false;
 
@@ -107,7 +117,63 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
 
   private extensionInfo = new Map<string, IMarketplaceExtensionInfo>();
 
-  bindEvents() {
+  /**
+   * 要要监听的文件的 URI
+   * 兼容插件禁用启用配置文件变化
+   */
+  private async watchExtensionSetting(uri: URI, scope: EnableScope) {
+    const resource = await this.filesystem.getFileStat(uri.toString());
+
+    // 如果不存在，则默认创建一个空文件
+    // 集成测有可能后置才会同步这个配置，如果不创建好不方便 watch
+    if (!resource) {
+      await this.filesystem.createFile(uri.toString(), {
+        content: JSON.stringify({}),
+      });
+    }
+    const watcher = await this.filesystem.watchFileChanges(uri);
+    this.addDispose(watcher);
+    watcher.onFilesChanged(async () => {
+
+      // 快捷键绑定文件内容变化，重新更新快捷键信息
+      const { content } = await this.filesystem.readFile(uri.toString());
+      let extensionsStorage = {};
+      try {
+        extensionsStorage = JSON.parse(content.toString());
+      } catch (e) {
+        this.logger.error(e);
+      }
+
+      // 如果是工作空间级别，需要在在当前空间取
+      if (scope === EnableScope.WORKSPACE) {
+        extensionsStorage = extensionsStorage[URI.file(this.appConfig.workspaceDir).toString()] || {};
+      }
+
+      Object.keys(extensionsStorage).forEach(async (extensionId) => {
+        const enable = parseInt(extensionsStorage[extensionId], 10) === EXTENSION_ENABLE.ENABLE;
+        const extension = this.getRawExtensionById(extensionId);
+        if (!extension) {
+          return;
+        }
+        if (enable !== extension.enable) {
+          await this._toggleActiveExtension(extension, enable, scope);
+        }
+      });
+
+    });
+  }
+
+  async bindEvents() {
+    const extensionSettingFileName = 'extensions.json';
+    const [ globalStoragePath, workspaceStoragePath ] = await Promise.all([
+      this.dataStoragePathServer.getLastGlobalStoragePath(),
+      this.dataStoragePathServer.getLastWorkspaceStoragePath(),
+    ]);
+
+    await Promise.all([
+      this.watchExtensionSetting(new URI(globalStoragePath).resolve(extensionSettingFileName), EnableScope.GLOBAL),
+      this.watchExtensionSetting(new URI(workspaceStoragePath).resolve(extensionSettingFileName), EnableScope.WORKSPACE),
+    ]);
     this.addDispose(this.eventBus.on(ExtensionDidActivatedEvent, async (e) => {
       const extProps = e.payload;
       if (!extProps.isBuiltin && !extProps.isDevelopment) {
@@ -835,7 +901,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   }
 
   @action
-  async toggleActiveExtension(extension: BaseExtension, enable: boolean, scope: EnableScope) {
+  async _toggleActiveExtension(extension: BaseExtension, enable: boolean, scope: EnableScope) {
 
     const extensionId = extension.extensionId;
 
@@ -848,7 +914,6 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
     }
 
     const reloadRequire = await this.computeReloadState(extension.path);
-    await this.setExtensionEnable(extensionId, enable, scope);
     // 如果需要重启，后续操作不进行启用、禁用
     if (!reloadRequire) {
       if (!enable) {
@@ -876,6 +941,10 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
       type: enable ? ExtensionChangeType.ENABLE : ExtensionChangeType.DISABLE,
       detail: extension,
     }));
+  }
+
+  async toggleActiveExtension(extension: BaseExtension, enable: boolean, scope: EnableScope) {
+    await this.setExtensionEnable(extension.extensionId, enable, scope);
   }
 
   async onDisableExtension(extensionPath: string) {

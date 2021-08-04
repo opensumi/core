@@ -17,7 +17,7 @@ const track = temp.track();
 let root: URI;
 root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
 @Injectable()
-class MockDatabaseStoragePathServer implements IStoragePathServer {
+export class MockDatabaseStoragePathServer implements IStoragePathServer {
 
   async getLastWorkspaceStoragePath() {
     return root.resolve('datas').toString();

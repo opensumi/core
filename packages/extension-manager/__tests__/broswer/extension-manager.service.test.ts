@@ -9,6 +9,10 @@ import { StorageProvider, Uri } from '@ali/ide-core-common';
 import { ExtensionManagementService } from '@ali/ide-kaitian-extension/src/browser/extension-management.service';
 import { ExtensionManagerServerPath } from '../../lib';
 import { ExtensionManagerServer } from '../../lib/node/extension-manager-server';
+import { IStoragePathServer } from '@ali/ide-storage';
+import { MockDatabaseStoragePathServer } from '../../../storage/__tests__/browser/index.test';
+import { IFileServiceClient } from '@ali/ide-file-service';
+import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 
 describe('extension manager service test', () => {
   let injector: MockInjector;
@@ -17,7 +21,7 @@ describe('extension manager service test', () => {
   let fakePostDisableExtension;
   let fakeInstallExtension;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     fakePostEnableExtension = jest.fn();
     fakePostDisableExtension = jest.fn();
     fakeInstallExtension = jest.fn();
@@ -32,6 +36,12 @@ describe('extension manager service test', () => {
     }, {
       token: ExtensionManagerServerPath,
       useClass: ExtensionManagerServer,
+    }, {
+      token: IStoragePathServer,
+      useClass: MockDatabaseStoragePathServer,
+    }, {
+      token: IFileServiceClient,
+      useClass: FileServiceClient,
     });
 
     injector.mockService(AbstractExtensionManagementService, {
@@ -82,6 +92,9 @@ describe('extension manager service test', () => {
         };
       },
     });
+
+    // 单测无法 watch 配置文件，mock 实现触发实际调用的 _toggleActiveExtension
+    jest.spyOn(extensionManagerService, 'toggleActiveExtension').mockImplementation((...args) => (extensionManagerService as any)._toggleActiveExtension(...args));
   });
 
   afterEach(() => {
