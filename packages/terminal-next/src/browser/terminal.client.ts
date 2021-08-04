@@ -149,6 +149,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       );
     }));
 
+    this.addDispose(this._term.onTitleChange((e) => {
+      this.updateOptions({ name: e });
+    }));
+
     this.addDispose(Disposable.create(() => {
       TerminalClient.WORKSPACE_PATH_CACHED.delete(widget.group.id);
     }));
