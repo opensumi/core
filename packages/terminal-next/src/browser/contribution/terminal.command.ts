@@ -11,6 +11,7 @@ import {
   IPreferenceSettingsService,
   ILogger,
   IClipboardService,
+  PreferenceScope,
 } from '@ali/ide-core-browser';
 import { Autowired } from '@ali/common-di';
 import {
@@ -173,31 +174,31 @@ export class TerminalCommandContribution implements CommandContribution {
 
     registry.registerCommand(TERMINAL_COMMANDS.SELECT_ZSH, {
       execute: async () => {
-        this.preference.set('terminal.type', 'zsh');
+        this.preference.set('terminal.type', 'zsh', PreferenceScope.User);
       },
     });
 
     registry.registerCommand(TERMINAL_COMMANDS.SELECT_BASH, {
       execute: async () => {
-        this.preference.set('terminal.type', 'bash');
+        this.preference.set('terminal.type', 'bash', PreferenceScope.User);
       },
     });
 
     registry.registerCommand(TERMINAL_COMMANDS.SELECT_SH, {
       execute: async () => {
-        this.preference.set('terminal.type', 'sh');
+        this.preference.set('terminal.type', 'sh', PreferenceScope.User);
       },
     });
 
     registry.registerCommand(TERMINAL_COMMANDS.SELECT_POWERSHELL, {
       execute: async () => {
-        this.preference.set('terminal.type', 'powershell');
+        this.preference.set('terminal.type', 'powershell', PreferenceScope.User);
       },
     });
 
     registry.registerCommand(TERMINAL_COMMANDS.SELECT_CMD, {
       execute: async () => {
-        this.preference.set('terminal.type', 'cmd');
+        this.preference.set('terminal.type', 'cmd', PreferenceScope.User);
       },
     });
 
