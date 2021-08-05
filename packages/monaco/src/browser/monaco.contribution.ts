@@ -137,6 +137,12 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
 
     // 注册/拦截 Monaco 内置的菜单
     this.patchMonacoInternalMenus();
+
+    // 更新 Mime
+    this.mimeService.updateMime();
+
+    // 在编辑器全部恢复前初始化 textmateService
+    this.initTextmateService();
   }
 
   onDidStart() {
@@ -222,6 +228,14 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
     };
   }
 
+  private initTextmateService() {
+    this.textmateService.init();
+    const currentTheme = this.themeService.getCurrentThemeSync();
+    const themeData = currentTheme.themeData;
+    this.textmateService.setTheme(themeData);
+    this.textmateService.initialized = true;
+  }
+
   private registryDefaultFormattingSelector(selector: FormattingSelectorType) {
     (FormattingConflicts as unknown as any)._selectors.unshift(selector);
   }
@@ -239,15 +253,6 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
       const configs = registry.getConfigurations();
       this.preferenceService.set('json.schemas', configs, PreferenceScope.Default);
     });
-  }
-
-  onStart() {
-    this.mimeService.updateMime();
-    this.textmateService.init();
-    const currentTheme = this.themeService.getCurrentThemeSync();
-    const themeData = currentTheme.themeData;
-    this.textmateService.setTheme(themeData);
-    this.textmateService.initialized = true;
   }
 
   private patchMonacoThemeService() {
