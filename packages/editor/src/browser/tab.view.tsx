@@ -40,7 +40,7 @@ export const Tabs = ({ group }: ITabsProps) => {
   const slotLocation = React.useMemo(() => getSlotLocation(pkgName, configContext.layoutConfig), []);
 
   useUpdateOnGroupTabChange(group);
-  useUpdateOnEventBusEvent(ResourceDidUpdateEvent, [...group.resources], (uri) => {
+  useUpdateOnEventBusEvent(ResourceDidUpdateEvent, [group.resources.length], (uri) => {
     return group.resources.findIndex((r) => r.uri.isEqual(uri)) !== -1;
   });
 
