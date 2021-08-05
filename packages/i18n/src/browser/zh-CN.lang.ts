@@ -41,7 +41,7 @@ export const localizationBundle = {
     'file.confirm.delete': '确定删除下面列的文件?\n{0}',
     'file.confirm.delete.ok': '移入回收站',
     'file.confirm.delete.cancel': '取消',
-    'file.confirm.move': '确定移动文件{0} 到 {1}?',
+    'file.confirm.move': '确定移动文件 {0} 到 {1} ?',
     'file.confirm.move.ok': '移动',
     'file.confirm.move.cancel': '取消',
     'file.confirm.replace': '确定替换{0}文件?',

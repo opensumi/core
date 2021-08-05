@@ -858,7 +858,7 @@ export class FileTreeModelService {
     if (this.corePreferences['explorer.confirmDelete']) {
       const ok = localize('file.confirm.delete.ok');
       const cancel = localize('file.confirm.delete.cancel');
-      const deleteFilesMessage = `[ ${uris.slice(0, 5).map((uri) => uri.displayName).join(',')}${uris.length > 5 && ' ...'} ]`;
+      const deleteFilesMessage = `[ ${uris.slice(0, 5).map((uri) => uri.displayName).join(',')}${uris.length > 5 ? ' ...' : ''} ]`;
       const confirm = await this.dialogService.warning(formatLocalize('file.confirm.delete', deleteFilesMessage), [cancel, ok]);
       if (confirm !== ok) {
         return;
@@ -1401,6 +1401,11 @@ export class FileTreeModelService {
     if (!Directory.is(parent)) {
       parent = parent.parent as Directory;
     }
+    let useRefresh = false;
+    if (this.fileTreeService.isCompactMode && !parent.uri.isEqual(to)) {
+      // 压缩路径的粘贴操作，使用刷新操作进行更新
+      useRefresh = true;
+    }
     if (this.pasteStore.type === PasteTypes.CUT) {
       for (const file of this.pasteStore.files) {
         if (file) {
@@ -1410,7 +1415,6 @@ export class FileTreeModelService {
           await (parent as Directory).setExpanded(true);
         }
       }
-      const to = (parent as Directory).uri;
       const errors = await this.fileTreeAPI.mvFiles(this.pasteStore.files.map((file) => file.uri), to);
       if (errors && errors.length > 0) {
         errors.forEach((error) => {
@@ -1427,12 +1431,14 @@ export class FileTreeModelService {
       };
     } else if (this.pasteStore.type === PasteTypes.COPY) {
       for (const file of this.pasteStore.files) {
-        const to = (parent as Directory).uri.resolve(file.uri.displayName);
+        const newUri = to.resolve(file.uri.displayName);
         if (!(parent as Directory).expanded) {
           await (parent as Directory).setExpanded(true);
         }
-        const res = await this.fileTreeAPI.copyFile(file.uri, to);
-        if (res) {
+        const res = await this.fileTreeAPI.copyFile(file.uri, newUri);
+        if (useRefresh) {
+          this.fileTreeService.refresh(parent.parent as Directory);
+        } else if (res) {
           if ((res as FileStat).uri) {
             const copyUri = new URI((res as FileStat).uri);
             this.fileTreeService.addNode((parent as Directory), copyUri.displayName, Directory.is(file) ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode);
