@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-addons",
-  "version": "2.7.8",
+  "version": "2.8.0",
   "files": [
     "lib"
   ],
@@ -20,20 +20,20 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "2.7.8",
-    "@ali/ide-core-node": "2.7.8"
+    "@ali/ide-core-common": "2.8.0",
+    "@ali/ide-core-node": "2.8.0"
   },
   "devDependencies": {
-    "@ali/ide-components": "2.7.8",
-    "@ali/ide-core-browser": "2.7.8",
+    "@ali/ide-components": "2.8.0",
+    "@ali/ide-core-browser": "2.8.0",
     "@ali/ide-dev-tool": "^1.1.0",
-    "@ali/ide-editor": "2.7.8",
-    "@ali/ide-file-search": "2.7.8",
-    "@ali/ide-file-service": "2.7.8",
-    "@ali/ide-overlay": "2.7.8",
-    "@ali/ide-quick-open": "2.7.8",
-    "@ali/ide-workspace": "2.7.8",
-    "@ali/ide-workspace-edit": "2.7.8",
+    "@ali/ide-editor": "2.8.0",
+    "@ali/ide-file-search": "2.8.0",
+    "@ali/ide-file-service": "2.8.0",
+    "@ali/ide-overlay": "2.8.0",
+    "@ali/ide-quick-open": "2.8.0",
+    "@ali/ide-workspace": "2.8.0",
+    "@ali/ide-workspace-edit": "2.8.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"
