@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-common",
-  "version": "2.7.5",
+  "version": "2.7.8",
   "description": "@ali/ide-core-common",
   "files": [
     "lib"

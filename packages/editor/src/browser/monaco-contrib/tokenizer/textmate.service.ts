@@ -332,7 +332,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     if (rules.unIndentedLinePattern) {
       result.unIndentedLinePattern = this.createRegex(rules.unIndentedLinePattern);
     }
-    return rules;
+    return result;
   }
 
   private convertEmbeddedLanguages(languages?: ScopeMap): IEmbeddedLanguagesMap | undefined {
