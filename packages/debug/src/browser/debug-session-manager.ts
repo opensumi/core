@@ -16,10 +16,10 @@
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/debug/src/browser/debug-session-manager.ts
 
 import { Injectable, Autowired } from '@ali/common-di';
-import { DebugSession, DebugState } from './debug-session';
+import { DebugSession } from './debug-session';
 import { WaitUntilEvent, Emitter, Event, URI, IContextKey, DisposableCollection, IContextKeyService, formatLocalize, Uri, IReporterService, uuid } from '@ali/ide-core-browser';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
-import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions, DEBUG_REPORT_NAME, IDebugSessionManager, DebugSessionExtra, DebugThreadExtra, CONTEXT_DEBUG_STOPPED_KEY, CONTEXT_IN_DEBUG_MODE_KEY, CONTEXT_DEBUG_TYPE_KEY } from '../common';
+import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions, DEBUG_REPORT_NAME, IDebugSessionManager, DebugSessionExtra, DebugThreadExtra, CONTEXT_DEBUG_STOPPED_KEY, CONTEXT_IN_DEBUG_MODE_KEY, CONTEXT_DEBUG_TYPE_KEY, DebugState } from '../common';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { IMessageService } from '@ali/ide-overlay';
 import { IVariableResolverService } from '@ali/ide-variable';
@@ -30,6 +30,7 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { DebugModelManager } from './editor/debug-model-manager';
 import { ITaskService } from '@ali/ide-task/lib/common';
 import { isRemoteAttach } from './debugUtils';
+import { IDebugProgress } from '../common/debug-progress';
 
 // tslint:disable-next-line:no-empty-interface
 export interface WillStartDebugSession extends WaitUntilEvent {
@@ -127,6 +128,9 @@ export class DebugSessionManager implements IDebugSessionManager {
 
   @Autowired(IReporterService)
   protected readonly reporterService: IReporterService;
+
+  @Autowired(IDebugProgress)
+  protected readonly debugProgressService: IDebugProgress;
 
   constructor() {
     this.init();
@@ -266,6 +270,7 @@ export class DebugSessionManager implements IDebugSessionManager {
       await this.fireWillStartDebugSession();
       const resolved = await this.resolveConfiguration(options);
       if (resolved.configuration.preLaunchTask) {
+        this.debugProgressService.onDebugServiceStateChange(DebugState.Initializing);
         const workspaceFolderUri = Uri.parse(resolved.workspaceFolderUri!);
         const task = await this.taskService.getTask(workspaceFolderUri, resolved.configuration.preLaunchTask);
         if (task) {
@@ -278,6 +283,7 @@ export class DebugSessionManager implements IDebugSessionManager {
             exitCode: result.exitCode,
           });
         }
+        this.debugProgressService.onDebugServiceStateChange(DebugState.Running);
       }
       const sessionId = await this.debug.createDebugSession(resolved.configuration);
       timeStart(resolved.configuration.type, {

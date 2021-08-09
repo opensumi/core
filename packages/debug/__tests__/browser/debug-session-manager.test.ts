@@ -1,4 +1,4 @@
-import { IDebugServer, IDebugSessionManager } from '@ali/ide-debug';
+import { IDebugServer, IDebugSessionManager, IDebugProgress } from '@ali/ide-debug';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { BreakpointManager, DebugModelManager, DebugSessionContributionRegistry, DebugSessionFactory, DebugSessionManager } from '@ali/ide-debug/lib/browser';
@@ -130,6 +130,12 @@ describe('DebugSessionManager', () => {
       {
         token: IDebugSessionManager,
         useClass: DebugSessionManager,
+      },
+      {
+        token: IDebugProgress,
+        useValue: {
+          onDebugServiceStateChange: jest.fn(),
+        },
       },
     ]));
     debugSessionManager = injector.get(IDebugSessionManager);

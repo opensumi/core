@@ -1,5 +1,4 @@
 import { MonacoCodeService } from '@ali/ide-editor/lib/browser/editor.override';
-import { DebugState } from './../../debug-session';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 import { Injectable, Autowired } from '@ali/common-di';
@@ -8,7 +7,7 @@ import { Schemas, URI, CommandRegistry, Emitter, Event } from '@ali/ide-core-com
 import { IEditorDocumentModelService, IEditorDocumentModelContentProvider, ICodeEditor, getSimpleEditorOptions } from '@ali/ide-editor/lib/browser';
 import { EditorCollectionService, IDecorationApplyOptions } from '@ali/ide-editor';
 import { IContextKeyService, MonacoOverrideServiceRegistry, ServiceNames, localize } from '@ali/ide-core-browser';
-import { DEBUG_CONSOLE_CONTAINER_ID, IDebugSessionManager, CONTEXT_IN_DEBUG_MODE_KEY } from '../../../common';
+import { DEBUG_CONSOLE_CONTAINER_ID, IDebugSessionManager, CONTEXT_IN_DEBUG_MODE_KEY, DebugState } from '../../../common';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugConsoleModelService } from './debug-console-tree.model.service';
 import { transparent, editorForeground, IThemeService } from '@ali/ide-theme';

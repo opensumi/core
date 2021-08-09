@@ -75,6 +75,9 @@ export interface DebugEventTypes {
   'stopped': DebugProtocol.StoppedEvent;
   'terminated': DebugProtocol.TerminatedEvent;
   'thread': DebugProtocol.ThreadEvent;
+  'progressStart': DebugProtocol.ProgressStartEvent;
+  'progressUpdate': DebugProtocol.ProgressUpdateEvent;
+  'progressEnd': DebugProtocol.ProgressEndEvent;
 }
 
 const standardDebugEvents = new Set<string>([
@@ -90,6 +93,9 @@ const standardDebugEvents = new Set<string>([
   'stopped',
   'terminated',
   'thread',
+  'progressStart',
+  'progressUpdate',
+  'progressEnd',
 ]);
 
 @Injectable({multiple: true})

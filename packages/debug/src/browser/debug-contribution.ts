@@ -34,6 +34,7 @@ import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
 import { IFileServiceClient, IShadowFileProvider } from '@ali/ide-file-service';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { IPreferenceSettingsService } from '@ali/ide-core-browser';
+import { DebugProgressService } from './debug-progress.service';
 
 const LAUNCH_JSON_REGEX = /launch\.json$/;
 
@@ -216,6 +217,9 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   @Autowired(IPreferenceSettingsService)
   protected readonly preferenceSettings: IPreferenceSettingsService;
 
+  @Autowired(DebugProgressService)
+  protected readonly debugProgressService: DebugProgressService;
+
   private firstSessionStart: boolean = true;
 
   get selectedBreakpoint(): SelectedBreakpoint | undefined {
@@ -287,6 +291,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   async initialize() {
     this.fileSystem.registerProvider(DEBUG_SCHEME, this.shadowFileServiceProvider);
     this.debugEditorController.init();
+    this.debugProgressService.run(this.sessionManager);
   }
 
   onStart() {
