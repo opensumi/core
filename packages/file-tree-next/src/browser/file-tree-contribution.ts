@@ -560,8 +560,13 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
         if (uri) {
           this.fileTreeModelService.pasteFile(uri);
         } else if (this.fileTreeModelService.focusedFile) {
-          const focusedUri = this.fileTreeModelService.focusedFile.uri;
-          this.fileTreeModelService.pasteFile(focusedUri);
+          let uri;
+          if (this.fileTreeModelService.activeUri) {
+            uri = this.fileTreeModelService.activeUri;
+          } else {
+            uri = this.fileTreeModelService.focusedFile.uri;
+          }
+          this.fileTreeModelService.pasteFile(uri);
         }
       },
       isVisible: () => {

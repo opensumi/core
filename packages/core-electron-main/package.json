@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-electron-main",
-  "version": "2.7.5",
+  "version": "2.8.0",
   "files": [
     "lib",
     "browser-preload"
@@ -21,8 +21,8 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-connection": "2.7.5",
-    "@ali/ide-core-common": "2.7.5",
+    "@ali/ide-connection": "2.8.0",
+    "@ali/ide-core-common": "2.8.0",
     "is-running": "^2.1.0",
     "tree-kill": "^1.2.2"
   },

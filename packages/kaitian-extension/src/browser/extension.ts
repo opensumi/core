@@ -1,6 +1,6 @@
 import { Injectable, Optional, Autowired } from '@ali/common-di';
 import { JSONType, ExtensionService, IExtension, IExtensionProps, IExtensionMetaData } from '../common';
-import { getDebugLogger, registerLocalizationBundle, getCurrentLanguageInfo, Uri, Deferred, URI, WithEventBus, replaceLocalizePlaceholder } from '@ali/ide-core-common';
+import { getDebugLogger, registerLocalizationBundle, getCurrentLanguageInfo, Uri, Deferred, URI, WithEventBus, replaceNlsField } from '@ali/ide-core-common';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { ExtensionMetadataService } from './metadata.service';
 import { AbstractExtInstanceManagementService, ExtensionDidActivatedEvent, ExtensionWillActivateEvent } from './types';
@@ -78,7 +78,7 @@ export class Extension extends WithEventBus implements IExtension {
     // 所以这里缓存的值可以会为 undefined 或者空字符串，这两者都属于无效内容
     // 对于无效内容要重新获取
     if (!this.pkgLocalizedField.get(key)) {
-      const nlsValue = replaceLocalizePlaceholder(this.packageJSON[key], this.id);
+      const nlsValue = replaceNlsField(this.packageJSON[key], this.id);
       this.pkgLocalizedField.set(key, nlsValue!);
       return nlsValue || this.packageJSON[key];
     }

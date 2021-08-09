@@ -1,4 +1,4 @@
-import { registerLocalizationBundle, localize, setLanguageId, replaceLocalizePlaceholder } from "../src/localize";
+import { registerLocalizationBundle, localize, setLanguageId, replaceLocalizePlaceholder, replaceNlsField } from "../src/localize";
 
 describe('localize test', () => {
 
@@ -58,7 +58,6 @@ describe('localize test', () => {
 
   })
 
-
   it('test replaceLocalizePlaceholder', () => {
     // 测试是否只会替换 placeholder，即只替换形如 %someMessage% 的字符串
 
@@ -67,13 +66,31 @@ describe('localize test', () => {
       languageName: '中文',
       localizedLanguageName: '中文',
       contents: {
-        "someMessage": '因为相信，所以看见',
+        "someMessage1": '消息1',
+        "someMessage2": '消息2',
       }
     })
 
-    expect(replaceLocalizePlaceholder('someMessage')).toEqual('someMessage');
-    expect(replaceLocalizePlaceholder('%someMessage%')).toEqual('因为相信，所以看见');
-    expect(replaceLocalizePlaceholder('%NotExists%')).toEqual('');
-    expect(replaceLocalizePlaceholder('%NotExists%', 'host','fallback')).toEqual('fallback');
+    expect(replaceLocalizePlaceholder('%someMessage1% %someMessage2%')).toEqual('消息1 消息2');
+    expect(replaceLocalizePlaceholder('%someMessage1% %NotExists%')).toEqual('消息1 %NotExists%');
+    expect(replaceLocalizePlaceholder('111%NotExists%')).toEqual("111%NotExists%");
+  })
+
+  it('test replaceNlsField', () => {
+    // 测试是否只会替换 placeholder，即只替换形如 %someMessage% 的字符串
+
+    registerLocalizationBundle({
+      languageId: 'zh-CN',
+      languageName: '中文',
+      localizedLanguageName: '中文',
+      contents: {
+        "someMessage": '一段消息',
+      }
+    })
+
+    expect(replaceNlsField('someMessage')).toEqual('someMessage');
+    expect(replaceNlsField('%someMessage%')).toEqual('一段消息');
+    expect(replaceNlsField('%NotExists%')).toEqual('');
+    expect(replaceNlsField('%NotExists%', 'host','fallback')).toEqual('fallback');
   })
 })

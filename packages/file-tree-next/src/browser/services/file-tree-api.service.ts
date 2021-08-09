@@ -158,7 +158,7 @@ export class FileTreeAPI implements IFileTreeAPI {
     if (this.corePreferences['explorer.confirmMove']) {
       const ok = localize('file.confirm.move.ok');
       const cancel = localize('file.confirm.move.cancel');
-      const confirm = await this.dialogService.warning(formatLocalize('file.confirm.move', `[${fromFiles.map((uri) => uri.displayName).join(',')}]`, targetDir.displayName), [cancel, ok]);
+      const confirm = await this.dialogService.warning(formatLocalize('file.confirm.move', `[ ${fromFiles.map((uri) => uri.displayName).join(',')} ]`, targetDir.displayName), [cancel, ok]);
       if (confirm !== ok) {
         return;
       }

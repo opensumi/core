@@ -9,7 +9,11 @@ export class SplitPanelService {
 
   panels: HTMLElement[] = [];
 
-  rootNode: HTMLElement;
+  rootNode: HTMLElement | undefined;
+
+  get isVisible(): boolean {
+    return this.rootNode && this.rootNode.clientHeight > 0 || false;
+  }
 
   getFirstResizablePanel(index: number, direction: boolean, isPrev?: boolean): HTMLElement | undefined {
     if (isPrev) {

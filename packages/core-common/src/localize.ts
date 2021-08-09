@@ -116,19 +116,36 @@ function getLocalizationRegistry(scope: string): LocalizationRegistry {
 }
 
 /**
- * 含有占位符标识的字段转换，字段为 falsy 的时候返回该字段
- * 占位符找不到时返回 fallback 值(默认为 undefined)
+ * 将整段字符串中所有的占位符标识的做一遍转换，
+ * 标识符转换失败则返回该字符串本身：
+ * ```js
+ * "%abcd%1 %1234%2".replace(/%(.*?)%/g, (c, a)=>{return c;})
+ * -> "%abcd%1 %1234%2"
+ * ```
  * @param label 要转换的字段
  * @param scope 默认为 host
- * @param fallback 默认为 undefined
  */
-export function replaceLocalizePlaceholder(label?: string, scope?: string, fallback: string | undefined = undefined): string | undefined {
+export function replaceLocalizePlaceholder(label?: string, scope?: string): string | undefined {
   if (label) {
-    const nlsRegex = /^%([\w\d.-]+)%$/i;
-    const result = nlsRegex.exec(label);
-    if (result) {
-      return localize(result[1], fallback, scope);
-    }
+    return label.replace(/%(.*?)%/g, (w, p) => localize(p, w, scope).replace(/\"/g,'\\"'))
   }
   return label;
+}
+
+/**
+* 含有占位符标识的字段转换，字段为 falsy 的时候返回该字段
+* 占位符找不到时返回 fallback 值(默认为 undefined)
+* @param label 要转换的字段
+* @param scope 默认为 host
+* @param fallback 默认为 undefined
+*/
+export function replaceNlsField(label?: string, scope?: string, fallback: string | undefined = undefined): string | undefined {
+ if (label) {
+   const nlsRegex = /^%([\w\d.-]+)%$/i;
+   const result = nlsRegex.exec(label);
+   if (result) {
+     return localize(result[1], fallback, scope);
+   }
+ }
+ return label;
 }

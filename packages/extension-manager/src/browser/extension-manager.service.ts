@@ -6,8 +6,8 @@ import * as flatten from 'lodash.flatten';
 import { Path } from '@ali/ide-core-common/lib/path';
 import * as compareVersions from 'compare-versions';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, localize, IClientApp, AppConfig } from '@ali/ide-core-browser';
-import { getLanguageId, IReporterService, REPORT_NAME, formatLocalize, IEventBus, memoize, Disposable } from '@ali/ide-core-common';
+import { URI, ILogger, debounce, StorageProvider, STORAGE_NAMESPACE, localize, IClientApp, AppConfig } from '@ali/ide-core-browser';
+import { getLanguageId, IReporterService, REPORT_NAME, formatLocalize, IEventBus, memoize, Disposable, replaceNlsField } from '@ali/ide-core-common';
 import { IMenu, AbstractMenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -1023,8 +1023,8 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
    */
   private getI18nInfo(extension: IExtension): { description: string, displayName: string} {
     return {
-      displayName: replaceLocalizePlaceholder(extension.packageJSON.displayName, extension.id)!,
-      description: replaceLocalizePlaceholder(extension.packageJSON.description, extension.id)!,
+      displayName: replaceNlsField(extension.packageJSON.displayName, extension.id)!,
+      description: replaceNlsField(extension.packageJSON.description, extension.id)!,
     };
   }
 

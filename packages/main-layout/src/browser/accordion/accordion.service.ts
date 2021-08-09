@@ -61,7 +61,7 @@ export class AccordionService extends WithEventBus {
 
   @observable.shallow views: View[] = [];
 
-  @observable state: {[containerId: string]: SectionState} = {};
+  @observable state: {[viewId: string]: SectionState} = {};
   // 提供给Mobx强刷，有没有更好的办法？
   @observable forceUpdate: number = 0;
 
@@ -112,6 +112,10 @@ export class AccordionService extends WithEventBus {
     this.listenWindowResize();
   }
 
+  tryUpdateResize() {
+    this.doUpdateResize();
+  }
+
   restoreState() {
     if (this.noRestore) { return; }
     const defaultState: {[containerId: string]: SectionState} = {};
@@ -128,7 +132,7 @@ export class AccordionService extends WithEventBus {
   // 调用时需要保证dom可见
   restoreSize() {
     // 计算存储总高度与当前窗口总高度差，加到最后一个展开的面板
-    let availableSize = this.splitPanelService.rootNode.clientHeight;
+    let availableSize = this.splitPanelService.rootNode!.clientHeight;
     let finalUncollapsedIndex: number | undefined;
     this.visibleViews.forEach((view, index) => {
       const savedState = this.state[view.id];
@@ -243,31 +247,32 @@ export class AccordionService extends WithEventBus {
     }
   }
 
-  protected listenWindowResize() {
-    // 监听窗口resize事件
-    const doUpdate = debounce(() => {
-      let largestViewId: string | undefined;
-      Object.keys(this.state).forEach((id) => {
-        if (!(this.state[id].hidden || this.state[id].collapsed)) {
-          if (!largestViewId) {
+  private doUpdateResize = debounce(() => {
+    let largestViewId: string | undefined;
+    Object.keys(this.state).forEach((id) => {
+      if (!(this.state[id].hidden || this.state[id].collapsed)) {
+        if (!largestViewId) {
+          largestViewId = id;
+        } else {
+          if ((this.state[id].size || 0) > (this.state[largestViewId].size || 0)) {
             largestViewId = id;
-          } else {
-            if ((this.state[id].size || 0) > (this.state[largestViewId].size || 0)) {
-              largestViewId = id;
-            }
           }
         }
-      });
-      if (largestViewId) {
-        if (this.expandedViews.length > 1) {
-          const diffSize = this.splitPanelService.rootNode.clientHeight - Object.keys(this.state).reduce((acc, id) => acc + (this.state[id].collapsed ? this.headerSize : (this.state[id].hidden ? 0 : this.state[id].size!)), 0);
-          this.state[largestViewId].size! += diffSize;
-        }
+      }
+    });
+    if (largestViewId && this.splitPanelService.isVisible && this.expandedViews.length > 1) {
+      // 需要过滤掉没有实际注册的视图
+      const diffSize = this.splitPanelService.rootNode!.clientHeight - Object.keys(this.state).filter((viewId) => this.views.find((item) => item.id === viewId)).reduce((acc, id) => acc + (this.state[id].collapsed ? this.headerSize : (this.state[id].hidden ? 0 : this.state[id].size!)), 0);
+      if (diffSize) {
+        this.state[largestViewId].size! += diffSize;
         this.toggleOpen(largestViewId, false);
       }
-    }, 16);
-    window.addEventListener('resize', doUpdate);
-    this.addDispose({dispose: () => window.removeEventListener('resize', doUpdate)});
+    }
+  }, 16);
+
+  protected listenWindowResize() {
+    window.addEventListener('resize', this.doUpdateResize);
+    this.addDispose({dispose: () => window.removeEventListener('resize', this.doUpdateResize)});
   }
 
   private createRevealContextKey(viewId: string) {
@@ -435,7 +440,7 @@ export class AccordionService extends WithEventBus {
   }
 
   protected setSize(index: number, targetSize: number, isIncrement?: boolean, noAnimation?: boolean): number {
-    const fullHeight = this.splitPanelService.rootNode.clientHeight;
+    const fullHeight = this.splitPanelService.rootNode!.clientHeight;
     const panel = this.splitPanelService.panels[index];
     if (!noAnimation) {
       panel.classList.add('resize-ease');
@@ -483,7 +488,7 @@ export class AccordionService extends WithEventBus {
   }
 
   protected getAvailableSize() {
-    const fullHeight = this.splitPanelService.rootNode.clientHeight;
+    const fullHeight = this.splitPanelService.rootNode!.clientHeight;
     return fullHeight - (this.visibleViews.length - 1) * this.headerSize;
   }
 

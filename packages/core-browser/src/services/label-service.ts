@@ -76,11 +76,23 @@ export interface ILabelOptions {
   isSymbolicLink?: boolean;
 }
 
-function serializeLabelOptions(options?: ILabelOptions): string {
+export function serializeLabelOptions(options?: ILabelOptions): string {
   if (!options) {
     return 'default';
   } else {
     return [options.isDirectory ? '0' : '1', options.isOpenedDirectory ? '0' : '1', options.isSymbolicLink ? '0' : '1'].join('');
+  }
+}
+
+export function deserializeLabelOptions(key: string): ILabelOptions | undefined {
+  if (key === 'default') {
+    return undefined;
+  } else {
+    return {
+      isDirectory: key[0] === '0',
+      isOpenedDirectory: key[1] === '0',
+      isSymbolicLink: key[2] === '0',
+    };
   }
 }
 
@@ -170,7 +182,7 @@ export class LabelService extends WithEventBus {
   }
 
   public registerLabelProvider(provider: ILabelProvider): IDisposable {
-    const currentProvided = Array.from(this.cachedProviderMap.keys());
+    const currentProvided = Array.from(this.cachedProviderMap.entries());
     this.cachedProviderMap.clear();
     const disposer = new Disposable();
     if (provider.onDidChange) {
@@ -186,10 +198,18 @@ export class LabelService extends WithEventBus {
       },
     });
     /**
-     * 对于已经提供过 icon label的，通知一遍已经改变
+     * 对于已经提供过 icon label的，如果发生改变, 通知一遍已经改变
      */
-    currentProvided.forEach((uriString) => {
-      this.onDidChangeEmitter.fire(new URI(uriString));
+    currentProvided.forEach(([uriString, prev]) => {
+      const uri = new URI(uriString);
+      for (const key of Object.keys(prev)) {
+        const options = deserializeLabelOptions(key);
+        const newProvider = this.getProviderForUri(uri, options);
+        if (newProvider !== prev[key]) {
+          this.onDidChangeEmitter.fire(uri);
+          return;
+        }
+      }
     });
 
     return disposer;

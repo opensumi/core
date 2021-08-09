@@ -22,7 +22,6 @@ export const FileTree = ({
   const [isReady, setIsReady] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [outerDragOver, setOuterDragOver] = React.useState<boolean>(false);
-  const [filter ] = React.useState<string>('');
   const [model, setModel ] = React.useState<TreeModel>();
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
@@ -130,7 +129,6 @@ export const FileTree = ({
       setFilterMode(flag);
     }));
     return () => {
-      disposable.dispose();
       fileTreeModelService.removeFileDecoration();
       disposable.dispose();
     };
@@ -257,7 +255,6 @@ export const FileTree = ({
           itemHeight={FILE_TREE_NODE_HEIGHT}
           onReady={handleTreeReady}
           model={model}
-          filter={filter}
           filterEnabled={filterMode}
           beforeFilterValueChange={beforeFilterValueChange}
           filterAfterClear={() => locationToCurrentFile()}
