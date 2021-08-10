@@ -16,6 +16,21 @@ export class MockedDiffEditor extends Disposable implements monaco.editor.IStand
     this.modifiedEditor = new MockedStandaloneCodeEditor(dom, options, override);
     this.onDidDispose = this.onDispose;
   }
+  revealLineNearTop(lineNumber: number, scrollType?: monaco.editor.ScrollType): void {
+    throw new Error('Method not implemented.');
+  }
+  revealPositionNearTop(position: monaco.IPosition, scrollType?: monaco.editor.ScrollType): void {
+    throw new Error('Method not implemented.');
+  }
+  revealLinesNearTop(lineNumber: number, endLineNumber: number, scrollType?: monaco.editor.ScrollType): void {
+    throw new Error('Method not implemented.');
+  }
+  revealRangeNearTop(range: monaco.IRange, scrollType?: monaco.editor.ScrollType): void {
+    throw new Error('Method not implemented.');
+  }
+  revealRangeNearTopIfOutsideViewport(range: monaco.IRange, scrollType?: monaco.editor.ScrollType): void {
+    throw new Error('Method not implemented.');
+  }
   ignoreTrimWhitespace: boolean;
   renderSideBySide: boolean;
   renderIndicators: boolean;

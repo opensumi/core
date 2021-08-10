@@ -1,5 +1,5 @@
 import { InlineValue } from '@ali/ide-debug/lib/common/inline-values';
-import type { CodeActionContext, CodeActionList } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+import type { CodeActionContext } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { ConstructorOf } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
@@ -87,10 +87,11 @@ import {
   IExtHostLanguages,
   ISuggestDataDto,
   IExtensionDescription,
+  ICodeActionListDto,
   IInlineValueContextDto,
 } from '../../../common/vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
-import { IExtensionLogger, Uri, UriComponents } from '@ali/ide-core-common';
+import { DisposableStore, IExtensionLogger, Uri, UriComponents } from '@ali/ide-core-common';
 import { CancellationError, Disposable } from '../../../common/vscode/ext-types';
 import { CompletionAdapter } from './language/completion';
 import { DefinitionAdapter } from './language/definition';
@@ -185,7 +186,7 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, ex
       return extHostLanguages.registerDeclarationProvider(selector, provider);
     },
     registerCodeActionsProvider(selector: DocumentSelector, provider: CodeActionProvider, metadata?: CodeActionProviderMetadata): Disposable {
-      return extHostLanguages.registerCodeActionsProvider(selector, provider, metadata);
+      return extHostLanguages.registerCodeActionsProvider(extension, selector, provider, metadata);
     },
     registerRenameProvider(selector: DocumentSelector, provider: RenameProvider): Disposable {
       return extHostLanguages.registerRenameProvider(selector, provider);
@@ -203,7 +204,7 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, ex
       return extHostLanguages.registerOnTypeFormattingEditProvider(selector, provider, [firstTriggerCharacter].concat(moreTriggerCharacter));
     },
     registerDocumentRangeFormattingEditProvider(selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable {
-      return extHostLanguages.registerDocumentRangeFormattingEditProvider(extension, selector,  provider);
+      return extHostLanguages.registerDocumentRangeFormattingEditProvider(extension, selector, provider);
     },
     registerDocumentFormattingEditProvider(selector: DocumentSelector, provider: DocumentFormattingEditProvider): Disposable {
       return extHostLanguages.registerDocumentFormattingEditProvider(extension, selector, provider);
@@ -270,6 +271,14 @@ export class ExtHostLanguages implements IExtHostLanguages {
     this.diagnostics = new Diagnostics(this.proxy);
   }
 
+  $resolveCodeAction(handle: number, id: ChainedCacheId, token: CancellationToken): Promise<WorkspaceEditDto | undefined> {
+    return this.withAdapter(handle, CodeActionAdapter, (adapter) => adapter.resolveCodeAction(id, token));
+  }
+
+  $releaseCodeActions(handle: number, cacheId: number): void {
+    this.withAdapter(handle, CodeActionAdapter, (adapter) => Promise.resolve(adapter.releaseCodeActions(cacheId)));
+  }
+
   private nextCallId(): number {
     return this.callId++;
   }
@@ -304,7 +313,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return p;
   }
 
-  private withDurationRecord(action)  {
+  private withDurationRecord(action) {
     const duration = getDurationTimer();
     return action().then((result) => ({ _dur: duration.end(), result }));
 
@@ -493,7 +502,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
   $provideOnTypeFormattingEdits(handle: number, resource: Uri, position: Position, ch: string, options: FormattingOptions): Promise<SingleEditOperation[] | undefined> {
     return this.withAdapter(handle, OnTypeFormattingAdapter, (adapter) => adapter.provideOnTypeFormattingEdits(resource, position, ch, options));
   }
-  $provideOnTypeFormattingEditsWithDuration(handle: number, resource: Uri, position: Position, ch: string, options: FormattingOptions): Promise<WithDuration<SingleEditOperation[] | undefined>>  {
+  $provideOnTypeFormattingEditsWithDuration(handle: number, resource: Uri, position: Position, ch: string, options: FormattingOptions): Promise<WithDuration<SingleEditOperation[] | undefined>> {
     return this.withDurationRecord(() => this.$provideOnTypeFormattingEdits(handle, resource, position, ch, options));
   }
   // ### Document Type Formatting Provider end
@@ -524,20 +533,30 @@ export class ExtHostLanguages implements IExtHostLanguages {
 
   // ### Code Actions Provider begin
   registerCodeActionsProvider(
+    extension: IExtensionDescription,
     selector: DocumentSelector,
     provider: CodeActionProvider,
     metadata?: CodeActionProviderMetadata,
   ): Disposable {
+    const store = new DisposableStore();
     const callId = this.addNewAdapter(new CodeActionAdapter(provider, this.documents, this.diagnostics));
     this.proxy.$registerQuickFixProvider(
       callId,
       this.transformDocumentSelector(selector),
-      metadata && metadata.providedCodeActionKinds ? metadata.providedCodeActionKinds.map((kind) => kind.value!) : undefined,
+      {
+        providedKinds: metadata?.providedCodeActionKinds?.map((kind) => kind.value),
+        documentation: metadata?.documentation?.map((doc) => ({
+          kind: doc.kind.value,
+          command: this.commands.converter.toInternal(doc.command, store)!,
+        })),
+      },
+      extension.displayName || extension.name,
+      Boolean(provider.resolveCodeAction),
     );
     return this.createDisposable(callId);
   }
 
-  $provideCodeActions(handle: number, resource: Uri, rangeOrSelection: Range | Selection, context: CodeActionContext): Promise<CodeActionList| undefined> {
+  $provideCodeActions(handle: number, resource: Uri, rangeOrSelection: Range | Selection, context: CodeActionContext): Promise<ICodeActionListDto | undefined> {
     return this.withAdapter(handle, CodeActionAdapter, (adapter) => adapter.provideCodeAction(resource, rangeOrSelection, context, this.commands.converter));
   }
   // ### Code Actions Provider end

@@ -288,12 +288,12 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       return result;
     };
     const resourceContext = new ResourceContextKey(this.editorContextKeyService, (uri: URI) => {
-        const res = getLanguageFromModel(uri);
-        if (res) {
-          return res!;
-        } else {
-          return getLanguageFromModel(uri);
-        }
+      const res = getLanguageFromModel(uri);
+      if (res) {
+        return res!;
+      } else {
+        return getLanguageFromModel(uri);
+      }
     });
     this.onActiveResourceChange((resource) => {
       if (this.currentEditor && this.currentEditor.currentUri) {
@@ -354,7 +354,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   async closeAll(uri?: URI, force?: boolean) {
     for (const group of this.editorGroups.slice(0)) {
       if (uri) {
-        await group.close(uri, {force});
+        await group.close(uri, { force });
       } else {
         await group.closeAll();
       }
@@ -385,7 +385,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   private createUntitledURI() {
     // 优先从已删除的 index 中获取
-    const index =  this.untitledCloseIndex.shift() || this.untitledIndex++;
+    const index = this.untitledCloseIndex.shift() || this.untitledIndex++;
     return new URI()
       .withScheme(Schemas.untitled)
       .withQuery(`name=Untitled-${index}&index=${index}`);
@@ -653,12 +653,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         return result;
       };
       this._resourceContext = new ResourceContextKey(this.contextKeyService, (uri: URI) => {
-          const res = getLanguageFromModel(uri);
-          if (res) {
-            return res!;
-          } else {
-            return getLanguageFromModel(uri);
-          }
+        const res = getLanguageFromModel(uri);
+        if (res) {
+          return res!;
+        } else {
+          return getLanguageFromModel(uri);
+        }
       });
       this._editorLangIDContextKey = this.contextKeyService.createKey<string>('editorLangId', '');
       this._isInDiffEditorContextKey = this.contextKeyService.createKey<boolean>('isInDiffEditor', false);
@@ -902,7 +902,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
     }
 
-    return editorGroup.open(uri, {...options, preview: false});
+    return editorGroup.open(uri, { ...options, preview: false });
   }
 
   async open(uri: URI, options: IResourceOpenOptions = {}): Promise<IOpenResourceResult> {
@@ -998,12 +998,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           }
           if (previewMode) {
             if (this.previewURI) {
-              await this.close(this.previewURI, { treatAsNotCurrent: true});
+              await this.close(this.previewURI, { treatAsNotCurrent: true });
             }
             this.previewURI = resource.uri;
           }
           if (options.replace && replaceResource) {
-            await this.close(replaceResource.uri, { treatAsNotCurrent: true});
+            await this.close(replaceResource.uri, { treatAsNotCurrent: true });
           }
         }
         if (options.backend) {
@@ -1256,7 +1256,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     return { activeOpenType, openTypes };
   }
 
-  public async close(uri: URI, {treatAsNotCurrent, force}: {
+  public async close(uri: URI, { treatAsNotCurrent, force }: {
     treatAsNotCurrent?: boolean,
     force?: boolean,
   } = {}) {
@@ -1331,7 +1331,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       for (const group of openedResources) {
         for (const res of group) {
           if (res.uri.isEqual(resource.uri)) {
-            count ++;
+            count++;
             if (count >= 2) {
               break;
             }
@@ -1347,8 +1347,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   private backToEmpty() {
-    const oldOpenType =  this._currentOpenType;
-    const oldResource =  this._currentResource;
+    const oldOpenType = this._currentOpenType;
+    const oldResource = this._currentResource;
 
     this._currentResource = null;
     this._currentOpenType = null;
@@ -1491,15 +1491,15 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
    */
   public async dropUri(uri: URI, position: DragOverPosition, sourceGroup?: EditorGroup, targetResource?: IResource) {
     if (position !== DragOverPosition.CENTER) {
-      await this.split(getSplitActionFromDragDrop(position), uri, {preview: false, focus: true});
+      await this.split(getSplitActionFromDragDrop(position), uri, { preview: false, focus: true });
     } else {
       // 扔在本体或者tab上
       if (!targetResource) {
-        await this.open(uri, {preview: false, focus: true});
+        await this.open(uri, { preview: false, focus: true });
       } else {
         const targetIndex = this.resources.indexOf(targetResource);
         if (targetIndex === -1) {
-          await this.open(uri, {preview: false, focus: true});
+          await this.open(uri, { preview: false, focus: true });
         } else {
           const sourceIndex = this.resources.findIndex((resource) => resource.uri.toString() === uri.toString());
           if (sourceIndex === -1) {
@@ -1513,11 +1513,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
             if (sourceIndex > targetIndex) {
               this.resources.splice(sourceIndex, 1);
               this.resources.splice(targetIndex, 0, sourceResource);
-              await this.open(uri, {preview: false});
+              await this.open(uri, { preview: false });
             } else if (sourceIndex < targetIndex) {
               this.resources.splice(targetIndex + 1, 0, sourceResource);
               this.resources.splice(sourceIndex, 1);
-              await this.open(uri, {preview: false});
+              await this.open(uri, { preview: false });
             }
           }
         }
@@ -1603,7 +1603,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
     }
     if (targetUri) {
-      if (!await this.open(targetUri, {deletedPolicy: 'skip'})) {
+      if (!await this.open(targetUri, { deletedPolicy: 'skip' })) {
         if (this.resources[0]) {
           await this.open(this.resources[0].uri);
         }

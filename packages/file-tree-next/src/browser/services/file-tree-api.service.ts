@@ -178,8 +178,8 @@ export class FileTreeAPI implements IFileTreeAPI {
       await this.workspaceEditService.apply({
         edits: [
           {
-            newUri: to,
-            oldUri: from,
+            newResource: to,
+            oldResource: from,
             options: {
               isDirectory,
               overwrite: true,
@@ -198,7 +198,7 @@ export class FileTreeAPI implements IFileTreeAPI {
       await this.workspaceEditService.apply({
         edits: [
           {
-            newUri: uri,
+            newResource: uri,
             options: {},
           },
         ],
@@ -215,7 +215,7 @@ export class FileTreeAPI implements IFileTreeAPI {
       await this.workspaceEditService.apply({
         edits: [
           {
-            newUri: uri,
+            newResource: uri,
             options: {
               isDirectory: true,
             },
@@ -233,7 +233,7 @@ export class FileTreeAPI implements IFileTreeAPI {
       await this.workspaceEditService.apply({
         edits: [
           {
-            oldUri: uri,
+            oldResource: uri,
             options: {},
           },
         ],

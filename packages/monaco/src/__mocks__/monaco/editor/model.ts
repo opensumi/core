@@ -168,14 +168,14 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   _setTrackedRange(id: any, newRange: any, newStickiness: any) {
     return '';
   }
-  undo(): monaco.Selection[] | null {
-    throw new Error('Method not implemented.');
+  undo() {
+    return;
   }
   canUndo(): boolean {
-    throw new Error('Method not implemented.');
+    return true;
   }
-  redo(): monaco.Selection[] | null {
-    throw new Error('Method not implemented.');
+  redo() {
+    return;
   }
   canRedo(): boolean {
     throw new Error('Method not implemented.');
@@ -384,7 +384,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
 
   pushEOL = jest.fn();
 
-  applyEdits(operations: monaco.editor.IIdentifiedSingleEditOperation[]): monaco.editor.IIdentifiedSingleEditOperation[] {
+  applyEdits(operations: monaco.editor.IIdentifiedSingleEditOperation[]): monaco.editor.IValidEditOperation[] {
     for (const operation of operations) {
       this.value =
         this.value.substr(0, operation.range.startColumn) +

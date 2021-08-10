@@ -8,6 +8,11 @@ import { IEditorDocumentModelService } from './types';
 @Injectable()
 export class MonacoTextModelService implements ITextModelService {
 
+  canHandleResource(resource: any): boolean {
+    // FIXME: 暂时返回 true
+    return true;
+  }
+
   hasTextModelContentProvider(scheme: string): boolean {
     throw new Error('Method not implemented.');
   }

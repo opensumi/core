@@ -1,4 +1,4 @@
-import { ContextKeyExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { ContextKeyExpression } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 import { ContextKeyChangeEvent, IScopedContextKeyService, IContextKey } from '@ali/ide-core-browser';
 import { Event } from '@ali/ide-core-common';
@@ -145,7 +145,7 @@ export class MockContextKeyService implements IScopedContextKeyService {
     return this;
   }
 
-  match(expression: string | ContextKeyExpr | undefined, context?: HTMLElement | null | undefined): boolean {
+  match(expression: string | ContextKeyExpression | undefined, context?: HTMLElement | null | undefined): boolean {
     if (typeof expression === 'string') {
       return WhenExpressionParser.parse(expression, this.getData());
     }
@@ -160,8 +160,8 @@ export class MockContextKeyService implements IScopedContextKeyService {
     }, {});
   }
 
-  getKeysInWhen(when: string | ContextKeyExpr | undefined) {
-    let expr: ContextKeyExpr | undefined;
+  getKeysInWhen(when: string | ContextKeyExpression | undefined) {
+    let expr: ContextKeyExpression | undefined;
     if (typeof when === 'string') {
       expr = this.parse(when);
     }
@@ -175,7 +175,7 @@ export class MockContextKeyService implements IScopedContextKeyService {
     }
   }
 
-  parse(when: string | undefined): ContextKeyExpr | undefined {
+  parse(when: string | undefined): ContextKeyExpression | undefined {
     return undefined;
   }
 

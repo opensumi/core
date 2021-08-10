@@ -1,9 +1,27 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import type { IBulkEditPreviewHandler, IBulkEditResult, IBulkEditService, IBulkEditOptions } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import { ResourceEdit, ResourceFileEdit, ResourceTextEdit } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 import { Injectable, Autowired } from '@ali/common-di';
-import { URI, ILogger } from '@ali/ide-core-common';
+import { URI, ILogger, revive } from '@ali/ide-core-common';
 import { UriComponents } from '@ali/ide-editor';
-import { IWorkspaceEdit, IWorkspaceEditService, IResourceTextEdit, ITextEdit, IResourceFileEdit } from '../';
+import { IWorkspaceEdit, IWorkspaceEditService, IResourceTextEdit, IResourceFileEdit } from '../common';
+import { isResourceFileEdit, isResourceTextEdit } from './utils';
+
+function reviveWorkspaceEditDto2(data: ResourceEdit[] | undefined): ResourceEdit[] {
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  const result: ResourceEdit[] = [];
+  for (const edit of revive(data)) {
+    if (isResourceFileEdit(edit)) {
+      result.push(new ResourceFileEdit(edit.oldResource, edit.newResource, edit.options, edit.metadata));
+    } else if (isResourceTextEdit(edit)) {
+      result.push(new ResourceTextEdit(edit.resource, edit.textEdit, edit.versionId, edit.metadata));
+    }
+  }
+  return result;
+}
 
 @Injectable()
 export class MonacoBulkEditService implements IBulkEditService {
@@ -27,12 +45,12 @@ export class MonacoBulkEditService implements IBulkEditService {
     return `Made ${totalEdits} text edits in one file`;
   }
 
-  async apply(edit: monaco.languages.WorkspaceEdit, options?: IBulkEditOptions): Promise<IBulkEditResult & { success: boolean }> {
-    let edits = edit;
+  async apply(resourceEdits: ResourceEdit[], options?: IBulkEditOptions): Promise<IBulkEditResult & { success: boolean }> {
+    let edits = reviveWorkspaceEditDto2(resourceEdits);
 
     if (options?.showPreview && this._previewHandler) {
       try {
-        edits = await this._previewHandler(edit, options);
+        edits = await this._previewHandler(edits, options);
       } catch (err) {
         this.logger.error(`Handle refactor preview error: \n ${err.message || err}`);
         return { ariaSummary: err.message, success: false };
@@ -73,17 +91,17 @@ export class MonacoBulkEditService implements IBulkEditService {
     };
   }
 
-  private convertWorkspaceEdit(edit: monaco.languages.WorkspaceEdit): { workspaceEdit: IWorkspaceEdit, totalEdits: number, totalFiles: number } {
+  private convertWorkspaceEdit(edit: ResourceEdit[]): { workspaceEdit: IWorkspaceEdit, totalEdits: number, totalFiles: number } {
     const workspaceEdit: IWorkspaceEdit = { edits: [] };
     let totalEdits = 0;
     let totalFiles = 0;
-    for (const resourceEdit of edit.edits) {
-      if ((resourceEdit as monaco.languages.WorkspaceTextEdit).resource) {
-        const resourceTextEdit = resourceEdit as monaco.languages.WorkspaceTextEdit;
+    for (const resourceEdit of edit) {
+      if ((resourceEdit as IResourceTextEdit).resource) {
+        const resourceTextEdit = resourceEdit as IResourceTextEdit;
         const tmp: IResourceTextEdit = {
           // TODO 类型定义有问题，拿到的是URIComponents并不是monaco.Uri
-          resource: URI.from(resourceTextEdit.resource as UriComponents),
-          edit: resourceTextEdit.edit as ITextEdit,
+          resource: URI.from(resourceTextEdit.resource as unknown as UriComponents),
+          textEdit: resourceTextEdit.textEdit,
           options: {
             dirtyIfInEditor: true,
           },
@@ -91,11 +109,11 @@ export class MonacoBulkEditService implements IBulkEditService {
         workspaceEdit.edits.push(tmp);
         totalEdits += 1;
       } else {
-        const resourceFileEdit = resourceEdit as monaco.languages.WorkspaceFileEdit;
-        const { oldUri, newUri, options = {} } = resourceFileEdit;
+        const resourceFileEdit = resourceEdit as ResourceFileEdit;
+        const { oldResource, newResource, options = {} } = resourceFileEdit;
         const tmp: IResourceFileEdit = {
-          oldUri: oldUri ? URI.from(oldUri as UriComponents) : undefined,
-          newUri: newUri ? URI.from(newUri as UriComponents) : undefined,
+          oldResource: oldResource ? URI.from(oldResource as UriComponents) : undefined,
+          newResource: newResource ? URI.from(newResource as UriComponents) : undefined,
           options,
         };
         workspaceEdit.edits.push(tmp);

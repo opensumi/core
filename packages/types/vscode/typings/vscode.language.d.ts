@@ -713,19 +713,35 @@ declare module 'vscode' {
    *
    * A code action can be any command that is [known](#commands.getCommands) to the system.
    */
-  export interface CodeActionProvider {
+  export interface CodeActionProvider<T extends CodeAction = CodeAction> {
     /**
-     * Provide commands for the given document and range.
-     *
-     * @param document The document in which the command was invoked.
-     * @param range The selector or range for which the command was invoked. This will always be a selection if
-     * there is a currently active editor.
-     * @param context Context carrying additional information.
-     * @param token A cancellation token.
-     * @return An array of commands, quick fixes, or refactorings or a thenable of such. The lack of a result can be
-     * signaled by returning `undefined`, `null`, or an empty array.
-     */
-    provideCodeActions(document: TextDocument, range: Range | Selection, context: CodeActionContext, token: CancellationToken): ProviderResult<(Command | CodeAction)[]>;
+		 * Provide commands for the given document and range.
+		 *
+		 * @param document The document in which the command was invoked.
+		 * @param range The selector or range for which the command was invoked. This will always be a selection if
+		 * there is a currently active editor.
+		 * @param context Context carrying additional information.
+		 * @param token A cancellation token.
+		 * @return An array of commands, quick fixes, or refactorings or a thenable of such. The lack of a result can be
+		 * signaled by returning `undefined`, `null`, or an empty array.
+		 */
+		provideCodeActions(document: TextDocument, range: Range | Selection, context: CodeActionContext, token: CancellationToken): ProviderResult<(Command | CodeAction)[]>;
+
+		/**
+		 * Given a code action fill in its [`edit`](#CodeAction.edit)-property. Changes to
+		 * all other properties, like title, are ignored. A code action that has an edit
+		 * will not be resolved.
+		 *
+		 * *Note* that a code action provider that returns commands, not code actions, cannot successfully
+		 * implement this function. Returning commands is deprecated and instead code actions should be
+		 * returned.
+		 *
+		 * @param codeAction A code action.
+		 * @param token A cancellation token.
+		 * @return The resolved code action or a thenable that resolves to such. It is OK to return the given
+		 * `item`. When no result is returned, the given `item` will be used.
+		 */
+		resolveCodeAction?(codeAction: T, token: CancellationToken): ProviderResult<T>;
   }
 
   /**
@@ -739,6 +755,39 @@ declare module 'vscode' {
      * may list our every specific kind they provide, such as `CodeActionKind.Refactor.Extract.append('function`)`
      */
     readonly providedCodeActionKinds?: ReadonlyArray<CodeActionKind>;
+    /**
+		 * Static documentation for a class of code actions.
+		 *
+		 * Documentation from the provider is shown in the code actions menu if either:
+		 *
+		 * - Code actions of `kind` are requested by VS Code. In this case, VS Code will show the documentation that
+		 *   most closely matches the requested code action kind. For example, if a provider has documentation for
+		 *   both `Refactor` and `RefactorExtract`, when the user requests code actions for `RefactorExtract`,
+		 *   VS Code will use the documentation for `RefactorExtract` instead of the documentation for `Refactor`.
+		 *
+		 * - Any code actions of `kind` are returned by the provider.
+		 *
+		 * At most one documentation entry will be shown per provider.
+		 */
+		readonly documentation?: ReadonlyArray<{
+			/**
+			 * The kind of the code action being documented.
+			 *
+			 * If the kind is generic, such as `CodeActionKind.Refactor`, the documentation will be shown whenever any
+			 * refactorings are returned. If the kind if more specific, such as `CodeActionKind.RefactorExtract`, the
+			 * documentation will only be shown when extract refactoring code actions are returned.
+			 */
+			readonly kind: CodeActionKind;
+
+			/**
+			 * Command that displays the documentation to the user.
+			 *
+			 * This can display the documentation directly in VS Code or open a website using [`env.openExternal`](#env.openExternal);
+			 *
+			 * The title of this documentation code action is taken from [`Command.title`](#Command.title)
+			 */
+			readonly command: Command;
+		}>;
   }
 
   /**

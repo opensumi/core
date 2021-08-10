@@ -4,8 +4,8 @@ import type { IBulkEditService } from '@ali/monaco-editor-core/esm/vs/editor/bro
 
 // 对文件位置(添加，删除，移动, 复制)
 export interface IResourceFileEdit {
-  oldUri?: URI;
-  newUri?: URI;
+  oldResource?: URI;
+  newResource?: URI;
   options: {
     overwrite?: boolean,
     ignoreIfNotExists?: boolean,
@@ -20,8 +20,8 @@ export interface IResourceFileEdit {
 // 对文件内容的编辑
 export interface IResourceTextEdit {
   resource: URI;
-  modelVersionId?: number; // monaco's version id
-  edit: ITextEdit;
+  versionId?: number; // monaco's version id
+  textEdit: ITextEdit;
   options?: {
     openDirtyInEditor?: boolean
     dirtyIfInEditor?: boolean,

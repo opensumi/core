@@ -47,10 +47,11 @@ import {
   CompletionItemKind,
   CompletionItemTag,
   ChainedCacheId,
+  IWorkspaceEditDto,
+  CacheId,
 } from './model.api';
 import type {
   CodeActionContext,
-  CodeActionList,
   SignatureHelpContext,
   SignatureHelpResult,
   Command,
@@ -126,7 +127,9 @@ export interface IMainThreadLanguages {
   $registerQuickFixProvider(
     handle: number,
     selector: SerializedDocumentFilter[],
-    codeActionKinds?: string[],
+    metadata: ICodeActionProviderMetadataDto,
+    displayName: string,
+    supportResolve: boolean,
   ): void;
   $registerImplementationProvider(
     handle: number,
@@ -359,7 +362,9 @@ export interface IExtHostLanguages {
     resource: UriComponents,
     rangeOrSelection: Range | Selection,
     context: CodeActionContext,
-  ): Promise<CodeActionList | undefined>;
+  ): Promise<ICodeActionListDto | undefined>;
+  $resolveCodeAction(handle: number, id: ChainedCacheId, token: CancellationToken): Promise<IWorkspaceEditDto | undefined>;
+  $releaseCodeActions(handle: number, cacheId: number): void;
 
   $provideDocumentLinks(
     handle: number,
@@ -494,14 +499,14 @@ export interface IInlineValueContextDto {
   stoppedLocation: IRange;
 }
 
-export const enum ISuggestResultDtoField {
+export enum ISuggestResultDtoField {
   defaultRanges = 'a',
   completions = 'b',
   isIncomplete = 'c',
   duration = 'd',
 }
 
-export const enum ISuggestDataDtoField {
+export enum ISuggestDataDtoField {
   label = 'a',
   kind = 'b',
   detail = 'c',
@@ -591,4 +596,25 @@ export namespace MonacoModelIdentifier {
       languageId: model.getModeId(),
     };
   }
+}
+
+export interface ICodeActionDto {
+  cacheId?: ChainedCacheId;
+  title: string;
+  edit?: IWorkspaceEditDto;
+  diagnostics?: IMarkerData[];
+  command?: Command;
+  kind?: string;
+  isPreferred?: boolean;
+  disabled?: string;
+}
+
+export interface ICodeActionListDto {
+  cacheId: CacheId;
+  actions: ReadonlyArray<ICodeActionDto>;
+}
+
+export interface ICodeActionProviderMetadataDto {
+  readonly providedKinds?: readonly string[];
+  readonly documentation?: ReadonlyArray<{ readonly kind: string, readonly command: Command }>;
 }
