@@ -323,6 +323,9 @@ export class ClientApp implements IClientApp, IDisposable {
     // 初始化命令、快捷键与菜单
     await this.initializeCoreRegistry();
 
+    // 核心模块初始化完毕
+    this.stateService.state = 'core_module_initialized';
+
     await this.measure('Contributions.onStart', () => this.onStartContributions());
 
     await this.runContributionsPhase(this.contributions, 'onDidStart');

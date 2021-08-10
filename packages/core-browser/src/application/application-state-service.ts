@@ -5,6 +5,8 @@ import { Deferred, IEventBus, BasicEvent } from '@ali/ide-core-common';
 export type ClientAppState =
   'init'
   | 'client_connected'
+  // contribution initialized 及命令、菜单、快捷键三个核心模块都初始化结束后
+  | 'core_module_initialized'
   | 'started_contributions'
   | 'ready'
   | 'electron_asking_close'
