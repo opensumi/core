@@ -1,18 +1,22 @@
+import { DebugContextKey } from './../../contextkeys/debug-contextkey.service';
 import { MonacoCodeService } from '@ali/ide-editor/lib/browser/editor.override';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { IHistoryNavigationWidget } from '@ali/monaco-editor-core/esm/vs/base/browser/history';
+import { HistoryNavigator } from '@ali/monaco-editor-core/esm/vs/base/common/history';
 import { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { Schemas, URI, CommandRegistry, Emitter, Event } from '@ali/ide-core-common';
+import { Schemas, URI, CommandRegistry, Emitter, Event, STORAGE_NAMESPACE } from '@ali/ide-core-common';
 import { IEditorDocumentModelService, IEditorDocumentModelContentProvider, ICodeEditor, getSimpleEditorOptions } from '@ali/ide-editor/lib/browser';
 import { EditorCollectionService, IDecorationApplyOptions } from '@ali/ide-editor';
-import { IContextKeyService, MonacoOverrideServiceRegistry, ServiceNames, localize } from '@ali/ide-core-browser';
+import { IContextKeyService, MonacoOverrideServiceRegistry, ServiceNames, localize, StorageProvider } from '@ali/ide-core-browser';
 import { DEBUG_CONSOLE_CONTAINER_ID, IDebugSessionManager, CONTEXT_IN_DEBUG_MODE_KEY, DebugState } from '../../../common';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugConsoleModelService } from './debug-console-tree.model.service';
 import { transparent, editorForeground, IThemeService } from '@ali/ide-theme';
 
 const DECORATION_KEY = 'consoleinputdecoration';
+const HISTORY_STORAGE_KEY = 'debug.console.history';
 
 const firstUpperCase = (str: string) => {
   return str.replace(/^\S/, (s) => s.toUpperCase());
@@ -31,7 +35,7 @@ const consoleInputMonacoOptions: monaco.editor.IEditorOptions = {
 };
 
 @Injectable()
-export class DebugConsoleService {
+export class DebugConsoleService implements IHistoryNavigationWidget {
   @Autowired(DebugConsoleModelService)
   protected readonly debugConsoleModelService: DebugConsoleModelService;
 
@@ -59,6 +63,15 @@ export class DebugConsoleService {
   @Autowired(MonacoOverrideServiceRegistry)
   private readonly overrideServicesRegistry: MonacoOverrideServiceRegistry;
 
+  @Autowired(StorageProvider)
+  private readonly storageProvider: StorageProvider;
+
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
+  private debugContextKey: DebugContextKey;
+
+  protected history: HistoryNavigator<string>;
   protected _consoleInputElement: HTMLDivElement | null = null;
   protected _updateDisposable: monaco.IDisposable | null = null;
   protected _consoleModel: ITextModel;
@@ -82,8 +95,12 @@ export class DebugConsoleService {
         if (inDebugMode) {
           this.updateReadOnly(false);
           this.updateInputDecoration();
+          this.debugContextKey.contextInDdebugMode.set(true);
         } else {
           this.updateReadOnly(true);
+          if (this.debugContextKey) {
+            this.debugContextKey.contextInDdebugMode.set(false);
+          }
         }
       }
     });
@@ -117,28 +134,63 @@ export class DebugConsoleService {
     }
   }
 
-  public async initConsoleInputMonacoInstance(e: HTMLDivElement | null) {
+  public async init(e: HTMLDivElement | null) {
     if (!e) {
       return;
     }
+
+    const storage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
+    this.history = new HistoryNavigator(storage.get(HISTORY_STORAGE_KEY, []), 50);
+
     this._consoleInputElement = e;
-    this.inputEditor = await this.editorService.createCodeEditor(this._consoleInputElement!, { ...consoleInputMonacoOptions });
-    const editor = this.inputEditor.monacoEditor;
-    editor.onKeyDown(async (e: monaco.IKeyboardEvent) => {
-      if (e.keyCode === monaco.KeyCode.Enter && e.shiftKey === false) {
-        const value = editor.getValue();
-        await this.tree.execute(value);
-        editor.setValue('');
-      }
-    });
+    this.inputEditor = this.editorService.createCodeEditor(this._consoleInputElement!, { ...consoleInputMonacoOptions });
+
+    this.debugContextKey = this.injector.get(DebugContextKey, [(this.inputEditor.monacoEditor as any)._contextKeyService]);
 
     this.registerDecorationType();
     await this.createConsoleInput();
     this.setMode();
   }
 
+  public get contextInDebugRepl() {
+    return this.debugContextKey.contextInDebugRepl;
+  }
+
   public get consoleInputValue() {
     return (this._consoleModel && this._consoleModel.getValue()) || '';
+  }
+
+  public showPreviousValue(): void {
+    if (!this._isReadonly) {
+      this.navigateHistory(true);
+    }
+  }
+
+  public showNextValue(): void {
+    if (!this._isReadonly) {
+      this.navigateHistory(false);
+    }
+  }
+
+  public async runExecute(): Promise<void> {
+    if (!this.inputEditor) {
+      return;
+    }
+
+    const editor = this.inputEditor.monacoEditor;
+    const value = editor.getValue();
+    await this.tree.execute(value);
+    this.history.add(value);
+    editor.setValue('');
+  }
+
+  private navigateHistory(previous: boolean): void {
+    const historyInput = previous ? this.history.previous() : this.history.next();
+    if (historyInput && this.inputEditor && this.inputEditor.monacoEditor) {
+      const { monacoEditor } = this.inputEditor;
+      monacoEditor.setValue(historyInput);
+      monacoEditor.setPosition({ lineNumber: 1, column: historyInput.length + 1 });
+    }
   }
 
   private get consoleInputUri() {
@@ -162,8 +214,14 @@ export class DebugConsoleService {
       this.layoutBody();
     }, 0);
 
-    monacoEditor.onDidFocusEditorText(() => this.updateInputDecoration());
-    monacoEditor.onDidBlurEditorText(() => this.updateInputDecoration());
+    monacoEditor.onDidFocusEditorText(() => {
+      this.contextInDebugRepl.set(true);
+      this.updateInputDecoration();
+    });
+    monacoEditor.onDidBlurEditorText(() => {
+      this.contextInDebugRepl.set(false);
+      this.updateInputDecoration();
+    });
     monacoEditor.onDidChangeModelContent(() => {
       const lineNum = monacoEditor.getModel()!.getLineCount();
       this.layoutBody(lineNum * 18);

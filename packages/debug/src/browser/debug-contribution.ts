@@ -131,6 +131,7 @@ export namespace DEBUG_COMMANDS {
   export const COPY_VARIABLE_VALUE = {
     id: 'debug.variables.copy',
   };
+  // console commands
   export const CLEAR_CONSOLE = {
     id: 'debug.console.clear',
     label: localize('debug.console.clear'),
@@ -144,6 +145,15 @@ export namespace DEBUG_COMMANDS {
   export const COLLAPSE_ALL_CONSOLE_ITEM = {
     id: 'debug.console.collapseAll',
     label: localize('debug.console.collapseAll'),
+  };
+  export const CONSOLE_ENTER_EVALUATE = {
+    id: 'debug.console.keybing.enter.evaluate',
+  };
+  export const CONSOLE_INPUT_DOWN_ARROW = {
+    id: 'debug.console.input.down.arrow',
+  };
+  export const CONSOLE_INPUT_UP_ARROW = {
+    id: 'debug.console.input.up.arrow',
   };
 }
 

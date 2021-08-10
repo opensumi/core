@@ -32,7 +32,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   React.useEffect(() => {
-    debugConsoleService.initConsoleInputMonacoInstance(debugInputRef.current);
+    debugConsoleService.init(debugInputRef.current);
   }, [debugInputRef.current]);
 
   React.useEffect(() => {
