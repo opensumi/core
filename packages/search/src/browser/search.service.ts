@@ -566,7 +566,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
   @action.bound
   openPreference() {
-    this.commandService.executeCommand(COMMON_COMMANDS.OPEN_PREFERENCES.id);
+    this.commandService.executeCommand(COMMON_COMMANDS.OPEN_PREFERENCES.id, 'files.watcherExclude');
   }
 
   get searchHistory(): SearchHistory {

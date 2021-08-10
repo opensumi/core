@@ -43,7 +43,6 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'string',
       default: 'vs-dark',
       enum: [],
-      description: '%preference.description.general.theme%',
     },
     'general.askReloadOnLanguageChange': {
       type: 'boolean',
@@ -54,7 +53,6 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'string',
       default: 'vs-minimal',
       enum: [],
-      description: '%preference.description.general.icon%',
     },
     'workbench.colorCustomizations': {
       type: 'object',
@@ -197,7 +195,6 @@ export const corePreferenceSchema: PreferenceSchema = {
     },
     'files.eol': {
       type: 'string',
-      description: '%preference.files.eolDesc%',
       enum: [
         '\n',
         '\r\n',

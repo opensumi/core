@@ -224,7 +224,6 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
           type: 'string',
           default: 'Default Dark+',
           enum: this.getAvailableThemeInfos().map((info) => info.themeId),
-          description: '%preference.description.general.theme%',
         },
       },
     }, true);
