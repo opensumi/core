@@ -37,9 +37,9 @@ import { Logger, ILogger } from '../logger';
 import { ComponentRegistry, ComponentRegistryImpl, ComponentContribution, TabBarToolbarContribution } from '../layout';
 import { useNativeContextMenu } from '../utils';
 import { createElectronMainApi } from '../utils/electron';
-import { IElectronMainUIService, IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
+import { IElectronMainUIService, IElectronMainLifeCycleService, IElectronURLService } from '@ali/ide-core-common/lib/electron';
 import { PreferenceContribution } from '../preferences';
-import { VariableRegistry, VariableRegistryImpl, VariableContribution} from '../variable';
+import { VariableRegistry, VariableRegistryImpl, VariableContribution } from '../variable';
 
 import { AbstractMenuService, MenuServiceImpl, AbstractMenubarService, MenubarServiceImpl, IMenuRegistry, MenuRegistryImpl, MenuContribution, AbstractContextMenuService, ContextMenuServiceImpl } from '../menu/next';
 import { ICtxMenuRenderer } from '../menu/next/renderer/ctxmenu/base';
@@ -223,22 +223,25 @@ export function injectInnerProviders(injector: Injector) {
   if (isElectronRenderer()) {
     injector.addProviders({
       token: IElectronMainMenuService,
-      useValue: createElectronMainApi('menu'),
+      useValue: createElectronMainApi(IElectronMainMenuService),
     }, {
       token: IElectronMainUIService,
-      useValue: createElectronMainApi('ui'),
+      useValue: createElectronMainApi(IElectronMainUIService),
     }, {
       token: IElectronMainLifeCycleService,
-      useValue: createElectronMainApi('lifecycle'),
+      useValue: createElectronMainApi(IElectronMainLifeCycleService),
+    }, {
+      token: IElectronURLService,
+      useValue: createElectronMainApi(IElectronURLService),
     },
-    {
-      token: IElectronMenuFactory,
-      useClass: ElectronMenuFactory,
-    },
-    {
-      token: IElectronMenuBarService,
-      useClass: ElectronMenuBarService,
-    },
+      {
+        token: IElectronMenuFactory,
+        useClass: ElectronMenuFactory,
+      },
+      {
+        token: IElectronMenuBarService,
+        useClass: ElectronMenuBarService,
+      },
     );
   }
 }

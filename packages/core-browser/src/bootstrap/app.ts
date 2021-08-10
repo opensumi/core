@@ -42,6 +42,7 @@ import { injectCorePreferences } from '../core-preferences';
 import { CorePreferences } from '../core-preferences';
 import { renderClientApp, IAppRenderer } from './app.view';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
+import { DEFAULT_APPLICATION_NAME, DEFAULT_URI_SCHEME } from '@ali/ide-core-common/lib/const/application';
 import { electronEnv } from '../utils';
 import { MenuRegistryImpl, IMenuRegistry } from '../menu/next';
 import { DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
@@ -87,9 +88,6 @@ if (typeof (window as any).ResizeObserver === 'undefined') {
 }
 
 export class ClientApp implements IClientApp, IDisposable {
-
-  public static DEFAULT_APPLICATION_NAME: string = 'KAITIAN';
-  public static DEFAULT_URI_SCHEME: string = 'kaitian';
 
   /**
    * 应用是否完成初始化
@@ -140,8 +138,8 @@ export class ClientApp implements IClientApp, IDisposable {
     this.browserModules = opts.modulesInstances || [];
 
     this.config = {
-      appName: ClientApp.DEFAULT_APPLICATION_NAME,
-      uriScheme: ClientApp.DEFAULT_URI_SCHEME,
+      appName: DEFAULT_APPLICATION_NAME,
+      uriScheme: DEFAULT_URI_SCHEME,
       // 如果通过 config 传入了 appName 及 uriScheme，则优先使用
       ...restOpts,
       // 一些转换和 typo 修复
@@ -161,8 +159,8 @@ export class ClientApp implements IClientApp, IDisposable {
     if (opts.extensionDevelopmentPath) {
       this.config.extensionCandidate = (this.config.extensionCandidate || []).concat(
         Array.isArray(opts.extensionDevelopmentPath) ?
-        opts.extensionDevelopmentPath.map((e) => asExtensionCandidate(e, true)) :
-        [asExtensionCandidate(opts.extensionDevelopmentPath, true)]);
+          opts.extensionDevelopmentPath.map((e) => asExtensionCandidate(e, true)) :
+          [asExtensionCandidate(opts.extensionDevelopmentPath, true)]);
 
       this.config.extensionDevelopmentHost = !!opts.extensionDevelopmentPath;
     }
@@ -213,7 +211,7 @@ export class ClientApp implements IClientApp, IDisposable {
         }, this.connectionProtocols, this.config.useExperimentalMultiChannel, this.config.clientId);
 
         this.logger = this.getLogger();
-         // 回写需要用到打点的 Logger 的地方
+        // 回写需要用到打点的 Logger 的地方
         this.injector.get(WSChannelHandler).replaceLogger(this.logger);
       }
     }
