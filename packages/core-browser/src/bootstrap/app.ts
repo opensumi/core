@@ -208,7 +208,7 @@ export class ClientApp implements IClientApp, IDisposable {
 
         await createClientConnection2(this.injector, this.modules, this.connectionPath, () => {
           this.onReconnectContributions();
-        }, this.connectionProtocols, this.config.useExperimentalMultiChannel, this.config.clientId);
+        }, this.connectionProtocols, this.config.clientId);
 
         this.logger = this.getLogger();
         // 回写需要用到打点的 Logger 的地方

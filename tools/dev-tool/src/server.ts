@@ -10,8 +10,6 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
   const deferred = new Deferred<http.Server>();
   const port = process.env.IDE_SERVER_PORT || 8000;
   let opts: IServerAppOpts = {
-    workspaceDir: path.join(__dirname, '../../workspace'),
-    extensionDir: path.join(__dirname, '../../extensions'),
     webSocketHandler: [
       // new TerminalHandler(logger),
     ],

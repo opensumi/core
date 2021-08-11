@@ -18,10 +18,10 @@ import { INodeLogger } from './logger/node-logger';
 
 export { RPCServiceCenter };
 
-export function createServerConnection2(server: http.Server, injector, modulesInstances, handlerArr?: WebSocketHandler[], useExperimentalMultiChannel?: boolean) {
+export function createServerConnection2(server: http.Server, injector, modulesInstances, handlerArr?: WebSocketHandler[]) {
   const logger = injector.get(INodeLogger);
   const socketRoute = new WebSocketServerRoute(server, logger);
-  const channelHandler = new CommonChannelHandler('/service', logger, useExperimentalMultiChannel);
+  const channelHandler = new CommonChannelHandler('/service', logger);
 
   // 事件由 connection 的时机来触发
   commonChannelPathHandler.register('RPCService', {
