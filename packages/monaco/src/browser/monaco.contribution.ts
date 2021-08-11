@@ -258,9 +258,9 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
   private patchMonacoThemeService() {
     // 临时实现，覆盖 standaloneThemeService 中的 getTokenStyleMetadata，因为在 0.20.0 中一直永远 undefined
     const standaloneThemeService = StaticServices.standaloneThemeService.get();
-    const originalGetTheme: typeof standaloneThemeService.getTheme = standaloneThemeService.getTheme.bind(standaloneThemeService);
+    const originalGetTheme: typeof standaloneThemeService.getColorTheme = standaloneThemeService.getColorTheme.bind(standaloneThemeService);
     const patchedGetTokenStyleMetadatadFlag = '__patched_getTokenStyleMetadata';
-    standaloneThemeService.getTheme = () => {
+    standaloneThemeService.getColorTheme = () => {
       const theme = originalGetTheme();
       if (!(patchedGetTokenStyleMetadatadFlag in theme)) {
         Object.defineProperty(theme, patchedGetTokenStyleMetadatadFlag, { enumerable: false, configurable: false, writable: false, value: true });
@@ -327,7 +327,7 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
             // 因此改成 (a && b) || (a && c) 这样不会报错
             // serialize 之后的结果类似 a && b || a && c
             // monaco-editor contextkey 的计算规则中 && 优先级高于 ||
-            if (when.getType() === ContextKeyExprType.Or) {
+            if (when.type === ContextKeyExprType.Or) {
               const exprs = (when as ContextKeyOrExpr).expr;
               when = ContextKeyExpr.or(
                 ...exprs.map((expr) => ContextKeyExpr.and(expr, editorFocus)),

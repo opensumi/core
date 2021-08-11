@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { PreferenceService, FileUri, Disposable, DisposableCollection, ILogger, PreferenceScope, ILoggerManagerClient, URI } from '@ali/ide-core-browser';
+import { PreferenceService, FileUri, Disposable, DisposableCollection, ILogger, PreferenceScope, ILoggerManagerClient, URI, IContextKeyService } from '@ali/ide-core-browser';
 import { AppConfig } from '@ali/ide-core-node';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IMessageService } from '@ali/ide-overlay';
@@ -20,6 +20,7 @@ import { IUserStorageService } from '@ali/ide-preferences';
 import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
 import { DebugContribution, DebugModule } from '@ali/ide-debug/lib/browser';
 import { EditorCollectionService } from '@ali/ide-editor/lib/browser';
+import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 
 @Injectable()
 export class MockLoggerManagerClient {
@@ -415,6 +416,10 @@ describe('Launch Preferences', () => {
         ]);
 
         injector.overrideProviders(
+          {
+            token: IContextKeyService,
+            useClass: MockContextKeyService,
+          },
           {
             token: IUserStorageService,
             useClass: UserStorageServiceImpl,

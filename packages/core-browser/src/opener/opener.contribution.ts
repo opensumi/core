@@ -1,9 +1,11 @@
-import { Autowired } from '@ali/common-di';
+import { Injector, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
 import { ClientAppContribution } from '../common/common.define';
-import { Domain, ContributionProvider } from '@ali/ide-core-common';
+import { Domain, ContributionProvider, isElectronRenderer } from '@ali/ide-core-common';
 import { OpenerContribution, IOpenerService } from '.';
 import { CommandOpener } from './command-opener';
 import { HttpOpener } from './http-opener';
+import { IElectronRendererURLService, IElectronURLService } from '@ali/ide-core-common/lib/electron';
+import { electronEnv } from '../utils/electron';
 
 @Domain(OpenerContribution)
 export class DefaultOpenerContribution implements OpenerContribution {
@@ -23,6 +25,9 @@ export class DefaultOpenerContribution implements OpenerContribution {
 @Domain(ClientAppContribution)
 export class OpenerContributionClient implements ClientAppContribution {
 
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
   @Autowired(OpenerContribution)
   private readonly contributionProvider: ContributionProvider<OpenerContribution>;
 
@@ -33,6 +38,15 @@ export class OpenerContributionClient implements ClientAppContribution {
     const contributions = this.contributionProvider.getContributions();
     for (const contribution of contributions) {
       contribution.registerOpener(this.openerService);
+    }
+
+    if (isElectronRenderer()) {
+      const electronRendererURLService: IElectronRendererURLService = this.injector.get(IElectronURLService);
+      electronRendererURLService.on('open-url', (payload) => {
+        if (electronEnv.currentWindowId === payload.windowId) {
+          this.openerService.open(payload.url);
+        }
+      });
     }
   }
 }

@@ -33,16 +33,16 @@ import { BrowserWindow, Menu } from 'electron';
 import { isWindows } from '../../core-node/lib';
 
 async function delay(ms: number) {
-  return new Promise((resolve) => {
+  return new Promise<void>((resolve) => {
     setTimeout(() => {
       resolve();
     }, ms);
   });
 }
 
-describe('electron main menu tests' , () => {
+describe('electron main menu tests', () => {
 
-  it ('menu leak should not happen', async (done) => {
+  it('menu leak should not happen', async (done) => {
     if (isWindows) {
       return;
     }

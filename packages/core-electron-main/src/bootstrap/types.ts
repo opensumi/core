@@ -1,8 +1,9 @@
 import { BrowserWindowConstructorOptions } from 'electron';
-import { ConstructorOf } from '@ali/ide-core-common';
-import { ElectronMainModule } from '../electron-main-module';
+import { Injector } from '@ali/common-di';
+import { ConstructorOf, ExtensionCandidate } from '@ali/ide-core-common';
 import { IDisposable } from '@ali/ide-core-common/lib/disposable';
-import { ExtensionCandidate } from '@ali/ide-core-common';
+import { IURLHandler } from '@ali/ide-core-common/lib/electron';
+import { ElectronMainModule } from '../electron-main-module';
 
 export interface ElectronAppConfig {
 
@@ -68,6 +69,16 @@ export interface ElectronAppConfig {
    * 覆盖browser层的WebPreferences配置
    */
   overrideWebPreferences?: { [key: string]: any };
+
+  /**
+   * 覆盖 DEFAULT_URI_SCHEME，用来注册 electron protocol 相关的内容
+   */
+  uriScheme?: string;
+
+  /**
+   * 如有外部 injector，优先使用外部
+   */
+  injector?: Injector;
 }
 
 export const ElectronAppConfig = Symbol('ElectronAppConfig');
@@ -76,11 +87,13 @@ export const ElectronMainContribution = Symbol('ElectronMainContribution');
 
 export interface ElectronMainContribution {
 
-  registerMainApi?(registry: ElectronMainApiRegistry);
+  registerMainApi?(registry: ElectronMainApiRegistry): void;
 
-  onStart?();
+  registerURLHandler?(registry: ElectronURLHandlerRegistry): void;
 
-  beforeAppReady?();
+  onStart?(): void;
+
+  beforeAppReady?(): void;
 
 }
 
@@ -90,15 +103,23 @@ export abstract class ElectronMainApiRegistry {
 
 }
 
+export abstract class ElectronURLHandlerRegistry {
+
+  abstract registerURLHandler(handler: IURLHandler): IDisposable;
+
+  abstract registerURLDefaultHandler(handler: IURLHandler): IDisposable;
+
+}
+
 export interface IElectronMainApiProvider<Events = any> {
 
-  eventEmitter?: { fire: (event: Events, ...args: any[]) => void};
+  eventEmitter?: { fire: (event: Events, ...args: any[]) => void };
 
 }
 
 export class ElectronMainApiProvider<Events = any> implements IElectronMainApiProvider<Events> {
 
-  eventEmitter: { fire: (event: Events, ...args: any[]) => void};
+  eventEmitter: { fire: (event: Events, ...args: any[]) => void };
 
 }
 

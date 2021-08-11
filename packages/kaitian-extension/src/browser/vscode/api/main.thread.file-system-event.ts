@@ -204,7 +204,7 @@ export class MainThreadFileSystemEvent extends Disposable {
     const workspaceEditDto = data?.edit;
     if (workspaceEditDto) {
       await this.bulkEditService.apply(
-        workspaceEditDto,
+        workspaceEditDto.edits,
         { showPreview: showPreview === 'show' },
       );
     }

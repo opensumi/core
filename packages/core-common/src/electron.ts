@@ -1,6 +1,7 @@
 import { IDisposable } from './disposable';
 import * as Electron from 'electron';
 import { ExtensionCandidate } from './types';
+import { BasicEvent, URI } from '.';
 
 export interface IElectronMainApi<Events> {
 
@@ -110,7 +111,7 @@ export interface IElectronMainUIService extends IElectronMainUIServiceShape, IEl
 
 }
 
-export const IElectronMainUIService = Symbol('IElectronMainUIService');
+export const IElectronMainUIService = 'IElectronMainUIService';
 
 export interface IElectronMainLifeCycleService extends IElectronMainApi<void> {
   minimizeWindow(windowId: number);
@@ -131,4 +132,25 @@ export interface IElectronMainLifeCycleService extends IElectronMainApi<void> {
   setExtensionCandidate(candidate: ExtensionCandidate[], windowId: number): void;
 }
 
-export const IElectronMainLifeCycleService = Symbol('IElectronMainLifeCycleService');
+export const IElectronMainLifeCycleService = 'IElectronMainLifeCycleService';
+
+
+export interface IURLHandler {
+  handleURL(url: string): Promise<boolean>;
+}
+
+export const IElectronURLService = 'IElectronURLService';
+
+export interface IElectronURLService {
+
+  open(url: string): Promise<boolean>;
+
+  registerHandler(handler: IURLHandler): void;
+
+  registerDefaultHandler(handler: IURLHandler): void;
+
+  deregisterHandler(handler: IURLHandler): void;
+}
+
+export interface IElectronRendererURLService extends IElectronMainApi<string>, IElectronURLService { }
+

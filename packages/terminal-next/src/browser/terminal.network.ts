@@ -20,8 +20,8 @@ export class TerminalNetworkService extends Disposable implements ITerminalNetwo
   public onDisconnect: Event<void> = this._onDisconnect.event;
 
   private _status: TerminalNetworkStatus = TerminalNetworkStatus.DISCONNECTED;
-  private _timer: NodeJS.Timeout | undefined;
-  private _resetRetryTimers = new Map<string, NodeJS.Timeout>();
+  private _timer: number | undefined;
+  private _resetRetryTimers = new Map<string, number>();
   private _reconnectInfo = new Map<string, ITerminalReconnectInfo>();
 
   constructor() {
@@ -124,7 +124,7 @@ export class TerminalNetworkService extends Disposable implements ITerminalNetwo
    * 这里延迟的作用是避免网络不稳定时频繁断连导致计数重置
    */
   resetRetryLater(sessionId: string) {
-    const timer = setTimeout(() => {
+    const timer = window.setTimeout(() => {
       this._reconnectInfo.delete(sessionId);
       this._resetRetryTimers.delete(sessionId);
     }, 8000);
@@ -135,7 +135,7 @@ export class TerminalNetworkService extends Disposable implements ITerminalNetwo
     if (this._timer) {
       return;
     }
-    this._timer = setTimeout(() => {
+    this._timer = window.setTimeout(() => {
       this._timer = undefined;
       this.reconnect();
     }, delay);

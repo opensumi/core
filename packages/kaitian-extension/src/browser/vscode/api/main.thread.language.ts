@@ -2,9 +2,6 @@ import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
-import type * as model from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
-
-import { Uri } from '@ali/ide-core-common';
 import { Autowired, Injectable, Optinal } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IReporterService, PreferenceService } from '@ali/ide-core-browser';
@@ -14,12 +11,13 @@ import { ICallHierarchyService } from '@ali/ide-monaco/lib/browser/contrib/callH
 import { IEvaluatableExpressionService } from '@ali/ide-debug/lib/browser/editor/evaluatable-expression';
 import { applyPatch } from 'diff';
 import { DocumentFilter } from 'vscode-languageserver-protocol';
-import { ExtHostAPIIdentifier, IExtHostLanguages, IMainThreadLanguages, ISuggestDataDto, ISuggestDataDtoField, ISuggestResultDtoField, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
+import { ExtHostAPIIdentifier, ICodeActionDto, ICodeActionProviderMetadataDto, IExtHostLanguages, IMainThreadLanguages, ISuggestDataDto, ISuggestDataDtoField, ISuggestResultDtoField, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
 import { IExtensionDescription } from '../../../common/vscode/extension';
 import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SemanticTokensLegend, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ICallHierarchyItemDto, CallHierarchyItem, IWorkspaceEditDto, ResourceTextEditDto, ResourceFileEditDto } from '../../../common/vscode/model.api';
 import { mixin, reviveIndentationRule, reviveOnEnterRules, reviveRegExp } from '../../../common/vscode/utils';
 import { UriComponents } from '../../../common/vscode/ext-types';
+import { FoldingRangeProvider } from './../../../common/vscode/model.api';
 import { ILanguageService } from '@ali/ide-editor';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { DocumentRangeSemanticTokensProviderImpl, DocumentSemanticTokensProvider } from './semantic-tokens/semantic-token-provider';
@@ -29,7 +27,7 @@ import { InlineValuesProviderRegistry } from '@ali/ide-debug/lib/browser/editor/
 
 const PATCH_PREFIX = 'Index: a\n===================================================================\n--- a\n+++ a\n';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class MainThreadLanguages implements IMainThreadLanguages {
   private readonly proxy: IExtHostLanguages;
   private readonly disposables = new Map<number, monaco.IDisposable>();
@@ -56,6 +54,13 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   private readonly documentModelManager: IEditorDocumentModelService;
 
   private languageFeatureEnabled = new LRUMap<string, boolean>(200, 100);
+
+  private _reviveCodeActionDto(data: ReadonlyArray<ICodeActionDto>): modes.CodeAction[] {
+    if (data) {
+      data.forEach((code) => this.reviveWorkspaceEditDto(code.edit));
+    }
+    return data as modes.CodeAction[];
+  }
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy<IExtHostLanguages>(ExtHostAPIIdentifier.ExtHostLanguages);
@@ -98,7 +103,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   isLanguageFeatureEnabled(model: ITextModel) {
     const uriString = model.uri.toString();
     if (!this.languageFeatureEnabled.has(uriString)) {
-      this.languageFeatureEnabled.set(uriString, model.getValueLength() < ( this.preference.get<number>('editor.languageFeatureEnabledMaxSize') || 2 * 1024 * 1024));
+      this.languageFeatureEnabled.set(uriString, model.getValueLength() < (this.preference.get<number>('editor.languageFeatureEnabledMaxSize') || 2 * 1024 * 1024));
     }
     return this.languageFeatureEnabled.get(uriString);
   }
@@ -228,10 +233,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         };
       },
       resolveCompletionItem: supportsResolveDetails
-        ? (model, position, suggestion, token) => {
-          if (!this.isLanguageFeatureEnabled(model)) {
-            return undefined!;
-          }
+        ? (suggestion, token) => {
           this.reporter.point(REPORT_NAME.RESOLVE_COMPLETION_ITEM);
           return this.proxy.$resolveCompletionItem(handle, suggestion._id!, token)
             .then((result) => {
@@ -381,9 +383,16 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
-  $registerFoldingRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void {
+  $registerFoldingRangeProvider(handle: number, selector: SerializedDocumentFilter[], eventHandle: number | undefined): void {
     const languageSelector = fromLanguageSelector(selector);
     const provider = this.createFoldingRangeProvider(handle, languageSelector);
+
+    if (typeof eventHandle === 'number') {
+      const emitter = new Emitter<modes.FoldingRangeProvider>();
+      this.disposables.set(eventHandle, emitter);
+      provider.onDidChange = emitter.event;
+    }
+
     const disposable = new DisposableCollection();
     for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
@@ -393,7 +402,14 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
-  createFoldingRangeProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.FoldingRangeProvider {
+  $emitFoldingRangeEvent(eventHandle: number, event?: any): void {
+    const obj = this.disposables.get(eventHandle);
+    if (obj instanceof Emitter) {
+      obj.fire(event);
+    }
+  }
+
+  createFoldingRangeProvider(handle: number, selector: LanguageSelector | undefined): FoldingRangeProvider {
     return {
       provideFoldingRanges: (model, context, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
@@ -730,7 +746,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_IMPLEMENTATION);
-        return this.proxy.$provideImplementationWithDuration(handle, model.uri, position).then(({result, _dur}) => {
+        return this.proxy.$provideImplementationWithDuration(handle, model.uri, position).then(({ result, _dur }) => {
           if (!result) {
             return undefined!;
           }
@@ -756,9 +772,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
-  $registerQuickFixProvider(handle: number, selector: SerializedDocumentFilter[], codeActionKinds?: string[]): void {
+  $registerQuickFixProvider(handle: number, selector: SerializedDocumentFilter[], metadata: ICodeActionProviderMetadataDto, displayName: string, supportResolve: boolean): void {
     const languageSelector = fromLanguageSelector(selector);
-    const quickFixProvider = this.createQuickFixProvider(handle, languageSelector, codeActionKinds);
+    const quickFixProvider = this.createQuickFixProvider(handle, languageSelector, metadata, displayName, supportResolve);
     const disposable = new DisposableCollection();
     for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
@@ -773,9 +789,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
-  protected createQuickFixProvider(handle: number, selector: LanguageSelector | undefined, providedCodeActionKinds?: string[]): modes.CodeActionProvider {
-    return {
-      provideCodeActions: (model, rangeOrSelection, monacoContext) => {
+  protected createQuickFixProvider(handle: number, selector: LanguageSelector | undefined, metadata: ICodeActionProviderMetadataDto, displayName: string, supportsResolve: boolean): modes.CodeActionProvider {
+    const provider: modes.CodeActionProvider = {
+      provideCodeActions: async (model: any, rangeOrSelection, monacoContext) => {
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined!;
         }
@@ -783,13 +799,34 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_CODE_ACTIONS);
-        return this.proxy.$provideCodeActions(handle, model.uri, rangeOrSelection, monacoContext).then((v) => {
+        const listDto = await this.proxy.$provideCodeActions(handle, model.uri, rangeOrSelection, monacoContext).then((v) => {
           timer.timeEnd(extname(model.uri.fsPath));
           return v;
         });
+        if (!listDto) {
+          return undefined;
+        }
+        return {
+          actions: this._reviveCodeActionDto(listDto.actions),
+          dispose: () => {
+            if (typeof listDto.cacheId === 'number') {
+              this.proxy.$releaseCodeActions(handle, listDto.cacheId);
+            }
+          },
+        };
       },
-      providedCodeActionKinds, // 不在monaco.d.ts中
-    } as unknown as  modes.CodeActionProvider;
+      documentation: metadata.documentation,
+      providedCodeActionKinds: metadata.providedKinds,
+      displayName,
+    };
+    if (supportsResolve) {
+      provider.resolveCodeAction = async (codeAction: modes.CodeAction, token: CancellationToken) => {
+        const data = await this.proxy.$resolveCodeAction(handle, (codeAction as ICodeActionDto).cacheId!, token);
+        codeAction.edit = this.reviveWorkspaceEditDto(data);
+        return codeAction;
+      };
+    }
+    return provider;
   }
 
   protected createLinkProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.LinkProvider {
@@ -868,7 +905,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_REFERENCES);
-        return this.proxy.$provideReferencesWithDuration(handle, model.uri, position, context, token).then(({result, _dur}) => {
+        return this.proxy.$provideReferencesWithDuration(handle, model.uri, position, context, token).then(({ result, _dur }) => {
           if (!result) {
             return undefined!;
           }
@@ -1012,18 +1049,18 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   /**
    * 将 IWorkspaceEditDto 转为 monaco-editor 中的 WorkspaceEdit
    */
-  private reviveWorkspaceEditDto(data: IWorkspaceEditDto): model.WorkspaceEdit {
+  private reviveWorkspaceEditDto(data?: IWorkspaceEditDto): modes.WorkspaceEdit {
     if (data && data.edits) {
       for (const edit of data.edits) {
         if (typeof (edit as ResourceTextEditDto).resource === 'object') {
-          (edit as ResourceTextEditDto).resource = Uri.revive((edit as ResourceTextEditDto).resource);
+          (edit as ResourceTextEditDto).resource = monaco.Uri.revive((edit as ResourceTextEditDto).resource);
         } else {
-          (edit as ResourceFileEditDto).newUri = Uri.revive((edit as ResourceFileEditDto).newUri);
-          (edit as ResourceFileEditDto).oldUri = Uri.revive((edit as ResourceFileEditDto).oldUri);
+          (edit as ResourceFileEditDto).newUri = monaco.Uri.revive((edit as ResourceFileEditDto).newUri);
+          (edit as ResourceFileEditDto).oldUri = monaco.Uri.revive((edit as ResourceFileEditDto).oldUri);
         }
       }
     }
-    return data as model.WorkspaceEdit;
+    return data as modes.WorkspaceEdit;
   }
 
   $registerSelectionRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void {

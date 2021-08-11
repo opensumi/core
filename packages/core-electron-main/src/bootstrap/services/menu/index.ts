@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { INativeMenuTemplate, Domain, isWindows, IDisposable } from '@ali/ide-core-common';
+import { INativeMenuTemplate, Domain, isWindows, IDisposable, IElectronMainMenuService } from '@ali/ide-core-common';
 import { ElectronMainContribution, ElectronMainApiRegistry, ElectronMainApiProvider } from '../../types';
 import { Menu, MenuItemConstructorOptions, BrowserWindow } from 'electron';
 
@@ -36,7 +36,7 @@ export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick'
           },
         };
         this.windowAppMenuDisposers.set(windowId, disposer);
-        window.on('focus' , listener);
+        window.on('focus', listener);
         if (window.isFocused()) {
           Menu.setApplicationMenu(menu);
         }
@@ -91,7 +91,7 @@ export class MenuElectronMainContribution implements ElectronMainContribution {
   injector: Injector;
 
   registerMainApi(registry: ElectronMainApiRegistry) {
-    registry.registerMainApi('menu', this.injector.get(ElectronMainMenuService));
+    registry.registerMainApi(IElectronMainMenuService, this.injector.get(ElectronMainMenuService));
   }
 
 }

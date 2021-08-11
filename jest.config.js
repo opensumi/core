@@ -9,6 +9,7 @@ const tsModuleNameMapper = pathsToModuleNameMapper(
 
 module.exports = {
   preset: 'ts-jest',
+  testRunner: 'jest-jasmine2',
   testEnvironment: 'node',
   coverageProvider: process.env.JEST_COVERAGE_PROVIDER || 'babel',
   maxWorkers: process.env.SIGMA_MAX_PROCESSORS_LIMIT || os.cpus().length,

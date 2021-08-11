@@ -223,6 +223,7 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
   protected static readonly EXCLUDE_ACTIONS = [
     'setContext',
     'editor.action.quickCommand',
+    'editor.action.quickOutline',
     'editor.action.toggleHighContrast',
   ];
 

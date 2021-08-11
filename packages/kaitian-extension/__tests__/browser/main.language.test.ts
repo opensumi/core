@@ -1,4 +1,5 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { createModel } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneEditor';
 import * as monacoModes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 
 /* tslint:disable no-console */
@@ -26,6 +27,7 @@ import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from 
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
 import { TestEditorDocumentProvider } from '@ali/ide-editor/__tests__/browser/test-providers';
 import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
+import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -49,7 +51,7 @@ const extHostDocuments = new ExtensionDocumentDataManagerImpl(rpcProtocolExt);
 
 let extHost: ExtHostLanguages;
 let mainThread: MainThreadLanguages;
-let model: monaco.editor.ITextModel;
+let model: ITextModel;
 
 // tslint:disable new-parens
 describe('ExtHostLanguageFeatures', () => {
@@ -94,7 +96,7 @@ describe('ExtHostLanguageFeatures', () => {
   beforeAll(async (done) => {
     monacoService = injector.get(MonacoService);
     await monacoService.loadMonaco();
-    model = monaco.editor.createModel([
+    model = createModel([
       'This is the first line',
       'This is the second line',
       'This is the third line',
@@ -313,9 +315,16 @@ describe('ExtHostLanguageFeatures', () => {
   });
 
   // --- quick fix
-
+  const extension = {
+    name: 'codeactiontest',
+    displayName: 'CodeAction Test',
+    id: 'codeactiontest.test',
+    activate: () => {},
+    deactivate: () => {},
+    toJSON: () => {},
+  } as unknown as IExtensionDescription;
   test('Quick Fix, command data conversion', async (done) => {
-    disposables.push(extHost.registerCodeActionsProvider(defaultSelector, {
+    disposables.push(extHost.registerCodeActionsProvider(extension, defaultSelector, {
       provideCodeActions(): vscode.Command[] {
         return [
           { command: 'test1', title: 'Testing1' },
@@ -338,7 +347,7 @@ describe('ExtHostLanguageFeatures', () => {
     }, 0);
   });
   test('Quick Fix, code action data conversion', async (done) => {
-    disposables.push(extHost.registerCodeActionsProvider(defaultSelector, {
+    disposables.push(extHost.registerCodeActionsProvider(extension, defaultSelector, {
       provideCodeActions(): vscode.CodeAction[] {
         return [
           {
@@ -364,7 +373,7 @@ describe('ExtHostLanguageFeatures', () => {
     }, 0);
   });
   test('Cannot read property \'id\' of undefined, #29469', async (done) => {
-    disposables.push(extHost.registerCodeActionsProvider(defaultSelector, new class implements vscode.CodeActionProvider {
+    disposables.push(extHost.registerCodeActionsProvider(extension, defaultSelector, new class implements vscode.CodeActionProvider {
       provideCodeActions(): any {
         return [
           undefined,
@@ -693,7 +702,7 @@ An error case:
     setTimeout(() => {
       expect(mockMainThreadFunc).toBeCalled();
       const uri = monaco.Uri.parse('file:///path/to/simple.semanticLanguage');
-      const textModel = monaco.editor.createModel('', 'semanticLanguage', uri);
+      const textModel = createModel('', 'semanticLanguage', uri);
       expect(monacoModes.DocumentSemanticTokensProviderRegistry.ordered(textModel as any).length).toBe(1);
       textModel.dispose();
       done();
@@ -702,7 +711,7 @@ An error case:
 
   it('provideDocumentSemanticTokens should be work', async (done) => {
     const uri = monaco.Uri.parse('file:///path/to/simple1.semanticLanguage');
-    const textModel = monaco.editor.createModel(``, 'semanticLanguage', uri);
+    const textModel = createModel(``, 'semanticLanguage', uri);
 
     const provider = monacoModes.DocumentSemanticTokensProviderRegistry.ordered(textModel as any)[0];
     expect(provider).toBeDefined();
@@ -798,7 +807,7 @@ An error case:
   });
   //#endregion Semantic Tokens
 
-  const textModel = monaco.editor.createModel('test.a = "test"', 'test');
+  const textModel = createModel('test.a = "test"', 'test');
   const evaluatableExpressionService = injector.get<IEvaluatableExpressionService>(IEvaluatableExpressionService);
   const expressionProvider = {
     provideEvaluatableExpression(document, position) {

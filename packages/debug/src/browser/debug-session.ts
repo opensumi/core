@@ -11,7 +11,7 @@ import {
 } from '@ali/ide-core-browser';
 import debounce = require('lodash.debounce');
 import { DebugSessionConnection, DebugEventTypes, DebugRequestTypes, DebugExitEvent } from './debug-session-connection';
-import { DebugSessionOptions, InternalDebugSessionOptions, IDebugSession, IDebugSessionManager, DEBUG_REPORT_NAME } from '../common';
+import { DebugSessionOptions, InternalDebugSessionOptions, IDebugSession, IDebugSessionManager, DEBUG_REPORT_NAME, DebugState } from '../common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { DebugProtocol } from '@ali/vscode-debugprotocol';
@@ -28,44 +28,50 @@ import { ITerminalApiService, TerminalOptions } from '@ali/ide-terminal-next';
 import { ExpressionContainer } from './tree/debug-tree-node.define';
 import { DebugEditor } from './../common/debug-editor';
 
-export enum DebugState {
-  Inactive,
-  Initializing,
-  Running,
-  Stopped,
-}
-
 export class DebugSession implements IDebugSession {
 
   protected readonly onDidChangeEmitter = new Emitter<void>();
   readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
   public fireDidChange(): void {
     this.onDidChangeEmitter.fire(undefined);
+    this.onStateChange();
   }
 
-  private _onDidChangeCallStack = new Emitter<void>();
+  private readonly _onDidChangeCallStack = new Emitter<void>();
   readonly onDidChangeCallStack: Event<void> = this._onDidChangeCallStack.event;
 
-  private _onVariableChange = new Emitter<void>();
+  private readonly _onVariableChange = new Emitter<void>();
   readonly onVariableChange: Event<void> = this._onVariableChange.event;
 
-  private _onCurrentThreadChange = new Emitter<DebugThread | undefined>();
+  private readonly _onCurrentThreadChange = new Emitter<DebugThread | undefined>();
   readonly onCurrentThreadChange: Event<DebugThread | undefined> = this._onCurrentThreadChange.event;
 
-  private _onDidStop = new Emitter<DebugProtocol.StoppedEvent>();
+  private readonly _onDidStop = new Emitter<DebugProtocol.StoppedEvent>();
   readonly onDidStop: Event<DebugProtocol.StoppedEvent> = this._onDidStop.event;
 
-  private _onDidContinued = new Emitter<DebugProtocol.ContinuedEvent>();
+  private readonly _onDidContinued = new Emitter<DebugProtocol.ContinuedEvent>();
   readonly onDidContinued: Event<DebugProtocol.ContinuedEvent> = this._onDidContinued.event;
 
-  private _onDidThread = new Emitter<DebugProtocol.ThreadEvent>();
+  private readonly _onDidThread = new Emitter<DebugProtocol.ThreadEvent>();
   readonly onDidThread: Event<DebugProtocol.ThreadEvent> = this._onDidThread.event;
 
-  private _onRequest = new Emitter<keyof DebugRequestTypes>();
+  private readonly _onRequest = new Emitter<keyof DebugRequestTypes>();
   readonly onRequest: Event<keyof DebugRequestTypes> = this._onRequest.event;
 
-  private _onDidExitAdapter = new Emitter<void>();
+  private readonly _onDidExitAdapter = new Emitter<void>();
   readonly onDidExitAdapter: Event<void> = this._onDidExitAdapter.event;
+
+  private readonly _onDidProgressStart = new Emitter<DebugProtocol.ProgressStartEvent>();
+  readonly onDidProgressStart: Event<DebugProtocol.ProgressStartEvent> = this._onDidProgressStart.event;
+
+  private readonly _onDidProgressUpdate = new Emitter<DebugProtocol.ProgressUpdateEvent>();
+  readonly onDidProgressUpdate: Event<DebugProtocol.ProgressUpdateEvent> = this._onDidProgressUpdate.event;
+
+  private readonly _onDidProgressEnd = new Emitter<DebugProtocol.ProgressEndEvent>();
+  readonly onDidProgressEnd: Event<DebugProtocol.ProgressEndEvent> = this._onDidProgressEnd.event;
+
+  private readonly _onDidChangeState = new Emitter<DebugState>();
+  readonly onDidChangeState: Event<DebugState> = this._onDidChangeState.event;
 
   protected readonly toDispose = new DisposableCollection();
 
@@ -85,6 +91,7 @@ export class DebugSession implements IDebugSession {
 
   protected cancellationMap = new Map<number, CancellationTokenSource[]>();
   protected readonly toDisposeOnCurrentThread = new DisposableCollection();
+  protected previousState: DebugState | undefined;
 
   constructor(
     readonly id: string,
@@ -138,6 +145,7 @@ export class DebugSession implements IDebugSession {
           this.clearThread(threadId);
         }
 
+        this.onStateChange();
         this._onDidContinued.fire(event);
       }),
       this.on('stopped', async (event: DebugProtocol.StoppedEvent) => {
@@ -170,6 +178,7 @@ export class DebugSession implements IDebugSession {
           this.sessionManager.setExtra(this.id, `${threadId ?? ''}`, extra);
         }
 
+        this.onStateChange();
         this._onDidStop.fire(event);
       }),
       this.on('thread', (event: DebugProtocol.ThreadEvent) => {
@@ -197,6 +206,15 @@ export class DebugSession implements IDebugSession {
       }),
       this.on('exited', (reason) => {
         this.exitDeferred.resolve(reason);
+      }),
+      this.on('progressStart', (event: DebugProtocol.ProgressStartEvent) => {
+        this._onDidProgressStart.fire(event);
+      }),
+      this.on('progressUpdate', (event: DebugProtocol.ProgressUpdateEvent) => {
+        this._onDidProgressUpdate.fire(event);
+      }),
+      this.on('progressEnd', (event: DebugProtocol.ProgressEndEvent) => {
+        this._onDidProgressEnd.fire(event);
       }),
       this.on('capabilities', (event) => this.updateCapabilities(event.body.capabilities)),
       this.breakpoints.onDidChangeBreakpoints((event) => this.updateBreakpoint(event)),
@@ -267,8 +285,10 @@ export class DebugSession implements IDebugSession {
       supportsVariableType: false,
       supportsVariablePaging: false,
       supportsRunInTerminalRequest: true,
+      supportsProgressReporting: true,
     }, this.configuration);
     this.updateCapabilities(response.body || {});
+    this.onStateChange();
   }
   protected async launchOrAttach(): Promise<void> {
     if (this.parentSession && this.parentSession.state === DebugState.Inactive) {
@@ -306,6 +326,14 @@ export class DebugSession implements IDebugSession {
     args: DebugProtocol.SetExceptionBreakpointsArguments,
   ): Promise<DebugProtocol.SetExceptionBreakpointsResponse> {
     return this.sendRequest('setExceptionBreakpoints', args);
+  }
+
+  public onStateChange(): void {
+    const state = this.state;
+    if (this.previousState !== state) {
+      this.previousState = state;
+      this._onDidChangeState.fire(state);
+    }
   }
 
   /**
@@ -757,6 +785,7 @@ export class DebugSession implements IDebugSession {
       return;
     } finally {
       this._onDidExitAdapter.fire();
+      this.onStateChange();
     }
     const timeout = 500;
     if (!await this.exited(timeout)) {
@@ -811,6 +840,10 @@ export class DebugSession implements IDebugSession {
       const res = await this.sendRequest('goto', args);
       return res;
     }
+  }
+
+  async cancel(progressId: string): Promise<DebugProtocol.CancelResponse | undefined> {
+    return this.sendRequest('cancel', { progressId });
   }
 
   async setVariableValue(args: DebugProtocol.SetVariableArguments): Promise<DebugProtocol.SetVariableResponse | void> {

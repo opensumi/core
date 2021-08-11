@@ -8,7 +8,7 @@ import { spawn } from 'child_process';
 import * as semver from 'semver';
 import * as qs from 'querystring';
 import { WindowCreatedEvent } from './events';
-import { IElectronMainUIServiceShape, IElectronPlainWebviewWindowOptions } from '@ali/ide-core-common/lib/electron';
+import { IElectronMainUIService, IElectronMainUIServiceShape, IElectronPlainWebviewWindowOptions } from '@ali/ide-core-common/lib/electron';
 
 @Injectable()
 export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenStatusChange' | 'windowClosed' | 'maximizeStatusChange'> implements IElectronMainUIServiceShape {
@@ -264,7 +264,7 @@ export class UIElectronMainContribution implements ElectronMainContribution {
   injector: Injector;
 
   registerMainApi(registry: ElectronMainApiRegistry) {
-    registry.registerMainApi('ui', this.injector.get(ElectronMainUIService));
+    registry.registerMainApi(IElectronMainUIService, this.injector.get(ElectronMainUIService));
   }
 
 }

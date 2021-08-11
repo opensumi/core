@@ -36,7 +36,6 @@ const defaultIconThemeDesc = {
 
 @Injectable()
 export class SCMTreeModelService {
-  private static DEFAULT_FLUSH_FILE_EVENT_DELAY = 100;
 
   @Autowired(LabelService)
   public readonly labelService: LabelService;
@@ -626,24 +625,6 @@ export class SCMTreeModelService {
    */
   async refresh(node: SCMResourceFolder = this.treeModel.root as SCMResourceFolder) {
     node.refresh();
-  }
-
-  // 队列化Changed事件
-  // tslint:disable-next-line:no-unused-variable
-  private queueChangeEvent(path: string, callback: any) {
-    if (!this.flushEventQueueDeferred) {
-      this.flushEventQueueDeferred = new Deferred<void>();
-      clearTimeout(this._eventFlushTimeout);
-      this._eventFlushTimeout = setTimeout(async () => {
-        await this.flushEventQueue()!;
-        this.flushEventQueueDeferred?.resolve();
-        this.flushEventQueueDeferred = null;
-        callback();
-      }, SCMTreeModelService.DEFAULT_FLUSH_FILE_EVENT_DELAY);
-    }
-    if (this._changeEventDispatchQueue.indexOf(path) === -1) {
-      this._changeEventDispatchQueue.push(path);
-    }
   }
 
   public flushEventQueue = () => {

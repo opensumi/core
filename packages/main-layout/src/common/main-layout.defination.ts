@@ -5,7 +5,7 @@ import { TabbarService } from '../browser/tabbar/tabbar.service';
 import { AccordionService } from '../browser/accordion/accordion.service';
 import { IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { Deferred, Event } from '@ali/ide-core-common';
-import { ContextKeyExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { IContextKeyExpression } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 export interface ComponentCollection {
   views?: View[];
@@ -102,10 +102,10 @@ export interface IViewsRegistry {
 
 export interface IViewContentDescriptor {
   readonly content: string;
-  readonly when?: ContextKeyExpr | 'default';
+  readonly when?: IContextKeyExpression | 'default';
   readonly group?: string;
   readonly order?: number;
-  readonly precondition?: ContextKeyExpr | undefined;
+  readonly precondition?: IContextKeyExpression | undefined;
 }
 
 export class ViewCollapseChangedEvent extends BasicEvent<{

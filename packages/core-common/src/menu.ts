@@ -23,4 +23,4 @@ export interface IElectronMainMenuService extends IElectronMainApi<'menuClick' |
   runNativeRoleAction(actionName: string): Promise<void>
 }
 
-export const IElectronMainMenuService = Symbol('IElectronMainMenuService');
+export const IElectronMainMenuService = 'IElectronMainMenuService';

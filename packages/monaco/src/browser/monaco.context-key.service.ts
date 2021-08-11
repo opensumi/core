@@ -1,5 +1,5 @@
 import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import { ContextKeyExpr, IContextKeyServiceTarget } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { ContextKeyExpr, ContextKeyExpression, IContextKeyServiceTarget } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { ContextKeyService } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
 import { KeybindingResolver } from '@ali/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingResolver';
 import { ConfigurationTarget, IConfigurationChangeEvent, IConfigurationService, IConfigurationOverrides, IConfigurationData, IConfigurationValue } from '@ali/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
@@ -267,8 +267,8 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
     return this.contextKeyService.createKey(key, defaultValue);
   }
 
-  getKeysInWhen(when: string | ContextKeyExpr | undefined) {
-    let expr: ContextKeyExpr | undefined;
+  getKeysInWhen(when: string | ContextKeyExpression | undefined) {
+    let expr: ContextKeyExpression | undefined;
     if (typeof when === 'string') {
       expr = this.parse(when);
     }
@@ -289,9 +289,9 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
   }
 
   // cache expressions
-  protected expressions = new Map<string, ContextKeyExpr | undefined>();
+  protected expressions = new Map<string, ContextKeyExpression | undefined>();
   // internal used
-  parse(when: string | undefined): ContextKeyExpr | undefined {
+  parse(when: string | undefined): ContextKeyExpression | undefined {
     if (!when) {
       return undefined;
     }
@@ -299,7 +299,7 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
     let expression = this.expressions.get(when);
     if (!expression) {
       const parsedExpr = ContextKeyExpr.deserialize(when) as unknown;
-      expression = parsedExpr ? parsedExpr as ContextKeyExpr : undefined;
+      expression = parsedExpr ? parsedExpr as ContextKeyExpression : undefined;
       this.expressions.set(when, expression);
     }
     return expression;

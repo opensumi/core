@@ -14,6 +14,33 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
     super();
     this.id = (++MockedCodeEditor.ID);
   }
+  getOverflowWidgetsDomNode(): HTMLElement | undefined {
+    throw new Error('Method not implemented.');
+  }
+  getConfiguredWordAtPosition(position: monaco.Position): monaco.editor.IWordAtPosition | null {
+    throw new Error('Method not implemented.');
+  }
+  _getViewModel() {
+    throw new Error('Method not implemented.');
+  }
+  getVisibleRangesPlusViewportAboveBelow(): monaco.Range[] {
+    throw new Error('Method not implemented.');
+  }
+  revealLineNearTop(lineNumber: number, scrollType?: monaco.editor.ScrollType): void {
+    throw new Error('Method not implemented.');
+  }
+  revealPositionNearTop(position: monaco.IPosition, scrollType?: monaco.editor.ScrollType): void {
+    throw new Error('Method not implemented.');
+  }
+  revealLinesNearTop(lineNumber: number, endLineNumber: number, scrollType?: monaco.editor.ScrollType): void {
+    throw new Error('Method not implemented.');
+  }
+  revealRangeNearTop(range: monaco.IRange, scrollType?: monaco.editor.ScrollType): void {
+    throw new Error('Method not implemented.');
+  }
+  revealRangeNearTopIfOutsideViewport(range: monaco.IRange, scrollType?: monaco.editor.ScrollType): void {
+    throw new Error('Method not implemented.');
+  }
   isSimpleWidget: boolean;
   onWillType(listener: (text: string) => void): monaco.IDisposable {
     throw new Error('Method not implemented.');
@@ -259,6 +286,9 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
 
   getLayoutInfo(): monaco.editor.EditorLayoutInfo {
     return {
+      isViewportWrapping: false,
+      isWordWrapMinified: false,
+      wrappingColumn: 1,
       height: 0,
       width: 0,
       glyphMarginLeft: 0,
@@ -269,9 +299,19 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
       lineNumbersWidth: 0,
       decorationsLeft: 0,
       decorationsWidth: 0,
-      minimapLeft: 0,
-      minimapWidth: 0,
-      renderMinimap: 0,
+      minimap: {
+        minimapLeft: 0,
+        minimapWidth: 0,
+        renderMinimap: 1,
+        minimapCanvasInnerHeight: 0,
+        minimapCanvasOuterHeight: 0,
+        minimapCanvasInnerWidth: 0,
+        minimapCanvasOuterWidth: 0,
+        minimapHeightIsEditorHeight: true,
+        minimapIsSampling: true,
+        minimapLineHeight: 0,
+        minimapScale: 0,
+      },
       verticalScrollbarWidth: 0,
       viewportColumn: 0,
       horizontalScrollbarHeight: 0,

@@ -1,7 +1,8 @@
-import { ElectronMainApiRegistry, IElectronMainApiProvider, IElectronMainApp } from './types';
-import { IDisposable, Disposable, getDebugLogger } from '@ali/ide-core-common';
 import { ipcMain } from 'electron';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { IDisposable, Disposable, getDebugLogger } from '@ali/ide-core-common';
+import { IElectronURLService, IURLHandler } from '@ali/ide-core-common/lib/electron';
+import { ElectronMainApiRegistry, ElectronURLHandlerRegistry, IElectronMainApiProvider, IElectronMainApp } from './types';
 
 @Injectable()
 export class ElectronMainApiRegistryImpl implements ElectronMainApiRegistry {
@@ -32,12 +33,38 @@ export class ElectronMainApiRegistryImpl implements ElectronMainApiRegistry {
         proxy.dispose();
       },
     };
-
   }
 
 }
 
-@Injectable({multiple: true})
+@Injectable()
+export class ElectronURLHandlerRegistryImpl implements ElectronURLHandlerRegistry {
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
+  registerURLDefaultHandler(handler: IURLHandler): IDisposable {
+    const urlService: IElectronURLService = this.injector.get(IElectronURLService);
+    urlService.registerDefaultHandler(handler);
+
+    return {
+      dispose: () => { },
+    };
+  }
+
+  registerURLHandler(handler: IURLHandler): IDisposable {
+    const urlService: IElectronURLService = this.injector.get(IElectronURLService);
+    urlService.registerHandler(handler);
+
+    return {
+      dispose: () => {
+        urlService.deregisterHandler(handler);
+      },
+    };
+  }
+
+}
+
+@Injectable({ multiple: true })
 export class ElectronMainApiProxy extends Disposable {
 
   @Autowired(IElectronMainApp)

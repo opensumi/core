@@ -331,6 +331,10 @@ export class MainThreadCommentThread implements CommentThread {
     this._isDisposed = false;
   }
 
+  // TODO: @蛋总 需要实现这个事件
+  canReply: boolean;
+  onDidChangeCanReply: Event<boolean>;
+
   batchUpdate(changes: CommentThreadChanges) {
     const modified = (value: keyof CommentThreadChanges): boolean =>
       Object.prototype.hasOwnProperty.call(changes, value);

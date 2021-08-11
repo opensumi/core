@@ -34,6 +34,7 @@ import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
 import { IFileServiceClient, IShadowFileProvider } from '@ali/ide-file-service';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { IPreferenceSettingsService } from '@ali/ide-core-browser';
+import { DebugProgressService } from './debug-progress.service';
 
 const LAUNCH_JSON_REGEX = /launch\.json$/;
 
@@ -130,6 +131,7 @@ export namespace DEBUG_COMMANDS {
   export const COPY_VARIABLE_VALUE = {
     id: 'debug.variables.copy',
   };
+  // console commands
   export const CLEAR_CONSOLE = {
     id: 'debug.console.clear',
     label: localize('debug.console.clear'),
@@ -143,6 +145,15 @@ export namespace DEBUG_COMMANDS {
   export const COLLAPSE_ALL_CONSOLE_ITEM = {
     id: 'debug.console.collapseAll',
     label: localize('debug.console.collapseAll'),
+  };
+  export const CONSOLE_ENTER_EVALUATE = {
+    id: 'debug.console.keybing.enter.evaluate',
+  };
+  export const CONSOLE_INPUT_DOWN_ARROW = {
+    id: 'debug.console.input.down.arrow',
+  };
+  export const CONSOLE_INPUT_UP_ARROW = {
+    id: 'debug.console.input.up.arrow',
   };
 }
 
@@ -216,6 +227,9 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   @Autowired(IPreferenceSettingsService)
   protected readonly preferenceSettings: IPreferenceSettingsService;
 
+  @Autowired(DebugProgressService)
+  protected readonly debugProgressService: DebugProgressService;
+
   private firstSessionStart: boolean = true;
 
   get selectedBreakpoint(): SelectedBreakpoint | undefined {
@@ -287,6 +301,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   async initialize() {
     this.fileSystem.registerProvider(DEBUG_SCHEME, this.shadowFileServiceProvider);
     this.debugEditorController.init();
+    this.debugProgressService.run(this.sessionManager);
   }
 
   onStart() {

@@ -32,7 +32,7 @@ function replacer(key: string, value: any): any {
 	return value;
 }
 
-export function revive(obj: any, depth: number): any {
+export function revive(obj: any, depth: number = 0): any {
 
 	if (!obj || depth > 200) {
 		return obj;
@@ -45,10 +45,16 @@ export function revive(obj: any, depth: number): any {
 			case 2: return new RegExp(obj.source, obj.flags);
 		}
 
-		// walk object (or array)
-		for (let key in obj) {
-			if (Object.hasOwnProperty.call(obj, key)) {
-				obj[key] = revive(obj[key], depth + 1);
+		if (Array.isArray(obj)) {
+			for (let i = 0; i < obj.length; ++i) {
+				obj[i] = revive(obj[i], depth + 1);
+			}
+		} else {
+			// walk object
+			for (let key in obj) {
+				if (Object.hasOwnProperty.call(obj, key)) {
+					obj[key] = revive(obj[key], depth + 1);
+				}
 			}
 		}
 	}

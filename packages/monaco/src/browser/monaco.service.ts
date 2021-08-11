@@ -7,7 +7,7 @@ import { Deferred, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 
 import { MonacoService } from '../common';
 import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
-import { IEditorConstructionOptions } from '@ali/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { IEditorConstructionOptions } from '@ali/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { IDiffEditorConstructionOptions } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 import { IDisposable } from '@ali/monaco-editor-core/esm/vs/base/common/lifecycle';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
