@@ -37,6 +37,7 @@ export class FileTreeModelService {
   static FILE_TREE_SNAPSHOT_KEY = 'FILE_TREE_SNAPSHOT';
   static DEFAULT_REFRESHED_ACTION_DELAY = 500;
   static DEFAULT_LOCATION_FLUSH_DELAY = 200;
+  static DEFAULT_LABEL_CHANGED_DELAY = 500;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -123,6 +124,7 @@ export class FileTreeModelService {
 
   private locationDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_LOCATION_FLUSH_DELAY);
   private refreshedActionDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_REFRESHED_ACTION_DELAY);
+  private labelChangedDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_LABEL_CHANGED_DELAY);
   private onDidFocusedFileChangeEmitter: Emitter<URI | void> = new Emitter();
   private onDidSelectedFileChangeEmitter: Emitter<URI[]> = new Emitter();
   private onFileTreeModelChangeEmitter: Emitter<TreeModel> = new Emitter();
@@ -296,9 +298,17 @@ export class FileTreeModelService {
     }));
     // 确保文件树响应刷新操作时无正在操作的CollapsedAll和Location
     this.disposableCollection.push(this.fileTreeService.requestFlushEventSignalEvent(this.canHandleRefreshEvent));
-    this.disposableCollection.push(this.labelService.onDidChange(() => {
-      // 当labelService注册的对应节点图标变化时，通知视图更新
-      this.fileTreeService.refresh();
+    // 当labelService注册的对应节点图标变化时，通知视图更新
+    this.disposableCollection.push(this.labelService.onDidChange(async () => {
+      if (!this.labelChangedDelayer.isTriggered()) {
+        this.labelChangedDelayer.cancel();
+      }
+      this.labelChangedDelayer.trigger(async () => {
+        if (this.locationQueueDeferred) {
+          await this.locationQueueDeferred.promise;
+        }
+        this.fileTreeService.refresh();
+      });
     }));
     this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
       this.loadingDecoration.addTarget(target);
@@ -311,6 +321,7 @@ export class FileTreeModelService {
     // 即找到插入节点位置为 0，导致重复问题
     this.fileTreeService.startWatchFileEvent();
     this.onFileTreeModelChangeEmitter.fire(this._treeModel);
+
     this._whenReady.resolve();
   }
 
@@ -1495,7 +1506,6 @@ export class FileTreeModelService {
     }
     // 确保在刷新等动作执行完后进行定位
     await this.ensurePerformedEffect();
-
     return this.queueLocation(pathOrUri);
   }
 

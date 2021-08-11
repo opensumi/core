@@ -183,7 +183,6 @@ export class IconService implements IIconService {
           type: 'string',
           default: 'vscode-icons',
           enum: this.getAvailableThemeInfos().map((info) => info.themeId),
-          description: '%preference.description.general.icon%',
         },
       },
     }, true);

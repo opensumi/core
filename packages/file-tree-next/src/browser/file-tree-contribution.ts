@@ -764,13 +764,13 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
     bindings.registerKeybinding({
       command: FILE_COMMANDS.FILTER_OPEN.id,
       keybinding: 'ctrlcmd+f',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`,
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerFilteredContext.raw}`,
     });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.FILTER_CLOSE.id,
       keybinding: 'esc',
-      when: `${FilesExplorerFocusedContext.raw} && ${FilesExplorerInputFocusedContext.raw}`,
+      when: `${FilesExplorerFocusedContext.raw} && ${FilesExplorerFilteredContext.raw}`,
     });
 
     bindings.registerKeybinding({

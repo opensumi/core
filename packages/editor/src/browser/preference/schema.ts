@@ -1103,7 +1103,6 @@ const customEditorSchema: PreferenceSchemaProperties = {
   'editor.previewMode': {
     type: 'boolean',
     default: true,
-    description: '%editor.configuration.preview%',
   },
   'editor.wrapTab': {
     type: 'boolean',
@@ -1145,17 +1144,14 @@ const customEditorSchema: PreferenceSchemaProperties = {
   'editor.fontFamily': {
     type: 'string',
     default: EDITOR_FONT_DEFAULTS.fontFamily,
-    description: '%editor.configuration.fontFamily%',
   },
   'editor.fontWeight': {
     type: 'string',
     default: EDITOR_FONT_DEFAULTS.fontWeight,
-    description: '%editor.configuration.fontWeight%',
   },
   'editor.fontSize': {
     type: 'number',
     default: EDITOR_FONT_DEFAULTS.fontSize,
-    description: '%editor.configuration.fontSize%',
     minimum: 6,
   },
   'editor.tabSize': {
@@ -1166,17 +1162,14 @@ const customEditorSchema: PreferenceSchemaProperties = {
   'editor.formatOnPaste': {
     type: 'boolean',
     default: false,
-    description: '%editor.configuration.formatOnPaste%',
   },
   'editor.detectIndentation': {
     type: 'boolean',
     default: true,
-    description: '%editor.configuration.detectIndentation%',
   },
   'editor.renderWhitespace': {
     type: 'boolean',
     default: EDITOR_FONT_DEFAULTS.renderWhitespace,
-    description: '%editor.configuration.renderWhitespace%',
   },
   'editor.cursorStyle': {
     type: 'string',
@@ -1189,12 +1182,10 @@ const customEditorSchema: PreferenceSchemaProperties = {
       'underline-thin',
     ],
     default: EDITOR_FONT_DEFAULTS.cursorStyle,
-    description: '%editor.configuration.cursorStyle%',
   },
   'editor.insertSpaces': {
     type: 'boolean',
     default: EDITOR_FONT_DEFAULTS.insertSpace,
-    description: '%editor.configuration.insertSpace%',
   },
   'editor.wordWrap': {
     type: 'string',
@@ -1203,7 +1194,6 @@ const customEditorSchema: PreferenceSchemaProperties = {
       'on',
     ],
     default: EDITOR_FONT_DEFAULTS.wordWrap,
-    description: '%editor.configuration.wordWrap%',
   },
   'editor.wordWrapColumn': {
     type: 'number',
@@ -1213,7 +1203,6 @@ const customEditorSchema: PreferenceSchemaProperties = {
   'editor.readonlyFiles': {
     type: 'array',
     default: [],
-    description: '%editor.configuration.readonlyFiles%',
     items: {
       type: 'string',
     },

@@ -435,7 +435,6 @@ export const localizationBundle = {
     'preference.editor.largeFile': 'Large File Size',
     'preference.editor.formatOnPaste': 'Format On Paste',
     'preference.files.eol': 'Files EOL',
-    'preference.files.eolDesc': 'Control files eol',
     'keymaps.tab.name': 'Keyboard Shortcuts',
 
     'preference.editor.wrapTab': 'Wrap Editor Tabs',
@@ -456,7 +455,6 @@ export const localizationBundle = {
     'editor.configuration.autoSaveDelay': 'Controls the delay in ms after which a dirty file is saved automatically. Only applies when Editor Auto Save is set to \'Save After Delay\'.',
     'editor.configuration.forceReadOnly': 'If Enable readOnly',
     'editor.configuration.tabSize': 'The number of spaces a tab is equal to. This setting is overridden based on the file contents when Detect Indentation is on.',
-    'editor.configuration.detectIndentation': 'Controls whether Tab Size and Insert Spaces will be automatically detected when a file is opened based on the file contents.',
     'editor.configuration.largeFileSize': 'Custom size of the large file',
     'editor.autoSave.enum.off': 'OFF',
     'editor.autoSave.enum.editorFocusChange': 'When editor focus changed',
