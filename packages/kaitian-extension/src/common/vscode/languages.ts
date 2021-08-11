@@ -96,6 +96,11 @@ export interface IMainThreadLanguages {
   $registerFoldingRangeProvider(
     handle: number,
     selector: SerializedDocumentFilter[],
+    eventHandle: number | undefined,
+  ): void;
+  $emitFoldingRangeEvent(
+    eventHandle: number,
+    event?: any,
   ): void;
   $registerDocumentColorProvider(
     handle: number,

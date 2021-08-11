@@ -17,6 +17,7 @@ import { IExtensionDescription } from '../../../common/vscode/extension';
 import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SemanticTokensLegend, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ICallHierarchyItemDto, CallHierarchyItem, IWorkspaceEditDto, ResourceTextEditDto, ResourceFileEditDto } from '../../../common/vscode/model.api';
 import { mixin, reviveIndentationRule, reviveOnEnterRules, reviveRegExp } from '../../../common/vscode/utils';
 import { UriComponents } from '../../../common/vscode/ext-types';
+import { FoldingRangeProvider } from './../../../common/vscode/model.api';
 import { ILanguageService } from '@ali/ide-editor';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { DocumentRangeSemanticTokensProviderImpl, DocumentSemanticTokensProvider } from './semantic-tokens/semantic-token-provider';
@@ -382,9 +383,16 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
-  $registerFoldingRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void {
+  $registerFoldingRangeProvider(handle: number, selector: SerializedDocumentFilter[], eventHandle: number | undefined): void {
     const languageSelector = fromLanguageSelector(selector);
     const provider = this.createFoldingRangeProvider(handle, languageSelector);
+
+    if (typeof eventHandle === 'number') {
+      const emitter = new Emitter<modes.FoldingRangeProvider>();
+      this.disposables.set(eventHandle, emitter);
+      provider.onDidChange = emitter.event;
+    }
+
     const disposable = new DisposableCollection();
     for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
@@ -394,7 +402,14 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
-  createFoldingRangeProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.FoldingRangeProvider {
+  $emitFoldingRangeEvent(eventHandle: number, event?: any): void {
+    const obj = this.disposables.get(eventHandle);
+    if (obj instanceof Emitter) {
+      obj.fire(event);
+    }
+  }
+
+  createFoldingRangeProvider(handle: number, selector: LanguageSelector | undefined): FoldingRangeProvider {
     return {
       provideFoldingRanges: (model, context, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {

@@ -428,8 +428,17 @@ export class ExtHostLanguages implements IExtHostLanguages {
 
   registerFoldingRangeProvider(selector: DocumentSelector, provider: FoldingRangeProvider): Disposable {
     const callId = this.addNewAdapter(new FoldingProviderAdapter(this.documents, provider));
-    this.proxy.$registerFoldingRangeProvider(callId, this.transformDocumentSelector(selector));
-    return this.createDisposable(callId);
+    const eventHandle = typeof provider.onDidChangeFoldingRanges === 'function' ? this.nextCallId() : undefined;
+
+    this.proxy.$registerFoldingRangeProvider(callId, this.transformDocumentSelector(selector), eventHandle);
+    let result = this.createDisposable(callId);
+
+    if (eventHandle !== undefined) {
+      const subscription = provider.onDidChangeFoldingRanges!(() => this.proxy.$emitFoldingRangeEvent(eventHandle));
+      result = Disposable.from(result, subscription);
+    }
+
+    return result;
   }
 
   $provideFoldingRange(handle: number, resource: Uri, context: FoldingContext, token: CancellationToken): Promise<FoldingRange[] | undefined> {
