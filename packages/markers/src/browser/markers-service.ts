@@ -1,6 +1,5 @@
 'use strict';
 import { Autowired, Injectable } from '@ali/common-di';
-import { useInjectable } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { Emitter, Event, IBaseMarkerManager, IMarkerData, MarkerManager, OnEvent, URI } from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -28,7 +27,7 @@ export class MarkerService extends Themable implements IMarkerService {
   private readonly labelService: LabelService;
 
   @Autowired(MarkerManager)
-  private readonly markerManager: IBaseMarkerManager;
+  protected readonly markerManager: IBaseMarkerManager;
 
   // marker 显示模型
   private markerViewModel: MarkerViewModel;
@@ -39,14 +38,14 @@ export class MarkerService extends Themable implements IMarkerService {
   public rootEle = createRef<HTMLDivElement>();
 
   // marker filter 事件
-  private readonly onMarkerFilterChangedEmitter = new Emitter<FilterOptions | undefined>();
+  protected readonly onMarkerFilterChangedEmitter = new Emitter<FilterOptions | undefined>();
   public readonly onMarkerFilterChanged: Event<FilterOptions | undefined> = this.onMarkerFilterChangedEmitter.event;
 
   // resource 事件
-  private readonly onResourceOpenEmitter = new Emitter<string>();
+  protected readonly onResourceOpenEmitter = new Emitter<string>();
   public readonly onResouceOpen: Event<string> = this.onResourceOpenEmitter.event;
 
-  private readonly onResourceCloseEmitter = new Emitter<string>();
+  protected readonly onResourceCloseEmitter = new Emitter<string>();
   public readonly onResourceClose: Event<string> = this.onResourceCloseEmitter.event;
 
   constructor() {
@@ -119,10 +118,4 @@ export class MarkerService extends Themable implements IMarkerService {
     return undefined;
   }
 
-  /**
-   * 给ui用的工具方法
-   */
-  public static useInjectable(): MarkerService {
-    return useInjectable<IMarkerService>(MarkerService) as MarkerService;
-  }
 }
