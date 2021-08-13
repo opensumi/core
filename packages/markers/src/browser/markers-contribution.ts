@@ -1,7 +1,7 @@
 import { Autowired } from '@ali/common-di';
 import { ComponentContribution, ComponentRegistry, Domain, Logger } from '@ali/ide-core-browser';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
-import { MARKER_CONTAINER_ID } from '../common';
+import { IMarkerService, MARKER_CONTAINER_ID } from '../common';
 import { MarkerFilterPanel } from './markers-filter.view';
 import { MarkerService } from './markers-service';
 import { MarkerPanel } from './markers-tree.view';
@@ -16,7 +16,7 @@ export class MarkersContribution implements ComponentContribution, MainLayoutCon
   @Autowired(IMainLayoutService)
   protected readonly mainlayoutService: IMainLayoutService;
 
-  @Autowired(MarkerService)
+  @Autowired(IMarkerService)
   protected readonly markerService: MarkerService;
 
   onDidRender() {

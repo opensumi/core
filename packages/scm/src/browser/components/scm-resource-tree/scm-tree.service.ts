@@ -160,7 +160,13 @@ export class SCMTreeService extends Tree {
   sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
     // 由于 tree 的 resolve 是无序的, 将 SCMResourceGroup 按照 id 排序
     if (SCMResourceGroup.is(a) && SCMResourceGroup.is(b)) {
-      return (a.resource as ISCMResourceGroup).id.localeCompare((b.resource as ISCMResourceGroup).id);
+      // 数字越大优先级越高
+      const priority = {
+        'merge': 3,
+        'index': 2,
+        'workingTree': 1,
+      };
+      return priority[(b.resource as ISCMResourceGroup).id] - priority[(a.resource as ISCMResourceGroup).id];
     }
 
     return super.sortComparator(a, b);

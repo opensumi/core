@@ -7,8 +7,8 @@ import { MarkerService } from './markers-service';
 import { MarkerViewModel } from './markers.model';
 import * as styles from './markers.module.less';
 import Messages from './messages';
-import { IRenderableMarker, IRenderableMarkerModel } from '../common';
-import { ViewState } from '@ali/ide-core-browser';
+import { IMarkerService, IRenderableMarker, IRenderableMarkerModel } from '../common';
+import { ViewState, useInjectable } from '@ali/ide-core-browser';
 
 const TAG_NONE = '';
 const EMPTY_FOLDING: string[] = [];
@@ -119,7 +119,7 @@ const MarkerItemDescription: React.FC<{ data: IRenderableMarker }> = observer(({
  * @param viewModel marker view model
  */
 const MarkerList: React.FC<{ viewModel: MarkerViewModel; viewState: ViewState }> = observer(({ viewModel, viewState }) => {
-  const markerService = MarkerService.useInjectable();
+  const markerService: MarkerService = useInjectable(IMarkerService);
   const [selectTag, updateSelectTag] = React.useState('');
   const [folding, updateFolding] = React.useState(EMPTY_FOLDING);
 
@@ -206,7 +206,7 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel; viewState: ViewState }>
  * empty marker
  */
 const Empty: React.FC = observer(() => {
-  const markerService = MarkerService.useInjectable();
+  const markerService: MarkerService = useInjectable(IMarkerService);
   const viewModel = markerService.getViewModel();
   if (viewModel.hasFilter()) {
     return (
@@ -230,7 +230,7 @@ const Empty: React.FC = observer(() => {
  * marker panel
  */
 export const MarkerPanel = observer(({viewState}: {viewState: ViewState}) => {
-  const markerService = MarkerService.useInjectable();
+  const markerService: MarkerService = useInjectable(IMarkerService);
   const viewModel = markerService.getViewModel();
 
   return (

@@ -8,13 +8,14 @@ import debounce = require('lodash.debounce');
 import { useDisposable } from '@ali/ide-core-browser/lib/utils/react-hooks';
 import { AutoFocusedInput } from '@ali/ide-main-layout/lib/browser/input';
 
-import { MARKER_CONTAINER_ID } from '../common';
+import { IMarkerService, MARKER_CONTAINER_ID } from '../common';
+import { useInjectable } from '@ali/ide-core-browser';
 
 /**
  * Marker过滤面板
  */
 export const MarkerFilterPanel = observer(() => {
-  const markerService = MarkerService.useInjectable();
+  const markerService: MarkerService = useInjectable(IMarkerService);
 
   const [filterValue, setFilterValue] = React.useState<string>('');
 
