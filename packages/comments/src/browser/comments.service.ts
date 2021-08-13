@@ -445,6 +445,8 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   registerCommentRangeProvider(id: string, provider: ICommentRangeProvider): IDisposable {
     this.rangeProviderMap.set(id, provider);
+    // 注册一个新的 range provider 后清理掉之前的缓存
+    this.providerDecorationCache.clear();
     return Disposable.create(() => {
       this.rangeProviderMap.delete(id);
       this.rangeOwner.delete(id);
