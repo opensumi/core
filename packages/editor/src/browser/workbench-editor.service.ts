@@ -45,7 +45,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   private _restoring: boolean = true;
 
-  public contributionsReady = new Deferred();
+  public contributionsReady = new Deferred<void>();
 
   private initializing: Promise<any>;
 

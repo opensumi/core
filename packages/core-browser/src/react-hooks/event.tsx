@@ -10,7 +10,7 @@ import { useInjectable } from './injectable-hooks';
  * @param condition 返回 true 时
  */
 export function useUpdateOnEvent<T = any>(event: Event<T>, dependencies: any[] = [], condition?: (payload: T) => boolean) {
-  const [, updateState] = React.useState();
+  const [, updateState] = React.useState<any>();
   const forceUpdate = React.useCallback(() => updateState({}), []);
 
   React.useEffect(() => {
@@ -31,7 +31,7 @@ export function useUpdateOnEvent<T = any>(event: Event<T>, dependencies: any[] =
 }
 
 export function useUpdateOnEventBusEvent<T = any>(eventType: ConstructorOf<BasicEvent<T>>, dependencies: any[] = [], condition?: (payload: T) => boolean) {
-  const [, updateState] = React.useState();
+  const [, updateState] = React.useState<any>();
   const forceUpdate = React.useCallback(() => updateState({}), []);
   const eventBus: IEventBus = useInjectable(IEventBus);
 

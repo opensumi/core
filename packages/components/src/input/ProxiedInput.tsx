@@ -18,6 +18,7 @@ class ProxiedInput extends React.Component<IPersistentInputPropsInternal> {
       ...this.props,
     };
     // 移除两个无效的属性
+    // @ts-ignore
     delete props.inputElement;
     delete props.innerRef;
     return <BaseInput {...props} type='text' id={this.props.id} ref={this.placeholderInputRef} />;

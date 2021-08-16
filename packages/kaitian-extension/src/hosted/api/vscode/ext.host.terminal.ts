@@ -22,7 +22,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
   private closeTerminalEvent: Emitter<Terminal> = new Emitter();
   private openTerminalEvent: Emitter<Terminal> = new Emitter();
   private terminalsMap: Map<string, Terminal> = new Map();
-  private _terminalDeferreds: Map<string, Deferred<Terminal>> = new Map();
+  private _terminalDeferreds: Map<string, Deferred<Terminal | undefined>> = new Map();
   private readonly _linkProviders: Set<vscode.TerminalLinkProvider> = new Set();
   private readonly _terminalLinkCache: Map<string, Map<number, ICachedLinkEntry>> = new Map();
   private readonly _terminalLinkCancellationSource: Map<string, CancellationTokenSource> = new Map();
@@ -254,9 +254,9 @@ export class ExtHostTerminal implements IExtHostTerminal {
   private async _getTerminalByIdEventually(id: string, timeout = 1000) {
     let terminal = this.terminalsMap.get(id);
     if (!terminal) {
-      const deferred = this._terminalDeferreds.get(id) || new Deferred<Terminal>();
+      const deferred = this._terminalDeferreds.get(id) || new Deferred<Terminal | undefined>();
       setTimeout(() => {
-        deferred.resolve();
+        deferred.resolve(terminal);
       }, timeout);
 
       this._terminalDeferreds.set(id, deferred);

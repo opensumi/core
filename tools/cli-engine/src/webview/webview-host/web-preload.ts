@@ -27,7 +27,7 @@ class WebIframeChannel implements IWebviewChannel {
       }
     });
 
-    this.ready = new Promise(async (resolve) => {
+    this.ready = new Promise<void>(async (resolve) => {
       // TODO 等待service worker完成  未来资源使用service worker时需要加入
       resolve();
     });

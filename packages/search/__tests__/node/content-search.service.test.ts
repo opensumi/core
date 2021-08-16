@@ -4,7 +4,7 @@
 import * as path from 'path';
 import * as temp from 'temp';
 import * as fs from 'fs';
-import { FileUri, URI, AppConfig, INodeLogger, NodeLogger} from '@ali/ide-core-node';
+import { FileUri, AppConfig, INodeLogger, NodeLogger} from '@ali/ide-core-node';
 import { isWindows } from '@ali/ide-core-common';
 import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { ProcessModule } from '@ali/ide-process';

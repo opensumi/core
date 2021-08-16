@@ -30,7 +30,7 @@ describe('connection browser', () => {
     const wsChannelHandler = new WSChannelHandler(fakeWSURL, console);
 
     await wsChannelHandler.initHandler();
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       setTimeout(() => {
         resolve();
       }, 7000);
@@ -42,7 +42,7 @@ describe('connection browser', () => {
 
     expect(channel).not.toBeNull();
 
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       setTimeout(() => {
         resolve();
       }, 4000);
@@ -50,7 +50,7 @@ describe('connection browser', () => {
     // 第七秒后有请求，则不需要再发送心跳
     expect(receivedHeartbeat).toBe(false);
 
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       setTimeout(() => {
         resolve();
       }, 2000);

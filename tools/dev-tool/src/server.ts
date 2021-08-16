@@ -2,7 +2,7 @@ import 'tsconfig-paths/register';
 import * as path from 'path';
 import * as http from 'http';
 import * as Koa from 'koa';
-import { Deferred, LogLevel } from '@ali/ide-core-common';
+import { Deferred } from '@ali/ide-core-common';
 import { IServerAppOpts, ServerApp, NodeModule } from '@ali/ide-core-node';
 
 export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) {

@@ -6,3 +6,7 @@ rules:
     - true
     - ignore-pattern: "^_"
   no-console: true
+
+linterOptions:
+  exclude:
+    - '**/__tests__/**/**.ts'

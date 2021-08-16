@@ -19,7 +19,7 @@ import { IMainLayoutService } from '@ali/ide-main-layout';
 import { MockLoggerManagerClient } from '../__mock__/loggermanager';
 
 async function delay(ms: number) {
-  return new Promise((resolve) => {
+  return new Promise<void>((resolve) => {
     setTimeout(() => {
       resolve();
     }, ms);

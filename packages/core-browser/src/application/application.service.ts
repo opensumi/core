@@ -9,7 +9,7 @@ export class ApplicationService implements IApplicationService {
 
   private _backendOS: OS.Type;
 
-  private _initialized = new Deferred();
+  private _initialized = new Deferred<void>();
 
   async initializeData() {
     this._backendOS = await this.commonServer.getBackendOS();

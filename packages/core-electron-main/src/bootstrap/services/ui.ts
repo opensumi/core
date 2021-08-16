@@ -201,7 +201,7 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenSt
       throw new Error('window with windowId ' + windowId + ' does not exist!');
     }
     window.close();
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
       window.once('closed', () => {
         resolve();
       });

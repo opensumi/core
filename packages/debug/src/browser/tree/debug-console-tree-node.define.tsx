@@ -19,6 +19,9 @@ export class TreeWithLinkWrapper extends React.Component<{ html: HTMLElement, cl
 }
 
 export class AnsiConsoleNode extends TreeNode {
+  public get parent(): CompositeTreeNode {
+    return this._compositeTreeNode;
+  }
   static is(node?: TreeNode): node is AnsiConsoleNode {
     return !!node && !!(node as AnsiConsoleNode).template;
   }
@@ -28,13 +31,13 @@ export class AnsiConsoleNode extends TreeNode {
   constructor(
     public readonly description: string,
     // 该节点默认只存在于根节点下
-    public readonly parent: CompositeTreeNode,
+    private readonly _compositeTreeNode: CompositeTreeNode,
     public readonly linkDetector: LinkDetector,
     public readonly severity?: MessageType,
     public readonly source?: DebugProtocol.Source,
     public readonly line?: string | number,
   ) {
-    super({} as ITree, parent);
+    super({} as ITree, _compositeTreeNode);
     this.linkDetectorHTML = this.linkDetector.linkify(this.description);
   }
 

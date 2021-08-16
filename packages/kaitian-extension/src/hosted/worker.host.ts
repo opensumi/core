@@ -113,7 +113,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
 
     this.extendExtHostErrorStackTrace();
 
-    this.initDeferred.resolve();
+    this.initDeferred.resolve(undefined);
   }
 
   private _extHostErrorStackTraceExtended = false;

@@ -1,7 +1,7 @@
 // import { VscodeContributionPoint, Contributes } from './common';
 import { VSCodeContributePoint, Contributes } from '../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { ExtColorContribution, IThemeService, getColorRegistry } from '@ali/ide-theme';
+import { ExtColorContribution, IThemeService } from '@ali/ide-theme';
 import { replaceLocalizePlaceholder, localize } from '@ali/ide-core-browser';
 
 export type ColorsSchema = Array<ExtColorContribution>;

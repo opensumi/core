@@ -26,7 +26,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   @Autowired(ElectronAppConfig)
   private appConfig: ElectronAppConfig;
 
-  private extensionDir: string = this.appConfig.extensionDir;
+  private extensionDir: string;
 
   private extensionCandidate: ExtensionCandidate[] = [];
 
@@ -48,6 +48,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   constructor(workspace?: string, metadata?: any, options: BrowserWindowConstructorOptions & ICodeWindowOptions = {}) {
     super();
+    this.extensionDir = this.appConfig.extensionDir;
     if (workspace) {
       this._workspace = new URI(workspace);
     }

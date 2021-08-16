@@ -109,7 +109,7 @@ describe('WorkspaceService should be work while workspace was a single directory
         useValue: mockWindowService,
       },
     );
-    mockFileSystem.watchFileChanges.mockResolvedValue({dispose: () => {}});
+    mockFileSystem.watchFileChanges.mockResolvedValue({dispose: () => {}} as never);
     workspaceService = injector.get(IWorkspaceService);
     workspaceService.init();
     await workspaceService.whenReady;
@@ -174,7 +174,7 @@ describe('WorkspaceService should be work while workspace was a single directory
       uri: newWorkspaceUri.toString(),
       isDirectory: true,
       lastModification: new Date().getTime(),
-    });
+    } as never);
     await workspaceService.open(newWorkspaceUri, {preserveWindow: true});
     expect(mockClientApp.fireOnReload).toBeCalledWith(true);
     await workspaceService.open(newWorkspaceUri);
@@ -194,7 +194,7 @@ describe('WorkspaceService should be work while workspace was a single directory
       uri: workspaceUri.toString(),
       lastModification: new Date().getTime(),
       isDirectory: true,
-    } as FileStat);
+    } as never);
     mockFileSystem.getFileStat.mockImplementation((uriStr) => {
       return {
         uri: uriStr,
@@ -246,7 +246,7 @@ describe('WorkspaceService should be work while workspace was a single directory
       workspaceStat,
     ]);
     injector.mock(IWorkspaceService, 'opened', true);
-    mockFileSystem.exists.mockResolvedValue(true);
+    mockFileSystem.exists.mockResolvedValue(true as never);
     const result = await workspaceService.containsSome(['test.js']);
     // always return true
     expect(result).toBeTruthy();

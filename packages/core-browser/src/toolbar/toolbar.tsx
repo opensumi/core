@@ -527,7 +527,7 @@ class ToolbarActionRenderer {
       promise: new Promise<HTMLDivElement>((resolve, reject) => {
         if (this.reactElement) {
           this.reactElement.setInDropDown(inDropDown);
-          resolve(this.reactElement.element);
+          resolve(this.reactElement.element!);
         } else {
           const element = document.createElement('div');
           element.classList.add('kt-toolbar-action-wrapper');

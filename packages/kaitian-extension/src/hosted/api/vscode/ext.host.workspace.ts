@@ -97,7 +97,7 @@ export function createWorkspaceApiFactory(
     },
     findFiles: (include, exclude, maxResults?, token?) => {
       return extHostWorkspace.findFiles(
-        TypeConverts.GlobPattern.from(include),
+        TypeConverts.GlobPattern.from(include)!,
         TypeConverts.GlobPattern.from(exclude),
         maxResults,
         null,

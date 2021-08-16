@@ -44,7 +44,7 @@ export async function selectTabIndex(page: puppeteer.Page, index: number) {
 }
 
 export async function delay(ms: number) {
-  return new Promise((resolve) => {
+  return new Promise<void>((resolve) => {
     setTimeout(() => {
       resolve();
     }, ms);

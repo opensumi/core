@@ -24,7 +24,7 @@ describe('main layout test', () => {
   const uniqueToken = 'unique_component_token';
   const testContainerId = 'unique_container_id';
   const layoutNode = document.createElement('div');
-  const rendered = new Deferred();
+  const rendered = new Deferred<void>();
   document.getElementById('main')!.appendChild(layoutNode);
 
   const timeoutIds: Set<NodeJS.Timer> = new Set();

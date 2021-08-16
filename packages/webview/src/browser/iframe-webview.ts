@@ -36,7 +36,7 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
   prepareContainer() {
     this.clear();
     this._iframeDisposer = new Disposable();
-    this._ready = new Promise((resolve) => {
+    this._ready = new Promise<void>((resolve) => {
       // tslint:disable-next-line: no-unused-variable
       const disposer = this._onWebviewMessage('webview-ready', () => {
         if (this._isReady) {

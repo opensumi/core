@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable } from '@ali/common-di';
 import { NodeModule } from '@ali/ide-core-node';
 import { LogServiceManager } from './log-manager';
 import {

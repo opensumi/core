@@ -318,7 +318,7 @@ export class DebugSessionConnection implements IDisposable {
         this.onDidCustomEventEmitter.fire(event);
       }
     } else {
-      this.fire('exited', event);
+      this.fire('exited', event as DebugEventTypes['exited']);
     }
   }
 

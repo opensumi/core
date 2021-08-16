@@ -45,7 +45,7 @@ describe('connection', () => {
     socketRoute.registerHandler(channelHandler);
     socketRoute.init();
 
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       server.listen(7788, () => {
         resolve();
       });
@@ -59,7 +59,7 @@ describe('connection', () => {
 
     const connection = new WebSocket('ws://127.0.0.1:7788/service');
 
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       connection.on('open', () => {
         resolve();
       });
@@ -79,7 +79,7 @@ describe('connection', () => {
       }
     });
 
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       channel.onOpen(() => {
         resolve();
       });
@@ -100,7 +100,7 @@ describe('connection', () => {
     let clientConnection;
 
     await Promise.all([
-      new Promise((resolve) => {
+      new Promise<void>((resolve) => {
         wss.on('connection', (connection) => {
           serviceCenter = new RPCServiceCenter();
           const serverConnection = createWebSocketConnection(connection);
@@ -110,7 +110,7 @@ describe('connection', () => {
         });
       }),
 
-      new Promise((resolve) => {
+      new Promise<void>((resolve) => {
         clientConnection = new WebSocket('ws://127.0.0.1:7788/service');
         clientConnection.on('open', () => {
           resolve();
@@ -160,7 +160,7 @@ describe('connection', () => {
     ]);
     await remoteNotificationService.onFileChange('deleteall');
 
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       setTimeout(() => {
         resolve();
       }, 1000);

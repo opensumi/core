@@ -164,15 +164,15 @@ export class DebugViewModel implements IDisposable {
     this.fireDidChange();
   }
 
-  report(...args: ArgsType<DebugSessionManager['report']>) {
-    return this.manager.report(...args);
+  report(name: string, msg: string | undefined, extra?: any) {
+    return this.manager.report(name, msg, extra);
   }
 
-  reportTime(...args: ArgsType<DebugSessionManager['reportTime']>) {
-    return this.manager.reportTime(...args);
+  reportTime(name: string, defaults?: any) {
+    return this.manager.reportTime(name, defaults);
   }
 
-  reportAction(...args: ArgsType<DebugSessionManager['reportAction']>) {
-    return this.manager.reportAction(...args);
+  reportAction(sessionId: string, threadId: number | string | undefined, action: string) {
+    return this.manager.reportAction(sessionId, threadId, action);
   }
 }

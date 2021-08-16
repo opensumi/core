@@ -15,7 +15,7 @@ export abstract class StorageServer implements IStorageServer {
   @Autowired(ILogger)
   protected readonly logger: ILogger;
 
-  public deferredStorageDirPath = new Deferred<string>();
+  public deferredStorageDirPath = new Deferred<string | undefined>();
   public databaseStorageDirPath: string | undefined;
 
   public _cache: any = {};

@@ -22,7 +22,7 @@ export class BrowserKeyboardLayoutImpl implements KeyboardNativeLayoutService, K
   @Autowired(GlobalBrowserStorageService)
   private readonly browserStorageService: GlobalBrowserStorageService;
 
-  protected readonly initialized = new Deferred();
+  protected readonly initialized = new Deferred<void>();
   protected readonly nativeLayoutChanged = new Emitter<KeymapInfo>();
 
   get onDidChangeNativeLayout() {

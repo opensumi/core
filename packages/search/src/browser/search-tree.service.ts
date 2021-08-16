@@ -433,18 +433,12 @@ export class SearchTreeService {
         resultTotal.resultNum = resultTotal.resultNum - 1;
       },
       replaceResult() {
-        let select: ISearchTreeItem | null = null;
-        items.some((item) => {
-          if (id === item.id) {
-            select = item;
-            return true;
-          }
-        });
+        const select: ISearchTreeItem  | undefined = items.find((v) => v.id === id);
         if (!select) {
           return;
         }
         const resultMap: Map<string, ContentSearchResult[]> = new Map();
-        resultMap.set(select!.parent!.uri!.toString(), [select!.searchResult!]);
+        resultMap.set(select.parent!.uri!.toString(), [select!.searchResult!]);
         replaceAll(
           workspaceEditService,
           resultMap,
@@ -464,13 +458,7 @@ export class SearchTreeService {
         searchResults.delete(parentId);
       },
       replaceResults: async () => {
-        let select: ISearchTreeItem | null = null;
-        items.some((item) => {
-          if (id === item.id) {
-            select = item;
-            return true;
-          }
-        });
+        const select: ISearchTreeItem | undefined = items.find((v) => v.id === id);
         if (!select) {
           return;
         }

@@ -697,6 +697,7 @@ export namespace WaitUntilEvent {
     emitter.fire(asyncEvent);
     // Asynchronous calls to `waitUntil` should fail.
     Object.freeze(waitables);
+    // @ts-ignore
     delete asyncEvent['waitUntil'];
     if (!waitables.length) {
       return;

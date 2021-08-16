@@ -895,7 +895,7 @@ export class DebugSession implements IDebugSession {
   }
 
   protected async takeCommand(command: string) {
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
       const disposable = this.onRequest((e) => {
         if (e === command) {
           disposable.dispose();

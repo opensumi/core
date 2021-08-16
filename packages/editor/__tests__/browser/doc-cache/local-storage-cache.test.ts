@@ -36,7 +36,7 @@ describe('LocalStorageDocCacheImpl', () => {
   it('get undefined from storageService', async () => {
     const uri = new URI('test://testUri1');
     const storageService: IWorkspaceStorageService = injector.get(IWorkspaceStorageService);
-    jest.spyOn(storageService, 'getData').mockResolvedValue(undefined as any);
+    jest.spyOn(storageService, 'getData').mockResolvedValue(undefined as never);
 
     const docModel = injector.get(EditorDocumentModel, [ uri, content, { savable: true }]);
     expect(docModel.dirty).toBeFalsy();
@@ -56,7 +56,7 @@ describe('LocalStorageDocCacheImpl', () => {
           ['a', 0, 0, 1, 0],
         ],
       ],
-    } as any);
+    } as never);
 
     const docModel = injector.get(EditorDocumentModel, [ uri, content, { savable: true }]);
     expect(docModel.getMonacoModel().getValue()).toBe(content);
