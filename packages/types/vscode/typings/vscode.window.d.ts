@@ -54,6 +54,20 @@ declare module 'vscode' {
     color: string | ThemeColor | undefined;
 
     /**
+		 * The background color for this entry.
+		 *
+		 * *Note*: only the following colors are supported:
+		 * * `new ThemeColor('statusBarItem.errorBackground')`
+		 * * `new ThemeColor('statusBarItem.warningBackground')`
+		 *
+		 * More background colors may be supported in the future.
+		 *
+		 * *Note*: when a background color is set, the statusbar may override
+		 * the `color` choice to ensure the entry is readable in all themes.
+		 */
+		backgroundColor: ThemeColor | undefined;
+
+    /**
      * The identifier of a command to run on click. The command must be
      * [known](#commands.getCommands).
      */

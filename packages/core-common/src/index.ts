@@ -40,3 +40,4 @@ export * from './filters';
 export * from './character-classifier';
 export * from './cache';
 export * from './keyboard';
+export * from './theme';

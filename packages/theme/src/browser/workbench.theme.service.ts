@@ -1,8 +1,8 @@
 import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, getThemeId, getThemeTypeSelector, IColorCustomizations, ITokenColorizationRule, ITokenColorCustomizations } from '../common/theme.service';
-import { URI, WithEventBus, localize, Emitter, Event, isObject, DisposableCollection, uuid, isLinux, isWindows } from '@ali/ide-core-common';
+import { URI, WithEventBus, localize, Emitter, Event, isObject, DisposableCollection, uuid, isLinux, isWindows, IThemeColor } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
-import { Color, IThemeColor } from '../common/color';
+import { Color } from '../common/color';
 import { ThemeChangedEvent } from '../common/event';
 import { ThemeData } from './theme-data';
 import { ThemeStore } from './theme-store';

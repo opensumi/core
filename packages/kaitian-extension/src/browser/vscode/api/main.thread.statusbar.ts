@@ -1,9 +1,11 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar } from '../../../common/vscode';
+import { IThemeColor } from '@ali/ide-core-common';
 import { Injectable, Autowired, Optional } from '@ali/common-di';
 import { CommandService, Disposable, IAccessibilityInformation } from '@ali/ide-core-browser';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@ali/ide-core-browser/lib/services';
+
 import * as types from '../../../common/vscode/ext-types';
+import { ExtHostAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar } from '../../../common/vscode';
 
 @Injectable({multiple: true})
 export class MainThreadStatusBar implements IMainThreadStatusBar {
@@ -55,7 +57,8 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
     text: string | undefined,
     priority: number,
     alignment: number,
-    color: string | undefined,
+    color: IThemeColor | string | undefined,
+    backgroundColor: IThemeColor | string | undefined,
     tooltip: string | undefined,
     accessibilityInformation: IAccessibilityInformation | undefined,
     command: string | undefined,
@@ -68,6 +71,7 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
         priority,
         alignment: alignment === types.StatusBarAlignment.Left ? StatusBarAlignment.LEFT : StatusBarAlignment.RIGHT,
         color,
+        backgroundColor,
         tooltip,
         command,
         arguments: commandArgs,

@@ -1,7 +1,9 @@
 import { localize } from '@ali/ide-core-common';
-import { registerColor } from '../color-registry';
+
 import { Color } from '../../common/color';
-import { contrastBorder } from './base';
+import { editorWarningForeground } from './editor';
+import { contrastBorder, errorForeground } from './base';
+import { darken, registerColor } from '../color-registry';
 import { ACTIVITY_BAR_BADGE_BACKGROUND, ACTIVITY_BAR_BADGE_FOREGROUND } from './activity-bar';
 
 // < --- Status --- >
@@ -71,6 +73,30 @@ export const STATUS_BAR_PROMINENT_ITEM_HOVER_BACKGROUND = registerColor('statusB
   light: Color.black.transparent(0.3),
   hc: Color.black.transparent(0.3),
 }, localize('statusBarProminentItemHoverBackground', 'Status bar prominent items background color when hovering. Prominent items stand out from other status bar entries to indicate importance. Change mode `Toggle Tab Key Moves Focus` from command palette to see an example. The status bar is shown in the bottom of the window.'));
+
+export const STATUS_BAR_ERROR_ITEM_BACKGROUND = registerColor('statusBarItem.errorBackground', {
+  dark: darken(errorForeground, .4),
+  light: darken(errorForeground, .4),
+  hc: null,
+}, localize('statusBarErrorItemBackground', 'Status bar error items background color. Error items stand out from other status bar entries to indicate error conditions. The status bar is shown in the bottom of the window.'));
+
+export const STATUS_BAR_ERROR_ITEM_FOREGROUND = registerColor('statusBarItem.errorForeground', {
+  dark: Color.white,
+  light: Color.white,
+  hc: Color.white,
+}, localize('statusBarErrorItemForeground', 'Status bar error items foreground color. Error items stand out from other status bar entries to indicate error conditions. The status bar is shown in the bottom of the window.'));
+
+export const STATUS_BAR_WARNING_ITEM_BACKGROUND = registerColor('statusBarItem.warningBackground', {
+  dark: darken(editorWarningForeground, .4),
+  light: darken(editorWarningForeground, .4),
+  hc: null,
+}, localize('statusBarWarningItemBackground', 'Status bar warning items background color. Warning items stand out from other status bar entries to indicate warning conditions. The status bar is shown in the bottom of the window.'));
+
+export const STATUS_BAR_WARNING_ITEM_FOREGROUND = registerColor('statusBarItem.warningForeground', {
+  dark: Color.white,
+  light: Color.white,
+  hc: Color.white,
+}, localize('statusBarWarningItemForeground', 'Status bar warning items foreground color. Warning items stand out from other status bar entries to indicate warning conditions. The status bar is shown in the bottom of the window.'));
 
 // < --- Remote --- >
 
