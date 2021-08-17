@@ -411,6 +411,7 @@ class ExtHostWebviewView extends IDEDisposable implements WebviewView {
   ) {
     super();
 
+    // @ts-ignore
     this.#viewType = viewType;
     this.#title = title;
     this.#handle = handle;
@@ -439,6 +440,7 @@ class ExtHostWebviewView extends IDEDisposable implements WebviewView {
   public readonly onDidChangeVisibility = this.#onDidChangeVisibility.event;
 
   readonly #onDidDispose = new Emitter<void>();
+  // @ts-ignore
   public readonly onDidDispose = this.#onDidDispose.event;
 
   public get title(): string | undefined {

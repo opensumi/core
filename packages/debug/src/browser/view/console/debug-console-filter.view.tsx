@@ -3,9 +3,10 @@ import { observer } from 'mobx-react-lite';
 import { localize } from '@ali/ide-core-browser';
 import * as styles from './debug-console.module.less';
 import debounce = require('lodash.debounce');
-import { Input } from '@ali/ide-components';
 import { useInjectable } from '@ali/ide-core-browser';
 import { DebugConsoleFilterService } from './debug-console-filter.service';
+import { HistoryInputBox, IHistoryInputBoxHandler } from '@ali/ide-components/lib/input/HistoryInputBox';
+import { Key } from '@ali/ide-core-browser';
 
 /**
  * 调试控制台筛选器
@@ -13,11 +14,15 @@ import { DebugConsoleFilterService } from './debug-console-filter.service';
 export const DebugConsoleFilterView = observer(() => {
   const debugConsoleFilterService = useInjectable<DebugConsoleFilterService>(DebugConsoleFilterService);
   const [filterValue, setFilterValue] = React.useState<string>('');
+  const [historyApi, setHistoryApi] = React.useState<IHistoryInputBoxHandler>();
 
   const onDebounceValueChange = debounce((value: string) => {
     setFilterValue(value);
     debugConsoleFilterService.setFilterText(value);
-  }, 300);
+    if (historyApi) {
+      historyApi.addToHistory(value);
+    }
+  }, 400);
 
   React.useEffect(() => {
     const filterDispose = debugConsoleFilterService.onDidValueChange((value: string) => {
@@ -28,9 +33,25 @@ export const DebugConsoleFilterView = observer(() => {
     };
   }, []);
 
+  const onReady = (api: IHistoryInputBoxHandler) => {
+    setHistoryApi(api);
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!historyApi) {
+      return;
+    }
+
+    if (e.keyCode === Key.ARROW_UP.keyCode) {
+      historyApi.showPreviousValue();
+    } else if (e.keyCode === Key.ARROW_DOWN.keyCode) {
+      historyApi.showNextValue();
+    }
+  };
+
   return (
     <div className={styles.debug_console_filter}>
-      <Input hasClear className={styles.filter_input} value={filterValue} placeholder={localize('debug.console.filter.placeholder')} onValueChange={onDebounceValueChange} />
+      <HistoryInputBox  hasClear className={styles.filter_input} value={filterValue} placeholder={localize('debug.console.filter.placeholder')} onValueChange={onDebounceValueChange} onReady={onReady} onKeyDown={onKeyDown}></HistoryInputBox>
     </div>
   );
 });

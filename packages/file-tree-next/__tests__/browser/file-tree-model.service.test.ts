@@ -10,13 +10,14 @@ import { IFileTreeService } from '@ali/ide-file-tree-next';
 import { IFileTreeAPI } from '@ali/ide-file-tree-next';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { MockContextKeyService } from '../../..//monaco/__mocks__/monaco.context-key.service';
 import { IThemeService } from '@ali/ide-theme';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { Emitter } from '@reexport/vsc-modules/lib/base/common/event';
 import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
-import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
+import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { FileContextKey } from '@ali/ide-file-tree-next/lib/browser/file-contextkey';
+import { MockLogger } from '@ali/ide-core-browser/__mocks__/logger';
 
 class TempDirectory {}
 
@@ -107,7 +108,7 @@ describe('FileTreeModelService should be work', () => {
       },
       {
         token: ILogger,
-        useValue: console,
+        useClass: MockLogger,
       },
       {
         token: IFileTreeService,

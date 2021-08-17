@@ -173,7 +173,7 @@ describe('Decorators', () => {
 
 			spy.mockClear();
 			jest.advanceTimersByTime(60);
-			expect(spy).toBeCalledWith(15);
+			expect(spy).toBeCalledWith(11);
 		} finally {
 			jest.useRealTimers();
 		}

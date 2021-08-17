@@ -1,9 +1,10 @@
+import { CONTEXT_IN_DEBUG_REPL, CONTEXT_IN_DEBUG_MODE } from './../../../common/constants';
 import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, getIcon, localize, TabBarToolbarContribution, ToolbarRegistry } from '@ali/ide-core-browser';
+import { CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, getIcon, localize, TabBarToolbarContribution, ToolbarRegistry, KeybindingContribution, KeybindingRegistry, IContextKeyService } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { DEBUG_CONSOLE_CONTAINER_ID } from '../../../common';
 import { DebugConsoleView } from './debug-console.view';
-import { DebugConsoleInputDocumentProvider } from './debug-console.service';
+import { DebugConsoleInputDocumentProvider, DebugConsoleService } from './debug-console.service';
 import { BrowserEditorContribution, IEditorDocumentModelContentRegistry } from '@ali/ide-editor/lib/browser';
 import { DebugConsoleFilterView } from './debug-console-filter.view';
 import { DEBUG_COMMANDS } from '../../debug-contribution';
@@ -13,14 +14,20 @@ import { DebugConsoleNode } from '../../tree';
 
 export const DEBUG_CONSOLE_VIEW_ID = 'debug-console-view';
 
-@Domain(ComponentContribution, BrowserEditorContribution, TabBarToolbarContribution, CommandContribution, MenuContribution)
-export class DebugConsoleContribution implements ComponentContribution, BrowserEditorContribution, TabBarToolbarContribution, CommandContribution, MenuContribution {
+@Domain(ComponentContribution, BrowserEditorContribution, TabBarToolbarContribution, CommandContribution, MenuContribution, KeybindingContribution)
+export class DebugConsoleContribution implements ComponentContribution, BrowserEditorContribution, TabBarToolbarContribution, CommandContribution, MenuContribution, KeybindingContribution {
 
   @Autowired()
   private readonly debugConsoleModelService: DebugConsoleModelService;
 
   @Autowired()
   private debugConsoleInputDocumentProvider: DebugConsoleInputDocumentProvider;
+
+  @Autowired(IContextKeyService)
+  protected readonly contextKeyService: IContextKeyService;
+
+  @Autowired(DebugConsoleService)
+  protected readonly debugConsoleService: DebugConsoleService;
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('debug-console', {
@@ -70,6 +77,21 @@ export class DebugConsoleContribution implements ComponentContribution, BrowserE
         this.debugConsoleModelService.collapseAll();
       },
     });
+    registry.registerCommand(DEBUG_COMMANDS.CONSOLE_ENTER_EVALUATE, {
+      execute: () => {
+        this.debugConsoleService.runExecute();
+      },
+    });
+    registry.registerCommand(DEBUG_COMMANDS.CONSOLE_INPUT_DOWN_ARROW, {
+      execute: () => {
+        this.debugConsoleService.showNextValue();
+      },
+    });
+    registry.registerCommand(DEBUG_COMMANDS.CONSOLE_INPUT_UP_ARROW, {
+      execute: () => {
+        this.debugConsoleService.showPreviousValue();
+      },
+    });
   }
 
   registerMenus(registry: IMenuRegistry): void {
@@ -100,6 +122,24 @@ export class DebugConsoleContribution implements ComponentContribution, BrowserE
         label: localize('debug.console.collapseAll'),
       },
       group: 'other',
+    });
+  }
+
+  registerKeybindings(bindings: KeybindingRegistry) {
+    bindings.registerKeybinding({
+      command: DEBUG_COMMANDS.CONSOLE_ENTER_EVALUATE.id,
+      keybinding: 'enter',
+      when: `${CONTEXT_IN_DEBUG_REPL.raw} && ${CONTEXT_IN_DEBUG_MODE.raw}`,
+    });
+    bindings.registerKeybinding({
+      command: DEBUG_COMMANDS.CONSOLE_INPUT_DOWN_ARROW.id,
+      keybinding: 'down',
+      when: `${CONTEXT_IN_DEBUG_REPL.raw} && ${CONTEXT_IN_DEBUG_MODE.raw}`,
+    });
+    bindings.registerKeybinding({
+      command: DEBUG_COMMANDS.CONSOLE_INPUT_UP_ARROW.id,
+      keybinding: 'up',
+      when: `${CONTEXT_IN_DEBUG_REPL.raw} && ${CONTEXT_IN_DEBUG_MODE.raw}`,
     });
   }
 }

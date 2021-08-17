@@ -71,7 +71,7 @@ export const EditorGridView = ({ grid }: { grid: EditorGrid }) => {
 
   const eventBus = useInjectable(IEventBus) as IEventBus;
   const resizeDelegates: IResizeHandleDelegate[] = [];
-  const [, updateState] = React.useState();
+  const [, updateState] = React.useState<any>();
   const forceUpdate = React.useCallback(() => updateState({}), []);
 
   React.useEffect(() => {
@@ -266,7 +266,7 @@ export function EditorGroupBody({ group }: { group: EditorGroup }) {
   const components: React.ReactNode[] = [];
   const codeEditorRef = React.useRef<HTMLDivElement>(null);
   const diffEditorRef = React.useRef<HTMLDivElement>(null);
-  const [, updateState] = React.useState();
+  const [, updateState] = React.useState<any>();
   const forceUpdate = React.useCallback(() => updateState({}), []);
 
   React.useEffect(() => {

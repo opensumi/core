@@ -3,7 +3,7 @@ import { URI, IEventBus } from '@ali/ide-core-browser';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { EditorDocumentModelServiceImpl, EditorDocumentModelContentRegistryImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
-import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
+import { useMockStorage } from '@ali/ide-core-browser/__mocks__/storage';
 import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EmptyDocCacheImpl, EditorDocumentModelCreationEvent } from '@ali/ide-editor/lib/browser';
 import { TestEditorDocumentProvider } from '../test-providers';
 import { IDocPersistentCacheProvider } from '@ali/ide-editor';

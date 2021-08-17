@@ -113,10 +113,11 @@ describe(__filename, () => {
     expect(extensionNodeClientService.disposeClientExtProcess).toBeCalled();
   });
 
-  it('workbench.action.openSettings', async (done) => {
+  it('workbench.action.openSettings', (done) => {
     const commandRegistry = injector.get<CommandRegistry>(CommandRegistry);
-    commandRegistry.beforeExecuteCommand((command, args) => {
+    const dispose = commandRegistry.beforeExecuteCommand((command, args) => {
       expect(command).toBe('core.openpreference');
+      dispose.dispose();
       done();
       return args;
     });

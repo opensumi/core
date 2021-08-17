@@ -6,7 +6,7 @@ import { URI } from '@ali/ide-core-common';
 import { WorkspaceModule } from '../../src/browser';
 import { IContextKeyService, CommandService, WORKSPACE_COMMANDS } from '@ali/ide-core-browser';
 import { IWindowDialogService } from '@ali/ide-overlay';
-import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
+import { MockContextKeyService } from '@ali/ide-core-browser/__mocks__/context-key';
 
 describe('WorkspaceContribution should be work', () => {
   let workspaceContribution: WorkspaceContribution;

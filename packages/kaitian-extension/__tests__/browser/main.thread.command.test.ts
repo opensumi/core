@@ -5,7 +5,7 @@ import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.commands';
 import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../src/common/vscode';
-import { MockLoggerManagerClient } from '../__mock__/loggermanager';
+import { MockLoggerManagerClient } from '../../__mocks__/loggermanager';
 import { ICommandServiceToken } from '@ali/ide-monaco/lib/browser/contrib/command';
 import { MonacoCommandService } from '@ali/ide-editor/lib/browser/monaco-contrib/command/command.service';
 

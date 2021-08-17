@@ -138,9 +138,8 @@ export function handleStdinMessage(json: PtyStdIn) {
 
 export function createWsServer() {
   const server = new WebSocket.Server({ port: getPort() });
-  server.addListener('connection', (socket) => {
-    socket.addEventListener('message', (req) => {
-      const { data } = req;
+  server.on('connection', (socket) => {
+    socket.on('message', (data) => {
       const json = JSON.parse(data.toString());
 
       if (json.method) {
@@ -150,6 +149,7 @@ export function createWsServer() {
         handleStdinMessage(json);
       }
     });
+    socket.on('error', () => {});
   });
 
   return server;

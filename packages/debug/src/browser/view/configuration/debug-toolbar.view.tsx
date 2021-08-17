@@ -8,12 +8,13 @@ import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 
 import { DebugAction } from '../../components';
-import { DebugSession, DebugState } from '../../debug-session';
+import { DebugSession } from '../../debug-session';
 import { isExtensionHostDebugging } from '../../debugUtils';
 import { DebugConfigurationService } from './debug-configuration.service';
 import { DebugToolbarService } from './debug-toolbar.service';
 import * as styles from './debug-configuration.module.less';
 import { InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
+import { DebugState } from '../../../common';
 
 @Injectable()
 class FloatController {

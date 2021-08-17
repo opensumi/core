@@ -106,7 +106,7 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
     return { suggestions };
   }
 
-  resolveCompletionItem(_: ITextModel, __: monaco.Position, item: monaco.languages.CompletionItem, token: monaco.CancellationToken) {
+  resolveCompletionItem(item: monaco.languages.CompletionItem, token: monaco.CancellationToken) {
     return Promise.resolve(item);
   }
 

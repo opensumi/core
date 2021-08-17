@@ -6,5 +6,8 @@
   },
   "include": [
     "../../../packages/monaco/src"
-  ]
+  ],
+  "exclude": [
+    "../../../../../../monaco/__mocks__"
+  ],
 }

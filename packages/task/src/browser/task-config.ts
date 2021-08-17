@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { isStringArray, isString, ProblemMatcherType, NamedProblemMatcher, deepClone, formatLocalize, isBoolean, isArray, ProblemMatcher, isUndefined, IJSONSchemaMap, uuid, IStringDictionary, KeyedTaskIdentifier, IProblemMatcherRegistry, ITaskDefinitionRegistry, ProblemPattern, IProblemPatternRegistry, NamedProblemPattern } from '@ali/ide-core-common';
+import { isStringArray, isString, ProblemMatcherType, NamedProblemMatcher, deepClone, formatLocalize, isBoolean, isArray, ProblemMatcher, isUndefined, IJSONSchemaMap, uuid, IStringDictionary, KeyedTaskIdentifier, IProblemMatcherRegistry, ITaskDefinitionRegistry, IProblemPatternRegistry, NamedProblemPattern } from '@ali/ide-core-common';
 import { Platform } from '@ali/ide-core-common/lib/platform';
 import { IWorkspaceFolder } from '../common';
 import * as TaskTypes from '../common/task';
@@ -1117,8 +1117,9 @@ namespace ProblemMatcherConverter {
         let localProblemMatcher = context.namedProblemMatchers[variableName];
         if (localProblemMatcher) {
           localProblemMatcher = deepClone(localProblemMatcher);
-          // remove the name
-          delete localProblemMatcher.name;
+          // remove the name attr
+          // 让他从一个 NamedProblemMatcher 到 ProblemMatcher
+          delete (localProblemMatcher as Partial<NamedProblemMatcher>).name;
           return localProblemMatcher;
         }
       }
@@ -1186,17 +1187,21 @@ namespace DependsOrder {
 namespace ConfigurationProperties {
 
   const properties: MetaData<TaskTypes.ConfigurationProperties, any>[] = [
-
-    { property: 'name' }, { property: 'identifier' }, { property: 'group' }, { property: 'isBackground' },
-    { property: 'promptOnClose' }, { property: 'dependsOn' },
-    { property: 'presentation', type: CommandConfiguration.PresentationOptions }, { property: 'problemMatchers' },
+    { property: 'name' },
+    { property: 'identifier' },
+    { property: 'group' },
+    { property: 'isBackground' },
+    { property: 'promptOnClose' },
+    { property: 'dependsOn' },
+    { property: 'presentation', type: CommandConfiguration.PresentationOptions },
+    { property: 'problemMatchers' },
   ];
 
   export function from(this: void, external: ConfigurationProperties & { [key: string]: any; }, context: ParseContext, includeCommandOptions: boolean, properties?: IJSONSchemaMap): TaskTypes.ConfigurationProperties | undefined {
     if (!external) {
       return undefined;
     }
-    const result: ConfigurationProperties & { [key: string]: any; } = {};
+    const result: TaskTypes.ConfigurationProperties = {};
 
     if (properties) {
       for (const propertyName of Object.keys(properties)) {

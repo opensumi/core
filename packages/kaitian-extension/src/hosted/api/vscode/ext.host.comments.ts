@@ -17,6 +17,7 @@ type CommentThreadModification = Partial<{
   contextValue: string | undefined,
   comments: vscode.Comment[],
   collapsibleState: vscode.CommentThreadCollapsibleState,
+  canReply: boolean;
 }>;
 
 export function createCommentsApiFactory(extension: IExtensionDescription, extHostComments: ExtHostComments) {
@@ -361,6 +362,20 @@ export class ExtHostCommentThread implements vscode.CommentThread {
     return this._range;
   }
 
+  private _canReply: boolean = true;
+
+  set canReply(state: boolean) {
+    if (this._canReply !== state) {
+      this._canReply = state;
+      this.modifications.canReply = state;
+      this._onDidUpdateCommentThread.fire();
+    }
+  }
+
+  get canReply() {
+    return this._canReply;
+  }
+
   private _label: string | undefined;
 
   get label(): string | undefined {
@@ -483,6 +498,9 @@ export class ExtHostCommentThread implements vscode.CommentThread {
     }
     if (modified('collapsibleState')) {
       formattedModifications.collapseState = convertToCollapsibleState(this._collapseState);
+    }
+    if (modified('canReply')) {
+      formattedModifications.canReply = this.canReply;
     }
     this.modifications = {};
 

@@ -36,7 +36,7 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
   }
 
   private startProxyServer() {
-    return new Promise<net.Socket>((resolve) => {
+    return new Promise<net.Socket | void>((resolve) => {
       const server = net.createServer();
       this.disposer.addDispose(toDisposable(() => {
         this.logger.warn('dispose server');

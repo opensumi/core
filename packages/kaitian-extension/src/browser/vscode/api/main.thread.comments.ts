@@ -269,11 +269,22 @@ export class MainThreadCommentThread implements CommentThread {
   // TODO: range 暂时不支持修改
   set range(range: IRange) {
     this._thread.range = range;
-    this._onDidChangeRange.fire(this._range);
+    this._onDidChangeRange.fire(this._thread.range);
   }
 
   get range(): IRange {
     return this._thread.range;
+  }
+
+  private readonly _onDidChangeCanReply = new Emitter<boolean>();
+  get onDidChangeCanReply(): Event<boolean> { return this._onDidChangeCanReply.event; }
+  set canReply(state: boolean) {
+    this._thread.readOnly = !state;
+    this._onDidChangeCanReply.fire(state);
+  }
+
+  get canReply() {
+    return !this._thread.readOnly;
   }
 
   private readonly _onDidChangeRange = new Emitter<IRange>();
@@ -306,7 +317,8 @@ export class MainThreadCommentThread implements CommentThread {
     public extensionId: string,
     public threadId: string,
     public resource: string,
-    private _range: IRange,
+    _range: IRange,
+    _canReply: boolean,
   ) {
     // 查找当前位置 的 threads
     // 框架支持同一个位置多个 thread
@@ -326,6 +338,7 @@ export class MainThreadCommentThread implements CommentThread {
     } else {
       this._thread = this.commentsService.createThread(new URI(resource), positionToRange(_range.startLineNumber), {
         data: threadData,
+        readOnly: !_canReply,
       });
     }
     this._isDisposed = false;
@@ -340,6 +353,7 @@ export class MainThreadCommentThread implements CommentThread {
     if (modified('contextValue')) { this.contextValue = changes.contextValue; }
     if (modified('comments')) { this.comments = changes.comments; }
     if (modified('collapseState')) { this.collapsibleState = changes.collapseState; }
+    if (modified('canReply')) { this.canReply = changes.canReply!; }
   }
 
   dispose() {
@@ -449,6 +463,7 @@ export class MainThreadCommentController extends WithEventBus {
       threadId,
       uri.toString(),
       range,
+      true,
     ]);
 
     this._threads.set(commentThreadHandle, thread);

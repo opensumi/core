@@ -1,5 +1,4 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import type { WorkspaceTextEdit, WorkspaceFileEdit } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import type { IRange } from '@ali/monaco-editor-core/esm/vs/editor/common/core/range';
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
@@ -18,22 +17,23 @@ import {
 } from './refactor-preview.service';
 import * as styles from './refactor_preview.module.less';
 import { localize } from '@ali/ide-core-common/lib/localize';
-import { isWorkspaceFileEdit } from './utils';
+import { isResourceFileEdit } from './utils';
 import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+import type { ResourceFileEdit, ResourceTextEdit } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 
 interface IRefactorNodeProps {
-  data: WorkspaceTextEdit | WorkspaceFileEdit;
-  onClick: (item: WorkspaceTextEdit | WorkspaceFileEdit) => void;
+  data: ResourceTextEdit | ResourceFileEdit;
+  onClick: (item: ResourceTextEdit | ResourceFileEdit) => void;
 }
 
 interface ITextEditNodeProps {
-  data: WorkspaceTextEdit;
-  onClick: (item: WorkspaceTextEdit) => void;
+  data: ResourceTextEdit;
+  onClick: (item: ResourceTextEdit) => void;
 }
 
 interface IFileEditNodeProps {
-  data: WorkspaceFileEdit;
-  onClick: (item: WorkspaceFileEdit) => void;
+  data: ResourceFileEdit;
+  onClick: (item: ResourceFileEdit) => void;
 }
 
 /**
@@ -97,12 +97,12 @@ const TextEditNode = observer<ITextEditNodeProps>(({ data: item }) => {
   const renderTextEditDiff = () => {
     const model = modelService.getModelReference(URI.from(item.resource));
     if (!model) {
-      return <div className={styles.refactor_preview_node_wrapper}>{item.edit.text}</div>;
+      return <div className={styles.refactor_preview_node_wrapper}>{item.textEdit.text}</div>;
     }
 
     const textModel = model.instance.getMonacoModel();
     const { leftPad, base, rightPad } = splitLeftAndRightPadInTextModel(
-      item.edit.range,
+      item.textEdit.range,
       textModel,
     );
 
@@ -111,7 +111,7 @@ const TextEditNode = observer<ITextEditNodeProps>(({ data: item }) => {
         {leftPad}
         <span className={styles.refactor_preview_node_base}>{base}</span>
         <span className={styles.refactor_preview_node_new}>
-          {item.edit.text}
+          {item.textEdit.text}
         </span>
         {rightPad}
       </div>
@@ -133,24 +133,24 @@ const TextEditNode = observer<ITextEditNodeProps>(({ data: item }) => {
   );
 });
 
-function mapDescForFileEdit(edit: WorkspaceFileEdit) {
-  if (edit.newUri && edit.oldUri) {
+function mapDescForFileEdit(edit: ResourceFileEdit) {
+  if (edit.newResource && edit.oldResource) {
     // rename
     return {
-      uri: edit.newUri,
+      uri: edit.newResource,
       desc: localize('refactor-preview.file.move'),
     };
   }
-  if (edit.newUri && !edit.oldUri) {
+  if (edit.newResource && !edit.oldResource) {
     // create
     return {
-      uri: edit.newUri,
+      uri: edit.newResource,
       desc: localize('refactor-preview.file.create'),
     };
   }
-  if (!edit.newUri && edit.oldUri) {
+  if (!edit.newResource && edit.oldResource) {
     return {
-      uri: edit.oldUri,
+      uri: edit.oldResource,
       desc: localize('refactor-preview.file.delete'),
     };
   }
@@ -186,7 +186,7 @@ const FileEditNode = observer<IFileEditNodeProps>(({ data: item }) => {
 });
 
 const RefactorNode = observer<IRefactorNodeProps>(({ data, ...restProps }) => {
-  if (isWorkspaceFileEdit(data)) {
+  if (isResourceFileEdit(data)) {
     return <FileEditNode data={data} {...restProps} />;
   }
   return <TextEditNode data={data} {...restProps} />;

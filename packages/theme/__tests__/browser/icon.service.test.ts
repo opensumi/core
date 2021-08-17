@@ -3,8 +3,8 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { IconService } from '../../src/browser';
 import { IIconService, IconType } from '../../src';
 import { PreferenceSchemaProvider, IPreferenceSettingsService, ILoggerManagerClient, IFileServiceClient, URI } from '@ali/ide-core-browser';
-import { MockPreferenceSchemaProvider, MockPreferenceSettingsService } from '@ali/ide-core-browser/lib/mocks/preference';
-import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
+import { MockPreferenceSchemaProvider, MockPreferenceSettingsService } from '@ali/ide-core-browser/__mocks__/preference';
+import { MockLoggerManageClient } from '@ali/ide-core-browser/__mocks__/logger';
 import { Injectable } from '@ali/common-di';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 

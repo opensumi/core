@@ -9,6 +9,7 @@ const tsModuleNameMapper = pathsToModuleNameMapper(
 
 module.exports = {
   preset: 'ts-jest',
+  testRunner: 'jest-jasmine2',
   testEnvironment: 'node',
   coverageProvider: process.env.JEST_COVERAGE_PROVIDER || 'babel',
   maxWorkers: process.env.SIGMA_MAX_PROCESSORS_LIMIT || os.cpus().length,
@@ -45,6 +46,9 @@ module.exports = {
     // FIXME：componets下的 utils 均引用自 @ali/ide-core-common 模块，无须重复测试
     // 后续统一至 @ali/ide-utils 模块
     '/packages/components/src/utils',
+  ],
+  modulePathIgnorePatterns: [
+    "<rootDir>/dist/",
   ],
   coveragePathIgnorePatterns: [
     '/dist/',

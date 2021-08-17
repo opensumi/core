@@ -15,7 +15,7 @@ import { ActivationEventServiceImpl } from '@ali/ide-kaitian-extension/lib/brows
 describe('Extension Serivce', () => {
   let injector: Injector;
   let extensionService: IExtensionNodeService;
-  const extensionDir = path.join(__dirname, '../__mock__/extensions');
+  const extensionDir = path.join(__dirname, '../../__mocks__/extensions');
   const testExtId = 'kaitian.ide-dark-theme';
   const testExtPath = 'kaitian.ide-dark-theme-1.13.1';
   const testExtReadme = '# IDE Dark Theme';
@@ -96,7 +96,7 @@ describe('Extension Serivce', () => {
 
     it('should return all extension and contains extraMetadata', async () => {
       const extension = await extensionService.getAllExtensions([extensionDir], [], 'zh_CN', { readme: './README.md' });
-      const expectExtension = extension.find((e) => e.id = testExtId);
+      const expectExtension = extension.find((e) => e.id === testExtId);
       expect(expectExtension?.extraMetadata.readme.trim()).toBe(testExtReadme);
     });
   });

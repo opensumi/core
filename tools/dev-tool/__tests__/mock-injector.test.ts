@@ -1,5 +1,4 @@
 import { Injectable } from '@ali/common-di';
-import mm from '@ali/mm';
 import { MockInjector } from '../src/mock-injector';
 import { createBrowserInjector, createNodeInjector } from '../src/injector-helper';
 
@@ -22,15 +21,6 @@ describe(__filename, () => {
 
     beforeEach(() => {
       injector = new MockInjector();
-    });
-
-    it('基本的 mm 测试', () => {
-      const a = new A();
-      mm(a, 'log', fn2);
-      a.log();
-
-      expect(fn1).toBeCalledTimes(0);
-      expect(fn2).toBeCalledTimes(1);
     });
 
     it('能够正常 mock 一个依赖注入的对象', () => {

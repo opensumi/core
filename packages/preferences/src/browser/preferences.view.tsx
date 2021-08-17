@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { replaceLocalizePlaceholder, useInjectable, localize, PreferenceScope, formatLocalize, AppConfig, PreferenceService } from '@ali/ide-core-browser';
+import { replaceLocalizePlaceholder, useInjectable, localize, PreferenceScope, formatLocalize, PreferenceService } from '@ali/ide-core-browser';
 import { PreferenceSettingsService } from './preference-settings.service';
 import * as styles from './preferences.module.less';
 import * as classnames from 'classnames';
@@ -10,7 +10,6 @@ import { ISettingGroup, IPreferenceSettingsService, ISettingSection } from '@ali
 import debounce = require('lodash.debounce');
 import { getIcon } from '@ali/ide-core-browser';
 import { Input, ComponentContextProvider } from '@ali/ide-components';
-import { Tabs } from '@ali/ide-components';
 import { ISectionItemData, toNormalCase } from '../common';
 import { NextPreferenceItem } from './preferenceItem.view';
 import { RecycleList } from '@ali/ide-components';
@@ -30,16 +29,14 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
 
   const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
   const preferences: PreferenceService = useInjectable(PreferenceService);
-  const appConfig: AppConfig = useInjectable(AppConfig);
   const userBeforeWorkspace = preferences.get<boolean>('settings.userBeforeWorkspace');
   const tabList = userBeforeWorkspace
     ? [UserScope, WorkspaceScope]
     : [WorkspaceScope, UserScope];
 
-  const [tabIndex, setTabIndex] = React.useState<number>(0);
   const currentScope = React.useMemo<PreferenceScope>(() => {
-    return (tabList[tabIndex] || tabList[0]).id;
-  }, [tabList, tabIndex]);
+    return tabList[0].id;
+  }, [tabList]);
 
   const { currentSearch: doSearchValue, currentGroup } = preferenceService;
 
@@ -62,14 +59,6 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   React.useEffect(() => {
     setCurrentSearch(doSearchValue);
   }, [doSearchValue]);
-
-  const headers = (
-    <Tabs
-      className={styles.tabs}
-      value={tabIndex}
-      onChange={(index: number) => setTabIndex(index)}
-      tabs={tabList.map((n) => localize(n.label))} />
-  );
 
   const items = React.useMemo(() => {
     const sections = preferenceService.getSections(preferenceService.currentGroup, currentScope, currentSearch);
@@ -98,7 +87,6 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
     <ComponentContextProvider value={{ getIcon, localize }}>
       <div className={styles.preferences}>
         <div className={styles.preferences_header}>
-          {appConfig.isSyncPreference ? <div /> : headers}
           <div className={styles.search_pref}>
             <Input
               value={currentSearch}

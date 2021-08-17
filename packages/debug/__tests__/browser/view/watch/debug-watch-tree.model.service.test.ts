@@ -7,7 +7,7 @@ import { ICtxMenuRenderer, AbstractContextMenuService } from '@ali/ide-core-brow
 import { DebugWatchModelService } from '@ali/ide-debug/lib/browser/view/watch/debug-watch-tree.model.service';
 import { IContextKeyService, StorageProvider } from '@ali/ide-core-browser';
 import { DebugWatch } from '@ali/ide-debug/lib/browser';
-import { MockedStorageProvider } from '@ali/ide-core-browser/src/mocks/storage';
+import { MockedStorageProvider } from '@ali/ide-core-browser/__mocks__/storage';
 import * as styles from '../../../../src/browser/view/watch/debug-watch.module.less';
 
 describe('Debug Watch Tree Model', () => {

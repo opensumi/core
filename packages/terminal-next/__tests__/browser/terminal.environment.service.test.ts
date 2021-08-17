@@ -1,4 +1,5 @@
 import { Injector } from '@ali/common-di';
+import { MockLogger } from '@ali/ide-core-browser/__mocks__/logger';
 import { CommandService, CommandServiceImpl } from '@ali/ide-core-common/lib/command';
 import { ILogger } from '@ali/ide-logs/lib/common';
 import { IDialogService } from '@ali/ide-overlay/lib/common';
@@ -37,9 +38,7 @@ describe('terminal.environment.service', () => {
       },
       {
         token: ILogger,
-        useValue: {
-          warn: () => {},
-        },
+        useClass: MockLogger,
       },
       {
         token: EnvironmentVariableServiceToken,

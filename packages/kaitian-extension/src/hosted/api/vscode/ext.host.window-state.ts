@@ -1,12 +1,13 @@
 
 import * as types from '../../../common/vscode/ext-types';
-import { IExtHostWindowState, MainThreadAPIIdentifier } from '../../../common/vscode';
+import { IExtHostWindowState } from '../../../common/vscode';
 import { Emitter, Event } from '@ali/ide-core-common';
 import { IRPCProtocol } from '@ali/ide-connection';
 
 export class ExtHostWindowState implements IExtHostWindowState {
   public readonly state: types.WindowState = new WindowStateImpl();
 
+  // tslint:disable-next-line: no-unused-variable
   constructor(private rpcProtocol: IRPCProtocol) {
   }
   private readonly _onDidChangeWindowState: Emitter<types.WindowState> = new Emitter();

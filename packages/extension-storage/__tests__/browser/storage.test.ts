@@ -6,7 +6,7 @@ import { FileStat, IDiskFileProvider } from '@ali/ide-file-service';
 import * as fs from 'fs-extra';
 import * as temp from 'temp';
 import * as path from 'path';
-import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
+import { MockLoggerManageClient } from '@ali/ide-core-browser/__mocks__/logger';
 import { AppConfig } from '@ali/ide-core-node';
 import { ExtensionStorageModule } from '../../src/browser';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';

@@ -18,7 +18,7 @@ export class IframePlainWebview extends Disposable implements IPlainWebview {
   _onLoadURL: Emitter<string> = new Emitter<string>();
   onLoadURL: Event<string> = this._onLoadURL.event;
 
-  private _ready = new Deferred();
+  private _ready = new Deferred<void>();
 
   get ready() {
     return this._ready.promise;
@@ -69,10 +69,10 @@ export class IframePlainWebview extends Disposable implements IPlainWebview {
     }
     this._iframe.setAttribute('src', url);
     this._onLoadURL.fire(url);
-    return new Promise((resolve) => {
-      const disposer = new DomListener(this._iframe!, 'load', () => {
+    return new Promise<void>((resolve) => {
+      this.addDispose(new DomListener(this._iframe!, 'load', () => {
         resolve();
-      });
+      }));
     });
   }
 
@@ -197,7 +197,7 @@ export class ElectronPlainWebview extends Disposable implements IPlainWebview {
   }
 
   private async doLoadURL(): Promise<void> {
-    return new Promise(async (resolve) => {
+    return new Promise<void>(async (resolve) => {
       await this.webviewDomReady.promise ;
       this.webview!.loadURL(this.url!);
       const disposer = this.addDispose(new DomListener(this.webview!, 'did-finish-load', () => {

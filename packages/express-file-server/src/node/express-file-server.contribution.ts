@@ -13,9 +13,6 @@ export class ExpressFileServerContribution implements ServerAppContribution {
 
   getWhiteList() {
     return [
-      this.appConfig.workspaceDir,
-      // 内置插件目录
-      this.appConfig.extensionDir,
       // 插件市场安装目录
       this.appConfig.marketplace.extensionDir,
       ...(this.appConfig.staticAllowPath || []),

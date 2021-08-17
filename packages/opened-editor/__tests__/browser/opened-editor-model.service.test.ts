@@ -3,15 +3,16 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { URI, Disposable, IContextKeyService, StorageProvider, ILogger } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { IThemeService } from '@ali/ide-theme';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
-import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
+import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { OpenedEditorModelService } from '../../src/browser/services/opened-editor-model.service';
 import { EditorFile } from '../../src/browser/opened-editor-node.define';
 import { OpenedEditorService } from '../../src/browser/services/opened-editor-tree.service';
 import { OpenedEditorDecorationService } from '../../src/browser/services/opened-editor-decoration.service';
+import { MockLogger } from '@ali/ide-core-browser/__mocks__/logger';
 import * as styles from '../../src/browser/file-tree-node.modules.less';
 
 describe('OpenedEditorModelService should be work', () => {
@@ -99,7 +100,7 @@ describe('OpenedEditorModelService should be work', () => {
       },
       {
         token: ILogger,
-        useValue: console,
+        useClass: MockLogger,
       },
       {
         token: OpenedEditorService,

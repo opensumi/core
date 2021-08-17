@@ -8,7 +8,7 @@ export abstract class VscodeContributionPoint<T extends JSONType = JSONType> ext
     super();
   }
 
-  abstract async contribute();
+  abstract contribute();
 
 }
 

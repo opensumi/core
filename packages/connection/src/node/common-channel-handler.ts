@@ -3,7 +3,6 @@ import * as pathMatch from 'path-match';
 import * as ws from 'ws';
 import { stringify, parse } from '../common/utils';
 import { WSChannel, ChannelMessage } from '../common/ws-channel';
-import { MultiWsServer } from './multi-ws-server';
 const route = pathMatch();
 
 export interface IPathHander {
@@ -97,19 +96,16 @@ export class CommonChannelHandler extends WebSocketHandler {
   static channelId = 0;
 
   public handlerId = 'common-channel';
-  private wsServer: MultiWsServer | ws.Server;
+  private wsServer: ws.Server;
   private handlerRoute: (wsPathname: string) => any;
   private channelMap: Map<string | number, WSChannel> = new Map();
   private connectionMap: Map<string, ws> = new Map();
   private heartbeatMap: Map<string, NodeJS.Timeout> = new Map();
 
-  private useExperimentalMultiChannel: boolean | undefined;
-
-  constructor(routePath: string, private logger: any = console, useExperimentalMultiChannel?: boolean) {
+  constructor(routePath: string, private logger: any = console) {
     super();
-    this.useExperimentalMultiChannel = useExperimentalMultiChannel;
-    this.handlerRoute = route(`${routePath}${ useExperimentalMultiChannel ? '/:channel' : '' }`);
-    this.initWSServer(useExperimentalMultiChannel);
+    this.handlerRoute = route(`${routePath}`);
+    this.initWSServer();
   }
   private hearbeat(connectionId: string, connection: ws) {
     const timer = global.setTimeout(() => {
@@ -121,9 +117,9 @@ export class CommonChannelHandler extends WebSocketHandler {
     this.heartbeatMap.set(connectionId, timer);
   }
 
-  private initWSServer(useExperimentalMultiChannel?: boolean) {
+  private initWSServer() {
     this.logger.log('init Common Channel Handler');
-    this.wsServer = useExperimentalMultiChannel ? new MultiWsServer() : new ws.Server({ noServer: true }) ;
+    this.wsServer = new ws.Server({ noServer: true }) ;
     this.wsServer.on('connection', (connection: ws) => {
       let connectionId;
       connection.on('message', (msg: string) => {
@@ -251,17 +247,13 @@ export class CommonChannelHandler extends WebSocketHandler {
 
     if (routeResult) {
       const wsServer = this.wsServer;
-      if (this.useExperimentalMultiChannel) {
-        (wsServer as MultiWsServer).handleUpgrade(wsPathname, request, socket, head);
-      } else {
-        wsServer.handleUpgrade(request, socket, head, (connection: any) => {
-          connection.routeParam = {
-            pathname: wsPathname,
-          };
+      wsServer.handleUpgrade(request, socket, head, (connection: any) => {
+        connection.routeParam = {
+          pathname: wsPathname,
+        };
 
-          wsServer.emit('connection', connection);
-        });
-      }
+        wsServer.emit('connection', connection);
+      });
       return true;
     }
 

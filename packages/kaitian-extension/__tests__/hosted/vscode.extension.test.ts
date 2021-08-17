@@ -1,4 +1,4 @@
-import { KTExtension } from '@ali/ide-kaitian-extension/lib/hosted/vscode.extension.ts';
+import { KTExtension } from '@ali/ide-kaitian-extension/lib/hosted/vscode.extension';
 import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
 
 describe('kaitian-extension/__tests__/hosted/vscode.extension.test.ts', () => {

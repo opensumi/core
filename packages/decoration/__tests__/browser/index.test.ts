@@ -96,7 +96,7 @@ describe('DecorationsService', () => {
 
     // un-register -> ensure good event
     let didSeeEvent = false;
-    const p = new Promise((resolve) => {
+    const p = new Promise<void>((resolve) => {
       service.onDidChangeDecorations((e) => {
         expect(e.affectsResource(uri)).toBeTruthy();
         expect(service.getDecoration(uri, false)).toBeUndefined();
@@ -271,7 +271,7 @@ describe('DecorationsService', () => {
     data = service.getDecoration(uri2, true)!;
     expect(data.tooltip); // emphazied items...not.toBeUndefined().
 
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const l = service.onDidChangeDecorations((e) => {
         l.dispose();
         try {

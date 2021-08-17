@@ -5,7 +5,6 @@ import {
   ILoggerManagerClient,
   SupportLogNamespace,
   LogLevel,
-  ILogServiceForClient,
   LogServiceForClientPath,
   ILogServiceClient,
 } from '../../src/common';

@@ -1,8 +1,8 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { CodeActionKind } from '@ali/monaco-editor-core/esm/vs/editor/contrib/codeAction/types';
-import { getCodeActions } from '@ali/monaco-editor-core/esm/vs/editor/contrib/codeAction/codeAction';
-import { ClientAppContribution, WithEventBus, Domain, OnEvent, PreferenceService, CommandService, MonacoService, ServiceNames, ILogger, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
+import { getCodeActions, CodeActionItem } from '@ali/monaco-editor-core/esm/vs/editor/contrib/codeAction/codeAction';
+import { ClientAppContribution, WithEventBus, Domain, OnEvent, PreferenceService, CommandService, MonacoService, ServiceNames, ILogger, MonacoOverrideServiceRegistry, Progress } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EditorDocumentModelWillSaveEvent, IEditorDocumentModelService } from './types';
 import { SaveReason } from '../types';
@@ -96,13 +96,13 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
     }
   }
 
-  private async applyCodeActions(actionsToRun: readonly modes.CodeAction[]) {
-    for (const action of actionsToRun) {
-      if (action.edit) {
-        await this.bulkEditService?.apply(action.edit);
+  private async applyCodeActions(actionsToRun: readonly CodeActionItem[]) {
+    for (const actionItem of actionsToRun) {
+      if (actionItem.action.edit) {
+        await this.bulkEditService?.apply(actionItem.action.edit);
       }
-      if (action.command) {
-        await this.commandService.executeCommand(action.command.id, ...(action.command.arguments || []));
+      if (actionItem.action.command) {
+        await this.commandService.executeCommand(actionItem.action.command.id, ...(actionItem.action.command.arguments || []));
       }
     }
   }
@@ -111,7 +111,7 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
     return getCodeActions(model, model.getFullModelRange(), {
       type: modes.CodeActionTriggerType.Auto,
       filter: { include: codeActionKind, includeSourceActions: true },
-    }, token);
+    }, Progress.None, token);
   }
 
 }

@@ -4,8 +4,8 @@ import { WorkbenchThemeService } from '../../src/browser/workbench.theme.service
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { IThemeService } from '../../';
 import { PreferenceSchemaProvider, IPreferenceSettingsService, ILoggerManagerClient, URI } from '@ali/ide-core-browser';
-import { MockPreferenceSchemaProvider, MockPreferenceSettingsService } from '@ali/ide-core-browser/lib/mocks/preference';
-import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
+import { MockPreferenceSchemaProvider, MockPreferenceSettingsService } from '@ali/ide-core-browser/__mocks__/preference';
+import { MockLoggerManageClient } from '@ali/ide-core-browser/__mocks__/logger';
 import { Injectable } from '@ali/common-di';
 
 @Injectable()

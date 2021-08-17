@@ -8,7 +8,7 @@ import * as types from '../../src/common/vscode/ext-types';
 import { ExtHostOutput } from '../../src/hosted/api/vscode/ext.host.output';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { OutputService } from '@ali/ide-output/lib/browser/output.service';
-import { MockOutputService } from '../__mock__/api/output.service';
+import { MockOutputService } from '../../__mocks__/api/output.service';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

@@ -2,12 +2,12 @@ import { Deferred, IReporter } from '@ali/ide-core-common';
 import { Injector } from '@ali/common-di';
 import ExtensionHostServiceImpl from '../../../../src/hosted/ext.host';
 
-import { mockExtensionProps, mockExtensionProps2 } from '../../../__mock__/extensions';
-import { initMockRPCProtocol } from '../../../__mock__/initRPCProtocol';
-import { MainThreadExtensionService } from '../../../__mock__/api/mainthread.extension.service';
-import { MainThreadStorage } from '../../../__mock__/api/mathread.storage';
-import { MainThreadExtensionLog } from '../../../__mock__/api/mainthread.extension.log';
-import { MockLoggerManagerClient } from '../../../__mock__/loggermanager';
+import { mockExtensionProps, mockExtensionProps2 } from '../../../../__mocks__/extensions';
+import { initMockRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
+import { MainThreadExtensionService } from '../../../../__mocks__/api/mainthread.extension.service';
+import { MainThreadStorage } from '../../../../__mocks__/api/mathread.storage';
+import { MainThreadExtensionLog } from '../../../../__mocks__/api/mainthread.extension.log';
+import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
 import { AppConfig, DefaultReporter } from '@ali/ide-core-node';
 import { REPORT_NAME } from '@ali/ide-core-common';
 

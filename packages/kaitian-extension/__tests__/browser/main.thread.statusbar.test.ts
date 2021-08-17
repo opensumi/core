@@ -8,7 +8,7 @@ import { MainThreadStatusBar } from '@ali/ide-kaitian-extension/lib/browser/vsco
 import { StatusBarAlignment } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
 import { IStatusBarService } from '@ali/ide-status-bar';
 import { StatusBarService } from '@ali/ide-status-bar/lib/browser/status-bar.service';
-import { MockLoggerManagerClient } from '../__mock__/loggermanager';
+import { MockLoggerManagerClient } from '../../__mocks__/loggermanager';
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
 

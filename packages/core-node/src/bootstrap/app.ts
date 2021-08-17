@@ -43,9 +43,10 @@ export interface MarketplaceConfig {
 }
 
 interface Config {
+  /**
+   * 初始化的 DI 实例，一般可在外部进行 DI 初始化之后传入，便于提前进行一些依赖的初始化
+   */
   injector: Injector;
-  workspaceDir: string;
-  extensionDir?: string;
   /**
    * 设置落盘日志级别，默认为 Info 级别的log落盘
   */
@@ -55,13 +56,10 @@ interface Config {
    */
   logDir?: string;
   /**
+   * @deprecated 可通过在传入的 `injector` 初始化 `ILogService` 进行实现替换
    * 外部设置的 ILogService，替换默认的 logService
    */
   LogServiceClass?: ConstructorOf<ILogService>;
-  /**
-   * 是否使用试验性多通道通信能力
-   */
-  useExperimentalMultiChannel?: boolean;
   /**
    * 启用插件进程的最大个数
    */
@@ -75,7 +73,7 @@ interface Config {
    */
   processCloseExitThreshold?: number;
   /**
-   * terminal pty 退出时间
+   * 终端 pty 进程退出时间
    */
   terminalPtyCloseThreshold?: number;
   /**
@@ -83,11 +81,11 @@ interface Config {
    */
   staticAllowOrigin?: string;
   /**
-   * 访问静态资源允许的 path
+   * 访问静态资源允许的路径，用于配置静态资源的白名单规则
    */
   staticAllowPath?: string[];
   /**
-   * fileService禁止访问的路径，使用glob匹配
+   * 文件服务禁止访问的路径，使用 glob 匹配
    */
   blockPatterns?: string[];
   /**
@@ -95,20 +93,17 @@ interface Config {
    * @deprecated 自测 1.30.0 后，不在提供给 IDE 后端发送插件进程的方法
    */
   onDidCreateExtensionHostProcess?: (cp: cp.ChildProcess) => void;
-
   /**
    * 插件 Node 进程入口文件
    */
   extHost?: string;
-
   /**
    * 插件进程存放用于通信的 sock 地址
    * 默认为 /tmp
    */
   extHostIPCSockPath?: string;
-
   /**
-   * 插件进程 fork options
+   * 插件进程 fork 配置
    */
   extHostForkOptions?: Partial<cp.ForkOptions>;
 }
@@ -171,8 +166,6 @@ export class ServerApp implements IServerApp {
     this.use = opts.use || ((middleware) => null);
     this.config = {
       injector: this.injector,
-      workspaceDir: opts.workspaceDir || '',
-      extensionDir: opts.extensionDir || process.env.EXTENSION_DIR,
       logDir: opts.logDir,
       logLevel: opts.logLevel,
       LogServiceClass: opts.LogServiceClass,
@@ -193,7 +186,6 @@ export class ServerApp implements IServerApp {
       terminalPtyCloseThreshold: opts.terminalPtyCloseThreshold,
       staticAllowOrigin: opts.staticAllowOrigin,
       staticAllowPath: opts.staticAllowPath,
-      useExperimentalMultiChannel: opts.useExperimentalMultiChannel,
       extLogServiceClassPath: opts.extLogServiceClassPath,
       maxExtProcessCount: opts.maxExtProcessCount,
       onDidCreateExtensionHostProcess: opts.onDidCreateExtensionHostProcess,
@@ -274,7 +266,7 @@ export class ServerApp implements IServerApp {
     } else {
       if (server instanceof http.Server || server instanceof https.Server) {
       // 创建 websocket 通道
-        serviceCenter = createServerConnection2(server, this.injector, this.modulesInstances, this.webSocketHandler, this.config.useExperimentalMultiChannel);
+        serviceCenter = createServerConnection2(server, this.injector, this.modulesInstances, this.webSocketHandler);
       } else if (server instanceof net.Server) {
         serviceCenter = createNetServerConnection(server, this.injector, this.modulesInstances);
       }

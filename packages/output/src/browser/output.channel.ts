@@ -36,7 +36,7 @@ export class OutputChannel extends Disposable {
 
   private monacoModel: ITextModel;
 
-  public modelReady: Deferred<boolean> = new Deferred();
+  public modelReady: Deferred<void> = new Deferred();
 
   private maxChannelLine: number = DEFAULT_MAX_CHANNEL_LINE;
 

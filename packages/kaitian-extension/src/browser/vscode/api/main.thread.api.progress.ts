@@ -9,7 +9,7 @@ import { IExtension } from '../../../common';
 @Injectable({ multiple: true })
 export class MainThreadProgress implements IMainThreadProgress {
   private proxy: IExtHostProgress;
-  private progress = new Map<number, { resolve: () => void, progress: IProgress<IProgressStep> }>();
+  private progress = new Map<number, { resolve: (value?: any) => void, progress: IProgress<IProgressStep> }>();
 
   @Autowired(IProgressService)
   private readonly progressService: IProgressService;

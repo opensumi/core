@@ -1,7 +1,6 @@
 import { WSChannel, MessageString } from '../common/ws-channel';
 import * as shortid from 'shortid';
 import { stringify, parse } from '../common/utils';
-import { MultiWs } from './multi-ws';
 import { warning } from '@ali/ide-components/lib/utils/warning';
 import { IReporterService, REPORT_NAME } from '@ali/ide-core-common';
 
@@ -11,9 +10,6 @@ if (ReconnectingWebSocket.default) {
   /* istanbul ignore next */
   ReconnectingWebSocket = ReconnectingWebSocket.default;
 }
-
-// import ReconnectingWebSocket from 'reconnecting-websocket';
-// import { IStatusBarService } from '@ali/ide-core-browser/lib/services';
 
 // 前台链接管理类
 export class WSChannelHandler {
@@ -25,10 +21,10 @@ export class WSChannelHandler {
   private heartbeatMessageTimer: NodeJS.Timer | null;
   private reporterService: IReporterService;
 
-  constructor(public wsPath: string, logger: any, public protocols?: string[], useExperimentalMultiChannel?: boolean, clientId?: string) {
+  constructor(public wsPath: string, logger: any, public protocols?: string[], clientId?: string) {
     this.logger = logger || this.logger;
     this.clientId = clientId || `CLIENT_ID_${shortid.generate()}`;
-    this.connection = useExperimentalMultiChannel ? new MultiWs(wsPath, protocols, this.clientId) as any : new ReconnectingWebSocket(wsPath, protocols, {}); // new WebSocket(wsPath, protocols);
+    this.connection = new ReconnectingWebSocket(wsPath, protocols, {}); // new WebSocket(wsPath, protocols);
   }
   // 为解决建立连接之后，替换成可落盘的 logger
   replaceLogger(logger: any) {
@@ -84,10 +80,8 @@ export class WSChannelHandler {
       this.connection.addEventListener('open', () => {
         this.clientMessage();
         this.heartbeatMessage();
-        resolve();
-
+        resolve(undefined);
         // 重连 channel
-
         if (this.channelMap.size) {
           this.channelMap.forEach((channel) => {
             channel.onOpen(() => {
@@ -122,7 +116,7 @@ export class WSChannelHandler {
 
     await new Promise((resolve) => {
       channel.onOpen(() => {
-        resolve();
+        resolve(undefined);
       });
       channel.open(channelPath);
     });
@@ -138,8 +132,8 @@ export class WSChannelHandler {
 }
 
 export class WSChanneHandler extends WSChannelHandler {
-  constructor(public wsPath: string, logger: any, public protocols?: string[], useExperimentalMultiChannel?: boolean, clientId?: string) {
-    super(wsPath, logger, protocols, useExperimentalMultiChannel, clientId);
+  constructor(public wsPath: string, logger: any, public protocols?: string[], clientId?: string) {
+    super(wsPath, logger, protocols, clientId);
     warning(false, '[Deprecated warning]: WSChanneHandler was a wrong typo, please use WSChannelHandler');
   }
 }

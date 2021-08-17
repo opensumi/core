@@ -60,7 +60,7 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
   private processMap: Map<number, IProcess> = new Map();
 
   @Autowired(ILogServiceManager)
-  loggerManager: ILogServiceManager;
+  loggerManager!: ILogServiceManager;
   logger: ILogService = this.loggerManager.getLogger(SupportLogNamespace.Node);
 
   constructor() {

@@ -1,14 +1,15 @@
-import { ElectronAppConfig, ElectronMainApiRegistry, ElectronMainContribution, IElectronMainApp, IElectronMainApiProvider, IParsedArgs } from './types';
+import { ElectronAppConfig, ElectronMainApiRegistry, ElectronMainContribution, IElectronMainApp, IElectronMainApiProvider, IParsedArgs, ElectronURLHandlerRegistry } from './types';
 import { CodeWindow } from './window';
 import { Injector, ConstructorOf } from '@ali/common-di';
 import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
-import { ElectronMainApiRegistryImpl } from './api';
+import { ElectronMainApiRegistryImpl, ElectronURLHandlerRegistryImpl } from './api';
 import { createContributionProvider, ContributionProvider, URI, ExtensionCandidate, IEventBus, EventBusImpl, asExtensionCandidate } from '@ali/ide-core-common';
 import { serviceProviders } from './services';
 import { ICodeWindowOptions } from './types';
 import { ElectronMainModule } from '../electron-main-module';
 import { argv } from 'yargs';
 import { WindowDestroyedEvent, WindowCreatedEvent } from './services/events';
+import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 
 export interface IWindowOpenOptions {
   windowId: number;
@@ -20,7 +21,7 @@ export class ElectronMainApp {
 
   private codeWindows: Map<number, CodeWindow> = new Map();
 
-  private injector = new Injector();
+  private injector: Injector;
 
   private modules: ElectronMainModule[] = [];
 
@@ -31,6 +32,7 @@ export class ElectronMainApp {
   };
 
   constructor(private config: ElectronAppConfig) {
+    this.injector = config.injector || new Injector();
     config.extensionDir = this.parsedArgs.extensionDir ? this.parsedArgs.extensionDir : config.extensionDir || '';
     config.extensionCandidate = [
       ...config.extensionCandidate,
@@ -56,6 +58,9 @@ export class ElectronMainApp {
       token: IElectronMainApp,
       useValue: this,
     }, {
+      token: ElectronURLHandlerRegistry,
+      useClass: ElectronURLHandlerRegistryImpl,
+    }, {
       token: ElectronMainApiRegistry,
       useClass: ElectronMainApiRegistryImpl,
     }, ...serviceProviders);
@@ -64,10 +69,10 @@ export class ElectronMainApp {
     this.createElectronMainModules(this.config.modules);
     this.onBeforeReadyContribution();
     this.registerMainApis();
+    this.registerURLHandlers();
   }
 
   async init() {
-    // TODO scheme start
     await app.whenReady().then(() => {
       this.onStartContribution();
     });
@@ -77,6 +82,14 @@ export class ElectronMainApp {
     for (const contribution of this.contributions) {
       if (contribution.registerMainApi) {
         contribution.registerMainApi(this.injector.get(ElectronMainApiRegistry));
+      }
+    }
+  }
+
+  registerURLHandlers() {
+    for (const contribution of this.contributions) {
+      if (contribution.registerURLHandler) {
+        contribution.registerURLHandler(this.injector.get(ElectronURLHandlerRegistry));
       }
     }
   }
@@ -176,11 +189,11 @@ export class ElectronMainApp {
 
   private injectLifecycleApi() {
     const registry: ElectronMainApiRegistry = this.injector.get(ElectronMainApiRegistry);
-    registry.registerMainApi('lifecycle', new ElectronMainLifeCycleApi(this));
+    registry.registerMainApi(IElectronMainLifeCycleService, new ElectronMainLifeCycleApi(this));
   }
 
   /**
-   * 兼容不规范的 url 比如 Windows "file://C:\\path\\to\\中文.html?background=#hash=title1"
+   * 兼容不规范的 url 比如 Windows "file://C:\\path\\to\\測試.html?background=#hash=title1"
    * 要转换为 c:\path\to\測試.html
    * @param workspace
    * @returns string | undefined

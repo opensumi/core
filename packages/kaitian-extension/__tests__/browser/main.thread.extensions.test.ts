@@ -14,15 +14,15 @@ import { MainThreadExtensionLog } from '../../src/browser/vscode/api/main.thread
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
 import { IContextKeyService, AppConfig } from '@ali/ide-core-browser';
 import { AppConfig as NodeAppConfig } from '@ali/ide-core-node';
-import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { IGlobalStorageServer } from '@ali/ide-storage';
 import { MainThreadWebview } from '../../src/browser/vscode/api/main.thread.api.webview';
 
-import { MockExtNodeClientService } from '../__mock__/extension.service.client';
+import { MockExtNodeClientService } from '../../__mocks__/extension.service.client';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { MockWorkbenchEditorService } from '../../../editor/src/common/mocks/workbench-editor.service';
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
-import { MockedStorageProvider } from '@ali/ide-core-browser/lib/mocks/storage';
+import { MockedStorageProvider } from '@ali/ide-core-browser/__mocks__/storage';
 import { FileSearchServicePath } from '@ali/ide-file-search';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
@@ -33,7 +33,7 @@ import { WorkspacePreferences } from '@ali/ide-workspace/lib/browser/workspace-p
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { IWebviewService } from '@ali/ide-webview';
 import { mockKaitianExtensionProviders } from './extension-service/extension-service-mock-helper';
-import { MainThreadExtensionService } from '../__mock__/api/mainthread.extension.service';
+import { MainThreadExtensionService } from '../../__mocks__/api/mainthread.extension.service';
 import { IReporter, DefaultReporter } from '@ali/ide-core-common';
 
 @Injectable()

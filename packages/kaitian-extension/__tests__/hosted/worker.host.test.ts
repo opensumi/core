@@ -1,13 +1,13 @@
-import { Deferred } from '@ali/ide-core-common/lib';
+import { Deferred } from '@ali/ide-core-common';
 import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { ProxyIdentifier } from '@ali/ide-connection';
 import { ExtensionWorkerHost } from '../../src/hosted/worker.host';
-import { mockExtensionProps, mockExtensionProps2 } from '../__mock__/extensions';
-import { initMockRPCProtocol } from '../__mock__/initRPCProtocol';
-import { MainThreadExtensionService } from '../__mock__/api/mainthread.extension.service';
-import { MainThreadStorage } from '../__mock__/api/mathread.storage';
-import { MainThreadExtensionLog } from '../__mock__/api/mainthread.extension.log';
-import { MockWorker, MessagePort, MessageChannel, mockFetch } from '../__mock__/worker';
+import { mockExtensionProps, mockExtensionProps2 } from '../../__mocks__/extensions';
+import { initMockRPCProtocol } from '../../__mocks__/initRPCProtocol';
+import { MainThreadExtensionService } from '../../__mocks__/api/mainthread.extension.service';
+import { MainThreadStorage } from '../../__mocks__/api/mathread.storage';
+import { MainThreadExtensionLog } from '../../__mocks__/api/mainthread.extension.log';
+import { MockWorker, MessagePort, MessageChannel, mockFetch } from '../../__mocks__/worker';
 
 const enum MessageType {
   Request = 1,

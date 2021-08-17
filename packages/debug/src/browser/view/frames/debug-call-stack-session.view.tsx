@@ -1,12 +1,12 @@
 import * as React from 'react';
 import * as cls from 'classnames';
 import { ViewState, getIcon, useInjectable, DisposableCollection } from '@ali/ide-core-browser';
-import { DebugSession, DebugState } from '../../debug-session';
+import { DebugSession } from '../../debug-session';
 import { DebugThread } from '../../model/debug-thread';
 import { DebugStackThreadView } from './debug-call-stack-thread.view';
 import { DebugStackOperationView } from './debug-call-stack.operation';
 import { DebugSessionManager } from '../../debug-session-manager';
-import { IDebugSessionManager } from '../../../common';
+import { DebugState, IDebugSessionManager } from '../../../common';
 import * as styles from './debug-call-stack.module.less';
 
 export interface DebugStackSessionViewProps {

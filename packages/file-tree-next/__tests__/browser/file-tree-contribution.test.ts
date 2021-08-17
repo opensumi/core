@@ -12,7 +12,7 @@ import { MockWorkbenchEditorService } from '@ali/ide-editor/lib/common/mocks/wor
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IDialogService, IMessageService, IWindowDialogService } from '@ali/ide-overlay';
 import { IApplicationService, IClipboardService, IContextKeyService, isLinux, isWindows, OS, PreferenceService } from '@ali/ide-core-browser';
-import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
+import { MockContextKeyService } from '@ali/ide-core-browser/__mocks__/context-key';
 import { ViewsRegistry } from '@ali/ide-main-layout/lib/browser/views-registry';
 
 describe('FileTreeContribution', () => {

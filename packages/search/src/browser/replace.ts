@@ -74,7 +74,7 @@ export async function replace(
         dirtyIfInEditor: true,
       },
       resource: new URI(result.fileUri),
-      edit: {
+      textEdit: {
         range: new monaco.Range(
           result.line,
           result.matchStart,

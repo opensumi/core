@@ -5,7 +5,7 @@ import { DefaultUriLabelProvider } from '@ali/ide-core-browser/lib/services';
 import { Disposable, URI, localize, ISchemaRegistry, ISchemaStore} from '@ali/ide-core-browser';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks/file-service-client';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
-import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
+import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { FileSchemeDocNodeServicePath } from '@ali/ide-file-scheme';
 import md5 = require('md5');
 import { FileSchemeDocumentProvider, VscodeSchemeDocumentProvider } from '@ali/ide-file-scheme/lib/browser/file-doc';

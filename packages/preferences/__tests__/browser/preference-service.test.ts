@@ -1,4 +1,4 @@
-import { BrowserModule, Domain, PreferenceContribution, URI, FileUri, PreferenceProviderProvider, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, injectPreferenceConfigurations, injectPreferenceSchemaProvider, IEventBus } from '@ali/ide-core-browser';
+import { BrowserModule, Domain, PreferenceContribution, URI, FileUri, PreferenceProviderProvider, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, injectPreferenceConfigurations, injectPreferenceSchemaProvider, IEventBus, ILoggerManagerClient } from '@ali/ide-core-browser';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IFileServiceClient, IDiskFileProvider } from '@ali/ide-file-service';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -12,6 +12,7 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import { UserStorageContribution } from '@ali/ide-preferences/lib/browser/userstorage';
 import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
+import { MockLoggerManageClient } from '@ali/ide-core-browser/__mocks__/logger';
 
 @Injectable()
 export class AddonModule extends BrowserModule {
@@ -135,6 +136,9 @@ describe('PreferenceService should be work', () => {
     injector.addProviders({
       token: IWorkspaceService,
       useValue: mockWorkspaceService,
+    }, {
+      token: ILoggerManagerClient,
+      useClass: MockLoggerManageClient,
     });
 
     injectPreferenceConfigurations(injector);

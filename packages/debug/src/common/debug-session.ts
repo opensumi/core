@@ -2,7 +2,14 @@ import { DebugProtocol } from '@ali/vscode-debugprotocol';
 import { IDisposable } from '@ali/ide-core-browser';
 import { DebugSessionOptions, InternalDebugSessionOptions } from './debug-session-options';
 import { DebugConfiguration } from './debug-configuration';
-import { DebugState, DebugEventTypes } from '../browser';
+import { DebugEventTypes } from '../browser';
+
+export enum DebugState {
+  Inactive,
+  Initializing,
+  Running,
+  Stopped,
+}
 
 export type IDebugSessionReplMode = 'separate' | 'mergeWithParent';
 

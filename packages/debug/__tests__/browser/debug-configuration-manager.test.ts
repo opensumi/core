@@ -5,7 +5,7 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IDebugServer } from '@ali/ide-debug';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 
 describe('Debug Configuration Manager', () => {
   const mockInjector = createBrowserInjector([]);

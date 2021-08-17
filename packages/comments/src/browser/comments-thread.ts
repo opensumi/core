@@ -51,6 +51,9 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   private _id = `thread_${uuid()}`;
 
   @observable
+  private _readOnly = false;
+
+  @observable
   public isCollapsed: boolean;
 
   constructor(
@@ -70,7 +73,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     const resourceContext = new ResourceContextKey(this._contextKeyService);
     resourceContext.set(uri);
     this._contextKeyService.createKey<string>('thread', options.contextValue);
-    this._contextKeyService.createKey<boolean>('readOnly', !!options.readOnly);
+    this.readOnly = !!options.readOnly;
     this.label = options.label;
     this.isCollapsed = !!this.options.isCollapsed;
     const threadsLengthContext = this._contextKeyService.createKey<number>('threadsLength', this.commentsService.getThreadsByUri(uri).length);
@@ -115,8 +118,14 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     return this._contextKeyService;
   }
 
+  @computed
   get readOnly() {
-    return !!this.options.readOnly;
+    return this._readOnly;
+  }
+
+  set readOnly(readOnly: boolean) {
+    this._readOnly = readOnly;
+    this._contextKeyService.createKey<boolean>('readOnly', this._readOnly);
   }
 
   @computed
