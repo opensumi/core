@@ -12,7 +12,7 @@ export * from './menu';
 export * from './localize';
 export * from './async';
 export * from './utils';
-export * from './uuid'
+export * from './uuid';
 export * from './types';
 export * from './application-props';
 export * from './application-error';
@@ -35,8 +35,9 @@ export * from './problem-matcher';
 export * from './task-definition';
 export * from './errors';
 export * from './node/port';
-export * from './line-text'
+export * from './line-text';
 export * from './filters';
 export * from './character-classifier';
 export * from './cache';
 export * from './keyboard';
+export * from './theme';

@@ -4,7 +4,7 @@ import type * as vscode from 'vscode';
 import * as types from './ext-types';
 import * as model from './model.api';
 import * as debugModel from '@ali/ide-debug';
-import { URI, Uri, UriComponents, ISelection, IMarkerData, IRelatedInformation, MarkerTag, MarkerSeverity, ProgressLocation as MainProgressLocation, parse, cloneAndChange } from '@ali/ide-core-common';
+import { URI, Uri, UriComponents, ISelection, IMarkerData, IRelatedInformation, MarkerTag, MarkerSeverity, ProgressLocation as MainProgressLocation, parse, cloneAndChange, IThemeColor } from '@ali/ide-core-common';
 import { IDecorationRenderOptions, IThemeDecorationRenderOptions, IContentDecorationRenderOptions, TrackedRangeStickiness } from '@ali/ide-editor/lib/common';
 import { IEvaluatableExpression } from '@ali/ide-debug/lib/common/evaluatable-expression';
 import { SymbolInformation, Range as R, Position as P, SymbolKind as S } from 'vscode-languageserver-types';
@@ -806,13 +806,13 @@ export namespace DecorationRenderOptions {
         ? ThemableDecorationRenderOptions.from(options.dark)
         : undefined,
 
-      backgroundColor: options.backgroundColor as string | types.ThemeColor,
+      backgroundColor: options.backgroundColor as string | IThemeColor,
       outline: options.outline,
-      outlineColor: options.outlineColor as string | types.ThemeColor,
+      outlineColor: options.outlineColor as string | IThemeColor,
       outlineStyle: options.outlineStyle,
       outlineWidth: options.outlineWidth,
       border: options.border,
-      borderColor: options.borderColor as string | types.ThemeColor,
+      borderColor: options.borderColor as string | IThemeColor,
       borderRadius: options.borderRadius,
       borderSpacing: options.borderSpacing,
       borderStyle: options.borderStyle,
@@ -821,7 +821,7 @@ export namespace DecorationRenderOptions {
       fontWeight: options.fontWeight,
       textDecoration: options.textDecoration,
       cursor: options.cursor,
-      color: options.color as string | types.ThemeColor,
+      color: options.color as string | IThemeColor,
       opacity: options.opacity,
       letterSpacing: options.letterSpacing,
       gutterIconPath: options.gutterIconPath
@@ -830,7 +830,7 @@ export namespace DecorationRenderOptions {
       gutterIconSize: options.gutterIconSize,
       overviewRulerColor: options.overviewRulerColor as
         | string
-        | types.ThemeColor,
+        | IThemeColor,
       before: options.before
         ? ThemableDecorationAttachmentRenderOptions.from(options.before)
         : undefined,
@@ -848,13 +848,13 @@ export namespace ThemableDecorationRenderOptions {
       return options;
     }
     return {
-      backgroundColor: options.backgroundColor as string | types.ThemeColor,
+      backgroundColor: options.backgroundColor as string | IThemeColor,
       outline: options.outline,
-      outlineColor: options.outlineColor as string | types.ThemeColor,
+      outlineColor: options.outlineColor as string | IThemeColor,
       outlineStyle: options.outlineStyle,
       outlineWidth: options.outlineWidth,
       border: options.border,
-      borderColor: options.borderColor as string | types.ThemeColor,
+      borderColor: options.borderColor as string | IThemeColor,
       borderRadius: options.borderRadius,
       borderSpacing: options.borderSpacing,
       borderStyle: options.borderStyle,
@@ -863,7 +863,7 @@ export namespace ThemableDecorationRenderOptions {
       fontWeight: options.fontWeight,
       textDecoration: options.textDecoration,
       cursor: options.cursor,
-      color: options.color as string | types.ThemeColor,
+      color: options.color as string | IThemeColor,
       opacity: options.opacity,
       letterSpacing: options.letterSpacing,
       gutterIconPath: options.gutterIconPath
@@ -872,7 +872,7 @@ export namespace ThemableDecorationRenderOptions {
       gutterIconSize: options.gutterIconSize,
       overviewRulerColor: options.overviewRulerColor as
         | string
-        | types.ThemeColor,
+        | IThemeColor,
       before: options.before
         ? ThemableDecorationAttachmentRenderOptions.from(options.before)
         : undefined,
@@ -895,12 +895,12 @@ export namespace ThemableDecorationAttachmentRenderOptions {
         ? pathOrURIToURI(options.contentIconPath)
         : undefined,
       border: options.border,
-      borderColor: options.borderColor as string | types.ThemeColor,
+      borderColor: options.borderColor as string | IThemeColor,
       fontStyle: options.fontStyle,
       fontWeight: options.fontWeight,
       textDecoration: options.textDecoration,
-      color: options.color as string | types.ThemeColor,
-      backgroundColor: options.backgroundColor as string | types.ThemeColor,
+      color: options.color as string | IThemeColor,
+      backgroundColor: options.backgroundColor as string | IThemeColor,
       margin: options.margin,
       width: options.width,
       height: options.height,

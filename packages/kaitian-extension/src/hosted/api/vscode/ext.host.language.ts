@@ -60,15 +60,12 @@ import {
   DocumentHighlight,
   FormattingOptions,
   SingleEditOperation,
-  CodeLensList,
   CodeLens,
-  DocumentLink,
   ReferenceContext,
   Location,
   SerializedLanguageConfiguration,
   ILink,
   DocumentSymbol,
-  SignatureHelpResult,
   WorkspaceEditDto,
   RenameLocation,
   ISerializedSignatureHelpProviderMetadata,
@@ -79,6 +76,9 @@ import {
   IOutgoingCallDto,
   WithDuration,
   ChainedCacheId,
+  ICodeLensListDto,
+  ISignatureHelpDto,
+  ILinksListDto,
 } from '../../../common/vscode/model.api';
 import {
   IMainThreadLanguages,
@@ -531,13 +531,18 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return result;
   }
 
-  $provideCodeLenses(handle: number, resource: Uri): Promise<CodeLensList | undefined> {
+  $provideCodeLenses(handle: number, resource: Uri): Promise<ICodeLensListDto> {
     return this.withAdapter(handle, CodeLensAdapter, (adapter) => adapter.provideCodeLenses(resource));
   }
 
   $resolveCodeLens(handle: number, resource: Uri, symbol: CodeLens): Promise<CodeLens | undefined> {
     return this.withAdapter(handle, CodeLensAdapter, (adapter) => adapter.resolveCodeLens(resource, symbol));
   }
+
+  $releaseCodeLens(handle: number, cacheId: number): Promise<void> {
+    return this.withAdapter(handle, CodeLensAdapter, (adapter) => Promise.resolve(adapter.releaseCodeLens(cacheId)));
+  }
+
   // ### Document Code Lens Provider end
 
   // ### Code Actions Provider begin
@@ -608,17 +613,21 @@ export class ExtHostLanguages implements IExtHostLanguages {
   // ### Diagnostics end
 
   // ### Document Link Provider begin
-  $provideDocumentLinks(handle: number, resource: Uri, token: CancellationToken): Promise<ILink[] | undefined> {
+  $provideDocumentLinks(handle: number, resource: Uri, token: CancellationToken): Promise<ILinksListDto | undefined> {
     return this.withAdapter(handle, LinkProviderAdapter, (adapter) => adapter.provideLinks(resource, token));
   }
 
-  $resolveDocumentLink(handle: number, link: DocumentLink, token: CancellationToken): Promise<ILink | undefined> {
-    return this.withAdapter(handle, LinkProviderAdapter, (adapter) => adapter.resolveLink(link, token));
+  $resolveDocumentLink(handle: number, id: ChainedCacheId, token: CancellationToken): Promise<ILink | undefined> {
+    return this.withAdapter(handle, LinkProviderAdapter, (adapter) => adapter.resolveLink(id, token));
+  }
+
+  $releaseDocumentLinks(handle: number, cacheId: number): Promise<void> {
+    return this.withAdapter(handle, LinkProviderAdapter, (adapter) => Promise.resolve(adapter.releaseLink(cacheId)));
   }
 
   registerDocumentLinkProvider(selector: DocumentSelector, provider: DocumentLinkProvider): Disposable {
     const callId = this.addNewAdapter(new LinkProviderAdapter(provider, this.documents));
-    this.proxy.$registerDocumentLinkProvider(callId, this.transformDocumentSelector(selector));
+    this.proxy.$registerDocumentLinkProvider(callId, this.transformDocumentSelector(selector), typeof provider.resolveDocumentLink === 'function');
     return this.createDisposable(callId);
   }
   // ### Document Link Provider end
@@ -689,8 +698,12 @@ export class ExtHostLanguages implements IExtHostLanguages {
   }
   // ### WorkspaceSymbol Provider end
   // ### Signature help begin
-  $provideSignatureHelp(handle: number, resource: Uri, position: Position, context: SignatureHelpContextDto, token: CancellationToken): Promise<SignatureHelpResult | undefined | null> {
+  $provideSignatureHelp(handle: number, resource: Uri, position: Position, context: SignatureHelpContextDto, token: CancellationToken): Promise<ISignatureHelpDto | undefined> {
     return this.withAdapter(handle, SignatureHelpAdapter, (adapter) => adapter.provideSignatureHelp(resource, position, token, context as SignatureHelpContext));
+  }
+
+  $releaseSignatureHelp(handle: number, cacheId: number): Promise<void> {
+    return this.withAdapter(handle, SignatureHelpAdapter, (adapter) => Promise.resolve(adapter.releaseSignatureHelp(cacheId)));
   }
 
   registerSignatureHelpProvider(selector: DocumentSelector, provider: SignatureHelpProvider, metadataOrTriggerChars: string[] | SignatureHelpProviderMetadata): Disposable {
@@ -701,6 +714,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     this.proxy.$registerSignatureHelpProvider(callId, this.transformDocumentSelector(selector), metadata);
     return this.createDisposable(callId);
   }
+
   // ### Signature help end
   // ### Rename Provider begin
   registerRenameProvider(selector: DocumentSelector, provider: RenameProvider): Disposable {

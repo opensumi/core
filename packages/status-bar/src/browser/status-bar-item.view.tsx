@@ -1,13 +1,41 @@
-import * as React from 'react';
-import * as styles from './status-bar.module.less';
-import { StatusBarEntry } from '@ali/ide-core-browser/lib/services';
-import { parseLabel, LabelPart, LabelIcon, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 import cls from 'classnames';
+import * as React from 'react';
+import { IThemeService } from '@ali/ide-theme';
 import { getExternalIcon } from '@ali/ide-core-browser';
+import { IThemeColor, isThemeColor } from '@ali/ide-core-common';
+import { StatusBarEntry } from '@ali/ide-core-browser/lib/services';
+import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
+
+import * as styles from './status-bar.module.less';
+import { parseLabel, LabelPart, LabelIcon, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 
 // todo: 移除 fa 的相关代码
 export function StatusBarItem(props: StatusBarEntry) {
-  const { iconClass, className, text, onClick, tooltip, command, color, ariaLabel, role = 'button' } = props;
+  const {
+    text,
+    onClick,
+    tooltip,
+    command,
+    ariaLabel,
+    iconClass,
+    className,
+    role = 'button',
+    color: propsColor,
+    backgroundColor: propsBackgroundColor,
+  } = props;
+
+  const themeService = useInjectable<IThemeService>(IThemeService);
+  const getColor = (color: string | IThemeColor | undefined): string => {
+    if (!color) {
+      return '';
+    }
+
+    if (isThemeColor(color)) {
+      return themeService.getColor(color)?.toString() ?? '';
+    }
+
+    return color;
+  };
 
   let items: LabelPart[] = [];
   if (text) {
@@ -22,7 +50,8 @@ export function StatusBarItem(props: StatusBarEntry) {
       title={tooltip}
       onClick={onClick}
       style={{
-        color,
+        color: getColor(propsColor),
+        backgroundColor: getColor(propsBackgroundColor),
       }}
       aria-label={ariaLabel}
     >

@@ -1,4 +1,4 @@
-import { IDisposable } from '@ali/ide-core-common/lib/disposable';
+import { IDisposable, IThemeColor } from '@ali/ide-core-common';
 
 export const IStatusBarService = Symbol('IStatusBarService');
 
@@ -21,7 +21,8 @@ export interface StatusBarEntry {
    */
   text?: string;
   alignment: StatusBarAlignment;
-  color?: string;
+  color?: IThemeColor | string;
+  backgroundColor?: IThemeColor | string;
   className?: string;
   tooltip?: string;
   command?: string;
