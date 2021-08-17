@@ -1,5 +1,5 @@
 export interface IThemeColor {
-	id: string;
+  id: string;
 }
 
 export function isThemeColor(obj: any): obj is IThemeColor {

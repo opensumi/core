@@ -1,14 +1,12 @@
 import { IDisposable } from './disposable';
 import * as Electron from 'electron';
 import { ExtensionCandidate } from './types';
-import { BasicEvent, URI } from '.';
 
 export interface IElectronMainApi<Events> {
-
   on(event: Events, listener: (...args) => void): IDisposable;
-
 }
 
+// tslint:disable-next-line: no-empty-interface
 export interface IElectronPlainWebviewWindowOptions extends Electron.BrowserWindowConstructorOptions {
   // 后续可支持更多自定义字段
 }
@@ -71,7 +69,6 @@ export interface IElectronMainUIServiceShape {
    */
   setSize(windowId: number, size: { width: number; height: number; }): Promise<void>;
 
-
   /**
    * 设置窗口是否始终置顶
    * @param windowId
@@ -103,13 +100,10 @@ export interface IElectronMainUIServiceShape {
    * @param windowId
    */
   getWebContentsId(windowId: number): Promise<number>;
-
-
 }
-export interface IElectronMainUIService extends IElectronMainUIServiceShape, IElectronMainApi<'fullScreenStatusChange' | 'windowClosed' | 'maximizeStatusChange'> {
 
-
-}
+// tslint:disable-next-line: no-empty-interface
+export interface IElectronMainUIService extends IElectronMainUIServiceShape, IElectronMainApi<'fullScreenStatusChange' | 'windowClosed' | 'maximizeStatusChange'> {}
 
 export const IElectronMainUIService = 'IElectronMainUIService';
 
@@ -134,7 +128,6 @@ export interface IElectronMainLifeCycleService extends IElectronMainApi<void> {
 
 export const IElectronMainLifeCycleService = 'IElectronMainLifeCycleService';
 
-
 export interface IURLHandler {
   handleURL(url: string): Promise<boolean>;
 }
@@ -152,5 +145,5 @@ export interface IElectronURLService {
   deregisterHandler(handler: IURLHandler): void;
 }
 
+// tslint:disable-next-line: no-empty-interface
 export interface IElectronRendererURLService extends IElectronMainApi<string>, IElectronURLService { }
-

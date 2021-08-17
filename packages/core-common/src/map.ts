@@ -916,3 +916,28 @@ export class SetMap<K, V> {
 		values.forEach(fn);
 	}
 }
+
+export class CaseInsensitiveMap<K, V> extends Map<K, V> {
+  set(key: K, value: V): this {
+    if (typeof key === 'string') {
+      key = key.toLowerCase() as any as K;
+    }
+    return super.set(key, value);
+  }
+
+  get(key: K): V | undefined {
+    if (typeof key === 'string') {
+      key = key.toLowerCase() as any as K;
+    }
+
+    return super.get(key);
+  }
+
+  has(key: K): boolean {
+    if (typeof key === 'string') {
+      key = key.toLowerCase() as any as K;
+    }
+
+    return super.has(key);
+  }
+}

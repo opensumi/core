@@ -1,11 +1,11 @@
 import { format, mnemonicButtonLabel } from './utils/strings';
+import { CaseInsensitiveMap } from './map';
 
 export type ILocalizationKey = string; // ts不支持symbol作为key
 
-// 仅在当前模块中作为用户使用语言的标识，需要全小写以屏蔽差异
-let _currentLanguageId: string = 'zh-cn';
+let _currentLanguageId: string = 'zh-CN';
 
-const localizationRegistryMap = new Map<string, ILocalizationRegistry>();
+const localizationRegistryMap = new CaseInsensitiveMap<string, LocalizationRegistry>();
 
 export function localize(symbol: ILocalizationKey, defaultMessage?: string | undefined, scope: string = 'host'): string {
   const localizationRegistry = getLocalizationRegistry(scope);
@@ -34,10 +34,6 @@ export interface ILocalizationContents {
   [key: string]: string;
 }
 
-function normalize(key?: string): string | undefined {
-  return key?.toLowerCase();
-}
-
 interface ILocalizationRegistry {
 
   registerLocalizationBundle(bundle: ILocalizationBundle): void;
@@ -49,12 +45,12 @@ interface ILocalizationRegistry {
 
 class LocalizationRegistry implements ILocalizationRegistry {
 
-  private localizationMap: Map<string, ILocalizationContents> = new Map() ;
+  private localizationMap = new CaseInsensitiveMap<string, ILocalizationContents>() ;
 
-  public readonly localizationInfo: Map<string, ILocalizationInfo> = new Map();
+  public readonly localizationInfo = new CaseInsensitiveMap<string, ILocalizationInfo>();
 
   registerLocalizationBundle(bundle: ILocalizationBundle): void {
-    const languageId = normalize(bundle.languageId);
+    const languageId = bundle.languageId;
     if (!languageId) {
       return;
     }
@@ -72,7 +68,6 @@ class LocalizationRegistry implements ILocalizationRegistry {
   }
 
   private getContents(languageId: string | undefined = 'zh-CN'): ILocalizationContents {
-    languageId = normalize(languageId);
     if (!languageId) {
       return {};
     }
@@ -101,7 +96,7 @@ export function getCurrentLanguageInfo(scope: string = 'host'): ILocalizationInf
 }
 
 export function setLanguageId(languageId: string): void {
-  _currentLanguageId = normalize(languageId)!;
+  _currentLanguageId = languageId;
 }
 
 export function getAvailableLanguages(scope: string = 'host'): ILocalizationInfo[] {
@@ -109,10 +104,10 @@ export function getAvailableLanguages(scope: string = 'host'): ILocalizationInfo
 }
 
 function getLocalizationRegistry(scope: string): LocalizationRegistry {
-  if(!localizationRegistryMap[scope]){
-    localizationRegistryMap[scope] = new LocalizationRegistry();
+  if(!localizationRegistryMap.has(scope)){
+    localizationRegistryMap.set(scope, new LocalizationRegistry());
   }
-  return localizationRegistryMap[scope];
+  return localizationRegistryMap.get(scope)!;
 }
 
 /**
