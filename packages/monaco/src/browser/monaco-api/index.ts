@@ -5,3 +5,5 @@ export const monaco = Object.freeze({
   editor: createMonacoEditorApi(),
   languages: createMonacoLanguageApi(),
 });
+
+export { URI } from '@ali/monaco-editor-core/esm/vs/base/common/uri';

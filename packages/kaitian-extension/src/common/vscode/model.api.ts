@@ -38,12 +38,6 @@ export interface IColorPresentation {
   additionalTextEdits?: TextEdit[];
 }
 
-export interface CodeLens {
-  range: IRange;
-  id?: string;
-  command?: VSCommand;
-}
-
 export interface CustomCodeAction {
   title: string;
   kind?: string;
@@ -521,6 +515,11 @@ export interface CodeLens {
   command?: VSCommand;
 }
 
+export interface ICodeLensListDto {
+  cacheId?: number;
+  lenses: CodeLens[];
+}
+
 export interface CodeLensList {
   lenses: CodeLens[];
   dispose(): void;
@@ -571,6 +570,15 @@ export interface ILinksList {
   dispose?(): void;
 }
 
+export interface ILinkDto extends ILink {
+  cacheId?: ChainedCacheId;
+}
+
+export interface ILinksListDto {
+  id?: CacheId;
+  links: ILink[];
+}
+
 export interface DocumentSymbol {
   name: string;
   detail: string;
@@ -615,6 +623,10 @@ export interface SignatureHelp {
   signatures: SignatureInformation[];
   activeSignature: number;
   activeParameter: number;
+}
+
+export interface ISignatureHelpDto extends SignatureHelp {
+  id: number;
 }
 
 export interface SignatureHelpResult extends IDisposable {

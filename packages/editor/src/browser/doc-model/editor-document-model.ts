@@ -1,7 +1,6 @@
-// import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { monaco } from '@ali/ide-monaco/lib/browser/monaco-api';
+import { monaco, URI as MonacoURI } from '@ali/ide-monaco/lib/browser/monaco-api';
 import { Autowired, Injectable } from '@ali/common-di';
-import { CommandService, Disposable, Emitter, formatLocalize, IEventBus, ILogger, IRange, IReporterService, isThenable, isUndefinedOrNull, localize, PreferenceService, REPORT_NAME, Uri, URI } from '@ali/ide-core-browser';
+import { CommandService, Disposable, Emitter, formatLocalize, IEventBus, ILogger, IRange, IReporterService, isThenable, isUndefinedOrNull, localize, PreferenceService, REPORT_NAME, URI } from '@ali/ide-core-browser';
 import { IMessageService } from '@ali/ide-overlay';
 import * as md5 from 'md5';
 import { IDocCache, IDocPersistentCacheProvider, isDocContentCache, parseRangeFrom, SaveReason, IEditorDocumentModelContentChange } from '../../common';
@@ -113,7 +112,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     this.alwaysDirty = !!options.alwaysDirty;
     this.closeAutoSave = !!options.closeAutoSave;
 
-    this.monacoModel = monaco.editor.createModel(content, options.languageId, Uri.parse(uri.toString()));
+    this.monacoModel = monaco.editor.createModel(content, options.languageId, MonacoURI.parse(uri.toString()));
     this.editorPreferences = createEditorPreferenceProxy(this.preferences, this.uri.toString(), this.languageId);
     this.updateOptions({});
     if (options.eol) {

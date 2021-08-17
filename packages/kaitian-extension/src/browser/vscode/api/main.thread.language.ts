@@ -14,7 +14,7 @@ import { DocumentFilter } from 'vscode-languageserver-protocol';
 import { ExtHostAPIIdentifier, ICodeActionDto, ICodeActionProviderMetadataDto, IExtHostLanguages, IMainThreadLanguages, ISuggestDataDto, ISuggestDataDtoField, ISuggestResultDtoField, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
 import { IExtensionDescription } from '../../../common/vscode/extension';
-import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SemanticTokensLegend, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ICallHierarchyItemDto, CallHierarchyItem, IWorkspaceEditDto, ResourceTextEditDto, ResourceFileEditDto } from '../../../common/vscode/model.api';
+import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SemanticTokensLegend, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ICallHierarchyItemDto, CallHierarchyItem, IWorkspaceEditDto, ResourceTextEditDto, ResourceFileEditDto, ILinkDto } from '../../../common/vscode/model.api';
 import { mixin, reviveIndentationRule, reviveOnEnterRules, reviveRegExp } from '../../../common/vscode/utils';
 import { UriComponents } from '../../../common/vscode/ext-types';
 import { FoldingRangeProvider } from './../../../common/vscode/model.api';
@@ -677,11 +677,14 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_CODE_LENSES);
-        return this.proxy.$provideCodeLenses(handle, model.uri).then((v) => {
-          if (v) {
+        return this.proxy.$provideCodeLenses(handle, model.uri).then((dto) => {
+          if (dto) {
             timer.timeEnd(extname(model.uri.fsPath));
           }
-          return v!;
+          return {
+            lenses: dto?.lenses || [],
+            dispose: () => dto?.cacheId && this.proxy.$releaseCodeLens(handle, dto.cacheId),
+          };
         });
       },
       resolveCodeLens: (model, codeLens, token) => {
@@ -724,9 +727,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
-  $registerDocumentLinkProvider(handle: number, selector: SerializedDocumentFilter[]): void {
+  $registerDocumentLinkProvider(handle: number, selector: SerializedDocumentFilter[], supportsResolve: boolean): void {
     const languageSelector = fromLanguageSelector(selector);
-    const linkProvider = this.createLinkProvider(handle, languageSelector);
+    const linkProvider = this.createLinkProvider(handle, supportsResolve);
     const disposable = new DisposableCollection();
     for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
@@ -829,39 +832,46 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     return provider;
   }
 
-  protected createLinkProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.LinkProvider {
-    return {
+  protected createLinkProvider(handle: number, supportResolve: boolean): monaco.languages.LinkProvider {
+    const provider: monaco.languages.LinkProvider = {
       provideLinks: (model, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined!;
         }
-        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
-          return undefined!;
-        }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_LINKS);
-        return this.proxy.$provideDocumentLinks(handle, model.uri, token).then((modelLinks) => {
-          if (!modelLinks) {
+        return this.proxy.$provideDocumentLinks(handle, model.uri, token).then((linksDto) => {
+          if (!linksDto) {
             return undefined;
           }
           timer.timeEnd(extname(model.uri.fsPath));
-          const links = modelLinks.map((link) => this.reviveLink(link));
+          const links = linksDto.links.map((link) => this.reviveLink(link));
           return {
             links,
             dispose: () => {
-              // console.warn('TODO 需要传递handleId实现release');
+              if (linksDto.id) {
+                this.proxy.$releaseDocumentLinks(handle, linksDto.id);
+              }
             },
           };
         });
       },
-      resolveLink: (link: monaco.languages.ILink, token) => {
-        return this.proxy.$resolveDocumentLink(handle, link, token).then((v) => {
+    };
+
+    if (supportResolve) {
+      provider.resolveLink = (link: monaco.languages.ILink, token) => {
+        const dto: ILinkDto = link;
+        if (!dto.cacheId) {
+          return link;
+        }
+        return this.proxy.$resolveDocumentLink(handle, dto.cacheId, token).then((v) => {
           if (!v) {
             return undefined;
           }
           return this.reviveLink(v);
         });
-      },
-    };
+      };
+    }
+    return provider;
   }
 
   reviveLink(data: ILink) {
@@ -994,10 +1004,15 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_SIGNATURE_HELP);
         return this.proxy.$provideSignatureHelp(handle, model.uri, position, context, token).then((v) => {
-          if (v) {
-            timer.timeEnd(extname(model.uri.fsPath));
+          if (!v) {
+            return undefined;
           }
-          return v!;
+
+          timer.timeEnd(extname(model.uri.fsPath));
+          return {
+            value: v,
+            dispose: () => v.id && this.proxy.$releaseSignatureHelp(handle, v.id),
+          };
         });
       },
     };

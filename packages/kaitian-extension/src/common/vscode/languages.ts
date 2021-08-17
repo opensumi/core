@@ -37,7 +37,6 @@ import {
   ICallHierarchyItemDto,
   IOutgoingCallDto,
   IIncomingCallDto,
-  CodeLensList,
   CodeLens,
   SemanticTokensLegend,
   WithDuration,
@@ -49,11 +48,13 @@ import {
   ChainedCacheId,
   IWorkspaceEditDto,
   CacheId,
+  ICodeLensListDto,
+  ISignatureHelpDto,
+  ILinksListDto,
 } from './model.api';
 import type {
   CodeActionContext,
   SignatureHelpContext,
-  SignatureHelpResult,
   Command,
 } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { Disposable } from './ext-types';
@@ -152,6 +153,7 @@ export interface IMainThreadLanguages {
   $registerDocumentLinkProvider(
     handle: number,
     selector: SerializedDocumentFilter[],
+    supportResolve: boolean,
   ): void;
   $registerOutlineSupport(
     handle: number,
@@ -344,12 +346,16 @@ export interface IExtHostLanguages {
   $provideCodeLenses(
     handle: number,
     resource: UriComponents,
-  ): Promise<CodeLensList | undefined>;
+  ): Promise<ICodeLensListDto | undefined>;
   $resolveCodeLens(
     handle: number,
     resource: UriComponents,
     codeLens: CodeLens,
   ): Promise<CodeLens | undefined>;
+  $releaseCodeLens(
+    handle: number,
+    cacheId: number,
+  ): Promise<void>;
 
   $provideImplementation(
     handle: number,
@@ -375,12 +381,13 @@ export interface IExtHostLanguages {
     handle: number,
     resource: UriComponents,
     token: CancellationToken,
-  ): Promise<ILink[] | undefined>;
+  ): Promise<ILinksListDto | undefined>;
   $resolveDocumentLink(
     handle: number,
-    link: ILink,
+    id: ChainedCacheId,
     token: CancellationToken,
   ): Promise<ILink | undefined>;
+  $releaseDocumentLinks(handle: number, id: number): void;
 
   $provideReferences(
     handle: number,
@@ -420,7 +427,12 @@ export interface IExtHostLanguages {
     position: Position,
     context: SignatureHelpContext,
     token: CancellationToken,
-  ): Promise<SignatureHelpResult | undefined | null>;
+  ): Promise<ISignatureHelpDto | undefined | null>;
+
+  $releaseSignatureHelp(
+    handle: number,
+    cacheId: number,
+  ): Promise<void>;
 
   $provideRenameEdits(
     handle: number,
