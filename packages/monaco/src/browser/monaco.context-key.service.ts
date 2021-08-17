@@ -1,5 +1,5 @@
 import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import { ContextKeyExpr, ContextKeyExpression, IContextKeyServiceTarget } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { ContextKeyExpression, IContextKeyServiceTarget, ContextKeyExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { ContextKeyService } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
 import { KeybindingResolver } from '@ali/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingResolver';
 import { ConfigurationTarget, IConfigurationChangeEvent, IConfigurationService, IConfigurationOverrides, IConfigurationData, IConfigurationValue } from '@ali/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
@@ -309,7 +309,7 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
     this.contextKeyService.dispose();
   }
 
-  abstract match(expression: string | ContextKeyExpr, context?: HTMLElement | null): boolean;
+  abstract match(expression: string | ContextKeyExpression, context?: HTMLElement | null): boolean;
 }
 
 @Injectable()
@@ -326,11 +326,11 @@ export class MonacoContextKeyService extends BaseContextKeyService implements IC
     this.listenToContextChanges();
   }
 
-  match(expression: string | ContextKeyExpr | undefined, context?: HTMLElement): boolean {
+  match(expression: string | ContextKeyExpression | undefined, context?: HTMLElement): boolean {
     try {
       // keybinding 将 html target 传递过来完成激活区域的 context 获取和匹配
       const ctx = context || (window.document.activeElement instanceof HTMLElement ? window.document.activeElement : undefined);
-      let parsed: ContextKeyExpr | undefined;
+      let parsed: ContextKeyExpression | undefined;
       if (typeof expression === 'string') {
         parsed = this.parse(expression);
       } else {
@@ -363,9 +363,9 @@ class ScopedContextKeyService extends BaseContextKeyService implements IScopedCo
     this.listenToContextChanges();
   }
 
-  match(expression: string | ContextKeyExpr | undefined): boolean {
+  match(expression: string | ContextKeyExpression | undefined): boolean {
     try {
-      let parsed: ContextKeyExpr | undefined;
+      let parsed: ContextKeyExpression | undefined;
       if (typeof expression === 'string') {
         parsed = this.parse(expression);
       } else {

@@ -14,7 +14,7 @@ import { CommentsFeatureRegistry } from '@ali/ide-comments/lib/browser/comments-
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { LayoutService } from '@ali/ide-main-layout/lib/browser/layout.service';
 import { IContextKeyService } from '@ali/ide-core-browser';
-import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { MockContextKeyService } from '../../../../../monaco/__mocks__/monaco.context-key.service';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 

@@ -13,7 +13,7 @@ import { ExtHostMessage } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode
 import { ExtensionDocumentDataManagerImpl } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/doc';
 import { ExtensionService } from '@ali/ide-kaitian-extension';
 import { ExtensionServiceImpl } from '@ali/ide-kaitian-extension/lib/browser/extension.service';
-import { mockExtensions } from '../__mock__/extensions';
+import { mockExtensions } from '../../__mocks__/extensions';
 import { ITaskService, ITaskSystem } from '@ali/ide-task/lib/common';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { LayoutService } from '@ali/ide-main-layout/lib/browser/layout.service';
@@ -31,7 +31,7 @@ import { ITerminalInternalService, ITerminalController } from '@ali/ide-terminal
 import { TerminalInternalService } from '@ali/ide-terminal-next/lib/browser/terminal.service';
 import { TerminalController } from '@ali/ide-terminal-next/lib/browser/terminal.controller';
 import { MonacoService } from '@ali/ide-monaco';
-import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
+import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
 import { IEditorDocumentModelService } from '@ali/ide-editor/src/browser';
 import { EditorDocumentModelServiceImpl } from '@ali/ide-editor/src/browser/doc-model/main';
 

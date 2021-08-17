@@ -35,7 +35,7 @@ describe('Extension service', () => {
   });
 
   it('should get correct worker script uri', async () => {
-    let extensionPath = '/__mock__/extension';
+    let extensionPath = '/__mocks__/extension';
     const workerMain = './worker.js';
     const getWorkerURI = () => {
       let extUri = new URI(extensionPath);
@@ -48,7 +48,7 @@ describe('Extension service', () => {
 
     expect(getWorkerURI().toString()).toBe(`file://${extensionPath}/worker.js`);
 
-    extensionPath = 'kt-ext://host/__mock__/extension';
+    extensionPath = 'kt-ext://host/__mocks__/extension';
     expect(getWorkerURI().toString()).toBe(`${extensionPath}/worker.js`);
   });
 });

@@ -12,9 +12,9 @@ import { MainthreadTasks } from '../../../../src/browser/vscode/api/main.thread.
 import { ExtensionDocumentDataManagerImpl } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/doc';
 import { ExtHostMessage } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.message';
 import { ExtHostWorkspace } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.workspace';
-import { mockExtensionProps } from '../../../__mock__/extensions';
+import { mockExtensionProps } from '../../../../__mocks__/extensions';
 import { ITaskService, ITaskSystem } from '@ali/ide-task/lib/common';
-import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
+import { MockLoggerManageClient } from '@ali/ide-core-browser/__mocks__/logger';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common/workspace-defination';
 import { TaskService } from '@ali/ide-task/lib/browser/task.service';
 import { IEditorDocumentModelService, WorkbenchEditorService } from '@ali/ide-editor/lib/browser';
@@ -22,7 +22,7 @@ import { IMainLayoutService } from '@ali/ide-main-layout/lib/common/main-layout.
 import { MockMainLayoutService, MockSocketService, MockTerminalThemeService } from '../../../../../terminal-next/__tests__/browser/mock.service';
 import { OutputPreferences } from '@ali/ide-output/lib/browser/output-preference';
 import { TerminalTaskSystem } from '@ali/ide-task/lib/browser/terminal-task-system';
-import { MockedStorageProvider } from '@ali/ide-core-browser/lib/mocks/storage';
+import { MockedStorageProvider } from '@ali/ide-core-browser/__mocks__/storage';
 import { ITaskDefinitionRegistry, TaskDefinitionRegistryImpl } from '@ali/ide-core-common/lib/task-definition';
 import { IVariableResolverService } from '@ali/ide-variable';
 import { VariableResolverService } from '@ali/ide-variable/lib/browser/variable-resolver.service';
@@ -34,7 +34,6 @@ import { TerminalPreference } from '@ali/ide-terminal-next/lib/browser/terminal.
 import { ITerminalPreference } from '@ali/ide-terminal-next/lib/common/preference';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
 import { CustomBuildTaskProvider } from './__mock__/taskProvider';
-import { IDisposable } from 'kaitian';
 
 const extension = mockExtensionProps;
 

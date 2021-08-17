@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { Uri } from '@ali/ide-core-common';
-import { IExtensionProps } from '../../src/common';
-import { IExtensionDescription, ExtensionIdentifier } from '../../src/common/vscode';
+import { IExtensionProps } from '../src/common';
+import { IExtensionDescription, ExtensionIdentifier } from '../src/common/vscode';
 
 // 临时绕过
 export const mockExtensionProps: IExtensionProps & { uri?: Uri } = {
@@ -31,7 +31,7 @@ export const mockExtensionProps: IExtensionProps & { uri?: Uri } = {
     },
     componentId: ['FakeComponentId'],
   },
-  workerScriptPath: 'http://some-host/__tests__/__mock__/extension/worker.js',
+  workerScriptPath: 'http://some-host/__mocks__/extension/worker.js',
   extraMetadata: {},
   packageNlsJSON: {},
   defaultPkgNlsJSON: {},
@@ -45,7 +45,7 @@ export const mockExtensionProps2: IExtensionProps = {
   id: 'test.kaitian-extension-error',
   extensionId: 'uuid-for-test-extension-2',
   extensionLocation: Uri.file(path.join(__dirname, 'extension-error')),
-  workerScriptPath: 'http://some-host/__tests__/__mock__/extension-error/worker.error.js',
+  workerScriptPath: 'http://some-host/__mocks__/extension-error/worker.error.js',
   packageJSON: {
     name: 'kaitian-extension-error',
     main: './index.js',

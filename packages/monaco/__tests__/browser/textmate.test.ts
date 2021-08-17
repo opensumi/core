@@ -146,7 +146,7 @@ describe('textmate service test', () => {
     },
   );
 
-  it('should be able to register language', async (done) => {
+  it('should be able to register language', async () => {
     textmateService = injector.get(TextmateService);
     monacoService = injector.get(MonacoService);
     await monacoService.loadMonaco();
@@ -166,7 +166,6 @@ describe('textmate service test', () => {
     }, new URI('file:///mock/base'));
     const languageIds = monaco.languages.getLanguages().map((l) => l.id);
     expect(languageIds).toContain('html');
-    done();
   });
 
   it('on language event should be fired', () => {

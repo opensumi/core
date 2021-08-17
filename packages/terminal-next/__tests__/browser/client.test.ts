@@ -36,7 +36,7 @@ describe('Terminal Client', () => {
   let root: URI | null;
 
   beforeAll(async () => {
-    root = FileUri.create(path.join(os.tmpdir(), 'preference-service-test'));
+    root = FileUri.create(path.join(os.tmpdir(), 'terminal-client-test'));
 
     await fs.ensureDir(root.path.toString());
 
@@ -85,6 +85,7 @@ describe('Terminal Client', () => {
     client.dispose();
     server.close();
     proxy.close();
+    injector.disposeAll();
   });
 
   it('Render Terminal', () => {
@@ -115,7 +116,7 @@ describe('Terminal Client', () => {
     expect(selection.includes('pwd')).toBeTruthy();
   });
 
-  it('Terminal Send Text', async (done) => {
+  it('Terminal Send Text', async () => {
     await client.attached.promise;
     client.clear();
     await client.sendText('pwd\r');
@@ -124,7 +125,6 @@ describe('Terminal Client', () => {
     const line = client.term.buffer.active.getLine(0);
     const lineText = (line && line.translateToString()) || '';
     expect(lineText.trim().length).toBeGreaterThan(0);
-    done();
   });
 
   it('Terminal Find Next', async () => {
@@ -146,13 +146,12 @@ describe('Terminal Client', () => {
     expect(client.container.children.length).toBe(0);
   });
 
-  it('After Terminal Dispose', async (done) => {
+  it('After Terminal Dispose', async () => {
     await client.attached.promise;
     client.sendText('pwd\r');
     client.focus();
     client.selectAll();
     client.updateTheme();
     client.clear();
-    done();
   });
 });

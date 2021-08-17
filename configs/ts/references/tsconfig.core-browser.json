@@ -6,5 +6,8 @@
   },
   "include": [
     "../../../packages/core-browser/src"
+  ],
+  "exclude": [
+    "../../../packages/core-browser/__mocks__"
   ]
 }

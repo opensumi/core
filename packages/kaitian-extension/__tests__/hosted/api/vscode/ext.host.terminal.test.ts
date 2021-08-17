@@ -54,7 +54,8 @@ describe(__filename, () => {
   }, {
     token: EnvironmentVariableServiceToken,
     useValue: {
-      set() {},
+      set: () => {},
+      delete: () => {},
     },
   });
 

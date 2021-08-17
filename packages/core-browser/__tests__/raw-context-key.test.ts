@@ -1,4 +1,4 @@
-import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { MockContextKeyService } from '../../monaco/__mocks__/monaco.context-key.service';
 
 import { RawContextKey } from '../src/raw-context-key';
 

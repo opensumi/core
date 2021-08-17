@@ -7,7 +7,7 @@ import { toDisposable, Event, CommandService, positionToRange, URI } from '@ali/
 import { IDocPersistentCacheProvider } from '@ali/ide-editor';
 import { EditorDocumentModel } from '@ali/ide-editor/src/browser/doc-model/main';
 import { EmptyDocCacheImpl, IEditorDocumentModel, IEditorDocumentModelService } from '@ali/ide-editor/src/browser';
-import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
+import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
 import { EditorCollectionService } from '@ali/ide-editor';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';

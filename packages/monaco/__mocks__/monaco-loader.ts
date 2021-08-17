@@ -1,4 +1,4 @@
-import { createMockedMonaco } from '../../__mocks__/monaco';
+import { createMockedMonaco } from './monaco';
 
 export async function loadMonaco() {
   (global as any).monaco = createMockedMonaco();

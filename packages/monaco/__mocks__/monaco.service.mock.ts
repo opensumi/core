@@ -1,7 +1,7 @@
 import { Deferred, Emitter } from '@ali/ide-core-common';
 import { createMockedMonaco } from './monaco';
 import { Injectable } from '@ali/common-di';
-import { MonacoService, ServiceNames } from '../common';
+import { MonacoService, ServiceNames } from '../src/common';
 
 @Injectable()
 export class MockedMonacoService implements MonacoService {

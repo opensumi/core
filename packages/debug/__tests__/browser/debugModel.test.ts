@@ -1,11 +1,10 @@
-import { enableJSDOM } from '@ali/ide-core-browser/lib/mocks/jsdom';
 import { URI, Disposable, DisposableCollection, IFileServiceClient, IContextKeyService } from '@ali/ide-core-browser';
-import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
+import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { DebugModel, DebugModelManager } from '@ali/ide-debug/lib/browser/editor';
 import { DebugModule, DebugStackFrame, DebugThread, DebugSession, DebugSessionConnection, BreakpointManager } from '@ali/ide-debug/lib/browser';
 import { DebugSessionOptions, IDebugSessionManager } from '@ali/ide-debug';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
-import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
+import { MockContextKeyService } from '@ali/ide-core-browser/__mocks__/context-key';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IMessageService } from '@ali/ide-overlay';
@@ -37,7 +36,6 @@ describe('Debug Model', () => {
   const toTearDown = new DisposableCollection();
 
   const initializeInjector = async () => {
-    toTearDown.push(Disposable.create(enableJSDOM()));
     toTearDown.push(Disposable.create(enableMonaCo()));
 
     mockDebugEditor = {

@@ -1,7 +1,7 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { monaco as monacoAPI } from '@ali/ide-monaco/lib/browser/monaco-api';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
+import { MockedMonacoService } from '@ali/ide-monaco/__mocks__/monaco.service.mock';
 import { MonacoService, Emitter, URI } from '@ali/ide-core-browser';
 import { BrowserCodeEditor, BaseMonacoEditorWrapper } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import { EditorCollectionService, EditorType } from '@ali/ide-editor';

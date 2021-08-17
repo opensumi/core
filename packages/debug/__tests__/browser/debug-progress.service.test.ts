@@ -6,7 +6,7 @@ import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks/fi
 import { IFileServiceClient } from '@ali/ide-core-common';
 import { DebugModelFactory } from './../../src/common/debug-model';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/browser';
-import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { IContextKeyService, QuickPickService } from '@ali/ide-core-browser';
 import { DebugSessionManager } from './../../src/browser/debug-session-manager';
 import { IDebugSessionManager } from './../../src/common/debug-session';

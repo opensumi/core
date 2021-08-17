@@ -5,6 +5,7 @@ import { GlobalBrowserStorageService, IStatusBarService } from '../../src/servic
 import { KeybindingsResultCollection } from '../../src';
 import { KeyboardLayoutChangeNotifierService, KeyboardNativeLayoutService } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
 import { KeyboardLayoutService } from '../../src/keyboard/keyboard-layout-service';
+import { MockLogger } from '../../__mocks__/logger';
 
 describe('KeybindingRegistry', () => {
   let keybindingRegistry: KeybindingRegistry;
@@ -52,7 +53,7 @@ describe('KeybindingRegistry', () => {
       },
       {
         token: ILogger,
-        useValue: console,
+        useClass: MockLogger,
       },
       {
         token: IContextKeyService,
@@ -294,7 +295,7 @@ describe('KeybindingService', () => {
       },
       {
         token: ILogger,
-        useValue: console,
+        useClass: MockLogger,
       },
       {
         token: IContextKeyService,

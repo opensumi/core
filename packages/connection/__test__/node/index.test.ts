@@ -38,7 +38,7 @@ class MockFileService extends RPCService {
 const mockFileService = new MockFileService();
 
 describe('connection', () => {
-  it('websocket connection route', async (done) => {
+  it('websocket connection route', async () => {
     const server = http.createServer();
     const socketRoute = new WebSocketServerRoute(server, console);
     const channelHandler = new CommonChannelHandler('/service', console);
@@ -47,7 +47,7 @@ describe('connection', () => {
 
     await new Promise<void>((resolve) => {
       server.listen(7788, () => {
-        resolve();
+        resolve(undefined);
       });
     });
 
@@ -59,9 +59,12 @@ describe('connection', () => {
 
     const connection = new WebSocket('ws://127.0.0.1:7788/service');
 
+    connection.on('error', () => {
+      connection.close();
+    });
     await new Promise<void>((resolve) => {
       connection.on('open', () => {
-        resolve();
+        resolve(undefined);
       });
     });
 
@@ -81,15 +84,12 @@ describe('connection', () => {
 
     await new Promise<void>((resolve) => {
       channel.onOpen(() => {
-        resolve();
+        resolve(undefined);
       });
       channel.open('TEST_CHANNEL');
     });
-
     expect(mockHandler.mock.calls.length).toBe(1);
     server.close();
-
-    done();
   });
 
   it('RPCService', async (done) => {
@@ -106,14 +106,14 @@ describe('connection', () => {
           const serverConnection = createWebSocketConnection(connection);
           serviceCenter.setConnection(serverConnection);
 
-          resolve();
+          resolve(undefined);
         });
       }),
 
       new Promise<void>((resolve) => {
         clientConnection = new WebSocket('ws://127.0.0.1:7788/service');
         clientConnection.on('open', () => {
-          resolve();
+          resolve(undefined);
         });
       }),
     ]);
@@ -162,7 +162,7 @@ describe('connection', () => {
 
     await new Promise<void>((resolve) => {
       setTimeout(() => {
-        resolve();
+        resolve(undefined);
       }, 1000);
     });
 

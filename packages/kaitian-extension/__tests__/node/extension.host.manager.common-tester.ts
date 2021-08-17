@@ -18,7 +18,7 @@ interface IExtensionHostManagerTesterOptions {
 export const extensionHostManagerTester = (options: IExtensionHostManagerTesterOptions) => describe(__filename, () => {
   let extensionHostManager: IExtensionHostManager;
   let injector: MockInjector;
-  const extHostPath = path.join(__dirname, '../__mock__/ext.host.js');
+  const extHostPath = path.join(__dirname, '../../__mocks__/ext.host.js');
 
   beforeEach(async () => {
     injector = createNodeInjector([]);

@@ -504,31 +504,19 @@ export class MockedStandaloneCodeEditor extends MockedCodeEditor {
     throw new Error('Method not implemented.');
   }
   revealLineInCenter(line: number) {
-    // tslint:disable-next-line:no-console
-    console.log('revealLineInCenter called');
   }
   setPosition(position: monaco.Position) {
-    // tslint:disable-next-line:no-console
-    console.log('setPosition called');
   }
   onDidCompositionStart(): IDisposable {
-    // tslint:disable-next-line:no-console
-    console.log('onDidCompositionStart called');
     return new Disposable();
   }
   onDidCompositionEnd(): IDisposable {
-    // tslint:disable-next-line:no-console
-    console.log('onDidCompositionEnd called');
     return new Disposable();
   }
   onDidPaste(): IDisposable {
-    // tslint:disable-next-line:no-console
-    console.log('onDidPaste called');
     return new Disposable();
   }
   onDidContentSizeChange(): IDisposable {
-    // tslint:disable-next-line:no-console
-    console.log('onDidContentSizeChange called');
     return new Disposable();
   }
 

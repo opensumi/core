@@ -1,7 +1,7 @@
 import { DisposableStore } from '@ali/ide-core-common';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { IMenuRegistry, MenuRegistryImpl, MenuId } from '@ali/ide-core-browser/lib/menu/next';
-import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';

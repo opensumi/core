@@ -9,7 +9,7 @@ import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injecto
 import { IDocPersistentCacheProvider } from '../../../src/common';
 import { EditorDocumentModel, EditorDocumentModelConstructionOptions } from '../../../src/browser/doc-model/main';
 import { EditorDocumentModelOptionChangedEvent, EditorDocumentModelContentChangedEvent } from '../../../src/browser/doc-model/types';
-import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
+import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
 import { EmptyDocCacheImpl } from '@ali/ide-editor/lib/browser/doc-cache';
 import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 

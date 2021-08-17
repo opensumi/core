@@ -1,7 +1,7 @@
 import { Injector } from '@ali/common-di';
-import { IEventBus, CommandService, ILogger, IFileServiceClient } from '@ali/ide-core-common';
+import { IEventBus, CommandService, ILogger, IFileServiceClient, Disposable } from '@ali/ide-core-common';
 import { AppConfig, IContextKeyService, PreferenceService, EventBusImpl, CorePreferences } from '@ali/ide-core-browser';
-import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
+import { MockContextKeyService } from '@ali/ide-core-browser/__mocks__/context-key';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { IThemeService } from '@ali/ide-theme';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -25,6 +25,7 @@ import {
   MockErrorService,
 } from './mock.service';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
+import { EnvironmentVariableServiceToken } from '@ali/ide-terminal-next/lib/common/environmentVariable';
 
 const mockPreferences = new Map();
 mockPreferences.set('terminal.integrated.shellArgs.linux', []);
@@ -115,5 +116,11 @@ export const injector = new Injector([
   {
     token: ITerminalErrorService,
     useValue: new MockErrorService(),
+  },
+  {
+    token: EnvironmentVariableServiceToken,
+    useValue: {
+      onDidChangeCollections: () => Disposable.create(() => {}),
+    },
   },
 ]);

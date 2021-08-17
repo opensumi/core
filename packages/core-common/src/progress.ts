@@ -68,7 +68,6 @@ export class Progress<T> implements IProgress<T> {
   constructor(private callback: (data: T) => void) { }
 
   report(item: T) {
-    console.log('report', item);
     this._value = item;
     this.callback(this._value);
   }

@@ -5,7 +5,7 @@ import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector'
 import { MainThreadLayout } from '../../../../src/browser/kaitian/main.thread.layout';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
-import { mockExtensions } from '../../../__mock__/extensions';
+import { mockExtensions } from '../../../../__mocks__/extensions';
 
 const extension = mockExtensions[0];
 

@@ -1,5 +1,4 @@
 import { Injectable } from '@ali/common-di';
-import { enableJSDOM } from '@ali/ide-core-browser/lib/mocks/jsdom';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
@@ -20,7 +19,8 @@ import { IUserStorageService } from '@ali/ide-preferences';
 import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
 import { DebugContribution, DebugModule } from '@ali/ide-debug/lib/browser';
 import { EditorCollectionService } from '@ali/ide-editor/lib/browser';
-import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
+import { MockLogger } from '@ali/ide-core-browser/__mocks__/logger';
 
 @Injectable()
 export class MockLoggerManagerClient {
@@ -390,8 +390,6 @@ describe('Launch Preferences', () => {
       const toTearDown = new DisposableCollection();
 
       const initializeInjector = async () => {
-        toTearDown.push(Disposable.create(enableJSDOM()));
-
         await fs.ensureDir(rootPath);
 
         if (settings) {
@@ -426,7 +424,7 @@ describe('Launch Preferences', () => {
           },
           {
             token: ILogger,
-            useValue: {},
+            useClass: MockLogger,
           },
           {
             token: IMessageService,

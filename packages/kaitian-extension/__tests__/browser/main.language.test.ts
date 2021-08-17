@@ -17,14 +17,14 @@ import { ExtHostAPIIdentifier, IExtensionDescription, MainThreadAPIIdentifier } 
 import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
 import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.commands';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
+import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
 import { ICallHierarchyService } from '@ali/ide-monaco/lib/browser/contrib';
 import { CallHierarchyService } from '@ali/ide-editor/lib/browser/monaco-contrib';
 import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry, EmptyDocCacheImpl } from '@ali/ide-editor/src/browser';
 import { EditorDocumentModelServiceImpl, EditorDocumentModelContentRegistryImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
 import { IDocPersistentCacheProvider } from '@ali/ide-editor';
 import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from '@ali/ide-debug/lib/browser/editor/evaluatable-expression';
-import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
+import { useMockStorage } from '@ali/ide-core-browser/__mocks__/storage';
 import { TestEditorDocumentProvider } from '@ali/ide-editor/__tests__/browser/test-providers';
 import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
@@ -83,6 +83,10 @@ describe('ExtHostLanguageFeatures', () => {
     {
       token: IDocPersistentCacheProvider,
       useClass: EmptyDocCacheImpl,
+    },
+    {
+      token: IEditorDocumentModelService,
+      useValue: {},
     },
   );
 

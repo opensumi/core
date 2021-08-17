@@ -1,9 +1,8 @@
-import { enableJSDOM } from '@ali/ide-core-browser/lib/mocks/jsdom';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { ILogger, GlobalBrowserStorageService, KeyboardNativeLayoutService, Key, KeyboardLayoutService, KeyCode, ILinuxKeyboardLayoutInfo, isOSX } from '@ali/ide-core-browser';
 import { KeyboardLayoutContribution } from '../../src/keyboard/layouts/_.contribution';
-import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
+import { MockLogger } from '../../__mocks__/logger';
 
 describe('KeyboardLayoutService should be work', () => {
   let keyboardLayoutService: KeyboardLayoutService;
@@ -19,11 +18,7 @@ describe('KeyboardLayoutService should be work', () => {
     },
   };
 
-  let disableJSDOM;
-
   beforeAll(async (done) => {
-    disableJSDOM = enableJSDOM();
-
     injector = createBrowserInjector([], new MockInjector([
       {
         token: GlobalBrowserStorageService,
@@ -31,9 +26,7 @@ describe('KeyboardLayoutService should be work', () => {
       },
       {
         token: ILogger,
-        useFactory: (injector) => {
-          return injector.get(MockLoggerManageClient).getLogger();
-        },
+        useClass: MockLogger,
       },
     ]));
 
@@ -45,7 +38,6 @@ describe('KeyboardLayoutService should be work', () => {
 
   afterAll(() => {
     injector.disposeAll();
-    disableJSDOM();
   });
 
   describe('#init', () => {

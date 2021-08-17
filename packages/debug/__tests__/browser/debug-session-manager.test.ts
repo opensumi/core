@@ -3,7 +3,7 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { BreakpointManager, DebugModelManager, DebugSessionContributionRegistry, DebugSessionFactory, DebugSessionManager } from '@ali/ide-debug/lib/browser';
 import { Emitter, IContextKeyService, IReporterService, LabelService } from '@ali/ide-core-browser';
-import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IMessageService } from '@ali/ide-overlay';
 import { IVariableResolverService } from '@ali/ide-variable';

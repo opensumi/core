@@ -9,8 +9,8 @@ import { MainThreadAuthentication } from '@ali/ide-kaitian-extension/lib/browser
 import { Injector } from '@ali/common-di';
 import { ActivationEventServiceImpl } from '@ali/ide-kaitian-extension/lib/browser/activation.service';
 import { IActivationEventService } from '@ali/ide-kaitian-extension/lib/browser/types';
-import { MockLoggerManagerClient } from '../../../__mock__/loggermanager';
-import { MockedStorageProvider } from '@ali/ide-core-browser/lib/mocks/storage';
+import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
+import { MockedStorageProvider } from '@ali/ide-core-browser/__mocks__/storage';
 import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/src/menu/next';
 import { IMessageService } from '@ali/ide-overlay';
 import { QuickPickService } from '@ali/ide-quick-open';

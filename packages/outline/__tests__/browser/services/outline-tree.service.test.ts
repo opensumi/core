@@ -6,7 +6,7 @@ import { OutlineTreeService } from '@ali/ide-outline/lib/browser/services/outlin
 import { OutlineSortOrder } from '@ali/ide-outline';
 import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '@ali/ide-outline/lib/browser/outline-node.define';
 import { IContextKeyService } from '@ali/ide-core-browser';
-import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
+import { MockContextKeyService } from '@ali/ide-core-browser/__mocks__/context-key';
 
 describe('OutlineTreeService', () => {
   let outlineTreeService: OutlineTreeService;
@@ -24,9 +24,9 @@ describe('OutlineTreeService', () => {
   const root = new OutlineRoot({resolveChildren: () => ([])} as any, null);
   const newTreeNode = (name: string, kind: number = 0, isComposite?: boolean) => {
     if (isComposite) {
-      return new OutlineCompositeTreeNode({} as any, root as any, { name, kind } as any, '');
+      return new OutlineCompositeTreeNode({resolveChildren: () => ([])} as any, root as any, { name, kind } as any, '');
     } else {
-      return new OutlineTreeNode({} as any, root as any, { name, kind } as any, '');
+      return new OutlineTreeNode({resolveChildren: () => ([])} as any, root as any, { name, kind } as any, '');
     }
   };
   const mockDocumentSymbolStore = {

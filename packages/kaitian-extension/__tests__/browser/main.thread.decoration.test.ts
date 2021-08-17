@@ -13,7 +13,7 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 
 import ExtensionHostextWindowAPIImpl from '../../src/hosted/ext.host';
 import { ExtHostDecorations } from '../../src/hosted/api/vscode/ext.host.decoration';
-import { mockExtensions } from '../__mock__/extensions';
+import { mockExtensions } from '../../__mocks__/extensions';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

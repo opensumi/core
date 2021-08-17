@@ -1,4 +1,4 @@
-import { VSCodeExtensionService } from '../../../src/common/vscode';
+import { VSCodeExtensionService } from '../../src/common/vscode';
 
 import { mockExtensionProps, mockExtensionProps2 } from '../extensions';
 

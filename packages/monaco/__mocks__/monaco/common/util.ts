@@ -21,7 +21,6 @@ export function partialMock<T>(prefix: string, mocked: Partial<T>): T {
         if (target[prop]) {
           return target[prop];
         } else {
-          console.warn(`调用了空mock方法${prefix}.${prop.toString()}`);
           return () => null;
         }
       },

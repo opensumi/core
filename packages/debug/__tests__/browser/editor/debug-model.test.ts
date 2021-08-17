@@ -5,7 +5,7 @@ import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { DebugModel, DebugHoverWidget, DebugBreakpointWidget } from '../../../src/browser/editor';
 import { ICtxMenuRenderer, AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next';
 import { IDebugModel, IDebugSessionManager } from '@ali/ide-debug';
-import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
+import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
 import { Injector } from '@ali/common-di';
 
 describe('Debug Model', () => {

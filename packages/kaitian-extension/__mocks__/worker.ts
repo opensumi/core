@@ -46,7 +46,7 @@ export class MockWorker {
   private onmessage: (msg: any, transferList?: Array<ArrayBuffer | MessagePort>) => void;
 
   constructor() {
-    const absolutePath = path.join(__dirname, '../../lib/worker-host.js');
+    const absolutePath = path.join(__dirname, '../lib/worker-host.js');
     fs.readFile(absolutePath)
       .then((data) => {
         const script = data.toString();

@@ -5,7 +5,7 @@ import { RPCProtocol, WSChannelHandler } from '@ali/ide-connection';
 import { MainThreadStatusBar } from '../../../../src/browser/vscode/api/main.thread.statusbar';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { MockLoggerManagerClient } from '../../../__mock__/loggermanager';
+import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
 import { IStatusBarService } from '@ali/ide-core-browser';
 import { StatusBarService } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 

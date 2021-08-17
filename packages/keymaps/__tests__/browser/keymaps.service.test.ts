@@ -13,6 +13,7 @@ import * as fs from 'fs-extra';
 import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
 import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
 import { FileServiceContribution } from '@ali/ide-file-service/lib/browser/file-service-contribution';
+import { MockLogger } from '@ali/ide-core-browser/__mocks__/logger';
 
 @Injectable()
 export class AddonModule extends BrowserModule {
@@ -89,7 +90,7 @@ describe('KeymapsService should be work', () => {
       },
       {
         token: ILogger,
-        useValue: console,
+        useClass: MockLogger,
       },
       {
         token: AppConfig,

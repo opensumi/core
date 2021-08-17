@@ -47,6 +47,9 @@ module.exports = {
     // 后续统一至 @ali/ide-utils 模块
     '/packages/components/src/utils',
   ],
+  modulePathIgnorePatterns: [
+    "<rootDir>/dist/",
+  ],
   coveragePathIgnorePatterns: [
     '/dist/',
     '/node_modules/',

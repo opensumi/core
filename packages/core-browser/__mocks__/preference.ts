@@ -1,6 +1,6 @@
-import { PreferenceScope, ISettingGroup, ISettingSection } from '..';
+import { PreferenceScope, ISettingGroup, ISettingSection } from '../src';
 import { Injectable, Injector, Optional } from '@ali/common-di';
-import { PreferenceProvider } from '../preferences';
+import { PreferenceProvider } from '../src/preferences';
 
 @Injectable()
 export class MockPreferenceSchemaProvider {

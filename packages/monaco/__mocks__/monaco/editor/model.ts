@@ -3,7 +3,8 @@ import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 // tslint:disable:no-console
 import { MockedMonacoUri } from '../common/uri';
 import { Disposable, Emitter, Event } from '@ali/ide-core-common';
-import { EndOfLineSequence, EOL } from '../../../browser/monaco-api/types';
+import { EndOfLineSequence, EOL } from '../../../src/browser/monaco-api/types';
+import { IValidEditOperation } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 
 let id = 1;
 
@@ -384,7 +385,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
 
   pushEOL = jest.fn();
 
-  applyEdits(operations: monaco.editor.IIdentifiedSingleEditOperation[]): monaco.editor.IValidEditOperation[] {
+  applyEdits(operations: monaco.editor.IIdentifiedSingleEditOperation[]): IValidEditOperation[] {
     for (const operation of operations) {
       this.value =
         this.value.substr(0, operation.range.startColumn) +

@@ -1,7 +1,7 @@
 import type { ResourceEdit, IBulkEditOptions } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
-import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
+import { createMockedMonaco } from '@ali/ide-monaco/__mocks__/monaco';
 import { WorkbenchEditorService, IEditorGroup } from '@ali/ide-editor';
 import { URI } from '@ali/ide-core-browser';
 import { IWorkspaceEditService, IResourceFileEdit, IWorkspaceFileService} from '../src/common';

@@ -1,4 +1,5 @@
 import { Injectable } from '@ali/common-di';
+import { getDebugLogger } from '@ali/ide-core-common';
 
 const maxChannelHistory = 1000;
 
@@ -14,7 +15,7 @@ export class MockOutputChannel {
   append(value: string): void {
     this.lines.push(value);
     if (this.shouldLogToBrowser) {
-      console.log(`%c[${this.name}]` + `%c ${value}`, 'background:rgb(50, 150, 250); color: #fff', 'background: none; color: inherit');
+      getDebugLogger().log(`%c[${this.name}]` + `%c ${value}`, 'background:rgb(50, 150, 250); color: #fff', 'background: none; color: inherit');
     }
   }
 
@@ -29,7 +30,7 @@ export class MockOutputChannel {
       this.lines.splice(0, this.lines.length - maxChannelHistory);
     }
     if (this.shouldLogToBrowser) {
-      console.log(`%c[${this.name}]` + `%c ${line}}`, 'background:rgb(50, 150, 250); color: #fff', 'background: none; color: inherit');
+      getDebugLogger().log(`%c[${this.name}]` + `%c ${line}}`, 'background:rgb(50, 150, 250); color: #fff', 'background: none; color: inherit');
     }
   }
 

@@ -1,8 +1,8 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createPreferenceProxy, DefaultPreferenceProvider, ILogger, PreferenceChangeEvent, PreferenceConfigurations, PreferenceContribution, PreferenceProvider, PreferenceProviderProvider, PreferenceProxy, PreferenceProxyOptions, PreferenceSchema, PreferenceSchemaProvider, PreferenceScope, PreferenceService, PreferenceServiceImpl } from '@ali/ide-core-browser';
-import { injectMockPreferences, MockPreferenceProvider } from '../../src/mocks/preference';
-import { MockLoggerManageClient } from '../../src/mocks/logger';
+import { injectMockPreferences, MockPreferenceProvider } from '../../__mocks__/preference';
+import { MockLogger } from '../../__mocks__/logger';
 
 describe('Preference Proxy', () => {
   let injector: MockInjector;
@@ -26,9 +26,7 @@ describe('Preference Proxy', () => {
       },
     }, {
       token: ILogger,
-      useFactory: (injector) => {
-        return injector.get(MockLoggerManageClient).getLogger();
-      },
+      useClass: MockLogger,
     }, {
       token: PreferenceProviderProvider,
       useFactory: () => {

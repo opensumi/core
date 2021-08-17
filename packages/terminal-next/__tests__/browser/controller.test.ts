@@ -6,16 +6,14 @@
 import { createProxyServer, createWsServer, resetPort } from './proxy';
 import { ITerminalController } from '../../src/common';
 import { injector } from './inject';
-import { enableJSDOM } from '@ali/ide-core-browser/lib/mocks/jsdom';
 
 describe('Terminal Controller', () => {
   let controller: ITerminalController;
-  let disableJSDOM;
   let server;
   let proxy;
 
   beforeAll(() => {
-    disableJSDOM = enableJSDOM();
+    // FIXME: happy test
     resetPort();
     server = createWsServer();
     proxy = createProxyServer();
@@ -24,9 +22,7 @@ describe('Terminal Controller', () => {
   });
 
   afterAll(() => {
-    server.close();
     proxy.close();
-    disableJSDOM();
   });
 
   it('Recovery', () => {

@@ -2,7 +2,7 @@ import * as net from 'net';
 import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { createSocketConnection, RPCServiceCenter, initRPCService } from '@ali/ide-connection';
 
-import { KT_PROCESS_SOCK_OPTION_KEY } from '../../src/common';
+import { KT_PROCESS_SOCK_OPTION_KEY } from '../src/common';
 
 const argv = require('yargs').argv;
 
