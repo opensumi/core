@@ -4,7 +4,7 @@ import { FolderPreferenceProvider } from '@ali/ide-preferences/lib/browser/folde
 
 import { DebugEditor, DebugModelFactory, IDebugServer, IDebugService, IDebugSessionManager } from '../common';
 import { BreakpointManager } from './breakpoint';
-import { BreakpointWidgetInputFocus, DebugCallStackItemTypeKey } from './contextkeys';
+import { DebugCallStackItemTypeKey } from './contextkeys';
 import { DebugConfigurationManager } from './debug-configuration-manager';
 import { DebugContribution } from './debug-contribution';
 import { injectDebugPreferences } from './debug-preferences';
@@ -101,12 +101,6 @@ export class DebugModule extends BrowserModule {
       token: DebugCallStackItemTypeKey,
       useFactory: (injector: Injector) => {
         return injector.get(IContextKeyService).createKey('callStackItemType');
-      },
-    },
-    {
-      token: BreakpointWidgetInputFocus,
-      useFactory: (injector: Injector) => {
-        return injector.get(IContextKeyService).createKey('breakpointWidgetInputFocus', false);
       },
     },
   ];

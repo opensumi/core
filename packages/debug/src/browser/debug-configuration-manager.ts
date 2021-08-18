@@ -1,3 +1,4 @@
+import { CONTEXT_DEBUGGERS_AVAILABLE } from './../common/constants';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -87,6 +88,8 @@ export class DebugConfigurationManager {
   @Autowired(DebugPreferences)
   protected readonly debugPreferences: DebugPreferences;
 
+  private contextDebuggersAvailable: IContextKey<boolean>;
+
   // 用于存储支持断点的语言
   private breakpointModeIdsSet = new Set<string>();
   // 用于存储debugger信息
@@ -98,16 +101,12 @@ export class DebugConfigurationManager {
   protected readonly onWillProvideDebugConfigurationEmitter = new Emitter<WillProvideDebugConfiguration>();
   readonly onWillProvideDebugConfiguration: Event<WillProvideDebugConfiguration> = this.onWillProvideDebugConfigurationEmitter.event;
 
-  protected debugConfigurationTypeKey: IContextKey<string>;
-  protected debugConfigurationEmptyKey: IContextKey<boolean>;
-
   private _whenReadyDeferred: Deferred<void>;
   protected updateModelDelayer: ThrottledDelayer<void> = new ThrottledDelayer(DebugConfigurationManager.DEFAULT_UPDATE_MODEL_TIMEOUT);
 
   constructor() {
-    this.debugConfigurationTypeKey = this.contextKeyService.createKey<string>('debugConfigurationType', undefined);
-    this.debugConfigurationEmptyKey = this.contextKeyService.createKey<boolean>('debugConfigurationEmpty', true);
     this.init();
+    this.contextDebuggersAvailable = CONTEXT_DEBUGGERS_AVAILABLE.bind(this.contextKeyService);
   }
 
   protected async init(): Promise<void> {
@@ -149,7 +148,7 @@ export class DebugConfigurationManager {
           configEmpty = false;
         }
       });
-      this.debugConfigurationEmptyKey.set(configEmpty);
+      this.contextDebuggersAvailable.set(!configEmpty);
       if (this._whenReadyDeferred) {
         this._whenReadyDeferred.resolve();
       }
@@ -222,7 +221,6 @@ export class DebugConfigurationManager {
         }
       }
     }
-    this.debugConfigurationTypeKey.set(this.current && this.current.configuration.type);
     this.onDidChangeEmitter.fire(undefined);
   }
 

@@ -1,9 +1,10 @@
+import { IContextKey, IContextKeyService } from '@ali/ide-core-browser';
+import { CONTEXT_BREAKPOINT_INPUT_FOCUSED } from './../../common/constants';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Disposable, positionToRange } from '@ali/ide-core-common';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { DebugEditor } from '../../common';
 import { DebugBreakpointZoneWidget, DebugBreakpointWidgetContext } from './debug-breakpoint-zone-widget';
-import { BreakpointWidgetInputFocus } from '../contextkeys';
 import { DebugBreakpointsService } from '../view/breakpoints/debug-breakpoints.service';
 
 export enum TopStackType {
@@ -17,11 +18,11 @@ export class DebugBreakpointWidget extends Disposable {
   @Autowired(DebugEditor)
   private readonly editor: DebugEditor;
 
-  @Autowired(BreakpointWidgetInputFocus)
-  private readonly breakpointWidgetInputFocus: BreakpointWidgetInputFocus;
-
   @Autowired(DebugBreakpointsService)
   protected debugBreakpointsService: DebugBreakpointsService;
+
+  @Autowired(IContextKeyService)
+  private readonly contextKeyService: IContextKeyService;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -31,9 +32,11 @@ export class DebugBreakpointWidget extends Disposable {
   protected zone: DebugBreakpointZoneWidget;
 
   private _position: monaco.Position | undefined;
+  private breakpointWidgetInputFocus: IContextKey<boolean>;
 
   constructor() {
     super();
+    this.breakpointWidgetInputFocus = CONTEXT_BREAKPOINT_INPUT_FOCUSED.bind(this.contextKeyService);
   }
 
   get position() {
