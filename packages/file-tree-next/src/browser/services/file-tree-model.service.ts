@@ -1,10 +1,9 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { DecorationsManager, Decoration, TreeNodeType, RenamePromptHandle, NewPromptHandle, PromptValidateMessage, PROMPT_VALIDATE_TYPE, TreeNodeEvent, IRecycleTreeError, TreeModel, IRecycleTreeFilterHandle } from '@ali/ide-components';
+import { DecorationsManager, Decoration, TreeNodeType, RenamePromptHandle, NewPromptHandle, PromptValidateMessage, PROMPT_VALIDATE_TYPE, TreeNodeEvent, TreeModel, IRecycleTreeFilterHandle } from '@ali/ide-components';
 import { FileTreeService } from '../file-tree.service';
 import { FileTreeModel } from '../file-tree-model';
 import { Directory, File } from '../../common/file-tree-node.define';
-import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, formatLocalize, isValidBasename, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IStorage, Event, ThrottledDelayer, Emitter, ILogger, Deferred, OS, IApplicationService } from '@ali/ide-core-browser';
-import { FileContextKey } from '../file-contextkey';
+import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, formatLocalize, isValidBasename, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IStorage, Event, ThrottledDelayer, Emitter, Deferred, OS, IApplicationService } from '@ali/ide-core-browser';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -75,9 +74,6 @@ export class FileTreeModelService {
   @Autowired(IApplicationService)
   private readonly appService: IApplicationService;
 
-  @Autowired(ILogger)
-  private readonly logger: ILogger;
-
   private _isDisposed = false;
 
   private _treeModel: FileTreeModel;
@@ -129,9 +125,9 @@ export class FileTreeModelService {
   private onDidSelectedFileChangeEmitter: Emitter<URI[]> = new Emitter();
   private onFileTreeModelChangeEmitter: Emitter<TreeModel> = new Emitter();
 
-  private locationQueueDeferred: Deferred<void> | null;
+  private locationQueueDeferred: Deferred<void> | null = new Deferred<void>();
+  private isPatchingLocation: boolean = false;
   private _locationDispatchQueue: (URI | string)[] = [];
-  private locationDeferred: Deferred<void> | null;
   private collapsedAllDeferred: Deferred<void> | null;
 
   private treeStateWatcher: TreeStateWatcher;
@@ -239,7 +235,11 @@ export class FileTreeModelService {
     this.initDecorations(root);
     // _dndService依赖装饰器逻辑加载
     this._dndService = this.injector.get<any>(DragAndDropService, [this]);
-    // 等待初次加载完成后再初始化当前的treeStateWatcher, 只加载可见的节点
+    // 确保文件树响应刷新操作时无正在操作的 CollapsedAll 和 Location
+    this.disposableCollection.push(this.fileTreeService.requestFlushEventSignalEvent(async () => {
+      return await this.canHandleRefreshEvent();
+    }));
+    // 等待初次加载完成后再初始化当前的 treeStateWatcher, 只加载可见的节点
     this.treeStateWatcher = this._treeModel.getTreeStateWatcher(true);
     this.disposableCollection.push(this.treeStateWatcher.onDidChange(() => {
       const snapshot = this.explorerStorage.get<any>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
@@ -296,17 +296,12 @@ export class FileTreeModelService {
         }
       }
     }));
-    // 确保文件树响应刷新操作时无正在操作的CollapsedAll和Location
-    this.disposableCollection.push(this.fileTreeService.requestFlushEventSignalEvent(this.canHandleRefreshEvent));
     // 当labelService注册的对应节点图标变化时，通知视图更新
     this.disposableCollection.push(this.labelService.onDidChange(async () => {
       if (!this.labelChangedDelayer.isTriggered()) {
         this.labelChangedDelayer.cancel();
       }
       this.labelChangedDelayer.trigger(async () => {
-        if (this.locationQueueDeferred) {
-          await this.locationQueueDeferred.promise;
-        }
         this.fileTreeService.refresh();
       });
     }));
@@ -358,12 +353,12 @@ export class FileTreeModelService {
     await this._treeModel.loadTreeState(snapshot);
   }
 
-  async canHandleRefreshEvent() {
+  private async canHandleRefreshEvent() {
     if (this.collapsedAllDeferred) {
       await this.collapsedAllDeferred.promise;
     }
-    if (this.locationDeferred) {
-      await this.locationDeferred.promise;
+    if (this.locationQueueDeferred) {
+      await this.locationQueueDeferred.promise;
     }
   }
 
@@ -654,12 +649,6 @@ export class FileTreeModelService {
 
   handleTreeHandler(handle: IFileTreeHandle) {
     this._fileTreeHandle = handle;
-    this.disposableCollection.push(handle.onError((event: IRecycleTreeError) => {
-      // 出错时，暴露当前错误状态，用于排查问题
-      this.logger.warn(event.type, event.message);
-      // 当渲染出错时，尝试刷新Tree
-      this.fileTreeService.refresh();
-    }));
   }
 
   handleTreeBlur = () => {
@@ -1510,15 +1499,19 @@ export class FileTreeModelService {
   }
 
   private queueLocation(path: URI | string) {
-    if (!this.locationQueueDeferred) {
+    if (!this.isPatchingLocation) {
       if (!this.locationDelayer.isTriggered) {
         this.locationDelayer.cancel();
       }
       this.locationDelayer.trigger(async () => {
-        this.locationQueueDeferred = new Deferred<void>();
+        this.isPatchingLocation = true;
+        if (!this.locationQueueDeferred) {
+          this.locationQueueDeferred = new Deferred<void>();
+        }
         await this.doLocation();
         this.locationQueueDeferred?.resolve();
         this.locationQueueDeferred = null;
+        this.isPatchingLocation = false;
       });
     }
     if (this._locationDispatchQueue.indexOf(path) === -1) {
@@ -1532,7 +1525,6 @@ export class FileTreeModelService {
     }
     // 只需要处理最后一个定位节点
     const pathOrUri = this._locationDispatchQueue[this._locationDispatchQueue.length - 1];
-    this.locationDeferred = new Deferred();
     let path;
     if (typeof pathOrUri === 'string') {
       path = pathOrUri;
@@ -1548,8 +1540,6 @@ export class FileTreeModelService {
         this.selectFileDecoration(node);
       }
     }
-    this.locationDeferred.resolve();
-    this.locationDeferred = null;
     this._locationDispatchQueue = [];
   }
 
