@@ -624,7 +624,6 @@ declare module 'vscode' {
     blockComment?: CharacterPair;
   }
 
-
   /**
    * Describes a rule to be evaluated when pressing Enter.
    */
@@ -809,7 +808,6 @@ declare module 'vscode' {
     readonly cspSource: string;
   }
 
-
   /**
    * Represents the state of a window.
    */
@@ -850,7 +848,6 @@ declare module 'vscode' {
      */
     constructor(label: string | [number, number], documentation?: string | MarkdownString);
   }
-
 
   /**
    * How a [`SignatureHelpProvider`](#SignatureHelpProvider) was triggered.
@@ -945,7 +942,6 @@ declare module 'vscode' {
     readonly retriggerCharacters: ReadonlyArray<string>;
   }
 
-
   /**
    * Represents the signature of something callable. A signature
    * can have a label, like a function-name, a doc-comment, and
@@ -1010,7 +1006,7 @@ declare module 'vscode' {
     /**
      * Render a symbol as obsolete, usually using a strike-out.
      */
-    Deprecated = 1
+    Deprecated = 1,
   }
 
   /**
@@ -1209,7 +1205,7 @@ declare module 'vscode' {
   }
 
   export enum CompletionItemTag {
-    Deprecated = 1
+    Deprecated = 1,
   }
 
   /**
@@ -1337,7 +1333,6 @@ declare module 'vscode' {
     entries(): [Uri, TextEdit[]][];
   }
 
-
   /**
    * Options for creating a [TreeView](#TreeView)
    */
@@ -1360,7 +1355,6 @@ declare module 'vscode' {
      */
     canSelectMany?: boolean;
   }
-
 
   /**
    * The event that is fired when an element in the [TreeView](#TreeView) is expanded or collapsed
@@ -1603,12 +1597,14 @@ declare module 'vscode' {
      * @param label A human-readable string describing this item
      * @param collapsibleState [TreeItemCollapsibleState](#TreeItemCollapsibleState) of the tree item. Default is [TreeItemCollapsibleState.None](#TreeItemCollapsibleState.None)
      */
+    /* tslint:disable-next-line */
     constructor(label: string, collapsibleState?: TreeItemCollapsibleState);
 
     /**
      * @param resourceUri The [uri](#Uri) of the resource representing this item.
      * @param collapsibleState [TreeItemCollapsibleState](#TreeItemCollapsibleState) of the tree item. Default is [TreeItemCollapsibleState.None](#TreeItemCollapsibleState.None)
      */
+    /* tslint:disable-next-line */
     constructor(resourceUri: Uri, collapsibleState?: TreeItemCollapsibleState);
   }
   /**
@@ -1731,6 +1727,7 @@ declare module 'vscode' {
      * @param line A line number in [0, lineCount).
      * @return A [line](#TextLine).
      */
+    /* tslint:disable-next-line */
     lineAt(line: number): TextLine;
 
     /**
@@ -1744,6 +1741,7 @@ declare module 'vscode' {
      * @param position A position.
      * @return A [line](#TextLine).
      */
+    /* tslint:disable-next-line */
     lineAt(position: Position): TextLine;
 
     /**
@@ -2043,6 +2041,7 @@ declare module 'vscode' {
      * @param disposables An array to which a [disposable](#Disposable) will be added.
      * @return A disposable which unsubscribes the event listener.
      */
+    /* tslint:disable-next-line */
     (listener: (e: T) => any, thisArgs?: any, disposables?: Disposable[]): Disposable;
   }
 
@@ -2297,7 +2296,7 @@ declare module 'vscode' {
      * on dispose.
      * @param callOnDispose Function that disposes something.
      */
-    constructor(callOnDispose: Function);
+    constructor(callOnDispose: () => void);
 
     /**
      * Dispose this object.
@@ -2486,7 +2485,7 @@ declare module 'vscode' {
     /**
      * Prepend to the start of the variable's existing value.
      */
-    Prepend = 3
+    Prepend = 3,
   }
 
   /**
@@ -2705,6 +2704,10 @@ declare module 'vscode' {
      * other extensions in the host run in `ExtensionMode.Release`.
      */
     readonly extensionMode: ExtensionMode;
+    /**
+		 * The current `Extension` instance.
+		 */
+    readonly extension: Extension<any>;
   }
 
   /**
@@ -3162,7 +3165,6 @@ declare module 'vscode' {
     Notification = 15,
   }
 
-
   /**
    * Value-object describing where and how progress should show.
    */
@@ -3201,7 +3203,7 @@ declare module 'vscode' {
     /**
      * Extensions are accessed from a web browser.
      */
-    Web = 2
+    Web = 2,
   }
 
   //#region Semantic Tokens
@@ -3498,7 +3500,7 @@ declare module 'vscode' {
   /**
    * Provide inline value as text.
    */
-   export class InlineValueText {
+  export class InlineValueText {
     /**
      * The document range for which the inline value applies.
      */
@@ -3639,5 +3641,6 @@ interface Thenable<T> {
   * @returns A Promise for the completion of which ever callback is executed.
   */
   then<TResult>(onfulfilled?: (value: T) => TResult | Thenable<TResult>, onrejected?: (reason: any) => TResult | Thenable<TResult>): Thenable<TResult>;
+  /* tslint:disable-next-line */
   then<TResult>(onfulfilled?: (value: T) => TResult | Thenable<TResult>, onrejected?: (reason: any) => void): Thenable<TResult>;
 }

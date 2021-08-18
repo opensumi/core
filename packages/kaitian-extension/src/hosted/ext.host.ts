@@ -1,6 +1,4 @@
 import * as path from 'path';
-import type * as vscode from 'vscode';
-
 import { Injector } from '@ali/common-di';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
 import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, REPORT_NAME, IExtensionProps, Uri, timeout, ReporterService, IReporter, IExtensionLogger } from '@ali/ide-core-common';
@@ -169,19 +167,25 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     this.extensionsChangeEmitter.fire();
   }
 
+  public createExtension(extensionDescription: IExtensionProps): KTExtension<any> {
+    const activateExtension = this.extensionsActivator.get(extensionDescription.id);
+
+    return new KTExtension(
+      extensionDescription,
+      this as unknown as IExtensionHostService,
+      this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService),
+      activateExtension && activateExtension.exports,
+      activateExtension && activateExtension.extendExports,
+    );
+  }
+
   public getExtension(extensionId: string): KTExtension<any> | undefined {
-    const extension = this.extensions.find((extension) => {
+    const extensionDescription = this.extensions.find((extension) => {
       return getExtensionId(extensionId) === getExtensionId(extension.id);
     });
-    if (extension) {
-      const activateExtension = this.extensionsActivator.get(extension.id);
-      return new KTExtension(
-        extension,
-        this as unknown as IExtensionHostService,
-        this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService),
-        activateExtension && activateExtension.exports,
-        activateExtension && activateExtension.extendExports,
-      );
+
+    if (extensionDescription) {
+      return this.createExtension(extensionDescription);
     }
   }
 
@@ -482,20 +486,21 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     return this.activateExtension(id);
   }
 
-  private async loadExtensionContext(extension: IExtensionDescription, modulePath: string, storageProxy: ExtHostStorage, extendProxy: IExtendProxy) {
+  private async loadExtensionContext(extensionDescription: IExtensionDescription, modulePath: string, storageProxy: ExtHostStorage, extendProxy: IExtendProxy) {
 
-    const extensionId = extension.id;
+    const extensionId = extensionDescription.id;
     const registerExtendFn = (exportsData) => {
-      return this.registerExtendModuleService(exportsData, extension);
+      return this.registerExtendModuleService(exportsData, extensionDescription);
     };
 
     const exthostTermianl = this.rpcProtocol.get(ExtHostAPIIdentifier.ExtHostTerminal);
 
     const context = new ExtensionContext({
-      extension,
+      extensionDescription,
       extensionId,
+      createExtension: this.createExtension.bind(this),
       extensionPath: modulePath,
-      extensionLocation: extension.extensionLocation,
+      extensionLocation: extensionDescription.extensionLocation,
       storageProxy,
       extendProxy,
       registerExtendModuleService: registerExtendFn,
@@ -506,7 +511,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       context.globalState.whenReady,
       context.workspaceState.whenReady,
     ]).then(() => {
-      return Object.freeze(context as vscode.ExtensionContext);
+      return Object.freeze(context);
     });
   }
 

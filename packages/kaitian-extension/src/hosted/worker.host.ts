@@ -85,11 +85,17 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
     });
   }
 
+  createExtension(extensionDescription: IExtensionProps) {
+    const activated = this.activatedExtensions.get(extensionDescription.id);
+
+    return new KTWorkerExtension(extensionDescription, this, this.mainThreadExtensionService, activated?.exports);
+  }
+
   getExtension(extensionId: string) {
     const extension = this.extensions.find((e) => e.id === extensionId);
-    const activated = this.activatedExtensions.get(extensionId);
+
     if (extension) {
-      return new KTWorkerExtension(extension, this, this.mainThreadExtensionService, activated?.exports);
+      return this.createExtension(extension);
     }
   }
 
@@ -210,20 +216,21 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
     this.rpcProtocol.set({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}`} as ProxyIdentifier<any>, service);
   }
 
-  private async loadContext(extension: IExtensionProps) {
-    const componentProxy = this.getExtendModuleProxy(extension);
+  private async loadContext(extensionDescription: IExtensionProps) {
+    const componentProxy = this.getExtendModuleProxy(extensionDescription);
     const registerExtendFn = (exportsData) => {
-      return this.registerExtendModuleService(exportsData, extension);
+      return this.registerExtendModuleService(exportsData, extensionDescription);
     };
 
     const context = new ExtensionContext({
-      extension,
-      extensionId: extension.id,
+      extensionDescription,
+      createExtension: this.createExtension.bind(this),
+      extensionId: extensionDescription.id,
       extendProxy: componentProxy,
       registerExtendModuleService: registerExtendFn,
-      extensionPath: extension.realPath,
+      extensionPath: extensionDescription.realPath,
       storageProxy: this.storage,
-      extensionLocation: extension.extensionLocation,
+      extensionLocation: extensionDescription.extensionLocation,
     });
 
     return Promise.all([

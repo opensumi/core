@@ -4,6 +4,7 @@ import { IExtensionProps, URI } from '@ali/ide-core-common';
 import { initMockRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
 import { ExtensionContext } from '../../../../src/hosted/api/vscode/ext.host.extensions';
 import { ExtHostStorage } from '../../../../src/hosted/api/vscode/ext.host.storage';
+import { ExtensionWorkerHost } from '../../../../src/hosted/worker.host';
 import { ExtensionMode } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
 
 const staticServicePath = 'http://localhost:9999';
@@ -36,10 +37,13 @@ describe(`test ${__filename}`, () => {
   beforeAll(async () => {
     rpcProtocol = await initMockRPCProtocol(mockClient);
     context = new ExtensionContext({
-      extension: mockExtension as unknown as IExtensionProps,
+      extensionDescription: mockExtension as unknown as IExtensionProps,
       isDevelopment: false,
       extensionId: mockExtension.extensionId,
       extendProxy: {},
+      createExtension: (extensionDescription: IExtensionProps) => {
+        return new ExtensionWorkerHost(rpcProtocol).createExtension(extensionDescription);
+      },
       registerExtendModuleService: () => {},
       extensionPath: mockExtension.realPath,
       extensionLocation: mockExtension.extensionLocation,
