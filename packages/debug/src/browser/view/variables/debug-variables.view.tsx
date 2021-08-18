@@ -24,8 +24,8 @@ export const DebugVariableView = observer(({
   const debugVariablesModelService = useInjectable<DebugVariablesModelService>(DebugVariablesModelService);
 
   React.useEffect(() => {
-    debugVariablesModelService.onDidUpdateTreeModel(async (model: TreeModel) => {
-      setModel(model);
+    debugVariablesModelService.onDidUpdateTreeModel(async (nextModel: TreeModel) => {
+      setModel(nextModel);
     });
     return () => {
       debugVariablesModelService.removeNodeDecoration();

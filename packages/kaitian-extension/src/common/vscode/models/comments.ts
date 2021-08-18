@@ -68,6 +68,7 @@ export type CommentThreadChanges = Partial<{
   contextValue: string,
   comments: Comment[],
   collapseState: CommentThreadCollapsibleState;
+  canReply: boolean;
 }>;
 
 /* --------------- end 以下类型在 monaco 中没有，在 vscode 源码中有 ----------------- */

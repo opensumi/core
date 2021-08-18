@@ -14,9 +14,9 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
   // 当没有工作区被打开时，存储路径为undefined
   private cachedStoragePath: URI | undefined;
   // 获取最后一次生成的工作区存储路径，初始化前返回对应的Promise
-  private deferredWorkspaceStoragePath: Deferred<string>;
+  private deferredWorkspaceStoragePath: Deferred<string | undefined>;
   // 获取顶级存储路径， 默认为 ~/.kaitian, 初始化前返回对应的Promise
-  private deferredStoragePath: Deferred<string>;
+  private deferredStoragePath: Deferred<string | undefined>;
   // 当初始化完成时为true
   private storagePathInitialized: boolean;
 
@@ -27,8 +27,8 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
   private readonly loggerManager: ILoggerManagerClient;
 
   constructor() {
-    this.deferredWorkspaceStoragePath = new Deferred<string>();
-    this.deferredStoragePath = new Deferred<string>();
+    this.deferredWorkspaceStoragePath = new Deferred();
+    this.deferredStoragePath = new Deferred();
     this.storagePathInitialized = false;
   }
 

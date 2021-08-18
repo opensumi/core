@@ -5,9 +5,10 @@ import { RPCProtocol, WSChannelHandler } from '@ali/ide-connection';
 import { MainThreadStatusBar } from '../../../../src/browser/vscode/api/main.thread.statusbar';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { MockLoggerManagerClient } from '../../../__mock__/loggermanager';
+import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
 import { IStatusBarService } from '@ali/ide-core-browser';
 import { StatusBarService } from '@ali/ide-status-bar/lib/browser/status-bar.service';
+import { ThemeColor } from '../../../../src/common/vscode/ext-types';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -63,9 +64,10 @@ describe('vscode MainThreadStatusBar Test', () => {
     statusbar.command = 'test';
     statusbar.show();
     // statusbar host 调用 main 有一个 定时器
+
     setTimeout(() => {
-      expect($setMessage.mock.calls[0][7]).toBe('test');
-      expect($setMessage.mock.calls[0][8]).toBe(undefined);
+      expect($setMessage.mock.calls[0][8]).toBe('test');
+      expect($setMessage.mock.calls[0][9]).toBe(undefined);
       done();
     }, 100);
   });
@@ -83,8 +85,8 @@ describe('vscode MainThreadStatusBar Test', () => {
     statusbar.show();
     // statusbar host 调用 main 有一个 定时器
     setTimeout(() => {
-      expect($setMessage.mock.calls[0][7]).toBe('test');
-      expect($setMessage.mock.calls[0][8]).toStrictEqual(['test2']);
+      expect($setMessage.mock.calls[0][8]).toBe('test');
+      expect($setMessage.mock.calls[0][9]).toStrictEqual(['test2']);
       done();
     }, 100);
   });
@@ -101,7 +103,23 @@ describe('vscode MainThreadStatusBar Test', () => {
     statusbar.show();
     // statusbar host 调用 main 有一个 定时器
     setTimeout(() => {
-      expect($setMessage.mock.calls[0][6]).toStrictEqual({'label': '蛋总', 'role': 'danzong'});
+      expect($setMessage.mock.calls[0][7]).toStrictEqual({'label': '蛋总', 'role': 'danzong'});
+      done();
+    }, 100);
+  });
+
+  it('support backgroundColor', (done) => {
+    // mock mainThread.$setMessage
+    const $setMessage = jest.spyOn(mainThread, '$setMessage');
+
+    const statusbar = extHost.createStatusBarItem();
+    statusbar.backgroundColor = new ThemeColor('statusBarItem.errorBackground');
+    statusbar.color = 'red';
+    statusbar.show();
+    // statusbar host 调用 main 有一个 定时器
+    setTimeout(() => {
+      expect(($setMessage.mock.calls[0][4] as ThemeColor).id).toStrictEqual('statusBarItem.errorForeground');
+      expect(($setMessage.mock.calls[0][5] as ThemeColor).id).toStrictEqual('statusBarItem.errorBackground');
       done();
     }, 100);
   });

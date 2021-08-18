@@ -2,11 +2,11 @@ import * as React from 'react';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, IContextKeyService, CommandRegistry, ILoggerManagerClient, ViewContainerOptions, PreferenceService, Disposable, ClientApp } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
+import { useMockStorage } from '@ali/ide-core-browser/__mocks__/storage';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
-import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
+import { MockLoggerManageClient } from '@ali/ide-core-browser/__mocks__/logger';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
-import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { MainLayoutModule } from '@ali/ide-main-layout/lib/browser';
 import { LayoutService } from '@ali/ide-main-layout/lib/browser/layout.service';
 import { IMainLayoutService } from '@ali/ide-main-layout';
@@ -24,7 +24,7 @@ describe('main layout test', () => {
   const uniqueToken = 'unique_component_token';
   const testContainerId = 'unique_container_id';
   const layoutNode = document.createElement('div');
-  const rendered = new Deferred();
+  const rendered = new Deferred<void>();
   document.getElementById('main')!.appendChild(layoutNode);
 
   const timeoutIds: Set<NodeJS.Timer> = new Set();

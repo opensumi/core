@@ -13,10 +13,10 @@ import { FileSystemNodeOptions, FileService } from '@ali/ide-file-service/lib/no
 import { AppConfig, INodeLogger } from '@ali/ide-core-node';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
-import { MockedStorageProvider } from '@ali/ide-core-browser/lib/mocks/storage';
+import { MockedStorageProvider } from '@ali/ide-core-browser/__mocks__/storage';
 import { Directory, File } from '../../src/common/file-tree-node.define';
 import { TreeNodeEvent, TreeNodeType } from '@ali/ide-components';
-import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
+import { MockContextKeyService } from '@ali/ide-core-browser/__mocks__/context-key';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { IContextKeyService, CorePreferences, EDITOR_COMMANDS, PreferenceService } from '@ali/ide-core-browser';
 import { FileDecorationsService } from '@ali/ide-decoration/lib/browser/decorationsService';

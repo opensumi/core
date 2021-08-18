@@ -6,7 +6,7 @@ import { IMainLayoutService } from '../common';
 @Injectable({multiple: true})
 export class TabBarHandler {
   @Autowired(IMainLayoutService)
-  private layoutService: IMainLayoutService;
+  private layoutService!: IMainLayoutService;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;

@@ -20,7 +20,8 @@
   },
   "dependencies": {
     "@ali/ide-core-common": "2.8.4",
-    "@ali/ide-core-node": "2.8.4"
+    "@ali/ide-core-node": "2.8.4",
+    "@ali/ide-theme": "2.8.4"
   },
   "devDependencies": {
     "@ali/ide-startup": "2.8.4",

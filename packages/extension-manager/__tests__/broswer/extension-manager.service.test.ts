@@ -2,7 +2,7 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { EnableScope, IExtensionManagerService, IExtension } from '../../src/common';
 import { ExtensionManagerModule } from '../../src/browser';
 import { IContextKeyService, uuid } from '@ali/ide-core-browser';
-import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { MockInjector } from '@ali/ide-dev-tool/src/mock-injector';
 import { AbstractExtensionManagementService } from '@ali/ide-kaitian-extension';
 import { StorageProvider, Uri } from '@ali/ide-core-common';

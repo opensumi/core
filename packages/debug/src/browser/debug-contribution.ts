@@ -1,3 +1,4 @@
+import { CONTEXT_DEBUGGERS_AVAILABLE, CONTEXT_IN_DEBUG_MODE, CONTEXT_BREAKPOINT_INPUT_FOCUSED } from './../common/constants';
 import { Domain, ClientAppContribution, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution, CommandService, IReporterService, formatLocalize, CoreConfiguration } from '@ali/ide-core-browser';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { ComponentContribution, ComponentRegistry, KeybindingRegistry } from '@ali/ide-core-browser';
@@ -34,6 +35,7 @@ import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
 import { IFileServiceClient, IShadowFileProvider } from '@ali/ide-file-service';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { IPreferenceSettingsService } from '@ali/ide-core-browser';
+import { DebugProgressService } from './debug-progress.service';
 
 const LAUNCH_JSON_REGEX = /launch\.json$/;
 
@@ -130,6 +132,7 @@ export namespace DEBUG_COMMANDS {
   export const COPY_VARIABLE_VALUE = {
     id: 'debug.variables.copy',
   };
+  // console commands
   export const CLEAR_CONSOLE = {
     id: 'debug.console.clear',
     label: localize('debug.console.clear'),
@@ -143,6 +146,15 @@ export namespace DEBUG_COMMANDS {
   export const COLLAPSE_ALL_CONSOLE_ITEM = {
     id: 'debug.console.collapseAll',
     label: localize('debug.console.collapseAll'),
+  };
+  export const CONSOLE_ENTER_EVALUATE = {
+    id: 'debug.console.keybing.enter.evaluate',
+  };
+  export const CONSOLE_INPUT_DOWN_ARROW = {
+    id: 'debug.console.input.down.arrow',
+  };
+  export const CONSOLE_INPUT_UP_ARROW = {
+    id: 'debug.console.input.up.arrow',
   };
 }
 
@@ -216,6 +228,9 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   @Autowired(IPreferenceSettingsService)
   protected readonly preferenceSettings: IPreferenceSettingsService;
 
+  @Autowired(DebugProgressService)
+  protected readonly debugProgressService: DebugProgressService;
+
   private firstSessionStart: boolean = true;
 
   get selectedBreakpoint(): SelectedBreakpoint | undefined {
@@ -243,35 +258,35 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
         component: DebugWatchView,
         id: DEBUG_WATCH_ID,
         name: localize('debug.watch.title'),
-        when: '!debugConfigurationEmpty',
+        when: CONTEXT_DEBUGGERS_AVAILABLE.raw,
         collapsed: false,
       },
       {
         component: DebugCallStackView,
         id: DEBUG_STACK_ID,
         name: localize('debug.callStack.title'),
-        when: '!debugConfigurationEmpty',
+        when: CONTEXT_DEBUGGERS_AVAILABLE.raw,
         collapsed: false,
       },
       {
         component: DebugVariableView,
         id: DEBUG_VARIABLES_ID,
         name: localize('debug.variables.title'),
-        when: '!debugConfigurationEmpty',
+        when: CONTEXT_DEBUGGERS_AVAILABLE.raw,
         collapsed: false,
       },
       {
         component: DebugBreakpointView,
         id: DEBUG_BREAKPOINTS_ID,
         name: localize('debug.breakpoints.title'),
-        when: '!debugConfigurationEmpty',
+        when: CONTEXT_DEBUGGERS_AVAILABLE.raw,
         collapsed: false,
       },
       {
         component: WelcomeView,
         id: DEBUG_WELCOME_ID,
         name: 'Debug Welcome',
-        when: 'debugConfigurationEmpty',
+        when: `!${CONTEXT_DEBUGGERS_AVAILABLE.raw}`,
         initialProps: { viewId: DEBUG_WELCOME_ID},
       },
     ], {
@@ -287,6 +302,7 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   async initialize() {
     this.fileSystem.registerProvider(DEBUG_SCHEME, this.shadowFileServiceProvider);
     this.debugEditorController.init();
+    this.debugProgressService.run(this.sessionManager);
   }
 
   onStart() {
@@ -592,48 +608,48 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
     keybindings.registerKeybinding({
       command: DEBUG_COMMANDS.START.id,
       keybinding: 'f5',
-      when: '!inDebugMode',
+      when: `!${CONTEXT_IN_DEBUG_MODE.raw}`,
     });
     keybindings.registerKeybinding({
       command: DEBUG_COMMANDS.CONTINUE.id,
       keybinding: 'f5',
-      when: 'inDebugMode',
+      when: CONTEXT_IN_DEBUG_MODE.raw,
     });
     keybindings.registerKeybinding({
       command: DEBUG_COMMANDS.STOP.id,
       keybinding: 'shift+f5',
-      when: 'inDebugMode',
+      when: CONTEXT_IN_DEBUG_MODE.raw,
     });
     keybindings.registerKeybinding({
       command: DEBUG_COMMANDS.NEXT.id,
       keybinding: 'f11',
-      when: 'inDebugMode',
+      when: CONTEXT_IN_DEBUG_MODE.raw,
     });
     keybindings.registerKeybinding({
       command: DEBUG_COMMANDS.PREV.id,
       keybinding: 'shift+f11',
-      when: 'inDebugMode',
+      when: CONTEXT_IN_DEBUG_MODE.raw,
     });
     keybindings.registerKeybinding({
       command: DEBUG_COMMANDS.OVER.id,
       keybinding: 'f10',
-      when: 'inDebugMode',
+      when: CONTEXT_IN_DEBUG_MODE.raw,
     });
     keybindings.registerKeybinding({
       command: DEBUG_COMMANDS.RESTART.id,
       keybinding: 'shift+ctrlcmd+f5',
-      when: 'inDebugMode',
+      when: CONTEXT_IN_DEBUG_MODE.raw,
     });
 
     keybindings.registerKeybinding({
       command: DebugBreakpointWidgetCommands.ACCEPT.id,
       keybinding: 'enter',
-      when: 'breakpointWidgetInputFocus',
+      when: CONTEXT_BREAKPOINT_INPUT_FOCUSED.raw,
     });
     keybindings.registerKeybinding({
       command: DebugBreakpointWidgetCommands.CLOSE.id,
       keybinding: 'esc',
-      when: 'breakpointWidgetInputFocus',
+      when: CONTEXT_BREAKPOINT_INPUT_FOCUSED.raw,
     });
   }
 

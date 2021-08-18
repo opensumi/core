@@ -1,7 +1,8 @@
+import { LanguageFeatureRegistry } from '@ali/monaco-editor-core/esm/vs/editor/common/modes/languageFeatureRegistry';
 import type { languages, editor } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 
 // 内置的api类型声明
-import { Uri as URI, IRange, IDisposable, UriComponents, SymbolTag, CancellationToken } from '@ali/ide-core-common';
+import { Uri as URI, IRange, IDisposable, UriComponents, SymbolTag, CancellationToken, Event } from '@ali/ide-core-common';
 import { ISingleEditOperation } from '@ali/ide-editor';
 import type * as vscode from 'vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
@@ -35,12 +36,6 @@ export interface IColorPresentation {
    * selecting this color presentation.
    */
   additionalTextEdits?: TextEdit[];
-}
-
-export interface CodeLens {
-  range: IRange;
-  id?: string;
-  command?: VSCommand;
 }
 
 export interface CustomCodeAction {
@@ -520,6 +515,11 @@ export interface CodeLens {
   command?: VSCommand;
 }
 
+export interface ICodeLensListDto {
+  cacheId?: number;
+  lenses: CodeLens[];
+}
+
 export interface CodeLensList {
   lenses: CodeLens[];
   dispose(): void;
@@ -570,6 +570,15 @@ export interface ILinksList {
   dispose?(): void;
 }
 
+export interface ILinkDto extends ILink {
+  cacheId?: ChainedCacheId;
+}
+
+export interface ILinksListDto {
+  id?: CacheId;
+  links: ILink[];
+}
+
 export interface DocumentSymbol {
   name: string;
   detail: string;
@@ -614,6 +623,10 @@ export interface SignatureHelp {
   signatures: SignatureInformation[];
   activeSignature: number;
   activeParameter: number;
+}
+
+export interface ISignatureHelpDto extends SignatureHelp {
+  id: number;
 }
 
 export interface SignatureHelpResult extends IDisposable {
@@ -779,3 +792,21 @@ export interface WithDuration<T> {
   _dur: number;
   result: T;
 }
+
+/**
+ * A provider of folding ranges for editor models.
+ */
+export interface FoldingRangeProvider {
+
+  /**
+   * An optional event to signal that the folding ranges from this provider have changed.
+   */
+  onDidChange?: Event<this>;
+
+  /**
+   * Provides the folding ranges for a specific model.
+   */
+  provideFoldingRanges(model: editor.ITextModel, context: FoldingContext, token: CancellationToken): vscode.ProviderResult<FoldingRange[]>;
+}
+
+export const FoldingRangeProviderRegistry = new LanguageFeatureRegistry<FoldingRangeProvider>();

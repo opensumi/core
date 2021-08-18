@@ -41,7 +41,7 @@ export function startDebugAdapter(executable: vscode.DebugAdapterExecutable, cp?
     childProcess = cp ? cp.spawn(command, args, options) : spawn(command, args, options);
 
   } else if ('modulePath' in executable) {
-    const forkExecutable = executable as DebugAdapterForkExecutable;
+    const forkExecutable = executable as unknown as DebugAdapterForkExecutable;
     const { modulePath, args } = forkExecutable;
     options.stdio.push('ipc');
     childProcess = fork(modulePath, args, options);

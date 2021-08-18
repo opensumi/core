@@ -44,134 +44,156 @@ export class ExtHostStatusBar implements IExtHostStatusBar {
 }
 
 export class StatusBarItemImpl implements vscode.StatusBarItem {
+  private static ALLOWED_BACKGROUND_COLORS = new Map<string, ThemeColor>(
+    [
+      ['statusBarItem.errorBackground', new ThemeColor('statusBarItem.errorForeground')],
+      ['statusBarItem.warningBackground', new ThemeColor('statusBarItem.warningForeground')],
+    ],
+  );
 
-    public readonly id = StatusBarItemImpl.nextId();
+  public readonly id = StatusBarItemImpl.nextId();
 
-    private _alignment: vscode.StatusBarAlignment;
-    private _priority: number;
+  private _alignment: vscode.StatusBarAlignment;
+  private _priority: number;
 
-    private _text: string;
-    private _tooltip: string;
-    private _color: string | ThemeColor;
-    private _command: string | vscode.Command | undefined;
+  private _text: string;
+  private _tooltip: string;
+  private _color: string | ThemeColor | undefined;
+  private _backgroundColor: ThemeColor | undefined;
+  private _command: string | vscode.Command | undefined;
 
-    private _isVisible: boolean;
-    private _timeoutHandle: NodeJS.Timer | undefined;
+  private _isVisible: boolean;
+  private _timeoutHandle: NodeJS.Timer | undefined;
 
-    private _proxy: IMainThreadStatusBar;
-    private _rpcProtocol: IRPCProtocol;
+  private _proxy: IMainThreadStatusBar;
+  private _rpcProtocol: IRPCProtocol;
 
-    private _accessibilityInformation?: vscode.AccessibilityInformation;
+  private _accessibilityInformation?: vscode.AccessibilityInformation;
 
-    constructor(rpcProtocol: IRPCProtocol, alignment: vscode.StatusBarAlignment = types.StatusBarAlignment.Left, priority: number = 0) {
-      this._rpcProtocol = rpcProtocol;
-      this._proxy = this._rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadStatusBar);
-      this._alignment = alignment;
-      this._priority = priority;
-    }
+  constructor(rpcProtocol: IRPCProtocol, alignment: vscode.StatusBarAlignment = types.StatusBarAlignment.Left, priority: number = 0) {
+    this._rpcProtocol = rpcProtocol;
+    this._proxy = this._rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadStatusBar);
+    this._alignment = alignment;
+    this._priority = priority;
+  }
 
-    public get alignment(): vscode.StatusBarAlignment {
-        return this._alignment;
-    }
+  public get alignment(): vscode.StatusBarAlignment {
+      return this._alignment;
+  }
 
-    public get priority(): number {
-        return this._priority;
-    }
+  public get priority(): number {
+      return this._priority;
+  }
 
-    public get text(): string {
-        return this._text;
-    }
-    public set text(text: string) {
-      this._text = text;
+  public get text(): string {
+      return this._text;
+  }
+  public set text(text: string) {
+    this._text = text;
+    this.update();
+  }
+
+  public get tooltip(): string {
+      return this._tooltip;
+  }
+  public set tooltip(tooltip: string) {
+      this._tooltip = tooltip;
       this.update();
-    }
+  }
 
-    public get tooltip(): string {
-        return this._tooltip;
-    }
-    public set tooltip(tooltip: string) {
-        this._tooltip = tooltip;
-        this.update();
-    }
-
-    public get color(): string | ThemeColor {
-        return this._color;
-    }
-    public set color(color: string | ThemeColor) {
-        this._color = color;
-        this.update();
-    }
-
-    public get accessibilityInformation(): vscode.AccessibilityInformation | undefined {
-      return this._accessibilityInformation;
-    }
-
-    public set accessibilityInformation(accessibilityInformation: vscode.AccessibilityInformation | undefined) {
-      this._accessibilityInformation = accessibilityInformation;
+  public get color(): string | ThemeColor | undefined {
+      return this._color;
+  }
+  public set color(color: string | ThemeColor | undefined) {
+      this._color = color;
       this.update();
+  }
+
+  public get backgroundColor(): ThemeColor | undefined {
+    return this._backgroundColor;
+  }
+
+  public set backgroundColor(color: ThemeColor | undefined) {
+    if (color && !StatusBarItemImpl.ALLOWED_BACKGROUND_COLORS.has(color.id)) {
+      color = undefined;
     }
 
-    public get command(): string | vscode.Command | undefined {
-        return this._command;
-    }
-    public set command(command: string | vscode.Command | undefined) {
-        this._command = command;
-        this.update();
-    }
+    this._backgroundColor = color;
 
-    public show(): void {
-        this._isVisible = true;
-        this.update();
-    }
+    this.update();
+  }
 
-    public hide(): void {
-        if (this._timeoutHandle) {
-            clearTimeout(this._timeoutHandle);
-        }
-        this._proxy.$dispose(this.id);
-        this._isVisible = false;
-    }
+  public get accessibilityInformation(): vscode.AccessibilityInformation | undefined {
+    return this._accessibilityInformation;
+  }
 
-    private update(): void {
-        if (!this._isVisible) {
-            return;
-        }
-        if (this._timeoutHandle) {
-            clearTimeout(this._timeoutHandle);
-        }
-        // Defer the update so that multiple changes to setters don't cause a redraw each
-        this._timeoutHandle = global.setTimeout(() => {
-            this._timeoutHandle = undefined;
-            const commandId = typeof this.command === 'string' ? this.command : this.command?.command;
-            const commandArgs = typeof this.command === 'string' ? undefined : this.command?.arguments;
-            // Set to status bar
-            this._proxy.$setMessage(
-                this.id,
-                this.text,
-                this.priority,
-                this.alignment,
-                this.getColor(),
-                this.tooltip,
-                this.accessibilityInformation,
-                commandId,
-                commandArgs);
-        }, 0);
-    }
+  public set accessibilityInformation(accessibilityInformation: vscode.AccessibilityInformation | undefined) {
+    this._accessibilityInformation = accessibilityInformation;
+    this.update();
+  }
 
-    private getColor(): string | undefined {
-      if (typeof this.color !== 'string' && typeof this.color !== 'undefined') {
-          const colorId = (this.color as ThemeColor).id;
-          return colorId;
+  public get command(): string | vscode.Command | undefined {
+      return this._command;
+  }
+  public set command(command: string | vscode.Command | undefined) {
+      this._command = command;
+      this.update();
+  }
+
+  public show(): void {
+      this._isVisible = true;
+      this.update();
+  }
+
+  public hide(): void {
+      if (this._timeoutHandle) {
+          clearTimeout(this._timeoutHandle);
       }
-      return this.color;
-    }
+      this._proxy.$dispose(this.id);
+      this._isVisible = false;
+  }
 
-    public dispose(): void {
-        this.hide();
-    }
+  private update(): void {
+      if (!this._isVisible) {
+          return;
+      }
+      if (this._timeoutHandle) {
+          clearTimeout(this._timeoutHandle);
+      }
+      // Defer the update so that multiple changes to setters don't cause a redraw each
+      this._timeoutHandle = global.setTimeout(() => {
+          this._timeoutHandle = undefined;
+          const commandId = typeof this.command === 'string' ? this.command : this.command?.command;
+          const commandArgs = typeof this.command === 'string' ? undefined : this.command?.arguments;
 
-    static nextId(): string {
-        return StatusBarItemImpl.ID_PREFIX + ':' + v4();
-    }
-    static ID_PREFIX = 'plugin-status-bar-item';
+          // If a background color is set, the foreground is determined
+          let color = this._color;
+          if (this._backgroundColor) {
+            color = StatusBarItemImpl.ALLOWED_BACKGROUND_COLORS.get(this._backgroundColor.id)!;
+          }
+
+          // Set to status bar
+          this._proxy.$setMessage(
+            this.id,
+            this.text,
+            this.priority,
+            this.alignment,
+            color,
+            this._backgroundColor,
+            this.tooltip,
+            this.accessibilityInformation,
+            commandId,
+            commandArgs,
+          );
+      }, 0);
+  }
+
+  public dispose(): void {
+      this.hide();
+  }
+
+  static nextId(): string {
+      return StatusBarItemImpl.ID_PREFIX + ':' + v4();
+  }
+  static ID_PREFIX = 'plugin-status-bar-item';
 }

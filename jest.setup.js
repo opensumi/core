@@ -41,6 +41,11 @@ global.self = global;
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
 
+global.ElectronIpcRenderer = {
+  send: () => {},
+  removeListener: () => {},
+  on: () => {},
+}
 
 class MockLocalStorage {
   constructor() {
@@ -65,3 +70,5 @@ class MockLocalStorage {
 }
 
 global.localStorage = new MockLocalStorage();
+
+process.env.IS_JEST_TEST = true;

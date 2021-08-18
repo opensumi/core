@@ -1,5 +1,5 @@
 import type { TaskProvider } from 'vscode';
-import { Emitter as EventEmitter, Disposable, Event } from '@ali/ide-core-common';
+import { Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 import * as extTypes from '../../../../../src/common/vscode/ext-types';
 
 // Test case

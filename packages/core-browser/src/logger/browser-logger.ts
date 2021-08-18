@@ -13,7 +13,12 @@ export class Logger implements ILogServiceClient {
 
   @Autowired(ILoggerManagerClient)
   private LoggerManager: ILoggerManagerClient;
-  private logger: ILogServiceClient = this.LoggerManager.getLogger(SupportLogNamespace.Browser);
+
+  private logger: ILogServiceClient;
+
+  constructor() {
+    this.logger = this.LoggerManager.getLogger(SupportLogNamespace.Browser);
+  }
 
   public getLevel() {
     return this.getLevel();

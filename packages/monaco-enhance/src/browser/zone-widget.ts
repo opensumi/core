@@ -137,14 +137,15 @@ export abstract class ZoneWidget extends Disposable {
   }
 
   private _getLeft(info: monaco.editor.EditorLayoutInfo): number {
-    if (info.minimapWidth > 0 && info.minimapLeft === 0) {
-      return info.minimapWidth;
+    if (info.minimap && info.minimap.minimapWidth > 0 && info.minimap.minimapLeft === 0) {
+      return info.minimap.minimapWidth;
     }
     return 0;
   }
 
   private _getWidth(info: monaco.editor.EditorLayoutInfo): number {
-    return info.width - info.minimapWidth - info.verticalScrollbarWidth;
+    const minimapWidth = info.minimap ? info.minimap.minimapWidth : 0;
+    return info.width - minimapWidth - info.verticalScrollbarWidth;
   }
 
   protected _onViewZoneTop(top: number): void {

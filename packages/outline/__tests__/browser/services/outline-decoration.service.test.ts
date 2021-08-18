@@ -3,7 +3,7 @@ import { MarkerManager, URI, MarkerSeverity } from '@ali/ide-core-common';
 import { OutlineRoot, OutlineCompositeTreeNode } from '@ali/ide-outline/lib/browser/outline-node.define';
 import { OutlineDecorationService } from '@ali/ide-outline/lib/browser/services/outline-decoration.service';
 import { IThemeService } from '@ali/ide-theme';
-import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
+import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
 
 describe('OutlineDecorationService', () => {
   let outlineDecorationService: OutlineDecorationService;

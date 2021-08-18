@@ -1,7 +1,5 @@
-import { CancellationToken, IDisposable, UriComponents } from '@ali/ide-core-common';
+import { CancellationToken, IDisposable, UriComponents, IThemeColor } from '@ali/ide-core-common';
 import type * as vscode from 'vscode';
-
-import { ThemeColor } from './ext-types';
 
 export interface DecorationRequest {
   readonly id: number;
@@ -10,9 +8,9 @@ export interface DecorationRequest {
 }
 
 // 去掉了第一个 weight 字段和最后一个 source 字段
-// type DecorationData = [number, boolean, string, string, ThemeColor, string];
+// type DecorationData = [number, boolean, string, string, IThemeColor, string];
 
-export type DecorationData = [boolean, string, string, ThemeColor];
+export type DecorationData = [boolean, string, string, IThemeColor];
 export interface DecorationReply {
   [id: number]: DecorationData;
 }

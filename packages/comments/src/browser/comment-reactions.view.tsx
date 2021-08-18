@@ -13,13 +13,14 @@ export const CommentReactionSwitcher: React.FC<{
   comment: IThreadComment;
   className?: string;
 }> = observer(({ thread, comment, className }) => {
-  const menuId = `comment_reaction_switcher_menu_${thread.providerId}_${comment.id}`;
+  const key = `${thread.providerId}_${thread.id}_${comment.id}`;
+  const menuId = `comment_reaction_switcher_menu_${key}`;
   const menuRegistry = useInjectable<IMenuRegistry>(IMenuRegistry);
   const menuService = useInjectable<AbstractMenuService>(AbstractMenuService);
 
   React.useEffect(() => {
     const disposer = new Disposable();
-    const subMenuId = `comment_reaction_switcher_submenu_${thread.providerId}_${comment.id}`;
+    const subMenuId = `comment_reaction_switcher_submenu_${key}`;
 
     disposer.addDispose(menuRegistry.registerMenuItem(menuId, {
       submenu: subMenuId,

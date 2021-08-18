@@ -18,7 +18,7 @@ import type * as vscode from 'vscode';
 import * as Converter from '../../../../common/vscode/converter';
 import { Uri as URI } from '@ali/ide-core-common';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
-import { CodeLensList, CodeLens } from '../../../../common/vscode/model.api';
+import { CodeLens, ICodeLensListDto } from '../../../../common/vscode/model.api';
 import { createToken, ObjectIdentifier } from './util';
 import { CommandsConverter } from '../ext.host.command';
 import { DisposableStore } from '@ali/ide-core-common';
@@ -30,6 +30,7 @@ export class CodeLensAdapter {
 
   private cacheId = 0;
   private cache = new Map<number, vscode.CodeLens>();
+  private readonly disposableStore = new Map<number, DisposableStore>();
 
   constructor(
     private readonly provider: vscode.CodeLensProvider,
@@ -37,40 +38,34 @@ export class CodeLensAdapter {
     private readonly commandConverter: CommandsConverter,
   ) { }
 
-  async provideCodeLenses(resource: URI): Promise<CodeLensList | undefined> {
+  async provideCodeLenses(resource: URI): Promise<ICodeLensListDto> {
     const document = this.documents.getDocumentData(resource.toString());
     if (!document) {
       return Promise.reject(new Error(`There is no document for ${resource}`));
     }
 
     const doc = document.document;
-    // TODO 实现releaseCodeAction
     const disposables = new DisposableStore();
+    const id = this.cacheId++;
+    this.disposableStore.set(id, disposables);
 
-    const lenses = await Promise.resolve(this.provider.provideCodeLenses(doc, createToken())).then((lenses) => {
+    const result: ICodeLensListDto = {
+      cacheId: id,
+      lenses: [],
+    };
+
+    await Promise.resolve(this.provider.provideCodeLenses(doc, createToken())).then((lenses) => {
       if (Array.isArray(lenses)) {
-        return lenses.map((lens) => {
-          const id = this.cacheId++;
-          const lensSymbol = ObjectIdentifier.mixin({
+        for (const lens of lenses) {
+          result.lenses.push(ObjectIdentifier.mixin({
             range: Converter.fromRange(lens.range)!,
             command: lens.command ? this.commandConverter.toInternal(lens.command, disposables) : undefined,
-          }, id);
-          this.cache.set(id, lens);
-          return lensSymbol;
-        });
+          }, id));
+        }
       }
-      return undefined;
     });
 
-    if (lenses) {
-      return {
-        lenses,
-        dispose: () => {
-          disposables.dispose();
-        },
-      };
-    }
-    return undefined;
+    return result;
   }
 
   resolveCodeLens(resource: URI, symbol: CodeLens): Promise<CodeLens | undefined> {
@@ -85,12 +80,18 @@ export class CodeLensAdapter {
     } else {
       resolve = Promise.resolve(this.provider.resolveCodeLens(lens, createToken())) as any;
     }
-    // TODO cache dispose
+
     const disposables = new DisposableStore();
     return resolve.then((newLens) => {
       newLens = newLens || lens;
       symbol.command = this.commandConverter.toInternal(newLens.command ? newLens.command : CodeLensAdapter.BAD_CMD, disposables);
       return symbol;
     });
+  }
+
+  releaseCodeLens(cacheId: number): void {
+    this.disposableStore.get(cacheId)?.dispose();
+    this.disposableStore.delete(cacheId);
+    this.cache.delete(cacheId);
   }
 }

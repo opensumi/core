@@ -2,7 +2,7 @@ import type * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { TaskProvider, Task, TaskExecution, TaskFilter } from 'vscode';
 import { getDebugLogger, Event, CancellationToken, asPromise, CancellationTokenSource, Emitter, DisposableStore, Uri, IDisposable } from '@ali/ide-core-common';
-import { IExtensionHostService, IExtensionProps } from '../../../../common';
+import { IExtensionProps } from '../../../../common';
 import { IExtHostTasks, TaskHandlerData, IMainThreadTasks, TaskSetDTO, TaskPresentationOptionsDTO, ProcessExecutionOptionsDTO, ShellExecutionDTO, ProcessExecutionDTO, CustomExecutionDTO, CustomExecution2DTO, ShellExecutionOptionsDTO, TaskFilterDTO, TaskDTO, TaskDefinitionDTO, TaskProcessStartedDTO, TaskExecutionDTO, TaskHandleDTO, TaskProcessEndedDTO } from '../../../../common/vscode/tasks';
 import { MainThreadAPIIdentifier, IExtHostTerminal, IExtHostWorkspace } from '../../../../common/vscode';
 import { Terminal } from '../ext.host.terminal';
@@ -322,6 +322,7 @@ class TaskExecutionImpl implements vscode.TaskExecution {
   }
 }
 
+// tslint:disable-next-line: no-unused-variable
 class CustomExecutionData implements IDisposable {
   private _cancellationSource?: CancellationTokenSource;
   private readonly _onTaskExecutionComplete: Emitter<CustomExecutionData> = new Emitter<CustomExecutionData>();

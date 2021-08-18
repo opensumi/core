@@ -68,9 +68,8 @@ export class DebugStackFrame extends DebugStackFrameData {
     });
   }
 
-  protected scopes: Promise<DebugScope[]> | undefined;
   getScopes(parent?: ExpressionContainer): Promise<DebugScope[]> {
-    return this.scopes || (this.scopes = this.doGetScopes(parent));
+    return this.doGetScopes(parent);
   }
   protected async doGetScopes(parent?: ExpressionContainer): Promise<DebugScope[]> {
     try {
@@ -87,7 +86,7 @@ export class DebugStackFrame extends DebugStackFrameData {
   }
 
   public async getMostSpecificScopes(range: IRange): Promise<DebugScope[]> {
-    const scopes = this.scopes ? await this.scopes : await this.doGetScopes();
+    const scopes = await this.doGetScopes();
     const nonExpensiveScopes = scopes.filter((s) => !s.getRawScope().expensive);
     const haveRangeInfo = nonExpensiveScopes.some((s) => !!s.range());
     if (!haveRangeInfo) {

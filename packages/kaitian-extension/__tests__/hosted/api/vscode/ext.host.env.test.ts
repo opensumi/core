@@ -5,7 +5,7 @@ import { RPCProtocol, WSChannelHandler } from '@ali/ide-connection';
 import { MainThreadEnv } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.env';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { MockLoggerManagerClient } from '../../../__mock__/loggermanager';
+import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
 import { UIKind } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
 
 import type * as vscode from 'vscode';

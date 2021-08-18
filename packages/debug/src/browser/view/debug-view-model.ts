@@ -15,13 +15,13 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/debug/src/browser/view/debug-view-model.ts
 
-import { DebugSession, DebugState } from '../debug-session';
+import { DebugSession } from '../debug-session';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugThread } from '../model/debug-thread';
 import { DebugStackFrame } from '../model/debug-stack-frame';
 import { URI, IDisposable, DisposableCollection, Event, Emitter } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
-import { IDebugSessionManager } from '../../common/debug-session';
+import { DebugState, IDebugSessionManager } from '../../common/debug-session';
 
 @Injectable()
 export class DebugViewModel implements IDisposable {
@@ -164,15 +164,15 @@ export class DebugViewModel implements IDisposable {
     this.fireDidChange();
   }
 
-  report(...args: ArgsType<DebugSessionManager['report']>) {
-    return this.manager.report(...args);
+  report(name: string, msg: string | undefined, extra?: any) {
+    return this.manager.report(name, msg, extra);
   }
 
-  reportTime(...args: ArgsType<DebugSessionManager['reportTime']>) {
-    return this.manager.reportTime(...args);
+  reportTime(name: string, defaults?: any) {
+    return this.manager.reportTime(name, defaults);
   }
 
-  reportAction(...args: ArgsType<DebugSessionManager['reportAction']>) {
-    return this.manager.reportAction(...args);
+  reportAction(sessionId: string, threadId: number | string | undefined, action: string) {
+    return this.manager.reportAction(sessionId, threadId, action);
   }
 }

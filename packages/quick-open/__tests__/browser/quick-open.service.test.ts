@@ -4,7 +4,7 @@ import { MockInjector, mockService } from '@ali/ide-dev-tool/src/mock-injector';
 import { MonacoContextKeyService } from '@ali/ide-monaco/lib/browser/monaco.context-key.service';
 import { QuickOpenModule } from '../../src/browser';
 import { QuickOpenItem, QuickOpenModel, QuickOpenService } from '../../src/common';
-import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
+import { MockContextKeyService } from '@ali/ide-core-browser/__mocks__/context-key';
 import { IQuickOpenWidget } from '../../src/browser/quick-open.type';
 import { VALIDATE_TYPE } from '@ali/ide-components';
 

@@ -1,5 +1,5 @@
 import { CoreCommandRegistryImpl, CommandRegistry, DisposableStore } from '@ali/ide-core-common';
-import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
 import { Injector } from '@ali/common-di';
 import { Command } from '@ali/ide-core-common';
 import * as React from 'react';

@@ -6,7 +6,7 @@ import { MockInjector, mockService } from '../../../../../tools/dev-tool/src/moc
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { ExtensionServiceImpl } from '../../../src/browser/extension.service';
 import { IContextKeyService, ILoggerManagerClient, StorageProvider, DefaultStorageProvider, createContributionProvider, StorageResolverContribution, PreferenceProvider, AppConfig, Uri, CommandRegistryImpl, CommandRegistry, IPreferenceSettingsService, KeybindingRegistryImpl, KeybindingRegistry, IFileServiceClient, ISchemaRegistry, ISchemaStore, URI, Disposable } from '@ali/ide-core-browser';
-import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
 import { IThemeService, IIconService } from '@ali/ide-theme/lib/common';
 import { IconService } from '@ali/ide-theme/lib/browser';
 import { DatabaseStorageContribution } from '@ali/ide-storage/lib/browser/storage.contribution';
@@ -17,7 +17,7 @@ import { IExtensionStorageService } from '@ali/ide-extension-storage';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { WSChanneHandler, WSChannel } from '@ali/ide-connection';
 import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService, IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
-import { MockPreferenceProvider } from '@ali/ide-core-browser/lib/mocks/preference';
+import { MockPreferenceProvider } from '@ali/ide-core-browser/__mocks__/preference';
 import { FileSearchServicePath } from '@ali/ide-file-search/lib/common/file-search';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { IMenuRegistry, MenuRegistryImpl } from '@ali/ide-core-browser/src/menu/next';
@@ -38,7 +38,7 @@ import { AbstractNodeExtProcessService, AbstractViewExtProcessService, AbstractW
 import { NodeExtProcessService } from '../../../src/browser/extension-node.service';
 import { WorkerExtProcessService } from '../../../src/browser/extension-worker.service';
 import { ViewExtProcessService } from '../../../src/browser/extension-view.service';
-import { MockWorker, MessagePort } from '../../__mock__/worker';
+import { MockWorker, MessagePort } from '../../../__mocks__/worker';
 import { IWebviewService } from '@ali/ide-webview';
 import { ICommentsService } from '@ali/ide-comments';
 import { CommentsService } from '@ali/ide-comments/lib/browser/comments.service';
@@ -62,9 +62,9 @@ const mockExtensionProps: IExtensionProps = {
   id: 'test.kaitian-extension',
   activated: false,
   enabled: true,
-  path: path.join(__dirname, '../__mock__/extension'),
-  realPath: path.join(__dirname, '../__mock__/extension'),
-  extensionLocation: Uri.file(path.join(__dirname, '../__mock__/extension')),
+  path: path.join(__dirname, '../../__mocks__/extension'),
+  realPath: path.join(__dirname, '../../__mocks__/extension'),
+  extensionLocation: Uri.file(path.join(__dirname, '../../__mocks__/extension')),
   extensionId: 'uuid-for-test-extension',
   isUseEnable: true,
   enableProposedApi: false,
@@ -96,7 +96,7 @@ const mockExtensionProps: IExtensionProps = {
           ],
         },
       },
-      browserMain: path.join(__dirname, '../__mock__/extension/browser.js'),
+      browserMain: path.join(__dirname, '../../__mocks__/extension/browser.js'),
     },
     contributes: {
       'actions': [
@@ -190,7 +190,7 @@ const mockExtensionProps: IExtensionProps = {
   },
   extendConfig: {
     worker: {
-      main: path.join(__dirname, '../__mock__/extension/worker.js'),
+      main: path.join(__dirname, '../../../__mocks__/extension/worker.js'),
     },
   },
   extraMetadata: {},
@@ -251,7 +251,7 @@ class MockExtNodeClientService implements IExtensionNodeClientService {
 function mockGlobals() {
   (global as any).fetch = jest.fn().mockResolvedValueOnce({
     ok: true,
-    text: async () => fs.readFileSync(path.join(__dirname, '../../__mock__/extension/browser-new.js'), 'utf8'),
+    text: async () => fs.readFileSync(path.join(__dirname, '../../../__mocks__/extension/browser-new.js'), 'utf8'),
   });
 
   (global as any).amdLoader = require('../../../../../tools/dev-tool/vendor/loader.js');
@@ -301,7 +301,7 @@ export function setupExtensionServiceInjector() {
     token: AppConfig,
     useValue: {
       noExtHost: true,
-      extWorkerHost: path.join(__dirname, '../../../lib/worker-host.js'),
+      extWorkerHost: path.join(__dirname, '../../lib/worker-host.js'),
     },
   }]));
   injector.addProviders(

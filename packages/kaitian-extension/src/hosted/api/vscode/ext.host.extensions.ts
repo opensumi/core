@@ -1,21 +1,24 @@
-import type * as vscode from 'vscode';
 import * as path from 'path';
-import { IExtendProxy, IExtensionHost, IExtensionProps } from '../../../common';
-import { ExtensionMemento, ExtHostStorage } from './ext.host.storage';
+import type * as vscode from 'vscode';
 import { Uri } from '@ali/ide-core-common/lib/uri';
-import { ExtensionMode } from '../../../common/vscode/ext-types';
+
 import { IExtHostTerminal } from '../../../common/vscode';
+import { KTExtension, KTWorkerExtension } from '../../vscode.extension';
+import { ExtensionMode } from '../../../common/vscode/ext-types';
+import { ExtensionMemento, ExtHostStorage } from './ext.host.storage';
+import { IExtendProxy, IExtensionHost, IExtensionProps } from '../../../common';
 
 export interface IKTContextOptions {
-  extension: IExtensionProps;
   extensionId: string;
   extensionPath: string;
   extensionLocation: Uri;
+  extensionDescription: IExtensionProps;
   storageProxy: ExtHostStorage;
   extendProxy?: IExtendProxy;
   isDevelopment?: boolean;
   registerExtendModuleService?: (exportsData: any) => void;
   exthostTerminal?: IExtHostTerminal;
+  createExtension: (extensionDescription: IExtensionProps) => KTExtension<unknown> | KTWorkerExtension<unknown>;
 }
 
 export interface IKTExtensionContext {
@@ -44,11 +47,13 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
 
   readonly globalState: ExtensionMemento;
 
+  private createExtension: IKTContextOptions['createExtension'];
+
   private _storage: ExtHostStorage;
 
   private exthostTerminalService: IExtHostTerminal | undefined;
 
-  private extension: IExtensionProps;
+  private extensionDescription: IExtensionProps;
 
   public componentProxy: IExtendProxy | undefined;
 
@@ -56,14 +61,17 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
 
   constructor(options: IKTContextOptions) {
     const {
-      extension,
       extensionId,
       storageProxy,
-      extensionLocation,
+      createExtension,
       isDevelopment,
+      extensionLocation,
+      extensionDescription,
     } = options;
+
     this._storage = storageProxy;
-    this.extension = extension;
+    this.createExtension = createExtension;
+    this.extensionDescription = extensionDescription;
     this._extensionLocation = extensionLocation;
     this._isDevelopment = !!isDevelopment;
     this.workspaceState = new ExtensionMemento(extensionId, false, storageProxy);
@@ -114,7 +122,11 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
   }
 
   get environmentVariableCollection() {
-    return this.exthostTerminalService?.getEnviromentVariableCollection(this.extension)!;
+    return this.exthostTerminalService?.getEnviromentVariableCollection(this.extensionDescription)!;
+  }
+
+  get extension() {
+    return this.createExtension(this.extensionDescription);
   }
 }
 

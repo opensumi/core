@@ -1,14 +1,16 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { URI, IFileServiceClient, StorageProvider, Disposable } from '@ali/ide-core-common';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+import { URI, StorageProvider, Disposable, ILoggerManagerClient } from '@ali/ide-core-common';
 import { PreferenceService, FILES_DEFAULTS, IClientApp, IWindowService } from '@ali/ide-core-browser';
 import { WorkspaceModule } from '../../src/browser';
 import { FileStat, DiskFileServicePath } from '@ali/ide-file-service';
 import { WorkspacePreferences } from '../../src/browser/workspace-preferences';
-import { MockedStorageProvider } from '@ali/ide-core-browser/lib/mocks/storage';
+import { MockedStorageProvider } from '@ali/ide-core-browser/__mocks__/storage';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
 import { MockFsProvider } from '@ali/ide-file-service/lib/common/mocks';
+import { MockLoggerManageClient } from '@ali/ide-core-browser/__mocks__/logger';
 
 describe('WorkspaceService should be work while workspace was a single directory', () => {
   let workspaceService: WorkspaceService;
@@ -105,11 +107,15 @@ describe('WorkspaceService should be work while workspace was a single directory
         useValue: mockClientApp,
       },
       {
+        token: ILoggerManagerClient,
+        useClass: MockLoggerManageClient,
+      },
+      {
         token: IWindowService,
         useValue: mockWindowService,
       },
     );
-    mockFileSystem.watchFileChanges.mockResolvedValue({dispose: () => {}});
+    mockFileSystem.watchFileChanges.mockResolvedValue({dispose: () => {}} as never);
     workspaceService = injector.get(IWorkspaceService);
     workspaceService.init();
     await workspaceService.whenReady;
@@ -174,7 +180,7 @@ describe('WorkspaceService should be work while workspace was a single directory
       uri: newWorkspaceUri.toString(),
       isDirectory: true,
       lastModification: new Date().getTime(),
-    });
+    } as never);
     await workspaceService.open(newWorkspaceUri, {preserveWindow: true});
     expect(mockClientApp.fireOnReload).toBeCalledWith(true);
     await workspaceService.open(newWorkspaceUri);
@@ -194,7 +200,7 @@ describe('WorkspaceService should be work while workspace was a single directory
       uri: workspaceUri.toString(),
       lastModification: new Date().getTime(),
       isDirectory: true,
-    } as FileStat);
+    } as never);
     mockFileSystem.getFileStat.mockImplementation((uriStr) => {
       return {
         uri: uriStr,
@@ -219,6 +225,7 @@ describe('WorkspaceService should be work while workspace was a single directory
 
   it('removeRoots method should be work', async (done) => {
     const newWorkspaceUri = workspaceUri.resolve('new_folder');
+    injector.mock(IFileServiceClient, 'exists', jest.fn(() => true));
     // re-set _workspace cause the workspace would be undefined in some cases
     injector.mock(IWorkspaceService, '_workspace', {
       uri: workspaceUri.toString(),
@@ -232,21 +239,17 @@ describe('WorkspaceService should be work while workspace was a single directory
         settings: {},
       }),
     });
-    injector.mock(IFileServiceClient, 'exists', jest.fn(() => true));
     await workspaceService.removeRoots([newWorkspaceUri]);
     expect(mockFileSystem.setContent).toBeCalledTimes(1);
     done();
   });
 
   it('containsSome method should be work', async (done) => {
-    injector.mock(IWorkspaceService, 'roots', [
-      workspaceStat,
-    ]);
     injector.mock(IWorkspaceService, '_roots', [
       workspaceStat,
     ]);
     injector.mock(IWorkspaceService, 'opened', true);
-    mockFileSystem.exists.mockResolvedValue(true);
+    mockFileSystem.exists.mockResolvedValue(true as never);
     const result = await workspaceService.containsSome(['test.js']);
     // always return true
     expect(result).toBeTruthy();

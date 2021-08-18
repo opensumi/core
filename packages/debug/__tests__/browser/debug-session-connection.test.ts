@@ -13,7 +13,7 @@ describe('DebugSessionConnection', () => {
   const cancellationRequestMap: Map<number, CancellationTokenSource[]> = new Map();
   const cancelationTokensMap = new Map<number, boolean>();
   const sleep = (t: number) => {
-    return new Promise((res) => {
+    return new Promise<void>((res) => {
       setTimeout(() => {
         res();
       }, t);

@@ -34,7 +34,7 @@ describe('TerminalServiceClientImpl', () => {
     terminalServiceClient.onMessage(mockId, JSON.stringify({ data: 'message test' }));
     terminalServiceClient.resize(mockId, 400, 400);
 
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       setTimeout(() => {
         resolve();
       }, 500);
@@ -56,7 +56,7 @@ describe('TerminalServiceClientImpl', () => {
     terminalServiceClient.disposeById(mockId);
     terminalServiceClient.dispose();
 
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       setTimeout(() => {
         resolve();
       }, 20);

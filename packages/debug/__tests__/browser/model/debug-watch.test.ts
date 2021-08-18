@@ -3,7 +3,7 @@ import { ILogger } from '@ali/ide-core-browser';
 import { DebugProtocol } from '@ali/vscode-debugprotocol/lib/debugProtocol';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
-import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
+import { MockLogger } from '@ali/ide-core-browser/__mocks__/logger';
 import { IDebugSessionManager } from '@ali/ide-debug';
 
 describe('DebugWatch Model', () => {
@@ -55,7 +55,7 @@ describe('DebugWatch Model', () => {
       });
       injector.addProviders({
         token: ILogger,
-        useClass: MockLoggerManageClient,
+        useClass: MockLogger,
       });
       injector.addProviders({
         token: IDebugSessionManager,

@@ -69,14 +69,14 @@ export class BulkEdit {
         // 合并连续同目标的edits
         if (last.resource.toString() === textEdit.resource.toString()) {
           let shouldMerge = false;
-          if (last.modelVersionId) {
-            if (textEdit.modelVersionId) {
-              shouldMerge = textEdit.modelVersionId === last.modelVersionId;
+          if (last.versionId) {
+            if (textEdit.versionId) {
+              shouldMerge = textEdit.versionId === last.versionId;
             } else {
               shouldMerge = true;
             }
           } else {
-            if (!textEdit.modelVersionId) {
+            if (!textEdit.versionId) {
               shouldMerge = true;
             }
           }
@@ -100,7 +100,7 @@ export class ResourceTextEditTask {
 
   public edits: IResourceTextEdit[];
   public resource: URI;
-  public modelVersionId: number | undefined;
+  public versionId: number | undefined;
   public options: {
     openDirtyInEditor?: boolean
     dirtyIfInEditor?: boolean,
@@ -108,9 +108,9 @@ export class ResourceTextEditTask {
 
   constructor(edit: IResourceTextEdit) {
     this.resource = edit.resource;
-    this.modelVersionId = edit.modelVersionId;
+    this.versionId = edit.versionId;
     this.options = edit.options || {};
-    this.edits = [ edit ];
+    this.edits = [edit];
   }
 
   addEdit(edit: IResourceTextEdit) {
@@ -121,21 +121,21 @@ export class ResourceTextEditTask {
     const docRef = await documentModelService.createModelReference(this.resource, 'bulk-edit');
     const documentModel = docRef.instance;
     const monacoModel = documentModel.getMonacoModel();
-    if (this.modelVersionId) {
-      if (monacoModel.getVersionId() !== this.modelVersionId) {
+    if (this.versionId) {
+      if (monacoModel.getVersionId() !== this.versionId) {
         throw new Error('文档版本不一致，无法执行变更');
       }
     }
     const edits: monaco.editor.IIdentifiedSingleEditOperation[] = [];
     let newEOL: EndOfLineSequence | null = null;
     for (const edit of this.edits) {
-      if (!isUndefined(edit.edit.eol)) {
-        newEOL = edit.edit.eol;
+      if (!isUndefined(edit.textEdit.eol)) {
+        newEOL = edit.textEdit.eol;
       }
       edits.push({
         forceMoveMarkers: true,
-        range: Range.lift(edit.edit.range),
-        text: edit.edit.text,
+        range: Range.lift(edit.textEdit.range),
+        text: edit.textEdit.text,
       });
     }
 
@@ -185,8 +185,8 @@ export class ResourceTextEditTask {
 
 export class ResourceFileEdit implements IResourceFileEdit {
 
-  oldUri?: URI;
-  newUri?: URI;
+  oldResource?: URI;
+  newResource?: URI;
   options: {
     overwrite?: boolean | undefined;
     ignoreIfNotExists?: boolean | undefined;
@@ -198,34 +198,34 @@ export class ResourceFileEdit implements IResourceFileEdit {
   } = {};
 
   constructor(edit: IResourceFileEdit) {
-    this.oldUri = edit.oldUri;
-    this.newUri = edit.newUri;
+    this.oldResource = edit.oldResource;
+    this.newResource = edit.newResource;
     this.options = edit.options;
   }
 
   async notifyEditor(editorService: WorkbenchEditorService, documentModelService: IEditorDocumentModelService) {
-    if (this.oldUri && this.newUri) {
+    if (this.oldResource && this.newResource) {
       const promises: Promise<any>[] = [];
       const urisToDealWith: Set<string> = new Set();
       editorService.editorGroups.forEach((g) => {
         g.resources.forEach((r) => {
-          if (this.oldUri!.isEqualOrParent(r.uri)) {
+          if (this.oldResource!.isEqualOrParent(r.uri)) {
             urisToDealWith.add(r.uri.toString());
           }
         });
       });
       urisToDealWith.forEach((uriString) => {
-        const oldUri = new URI(uriString);
-        const subPath = uriString.substr(this.oldUri!.toString().length);
-        const newUri = new URI(this.newUri!.toString()! + subPath);
-        promises.push(this.notifyOnResource(oldUri, newUri, editorService, documentModelService));
+        const oldResource = new URI(uriString);
+        const subPath = uriString.substr(this.oldResource!.toString().length);
+        const newResource = new URI(this.newResource!.toString()! + subPath);
+        promises.push(this.notifyOnResource(oldResource, newResource, editorService, documentModelService));
       });
       return Promise.all(promises);
     }
   }
 
-  async notifyOnResource(oldUri: URI, newUri: URI, editorService: WorkbenchEditorService, documentModelService: IEditorDocumentModelService) {
-    const docRef = documentModelService.getModelReference(oldUri, 'bulk-file-move');
+  async notifyOnResource(oldResource: URI, newResource: URI, editorService: WorkbenchEditorService, documentModelService: IEditorDocumentModelService) {
+    const docRef = documentModelService.getModelReference(oldResource, 'bulk-file-move');
     let dirtyContent: string | undefined;
     let dirtyEOL: EOL | undefined;
     if (docRef && docRef.instance.dirty) {
@@ -238,22 +238,22 @@ export class ResourceFileEdit implements IResourceFileEdit {
     }
     // 如果之前的文件在编辑器中被打开，重新打开文件
     await Promise.all([editorService.editorGroups.map(async (g) => {
-      const index = g.resources.findIndex((r) => r.uri.isEqual(oldUri));
+      const index = g.resources.findIndex((r) => r.uri.isEqual(oldResource));
       if (index !== -1) {
         await runInAction(async () => {
-          await g.open(newUri, {
+          await g.open(newResource, {
             index,
-            backend: !(g.currentResource && g.currentResource.uri.isEqual(oldUri)),
+            backend: !(g.currentResource && g.currentResource.uri.isEqual(oldResource)),
             // 如果旧的是preview模式，应该保持，如果不是，应该不要关闭其他处于preview模式的资源tab
-            preview: (g as EditorGroup).previewURI ? (g as EditorGroup).previewURI!.isEqual(oldUri) : false,
+            preview: (g as EditorGroup).previewURI ? (g as EditorGroup).previewURI!.isEqual(oldResource) : false,
           });
-          await g.close(oldUri);
+          await g.close(oldResource);
         });
       }
     })]);
 
     if (dirtyContent) {
-      const newDocRef = await documentModelService.createModelReference(newUri, 'bulk-file-move');
+      const newDocRef = await documentModelService.createModelReference(newResource, 'bulk-file-move');
       newDocRef.instance.updateContent(dirtyContent, dirtyEOL);
       newDocRef.dispose();
     }
@@ -262,33 +262,33 @@ export class ResourceFileEdit implements IResourceFileEdit {
   async apply(documentModelService: IEditorDocumentModelService, editorService: WorkbenchEditorService, workspaceFS: IWorkspaceFileService, eventBus: IEventBus) {
     const options = this.options || {};
 
-    if (this.newUri && this.oldUri) {
+    if (this.newResource && this.oldResource) {
 
       if (options.copy) {
-        await workspaceFS.copy([{ source: this.oldUri.codeUri, target: this.newUri.codeUri}], options);
+        await workspaceFS.copy([{ source: this.oldResource.codeUri, target: this.newResource.codeUri }], options);
 
       } else {
         // rename
-        await workspaceFS.move([{ source: this.oldUri.codeUri, target: this.newUri.codeUri}], options);
+        await workspaceFS.move([{ source: this.oldResource.codeUri, target: this.newResource.codeUri }], options);
 
         await this.notifyEditor(editorService, documentModelService);
 
         // TODO 文件夹rename应该带传染性, 但是遍历实现比较坑，先不实现
-        eventBus.fire(new WorkspaceEditDidRenameFileEvent({ oldUri: this.oldUri, newUri: this.newUri }));
+        eventBus.fire(new WorkspaceEditDidRenameFileEvent({ oldUri: this.oldResource, newUri: this.newResource }));
       }
 
       if (options.showInEditor) {
-        editorService.open(this.newUri);
+        editorService.open(this.newResource);
       }
 
-    } else if (!this.newUri && this.oldUri) {
+    } else if (!this.newResource && this.oldResource) {
       // 删除文件
       try {
         // electron windows下moveToTrash大量文件会导致IDE卡死，如果检测到这个情况就不使用moveToTrash
-        await workspaceFS.delete([this.oldUri], { useTrash: !(isWindows && this.oldUri.path.name === 'node_modules') });
+        await workspaceFS.delete([this.oldResource], { useTrash: !(isWindows && this.oldResource.path.name === 'node_modules') });
         // 默认recursive
-        await editorService.close(this.oldUri, true);
-        eventBus.fire(new WorkspaceEditDidDeleteFileEvent({ oldUri: this.oldUri}));
+        await editorService.close(this.oldResource, true);
+        eventBus.fire(new WorkspaceEditDidDeleteFileEvent({ oldUri: this.oldResource }));
       } catch (err) {
         if (FileSystemError.FileNotFound.is(err) && options.ignoreIfNotExists) {
           // 不抛出错误
@@ -296,25 +296,30 @@ export class ResourceFileEdit implements IResourceFileEdit {
           throw err;
         }
       }
-    } else if (this.newUri && !this.oldUri) {
+    } else if (this.newResource && !this.oldResource) {
       // 创建文件
       try {
         if (options.isDirectory) {
-          await workspaceFS.createFolder(this.newUri);
+          await workspaceFS.createFolder(this.newResource);
         } else {
-          await workspaceFS.create(this.newUri, '', { overwrite: options.overwrite });
+          await workspaceFS.create(this.newResource, '', { overwrite: options.overwrite });
         }
       } catch (err) {
-        if (FileSystemError.FileExists.is(err) && options.ignoreIfExists) {
+        // FIXME: 不知道为什么这里错误不是 FileSystemError 了，所以换个实现兼容一下
+        if (this.isFileExistError(err) && options.ignoreIfExists) {
           // 不抛出错误
         } else {
           throw err;
         }
       }
       if (!options.isDirectory && options.showInEditor) {
-        editorService.open(this.newUri);
+        editorService.open(this.newResource);
       }
     }
+  }
+
+  private isFileExistError(err: Error): boolean {
+    return err.message.includes('already exists.');
   }
 
   async revert(): Promise<void> {
@@ -323,7 +328,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
 }
 
 export function isResourceFileEdit(thing: any): thing is ResourceFileEdit {
-  return (!!((thing as ResourceFileEdit).newUri) || !!((thing as ResourceFileEdit).oldUri));
+  return (!!((thing as ResourceFileEdit).newResource) || !!((thing as ResourceFileEdit).oldResource));
 }
 
 /**

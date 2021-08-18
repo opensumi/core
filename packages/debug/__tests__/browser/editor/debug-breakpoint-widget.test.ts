@@ -1,7 +1,6 @@
 import { IWorkspaceService } from '@ali/ide-workspace';
 import type { Position } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Disposable, IFileServiceClient } from '@ali/ide-core-browser';
-import { BreakpointWidgetInputFocus } from '@ali/ide-debug/lib/browser';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { DebugBreakpointWidget } from '@ali/ide-debug/lib/browser/editor';
 import { DebugEditor, IDebugSessionManager } from '@ali/ide-debug';
@@ -24,10 +23,6 @@ describe('Debug Breakpoint Widget', () => {
       useValue: mockDebugEditor,
     });
     mockInjector.overrideProviders({
-      token: BreakpointWidgetInputFocus,
-      useValue: {},
-    });
-    mockInjector.overrideProviders({
       token: IWorkspaceService,
       useValue: {},
     });
@@ -37,7 +32,9 @@ describe('Debug Breakpoint Widget', () => {
     });
     mockInjector.overrideProviders({
       token: IContextKeyService,
-      useValue: {},
+      useValue: {
+        createKey: jest.fn(),
+      },
     });
     mockInjector.overrideProviders({
       token: IEditorDocumentModelService,

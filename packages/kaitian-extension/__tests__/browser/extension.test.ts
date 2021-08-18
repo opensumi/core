@@ -11,9 +11,9 @@ import '@ali/ide-i18n/lib/browser';
 
 const mockExtension: IExtensionMetaData = {
   id: 'test.kaitian-extension',
-  path: paths.join(__dirname, '../__mock__/extension'),
-  realPath: paths.join(__dirname, '../__mock__/extension'),
-  uri: Uri.file(paths.join(__dirname, '../__mock__/extension')),
+  path: paths.join(__dirname, '../../__mocks__/extension'),
+  realPath: paths.join(__dirname, '../../__mocks__/extension'),
+  uri: Uri.file(paths.join(__dirname, '../../__mocks__/extension')),
   extensionId: 'uuid-for-test-extension',
   isBuiltin: false,
   isDevelopment: false,

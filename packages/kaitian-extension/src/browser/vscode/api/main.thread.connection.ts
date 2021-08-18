@@ -11,10 +11,11 @@ export class MainThreadConnection implements IMainThreadConnectionService {
 
   @Autowired(ILoggerManagerClient)
   protected readonly LoggerManager: ILoggerManagerClient;
-  protected readonly logger: ILogServiceClient = this.LoggerManager.getLogger(SupportLogNamespace.ExtensionHost);
+  protected readonly logger: ILogServiceClient;
 
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostConnection);
+    this.logger = this.LoggerManager.getLogger(SupportLogNamespace.ExtensionHost);
   }
 
   dispose() {

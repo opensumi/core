@@ -21,13 +21,12 @@ export async function createClientConnection2(
   modules: ModuleConstructor[],
   wsPath: string, onReconnect: () => void,
   protocols?: string[],
-  useExperimentalMultiChannel?: boolean,
   clientId?: string,
 ) {
   const reporterService: IReporterService = injector.get(IReporterService);
   const eventBus = injector.get(IEventBus);
 
-  const wsChannelHandler = new WSChannelHandler(wsPath, initialLogger, protocols, useExperimentalMultiChannel, clientId);
+  const wsChannelHandler = new WSChannelHandler(wsPath, initialLogger, protocols, clientId);
   wsChannelHandler.setReporter(reporterService);
   wsChannelHandler.connection.addEventListener('open', () => {
     eventBus.fire(new BrowserConnectionOpenEvent());

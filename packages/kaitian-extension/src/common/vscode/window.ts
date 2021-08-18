@@ -2,7 +2,7 @@ import type * as vscode from 'vscode';
 import * as types from './ext-types';
 import { CancellationToken, MessageType, MaybePromise } from '@ali/ide-core-common';
 import { QuickPickItem, QuickPickOptions, QuickInputOptions } from '@ali/ide-quick-open';
-import { Event } from '@ali/ide-core-common';
+import { Event, IThemeColor } from '@ali/ide-core-common';
 import { QuickTitleButton } from '@ali/ide-core-browser/lib/quick-open';
 import { UriComponents, QuickInputButton } from './ext-types';
 
@@ -104,7 +104,8 @@ export interface IMainThreadStatusBar {
               text: string | undefined,
               priority: number,
               alignment: number,
-              color: string | undefined,
+              color: IThemeColor | string | undefined,
+              backgroundColor: IThemeColor | undefined,
               tooltip: string | undefined,
               accessibilityInformation: vscode.AccessibilityInformation | undefined,
               command: string | undefined,

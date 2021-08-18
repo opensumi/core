@@ -11,7 +11,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const PROXY_PORT = 10296;
 describe(__filename, () => {
   describe('extension host proxy', () => {
-    const extHostPath = path.join(__dirname, '../__mock__/ext.host.js');
+    const extHostPath = path.join(__dirname, '../../__mocks__/ext.host.js');
     let injector: MockInjector;
     let extHostProxy: IExtHostProxy;
     let extensionHostManager: IExtensionHostManager;
@@ -52,6 +52,12 @@ describe(__filename, () => {
     afterEach(async () => {
       await extensionHostManager.dispose();
       extHostProxy.dispose();
+    });
+
+    afterAll(() => {
+      injector.disposeAll();
+      extHostProxy.dispose();
+      extensionHostManager.dispose();
     });
 
     it('retry connect if server close', async () => {

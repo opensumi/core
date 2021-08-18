@@ -1,5 +1,5 @@
 import { InlineValue } from '@ali/ide-debug/lib/common/inline-values';
-import type { CodeActionContext, CodeActionList } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+import type { CodeActionContext } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { ConstructorOf } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
@@ -60,15 +60,12 @@ import {
   DocumentHighlight,
   FormattingOptions,
   SingleEditOperation,
-  CodeLensList,
   CodeLens,
-  DocumentLink,
   ReferenceContext,
   Location,
   SerializedLanguageConfiguration,
   ILink,
   DocumentSymbol,
-  SignatureHelpResult,
   WorkspaceEditDto,
   RenameLocation,
   ISerializedSignatureHelpProviderMetadata,
@@ -79,6 +76,9 @@ import {
   IOutgoingCallDto,
   WithDuration,
   ChainedCacheId,
+  ICodeLensListDto,
+  ISignatureHelpDto,
+  ILinksListDto,
 } from '../../../common/vscode/model.api';
 import {
   IMainThreadLanguages,
@@ -87,10 +87,11 @@ import {
   IExtHostLanguages,
   ISuggestDataDto,
   IExtensionDescription,
+  ICodeActionListDto,
   IInlineValueContextDto,
 } from '../../../common/vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
-import { IExtensionLogger, Uri, UriComponents } from '@ali/ide-core-common';
+import { DisposableStore, IExtensionLogger, Uri, UriComponents } from '@ali/ide-core-common';
 import { CancellationError, Disposable } from '../../../common/vscode/ext-types';
 import { CompletionAdapter } from './language/completion';
 import { DefinitionAdapter } from './language/definition';
@@ -185,7 +186,7 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, ex
       return extHostLanguages.registerDeclarationProvider(selector, provider);
     },
     registerCodeActionsProvider(selector: DocumentSelector, provider: CodeActionProvider, metadata?: CodeActionProviderMetadata): Disposable {
-      return extHostLanguages.registerCodeActionsProvider(selector, provider, metadata);
+      return extHostLanguages.registerCodeActionsProvider(extension, selector, provider, metadata);
     },
     registerRenameProvider(selector: DocumentSelector, provider: RenameProvider): Disposable {
       return extHostLanguages.registerRenameProvider(selector, provider);
@@ -203,7 +204,7 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, ex
       return extHostLanguages.registerOnTypeFormattingEditProvider(selector, provider, [firstTriggerCharacter].concat(moreTriggerCharacter));
     },
     registerDocumentRangeFormattingEditProvider(selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable {
-      return extHostLanguages.registerDocumentRangeFormattingEditProvider(extension, selector,  provider);
+      return extHostLanguages.registerDocumentRangeFormattingEditProvider(extension, selector, provider);
     },
     registerDocumentFormattingEditProvider(selector: DocumentSelector, provider: DocumentFormattingEditProvider): Disposable {
       return extHostLanguages.registerDocumentFormattingEditProvider(extension, selector, provider);
@@ -270,6 +271,14 @@ export class ExtHostLanguages implements IExtHostLanguages {
     this.diagnostics = new Diagnostics(this.proxy);
   }
 
+  $resolveCodeAction(handle: number, id: ChainedCacheId, token: CancellationToken): Promise<WorkspaceEditDto | undefined> {
+    return this.withAdapter(handle, CodeActionAdapter, (adapter) => adapter.resolveCodeAction(id, token));
+  }
+
+  $releaseCodeActions(handle: number, cacheId: number): void {
+    this.withAdapter(handle, CodeActionAdapter, (adapter) => Promise.resolve(adapter.releaseCodeActions(cacheId)));
+  }
+
   private nextCallId(): number {
     return this.callId++;
   }
@@ -304,7 +313,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return p;
   }
 
-  private withDurationRecord(action)  {
+  private withDurationRecord(action) {
     const duration = getDurationTimer();
     return action().then((result) => ({ _dur: duration.end(), result }));
 
@@ -419,8 +428,17 @@ export class ExtHostLanguages implements IExtHostLanguages {
 
   registerFoldingRangeProvider(selector: DocumentSelector, provider: FoldingRangeProvider): Disposable {
     const callId = this.addNewAdapter(new FoldingProviderAdapter(this.documents, provider));
-    this.proxy.$registerFoldingRangeProvider(callId, this.transformDocumentSelector(selector));
-    return this.createDisposable(callId);
+    const eventHandle = typeof provider.onDidChangeFoldingRanges === 'function' ? this.nextCallId() : undefined;
+
+    this.proxy.$registerFoldingRangeProvider(callId, this.transformDocumentSelector(selector), eventHandle);
+    let result = this.createDisposable(callId);
+
+    if (eventHandle !== undefined) {
+      const subscription = provider.onDidChangeFoldingRanges!(() => this.proxy.$emitFoldingRangeEvent(eventHandle));
+      result = Disposable.from(result, subscription);
+    }
+
+    return result;
   }
 
   $provideFoldingRange(handle: number, resource: Uri, context: FoldingContext, token: CancellationToken): Promise<FoldingRange[] | undefined> {
@@ -493,7 +511,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
   $provideOnTypeFormattingEdits(handle: number, resource: Uri, position: Position, ch: string, options: FormattingOptions): Promise<SingleEditOperation[] | undefined> {
     return this.withAdapter(handle, OnTypeFormattingAdapter, (adapter) => adapter.provideOnTypeFormattingEdits(resource, position, ch, options));
   }
-  $provideOnTypeFormattingEditsWithDuration(handle: number, resource: Uri, position: Position, ch: string, options: FormattingOptions): Promise<WithDuration<SingleEditOperation[] | undefined>>  {
+  $provideOnTypeFormattingEditsWithDuration(handle: number, resource: Uri, position: Position, ch: string, options: FormattingOptions): Promise<WithDuration<SingleEditOperation[] | undefined>> {
     return this.withDurationRecord(() => this.$provideOnTypeFormattingEdits(handle, resource, position, ch, options));
   }
   // ### Document Type Formatting Provider end
@@ -513,31 +531,46 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return result;
   }
 
-  $provideCodeLenses(handle: number, resource: Uri): Promise<CodeLensList | undefined> {
+  $provideCodeLenses(handle: number, resource: Uri): Promise<ICodeLensListDto> {
     return this.withAdapter(handle, CodeLensAdapter, (adapter) => adapter.provideCodeLenses(resource));
   }
 
   $resolveCodeLens(handle: number, resource: Uri, symbol: CodeLens): Promise<CodeLens | undefined> {
     return this.withAdapter(handle, CodeLensAdapter, (adapter) => adapter.resolveCodeLens(resource, symbol));
   }
+
+  $releaseCodeLens(handle: number, cacheId: number): Promise<void> {
+    return this.withAdapter(handle, CodeLensAdapter, (adapter) => Promise.resolve(adapter.releaseCodeLens(cacheId)));
+  }
+
   // ### Document Code Lens Provider end
 
   // ### Code Actions Provider begin
   registerCodeActionsProvider(
+    extension: IExtensionDescription,
     selector: DocumentSelector,
     provider: CodeActionProvider,
     metadata?: CodeActionProviderMetadata,
   ): Disposable {
+    const store = new DisposableStore();
     const callId = this.addNewAdapter(new CodeActionAdapter(provider, this.documents, this.diagnostics));
     this.proxy.$registerQuickFixProvider(
       callId,
       this.transformDocumentSelector(selector),
-      metadata && metadata.providedCodeActionKinds ? metadata.providedCodeActionKinds.map((kind) => kind.value!) : undefined,
+      {
+        providedKinds: metadata?.providedCodeActionKinds?.map((kind) => kind.value),
+        documentation: metadata?.documentation?.map((doc) => ({
+          kind: doc.kind.value,
+          command: this.commands.converter.toInternal(doc.command, store)!,
+        })),
+      },
+      extension.displayName || extension.name,
+      Boolean(provider.resolveCodeAction),
     );
     return this.createDisposable(callId);
   }
 
-  $provideCodeActions(handle: number, resource: Uri, rangeOrSelection: Range | Selection, context: CodeActionContext): Promise<CodeActionList| undefined> {
+  $provideCodeActions(handle: number, resource: Uri, rangeOrSelection: Range | Selection, context: CodeActionContext): Promise<ICodeActionListDto | undefined> {
     return this.withAdapter(handle, CodeActionAdapter, (adapter) => adapter.provideCodeAction(resource, rangeOrSelection, context, this.commands.converter));
   }
   // ### Code Actions Provider end
@@ -580,17 +613,21 @@ export class ExtHostLanguages implements IExtHostLanguages {
   // ### Diagnostics end
 
   // ### Document Link Provider begin
-  $provideDocumentLinks(handle: number, resource: Uri, token: CancellationToken): Promise<ILink[] | undefined> {
+  $provideDocumentLinks(handle: number, resource: Uri, token: CancellationToken): Promise<ILinksListDto | undefined> {
     return this.withAdapter(handle, LinkProviderAdapter, (adapter) => adapter.provideLinks(resource, token));
   }
 
-  $resolveDocumentLink(handle: number, link: DocumentLink, token: CancellationToken): Promise<ILink | undefined> {
-    return this.withAdapter(handle, LinkProviderAdapter, (adapter) => adapter.resolveLink(link, token));
+  $resolveDocumentLink(handle: number, id: ChainedCacheId, token: CancellationToken): Promise<ILink | undefined> {
+    return this.withAdapter(handle, LinkProviderAdapter, (adapter) => adapter.resolveLink(id, token));
+  }
+
+  $releaseDocumentLinks(handle: number, cacheId: number): Promise<void> {
+    return this.withAdapter(handle, LinkProviderAdapter, (adapter) => Promise.resolve(adapter.releaseLink(cacheId)));
   }
 
   registerDocumentLinkProvider(selector: DocumentSelector, provider: DocumentLinkProvider): Disposable {
     const callId = this.addNewAdapter(new LinkProviderAdapter(provider, this.documents));
-    this.proxy.$registerDocumentLinkProvider(callId, this.transformDocumentSelector(selector));
+    this.proxy.$registerDocumentLinkProvider(callId, this.transformDocumentSelector(selector), typeof provider.resolveDocumentLink === 'function');
     return this.createDisposable(callId);
   }
   // ### Document Link Provider end
@@ -661,8 +698,12 @@ export class ExtHostLanguages implements IExtHostLanguages {
   }
   // ### WorkspaceSymbol Provider end
   // ### Signature help begin
-  $provideSignatureHelp(handle: number, resource: Uri, position: Position, context: SignatureHelpContextDto, token: CancellationToken): Promise<SignatureHelpResult | undefined | null> {
+  $provideSignatureHelp(handle: number, resource: Uri, position: Position, context: SignatureHelpContextDto, token: CancellationToken): Promise<ISignatureHelpDto | undefined> {
     return this.withAdapter(handle, SignatureHelpAdapter, (adapter) => adapter.provideSignatureHelp(resource, position, token, context as SignatureHelpContext));
+  }
+
+  $releaseSignatureHelp(handle: number, cacheId: number): Promise<void> {
+    return this.withAdapter(handle, SignatureHelpAdapter, (adapter) => Promise.resolve(adapter.releaseSignatureHelp(cacheId)));
   }
 
   registerSignatureHelpProvider(selector: DocumentSelector, provider: SignatureHelpProvider, metadataOrTriggerChars: string[] | SignatureHelpProviderMetadata): Disposable {
@@ -673,6 +714,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     this.proxy.$registerSignatureHelpProvider(callId, this.transformDocumentSelector(selector), metadata);
     return this.createDisposable(callId);
   }
+
   // ### Signature help end
   // ### Rename Provider begin
   registerRenameProvider(selector: DocumentSelector, provider: RenameProvider): Disposable {

@@ -1,6 +1,5 @@
 import { Provider, Injectable, Autowired } from '@ali/common-di';
-import type { IBulkEditOptions } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
-import type { WorkspaceEdit } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+import type { IBulkEditOptions, ResourceEdit } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 
 import { BrowserModule, Domain, MonacoContribution, ServiceNames, ILogger, TabBarToolbarContribution, ToolbarRegistry, localize, CommandContribution, getIcon, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
 import { CommandRegistry } from '@ali/ide-core-common';
@@ -49,17 +48,17 @@ export class WorkspaceEditContribution implements MonacoContribution, TabBarTool
   @Autowired(IRefactorPreviewService)
   protected readonly refactorPreviewService: IRefactorPreviewService;
 
-  private async previewEdit(edit: WorkspaceEdit, options?: IBulkEditOptions): Promise<WorkspaceEdit> {
+  private async previewEdit(edits: ResourceEdit[], options?: IBulkEditOptions): Promise<ResourceEdit[]> {
     try {
-      const edits = await this.refactorPreviewService.previewEdits(edit);
-      return { edits };
+      const filteredEdits = await this.refactorPreviewService.previewEdits(edits);
+      return filteredEdits;
     } catch (err) {
       if (!err) {
         // Canceled
       } else {
         this.logger.error(`Preview textEdit error: \n ${err.message}`);
       }
-      return { edits: [] };
+      return edits;
     }
   }
 

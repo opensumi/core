@@ -1,7 +1,6 @@
 import { ThemeContribution, ExtColorContribution, IThemeService, ITheme } from '../theme.service';
-import { IThemeColor } from '../color';
 import { Injectable } from '@ali/common-di';
-import { Emitter, Event, URI } from '@ali/ide-core-common';
+import { Emitter, Event, URI, IThemeColor } from '@ali/ide-core-common';
 
 @Injectable()
 export class MockThemeService implements IThemeService {

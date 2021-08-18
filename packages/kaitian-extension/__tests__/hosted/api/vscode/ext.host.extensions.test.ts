@@ -1,9 +1,10 @@
 import * as path from 'path';
 import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { IExtensionProps, URI } from '@ali/ide-core-common';
-import { initMockRPCProtocol } from '../../../__mock__/initRPCProtocol';
+import { initMockRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
 import { ExtensionContext } from '../../../../src/hosted/api/vscode/ext.host.extensions';
 import { ExtHostStorage } from '../../../../src/hosted/api/vscode/ext.host.storage';
+import { ExtensionWorkerHost } from '../../../../src/hosted/worker.host';
 import { ExtensionMode } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
 
 const staticServicePath = 'http://localhost:9999';
@@ -11,10 +12,10 @@ const staticServicePath = 'http://localhost:9999';
 const mockExtension = {
   name: 'kaitian-extension',
   id: 'mock.kaitian-extension',
-  path: path.join(__dirname, '../__mock__/extension'),
-  realPath: path.join(__dirname, '../__mock__/extension'),
+  path: path.join(__dirname, '../../../../__mocks__/extension'),
+  realPath: path.join(__dirname, '../../../../__mocks__/extension'),
   extensionId: 'mock.kaitian-extension',
-  extensionLocation: new URI(`${staticServicePath}/assets${path.join(__dirname, '../__mock__/extension')}`).codeUri,
+  extensionLocation: new URI(`${staticServicePath}/assets${path.join(__dirname, '../../../../__mocks__/extension')}`).codeUri,
   packageJSON: {
     name: 'kaitian-extension',
     kaitianContributes: {
@@ -36,10 +37,13 @@ describe(`test ${__filename}`, () => {
   beforeAll(async () => {
     rpcProtocol = await initMockRPCProtocol(mockClient);
     context = new ExtensionContext({
-      extension: mockExtension as unknown as IExtensionProps,
+      extensionDescription: mockExtension as unknown as IExtensionProps,
       isDevelopment: false,
       extensionId: mockExtension.extensionId,
       extendProxy: {},
+      createExtension: (extensionDescription: IExtensionProps) => {
+        return new ExtensionWorkerHost(rpcProtocol).createExtension(extensionDescription);
+      },
       registerExtendModuleService: () => {},
       extensionPath: mockExtension.realPath,
       extensionLocation: mockExtension.extensionLocation,

@@ -2,7 +2,7 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { IEditorDecorationCollectionService, EditorDecorationChangeEvent, EditorDecorationTypeRemovedEvent } from '@ali/ide-editor/lib/browser';
 import { EditorDecorationCollectionService } from '@ali/ide-editor/lib/browser/editor.decoration.service';
 import { URI, Emitter, IEventBus, Disposable } from '@ali/ide-core-browser';
-import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
+import { createMockedMonaco } from '@ali/ide-monaco/__mocks__/monaco';
 import { IThemeService } from '@ali/ide-theme';
 import { MonacoEditorDecorationApplier } from '../../src/browser/decoration-applier';
 import { ICSSStyleService } from '@ali/ide-theme/lib/common/style';

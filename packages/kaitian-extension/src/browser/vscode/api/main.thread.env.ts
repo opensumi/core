@@ -72,7 +72,7 @@ export class MainThreadEnv implements IMainThreadEnv {
   }
 
   $clipboardWriteText(text): Thenable<void> {
-    return new Promise(async (resolve) => {
+    return new Promise<void>(async (resolve) => {
       try {
         await this.clipboardService.writeText(text);
       } catch (e) {}

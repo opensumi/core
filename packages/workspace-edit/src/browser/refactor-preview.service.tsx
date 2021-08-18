@@ -9,10 +9,10 @@ import { observable, action } from 'mobx';
 
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import type {
-  WorkspaceEdit,
   WorkspaceFileEdit,
   WorkspaceTextEdit,
 } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+import { ResourceEdit } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 import { IDialogService } from '@ali/ide-overlay';
 import { Deferred, localize, MessageType } from '@ali/ide-core-common';
 import { RefactorPreview } from './refactor-preview';
@@ -24,8 +24,8 @@ export interface IRefactorPreviewService {
   selectedFileOrTextEdits: Set<WorkspaceTextEdit | WorkspaceFileEdit>;
 
   previewEdits(
-    edit: WorkspaceEdit,
-  ): Promise<Array<WorkspaceTextEdit | WorkspaceFileEdit>>;
+    edit: ResourceEdit[],
+  ): Promise<ResourceEdit[]>;
 
   filterEdit(edit: WorkspaceTextEdit | WorkspaceFileEdit, checked: boolean): void;
 
@@ -99,8 +99,8 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
   }
 
   async previewEdits(
-    edit: WorkspaceEdit,
-  ): Promise<Array<WorkspaceTextEdit | WorkspaceFileEdit>> {
+    edits: ResourceEdit[],
+  ): Promise<ResourceEdit[]> {
 
     this.registerRefactorPreviewView();
 
@@ -124,9 +124,9 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
 
     this.togglePreviewView(true);
 
-    this.edits = edit.edits;
+    this.edits = edits;
     // 默认全选
-    edit.edits.forEach((edit) => {
+    edits.forEach((edit) => {
       this.selectedFileOrTextEdits.add(edit);
     });
 

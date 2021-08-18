@@ -46,6 +46,9 @@ export class QuickOpenFeatureContribution implements CommandContribution, Keybin
     commands.registerCommand(QUICK_OPEN_COMMANDS.OPEN, {
       execute: () => this.prefixQuickOpenService.open('>'),
     });
+    commands.registerCommand(QUICK_OPEN_COMMANDS.OPEN_OUTLINE, {
+      execute: () => this.prefixQuickOpenService.open('@'),
+    });
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {

@@ -14,7 +14,7 @@ import { CommentsFeatureRegistry } from '@ali/ide-comments/lib/browser/comments-
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { LayoutService } from '@ali/ide-main-layout/lib/browser/layout.service';
 import { IContextKeyService } from '@ali/ide-core-browser';
-import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { MockContextKeyService } from '../../../../../monaco/__mocks__/monaco.context-key.service';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 
@@ -235,6 +235,19 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.comments.test.t
       }),
       reaction: modelReaction,
     }));
+  });
+
+  it('comment canReply', async () => {
+    const id = 'test_id';
+    const label = 'test_label';
+    const $updateCommentThread = jest.spyOn(mainThreadComments, '$updateCommentThread');
+    const controller = vscodeComments.createCommentController(id, label);
+    const thread = controller.createCommentThread(Uri.file('test'),  new types.Range(1, 1, 1, 1), []);
+    thread.canReply = false;
+    // 修改属性会加 100ms 的 debounce
+    await sleep(100);
+    expect($updateCommentThread).toBeCalled();
+    expect($updateCommentThread).toBeCalledWith(expect.anything(), expect.anything(), expect.anything(), expect.anything(), {'canReply': false, 'comments': []});
   });
 
   it('dispose', async () => {

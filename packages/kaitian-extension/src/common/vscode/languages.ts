@@ -37,7 +37,6 @@ import {
   ICallHierarchyItemDto,
   IOutgoingCallDto,
   IIncomingCallDto,
-  CodeLensList,
   CodeLens,
   SemanticTokensLegend,
   WithDuration,
@@ -47,12 +46,15 @@ import {
   CompletionItemKind,
   CompletionItemTag,
   ChainedCacheId,
+  IWorkspaceEditDto,
+  CacheId,
+  ICodeLensListDto,
+  ISignatureHelpDto,
+  ILinksListDto,
 } from './model.api';
 import type {
   CodeActionContext,
-  CodeActionList,
   SignatureHelpContext,
-  SignatureHelpResult,
   Command,
 } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { Disposable } from './ext-types';
@@ -95,6 +97,11 @@ export interface IMainThreadLanguages {
   $registerFoldingRangeProvider(
     handle: number,
     selector: SerializedDocumentFilter[],
+    eventHandle: number | undefined,
+  ): void;
+  $emitFoldingRangeEvent(
+    eventHandle: number,
+    event?: any,
   ): void;
   $registerDocumentColorProvider(
     handle: number,
@@ -126,7 +133,9 @@ export interface IMainThreadLanguages {
   $registerQuickFixProvider(
     handle: number,
     selector: SerializedDocumentFilter[],
-    codeActionKinds?: string[],
+    metadata: ICodeActionProviderMetadataDto,
+    displayName: string,
+    supportResolve: boolean,
   ): void;
   $registerImplementationProvider(
     handle: number,
@@ -144,6 +153,7 @@ export interface IMainThreadLanguages {
   $registerDocumentLinkProvider(
     handle: number,
     selector: SerializedDocumentFilter[],
+    supportResolve: boolean,
   ): void;
   $registerOutlineSupport(
     handle: number,
@@ -336,12 +346,16 @@ export interface IExtHostLanguages {
   $provideCodeLenses(
     handle: number,
     resource: UriComponents,
-  ): Promise<CodeLensList | undefined>;
+  ): Promise<ICodeLensListDto | undefined>;
   $resolveCodeLens(
     handle: number,
     resource: UriComponents,
     codeLens: CodeLens,
   ): Promise<CodeLens | undefined>;
+  $releaseCodeLens(
+    handle: number,
+    cacheId: number,
+  ): Promise<void>;
 
   $provideImplementation(
     handle: number,
@@ -359,18 +373,21 @@ export interface IExtHostLanguages {
     resource: UriComponents,
     rangeOrSelection: Range | Selection,
     context: CodeActionContext,
-  ): Promise<CodeActionList | undefined>;
+  ): Promise<ICodeActionListDto | undefined>;
+  $resolveCodeAction(handle: number, id: ChainedCacheId, token: CancellationToken): Promise<IWorkspaceEditDto | undefined>;
+  $releaseCodeActions(handle: number, cacheId: number): void;
 
   $provideDocumentLinks(
     handle: number,
     resource: UriComponents,
     token: CancellationToken,
-  ): Promise<ILink[] | undefined>;
+  ): Promise<ILinksListDto | undefined>;
   $resolveDocumentLink(
     handle: number,
-    link: ILink,
+    id: ChainedCacheId,
     token: CancellationToken,
   ): Promise<ILink | undefined>;
+  $releaseDocumentLinks(handle: number, id: number): void;
 
   $provideReferences(
     handle: number,
@@ -410,7 +427,12 @@ export interface IExtHostLanguages {
     position: Position,
     context: SignatureHelpContext,
     token: CancellationToken,
-  ): Promise<SignatureHelpResult | undefined | null>;
+  ): Promise<ISignatureHelpDto | undefined | null>;
+
+  $releaseSignatureHelp(
+    handle: number,
+    cacheId: number,
+  ): Promise<void>;
 
   $provideRenameEdits(
     handle: number,
@@ -494,14 +516,14 @@ export interface IInlineValueContextDto {
   stoppedLocation: IRange;
 }
 
-export const enum ISuggestResultDtoField {
+export enum ISuggestResultDtoField {
   defaultRanges = 'a',
   completions = 'b',
   isIncomplete = 'c',
   duration = 'd',
 }
 
-export const enum ISuggestDataDtoField {
+export enum ISuggestDataDtoField {
   label = 'a',
   kind = 'b',
   detail = 'c',
@@ -591,4 +613,25 @@ export namespace MonacoModelIdentifier {
       languageId: model.getModeId(),
     };
   }
+}
+
+export interface ICodeActionDto {
+  cacheId?: ChainedCacheId;
+  title: string;
+  edit?: IWorkspaceEditDto;
+  diagnostics?: IMarkerData[];
+  command?: Command;
+  kind?: string;
+  isPreferred?: boolean;
+  disabled?: string;
+}
+
+export interface ICodeActionListDto {
+  cacheId: CacheId;
+  actions: ReadonlyArray<ICodeActionDto>;
+}
+
+export interface ICodeActionProviderMetadataDto {
+  readonly providedKinds?: readonly string[];
+  readonly documentation?: ReadonlyArray<{ readonly kind: string, readonly command: Command }>;
 }

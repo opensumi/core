@@ -30,7 +30,7 @@ describe('packages/core-browser/src/bootstrap/connection.test.ts', () => {
     });
 
     createClientConnection2(injector, [], fakeWSURL, () => { });
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       setTimeout(() => {
         resolve();
       }, 4000);

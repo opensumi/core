@@ -1,3 +1,4 @@
+import { CONTEXT_IN_DEBUG_MODE } from './../../../common/constants';
 import { MenuContribution } from '@ali/ide-core-browser/lib/menu/next';
 import { Autowired } from '@ali/common-di';
 import { Domain, CommandContribution, CommandRegistry, TabBarToolbarContribution, localize, ToolbarRegistry, ClientAppContribution } from '@ali/ide-core-browser';
@@ -62,7 +63,7 @@ export class WatchPanelContribution implements ClientAppContribution, MenuContri
       command: DEBUG_COMMANDS.COLLAPSE_ALL_WATCHER.id,
       viewId: DEBUG_WATCH_ID,
       tooltip: localize('debug.watch.collapseAll'),
-      when: 'inDebugMode',
+      when: CONTEXT_IN_DEBUG_MODE.raw,
     });
 
     registry.registerItem({
@@ -70,7 +71,7 @@ export class WatchPanelContribution implements ClientAppContribution, MenuContri
       command: DEBUG_COMMANDS.ADD_WATCHER.id,
       viewId: DEBUG_WATCH_ID,
       tooltip: localize('debug.watch.add'),
-      when: 'inDebugMode',
+      when: CONTEXT_IN_DEBUG_MODE.raw,
     });
   }
 
@@ -80,7 +81,7 @@ export class WatchPanelContribution implements ClientAppContribution, MenuContri
         id: DEBUG_COMMANDS.ADD_WATCHER.id,
         label: localize('debug.watch.add'),
       },
-      when: 'inDebugMode',
+      when: CONTEXT_IN_DEBUG_MODE.raw,
       group: '0_operator',
     });
     registry.registerMenuItem(MenuId.DebugWatchContext, {
@@ -95,7 +96,7 @@ export class WatchPanelContribution implements ClientAppContribution, MenuContri
         id: DEBUG_COMMANDS.COPY_WATCHER_VALUE.id,
         label: localize('debug.watch.copyValue'),
       },
-      when: 'inDebugMode',
+      when: CONTEXT_IN_DEBUG_MODE.raw,
       group: '0_operator',
     });
     registry.registerMenuItem(MenuId.DebugWatchContext, {

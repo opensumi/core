@@ -1,7 +1,7 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Emitter, IFileServiceClient, IEventBus, CommonServerPath, OS, IApplicationService } from '@ali/ide-core-common';
 import { URI, IContextKeyService } from '@ali/ide-core-browser';
-import { injectMockPreferences } from '@ali/ide-core-browser/src/mocks/preference';
+import { injectMockPreferences } from '@ali/ide-core-browser/__mocks__/preference';
 import * as path from 'path';
 import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@ali/ide-kaitian-extension/lib/common/vscode';
@@ -29,7 +29,7 @@ import MonacoServiceImpl from '@ali/ide-monaco/lib/browser/monaco.service';
 import { CorePreferences, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
 import { ResourceServiceImpl } from '@ali/ide-editor/lib/browser/resource.service';
 import { LanguageService } from '@ali/ide-editor/lib/browser/language/language.service';
-import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
+import { useMockStorage } from '@ali/ide-core-browser/__mocks__/storage';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { BaseFileSystemEditorDocumentProvider } from '@ali/ide-editor/lib/browser/fs-resource/fs-editor-doc';
@@ -39,7 +39,7 @@ import { FileServiceContribution } from '@ali/ide-file-service/lib/browser/file-
 import { TestEditorDocumentProvider, TestResourceResolver } from '../../../editor/__tests__/browser/test-providers';
 import { EditorComponentRegistryImpl } from '@ali/ide-editor/lib/browser/component';
 import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser/types';
-import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { IResource, IEditorOpenType } from '@ali/ide-editor';
 import { IConfigurationService, IConfigurationChangeEvent, ConfigurationTarget } from '@ali/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 import * as TypeConverts from '@ali/ide-kaitian-extension/lib/common/vscode/converter';

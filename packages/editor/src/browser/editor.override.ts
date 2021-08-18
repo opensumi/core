@@ -2,6 +2,7 @@ import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import type { ICodeEditor as IMonacoCodeEditor } from '@ali/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { CodeEditorServiceImpl } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/codeEditorServiceImpl';
+import { ICodeEditorService } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/codeEditorService';
 import { SimpleLayoutService } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
 import { ContextViewService } from '@ali/monaco-editor-core/esm/vs/platform/contextview/browser/contextViewService';
 
@@ -38,8 +39,8 @@ export class MonacoCodeService extends CodeEditorServiceImpl {
    * @param sideBySide ？
    */
   // @ts-ignore
-  async openCodeEditor(input: monaco.editor.IResourceInput, source?: IMonacoCodeEditor,
-                       sideBySide?: boolean): Promise<IMonacoCodeEditor | undefined> {
+  async openCodeEditor(input: monaco.editor.IResourceInput, source: IMonacoCodeEditor | null,
+                       sideBySide?: boolean): Promise<IMonacoCodeEditor | null> {
     const resourceUri = new URI(input.resource.toString());
     let editorGroup = this.workbenchEditorService.currentEditorGroup;
     let index: number | undefined;
@@ -65,13 +66,14 @@ export class MonacoCodeService extends CodeEditorServiceImpl {
 
 }
 
-@Injectable()
 export class MonacoContextViewService extends ContextViewService {
 
   private menuContainer: HTMLDivElement;
 
-  constructor() {
-    super(new SimpleLayoutService(document.body));
+  constructor(
+    codeEditorService: ICodeEditorService,
+  ) {
+    super(new SimpleLayoutService(codeEditorService, document.body));
   }
 
   setContainer(container) {

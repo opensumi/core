@@ -21,7 +21,7 @@ describe(`test ${__filename} on Electron env`, () => {
   };
 
   beforeEach(() => {
-    global.isElectronRenderer = true;
+    (global as any).isElectronRenderer = true;
     injector = createBrowserInjector([]);
     injector.overrideProviders({
       token: IExternalUriService,
@@ -41,7 +41,7 @@ describe(`test ${__filename} on Electron env`, () => {
   });
 
   afterEach(() => {
-    global.isElectronRenderer = false;
+    (global as any).isElectronRenderer = false;
     injector.disposeAll();
   });
 

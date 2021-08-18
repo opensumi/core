@@ -5,6 +5,7 @@ export * from './debug-model';
 export * from './debug-session';
 export * from './debug-session-options';
 export * from './debug-editor';
+export * from './debug-progress';
 export * from './debug-schema-updater';
 export * from './inline-values';
 export * from './types';

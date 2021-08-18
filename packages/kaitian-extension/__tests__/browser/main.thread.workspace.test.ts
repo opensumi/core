@@ -22,7 +22,7 @@ import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/browser';
 import { ExtensionService } from '@ali/ide-kaitian-extension';
 import { ExtensionServiceImpl } from '@ali/ide-kaitian-extension/lib/browser/extension.service';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
-import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
+import { useMockStorage } from '@ali/ide-core-browser/__mocks__/storage';
 import { MonacoService } from '@ali/ide-monaco';
 import MonacoServiceImpl from '@ali/ide-monaco/lib/browser/monaco.service';
 import { MainThreadWebview } from '../../src/browser/vscode/api/main.thread.api.webview';
@@ -37,17 +37,17 @@ import { EditorDocumentModelContentRegistryImpl, EditorDocumentModelServiceImpl 
 import { FileSchemeDocumentProvider } from '@ali/ide-file-scheme/lib/browser/file-doc';
 import { MainThreadPreference } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.preference';
 import { PreferenceProviderProvider, PreferenceProvider, PreferenceService, PreferenceServiceImpl } from '@ali/ide-core-browser';
-import { injectMockPreferences } from '@ali/ide-core-browser/lib/mocks/preference';
+import { injectMockPreferences } from '@ali/ide-core-browser/__mocks__/preference';
 import { ResourceServiceImpl } from '@ali/ide-editor/lib/browser/resource.service';
 import { EditorComponentRegistryImpl } from '@ali/ide-editor/lib/browser/component';
 import { ExtHostStorage } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.storage';
 import { ExtHostTasks } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/tasks/ext.host.tasks';
 import { ExtHostTerminal } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.terminal';
-import { mockExtensions } from '../__mock__/extensions';
+import { mockExtensions } from '../../__mocks__/extensions';
 import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
 import { MainThreadFileSystem } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.file-system';
 import { ExtHostFileSystemEvent } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.file-system-event';
-import { MockLoggerManagerClient } from '../__mock__/loggermanager';
+import { MockLoggerManagerClient } from '../../__mocks__/loggermanager';
 import temp = require('temp');
 import { IWebviewService } from '@ali/ide-webview';
 import * as vscode from 'vscode';
@@ -247,6 +247,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
   afterAll(() => {
     track.cleanupSync();
     disposables.dispose();
+    injector.disposeAll();
   });
 
   describe('MainThreadWorkspace fs API Test Suite', () => {
@@ -290,8 +291,6 @@ describe('MainThreadWorkspace API Test Suite', () => {
       expect(fs.readFileSync(filepath).toString()).toBe('hello kaitian');
       done();
     });
-
-    // TODO more test case
   });
 
   it('should be able to updateWorkspaceFolders', async (done) => {

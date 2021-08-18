@@ -2,9 +2,8 @@ import type { ICodeEditor as IMonacoCodeEditor } from '@ali/ide-monaco/lib/brows
 import type { ITextModelUpdateOptions } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 import type { IEditorOptions } from '@ali/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { Injectable } from '@ali/common-di';
-import { URI, Event, BasicEvent, IDisposable, MaybeNull, IRange, ISelection, ILineChange, IPosition } from '@ali/ide-core-common';
+import { URI, Event, BasicEvent, IDisposable, MaybeNull, IRange, ISelection, ILineChange, IPosition, IThemeColor } from '@ali/ide-core-common';
 import { IResource } from './resource';
-import { IThemeColor } from '@ali/ide-theme/lib/common/color';
 import { IEditorDocumentModel, IEditorDocumentModelRef } from '../browser';
 import { IScopedContextKeyService } from '@ali/ide-core-browser';
 

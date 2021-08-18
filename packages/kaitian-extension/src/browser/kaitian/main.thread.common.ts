@@ -1,7 +1,7 @@
 import { Injectable, Injector, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostKaitianAPIIdentifier } from '../../common/kaitian';
-import { Disposable, IEventBus, WithEventBus, OnEvent } from '@ali/ide-core-browser';
+import { IEventBus, WithEventBus, OnEvent } from '@ali/ide-core-browser';
 import { IExtHostCommon, IMainThreadCommon } from '../../common/kaitian/common';
 import { ExtHostEvent } from '../types';
 
@@ -19,6 +19,7 @@ export class MainThreadCommon extends WithEventBus implements IMainThreadCommon 
 
   private subscribedEvent = new Set<string>();
 
+  // tslint:disable-next-line: no-unused-variable
   constructor(private rpcProtocol: IRPCProtocol, private injector: Injector) {
     super();
     this._proxy = this.rpcProtocol.getProxy(ExtHostKaitianAPIIdentifier.ExtHostCommon);

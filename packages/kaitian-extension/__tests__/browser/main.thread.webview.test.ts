@@ -10,24 +10,22 @@ import { IExtHostWebview, ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '
 import { WebviewViewShouldShowEvent } from '@ali/ide-kaitian-extension/lib/browser/components/extension-webview-view';
 import { WebviewViewProvider, WebviewView } from '@ali/ide-kaitian-extension/lib/common/vscode/webview';
 import { IExtensionDescription, ExtensionIdentifier } from '@ali/ide-kaitian-extension/lib/common/vscode';
-import { enableJSDOM } from '@ali/ide-core-browser/lib/mocks/jsdom';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { IIconService } from '@ali/ide-theme';
 import { StaticResourceService } from '@ali/ide-static-resource';
 import { IOpenerService } from '@ali/ide-core-browser/lib/opener';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { MockLoggerManagerClient } from '../__mock__/loggermanager';
+import { MockLoggerManagerClient } from '../../__mocks__/loggermanager';
 
 async function delay(ms: number) {
-  return new Promise((resolve) => {
+  return new Promise<void>((resolve) => {
     setTimeout(() => {
-      resolve();
+      resolve(undefined);
     }, ms);
   });
 }
 
 describe('Webview view tests ', () => {
-  let disableJSDOM: () => void;
   let extHostWebview: IExtHostWebview;
   let extHostWebviewView: ExtHostWebviewViews;
   let mainThreadWebview: MainThreadWebview;
@@ -109,7 +107,6 @@ describe('Webview view tests ', () => {
   const rpcProtocolMain = new RPCProtocol(mockClientB);
 
   beforeAll((done) => {
-    disableJSDOM = enableJSDOM();
     extHostWebview = new ExtHostWebviewService(rpcProtocolExt);
     extHostWebviewView = new ExtHostWebviewViews(rpcProtocolExt, extHostWebview as ExtHostWebviewService);
 
@@ -161,7 +158,6 @@ describe('Webview view tests ', () => {
   });
 
   afterAll(() => {
-    disableJSDOM();
     injector.disposeAll();
     Array.from(webviews.entries()).forEach(([i, w]) => w.dispose());
   });

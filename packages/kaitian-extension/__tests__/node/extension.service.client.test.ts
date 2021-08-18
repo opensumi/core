@@ -17,7 +17,7 @@ import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file
 describe('Extension Client Serivce', () => {
   let injector: Injector;
   let extensionNodeClient: IExtensionNodeClientService;
-  const extensionDir = path.join(__dirname, '../__mock__/extensions');
+  const extensionDir = path.join(__dirname, '../../__mocks__/extensions');
   const testExtId = 'kaitian.ide-dark-theme';
   const testExtPath = 'kaitian.ide-dark-theme-1.13.1';
   const testExtReadme = '# IDE Dark Theme';
@@ -83,9 +83,7 @@ describe('Extension Client Serivce', () => {
 
     it('should get all extension and contains extraMetadata', async () => {
       const extension = await extensionNodeClient.getAllExtensions([extensionDir], [], 'zh_CN', { readme: './README.md' });
-      const expectExtension = extension.find((e) => e.id = testExtId);
-      console.log('id:' + expectExtension?.id + 'path:' + expectExtension?.path + 'readme:' + expectExtension?.extraMetadata.readme);
-      console.log(testExtId);
+      const expectExtension = extension.find((e) => e.id === testExtId);
       expect(expectExtension?.extraMetadata.readme.trim()).toEqual(testExtReadme);
     });
   });

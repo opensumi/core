@@ -9,13 +9,17 @@ const MAX_WAIT_AFTER_SUCCESS = 3 * 1000;
 const SHELL_TIMEOUT = 30 * 1000;
 
 let shellPath = process.env.PATH;
+const isJestTest = process.env.IS_JEST_TEST;
 let updating: Promise<void> | undefined;
 
 // 至少成功过一次
 let hasSuccess = false;
 
 // 某些用户的配置初始化时间较长，提前开始
-updateShellPath();
+// 测试环境下不执行，让测试快一点
+if (!isJestTest) {
+  updateShellPath();
+}
 
 function parseEnv(env: string) {
   env = env.split('_SHELL_ENV_DELIMITER_')[1];

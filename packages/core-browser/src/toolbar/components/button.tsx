@@ -16,7 +16,7 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
   const [viewState, setViewState] = React.useState(props.defaultState || 'default');
   const [title, setTitle] = React.useState(undefined);
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
-  const [, updateState] = React.useState();
+  const [, updateState] = React.useState<any>();
   const forceUpdate = React.useCallback(() => updateState({}), []);
 
   const { defaultButtonStyle = {} } = props.preferences || {} ;

@@ -188,7 +188,7 @@ describe('测试重命名、移动、新建相关', () => {
       root.resolve('for_rename').toString(),
     ];
 
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       mv(
         FileUri.fsPath(root.resolve('for_rename')),
         FileUri.fsPath(root.resolve('for_rename_folder').resolve('for_rename')),
@@ -231,7 +231,7 @@ describe('测试重命名、移动、新建相关', () => {
       root.resolve('for_rename').toString(),
     ];
 
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       mv(
         FileUri.fsPath(root.resolve('for_rename')),
         FileUri.fsPath(root.resolve('for_rename_1')),
@@ -273,7 +273,7 @@ describe('测试重命名、移动、新建相关', () => {
 
     const expectedDeleteUris = [];
 
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       execSync('touch 中文.md', {
         cwd: FileUri.fsPath(root),
       });

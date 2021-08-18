@@ -8,6 +8,7 @@ export class ElectronWebviewChannel implements IWebviewChannel {
   focusIframeOnCreate?: boolean | undefined;
   ready?: Promise<void> | undefined;
   fakeLoad: boolean = false;
+  // tslint:disable-next-line: no-unused-variable
   private isInDevelopmentMode = false;
 
   constructor() {
@@ -23,11 +24,12 @@ export class ElectronWebviewChannel implements IWebviewChannel {
       if (handler) {
         handler(e, e.data.data);
       } else {
-        console.log('no handler for ', e);
+        // tslint:disable-next-line: no-console
+        console.warn('no handler for ', e);
       }
     });
 
-    this.ready = new Promise(async (resolve) => {
+    this.ready = new Promise<void>(async (resolve) => {
       // TODO 等待service worker完成  未来资源使用service worker时需要加入
       resolve();
     });

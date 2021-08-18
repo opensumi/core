@@ -35,7 +35,7 @@ describe('ExtensionFileSystemManage', () => {
   });
 
   it('Should Run method with args', async () => {
-    await new Promise((resolve) => setTimeout(() => resolve(), 21));
+    await new Promise<void>((resolve) => setTimeout(() => resolve(), 21));
     expect(changeList).toEqual(mockChangeList);
     expect(watcher.onFilesChanged).toBeInstanceOf(Function);
     watcher.dispose();

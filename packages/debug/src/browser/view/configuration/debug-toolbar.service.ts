@@ -1,11 +1,11 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
 import { DebugViewModel } from '../debug-view-model';
-import { DebugState, DebugSession } from '../../debug-session';
+import { DebugSession } from '../../debug-session';
 import { IContextKeyService, IReporterService } from '@ali/ide-core-browser';
 import { AbstractContextMenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
-import { DEBUG_REPORT_NAME } from '../../../common';
+import { DebugState, DEBUG_REPORT_NAME } from '../../../common';
 
 @Injectable()
 export class DebugToolbarService {

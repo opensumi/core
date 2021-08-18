@@ -7,16 +7,16 @@ import { OutputPreferences } from '@ali/ide-output/lib/browser/output-preference
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { FileUri, Uri } from '@ali/ide-core-common';
-import { MonacoService } from '@ali/ide-monaco';
-import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
+import { MonacoService } from '../../../monaco';
 import { PreferenceService, ISchemaRegistry, ISchemaStore, QuickOpenService } from '@ali/ide-core-browser';
-import { SchemaRegistry, SchemaStore } from '@ali/ide-monaco/lib/browser/schema-registry';
+import { SchemaRegistry, SchemaStore } from '../../../monaco/src/browser/schema-registry';
 import { taskSchemaUri, schema } from '@ali/ide-task/lib/browser/task.schema';
 import { TaskService } from '@ali/ide-task/lib/browser/task.service';
 import { TerminalTaskSystem } from '@ali/ide-task/lib/browser/terminal-task-system';
 import { MockQuickOpenService } from '@ali/ide-quick-open/lib/common/mocks/quick-open.service';
 import { IEditorDocumentModelService } from '@ali/ide-editor/src/browser';
 import { EditorDocumentModelServiceImpl } from '@ali/ide-editor/src/browser/doc-model/main';
+import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
 
 const preferences: Map<string, any> = new Map();
 

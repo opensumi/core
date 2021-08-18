@@ -278,8 +278,6 @@ declare module 'vscode' {
      */
     export function createDiagnosticCollection(name?: string): DiagnosticCollection;
 
-
-
     /**
      * Register a code action provider.
      *
@@ -293,8 +291,6 @@ declare module 'vscode' {
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
      */
     export function registerCodeActionsProvider(selector: DocumentSelector, provider: CodeActionProvider, metadata?: CodeActionProviderMetadata): Disposable;
-
-
 
     /**
      * Register an implementation provider.
@@ -335,8 +331,6 @@ declare module 'vscode' {
      */
     export function registerWorkspaceSymbolProvider(provider: WorkspaceSymbolProvider): Disposable;
 
-
-
     /**
      * Register a rename provider.
      *
@@ -363,10 +357,6 @@ declare module 'vscode' {
      */
     export function registerDocumentFormattingEditProvider(selector: DocumentSelector, provider: DocumentFormattingEditProvider): Disposable;
 
-
-
-
-
     /**
      * Register a signature help provider.
      *
@@ -383,9 +373,6 @@ declare module 'vscode' {
     export function registerSignatureHelpProvider(selector: DocumentSelector, provider: SignatureHelpProvider, ...triggerCharacters: string[]): Disposable;
     export function registerSignatureHelpProvider(selector: DocumentSelector, provider: SignatureHelpProvider, metadata: SignatureHelpProviderMetadata): Disposable;
 
-
-
-
     /**
      * Register a selection range provider.
      *
@@ -398,7 +385,6 @@ declare module 'vscode' {
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
      */
     export function registerSelectionRangeProvider(selector: DocumentSelector, provider: SelectionRangeProvider): Disposable;
-
 
     /**
      * Register a semantic tokens provider for a whole document.
@@ -426,7 +412,6 @@ declare module 'vscode' {
      */
     export function registerDocumentRangeSemanticTokensProvider(selector: DocumentSelector, provider: DocumentRangeSemanticTokensProvider, legend: SemanticTokensLegend): Disposable;
 
-
     /**
      * Register a provider that locates evaluatable expressions in text documents.
      * VS Code will evaluate the expression in the active debug session and will show the result in the debug hover.
@@ -439,7 +424,6 @@ declare module 'vscode' {
      */
     export function registerEvaluatableExpressionProvider(selector: DocumentSelector, provider: EvaluatableExpressionProvider): Disposable;
   }
-
 
   /**
    * A code action represents a change that can be performed in code, e.g. to fix a problem or
@@ -713,7 +697,7 @@ declare module 'vscode' {
    *
    * A code action can be any command that is [known](#commands.getCommands) to the system.
    */
-  export interface CodeActionProvider {
+  export interface CodeActionProvider<T extends CodeAction = CodeAction> {
     /**
      * Provide commands for the given document and range.
      *
@@ -726,6 +710,22 @@ declare module 'vscode' {
      * signaled by returning `undefined`, `null`, or an empty array.
      */
     provideCodeActions(document: TextDocument, range: Range | Selection, context: CodeActionContext, token: CancellationToken): ProviderResult<(Command | CodeAction)[]>;
+
+    /**
+     * Given a code action fill in its [`edit`](#CodeAction.edit)-property. Changes to
+     * all other properties, like title, are ignored. A code action that has an edit
+     * will not be resolved.
+     *
+     * *Note* that a code action provider that returns commands, not code actions, cannot successfully
+     * implement this function. Returning commands is deprecated and instead code actions should be
+     * returned.
+     *
+     * @param codeAction A code action.
+     * @param token A cancellation token.
+     * @return The resolved code action or a thenable that resolves to such. It is OK to return the given
+     * `item`. When no result is returned, the given `item` will be used.
+     */
+    resolveCodeAction?(codeAction: T, token: CancellationToken): ProviderResult<T>;
   }
 
   /**
@@ -739,6 +739,39 @@ declare module 'vscode' {
      * may list our every specific kind they provide, such as `CodeActionKind.Refactor.Extract.append('function`)`
      */
     readonly providedCodeActionKinds?: ReadonlyArray<CodeActionKind>;
+    /**
+     * Static documentation for a class of code actions.
+     *
+     * Documentation from the provider is shown in the code actions menu if either:
+     *
+     * - Code actions of `kind` are requested by VS Code. In this case, VS Code will show the documentation that
+     *   most closely matches the requested code action kind. For example, if a provider has documentation for
+     *   both `Refactor` and `RefactorExtract`, when the user requests code actions for `RefactorExtract`,
+     *   VS Code will use the documentation for `RefactorExtract` instead of the documentation for `Refactor`.
+     *
+     * - Any code actions of `kind` are returned by the provider.
+     *
+     * At most one documentation entry will be shown per provider.
+     */
+    readonly documentation?: ReadonlyArray<{
+      /**
+       * The kind of the code action being documented.
+       *
+       * If the kind is generic, such as `CodeActionKind.Refactor`, the documentation will be shown whenever any
+       * refactorings are returned. If the kind if more specific, such as `CodeActionKind.RefactorExtract`, the
+       * documentation will only be shown when extract refactoring code actions are returned.
+       */
+      readonly kind: CodeActionKind;
+
+      /**
+       * Command that displays the documentation to the user.
+       *
+       * This can display the documentation directly in VS Code or open a website using [`env.openExternal`](#env.openExternal);
+       *
+       * The title of this documentation code action is taken from [`Command.title`](#Command.title)
+       */
+      readonly command: Command;
+    }>;
   }
 
   /**
@@ -751,7 +784,6 @@ declare module 'vscode' {
    * @see [CodeLensProvider.provideCodeLenses](#CodeLensProvider.provideCodeLenses)
    * @see [CodeLensProvider.resolveCodeLens](#CodeLensProvider.resolveCodeLens)
    */
-
 
   /**
    * A code lens provider adds [commands](#Command) to source text. The commands will be shown
@@ -786,9 +818,6 @@ declare module 'vscode' {
      */
     resolveCodeLens?(codeLens: CodeLens, token: CancellationToken): ProviderResult<CodeLens>;
   }
-
-
-
 
   /**
    * The hover provider interface defines the contract between extensions and
@@ -828,7 +857,7 @@ declare module 'vscode' {
     /**
      * Write-access of a symbol, like writing to a variable.
      */
-    Write = 2
+    Write = 2,
   }
 
   /**
@@ -1074,33 +1103,33 @@ declare module 'vscode' {
   }
 
   /**
-	 * The document link provider defines the contract between extensions and feature of showing
-	 * links in the editor.
-	 */
-	export interface DocumentLinkProvider<T extends DocumentLink = DocumentLink> {
+   * The document link provider defines the contract between extensions and feature of showing
+   * links in the editor.
+   */
+  export interface DocumentLinkProvider<T extends DocumentLink = DocumentLink> {
 
-		/**
-		 * Provide links for the given document. Note that the editor ships with a default provider that detects
-		 * `http(s)` and `file` links.
-		 *
-		 * @param document The document in which the command was invoked.
-		 * @param token A cancellation token.
-		 * @return An array of {@link DocumentLink document links} or a thenable that resolves to such. The lack of a result
-		 * can be signaled by returning `undefined`, `null`, or an empty array.
-		 */
-		provideDocumentLinks(document: TextDocument, token: CancellationToken): ProviderResult<T[]>;
+    /**
+     * Provide links for the given document. Note that the editor ships with a default provider that detects
+     * `http(s)` and `file` links.
+     *
+     * @param document The document in which the command was invoked.
+     * @param token A cancellation token.
+     * @return An array of {@link DocumentLink document links} or a thenable that resolves to such. The lack of a result
+     * can be signaled by returning `undefined`, `null`, or an empty array.
+     */
+    provideDocumentLinks(document: TextDocument, token: CancellationToken): ProviderResult<T[]>;
 
-		/**
-		 * Given a link fill in its {@link DocumentLink.target target}. This method is called when an incomplete
-		 * link is selected in the UI. Providers can implement this method and return incomplete links
-		 * (without target) from the {@link DocumentLinkProvider.provideDocumentLinks `provideDocumentLinks`} method which
-		 * often helps to improve performance.
-		 *
-		 * @param link The link that is to be resolved.
-		 * @param token A cancellation token.
-		 */
-		resolveDocumentLink?(link: T, token: CancellationToken): ProviderResult<T>;
-	}
+    /**
+     * Given a link fill in its {@link DocumentLink.target target}. This method is called when an incomplete
+     * link is selected in the UI. Providers can implement this method and return incomplete links
+     * (without target) from the {@link DocumentLinkProvider.provideDocumentLinks `provideDocumentLinks`} method which
+     * often helps to improve performance.
+     *
+     * @param link The link that is to be resolved.
+     * @param token A cancellation token.
+     */
+    resolveDocumentLink?(link: T, token: CancellationToken): ProviderResult<T>;
+  }
 
   /**
    * The document color provider defines the contract between extensions and feature of
@@ -1191,14 +1220,20 @@ declare module 'vscode' {
   /**
    * Folding context (for future use)
    */
-  export interface FoldingContext {
-  }
+  // tslint:disable-next-line: no-empty-interface
+  export interface FoldingContext {}
 
   /**
    * The folding range provider interface defines the contract between extensions and
    * [Folding](https://code.visualstudio.com/docs/editor/codebasics#_folding) in the editor.
    */
   export interface FoldingRangeProvider {
+
+    /**
+     * An optional event to signal that the folding ranges from this provider have changed.
+     */
+    onDidChangeFoldingRanges?: Event<void>;
+
     /**
      * Returns a list of folding ranges or null and undefined if the provider
      * does not want to participate or was cancelled.
@@ -1350,13 +1385,13 @@ declare module 'vscode' {
      */
     targetSelectionRange?: Range;
   }
- /**
-   * The MarkdownString represents human-readable text that supports formatting via the
-   * markdown syntax. Standard markdown is supported, also tables, but no embedded html.
-   *
-   * When created with `supportThemeIcons` then rendering of [theme icons](#ThemeIcon) via
-   * the `$(<name>)`-syntax is supported.
-   */
+  /**
+    * The MarkdownString represents human-readable text that supports formatting via the
+    * markdown syntax. Standard markdown is supported, also tables, but no embedded html.
+    *
+    * When created with `supportThemeIcons` then rendering of [theme icons](#ThemeIcon) via
+    * the `$(<name>)`-syntax is supported.
+    */
   export class MarkdownString {
 
     /**
@@ -1850,20 +1885,20 @@ declare module 'vscode' {
      * Builder-function that appends the given string to
      * the [`value`](#SnippetString.value) of this snippet string.
      *
-     * @param string A value to append 'as given'. The string will be escaped.
+     * @param value A value to append 'as given'. The string will be escaped.
      * @return This snippet string.
      */
-    appendText(string: string): SnippetString;
+    appendText(value: string): SnippetString;
 
     /**
      * Builder-function that appends a tabstop (`$1`, `$2` etc) to
      * the [`value`](#SnippetString.value) of this snippet string.
      *
-     * @param number The number of this tabstop, defaults to an auto-increment
+     * @param num The number of this tabstop, defaults to an auto-increment
      * value starting at 1.
      * @return This snippet string.
      */
-    appendTabstop(number?: number): SnippetString;
+    appendTabstop(num?: number): SnippetString;
 
     /**
      * Builder-function that appends a placeholder (`${1:value}`) to
@@ -1871,22 +1906,22 @@ declare module 'vscode' {
      *
      * @param value The value of this placeholder - either a string or a function
      * with which a nested snippet can be created.
-     * @param number The number of this tabstop, defaults to an auto-increment
+     * @param num The number of this tabstop, defaults to an auto-increment
      * value starting at 1.
      * @return This snippet string.
      */
-    appendPlaceholder(value: string | ((snippet: SnippetString) => any), number?: number): SnippetString;
+    appendPlaceholder(value: string | ((snippet: SnippetString) => any), num?: number): SnippetString;
 
     /**
      * Builder-function that appends a choice (`${1|a,b,c}`) to
      * the [`value`](#SnippetString.value) of this snippet string.
      *
      * @param values The values for choices - the array of strings
-     * @param number The number of this tabstop, defaults to an auto-increment
+     * @param num The number of this tabstop, defaults to an auto-increment
      * value starting at 1.
      * @return This snippet string.
      */
-    appendChoice(values: string[], number?: number): SnippetString;
+    appendChoice(values: string[], num?: number): SnippetString;
 
     /**
      * Builder-function that appends a variable (`${VAR}`) to
@@ -2160,7 +2195,7 @@ declare module 'vscode' {
     /**
      * The carriage return line feed `\r\n` sequence.
      */
-    CRLF = 2
+    CRLF = 2,
   }
 
   /**
@@ -2190,9 +2225,6 @@ declare module 'vscode' {
      */
     readonly uris: ReadonlyArray<Uri>;
   }
-
-
-
 
   /**
    * A diagnostics collection is a container that manages a set of
@@ -2278,7 +2310,6 @@ declare module 'vscode' {
      */
     dispose(): void;
   }
-
 
   /**
    * The declaration of a symbol representation as one or many [locations](#Location)
@@ -2478,4 +2509,3 @@ declare module 'vscode' {
     provideCallHierarchyOutgoingCalls(item: CallHierarchyItem, token: CancellationToken): ProviderResult<CallHierarchyOutgoingCall[]>;
   }
 }
-

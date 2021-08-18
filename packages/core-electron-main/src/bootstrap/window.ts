@@ -26,7 +26,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   @Autowired(ElectronAppConfig)
   private appConfig: ElectronAppConfig;
 
-  private extensionDir: string = this.appConfig.extensionDir;
+  private extensionDir: string;
 
   private extensionCandidate: ExtensionCandidate[] = [];
 
@@ -48,6 +48,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   constructor(workspace?: string, metadata?: any, options: BrowserWindowConstructorOptions & ICodeWindowOptions = {}) {
     super();
+    this.extensionDir = this.appConfig.extensionDir;
     if (workspace) {
       this._workspace = new URI(workspace);
     }
@@ -278,7 +279,7 @@ export class KTNodeProcess {
     const logger = getDebugLogger();
     logger.log('KTNodeProcess dispose', this._process.pid);
     if (this._process) {
-      return new Promise((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         treeKill(this._process.pid, 'SIGKILL', (err) => {
           if (err) {
             logger.error(`tree kill error" \n ${err.message}`);

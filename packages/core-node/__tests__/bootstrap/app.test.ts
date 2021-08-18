@@ -34,8 +34,6 @@ describe('ServerApp', () => {
     const rpcListenPath = normalizedIpcHandlerPath('NODE-TEST', true);
     const app = new ServerApp({
       injector,
-      workspaceDir: '',
-      extensionDir: './extensions',
       modules: [
         ServerCommonModule,
       ],
@@ -59,8 +57,6 @@ describe('ServerApp', () => {
     const koa = new Koa();
     const app = new ServerApp({
       injector,
-      workspaceDir: '',
-      extensionDir: './extensions',
       modules: [
         ServerCommonModule,
       ],

@@ -1,21 +1,25 @@
 import { Injector, Token, TokenResult, InstanceOpts, ConstructorOf, CreatorStatus } from '@ali/common-di';
-import mm from '@ali/mm';
 import { CommandRegistry } from '@ali/ide-core-common';
-
-afterEach(() => {
-  mm.restore();
-});
 
 export class MockInjector extends Injector {
   // tslint:disable-next-line
-  private mockMap = new Map<Token, [any, any]>();
+  private mockMap = new Map<Token, [any, any][]>();
 
   mock<T extends Token, K extends keyof TokenResult<T>>(token: T, method: K, value: TokenResult<T>[K]) {
     if (this.hasCreated(token)) {
       const instance = this.get(token);
-      mm(instance, method as any, value);
+      Object.defineProperty(instance, method, {
+        get: () => value,
+        set: (v) => {
+          value = v;
+        },
+        enumerable: true,
+        configurable: true,
+      });
     } else {
-      this.mockMap.set(token, [method, value]);
+      const map: [any, any][] = this.mockMap.get(token) || [];
+      map.push([method, value]);
+      this.mockMap.set(token, map);
     }
   }
 
@@ -24,14 +28,22 @@ export class MockInjector extends Injector {
   get<T>(token: Token, opts?: InstanceOpts): T;
   get(arg1: any, arg2?: any, arg3?: any) {
     const instance = super.get(arg1, arg2, arg3);
-
-    const mockDefination = this.mockMap.get(arg1);
-    if (mockDefination) {
-      const method = mockDefination[0];
-      const value = mockDefination[1];
-      mm(instance, method, value);
+    const mockDefinations = this.mockMap.get(arg1);
+    if (mockDefinations) {
+      for (const mockDefination of mockDefinations) {
+        const method = mockDefination[0];
+        let value = mockDefination[1];
+        Object.defineProperty(instance, method, {
+          get: () => value,
+          set: (v) => {
+            value = v;
+          },
+          enumerable: true,
+          configurable: true,
+        });
+        this.mockMap.delete(arg1);
+      }
     }
-
     return instance;
   }
 
@@ -48,14 +60,14 @@ export class MockInjector extends Injector {
     registry.registerCommand({
       id: commandId,
     }, {
-        execute: (...args) => {
-          if (typeof fn === 'function') {
-            fn(...args);
-          } else if (typeof fn !== 'undefined') {
-            return fn;
-          }
-        },
-      });
+      execute: (...args) => {
+        if (typeof fn === 'function') {
+          fn(...args);
+        } else if (typeof fn !== 'undefined') {
+          return fn;
+        }
+      },
+    });
   }
 
   public mockService(token: Token, proxyObj: any = {}) {

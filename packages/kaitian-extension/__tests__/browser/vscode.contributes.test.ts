@@ -3,7 +3,7 @@ import * as os from 'os';
 import { Injector } from '@ali/common-di';
 import { VSCodeContributeRunner } from '../../src/browser/vscode/contributes';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import { mockExtensionProps } from '../__mock__/extensions';
+import { mockExtensionProps } from '../../__mocks__/extensions';
 import { CommandRegistry, CommandService, CommandServiceImpl, EventBusImpl, IEventBus, ILogger, ILoggerManagerClient, Uri } from '@ali/ide-core-common';
 import { ExtensionWillContributeEvent } from '@ali/ide-kaitian-extension/lib/browser/types';
 import { ISchemaRegistry } from '@ali/ide-monaco';
@@ -11,9 +11,9 @@ import { SchemaRegistry, SchemaStore } from '@ali/ide-monaco/lib/browser/schema-
 import { IExtensionStoragePathServer } from '@ali/ide-extension-storage';
 import { ISchemaStore, PreferenceService } from '@ali/ide-core-browser';
 import { MockPreferenceService } from '../../../terminal-next/__tests__/browser/mock.service';
-import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
+import { MockLogger, MockLoggerManageClient } from '@ali/ide-core-browser/__mocks__/logger';
 import { ExtensionNodeServiceServerPath } from '@ali/ide-kaitian-extension/lib/common';
-import { MockExtNodeClientService } from '../__mock__/extension.service.client';
+import { MockExtNodeClientService } from '../../__mocks__/extension.service.client';
 import { IIconService, IThemeService } from '@ali/ide-theme';
 import { IconService } from '@ali/ide-theme/lib/browser';
 import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
@@ -113,11 +113,7 @@ describe('VSCodeContributeRunner', () => {
       },
       {
         token: ILogger,
-        useValue: {
-          error: () => {},
-          warn: () => {},
-          info: () => {},
-        },
+        useClass: MockLogger,
       },
       {
         token: ITextmateTokenizer,

@@ -10,7 +10,7 @@ import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { EditorDocumentModelServiceImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
 import { MonacoService } from '@ali/ide-monaco';
-import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
+import { MockedMonacoService } from '@ali/ide-monaco/__mocks__/monaco.service.mock';
 
 @Injectable()
 class MockLoggerManagerClient {

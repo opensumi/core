@@ -17,6 +17,8 @@ import { IEditorDocumentModelService } from './doc-model/types';
 import { FormattingSelector } from './format/formatterSelect';
 import { EditorTopPaddingContribution } from './view/topPadding';
 import { EditorSuggestWidgetContribution } from './view/suggest-widget';
+import { MonacoCodeService, MonacoContextViewService } from './editor.override';
+import { MonacoTextModelService } from './doc-model/override';
 import { EditorOpener } from './editor-opener';
 import { WorkspaceSymbolQuickOpenHandler } from './language/workspace-symbol-quickopen';
 import { AUTO_SAVE_MODE } from '../common/editor';
@@ -93,8 +95,6 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
   }
 
   registerOverrideService(registry: MonacoOverrideServiceRegistry): void {
-    const { MonacoCodeService, MonacoContextViewService } = require('./editor.override');
-    const { MonacoTextModelService } = require('./doc-model/override');
     const codeEditorService = this.injector.get(MonacoCodeService);
 
     // Monaco Editor ContextKeyService
@@ -108,7 +108,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     registry.registerOverrideService(ServiceNames.CODE_EDITOR_SERVICE, codeEditorService);
 
     // Monaco ContextViewService
-    registry.registerOverrideService(ServiceNames.CONTEXT_VIEW_SERVICE, this.injector.get(MonacoContextViewService));
+    registry.registerOverrideService(ServiceNames.CONTEXT_VIEW_SERVICE, new MonacoContextViewService(codeEditorService));
 
     // Monaco TextModelService
     registry.registerOverrideService(ServiceNames.TEXT_MODEL_SERVICE, this.injector.get(MonacoTextModelService));

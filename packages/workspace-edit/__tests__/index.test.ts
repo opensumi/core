@@ -1,14 +1,14 @@
-import type { IBulkEditOptions } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
-import type { WorkspaceEdit } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+import type { ResourceEdit, IBulkEditOptions } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
-import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
+import { createMockedMonaco } from '@ali/ide-monaco/__mocks__/monaco';
 import { WorkbenchEditorService, IEditorGroup } from '@ali/ide-editor';
 import { URI } from '@ali/ide-core-browser';
 import { IWorkspaceEditService, IResourceFileEdit, IWorkspaceFileService} from '../src/common';
 import { IFileServiceClient, FileSystemError } from '@ali/ide-file-service/lib/common';
 import { WorkspaceEditModule } from '../src/browser';
 import { MonacoBulkEditService } from '../src/browser/bulk-edit.service';
+import { Uri } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 
 function mockService(target) {
   return new Proxy(target, {
@@ -45,7 +45,7 @@ describe('workspace edit tests', () => {
       createModelReference: jest.fn((uri) => {
         return {
           instance: {
-            getMonacoModel: jest.fn(() => monaco.editor!.createModel!('', undefined, monaco.Uri!.parse(uri.toString()))),
+            getMonacoModel: jest.fn(() => monaco.editor.createModel!('', undefined, Uri.parse(uri.toString()))),
             updateContent: jest.fn(),
             dispose: jest.fn(),
             save: jest.fn(),
@@ -56,7 +56,7 @@ describe('workspace edit tests', () => {
       getModelReference: jest.fn((uri) => {
         return {
           instance: {
-            getMonacoModel: jest.fn(() => monaco.editor!.createModel!('', undefined, monaco.Uri!.parse(uri.toString()))),
+            getMonacoModel: jest.fn(() => monaco.editor.createModel!('', undefined, Uri.parse(uri.toString()))),
             updateContent: jest.fn(),
             dispose: jest.fn(),
           },
@@ -101,7 +101,7 @@ describe('workspace edit tests', () => {
       edits: [
         {
           resource: new URI('file:///test.ts'),
-          edit: {
+          textEdit: {
             range: {
               startColumn: 1,
               endColumn: 1,
@@ -113,7 +113,7 @@ describe('workspace edit tests', () => {
         },
         {
           resource: new URI('file:///test.ts'),
-          edit: {
+          textEdit: {
             range: {
               startColumn: 1,
               endColumn: 1,
@@ -125,7 +125,7 @@ describe('workspace edit tests', () => {
         },
         {
           resource: new URI('file:///test2.ts'),
-          edit: {
+          textEdit: {
             range: {
               startColumn: 1,
               endColumn: 1,
@@ -141,7 +141,7 @@ describe('workspace edit tests', () => {
       ],
     });
 
-    const model = monaco.editor!.getModel(monaco.Uri!.parse('file:///test.ts'))!;
+    const model = monaco.editor.getModel(Uri.parse('file:///test.ts'))!;
     expect(model.pushEditOperations).toBeCalled();
     expect(model.pushStackElement).toBeCalled();
 
@@ -170,15 +170,15 @@ describe('workspace edit tests', () => {
     } as any);
 
     const moveEdit: IResourceFileEdit = {
-      newUri: new URI('file:///newTest.ts'),
-      oldUri: new URI('file:///oldTest.ts'),
+      newResource: new URI('file:///newTest.ts'),
+      oldResource: new URI('file:///oldTest.ts'),
       options: {
         overwrite: true,
       },
     };
 
     const createEdit: IResourceFileEdit = {
-      newUri: new URI('file:///createTest.ts'),
+      newResource: new URI('file:///createTest.ts'),
       options: {
         overwrite: true,
         showInEditor: true,
@@ -186,7 +186,7 @@ describe('workspace edit tests', () => {
     };
 
     const deleteEdit: IResourceFileEdit = {
-      oldUri: new URI('file:///deleteTest.ts'),
+      oldResource: new URI('file:///deleteTest.ts'),
       options: {
         overwrite: true,
       },
@@ -215,16 +215,16 @@ describe('workspace edit tests', () => {
       ],
     });
 
-    expect(fileServiceClient.move).toHaveBeenLastCalledWith(moveEdit.oldUri!.toString(), moveEdit.newUri!.toString(), expect.objectContaining({
+    expect(fileServiceClient.move).toHaveBeenLastCalledWith(moveEdit.oldResource!.toString(), moveEdit.newResource!.toString(), expect.objectContaining({
       overwrite: true,
     }));
 
-    expect(fileServiceClient.createFile).toHaveBeenLastCalledWith(createEdit.newUri!.toString(), expect.objectContaining({
+    expect(fileServiceClient.createFile).toHaveBeenLastCalledWith(createEdit.newResource!.toString(), expect.objectContaining({
       content: '',
       overwrite: true,
     }));
 
-    expect(fileServiceClient.delete).toHaveBeenLastCalledWith(deleteEdit.oldUri!.toString(), expect.objectContaining({}));
+    expect(fileServiceClient.delete).toHaveBeenLastCalledWith(deleteEdit.oldResource!.toString(), expect.objectContaining({}));
 
     expect(mockParticipant).toBeCalledTimes(3);
     expect(mockWillCall).toBeCalledTimes(3);
@@ -232,7 +232,7 @@ describe('workspace edit tests', () => {
 
     // 已存在的文件，不添加 ignoreIfExists 和 overwrite 选项， 应该抛出文件已存在的问题
     const createEdit2: IResourceFileEdit = {
-      newUri: new URI('file:///createTest.ts'),
+      newResource: new URI('file:///createTest.ts'),
       options: {
       },
     };
@@ -250,7 +250,7 @@ describe('workspace edit tests', () => {
 
     // 添加 ignoreIfExists 应该正常执行不抛出错误
     const createEdit3: IResourceFileEdit = {
-      newUri: new URI('file:///createTest.ts'),
+      newResource: new URI('file:///createTest.ts'),
       options: {
         ignoreIfExists: true,
       },
@@ -270,68 +270,63 @@ describe('workspace edit tests', () => {
     const monacoBulkEditService: MonacoBulkEditService = injector.get(MonacoBulkEditService);
     const fileServiceClient = injector.get<IFileServiceClient>(IFileServiceClient);
 
-    await monacoBulkEditService.apply({
-      edits: [
-        {
-          resource: monaco.Uri!.parse('file:///monaco-test.ts'),
-          edit: {
-            range: {
-              startColumn: 1,
-              endColumn: 1,
-              startLineNumber: 1,
-              endLineNumber: 1,
-            },
-            text: 'test',
+    await monacoBulkEditService.apply([
+      {
+        resource: Uri.parse('file:///monaco-test.ts'),
+        textEdit: {
+          range: {
+            startColumn: 1,
+            endColumn: 1,
+            startLineNumber: 1,
+            endLineNumber: 1,
           },
+          text: 'test',
         },
-        {
-          newUri: monaco.Uri!.parse('file:///monaco.newTest.ts'),
-          oldUri: monaco.Uri!.parse('file:///monaco.oldTest.ts'),
-          options: {
-            overwrite: true,
-          },
+      },
+      {
+        newResource: Uri.parse('file:///monaco.newTest.ts'),
+        oldResource: Uri.parse('file:///monaco.oldTest.ts'),
+        options: {
+          overwrite: true,
         },
-      ],
-    });
+      },
+    ] as unknown as ResourceEdit[]);
 
     expect(fileServiceClient.move).toHaveBeenLastCalledWith('file:///monaco.oldTest.ts', 'file:///monaco.newTest.ts', expect.objectContaining({
       overwrite: true,
     }));
 
-    const model = monaco.editor!.getModel(monaco.Uri!.parse('file:///monaco-test.ts'))!;
+    const model = monaco.editor.getModel(Uri.parse('file:///monaco-test.ts'))!;
+
     expect(model.pushEditOperations).toBeCalled();
     expect(model.pushStackElement).toBeCalled();
-
-    expect(injector.get(WorkbenchEditorService).open).toBeCalled();
 
     done();
   });
 
   it('monaco bulk edit preview test', async (done) => {
-    const mockedPreviewFn = jest.fn((edit: WorkspaceEdit, options?: IBulkEditOptions): Promise<WorkspaceEdit> => {
-      return Promise.resolve(edit);
+    const mockedPreviewFn = jest.fn((edits: ResourceEdit[], options?: IBulkEditOptions): Promise<ResourceEdit[]> => {
+      return Promise.resolve(edits);
     });
     const monacoBulkEditService: MonacoBulkEditService = injector.get(MonacoBulkEditService);
     monacoBulkEditService.setPreviewHandler(mockedPreviewFn);
 
-    await monacoBulkEditService.apply({
-      edits: [
-        {
-          resource: monaco.Uri!.parse('file:///monaco-test-2.ts'),
-          edit: {
-            range: {
-              startColumn: 1,
-              endColumn: 1,
-              startLineNumber: 1,
-              endLineNumber: 1,
-            },
-            text: 'test1',
+    await monacoBulkEditService.apply([
+      {
+        resource: Uri.parse('file:///monaco-test-2.ts'),
+        textEdit: {
+          range: {
+            startColumn: 1,
+            endColumn: 1,
+            startLineNumber: 1,
+            endLineNumber: 1,
           },
+          text: 'test1',
         },
-      ],
-    }, { showPreview: true });
+      },
+    ] as unknown as ResourceEdit[], { showPreview: true });
 
-    const model = monaco.editor!.getModel(monaco.Uri!.parse('file:///monaco-test-2.ts'))!;
+    const model = monaco.editor.getModel(Uri.parse('file:///monaco-test-2.ts'))!;
     expect(model.pushEditOperations).toBeCalled();
     expect(model.pushStackElement).toBeCalled();
 

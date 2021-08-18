@@ -10,15 +10,15 @@ import { EditorDecorationCollectionService } from '@ali/ide-editor/lib/browser/e
 import { EditorDocumentModelContentRegistryImpl, EditorDocumentModelServiceImpl, SaveTask } from '@ali/ide-editor/lib/browser/doc-model/main';
 import { LanguageService } from '@ali/ide-editor/lib/browser/language/language.service';
 import { MonacoService } from '@ali/ide-monaco';
-import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
+import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
 import { URI, Disposable, createContributionProvider, ILoggerManagerClient, IEventBus } from '@ali/ide-core-common';
 import { TestResourceProvider, TestResourceResolver, TestEditorDocumentProvider, TestResourceResolver2, TestResourceComponent, doNotClose } from './test-providers';
-import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
+import { useMockStorage } from '../../../core-browser/__mocks__/storage';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { CorePreferences, IContextKeyService, PreferenceService } from '@ali/ide-core-browser';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { EditorFeatureRegistryImpl } from '@ali/ide-editor/lib/browser/feature';
-import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { isEditStack, isEOLStack } from '@ali/ide-editor/lib/browser/doc-model/editor-is-fn';
 import { IMessageService } from '@ali/ide-overlay';
 import { IConfigurationService } from '@ali/monaco-editor-core/esm/vs/platform/configuration/common/configuration';

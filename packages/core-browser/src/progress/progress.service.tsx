@@ -229,7 +229,7 @@ export class ProgressService implements IProgressService {
 
       // Create a promise that we can resolve as needed
       // when the outside calls dispose on us
-      let promiseResolve: () => void;
+      let promiseResolve: (value?: R | PromiseLike<R>) => void;
       const promise = new Promise<R>((resolve) => promiseResolve = resolve);
 
       this.withWindowProgress<R>({

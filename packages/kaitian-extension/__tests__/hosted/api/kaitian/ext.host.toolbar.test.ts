@@ -7,7 +7,7 @@ import { createBrowserInjector } from '../../../../../debug/node_modules/@ali/id
 
 import { createToolbarAPIFactory, ExtHostToolbarActionService } from '@ali/ide-kaitian-extension/lib/hosted/api/kaitian/ext.host.toolbar';
 import { ExtHostCommon } from '@ali/ide-kaitian-extension/lib/hosted/api/kaitian/ext.host.common';
-import { mockExtensions } from '../../../__mock__/extensions';
+import { mockExtensions } from '../../../../__mocks__/extensions';
 
 const actionMaps: Map<string, any> = new Map();
 

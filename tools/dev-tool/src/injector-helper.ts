@@ -33,6 +33,10 @@ export function createBrowserInjector(modules: Array<ConstructorOf<BrowserModule
   // TODO mock支持新版的引入
   const app = new ClientApp({ modules, injector } as any);
 
+  afterAll(() => {
+    app.injector.disposeAll();
+  });
+
   return app.injector as MockInjector;
 }
 
@@ -59,6 +63,10 @@ export function createNodeInjector(constructors: Array<ConstructorOf<NodeModule>
       injector.addProviders(...instance.providers);
     }
   }
+
+  afterAll(() => {
+    injector.disposeAll();
+  });
 
   return injector as MockInjector;
 }
