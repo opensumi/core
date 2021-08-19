@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { ViewState } from '@ali/ide-core-browser';
 import { INodeRendererProps, ClasslistComposite, IRecycleTreeHandle, TreeNodeType, RecycleTree, INodeRendererWrapProps, TreeModel, CompositeTreeNode, PromptHandle } from '@ali/ide-components';
 import { ExpressionContainer, ExpressionNode, DebugVariableContainer, DebugVariable, DebugWatchNode } from '../../tree/debug-tree-node.define';
-import { DebugWatchModelService } from './debug-watch-tree.model.service';
+import { DebugWatchModelService, IWatchNode } from './debug-watch-tree.model.service';
 import * as styles from './debug-watch.module.less';
 import * as cls from 'classnames';
 import { Loading } from '@ali/ide-core-browser/lib/components/loading';
@@ -63,7 +63,7 @@ export const DebugWatchView = observer(({
     });
   };
 
-  const handleTwistierClick = (ev: React.MouseEvent, item: ExpressionNode | ExpressionContainer, type: TreeNodeType) => {
+  const handleTwistierClick = (ev: React.MouseEvent, item: IWatchNode, type: TreeNodeType) => {
     // 阻止点击事件冒泡
     ev.stopPropagation();
 
@@ -74,7 +74,7 @@ export const DebugWatchView = observer(({
     handleTwistierClick(item, type);
   };
 
-  const handlerContextMenu = (ev: React.MouseEvent, node: ExpressionNode | ExpressionContainer) => {
+  const handlerContextMenu = (ev: React.MouseEvent, node: IWatchNode) => {
     const { handleContextMenu } = debugWatchModelService;
     handleContextMenu(ev, node);
   };
@@ -182,17 +182,10 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
     }
   };
 
-  let paddingLeft;
-  if (isPrompt) {
-    paddingLeft = `${(defaultLeftPadding || 8) + (item.depth || 0) * (leftPadding || 0)}px`;
-  } else {
-    paddingLeft = `${(defaultLeftPadding || 8) + (item.depth || 0) * (leftPadding || 0)}px`;
-  }
-
   const editorNodeStyle = {
     height: DEBUG_WATCH_TREE_NODE_HEIGHT,
     lineHeight: `${DEBUG_WATCH_TREE_NODE_HEIGHT}px`,
-    paddingLeft,
+    paddingLeft: `${(defaultLeftPadding || 8) + (item.depth || 0) * (leftPadding || 0)}px`,
   } as React.CSSProperties;
 
   const renderDisplayName = (node: ExpressionContainer | ExpressionNode) => {

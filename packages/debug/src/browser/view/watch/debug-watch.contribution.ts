@@ -1,15 +1,15 @@
-import { CONTEXT_IN_DEBUG_MODE } from './../../../common/constants';
+import { CONTEXT_IN_DEBUG_MODE, CONTEXT_WATCH_EXPRESSIONS_FOCUSED, CONTEXT_WATCH_ITEM_TYPE } from './../../../common/constants';
 import { MenuContribution } from '@ali/ide-core-browser/lib/menu/next';
 import { Autowired } from '@ali/common-di';
-import { Domain, CommandContribution, CommandRegistry, TabBarToolbarContribution, localize, ToolbarRegistry, ClientAppContribution } from '@ali/ide-core-browser';
+import { Domain, CommandContribution, CommandRegistry, TabBarToolbarContribution, localize, ToolbarRegistry, ClientAppContribution, KeybindingContribution, KeybindingRegistry } from '@ali/ide-core-browser';
 import { DEBUG_COMMANDS } from '../../debug-contribution';
 import { DEBUG_WATCH_ID } from '../../../common';
 import { DebugWatchModelService } from './debug-watch-tree.model.service';
 import { MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
 import { DebugWatchNode } from '../../tree/debug-tree-node.define';
 
-@Domain(ClientAppContribution, MenuContribution, CommandContribution, TabBarToolbarContribution)
-export class WatchPanelContribution implements ClientAppContribution, MenuContribution, CommandContribution, TabBarToolbarContribution {
+@Domain(ClientAppContribution, MenuContribution, CommandContribution, TabBarToolbarContribution, KeybindingContribution)
+export class WatchPanelContribution implements ClientAppContribution, MenuContribution, CommandContribution, TabBarToolbarContribution, KeybindingContribution {
 
   @Autowired(DebugWatchModelService)
   private readonly debugWatchModelService: DebugWatchModelService;
@@ -31,8 +31,15 @@ export class WatchPanelContribution implements ClientAppContribution, MenuContri
       },
     });
     registry.registerCommand(DEBUG_COMMANDS.REMOVE_WATCHER, {
-      execute: (node: DebugWatchNode) => {
-        this.debugWatchModelService.removeDebugWatchNode(node);
+      execute: (node: DebugWatchNode | unknown) => {
+        if (node instanceof DebugWatchNode) {
+          this.debugWatchModelService.removeDebugWatchNode(node);
+        }
+
+        const [selectedNode] = this.debugWatchModelService.selectedNodes;
+        if (selectedNode instanceof DebugWatchNode) {
+          this.debugWatchModelService.removeDebugWatchNode(selectedNode);
+        }
       },
     });
     registry.registerCommand(DEBUG_COMMANDS.EDIT_WATCHER, {
@@ -104,6 +111,7 @@ export class WatchPanelContribution implements ClientAppContribution, MenuContri
         id: DEBUG_COMMANDS.REMOVE_WATCHER.id,
         label: localize('debug.watch.remove'),
       },
+      when: CONTEXT_WATCH_ITEM_TYPE.equalsTo('expression'),
       group: '1_operator',
     });
     registry.registerMenuItem(MenuId.DebugWatchContext, {
@@ -112,6 +120,14 @@ export class WatchPanelContribution implements ClientAppContribution, MenuContri
         label: localize('debug.watch.removeAll'),
       },
       group: '1_operator',
+    });
+  }
+
+  registerKeybindings(keybindings: KeybindingRegistry) {
+    keybindings.registerKeybinding({
+      command: DEBUG_COMMANDS.REMOVE_WATCHER.id,
+      keybinding: 'ctrlcmd+backspace',
+      when: CONTEXT_WATCH_EXPRESSIONS_FOCUSED.raw,
     });
   }
 

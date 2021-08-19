@@ -2,7 +2,7 @@ import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { Disposable } from '@ali/ide-core-common';
 import { DebugHoverSource } from '@ali/ide-debug/lib/browser/editor/debug-hover-source';
 import { IDebugSessionManager } from '@ali/ide-debug';
-import { DebugConsoleNode } from '@ali/ide-debug/lib/browser/tree';
+import { DebugWatchNode } from '@ali/ide-debug/lib/browser/tree';
 import { ICtxMenuRenderer, AbstractContextMenuService } from '@ali/ide-core-browser/lib/menu/next';
 import { DebugWatchModelService } from '@ali/ide-debug/lib/browser/view/watch/debug-watch-tree.model.service';
 import { IContextKeyService, StorageProvider } from '@ali/ide-core-browser';
@@ -56,6 +56,9 @@ describe('Debug Watch Tree Model', () => {
 
   const mockContextKeyService = {
     createScoped: jest.fn(),
+    createKey: jest.fn(() => ({
+      set: jest.fn(),
+    })),
   };
 
   beforeAll(async (done) => {
@@ -144,7 +147,7 @@ describe('Debug Watch Tree Model', () => {
       on: jest.fn(),
     } as any;
     debugWatchModelService.initDecorations(mockRoot);
-    const node = new DebugConsoleNode(mockSession, 'test', mockRoot);
+    const node = new DebugWatchNode(mockSession, 'test', mockRoot);
     debugWatchModelService.activeNodeDecoration(node);
     const decoration = debugWatchModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -156,7 +159,7 @@ describe('Debug Watch Tree Model', () => {
       on: jest.fn(),
     } as any;
     debugWatchModelService.initDecorations(mockRoot);
-    const node = new DebugConsoleNode(mockSession, 'test', mockRoot);
+    const node = new DebugWatchNode(mockSession, 'test', mockRoot);
     debugWatchModelService.activeNodeDecoration(node);
     let decoration = debugWatchModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -172,7 +175,7 @@ describe('Debug Watch Tree Model', () => {
       on: jest.fn(),
     } as any;
     debugWatchModelService.initDecorations(mockRoot);
-    const node = new DebugConsoleNode(mockSession, 'test', mockRoot);
+    const node = new DebugWatchNode(mockSession, 'test', mockRoot);
     debugWatchModelService.activeNodeDecoration(node);
     let decoration = debugWatchModelService.decorations.getDecorations(node);
     debugWatchModelService.removeNodeDecoration();
@@ -192,7 +195,7 @@ describe('Debug Watch Tree Model', () => {
       on: jest.fn(),
     } as any;
     debugWatchModelService.initDecorations(mockRoot);
-    const node = new DebugConsoleNode(mockSession, 'test', mockRoot);
+    const node = new DebugWatchNode(mockSession, 'test', mockRoot);
     debugWatchModelService.initDecorations(mockRoot);
     debugWatchModelService.activeNodeDecoration(node);
     let decoration = debugWatchModelService.decorations.getDecorations(node);

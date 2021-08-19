@@ -1,6 +1,8 @@
+import { DebugVariableContainer, DebugVariable } from './../../tree/debug-tree-node.define';
+import { CONTEXT_WATCH_EXPRESSIONS_FOCUSED, CONTEXT_WATCH_ITEM_TYPE } from './../../../common/constants';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNodeEvent, NewPromptHandle, IWatcherEvent, RenamePromptHandle } from '@ali/ide-components';
-import { Emitter, IContextKeyService, ThrottledDelayer, Deferred, Event, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IClipboardService } from '@ali/ide-core-browser';
+import { Emitter, IContextKeyService, ThrottledDelayer, Deferred, Event, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IClipboardService, IContextKey } from '@ali/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { DebugWatchModel } from './debug-watch-model';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -13,6 +15,8 @@ import * as styles from './debug-watch.module.less';
 export interface IDebugWatchHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
 }
+
+export type IWatchNode = DebugVariable | DebugVariableContainer | DebugWatchNode | DebugWatchRoot;
 
 @Injectable()
 export class DebugWatchModelService {
@@ -60,11 +64,11 @@ export class DebugWatchModelService {
   private contextMenuDecoration: Decoration = new Decoration(styles.mod_actived); // 右键菜单激活态
   private loadingDecoration: Decoration = new Decoration(styles.mod_loading); // 加载态
   // 即使选中态也是焦点态的节点
-  private _focusedNode: ExpressionContainer | ExpressionNode | undefined;
+  private _focusedNode: IWatchNode | undefined;
   // 选中态的节点
-  private _selectedNodes: (ExpressionContainer | ExpressionNode)[] = [];
+  private _selectedNodes: IWatchNode[] = [];
   // 右键菜单选中态的节点
-  private _contextMenuNode: ExpressionContainer | ExpressionNode | undefined;
+  private _contextMenuNode: IWatchNode | undefined;
 
   private onDidRefreshedEmitter: Emitter<void> = new Emitter();
   private onDidUpdateTreeModelEmitter: Emitter<TreeModel | void> = new Emitter();
@@ -77,8 +81,11 @@ export class DebugWatchModelService {
   private disposableCollection: DisposableCollection = new DisposableCollection();
   private loadedDeferred: Deferred<void> = new Deferred();
 
+  private watchItemType: IContextKey<string>;
+
   constructor() {
     this.init();
+    this.watchItemType = CONTEXT_WATCH_ITEM_TYPE.bind(this.contextKeyService);
   }
 
   get flushEventQueuePromise() {
@@ -207,7 +214,8 @@ export class DebugWatchModelService {
   }
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
-  activeNodeDecoration = (target: ExpressionContainer | ExpressionNode, dispatchChange: boolean = true) => {
+  activeNodeDecoration = (target: IWatchNode, dispatchChange: boolean = true) => {
+    CONTEXT_WATCH_EXPRESSIONS_FOCUSED.bind(this.contextKeyService);
     if (this.contextMenuNode) {
       this.focusedDecoration.removeTarget(this.contextMenuNode);
       this.selectedDecoration.removeTarget(this.contextMenuNode);
@@ -237,7 +245,7 @@ export class DebugWatchModelService {
   }
 
   // 右键菜单焦点态切换
-  activeNodeActivedDecoration = (target: ExpressionContainer | ExpressionNode) => {
+  activeNodeActivedDecoration = (target: IWatchNode) => {
     if (this.contextMenuNode) {
       this.contextMenuDecoration.removeTarget(this.contextMenuNode);
     }
@@ -252,6 +260,7 @@ export class DebugWatchModelService {
 
   // 取消选中节点焦点
   enactiveNodeDecoration = () => {
+    CONTEXT_WATCH_EXPRESSIONS_FOCUSED.bind(this.contextKeyService).set(false);
     if (this.focusedNode) {
       this.focusedDecoration.removeTarget(this.focusedNode);
       this._focusedNode = undefined;
@@ -272,7 +281,7 @@ export class DebugWatchModelService {
     this.decorations.removeDecoration(this.loadingDecoration);
   }
 
-  handleContextMenu = (ev: React.MouseEvent, expression?: ExpressionContainer | ExpressionNode) => {
+  handleContextMenu = (ev: React.MouseEvent, expression?: IWatchNode) => {
     ev.stopPropagation();
     ev.preventDefault();
 
@@ -283,7 +292,7 @@ export class DebugWatchModelService {
     } else {
       this.enactiveNodeDecoration();
     }
-    let node: ExpressionContainer | ExpressionNode;
+    let node: IWatchNode | ExpressionContainer;
 
     if (!expression) {
       // 空白区域右键菜单
@@ -291,6 +300,9 @@ export class DebugWatchModelService {
     } else {
       node = expression;
     }
+
+    this.watchItemType.set(node instanceof DebugWatchNode ? 'expression' : (node instanceof DebugVariable || node instanceof DebugVariableContainer) ? 'variable' : undefined);
+
     const menus = this.contextMenuService.createMenu({id: MenuId.DebugWatchContext, contextKeyService: this.contextMenuContextKeyService});
     const menuNodes = menus.getMergedMenuNodes();
     menus.dispose();
@@ -310,12 +322,12 @@ export class DebugWatchModelService {
     this.enactiveNodeDecoration();
   }
 
-  handleItemClick = (item: ExpressionContainer | ExpressionNode) => {
+  handleItemClick = (item: IWatchNode) => {
     // 单选操作默认先更新选中状态
     this.activeNodeDecoration(item);
   }
 
-  handleTwistierClick = (item: ExpressionContainer | ExpressionNode, type: TreeNodeType) => {
+  handleTwistierClick = (item: IWatchNode, type: TreeNodeType) => {
     if (type === TreeNodeType.CompositeTreeNode) {
       if (DebugWatchNode.is(item) && (item as DebugWatchNode).available) {
         this.activeNodeDecoration(item, false);
