@@ -60,6 +60,36 @@ declare module 'kaitian' {
     activate(): Thenable<T>;
   }
 
+  export namespace extensions {
+
+    /**
+     * Get an extension by its full identifier in the form of: `publisher.name`.
+     *
+     * @param extensionId An extension identifier.
+     * @return An extension or `undefined`.
+     */
+    export function getExtension(extensionId: string): Extension<any> | undefined;
+
+    /**
+     * Get an extension its full identifier in the form of: `publisher.name`.
+     *
+     * @param extensionId An extension identifier.
+     * @return An extension or `undefined`.
+     */
+    export function getExtension<T>(extensionId: string): Extension<T> | undefined;
+
+    /**
+     * All extensions currently known to the system.
+     */
+    export const all: ReadonlyArray<Extension<any>>;
+
+    /**
+     * An event which fires when `extensions.all` changes. This can happen when extensions are
+     * installed, uninstalled, enabled or disabled.
+     */
+    export const onDidChange: Event<void>;
+  }
+
   export namespace event {
 
     /**
