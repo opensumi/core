@@ -18,6 +18,14 @@
   &:hover {
     background:  var(--list-hoverBackground);
     color:  var(--list-hoverForeground);
+    .debug_remove_breakpoints_icon {
+      display: inline-block;
+      pointer-events: all;
+      margin-right: 5px;
+    }
+    .debug_breakpoints_badge {
+      display: none;
+    }
   }
   &.selected {
     background: var(--list-activeSelectionBackground);
@@ -29,6 +37,16 @@
   width: 19px;
   height: 19px;
   min-width: 19px;
+}
+
+.debug_remove_breakpoints_icon {
+  color: #c5c5c5;
+  display: none;
+  pointer-events: none;
+}
+
+.debug_breakpoints_badge {
+  display: block;
 }
 
 .debug_breakpoints_description {

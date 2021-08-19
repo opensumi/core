@@ -164,7 +164,7 @@ export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
   delBreakpoint(breakpoint: DebugBreakpoint): boolean {
     const uri = URI.parse(breakpoint.uri);
     const breakpoints = this.getBreakpoints(uri);
-    const index = breakpoints.indexOf(breakpoint);
+    const index = breakpoints.findIndex((bp) => bp.id === breakpoint.id);
     if (index > -1) {
       breakpoints.splice(index, 1);
       this.setBreakpoints(uri, ([] as DebugBreakpoint[]).concat(breakpoints));

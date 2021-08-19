@@ -129,6 +129,11 @@ export const BreakpointItem = ({
     return '';
   };
 
+  const removeBreakpoint = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    event.stopPropagation();
+    debugBreakpointsService.delBreakpoint(data.breakpoint as DebugBreakpoint);
+  };
+
   return <div className={ cls(styles.debug_breakpoints_item) }>
     <div className={ cls(converBreakpointClsState(), styles.debug_breakpoints_icon) }></div>
     <CheckBox id={ data.id } onChange={ handleBreakpointChange } checked={ enabled }></CheckBox>
@@ -138,11 +143,19 @@ export const BreakpointItem = ({
     </div>
     {
       isDebugBreakpoint(data.breakpoint) ? (
-        <Badge>
-          { (data.breakpoint as DebugBreakpoint).raw.line }
-          { !!data.breakpoint.raw.column && `:${data.breakpoint.raw.column}` }
-        </Badge>
+        <>
+          <a
+            title='删除断点'
+            onClick={ (event) => removeBreakpoint(event) }
+            className={ cls(styles.debug_remove_breakpoints_icon, 'kaitian-icon kticon-close')} >
+          </a>
+          <Badge className={ styles.debug_breakpoints_badge }>
+            { (data.breakpoint as DebugBreakpoint).raw.line }
+            { !!data.breakpoint.raw.column && `:${data.breakpoint.raw.column}` }
+          </Badge>
+        </>
       ) : null
     }
   </div>;
 };
+// e7fd

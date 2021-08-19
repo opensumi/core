@@ -165,6 +165,11 @@ export class DebugBreakpointsService extends WithEventBus {
     this.breakpoints.clearBreakpoints();
   }
 
+  delBreakpoint(bp: DebugBreakpoint): void {
+    this.breakpoints.delBreakpoint(bp);
+    this.updateBreakpoints();
+  }
+
   @action
   toggleBreakpoints() {
     this.breakpoints.breakpointsEnabled = !this.breakpoints.breakpointsEnabled;
