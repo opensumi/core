@@ -31,6 +31,7 @@ import { DebugModelManager } from './editor/debug-model-manager';
 import { ITaskService } from '@ali/ide-task/lib/common';
 import { isRemoteAttach } from './debugUtils';
 import { IDebugProgress } from '../common/debug-progress';
+import { DebugContextKey } from './contextkeys/debug-contextkey.service';
 
 // tslint:disable-next-line:no-empty-interface
 export interface WillStartDebugSession extends WaitUntilEvent {
@@ -131,6 +132,9 @@ export class DebugSessionManager implements IDebugSessionManager {
 
   @Autowired(IDebugProgress)
   protected readonly debugProgressService: IDebugProgress;
+
+  @Autowired(DebugContextKey)
+  protected readonly debugContextKey: DebugContextKey;
 
   constructor() {
     this.init();
@@ -370,6 +374,7 @@ export class DebugSessionManager implements IDebugSessionManager {
           this.debugStopped.set(false);
         }
       }
+      this.debugContextKey.contextDebugState.set(DebugState[session.state] as keyof typeof DebugState);
     });
     session.on('terminated', (event) => {
       const restart = event.body && event.body.restart;

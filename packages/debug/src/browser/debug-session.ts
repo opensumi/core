@@ -1,3 +1,4 @@
+import { IDebugModel } from './../common/debug-model';
 import {
   Emitter,
   Event,
@@ -99,7 +100,7 @@ export class DebugSession implements IDebugSession {
     protected readonly connection: DebugSessionConnection,
     protected readonly terminalService: ITerminalApiService,
     protected readonly workbenchEditorService: WorkbenchEditorService,
-    protected readonly breakpoints: BreakpointManager,
+    protected readonly breakpointManager: BreakpointManager,
     protected readonly modelManager: DebugModelManager,
     protected readonly labelProvider: LabelService,
     protected readonly messages: IMessageService,
@@ -217,15 +218,15 @@ export class DebugSession implements IDebugSession {
         this._onDidProgressEnd.fire(event);
       }),
       this.on('capabilities', (event) => this.updateCapabilities(event.body.capabilities)),
-      this.breakpoints.onDidChangeBreakpoints((event) => this.updateBreakpoint(event)),
-      this.breakpoints.onDidChangeExceptionsBreakpoints((args) => {
-        if (this.breakpoints.breakpointsEnabled) {
+      this.breakpointManager.onDidChangeBreakpoints((event) => this.updateBreakpoint(event)),
+      this.breakpointManager.onDidChangeExceptionsBreakpoints((args) => {
+        if (this.breakpointManager.breakpointsEnabled) {
           this.setExceptionBreakpoints(args);
         }
       }),
       Disposable.create(() => {
         // 清除断点的运行时状态
-        this.breakpoints.clearAllStatus(this.id);
+        this.breakpointManager.clearAllStatus(this.id);
       }),
     ]);
   }
@@ -312,7 +313,7 @@ export class DebugSession implements IDebugSession {
   protected async configure(): Promise<void> {
     await this.initBreakpoints();
     // 更新exceptionBreakpoint配置
-    this.breakpoints.setExceptionBreakpoints(this.capabilities.exceptionBreakpointFilters || []);
+    this.breakpointManager.setExceptionBreakpoints(this.capabilities.exceptionBreakpointFilters || []);
     if (this.capabilities.supportsConfigurationDoneRequest) {
       await this.sendRequest('configurationDone', {});
     }
@@ -360,14 +361,14 @@ export class DebugSession implements IDebugSession {
             const uri = DebugSource.toUri(raw.source);
             const bp = DebugBreakpoint.create(uri, { line: raw.line, column: raw.column });
             bp.status.set(this.id, raw);
-            this.breakpoints.addBreakpoint(bp);
+            this.addBreakpoint(bp);
           }
           break;
         case 'removed':
           if (raw.id) {
             breakpoint = this.id2Breakpoint.get(raw.id);
             if (breakpoint) {
-              this.breakpoints.delBreakpoint(breakpoint);
+              this.delBreakpoint(breakpoint);
             }
           }
           break;
@@ -376,7 +377,7 @@ export class DebugSession implements IDebugSession {
             breakpoint = this.id2Breakpoint.get(raw.id);
             if (breakpoint) {
               (breakpoint as IRuntimeBreakpoint).status.set(this.id, raw);
-              this.breakpoints.updateBreakpoint(breakpoint);
+              this.breakpointManager.updateBreakpoint(breakpoint);
             }
           }
           break;
@@ -391,38 +392,53 @@ export class DebugSession implements IDebugSession {
     const promises: Promise<void>[] = [];
     for (const uri of affected) {
       const source = await this.toSource(uri);
-      const enabled = this.breakpoints.getBreakpoints(uri).filter((b) => this.breakpoints.breakpointsEnabled && b.enabled);
-
+      const enableds = this.breakpointManager.getBreakpoints(uri).filter((b) => this.breakpointManager.breakpointsEnabled && b.enabled);
       promises.push(
         this.sendRequest('setBreakpoints', {
           source: source.raw,
           sourceModified: false,
-          lines: enabled.map((breakpoint) => breakpoint.raw.line),
-          breakpoints: enabled.map((breakpoint) => breakpoint.raw),
+          lines: enableds.map((breakpoint) => breakpoint.raw.line),
+          breakpoints: enableds.map((breakpoint) => breakpoint.raw),
         })
           .then((res) => {
             res.body.breakpoints.forEach((status, index) => {
               if (status.id) {
-                this.id2Breakpoint.set(status.id, enabled[index]);
+                this.id2Breakpoint.set(status.id, enableds[index]);
               }
-              (enabled[index] as IRuntimeBreakpoint).status.set(this.id, status);
+              const enabledBp = (enableds[index] as IRuntimeBreakpoint);
+              enabledBp.raw.line = status.line ?? enabledBp.raw.line;
+              enabledBp.raw.column = status.column ?? enabledBp.raw.column;
+              enabledBp.status.set(this.id, status);
             });
-            this.breakpoints.updateBreakpoints(enabled, true);
+            this.breakpointManager.updateBreakpoints(enableds, true);
+            this.breakpointManager.resolveBpDeffered();
             return Promise.resolve();
           })
           .catch((error) => {
             if (!(error instanceof Error)) {
               const genericMessage: string = 'Breakpoint not valid for current debug session';
               const message: string = error.message ? `${error.message}` : genericMessage;
-              enabled.forEach((breakpoint) => {
+              enableds.forEach((breakpoint) => {
                 (breakpoint as IRuntimeBreakpoint).status.set(this.id, { verified: false, message });
-                this.breakpoints.updateBreakpoint(breakpoint, true);
+                this.breakpointManager.updateBreakpoint(breakpoint, true);
               });
             }
           }));
     }
 
     return await Promise.all(promises);
+  }
+
+  public delBreakpoint(breakpoint: DebugBreakpoint): boolean {
+    return this.breakpointManager.delBreakpoint(breakpoint);
+  }
+
+  public async addBreakpoint(breakpoint: DebugBreakpoint, isBpDeferred?: boolean): Promise<void> {
+    if (isBpDeferred) {
+      this.breakpointManager.setBpDeffered();
+    }
+    this.breakpointManager.addBreakpoint(breakpoint);
+    return this.breakpointManager.promiseBpDeffered();
   }
 
   /**
@@ -451,7 +467,7 @@ export class DebugSession implements IDebugSession {
 
     // 当配置为noDebug时，仅运行程序，不设置断点
     if (!this.configuration.noDebug) {
-      await this.setBreakpoints(this.breakpoints.affected.map((str) => URI.parse(str)));
+      await this.setBreakpoints(this.breakpointManager.affected.map((str) => URI.parse(str)));
     }
 
     this.settingBreakpoints.resolve();
@@ -961,7 +977,7 @@ export class DebugSession implements IDebugSession {
   // Cancellation end
 
   public getDebugProtocolBreakpoint(breakpointId: string): DebugProtocol.Breakpoint | undefined {
-    const data = this.breakpoints.getBreakpoints().find((bp) => bp.id === breakpointId);
+    const data = this.breakpointManager.getBreakpoints().find((bp) => bp.id === breakpointId);
     if (data) {
       const status = data.status.get(this.id);
       const bp: DebugProtocol.Breakpoint = {
@@ -982,6 +998,10 @@ export class DebugSession implements IDebugSession {
   }
 
   public currentEditor(): DebugEditor | undefined {
-    return this.modelManager.model?.editor;
+    return this.getModel()?.editor;
+  }
+
+  public getModel(): IDebugModel | undefined {
+    return this.modelManager.model;
   }
 }

@@ -140,7 +140,7 @@ export const BreakpointItem = ({
       isDebugBreakpoint(data.breakpoint) ? (
         <Badge>
           { (data.breakpoint as DebugBreakpoint).raw.line }
-          { data.breakpoint.raw.column && `:${data.breakpoint.raw.column}` }
+          { !!data.breakpoint.raw.column && `:${data.breakpoint.raw.column}` }
         </Badge>
       ) : null
     }

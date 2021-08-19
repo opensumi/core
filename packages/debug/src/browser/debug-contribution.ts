@@ -1,7 +1,7 @@
 import { CONTEXT_DEBUGGERS_AVAILABLE, CONTEXT_IN_DEBUG_MODE, CONTEXT_BREAKPOINT_INPUT_FOCUSED } from './../common/constants';
-import { Domain, ClientAppContribution, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution, CommandService, IReporterService, formatLocalize, CoreConfiguration } from '@ali/ide-core-browser';
+import { URI } from '@ali/ide-core-common';
+import { Domain, ClientAppContribution, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution, CommandService, IReporterService, formatLocalize, CoreConfiguration, ComponentContribution, ComponentRegistry, KeybindingRegistry, getIcon, PreferenceService, IPreferenceSettingsService } from '@ali/ide-core-browser';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import { ComponentContribution, ComponentRegistry, KeybindingRegistry } from '@ali/ide-core-browser';
 import { DebugBreakpointView } from './view/breakpoints/debug-breakpoints.view';
 import { DebugVariableView } from './view/variables/debug-variables.view';
 import { DebugCallStackView } from './view/frames/debug-call-stack.view';
@@ -14,7 +14,6 @@ import { DebugConfigurationManager } from './debug-configuration-manager';
 import { launchSchema } from './debug-schema-updater';
 import { DebugWatchView } from './view/watch/debug-watch.view';
 
-import { getIcon } from '@ali/ide-core-browser';
 import { ToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
 import { DebugBreakpointsService } from './view/breakpoints/debug-breakpoints.service';
 import { DebugConfigurationService } from './view/configuration/debug-configuration.service';
@@ -29,13 +28,12 @@ import { MenuContribution, MenuId, IMenuRegistry } from '@ali/ide-core-browser/l
 import { BrowserEditorContribution, IEditorFeatureRegistry, EditorComponentRegistry, IEditor } from '@ali/ide-editor/lib/browser';
 import { DebugEditorContribution } from './editor/debug-editor-contribution';
 import { FloatingClickWidget } from './components/floating-click-widget';
-import { PreferenceService } from '@ali/ide-core-browser';
 import { DebugBreakpointZoneWidget } from './editor/debug-breakpoint-zone-widget';
 import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
 import { IFileServiceClient, IShadowFileProvider } from '@ali/ide-file-service';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
-import { IPreferenceSettingsService } from '@ali/ide-core-browser';
 import { DebugProgressService } from './debug-progress.service';
+import { DebugRunToCursorService } from './editor/debug-run-to-cursor.service';
 
 const LAUNCH_JSON_REGEX = /launch\.json$/;
 
@@ -156,6 +154,10 @@ export namespace DEBUG_COMMANDS {
   export const CONSOLE_INPUT_UP_ARROW = {
     id: 'debug.console.input.up.arrow',
   };
+  export const RUN_TO_CURSOR = {
+    id: 'debug.action.runToCursor',
+    label: localize('debug.action.runToCursor'),
+  };
 }
 
 export namespace DebugBreakpointWidgetCommands {
@@ -230,6 +232,9 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
 
   @Autowired(DebugProgressService)
   protected readonly debugProgressService: DebugProgressService;
+
+  @Autowired(DebugRunToCursorService)
+  protected readonly debugRunToCursorService: DebugRunToCursorService;
 
   private firstSessionStart: boolean = true;
 
@@ -572,6 +577,11 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
       isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
       isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
     });
+    commands.registerCommand(DEBUG_COMMANDS.RUN_TO_CURSOR, {
+      execute: (uri: URI) => {
+        this.debugRunToCursorService.run(uri);
+      },
+    });
   }
 
   registerToolbarItems(registry: ToolbarRegistry) {
@@ -686,6 +696,17 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
     menuRegistry.registerMenuItem(MenuId.DebugBreakpointsContext, {
       command: DEBUG_COMMANDS.ADD_LOGPOINT.id,
       group: '2_has_not_breakpoint',
+    });
+
+    // editor/context
+    menuRegistry.registerMenuItem(MenuId.EditorContext, {
+      command: {
+        id: DEBUG_COMMANDS.RUN_TO_CURSOR.id,
+        label: DEBUG_COMMANDS.RUN_TO_CURSOR.label,
+      },
+      when: `${CONTEXT_IN_DEBUG_MODE.raw}`,
+      group: 'debug',
+      order: 2,
     });
   }
 

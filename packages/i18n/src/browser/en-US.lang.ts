@@ -250,6 +250,7 @@ export const localizationBundle = {
     'debug.action.pause': 'Pause',
     'debug.action.stop': 'Stop',
     'debug.action.disattach': 'Disattach',
+    'debug.action.runToCursor': 'Run to Cursor',
     'debug.breakpoint.toggle': 'Enable/Disable Breakpoints',
     'debug.breakpoint.removeAll': 'Remove All Breakpoints',
     'debug.breakpoint.uncaughtExceptions': 'Uncaught Exceptions',

@@ -1,3 +1,4 @@
+import { Deferred } from '@ali/ide-core-common';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Emitter, Event, URI, isUndefined, StorageProvider, IStorage, STORAGE_NAMESPACE, IReporterService } from '@ali/ide-core-browser';
@@ -59,10 +60,31 @@ export class BreakpointManager extends MarkerManager<DebugBreakpoint> {
     return Array.from(this._affected.values());
   }
 
+  protected breakpointsDeffered: Deferred<void> | null = null;
+
   protected readonly onDidChangeBreakpointsEmitter = new Emitter<BreakpointsChangeEvent>();
   readonly onDidChangeBreakpoints: Event<BreakpointsChangeEvent> = this.onDidChangeBreakpointsEmitter.event;
   protected readonly onDidChangeExceptionsBreakpointsEmitter = new Emitter<ExceptionBreakpointsChangeEvent>();
   readonly onDidChangeExceptionsBreakpoints: Event<ExceptionBreakpointsChangeEvent> = this.onDidChangeExceptionsBreakpointsEmitter.event;
+
+  public setBpDeffered(): this {
+    this.breakpointsDeffered = new Deferred();
+    return this;
+  }
+
+  public resolveBpDeffered(): void {
+    if (this.breakpointsDeffered) {
+      this.breakpointsDeffered.resolve();
+    }
+  }
+
+  public promiseBpDeffered(): Promise<void> {
+    if (this.breakpointsDeffered) {
+      return this.breakpointsDeffered.promise;
+    } else {
+      return Promise.resolve();
+    }
+  }
 
   setMarkers(uri: URI, owner: string, newMarkers: DebugBreakpoint[]): Marker<DebugBreakpoint>[] {
     const result = super.setMarkers(uri, owner, newMarkers);

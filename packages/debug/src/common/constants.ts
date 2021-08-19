@@ -1,3 +1,4 @@
+import { DebugState } from './debug-session';
 import { RawContextKey } from '@ali/ide-core-browser/lib/raw-context-key';
 
 export const DEBUG_CONSOLE_CONTAINER_ID = 'debug-console-container';
@@ -17,7 +18,7 @@ export const CONTEXT_DEBUG_TYPE_KEY = 'debugType';
 
 export const CONTEXT_DEBUG_TYPE = new RawContextKey<string>('debugType', undefined);
 export const CONTEXT_DEBUG_CONFIGURATION_TYPE = new RawContextKey<string>('debugConfigurationType', undefined);
-export const CONTEXT_DEBUG_STATE = new RawContextKey<string>('debugState', 'inactive');
+export const CONTEXT_DEBUG_STATE = new RawContextKey<keyof typeof DebugState>('debugState', 'Inactive');
 export const CONTEXT_DEBUG_UX_KEY = 'debugUx';
 export const CONTEXT_DEBUG_UX = new RawContextKey<string>(CONTEXT_DEBUG_UX_KEY, 'default');
 export const CONTEXT_IN_DEBUG_MODE = new RawContextKey<boolean>('inDebugMode', false);

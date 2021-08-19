@@ -594,6 +594,10 @@ export class DebugModel implements IDebugModel {
     this.deltaHintDecorations([]);
   }
 
+  public getBreakpoints(uri?: URI | undefined, filter?: Partial<monaco.IPosition> | undefined): DebugBreakpoint[] {
+    return this.breakpointManager.getBreakpoints(uri, filter);
+  }
+
   protected hintDecorations: string[] = [];
   protected hintBreakpoint(event) {
     const hintDecorations = this.createHintDecorations(event);

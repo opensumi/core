@@ -1,8 +1,10 @@
 import * as stream from 'stream';
 import type { editor } from '@ali/monaco-editor-core';
 import { DebugConfiguration } from './debug-configuration';
-import { IDisposable, MaybePromise, IJSONSchema, IJSONSchemaSnippet } from '@ali/ide-core-common';
+import { IDisposable, MaybePromise, IJSONSchema, IJSONSchemaSnippet, URI } from '@ali/ide-core-common';
 import { DebugEditor } from './debug-editor';
+import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { DebugBreakpoint } from '../browser';
 
 export const DebugAdapterSession = Symbol('DebugAdapterSession');
 
@@ -118,5 +120,6 @@ export interface IDebugModel extends IDisposable {
   onMouseMove: (event: editor.IEditorMouseEvent | editor.IPartialEditorMouseEvent) => void;
   onMouseLeave: (event: editor.IEditorMouseEvent | editor.IPartialEditorMouseEvent) => void;
   editor: DebugEditor;
+  getBreakpoints(uri?: URI | undefined, filter?: Partial<monaco.IPosition> | undefined): DebugBreakpoint[];
   [key: string]: any;
 }
