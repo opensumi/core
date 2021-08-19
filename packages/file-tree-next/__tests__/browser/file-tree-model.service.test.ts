@@ -258,9 +258,6 @@ describe('FileTreeModelService should be work', () => {
     const treeHandle = { ensureVisible: () => { }, onError: errorEmitter.event } as any;
     fileTreeModelService.handleTreeHandler(treeHandle);
     expect(fileTreeModelService.fileTreeHandle).toEqual(treeHandle);
-    mockFileTreeService.refresh.mockClear();
-    errorEmitter.fire('');
-    expect(mockFileTreeService.refresh).toBeCalledTimes(1);
   });
 
   it('handleTreeBlur method should be work', () => {
@@ -278,11 +275,6 @@ describe('FileTreeModelService should be work', () => {
     decoration = fileTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
     expect(decoration!.classlist).toEqual([styles.mod_selected]);
-  });
-
-  it('canHandleRefreshEvent method should be work', async (done) => {
-    await fileTreeModelService.canHandleRefreshEvent();
-    done();
   });
 
   it('clearFileSelectedDecoration method should be work', () => {
