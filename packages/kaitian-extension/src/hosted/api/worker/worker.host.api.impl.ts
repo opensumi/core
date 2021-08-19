@@ -1,6 +1,5 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtensionHostService, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../common';
-import { createLayoutAPIFactory } from './worker.host.layout';
 import { TextEditorCursorStyle, ViewColumn, TextEditorSelectionChangeKind, IExtensionDescription } from '../../../common/vscode';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import * as workerExtTypes from './worker.ext-types';
@@ -9,7 +8,7 @@ import { ExtHostCommands, createCommandsApiFactory } from '../vscode/ext.host.co
 import { createLanguagesApiFactory, ExtHostLanguages } from '../vscode/ext.host.language';
 import { ExtensionDocumentDataManagerImpl } from '../vscode/doc';
 import { ExtensionHostEditorService } from '../vscode/editor/editor.host';
-import { Emitter, Event, CancellationTokenSource } from '@ali/ide-core-common';
+import { Emitter, Event, CancellationTokenSource, DefaultReporter } from '@ali/ide-core-common';
 import { createExtensionsApiFactory } from '../vscode/ext.host.extensions';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from '../vscode/ext.host.workspace';
 import { ExtHostMessage } from '../vscode/ext.host.message';
@@ -31,6 +30,7 @@ import { ExtHostUrls } from '../vscode/ext.host.urls';
 import { ExtHostComments, createCommentsApiFactory } from '../vscode/ext.host.comments';
 import { ExtHostTheming } from '../vscode/ext.host.theming';
 import { ExtHostCustomEditorImpl } from '../vscode/ext.host.custom-editor';
+import { createAPIFactory as createKaitianAPIFactory } from '../kaitian/ext.host.api.impl';
 
 export function createAPIFactory(
   rpcProtocol: IRPCProtocol,
@@ -64,6 +64,9 @@ export function createAPIFactory(
   const extHostComments = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostComments, new ExtHostComments(rpcProtocol, extHostCommands, extHostDocs)) as ExtHostComments;
   const extHostTheming = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostTheming, new ExtHostTheming(rpcProtocol)) as ExtHostTheming;
   const extHostCustomEditor = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCustomEditor, new ExtHostCustomEditorImpl(rpcProtocol, extHostWebview , extHostDocs)) as ExtHostCustomEditorImpl;
+  // TODO: 目前 worker reporter 缺少一条通信链路，先默认实现
+  const reporter = new DefaultReporter();
+  const kaitianAPI = createKaitianAPIFactory(rpcProtocol, extensionService, 'worker', reporter);
 
   return (extension: IExtensionDescription) => {
     return {
@@ -90,9 +93,9 @@ export function createAPIFactory(
         extHostQuickOpen, extHostOutput, extHostTerminal, extHostWindow, extHostProgress,
         extHostUrls, extHostTheming, extHostCustomEditor,
       ),
-      // KAITIAN 扩展 API
-      layout: createLayoutAPIFactory(extHostCommands),
       comments: createCommentsApiFactory(extension, extHostComments),
+      // KAITIAN 扩展 API
+      ...kaitianAPI,
     };
   };
 }
