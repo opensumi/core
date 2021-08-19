@@ -206,6 +206,12 @@ export const Tabs = ({ group }: ITabsProps) => {
         onDrop(e, -1);
       }
     }}
+    onDoubleClick={(e) => {
+      // 只处理 tab 组空余的地方
+      if (e.target === e.currentTarget) {
+        editorService.createUntitledResource();
+      }
+    }}
   >
     {group.resources.map((resource, i) => {
       let ref: HTMLDivElement | null;
