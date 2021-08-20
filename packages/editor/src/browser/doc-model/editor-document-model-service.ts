@@ -230,8 +230,6 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     if (!encoding && provider.provideEncoding) {
       if (preferedOptions && preferedOptions.encoding) {
         encoding = preferedOptions.encoding;
-      } else if (provider.provideEncoding) {
-        encoding = await provider.provideEncoding(uri);
       }
     }
 
@@ -252,6 +250,11 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       (async () => provider.isAlwaysDirty ? provider.isAlwaysDirty(uri) : false)(),
       (async () => provider.closeAutoSave ? provider.closeAutoSave(uri) : false)(),
     ] as const);
+
+    // 优先使用 preferred encoding，然后用 detected encoding
+    if (!encoding && provider.provideEncoding) {
+      encoding = await provider.provideEncoding(uri);
+    }
 
     const savable = !!provider.saveDocumentModel;
 

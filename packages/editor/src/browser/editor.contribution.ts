@@ -1,6 +1,6 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import {  IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService, IClipboardService, QuickOpenContribution, IQuickOpenHandlerRegistry, PrefixQuickOpenService, MonacoOverrideServiceRegistry, IContextKeyService } from '@ali/ide-core-browser';
+import {  IClientApp, ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, OpenerContribution, IOpenerService, IClipboardService, QuickOpenContribution, IQuickOpenHandlerRegistry, PrefixQuickOpenService, MonacoOverrideServiceRegistry, IContextKeyService, getLanguageIdFromMonaco, QuickPickItem } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { isElectronEnv, isWindows, isOSX, PreferenceScope, ILogger } from '@ali/ide-core-common';
 import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -22,6 +22,7 @@ import { MonacoTextModelService } from './doc-model/override';
 import { EditorOpener } from './editor-opener';
 import { WorkspaceSymbolQuickOpenHandler } from './language/workspace-symbol-quickopen';
 import { AUTO_SAVE_MODE } from '../common/editor';
+import { IEditorDocumentModelContentRegistry } from './doc-model/types';
 import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 interface ResourceArgs {
@@ -82,6 +83,9 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
+
+  @Autowired(IEditorDocumentModelContentRegistry)
+  contentRegistry: IEditorDocumentModelContentRegistry;
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-editor', {
@@ -588,22 +592,77 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
 
     commands.registerCommand(EDITOR_COMMANDS.CHANGE_ENCODING, {
       execute: async () => {
+        // TODO: 这里应该和 vscode 一样，可以 通过编码打开 和 通过编码保存
+        // 但目前的磁盘文件对比使用的是文件字符串 md5 对比，导致更改编码时必定触发 diff，因此编码保存无法生效
+        // 长期看 md5 应该更改为 mtime 和 size 才更可靠
         const resource = this.workbenchEditorService.currentResource;
-        if (resource) {
-          const encodingItems = Object.keys(SUPPORTED_ENCODINGS).map((encoding) => ({
-            label: SUPPORTED_ENCODINGS[encoding].labelLong,
-            value: encoding,
-            description: SUPPORTED_ENCODINGS[encoding].labelShort,
-          }));
-          const encoding = await this.quickPickService.show(encodingItems, {
-            placeholder: localize('editor.chooseEncoding'),
+        const documentModel = this.workbenchEditorService.currentEditor?.currentDocumentModel;
+        if (!resource || !documentModel) {
+          return;
+        }
+
+        const configuredEncoding = this.preferenceService.get<string>('files.encoding', 'utf8', resource.uri.toString(), getLanguageIdFromMonaco(resource.uri)!);
+
+        const provider = await this.contentRegistry.getProvider(resource.uri);
+        const guessedEncoding = await provider?.guessEncoding?.(resource.uri);
+
+        const currentEncoding = documentModel.encoding;
+        let matchIndex: number | undefined;
+        const encodingItems: QuickPickItem<string>[] = Object.keys(SUPPORTED_ENCODINGS)
+          .sort((k1, k2) => {
+            if (k1 === configuredEncoding) {
+              return -1;
+            } else if (k2 === configuredEncoding) {
+              return 1;
+            }
+            return SUPPORTED_ENCODINGS[k1].order - SUPPORTED_ENCODINGS[k2].order;
+          })
+          .filter((k) => {
+            // 猜测的编码和配置的编码不一致不现实，单独在最上方显示
+            if (k === guessedEncoding && guessedEncoding !== configuredEncoding) {
+              return false;
+            }
+            return !SUPPORTED_ENCODINGS[k].encodeOnly; // 对于只用于 encode 编码不展示
+          })
+          .map((key, index) => {
+            if (key === currentEncoding || SUPPORTED_ENCODINGS[key].alias === currentEncoding) {
+              matchIndex = index;
+            }
+            return { label: SUPPORTED_ENCODINGS[key].labelLong, value: key, description: key };
           });
-          if (encoding) {
-            this.editorDocumentModelService.changeModelOptions(resource.uri, {
-              encoding,
-            });
+
+        // Insert guessed encoding
+        if (guessedEncoding && configuredEncoding !== guessedEncoding && SUPPORTED_ENCODINGS[guessedEncoding]) {
+          if (encodingItems[0]) {
+            encodingItems[0].showBorder = true;
+          }
+          encodingItems.unshift({
+            label: SUPPORTED_ENCODINGS[guessedEncoding].labelLong,
+            value: guessedEncoding,
+            description: localize('editor.guessEncodingFromContent'),
+          });
+          if (typeof matchIndex === 'number') {
+            matchIndex++;
           }
         }
+
+        const selectedFileEncoding = await this.quickPickService.show(encodingItems, {
+          placeholder: localize('editor.chooseEncoding'),
+          selectIndex(lookFor) {
+            if (!lookFor) {
+              return typeof matchIndex === 'number' ? matchIndex : -1;
+            }
+            return -1;
+          },
+        });
+
+        if (!selectedFileEncoding) {
+          return;
+        }
+
+        this.editorDocumentModelService.changeModelOptions(resource.uri, {
+          encoding: selectedFileEncoding,
+        });
       },
     });
 

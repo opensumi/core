@@ -45,15 +45,9 @@ export class QuickPickServiceImpl implements QuickPickService {
 
   protected toItems<T>(elements: (string | QuickPickItem<T>)[], resolve: (element: T | string) => void): QuickOpenItem[] {
     const items: QuickOpenItem[] = [];
-    let groupLabel: string | undefined;
     for (const element of elements) {
       const options = this.toItemOptions(element, resolve);
-      if (groupLabel) {
-        items.push(new QuickOpenItem(Object.assign(options, { groupLabel, showBorder: true })));
-        groupLabel = undefined;
-      } else {
-        items.push(new QuickOpenItem(options));
-      }
+      items.push(new QuickOpenItem(options));
     }
     return items;
   }
@@ -63,6 +57,8 @@ export class QuickPickServiceImpl implements QuickPickService {
     const value = typeof element === 'string' ? element : element.value;
     const description = typeof element === 'string' ? undefined : element.description;
     const detail = typeof element === 'string' ? undefined : element.detail;
+    const groupLabel = typeof element === 'string' ? undefined : element.groupLabel;
+    const showBorder = typeof element === 'string' ? undefined : element.showBorder;
     const [icon, text] = getIconClass(label);
 
     if (icon) {
@@ -74,6 +70,8 @@ export class QuickPickServiceImpl implements QuickPickService {
       description,
       detail,
       iconClass,
+      groupLabel,
+      showBorder,
       run: (mode) => {
         if (mode !== Mode.OPEN) {
           return false;

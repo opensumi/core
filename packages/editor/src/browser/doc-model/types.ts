@@ -87,6 +87,8 @@ export interface IEditorDocumentModel extends IDisposable {
 
   updateEncoding(encoding: string): Promise<void>;
 
+  // setEncoding(encoding: string, preferredEncoding, mode: EncodingMode): Promise<void>;
+
   updateOptions(options: IDocModelUpdateOptions);
 
 }
@@ -172,6 +174,10 @@ export interface IEditorDocumentModelContentProvider {
    */
   closeAutoSave?(uri: URI): MaybePromise<boolean>;
 
+  /**
+   * 猜测编码
+   */
+  guessEncoding?(uri: URI): Promise<string | undefined>;
 }
 
 export interface IPreferredModelOptions {
@@ -299,3 +305,16 @@ export interface IEOLStackElement extends IStackElement {
 
 // original_doc://?target=file://aaa.js
 export const ORIGINAL_DOC_SCHEME = 'original_doc';
+
+export const enum EncodingMode {
+
+  /**
+   * Instructs the encoding support to encode the current input with the provided encoding
+   */
+  Encode,
+
+  /**
+   * Instructs the encoding support to decode the current input with the provided encoding
+   */
+  Decode,
+}

@@ -1,9 +1,24 @@
 import { IEditorDocumentModelContentProvider } from '../doc-model/types';
-import { Emitter, URI, Event, IApplicationService, FileChangeType, OS, IEditorDocumentChange, IEditorDocumentModelSaveResult, PreferenceService, getLanguageIdFromMonaco } from '@ali/ide-core-browser';
+import { Emitter, URI, Event, IApplicationService, FileChangeType, OS, IEditorDocumentChange, IEditorDocumentModelSaveResult, PreferenceService, getLanguageIdFromMonaco, EncodingRegistry } from '@ali/ide-core-browser';
+import { UTF8_with_bom, UTF8, detectEncodingFromBuffer } from '@ali/ide-core-common/lib/encoding';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { EditorPreferences } from '../preference/schema';
 import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+
+export interface ReadEncodingOptions {
+
+  /**
+   * The optional encoding parameter allows to specify the desired encoding when resolving
+   * the contents of the file.
+   */
+  encoding?: string;
+
+  /**
+   * The optional guessEncoding parameter allows to guess encoding from content of the file.
+   */
+  autoGuessEncoding?: boolean;
+}
 
 /**
  * 通用的用来处理 FileSystem 提供的文档
@@ -18,6 +33,8 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
 
   protected _fileContentMd5OnBrowserFs: Set<string> = new Set();
 
+  private _detectedEncodingMap = new Map<string, string>();
+
   @Autowired(IFileServiceClient)
   protected readonly fileServiceClient: IFileServiceClient;
 
@@ -29,6 +46,9 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
 
   @Autowired(PreferenceService)
   protected readonly preferenceService: PreferenceService;
+
+  @Autowired(EncodingRegistry)
+  encodingRegistry: EncodingRegistry;
 
   constructor() {
     this.fileServiceClient.onFilesChanged((changes) => {
@@ -46,9 +66,8 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
     return this.fileServiceClient.handlesScheme(scheme);
   }
 
-  async provideEncoding(uri: URI) {
-
-    return await this.fileServiceClient.getEncoding(uri.toString());
+  provideEncoding(uri: URI) {
+    return this._detectedEncodingMap.get(uri.toString()) || UTF8;
   }
 
   async provideEOL(uri: URI) {
@@ -61,19 +80,33 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
     return backendOS === OS.Type.Windows ? EOL.CRLF : EOL.LF;
   }
 
+  async read(uri: URI, options: ReadEncodingOptions): Promise<{ encoding: string, content: string }> {
+    const { content: buffer } = await this.fileServiceClient.readFile(uri.toString());
+
+    const guessEncoding = options.autoGuessEncoding || this.preferenceService.get<boolean>('files.autoGuessEncoding', undefined, uri.toString(), getLanguageIdFromMonaco(uri)!);
+    const detected = await detectEncodingFromBuffer(buffer, guessEncoding);
+    detected.encoding = await this.getReadEncoding(uri, options, detected.encoding);
+
+    const content = buffer.toString(detected.encoding);
+
+    const uriString = uri.toString();
+
+    this._detectedEncodingMap.set(uriString, detected.encoding);
+
+    // 记录表示这个文档被[这个editorDocumentProvider]引用了
+    this._fileContentMd5OnBrowserFs.add(uriString);
+
+    return {
+      encoding: detected.encoding || UTF8,
+      content,
+    };
+  }
+
   async provideEditorDocumentModelContent(uri: URI, encoding: string) {
     // TODO: 这部分要优化成buffer获取（长期来看是stream获取，encoding在哪一层做？）
     // TODO: 暂时还是使用 resolveContent 内提供的 decode 功能
     // TODO: 之后 encoding 做了分层之后和其他的需要 decode 的地方一起改
-    const res = await this.fileServiceClient.resolveContent(uri.toString(), {
-      encoding,
-    });
-
-    // 记录表示这个文档被[这个editorDocumentProvider]引用了
-    const content = res && res.content || '';
-    this._fileContentMd5OnBrowserFs.add(uri.toString());
-
-    return content;
+    return (await this.read(uri, { encoding })).content;
   }
 
   async isReadonly(uri: URI): Promise<boolean> {
@@ -112,4 +145,28 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
     this._fileContentMd5OnBrowserFs.delete(uri.toString());
   }
 
+  async guessEncoding(uri: URI) {
+    return (await this.read(uri, { autoGuessEncoding: true })).encoding;
+  }
+
+  protected getReadEncoding(resource: URI, options: ReadEncodingOptions | undefined, detectedEncoding: string | null): Promise<string> {
+    let preferredEncoding: string | undefined;
+
+    // Encoding passed in as option
+    if (options?.encoding) {
+      if (detectedEncoding === UTF8_with_bom && options.encoding === UTF8) {
+        preferredEncoding = UTF8_with_bom; // indicate the file has BOM if we are to resolve with UTF 8
+      } else {
+        preferredEncoding = options.encoding; // give passed in encoding highest priority
+      }
+    } else if (detectedEncoding) {
+      preferredEncoding = detectedEncoding;
+    }
+
+    return this.getEncodingForResource(resource, preferredEncoding);
+  }
+
+  protected async getEncodingForResource(resource: URI, preferredEncoding?: string): Promise<string> {
+    return this.encodingRegistry.getEncodingForResource(resource, preferredEncoding);
+  }
 }

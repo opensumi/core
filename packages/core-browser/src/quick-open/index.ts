@@ -307,6 +307,8 @@ export namespace QuickOpenOptions {
 
 export interface QuickPickItem<T> {
   label: string;
+  groupLabel?: string;
+  showBorder?: boolean;
   value: T;
   description?: string;
   detail?: string;

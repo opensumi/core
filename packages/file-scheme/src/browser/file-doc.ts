@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
 import { FILE_SCHEME, FILE_SAVE_BY_CHANGE_THRESHOLD, IFileSchemeDocClient } from '../common';
-import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, ISchemaStore, IDisposable, Disposable, ISchemaRegistry, replaceLocalizePlaceholder, getLanguageIdFromMonaco, PreferenceService } from '@ali/ide-core-browser';
+import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, ISchemaStore, IDisposable, Disposable, ISchemaRegistry, replaceLocalizePlaceholder, PreferenceService } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import * as md5 from 'md5';
 import { BaseFileSystemEditorDocumentProvider } from '@ali/ide-editor/lib/browser/fs-resource/fs-editor-doc';
@@ -32,13 +32,7 @@ export class FileSchemeDocumentProvider extends BaseFileSystemEditorDocumentProv
     return false; // dummy, 走handlesUri
   }
 
-  async provideEncoding(uri: URI) {
-    if (uri.scheme === FILE_SCHEME) {
-      const encoding = this.preferenceService.get<string>('files.encoding', undefined, uri.toString(), getLanguageIdFromMonaco(uri)!);
-      if (!!encoding) {
-        return encoding;
-      }
-    }
+  provideEncoding(uri: URI) {
 
     return super.provideEncoding(uri);
   }

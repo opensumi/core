@@ -12,6 +12,7 @@ import { FileSchemeDocumentProvider, VscodeSchemeDocumentProvider } from '@ali/i
 import { FileSchemeModule } from '../../src/browser';
 import { EditorPreferences } from '@ali/ide-editor/lib/browser';
 import { FileSystemResourceProvider } from '@ali/ide-editor/lib/browser/fs-resource/fs-resource';
+import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
 
 describe('file scheme tests', () => {
 
@@ -128,6 +129,10 @@ describe('file scheme tests', () => {
 
     injector.mock(IFileServiceClient, 'resolveContent', (uriString) => {
       return { content: docContentPrefix + uriString };
+    });
+
+    injector.mock(IFileServiceClient, 'readFile', (uriString) => {
+      return { content: BinaryBuffer.fromString(docContentPrefix + uriString) };
     });
 
     await documentProvider.saveDocumentModel(new URI('file:///test.ts'), 'this is modified content', 'docContent', [], 'utf8');

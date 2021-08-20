@@ -202,6 +202,12 @@ export const corePreferenceSchema: PreferenceSchema = {
       ],
       default: 'auto',
     },
+    'files.autoGuessEncoding': {
+      type: 'boolean',
+      default: false,
+      description: '%preference.files.autoGuessEncoding%',
+      included: Object.keys(SUPPORTED_ENCODINGS).length > 1,
+    },
     // 设置面板是否用户Scope在前
     'settings.userBeforeWorkspace': {
       type: 'boolean',

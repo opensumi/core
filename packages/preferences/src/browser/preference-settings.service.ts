@@ -380,6 +380,7 @@ export const defaultSettingSections: {
         // `forceReadOnly` 选项暂时不对用户暴露
         // {id: 'editor.forceReadOnly', localized: 'preference.editor.forceReadOnly'},
 
+        { id: 'files.autoGuessEncoding', localized: 'preference.files.autoGuessEncoding.title' },
         { id: 'files.encoding', localized: 'preference.files.encoding.title' },
         { id: 'files.eol', localized: 'preference.files.eol' },
         { id: 'editor.readonlyFiles', localized: 'preference.editor.readonlyFiles' },

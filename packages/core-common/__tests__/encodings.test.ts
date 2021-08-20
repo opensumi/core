@@ -1,5 +1,6 @@
 import { SUPPORTED_ENCODINGS } from "../src/const"
-import { toIconvLiteEncoding, toCanonicalName } from "../src/encoding"
+import { toIconvLiteEncoding, toCanonicalName, detectEncodingFromBuffer } from "../src/encoding"
+import { BinaryBuffer } from '../src/utils/buffer'
 import * as iconv from "iconv-lite";
 
 const utf8BOM = [0xEF, 0xBB, 0xBF]
@@ -51,4 +52,11 @@ describe('encodings', () => {
     let result = iconv.decode(buffer as Buffer, "utf8");
     expect(result).toBe("你好");
   });
+
+  test('guess encoding', async () => {
+    const buffer = BinaryBuffer.wrap(Uint8Array.from([0xb4, 0xb0, 0xc7, 0xb0, 0xc3, 0xf7, 0xd4, 0xc2, 0xb9, 0xe2, 0x0a, 0xd2, 0xc9, 0xca, 0xc7, 0xb5, 0xd8, 0xc9, 0xcf, 0xcb, 0xaa]));
+    const detectedEncoding = 'gb2312'
+    expect((await detectEncodingFromBuffer(buffer, true)).encoding).toBe(detectedEncoding);
+    expect(buffer.toString(detectedEncoding)).toBe('窗前明月光\n疑是地上霜');
+  })
 });
