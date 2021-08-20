@@ -386,6 +386,11 @@ export class DebugWatchModelService {
     this.save();
   }
 
+  public addWatchExpression(expression: string): void {
+    this.debugWatch.addWatchExpression(expression);
+    this.initTreeModel();
+  }
+
   private dispatchWatchEvent(path: string, event: IWatcherEvent) {
     const watcher = this.treeModel?.root.watchEvents.get(path);
     if (watcher && watcher.callback) {
@@ -405,8 +410,7 @@ export class DebugWatchModelService {
           const parent = promptHandle.parent as DebugWatchRoot;
           promptHandle.addAddonAfter('loading_indicator');
           if (parent.session) {
-            this.debugWatch.addWatchExpression(expression);
-            this.initTreeModel();
+            this.addWatchExpression(expression);
           } else {
             const node = new DebugWatchNode(parent.session, expression, parent);
             this.dispatchWatchEvent(parent.path, { type: WatchEvent.Added, node, id: parent.id });

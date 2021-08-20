@@ -1,8 +1,9 @@
+import { DebugContextKey } from './../../contextkeys/debug-contextkey.service';
 import { DebugProtocol } from '@ali/vscode-debugprotocol';
 import { isEqual } from 'lodash';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, TreeNodeEvent } from '@ali/ide-components';
-import { Emitter, IContextKeyService, ThrottledDelayer, Deferred, Event, DisposableCollection, IClipboardService } from '@ali/ide-core-browser';
+import { Emitter, ThrottledDelayer, Deferred, Event, DisposableCollection, IClipboardService } from '@ali/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { DebugVariablesModel } from './debug-variables-model';
 import { ExpressionContainer, ExpressionNode, DebugVariableRoot, DebugVariableContainer, DebugVariable, DebugScope } from '../../tree/debug-tree-node.define';
@@ -75,11 +76,11 @@ export class DebugVariablesModelService {
   @Autowired(DebugViewModel)
   protected readonly viewModel: DebugViewModel;
 
-  @Autowired(IContextKeyService)
-  private readonly contextKeyService: IContextKeyService;
-
   @Autowired(IClipboardService)
   private readonly clipboardService: IClipboardService;
+
+  @Autowired(DebugContextKey)
+  private readonly debugContextKey: DebugContextKey;
 
   private _activeTreeModel: DebugVariablesModel | undefined;
 
@@ -103,9 +104,6 @@ export class DebugVariablesModelService {
   private onDidRefreshedEmitter: Emitter<void> = new Emitter();
   private onDidUpdateTreeModelEmitter: Emitter<TreeModel | void> = new Emitter();
 
-  // 右键菜单局部ContextKeyService
-  private _contextMenuContextKeyService: IContextKeyService;
-
   private flushDispatchChangeDelayer =  new ThrottledDelayer<void>(DebugVariablesModelService.DEFAULT_TRIGGER_DELAY);
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
@@ -118,13 +116,6 @@ export class DebugVariablesModelService {
 
   get flushEventQueuePromise() {
     return this.flushEventQueueDeferred && this.flushEventQueueDeferred.promise;
-  }
-
-  get contextMenuContextKeyService() {
-    if (!this._contextMenuContextKeyService) {
-      this._contextMenuContextKeyService = this.contextKeyService.createScoped();
-    }
-    return this._contextMenuContextKeyService;
   }
 
   get treeHandle() {
@@ -322,7 +313,7 @@ export class DebugVariablesModelService {
     this.decorations.removeDecoration(this.contextMenuDecoration);
   }
 
-  handleContextMenu = (ev: React.MouseEvent, expression?: ExpressionContainer | ExpressionNode) => {
+  handleContextMenu = (ev: React.MouseEvent, expression?: ExpressionContainer | ExpressionNode | DebugVariableContainer | DebugVariable) => {
     ev.stopPropagation();
     ev.preventDefault();
 
@@ -330,6 +321,7 @@ export class DebugVariablesModelService {
 
     if (expression) {
       this.activeNodeActivedDecoration(expression);
+      this.debugContextKey.contextVariableEvaluateNamePresent.set(!!(expression as DebugVariableContainer | DebugVariable).evaluateName);
     } else {
       this.enactiveNodeDecoration();
     }
@@ -341,7 +333,7 @@ export class DebugVariablesModelService {
     } else {
       node = expression;
     }
-    const menus = this.contextMenuService.createMenu({id: MenuId.DebugVariablesContext, contextKeyService: this.contextMenuContextKeyService});
+    const menus = this.contextMenuService.createMenu({id: MenuId.DebugVariablesContext, contextKeyService: this.debugContextKey.contextKeyScoped});
     const menuNodes = menus.getMergedMenuNodes();
     menus.dispose();
     this.ctxMenuRenderer.show({

@@ -124,11 +124,15 @@ export namespace DEBUG_COMMANDS {
     id: 'debug.add.conditional',
     label: localize('debug.menu.add.conditional'),
   };
+  // variables
   export const SET_VARIABLE_VALUE = {
     id: 'debug.variables.setValue',
   };
   export const COPY_VARIABLE_VALUE = {
     id: 'debug.variables.copy',
+  };
+  export const ADD_TO_WATCH_ID = {
+    id: 'debug.addToWatchExpressions',
   };
   // console commands
   export const CLEAR_CONSOLE = {

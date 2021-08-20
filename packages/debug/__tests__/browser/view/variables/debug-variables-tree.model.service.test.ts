@@ -1,3 +1,4 @@
+import { DebugContextKey } from './../../../../src/browser/contextkeys/debug-contextkey.service';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { Disposable } from '@ali/ide-core-common';
 import { DebugHoverSource } from '@ali/ide-debug/lib/browser/editor/debug-hover-source';
@@ -81,6 +82,14 @@ describe('Debug Variables Tree Model', () => {
     mockInjector.overrideProviders({
       token: DebugViewModel,
       useValue: mockDebugViewModel,
+    });
+    mockInjector.overrideProviders({
+      token: DebugContextKey,
+      useValue: {
+        contextVariableEvaluateNamePresent: {
+          set: jest.fn(),
+        },
+      },
     });
 
     debugVariablesModelService = mockInjector.get(DebugVariablesModelService);

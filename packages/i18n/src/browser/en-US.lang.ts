@@ -537,6 +537,7 @@ export const localizationBundle = {
     'deugger.menu.setValue.param': 'Please input the value of this variable',
 
     'deugger.menu.copyValue': 'Copy Value',
+    'deugger.menu.addToWatchExpressions': 'Add to Watch',
 
     'theme.toggle': 'Color Theme',
     'theme.icon.toggle': 'File Icon Theme',

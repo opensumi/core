@@ -265,7 +265,7 @@ export const localizationBundle = {
     'debug.breakpoint.deactive': '关闭所有断点',
     'debug.breakpoint.active': '激活所有断点',
     'debug.threads.title': '进程',
-    'debug.watch.title': '监听',
+    'debug.watch.title': '监视',
     'debug.callStack.title': '堆栈',
     'debug.variables.title': '变量',
     'debug.breakpoints.title': '断点',
@@ -603,6 +603,7 @@ export const localizationBundle = {
     'deugger.menu.setValue.param': '请输入你要改变变量的值',
 
     'deugger.menu.copyValue': '复制值',
+    'deugger.menu.addToWatchExpressions': '添加到监视',
 
     'theme.toggle': '颜色主题',
     'theme.icon.toggle': '文件图标主题',

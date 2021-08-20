@@ -246,6 +246,10 @@ export class DebugVariable extends ExpressionNode {
     return String(this.id);
   }
 
+  get evaluateName(): string {
+    return this.variable?.evaluateName || '';
+  }
+
   get description(): string {
     return this.value;
   }
@@ -335,6 +339,10 @@ export class DebugVariableContainer extends ExpressionContainer {
       }
     }
     return String(this.id);
+  }
+
+  get evaluateName(): string {
+    return this.variable?.evaluateName || '';
   }
 
   get description(): string {
