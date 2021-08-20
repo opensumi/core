@@ -194,7 +194,7 @@ describe('KeymapsService should be work', () => {
     it('reconcile method should be work', async (done) => {
       const keybindings = [{
         command: 'test.command',
-        keybinding: 'cmd+c',
+        key: 'cmd+c',
       }];
       keymapsService.reconcile(keybindings);
       expect(mockKeybindingRegistry.getKeybindingsForCommand).toBeCalledTimes(3);
@@ -269,7 +269,7 @@ describe('KeymapsService should be work', () => {
     it('filter monaco.editor from storeKeybindings ', () => {
       keymapsService.storeKeybindings = [{
         command: 'monaco.editor.action.quickCommand',
-        keybinding: 'cmd+c',
+        key: 'cmd+c',
       }];
       expect(keymapsService.storeKeybindings[0].command === 'editor.action.quickCommand');
     });

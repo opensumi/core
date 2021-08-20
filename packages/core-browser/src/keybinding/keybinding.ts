@@ -1,4 +1,4 @@
-import { ContextKeyExpr, ContextKeyAndExpr, ContextKeyDefinedExpr, ContextKeyEqualsExpr, ContextKeyNotEqualsExpr, ContextKeyNotExpr, ContextKeyNotRegexExpr, ContextKeyOrExpr, ContextKeyRegexExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { ContextKeyExprType, ContextKeyExpr, ContextKeyAndExpr, ContextKeyDefinedExpr, ContextKeyEqualsExpr, ContextKeyNotEqualsExpr, ContextKeyNotExpr, ContextKeyNotRegexExpr, ContextKeyOrExpr, ContextKeyRegexExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ILogger, isOSX, Emitter, Event, CommandRegistry, ContributionProvider, IDisposable, Disposable, formatLocalize, CommandService, isUndefined } from '@ali/ide-core-common';
 import { KeyCode, KeySequence, Key, SpecialCases } from '../keyboard/keys';
@@ -11,18 +11,6 @@ export enum KeybindingScope {
   USER,
   WORKSPACE,
   END,
-}
-
-// monaco.contextkey.ContextKeyExprType 引入
-export const enum ContextKeyExprType {
-  Defined = 1,
-  Not = 2,
-  Equals = 3,
-  NotEquals = 4,
-  And = 5,
-  Regex = 6,
-  NotRegex = 7,
-  Or = 8,
 }
 
 // ref: https://github.com/Microsoft/vscode/blob/97fc588e65bedcb1113baeddd2f67237e52c8c63/src/vs/platform/keybinding/common/keybindingsRegistry.ts#L56
@@ -279,10 +267,10 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
         | ContextKeyRegexExpr;
     }
     if (!when.expr || (when.expr && when.expr.length > 0 && when.expr[0].serialize)) {
-      if (!when.getType) {
+      if (isUndefined(when.type)) {
         return when;
       }
-      switch (when.getType()) {
+      switch (when.type) {
         case ContextKeyExprType.Defined:
           return when.key;
         case ContextKeyExprType.Equals:

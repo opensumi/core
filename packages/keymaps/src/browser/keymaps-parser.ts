@@ -1,15 +1,20 @@
 import { Injectable } from '@ali/common-di';
 import * as Ajv from 'ajv';
 import * as parser from 'jsonc-parser';
-import { Keybinding } from '@ali/ide-core-browser';
+import { KeymapItem } from '../common';
 
 export const keymapsSchema = {
   type: 'array',
   items: {
     type: 'object',
     properties: {
+      // 为了兼容 vscode，优先使用 key
+      key: {
+        type: 'string',
+      },
       keybinding: {
         type: 'string',
+        deprecated: true,
       },
       command: {
         type: 'string',
@@ -22,8 +27,8 @@ export const keymapsSchema = {
       },
       args: {},
     },
-    required: ['command', 'keybinding'],
-    optional: [ 'when', 'args'],
+    required: ['command'],
+    optional: [ 'key', 'keybinding', 'when', 'args'],
     additionalProperties: false,
   },
 };
@@ -45,7 +50,7 @@ export class KeymapsParser {
    * @param content 内容.
    * @param errors 可选的错误存储指针.
    */
-  parse(content: string, errors?: string[]): Keybinding[] {
+  parse(content: string, errors?: string[]): KeymapItem[] {
     const strippedContent = parser.stripComments(content);
     const parsingErrors: parser.ParseError[] | undefined = errors ? [] : undefined;
     const bindings = parser.parse(strippedContent, parsingErrors);

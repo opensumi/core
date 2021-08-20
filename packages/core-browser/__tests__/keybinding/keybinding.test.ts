@@ -1,11 +1,12 @@
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { ContextKeyExprType, IContextKeyService, KeybindingContribution, KeybindingRegistry, KeybindingRegistryImpl, Keybinding, KeybindingScope, ILogger, BrowserKeyboardLayoutImpl, KeybindingService, SpecialCases } from '@ali/ide-core-browser';
+import { IContextKeyService, KeybindingContribution, KeybindingRegistry, KeybindingRegistryImpl, Keybinding, KeybindingScope, ILogger, BrowserKeyboardLayoutImpl, KeybindingService, SpecialCases } from '@ali/ide-core-browser';
 import { GlobalBrowserStorageService, IStatusBarService } from '../../src/services';
 import { KeybindingsResultCollection } from '../../src';
 import { KeyboardLayoutChangeNotifierService, KeyboardNativeLayoutService } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
 import { KeyboardLayoutService } from '../../src/keyboard/keyboard-layout-service';
 import { MockLogger } from '../../__mocks__/logger';
+import { ContextKeyExprType } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 describe('KeybindingRegistry', () => {
   let keybindingRegistry: KeybindingRegistry;
@@ -346,7 +347,7 @@ describe('KeybindingService', () => {
       expect(result).toBe(keybinding.when);
 
       const defined = {
-        getType: () => ContextKeyExprType.Defined,
+        type: ContextKeyExprType.Defined,
         key: 'definedKey',
       };
       keybinding = {
@@ -357,7 +358,7 @@ describe('KeybindingService', () => {
       expect(result).toBe(defined.key);
 
       const equals = {
-        getType: () => ContextKeyExprType.Equals,
+        type: ContextKeyExprType.Equals,
         getValue: () => 'true',
         key: 'notEqualsKey',
       };
@@ -369,7 +370,7 @@ describe('KeybindingService', () => {
       expect(result).toBe(`${equals.key} == 'true'`);
 
       const notEquals = {
-        getType: () => ContextKeyExprType.NotEquals,
+        type: ContextKeyExprType.NotEquals,
         getValue: () => 'true',
         key: 'equalsKey',
       };
@@ -381,7 +382,7 @@ describe('KeybindingService', () => {
       expect(result).toBe(`${notEquals.key} != 'true'`);
 
       const not = {
-        getType: () => ContextKeyExprType.Not,
+        type: ContextKeyExprType.Not,
         key: 'notKey',
       };
       keybinding = {
@@ -392,7 +393,7 @@ describe('KeybindingService', () => {
       expect(result).toBe(`!${not.key}`);
 
       const regex = {
-        getType: () => ContextKeyExprType.Regex,
+        type: ContextKeyExprType.Regex,
         regexp: {
           source: 'regexKey',
           ignoreCase: true,
@@ -407,7 +408,7 @@ describe('KeybindingService', () => {
       expect(result).toBe(`${regex.key} =~ /${regex.regexp.source}/${regex.regexp.ignoreCase ? 'i' : ''}`);
 
       const and = {
-        getType: () => ContextKeyExprType.And,
+        type: ContextKeyExprType.And,
         expr: [{
           serialize: () => 'a',
         }, {
@@ -422,7 +423,7 @@ describe('KeybindingService', () => {
       expect(result).toBe(`a && b`);
 
       const or = {
-        getType: () => ContextKeyExprType.Or,
+        type: ContextKeyExprType.Or,
         expr: [{
           serialize: () => 'a',
         }, {
@@ -437,7 +438,7 @@ describe('KeybindingService', () => {
       expect(result).toBe(`a || b`);
 
       const expr = {
-        getType: () => ContextKeyExprType.Or,
+        type: ContextKeyExprType.Or,
         expr: [and],
       };
       keybinding = {

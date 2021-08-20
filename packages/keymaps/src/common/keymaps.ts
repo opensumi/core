@@ -3,16 +3,23 @@ import { Keybinding } from '@ali/ide-core-browser';
 
 export const IKeymapService = Symbol('IKeymapService');
 
-export interface KeybindingItem {
-  id: string;
-  /**
-   * 命令ID
-   */
-  command: string;
+/**
+ * 从 keymap.json 读取的值
+ */
+export interface KeymapItem {
   /**
    * 快捷键
    */
+  key: string;
+  /**
+   * 快捷键
+   * @deprecated 为了兼容老格式，这个字段还保留
+   */
   keybinding?: string;
+  /**
+   * 命令 id
+   */
+  command: string;
   /**
    * When条件语句
    */
@@ -21,6 +28,18 @@ export interface KeybindingItem {
    * Context条件语句
    */
   context?: string;
+  /**
+   * 命令参数
+   */
+  args?: Record<string, string>;
+}
+
+export interface KeybindingItem extends Omit<KeymapItem, 'key'> {
+  id: string;
+  /**
+   * 快捷键
+   */
+  keybinding?: string;
   /**
    * 作用域
    */
