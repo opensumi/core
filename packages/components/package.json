@@ -8,6 +8,7 @@
     "dist"
   ],
   "scripts": {
+    "prepublishOnly": "npm run build && npm run build:dist",
     "build": "tsc --build ../../configs/ts/references/tsconfig.components.json",
     "build:dist": "webpack --config ./webpack.config.js --progress --color",
     "test": "echo \"Error: no test specified\" && exit 1"

@@ -7,6 +7,10 @@
     "type": "git",
     "url": "git@code.alipay.com:kaitian/ide-framework.git"
   },
+  "scripts": {
+    "prepublishOnly": "npm run build",
+    "build": "ts-node ./build"
+  },
   "publishConfig": {
     "registry": "http://registry.npm.alibaba-inc.com"
   },

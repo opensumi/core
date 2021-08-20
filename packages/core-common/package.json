@@ -12,6 +12,7 @@
     "url": "git@code.alipay.com:kaitian/ide-framework.git"
   },
   "scripts": {
+    "prepublishOnly": "npm run build",
     "build": "tsc --build ../../configs/ts/references/tsconfig.core-common.json"
   },
   "publishConfig": {

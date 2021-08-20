@@ -7,6 +7,8 @@
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
+    "prepublishOnly": "npm run build",
+    "build": "tsc --build ../../configs/ts/references/tsconfig.editor.json",
     "start": "run-p start:client start:server",
     "start:client": "webpack-dev-server --config ./webpack.config.js",
     "start:server": "node --inspect -r ts-node/register ./example/server.ts"

@@ -7,6 +7,8 @@
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
+    "prepublishOnly": "npm run build",
+    "build": "tsc --build ../../configs/ts/references/tsconfig.extension-storage.json",
     "start": "run-p start:client",
     "start:client": "webpack-dev-server --config ./webpack.config.js"
   },
