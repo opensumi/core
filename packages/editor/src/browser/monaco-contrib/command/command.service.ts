@@ -1,6 +1,6 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired } from '@ali/common-di';
-import { Command, Emitter, CommandRegistry, CommandHandler, HANDLER_NOT_FOUND, ILogger, EDITOR_COMMANDS, CommandService, isElectronRenderer, IReporterService, REPORT_NAME, ServiceNames, memoize, Uri, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
+import { Command, Emitter, CommandRegistry, CommandHandler, HANDLER_NOT_FOUND, ILogger, EDITOR_COMMANDS, CommandService, IReporterService, REPORT_NAME, ServiceNames, memoize, Uri, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
 
 import { CommandsRegistry as MonacoCommandsRegistry, EditorExtensionsRegistry, ICommandEvent, ICommandService, IMonacoActionRegistry, IMonacoCommandService, IMonacoCommandsRegistry, MonacoEditorCommandHandler } from '@ali/ide-monaco/lib/browser/contrib/command';
 import { StaticServices } from '@ali/ide-monaco/lib/browser/monaco-api/services';
@@ -144,7 +144,6 @@ export class MonacoCommandRegistry implements IMonacoCommandsRegistry {
   protected newHandler(monacoHandler: MonacoEditorCommandHandler): CommandHandler {
     return {
       execute: (...args) => this.execute(monacoHandler, ...args),
-      isEnabled: (...args) => this.isEnabled(monacoHandler, ...args),
     };
   }
 
@@ -160,22 +159,6 @@ export class MonacoCommandRegistry implements IMonacoCommandsRegistry {
       return Promise.resolve(monacoHandler.execute(editor, ...args));
     }
     return Promise.resolve();
-  }
-
-  /**
-   * 是否开启该命令
-   * 如果没有 editor 则为 false
-   * 否则尝试执行函数的 isEnabled 方法
-   * @param monacoHandler
-   * @param args
-   */
-  protected isEnabled(monacoHandler: MonacoEditorCommandHandler, ...args: any[]): boolean {
-    if (isElectronRenderer()) {
-      // 针对 Selection 等菜单在 electron 上的展示
-      return true;
-    }
-    const editor = this.getActiveCodeEditor();
-    return !!editor && (!monacoHandler.isEnabled || monacoHandler.isEnabled(editor, ...args));
   }
 
   /**
@@ -304,6 +287,9 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
   protected newCommandHandler(commandId: string): MonacoEditorCommandHandler {
     return {
       execute: (editor, ...args) => {
+        if (!!this.monacoEditorRegistry.getEditorCommand(commandId) || !editor) {
+          return !!editor;
+        }
         const editorCommand = !!this.monacoEditorRegistry.getEditorCommand(commandId) ||
           !(this.isInternalExecuteCommand(commandId) || commandId === 'setContext' || MonacoActionRegistry.COMMON_ACTIONS.has(commandId));
         const instantiationService = editorCommand ? editor && editor['_instantiationService'] : this.globalInstantiationService;
@@ -316,12 +302,6 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
           ...commandArgs,
         );
       },
-      isEnabled: (editor) => {
-        if (!!this.monacoEditorRegistry.getEditorCommand(commandId)) {
-          return !!editor;
-        }
-        return true;
-      },
     };
   }
 
@@ -332,11 +312,11 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
    */
   protected newActionHandler(id: string): MonacoEditorCommandHandler {
     return {
-      execute: (editor) => this.runAction(id, editor),
-
-      isEnabled: (editor) => {
+      execute: (editor) => {
         const action = editor.getAction(id);
-        return !!action;
+        if (action && action.isSupported()) {
+          this.runAction(id, editor);
+        }
       },
     };
   }
