@@ -529,28 +529,19 @@ export class TabbarService extends WithEventBus {
   protected registerPanelMenus() {
     this.menuRegistry.registerMenuItems('tabbar/bottom/common', [
       {
-        command: {
-          id: EXPAND_BOTTOM_PANEL.id,
-          label: localize('layout.tabbar.expand', '最大化面板'),
-        },
+        command: EXPAND_BOTTOM_PANEL.id,
         group: 'navigation',
         when: '!bottomFullExpanded',
         order: 1,
       },
       {
-        command: {
-          id: RETRACT_BOTTOM_PANEL.id,
-          label: localize('layout.tabbar.retract', '恢复面板'),
-        },
+        command: RETRACT_BOTTOM_PANEL.id,
         group: 'navigation',
         when: 'bottomFullExpanded',
         order: 1,
       },
       {
-        command: {
-          id: TOGGLE_BOTTOM_PANEL_COMMAND.id,
-          label: localize('layout.tabbar.hide', '收起面板'),
-        },
+        command: TOGGLE_BOTTOM_PANEL_COMMAND.id,
         group: 'navigation',
         order: 2,
       },
