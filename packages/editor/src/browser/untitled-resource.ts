@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { URI, Emitter, Event, Schemas, WithEventBus, IEditorDocumentChange, IEditorDocumentModelSaveResult, localize, AppConfig, CommandService, OS, IApplicationService, PreferenceService, getLanguageIdFromMonaco } from '@ali/ide-core-browser';
+import { URI, Emitter, Event, Schemas, WithEventBus, IEditorDocumentChange, IEditorDocumentModelSaveResult, AppConfig, CommandService, OS, IApplicationService, PreferenceService, getLanguageIdFromMonaco } from '@ali/ide-core-browser';
 import * as path from '@ali/ide-core-common/lib/path';
 import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
@@ -82,15 +82,10 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
         preview: false,
         focus: true,
       });
-      return {
-        state: 'success',
-      };
-    } else {
-      return {
-        state: 'error',
-        errorMessage: localize('editor.cannotSaveWithoutDirectory'),
-      };
     }
+    return {
+      state: 'success',
+    };
   }
   onDidDisposeModel() {
 
