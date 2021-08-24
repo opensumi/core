@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-express-file-server",
-  "version": "2.8.4",
+  "version": "2.9.0",
   "files": [
     "lib"
   ],
@@ -21,14 +21,14 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "2.8.4",
-    "@ali/ide-core-node": "2.8.4",
-    "@ali/ide-static-resource": "2.8.4",
+    "@ali/ide-core-common": "2.9.0",
+    "@ali/ide-core-node": "2.9.0",
+    "@ali/ide-static-resource": "2.9.0",
     "koa-mount": "^4.0.0",
     "koa-static": "^5.0.0"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "2.8.4",
+    "@ali/ide-core-browser": "2.9.0",
     "@ali/ide-dev-tool": "^1.1.0",
     "koa": "^2.11.0",
     "npm-run-all": "^4.1.5",
