@@ -287,8 +287,8 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
   protected newCommandHandler(commandId: string): MonacoEditorCommandHandler {
     return {
       execute: (editor, ...args) => {
-        if (!!this.monacoEditorRegistry.getEditorCommand(commandId) || !editor) {
-          return !!editor;
+        if (!editor) {
+          return;
         }
         const editorCommand = !!this.monacoEditorRegistry.getEditorCommand(commandId) ||
           !(this.isInternalExecuteCommand(commandId) || commandId === 'setContext' || MonacoActionRegistry.COMMON_ACTIONS.has(commandId));
