@@ -46,6 +46,7 @@ export const SHOW_BOTTOM_PANEL_COMMAND: Command = {
 export const TOGGLE_BOTTOM_PANEL_COMMAND: Command = {
   id: 'main-layout.bottom-panel.toggle',
   iconClass: getIcon('minus'),
+  label: localize('layout.tabbar.hide', '收起面板'),
 };
 export const IS_VISIBLE_BOTTOM_PANEL_COMMAND: Command = {
   id: 'main-layout.bottom-panel.is-visible',
@@ -61,10 +62,12 @@ export const SET_PANEL_SIZE_COMMAND: Command = {
 };
 export const EXPAND_BOTTOM_PANEL: Command = {
   id: 'main-layout.bottom-panel.expand',
+  label: localize('layout.tabbar.expand', '最大化面板'),
   iconClass: getIcon('expand'),
 };
 export const RETRACT_BOTTOM_PANEL: Command = {
   id: 'main-layout.bottom-panel.retract',
+  label: localize('layout.tabbar.retract', '恢复面板'),
   iconClass: getIcon('shrink'),
 };
 
