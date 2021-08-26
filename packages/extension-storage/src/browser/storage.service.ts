@@ -1,8 +1,10 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { ExtensionStorageUri, IExtensionStorageService, KeysToAnyValues, KeysToKeysToAnyValue, IExtensionStorageServer, DEFAULT_EXTENSION_STORAGE_DIR_NAME } from '../common' ;
-import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 import { AppConfig } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ali/common-di';
+import { IWorkspaceService } from '@ali/ide-workspace';
+import { firstSessionDateStorageKey } from '@ali/ide-core-common';
+
+import { ExtensionStorageUri, IExtensionStorageService, KeysToAnyValues, KeysToKeysToAnyValue, IExtensionStorageServer, DEFAULT_EXTENSION_STORAGE_DIR_NAME } from '../common' ;
 
 @Injectable()
 export class ExtensionStorageService implements IExtensionStorageService {
@@ -20,6 +22,8 @@ export class ExtensionStorageService implements IExtensionStorageService {
 
   constructor() {
     this._init = this.init();
+
+    this.updateEnvState();
   }
 
   get whenReady() {
@@ -36,6 +40,14 @@ export class ExtensionStorageService implements IExtensionStorageService {
     const extensionStorageDirName = this.appConfig.extensionStorageDirName || DEFAULT_EXTENSION_STORAGE_DIR_NAME;
     this._extensionStoragePath = await this.extensionStorageServer.init(workspace, roots, extensionStorageDirName);
     return this._extensionStoragePath;
+  }
+
+  async updateEnvState() {
+    const firstSessionDate = await this.get(firstSessionDateStorageKey, true);
+
+    if (firstSessionDate === undefined) {
+      await this.set(firstSessionDateStorageKey, { date: new Date().toUTCString() }, true);
+    }
   }
 
   set(key: string, value: KeysToAnyValues, isGlobal: boolean) {

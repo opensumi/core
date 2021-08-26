@@ -5,8 +5,9 @@ import { ILoggerManagerClient } from '@ali/ide-logs/lib/browser';
 import { IMainThreadEnv, IExtHostEnv, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { UIKind, UriComponents } from '../../../common/vscode/ext-types';
 import { IOpenerService, IClipboardService, electronEnv, IExternalUriService, AppConfig } from '@ali/ide-core-browser';
-import { getLanguageId, URI, isElectronEnv } from '@ali/ide-core-common';
+import { getLanguageId, URI, isElectronEnv, firstSessionDateStorageKey } from '@ali/ide-core-common';
 import { HttpOpener } from '@ali/ide-core-browser/lib/opener/http-opener';
+import { MainThreadStorage } from './main.thread.storage';
 
 @Injectable({multiple: true})
 export class MainThreadEnv implements IMainThreadEnv {
@@ -37,19 +38,27 @@ export class MainThreadEnv implements IMainThreadEnv {
     return HttpOpener.standardSupportedLinkSchemes.has(uri.scheme) || uri.scheme === this.appConfig.uriScheme;
   }
 
-  constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
+  constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol, private storage: MainThreadStorage) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostEnv);
 
     this.eventDispose = this.loggerManger.onDidChangeLogLevel((level) => {
       this.proxy.$fireChangeLogLevel(level);
     });
     this.setLogLevel();
+
+    this.setEnvValues();
+  }
+
+  async setEnvValues() {
     const { appName, uriScheme } = this.appConfig;
+    const firstSessionDateValue = await this.storage.$getValue(true, firstSessionDateStorageKey);
+
     this.proxy.$setEnvValues({
       appName,
       uriScheme,
       language: getLanguageId(),
       uiKind: isElectronEnv() ? UIKind.Desktop : UIKind.Web,
+      firstSessionDate: firstSessionDateValue?.date,
     });
   }
 

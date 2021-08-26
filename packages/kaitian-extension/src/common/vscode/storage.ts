@@ -8,6 +8,7 @@ export interface IMainThreadStorage {
 }
 
 export interface IExtHostStorage {
+  getValue<T>(shared: boolean, key: string, defaultValue?: T): Promise<T | KeysToAnyValues>;
   $acceptStoragePath(paths: ExtensionStorageUri): Promise<void>;
   $updateWorkspaceStorageData(data: KeysToKeysToAnyValue): Promise<void>;
 }

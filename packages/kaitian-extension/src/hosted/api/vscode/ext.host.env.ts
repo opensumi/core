@@ -76,6 +76,29 @@ export function createEnvApiFactory(
     get environmentVariableCollection(): vscode.EnvironmentVariableCollection {
       return exthostTerminal.getEnviromentVariableCollection(extension);
     },
+    get isNewAppInstall() {
+      const { firstSessionDate } = values;
+
+      if (!firstSessionDate) {
+        return true;
+      }
+
+      const installAge = Date.now() - new Date(firstSessionDate).getTime();
+
+      return isNaN(installAge) ? false : installAge < 1000 * 60 * 60 * 24; // install age is less than a day
+    },
+    /**
+     * 兼容 vscode api 用，该 api 主要与用户个人数据收集相关：https://privacy.microsoft.com/zh-cn/privacystatement
+     */
+    get isTelemetryEnabled() {
+      return false;
+    },
+    /**
+     * 同 isTelemetryEnabled
+     */
+    get onDidChangeTelemetryEnabled(): Event<boolean> {
+      return Event.None as Event<boolean>;
+    },
   };
 
   return Object.freeze(env);
