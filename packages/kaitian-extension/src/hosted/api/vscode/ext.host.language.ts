@@ -44,6 +44,7 @@ import {
   DocumentRangeSemanticTokensProvider,
   EvaluatableExpressionProvider,
   InlineValuesProvider,
+  LinkedEditingRangeProvider,
 } from 'vscode';
 import {
   SerializedDocumentFilter,
@@ -89,6 +90,7 @@ import {
   IExtensionDescription,
   ICodeActionListDto,
   IInlineValueContextDto,
+  ILinkedEditingRangesDto,
 } from '../../../common/vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 import { DisposableStore, IExtensionLogger, Uri, UriComponents } from '@ali/ide-core-common';
@@ -121,6 +123,7 @@ import { ExtHostCommands } from './ext.host.command';
 import { DocumentRangeSemanticTokensAdapter, DocumentSemanticTokensAdapter } from './language/semantic-tokens';
 import { EvaluatableExpressionAdapter } from './language/evaluatableExpression';
 import { InlineValuesAdapter } from './language/inline-values';
+import { LinkedEditingRangeAdapter } from './language/linked-editing-range';
 
 export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, extension: IExtensionDescription) {
 
@@ -227,6 +230,9 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, ex
     registerInlineValuesProvider(selector: DocumentSelector, provider: InlineValuesProvider): Disposable {
       return extHostLanguages.registerInlineValuesProvider(extension, selector, provider);
     },
+    registerLinkedEditingRangeProvider(selector: DocumentSelector, provider: LinkedEditingRangeProvider): Disposable {
+      return extHostLanguages.registerLinkedEditingRangeProvider(extension, selector, provider);
+    },
   };
 }
 
@@ -256,7 +262,8 @@ export type Adapter =
   DocumentSemanticTokensAdapter |
   DocumentRangeSemanticTokensAdapter |
   EvaluatableExpressionAdapter |
-  InlineValuesAdapter;
+  InlineValuesAdapter |
+  LinkedEditingRangeAdapter;
 
 export class ExtHostLanguages implements IExtHostLanguages {
   private readonly proxy: IMainThreadLanguages;
@@ -824,4 +831,26 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.withAdapter(handle, InlineValuesAdapter, (adapter) => adapter.provideInlineValues(Uri.revive(resource), range, context, token), undefined);
   }
   //#endregion Inline Values
+
+  //#region Linked Editing
+  registerLinkedEditingRangeProvider(extension: IExtensionDescription, selector: DocumentSelector, provider: LinkedEditingRangeProvider): Disposable {
+    const handle = this.addNewAdapter(new LinkedEditingRangeAdapter(this.documents, provider), extension);
+    this.proxy.$registerLinkedEditingRangeProvider(handle, this.transformDocumentSelector(selector));
+    return this.createDisposable(handle);
+  }
+
+  $provideLinkedEditingRanges(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<ILinkedEditingRangesDto | undefined> {
+    return this.withAdapter(handle, LinkedEditingRangeAdapter, async (adapter) => {
+      const res = await adapter.provideLinkedEditingRanges(Uri.revive(resource), position, token);
+      if (res) {
+        return {
+          ranges: res.ranges,
+          wordPattern: res.wordPattern ? serializeRegExp(res.wordPattern) : undefined,
+        };
+      }
+      return undefined;
+    }, undefined);
+  }
+
+  //#endregion Linked Editing
 }

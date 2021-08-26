@@ -65,6 +65,10 @@ export class MonacoResolvedKeybinding extends ResolvedKeybinding {
     });
   }
 
+  getSingleModifierDispatchParts(): (string | null)[] {
+    return []; /* NOOP */
+  }
+
   public getParts(): ResolvedKeybindingPart[] {
     return this.parts.map((part) => new ResolvedKeybindingPart(
       part.modifiers.ctrlKey,

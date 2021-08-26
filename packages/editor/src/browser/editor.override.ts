@@ -20,7 +20,7 @@ export class MonacoCodeService extends CodeEditorServiceImpl {
   private workbenchEditorService: WorkbenchEditorServiceImpl;
 
   constructor() {
-    super(StaticServices.standaloneThemeService.get());
+    super(null, StaticServices.standaloneThemeService.get());
   }
 
   // FIXME - Monaco 20 - ESM

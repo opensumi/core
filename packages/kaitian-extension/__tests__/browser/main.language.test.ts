@@ -868,4 +868,27 @@ An error case:
     done();
   });
   //#endregion EvaluatableExpressionProvider
+
+  //#region registerLinkedEditingRangeProvider
+  it('registerLinkedEditingRangeProvider', async () => {
+    class TestLinkedEditingRangeProvider implements vscode.LinkedEditingRangeProvider {
+      provideLinkedEditingRanges(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.LinkedEditingRanges> {
+        return {
+          ranges: [
+            new types.Range(0, 0, 0, 1),
+          ],
+          wordPattern: /[a-eA-E]+/,
+        };
+      }
+    }
+    const mockMainThreadFunc = jest.spyOn(mainThread, '$registerLinkedEditingRangeProvider');
+
+    extHost.registerLinkedEditingRangeProvider(mockService({}), 'plaintext', new TestLinkedEditingRangeProvider());
+
+    await 0;
+
+    expect(mockMainThreadFunc).toBeCalled();
+    expect(mockMainThreadFunc).toBeCalledWith(expect.anything(), [{'$serialized': true, 'language': 'plaintext'}]);
+  });
+  //#endregion registerLinkedEditingRangeProvider
 });

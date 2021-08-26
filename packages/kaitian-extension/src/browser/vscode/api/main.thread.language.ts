@@ -1210,4 +1210,24 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     }
   }
   //#endregion Inline Values
+
+  //#region Linked Editing Range
+  $registerLinkedEditingRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void {
+    const languageSelector = fromLanguageSelector(selector)!;
+    modes.LinkedEditingRangeProviderRegistry.register(languageSelector, <modes.LinkedEditingRangeProvider> {
+      provideLinkedEditingRanges: async (model: ITextModel, position: monaco.Position, token: CancellationToken): Promise<modes.LinkedEditingRanges | undefined> => {
+        const res = await this.proxy.$provideLinkedEditingRanges(handle, model.uri, position, token);
+        if (res) {
+          return {
+            ranges: res.ranges,
+            wordPattern: res.wordPattern ? reviveRegExp(res.wordPattern) : undefined,
+          };
+        }
+        return undefined;
+      },
+    });
+  }
+
+  //#endregion Linked Editing Range
+
 }
