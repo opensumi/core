@@ -395,6 +395,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
       this.doGetStat(_sourceUri, 1),
       this.doGetStat(_targetUri, 1),
     ]);
+    const isCapitalizedEqual = _sourceUri.toString().toLocaleUpperCase() === _targetUri.toString().toLocaleUpperCase();
     const { overwrite } = options;
     if (!sourceStat) {
       throw FileSystemError.FileNotFound(sourceUri.path);
@@ -413,7 +414,9 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
     const [sourceMightHaveChildren, targetMightHaveChildren] = await Promise.all([this.mayHaveChildren(_sourceUri), this.mayHaveChildren(_targetUri)]);
     // Handling special Windows case when source and target resources are empty folders.
     // Source should be deleted and target should be touched.
-    if (overwrite && targetStat && targetStat.isDirectory && sourceStat.isDirectory && !sourceMightHaveChildren && !targetMightHaveChildren) {
+    if (!isCapitalizedEqual && overwrite && targetStat && targetStat.isDirectory && sourceStat.isDirectory && !sourceMightHaveChildren && !targetMightHaveChildren) {
+      // 当移动路径跟目标路径均存在文件，同时排除大写路径不等时才进入该逻辑
+      // 核心解决在 Mac 等默认大小写不敏感系统中的文件移动问题
       // The value should be a Unix timestamp in seconds.
       // For example, `Date.now()` returns milliseconds, so it should be divided by `1000` before passing it in.
       const now = Date.now() / 1000;
@@ -423,7 +426,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
       if (newStat) {
         return newStat;
       }
-      throw FileSystemError.FileNotFound(targetUri.path, `Error occurred when moving resource from '${sourceUri}' to '${targetUri}'.`);
+      throw FileSystemError.FileNotFound(targetUri.path, `Error occurred when moving resource from '${sourceUri.toString()}' to '${targetUri.toString()}'.`);
     } else if (overwrite && targetStat && targetStat.isDirectory && sourceStat.isDirectory && !targetMightHaveChildren && sourceMightHaveChildren) {
       // Copy source to target, since target is empty. Then wipe the source content.
       const newStat = await this.copy(sourceUri, targetUri, { overwrite });
