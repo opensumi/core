@@ -117,7 +117,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     return bottomPanelHandler && bottomPanelHandler.isVisible;
   }
 
-  public get tree(): DebugConsoleModelService {
+  public get consoleModel(): DebugConsoleModelService {
     return this.debugConsoleModelService;
   }
 
@@ -179,7 +179,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
 
     const editor = this.inputEditor.monacoEditor;
     const value = editor.getValue();
-    await this.tree.execute(value);
+    await this.consoleModel.execute(value);
     this.history.add(value);
     editor.setValue('');
   }

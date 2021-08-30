@@ -61,6 +61,10 @@ export class AnsiConsoleNode extends TreeNode {
     }
   }
 
+  get el(): HTMLElement {
+    return this.linkDetectorHTML;
+  }
+
   get template(): any {
     return () => {
       return <TreeWithLinkWrapper className={this.getColor(this.severity)} html={ this.linkDetectorHTML }/>;

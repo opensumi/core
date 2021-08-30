@@ -385,10 +385,6 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
       execute: (data) => {
         this.debugBreakpointsService.removeAllBreakpoints();
       },
-      isVisible: () => {
-        const handler = this.mainlayoutService.getTabbarHandler(DEBUG_CONTAINER_ID);
-        return handler ? handler.isVisible : false;
-      },
     });
     commands.registerCommand(DEBUG_COMMANDS.START, {
       execute: (data) => {
@@ -433,10 +429,6 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
     commands.registerCommand(DEBUG_COMMANDS.TOGGLE_BREAKPOINTS, {
       execute: (data) => {
         this.debugBreakpointsService.toggleBreakpoints();
-      },
-      isVisible: () => {
-        const handler = this.mainlayoutService.getTabbarHandler(DEBUG_CONTAINER_ID);
-        return handler ? handler.isVisible : false;
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.EDIT_BREAKPOINT, {
