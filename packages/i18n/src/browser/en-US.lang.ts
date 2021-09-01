@@ -540,6 +540,7 @@ export const localizationBundle = {
     'deugger.menu.setValue.param': 'Please input the value of this variable',
 
     'deugger.menu.copyValue': 'Copy Value',
+    'deugger.menu.copyEvaluatePath': 'Copy as Expression',
     'deugger.menu.addToWatchExpressions': 'Add to Watch',
 
     'theme.toggle': 'Color Theme',

@@ -313,33 +313,30 @@ export class DebugVariablesModelService {
     this.decorations.removeDecoration(this.contextMenuDecoration);
   }
 
-  handleContextMenu = (ev: React.MouseEvent, expression?: ExpressionContainer | ExpressionNode | DebugVariableContainer | DebugVariable) => {
+  handleContextMenu = (ev: React.MouseEvent, expression?: DebugScope | DebugVariableContainer | DebugVariable | undefined) => {
     ev.stopPropagation();
     ev.preventDefault();
+
+    if (!expression || expression instanceof DebugScope) {
+      this.enactiveNodeDecoration();
+      this.debugContextKey.contextVariableEvaluateNamePresent.set(false);
+      return;
+    }
 
     const { x, y } = ev.nativeEvent;
 
     if (expression) {
       this.activeNodeActivedDecoration(expression);
       this.debugContextKey.contextVariableEvaluateNamePresent.set(!!(expression as DebugVariableContainer | DebugVariable).evaluateName);
-    } else {
-      this.enactiveNodeDecoration();
     }
-    let node: ExpressionContainer | ExpressionNode;
 
-    if (!expression) {
-      // 空白区域右键菜单
-      node = this.treeModel?.root as ExpressionContainer;
-    } else {
-      node = expression;
-    }
     const menus = this.contextMenuService.createMenu({id: MenuId.DebugVariablesContext, contextKeyService: this.debugContextKey.contextKeyScoped});
     const menuNodes = menus.getMergedMenuNodes();
     menus.dispose();
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
-      args: [node],
+      args: [expression],
     });
   }
 
@@ -376,6 +373,10 @@ export class DebugVariablesModelService {
       await item.setExpanded(true);
     }
     this.keepExpandedScopesModel.set(item);
+  }
+
+  async copyEvaluateName(node: DebugVariableContainer | DebugVariable) {
+    await this.clipboardService.writeText(node.evaluateName);
   }
 
   async copyValue(node: DebugVariableContainer | DebugVariable) {

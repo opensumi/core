@@ -606,6 +606,7 @@ export const localizationBundle = {
     'deugger.menu.setValue.param': '请输入你要改变变量的值',
 
     'deugger.menu.copyValue': '复制值',
+    'deugger.menu.copyEvaluatePath': '复制表达式',
     'deugger.menu.addToWatchExpressions': '添加到监视',
 
     'theme.toggle': '颜色主题',

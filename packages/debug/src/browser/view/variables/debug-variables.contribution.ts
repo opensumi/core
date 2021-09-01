@@ -1,7 +1,7 @@
 import { URI } from '@ali/ide-core-common';
 import { ContextKeyExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { EditorContextKeys } from '@ali/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
-import { CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT, CONTEXT_IN_DEBUG_MODE } from './../../../common/constants';
+import { CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT, CONTEXT_IN_DEBUG_MODE, CONTEXT_SET_VARIABLE_SUPPORTED } from './../../../common/constants';
 import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { Autowired } from '@ali/common-di';
 import { Domain, CommandContribution, CommandRegistry, localize, IQuickInputService, IReporterService } from '@ali/ide-core-browser';
@@ -56,6 +56,11 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
         this.debugVariablesModelService.copyValue(node);
       },
     });
+    registry.registerCommand(DEBUG_COMMANDS.COPY_EVALUATE_PATH, {
+      execute: async (node: DebugVariableContainer | DebugVariable) => {
+        this.debugVariablesModelService.copyEvaluateName(node);
+      },
+    });
     registry.registerCommand(DEBUG_COMMANDS.ADD_TO_WATCH_ID, {
       execute: async (node: DebugVariableContainer | DebugVariable | URI) => {
         if (node instanceof URI) {
@@ -88,6 +93,7 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
         label: localize('deugger.menu.setValue'),
       },
       order: 10,
+      when: CONTEXT_SET_VARIABLE_SUPPORTED.raw,
       group: '3_modification',
     });
     registry.registerMenuItem(MenuId.DebugVariablesContext, {
@@ -96,6 +102,15 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
         label: localize('deugger.menu.copyValue'),
       },
       order: 10,
+      group: '5_cutcopypaste',
+    });
+    registry.registerMenuItem(MenuId.DebugVariablesContext, {
+      command: {
+        id: DEBUG_COMMANDS.COPY_EVALUATE_PATH.id,
+        label: localize('deugger.menu.copyEvaluatePath'),
+      },
+      when: CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT.raw,
+      order: 20,
       group: '5_cutcopypaste',
     });
     registry.registerMenuItem(MenuId.DebugVariablesContext, {

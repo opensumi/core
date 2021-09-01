@@ -374,6 +374,7 @@ export class DebugSessionManager implements IDebugSessionManager {
           this.debugStopped.set(false);
         }
       }
+      this.debugContextKey.contextSetVariableSupported.set(session.capabilities.supportsSetVariable ?? false);
       this.debugContextKey.contextDebugState.set(DebugState[session.state] as keyof typeof DebugState);
     });
     session.on('terminated', (event) => {

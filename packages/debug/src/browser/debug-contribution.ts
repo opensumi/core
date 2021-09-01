@@ -131,6 +131,9 @@ export namespace DEBUG_COMMANDS {
   export const COPY_VARIABLE_VALUE = {
     id: 'debug.variables.copy',
   };
+  export const COPY_EVALUATE_PATH = {
+    id: 'debug.evaluate.copy',
+  };
   export const ADD_TO_WATCH_ID = {
     id: 'debug.addToWatchExpressions',
   };
