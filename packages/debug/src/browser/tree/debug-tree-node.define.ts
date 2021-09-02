@@ -432,6 +432,7 @@ export class DebugWatchNode extends ExpressionContainer {
 
   private _description: string;
   private _available: boolean;
+  private raw: DebugProtocol.EvaluateResponse['body'];
 
   constructor(
     public readonly session: DebugSession | undefined,
@@ -451,6 +452,10 @@ export class DebugWatchNode extends ExpressionContainer {
     return this._available;
   }
 
+  public getRawWatch(): DebugProtocol.EvaluateResponse['body'] {
+    return this.raw;
+  }
+
   async evaluate(context: string = 'watch'): Promise<void> {
     if (this.session) {
       try {
@@ -463,6 +468,7 @@ export class DebugWatchNode extends ExpressionContainer {
           this.variablesReference = body.variablesReference;
           this.namedVariables = body.namedVariables;
           this.indexedVariables = body.indexedVariables;
+          this.raw = body;
         }
       } catch (err) {
         this.name = this.expression;
