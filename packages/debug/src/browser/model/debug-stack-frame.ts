@@ -32,10 +32,15 @@ export class DebugStackFrame extends DebugStackFrameData {
     this._source = this.raw.source && this.session.getSource(this.raw.source);
   }
 
-  async restart(): Promise<void> {
-    await this.session.sendRequest('restartFrame', this.toArgs({
-      threadId: this.thread.id,
-    }));
+  async restart(): Promise<DebugProtocol.RestartFrameResponse | undefined> {
+    if (this.session.capabilities.supportsRestartFrame) {
+      return await this.session.sendRequest('restartFrame', { frameId: this.raw.id });
+    }
+    return Promise.reject(new Error('restartFrame not supported'));
+  }
+
+  get canRestart(): boolean {
+    return typeof this.raw.canRestart === 'boolean' ? this.raw.canRestart : true;
   }
 
   async open(options?: IResourceOpenOptions) {

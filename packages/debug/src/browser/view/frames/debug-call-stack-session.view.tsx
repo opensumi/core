@@ -8,6 +8,7 @@ import { DebugStackOperationView } from './debug-call-stack.operation';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugState, IDebugSessionManager } from '../../../common';
 import * as styles from './debug-call-stack.module.less';
+import { DebugCallStackService } from './debug-call-stack.service';
 
 export interface DebugStackSessionViewProps {
   session: DebugSession;
@@ -18,6 +19,7 @@ export interface DebugStackSessionViewProps {
 export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
   const { session, viewState, indent } = props;
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
+  const debugCallStackService = useInjectable<DebugCallStackService>(DebugCallStackService);
   const [threads, setThreads] = React.useState<DebugThread[]>([]);
   const [otherThreads, setOtherThreads] = React.useState<DebugThread[]>([]);
   const [multipleThreadPaused, setMultipleThreadPaused] = React.useState<DebugThread[]>([]);
@@ -158,7 +160,10 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
   }
 
   return (
-    <div className={ styles.debug_stack_item }>
+    <div
+      className={ styles.debug_stack_item }
+      onContextMenu={ (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => debugCallStackService.handleContextMenu(event, session)}
+    >
       <div style={{paddingLeft: indent * 10 + 'px'}}>
         {
           mutipleSession &&

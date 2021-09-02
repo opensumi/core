@@ -21,8 +21,8 @@ import { DebugConsoleContribution } from './view/console/debug-console.contribut
 import { WatchPanelContribution } from './view/watch/debug-watch.contribution';
 
 import './debug-style.less';
-import { DebugWatch } from './model';
 import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from './editor/evaluatable-expression';
+import { DebugCallStackContribution } from './view/frames/debug-call-stack.contribution';
 
 @Injectable()
 export class DebugModule extends BrowserModule {
@@ -38,10 +38,6 @@ export class DebugModule extends BrowserModule {
     {
       token: DebugSessionFactory,
       useClass: DefaultDebugSessionFactory,
-    },
-    {
-      token: DebugWatch,
-      useClass: DebugWatch,
     },
     {
       token: DebugModelManager,
@@ -95,6 +91,7 @@ export class DebugModule extends BrowserModule {
     DebugContribution,
     DebugConsoleContribution,
     VariablesPanelContribution,
+    DebugCallStackContribution,
     WatchPanelContribution,
     // contextkeys
     {

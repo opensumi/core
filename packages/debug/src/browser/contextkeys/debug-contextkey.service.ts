@@ -1,6 +1,6 @@
 import { Optional, Injectable, Autowired } from '@ali/common-di';
 import { IContextKeyService, IContextKey, IScopedContextKeyService } from '@ali/ide-core-browser';
-import { CONTEXT_IN_DEBUG_REPL, CONTEXT_IN_DEBUG_MODE, CONTEXT_DEBUG_STATE, CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT, CONTEXT_SET_VARIABLE_SUPPORTED } from './../../common/constants';
+import { CONTEXT_IN_DEBUG_REPL, CONTEXT_IN_DEBUG_MODE, CONTEXT_DEBUG_STATE, CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT, CONTEXT_SET_VARIABLE_SUPPORTED, CONTEXT_RESTART_FRAME_SUPPORTED } from './../../common/constants';
 import { DebugState } from '../../common';
 
 @Injectable()
@@ -16,6 +16,7 @@ export class DebugContextKey {
   public readonly contextDebugState: IContextKey<keyof typeof DebugState>;
   public readonly contextVariableEvaluateNamePresent: IContextKey<boolean>;
   public readonly contextSetVariableSupported: IContextKey<boolean>;
+  public readonly contextRestartFrameSupported: IContextKey<boolean>;
 
   constructor(@Optional() dom?: HTMLElement) {
     this._contextKeyService = this.globalContextKeyService.createScoped(dom);
@@ -24,6 +25,7 @@ export class DebugContextKey {
     this.contextDebugState = CONTEXT_DEBUG_STATE.bind(this.contextKeyScoped);
     this.contextVariableEvaluateNamePresent = CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT.bind(this.contextKeyScoped);
     this.contextSetVariableSupported = CONTEXT_SET_VARIABLE_SUPPORTED.bind(this.contextKeyScoped);
+    this.contextRestartFrameSupported = CONTEXT_RESTART_FRAME_SUPPORTED.bind(this.contextKeyScoped);
   }
 
   public get contextKeyScoped(): IScopedContextKeyService {

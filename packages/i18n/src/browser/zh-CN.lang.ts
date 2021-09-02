@@ -609,6 +609,9 @@ export const localizationBundle = {
     'deugger.menu.copyEvaluatePath': '复制表达式',
     'deugger.menu.addToWatchExpressions': '添加到监视',
 
+    'deugger.menu.restartFrame': '重启栈帧',
+    'deugger.menu.copyCallstack': '复制堆栈',
+
     'theme.toggle': '颜色主题',
     'theme.icon.toggle': '文件图标主题',
 

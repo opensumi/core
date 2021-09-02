@@ -124,6 +124,12 @@ export namespace DEBUG_COMMANDS {
     id: 'debug.add.conditional',
     label: localize('debug.menu.add.conditional'),
   };
+  export const RESTART_FRAME = {
+    id: 'debug.callstack.restart.frame',
+  };
+  export const COPY_STACK_TRACE = {
+    id: 'debug.callstack.copy',
+  };
   // variables
   export const SET_VARIABLE_VALUE = {
     id: 'debug.variables.setValue',

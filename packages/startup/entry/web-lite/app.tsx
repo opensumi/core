@@ -68,7 +68,7 @@ renderApp({
         shangchuan: 'shangchuan',
       },
       prefix: 'tbe tbe-',
-      cssPath: '//at.alicdn.com/t/font_403404_1qiu0eed62f.css',
+      cssPath: '//at.alicdn.com/t/font_1432262_qwu5r5q6rd.css',
     },
   ],
 });

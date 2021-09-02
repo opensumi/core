@@ -543,6 +543,9 @@ export const localizationBundle = {
     'deugger.menu.copyEvaluatePath': 'Copy as Expression',
     'deugger.menu.addToWatchExpressions': 'Add to Watch',
 
+    'deugger.menu.restartFrame': 'Restart Frame',
+    'deugger.menu.copyCallstack': 'Copy Call Stack',
+
     'theme.toggle': 'Color Theme',
     'theme.icon.toggle': 'File Icon Theme',
 

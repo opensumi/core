@@ -79,10 +79,29 @@
   &:hover {
     background:  var(--list-hoverBackground);
     color:  var(--list-hoverForeground);
+    .debug_restart_frame_icon {
+      display: inline-block;
+      pointer-events: all;
+    }
+    .debug_stack_frames_item_badge {
+      display: none;
+    }
   }
   &.selected {
     background: var(--list-activeSelectionBackground);
     color: var(--list-activeSelectionForeground);
+  }
+  .debug_restart_frame_icon {
+    color: var(--debugIcon-restartForeground);
+    display: none;
+    pointer-events: none;
+    margin: 0 4px;
+    border-radius: 4px;
+    line-height: 1;
+    padding: 2px;
+    &:hover {
+      background-color: rgba(90, 93, 94, 1);
+    }
   }
 }
 .debug_stack_frames_load_more {
