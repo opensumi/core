@@ -21,6 +21,7 @@ export interface IKaitianQuickOpenControllerOpts extends QuickOpenTabOptions {
   onType?(lookFor: string, acceptor: (model: IQuickOpenModel) => void): void;
   onClose?(canceled: boolean): void;
   onSelect?(item: QuickOpenItem, index: number): void;
+  onChangeValue?(lookFor: string): void;
 }
 
 @Injectable()
@@ -45,6 +46,8 @@ export class MonacoQuickOpenService implements QuickOpenService {
 
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
+
+  private preLookFor = '';
 
   get inQuickOpenContextKey(): IContextKey<boolean> {
     return this.contextKeyService.createKey<boolean>('inQuickOpen', false);
@@ -164,6 +167,11 @@ export class MonacoQuickOpenService implements QuickOpenService {
     const options = this.opts;
     if (this.widget && options.onType) {
       options.onType(lookFor, (model) => {
+        // 触发 onchange 事件
+        if (this.preLookFor !== lookFor && this.opts.onChangeValue) {
+          this.opts.onChangeValue(lookFor);
+        }
+        this.preLookFor = lookFor;
         return this.widget.setInput(model, options.getAutoFocus(lookFor), options.inputAriaLabel);
       });
     }
@@ -238,7 +246,6 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
   }
 
   onType(lookFor: string, acceptor: (model: IQuickOpenModel) => void): void {
-    this.options.onChangeValue(lookFor);
     this.model.onType(lookFor, (items, actionProvider) => {
       const result = this.toOpenModel(lookFor, items, actionProvider);
       acceptor(result);
