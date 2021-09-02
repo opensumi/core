@@ -15,10 +15,12 @@ export interface IHistoryInputBoxHandler {
   getCurrentValue: () => string | null;
   showNextValue: () => void;
   showPreviousValue: () => void;
+  focus: () => void;
 }
 
 export class HistoryInputBox extends React.Component<HistoryInputBoxProp> {
 
+  private inputRef = React.createRef<any>();
   public history: HistoryNavigator<string>;
   public inputProps: HistoryInputBoxProp;
 
@@ -45,6 +47,7 @@ export class HistoryInputBox extends React.Component<HistoryInputBoxProp> {
         getCurrentValue: this.getCurrentValue,
         showNextValue: this.showNextValue,
         showPreviousValue: this.showPreviousValue,
+        focus: this.focus,
       });
     }
   }
@@ -136,8 +139,14 @@ export class HistoryInputBox extends React.Component<HistoryInputBoxProp> {
     }
   }
 
+  private focus = () => {
+    if (this.inputRef && this.inputRef.current) {
+      this.inputRef.current.focus();
+    }
+  }
+
   public render() {
     const inputValue = this.state && this.state.inputValue;
-    return <Input {...this.inputProps} onValueChange={this.onValueChange} onKeyDown={this.onKeyDown} value={inputValue}/>;
+    return <Input ref={this.inputRef} {...this.inputProps} onValueChange={this.onValueChange} onKeyDown={this.onKeyDown} value={inputValue}/>;
   }
 }

@@ -167,6 +167,9 @@ export namespace DEBUG_COMMANDS {
   export const CONSOLE_INPUT_UP_ARROW = {
     id: 'debug.console.input.up.arrow',
   };
+  export const CONSOLE_FILTER_FOCUS = {
+    id: 'debug.console.filter.input.focus',
+  };
   export const RUN_TO_CURSOR = {
     id: 'debug.action.runToCursor',
     label: localize('debug.action.runToCursor'),

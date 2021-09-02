@@ -1,3 +1,4 @@
+import { DebugConsoleFilterService } from './debug-console-filter.service';
 import { CONTEXT_IN_DEBUG_REPL, CONTEXT_IN_DEBUG_MODE } from './../../../common/constants';
 import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, getIcon, localize, TabBarToolbarContribution, ToolbarRegistry, KeybindingContribution, KeybindingRegistry, IContextKeyService } from '@ali/ide-core-browser';
@@ -28,6 +29,9 @@ export class DebugConsoleContribution implements ComponentContribution, BrowserE
 
   @Autowired(DebugConsoleService)
   protected readonly debugConsoleService: DebugConsoleService;
+
+  @Autowired(DebugConsoleFilterService)
+  protected readonly debugConsoleFilterService: DebugConsoleFilterService;
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('debug-console', {
@@ -92,6 +96,11 @@ export class DebugConsoleContribution implements ComponentContribution, BrowserE
         this.debugConsoleService.showPreviousValue();
       },
     });
+    registry.registerCommand(DEBUG_COMMANDS.CONSOLE_FILTER_FOCUS, {
+      execute: () => {
+        this.debugConsoleFilterService.focusInput();
+      },
+    });
   }
 
   registerMenus(registry: IMenuRegistry): void {
@@ -140,6 +149,12 @@ export class DebugConsoleContribution implements ComponentContribution, BrowserE
       command: DEBUG_COMMANDS.CONSOLE_INPUT_UP_ARROW.id,
       keybinding: 'up',
       when: `${CONTEXT_IN_DEBUG_REPL.raw} && ${CONTEXT_IN_DEBUG_MODE.raw}`,
+    });
+    bindings.registerKeybinding({
+      command: DEBUG_COMMANDS.CONSOLE_FILTER_FOCUS.id,
+      keybinding: 'ctrlcmd+f',
+      when: `${CONTEXT_IN_DEBUG_REPL.raw}`,
+      priority: Number.MAX_SAFE_INTEGER,
     });
   }
 }
