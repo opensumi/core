@@ -557,11 +557,18 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
         return [];
       },
     });
+
+    this.activateLanguages();
+
+    this.addDispose(ModesRegistry.onDidChangeLanguages(() => {
+      this.activateLanguages();
+    }));
+  }
+
+  private activateLanguages() {
     for (const { id: languageId } of monaco.languages.getLanguages()) {
       if (this.editorDocumentModelService.hasLanguage(languageId)) {
         this.activateLanguage(languageId);
-      } else {
-        monaco.languages.onLanguage(languageId, () => this.activateLanguage(languageId));
       }
     }
   }
