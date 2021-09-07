@@ -13,7 +13,6 @@ import * as platform from '@ali/ide-core-common/lib/platform';
 import { IWorkspaceFolder } from '@ali/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
 import { IFileServiceClient, FileStat } from '@ali/ide-file-service/lib/common';
 import * as styles from './view/console/debug-console.module.less';
-import { isSingleCharacter } from './debugUtils';
 
 const CONTROL_CODES = '\\u0000-\\u0020\\u007f-\\u009f';
 const WEB_LINK_REGEX = new RegExp('(?:[a-zA-Z][a-zA-Z0-9+.-]{2,}:\\/\\/|data:|www\\.)[^\\s' + CONTROL_CODES + '"]{2,}[^\\s' + CONTROL_CODES + '"\')}\\],:;.!?]', 'ug');
@@ -60,21 +59,16 @@ export class LinkDetector {
         return elements[0];
       }
       const container = document.createElement('span');
-      container.classList.add(styles.link_detector_container);
       elements.forEach((e) => container.appendChild(e));
       return container;
     }
 
     const container = document.createElement('span');
-    container.classList.add(styles.link_detector_container);
     for (const part of this.detectLinks(text)) {
       try {
         switch (part.kind) {
           case 'text':
-            const spans = this.decorateSpan(part.value);
-            spans.forEach((s) => {
-              container.appendChild(s);
-            });
+            container.appendChild(document.createTextNode(part.value));
             break;
           case 'web':
             container.appendChild(this.createWebLink(part.value));
@@ -83,9 +77,7 @@ export class LinkDetector {
             const path = part.captures[0];
             const lineNumber = part.captures[1] ? Number(part.captures[1]) : 0;
             const columnNumber = part.captures[2] ? Number(part.captures[2]) : 0;
-            this.createPathLink(part.value, path, lineNumber, columnNumber, workspaceFolder).forEach((s) => {
-              container.appendChild(s);
-            });
+            container.appendChild(this.createPathLink(part.value, path, lineNumber, columnNumber, workspaceFolder));
             break;
         }
       } catch (e) {
@@ -93,18 +85,6 @@ export class LinkDetector {
       }
     }
     return container;
-  }
-
-  private decorateSpan(text: string): Node[] {
-    const len = text.length;
-    return Array.from({ length: len }).map((_, i) => {
-      const span = document.createElement('span');
-      span.textContent = text.charAt(i);
-      if (!isSingleCharacter(span.textContent)) {
-        span.classList.add(styles.double_placeholder);
-      }
-      return span;
-    });
   }
 
   private createWebLink(url: string): Node {
@@ -128,21 +108,21 @@ export class LinkDetector {
     return link;
   }
 
-  private createPathLink(text: string, path: string, lineNumber: number, columnNumber: number, workspaceFolder: IWorkspaceFolder | undefined): Node[] {
+  private createPathLink(text: string, path: string, lineNumber: number, columnNumber: number, workspaceFolder: IWorkspaceFolder | undefined): Node {
     if (path[0] === '/' && path[1] === '/') {
-      return this.decorateSpan(text);
+      return document.createTextNode(text);
     }
 
     if (path[0] === '.') {
       if (!workspaceFolder) {
-        return this.decorateSpan(text);
+        return document.createTextNode(text);
       }
       const uri = workspaceFolder.toResource(path);
       const link = this.createLink(text);
       this.decorateLink(link, () => {
         this.workbenchEditorService.open(URI.parse(uri.toString()));
       });
-      return [link];
+      return link;
     }
 
     const link = this.createLink(text);
@@ -164,15 +144,12 @@ export class LinkDetector {
         });
       });
     });
-    return [link];
+    return link;
   }
 
   private createLink(text: string): HTMLElement {
     const link = document.createElement('a');
-    const spans = this.decorateSpan(text);
-    spans.forEach((s) => {
-      link.appendChild(s);
-    });
+    link.textContent = text;
     return link;
   }
 

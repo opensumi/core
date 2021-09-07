@@ -1,11 +1,6 @@
 import { equalsIgnoreCase } from '@ali/ide-core-browser';
 import { DebugConfiguration } from '../common';
 
-export function isSingleCharacter(text: string): boolean {
-  const pattern = new RegExp('[\u4E00-\u9FA5]+');
-  return !pattern.test(text);
-}
-
 export function isExtensionHostDebugging(config: DebugConfiguration) {
   return config.type && equalsIgnoreCase(config.type === 'vslsShare' ? (config as any).adapterProxy.configuration.type : config.type, 'extensionhost');
 }
@@ -72,3 +67,36 @@ function createWordRegExp(allowInWords: string = ''): RegExp {
 
 // catches numbers (including floating numbers) in the first group, and alphanum in the second
 export const DEFAULT_WORD_REGEXP = createWordRegExp();
+
+export class CharWidthReader {
+  private static _INSTANCE: CharWidthReader | null = null;
+
+  public static getInstance(): CharWidthReader {
+    if (!CharWidthReader._INSTANCE) {
+      CharWidthReader._INSTANCE = new CharWidthReader();
+    }
+    return CharWidthReader._INSTANCE;
+  }
+
+  private readonly _cache: Map<string, number>;
+  private readonly _canvas: HTMLCanvasElement;
+
+  private constructor() {
+    this._cache = new Map();
+    this._canvas = document.createElement('canvas');
+  }
+
+  public getCharWidth(char: string, font: string): number {
+    const cacheKey = char + font;
+    if (this._cache.has(cacheKey)) {
+      return this._cache.get(cacheKey)!;
+    }
+
+    const context = this._canvas.getContext('2d')!;
+    context.font = font;
+    const metrics = context.measureText(char);
+    const width = metrics.width;
+    this._cache.set(cacheKey, width);
+    return width;
+  }
+}

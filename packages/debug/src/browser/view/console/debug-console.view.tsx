@@ -4,16 +4,16 @@ import { observer } from 'mobx-react-lite';
 import * as styles from './debug-console.module.less';
 import { useInjectable, ViewState, getIcon } from '@ali/ide-core-browser';
 import { DebugConsoleService } from './debug-console.service';
-import { RecycleTree, IRecycleTreeHandle, TreeNodeType, INodeRendererWrapProps, ClasslistComposite, INodeRendererProps, CompositeTreeNode, TreeNode } from '@ali/ide-components';
+import { RecycleTree, IRecycleTreeHandle, TreeNodeType, INodeRendererWrapProps, ClasslistComposite, INodeRendererProps, CompositeTreeNode, TreeNode, TreeNodeEvent } from '@ali/ide-components';
 import { IDebugConsoleModel } from './debug-console-tree.model.service';
 import { DebugConsoleNode, AnsiConsoleNode, DebugVariableContainer, TreeWithLinkWrapper } from '../../tree';
 import { Loading } from '@ali/ide-core-browser/lib/components/loading';
 import { DebugConsoleFilterService } from './debug-console-filter.service';
 import { LinkDetector } from '../../debug-link-detector';
 import { PreferenceService, PreferenceChange, CoreConfiguration } from '@ali/ide-core-browser';
-import { isSingleCharacter } from '../../debugUtils';
 import { Disposable } from '@ali/ide-core-common';
 import { debounce } from 'lodash';
+import { CharWidthReader } from '../../debugUtils';
 
 declare const ResizeObserver: any;
 
@@ -21,7 +21,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   const debugConsoleService = useInjectable<DebugConsoleService>(DebugConsoleService);
   const debugConsoleFilterService = useInjectable<DebugConsoleFilterService>(DebugConsoleFilterService);
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
-  const { tree } = debugConsoleService;
+  const { consoleModel } = debugConsoleService;
   const debugInputRef = React.createRef<HTMLDivElement>();
   const { height, width } = viewState;
   const [model, setModel] = React.useState<IDebugConsoleModel>();
@@ -36,9 +36,12 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   }, [debugInputRef.current]);
 
   React.useEffect(() => {
-    disposer.addDispose(tree.onDidUpdateTreeModel(async (model: IDebugConsoleModel) => {
+    disposer.addDispose(consoleModel.onDidUpdateTreeModel(async (model: IDebugConsoleModel) => {
       if (model) {
         await model.treeModel!.root.ensureLoaded();
+        disposer.addDispose(model.treeModel.root.watcher.on(TreeNodeEvent.WillChangeExpansionState, () => {
+          consoleModel.treeHandle.layoutItem();
+        }));
       }
       setModel(model);
     }));
@@ -56,8 +59,10 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
       setIsWordWrap(newValue);
     }));
 
+    setIsWordWrap(!!preferenceService.get('debug.console.wordWrap', isWordWrap));
+
     return () => {
-      tree.removeNodeDecoration();
+      consoleModel.removeNodeDecoration();
       disposer.dispose();
     };
   }, []);
@@ -65,7 +70,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   React.useEffect(() => {
     if (wrapperRef.current && isWordWrap) {
       let animationFrame: number;
-      const layoutDebounce = debounce(() => tree.treeHandle?.layoutItem(), 10);
+      const layoutDebounce = debounce(() => consoleModel.treeHandle?.layoutItem(), 10);
       const resizeObserver = new ResizeObserver(() => {
         animationFrame = window.requestAnimationFrame(() => layoutDebounce());
       });
@@ -82,13 +87,13 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   React.useEffect(() => {
     if (model && isWordWrap) {
       disposer.addDispose(model.treeModel.state.onChangeScrollOffset(() => {
-        tree.treeHandle.layoutItem();
+        consoleModel.treeHandle.layoutItem();
       }));
     }
   }, [model, isWordWrap]);
 
   const handleTreeReady = (handle: IRecycleTreeHandle) => {
-    tree.handleTreeHandler({
+    consoleModel.handleTreeHandler({
       ...handle,
       getModel: () => model?.treeModel!,
       hasDirectFocus: () => wrapperRef.current === document.activeElement,
@@ -99,7 +104,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
     // 阻止点击事件冒泡
     ev.stopPropagation();
 
-    const { handleTwistierClick } = tree;
+    const { handleTwistierClick } = consoleModel;
     if (!item) {
       return;
     }
@@ -107,19 +112,19 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   };
 
   const handlerContextMenu = (ev: React.MouseEvent, node: AnsiConsoleNode | DebugConsoleNode) => {
-    const { handleContextMenu } = tree;
+    const { handleContextMenu } = consoleModel;
     handleContextMenu(ev, node);
   };
 
   const handleOuterContextMenu = (ev: React.MouseEvent) => {
-    const { handleContextMenu } = tree;
+    const { handleContextMenu } = consoleModel;
     // 空白区域右键菜单
     handleContextMenu(ev);
   };
 
   const handleOuterClick = (ev: React.MouseEvent) => {
     // 空白区域点击，取消焦点状态
-    const { enactiveNodeDecoration } = tree;
+    const { enactiveNodeDecoration } = consoleModel;
     enactiveNodeDecoration();
 
     debugConsoleService.focusInput();
@@ -127,12 +132,12 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
 
   const handleOuterBlur = (ev: React.FocusEvent) => {
     // 空白区域点击，取消焦点状态
-    const { enactiveNodeDecoration } = tree;
+    const { enactiveNodeDecoration } = consoleModel;
     enactiveNodeDecoration();
   };
 
   const filterMode = (): CoreConfiguration['debug.console.filter.mode'] => {
-    return preferenceService.get('debug.console.filter.mode') || 'filter';
+    return 'filter';
   };
 
   const fuzzyOptions = () => {
@@ -146,7 +151,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   };
 
   const renderOutputNode = React.useCallback((props: INodeRendererWrapProps) => {
-    const decorations = tree.decorations.getDecorations(props.item as any);
+    const decorations = consoleModel.decorations.getDecorations(props.item as any);
     return <DebugConsoleRenderedNode
       item={props.item}
       itemType={props.itemType}
@@ -223,8 +228,8 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
   decorations,
   defaultLeftPadding,
   leftPadding,
-  filterValue,
   filterMode,
+  filterValue,
   onClick,
   onTwistierClick,
   onContextMenu,
@@ -234,6 +239,13 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
 
   const debugConsoleFilterService = useInjectable<DebugConsoleFilterService>(DebugConsoleFilterService);
   const linkDetector: LinkDetector = useInjectable<LinkDetector>(LinkDetector);
+  const [computedStyle, setComputedStyle] = React.useState<string>();
+
+  React.useEffect(() => {
+    const computed = window.getComputedStyle(AnsiConsoleNode.is(item) ? item.el : linkDetector.linkify((item as DebugConsoleNode).description), null);
+    const fontStyle = `${computed.fontStyle} ${computed.fontWeight} ${computed.fontSize}/${computed.lineHeight} ${computed.fontFamily}`;
+    setComputedStyle(fontStyle);
+  }, [item]);
 
   const handleClick = (ev: React.MouseEvent) => {
     onClick(ev, item, CompositeTreeNode.is(item) ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode);
@@ -255,49 +267,57 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     return (DebugConsoleNode.is(item) ? '' : (item as any).name) + (item.description && !DebugConsoleNode.is(item) ? ': ' : '');
   };
 
-  const renderSelectionFilter = () => {
+  const getTextWidth = (char: string, font: string): number => {
+    return CharWidthReader.getInstance().getCharWidth(char, font);
+  };
+
+  const renderSelectionFilter = React.useCallback(() => {
+    if (!computedStyle) {
+      return;
+    }
+
     const desc = acquireVariableName() + item.description;
     const matchers = debugConsoleFilterService.findMatches(desc || '');
-    const fValueSplit = (filterValue || '').split('');
-    const calcWidth = () => {
-      let singleCharLen = 0;
-      let doubleCharLen = 0;
-      fValueSplit.forEach((s) => {
-        if (isSingleCharacter(s)) {
-          singleCharLen += 1;
-        } else {
-          doubleCharLen += 1;
-        }
-      });
-      // 单字节字符 8 的宽度，双字节字符 14 的宽度
-      return singleCharLen * DEBUG_CONSOLE_SINGLE_CHAR_LEN + doubleCharLen * DEBUG_CONSOLE_DOUBLE_CHAR_LEN;
+    const toNumFixed = (n: number) => Number(n.toFixed(4));
+
+    const calcWidth = (index: number, count: number) => {
+      return Array.from({length: count}, (_, i) => i).reduce((pre: number, cur: number) => pre + toNumFixed(getTextWidth(desc.charAt(index + cur), computedStyle)), 0);
     };
-    const calcLeft = (index: number) => {
-      let singleCharLen = 0;
-      let doubleCharLen = 0;
-      if (index > 0) {
-        Array.from({length: index}).forEach((_, i) => {
-          if (isSingleCharacter(desc[i])) {
-            singleCharLen += 1;
-          } else {
-            doubleCharLen += 1;
-          }
-        });
-        return singleCharLen * DEBUG_CONSOLE_SINGLE_CHAR_LEN + doubleCharLen * DEBUG_CONSOLE_DOUBLE_CHAR_LEN;
+
+    // 在每次计算 left 的时候临时存储上一次的结果（这在每次计算大量日志内容的时候很有用）
+    const cacheLeftMap: Map<number, { startIndex: number, left: number }> = new Map();
+
+    const calcLeft = (startIndex: number, preIndex: number) => {
+      if (startIndex > 0) {
+        const excute = (len: number, start: number, initial: number) => {
+          return Array.from({length: len - start}, (_, i) => start + i)
+          .reduce((pre: number, cur: number) => toNumFixed(pre + getTextWidth(desc.charAt(cur), computedStyle)), initial);
+        };
+
+        let left: number;
+        if (preIndex !== 0 && cacheLeftMap.has(matchers[preIndex].startIndex)) {
+          const pre = cacheLeftMap.get(matchers[preIndex].startIndex)!;
+          left = excute(startIndex, pre.startIndex, pre.left);
+        } else {
+          left = excute(startIndex, 0, 0);
+        }
+        cacheLeftMap.set(startIndex, { startIndex, left });
+        return left;
       }
       return 0;
     };
-    const matStyles: React.CSSProperties[] = matchers.map((m) => {
+
+    const matStyles: React.CSSProperties[] = matchers.map((m, i) => {
       return {
         height: 16,
         top: 3,
-        width: calcWidth(),
-        left: calcLeft(m.startIndex),
+        width: calcWidth(m.startIndex, m.count),
+        left: calcLeft(m.startIndex, Math.max(0, i - 1)),
       };
     });
 
     return matStyles.map((s) => <div key={s.left} className={styles.block} style={s}></div>);
-  };
+  }, [filterValue, computedStyle]);
 
   const renderDisplayName = (node: DebugConsoleNode | AnsiConsoleNode) => {
     if (AnsiConsoleNode.is(node)) {
@@ -401,7 +421,6 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
         decorations ? decorations.classlist : null,
       )}
       style={{
-        // height: DEBUG_CONSOLE_TREE_NODE_HEIGHT + 'px',
         paddingLeft: `${(defaultLeftPadding || 8) + (item.depth || 0) * (leftPadding || 0)}px`,
       }}
       data-id={item.id}
@@ -412,6 +431,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
           className={styles.debug_console_node_overflow_wrap}
           style={{
             whiteSpace: isWordWrap ? 'pre-wrap' : 'nowrap',
+            cursor: item instanceof DebugVariableContainer ? 'pointer' : 'initial',
           }}
         >
           {renderDisplayName(item)}
@@ -426,7 +446,5 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
   );
 };
 
-const DEBUG_CONSOLE_SINGLE_CHAR_LEN = 8;
-const DEBUG_CONSOLE_DOUBLE_CHAR_LEN = 14;
 export const DEBUG_CONSOLE_TREE_NODE_HEIGHT = 22;
 export const DEBUG_CONSOLE_TREE_FIELD_NAME = 'DEBUG_CONSOLE_TREE_FIELD';

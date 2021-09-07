@@ -239,7 +239,6 @@ describe('Debug Console Tree Model', () => {
     debugConsoleModelService.activeNodeDecoration(node);
     const decoration = debugConsoleModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
   });
 
   it('enactiveNodeDecoration method should be work', () => {
@@ -251,7 +250,6 @@ describe('Debug Console Tree Model', () => {
     debugConsoleModelService.activeNodeDecoration(node);
     let decoration = debugConsoleModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
     debugConsoleModelService.enactiveNodeDecoration();
     decoration = debugConsoleModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -288,7 +286,6 @@ describe('Debug Console Tree Model', () => {
     debugConsoleModelService.activeNodeDecoration(node);
     let decoration = debugConsoleModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
     debugConsoleModelService.handleTreeBlur();
     decoration = debugConsoleModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();

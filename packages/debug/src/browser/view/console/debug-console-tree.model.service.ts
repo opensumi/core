@@ -64,7 +64,6 @@ export class DebugConsoleModelService {
 
   // 装饰器
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
-  private focusedDecoration: Decoration = new Decoration(styles.mod_focused); // 焦点态
   private contextMenuDecoration: Decoration = new Decoration(styles.mod_actived); // 右键菜单激活态
   private loadingDecoration: Decoration = new Decoration(styles.mod_loading); // 加载态
   // 即使选中态也是焦点态的节点
@@ -272,7 +271,6 @@ export class DebugConsoleModelService {
   initDecorations(root) {
     this._decorations = new DecorationsManager(root as any);
     this._decorations.addDecoration(this.selectedDecoration);
-    this._decorations.addDecoration(this.focusedDecoration);
     this._decorations.addDecoration(this.contextMenuDecoration);
     this._decorations.addDecoration(this.loadingDecoration);
   }
@@ -292,10 +290,8 @@ export class DebugConsoleModelService {
         }
       }
       if (this.focusedNode) {
-        this.focusedDecoration.removeTarget(this.focusedNode);
       }
       this.selectedDecoration.addTarget(target);
-      this.focusedDecoration.addTarget(target);
       this._focusedNode = target;
       this._selectedNodes = [target];
 
@@ -312,7 +308,6 @@ export class DebugConsoleModelService {
       this.contextMenuDecoration.removeTarget(this.contextMenuNode);
     }
     if (this.focusedNode) {
-      this.focusedDecoration.removeTarget(this.focusedNode);
       this._focusedNode = undefined;
     }
     this.contextMenuDecoration.addTarget(target);
@@ -323,7 +318,6 @@ export class DebugConsoleModelService {
   // 取消选中节点焦点
   enactiveNodeDecoration = () => {
     if (this.focusedNode) {
-      this.focusedDecoration.removeTarget(this.focusedNode);
       this._focusedNode = undefined;
     }
     if (this.contextMenuNode) {
@@ -337,7 +331,6 @@ export class DebugConsoleModelService {
       return;
     }
     this.decorations.removeDecoration(this.selectedDecoration);
-    this.decorations.removeDecoration(this.focusedDecoration);
     this.decorations.removeDecoration(this.contextMenuDecoration);
     this.decorations.removeDecoration(this.loadingDecoration);
   }
