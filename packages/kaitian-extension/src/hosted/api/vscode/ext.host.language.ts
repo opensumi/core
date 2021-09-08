@@ -33,7 +33,6 @@ import {
   SignatureHelpProvider,
   RenameProvider,
   SignatureHelpProviderMetadata,
-  SignatureHelpContext,
   Event,
   DiagnosticChangeEvent,
   SelectionRangeProvider,
@@ -706,7 +705,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
   // ### WorkspaceSymbol Provider end
   // ### Signature help begin
   $provideSignatureHelp(handle: number, resource: Uri, position: Position, context: SignatureHelpContextDto, token: CancellationToken): Promise<ISignatureHelpDto | undefined> {
-    return this.withAdapter(handle, SignatureHelpAdapter, (adapter) => adapter.provideSignatureHelp(resource, position, token, context as SignatureHelpContext));
+    return this.withAdapter(handle, SignatureHelpAdapter, (adapter) => adapter.provideSignatureHelp(resource, position, token, context));
   }
 
   $releaseSignatureHelp(handle: number, cacheId: number): Promise<void> {
