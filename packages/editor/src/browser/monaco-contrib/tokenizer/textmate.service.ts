@@ -227,10 +227,11 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
   }
 
   async activateLanguage(languageId: string) {
+    // 允许后来的插件上车
+    this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onLanguage', data: languageId }));
     if (this.activatedLanguage.has(languageId)) {
       return;
     }
-    this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onLanguage', data: languageId }));
     this.activatedLanguage.add(languageId);
     this.setTokensProviderByLanguageId(languageId);
   }
