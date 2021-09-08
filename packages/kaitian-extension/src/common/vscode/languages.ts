@@ -348,11 +348,12 @@ export interface IExtHostLanguages {
   $provideCodeLenses(
     handle: number,
     resource: UriComponents,
+    token: CancellationToken,
   ): Promise<ICodeLensListDto | undefined>;
   $resolveCodeLens(
     handle: number,
-    resource: UriComponents,
     codeLens: CodeLens,
+    token: CancellationToken,
   ): Promise<CodeLens | undefined>;
   $releaseCodeLens(
     handle: number,

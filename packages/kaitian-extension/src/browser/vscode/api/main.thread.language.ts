@@ -677,7 +677,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_CODE_LENSES);
-        return this.proxy.$provideCodeLenses(handle, model.uri).then((dto) => {
+        return this.proxy.$provideCodeLenses(handle, model.uri, token).then((dto) => {
           if (dto) {
             timer.timeEnd(extname(model.uri.fsPath));
           }
@@ -687,12 +687,12 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           };
         });
       },
-      resolveCodeLens: (model, codeLens, token) => {
+      resolveCodeLens: async (model, codeLens, token) => {
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined!;
         }
         this.reporter.point(REPORT_NAME.RESOLVE_CODE_LENS);
-        return this.proxy.$resolveCodeLens(handle, model.uri, codeLens).then((v) => v!);
+        return this.proxy.$resolveCodeLens(handle, codeLens, token).then((v) => v!);
       },
     };
   }
