@@ -149,7 +149,7 @@ export class DebugModel implements IDebugModel {
   protected createFrameDecorations(): monaco.editor.IModelDeltaDecoration[] {
     const decorations: monaco.editor.IModelDeltaDecoration[] = [];
     const { currentFrame, topFrame } = this.debugSessionManager;
-    if (!currentFrame || !currentFrame.source || currentFrame.source.uri.toString() !== this.uri.toString()) {
+    if (!currentFrame || !currentFrame.source || currentFrame.source.uri.toString() !== this.editor.getModel()?.uri.toString()) {
       return decorations;
     }
 
