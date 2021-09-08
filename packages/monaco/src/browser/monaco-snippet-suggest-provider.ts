@@ -3,7 +3,7 @@ import { SnippetParser } from '@ali/monaco-editor-core/esm/vs/editor/contrib/sni
 import * as jsoncparser from 'jsonc-parser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import { IRange, Uri, localize, ILogger } from '@ali/ide-core-common';
+import { IRange, Uri, localize, ILogger, Disposable, IDisposable, DisposableCollection } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { isPatternInWord } from '@ali/ide-core-common/lib/filters';
 import { ITextModel } from './monaco-api/types';
@@ -119,32 +119,49 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
     }
   }
 
-  fromPath(path: string, options: SnippetLoadOptions): Promise<void> {
+  fromPath(path: string, options: SnippetLoadOptions): IDisposable {
+    const toDispose = new DisposableCollection(Disposable.create(() => { /* mark as not disposed */ }));
     const snippetPath = new Path(options.extPath).join(path.replace(/^\.\//, '')).toString();
-    const pending = this.loadURI(Uri.file(snippetPath), options);
+    const pending = this.loadURI(Uri.file(snippetPath), options, toDispose);
     const { language } = options;
     const scopes = Array.isArray(language) ? language : !!language ? [language] : ['*'];
     for (const scope of scopes) {
       const pendingSnippets = this.pendingSnippets.get(scope) || [];
       pendingSnippets.push(pending);
       this.pendingSnippets.set(scope, pendingSnippets);
+
+      toDispose.push(Disposable.create(() => {
+        const index = pendingSnippets.indexOf(pending);
+        if (index !== -1) {
+            pendingSnippets.splice(index, 1);
+        }
+
+        this.pendingSnippets.delete(scope);
+      }));
     }
-    return pending;
+
+    return toDispose;
   }
   /**
    * should NOT throw to prevent load erros on suggest
    */
-  protected async loadURI(uri: string | Uri, options: SnippetLoadOptions): Promise<void> {
+  protected async loadURI(uri: string | Uri, options: SnippetLoadOptions, toDispose: DisposableCollection): Promise<void> {
     try {
       const { content } = await this.filesystem.resolveContent(uri.toString(), { encoding: 'utf-8' });
+      if (toDispose.disposed) {
+        return;
+      }
+
       const snippets = content && jsoncparser.parse(content, undefined, { disallowComments: false });
-      this.fromJSON(snippets, options);
+      toDispose.push(this.fromJSON(snippets, options));
     } catch (e) {
       this.logger.error(e);
     }
   }
 
-  protected fromJSON(snippets: JsonSerializedSnippets | undefined, { language, source }: SnippetLoadOptions): void {
+  protected fromJSON(snippets: JsonSerializedSnippets | undefined, { language, source }: SnippetLoadOptions): IDisposable {
+    const toDispose = new DisposableCollection();
+
     this.parseSnippets(snippets, (name, snippet) => {
       // tslint:disable-next-line:prefer-const
       let { prefix, body, description } = snippet;
@@ -169,15 +186,17 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
           }
         }
       }
-      this.push({
+      toDispose.push(this.push({
         scopes,
         name,
         prefix,
         description,
         body,
         source,
-      });
+      }));
     });
+
+    return toDispose;
   }
   protected parseSnippets(snippets: JsonSerializedSnippets | undefined, accept: (name: string, snippet: JsonSerializedSnippet) => void): void {
     if (typeof snippets === 'object') {
@@ -193,14 +212,26 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
     }
   }
 
-  push(...snippets: Snippet[]): void {
+  push(...snippets: Snippet[]): IDisposable {
+    const toDispose = new DisposableCollection();
+
     for (const snippet of snippets) {
       for (const scope of snippet.scopes) {
         const languageSnippets = this.snippets.get(scope) || [];
         languageSnippets.push(snippet);
         this.snippets.set(scope, languageSnippets);
+
+        toDispose.push(Disposable.create(() => {
+          const index = languageSnippets.indexOf(snippet);
+          if (index !== -1) {
+            languageSnippets.splice(index, 1);
+            this.snippets.delete(scope);
+          }
+        }));
       }
     }
+
+    return toDispose;
   }
 
 }

@@ -36,6 +36,12 @@ export class ExtensionServiceClientImpl extends RPCService implements IExtension
     }
   }
 
+  public restartExtProcessByClient() {
+    if (this.rpcClient) {
+      this.rpcClient[0].$restartExtProcess();
+    }
+  }
+
   public infoProcessCrash() {
     if (this.rpcClient) {
       this.rpcClient[0].$processCrashRestart(this.clientId);

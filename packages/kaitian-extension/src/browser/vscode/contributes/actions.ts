@@ -83,6 +83,8 @@ export class ActionsContributionPoint extends VSCodeContributePoint<ActionContri
   }
 
   dispose() {
+    super.dispose();
+
     this.unregister();
   }
 }

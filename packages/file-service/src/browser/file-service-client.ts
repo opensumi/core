@@ -43,13 +43,13 @@ export class BrowserFileSystemRegistryImpl implements IBrowserFileSystemRegistry
 
 @Injectable()
 export class FileServiceClient implements IFileServiceClient {
+  protected readonly watcherWithSchemaMap = new Map<string, number[]>();
+  protected readonly watcherDisposerMap = new Map<number, IDisposable>();
   protected readonly onFileChangedEmitter = new Emitter<FileChangeEvent>();
   protected readonly onFileProviderChangedEmitter = new Emitter<string[]>();
-  protected filesExcludesMatcherList: ParsedPattern[] = [];
 
+  protected filesExcludesMatcherList: ParsedPattern[] = [];
   protected watcherId: number = 0;
-  protected readonly watcherDisposerMap = new Map<number, IDisposable>();
-  protected readonly watcherWithSchemaMap = new Map<string, number[]>();
   protected toDisposable = new DisposableCollection();
   protected watchFileExcludes: string[] = [];
   protected watchFileExcludesMatcherList: ParsedPattern[] = [];
@@ -90,6 +90,10 @@ export class FileServiceClient implements IFileServiceClient {
 
   handlesScheme(scheme: string) {
     return this.registry.providers.has(scheme) || this.fsProviders.has(scheme);
+  }
+
+  public dispose() {
+    this.toDisposable.dispose();
   }
 
   /**
@@ -343,24 +347,35 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   registerProvider(scheme: string, provider: FileSystemProvider): IDisposable {
+    const disposables: IDisposable[] = [];
+
     this.fsProviders.set(scheme, provider);
-    this.toDisposable.push({
+    disposables.push({
       dispose: () => {
         this.fsProviders.delete(scheme);
         this._providerChanged.add(scheme);
       },
     });
     if (provider.onDidChangeFile) {
-      this.toDisposable.push(provider.onDidChangeFile((e) => this.fireFilesChange({changes: e})));
+      disposables.push(provider.onDidChangeFile((e) => this.fireFilesChange({changes: e})));
     }
-    this.toDisposable.push({
+    disposables.push({
       dispose: () => {
         (this.watcherWithSchemaMap.get(scheme) || []).forEach((id) => this.unwatchFileChanges(id));
       },
     });
     this._providerChanged.add(scheme);
     this.onFileProviderChangedEmitter.fire(Array.from(this._providerChanged));
-    return this.toDisposable;
+    this.toDisposable.pushAll(disposables);
+
+    /**
+     * 当外部注册了当前 Provider 的时候，暴露出去一个 dispose 供注册方去调用
+     */
+    const tempToDisable = new DisposableCollection();
+
+    tempToDisable.pushAll(disposables);
+
+    return tempToDisable;
   }
 
   async access(uri: string, mode: number = FileAccess.Constants.F_OK): Promise<boolean> {

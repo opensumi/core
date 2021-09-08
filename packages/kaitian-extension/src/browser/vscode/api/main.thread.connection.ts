@@ -1,13 +1,16 @@
-import { IMainThreadConnectionService, ExtensionConnection, IExtHostConnection, ExtHostAPIIdentifier, ExtensionMessageReader, ExtensionMessageWriter } from '../../../common/vscode';
-import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
+import { Disposable, DisposableCollection } from '@ali/ide-core-common';
+import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, Deferred } from '@ali/ide-core-browser';
+
+import { IMainThreadConnectionService, ExtensionConnection, IExtHostConnection, ExtHostAPIIdentifier, ExtensionMessageReader, ExtensionMessageWriter } from '../../../common/vscode';
 
 @Injectable({multiple: true})
 export class MainThreadConnection implements IMainThreadConnectionService {
   private proxy: IExtHostConnection;
   private connections = new Map<string, ExtensionConnection>();
   private connectionsReady = new Map<string, Deferred<void>>();
+  private readonly toDispose = new DisposableCollection();
 
   @Autowired(ILoggerManagerClient)
   protected readonly LoggerManager: ILoggerManagerClient;
@@ -24,6 +27,8 @@ export class MainThreadConnection implements IMainThreadConnectionService {
     });
 
     this.connections.clear();
+
+    this.toDispose.dispose();
   }
   /**
    * 通过ID获取Connection并发送对应消息
@@ -92,12 +97,18 @@ export class MainThreadConnection implements IMainThreadConnectionService {
   protected async doCreateConnection(id: string): Promise<ExtensionConnection> {
     const reader = new ExtensionMessageReader();
     const writer = new ExtensionMessageWriter(id, this.proxy);
-    return new ExtensionConnection(
+    const connection = new ExtensionConnection(
       reader,
       writer,
       () => {
         this.connections.delete(id);
         this.proxy.$deleteConnection(id);
-      });
+      },
+    );
+
+    const toClose = new DisposableCollection(Disposable.create(() => reader.fireClose()));
+    this.toDispose.push(toClose);
+
+    return connection;
   }
 }

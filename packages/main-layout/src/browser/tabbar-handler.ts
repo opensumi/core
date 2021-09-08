@@ -41,6 +41,7 @@ export class TabBarHandler {
   dispose() {
     // remove tab
     this.tabbarService.containersMap.delete(this.containerId);
+    this.tabbarService.disposeContainer(this.containerId);
   }
   /**
    * dispose 子视图

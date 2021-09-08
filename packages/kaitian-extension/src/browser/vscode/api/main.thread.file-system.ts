@@ -1,4 +1,4 @@
-import { URI, IDisposable, Emitter, Event, Uri, dispose } from '@ali/ide-core-common';
+import { URI, IDisposable, Emitter, Event, Uri, dispose, Disposable } from '@ali/ide-core-common';
 import { ensureDir } from '@ali/ide-core-common/lib/browser-fs/ensure-dir';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
@@ -13,6 +13,7 @@ import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
 @Injectable({ multiple: true })
 export class MainThreadFileSystem implements IMainThreadFileSystemShape {
 
+  private readonly disposable = new Disposable();
   private readonly _proxy: IExtHostFileSystemShape;
   private readonly _fileProvider = new Map<number, RemoteFileSystemProvider>();
 
@@ -29,12 +30,15 @@ export class MainThreadFileSystem implements IMainThreadFileSystemShape {
   }
 
   dispose(): void {
+    this.disposable.dispose();
+
     this._fileProvider.forEach((value) => value.dispose());
     this._fileProvider.clear();
   }
 
   $registerFileSystemProvider(handle: number, scheme: string, capabilities: FileSystemProviderCapabilities): void {
-    this.schemeRegistry.registerFileSystemProvider({scheme});
+    this.disposable.addDispose(this.schemeRegistry.registerFileSystemProvider({scheme}));
+
     this._fileProvider.set(handle, new RemoteFileSystemProvider(this._fileService, scheme, capabilities, handle, this._proxy));
   }
 

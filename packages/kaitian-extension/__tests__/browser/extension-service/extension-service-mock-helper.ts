@@ -234,6 +234,9 @@ class MockExtNodeClientService implements IExtensionNodeClientService {
   getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData | undefined): Promise<IExtensionMetaData | undefined> {
     return Promise.resolve({ ...mockExtensionProps, extraMetadata: { ...extraMetaData } });
   }
+  restartExtProcessByClient(): void {
+    throw new Error('Method not implemented.');
+  }
   infoProcessNotExist(): void {
     throw new Error('Method not implemented.');
   }

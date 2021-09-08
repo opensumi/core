@@ -59,6 +59,12 @@ export class MainThreadTreeView implements IMainThreadTreeView {
 
   dispose() {
     this.disposable.dispose();
+
+    this.disposableCollection.forEach((item) => {
+      item.dispose();
+    });
+
+    this.disposableCollection.clear();
   }
 
   createTreeModel(treeViewId: string, dataProvider: TreeViewDataProvider, options: TreeViewBaseOptions): ExtensionTreeViewModel {

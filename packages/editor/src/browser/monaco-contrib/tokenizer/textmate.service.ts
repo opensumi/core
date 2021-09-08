@@ -1,20 +1,20 @@
+import { IThemeData } from '@ali/ide-theme';
+import { Injectable, Autowired } from '@ali/common-di';
 import { monaco } from '@ali/ide-monaco/lib/browser/monaco-api';
+import { URI, Disposable } from '@ali/ide-core-common';
+import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
+import { OnigScanner, loadWASM, OnigString } from 'vscode-oniguruma';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { ModesRegistry } from '@ali/monaco-editor-core/esm/vs/editor/common/modes/modesRegistry';
 import type { ILanguageExtensionPoint } from '@ali/monaco-editor-core/esm/vs/editor/common/services/modeService';
-import { FoldingRules, IAutoClosingPair, IAutoClosingPairConditional, IndentationRule, LanguageConfiguration } from '@ali/ide-monaco/lib/browser/monaco-api/types';
-import { Injectable, Autowired } from '@ali/common-di';
-import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger, ExtensionActivateEvent, getDebugLogger, MonacoService, electronEnv } from '@ali/ide-core-browser';
-import { CommentRule, GrammarsContribution, ITextmateTokenizerService, LanguagesContribution, ScopeMap } from '@ali/ide-monaco/lib/browser/contrib/tokenizer';
 import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap, INITIAL } from 'vscode-textmate';
-import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
-import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import { URI } from '@ali/ide-core-common';
-import { IThemeData } from '@ali/ide-theme';
-import { OnigScanner, loadWASM, OnigString } from 'vscode-oniguruma';
+import { CommentRule, GrammarsContribution, ITextmateTokenizerService, LanguagesContribution, ScopeMap } from '@ali/ide-monaco/lib/browser/contrib/tokenizer';
+import { FoldingRules, IAutoClosingPair, IAutoClosingPairConditional, IndentationRule, LanguageConfiguration } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger, ExtensionActivateEvent, getDebugLogger, MonacoService, electronEnv } from '@ali/ide-core-browser';
 
-import { createTextmateTokenizer, TokenizerOption } from './textmate-tokenizer';
 import { TextmateRegistry } from './textmate-registry';
 import { IEditorDocumentModelService } from '../../doc-model/types';
+import { createTextmateTokenizer, TokenizerOption } from './textmate-tokenizer';
 
 let wasmLoaded = false;
 
@@ -76,6 +76,8 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
   editorDocumentModelService: IEditorDocumentModelService;
 
   public grammarRegistry: Registry;
+
+  private registeredGrammarDisposableCollection = new Map<string, Disposable>();
 
   private injections = new Map<string, string[]>();
 
@@ -185,45 +187,72 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
       // get content in `initGrammarRegistry`
       grammar.location = extPath.resolve(grammarPath);
     }
+
     this.doRegisterGrammar(grammar);
   }
 
-  async doRegisterGrammar(grammar: GrammarsContribution) {
+  unregisterGrammar(grammar: GrammarsContribution) {
+    const toDispose = this.registeredGrammarDisposableCollection.get(grammar.scopeName);
+
+    if (toDispose) {
+      toDispose.dispose();
+    }
+  }
+
+  doRegisterGrammar(grammar: GrammarsContribution) {
+    const toDispose = new Disposable();
+
     if (grammar.injectTo) {
       for (const injectScope of grammar.injectTo) {
         let injections = this.injections.get(injectScope);
         if (!injections) {
           injections = [];
+
+          toDispose.addDispose(Disposable.create(() => {
+            this.injections.delete(injectScope);
+          }));
+
           this.injections.set(injectScope, injections);
         }
         injections.push(grammar.scopeName);
       }
     }
-    this.textmateRegistry.registerTextmateGrammarScope(grammar.scopeName, {
-      async getGrammarDefinition() {
-        return {
-          format: /\.json$/.test(grammar.path) ? 'json' : 'plist',
-          location: grammar.location!,
-          content: await grammar.resolvedConfiguration,
-        };
-      },
-      getInjections: (scopeName: string) => {
-        const scopeParts = scopeName.split('.');
-        let injections: string[] = [];
-        for (let i = 1; i <= scopeParts.length; i++) {
-          const subScopeName = scopeParts.slice(0, i).join('.');
-          injections = [...injections, ...(this.injections.get(subScopeName) || [])];
-        }
-        return injections;
-      },
-    });
+
+    toDispose.addDispose(Disposable.create(
+      this.textmateRegistry.registerTextmateGrammarScope(grammar.scopeName, {
+        async getGrammarDefinition() {
+          return {
+            format: /\.json$/.test(grammar.path) ? 'json' : 'plist',
+            location: grammar.location!,
+            content: await grammar.resolvedConfiguration,
+          };
+        },
+        getInjections: (scopeName: string) => {
+          const scopeParts = scopeName.split('.');
+          let injections: string[] = [];
+          for (let i = 1; i <= scopeParts.length; i++) {
+            const subScopeName = scopeParts.slice(0, i).join('.');
+            injections = [...injections, ...(this.injections.get(subScopeName) || [])];
+          }
+          return injections;
+        },
+      }),
+    ));
+
     if (grammar.language) {
-      this.textmateRegistry.mapLanguageIdToTextmateGrammar(grammar.language, grammar.scopeName);
-      this.textmateRegistry.registerGrammarConfiguration(grammar.language, () => ({
-        embeddedLanguages: this.convertEmbeddedLanguages(grammar.embeddedLanguages),
-        tokenTypes: this.convertTokenTypes(grammar.tokenTypes),
-      }));
+      toDispose.addDispose(Disposable.create(
+        this.textmateRegistry.mapLanguageIdToTextmateGrammar(grammar.language, grammar.scopeName),
+      ));
+
+      toDispose.addDispose(Disposable.create(
+        this.textmateRegistry.registerGrammarConfiguration(grammar.language, () => ({
+          embeddedLanguages: this.convertEmbeddedLanguages(grammar.embeddedLanguages),
+          tokenTypes: this.convertTokenTypes(grammar.tokenTypes),
+        })),
+      ));
     }
+
+    this.registeredGrammarDisposableCollection.set(grammar.scopeName, toDispose);
   }
 
   async activateLanguage(languageId: string) {

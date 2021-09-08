@@ -692,6 +692,7 @@ export const localizationBundle = {
     'kaitianExtension.invalidExthostReload.confirm.ok': 'Refresh',
     'kaitianExtension.invalidExthostReload.confirm.cancel': 'Ignore and continue to use',
     'kaitianExtension.crashedExthostReload.confirm': 'Ext-host process crashed, restart this process?',
+    'kaitianExtension.exthostRestarting.content': 'Ext-host process is restarting',
 
     'extension.no.view.found': 'The view component registered with the plugin {0} could not be found. \n Please make sure that the component named {1} has been exported from the plugin.',
     'extension.profilingExtensionHost': 'Profiling Extension Host',

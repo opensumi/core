@@ -9,8 +9,6 @@ import { ExtHostAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar } from '.
 
 @Injectable({multiple: true})
 export class MainThreadStatusBar implements IMainThreadStatusBar {
-  private entries: Map<string, StatusBarEntry> = new Map();
-
   private disposable = new Disposable();
   protected readonly proxy: IExtHostStatusBar;
 
@@ -29,18 +27,16 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
   }
 
   $setStatusBarMessage(text: string): void {
-
-    this.statusBar.addElement('ext_default_statusbar_text', {
+    this.disposable.addDispose(this.statusBar.addElement('ext_default_statusbar_text', {
       text,
       alignment: StatusBarAlignment.LEFT,
-    });
+    }));
   }
 
   $dispose(id?: string): void {
     if (id) {
       this.statusBar.removeElement(id);
     } else {
-
       this.statusBar.removeElement('ext_default_statusbar_text');
     }
   }
@@ -79,8 +75,7 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
         ariaLabel,
     };
 
-    this.entries.set(id, entry);
-    await this.statusBar.addElement(id, entry);
+    this.disposable.addDispose(this.statusBar.addElement(id, entry));
   }
 
 }
