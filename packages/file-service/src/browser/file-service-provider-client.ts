@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Event, Emitter, Uri, getDebugLogger } from '@ali/ide-core-common';
+import { Event, Emitter, Uri, getDebugLogger, FileSystemProviderCapabilities, isLinux } from '@ali/ide-core-common';
 import {
   IDiskFileProvider, FileChangeEvent, DiskFileServicePath, FileSystemProvider, DidFilesChangedParams, FileChange,
 } from '../common';
@@ -8,6 +8,9 @@ export abstract class CoreFileServiceProviderClient implements FileSystemProvide
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
+
+  abstract capabilities: FileSystemProviderCapabilities;
+  abstract onDidChangeCapabilities: Event<void>;
 
   abstract fileServiceProvider: FileSystemProvider;
 
@@ -61,6 +64,26 @@ export abstract class CoreFileServiceProviderClient implements FileSystemProvide
 export class DiskFsProviderClient extends CoreFileServiceProviderClient implements IDiskFileProvider {
   @Autowired(DiskFileServicePath)
   fileServiceProvider: IDiskFileProvider;
+
+  onDidChangeCapabilities: Event<void> = Event.None;
+  protected _capabilities: FileSystemProviderCapabilities | undefined;
+  get capabilities(): FileSystemProviderCapabilities {
+    if (!this._capabilities) {
+      this._capabilities =
+        FileSystemProviderCapabilities.FileReadWrite |
+        FileSystemProviderCapabilities.FileOpenReadWriteClose |
+        FileSystemProviderCapabilities.FileReadStream |
+        FileSystemProviderCapabilities.FileFolderCopy |
+        FileSystemProviderCapabilities.FileWriteUnlock |
+        FileSystemProviderCapabilities.Trash;
+
+      if (isLinux) {
+        this._capabilities |= FileSystemProviderCapabilities.PathCaseSensitive;
+      }
+    }
+
+    return this._capabilities;
+  }
 
   setWatchFileExcludes(excludes: string[]) {
     return this.fileServiceProvider.setWatchFileExcludes(excludes);

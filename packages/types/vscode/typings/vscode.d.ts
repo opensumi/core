@@ -3120,6 +3120,7 @@ declare module 'vscode' {
     delete(uri: Uri, options?: { recursive: boolean }): Thenable<void>;
     rename(source: Uri, target: Uri, options?: { overwrite: boolean }): Thenable<void>;
     copy(source: Uri, target: Uri, options?: { overwrite: boolean }): Thenable<void>;
+    isWritableFileSystem(scheme: string): boolean | undefined;
   }
 
   /**

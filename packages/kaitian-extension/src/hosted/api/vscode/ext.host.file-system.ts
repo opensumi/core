@@ -32,6 +32,7 @@ import {
 import {
   MainThreadAPIIdentifier,
 } from '../../../common/vscode';
+import { ExtHostFileSystemInfo } from './ext.host.file-system-info';
 import * as files from '../../../common/vscode/file-system';
 import { UriComponents } from '../../../common/vscode/ext-types';
 
@@ -46,7 +47,10 @@ export function convertToVSCFileStat(stat: FileStat): vscode.FileStat {
 
 class ConsumerFileSystem implements vscode.FileSystem {
 
-  constructor(private _proxy: files.IMainThreadFileSystemShape) { }
+  constructor(
+    private _proxy: files.IMainThreadFileSystemShape,
+    private _fileSystemInfo: ExtHostFileSystemInfo,
+  ) { }
 
   stat(uri: vscode.Uri): Promise<vscode.FileStat> {
     return this._proxy.$stat(uri).catch(ConsumerFileSystem._handleError);
@@ -73,6 +77,13 @@ class ConsumerFileSystem implements vscode.FileSystem {
   }
   copy(source: vscode.Uri, destination: vscode.Uri, options?: { overwrite?: boolean }): Promise<void> {
     return this._proxy.$copy(source, destination, { ...{ overwrite: false }, ...options }).catch(ConsumerFileSystem._handleError);
+  }
+  isWritableFileSystem(scheme: string): boolean | undefined {
+    const capabilities = this._fileSystemInfo.getCapabilities(scheme);
+    if (typeof capabilities === 'number') {
+      return !(capabilities & FileSystemProviderCapabilities.Readonly);
+    }
+    return undefined;
   }
   private static _handleError(err: any): never {
     // generic error
@@ -109,9 +120,12 @@ export class ExtHostFileSystem implements files.IExtHostFileSystemShape {
 
   readonly fileSystem: vscode.FileSystem;
 
-  constructor(private readonly rpcProtocol: IRPCProtocol) {
+  constructor(
+    private readonly rpcProtocol: IRPCProtocol,
+    private readonly _fileSystemInfo: ExtHostFileSystemInfo,
+  ) {
     this._proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadFileSystem);
-    this.fileSystem = new ConsumerFileSystem(this._proxy);
+    this.fileSystem = new ConsumerFileSystem(this._proxy, this._fileSystemInfo);
 
     // register used schemes
     Object.keys(Schemas).forEach((scheme) => this._usedSchemes.add(scheme));

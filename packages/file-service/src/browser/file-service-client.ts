@@ -1,8 +1,8 @@
 
 import { Injectable, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
-import { FileStat, FileDeleteOptions, FileMoveOptions, IBrowserFileSystemRegistry, IFileSystemProvider, FileSystemProvider, FileSystemError, FileAccess, IDiskFileProvider, containsExtraFileMethod, FILE_SCHEME } from '../common';
+import { FileStat, FileDeleteOptions, FileMoveOptions, IBrowserFileSystemRegistry, IFileSystemProvider, FileSystemProvider, FileSystemError, FileAccess, IDiskFileProvider, containsExtraFileMethod, FILE_SCHEME, IFileSystemProviderRegistrationEvent, IFileSystemProviderCapabilitiesChangeEvent } from '../common';
 import { TextDocument } from 'vscode-languageserver-types';
-import { URI, Emitter, Event, isElectronRenderer, IEventBus, FileUri, DisposableCollection, IDisposable } from '@ali/ide-core-common';
+import { URI, Emitter, Event, isElectronRenderer, IEventBus, FileUri, DisposableCollection, IDisposable, FileSystemProviderCapabilities } from '@ali/ide-core-common';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import { Uri } from '@ali/ide-core-common';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
@@ -21,6 +21,7 @@ import { FileSystemWatcher } from './watcher';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { FilesChangeEvent, ExtensionActivateEvent } from '@ali/ide-core-browser';
 import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
+import { Iterable } from '@ali/monaco-editor-core/esm/vs/base/common/iterator';
 
 // TODO: 这里只做标记，实现插件注册的scheme统一走fs-client
 @Injectable()
@@ -48,7 +49,20 @@ export class FileServiceClient implements IFileServiceClient {
   protected readonly onFileChangedEmitter = new Emitter<FileChangeEvent>();
   protected readonly onFileProviderChangedEmitter = new Emitter<string[]>();
 
+  protected readonly _onFilesChanged = new Emitter<FileChangeEvent>();
+  readonly onFilesChanged: Event<FileChangeEvent> = this._onFilesChanged.event;
+
+  protected readonly _onFileProviderChanged = new Emitter<string[]>();
+  readonly onFileProviderChanged: Event<string[]> = this._onFileProviderChanged.event;
+
+  protected readonly _onDidChangeFileSystemProviderRegistrations = new Emitter<IFileSystemProviderRegistrationEvent>();
+  readonly onDidChangeFileSystemProviderRegistrations = this._onDidChangeFileSystemProviderRegistrations.event;
+
+  private readonly _onDidChangeFileSystemProviderCapabilities = new Emitter<IFileSystemProviderCapabilitiesChangeEvent>();
+  readonly onDidChangeFileSystemProviderCapabilities = this._onDidChangeFileSystemProviderCapabilities.event;
+
   protected filesExcludesMatcherList: ParsedPattern[] = [];
+
   protected watcherId: number = 0;
   protected toDisposable = new DisposableCollection();
   protected watchFileExcludes: string[] = [];
@@ -79,14 +93,6 @@ export class FileServiceClient implements IFileServiceClient {
   };
 
   corePreferences: CorePreferences;
-
-  get onFilesChanged(): Event<FileChangeEvent> {
-    return this.onFileChangedEmitter.event;
-  }
-
-  get onFileProviderChanged(): Event<string[]> {
-    return this.onFileProviderChangedEmitter.event;
-  }
 
   handlesScheme(scheme: string) {
     return this.registry.providers.has(scheme) || this.fsProviders.has(scheme);
@@ -261,7 +267,7 @@ export class FileServiceClient implements IFileServiceClient {
         type: change.type,
       } as FileChange;
     });
-    this.onFileChangedEmitter.fire(changes);
+    this._onFilesChanged.fire(changes);
     this.eventBus.fire(new FilesChangeEvent(changes));
   }
 
@@ -346,24 +352,40 @@ export class FileServiceClient implements IFileServiceClient {
     return 'utf8';
   }
 
+  // capabilities
+  listCapabilities(): Iterable<{ scheme: string, capabilities: FileSystemProviderCapabilities; }> {
+    return Iterable.map(this.fsProviders, ([scheme, provider]) => ({ scheme, capabilities: provider.capabilities }));
+  }
+  // capabilities end
+
   registerProvider(scheme: string, provider: FileSystemProvider): IDisposable {
+    if (this.fsProviders.has(scheme)) {
+      throw new Error(`'${scheme}' 的文件系统 provider 已存在`);
+    }
+
     const disposables: IDisposable[] = [];
 
     this.fsProviders.set(scheme, provider);
+    this._onDidChangeFileSystemProviderRegistrations.fire({ added: true, scheme, provider });
+
     disposables.push({
       dispose: () => {
+        this._onDidChangeFileSystemProviderRegistrations.fire({ added: false, scheme, provider });
         this.fsProviders.delete(scheme);
         this._providerChanged.add(scheme);
       },
     });
+
     if (provider.onDidChangeFile) {
       disposables.push(provider.onDidChangeFile((e) => this.fireFilesChange({changes: e})));
     }
+    this.toDisposable.push(provider.onDidChangeCapabilities(() => this._onDidChangeFileSystemProviderCapabilities.fire({ provider, scheme })));
     disposables.push({
       dispose: () => {
         (this.watcherWithSchemaMap.get(scheme) || []).forEach((id) => this.unwatchFileChanges(id));
       },
     });
+
     this._providerChanged.add(scheme);
     this.onFileProviderChangedEmitter.fire(Array.from(this._providerChanged));
     this.toDisposable.pushAll(disposables);
@@ -375,6 +397,7 @@ export class FileServiceClient implements IFileServiceClient {
 
     tempToDisable.pushAll(disposables);
 
+    this._onFileProviderChanged.fire(Array.from(this._providerChanged));
     return tempToDisable;
   }
 

@@ -1,3 +1,4 @@
+import { Event, FileSystemProviderCapabilities } from '@ali/ide-core-common';
 
 import { DisposableCollection, ILogger, Emitter, URI, AppConfig, Uri, FileType, FileChangeEvent } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
@@ -9,6 +10,8 @@ export const DEFAULT_USER_STORAGE_FOLDER = '.kaitian';
 
 @Injectable()
 export class UserStorageServiceImpl implements IUserStorageService {
+  capabilities: FileSystemProviderCapabilities = FileSystemProviderCapabilities.FileReadWrite;
+  onDidChangeCapabilities = Event.None;
   /**
    * 基于用户存储路径创建文件路径
    * @param userStorageFolderUri 存储目录路径，如 file://home/user/

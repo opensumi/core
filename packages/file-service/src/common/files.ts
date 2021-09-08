@@ -15,7 +15,7 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/filesystem/src/common/filesystem.ts
 
-import { FileSystemWatcherServer, DidFilesChangedParams, WatchOptions } from '@ali/ide-core-common'
+import { FileSystemWatcherServer, DidFilesChangedParams, WatchOptions } from '@ali/ide-core-common';
 import { ApplicationError, Event, IDisposable, Uri, URI, isUndefinedOrNull, hasProperty, isFunction, FileChangeEvent } from '@ali/ide-core-common';
 import { FileSystemProvider, FileStat } from '@ali/ide-core-common/lib/types/file';
 import { Range } from 'vscode-languageserver-types';
@@ -27,7 +27,6 @@ export const IDiskFileProvider = Symbol('IDiskFileProvider');
 export const IShadowFileProvider = Symbol('IShadowFileProvider');
 
 export const IFileService = Symbol('IFileService');
-
 
 export interface TextDocumentContentChangeEvent {
   /**
@@ -174,7 +173,7 @@ export interface IFileService extends FileSystemWatcherServer {
 
   getUri(uri: string | Uri): URI;
 
-  dispose():void;
+  dispose(): void;
 }
 
 export namespace FileAccess {
@@ -216,70 +215,69 @@ export interface FileDeleteOptions {
 }
 
 export interface FileSetContentOptions {
-  encoding?: string
+  encoding?: string;
 }
 
 export interface FileCreateOptions {
-  content?: string,
-  encoding?: string,
-  overwrite?: boolean
+  content?: string;
+  encoding?: string;
+  overwrite?: boolean;
 }
 
 export interface FileCopyOptions {
-  overwrite?: boolean
+  overwrite?: boolean;
 }
 
 export namespace FileSystemError {
   export const FileNotFound = ApplicationError.declare(-33000, (uri: string, prefix?: string) => ({
     message: `${prefix ? prefix + ' ' : ''} '${uri}' has not been found.`,
-    data: { uri }
+    data: { uri },
   }));
   export const FileExists = ApplicationError.declare(-33001, (uri: string, prefix?: string) => ({
     message: `${prefix ? prefix + ' ' : ''}'${uri}' already exists.`,
-    data: { uri }
+    data: { uri },
   }));
   export const FileIsDirectory = ApplicationError.declare(-33002, (uri: string, prefix?: string) => ({
     message: `${prefix ? prefix + ' ' : ''}'${uri}' is a directory.`,
-    data: { uri }
+    data: { uri },
   }));
   export const FileNotDirectory = ApplicationError.declare(-33003, (uri: string, prefix?: string) => ({
     message: `${prefix ? prefix + ' ' : ''}'${uri}' is not a directory.`,
-    data: { uri }
+    data: { uri },
   }));
   export const FileIsOutOfSync = ApplicationError.declare(-33004, (file: FileStat, stat: FileStat) => ({
     message: `'${file.uri}' is out of sync.`,
-    data: { file, stat }
+    data: { file, stat },
   }));
   export const FileIsNoPermissions = ApplicationError.declare(-33005, (uri: string, prefix?: string) => ({
     message: `${prefix ? prefix + ' ' : ''}'${uri}' is no permissions.`,
-    data: { uri }
+    data: { uri },
   }));
 }
 
 export class FileOperationError extends Error {
-	constructor(message: string, public fileOperationResult: FileOperationResult, public options?: any) {
-		super(message);
-	}
+  constructor(message: string, public fileOperationResult: FileOperationResult, public options?: any) {
+    super(message);
+  }
 
-	static isFileOperationError(obj: unknown): obj is FileOperationError {
-		return obj instanceof Error && !isUndefinedOrNull((obj as FileOperationError).fileOperationResult);
-	}
+  static isFileOperationError(obj: unknown): obj is FileOperationError {
+    return obj instanceof Error && !isUndefinedOrNull((obj as FileOperationError).fileOperationResult);
+  }
 }
 
-
 export const enum FileOperationResult {
-	FILE_IS_DIRECTORY,
-	FILE_NOT_FOUND,
-	FILE_NOT_MODIFIED_SINCE,
-	FILE_MODIFIED_SINCE,
-	FILE_MOVE_CONFLICT,
-	FILE_READ_ONLY,
-	FILE_PERMISSION_DENIED,
-	FILE_TOO_LARGE,
-	FILE_INVALID_PATH,
-	FILE_EXCEEDS_MEMORY_LIMIT,
-	FILE_NOT_DIRECTORY,
-	FILE_OTHER_ERROR
+  FILE_IS_DIRECTORY,
+  FILE_NOT_FOUND,
+  FILE_NOT_MODIFIED_SINCE,
+  FILE_MODIFIED_SINCE,
+  FILE_MOVE_CONFLICT,
+  FILE_READ_ONLY,
+  FILE_PERMISSION_DENIED,
+  FILE_TOO_LARGE,
+  FILE_INVALID_PATH,
+  FILE_EXCEEDS_MEMORY_LIMIT,
+  FILE_NOT_DIRECTORY,
+  FILE_OTHER_ERROR,
 }
 
 /**
@@ -295,6 +293,7 @@ export const enum FileOperationResult {
  * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
  */
 export interface FileCopyFn {
+  /* tslint:disable callable-types */
   (source: Uri, destination: Uri, options: { overwrite: boolean }): void | Thenable<void | FileStat>;
 }
 
@@ -303,10 +302,12 @@ export interface FileCopyFn {
  * @returns {Promise<boolean>}
  */
 export interface FileAccessFn {
+  /* tslint:disable callable-types */
   (uri: Uri, mode: number): Promise<boolean>;
 }
 
 export interface FileGetCurrentUserHomeFn {
+  /* tslint:disable callable-types */
   (): Promise<FileStat | undefined>;
 }
 
@@ -315,7 +316,8 @@ export interface FileGetCurrentUserHomeFn {
  * @param uri string
  */
 export interface FileGetFileTypeFn {
-  (uri: string): Promise<string | undefined>
+  /* tslint:disable callable-types */
+  (uri: string): Promise<string | undefined>;
 }
 
 interface ExtendedFileFns {
@@ -344,7 +346,8 @@ export interface IDiskFileProvider extends FileSystemProvider {
   getWatchFileExcludes(): string[] | Thenable<string[]>;
 }
 
-export interface IShadowFileProvider extends FileSystemProvider {}
+// tslint:disable-next-line: no-empty-interface
+export interface IShadowFileProvider extends FileSystemProvider { }
 
 /**
  * Inner FileSystemProvider：内部实现的 Provider，可以直接在NODE主进程使用的，用FileSystemProvider标记
@@ -361,3 +364,14 @@ export function isErrnoException(error: any | NodeJS.ErrnoException): error is N
 }
 
 export const FILE_SCHEME = 'file';
+
+export interface IFileSystemProviderRegistrationEvent {
+  added: boolean;
+  scheme: string;
+  provider?: FileSystemProvider;
+}
+
+export interface IFileSystemProviderCapabilitiesChangeEvent {
+  provider: FileSystemProvider;
+  scheme: string;
+}

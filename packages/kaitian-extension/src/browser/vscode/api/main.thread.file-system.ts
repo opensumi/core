@@ -6,7 +6,7 @@ import { FileChange, FileSystemProviderCapabilities, FileStat as IFileStat } fro
 import { IFileServiceClient, FileType, FileOperationError, FileOperationResult, FileSystemProvider, IBrowserFileSystemRegistry } from '@ali/ide-file-service/lib/common';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { UriComponents } from '../../../common/vscode/ext-types';
-import { IExtHostFileSystemShape, FileDeleteOptions, IMainThreadFileSystemShape, FileStat, FileSystemProviderErrorCode, FileOverwriteOptions } from '../../../common/vscode/file-system';
+import { IExtHostFileSystemShape, FileDeleteOptions, IMainThreadFileSystemShape, FileStat, FileSystemProviderErrorCode, FileOverwriteOptions, IExtHostFileSystemInfoShape } from '../../../common/vscode/file-system';
 import { toFileStat, fromFileStat } from '../../../common/vscode/converter';
 import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
 
@@ -27,11 +27,18 @@ export class MainThreadFileSystem implements IMainThreadFileSystemShape {
     private readonly rpcProtocol: IRPCProtocol,
   ) {
     this._proxy = this.rpcProtocol.getProxy<IExtHostFileSystemShape>(ExtHostAPIIdentifier.ExtHostFileSystem);
+
+    const infoProxy = this.rpcProtocol.getProxy<IExtHostFileSystemInfoShape>(ExtHostAPIIdentifier.ExtHostFileSystemInfo);
+
+    for (const entry of this._fileService.listCapabilities()) {
+      infoProxy.$acceptProviderInfos(entry.scheme, entry.capabilities);
+    }
+    this.disposable.addDispose(this._fileService.onDidChangeFileSystemProviderRegistrations((e) => infoProxy.$acceptProviderInfos(e.scheme, e.provider?.capabilities ?? null)));
+    this.disposable.addDispose(this._fileService.onDidChangeFileSystemProviderCapabilities((e) => infoProxy.$acceptProviderInfos(e.scheme, e.provider.capabilities)));
   }
 
   dispose(): void {
     this.disposable.dispose();
-
     this._fileProvider.forEach((value) => value.dispose());
     this._fileProvider.clear();
   }
