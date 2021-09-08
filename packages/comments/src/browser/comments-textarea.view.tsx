@@ -87,7 +87,7 @@ export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTe
       }
       // auto set last selection
       selectLastPosition(value);
-      function handleMouseWheel(event: MouseWheelEvent) {
+      function handleMouseWheel(event: Event) {
         const target = event.target as Element;
         if (target) {
           if (

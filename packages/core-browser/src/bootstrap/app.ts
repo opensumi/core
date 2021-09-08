@@ -544,6 +544,7 @@ export class ClientApp implements IClientApp, IDisposable {
    */
   fireOnReload(forcedReload: boolean = false) {
     // 默认调用 location reload
+    // @ts-ignore
     window.location.reload(forcedReload);
   }
 
