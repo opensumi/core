@@ -31,6 +31,46 @@ export const EDITOR_MODEL_DEFAULTS = {
   largeFileOptimizations: true,
 };
 
+export const EDITOR_SUGGEST_DEFAULTS = {
+  insertMode: 'insert',
+  filterGraceful: true,
+  snippetsPreventQuickSuggestions: true,
+  localityBonus: false,
+  shareSuggestSelections: false,
+  showIcons: true,
+  maxVisibleSuggestions: 12,
+  showMethods: true,
+  showFunctions: true,
+  showConstructors: true,
+  showFields: true,
+  showVariables: true,
+  showClasses: true,
+  showStructs: true,
+  showInterfaces: true,
+  showModules: true,
+  showProperties: true,
+  showEvents: true,
+  showOperators: true,
+  showUnits: true,
+  showValues: true,
+  showConstants: true,
+  showEnums: true,
+  showEnumMembers: true,
+  showKeywords: true,
+  showWords: true,
+  showColors: true,
+  showFiles: true,
+  showReferences: true,
+  showFolders: true,
+  showTypeParameters: true,
+  showSnippets: true,
+  showUsers: true,
+  showIssues: true,
+  statusBar: {
+    visible: false,
+  },
+};
+
 export const enum WrappingIndent {
   /**
    * No indentation => wrapped lines begin at column 1.
@@ -160,16 +200,6 @@ export const EDITOR_DEFAULTS = {
     suggestFontSize: 0,
     suggestLineHeight: 0,
     tabCompletion: 'off',
-    suggest: {
-      filterGraceful: true,
-      snippets: 'inline',
-      snippetsPreventQuickSuggestions: true,
-      localityBonus: false,
-      shareSuggestSelections: false,
-      showIcons: true,
-      maxVisibleSuggestions: 12,
-      filteredTypes: Object.create(null),
-    },
     gotoLocation: {
       multiple: 'peek',
     },
@@ -266,6 +296,193 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     'type': 'number',
     'default': EDITOR_FONT_DEFAULTS.lineHeight,
     'description': localize('lineHeight', 'Controls the line height. Use 0 to compute the line height from the font size.'),
+  },
+  'editor.suggest.insertMode': {
+    type: 'string',
+    enum: ['insert', 'replace'],
+    enumDescriptions: [
+      localize('suggest.insertMode.insert', 'Insert suggestion without overwriting text right of the cursor.'),
+      localize('suggest.insertMode.replace', 'Insert suggestion and overwrite text right of the cursor.'),
+    ],
+    default: 'insert',
+    description: localize('suggest.insertMode', 'Controls whether words are overwritten when accepting completions. Note that this depends on extensions opting into this feature.'),
+  },
+  'editor.suggest.filterGraceful': {
+    type: 'boolean',
+    default: EDITOR_SUGGEST_DEFAULTS.filterGraceful,
+    description: localize('suggest.filterGraceful', 'Controls whether filtering and sorting suggestions accounts for small typos.'),
+  },
+  'editor.suggest.localityBonus': {
+    type: 'boolean',
+    default: EDITOR_SUGGEST_DEFAULTS.localityBonus,
+    description: localize('suggest.localityBonus', 'Controls whether sorting favours words that appear close to the cursor.'),
+  },
+  'editor.suggest.shareSuggestSelections': {
+    type: 'boolean',
+    default: EDITOR_SUGGEST_DEFAULTS.shareSuggestSelections,
+    markdownDescription: localize('suggest.shareSuggestSelections', 'Controls whether remembered suggestion selections are shared between multiple workspaces and windows (needs `#editor.suggestSelection#`).'),
+  },
+  'editor.suggest.snippetsPreventQuickSuggestions': {
+    type: 'boolean',
+    default: EDITOR_SUGGEST_DEFAULTS.snippetsPreventQuickSuggestions,
+    description: localize('suggest.snippetsPreventQuickSuggestions', 'Controls whether an active snippet prevents quick suggestions.'),
+  },
+  'editor.suggest.showIcons': {
+    type: 'boolean',
+    default: EDITOR_SUGGEST_DEFAULTS.showIcons,
+    description: localize('suggest.showIcons', 'Controls whether to show or hide icons in suggestions.'),
+  },
+  'editor.suggest.maxVisibleSuggestions': {
+    type: 'number',
+    default: EDITOR_SUGGEST_DEFAULTS.maxVisibleSuggestions,
+    minimum: 1,
+    maximum: 15,
+    description: localize('suggest.maxVisibleSuggestions', 'Controls how many suggestions IntelliSense will show before showing a scrollbar (maximum 15).'),
+  },
+  'editor.suggest.showMethods': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showMethods', 'When enabled IntelliSense shows `method`-suggestions.'),
+  },
+  'editor.suggest.showFunctions': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showFunctions', 'When enabled IntelliSense shows `function`-suggestions.'),
+  },
+  'editor.suggest.showConstructors': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showConstructors', 'When enabled IntelliSense shows `constructor`-suggestions.'),
+  },
+  'editor.suggest.showFields': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showFields', 'When enabled IntelliSense shows `field`-suggestions.'),
+  },
+  'editor.suggest.showVariables': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showVariables', 'When enabled IntelliSense shows `variable`-suggestions.'),
+  },
+  'editor.suggest.showClasses': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showClasss', 'When enabled IntelliSense shows `class`-suggestions.'),
+  },
+  'editor.suggest.showStructs': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showStructs', 'When enabled IntelliSense shows `struct`-suggestions.'),
+  },
+  'editor.suggest.showInterfaces': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showInterfaces', 'When enabled IntelliSense shows `interface`-suggestions.'),
+  },
+  'editor.suggest.showModules': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showModules', 'When enabled IntelliSense shows `module`-suggestions.'),
+  },
+  'editor.suggest.showProperties': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showPropertys', 'When enabled IntelliSense shows `property`-suggestions.'),
+  },
+  'editor.suggest.showEvents': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showEvents', 'When enabled IntelliSense shows `event`-suggestions.'),
+  },
+  'editor.suggest.showOperators': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showOperators', 'When enabled IntelliSense shows `operator`-suggestions.'),
+  },
+  'editor.suggest.showUnits': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showUnits', 'When enabled IntelliSense shows `unit`-suggestions.'),
+  },
+  'editor.suggest.showValues': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showValues', 'When enabled IntelliSense shows `value`-suggestions.'),
+  },
+  'editor.suggest.showConstants': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showConstants', 'When enabled IntelliSense shows `constant`-suggestions.'),
+  },
+  'editor.suggest.showEnums': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showEnums', 'When enabled IntelliSense shows `enum`-suggestions.'),
+  },
+  'editor.suggest.showEnumMembers': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showEnumMembers', 'When enabled IntelliSense shows `enumMember`-suggestions.'),
+  },
+  'editor.suggest.showKeywords': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showKeywords', 'When enabled IntelliSense shows `keyword`-suggestions.'),
+  },
+  'editor.suggest.showWords': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showTexts', 'When enabled IntelliSense shows `text`-suggestions.'),
+  },
+  'editor.suggest.showColors': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showColors', 'When enabled IntelliSense shows `color`-suggestions.'),
+  },
+  'editor.suggest.showFiles': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showFiles', 'When enabled IntelliSense shows `file`-suggestions.'),
+  },
+  'editor.suggest.showReferences': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showReferences', 'When enabled IntelliSense shows `reference`-suggestions.'),
+  },
+  'editor.suggest.showCustomcolors': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showCustomcolors', 'When enabled IntelliSense shows `customcolor`-suggestions.'),
+  },
+  'editor.suggest.showFolders': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showFolders', 'When enabled IntelliSense shows `folder`-suggestions.'),
+  },
+  'editor.suggest.showTypeParameters': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showTypeParameters', 'When enabled IntelliSense shows `typeParameter`-suggestions.'),
+  },
+  'editor.suggest.showSnippets': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showSnippets', 'When enabled IntelliSense shows `snippet`-suggestions.'),
+  },
+  'editor.suggest.showUsers': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showUsers', 'When enabled IntelliSense shows `user`-suggestions.'),
+  },
+  'editor.suggest.showIssues': {
+    type: 'boolean',
+    default: true,
+    markdownDescription: localize('editor.suggest.showIssues', 'When enabled IntelliSense shows `issues`-suggestions.'),
+  },
+  'editor.suggest.statusBar.visible': {
+    type: 'boolean',
+    default: false,
+    markdownDescription: localize('editor.suggest.statusBar.visible', 'Controls the visibility of the status bar at the bottom of the suggest widget.'),
   },
   'editor.letterSpacing': {
     'type': 'number',
@@ -597,7 +814,7 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
       localize('snippetSuggestions.inline', 'Show snippets suggestions with other suggestions.'),
       localize('snippetSuggestions.none', 'Do not show snippet suggestions.'),
     ],
-    'default': EDITOR_DEFAULTS.contribInfo.suggest.snippets,
+    'default': 'inline',
     'description': localize('snippetSuggestions', 'Controls whether snippets are shown with other suggestions and how they are sorted.'),
   },
   'editor.emptySelectionClipboard': {
@@ -648,38 +865,6 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
       localize('tabCompletion.onlySnippets', "Tab complete snippets when their prefix match. Works best when 'quickSuggestions' aren't enabled."),
     ],
     description: localize('tabCompletion', 'Enables tab completions.'),
-  },
-  'editor.suggest.filterGraceful': {
-    type: 'boolean',
-    default: true,
-    description: localize('suggest.filterGraceful', 'Controls whether filtering and sorting suggestions accounts for small typos.'),
-  },
-  'editor.suggest.localityBonus': {
-    type: 'boolean',
-    default: false,
-    description: localize('suggest.localityBonus', 'Controls whether sorting favours words that appear close to the cursor.'),
-  },
-  'editor.suggest.shareSuggestSelections': {
-    type: 'boolean',
-    default: false,
-    markdownDescription: localize('suggest.shareSuggestSelections', 'Controls whether remembered suggestion selections are shared between multiple workspaces and windows (needs `#editor.suggestSelection#`).'),
-  },
-  'editor.suggest.snippetsPreventQuickSuggestions': {
-    type: 'boolean',
-    default: true,
-    description: localize('suggest.snippetsPreventQuickSuggestions', 'Control whether an active snippet prevents quick suggestions.'),
-  },
-  'editor.suggest.showIcons': {
-    type: 'boolean',
-    default: EDITOR_DEFAULTS.contribInfo.suggest.showIcons,
-    description: localize('suggest.showIcons', 'Controls whether to show or hide icons in suggestions.'),
-  },
-  'editor.suggest.maxVisibleSuggestions': {
-    type: 'number',
-    default: EDITOR_DEFAULTS.contribInfo.suggest.maxVisibleSuggestions,
-    minimum: 1,
-    maximum: 15,
-    description: localize('suggest.maxVisibleSuggestions', 'Controls how many suggestions IntelliSense will show before showing a scrollbar (maximum 15).'),
   },
   'editor.suggest.filteredTypes': {
     type: 'object',
