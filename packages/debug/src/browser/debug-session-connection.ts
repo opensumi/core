@@ -78,9 +78,10 @@ export interface DebugEventTypes {
   'progressStart': DebugProtocol.ProgressStartEvent;
   'progressUpdate': DebugProtocol.ProgressUpdateEvent;
   'progressEnd': DebugProtocol.ProgressEndEvent;
+  'invalidated': DebugProtocol.InvalidatedEvent;
 }
 
-const standardDebugEvents = new Set<string>([
+const standardDebugEvents = new Set<Required<keyof DebugEventTypes>>([
   'breakpoint',
   'capabilities',
   'continued',
@@ -96,6 +97,7 @@ const standardDebugEvents = new Set<string>([
   'progressStart',
   'progressUpdate',
   'progressEnd',
+  'invalidated',
 ]);
 
 @Injectable({multiple: true})
@@ -312,7 +314,7 @@ export class DebugSessionConnection implements IDisposable {
       if (event.event === 'continued') {
         this.allThreadsContinued = (event as DebugProtocol.ContinuedEvent).body.allThreadsContinued === false ? false : true;
       }
-      if (standardDebugEvents.has(event.event)) {
+      if (standardDebugEvents.has(event.event as keyof DebugEventTypes)) {
         this.doFire(event.event, event);
       } else {
         this.onDidCustomEventEmitter.fire(event);

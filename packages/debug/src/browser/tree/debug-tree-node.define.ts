@@ -217,7 +217,10 @@ export class DebugVirtualVariable extends ExpressionContainer {
 export class DebugVariable extends ExpressionNode {
   constructor(
     public readonly session: DebugSession | undefined,
-    public readonly variable: DebugProtocol.Variable,
+    /**
+     * https://code.visualstudio.com/updates/v1_49#_contributable-context-menu-for-variables-view
+     */
+    public readonly variable: DebugProtocol.Variable & { __vscodeVariableMenuContext?: string },
     parent?: ExpressionContainer,
   ) {
     super({
@@ -227,6 +230,19 @@ export class DebugVariable extends ExpressionNode {
       indexedVariables: variable.indexedVariables,
     }, parent);
     TreeNode.setTreeNode(this._uid, this.path, this);
+  }
+
+  get variableMenuContext(): string {
+    return this.variable.__vscodeVariableMenuContext || '';
+  }
+
+  toDebugProtocolObject(): DebugProtocol.Variable {
+    return {
+      name: this.name,
+      variablesReference: this.variable.variablesReference || 0,
+      value: this.value,
+      evaluateName: this.evaluateName,
+    };
   }
 
   get name(): string {
@@ -272,8 +288,8 @@ export class DebugVariable extends ExpressionNode {
     if (!this.session || this.session.terminated) {
       return;
     }
-    const { name, parent } = this as any;
-    const variablesReference = parent.variablesReference;
+    const { name, parent } = this;
+    const variablesReference = (parent as DebugScope).variablesReference;
     try {
       const response = await this.session.sendRequest('setVariable', { variablesReference, name, value });
       this._value = response.body.value;
@@ -303,7 +319,7 @@ export class DebugVariableContainer extends ExpressionContainer {
 
   constructor(
     public readonly session: DebugSession | undefined,
-    public readonly variable: DebugProtocol.Variable,
+    public readonly variable: DebugProtocol.Variable & { __vscodeVariableMenuContext?: string },
     parent: ExpressionContainer | undefined,
     source?: DebugProtocol.Source,
     line?: string | number,
@@ -322,6 +338,19 @@ export class DebugVariableContainer extends ExpressionContainer {
       ),
     );
     TreeNode.setTreeNode(this._uid, this.path, this);
+  }
+
+  get variableMenuContext(): string {
+    return this.variable.__vscodeVariableMenuContext || '';
+  }
+
+  toDebugProtocolObject(): DebugProtocol.Variable {
+    return {
+      name: this.name,
+      variablesReference: this.variable.variablesReference || 0,
+      value: this.value,
+      evaluateName: this.evaluateName,
+    };
   }
 
   get name(): string {
@@ -371,11 +400,11 @@ export class DebugVariableContainer extends ExpressionContainer {
     if (!this.session || this.session.terminated) {
       return;
     }
-    const { name, parent } = this as any;
+    const { name, parent } = this;
     if (!parent) {
       return;
     }
-    const variablesReference = parent.variablesReference;
+    const variablesReference = (parent as DebugScope).variablesReference;
     try {
       const response = await this.session.sendRequest('setVariable', { variablesReference, name, value });
       this._value = response.body.value;

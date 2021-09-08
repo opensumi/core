@@ -86,6 +86,7 @@ export class DebugVariablesModelService {
 
   private _decorations: DecorationsManager;
   private _debugVariablesTreeHandle: IDebugVariablesHandle;
+  private _currentVariableInternalContext: DebugVariable | DebugVariableContainer | undefined;
 
   public flushEventQueueDeferred: Deferred<void> | null;
 
@@ -128,6 +129,10 @@ export class DebugVariablesModelService {
 
   get treeModel() {
     return this._activeTreeModel;
+  }
+
+  get currentVariableInternalContext() {
+    return this._currentVariableInternalContext;
   }
 
   // 既是选中态，也是焦点态节点
@@ -323,10 +328,12 @@ export class DebugVariablesModelService {
       return;
     }
 
+    this._currentVariableInternalContext = expression;
     const { x, y } = ev.nativeEvent;
 
     if (expression) {
       this.activeNodeActivedDecoration(expression);
+      this.debugContextKey.contextDebugProtocolVariableMenu.set(expression.variableMenuContext);
       this.debugContextKey.contextVariableEvaluateNamePresent.set(!!(expression as DebugVariableContainer | DebugVariable).evaluateName);
     }
 
@@ -336,7 +343,7 @@ export class DebugVariablesModelService {
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
-      args: [expression],
+      args: [expression.toDebugProtocolObject()],
     });
   }
 
@@ -375,11 +382,19 @@ export class DebugVariablesModelService {
     this.keepExpandedScopesModel.set(item);
   }
 
-  async copyEvaluateName(node: DebugVariableContainer | DebugVariable) {
+  async copyEvaluateName(node: DebugVariableContainer | DebugVariable | undefined) {
+    if (!node) {
+      return;
+    }
+
     await this.clipboardService.writeText(node.evaluateName);
   }
 
-  async copyValue(node: DebugVariableContainer | DebugVariable) {
+  async copyValue(node: DebugVariableContainer | DebugVariable | undefined) {
+    if (!node) {
+      return;
+    }
+
     const getClipboardValue = async () => {
       if (node.session && node.session.capabilities.supportsValueFormattingOptions) {
         try {

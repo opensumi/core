@@ -89,6 +89,9 @@ describe('Debug Variables Tree Model', () => {
         contextVariableEvaluateNamePresent: {
           set: jest.fn(),
         },
+        contextDebugProtocolVariableMenu: {
+          set: jest.fn(),
+        },
       },
     });
 
@@ -210,7 +213,7 @@ describe('Debug Variables Tree Model', () => {
   });
 
   it('handleContextMenu method should be work', () => {
-    const mockNode = { expanded: false } as any;
+    const mockNode = { expanded: false, toDebugProtocolObject: jest.fn() } as any;
     const mockEvent = {
       stopPropagation: jest.fn(),
       preventDefault: jest.fn(),
