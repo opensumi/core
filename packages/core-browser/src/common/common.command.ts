@@ -301,7 +301,7 @@ export namespace EDITOR_COMMANDS {
   export const SAVE_URI: Command = {
     id: 'editor.saveUri',
     category: CATEGORY,
-    label: '%editor.saveUri%',
+    label: localize('editor.saveUri'),
   };
 
   export const SAVE_CURRENT: Command = {
@@ -336,7 +336,7 @@ export namespace EDITOR_COMMANDS {
   export const CLOSE_ALL: Command = {
     id: 'editor.closeAll',
     category: CATEGORY,
-    label: '%editor.close.all%',
+    label: localize('editor.close.all'),
   };
 
   export const CLOSE_SAVED: Command = {
@@ -348,7 +348,7 @@ export namespace EDITOR_COMMANDS {
   export const SAVE_ALL: Command = {
     id: 'editor.saveAll',
     category: CATEGORY,
-    label: '%editor.saveAll%',
+    label: localize('editor.saveAll', '保存全部'),
   };
 
   export const CLOSE_TO_RIGHT: Command = {
@@ -465,7 +465,7 @@ export namespace EDITOR_COMMANDS {
   export const CLOSE_OTHER_GROUPS: Command = {
     id: 'editor.closeOtherGroup',
     category: CATEGORY,
-    label: '%closeEditorsInOtherGroups%',
+    label: localize('closeEditorsInOtherGroups', '关闭其他组中的编辑器'),
   };
 
   export const OPEN_EDITOR_AT_INDEX: Command = {
@@ -533,7 +533,7 @@ export namespace EDITOR_COMMANDS {
   export const TEST_TOKENIZE: Command = {
     id: 'editor.tokenize.test',
     category: CATEGORY,
-    label: '%editor.tokenize.test%',
+    label: localize('editor.tokenize.test'),
   };
 
   export const AUTO_SAVE: Command = {
@@ -563,13 +563,13 @@ export namespace EDITOR_COMMANDS {
 
   export const SEARCH_WORKSPACE_SYMBOL: Command = {
     id: 'editor.workspaceSymbol.quickopen',
-    label: '%editor.workspaceSymbol.quickopen%',
+    label: localize('editor.workspaceSymbol.quickopen'),
     category: CATEGORY,
   };
 
   export const SEARCH_WORKSPACE_SYMBOL_CLASS: Command = {
     id: 'editor.workspaceSymbolClass.quickopen',
-    label: '%editor.workspaceClassSymbol.quickopen%',
+    label: localize('editor.workspaceClassSymbol.quickopen', '搜索工作区中的类'),
     category: CATEGORY,
   };
 
