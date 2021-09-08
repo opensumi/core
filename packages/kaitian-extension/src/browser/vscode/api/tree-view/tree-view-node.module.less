@@ -33,12 +33,12 @@
 
   &.mod_focused {
     outline: 1px solid var(--list-focusOutline);
+    outline-offset: -1px;
     color: var(--kt-tree-activeSelectionForeground) !important;
     background: var(--kt-tree-activeSelectionBackground);
 
     .expansion_toggle {
       color: var(--kt-tree-activeSelectionForeground) !important;
-      ;
     }
 
     .tree_view_node_displayname {
@@ -93,8 +93,11 @@
   align-items: center;
   width: 100%;
 
-  match {
+  .highlight {
     background-color: var(--editor-findMatchHighlightBackground);
+  }
+  .strikethrough {
+    text-decoration: line-through;
   }
 }
 
