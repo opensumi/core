@@ -1816,7 +1816,7 @@ declare module 'vscode' {
    *
    * @sample `let sel:DocumentSelector = { scheme: 'file', language: 'typescript' }`;
    */
-  export type DocumentSelector = DocumentFilter | string | Array<DocumentFilter | string>;
+  export type DocumentSelector = DocumentFilter | string | ReadonlyArray<DocumentFilter | string>;
 
   /**
    * A provider result represents the values a provider, like the [`HoverProvider`](#HoverProvider),

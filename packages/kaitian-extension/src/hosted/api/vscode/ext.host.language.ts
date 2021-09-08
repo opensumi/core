@@ -330,7 +330,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
       return selector.map((sel) => this.doTransformDocumentSelector(sel)!);
     }
 
-    return [this.doTransformDocumentSelector(selector)!];
+    return [this.doTransformDocumentSelector(selector as DocumentFilter)!];
   }
 
   private doTransformDocumentSelector(selector: string | DocumentFilter): SerializedDocumentFilter | undefined {
