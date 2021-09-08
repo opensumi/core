@@ -639,9 +639,7 @@ export class DebugVariableRoot extends DebugVariableContainer {
 
 export class DebugHoverVariableRoot extends ExpressionContainer {
 
-  static NOT_AVAILABLE = localize('debug.hover.not.available');
-
-  private _value = DebugHoverVariableRoot.NOT_AVAILABLE;
+  private _value = '';
 
   constructor(
     protected readonly expression: string,

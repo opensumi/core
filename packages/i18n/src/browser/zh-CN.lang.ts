@@ -308,7 +308,6 @@ export const localizationBundle = {
     'debug.stack.frame.because': '因',
     'debug.stack.frame.stopped': '已暂停',
     'debug.stack.frame.running': '正在运行',
-    'debug.hover.not.available': '暂无值',
     'debug.launch.configurations.debugType': '配置类型。',
     'debug.launch.configurations.debugTypeNotRecognised': '无法识别此调试类型。确保已经安装并启用相应的调试扩展。',
     'debug.launch.configurations.node2NotSupported': '不再支持 \'node2\'，改用 \'node\'，并将 \'protocol\' 属性设为 \'inspector\'。',
