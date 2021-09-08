@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-overlay",
-  "version": "2.9.0",
+  "version": "2.9.1",
   "files": [
     "lib"
   ],
@@ -21,13 +21,13 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "2.9.0",
-    "@ali/ide-core-node": "2.9.0"
+    "@ali/ide-core-common": "2.9.1",
+    "@ali/ide-core-node": "2.9.1"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "2.9.0",
+    "@ali/ide-core-browser": "2.9.1",
     "@ali/ide-dev-tool": "^1.1.0",
-    "@ali/ide-components": "2.9.0",
+    "@ali/ide-components": "2.9.1",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"

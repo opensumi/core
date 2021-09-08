@@ -262,13 +262,23 @@ export class AccordionService extends WithEventBus {
     });
     if (largestViewId && this.splitPanelService.isVisible && this.expandedViews.length > 1) {
       // 需要过滤掉没有实际注册的视图
-      const diffSize = this.splitPanelService.rootNode!.clientHeight - Object.keys(this.state).filter((viewId) => this.views.find((item) => item.id === viewId)).reduce((acc, id) => acc + (this.state[id].collapsed ? this.headerSize : (this.state[id].hidden ? 0 : this.state[id].size!)), 0);
+      const diffSize = this.splitPanelService.rootNode!.clientHeight - this.getPanelFullHeight();
       if (diffSize) {
         this.state[largestViewId].size! += diffSize;
-        this.toggleOpen(largestViewId, false);
+        this.toggleOpen(largestViewId!, false);
       }
     }
   }, 16);
+
+  private getPanelFullHeight(ignoreViewId?: string) {
+    return Object.keys(this.state).filter(
+      (viewId) =>
+        this.views.find((item) => item.id === viewId) && viewId !== ignoreViewId,
+    ).reduce(
+      (acc, id) => {
+        return acc + (this.state[id].collapsed ? this.headerSize : (this.state[id].hidden ? 0 : this.state[id].size!));
+      }, 0);
+  }
 
   protected listenWindowResize() {
     window.addEventListener('resize', this.doUpdateResize);
@@ -459,9 +469,16 @@ export class AccordionService extends WithEventBus {
     if (isIncrement) {
       calcTargetSize = Math.max(prevSize - targetSize, this.minSize);
     }
-    if (index === this.expandedViews.length - 1 && (calcTargetSize + index * this.minSize > fullHeight)) {
-      // 最后一个视图需要兼容最大高度超出总视图高度的情况，
-      calcTargetSize -= ((calcTargetSize + index * this.minSize) - fullHeight);
+    if (index === this.expandedViews.length - 1) {
+      // 最后一个视图需要兼容最大高度超出总视图高度及最大高度不足总视图高度的情况
+      if (calcTargetSize + index * this.minSize > fullHeight) {
+        calcTargetSize -= ((calcTargetSize + index * this.minSize) - fullHeight);
+      } else {
+        const restSize = this.getPanelFullHeight(this.visibleViews[index].id);
+        if (calcTargetSize + restSize < fullHeight) {
+          calcTargetSize += fullHeight - (calcTargetSize + restSize);
+        }
+      }
     }
     if (this.rendered) {
       let toSaveSize: number;

@@ -587,6 +587,10 @@ export class ClientApp implements IClientApp, IDisposable {
       document.body.removeEventListener('wheel', this._handleWheel);
     }
 
+    await  this.disposeSideEffect();
+  }
+
+  private async disposeSideEffect() {
     for (const contribution of this.contributions) {
       if (contribution.onDisposeSideEffects) {
         try {
@@ -638,6 +642,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.stateService.state = 'closing_window';
     if (!isElectronRenderer()) {
       this.stopContributions();
+      this.disposeSideEffect();
     }
   }
 
