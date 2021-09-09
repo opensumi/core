@@ -140,6 +140,8 @@ export function reviveWorkspaceEditDto(data: model.WorkspaceEditDto | undefined)
       if (typeof (edit as model.ResourceTextEditDto).resource === 'object') {
         (edit as unknown as IResourceTextEdit).resource = URI.from((edit as model.ResourceTextEditDto).resource);
         (edit as unknown as IResourceTextEdit).options = { openDirtyInEditor: true };
+        (edit as unknown as IResourceTextEdit).textEdit = (edit as model.ResourceTextEditDto).edit;
+        (edit as unknown as IResourceTextEdit).versionId = (edit as model.ResourceTextEditDto).modelVersionId;
       } else {
         const resourceFileEdit = edit as unknown as IResourceFileEdit;
         resourceFileEdit.newResource = (edit as model.ResourceFileEditDto).newUri ? URI.from((edit as model.ResourceFileEditDto).newUri!) : undefined;

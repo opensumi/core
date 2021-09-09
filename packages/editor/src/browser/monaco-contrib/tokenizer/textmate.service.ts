@@ -259,10 +259,11 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
   }
 
   async activateLanguage(languageId: string) {
+    // 允许后来的插件上车
+    this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onLanguage', data: languageId }));
     if (this.activatedLanguage.has(languageId)) {
       return;
     }
-    this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onLanguage', data: languageId }));
     this.activatedLanguage.add(languageId);
     this.setTokensProviderByLanguageId(languageId);
   }
@@ -589,11 +590,18 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
         return [];
       },
     });
+
+    this.activateLanguages();
+
+    this.addDispose(ModesRegistry.onDidChangeLanguages(() => {
+      this.activateLanguages();
+    }));
+  }
+
+  private activateLanguages() {
     for (const { id: languageId } of monaco.languages.getLanguages()) {
       if (this.editorDocumentModelService.hasLanguage(languageId)) {
         this.activateLanguage(languageId);
-      } else {
-        monaco.languages.onLanguage(languageId, () => this.activateLanguage(languageId));
       }
     }
   }

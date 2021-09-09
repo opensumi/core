@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-connection",
-  "version": "2.9.1",
+  "version": "2.9.3",
   "files": [
     "lib"
   ],
@@ -21,8 +21,8 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-components": "2.9.1",
-    "@ali/ide-core-common": "2.9.1",
+    "@ali/ide-components": "2.9.3",
+    "@ali/ide-core-common": "2.9.3",
     "@ali/vscode-jsonrpc": "^6.1.1-beta.1",
     "lzutf8": "^0.5.5",
     "path-match": "^1.2.4",
