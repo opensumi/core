@@ -846,7 +846,7 @@ declare module 'vscode' {
    * A code lens provider adds [commands](#Command) to source text. The commands will be shown
    * as dedicated horizontal lines in between the source text.
    */
-  export interface CodeLensProvider {
+  export interface CodeLensProvider<T extends CodeLens = CodeLens> {
 
     /**
      * An optional event to signal that the code lenses from this provider have changed.
@@ -863,7 +863,7 @@ declare module 'vscode' {
      * @return An array of code lenses or a thenable that resolves to such. The lack of a result can be
      * signaled by returning `undefined`, `null`, or an empty array.
      */
-    provideCodeLenses(document: TextDocument, token: CancellationToken): ProviderResult<CodeLens[]>;
+    provideCodeLenses(document: TextDocument, token: CancellationToken): ProviderResult<T[]>;
 
     /**
      * This function will be called for each visible code lens, usually when scrolling and after
@@ -873,7 +873,7 @@ declare module 'vscode' {
      * @param token A cancellation token.
      * @return The given, resolved code lens or thenable that resolves to such.
      */
-    resolveCodeLens?(codeLens: CodeLens, token: CancellationToken): ProviderResult<CodeLens>;
+    resolveCodeLens?(codeLens: T, token: CancellationToken): ProviderResult<T[]>;
   }
 
   /**

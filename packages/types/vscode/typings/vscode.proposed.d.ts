@@ -255,6 +255,15 @@ declare module 'vscode' {
     onDidChange: Event<undefined | Uri | Uri[]>;
 
   /**
+   * An optional event to signal that decorations for one or many files have changed.
+   *
+   * *Note* that this event should be used to propagate information about children.
+   *
+   * @see [EventEmitter](#EventEmitter)
+   */
+  onDidChangeFileDecorations?: Event<undefined | Uri | Uri[]>;
+
+  /**
    * Provide decorations for a given uri.
    *
    * *Note* that this function is only called when a file gets rendered in the UI.
