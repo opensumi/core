@@ -10,7 +10,7 @@ import type { ILanguageExtensionPoint } from '@ali/monaco-editor-core/esm/vs/edi
 import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap, INITIAL } from 'vscode-textmate';
 import { CommentRule, GrammarsContribution, ITextmateTokenizerService, LanguagesContribution, ScopeMap } from '@ali/ide-monaco/lib/browser/contrib/tokenizer';
 import { FoldingRules, IAutoClosingPair, IAutoClosingPairConditional, IndentationRule, LanguageConfiguration } from '@ali/ide-monaco/lib/browser/monaco-api/types';
-import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger, ExtensionActivateEvent, getDebugLogger, MonacoService, electronEnv } from '@ali/ide-core-browser';
+import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger, ExtensionActivateEvent, getDebugLogger, MonacoService, electronEnv, AppConfig } from '@ali/ide-core-browser';
 
 import { TextmateRegistry } from './textmate-registry';
 import { IEditorDocumentModelService } from '../../doc-model/types';
@@ -74,6 +74,9 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
 
   @Autowired(IEditorDocumentModelService)
   editorDocumentModelService: IEditorDocumentModelService;
+
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
 
   public grammarRegistry: Registry;
 
@@ -604,7 +607,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     if (isElectronEnv() && electronEnv.onigWasmPath) {
       wasmUri = URI.file(electronEnv.onigWasmPath).codeUri.toString();
     } else {
-      wasmUri = 'https://g.alicdn.com/kaitian/vscode-oniguruma-wasm/0.0.1/onig.wasm';
+      wasmUri = this.appConfig.onigWasmPath || 'https://g.alicdn.com/kaitian/vscode-oniguruma-wasm/0.0.1/onig.wasm';
     }
 
     const response = await fetch(wasmUri);
