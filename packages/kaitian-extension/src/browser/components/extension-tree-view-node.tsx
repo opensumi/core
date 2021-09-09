@@ -88,10 +88,33 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
   };
 
   const renderDisplayName = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => {
+    const displayName = () => {
+      if (node.highlights) {
+        let hightlightSnaps: React.ReactNode[] = [];
+        let endIndex: number = 0;
+        const hightlights = node.highlights.sort(((a, b) => a[0] - b[0]));
+        hightlightSnaps = hightlights.map((highlight, index: number) => {
+          const [start, end] = highlight;
+          const addonStr = node.displayName.slice(endIndex, start);
+          endIndex = end;
+          const hls = [
+            addonStr,
+            <span className={styles.highlight}>{node.displayName.slice(start, end)}</span>,
+          ];
+          if (index === hightlights.length - 1) {
+            hls.push(node.displayName.slice(end));
+          }
+          return hls;
+        });
+        return hightlightSnaps;
+      } else {
+        return node.displayName;
+      }
+    };
     return <div
-      className={cls(styles.tree_view_node_segment, styles.tree_view_node_displayname)}
+      className={cls(styles.tree_view_node_segment, styles.tree_view_node_displayname, node.strikethrough && styles.strikethrough)}
     >
-      {node.displayName}
+      {displayName()}
     </div>;
   };
 

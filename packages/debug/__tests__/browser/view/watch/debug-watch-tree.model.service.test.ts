@@ -6,7 +6,6 @@ import { DebugWatchNode } from '@ali/ide-debug/lib/browser/tree';
 import { ICtxMenuRenderer, AbstractContextMenuService } from '@ali/ide-core-browser/lib/menu/next';
 import { DebugWatchModelService } from '@ali/ide-debug/lib/browser/view/watch/debug-watch-tree.model.service';
 import { IContextKeyService, StorageProvider } from '@ali/ide-core-browser';
-import { DebugWatch } from '@ali/ide-debug/lib/browser';
 import { MockedStorageProvider } from '@ali/ide-core-browser/__mocks__/storage';
 import * as styles from '../../../../src/browser/view/watch/debug-watch.module.less';
 
@@ -34,17 +33,10 @@ describe('Debug Watch Tree Model', () => {
     path: 'testRoot',
   } as any;
 
-  const mockDebugWatch = {
-    getRoot: jest.fn(() => mockRoot),
-    onDidVariableChange: jest.fn(),
-    onDidExpressionChange: jest.fn(),
-    onDidChange: jest.fn(),
-    updateWatchExpressions: jest.fn(),
-  };
-
   const mockDebugSessionManager = {
     onDidDestroyDebugSession: jest.fn(() => Disposable.create(() => { })),
     onDidChangeActiveDebugSession: jest.fn(() => Disposable.create(() => { })),
+    onDidStopDebugSession: jest.fn(() => Disposable.create(() => { })),
   };
 
   const mockMenuService = {
@@ -88,11 +80,6 @@ describe('Debug Watch Tree Model', () => {
       useValue: mockMenuService,
     });
 
-    mockInjector.overrideProviders({
-      token: DebugWatch,
-      useValue: mockDebugWatch,
-    });
-
     debugWatchModelService = mockInjector.get(DebugWatchModelService);
 
     await debugWatchModelService.load();
@@ -126,13 +113,6 @@ describe('Debug Watch Tree Model', () => {
     expect(debugWatchModelService.treeHandle).toBeUndefined();
     expect(debugWatchModelService.focusedNode).toBeUndefined();
     expect(Array.isArray(debugWatchModelService.selectedNodes)).toBeTruthy();
-  });
-
-  it('should init success', () => {
-    expect(mockDebugWatch.updateWatchExpressions).toBeCalledTimes(1);
-    expect(mockDebugWatch.onDidChange).toBeCalledTimes(1);
-    expect(mockDebugWatch.onDidExpressionChange).toBeCalledTimes(1);
-    expect(mockDebugWatch.onDidVariableChange).toBeCalledTimes(1);
   });
 
   it('initTreeModel method should be work', async (done) => {

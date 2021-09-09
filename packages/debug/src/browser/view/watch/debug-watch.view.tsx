@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useInjectable, getIcon, DisposableCollection, Disposable } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { ViewState } from '@ali/ide-core-browser';
-import { INodeRendererProps, ClasslistComposite, IRecycleTreeHandle, TreeNodeType, RecycleTree, INodeRendererWrapProps, TreeModel, CompositeTreeNode, PromptHandle } from '@ali/ide-components';
+import { INodeRendererProps, ClasslistComposite, IRecycleTreeHandle, TreeNodeType, RecycleTree, INodeRendererWrapProps, TreeModel, PromptHandle } from '@ali/ide-components';
 import { ExpressionContainer, ExpressionNode, DebugVariableContainer, DebugVariable, DebugWatchNode } from '../../tree/debug-tree-node.define';
 import { DebugWatchModelService, IWatchNode } from './debug-watch-tree.model.service';
 import * as styles from './debug-watch.module.less';
@@ -81,7 +81,6 @@ export const DebugWatchView = observer(({
 
   const handleOuterContextMenu = (ev: React.MouseEvent) => {
     const { handleContextMenu } = debugWatchModelService;
-    // 空白区域右键菜单
     handleContextMenu(ev);
   };
 
@@ -170,7 +169,10 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
   const isPrompt = isRenamePrompt || isNewPrompt;
 
   const handleClick = (ev: React.MouseEvent) => {
-    onClick(ev, item, CompositeTreeNode.is(item) ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode);
+    const watch = (item as DebugWatchNode).getRawWatch();
+    if (watch) {
+      onClick(ev, item, watch.variablesReference > 0 ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode);
+    }
   };
 
   const handleContextMenu = (ev: React.MouseEvent) => {
@@ -209,7 +211,7 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
   const renderDescription = (node: ExpressionContainer | ExpressionNode) => {
     const booleanRegex = /^true|false$/i;
     const stringRegex = /^(['"]).*\1$/;
-    const description = (node as DebugVariableContainer).description ? (node as DebugVariableContainer).description.replace('function', 'f') : '';
+    const description = (node as DebugVariableContainer).description ? (node as DebugVariableContainer).description.replace('function', 'ƒ ') : '';
     const addonClass = [styles.debug_watch_variable];
     if (isPrompt) {
       return null;

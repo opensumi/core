@@ -27,7 +27,16 @@ export class DebugConsoleFilterService implements IDebugConsoleFilter {
     return this._onDidValueChange.event;
   }
 
+  private readonly _onDidFocus: Emitter<void> = new Emitter<void>();
+  get onDidFocus(): Event<void> {
+    return this._onDidFocus.event;
+  }
+
   private _filterText: string = '';
+
+  public focusInput(): void {
+    this._onDidFocus.fire();
+  }
 
   public get filterText(): string {
     return this._filterText;

@@ -25,7 +25,7 @@ describe('DebugStackFrame Model', () => {
       openSource = jest.fn();
       session = {
         id: 'session',
-        sendRequest: jest.fn((type) => {
+        sendRequest: jest.fn((type, args) => {
           if (type === 'scopes') {
             return {
               body: {
@@ -44,6 +44,9 @@ describe('DebugStackFrame Model', () => {
             open: openSource,
           };
         }),
+        capabilities: {
+          supportsRestartFrame: true,
+        },
       } as any;
       debugThread = new DebugThread(session);
       debugThread.update({raw: rawThread});
@@ -62,8 +65,7 @@ describe('DebugStackFrame Model', () => {
 
     it ('restart method should be work', async (done) => {
       await debugStackFrame.restart();
-      expect(session.sendRequest).toBeCalledWith('restartFrame', {
-        threadId: `${session.id}:${rawThread.id}`,
+      expect(debugStackFrame.session.sendRequest).toBeCalledWith('restartFrame', {
         frameId: raw.id,
       });
       done();

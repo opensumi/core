@@ -96,6 +96,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
           { headers }
           <div className={styles.search_pref}>
             <Input
+              autoFocus
               value={currentSearch}
               placeholder={localize('preference.searchPlaceholder')}
               onValueChange={search}

@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WithEventBus, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent, AppConfig, ComponentRegistry, ILogger, CommandRegistry, CommandService, OnEvent, slotRendererRegistry } from '@ali/ide-core-browser';
+import { WithEventBus, IDisposable, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent, AppConfig, ComponentRegistry, ILogger, CommandRegistry, CommandService, OnEvent, slotRendererRegistry } from '@ali/ide-core-browser';
 import { MainLayoutContribution, IMainLayoutService, ViewComponentOptions, SUPPORT_ACCORDION_LOCATION } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
@@ -51,6 +51,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   private pendingViewsMap: Map<string, {view: View, props?: any}[]> = new Map();
 
   private viewToContainerMap: Map<string, string> = new Map();
+
+  private disposableMap: Map<string, IDisposable> = new Map();
 
   private state: {[location: string]: {
     currentId?: string;
@@ -307,6 +309,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       view.initialProps = props;
     }
     accordionService.appendView(view, options?.isReplace);
+
     // 如果之前没有views信息，且为hideIfEmpty类型视图则需要刷新
     if (accordionService.views.length === 1) {
       this.tabbarUpdateSet.add(containerId);
@@ -314,7 +317,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     }
 
     if (options?.fromExtension) {
-      this.commandRegistry.registerCommand({
+      this.disposableMap.set(view.id, this.commandRegistry.registerCommand({
         id: `${view.id}.focus`,
       }, {
         execute: async () => {
@@ -322,7 +325,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
           // TODO: 目前 view 没有 focus 状态，先跳转到对应的 container 上 @寻壑
           return this.commandService.executeCommand(`workbench.view.extension.${containerId}`, { forceShow: true });
         },
-      });
+      }));
     }
 
     return containerId;
@@ -376,13 +379,21 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   }
 
   disposeViewComponent(viewId: string) {
+    const toDispose = this.disposableMap.get(viewId);
+
+    if (toDispose) {
+      toDispose.dispose();
+    }
+
     const containerId = this.viewToContainerMap.get(viewId);
     if (!containerId) {
       // tslint:disable-next-line no-console
       console.warn(`没有找到${viewId}对应的容器，请检查传入参数!`);
       return;
     }
+
     const accordionService: AccordionService = this.getAccordionService(containerId);
+
     accordionService.disposeView(viewId);
   }
 

@@ -18,11 +18,11 @@ export class SnippetsContributionPoint extends VSCodeContributePoint<SnippetSche
 
   contribute() {
     for (const snippet of this.json) {
-      this.snippetSuggestProvider.fromPath(snippet.path, {
+      this.addDispose(this.snippetSuggestProvider.fromPath(snippet.path, {
         extPath: this.extension.path,
         language: snippet.language,
         source: this.extension.packageJSON.name,
-      });
+      }));
     }
   }
 }

@@ -43,9 +43,10 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostWorkspace);
 
     this.processWorkspaceFoldersChanged(this.workspaceService.tryGetRoots());
-    this.workspaceChangeEvent = this.workspaceService.onWorkspaceChanged((roots) => {
+
+    this.addDispose(this.workspaceChangeEvent = this.workspaceService.onWorkspaceChanged((roots) => {
       this.processWorkspaceFoldersChanged(roots);
-    });
+    }));
 
     this.storageProxy = rpcProtocol.getProxy<IExtHostStorage>(ExtHostAPIIdentifier.ExtHostStorage);
   }

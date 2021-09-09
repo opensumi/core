@@ -29,6 +29,7 @@ import { IExtHostTheming, IMainThreadTheming } from './theming';
 import { IExtHostTasks, IMainThreadTasks } from './tasks';
 import { IExtHostComments, IMainThreadComments } from './comments';
 import { ExtHostFileSystem } from '../../hosted/api/vscode/ext.host.file-system';
+import { ExtHostFileSystemInfo } from './../../hosted/api/vscode/ext.host.file-system-info';
 import { ExtHostFileSystemEvent } from '../../hosted/api/vscode/ext.host.file-system-event';
 import { IMainThreadUrls, IExtHostUrls } from './urls';
 import { IExtHostAuthentication, IMainThreadAuthentication } from './authentication';
@@ -95,6 +96,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostStorage: createExtHostContextProxyIdentifier<IExtHostStorage>('ExtHostStorage'),
   ExtHostOutput: createExtHostContextProxyIdentifier<IExtHostOutput>('ExtHostOutput'),
   ExtHostFileSystem: createExtHostContextProxyIdentifier<ExtHostFileSystem>('ExtHostFileSystem'),
+  ExtHostFileSystemInfo: createExtHostContextProxyIdentifier<ExtHostFileSystemInfo>('ExtHostFileSystemInfo'),
   ExtHostFileSystemEvent: createExtHostContextProxyIdentifier<ExtHostFileSystemEvent>('ExtHostFileSystemEvent'),
   ExtHostWebview: createExtHostContextProxyIdentifier<IExtHostWebview>('ExtHostWebview'),
   ExtHostWebviewView: createExtHostContextProxyIdentifier<IExtHostWebviewView>('ExtHostWebviewView'),

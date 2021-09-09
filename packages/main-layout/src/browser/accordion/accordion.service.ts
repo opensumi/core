@@ -192,7 +192,7 @@ export class AccordionService extends WithEventBus {
     this.viewContextKeyRegistry.registerContextKeyService(view.id, this.scopedCtxKeyService.createScoped()).createKey('view', view.id);
     disposables.push(this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
-        id: this.registerVisibleToggleCommand(view.id),
+        id: this.registerVisibleToggleCommand(view.id, disposables),
         label: view.name || view.id,
       },
       group: '1_widgets',
@@ -315,9 +315,10 @@ export class AccordionService extends WithEventBus {
     return commandId;
   }
 
-  private registerVisibleToggleCommand(viewId: string): string {
+  private registerVisibleToggleCommand(viewId: string, disposables: DisposableCollection): string {
     const commandId = `view-container.hide.${viewId}`;
-    this.commandRegistry.registerCommand({
+
+    disposables.push(this.commandRegistry.registerCommand({
       id: commandId,
     }, {
       execute: ({forceShow}: {forceShow?: boolean} = {}) => {
@@ -331,7 +332,8 @@ export class AccordionService extends WithEventBus {
         const state = this.getViewState(viewId);
         return state.hidden || this.visibleViews.length > 1;
       },
-    });
+    }));
+
     return commandId;
   }
 

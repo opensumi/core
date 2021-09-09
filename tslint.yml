@@ -25,6 +25,7 @@ rules:
   no-unused-expression: false
   no-string-literal: false
   no-bitwise: false
+  no-angle-bracket-type-assertion: false
 
 linterOptions:
   exclude:

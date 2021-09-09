@@ -127,7 +127,9 @@ describe('ExtHostFileSystem', () => {
       return { dispose() {} };
     },
   };
-  const extHostFs = new ExtHostFileSystem(mockRpcProtocol as any);
+  const extHostFs = new ExtHostFileSystem(mockRpcProtocol as any, {
+    $acceptProviderInfos: jest.fn((scheme: string, capabilities: number | null) => {}),
+  } as any);
 
   it.skip('WatchEmitter should send and receive messages normally.', () => {
     // const uri = URI.file('/root/test.txt');

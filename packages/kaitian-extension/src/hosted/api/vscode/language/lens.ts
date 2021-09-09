@@ -16,10 +16,9 @@
 
 import type * as vscode from 'vscode';
 import * as Converter from '../../../../common/vscode/converter';
-import { Uri as URI } from '@ali/ide-core-common';
+import { Uri as URI, Cache, CancellationToken } from '@ali/ide-core-common';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { CodeLens, ICodeLensListDto } from '../../../../common/vscode/model.api';
-import { createToken, ObjectIdentifier } from './util';
 import { CommandsConverter } from '../ext.host.command';
 import { DisposableStore } from '@ali/ide-core-common';
 
@@ -28,8 +27,7 @@ export class CodeLensAdapter {
 
   private static readonly BAD_CMD: vscode.Command = { command: 'missing', title: '<<MISSING COMMAND>>' };
 
-  private cacheId = 0;
-  private cache = new Map<number, vscode.CodeLens>();
+  private readonly cache = new Cache<vscode.CodeLens>('CodeLens');
   private readonly disposableStore = new Map<number, DisposableStore>();
 
   constructor(
@@ -38,55 +36,60 @@ export class CodeLensAdapter {
     private readonly commandConverter: CommandsConverter,
   ) { }
 
-  async provideCodeLenses(resource: URI): Promise<ICodeLensListDto> {
-    const document = this.documents.getDocumentData(resource.toString());
-    if (!document) {
+  async provideCodeLenses(resource: URI, token: CancellationToken): Promise<ICodeLensListDto | undefined> {
+    const doc = this.documents.getDocumentData(resource.toString());
+    if (!doc) {
       return Promise.reject(new Error(`There is no document for ${resource}`));
     }
 
-    const doc = document.document;
+    const lenses = await this.provider.provideCodeLenses(doc.document, token);
+    if (!lenses || token.isCancellationRequested) {
+      return undefined;
+    }
+    const cacheId = this.cache.add(lenses);
     const disposables = new DisposableStore();
-    const id = this.cacheId++;
-    this.disposableStore.set(id, disposables);
+    this.disposableStore.set(cacheId, disposables);
 
     const result: ICodeLensListDto = {
-      cacheId: id,
+      cacheId,
       lenses: [],
     };
-
-    await Promise.resolve(this.provider.provideCodeLenses(doc, createToken())).then((lenses) => {
-      if (Array.isArray(lenses)) {
-        for (const lens of lenses) {
-          result.lenses.push(ObjectIdentifier.mixin({
-            range: Converter.fromRange(lens.range)!,
-            command: lens.command ? this.commandConverter.toInternal(lens.command, disposables) : undefined,
-          }, id));
-        }
-      }
-    });
+    for (let i = 0; i < lenses.length; i++) {
+      result.lenses.push({
+        cacheId: [cacheId, i],
+        range: Converter.fromRange(lenses[i].range),
+        command: this.commandConverter.toInternal(lenses[i].command, disposables),
+      });
+    }
 
     return result;
   }
 
-  resolveCodeLens(resource: URI, symbol: CodeLens): Promise<CodeLens | undefined> {
-    const lens = this.cache.get(ObjectIdentifier.of(symbol));
+  async resolveCodeLens(symbol: CodeLens, token: CancellationToken): Promise<CodeLens | undefined> {
+    const lens = symbol.cacheId && this.cache.get(...symbol.cacheId);
     if (!lens) {
       return Promise.resolve(undefined);
     }
 
-    let resolve: Promise<vscode.CodeLens | undefined>;
+    let resolvedLens: vscode.CodeLens | undefined | null;
     if (typeof this.provider.resolveCodeLens !== 'function' || lens.isResolved) {
-      resolve = Promise.resolve(lens);
+      resolvedLens = lens;
     } else {
-      resolve = Promise.resolve(this.provider.resolveCodeLens(lens, createToken())) as any;
+      resolvedLens = await this.provider.resolveCodeLens(lens, token) as any;
+    }
+
+    if (!resolvedLens) {
+      resolvedLens = lens;
+    }
+
+    if (token.isCancellationRequested) {
+      return undefined;
     }
 
     const disposables = new DisposableStore();
-    return resolve.then((newLens) => {
-      newLens = newLens || lens;
-      symbol.command = this.commandConverter.toInternal(newLens.command ? newLens.command : CodeLensAdapter.BAD_CMD, disposables);
-      return symbol;
-    });
+
+    symbol.command = this.commandConverter.toInternal(resolvedLens.command ? resolvedLens.command : CodeLensAdapter.BAD_CMD, disposables);
+    return symbol;
   }
 
   releaseCodeLens(cacheId: number): void {

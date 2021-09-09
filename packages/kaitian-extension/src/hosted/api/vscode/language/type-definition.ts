@@ -61,7 +61,7 @@ export class TypeDefinitionAdapter {
                 const definitionLinks: DefinitionLink[] = [];
 
                 for (const definitionLink of definition) {
-                    definitionLinks.push(Converter.fromDefinitionLink(definitionLink));
+                    definitionLinks.push(Converter.DefinitionLink.from(definitionLink));
                 }
 
                 return definitionLinks;

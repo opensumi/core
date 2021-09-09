@@ -703,6 +703,14 @@ export class TextEdit {
     ret.newEol = eol;
     return ret;
   }
+
+  toJSON(): any {
+    return {
+      range: this.range,
+      newText: this.newText,
+      newEol: this._newEol,
+    };
+  }
 }
 
 export enum CompletionTriggerKind {

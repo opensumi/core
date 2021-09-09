@@ -193,6 +193,10 @@ export class MainThreadAuthentication extends Disposable implements IMainThreadA
     const provider = this.injector.get(MainThreadAuthenticationProvider, [this._proxy, id, label, supportsMultipleAccounts]);
     await provider.initialize();
     this.authenticationService.registerAuthenticationProvider(id, provider);
+
+    this.addDispose(Disposable.create(() => {
+      this.$unregisterAuthenticationProvider(id);
+    }));
   }
 
   $unregisterAuthenticationProvider(id: string): void {

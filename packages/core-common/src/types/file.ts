@@ -33,13 +33,13 @@ export interface FileStat {
   isDirectory: boolean;
 
   /**
-	 * 资源是否为软连接
-	 */
+   * 资源是否为软连接
+   */
   isSymbolicLink?: boolean;
 
   /**
-	 * 资源是否在软连接文件夹内
-	 */
+   * 资源是否在软连接文件夹内
+   */
   isInSymbolicDirectory?: boolean;
 
   /**
@@ -60,7 +60,7 @@ export interface FileStat {
 }
 
 export namespace FileStat {
-  export function is(candidate: Object | undefined): candidate is FileStat {
+  export function is(candidate: object | undefined): candidate is FileStat {
     return typeof candidate === 'object' && ('uri' in candidate) && ('lastModification' in candidate) && ('isDirectory' in candidate);
   }
 
@@ -102,6 +102,9 @@ export enum FileType {
  * Compatible with vscode.FileSystemProvider
  */
 export interface FileSystemProvider {
+
+  readonly capabilities: FileSystemProviderCapabilities;
+  readonly onDidChangeCapabilities: Event<void>;
 
   // TODO: 对单个文件判断 readonly
   readonly readonly?: boolean;
@@ -168,7 +171,7 @@ export interface FileSystemProvider {
    * @return An array of bytes or a thenable that resolves to such.
    * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
    */
-  readFile(uri: Uri, encoding?: string): Uint8Array | void | Promise<Uint8Array | void>
+  readFile(uri: Uri, encoding?: string): Uint8Array | void | Promise<Uint8Array | void>;
 
   /**
    * Write data to a file, replacing its entire contents.
@@ -207,14 +210,43 @@ export interface FileSystemProvider {
 }
 
 export const enum FileSystemProviderCapabilities {
-	FileReadWrite = 1 << 1,
-	FileOpenReadWriteClose = 1 << 2,
-	FileReadStream = 1 << 4,
+  /**
+   * Provider supports unbuffered read/write.
+   */
+   FileReadWrite = 1 << 1,
 
-	FileFolderCopy = 1 << 3,
+   /**
+    * Provider supports open/read/write/close low level file operations.
+    */
+   FileOpenReadWriteClose = 1 << 2,
 
-	PathCaseSensitive = 1 << 10,
-	Readonly = 1 << 11,
+   /**
+    * Provider supports stream based reading.
+    */
+   FileReadStream = 1 << 4,
 
-	Trash = 1 << 12
+   /**
+    * Provider supports copy operation.
+    */
+   FileFolderCopy = 1 << 3,
+
+   /**
+    * Provider is path case sensitive.
+    */
+   PathCaseSensitive = 1 << 10,
+
+   /**
+    * All files of the provider are readonly.
+    */
+   Readonly = 1 << 11,
+
+   /**
+    * Provider supports to delete via trash.
+    */
+   Trash = 1 << 12,
+
+   /**
+    * Provider support to unlock files for writing.
+    */
+   FileWriteUnlock = 1 << 13,
 }

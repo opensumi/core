@@ -247,13 +247,17 @@ export class TabbarService extends WithEventBus {
   }
 
   protected registerHideMenu(componentInfo: ComponentRegistryInfo) {
-    return this.menuRegistry.registerMenuItem(this.menuId, {
+    const disposables = new DisposableCollection();
+
+    disposables.push(this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
-        id: this.registerVisibleToggleCommand(componentInfo.options!.containerId),
+        id: this.registerVisibleToggleCommand(componentInfo.options!.containerId, disposables),
         label: componentInfo.options!.title || '',
       },
       group: '1_widgets',
-    });
+    }));
+
+    return disposables;
   }
 
   protected registerMoreMenu(componentInfo: ComponentRegistryInfo) {
@@ -266,7 +270,7 @@ export class TabbarService extends WithEventBus {
     });
     disposables.push(this.menuRegistry.registerMenuItem(this.moreMenuId, {
       command: {
-        id: this.registerMoreToggleCommand(componentInfo),
+        id: this.registerMoreToggleCommand(componentInfo, disposables),
         label: componentInfo.options!.title || containerId,
       },
       group: 'inline',
@@ -478,9 +482,9 @@ export class TabbarService extends WithEventBus {
   }
 
   // 注册tab的隐藏显示功能
-  private registerVisibleToggleCommand(containerId: string): string {
+  private registerVisibleToggleCommand(containerId: string, disposables: DisposableCollection): string {
     const commandId = `activity.bar.toggle.${containerId}`;
-    this.commandRegistry.registerCommand({
+    disposables.push(this.commandRegistry.registerCommand({
       id: commandId,
     }, {
       execute: ({forceShow}: {forceShow?: boolean} = {}) => {
@@ -494,15 +498,15 @@ export class TabbarService extends WithEventBus {
         const state = this.getContainerState(containerId);
         return state.hidden || this.visibleContainers.length !== 1;
       },
-    });
+    }));
     return commandId;
   }
 
-  private registerMoreToggleCommand(component: ComponentRegistryInfo): string {
+  private registerMoreToggleCommand(component: ComponentRegistryInfo, disposables: DisposableCollection): string {
     const { options } = component;
     const { containerId } = options!;
     const commandId = `activity.bar.activate.more.${containerId}`;
-    this.commandRegistry.registerCommand({
+    disposables.push(this.commandRegistry.registerCommand({
       id: commandId,
     }, {
       execute: ({lastContainerId}: {lastContainerId?: string}) => {
@@ -518,7 +522,7 @@ export class TabbarService extends WithEventBus {
           this.storeState();
         }
       },
-    });
+    }));
     return commandId;
   }
 

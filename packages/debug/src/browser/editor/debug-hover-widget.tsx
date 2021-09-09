@@ -76,6 +76,7 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
         }
       }),
     ]);
+    this.renderView();
   }
 
   handleWindowWheel(event) {
@@ -137,12 +138,21 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
       this.editor.focus();
     }
     this.hoverSource.dispose();
+    this.hoverSource.clearEvaluate();
     this.options = undefined;
     this.editor.removeContentWidget(this);
   }
 
   protected layoutContentWidget(): void {
     this.editor.layoutContentWidget(this);
+  }
+
+  private renderView(): void {
+    ReactDOM.render((<ConfigProvider value={ this.configContext } >
+      <DebugHoverView />
+    </ConfigProvider>), this.getDomNode(), () => {
+      this.layoutContentWidget();
+    });
   }
 
   protected async doShow(options: ShowDebugHoverOptions | undefined = this.options): Promise<void> {
@@ -164,6 +174,8 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
       return;
     }
 
+    this.hoverSource.clearEvaluate();
+
     if (!await this.hoverSource.evaluate(expression)) {
       return;
     }
@@ -173,10 +185,5 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
     this.editor.addContentWidget(this);
     // 展示变量面板时临时屏蔽滚轮事件
     window.addEventListener('mousewheel', this.handleWindowWheel, true);
-    ReactDOM.render((<ConfigProvider value={ this.configContext } >
-      <DebugHoverView />
-    </ConfigProvider>), this.getDomNode(), () => {
-      this.layoutContentWidget();
-    });
   }
 }

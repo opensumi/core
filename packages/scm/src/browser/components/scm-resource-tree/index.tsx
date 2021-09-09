@@ -8,6 +8,7 @@ import { isOSX } from '@ali/ide-core-common';
 import { SCMResourceFolder, SCMResourceFile, SCMResourceGroup, SCMResourceNotRoot } from './scm-tree-node';
 import { SCMTreeModelService } from './scm-tree-model.service';
 import { ISCMTreeNodeProps, SCMTreeNode, SCM_TREE_NODE_HEIGHT } from './scm-tree-node.view';
+import { SCMTreeService } from './scm-tree.service';
 
 import { ViewModelContext } from '../../scm-model';
 
@@ -28,6 +29,7 @@ export const SCMResourceTree: React.FC<{
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   const scmTreeModelService = useInjectable<SCMTreeModelService>(SCMTreeModelService);
+  const scmTreeService = useInjectable<SCMTreeService>(SCMTreeService);
   const { iconThemeDesc, decorationService, labelService, commandService } = scmTreeModelService;
 
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
@@ -151,8 +153,8 @@ export const SCMResourceTree: React.FC<{
       onDoubleClick={handleItemDoubleClick}
       onTwistierClick={handleTwistierClick}
       onContextMenu={handleContextMenu}
-      defaultLeftPadding={8}
-      leftPadding={8}
+      defaultLeftPadding={scmTreeService.isTreeMode ? 8 : 16}
+      leftPadding={scmTreeService.isTreeMode ? 8 : 0}
       iconTheme={iconThemeDesc}
     />
   ), [model]);
@@ -174,6 +176,7 @@ export const SCMResourceTree: React.FC<{
             model={model}
             getItemKey={(node: ISCMTreeNodeProps) => node.item.raw.id}
             overScanCount={100}
+
           >
             {renderSCMTreeNode}
           </RecycleTree>

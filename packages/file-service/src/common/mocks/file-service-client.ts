@@ -8,6 +8,12 @@ import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
 
 @Injectable()
 export class MockFileServiceClient implements IFileServiceClient {
+  listCapabilities() {
+    return [];
+  }
+  onDidChangeFileSystemProviderRegistrations = Event.None;
+  onDidChangeFileSystemProviderCapabilities = Event.None;
+
   registerProvider(scheme: string, provider: FileSystemProvider): IDisposable {
     throw new Error('Method not implemented.');
   }

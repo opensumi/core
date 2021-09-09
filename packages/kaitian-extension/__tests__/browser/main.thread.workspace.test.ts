@@ -1,3 +1,4 @@
+import { ExtHostFileSystemInfo } from './../../src/hosted/api/vscode/ext.host.file-system-info';
 import { Uri as vscodeUri, Emitter, IFileServiceClient, URI, Uri, IEventBus, PreferenceScope, ILoggerManagerClient, FileUri, CommonServerPath, OS, IApplicationService, DisposableCollection } from '@ali/ide-core-common';
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import * as path from 'path';
@@ -229,9 +230,10 @@ describe('MainThreadWorkspace API Test Suite', () => {
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadWorkspace, mainThreadWorkspaceAPI);
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadWebview, injector.get(MainThreadWebview, [rpcProtocolMain]));
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadDocuments, injector.get(MainThreadExtensionDocumentData, [rpcProtocolMain]));
+    const extHostFileSystemInfo = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostFileSystemInfo, new ExtHostFileSystemInfo());
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadFileSystem, injector.get(MainThreadFileSystem, [rpcProtocolMain]));
     injector.get(MainThreadFileSystemEvent, [rpcProtocolMain]);
-    const extHostFileSystem = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostFileSystem, new ExtHostFileSystem(rpcProtocolExt));
+    const extHostFileSystem = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostFileSystem, new ExtHostFileSystem(rpcProtocolExt, extHostFileSystemInfo));
     const extHostFileSystemEvent = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostFileSystemEvent, new ExtHostFileSystemEvent(rpcProtocolExt, extHostDocs));
     const extHostPreference = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostPreference, new ExtHostPreference(rpcProtocolExt, extHostWorkspace)) as ExtHostPreference;
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadPreference, injector.get(MainThreadPreference, [rpcProtocolMain]));

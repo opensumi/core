@@ -37,7 +37,7 @@ export class ExtensionMetadataService extends Disposable {
         ktRunner.run(),
       ]);
 
-      this.registerActivationEvent(extension);
+      this.addDispose(this.registerActivationEvent(extension));
     } catch (e) {
       this.logger.error('vscode meta启用插件出错' + extension.name);
       this.logger.error(e);
@@ -61,6 +61,8 @@ export class ExtensionMetadataService extends Disposable {
         activateDisposer.dispose();
       }));
     });
+
+    return activateDisposer;
   }
 
 }

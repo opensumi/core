@@ -1,6 +1,6 @@
 import * as Ajv from 'ajv';
 import { Injectable, Autowired, Injector } from '@ali/common-di';
-import { ContributionProvider, Emitter, Event, ILogger } from '@ali/ide-core-common';
+import { Mutable, ContributionProvider, Emitter, Event, ILogger, Disposable, IDisposable } from '@ali/ide-core-common';
 import { PreferenceScope } from './preference-scope';
 import { PreferenceProvider, PreferenceProviderDataChange, IResolvedPreferences } from './preference-provider';
 import {
@@ -45,10 +45,6 @@ export const OVERRIDE_PROPERTY_PATTERN = new RegExp(OVERRIDE_PROPERTY);
 
 @Injectable()
 export class PreferenceSchemaProvider extends PreferenceProvider {
-
-  protected readonly preferences: { [name: string]: any } = {};
-  protected readonly combinedSchema: PreferenceDataSchema = { properties: {}, patternProperties: {} };
-
   @Autowired(PreferenceContribution)
   protected readonly preferenceContributions: ContributionProvider<PreferenceContribution>;
   private _validateFunction: Ajv.ValidateFunction | undefined;
@@ -62,6 +58,8 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
   @Autowired(AppConfig)
   protected readonly appConfig: AppConfig;
 
+  protected preferences: { [name: string]: any } = {};
+  protected combinedSchema: PreferenceDataSchema = { properties: {}, patternProperties: {} };
   protected readonly onDidPreferenceSchemaChangedEmitter = new Emitter<void>();
   public readonly onDidPreferenceSchemaChanged: Event<void> = this.onDidPreferenceSchemaChangedEmitter.event;
 
@@ -81,6 +79,14 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
   constructor() {
     super();
     this.init();
+
+    this.toDispose.push(Disposable.create(() => {
+      this.preferences = {};
+      this.validationFunctions.clear();
+      this.combinedSchema = { properties: {}, patternProperties: {} };
+    }));
+
+    this.toDispose.push(this.onDidPreferenceSchemaChangedEmitter);
   }
 
   protected init(): void {
@@ -91,6 +97,28 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     this.updateValidate();
     this.onDidPreferencesChanged(() => this.updateValidate());
     this._ready.resolve();
+  }
+
+  protected doUnsetSchema(changes: PreferenceProviderDataChange[]): PreferenceProviderDataChange[] {
+    const inverseChanges: PreferenceProviderDataChange[] = [];
+    for (const change of changes) {
+      const preferenceName = change.preferenceName;
+      const newValue = change.oldValue;
+      const oldValue = change.newValue;
+      const { scope, domain } = change;
+      const inverseChange: Mutable<PreferenceProviderDataChange> = { preferenceName, oldValue, scope, domain };
+
+      delete this.combinedSchema.properties[preferenceName];
+
+      if (typeof newValue === undefined) {
+        delete this.preferences[preferenceName];
+      } else {
+        inverseChange.newValue = newValue;
+        this.preferences[preferenceName] = newValue;
+      }
+      inverseChanges.push(inverseChange);
+    }
+    return inverseChanges;
   }
 
   protected doSetSchema(schema: PreferenceSchema, override?: boolean): PreferenceProviderDataChange[] {
@@ -205,10 +233,24 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     return this.combinedSchema;
   }
 
-  public setSchema(schema: PreferenceSchema, override?: boolean): void {
+  public setSchema(schema: PreferenceSchema, override?: boolean): IDisposable {
     const changes = this.doSetSchema(schema, override);
+
+    if (!changes.length) {
+      return Disposable.NULL;
+    }
+
     this.fireDidPreferenceSchemaChanged();
     this.emitPreferencesChangedEvent(changes);
+
+    return Disposable.create(() => {
+      const inverseChanges = this.doUnsetSchema(changes);
+      if (!inverseChanges.length) {
+        return;
+      }
+      this.fireDidPreferenceSchemaChanged();
+      this.emitPreferencesChangedEvent(inverseChanges);
+    });
   }
 
   public getPreferences(): { [name: string]: any } {

@@ -308,7 +308,6 @@ export const localizationBundle = {
     'debug.stack.frame.because': '因',
     'debug.stack.frame.stopped': '已暂停',
     'debug.stack.frame.running': '正在运行',
-    'debug.hover.not.available': '暂无值',
     'debug.launch.configurations.debugType': '配置类型。',
     'debug.launch.configurations.debugTypeNotRecognised': '无法识别此调试类型。确保已经安装并启用相应的调试扩展。',
     'debug.launch.configurations.node2NotSupported': '不再支持 \'node2\'，改用 \'node\'，并将 \'protocol\' 属性设为 \'inspector\'。',
@@ -606,7 +605,11 @@ export const localizationBundle = {
     'deugger.menu.setValue.param': '请输入你要改变变量的值',
 
     'deugger.menu.copyValue': '复制值',
+    'deugger.menu.copyEvaluatePath': '复制表达式',
     'deugger.menu.addToWatchExpressions': '添加到监视',
+
+    'deugger.menu.restartFrame': '重启栈帧',
+    'deugger.menu.copyCallstack': '复制堆栈',
 
     'theme.toggle': '颜色主题',
     'theme.icon.toggle': '文件图标主题',
@@ -696,6 +699,7 @@ export const localizationBundle = {
     'kaitianExtension.invalidExthostReload.confirm.ok': '刷新',
     'kaitianExtension.invalidExthostReload.confirm.cancel': '继续使用其他功能',
     'kaitianExtension.crashedExthostReload.confirm': '插件进程异常退出，是否重启插件进程',
+    'kaitianExtension.exthostRestarting.content': '插件进程重启中...',
 
     'extension.no.view.found': '找不到插件 {0} 注册的视图组件。\n 请确保插件中已经导出名为 {1} 的组件。',
     'extension.profilingExtensionHost': '分析扩展主机',

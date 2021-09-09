@@ -311,7 +311,6 @@ export const localizationBundle = {
     'debug.stack.frame.because': 'Because Of',
     'debug.stack.frame.stopped': 'Stopped',
     'debug.stack.frame.running': 'Running',
-    'debug.hover.not.available': 'not available',
     'debug.launch.configurations.debugType': 'Type of configuration.',
     'debug.launch.configurations.debugTypeNotRecognised': 'The debug type is not recognized. Make sure that you have a corresponding debug extension installed and that it is enabled.',
     'debug.launch.configurations.node2NotSupported': '"node2" is no longer supported, use "node" instead and set the "protocol" attribute to "inspector".',
@@ -540,7 +539,11 @@ export const localizationBundle = {
     'deugger.menu.setValue.param': 'Please input the value of this variable',
 
     'deugger.menu.copyValue': 'Copy Value',
+    'deugger.menu.copyEvaluatePath': 'Copy as Expression',
     'deugger.menu.addToWatchExpressions': 'Add to Watch',
+
+    'deugger.menu.restartFrame': 'Restart Frame',
+    'deugger.menu.copyCallstack': 'Copy Call Stack',
 
     'theme.toggle': 'Color Theme',
     'theme.icon.toggle': 'File Icon Theme',
@@ -688,6 +691,7 @@ export const localizationBundle = {
     'kaitianExtension.invalidExthostReload.confirm.ok': 'Refresh',
     'kaitianExtension.invalidExthostReload.confirm.cancel': 'Ignore and continue to use',
     'kaitianExtension.crashedExthostReload.confirm': 'Ext-host process crashed, restart this process?',
+    'kaitianExtension.exthostRestarting.content': 'Ext-host process is restarting',
 
     'extension.no.view.found': 'The view component registered with the plugin {0} could not be found. \n Please make sure that the component named {1} has been exported from the plugin.',
     'extension.profilingExtensionHost': 'Profiling Extension Host',

@@ -16,6 +16,9 @@ export class ExtensionClientService implements IExtensionNodeClientService {
   getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData | undefined): Promise<IExtensionMetaData | undefined> {
     throw new Error('Method not implemented.');
   }
+  restartExtProcessByClient(): void {
+    throw new Error('Method not implemented.');
+  }
   infoProcessNotExist(): void {
     throw new Error('Method not implemented.');
   }

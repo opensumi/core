@@ -1,3 +1,4 @@
+import { IReporterService } from '@ali/ide-core-common';
 import { DebugWatch, DebugThread } from '@ali/ide-debug/lib/browser';
 import { ILogger } from '@ali/ide-core-browser';
 import { DebugProtocol } from '@ali/vscode-debugprotocol/lib/debugProtocol';
@@ -14,6 +15,7 @@ describe('DebugWatch Model', () => {
     let debugWatch: DebugWatch;
     let debugManager;
     let session;
+    let reporter;
     const raw: DebugProtocol.Thread = {
       id: 0,
       name: 'thread',
@@ -48,11 +50,10 @@ describe('DebugWatch Model', () => {
           };
         }),
       };
+      reporter = {
+        point: jest.fn(),
+      };
       injector = createBrowserInjector([]);
-      injector.addProviders({
-        token: DebugWatch,
-        useClass: DebugWatch,
-      });
       injector.addProviders({
         token: ILogger,
         useClass: MockLogger,
@@ -62,10 +63,10 @@ describe('DebugWatch Model', () => {
         useValue: debugManager,
       });
       injector.addProviders({
-        token: DebugWatch,
-        useClass: DebugWatch,
+        token: IReporterService,
+        useValue: reporter,
       });
-      debugWatch = injector.get(DebugWatch);
+      debugWatch = new DebugWatch(debugManager, reporter);
     });
 
     afterEach(() => {

@@ -305,6 +305,10 @@ export class MainThreadSCM extends Disposable implements IMainThreadSCMShape {
 
     const inputDisposable = repository.input.onDidChange((value) => this._proxy.$onInputBoxValueChange(handle, value));
     this._inputDisposables.set(handle, inputDisposable);
+
+    this.addDispose(Disposable.create(() => {
+      this.$unregisterSourceControl(handle);
+    }));
   }
 
   $updateSourceControl(handle: number, features: SCMProviderFeatures): void {
@@ -341,6 +345,10 @@ export class MainThreadSCM extends Disposable implements IMainThreadSCMShape {
 
     const provider = repository.provider as MainThreadSCMProvider;
     provider.$registerGroup(groupHandle, id, label);
+
+    this.addDispose(Disposable.create(() => {
+      provider.$unregisterGroup(groupHandle);
+    }));
   }
 
   $updateGroup(sourceControlHandle: number, groupHandle: number, features: SCMGroupFeatures): void {

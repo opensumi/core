@@ -6,6 +6,7 @@ import {
 import { Event, IDisposable, IAccessibilityInformation } from '@ali/ide-core-common';
 import { TreeItemCollapsibleState, ThemeIcon } from './ext-types';
 import { ThemeType } from '@ali/ide-theme';
+import type { CancellationToken } from '@ali/ide-core-common/lib/cancellation';
 
 export interface ITreeViewRevealOptions {
   select?: boolean;
@@ -18,7 +19,9 @@ export interface IMainThreadTreeView {
   $refresh<T>(treeViewId: string, itemsToRefresh?: T | null): void;
   $refresh(treeViewId: string, itemsToRefresh?: TreeViewItem): void;
   $reveal(treeViewId: string, treeItemId: string, options?: ITreeViewRevealOptions): Promise<any>;
-  // $setMessage(treeViewId: string, message: string | IMarkdownString): void;
+  $setTitle(treeViewId: string, message: string): void;
+  $setDescription(treeViewId: string, message: string): void;
+  $setMessage(treeViewId: string, message: string): void;
 }
 
 export interface IExtHostTreeView {
@@ -28,17 +31,33 @@ export interface IExtHostTreeView {
   $setExpanded(treeViewId: string, treeItemId: string, expanded: boolean): Promise<any>;
   $setSelection(treeViewId: string, treeItemHandles: string[]): void;
   $setVisible(treeViewId: string, visible: boolean): void;
+  $resolveTreeItem(treeViewId: string, treeItemId: string, token: CancellationToken): Promise<TreeViewItem | undefined>;
 }
 
 // TreeView API Interface dependencies
 
 export type IconUrl = string | { [index in ThemeType]: string };
 
+export interface ITreeItemLabel {
+  /**
+   * 展示文本
+   */
+  label: string;
+  /**
+   * 高亮展示部分文本内容
+   */
+  highlights?: [number, number][];
+  /**
+   * 是否展示为删除线文本
+   */
+  strikethrough?: boolean;
+}
+
 export class TreeViewItem {
 
   id: string;
 
-  label: string;
+  label: string | ITreeItemLabel;
 
   icon?: string;
 
@@ -86,6 +105,19 @@ export interface TreeView<T> extends IDisposable {
    * 当前选中的节点
    */
   readonly selection: ReadonlyArray<T>;
+  /**
+    * 节点上的
+    * Setting the message to null, undefined, or empty string will remove the message from the view.
+    */
+  message?: string;
+  /**
+   * TreeView 视图标题
+   */
+  title?: string;
+  /**
+   * 可选的节点描述信息
+   */
+  description?: string;
   /**
    * 展示节点，默认情况下展示的节点为选中状态
    *

@@ -262,6 +262,8 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
   }
 
   dispose() {
+    super.dispose();
+
     for (const disposable of this.editorDisposers.values()) {
       disposable.dispose();
     }

@@ -60,6 +60,7 @@ export const defaultIconfont = {
   'down': 'down',
   'download': 'download',
   'drag': 'drag',
+  'debug-restart-frame': 'debug-restart-frame',
   'edit': 'edit',
   'editor': 'editor',
   'ellipsis': 'ellipsis',

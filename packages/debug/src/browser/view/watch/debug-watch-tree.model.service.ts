@@ -1,8 +1,9 @@
+import { IDebugSessionManager } from './../../../common/debug-session';
 import { DebugVariableContainer, DebugVariable } from './../../tree/debug-tree-node.define';
 import { CONTEXT_WATCH_EXPRESSIONS_FOCUSED, CONTEXT_WATCH_ITEM_TYPE } from './../../../common/constants';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent, TreeNodeEvent, NewPromptHandle, IWatcherEvent, RenamePromptHandle } from '@ali/ide-components';
-import { Emitter, IContextKeyService, ThrottledDelayer, Deferred, Event, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IClipboardService, IContextKey } from '@ali/ide-core-browser';
+import { Emitter, IContextKeyService, ThrottledDelayer, Deferred, Event, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IClipboardService, IContextKey, IReporterService } from '@ali/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { DebugWatchModel } from './debug-watch-model';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -11,6 +12,7 @@ import { DebugViewModel } from '../debug-view-model';
 import { DebugWatch } from '../../model';
 import * as pSeries from 'p-series';
 import * as styles from './debug-watch.module.less';
+import { DebugSessionManager } from '../../debug-session-manager';
 
 export interface IDebugWatchHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -37,8 +39,11 @@ export class DebugWatchModelService {
   @Autowired(DebugViewModel)
   protected readonly viewModel: DebugViewModel;
 
-  @Autowired(DebugWatch)
-  protected readonly debugWatch: DebugWatch;
+  @Autowired(IDebugSessionManager)
+  protected readonly manager: DebugSessionManager;
+
+  @Autowired(IReporterService)
+  protected readonly reporterService: IReporterService;
 
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;
@@ -53,6 +58,7 @@ export class DebugWatchModelService {
 
   private _decorations: DecorationsManager;
   private _debugWatchTreeHandle: IDebugWatchHandle;
+  private debugWatch: DebugWatch;
 
   public flushEventQueueDeferred: Deferred<void> | null;
   private _eventFlushTimeout: number;
@@ -84,6 +90,8 @@ export class DebugWatchModelService {
   private watchItemType: IContextKey<string>;
 
   constructor() {
+    this.debugWatch = new DebugWatch(this.manager, this.reporterService);
+
     this.init();
     this.watchItemType = CONTEXT_WATCH_ITEM_TYPE.bind(this.contextKeyService);
   }

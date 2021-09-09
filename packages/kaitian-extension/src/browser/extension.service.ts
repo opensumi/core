@@ -1,27 +1,28 @@
 import { Autowired, Injectable } from '@ali/common-di';
+import { IWorkspaceService } from '@ali/ide-workspace';
+import { IIconService, IThemeService } from '@ali/ide-theme';
+import { IDialogService, IMessageService } from '@ali/ide-overlay';
+import { IProgressService } from '@ali/ide-core-browser/lib/progress';
+import { IExtensionStorageService } from '@ali/ide-extension-storage';
+import { localize, OnEvent, WithEventBus, ProgressLocation } from '@ali/ide-core-common';
+import { FileSearchServicePath, IFileSearchService } from '@ali/ide-file-search/lib/common';
 import {
   AppConfig, CommandRegistry, CorePreferences, Deferred, ExtensionActivateEvent,
   getPreferenceLanguageId, IClientApp, ILogger,
 } from '@ali/ide-core-browser';
-import { localize, OnEvent, WithEventBus } from '@ali/ide-core-common';
-import { IExtensionStorageService } from '@ali/ide-extension-storage';
-import { FileSearchServicePath, IFileSearchService } from '@ali/ide-file-search/lib/common';
-import { IDialogService, IMessageService } from '@ali/ide-overlay';
-import { IIconService, IThemeService } from '@ali/ide-theme';
-import { IWorkspaceService } from '@ali/ide-workspace';
 
-import {
-  ExtensionHostType, ExtensionNodeServiceServerPath, ExtensionService, IExtensionNodeClientService,
-  IExtCommandManagement, IExtensionMetaData, LANGUAGE_BUNDLE_FIELD,
-} from '../common';
-import { ActivatedExtension } from '../common/activator';
-import { AbstractNodeExtProcessService, AbstractViewExtProcessService, AbstractWorkerExtProcessService } from '../common/extension.service';
-import { isLanguagePackExtension, MainThreadAPIIdentifier } from '../common/vscode';
 import { Extension } from './extension';
+import { ActivatedExtension } from '../common/activator';
+import { isLanguagePackExtension, MainThreadAPIIdentifier } from '../common/vscode';
+import { AbstractNodeExtProcessService, AbstractViewExtProcessService, AbstractWorkerExtProcessService } from '../common/extension.service';
 import {
   ExtensionApiReadyEvent, ExtensionDidEnabledEvent, ExtensionBeforeActivateEvent,
   ExtensionDidUninstalledEvent, IActivationEventService, AbstractExtInstanceManagementService,
 } from './types';
+import {
+  ExtensionHostType, ExtensionNodeServiceServerPath, ExtensionService, IExtensionNodeClientService,
+  IExtCommandManagement, IExtensionMetaData, LANGUAGE_BUNDLE_FIELD,
+} from '../common';
 
 @Injectable()
 export class ExtensionServiceImpl extends WithEventBus implements ExtensionService {
@@ -46,6 +47,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   @Autowired(IExtensionStorageService)
   private readonly extensionStorageService: IExtensionStorageService;
+
+  @Autowired(IProgressService)
+  private readonly progressService: IProgressService;
 
   @Autowired(IThemeService)
   private readonly themeService: IThemeService;
@@ -93,6 +97,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   // 存储 extension 的 meta 数据
   private extensionMetaDataArr: IExtensionMetaData[];
+
+  // 插件进程是否正在重启中
+  private isExtensionRestarting: boolean = false;
 
   // 针对 activationEvents 为 * 的插件
   public eagerExtensionsActivated: Deferred<void> = new Deferred();
@@ -231,15 +238,33 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
    * 重启插件进程
    */
   public async restartExtProcess() {
-    await this.startExtProcess(false);
+    if (this.isExtensionRestarting) {
+      return;
+    }
+
+    this.isExtensionRestarting = true;
+
+    await this.progressService.withProgress({
+      location: ProgressLocation.Notification,
+      title: localize('kaitianExtension.exthostRestarting.content'),
+    }, async () => {
+      try {
+        await this.startExtProcess(false);
+      } catch (err) {
+        this.logger.error(`[ext-restart]: ext-host restart failure, error: ${JSON.stringify(err)}`);
+      }
+
+      this.isExtensionRestarting = false;
+    });
   }
 
   private async startExtProcess(init: boolean) {
     // 重启场景下，需要将插件 dispose 掉并重新激活一遍
     if (!init) {
-      this.disposeExtensions();
+      await this.disposeExtensions();
       await this.initExtensionInstanceData();
       await this.runExtensionContributes();
+      await this.initThemeAndColor();
     }
 
     // set ready for node/worker
@@ -461,6 +486,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   // RPC call from node
+  public async $restartExtProcess() {
+    await this.restartExtProcess();
+  }
+
   public async $processNotExist() {
     const okText = localize('kaitianExtension.invalidExthostReload.confirm.ok');
     const options = [okText];

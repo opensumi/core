@@ -7,6 +7,7 @@ export interface ITextmateTokenizerService {
   initialized: boolean;
   init(): void;
   setTheme(theme: any /**应为 @ali/ide-theme#IThemeData */): void;
+  unregisterGrammar(grammar: GrammarsContribution): void;
   registerGrammar(grammar: GrammarsContribution, extPath: URI): Promise<void>;
   registerLanguage(language: LanguagesContribution, extPath: URI): Promise<void>;
   registerLanguages(language: LanguagesContribution[], extPath: URI): Promise<void>;

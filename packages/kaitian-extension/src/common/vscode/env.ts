@@ -26,4 +26,5 @@ export interface ExtHostEnvValues {
   uriScheme: string;
   language: string;
   uiKind: UIKind;
+  firstSessionDate: string | undefined;
 }

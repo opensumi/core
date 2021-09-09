@@ -283,7 +283,10 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
     if (target && isContextKeyService(target)) {
       return this.injector.get(ScopedContextKeyService, [target]);
     } else {
-      const scopedContextKeyService = this.contextKeyService.createScoped(target as IContextKeyServiceTarget);
+      // monaco 21 开始 domNode 变为必选
+      // https://github.com/microsoft/vscode/commit/c88888aa9bcc76b05779edb21c19eb8c7ebac787
+      const domNode = target || document.createElement('div');
+      const scopedContextKeyService = this.contextKeyService.createScoped(domNode as IContextKeyServiceTarget);
       return this.injector.get(ScopedContextKeyService, [scopedContextKeyService as ContextKeyService]);
     }
   }

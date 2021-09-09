@@ -71,6 +71,9 @@ export class DebugSession implements IDebugSession {
   private readonly _onDidProgressEnd = new Emitter<DebugProtocol.ProgressEndEvent>();
   readonly onDidProgressEnd: Event<DebugProtocol.ProgressEndEvent> = this._onDidProgressEnd.event;
 
+  private readonly _onDidInvalidated = new Emitter<DebugProtocol.InvalidatedEvent>();
+  readonly onDidInvalidated: Event<DebugProtocol.InvalidatedEvent> = this._onDidInvalidated.event;
+
   private readonly _onDidChangeState = new Emitter<DebugState>();
   readonly onDidChangeState: Event<DebugState> = this._onDidChangeState.event;
 
@@ -93,6 +96,7 @@ export class DebugSession implements IDebugSession {
   protected cancellationMap = new Map<number, CancellationTokenSource[]>();
   protected readonly toDisposeOnCurrentThread = new DisposableCollection();
   protected previousState: DebugState | undefined;
+  protected stoppedDetails: StoppedDetails | undefined;
 
   constructor(
     readonly id: string,
@@ -151,6 +155,8 @@ export class DebugSession implements IDebugSession {
       }),
       this.on('stopped', async (event: DebugProtocol.StoppedEvent) => {
         const { body } = event;
+        this.stoppedDetails = body;
+
         const { threadId } = body;
         const reportTime = this.sessionManager.reportTime(DEBUG_REPORT_NAME.DEBUG_STOPPED, {
           sessionId: this.id,
@@ -216,6 +222,17 @@ export class DebugSession implements IDebugSession {
       }),
       this.on('progressEnd', (event: DebugProtocol.ProgressEndEvent) => {
         this._onDidProgressEnd.fire(event);
+      }),
+      this.on('invalidated', async (event: DebugProtocol.InvalidatedEvent) => {
+        this._onDidInvalidated.fire(event);
+
+        if (!(event.body.areas && event.body.areas.length === 1 && (event.body.areas[0] === 'variables' || event.body.areas[0] === 'watch'))) {
+          this.cancelAllRequests();
+          this.clearThreads();
+          await this.updateThreads(this.stoppedDetails);
+        }
+
+        this.fireDidChange();
       }),
       this.on('capabilities', (event) => this.updateCapabilities(event.body.capabilities)),
       this.breakpointManager.onDidChangeBreakpoints((event) => this.updateBreakpoint(event)),
@@ -287,6 +304,7 @@ export class DebugSession implements IDebugSession {
       supportsVariablePaging: false,
       supportsRunInTerminalRequest: true,
       supportsProgressReporting: true,
+      supportsInvalidatedEvent: true,
     }, this.configuration);
     this.updateCapabilities(response.body || {});
     this.onStateChange();
@@ -619,7 +637,7 @@ export class DebugSession implements IDebugSession {
   get runningThreads(): IterableIterator<DebugThread> {
     return this.getThreads((thread) => !thread.stopped);
   }
-  get stoppedThreads(): IterableIterator<DebugThread> {
+  private get stoppedThreads(): IterableIterator<DebugThread> {
     return this.getThreads((thread) => thread.stopped);
   }
   protected readonly scheduleUpdateThreads = debounce(() => this.updateThreads(undefined), 100);
@@ -649,7 +667,7 @@ export class DebugSession implements IDebugSession {
     return Promise.resolve(threads);
   }
 
-  updateThreads(stoppedDetails: StoppedDetails | undefined): Promise<void> {
+  private updateThreads(stoppedDetails: StoppedDetails | undefined): Promise<void> {
     return this.pendingThreads = this.pendingThreads.then(async () => {
       try {
         // java debugger returns an empty body sometimes
@@ -660,6 +678,7 @@ export class DebugSession implements IDebugSession {
       }
     });
   }
+
   protected doUpdateThreads(rawThreads: DebugProtocol.Thread[], stoppedDetails?: StoppedDetails): void {
     const frontEndTime = this.sessionManager.reportTime(DEBUG_REPORT_NAME.DEBUG_UI_FRONTEND_TIME, {
       sessionId: this.id,

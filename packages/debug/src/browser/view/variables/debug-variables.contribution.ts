@@ -1,11 +1,11 @@
+import { DebugProtocol } from '@ali/vscode-debugprotocol';
 import { URI } from '@ali/ide-core-common';
 import { ContextKeyExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { EditorContextKeys } from '@ali/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
-import { CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT, CONTEXT_IN_DEBUG_MODE } from './../../../common/constants';
+import { CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT, CONTEXT_IN_DEBUG_MODE, CONTEXT_SET_VARIABLE_SUPPORTED } from './../../../common/constants';
 import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { Autowired } from '@ali/common-di';
 import { Domain, CommandContribution, CommandRegistry, localize, IQuickInputService, IReporterService } from '@ali/ide-core-browser';
-import { DebugVariableContainer, DebugVariable } from '../../tree/debug-tree-node.define';
 import { DebugVariablesModelService } from './debug-variables-tree.model.service';
 import { DEBUG_COMMANDS } from '../../debug-contribution';
 import { IMessageService } from '@ali/ide-overlay';
@@ -34,8 +34,13 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
 
   registerCommands(registry: CommandRegistry) {
     registry.registerCommand(DEBUG_COMMANDS.SET_VARIABLE_VALUE, {
-      execute: async (node: DebugVariable) => {
+      execute: async () => {
         this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_VARIABLES, DEBUG_COMMANDS.SET_VARIABLE_VALUE.id);
+        const { currentVariableInternalContext: node } = this.debugVariablesModelService;
+        if (!node) {
+          return;
+        }
+
         const param = await this.quickInputService.open({
           placeHolder: localize('deugger.menu.setValue.param'),
           value: node.description.replace(/^\"(.*)\"$/, '$1') as string,
@@ -52,12 +57,21 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
       },
     });
     registry.registerCommand(DEBUG_COMMANDS.COPY_VARIABLE_VALUE, {
-      execute: async (node: DebugVariableContainer | DebugVariable) => {
+      execute: async () => {
+        const { currentVariableInternalContext: node } = this.debugVariablesModelService;
         this.debugVariablesModelService.copyValue(node);
       },
     });
+    registry.registerCommand(DEBUG_COMMANDS.COPY_EVALUATE_PATH, {
+      execute: async () => {
+        const { currentVariableInternalContext: node } = this.debugVariablesModelService;
+        this.debugVariablesModelService.copyEvaluateName(node);
+      },
+    });
     registry.registerCommand(DEBUG_COMMANDS.ADD_TO_WATCH_ID, {
-      execute: async (node: DebugVariableContainer | DebugVariable | URI) => {
+      execute: async (node: DebugProtocol.Variable | URI) => {
+        const { currentVariableInternalContext } = this.debugVariablesModelService;
+
         if (node instanceof URI) {
           // 说明是从编辑器的选中区域来监听表达式
           const currentEditor = this.workbenchEditorService.currentEditor;
@@ -75,8 +89,9 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
 
           this.debugWatchModelService.addWatchExpression(text);
           return;
+        } else if (currentVariableInternalContext) {
+          this.debugWatchModelService.addWatchExpression(currentVariableInternalContext.evaluateName);
         }
-        this.debugWatchModelService.addWatchExpression(node.evaluateName);
       },
     });
   }
@@ -88,6 +103,7 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
         label: localize('deugger.menu.setValue'),
       },
       order: 10,
+      when: CONTEXT_SET_VARIABLE_SUPPORTED.raw,
       group: '3_modification',
     });
     registry.registerMenuItem(MenuId.DebugVariablesContext, {
@@ -96,6 +112,15 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
         label: localize('deugger.menu.copyValue'),
       },
       order: 10,
+      group: '5_cutcopypaste',
+    });
+    registry.registerMenuItem(MenuId.DebugVariablesContext, {
+      command: {
+        id: DEBUG_COMMANDS.COPY_EVALUATE_PATH.id,
+        label: localize('deugger.menu.copyEvaluatePath'),
+      },
+      when: CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT.raw,
+      order: 20,
       group: '5_cutcopypaste',
     });
     registry.registerMenuItem(MenuId.DebugVariablesContext, {

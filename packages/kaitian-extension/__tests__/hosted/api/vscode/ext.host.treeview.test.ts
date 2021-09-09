@@ -3,7 +3,7 @@ import { MainThreadAPIIdentifier, TreeView } from '../../../../src/common/vscode
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
 import { createBrowserInjector } from '../../../../../debug/node_modules/@ali/ide-dev-tool/src/injector-helper';
 import { ExtHostTreeViews } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.treeview';
-import { Emitter, Disposable } from '@ali/ide-core-common';
+import { Emitter, Disposable, CancellationTokenSource } from '@ali/ide-core-common';
 
 const moackManThreadTreeView = {
   $registerTreeDataProvider: jest.fn(),
@@ -30,7 +30,7 @@ const rpcProtocol: IRPCProtocol = {
 const onDidChangeTreeDataEmitter = new Emitter<void>();
 
 const mockTreeViewItem = {
-  id: 'mock',
+  id: 'tree-item-id',
   label: 'test',
   iconPath: '',
   description: '',
@@ -41,9 +41,10 @@ const mockTreeDataProvider = {
   onDidChangeTreeData: onDidChangeTreeDataEmitter.event,
   getTreeItem: jest.fn(() => mockTreeViewItem),
   getChildren: jest.fn(() => [
-    {},
+    mockTreeViewItem.id,
   ]),
   getParent: jest.fn(),
+  resolveTreeItem: jest.fn(),
 };
 
 describe('packages/kaitian-extension/__tests__/hosted/api/vscode/ext.host.treeview.test.ts', () => {
@@ -60,10 +61,22 @@ describe('packages/kaitian-extension/__tests__/hosted/api/vscode/ext.host.treevi
     extHostTreeViews = injector.get(ExtHostTreeViews, [rpcProtocol, extHostCommands]);
   });
 
+  afterAll(() => {
+    injector.disposeAll();
+  });
+
   it('registerTreeDataProvider should be work', () => {
     const treeViewId = 'registerTreeDataProvider-TreeViewId';
     extHostTreeViews.registerTreeDataProvider(treeViewId, mockTreeDataProvider as any);
     expect(moackManThreadTreeView.$registerTreeDataProvider).toBeCalledTimes(1);
+  });
+
+  it('resolveTreeItem should be work', async () => {
+    const treeViewId = 'registerTreeDataProvider-TreeViewId';
+    extHostTreeViews.registerTreeDataProvider(treeViewId, mockTreeDataProvider as any);
+    await extHostTreeViews.$getChildren(treeViewId);
+    extHostTreeViews.$resolveTreeItem(treeViewId, mockTreeViewItem.id, new CancellationTokenSource().token);
+    expect(mockTreeDataProvider.resolveTreeItem).toBeCalledTimes(1);
   });
 
   describe('TreeViewAPI should be work', () => {

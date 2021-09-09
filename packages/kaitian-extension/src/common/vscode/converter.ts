@@ -319,9 +319,9 @@ export function fromLanguageSelector(
     return selector;
   } else {
     return {
-      language: selector.language,
-      scheme: selector.scheme,
-      pattern: fromGlobPattern(selector.pattern!),
+      language: (selector as vscode.DocumentFilter).language,
+      scheme: (selector as vscode.DocumentFilter).scheme,
+      pattern: fromGlobPattern((selector as vscode.DocumentFilter).pattern!),
     } as model.LanguageFilter;
   }
 }

@@ -118,10 +118,14 @@ export class MainthreadComments implements IDisposable, IMainThreadComments {
     this.commentsService.registerCommentPanel();
     this._providers.set(id, handle);
     const provider = this.injector.get(MainThreadCommentController, [this.proxy, handle, id, label, {}]);
-    this.disposable.addDispose(provider);
+
     this._commentControllers.set(handle, provider);
     // 注册后触发 decoration
     this.commentsService.forceUpdateDecoration();
+
+    this.disposable.addDispose(Disposable.create(() => {
+      this.$unregisterCommentController(handle);
+    }));
   }
   $updateCommentControllerFeatures(handle: number, features: CommentProviderFeatures): void {
     const provider = this._commentControllers.get(handle);

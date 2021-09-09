@@ -22,7 +22,7 @@ export const DebugHoverView = observer(() => {
     debugHoverTreeModelService.onDidUpdateTreeModelOrVariable(async (data: IDebugHoverUpdateData) => {
       const { treeModel, variable } = data;
       if (treeModel) {
-        await treeModel!.root.ensureLoaded();
+        await treeModel.root.ensureLoaded();
       }
       setModel({treeModel, variable});
     });
@@ -120,13 +120,9 @@ export const DebugHoverView = observer(() => {
           { model.treeModel.root.name }
         </div>
         :
-        model.variable ?
+        model.variable &&
         <div className={ cls(styles.debug_hover_title, shouldRenderVariableTree && styles.has_complex_value) } title={ model.variable.name }>
           { model.variable.value }
-        </div>
-        :
-        <div className={ styles.debug_hover_title }>
-          {DebugHoverVariableRoot.NOT_AVAILABLE}
         </div>
       }
       {

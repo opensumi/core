@@ -57,6 +57,17 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
     }
   }, [ replyText ]);
 
+  React.useEffect(() => {
+    const disposer = widget.onFirstDisplay(() => {
+      setTimeout(() => {
+        widget.coreEditor.monacoEditor.revealLine(thread.range.startLineNumber + 1);
+      }, 0);
+    });
+    return () => {
+      disposer.dispose();
+    };
+  }, []);
+
   return (
     <div className={clx(thread.options.threadClassName, styles.comment_container)}>
       <div className={clx(thread.options.threadHeadClassName, styles.head)}>

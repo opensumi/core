@@ -64,7 +64,7 @@ export interface ExtProcessConfig {
 async function initRPCProtocol(extInjector): Promise<any> {
   const extCenter = new RPCServiceCenter();
   const { getRPCService } = initRPCService(extCenter);
-  const extConnection = net.createConnection(JSON.parse(argv[KT_PROCESS_SOCK_OPTION_KEY] || {}));
+  const extConnection = net.createConnection(JSON.parse(argv[KT_PROCESS_SOCK_OPTION_KEY] || '{}'));
 
   extCenter.setConnection(createSocketConnection(extConnection));
 
@@ -82,7 +82,7 @@ async function initRPCProtocol(extInjector): Promise<any> {
   });
 
   logger = new ExtensionLogger2(extInjector); // new ExtensionLogger(extProtocol);
-  logger.log('process extConnection path', argv['KT_PROCESS_SOCK_OPTION_KEY']);
+  logger.log('process extConnection path', argv[KT_PROCESS_SOCK_OPTION_KEY]);
   return {extProtocol, logger};
 }
 

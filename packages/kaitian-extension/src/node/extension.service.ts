@@ -151,10 +151,15 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       const { connection: mainThreadConnection, clientId } = connectionResult;
       const extProcessId = this.clientExtProcessMap.get(clientId);
       const notExistExtension = isUndefined(extProcessId) || !(await this.extensionHostManager.isRunning(extProcessId) && this.clientExtProcessExtConnection.has(clientId));
+
       if (notExistExtension) {
         // 进程未调用启动直接连接
         this.logger.log(`${clientId} clientId process connection set error`, extProcessId);
-        this.infoProcessNotExist(clientId);
+        /**
+         * 如果前端与后端连接后发现没有对应的插件进程实例，那么通知前端重启插件进程
+         * 一般这种情况出现在用户关闭电脑超过 ProcessCloseExitThreshold 设定的最大时间，插件进程被杀死后，前端再次建立连接时
+         */
+        this.restartExtProcessByClient(clientId);
         this.reporterService.point(REPORT_NAME.EXTENSION_NOT_EXIST, clientId);
         return;
       }
@@ -515,6 +520,17 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       this.clientServiceMap.delete(clientId);
     }
   }
+
+  /**
+   * 如果插件进程已被销毁(比如ws连接断开超过 ProcessCloseExitThreshold)，那么当用户重新连接至服务时
+   * 需要通知重启整个插件进程
+   */
+  private restartExtProcessByClient(clientId: string) {
+    if (this.clientServiceMap.has(clientId)) {
+     (this.clientServiceMap.get(clientId) as IExtensionNodeClientService).restartExtProcessByClient();
+    }
+  }
+
   private infoProcessCrash(clientId: string) {
     if (this.clientServiceMap.has(clientId)) {
       (this.clientServiceMap.get(clientId) as IExtensionNodeClientService).infoProcessCrash();

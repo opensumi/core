@@ -3,7 +3,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optinal } from '@ali/c
 import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { Emitter, Event, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize, getIcon, getExternalIcon, LabelService, URI, IContextKeyService } from '@ali/ide-core-browser';
+import { Emitter, Event, DisposableStore, toDisposable, isUndefined, CommandRegistry, localize, getIcon, getExternalIcon, LabelService, URI, IContextKeyService, CancellationTokenSource } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { ExtensionTabBarTreeView } from '../../components';
 import { IIconService, IconType, IThemeService } from '@ali/ide-theme';
@@ -59,6 +59,12 @@ export class MainThreadTreeView implements IMainThreadTreeView {
 
   dispose() {
     this.disposable.dispose();
+
+    this.disposableCollection.forEach((item) => {
+      item.dispose();
+    });
+
+    this.disposableCollection.clear();
   }
 
   createTreeModel(treeViewId: string, dataProvider: TreeViewDataProvider, options: TreeViewBaseOptions): ExtensionTreeViewModel {
@@ -131,6 +137,21 @@ export class MainThreadTreeView implements IMainThreadTreeView {
     if (treeModel) {
       treeModel.refresh(itemsToRefresh);
     }
+  }
+
+  $setTitle(treeViewId: string, title: string) {
+    const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
+    if (handler) {
+      handler.updateViewTitle(treeViewId, title);
+    }
+  }
+
+  $setDescription(treeViewId: string, description: string) {
+    // TODO: 框架的 Panel 暂无存储 descrition 信息，暂时为空实现
+  }
+
+  $setMessage(treeViewId: string, description: string) {
+    // TODO: 框架的 Panel 暂无存储 message 信息，暂时为空实现
   }
 
   async $reveal(treeViewId: string, treeItemId: string, options?: ITreeViewRevealOptions) {
@@ -319,6 +340,11 @@ export class TreeViewDataProvider extends Tree {
     }
     this.cacheNodes(nodes);
     return nodes;
+  }
+
+  async resolveTreeItem(treeViewId: string, treeItemId: string) {
+    const token = new CancellationTokenSource().token;
+    return this.proxy.$resolveTreeItem(treeViewId, treeItemId, token);
   }
 
   // 按照默认次序排序

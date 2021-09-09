@@ -511,7 +511,7 @@ export interface FormattingOptions {
 
 export interface CodeLens {
   range: IRange;
-  id?: string;
+  cacheId?: ChainedCacheId;
   command?: VSCommand;
 }
 

@@ -178,6 +178,7 @@ export class Extension extends WithEventBus implements IExtension {
       this._activating.resolve();
     }).catch((e) => {
       this.logger.error(e);
+      this._activating.reject();
     });
 
     return this._activating.promise;

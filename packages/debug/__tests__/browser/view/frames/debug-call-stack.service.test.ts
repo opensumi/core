@@ -1,3 +1,5 @@
+import { ContextKeyService } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
+import { IContextKeyServiceTarget } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { URI } from '@ali/ide-core-common';
 import { Disposable } from '@ali/ide-core-common';
@@ -16,7 +18,12 @@ describe('Debug Call Frames Service', () => {
   } as any;
 
   const mockContextKeyService = {
-    createScoped: jest.fn(),
+    createScoped: jest.fn((target?: IContextKeyServiceTarget | ContextKeyService | undefined) => mockContextKeyService),
+    createKey: jest.fn(() => ({
+      set: jest.fn(),
+      reset: jest.fn(),
+    })),
+    contextKeyScoped: jest.fn(),
   } as any;
 
   const mockAbstractContextMenuService = {

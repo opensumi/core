@@ -96,6 +96,10 @@ export class DebugSource extends DebugSourceData {
     return this.uri.scheme === DebugSource.SCHEME;
   }
 
+  get reference(): number | undefined {
+    return this.raw.sourceReference;
+  }
+
   get name(): string {
     if (this.inMemory) {
       return this.raw.name || this.uri.path.base || this.uri.path.toString();
