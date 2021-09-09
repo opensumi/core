@@ -127,7 +127,7 @@ export const MenuActionList: React.FC<{
     <Menu
       className='kt-menu'
       selectable={false}
-      openTransitionName=''
+      motion={{ enter: () => null, leave: () => null }}
       {...{builtinPlacements: placements} as any}
       onClick={handleClick}>
       {recursiveRender(data)}

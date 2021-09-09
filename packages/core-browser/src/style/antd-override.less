@@ -60,6 +60,9 @@
 
     // 解决 antd 弹出元素防穿透的背景色
     &.@{clsx}-submenu {
+      .overlay-shadow(var(--kt-menu-shadow)) !important;
+      border-radius: 0 !important;
+      min-width: 120px;
       background-color: var(--menu-background) !important;
     }
   }
