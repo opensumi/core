@@ -79,7 +79,7 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
     this._tooltip = tooltip;
     if (typeof label === 'string') {
       this._displayName = label;
-    } else {
+    } else if (typeof label === 'object') {
       this._displayName = label.label;
       this._hightlights = label.highlights;
       this._strikethrough = label.strikethrough;
@@ -161,7 +161,7 @@ export class ExtensionTreeNode extends TreeNode {
     this.name = String(this._uid);
     if (typeof label === 'string') {
       this._displayName = label;
-    } else {
+    } else if (typeof label === 'object') {
       this._displayName = label.label;
       this._hightlights = label.highlights;
       this._strikethrough = label.strikethrough;

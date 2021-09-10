@@ -97,6 +97,7 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
       await this.workspaceEditService.apply(workspaceEdit);
       return true;
     } catch (e) {
+      this.logger.error(e);
       return false;
     }
   }
