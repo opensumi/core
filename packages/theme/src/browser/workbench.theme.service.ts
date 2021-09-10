@@ -243,10 +243,11 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   }
 
   private listen() {
-    this.eventBus.on(ThemeChangedEvent, (e) => {
+    this.addDispose(this.eventBus.on(ThemeChangedEvent, (e) => {
       this.themeChangeEmitter.fire(e.payload.theme);
-    });
-    this.preferenceService.onPreferenceChanged(async (e) => {
+    }));
+
+    this.addDispose(this.preferenceService.onPreferenceChanged(async (e) => {
       if (e.preferenceName === COLOR_THEME_SETTING && this.extensionReady) {
         await this.applyTheme(e.newValue);
       }
@@ -261,7 +262,11 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
           }));
         }
       }
-    });
+    }));
+
+    this.addDispose(this.colorRegistry.onDidColorChangedEvent((e) => {
+      this.doApplyTheme.apply(this, [this.currentTheme]);
+    }));
   }
 
   private checkColorContribution(contribution: ExtColorContribution) {

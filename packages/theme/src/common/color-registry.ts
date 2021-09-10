@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Emitter, Event } from '@ali/ide-core-common';
 import { Color } from '../common/color';
 import { ITheme, ColorIdentifier, ColorDefaults, ColorContribution, ColorValue, ColorFunction } from '../common/theme.service';
 
@@ -38,11 +39,16 @@ export interface IColorRegistry {
    */
   resolveDefaultColor(id: ColorIdentifier, theme: ITheme): Color | undefined;
 
+  onDidColorChangedEvent: Event<void>;
 }
 
 class ColorRegistry implements IColorRegistry {
 
   private colorsById: { [key: string]: ColorContribution };
+
+  private onDidColorChanged: Emitter<void> = new Emitter();
+
+  onDidColorChangedEvent: Event<void> = Event.debounce(this.onDidColorChanged.event, () => {}, 500);
 
   constructor() {
     this.colorsById = {};
@@ -51,6 +57,7 @@ class ColorRegistry implements IColorRegistry {
   public registerColor(id: string, defaults: ColorDefaults | null, description: string, needsTransparency = false, deprecationMessage?: string): ColorIdentifier {
     const colorContribution: ColorContribution = { id, description, defaults, needsTransparency, deprecationMessage };
     this.colorsById[id] = colorContribution;
+    this.onDidColorChanged.fire();
     return id;
   }
 
