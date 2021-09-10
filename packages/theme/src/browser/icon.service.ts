@@ -191,6 +191,14 @@ export class IconService implements IIconService {
       map[info.themeId] = info.name;
     });
     this.preferenceSettings.setEnumLabels('general.icon', map);
+
+    // 可能只有一个主题，同时当前没有主题，将第一个注册主题设置为当前主题
+    if (Object.keys(map).length <= 1) {
+      const themeId = Object.keys(map)[0];
+      if (!this.currentTheme || !this.preferenceService.get<string>('general.icon')) {
+        this.applyTheme(themeId);
+      }
+    }
   }
 
   getAvailableThemeInfos(): IconThemeInfo[] {
