@@ -1628,7 +1628,7 @@ declare module 'vscode' {
       * @param collapsibleState {@link TreeItemCollapsibleState} of the tree item. Default is {@link TreeItemCollapsibleState.None}
       */
      constructor(label: string | TreeItemLabel, collapsibleState?: TreeItemCollapsibleState);
- 
+
      /**
       * @param resourceUri The {@link Uri} of the resource representing this item.
       * @param collapsibleState {@link TreeItemCollapsibleState} of the tree item. Default is {@link TreeItemCollapsibleState.None}
