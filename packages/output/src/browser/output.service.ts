@@ -2,7 +2,7 @@ import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { observable, action } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { WithEventBus } from '@ali/ide-core-common';
-import { IEditorDocumentModelService, EditorCollectionService, ICodeEditor } from '@ali/ide-editor/lib/browser';
+import { IEditorDocumentModelService, EditorCollectionService, ICodeEditor, getSimpleEditorOptions } from '@ali/ide-editor/lib/browser';
 import { AppConfig, PreferenceService } from '@ali/ide-core-browser';
 
 import { OutputChannel } from './output.channel';
@@ -106,24 +106,14 @@ export class OutputService extends WithEventBus {
 
   public async initOuputMonacoInstance(container: HTMLDivElement) {
     this.outputEditor = this.editorCollectionService.createCodeEditor(container, {
+      ...getSimpleEditorOptions(),
+      lineDecorationsWidth: 20,
       automaticLayout: true,
-      minimap: {
-        enabled: false,
-      },
-      lineNumbers: 'off',
       readOnly: true,
       scrollbar: {
         useShadows: false,
       },
-      wordWrap: 'on',
-      overviewRulerLanes: 3,
-      lineNumbersMinChars: 3,
-      fixedOverflowWidgets: true,
-      lineDecorationsWidth: 4,
       renderIndentGuides: false,
-      glyphMargin: false,
-      scrollBeyondLastLine: false,
-      scrollBeyondLastColumn: 0,
     });
 
     this.addDispose(this.outputEditor.monacoEditor.onMouseUp((e) => {

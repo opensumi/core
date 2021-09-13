@@ -1,13 +1,13 @@
-import { IContextKeyService } from '@ali/ide-core-browser';
+import { DebugSession } from './../../debug-session';
+import { CONTEXT_STACK_FRAME_SUPPORTS_RESTART, CONTEXT_CALLSTACK_ITEM_TYPE } from './../../../common/constants';
+import { DebugContextKey } from './../../contextkeys/debug-contextkey.service';
+import { IContextKey } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
-import { DebugStackFrame } from '../../model';
+import { DebugStackFrame, DebugThread } from '../../model';
 
 @Injectable()
 export class DebugCallStackService {
-
-  @Autowired(IContextKeyService)
-  private readonly contextKeyService: IContextKeyService;
 
   @Autowired(AbstractContextMenuService)
   private readonly contextMenuService: AbstractContextMenuService;
@@ -15,40 +15,80 @@ export class DebugCallStackService {
   @Autowired(ICtxMenuRenderer)
   private readonly ctxMenuRenderer: ICtxMenuRenderer;
 
-  private _contextMenuContextKeyService: IContextKeyService;
+  @Autowired(DebugContextKey)
+  private readonly debugContextKey: DebugContextKey;
 
-  public get contextMenuContextKeyService(): IContextKeyService {
-    if (!this._contextMenuContextKeyService) {
-      this._contextMenuContextKeyService = this.contextKeyService.createScoped();
+  private stackFrameSupportsRestart: IContextKey<boolean>;
+  private callStackItemType: IContextKey<string>;
+
+  constructor() {
+    if (!this.stackFrameSupportsRestart) {
+      this.stackFrameSupportsRestart = CONTEXT_STACK_FRAME_SUPPORTS_RESTART.bind(this.debugContextKey.contextKeyScoped);
     }
-    return this._contextMenuContextKeyService;
+    if (!this.callStackItemType) {
+      this.callStackItemType = CONTEXT_CALLSTACK_ITEM_TYPE.bind(this.debugContextKey.contextKeyScoped);
+    }
   }
 
-  public handleContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>, data: DebugStackFrame): void => {
+  public handleContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>, data: DebugSession | DebugStackFrame | DebugThread): void => {
+
+    this.stackFrameSupportsRestart.reset();
     event.stopPropagation();
     event.preventDefault();
 
+    if (data instanceof DebugSession) {
+      this.callStackItemType.set('session');
+    } else if (data instanceof DebugThread) {
+      this.callStackItemType.set('thread');
+    } else if (data instanceof DebugStackFrame) {
+      this.callStackItemType.set('stackFrame');
+      this.stackFrameSupportsRestart.set(data.canRestart);
+    } else {
+      this.callStackItemType.reset();
+    }
+
     const { x, y } = event.nativeEvent;
 
-    const menus = this.contextMenuService.createMenu({ id: MenuId.DebugCallStackContext, contextKeyService: this.contextMenuContextKeyService });
+    const menus = this.contextMenuService.createMenu({ id: MenuId.DebugCallStackContext, contextKeyService: this.debugContextKey.contextKeyScoped });
     const menuNodes = menus.getMergedMenuNodes();
     menus.dispose();
 
     const toArgs = () => {
-      return [
-        data.source ? data.source.uri.toString() : '',
-        {
-          sessionId: data.session.id,
-          threadId: data.thread.id,
-          frameId: data.raw.id,
-        },
-      ];
+      if (data instanceof DebugStackFrame) {
+        if (data.source?.inMemory) {
+          return data.source.raw.path || data.source.reference || data.source.name;
+        }
+
+        return data.source ? data.source.uri.toString() : '';
+      }
+      if (data instanceof DebugThread) {
+        return data.id;
+      }
+      if (data instanceof DebugSession) {
+        return data.id;
+      }
+
+      return '';
+    };
+
+    const toAgrsContext = () => {
+      return data instanceof DebugStackFrame ? {
+        sessionId: data.session.id,
+        threadId: data.thread.id,
+        frameId: data.id,
+      } : data instanceof DebugThread ? {
+        sessionId: data.session.id,
+        threadId: data.id,
+      } : data instanceof DebugSession ? {
+        sessionId: data.id,
+      } : undefined;
     };
 
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
-      args: toArgs(),
+      args: [toArgs(), toAgrsContext()],
+      contextKeyService: this.debugContextKey.contextKeyScoped,
     });
   }
 

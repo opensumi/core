@@ -65,7 +65,7 @@ export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTe
     }, []);
 
     const selectLastPosition = React.useCallback((value) => {
-      const textarea = inputRef?.current;
+      const textarea = inputRef.current;
       if (textarea) {
         const position = value.toString().length;
         textarea.setSelectionRange(position, position);
@@ -73,7 +73,7 @@ export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTe
     }, []);
 
     React.useEffect(() => {
-      const textarea = inputRef?.current;
+      const textarea = inputRef.current;
       if (!textarea) {
         return;
       }
@@ -82,12 +82,14 @@ export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTe
       }
       if (focusDelay) {
         setTimeout(() => {
-          textarea.focus();
+          textarea.focus({
+            preventScroll: true,
+          });
         }, focusDelay);
       }
       // auto set last selection
       selectLastPosition(value);
-      function handleMouseWheel(event: MouseWheelEvent) {
+      function handleMouseWheel(event: Event) {
         const target = event.target as Element;
         if (target) {
           if (
@@ -111,7 +113,11 @@ export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTe
 
     React.useEffect(() => {
       if (index === 0) {
-        inputRef?.current?.focus();
+        setTimeout(() => {
+          inputRef.current?.focus({
+            preventScroll: true,
+          });
+        }, focusDelay);
         selectLastPosition(value);
       }
     }, [ index ]);

@@ -14,6 +14,12 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
     super();
     this.id = (++MockedCodeEditor.ID);
   }
+  onMouseDropCanceled(listener: () => void): monaco.IDisposable {
+    throw new Error('Method not implemented.');
+  }
+  popUndoStop(): boolean {
+    throw new Error('Method not implemented.');
+  }
   getOverflowWidgetsDomNode(): HTMLElement | undefined {
     throw new Error('Method not implemented.');
   }

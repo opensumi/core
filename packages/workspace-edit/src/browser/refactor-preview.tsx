@@ -122,8 +122,8 @@ const TextEditNode = observer<ITextEditNodeProps>(({ data: item }) => {
     <div className={styles.resource_node} data-workspace-edit-type='text'>
       <CheckBox
         checked={refactorPreviewService.selectedFileOrTextEdits.has(item)}
-        onChange={(checked: React.ChangeEvent<HTMLInputElement>) => {
-          refactorPreviewService.filterEdit(item, !!checked);
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          refactorPreviewService.filterEdit(item, event.target.checked);
         }}
       />
       <ResourceIcon uri={item.resource as unknown as Uri /* monaco#Uri */} />

@@ -76,6 +76,7 @@ export interface IExtensionNodeClientService {
   getExtension(extensionPath: string, localization: string, extraMetaData?: IExtraMetaData): Promise<IExtensionMetaData | undefined>;
   infoProcessNotExist(): void;
   infoProcessCrash(): void;
+  restartExtProcessByClient(): void;
   disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
   updateLanguagePack(languageId: string, languagePackPath: string, storagePath: string): Promise<void>;
 }

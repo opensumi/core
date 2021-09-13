@@ -30,11 +30,13 @@ import {
   notEmpty,
   IDiskFileProvider,
   FileAccess,
+  FileSystemProviderCapabilities,
 } from '../common/';
 import { Injectable } from '@ali/common-di';
 import { RPCService } from '@ali/ide-connection';
 import * as fileType from 'file-type';
 import { ParsedPattern, parse } from '@ali/ide-core-common/lib/utils/glob';
+import { isLinux } from '@ali/ide-core-common/lib/platform';
 
 const UNIX_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/**/*';
 const WINDOWS_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';
@@ -59,6 +61,26 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
   constructor() {
     super();
     this.initWatcher();
+  }
+
+  onDidChangeCapabilities: Event<void> = Event.None;
+
+  protected _capabilities: FileSystemProviderCapabilities | undefined;
+  get capabilities(): FileSystemProviderCapabilities {
+    if (!this._capabilities) {
+      this._capabilities =
+        FileSystemProviderCapabilities.FileReadWrite |
+        FileSystemProviderCapabilities.FileOpenReadWriteClose |
+        FileSystemProviderCapabilities.FileReadStream |
+        FileSystemProviderCapabilities.FileFolderCopy |
+        FileSystemProviderCapabilities.FileWriteUnlock;
+
+      if (isLinux) {
+        this._capabilities |= FileSystemProviderCapabilities.PathCaseSensitive;
+      }
+    }
+
+    return this._capabilities;
   }
 
   dispose(): void {

@@ -705,6 +705,9 @@ export interface IEditorDocumentModelContentChange {
 // 获取最基础的MonacoEditor配置
 export function getSimpleEditorOptions(): IEditorOptions {
   return {
+    fontSize: 12,
+    fontWeight: 'normal',
+    lineHeight: 0,
     wordWrap: 'on',
     overviewRulerLanes: 0,
     glyphMargin: false,

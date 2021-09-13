@@ -1,11 +1,11 @@
-import { IExtHostTreeView, IMainThreadTreeView, ITreeViewRevealOptions, MainThreadAPIIdentifier } from '../../../common/vscode';
+import { IExtHostTreeView, IMainThreadTreeView, ITreeItemLabel, ITreeViewRevealOptions, MainThreadAPIIdentifier } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { TreeView, TreeViewItem, TreeViewSelection, TreeViewOptions } from '../../../common/vscode';
 import { IDisposable, Emitter, Disposable, Uri, DisposableStore, toDisposable } from '@ali/ide-core-common';
-import type * as vscode from 'vscode';
 import { ThemeIcon } from '../../../common/vscode/ext-types';
-import { isUndefined } from 'util';
 import { ExtHostCommands } from './ext.host.command';
+import type { CancellationToken } from '@ali/ide-core-common/lib/cancellation';
+import type * as vscode from 'vscode';
 
 export class ExtHostTreeViews implements IExtHostTreeView {
   private proxy: IMainThreadTreeView;
@@ -53,11 +53,9 @@ export class ExtHostTreeViews implements IExtHostTreeView {
       get onDidExpandElement() {
         return treeView.onDidExpandElement;
       },
-
       get onDidCollapseElement() {
         return treeView.onDidCollapseElement;
       },
-
       get selection() {
         return treeView.selectedElements;
       },
@@ -70,9 +68,25 @@ export class ExtHostTreeViews implements IExtHostTreeView {
       get onDidChangeVisibility() {
         return treeView.onDidChangeVisibility;
       },
-
+      get message(): string {
+        return treeView.message;
+      },
+      set message(message: string) {
+        treeView.message = message;
+      },
+      get title(): string {
+        return treeView.title;
+      },
+      set title(title: string) {
+        treeView.title = title;
+      },
+      get description(): string {
+        return treeView.description;
+      },
+      set description(description: string) {
+        treeView.description = description;
+      },
       reveal: (element: T, options: ITreeViewRevealOptions): Thenable<void> => treeView.reveal(element, options),
-
       dispose: () => {
         this.treeViews.delete(treeViewId);
         treeView.dispose();
@@ -92,6 +106,20 @@ export class ExtHostTreeViews implements IExtHostTreeView {
     }
 
     return treeView.getChildren(treeItemId);
+  }
+
+  /**
+   * 获取子节点
+   * @param treeViewId
+   * @param treeItemId
+   */
+  async $resolveTreeItem(treeViewId: string, treeItemId: string, token: CancellationToken): Promise<TreeViewItem | undefined> {
+    const treeView = this.treeViews.get(treeViewId);
+    if (!treeView) {
+      throw new Error('No tree view with id ' + treeViewId);
+    }
+
+    return treeView.resolveTreeItem(treeItemId, token);
   }
 
   /**
@@ -159,10 +187,15 @@ class ExtHostTreeView<T> implements IDisposable {
   private selectedItemIds = new Set<string>();
 
   private cache: Map<string, T> = new Map<string, T>();
+  private cacheTreeItems: Map<T, vscode.TreeItem> = new Map<T, vscode.TreeItem>();
 
   private disposable: DisposableStore = new DisposableStore();
 
   private treeDataProvider: vscode.TreeDataProvider<T>;
+
+  private _title: string;
+  private _description: string;
+  private _message: string;
 
   constructor(
     private treeViewId: string,
@@ -201,8 +234,46 @@ class ExtHostTreeView<T> implements IDisposable {
     this.disposable.dispose();
   }
 
+  get title() {
+    return this._title;
+  }
+
+  set title(value: string) {
+    this.proxy.$setTitle(this.treeViewId, value);
+    this._title = value;
+  }
+
+  get description() {
+    return this._description;
+  }
+
+  set description(value: string) {
+    this.proxy.$setDescription(this.treeViewId, value);
+    this._description = value;
+  }
+
+  get message() {
+    return this._message;
+  }
+
+  set message(value: string) {
+    this.proxy.$setMessage(this.treeViewId, value);
+    this._message = value;
+  }
+
   get visible(): boolean {
     return this._visible;
+  }
+
+  get selectedElements(): T[] {
+    const items: T[] = [];
+    for (const id of this.selectedItemIds) {
+      const item = this.getTreeItem(id);
+      if (item) {
+        items.push(item);
+      }
+    }
+    return items;
   }
 
   async reveal(element: T, options?: ITreeViewRevealOptions): Promise<void> {
@@ -225,6 +296,29 @@ class ExtHostTreeView<T> implements IDisposable {
     }
   }
 
+  /**
+   * 在节点被点击或者打开时，获取原有的 command 为 undefined 时被调用
+   * 在节点被 Hover 时，获取原有的 tooltip 为 undefined 时被调用
+   */
+  async resolveTreeItem(treeItemId: string, token: CancellationToken): Promise<TreeViewItem | undefined> {
+    if (!this.treeDataProvider.resolveTreeItem) {
+      return;
+    }
+    const cache = this.getTreeItem(treeItemId);
+    if (cache) {
+      if (cache) {
+        const node = this.cacheTreeItems.get(cache);
+        if (node) {
+          const resolve = await this.treeDataProvider.resolveTreeItem(node!, cache, token) ?? node;
+          node.tooltip = resolve.tooltip;
+          node.command = resolve.command;
+          return node as TreeViewItem;
+        }
+      }
+    }
+    return;
+  }
+
   async getChildren(treeItemId?: string): Promise<TreeViewItem[] | undefined> {
     // 缓存中获取节点
     const cachedElement = this.getTreeItem(treeItemId);
@@ -237,14 +331,13 @@ class ExtHostTreeView<T> implements IDisposable {
 
         // 遍历treeDataProvider获取的值生成节点
         const treeItem = await this.treeDataProvider.getTreeItem(value);
+        this.cacheTreeItems.set(value, treeItem);
 
         // 获取Label属性
-        let label: string | undefined;
+        let label: string | ITreeItemLabel | undefined;
         const treeItemLabel: string | vscode.TreeItemLabel | undefined = treeItem.label;
-        if (typeof treeItemLabel === 'object' && typeof (treeItemLabel as vscode.TreeItemLabel).label === 'string') {
-          label = (treeItemLabel as vscode.TreeItemLabel).label;
-        } else {
-          label = treeItem.label;
+        if (treeItemLabel) {
+          label = treeItemLabel;
         }
         // 当没有指定label时尝试使用resourceUri
         if (!label && treeItem.resourceUri) {
@@ -256,14 +349,8 @@ class ExtHostTreeView<T> implements IDisposable {
         }
 
         // 生成ID用于存储缓存
-        const id = treeItem.id || `${treeItemId || 'root'}/${index}:${label}`;
-
+        const id = treeItem.id || `${treeItemId || 'root'}/${index}:${typeof label === 'string' ? label : label?.label}`;
         this.cache.set(id, value);
-
-        // 使用ID作为label
-        if (isUndefined(label)) {
-          label = id;
-        }
 
         const { iconPath } = treeItem;
         let icon;
@@ -299,7 +386,6 @@ class ExtHostTreeView<T> implements IDisposable {
           accessibilityInformation: treeItem.accessibilityInformation,
           command: treeItem.command ? this.commands.converter.toInternal(treeItem.command, this.disposable) : undefined,
         } as TreeViewItem;
-
         treeItems.push(treeViewItem);
       });
 
@@ -366,17 +452,6 @@ class ExtHostTreeView<T> implements IDisposable {
       this._visible = visible;
       this.onDidChangeVisibilityEmitter.fire(Object.freeze({ visible: this._visible }));
     }
-  }
-
-  get selectedElements(): T[] {
-    const items: T[] = [];
-    for (const id of this.selectedItemIds) {
-      const item = this.getTreeItem(id);
-      if (item) {
-        items.push(item);
-      }
-    }
-    return items;
   }
 
   setSelection(selectedItemIds: string[]): void {

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { DebugProtocol } from '@ali/vscode-debugprotocol/lib/debugProtocol';
 import { DebugBreakpointsService } from './debug-breakpoints.service';
-import { useInjectable, ViewState, CommandService, EDITOR_COMMANDS, URI } from '@ali/ide-core-browser';
+import { useInjectable, ViewState, CommandService, EDITOR_COMMANDS, URI, getIcon } from '@ali/ide-core-browser';
 import * as styles from './debug-breakpoints.module.less';
 import * as cls from 'classnames';
 import { CheckBox } from '@ali/ide-components';
@@ -147,7 +147,7 @@ export const BreakpointItem = ({
           <a
             title='删除断点'
             onClick={ (event) => removeBreakpoint(event) }
-            className={ cls(styles.debug_remove_breakpoints_icon, 'kaitian-icon kticon-close')} >
+            className={ cls(styles.debug_remove_breakpoints_icon, getIcon('close'))} >
           </a>
           <Badge className={ styles.debug_breakpoints_badge }>
             { (data.breakpoint as DebugBreakpoint).raw.line }

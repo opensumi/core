@@ -302,6 +302,7 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
       totalSteps: this.totalSteps,
       buttons: this.buttons,
       placeHolder: this.placeholder,
+      ignoreFocusOut: this.ignoreFocusOut,
       _sessionId: this.quickPickIndex,
     } as QuickPickOptions ).then((item) => {
       if (typeof item !== 'string') {

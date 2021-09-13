@@ -1,4 +1,4 @@
-import { Uri } from '@ali/ide-core-common';
+import { Uri, FileSystemProviderCapabilities } from '@ali/ide-core-common';
 import {
   Event,
   Emitter,
@@ -15,8 +15,10 @@ import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
 @Injectable()
 export class ShadowFileSystemProvider implements FileSystemProvider {
 
-    readonly: boolean = true;
+    capabilities = FileSystemProviderCapabilities.Readonly;
+    onDidChangeCapabilities = Event.None;
 
+    readonly: boolean = true;
     shadowFiles: Map<string, Uint8Array> = new Map();
     private fileChangeEmitter = new Emitter<FileChangeEvent>();
     onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;

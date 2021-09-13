@@ -5,11 +5,14 @@ import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { createEnvApiFactory, ExtHostEnv, envValue } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.env';
 import { ExtHostTerminal } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.terminal';
+import { ExtHostStorage } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.storage';
 import { MainThreadEnv } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.env';
-import { IMainThreadEnv, MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@ali/ide-kaitian-extension/lib/common/vscode';
+import { MainThreadStorage } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.storage';
+import { IMainThreadEnv, MainThreadAPIIdentifier, ExtHostAPIIdentifier, IMainThreadStorage } from '@ali/ide-kaitian-extension/lib/common/vscode';
 import ExtensionHostServiceImpl from '@ali/ide-kaitian-extension/lib/hosted/ext.host';
 import { LoggerManagerClient } from '@ali/ide-logs/lib/browser/log-manage';
 import { AppConfig } from '@ali/ide-core-browser';
+import { IExtensionStorageService } from '@ali/ide-extension-storage';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -65,11 +68,29 @@ describe('MainThreadEnvAPI Test Suites ', () => {
     }, {
       token: AppConfig,
       useValue: appConfig,
+    }, {
+      token: IExtensionStorageService,
+      useValue: {
+        whenReady: Promise.resolve(true),
+        extensionStoragePath: {},
+        set() { },
+        get() { },
+        getAll() { },
+        reConnectInit() { },
+      },
     }]);
+
     const extHostEnv = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostEnv, new ExtHostEnv(rpcProtocolExt));
     const extHostTerminal = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostTerminal, new ExtHostTerminal(rpcProtocolExt));
-    const MainThreadEnvAPI = injector.get(MainThreadEnv, [rpcProtocolMain]);
+
+    rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostStorage, new ExtHostStorage(rpcProtocolExt));
+
+    const MainThreadStorageAPI = injector.get(MainThreadStorage, [rpcProtocolMain]);
+    const MainThreadEnvAPI = injector.get(MainThreadEnv, [rpcProtocolMain, MainThreadStorageAPI]);
+
     rpcProtocolMain.set<IMainThreadEnv>(MainThreadAPIIdentifier.MainThreadEnv, MainThreadEnvAPI);
+    rpcProtocolMain.set<IMainThreadStorage>(MainThreadAPIIdentifier.MainThreadStorage, MainThreadStorageAPI);
+
     setTimeout(() => {
       extHostEnvAPI = createEnvApiFactory(rpcProtocolExt, injector.get(ExtensionHostServiceImpl), extHostEnv, extHostTerminal);
       done();
@@ -89,6 +110,9 @@ describe('MainThreadEnvAPI Test Suites ', () => {
     expect(typeof extHostEnvAPI.clipboard.writeText).toBe('function');
     expect(typeof extHostEnvAPI.openExternal).toBe('function');
     expect(typeof extHostEnvAPI.logLevel).toBe('number');
+    expect(typeof extHostEnvAPI.isNewAppInstall).toBe('boolean');
+    expect(typeof extHostEnvAPI.isTelemetryEnabled).toBe('boolean');
+    expect(typeof extHostEnvAPI.onDidChangeTelemetryEnabled).toBe('function');
     done();
   });
 

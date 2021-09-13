@@ -40,6 +40,7 @@ describe('vscode extHostEnv Test', () => {
     }),
   });
   const extensionService = mockService({});
+  const extStorage = mockService({});
   const extHostTerminal = mockService({
     shellPath: 'shellPath',
   });
@@ -47,7 +48,7 @@ describe('vscode extHostEnv Test', () => {
   extHost = new ExtHostEnv(rpcProtocolExt);
   rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostEnv, extHost);
 
-  mainThread = rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadEnv, injector.get(MainThreadEnv, [rpcProtocolMain]));
+  mainThread = rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadEnv, injector.get(MainThreadEnv, [rpcProtocolMain, extStorage]));
 
   beforeEach(() => {
     env = createEnvApiFactory(rpcProtocolExt, extensionService, extHost, extHostTerminal);
@@ -133,4 +134,37 @@ describe('vscode extHostEnv Test', () => {
     });
   });
 
+  describe('isNewAppInstall', () => {
+    const getExtHost = (date) => {
+      return mockService({
+        getEnvValues() {
+          return {
+            firstSessionDate: date,
+          };
+        },
+      });
+    };
+
+    it('用户首次访问时间大于一天', async () => {
+      const envApi = createEnvApiFactory(
+        rpcProtocolExt,
+        extensionService,
+        getExtHost(new Date(new Date().getTime() - 25 * 60 * 60 * 1000).toUTCString()),
+        extHostTerminal,
+      );
+
+      expect(envApi.isNewAppInstall).toBe(false);
+    });
+
+    it('用户首次访问时间小于一天', () => {
+      const envApi = createEnvApiFactory(
+        rpcProtocolExt,
+        extensionService,
+        getExtHost(new Date(new Date().getTime() - 5 * 60 * 60 * 1000).toUTCString()),
+        extHostTerminal,
+      );
+
+      expect(envApi.isNewAppInstall).toBe(true);
+    });
+  });
 });

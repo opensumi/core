@@ -1,11 +1,11 @@
 @font-face {
   font-family: "kaitian-icon"; /* Project id 1432262 */
-  src: url('iconfont.eot?t=1620807654095'); /* IE9 */
-  src: url('iconfont.eot?t=1620807654095#iefix') format('embedded-opentype'), /* IE6-IE8 */
-       url('iconfont.woff2?t=1620807654095') format('woff2'),
-       url('iconfont.woff?t=1620807654095') format('woff'),
-       url('iconfont.ttf?t=1620807654095') format('truetype'),
-       url('iconfont.svg?t=1620807654095#kaitian-icon') format('svg');
+  src: url('iconfont.eot?t=1629945562168'); /* IE9 */
+  src: url('iconfont.eot?t=1629945562168#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('iconfont.woff2?t=1629945562168') format('woff2'),
+       url('iconfont.woff?t=1629945562168') format('woff'),
+       url('iconfont.ttf?t=1629945562168') format('truetype'),
+       url('iconfont.svg?t=1629945562168#kaitian-icon') format('svg');
 }
 
 .kaitian-icon {
@@ -14,6 +14,10 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.kticon-debug-restart-frame:before {
+  content: "\e60d";
 }
 
 .kticon-unmax:before {

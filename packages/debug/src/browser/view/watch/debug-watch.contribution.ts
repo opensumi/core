@@ -88,23 +88,27 @@ export class WatchPanelContribution implements ClientAppContribution, MenuContri
         id: DEBUG_COMMANDS.ADD_WATCHER.id,
         label: localize('debug.watch.add'),
       },
-      when: CONTEXT_IN_DEBUG_MODE.raw,
-      group: '0_operator',
+      order: 10,
+      group: '3_modification',
     });
     registry.registerMenuItem(MenuId.DebugWatchContext, {
       command: {
         id: DEBUG_COMMANDS.EDIT_WATCHER.id,
         label: localize('debug.watch.edit'),
       },
-      group: '0_operator',
+      when: CONTEXT_WATCH_ITEM_TYPE.equalsTo('expression'),
+      order: 20,
+      group: '3_modification',
     });
     registry.registerMenuItem(MenuId.DebugWatchContext, {
       command: {
         id: DEBUG_COMMANDS.COPY_WATCHER_VALUE.id,
         label: localize('debug.watch.copyValue'),
       },
-      when: CONTEXT_IN_DEBUG_MODE.raw,
-      group: '0_operator',
+      when: `${CONTEXT_WATCH_ITEM_TYPE.equalsTo('expression')} || ${CONTEXT_WATCH_ITEM_TYPE.equalsTo('variable')} && ${CONTEXT_IN_DEBUG_MODE.raw}`,
+      order: 30,
+      enabledWhen: CONTEXT_IN_DEBUG_MODE.raw,
+      group: '3_modification',
     });
     registry.registerMenuItem(MenuId.DebugWatchContext, {
       command: {
@@ -112,14 +116,16 @@ export class WatchPanelContribution implements ClientAppContribution, MenuContri
         label: localize('debug.watch.remove'),
       },
       when: CONTEXT_WATCH_ITEM_TYPE.equalsTo('expression'),
-      group: '1_operator',
+      order: 10,
+      group: 'z_commands',
     });
     registry.registerMenuItem(MenuId.DebugWatchContext, {
       command: {
         id: DEBUG_COMMANDS.REMOVE_ALL_WATCHER.id,
         label: localize('debug.watch.removeAll'),
       },
-      group: '1_operator',
+      order: 20,
+      group: 'z_commands',
     });
   }
 

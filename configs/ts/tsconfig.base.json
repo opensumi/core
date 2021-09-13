@@ -19,6 +19,7 @@
     "noImplicitAny": false,
     "skipLibCheck": true,
     "strictFunctionTypes": false,
+    "useUnknownInCatchVariables": false,
     "jsx": "react",
     "lib": [
       "dom",

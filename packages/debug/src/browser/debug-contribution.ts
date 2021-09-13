@@ -124,12 +124,21 @@ export namespace DEBUG_COMMANDS {
     id: 'debug.add.conditional',
     label: localize('debug.menu.add.conditional'),
   };
+  export const RESTART_FRAME = {
+    id: 'debug.callstack.restart.frame',
+  };
+  export const COPY_STACK_TRACE = {
+    id: 'debug.callstack.copy',
+  };
   // variables
   export const SET_VARIABLE_VALUE = {
     id: 'debug.variables.setValue',
   };
   export const COPY_VARIABLE_VALUE = {
     id: 'debug.variables.copy',
+  };
+  export const COPY_EVALUATE_PATH = {
+    id: 'debug.evaluate.copy',
   };
   export const ADD_TO_WATCH_ID = {
     id: 'debug.addToWatchExpressions',
@@ -157,6 +166,9 @@ export namespace DEBUG_COMMANDS {
   };
   export const CONSOLE_INPUT_UP_ARROW = {
     id: 'debug.console.input.up.arrow',
+  };
+  export const CONSOLE_FILTER_FOCUS = {
+    id: 'debug.console.filter.input.focus',
   };
   export const RUN_TO_CURSOR = {
     id: 'debug.action.runToCursor',

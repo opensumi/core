@@ -333,6 +333,10 @@ export interface FileSystemProvider {
   copy?(source: Uri, destination: Uri, options: { overwrite: boolean }): void | Thenable<void>;
 }
 
+export interface IExtHostFileSystemInfoShape {
+  $acceptProviderInfos(scheme: string, capabilities: number | null): void;
+}
+
 export interface IExtHostFileSystemShape {
   $stat(handle: number, resource: UriComponents): Promise<FileStat>;
   $readdir(handle: number, resource: UriComponents): Promise<[string, FileType][]>;

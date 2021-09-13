@@ -153,6 +153,10 @@ export const FileTree = ({
       if (fileTreeModelService.fileTreeHandle) {
         fileTreeModelService.fileTreeHandle.clearFilter();
       }
+      if (fileTreeModelService.selectedFiles.length === 1) {
+        // 单选情况下定位到对应文件或目录
+        fileTreeModelService.location(fileTreeModelService.selectedFiles[0].uri);
+      }
     }
   }, [filterMode]);
 

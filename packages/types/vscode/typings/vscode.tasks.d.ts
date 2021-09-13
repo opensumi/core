@@ -445,6 +445,13 @@ declare module 'vscode' {
 		name: string;
 
 		/**
+		 * A human-readable string which is rendered less prominently on a separate line in places
+		 * where the task's name is displayed. Supports rendering of {@link ThemeIcon theme icons}
+		 * via the `$(<name>)`-syntax.
+		 */
+		detail?: string;
+
+		/**
 		 * The task's execution engine
 		 */
 		execution?: ProcessExecution | ShellExecution | CustomExecution;

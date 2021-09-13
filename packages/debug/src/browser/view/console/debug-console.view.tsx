@@ -101,8 +101,11 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   };
 
   const handleTwistierClick = (ev: React.MouseEvent, item: AnsiConsoleNode | DebugConsoleNode, type: TreeNodeType) => {
-    // 阻止点击事件冒泡
-    ev.stopPropagation();
+    const selection = window.getSelection();
+    if (selection && selection.type === 'Range' && selection.rangeCount > 0) {
+      // 当用户有选中日志内容时阻止冒泡，防止在选中之后 focus 到 debug console input
+      ev.stopPropagation();
+    }
 
     const { handleTwistierClick } = consoleModel;
     if (!item) {

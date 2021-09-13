@@ -167,6 +167,10 @@ export interface AppConfig {
    * 此时表示 IDE 界面已经完成渲染并可以操作
    */
   didRendered?: () => void;
+  /**
+   * vscode-oniguruma-wasm 资源地址
+   */
+  onigWasmPath?: string;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({

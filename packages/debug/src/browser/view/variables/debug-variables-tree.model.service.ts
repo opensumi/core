@@ -86,6 +86,7 @@ export class DebugVariablesModelService {
 
   private _decorations: DecorationsManager;
   private _debugVariablesTreeHandle: IDebugVariablesHandle;
+  private _currentVariableInternalContext: DebugVariable | DebugVariableContainer | undefined;
 
   public flushEventQueueDeferred: Deferred<void> | null;
 
@@ -128,6 +129,10 @@ export class DebugVariablesModelService {
 
   get treeModel() {
     return this._activeTreeModel;
+  }
+
+  get currentVariableInternalContext() {
+    return this._currentVariableInternalContext;
   }
 
   // 既是选中态，也是焦点态节点
@@ -313,33 +318,32 @@ export class DebugVariablesModelService {
     this.decorations.removeDecoration(this.contextMenuDecoration);
   }
 
-  handleContextMenu = (ev: React.MouseEvent, expression?: ExpressionContainer | ExpressionNode | DebugVariableContainer | DebugVariable) => {
+  handleContextMenu = (ev: React.MouseEvent, expression?: DebugScope | DebugVariableContainer | DebugVariable | undefined) => {
     ev.stopPropagation();
     ev.preventDefault();
 
+    if (!expression || expression instanceof DebugScope) {
+      this.enactiveNodeDecoration();
+      this.debugContextKey.contextVariableEvaluateNamePresent.set(false);
+      return;
+    }
+
+    this._currentVariableInternalContext = expression;
     const { x, y } = ev.nativeEvent;
 
     if (expression) {
       this.activeNodeActivedDecoration(expression);
+      this.debugContextKey.contextDebugProtocolVariableMenu.set(expression.variableMenuContext);
       this.debugContextKey.contextVariableEvaluateNamePresent.set(!!(expression as DebugVariableContainer | DebugVariable).evaluateName);
-    } else {
-      this.enactiveNodeDecoration();
     }
-    let node: ExpressionContainer | ExpressionNode;
 
-    if (!expression) {
-      // 空白区域右键菜单
-      node = this.treeModel?.root as ExpressionContainer;
-    } else {
-      node = expression;
-    }
     const menus = this.contextMenuService.createMenu({id: MenuId.DebugVariablesContext, contextKeyService: this.debugContextKey.contextKeyScoped});
     const menuNodes = menus.getMergedMenuNodes();
     menus.dispose();
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
-      args: [node],
+      args: [expression.toDebugProtocolObject()],
     });
   }
 
@@ -378,7 +382,19 @@ export class DebugVariablesModelService {
     this.keepExpandedScopesModel.set(item);
   }
 
-  async copyValue(node: DebugVariableContainer | DebugVariable) {
+  async copyEvaluateName(node: DebugVariableContainer | DebugVariable | undefined) {
+    if (!node) {
+      return;
+    }
+
+    await this.clipboardService.writeText(node.evaluateName);
+  }
+
+  async copyValue(node: DebugVariableContainer | DebugVariable | undefined) {
+    if (!node) {
+      return;
+    }
+
     const getClipboardValue = async () => {
       if (node.session && node.session.capabilities.supportsValueFormattingOptions) {
         try {

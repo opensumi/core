@@ -193,7 +193,7 @@ describe('icon theme test', () => {
     expect(bodyNode.classList.contains('default-file-icons')).toBeTruthy();
     await service.applyTheme('test-icon-theme');
     expect(service.currentThemeId).toEqual('test-icon-theme');
-    expect(bodyNode.classList.contains('default-file-icons')).toBeFalsy();
+    expect(bodyNode.classList.contains('default-file-icons')).toBeTruthy();
     const iconThemeNode = document.getElementById('icon-style')!;
     expect(iconThemeNode.innerHTML.indexOf('.vs .show-file-icons .folder-icon')).toBeGreaterThan(-1);
     done();

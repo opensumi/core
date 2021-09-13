@@ -3,7 +3,7 @@ import { useInjectable, getIcon } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { ViewState } from '@ali/ide-core-browser';
 import { INodeRendererProps, ClasslistComposite, IRecycleTreeHandle, TreeNodeType, RecycleTree, INodeRendererWrapProps, TreeModel, CompositeTreeNode } from '@ali/ide-components';
-import { ExpressionContainer, ExpressionNode, DebugVariableContainer, DebugVariable } from '../../tree/debug-tree-node.define';
+import { ExpressionContainer, ExpressionNode, DebugVariableContainer, DebugVariable, DebugScope } from '../../tree/debug-tree-node.define';
 import { DebugVariablesModelService } from './debug-variables-tree.model.service';
 import * as styles from './debug-variables.module.less';
 import * as cls from 'classnames';
@@ -50,7 +50,7 @@ export const DebugVariableView = observer(({
     handleTwistierClick(item, type);
   };
 
-  const handlerContextMenu = (ev: React.MouseEvent, node: ExpressionNode | ExpressionContainer) => {
+  const handlerContextMenu = (ev: React.MouseEvent, node: DebugScope | DebugVariable | DebugVariableContainer | undefined) => {
     const { handleContextMenu } = debugVariablesModelService;
     handleContextMenu(ev, node);
   };
@@ -127,7 +127,7 @@ export interface IDebugVariableNodeProps {
   decorations?: ClasslistComposite;
   onClick: (ev: React.MouseEvent, item: ExpressionNode | ExpressionContainer, type: TreeNodeType) => void;
   onTwistierClick: (ev: React.MouseEvent, item: ExpressionNode | ExpressionContainer, type: TreeNodeType) => void;
-  onContextMenu?: (ev: React.MouseEvent, item: ExpressionNode | ExpressionContainer, type: TreeNodeType) => void;
+  onContextMenu?: (ev: React.MouseEvent, item: DebugScope | DebugVariableContainer | DebugVariable | undefined, type: TreeNodeType) => void;
 }
 
 export type IDebugVariableNodeRenderedProps = IDebugVariableNodeProps & INodeRendererProps;
@@ -152,7 +152,7 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
       return;
     }
     if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      onContextMenu && onContextMenu(ev, item as ExpressionNode, itemType);
+      onContextMenu && onContextMenu(ev, item, itemType);
     }
   };
 
@@ -176,7 +176,7 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
   const renderDescription = (node: ExpressionContainer | ExpressionNode) => {
     const booleanRegex = /^true|false$/i;
     const stringRegex = /^(['"]).*\1$/;
-    const description = (node as DebugVariableContainer).description ? (node as DebugVariableContainer).description.replace('function', 'f') : '';
+    const description = (node as DebugVariableContainer).description ? (node as DebugVariableContainer).description.replace('function', 'ƒ ') : '';
     const addonClass = [styles.debug_variables_variable];
     if (item.variableType === 'number' || item.variableType === 'boolean' || item.variableType === 'string') {
       addonClass.push(styles[item.variableType]);
@@ -202,11 +202,6 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
     return <div className={styles.debug_variables_node_status}>
       {item.badge}
     </div>;
-  };
-
-  const getItemTooltip = () => {
-    const tooltip = item.tooltip;
-    return tooltip;
   };
 
   const renderToggle = (node: ExpressionContainer, clickHandler: any) => {
@@ -241,7 +236,7 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
       key={item.id}
       onClick={handleClick}
       onContextMenu={handleContextMenu}
-      title={getItemTooltip()}
+      title={item.description || ''}
       className={cls(
         styles.debug_variables_node,
         decorations ? decorations.classlist : null,

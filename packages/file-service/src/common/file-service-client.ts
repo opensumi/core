@@ -1,4 +1,4 @@
-import { URI, Event, IFileServiceClient as IFileServiceClientToken, IDisposable } from '@ali/ide-core-common';
+import { URI, Event, IFileServiceClient as IFileServiceClientToken, IDisposable, FileSystemProviderCapabilities } from '@ali/ide-core-common';
 import { FileStat,
   FileMoveOptions,
   FileDeleteOptions,
@@ -7,6 +7,8 @@ import { FileStat,
   FileCopyOptions,
   FileSystemProvider,
   TextDocumentContentChangeEvent,
+  IFileSystemProviderRegistrationEvent,
+  IFileSystemProviderCapabilitiesChangeEvent,
 } from './files';
 import { IFileServiceWatcher } from './watcher';
 import { DidFilesChangedParams, FileChangeEvent } from '@ali/ide-core-common';
@@ -83,6 +85,12 @@ export interface IFileServiceClient {
   getEncoding(uri: string): Promise<string>;
 
   isReadonly(uri: string): Promise<boolean>;
+
+  listCapabilities(): Iterable<{ scheme: string, capabilities: FileSystemProviderCapabilities }>;
+
+  readonly onDidChangeFileSystemProviderRegistrations: Event<IFileSystemProviderRegistrationEvent>;
+
+  readonly onDidChangeFileSystemProviderCapabilities: Event<IFileSystemProviderCapabilitiesChangeEvent>;
 }
 
 export interface IBrowserFileSystemRegistry {

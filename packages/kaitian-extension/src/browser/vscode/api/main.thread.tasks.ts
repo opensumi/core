@@ -437,6 +437,13 @@ export class MainthreadTasks extends Disposable implements IMainThreadTasks {
     }));
   }
 
+  dispose() {
+    super.dispose();
+
+    this.providers.forEach((item) => item.disposable.dispose());
+    this.providers.clear();
+  }
+
   $registerTaskProvider(handler: number, type: string): Promise<void> {
     this.logger.verbose(`register task provider ${type}, handler ${handler}`);
     const provider: ITaskProvider = {

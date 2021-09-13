@@ -1,12 +1,12 @@
-import { IDebugSessionManager, DEBUG_REPORT_NAME } from '../../common';
-import { Autowired, Injectable } from '@ali/common-di';
+import { DEBUG_REPORT_NAME } from '../../common';
 import { DebugSessionManager } from '../debug-session-manager';
-import { DisposableCollection, Emitter, Event, ILogger, IReporterService } from '@ali/ide-core-browser';
+import { DisposableCollection, Emitter, Event, IReporterService } from '@ali/ide-core-browser';
 import throttle = require('lodash.throttle');
 import { DebugWatchRoot, DebugWatchNode } from '../tree/debug-tree-node.define';
 import { DEBUG_COMMANDS } from '../debug-contribution';
 
-export class DebugWatchData {
+export const IDebugWatchData = Symbol('IDebugWatchData');
+export interface IDebugWatchData {
   getRoot: () => Promise<DebugWatchRoot | void>;
   updateWatchExpressions: (data: string[]) => Promise<void>;
   addWatchExpression: (value: string) => void;
@@ -16,18 +16,7 @@ export class DebugWatchData {
   onDidExpressionChange: Event<string[]>;
 }
 
-@Injectable()
-export class DebugWatch implements DebugWatchData {
-
-  @Autowired(IDebugSessionManager)
-  protected readonly manager: DebugSessionManager;
-
-  @Autowired(IReporterService)
-  protected readonly reporterService: IReporterService;
-
-  @Autowired(ILogger)
-  logger: ILogger;
-
+export class DebugWatch implements IDebugWatchData {
   protected readonly toDispose = new DisposableCollection();
 
   protected fireDidChange: () => void = throttle(() => this.onDidChangeEmitter.fire(), 50);
@@ -43,7 +32,10 @@ export class DebugWatch implements DebugWatchData {
   private onDidVariableChangeEmitter: Emitter<void> = new Emitter();
   private onDidExExpressionChangeEmitter: Emitter<string[]> = new Emitter();
 
-  constructor() {
+  constructor(
+    private readonly manager: DebugSessionManager,
+    private readonly reporterService: IReporterService,
+  ) {
     this.whenReady = this.init();
   }
 

@@ -31,6 +31,7 @@ import { ExtHostComments, createCommentsApiFactory } from '../vscode/ext.host.co
 import { ExtHostTheming } from '../vscode/ext.host.theming';
 import { ExtHostCustomEditorImpl } from '../vscode/ext.host.custom-editor';
 import { createAPIFactory as createKaitianAPIFactory } from '../kaitian/ext.host.api.impl';
+import { ExtHostFileSystemInfo } from '../vscode/ext.host.file-system-info';
 
 export function createAPIFactory(
   rpcProtocol: IRPCProtocol,
@@ -45,7 +46,8 @@ export function createAPIFactory(
   const extHostEditors = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEditors, new ExtensionHostEditorService(rpcProtocol, extHostDocs)) as ExtensionHostEditorService;
   const extHostMessage = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocol));
   const extHostWorkspace = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWorkspace, new ExtHostWorkspace(rpcProtocol, extHostMessage, extHostDocs)) as ExtHostWorkspace;
-  const extHostFileSystem = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostFileSystem, new ExtHostFileSystem(rpcProtocol));
+  const extHostFileSystemInfo = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostFileSystemInfo, new ExtHostFileSystemInfo());
+  const extHostFileSystem = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostFileSystem, new ExtHostFileSystem(rpcProtocol, extHostFileSystemInfo));
   const extHostTerminal = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostTerminal, new ExtHostTerminal(rpcProtocol));
   const extHostTasks = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostTasks, new ExtHostTasks(rpcProtocol, extHostTerminal, extHostWorkspace));
   const extHostFileSystemEvent = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostFileSystemEvent, new ExtHostFileSystemEvent(rpcProtocol, extHostDocs));

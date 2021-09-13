@@ -51,6 +51,7 @@ import {
   ICodeLensListDto,
   ISignatureHelpDto,
   ILinksListDto,
+  SerializedRegExp,
 } from './model.api';
 import type {
   CodeActionContext,
@@ -205,6 +206,7 @@ export interface IMainThreadLanguages {
     eventHandle: number,
     event?: any,
   ): void;
+  $registerLinkedEditingRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void;
 }
 
 export interface IExtHostLanguages {
@@ -346,11 +348,12 @@ export interface IExtHostLanguages {
   $provideCodeLenses(
     handle: number,
     resource: UriComponents,
+    token: CancellationToken,
   ): Promise<ICodeLensListDto | undefined>;
   $resolveCodeLens(
     handle: number,
-    resource: UriComponents,
     codeLens: CodeLens,
+    token: CancellationToken,
   ): Promise<CodeLens | undefined>;
   $releaseCodeLens(
     handle: number,
@@ -509,6 +512,13 @@ export interface IExtHostLanguages {
     context: InlineValueContext,
     token: CancellationToken,
   ): Promise<InlineValue[] | undefined>;
+
+  $provideLinkedEditingRanges(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<ILinkedEditingRangesDto | undefined>;
+}
+
+export interface ILinkedEditingRangesDto {
+  ranges: IRange[];
+  wordPattern?: SerializedRegExp;
 }
 
 export interface IInlineValueContextDto {

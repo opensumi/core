@@ -24,6 +24,10 @@ export class DebugHoverSource {
     return this._expression;
   }
 
+  public clearEvaluate(): void {
+    this.onDidChangeEmitter.fire(undefined);
+  }
+
   async evaluate(expression: string): Promise<ExpressionVariable> {
     const evaluated = await this.doEvaluate(expression);
     this._expression = evaluated;

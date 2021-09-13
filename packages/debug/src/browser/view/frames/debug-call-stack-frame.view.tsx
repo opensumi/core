@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import { ViewState, isUndefined, useInjectable, localize, DisposableCollection } from '@ali/ide-core-browser';
+import { ViewState, isUndefined, useInjectable, localize, DisposableCollection, getIcon } from '@ali/ide-core-browser';
 import { DebugThread } from '../../model/debug-thread';
 import { RecycleList } from '@ali/ide-components';
 import { DebugStackFrame } from '../../model';
@@ -111,6 +111,15 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
       frameOpenSource(frame);
     };
 
+    const restartFrame = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (frame.canRestart) {
+        frame.restart();
+      }
+    };
+
     return <div
       style={ { paddingLeft: `${indent}px` } }
       className={ cls(
@@ -130,9 +139,16 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
       <span className={ styles.debug_stack_frames_item_description }>
         { (frame.raw && frame.raw.source && frame.raw.source.name) || localize('debug.stack.frame.noSource') }
       </span>
-      <div className={ cls(!isUndefined(frame.raw.line) && styles.debug_stack_frames_item_badge) }>
-        { frame.raw && frame.raw.line }{ !isUndefined(frame.raw.line) && ':' }{ frame.raw && frame.raw.column }
-      </div>
+      <>
+        <a
+          title=''
+          onClick={ (event) => restartFrame(event) }
+          className={ cls(styles.debug_restart_frame_icon, getIcon('debug-restart-frame'))} >
+        </a>
+        <div className={ cls(!isUndefined(frame.raw.line) && styles.debug_stack_frames_item_badge) }>
+          { frame.raw && frame.raw.line }{ !isUndefined(frame.raw.line) && ':' }{ frame.raw && frame.raw.column }
+        </div>
+      </>
     </div>;
   };
 

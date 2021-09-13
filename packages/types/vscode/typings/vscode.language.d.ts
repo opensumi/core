@@ -116,6 +116,20 @@ declare module 'vscode' {
      */
     export function registerDeclarationProvider(selector: DocumentSelector, provider: DeclarationProvider): Disposable;
     /**
+     * Register a provider that returns data for the debugger's 'inline value' feature.
+     * Whenever the generic debugger has stopped in a source file, providers registered for the language of the file
+     * are called to return textual data that will be shown in the editor at the end of lines.
+     *
+     * Multiple providers can be registered for a language. In that case providers are asked in
+     * parallel and the results are merged. A failing provider (rejected promise or exception) will
+     * not cause a failure of the whole operation.
+     *
+     * @param selector A selector that defines the documents this provider is applicable to.
+     * @param provider An inline values provider.
+     * @return A {@link Disposable} that unregisters this provider when being disposed.
+     */
+    export function registerInlineValuesProvider(selector: DocumentSelector, provider: InlineValuesProvider): Disposable;
+    /**
      * Register a document highlight provider.
      *
      * Multiple providers can be registered for a language. In that case providers are sorted
@@ -246,6 +260,19 @@ declare module 'vscode' {
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
      */
     export function registerCallHierarchyProvider(selector: DocumentSelector, provider: CallHierarchyProvider): Disposable;
+
+    /**
+     * Register a linked editing range provider.
+     *
+     * Multiple providers can be registered for a language. In that case providers are sorted
+     * by their {@link languages.match score} and the best-matching provider that has a result is used. Failure
+     * of the selected provider will cause a failure of the whole operation.
+     *
+     * @param selector A selector that defines the documents this provider is applicable to.
+     * @param provider A linked editing range provider.
+     * @return A {@link Disposable} that unregisters this provider when being disposed.
+     */
+    export function registerLinkedEditingRangeProvider(selector: DocumentSelector, provider: LinkedEditingRangeProvider): Disposable;
 
     /**
      * An [event](#Event) which fires when the global set of diagnostics changes. This is
@@ -423,6 +450,50 @@ declare module 'vscode' {
      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
      */
     export function registerEvaluatableExpressionProvider(selector: DocumentSelector, provider: EvaluatableExpressionProvider): Disposable;
+  }
+
+  /**
+   * Represents a list of ranges that can be edited together along with a word pattern to describe valid range contents.
+   */
+  export class LinkedEditingRanges {
+    /**
+     * Create a new linked editing ranges object.
+     *
+     * @param ranges A list of ranges that can be edited together
+     * @param wordPattern An optional word pattern that describes valid contents for the given ranges
+     */
+    constructor(ranges: Range[], wordPattern?: RegExp);
+
+    /**
+     * A list of ranges that can be edited together. The ranges must have
+     * identical length and text content. The ranges cannot overlap.
+     */
+    readonly ranges: Range[];
+
+    /**
+     * An optional word pattern that describes valid contents for the given ranges.
+     * If no pattern is provided, the language configuration's word pattern will be used.
+     */
+    readonly wordPattern?: RegExp;
+  }
+
+  /**
+   * The linked editing range provider interface defines the contract between extensions and
+   * the linked editing feature.
+   */
+  export interface LinkedEditingRangeProvider {
+    /**
+     * For a given position in a document, returns the range of the symbol at the position and all ranges
+     * that have the same content. A change to one of the ranges can be applied to all other ranges if the new content
+     * is valid. An optional word pattern can be returned with the result to describe valid contents.
+     * If no result-specific word pattern is provided, the word pattern from the language configuration is used.
+     *
+     * @param document The document in which the provider was invoked.
+     * @param position The position at which the provider was invoked.
+     * @param token A cancellation token.
+     * @return A list of ranges that can be edited together
+     */
+    provideLinkedEditingRanges(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<LinkedEditingRanges>;
   }
 
   /**
@@ -789,7 +860,7 @@ declare module 'vscode' {
    * A code lens provider adds [commands](#Command) to source text. The commands will be shown
    * as dedicated horizontal lines in between the source text.
    */
-  export interface CodeLensProvider {
+  export interface CodeLensProvider<T extends CodeLens = CodeLens> {
 
     /**
      * An optional event to signal that the code lenses from this provider have changed.
@@ -806,7 +877,7 @@ declare module 'vscode' {
      * @return An array of code lenses or a thenable that resolves to such. The lack of a result can be
      * signaled by returning `undefined`, `null`, or an empty array.
      */
-    provideCodeLenses(document: TextDocument, token: CancellationToken): ProviderResult<CodeLens[]>;
+    provideCodeLenses(document: TextDocument, token: CancellationToken): ProviderResult<T[]>;
 
     /**
      * This function will be called for each visible code lens, usually when scrolling and after
@@ -816,7 +887,7 @@ declare module 'vscode' {
      * @param token A cancellation token.
      * @return The given, resolved code lens or thenable that resolves to such.
      */
-    resolveCodeLens?(codeLens: CodeLens, token: CancellationToken): ProviderResult<CodeLens>;
+    resolveCodeLens?(codeLens: T, token: CancellationToken): ProviderResult<T[]>;
   }
 
   /**
@@ -1759,7 +1830,7 @@ declare module 'vscode' {
    *
    * @sample `let sel:DocumentSelector = { scheme: 'file', language: 'typescript' }`;
    */
-  export type DocumentSelector = DocumentFilter | string | Array<DocumentFilter | string>;
+  export type DocumentSelector = DocumentFilter | string | ReadonlyArray<DocumentFilter | string>;
 
   /**
    * A provider result represents the values a provider, like the [`HoverProvider`](#HoverProvider),

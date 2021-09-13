@@ -49,9 +49,20 @@ export const DebugConsoleFilterView = observer(() => {
     }
   };
 
+  React.useEffect(() => {
+    const focusDispose = debugConsoleFilterService.onDidFocus(() => {
+      if (historyApi) {
+        historyApi.focus();
+      }
+    });
+    return () => {
+      focusDispose.dispose();
+    };
+  }, [historyApi]);
+
   return (
     <div className={styles.debug_console_filter}>
-      <HistoryInputBox  hasClear className={styles.filter_input} value={filterValue} placeholder={localize('debug.console.filter.placeholder')} onValueChange={onDebounceValueChange} onReady={onReady} onKeyDown={onKeyDown}></HistoryInputBox>
+      <HistoryInputBox hasClear className={styles.filter_input} value={filterValue} placeholder={localize('debug.console.filter.placeholder')} onValueChange={onDebounceValueChange} onReady={onReady} onKeyDown={onKeyDown}></HistoryInputBox>
     </div>
   );
 });

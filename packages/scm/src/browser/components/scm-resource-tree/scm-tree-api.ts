@@ -113,7 +113,7 @@ export class SCMTreeAPI extends Disposable {
               resource: element,
               // 将 children 为 [] 时判断为文件
               type: index === pathList.length - 1 ? 'file' : 'folder',
-            };
+            } as ISCMTreeNodeDescription;
 
             acc[kResult].push(resource);
           }

@@ -1,5 +1,11 @@
 import { IJSONSchemaSnippet } from '@ali/ide-core-common';
 
+export interface CallStackContext {
+  sessionId: string;
+  threadId: string;
+  frameId: string;
+}
+
 export interface IPlatformSpecificAdapterContribution {
   program?: string;
   args?: string[];

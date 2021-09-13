@@ -41,7 +41,7 @@ export class PtyService {
     }
 
     const ptyProcess = pty.spawn(bin, options.shellArgs || [], {
-      name: 'xterm-color',
+      name: 'xterm-256color',
       cols: cols || 100,
       rows: rows || 30,
       cwd: options.cwd ? options.cwd!.toString() : '',

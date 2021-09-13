@@ -1,5 +1,22 @@
 
 declare module 'kaitian-worker' {
+  /**
+   * Accessibility information which controls screen reader behavior.
+   */
+  export interface AccessibilityInformation {
+    /**
+     * Label to be read out by a screen reader once the item has focus.
+     */
+    label: string;
+
+    /**
+     * Role of the widget which defines how a screen reader interacts with it.
+     * The role should be set in special cases when for example a tree-like element behaves like a checkbox.
+     * If role is not specified VS Code will pick the appropriate role automatically.
+     * More about aria roles can be found here https://w3c.github.io/aria/#widget_roles
+     */
+    role?: string;
+  }
 
   export type relativePathKind = 'http' | 'file';
 
@@ -558,6 +575,13 @@ declare module 'kaitian-worker' {
     parameters: ParameterInformation[];
 
     /**
+     * The index of the active parameter.
+     *
+     * If provided, this is used in place of {@linkcode SignatureHelp.activeSignature}.
+     */
+    activeParameter?: number;
+
+    /**
      * Creates a new signature information object.
      *
      * @param label A label string.
@@ -1018,6 +1042,24 @@ declare module 'kaitian-worker' {
   }
 
   /**
+   * Label describing the [Tree item](#TreeItem)
+   */
+  export interface TreeItemLabel {
+
+    /**
+     * A human-readable string describing the [Tree item](#TreeItem).
+     */
+    label: string;
+
+    /**
+     * Ranges in the label to highlight. A range is defined as a tuple of two number where the
+     * first is the inclusive start index and the second the exclusive end index
+     */
+    highlights?: [number, number][];
+
+  }
+
+  /**
    * A data provider that provides tree data
    */
   export interface TreeDataProvider<T> {
@@ -1054,13 +1096,36 @@ declare module 'kaitian-worker' {
      * @return Parent of `element`.
      */
     getParent?(element: T): ProviderResult<T>;
+
+    /**
+     * Called on hover to resolve the {@link TreeItem.tooltip TreeItem} property if it is undefined.
+     * Called on tree item click/open to resolve the {@link TreeItem.command TreeItem} property if it is undefined.
+     * Only properties that were undefined can be resolved in `resolveTreeItem`.
+     * Functionality may be expanded later to include being called to resolve other missing
+     * properties on selection and/or on open.
+     *
+     * Will only ever be called once per TreeItem.
+     *
+     * onDidChangeTreeData should not be triggered from within resolveTreeItem.
+     *
+     * *Note* that this function is called when tree items are already showing in the UI.
+     * Because of that, no property that changes the presentation (label, description, etc.)
+     * can be changed.
+     *
+     * @param item Undefined properties of `item` should be set then `item` should be returned.
+     * @param element The object associated with the TreeItem.
+     * @param token A cancellation token.
+     * @return The resolved tree item or a thenable that resolves to such. It is OK to return the given
+     * `item`. When no result is returned, the given `item` will be used.
+     */
+    resolveTreeItem?(item: TreeItem, element: T, token: CancellationToken): ProviderResult<TreeItem>;
   }
 
   export class TreeItem {
     /**
-     * A human-readable string describing this item. When `falsy`, it is derived from [resourceUri](#TreeItem.resourceUri).
+     * A human-readable string describing this item. When `falsy`, it is derived from {@link TreeItem.resourceUri resourceUri}.
      */
-    label?: string;
+    label?: string | TreeItemLabel;
 
     /**
      * Optional id for the tree item that has to be unique across tree. The id is used to preserve the selection and expansion state of the tree item.
@@ -1115,22 +1180,35 @@ declare module 'kaitian-worker' {
      *      "view/item/context": [
      *        {
      *          "command": "extension.deleteFolder",
-      *          "when": "viewItem == folder"
-      *        }
-      *      ]
-      *    }
-      *  }
-      * ```
-      * This will show action `extension.deleteFolder` only for items with `contextValue` is `folder`.
-      */
+     *          "when": "viewItem == folder"
+     *        }
+     *      ]
+     *    }
+     *  }
+     * ```
+     * This will show action `extension.deleteFolder` only for items with `contextValue` is `folder`.
+     */
     contextValue?: string;
 
     /**
-     * @param resourceUri The [uri](#Uri) of the resource representing this item.
-     * @param label A human-readable string describing this item
-     * @param collapsibleState [TreeItemCollapsibleState](#TreeItemCollapsibleState) of the tree item. Default is [TreeItemCollapsibleState.None](#TreeItemCollapsibleState.None)
+     * Accessibility information used when screen reader interacts with this tree item.
+     * Generally, a TreeItem has no need to set the `role` of the accessibilityInformation;
+     * however, there are cases where a TreeItem is not displayed in a tree-like way where setting the `role` may make sense.
      */
-    constructor(resourceUri: Uri | string, collapsibleState?: TreeItemCollapsibleState);
+    accessibilityInformation?: AccessibilityInformation;
+
+    /**
+     * @param label A human-readable string describing this item
+     * @param collapsibleState {@link TreeItemCollapsibleState} of the tree item. Default is {@link TreeItemCollapsibleState.None}
+     */
+    constructor(label: string | TreeItemLabel, collapsibleState?: TreeItemCollapsibleState);
+
+    /**
+     * @param resourceUri The {@link Uri} of the resource representing this item.
+     * @param collapsibleState {@link TreeItemCollapsibleState} of the tree item. Default is {@link TreeItemCollapsibleState.None}
+     */
+    // tslint:disable unified-signatures
+    constructor(resourceUri: Uri, collapsibleState?: TreeItemCollapsibleState);
   }
   /**
    * Represents a line of text, such as a line of source code.

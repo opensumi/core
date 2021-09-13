@@ -7,6 +7,7 @@ import { DebugSessionManager } from '../../debug-session-manager';
 import { IDebugSessionManager } from '../../../common';
 import * as styles from './debug-call-stack.module.less';
 import { DebugSession } from '../../debug-session';
+import { DebugCallStackService } from './debug-call-stack.service';
 
 export interface DebugStackThreadViewProps {
   session: DebugSession;
@@ -18,6 +19,7 @@ export interface DebugStackThreadViewProps {
 export const DebugStackThreadView = (props: DebugStackThreadViewProps) => {
   const { thread, viewState, indent, session } = props;
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
+  const debugCallStackService = useInjectable<DebugCallStackService>(DebugCallStackService);
   const [unfold, setUnfold] = React.useState<boolean>(true);
 
   const mutipleS = manager.sessions.length > 1;
@@ -40,7 +42,10 @@ export const DebugStackThreadView = (props: DebugStackThreadViewProps) => {
   }, []);
 
   return (
-    <div className={ styles.debug_stack_item }>
+    <div
+      className={ styles.debug_stack_item }
+      onContextMenu={ (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => debugCallStackService.handleContextMenu(event, thread)}
+    >
       {
         mutiple &&
         <div

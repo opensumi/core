@@ -55,17 +55,18 @@ export class DebugHoverTreeModelService {
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
   constructor() {
-    this.debugHoverSource.onDidChange(async (expression: ExpressionVariable | DebugVariable) => {
+    this.debugHoverSource.onDidChange(async (expression: ExpressionVariable | DebugVariable | undefined) => {
+      if (!expression) {
+        this.onDidUpdateTreeModelOrVariableEmitter.fire({ treeModel: undefined, variable: undefined });
+        return;
+      }
+
       if (expression instanceof DebugVariable) {
         this.dispose();
-        this.onDidUpdateTreeModelOrVariableEmitter.fire({
-          variable: expression,
-        });
+        this.onDidUpdateTreeModelOrVariableEmitter.fire({ variable: expression });
       } else {
         await this.initTreeModel(expression);
-        this.onDidUpdateTreeModelOrVariableEmitter.fire({
-          treeModel: this.treeModel,
-        });
+        this.onDidUpdateTreeModelOrVariableEmitter.fire({ treeModel: this.treeModel });
       }
     });
   }

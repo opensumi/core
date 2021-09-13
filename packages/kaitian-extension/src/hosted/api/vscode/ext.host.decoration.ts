@@ -20,6 +20,7 @@ interface ProviderData {
 
 function isFileDecorationProvider(provider: vscode.FileDecorationProvider | vscode.DecorationProvider): provider is vscode.FileDecorationProvider {
   return !!(provider as vscode.FileDecorationProvider).onDidChange
+    || !!(provider as vscode.FileDecorationProvider).onDidChangeFileDecorations
     || !!(provider as vscode.FileDecorationProvider).provideFileDecoration;
 }
 
@@ -47,6 +48,12 @@ export class ExtHostDecorations implements IExtHostDecorationsShape {
       listener = provider.onDidChange((e) => {
         this.proxy.$onDidChange(handle, !e ? null : asArray(e));
       });
+      // TODO: 1.55 API，后续被废弃掉了，为了兼容先保留
+      if (provider.onDidChangeFileDecorations) {
+        listener = provider.onDidChangeFileDecorations((e) => {
+          this.proxy.$onDidChange(handle, !e ? null : asArray(e));
+        });
+      }
     } else /* 这条分支后续可清理掉 */ {
       this.logger.verbose('ExtHostDecoration#registerDecorationProvider', extensionId);
       listener = provider.onDidChangeDecorations && provider.onDidChangeDecorations((e) => {

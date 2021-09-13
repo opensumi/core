@@ -83,8 +83,6 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
   // @ts-ignore
   app.use(cors());
   let opts: IServerAppOpts = {
-    workspaceDir,
-    extensionDir,
     webSocketHandler: [],
     use: app.use.bind(app),
     marketplace: {
