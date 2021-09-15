@@ -852,6 +852,8 @@ declare module 'vscode' {
      * from the user's workspace.
      */
     readonly backupId?: string;
+
+    untitledDocumentData?: Uint8Array;
   }
 
   /**
