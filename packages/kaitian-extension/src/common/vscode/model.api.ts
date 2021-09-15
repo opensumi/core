@@ -138,6 +138,7 @@ export interface SerializedOnEnterRule {
   beforeText: SerializedRegExp;
   afterText?: SerializedRegExp;
   action: EnterAction;
+  previousLineText: SerializedRegExp;
 }
 
 export type CharacterPair = [string, string];

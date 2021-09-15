@@ -640,6 +640,8 @@ declare module 'vscode' {
      * The action to execute.
      */
     action: EnterAction;
+
+    previousLineText?: RegExp;
   }
 
   /**
