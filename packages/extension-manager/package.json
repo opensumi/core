@@ -39,7 +39,7 @@
     "fs-extra": "^8.1.0",
     "lodash.uniqby": "^4.7.0",
     "query-string": "^6.8.3",
-    "urllib": "^2.34.1"
+    "urllib": "^2.37.3"
   },
   "devDependencies": {
     "@ali/ide-components": "2.9.4",

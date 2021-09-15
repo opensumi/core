@@ -39,11 +39,11 @@ module.exports = {
   },
   externals:[
     function(context, request, callback) {
-      if (['node-pty','nsfw', 'spdlog', '@ali/vscode-ripgrep'].indexOf(request) !== -1){
+      if (['node-pty','nsfw', 'spdlog', '@ali/vscode-ripgrep', 'vm2'].indexOf(request) !== -1){
         return callback(null, 'commonjs ' + request);
       }
       callback();
-    }
+    },
   ],
   resolveLoader: {
     modules: [path.join(__dirname, '../node_modules')],
