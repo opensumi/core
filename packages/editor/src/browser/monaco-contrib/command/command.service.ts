@@ -6,6 +6,7 @@ import { CommandsRegistry as MonacoCommandsRegistry, EditorExtensionsRegistry, I
 import { StaticServices } from '@ali/ide-monaco/lib/browser/monaco-api/services';
 import { Event, ICodeEditor, IEvent } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import { EditorCollectionService, WorkbenchEditorService } from '../../types';
+import { URI } from '@ali/ide-monaco/lib/browser/monaco-api';
 
 /**
  * vscode 会有一些别名 command，如果直接执行这些别名 command 会报错，做一个转换
@@ -194,6 +195,9 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
   private static CONVERT_MONACO_COMMAND_ARGS = new Map<string, (...args: any[]) => any[]>([
     [
       'editor.action.showReferences', (uri, ...args) => [Uri.parse(uri), ...args],
+    ],
+    [
+      'editor.action.goToLocations', (uri, ...args) => [URI.parse(uri), ...args],
     ],
   ]);
 
