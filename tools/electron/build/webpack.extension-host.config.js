@@ -14,6 +14,7 @@ const nodeTarget = {
   },
   node: false,
   resolve: {
+    mainFields: ['main'],
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     plugins: [new TsconfigPathsPlugin({
       configFile: tsConfigPath,
@@ -25,20 +26,20 @@ const nodeTarget = {
     // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
     exprContextCritical: false,
     rules: [{
-        test: /\.tsx?$/,
-        loader: 'ts-loader',
-        options: {
-          configFile: tsConfigPath,
-          compilerOptions: {
-            target: 'es5'
-          }
+      test: /\.tsx?$/,
+      loader: 'ts-loader',
+      options: {
+        configFile: tsConfigPath,
+        compilerOptions: {
+          target: 'es5'
         }
-      },
+      }
+    },
     ],
   },
-  externals:[
-    function(context, request, callback) {
-      if (['node-pty','nsfw', 'spdlog', 'getmac'].indexOf(request) !== -1){
+  externals: [
+    function (context, request, callback) {
+      if (['node-pty', 'nsfw', 'spdlog', 'getmac'].indexOf(request) !== -1) {
         return callback(null, 'commonjs ' + request);
       }
       callback();
@@ -75,20 +76,20 @@ const workerTarget = {
     // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
     exprContextCritical: false,
     rules: [{
-        test: /\.tsx?$/,
-        loader: 'ts-loader',
-        options: {
-          configFile: tsConfigPath,
-          compilerOptions: {
-            target: 'es5'
-          }
+      test: /\.tsx?$/,
+      loader: 'ts-loader',
+      options: {
+        configFile: tsConfigPath,
+        compilerOptions: {
+          target: 'es5'
         }
-      },
+      }
+    },
     ],
   },
-  externals:[
-    function(context, request, callback) {
-      if (['node-pty','nsfw', 'spdlog', 'getmac'].indexOf(request) !== -1){
+  externals: [
+    function (context, request, callback) {
+      if (['node-pty', 'nsfw', 'spdlog', 'getmac'].indexOf(request) !== -1) {
         return callback(null, 'commonjs ' + request);
       }
       callback();
