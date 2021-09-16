@@ -1,4 +1,4 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { URI } from '@ali/ide-monaco/lib/browser/monaco-api';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Command, Emitter, CommandRegistry, CommandHandler, HANDLER_NOT_FOUND, ILogger, EDITOR_COMMANDS, CommandService, IReporterService, REPORT_NAME, ServiceNames, memoize, Uri, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
 
@@ -6,7 +6,6 @@ import { CommandsRegistry as MonacoCommandsRegistry, EditorExtensionsRegistry, I
 import { StaticServices } from '@ali/ide-monaco/lib/browser/monaco-api/services';
 import { Event, ICodeEditor, IEvent } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import { EditorCollectionService, WorkbenchEditorService } from '../../types';
-import { URI } from '@ali/ide-monaco/lib/browser/monaco-api';
 
 /**
  * vscode 会有一些别名 command，如果直接执行这些别名 command 会报错，做一个转换
@@ -194,7 +193,7 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
 
   private static CONVERT_MONACO_COMMAND_ARGS = new Map<string, (...args: any[]) => any[]>([
     [
-      'editor.action.showReferences', (uri, ...args) => [Uri.parse(uri), ...args],
+      'editor.action.showReferences', (uri, ...args) => [URI.parse(uri), ...args],
     ],
     [
       'editor.action.goToLocations', (uri, ...args) => [URI.parse(uri), ...args],
@@ -276,7 +275,7 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
    */
   private processInternalCommandArgument(commandId: string, args: any[] = []): any[] {
     if (this.isInternalExecuteCommand(commandId)) {
-      return args.map((arg) => arg instanceof Uri ? monaco.Uri.revive(arg) : arg);
+      return args.map((arg) => arg instanceof Uri ? URI.revive(arg) : arg);
     } else if (MonacoActionRegistry.CONVERT_MONACO_COMMAND_ARGS.has(commandId)) {
       return MonacoActionRegistry.CONVERT_MONACO_COMMAND_ARGS.get(commandId)!(...args);
     }
