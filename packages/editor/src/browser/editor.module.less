@@ -102,6 +102,17 @@
   .kt_editor_tabs_scroll {
     display: flex;
     background: var(--editorGroupHeader-tabsBackground);
+    &::before {
+      content: '';
+      height:1px;
+      background: var(--tab-border);
+      bottom:0;
+      width:100%;
+      left:0;
+      position: absolute;
+      display: block;
+      z-index: 0;
+    }
   }
   .kt_editor_tab_preview {
     font-style: italic;
@@ -121,6 +132,17 @@
       flex-wrap: wrap;
       width: 100%;
       background: var(--editorGroupHeader-tabsBackground);
+      &::before {
+        content: '';
+        height:1px;
+        background: var(--tab-border);
+        bottom:0;
+        width:100%;
+        left:0;
+        position: absolute;
+        display: block;
+        z-index: 0;
+      }
     }
   }
   .last_in_row {
@@ -132,17 +154,6 @@
     &.kt_on_drag_over {
       background-color: var(--editorGroup-dropBackground);
     }
-    &::before {
-      content: '';
-      height:1px;
-      background: var(--tab-border);
-      bottom:0;
-      width:100%;
-      left:0;
-      position: absolute;
-      display: block;
-      z-index: 0;
-    }
     &::-webkit-scrollbar {
       display: none;
     }
@@ -151,6 +162,7 @@
       position: relative;
       align-items: center;
       flex-shrink: 0;
+      flex-grow: .5;
       padding: 0 12px;
       border-right:1px solid var(--tab-border);
       height: @TAB_HEIGHT;
