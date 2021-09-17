@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { VALIDATE_TYPE } from '@ali/ide-components';
 import { URI, MaybePromise, IDisposable, Event } from '@ali/ide-core-common';
-
+import { observable } from 'mobx';
 import { Keybinding } from '../keybinding';
 
 export enum Mode {
@@ -98,6 +98,10 @@ export interface QuickOpenItemOptions {
    */
   showBorder?: boolean;
   /**
+   * 是否选中
+   */
+  checked?: boolean;
+  /**
    * 点击 QuickOpen 要执行的方法
    * @param mode
    */
@@ -113,9 +117,14 @@ export class QuickOpenItem {
 
   private detailHighlights?: Highlight[];
 
+  @observable
+  public checked = false;
+
   constructor(
     protected options: QuickOpenItemOptions,
-  ) { }
+  ) {
+    this.checked = options.checked || false;
+  }
 
   getTooltip(): string | undefined {
     return this.options.tooltip || this.getLabel();
@@ -169,6 +178,9 @@ export class QuickOpenItem {
   }
   showBorder(): boolean {
     return this.options.showBorder || false;
+  }
+  getValue(): any {
+    return this.options.value;
   }
 }
 
@@ -230,6 +242,13 @@ export namespace QuickOpenOptions {
      * @param index
      */
     onSelect(item: QuickOpenItem, index: number): void;
+
+    /**
+     * select 状态时触发回调
+     * @param item
+     * @param index
+     */
+    onConfirm(items: QuickOpenItem[]): void;
     /**
      * 在输入框修改文字时触发
      * @param value
@@ -268,7 +287,10 @@ export namespace QuickOpenOptions {
     * 如果为 true，则输入内容会隐藏
     */
     readonly password: boolean;
-
+    /**
+     * 是否为多选
+     */
+    canPickMany?: boolean;
     /**
      * 如果没有高亮也显示 item
      */
@@ -288,6 +310,7 @@ export namespace QuickOpenOptions {
     onClose: () => { /* no-op*/ },
     onSelect: () => { /* no-op*/ },
     onChangeValue: () => { /* no-op*/ },
+    onConfirm: () => { /* no-op*/ },
     valueSelection: [-1, -1],
     fuzzyMatchLabel: false,
     fuzzyMatchDetail: false,

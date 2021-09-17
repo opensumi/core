@@ -34,7 +34,7 @@ describe(__filename, () => {
     token: QuickPickService,
     useValue: mockService({
       // 默认返回第一个
-      show: () => 0,
+      show: (_, options) => options.canPickMany ? [0] : 0,
     }),
   }, {
     token: QuickTitleBar,

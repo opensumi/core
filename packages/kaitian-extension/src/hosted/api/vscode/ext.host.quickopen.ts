@@ -1,7 +1,7 @@
 import type * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, IExtHostQuickOpen, IMainThreadQuickOpen, IExtHostWorkspace } from '../../../common/vscode';
-import { CancellationToken, hookCancellationToken, Event, Emitter, DisposableCollection, MaybePromise } from '@ali/ide-core-common';
+import { CancellationToken, hookCancellationToken, Event, Emitter, DisposableCollection, MaybePromise, isUndefined } from '@ali/ide-core-common';
 import { QuickPickItem, QuickPickOptions } from '@ali/ide-quick-open';
 
 type Item = string | vscode.QuickPickItem;
@@ -59,6 +59,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
     });
 
     const quickPickPromise = this.proxy.$showQuickPick(sessionId, pickItems, options && {
+      canPickMany: options.canPickMany,
       placeholder: options.placeHolder,
       fuzzyMatchDescription: options.matchOnDescription,
       fuzzyMatchDetail: options.matchOnDetail,
@@ -69,18 +70,13 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
       totalSteps: (options as QuickPickOptions).totalSteps,
     });
 
-    const value = await hookCancellationToken<number | undefined>(token, quickPickPromise);
-    let result: Item[] | Item | undefined;
+    const value = await hookCancellationToken<number | number[] | undefined>(token, quickPickPromise);
 
-    if (typeof value === 'number') {
-      if (options && options.canPickMany) {
-        result = Array.of(items[value]);
-      } else {
-        result = items[value];
-      }
+    if (isUndefined(value)) {
+      return;
     }
 
-    return result;
+    return Array.isArray(value) ? value.map((index) => items[index]) : items[value];
   }
 
   $onItemSelected(handle: number): void {
@@ -289,10 +285,11 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
     const hide = () => {
       this.onDidHideEmitter.fire(undefined);
     };
-    const selectItem = (item: T) => {
-      this.selectedItems = this.activeItems = [item];
+    const selectItem = (item: T | T[]) => {
+      const selectedItems = Array.isArray(item) ? item : [item];
+      this.selectedItems = this.activeItems = selectedItems;
       this.onDidAcceptEmitter.fire(undefined);
-      this.onDidChangeSelectionEmitter.fire([item]);
+      this.onDidChangeSelectionEmitter.fire(selectedItems);
     };
 
     this.quickOpen.showQuickPick(this.items.map((item) => item as T), {
@@ -305,8 +302,8 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
       ignoreFocusOut: this.ignoreFocusOut,
       _sessionId: this.quickPickIndex,
     } as QuickPickOptions ).then((item) => {
-      if (typeof item !== 'string') {
-        selectItem(Array.isArray(item) ? item[0] : item);
+      if (!isUndefined(item)) {
+        selectItem(item as (T | T[]));
       }
       hide();
     });

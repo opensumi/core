@@ -24,12 +24,15 @@ export interface IMainThreadQuickOpen {
   $hideQuickinput(): void;
 }
 
+type VSCodeQuickPickItem = string | vscode.QuickPickItem;
+
 export interface IExtHostQuickOpen {
   $onDidTriggerButton(handler: number): void;
   $onItemSelected(handler: number): void;
   showQuickPick(promiseOrItems: vscode.QuickPickItem[] | Promise<vscode.QuickPickItem[]>, options?: vscode.QuickPickOptions, token?: CancellationToken): Promise<vscode.QuickPickItem | undefined>;
   showQuickPick(promiseOrItems: vscode.QuickPickItem[] | Promise<vscode.QuickPickItem[]>, options?: vscode.QuickPickOptions & { canSelectMany: true; }, token?: CancellationToken): Promise<vscode.QuickPickItem[] | undefined>;
   showQuickPick(promiseOrItems: string[] | Promise<string[]>, options?: QuickPickOptions, token?: CancellationToken): Promise<string | undefined>;
+  showQuickPick(itemsOrItemsPromise: VSCodeQuickPickItem[] | Promise<VSCodeQuickPickItem[]>, options?: vscode.QuickPickOptions, token?: vscode.CancellationToken): Promise<VSCodeQuickPickItem | VSCodeQuickPickItem[] | undefined>;
   showWorkspaceFolderPick(options: vscode.WorkspaceFolderPickOptions, token?: CancellationToken): Promise<vscode.WorkspaceFolder | undefined>;
   createQuickPick<T extends vscode.QuickPickItem>(): vscode.QuickPick<T>;
   createInputBox(): vscode.InputBox;
