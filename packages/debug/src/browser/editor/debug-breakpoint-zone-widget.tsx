@@ -137,6 +137,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
         endColumn: 1,
       },
       options: {
+        description: 'debug-breakpoint-zone-widget',
         afterContentClassName: styles.input_placeholder,
       },
     }]);

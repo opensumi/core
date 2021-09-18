@@ -282,7 +282,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
       });
     }
 
-    this.inputEditor.monacoEditor.setDecorations(DECORATION_KEY, decorations as any[]);
+    this.inputEditor.monacoEditor.setDecorations('debug-console-input', DECORATION_KEY, decorations as any[]);
   }
 
   private setMode(): void {
@@ -304,7 +304,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
 
   private registerDecorationType(): void {
     const codeEditorService = this.overrideServicesRegistry.getRegisteredService(ServiceNames.CODE_EDITOR_SERVICE) as MonacoCodeService;
-    codeEditorService.registerDecorationType(DECORATION_KEY, {});
+    codeEditorService.registerDecorationType('console-input-decoration', DECORATION_KEY, {});
   }
 
   private registerCompletion(): void {

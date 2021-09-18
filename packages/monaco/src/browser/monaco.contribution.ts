@@ -364,7 +364,7 @@ function transformMonacoMenuItem(item: monacoActions.IMenuItem | monacoActions.I
     return {
       command: {
         id: item.command.id,
-        label: item.command.title as string,
+        label: typeof item.command.title === 'string' ? item.command.title : item.command.title.value,
       },
       group: item.group,
       when: item.when,
@@ -374,7 +374,7 @@ function transformMonacoMenuItem(item: monacoActions.IMenuItem | monacoActions.I
 
   return {
     submenu: item.submenu as unknown as string,
-    label: item.title as string,
+    label: typeof item.title === 'string' ? item.title : item.title.value,
     when: item.when,
     group: item.group,
     order: item.order,

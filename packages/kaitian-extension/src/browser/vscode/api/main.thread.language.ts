@@ -171,9 +171,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     if (!this.isDeflatedSuggestDto(data)) {
       return data as unknown as modes.CompletionItem;
     }
-
+    const label = data[ISuggestDataDtoField.label2] ?? data[ISuggestDataDtoField.label];
     return {
-      label: data[ISuggestDataDtoField.label2] ?? data[ISuggestDataDtoField.label],
+      label: typeof label === 'string' ? label : label.name,
       // @ts-ignore
       kind: data[ISuggestDataDtoField.kind] ?? modes.CompletionItemKind.Property,
       // @ts-ignore
