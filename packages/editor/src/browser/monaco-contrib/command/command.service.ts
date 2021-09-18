@@ -118,7 +118,7 @@ export class MonacoCommandRegistry implements IMonacoCommandsRegistry {
 
   /**
    * 注册 monaco 命令
-   * 命令 id 会统一加入 manaco 前缀
+   * 命令 id 会统一加入 monaco 前缀
    * monaco handler 会注入当前 editor 参数
    * @param command 注册的命令
    * @param handler 命令处理函数
