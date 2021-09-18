@@ -192,12 +192,12 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
   ]);
 
   private static CONVERT_MONACO_COMMAND_ARGS = new Map<string, (...args: any[]) => any[]>([
-    [
-      'editor.action.showReferences', (uri, ...args) => [URI.parse(uri), ...args],
-    ],
-    [
-      'editor.action.goToLocations', (uri, ...args) => [URI.parse(uri), ...args],
-    ],
+    [ 'editor.action.showReferences', (uri, ...args) => [URI.parse(uri), ...args] ],
+    [ 'editor.action.goToLocations', (uri, ...args) => [URI.parse(uri), ...args] ],
+  ]);
+
+  private static CONVERT_MONACO_ACTIONS_TO_CONTRIBUTION_ID = new Map<string, string>([
+    [ 'editor.action.rename',  'editor.contrib.renameController'],
   ]);
 
   /**
@@ -249,7 +249,7 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
         continue;
       }
       const label = editorActions.has(id) ? editorActions.get(id) : '';
-      const handler = editorActions.has(id) ? this.newActionHandler(id) : this.newCommandHandler(id);
+      const handler = this.actAndComHandler(editorActions, id);
       this.monacoCommandRegistry.registerCommand({
         id,
         label,
@@ -260,6 +260,19 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
         this.monacoCommandRegistry.registerHandler(command, handler);
       }
     }
+  }
+
+  /**
+   * monaco 内部有些 contribution 既注册了 actions 又注册了 commands，在这里优先调取 commands
+   */
+  private actAndComHandler(actions: Map<string, string>, id: string): MonacoEditorCommandHandler {
+    if (MonacoActionRegistry.CONVERT_MONACO_ACTIONS_TO_CONTRIBUTION_ID.has(id)) {
+      const toConver = MonacoActionRegistry.CONVERT_MONACO_ACTIONS_TO_CONTRIBUTION_ID.get(id)!;
+      if (this.monacoEditorRegistry.getSomeEditorContributions([toConver]).length > 0) {
+        return this.newCommandHandler(id);
+      }
+    }
+    return actions.has(id) ? this.newActionHandler(id) : this.newCommandHandler(id);
   }
 
   /**
