@@ -384,6 +384,10 @@ export const localizationBundle = {
 
     'component.message.origin': 'Origin',
 
+    'component.modal.okText': 'OK',
+    'component.modal.cancelText': 'Cancel',
+    'component.modal.justOkText': 'OK',
+
     'preference.tab.user': 'Global Settings',
     'preference.tab.workspace': 'Workspace Settings',
 

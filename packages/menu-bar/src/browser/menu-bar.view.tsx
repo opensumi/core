@@ -7,8 +7,7 @@ import { IMenubarItem } from '@ali/ide-core-browser/lib/menu/next';
 import { ClickOutside } from '@ali/ide-core-browser/lib/components/click-outside';
 import { Deprecated } from '@ali/ide-components/lib/utils/deprecated';
 
-import Dropdown from 'antd/lib/dropdown';
-import 'antd/lib/dropdown/style/index.css';
+import { Dropdown } from '@ali/ide-components/lib/dropdown';
 
 import { MenubarStore } from './menu-bar.store';
 import * as styles from './menu-bar.module.less';

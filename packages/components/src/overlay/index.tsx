@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as clsx from 'classnames';
-import Modal, { ModalProps } from 'antd/lib/modal';
+import { Modal, ModalProps } from '../modal';
 
 import './styles.less';
 

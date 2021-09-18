@@ -482,6 +482,10 @@ export const localizationBundle = {
 
     'component.message.origin': '来源',
 
+    'component.modal.okText': '确定',
+    'component.modal.cancelText': '取消',
+    'component.modal.justOkText': '知道了',
+
     'preference.tab.user': '全局设置',
     'preference.tab.workspace': '工作区设置',
 

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import Dropdown from 'antd/lib/dropdown';
+import { Dropdown } from '../dropdown';
 import classNames from 'classnames';
 
 import './style.less';

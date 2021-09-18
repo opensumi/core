@@ -1,5 +1,5 @@
 import * as React from 'react';
-import antdMessage from 'antd/lib/message';
+import antdMessage from './message';
 import './style.less';
 
 function generateSnackbar(funName: string) {
