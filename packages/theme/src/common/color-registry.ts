@@ -195,7 +195,7 @@ function resolveColorValue(colorValue: ColorValue | null, theme: ITheme): Color 
   } else if (colorValue instanceof Color) {
     return colorValue;
   } else if (typeof colorValue === 'function') {
-    return colorValue(theme);
+    return colorValue(theme) as Color;
   }
   return undefined;
 }

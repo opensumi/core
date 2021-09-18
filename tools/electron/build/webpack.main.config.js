@@ -11,17 +11,18 @@ const distDir = path.join(__dirname, '../app/dist/main')
 
 module.exports = {
   entry: path.join(srcDir, './index.ts'),
-  target: "node",
+  target: 'electron-main',
   output: {
     filename: 'index.js',
     path: distDir,
   },
   node: false,
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
+    mainFields: ['main'],
+    extensions: ['.ts', '.tsx', '.mjs', '.js', '.json', '.less'],
     plugins: [new TsconfigPathsPlugin({
       configFile: tsConfigPath,
-    })]
+    })],
   },
   mode: 'development',
   devtool: 'source-map',
@@ -29,26 +30,29 @@ module.exports = {
     // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
     exprContextCritical: false,
     rules: [{
-        test: /\.tsx?$/,
-        loader: 'ts-loader',
-        options: {
-          configFile: tsConfigPath
-        }
+      test: /\.tsx?$/,
+      loader: 'ts-loader',
+      options: {
+        configFile: tsConfigPath,
       },
-    ],
+    }, {
+      test: /\.mjs$/,
+      include: /node_modules/,
+      type: 'javascript/auto',
+    }],
   },
-  externals:[
-    function(context, request, callback) {
-      if (['node-pty','nsfw', 'spdlog', 'electron'].indexOf(request) !== -1){
-        return callback(null, 'commonjs ' + request);
-      }
-      callback();
-    }
-  ],
   resolveLoader: {
     modules: [path.join(__dirname, '../node_modules')],
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     mainFields: ['loader', 'main'],
     moduleExtensions: ['-loader'],
   },
+  externals: [
+    (context, request, callback) => {
+      if (['node-pty', 'nsfw', 'spdlog', 'electron'].includes(request)) {
+        return callback(null, 'commonjs ' + request);
+      }
+      callback();
+    }
+  ],
 };

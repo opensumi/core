@@ -176,8 +176,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
         if (model && model.instance) {
           const langId = model.instance.getMonacoModel().getModeId();
           if (languageIds.includes(langId)) {
-            await this.activateLanguage(langId);
-            break;
+            this.activateLanguage(langId);
           }
         }
       }
@@ -592,10 +591,6 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     });
 
     this.activateLanguages();
-
-    this.addDispose(ModesRegistry.onDidChangeLanguages(() => {
-      this.activateLanguages();
-    }));
   }
 
   private activateLanguages() {

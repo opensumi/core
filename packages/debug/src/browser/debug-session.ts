@@ -772,16 +772,32 @@ export class DebugSession implements IDebugSession {
     await this.rawFetchFrames(this.currentThread);
     this._onDidChangeCallStack.fire();
 
-    // set current frame from editor
     const editor = this.workbenchEditorService.currentEditor;
-    if (editor && this.currentThread && !this.currentFrame) {
-      const model = editor.monacoEditor.getModel();
-      if (model) {
-        const uri = URI.parse(model.uri.toString());
-        const frames = this.currentThread.frames.filter((f) => f.source?.uri.toString() === uri.toString());
-        if (frames) {
-          this.currentThread.currentFrame = frames[0];
+
+    const focus = (f: DebugStackFrame | undefined) => {
+      if (this.stoppedDetails && !this.stoppedDetails.preserveFocusHint) {
+        this.currentThread!.currentFrame = f;
+      }
+    };
+
+    if (this.currentThread && !this.currentFrame) {
+      // 过滤出有效的 frame source 资源
+      const frames = this.currentThread.frames.filter((f: DebugStackFrame) => f && f.source && f.source.raw.presentationHint !== 'deemphasize');
+      if (frames.length === 0) {
+        return;
+      }
+
+      if (editor) {
+        const model = editor.monacoEditor.getModel();
+        if (model) {
+          const uri = URI.parse(model.uri.toString());
+          const curFram = frames.filter((f: DebugStackFrame) => f.source!.uri.toString() === uri.toString());
+          if (Array.isArray(curFram)) {
+            focus(curFram[0]);
+          }
         }
+      } else {
+        focus(frames[0]);
       }
     }
   }

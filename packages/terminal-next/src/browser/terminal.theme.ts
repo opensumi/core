@@ -2,11 +2,12 @@ import { Injectable } from '@ali/common-di';
 import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { Color } from '@ali/ide-theme/lib/common/color';
 import { ITerminalTheme } from '../common';
+import type { ITheme } from 'xterm';
 import * as TERMINAL_COLOR from './terminal.color';
 
 @Injectable()
 export class TerminalTheme extends Themable implements ITerminalTheme {
-  get terminalTheme(): any {
+  get terminalTheme(): ITheme {
     const termBgColor = this.getColorSync(TERMINAL_COLOR.TERMINAL_BACKGROUND_COLOR);
     const termFgColor = this.getColorSync(TERMINAL_COLOR.TERMINAL_FOREGROUND_COLOR);
     const termSelectionColor = this.getColorSync(TERMINAL_COLOR.TERMINAL_SELECTION_BACKGROUND_COLOR);
@@ -23,25 +24,25 @@ export class TerminalTheme extends Themable implements ITerminalTheme {
     return {
       background: Color.Format.CSS.formatHexA(termBgColor),
       foreground: Color.Format.CSS.formatHexA(termFgColor),
-      selection: Color.Format.CSS.formatHexA(termSelectionColor),
       cursor: Color.Format.CSS.formatHexA(termCursorColor),
       cursorAccent: Color.Format.CSS.formatHexA(termCursorAccentColor),
-      black: ansiColorMap['terminal.ansiBlack'].defaults[this.theme.type],
-      red: ansiColorMap['terminal.ansiRed'].defaults[this.theme.type],
-      green: ansiColorMap['terminal.ansiGreen'].defaults[this.theme.type],
-      yellow: ansiColorMap['terminal.ansiYellow'].defaults[this.theme.type],
-      blue: ansiColorMap['terminal.ansiBlue'].defaults[this.theme.type],
-      magenta: ansiColorMap['terminal.ansiMagenta'].defaults[this.theme.type],
-      cyan: ansiColorMap['terminal.ansiCyan'].defaults[this.theme.type],
-      white: ansiColorMap['terminal.ansiWhite'].defaults[this.theme.type],
-      brightBlack: ansiColorMap['terminal.ansiBrightBlack'].defaults[this.theme.type],
-      brightRed: ansiColorMap['terminal.ansiBrightRed'].defaults[this.theme.type],
-      brightGreen: ansiColorMap['terminal.ansiBrightGreen'].defaults[this.theme.type],
-      brightYellow: ansiColorMap['terminal.ansiBrightYellow'].defaults[this.theme.type],
-      brightBlue: ansiColorMap['terminal.ansiBrightBlue'].defaults[this.theme.type],
-      brightMagenta: ansiColorMap['terminal.ansiBrightMagenta'].defaults[this.theme.type],
-      brightCyan: ansiColorMap['terminal.ansiBrightCyan'].defaults[this.theme.type],
-      brightWhite: ansiColorMap['terminal.ansiBrightWhite'].defaults[this.theme.type],
+      selection: Color.Format.CSS.formatHexA(termSelectionColor),
+      black: ansiColorMap['terminal.ansiBlack'].defaults[this.theme.type] as string,
+      red: ansiColorMap['terminal.ansiRed'].defaults[this.theme.type] as string,
+      green: ansiColorMap['terminal.ansiGreen'].defaults[this.theme.type] as string,
+      yellow: ansiColorMap['terminal.ansiYellow'].defaults[this.theme.type] as string,
+      blue: ansiColorMap['terminal.ansiBlue'].defaults[this.theme.type] as string,
+      magenta: ansiColorMap['terminal.ansiMagenta'].defaults[this.theme.type] as string,
+      cyan: ansiColorMap['terminal.ansiCyan'].defaults[this.theme.type] as string,
+      white: ansiColorMap['terminal.ansiWhite'].defaults[this.theme.type] as string,
+      brightBlack: ansiColorMap['terminal.ansiBrightBlack'].defaults[this.theme.type] as string,
+      brightRed: ansiColorMap['terminal.ansiBrightRed'].defaults[this.theme.type] as string,
+      brightGreen: ansiColorMap['terminal.ansiBrightGreen'].defaults[this.theme.type] as string,
+      brightYellow: ansiColorMap['terminal.ansiBrightYellow'].defaults[this.theme.type] as string,
+      brightBlue: ansiColorMap['terminal.ansiBrightBlue'].defaults[this.theme.type] as string,
+      brightMagenta: ansiColorMap['terminal.ansiBrightMagenta'].defaults[this.theme.type] as string,
+      brightCyan: ansiColorMap['terminal.ansiBrightCyan'].defaults[this.theme.type] as string,
+      brightWhite: ansiColorMap['terminal.ansiBrightWhite'].defaults[this.theme.type] as string,
     };
   }
 }

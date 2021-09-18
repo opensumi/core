@@ -127,9 +127,9 @@ export class ResourceTextEditTask {
       }
     }
     const edits: monaco.editor.IIdentifiedSingleEditOperation[] = [];
-    let newEOL: EndOfLineSequence | null = null;
+    let newEOL: EndOfLineSequence | undefined;
     for (const edit of this.edits) {
-      if (!isUndefined(edit.textEdit.eol)) {
+      if (edit.textEdit.eol && !isUndefined(edit.textEdit.eol)) {
         newEOL = edit.textEdit.eol;
       }
       edits.push({
@@ -145,7 +145,7 @@ export class ResourceTextEditTask {
       monacoModel.pushStackElement();
     }
 
-    if (!isUndefined(newEOL)) {
+    if (newEOL && !isUndefined(newEOL)) {
       monacoModel.pushStackElement();
       documentModel.eol = newEOL === EndOfLineSequence.CRLF ? EOL.CRLF : EOL.LF;
       monacoModel.pushStackElement();

@@ -45,6 +45,8 @@
     "getmac": "^1.4.6"
   },
   "resolutions": {
+    "urllib": "2.37.3",
+    "canvas": "2.6.1",
     "y18n": "4.0.0"
   },
   "devDependencies": {
