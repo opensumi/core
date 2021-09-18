@@ -159,7 +159,11 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
   }
 
   clearAllEdits(): void {
-    this.previewDeferred?.reject();
+    if (!this.previewDeferred) {
+      return;
+    }
+
+    this.previewDeferred.resolve([]);
     this.clear();
   }
 }
