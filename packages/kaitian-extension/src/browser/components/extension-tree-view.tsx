@@ -111,6 +111,7 @@ export const ExtensionTabBarTreeView = observer(({
   };
 
   React.useEffect(() => {
+    let unmouted = false;
     (async () => {
       await model.whenReady;
       if (!!model.treeModel) {
@@ -118,9 +119,12 @@ export const ExtensionTabBarTreeView = observer(({
         // 这里需要重新取一下treeModel的值确保为最新的TreeModel
         await model.treeModel.root.ensureLoaded();
       }
-      setIsReady(true);
+      if (!unmouted) {
+        setIsReady(true);
+      }
     })();
     return () => {
+      unmouted = true;
       model && model.removeNodeDecoration();
     };
   }, [model]);

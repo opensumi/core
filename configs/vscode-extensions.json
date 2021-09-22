@@ -3,6 +3,9 @@
   "extensions": {
     "vscode-extensions": [
       {
+        "name": "typescript-language-features"
+      },
+      {
         "name": "bat"
       },
       {
@@ -208,9 +211,6 @@
       },
       {
         "name": "vscode-language-pack-zh-hans"
-      },
-      {
-        "name": "typescript-language-features"
       },
       {
         "name": "ide-dark-theme"
