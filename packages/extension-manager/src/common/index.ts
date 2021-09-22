@@ -165,7 +165,7 @@ export interface IExtensionManagerService  {
   loadHotExtensions(): Promise<void>;
   getExtDeps(extensionId: string, version?: string): Promise<ExtensionDependencies>;
   dispose(): void;
-  getEnabledDeps(): Promise<Map<string, string[]>>;
+  getEnabledDepsByExtensionId(extensionId: string): string[];
   transformDepsDeclaration(raw: string | { [key: string]: string}): { id: string, version: string };
   getExtensionVersions(extensionId: string): Promise<IExtensionVersion[]>;
   checkNeedReload(extensionId: string, reloadRequire: boolean): Promise<void>;

@@ -144,7 +144,7 @@ describe('extension manager service test', () => {
       enabled: true,
       extensionId: 'b',
       packageJSON: {
-        extensionDependencies: [extA.extensionId],
+        extensionDependencies: [extA.id],
       },
     });
 
@@ -157,7 +157,7 @@ describe('extension manager service test', () => {
       enabled: false,
       extensionId: 'd',
       packageJSON: {
-        extensionDependencies: [extC.extensionId],
+        extensionDependencies: [extC.id],
       },
     });
 
@@ -174,28 +174,21 @@ describe('extension manager service test', () => {
     * 则 return 的结果为 A - B
     *
     */
-    expect(await extensionManagerService.getEnabledDeps())
-      .toEqual(new Map(Object.entries({
-        [extA.extensionId]: extB.extensionId,
-      })));
+    expect(extensionManagerService.getEnabledDepsByExtensionId(extA.id))
+      .toEqual([extB.id]);
 
     /**
-     * 启用插件 F，依赖插件 D
-     * 则此时的结果应该为 A - B, D - F
+     * F依赖禁用状态的插件 D，所以获取依赖为空数组
      */
     const extF = createFakeExtension({
       enabled: true,
       extensionId: 'f',
       packageJSON: {
-        extensionDependencies: [extD.extensionId],
+        extensionDependencies: [extD.id],
       },
     });
-
-    expect(await extensionManagerService.getEnabledDeps())
-      .toEqual(new Map(Object.entries({
-        [extA.extensionId]: extB.extensionId,
-        [extD.extensionId]: extF.extensionId,
-      })));
+    expect(extensionManagerService.getEnabledDepsByExtensionId(extF.id))
+      .toEqual([]);
   });
 
   it('enable all extension', async () => {
@@ -248,13 +241,13 @@ describe('extension manager service test', () => {
       // 启用
       await extensionManagerService.toggleActiveExtension(packExtension, true, EnableScope.GLOBAL);
 
-      expect(fakePostEnableExtension).toBeCalledTimes(3);
+      expect(fakePostEnableExtension).toBeCalledTimes(1);
 
       // 禁用
       await extensionManagerService.toggleActiveExtension(packExtension, false, EnableScope.GLOBAL);
 
       // disable pack 时，同时会 disable pack 中的 ext
-      expect(fakePostDisableExtension).toBeCalledTimes(3);
+      expect(fakePostDisableExtension).toBeCalledTimes(1);
     });
   });
 
