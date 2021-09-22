@@ -45,7 +45,7 @@ export interface ClientAppContribution {
    * onDisposeEffect 适用于一些耗时较长的阻塞性任务，适用于将 IDE 作为大组件优雅卸载的场景
    * 但 onDisposeEffect 在 Electron 下可能会阻塞窗口关闭(例如需要1s以上时间关闭)
    */
-  onDisposeSideEffects?(app: IClientApp): MaybePromise<void>;
+  onDisposeSideEffects?(app: IClientApp): void;
 
   /**
    *

@@ -8,16 +8,33 @@ import { IResourceOpenOptions, WorkbenchEditorService } from '@ali/ide-editor';
 import type * as vscode from 'vscode';
 
 import { TextDocumentShowOptions, ViewColumn } from '../common/vscode';
-import { EMIT_EXT_HOST_EVENT, ExtensionHostProfilerServicePath, ExtensionHostType, ExtensionService, IExtensionHostProfilerService } from '../common';
+import { ExtensionNodeServiceServerPath, IExtensionNodeClientService, EMIT_EXT_HOST_EVENT, ExtensionHostProfilerServicePath, ExtensionHostType, ExtensionService, IExtensionHostProfilerService } from '../common';
 import { ActivatedExtension } from '../common/activator';
 import * as VSCodeBuiltinCommands from './vscode/builtin-commands';
 import { AbstractExtInstanceManagementService, ExtensionApiReadyEvent, ExtHostEvent, IActivationEventService, Serializable } from './types';
 import { fromRange, isLikelyVscodeRange, viewColumnToResourceOpenOptions } from '../common/vscode/converter';
 
+export const getClientId = (injector: Injector) => {
+  let clientId: string;
+  if (isElectronEnv()) {
+    clientId = electronEnv.metadata.windowClientId;
+  } else {
+    const channelHandler = injector.get(WSChannelHandler);
+    clientId = channelHandler.clientId;
+  }
+  return clientId;
+};
+
 @Domain(ClientAppContribution)
 export class KaitianExtensionClientAppContribution implements ClientAppContribution {
   @Autowired(IPreferenceSettingsService)
   private readonly preferenceSettingsService: IPreferenceSettingsService;
+
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
+  @Autowired(ExtensionNodeServiceServerPath)
+  private readonly extensionNodeClient: IExtensionNodeClientService;
 
   @Autowired(QuickOpenService)
   protected readonly quickOpenService: QuickOpenService;
@@ -58,13 +75,23 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
   }
 
   onDisposeSideEffects() {
-    // IDE 关闭或者重启时销毁插件进程
-    this.extensionService.disposeExtensions();
+    /**
+     * IDE 关闭或者刷新时销毁插件进程
+     * 最好在这里直接关掉插件进程，调用链路太长可能导致请求调不到后端
+     */
+    this.extensionNodeClient.disposeClientExtProcess(this.clientId, false);
   }
 
   onContextKeyServiceReady(contextKeyService: IContextKeyService) {
     // `listFocus` 为 vscode 旧版 api，已经废弃，默认设置为 true
     contextKeyService.createKey('listFocus', true);
+  }
+
+  /**
+   * 当前客户端 id
+   */
+  private get clientId() {
+    return getClientId(this.injector);
   }
 }
 
@@ -351,13 +378,6 @@ export class KaitianExtensionCommandContribution implements CommandContribution 
    * 当前客户端 id
    */
   private get clientId() {
-    let clientId: string;
-    if (isElectronEnv()) {
-      clientId = electronEnv.metadata.windowClientId;
-    } else {
-      const channelHandler = this.injector.get(WSChannelHandler);
-      clientId = channelHandler.clientId;
-    }
-    return clientId;
+    return getClientId(this.injector);
   }
 }
