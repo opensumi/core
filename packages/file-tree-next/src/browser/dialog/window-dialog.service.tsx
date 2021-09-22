@@ -82,7 +82,7 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
 
       if (isMacintosh) {
         // macOS - Treat packages, such as .app folders, as a directory instead of a file.
-        properties.push('treatPackageAsDirectory');
+        properties.push('treatPackageAsDirectory', 'createDirectory');
       }
       const defaultUri = options.defaultUri || this.defaultUri;
       const res = await electronUi.showOpenDialog(electronEnv.currentWindowId, {
