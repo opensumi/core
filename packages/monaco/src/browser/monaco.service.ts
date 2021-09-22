@@ -1,17 +1,17 @@
-import type { ICodeEditor, IDiffEditor } from './monaco-api/types';
-import { monaco } from './monaco-api';
-// import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Disposable, KeybindingRegistry, MonacoOverrideServiceRegistry, ServiceNames, ILogger } from '@ali/ide-core-browser';
 import { Deferred, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
-
-import { MonacoService } from '../common';
-import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
-import { IEditorConstructionOptions } from '@ali/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { IEditorConstructionOptions, isDiffEditor, MouseTargetType } from '@ali/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { IDiffEditorConstructionOptions } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
-import { IDisposable } from '@ali/monaco-editor-core/esm/vs/base/common/lifecycle';
-import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
 import { SimpleKeybinding } from '@ali/monaco-editor-core/esm/vs/base/common/keyCodes';
+import { Range } from '@ali/monaco-editor-core/esm/vs/editor/editor.main';
+import { IDisposable } from '@ali/monaco-editor-core/esm/vs/base/common/lifecycle';
+
+import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
+import { ICodeEditor, IDiffEditor } from './monaco-api/types';
+import { monaco } from './monaco-api';
+import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
+import { MonacoService } from '../common';
 
 @Injectable()
 export default class MonacoServiceImpl extends Disposable implements MonacoService {
@@ -65,7 +65,41 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       ...options,
     }, { ...this.overrideServiceRegistry.all(), ...overrides });
     this.overrideMonacoKeybindingService(editor);
+
+    this.addClickEventListener(editor);
     return editor;
+  }
+
+  private doAddClickEventListener(editor: ICodeEditor) {
+    this.addDispose(editor.onMouseDown((e) => {
+      if (e.target.type === MouseTargetType.GUTTER_LINE_NUMBERS) {
+        const lineNumber = e.target.position?.lineNumber || e.target.range?.startLineNumber;
+        if (!lineNumber) {
+          return;
+        }
+
+        editor.setSelection(
+          new Range(
+            lineNumber,
+            e.target.range?.startColumn || e.target.position?.column || 0,
+            lineNumber + 1,
+            e.target.range?.startColumn || e.target.position?.column || 0,
+          ),
+        );
+      }
+    }));
+  }
+
+  private addClickEventListener(editor: IDiffEditor | ICodeEditor) {
+    if (isDiffEditor(editor)) {
+      const originalEditor = editor.getOriginalEditor();
+      const modifiedEditor = editor.getModifiedEditor();
+
+      this.doAddClickEventListener(originalEditor);
+      this.doAddClickEventListener(modifiedEditor);
+    } else {
+      this.doAddClickEventListener(editor);
+    }
   }
 
   public createDiffEditor(
@@ -85,6 +119,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       ...options,
     } as any, { ...this.overrideServiceRegistry.all(), ...overrides });
     this.overrideMonacoKeybindingService(editor);
+    this.addClickEventListener(editor);
     return editor;
   }
 
