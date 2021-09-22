@@ -177,7 +177,6 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
     }
   }, [data]);
 
-  // 这里使用 onMouseDown 事件，避免比 onBlur 推后而改变关闭原因
   const runQuickOpenItem = React.useCallback((event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     // 如果为多选，则点击 item 为切换选中状态
     if (widget.canSelectMany) {
@@ -205,7 +204,7 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
       { widget.canSelectMany && (
         <CheckBox checked={data.checked} onChange={(event) => data.checked = (event.target as HTMLInputElement).checked} />
       )}
-      <div className={styles.item_label_container} onMouseDown={runQuickOpenItem}>
+      <div className={styles.item_label_container} onClick={runQuickOpenItem}>
         <div className={styles.item_label}>
           { iconClass && (
             <span className={clx(styles.item_icon, iconClass)}></span>
@@ -266,7 +265,30 @@ export const QuickOpenView = observer(() => {
   const { widget } = React.useContext(QuickOpenContext);
   const listApi = React.useRef<IRecycleListHandler>();
 
-  const onBlur = React.useCallback(() => {
+  // https://stackoverflow.com/questions/38019140/react-and-blur-event/38019906#38019906
+  const focusInCurrentTarget = React.useCallback(({ relatedTarget, currentTarget }) => {
+    // 点击 checkbox 时 relatedTarget 为 null
+    if (relatedTarget === null) {
+      return true;
+    }
+
+    let node = relatedTarget.parentNode;
+
+    while (node !== null) {
+      if (node === currentTarget) {
+        return true;
+      }
+      node = node.parentNode;
+    }
+
+    return false;
+  }, []);
+
+  const onBlur = React.useCallback((event: React.FocusEvent) => {
+    // 判断其是否在父元素内，如果在父元素内就不做处理
+    if (focusInCurrentTarget(event)) {
+      return;
+    }
     // 判断移出焦点后是否需要关闭组件
     const keepShow = widget.callbacks.onFocusLost();
     if (!keepShow) {
