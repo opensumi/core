@@ -219,12 +219,12 @@ export class ClientApp implements IClientApp, IDisposable {
 
     this.logger = this.getLogger();
     this.stateService.state = 'client_connected';
+    this.registerEventListeners();
     // 在 connect 之后立即初始化数据，保证其它 module 能同步获取数据
     await this.injector.get(IApplicationService).initializeData();
     // 在 contributions 执行完 onStart 上报一次耗时
     await this.measure('Contributions.start', () => this.startContributions(container));
     this.stateService.state = 'started_contributions';
-    this.registerEventListeners();
     this.stateService.state = 'ready';
 
     measureReporter.timeEnd('Framework.ready');
@@ -588,14 +588,14 @@ export class ClientApp implements IClientApp, IDisposable {
       document.body.removeEventListener('wheel', this._handleWheel);
     }
 
-    await  this.disposeSideEffect();
+    this.disposeSideEffect();
   }
 
-  private async disposeSideEffect() {
+  private disposeSideEffect() {
     for (const contribution of this.contributions) {
       if (contribution.onDisposeSideEffects) {
         try {
-          await contribution.onDisposeSideEffects(this);
+          contribution.onDisposeSideEffects(this);
         } catch (error) {
           this.logger.error('Could not dispose contribution', error);
         }
@@ -642,8 +642,8 @@ export class ClientApp implements IClientApp, IDisposable {
     // 浏览器关闭事件
     this.stateService.state = 'closing_window';
     if (!isElectronRenderer()) {
-      this.stopContributions();
       this.disposeSideEffect();
+      this.stopContributions();
     }
   }
 
