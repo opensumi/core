@@ -8,6 +8,7 @@ import { warning } from '../utils/warning';
 import raf from '../utils/raf';
 import collapseMotion from '../utils/motion';
 import MenuContext from './MenuContext';
+import './style.less';
 
 export interface SelectParam {
   key: string;
