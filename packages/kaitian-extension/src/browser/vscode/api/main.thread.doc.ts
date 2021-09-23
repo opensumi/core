@@ -7,6 +7,7 @@ import { ResourceService } from '@ali/ide-editor';
 import { EditorComponentRegistry, IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, EditorDocumentModelCreationEvent, EditorDocumentModelRemovalEvent, EditorDocumentModelSavedEvent, IEditorDocumentModelContentProvider, EditorDocumentModelOptionChangedEvent, EditorDocumentModelWillSaveEvent } from '@ali/ide-editor/lib/browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { PreferenceService } from '@ali/ide-core-browser';
+import { IFileServiceClient } from '@ali/ide-file-service';
 
 const DEFAULT_EXT_HOLD_DOC_REF_MAX_AGE = 1000 * 60 * 3; // 插件进程openDocument持有的最长时间
 const DEFAULT_EXT_HOLD_DOC_REF_MIN_AGE = 1000 * 20; // 插件进程openDocument持有的最短时间，防止bounce
@@ -74,6 +75,9 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
 
   @Autowired(PreferenceService)
   preference: PreferenceService;
+
+  @Autowired(IFileServiceClient)
+  fileServiceClient: IFileServiceClient;
 
   provider: ExtensionEditorDocumentProvider;
 
@@ -247,6 +251,10 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
       },
     }));
     disposer.addDispose(this.editorComponentRegistry.registerEditorComponentResolver(scheme, (resource, results) => {
+      if (this.fileServiceClient.handlesScheme(scheme)) {
+        // 有插件会同时注册 documentProvider 和 fileSystem，如果这里注册了 fileSystem，就不再添加打开类型
+        return;
+      }
       results.push({
         type: 'code',
         readonly: true,
