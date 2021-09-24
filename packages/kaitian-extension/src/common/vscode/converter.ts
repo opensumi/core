@@ -435,16 +435,6 @@ export function fromDefinitionLink(
   } as model.DefinitionLink;
 }
 
-export function fromInsertText(item: vscode.CompletionItem): string {
-  if (typeof item.insertText === 'string') {
-    return item.insertText;
-  }
-  if (typeof item.insertText === 'object') {
-    return item.insertText.value;
-  }
-  return item.label;
-}
-
 export function fromFoldingRange(
   foldingRange: vscode.FoldingRange,
 ): model.FoldingRange {
@@ -1256,134 +1246,12 @@ export namespace CompletionItemKind {
   }
 }
 
-/**
- * @deprecated
- */
-export function fromCompletionItemKind(
-  kind: vscode.CompletionItemKind | undefined,
-): model.CompletionItemKind {
-  switch (kind) {
-    case types.CompletionItemKind.Method:
-      return model.CompletionItemKind.Method;
-    case types.CompletionItemKind.Function:
-      return model.CompletionItemKind.Function;
-    case types.CompletionItemKind.Constructor:
-      return model.CompletionItemKind.Constructor;
-    case types.CompletionItemKind.Field:
-      return model.CompletionItemKind.Field;
-    case types.CompletionItemKind.Variable:
-      return model.CompletionItemKind.Variable;
-    case types.CompletionItemKind.Class:
-      return model.CompletionItemKind.Class;
-    case types.CompletionItemKind.Interface:
-      return model.CompletionItemKind.Interface;
-    case types.CompletionItemKind.Struct:
-      return model.CompletionItemKind.Struct;
-    case types.CompletionItemKind.Module:
-      return model.CompletionItemKind.Module;
-    case types.CompletionItemKind.Property:
-      return model.CompletionItemKind.Property;
-    case types.CompletionItemKind.Unit:
-      return model.CompletionItemKind.Unit;
-    case types.CompletionItemKind.Value:
-      return model.CompletionItemKind.Value;
-    case types.CompletionItemKind.Constant:
-      return model.CompletionItemKind.Constant;
-    case types.CompletionItemKind.Enum:
-      return model.CompletionItemKind.Enum;
-    case types.CompletionItemKind.EnumMember:
-      return model.CompletionItemKind.EnumMember;
-    case types.CompletionItemKind.Keyword:
-      return model.CompletionItemKind.Keyword;
-    case types.CompletionItemKind.Snippet:
-      return model.CompletionItemKind.Snippet;
-    case types.CompletionItemKind.Text:
-      return model.CompletionItemKind.Text;
-    case types.CompletionItemKind.Color:
-      return model.CompletionItemKind.Color;
-    case types.CompletionItemKind.File:
-      return model.CompletionItemKind.File;
-    case types.CompletionItemKind.Reference:
-      return model.CompletionItemKind.Reference;
-    case types.CompletionItemKind.Folder:
-      return model.CompletionItemKind.Folder;
-    case types.CompletionItemKind.Event:
-      return model.CompletionItemKind.Event;
-    case types.CompletionItemKind.Operator:
-      return model.CompletionItemKind.Operator;
-    case types.CompletionItemKind.TypeParameter:
-      return model.CompletionItemKind.TypeParameter;
-  }
-  return model.CompletionItemKind.Property;
-}
-
-/**
- * @deprecated
- */
-export function toCompletionItemKind(
-  kind: model.CompletionItemKind,
-): types.CompletionItemKind {
-  switch (kind) {
-    case model.CompletionItemKind.Method:
-      return types.CompletionItemKind.Method;
-    case model.CompletionItemKind.Function:
-      return types.CompletionItemKind.Function;
-    case model.CompletionItemKind.Constructor:
-      return types.CompletionItemKind.Constructor;
-    case model.CompletionItemKind.Field:
-      return types.CompletionItemKind.Field;
-    case model.CompletionItemKind.Variable:
-      return types.CompletionItemKind.Variable;
-    case model.CompletionItemKind.Class:
-      return types.CompletionItemKind.Class;
-    case model.CompletionItemKind.Interface:
-      return types.CompletionItemKind.Interface;
-    case model.CompletionItemKind.Struct:
-      return types.CompletionItemKind.Struct;
-    case model.CompletionItemKind.Module:
-      return types.CompletionItemKind.Module;
-    case model.CompletionItemKind.Property:
-      return types.CompletionItemKind.Property;
-    case model.CompletionItemKind.Unit:
-      return types.CompletionItemKind.Unit;
-    case model.CompletionItemKind.Value:
-      return types.CompletionItemKind.Value;
-    case model.CompletionItemKind.Constant:
-      return types.CompletionItemKind.Constant;
-    case model.CompletionItemKind.Enum:
-      return types.CompletionItemKind.Enum;
-    case model.CompletionItemKind.EnumMember:
-      return types.CompletionItemKind.EnumMember;
-    case model.CompletionItemKind.Keyword:
-      return types.CompletionItemKind.Keyword;
-    case model.CompletionItemKind.Snippet:
-      return types.CompletionItemKind.Snippet;
-    case model.CompletionItemKind.Text:
-      return types.CompletionItemKind.Text;
-    case model.CompletionItemKind.Color:
-      return types.CompletionItemKind.Color;
-    case model.CompletionItemKind.File:
-      return types.CompletionItemKind.File;
-    case model.CompletionItemKind.Reference:
-      return types.CompletionItemKind.Reference;
-    case model.CompletionItemKind.Folder:
-      return types.CompletionItemKind.Folder;
-    case model.CompletionItemKind.Event:
-      return types.CompletionItemKind.Event;
-    case model.CompletionItemKind.Operator:
-      return types.CompletionItemKind.Operator;
-    case model.CompletionItemKind.TypeParameter:
-      return types.CompletionItemKind.TypeParameter;
-  }
-  return types.CompletionItemKind.Property;
-}
-
 export namespace CompletionItem {
   export function to(
     suggestion: model.CompletionItem,
     converter?: CommandsConverter,
   ): types.CompletionItem {
-    const result = new types.CompletionItem(typeof suggestion.label === 'string' ? suggestion.label : suggestion.label.name);
+    const result = new types.CompletionItem(suggestion.label);
     if (typeof suggestion.label !== 'string') {
       result.label2 = suggestion.label;
     }

@@ -41,7 +41,6 @@ import {
   SemanticTokensLegend,
   WithDuration,
   CompletionItemInsertTextRule,
-  CompletionItemLabel,
   IMarkdownString,
   CompletionItemKind,
   CompletionItemTag,
@@ -57,6 +56,7 @@ import type {
   CodeActionContext,
   SignatureHelpContext,
   Command,
+  CompletionItemLabel,
 } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { Disposable } from './ext-types';
 import { SymbolInformation } from 'vscode-languageserver-types';
@@ -563,7 +563,7 @@ export interface ISuggestResultDto {
 }
 
 export interface ISuggestDataDto {
-  [ISuggestDataDtoField.label]: string;
+  [ISuggestDataDtoField.label]: string | CompletionItemLabel;
   [ISuggestDataDtoField.label2]?: string | CompletionItemLabel;
   [ISuggestDataDtoField.kind]?: CompletionItemKind;
   [ISuggestDataDtoField.detail]?: string;

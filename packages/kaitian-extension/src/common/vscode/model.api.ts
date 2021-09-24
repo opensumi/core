@@ -9,6 +9,7 @@ import { SymbolInformation } from 'vscode-languageserver-types';
 import { IndentAction, SymbolKind } from './ext-types';
 import { IMarkdownString } from './models/html-content';
 import { CallHierarchyItem } from '@ali/ide-monaco/lib/browser/contrib/callHierarchy';
+import type { CompletionItemLabel } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 export { IMarkdownString, SymbolTag, CallHierarchyItem };
 
 export interface IRawColorInfo {
@@ -242,25 +243,6 @@ export type CompletionType = 'method'
   | 'customcolor'
   | 'folder'
   | 'type-parameter';
-
-export interface CompletionItemLabel {
-  /**
-   * The function or variable. Rendered leftmost.
-   */
-  name: string;
-  /**
-   * The signature without the return type. Render after `name`.
-   */
-  signature?: string;
-  /**
-   * The fully qualified name, like package name or file path. Rendered after `signature`.
-   */
-  qualifier?: string;
-  /**
-   * The return-type of a function or type of a property/variable. Rendered rightmost.
-   */
-  type?: string;
-}
 
 /**
  * A completion item represents a text snippet that is
@@ -701,25 +683,6 @@ export enum CompletionItemKind {
   User,
   Issue,
   Snippet, // <- highest value (used for compare!)
-}
-
-export interface CompletionItemLabel {
-  /**
-   * The function or variable. Rendered leftmost.
-   */
-  name: string;
-  /**
-   * The parameters without the return type. Render after `name`.
-   */
-  parameters?: string;
-  /**
-   * The fully qualified name, like package name or file path. Rendered after `signature`.
-   */
-  qualifier?: string;
-  /**
-   * The return-type of a function or type of a property/variable. Rendered rightmost.
-   */
-  type?: string;
 }
 
 export enum CompletionItemTag {

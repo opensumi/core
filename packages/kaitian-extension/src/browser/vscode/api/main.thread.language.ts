@@ -173,7 +173,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     }
     const label = data[ISuggestDataDtoField.label2] ?? data[ISuggestDataDtoField.label];
     return {
-      label: typeof label === 'string' ? label : label.name,
+      label: typeof label === 'string' ? label : label.label,
       // @ts-ignore
       kind: data[ISuggestDataDtoField.kind] ?? modes.CompletionItemKind.Property,
       // @ts-ignore
@@ -183,7 +183,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       sortText: data[ISuggestDataDtoField.sortText],
       filterText: data[ISuggestDataDtoField.filterText],
       preselect: data[ISuggestDataDtoField.preselect],
-      insertText: typeof data.h === 'undefined' ? data[ISuggestDataDtoField.label] : data.h,
+      insertText: data[ISuggestDataDtoField.insertText] ?? (typeof label === 'string' ? label : label.label),
       // @ts-ignore
       range: data[ISuggestDataDtoField.range] ?? defaultRange,
       // @ts-ignore

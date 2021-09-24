@@ -1,7 +1,7 @@
 import type * as vscode from 'vscode';
 import { Uri, UriUtils } from '@ali/ide-core-common';
 import { illegalArgument } from './utils';
-import { FileOperationOptions, CompletionItemLabel } from './model.api';
+import { FileOperationOptions } from './model.api';
 import { startsWithIgnoreCase, uuid, es5ClassCompat, isStringArray } from '@ali/ide-core-common';
 import { escapeCodicons } from './models/html-content';
 
@@ -803,10 +803,16 @@ export class MarkdownString {
   }
 }
 
+export interface CompletionItemLabel {
+  label: string;
+  detail?: string;
+  description?: string;
+}
+
 @es5ClassCompat
 export class CompletionItem implements vscode.CompletionItem {
 
-  label: string;
+  label: string | CompletionItemLabel;
   label2?: CompletionItemLabel;
   kind?: vscode.CompletionItemKind;
   tags?: CompletionItemTag[];
@@ -823,7 +829,7 @@ export class CompletionItem implements vscode.CompletionItem {
   additionalTextEdits: TextEdit[];
   command?: vscode.Command;
 
-  constructor(label: string, kind?: vscode.CompletionItemKind) {
+  constructor(label: string | CompletionItemLabel, kind?: vscode.CompletionItemKind) {
     this.label = label;
     this.kind = kind;
   }
