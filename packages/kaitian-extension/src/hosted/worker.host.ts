@@ -10,6 +10,7 @@ import { KTWorkerExtension } from './vscode.extension';
 import { ExtensionContext } from './api/vscode/ext.host.extensions';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { ActivatedExtension, ActivatedExtensionJSON } from '../common/activator';
+import { ExtHostSecret } from './api/vscode/ext.host.secrets';
 
 export function initRPCProtocol() {
   const onMessageEmitter = new Emitter<string>();
@@ -52,6 +53,8 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
 
   public storage: ExtHostStorage;
 
+  public secret: ExtHostSecret;
+
   constructor(rpcProtocol: RPCProtocol) {
     this.rpcProtocol = rpcProtocol;
 
@@ -59,6 +62,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
     this.mainThreadExtensionService = this.rpcProtocol.getProxy<KaitianWorkerExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService);
     this.logger = new ExtensionLogger(rpcProtocol);
     this.storage = new ExtHostStorage(rpcProtocol);
+    this.secret = new ExtHostSecret(rpcProtocol);
     rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, this.storage);
   }
 
@@ -230,6 +234,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
       registerExtendModuleService: registerExtendFn,
       extensionPath: extensionDescription.realPath,
       storageProxy: this.storage,
+      secretProxy: this.secret,
       extensionLocation: extensionDescription.extensionLocation,
     });
 

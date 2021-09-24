@@ -7,6 +7,7 @@ import { KTExtension, KTWorkerExtension } from '../../vscode.extension';
 import { ExtensionMode } from '../../../common/vscode/ext-types';
 import { ExtensionMemento, ExtHostStorage } from './ext.host.storage';
 import { IExtendProxy, IExtensionHost, IExtensionProps } from '../../../common';
+import { ExtensionSecrets, ExtHostSecret } from './ext.host.secrets';
 
 export interface IKTContextOptions {
   extensionId: string;
@@ -14,6 +15,7 @@ export interface IKTContextOptions {
   extensionLocation: Uri;
   extensionDescription: IExtensionProps;
   storageProxy: ExtHostStorage;
+  secretProxy: ExtHostSecret;
   extendProxy?: IExtendProxy;
   isDevelopment?: boolean;
   registerExtendModuleService?: (exportsData: any) => void;
@@ -47,6 +49,8 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
 
   readonly globalState: ExtensionMemento;
 
+  readonly secrets: ExtensionSecrets;
+
   private createExtension: IKTContextOptions['createExtension'];
 
   private _storage: ExtHostStorage;
@@ -63,6 +67,7 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
     const {
       extensionId,
       storageProxy,
+      secretProxy,
       createExtension,
       isDevelopment,
       extensionLocation,
@@ -76,6 +81,7 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
     this._isDevelopment = !!isDevelopment;
     this.workspaceState = new ExtensionMemento(extensionId, false, storageProxy);
     this.globalState = new ExtensionMemento(extensionId, true, storageProxy);
+    this.secrets = new ExtensionSecrets(extensionDescription, secretProxy);
     this.exthostTerminalService = options.exthostTerminal;
     this.componentProxy = options.extendProxy;
     this.registerExtendModuleService = options.registerExtendModuleService;

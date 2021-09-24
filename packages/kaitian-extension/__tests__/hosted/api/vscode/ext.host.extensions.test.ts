@@ -5,7 +5,8 @@ import { initMockRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
 import { ExtensionContext } from '../../../../src/hosted/api/vscode/ext.host.extensions';
 import { ExtHostStorage } from '../../../../src/hosted/api/vscode/ext.host.storage';
 import { ExtensionWorkerHost } from '../../../../src/hosted/worker.host';
-import { ExtensionMode } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
+import { ExtensionMode } from '../../../../src/common/vscode/ext-types';
+import { ExtHostSecret } from '../../../../src/hosted/api/vscode/ext.host.secrets';
 
 const staticServicePath = 'http://localhost:9999';
 
@@ -48,6 +49,7 @@ describe(`test ${__filename}`, () => {
       extensionPath: mockExtension.realPath,
       extensionLocation: mockExtension.extensionLocation,
       storageProxy: new ExtHostStorage(rpcProtocol),
+      secretProxy: new ExtHostSecret(rpcProtocol),
     });
   });
 

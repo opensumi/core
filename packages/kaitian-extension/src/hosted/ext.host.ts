@@ -11,6 +11,7 @@ import { ExtensionContext } from './api/vscode/ext.host.extensions';
 import { KTExtension } from './vscode.extension';
 import { AppConfig } from '@ali/ide-core-node';
 import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from '../common/activator';
+import { ExtHostSecret } from './api/vscode/ext.host.secrets';
 
 /**
  * 在Electron中，会将kaitian中的extension-host使用webpack打成一个，所以需要其他方法来获取原始的require
@@ -35,6 +36,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
   public extensionsActivator: ExtensionsActivator;
   public storage: ExtHostStorage;
+  public secret: ExtHostSecret;
 
   readonly extensionsChangeEmitter: Emitter<void> = new Emitter<void>();
 
@@ -45,6 +47,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   constructor(rpcProtocol: RPCProtocol, public logger: IExtensionLogger, private injector: Injector) {
     this.rpcProtocol = rpcProtocol;
     this.storage = new ExtHostStorage(rpcProtocol);
+    this.secret = new ExtHostSecret(rpcProtocol);
     const reporter = injector.get(IReporter);
     this.vscodeAPIFactory = createVSCodeAPIFactory(
       this.rpcProtocol,
@@ -333,7 +336,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     this.logger.debug('kaitian exthost $activateExtension path', modulePath);
     const extendProxy = this.getExtendModuleProxy(extension, isKaitianContributes);
 
-    const context = await this.loadExtensionContext(extension, modulePath, this.storage, extendProxy);
+    const context = await this.loadExtensionContext(extension, modulePath, this.storage, this.secret, extendProxy);
 
     let activationFailed = false;
     let activationFailedError: Error | null = null;
@@ -486,7 +489,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     return this.activateExtension(id);
   }
 
-  private async loadExtensionContext(extensionDescription: IExtensionDescription, modulePath: string, storageProxy: ExtHostStorage, extendProxy: IExtendProxy) {
+  private async loadExtensionContext(extensionDescription: IExtensionDescription, modulePath: string, storageProxy: ExtHostStorage, secretProxy: ExtHostSecret, extendProxy: IExtendProxy) {
 
     const extensionId = extensionDescription.id;
     const registerExtendFn = (exportsData) => {
@@ -502,6 +505,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       extensionPath: modulePath,
       extensionLocation: extensionDescription.extensionLocation,
       storageProxy,
+      secretProxy,
       extendProxy,
       registerExtendModuleService: registerExtendFn,
       exthostTerminal: exthostTermianl,

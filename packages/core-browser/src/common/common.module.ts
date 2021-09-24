@@ -3,7 +3,7 @@ import { BrowserModule } from '../browser-module';
 import { ClientCommonContribution } from './common.contribution';
 import { OpenerContribution } from '../opener';
 import { DefaultOpenerContribution, OpenerContributionClient } from '../opener/opener.contribution';
-import { CommonServerPath } from '@ali/ide-core-common';
+import { CommonServerPath, CryptrServicePath, KeytarServicePath } from '@ali/ide-core-common';
 import { AuthenticationContribution } from '../authentication/authentication.contribution';
 
 @Injectable()
@@ -18,6 +18,12 @@ export class ClientCommonModule extends BrowserModule {
   backServices = [
     {
       servicePath: CommonServerPath,
+    },
+    {
+      servicePath: KeytarServicePath,
+    },
+    {
+      servicePath: CryptrServicePath,
     },
   ];
 }

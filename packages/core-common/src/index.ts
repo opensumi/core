@@ -42,3 +42,5 @@ export * from './cache';
 export * from './keyboard';
 export * from './theme';
 export * from './env';
+export * from './credential';
+export * from './cryptr';

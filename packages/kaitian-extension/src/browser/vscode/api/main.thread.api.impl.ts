@@ -19,6 +19,7 @@ import {
   IMainThreadCustomEditor,
   IMainThreadAuthentication,
   IMainThreadWebviewView,
+  IMainThreadSecret,
 } from '../../../common/vscode'; // '../../common';
 import { MainThreadCommands } from './main.thread.commands';
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
@@ -55,6 +56,7 @@ import { MainThreadExtensionLog } from './main.thread.log';
 import { MainThreadTheming } from './main.thread.theming';
 import { MainThreadCustomEditor } from './main.thread.custom-editor';
 import { MainThreadAuthentication } from './main.thread.authentication';
+import { MainThreadSecret } from './main.thread.secret';
 
 export async function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -93,6 +95,7 @@ export async function createApiFactory(
   const MainthreadThemingAPI = injector.get(MainThreadTheming, [rpcProtocol]);
   const MainThreadCustomEditorAPI = injector.get(MainThreadCustomEditor, [rpcProtocol, MainThreadWebviewAPI]);
   const MainThreadAuthenticationAPI = injector.get(MainThreadAuthentication, [rpcProtocol]);
+  const MainThreadSecretAPI = injector.get(MainThreadSecret, [rpcProtocol]);
 
   rpcProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   rpcProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
@@ -126,6 +129,7 @@ export async function createApiFactory(
   rpcProtocol.set<IMainThreadExtensionLog>(MainThreadExtensionLogIdentifier, injector.get(MainThreadExtensionLog));
   rpcProtocol.set<IMainThreadCustomEditor>(MainThreadAPIIdentifier.MainThreadCustomEditor, MainThreadCustomEditorAPI);
   rpcProtocol.set<IMainThreadAuthentication>(MainThreadAPIIdentifier.MainThreadAuthentication, MainThreadAuthenticationAPI);
+  rpcProtocol.set<IMainThreadSecret>(MainThreadAPIIdentifier.MainThreadSecret, MainThreadSecretAPI);
 
   await MainThreadWebviewAPI.init();
 
@@ -159,6 +163,7 @@ export async function createApiFactory(
     MainthreadUrlsAPI.dispose();
     MainthreadThemingAPI.dispose();
     MainThreadAuthenticationAPI.dispose();
+    MainThreadSecretAPI.dispose();
   };
 }
 
@@ -186,6 +191,8 @@ export async function initWorkerTheadAPIProxy(
   const MainthreadCommentsAPI = injector.get(MainthreadComments, [workerProtocol, MainThreadCommandsAPI]);
   const MainThreadThemingAPI = injector.get(MainThreadTheming, [workerProtocol]);
   const MainThreadCustomEditorAPI = injector.get(MainThreadCustomEditor, [workerProtocol, MainThreadWebviewAPI]);
+  const MainThreadAuthenticationAPI = injector.get(MainThreadAuthentication, [workerProtocol]);
+  const MainThreadSecretAPI = injector.get(MainThreadSecret, [workerProtocol]);
 
   workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
@@ -207,6 +214,8 @@ export async function initWorkerTheadAPIProxy(
   workerProtocol.set<IMainThreadProgress>(MainThreadAPIIdentifier.MainThreadProgress, MainThreadProgressAPI);
   workerProtocol.set<IMainThreadTheming>(MainThreadAPIIdentifier.MainThreadTheming, MainThreadThemingAPI);
   workerProtocol.set<IMainThreadCustomEditor>(MainThreadAPIIdentifier.MainThreadCustomEditor, MainThreadCustomEditorAPI);
+  workerProtocol.set<IMainThreadAuthentication>(MainThreadAPIIdentifier.MainThreadAuthentication, MainThreadAuthenticationAPI);
+  workerProtocol.set<IMainThreadSecret>(MainThreadAPIIdentifier.MainThreadSecret, MainThreadSecretAPI);
 
   // 作用和 node extension service 等同，用来设置 webview resourceRoots
   await MainThreadWebviewAPI.init();
@@ -230,5 +239,7 @@ export async function initWorkerTheadAPIProxy(
     MainthreadCommentsAPI.dispose();
     MainThreadThemingAPI.dispose();
     MainThreadCustomEditorAPI.dispose();
+    MainThreadAuthenticationAPI.dispose();
+    MainThreadSecretAPI.dispose();
   };
 }

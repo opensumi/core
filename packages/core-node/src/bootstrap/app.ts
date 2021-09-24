@@ -106,6 +106,10 @@ interface Config {
    * 插件进程 fork 配置
    */
   extHostForkOptions?: Partial<cp.ForkOptions>;
+  /**
+   * 配置关闭 keytar 校验能力，默认开启
+   */
+  disableKeytar?: boolean;
 }
 
 export interface AppConfig extends Partial<Config> {
