@@ -18,7 +18,7 @@ import {
 } from './models';
 import * as marked from 'marked';
 import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
-import { EndOfLineSequence } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+import { EndOfLineSequence, CodeActionTriggerType } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import { IInlineValueContextDto } from './languages';
 
 export interface TextEditorOpenOptions extends vscode.TextDocumentShowOptions {
@@ -1696,5 +1696,18 @@ export namespace InlineValueContext {
 
   export function to(inlineValueContext: IInlineValueContextDto): types.InlineValueContext {
     return new types.InlineValueContext(inlineValueContext.frameId, Range.to(inlineValueContext.stoppedLocation));
+  }
+}
+
+export namespace CodeActionTriggerKind {
+
+  export function to(value: CodeActionTriggerType): types.CodeActionTriggerKind {
+    switch (value) {
+      case CodeActionTriggerType.Invoke:
+        return types.CodeActionTriggerKind.Invoke;
+
+      case CodeActionTriggerType.Auto:
+        return types.CodeActionTriggerKind.Automatic;
+    }
   }
 }

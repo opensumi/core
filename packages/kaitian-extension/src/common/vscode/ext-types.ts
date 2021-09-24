@@ -1061,6 +1061,11 @@ export class CodeActionKind {
   }
 }
 
+export enum CodeActionTriggerKind {
+  Invoke = 1,
+  Automatic = 2,
+}
+
 @es5ClassCompat
 export class CodeAction {
   title: string;

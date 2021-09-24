@@ -746,19 +746,41 @@ declare module 'vscode' {
     constructor(contents: MarkedString | MarkedString[], range?: Range);
   }
   /**
+   * The reason why code actions were requested.
+   */
+  export enum CodeActionTriggerKind {
+    /**
+     * Code actions were explicitly requested by the user or by an extension.
+     */
+    Invoke = 1,
+
+    /**
+     * Code actions were requested automatically.
+     *
+     * This typically happens when current selection in a file changes, but can
+     * also be triggered when file content changes.
+     */
+    Automatic = 2,
+  }
+  /**
    * Contains additional diagnostic information about the context in which
-   * a [code action](#CodeActionProvider.provideCodeActions) is run.
+   * a {@link CodeActionProvider.provideCodeActions code action} is run.
    */
   export interface CodeActionContext {
     /**
+     * The reason why code actions were requested.
+     */
+    readonly triggerKind: CodeActionTriggerKind;
+
+    /**
      * An array of diagnostics.
      */
-    readonly diagnostics: ReadonlyArray<Diagnostic>;
+    readonly diagnostics: readonly Diagnostic[];
 
     /**
      * Requested kind of actions to return.
      *
-     * Actions not of this kind are filtered out before being shown by the lightbulb.
+     * Actions not of this kind are filtered out before being shown by the [lightbulb](https://code.visualstudio.com/docs/editor/editingevolved#_code-action).
      */
     readonly only?: CodeActionKind;
   }
