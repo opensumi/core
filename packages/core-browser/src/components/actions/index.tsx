@@ -178,7 +178,13 @@ const InlineActionWidget: React.FC<{
     }
   }, [ data, context ]);
 
-  const title = data.tooltip || data.label;
+  const title = React.useMemo(() => {
+    const title = data.tooltip || data.label;
+    if (data.keybinding) {
+      return `${title} (${data.keybinding.split('').join('+')})`;
+    }
+    return title;
+  }, [ data ]);
 
   const isSubmenuNode = data.id === SubmenuItemNode.ID;
 

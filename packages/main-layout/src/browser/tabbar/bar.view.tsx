@@ -3,7 +3,7 @@ import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
 import { Layout } from '@ali/ide-core-browser/lib/components/layout/layout';
 import { Badge, Icon } from '@ali/ide-components';
-import { ComponentRegistryInfo, useInjectable } from '@ali/ide-core-browser';
+import { ComponentRegistryInfo, useInjectable, KeybindingRegistry } from '@ali/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { TabbarConfig } from './renderer.view';
@@ -116,9 +116,19 @@ export const TabbarViewBase: React.FC<{
 
 export const IconTabView: React.FC<{component: ComponentRegistryInfo}> = observer(({ component }) => {
   const progressService: IProgressService = useInjectable(IProgressService);
+  const keybindingRegistry: KeybindingRegistry = useInjectable(KeybindingRegistry);
   const inProgress = progressService.getIndicator(component.options!.containerId)!.progressModel.show;
+
+  const title = React.useMemo(() => {
+    const options = component.options!;
+    if (options.activateKeyBinding) {
+      return `${options.title} (${keybindingRegistry.acceleratorForKeyString(options.activateKeyBinding, '+')})`;
+    }
+    return options.title;
+  }, [component]);
+
   return <div className={styles.icon_tab}>
-    <div className={clsx(component.options!.iconClass, 'activity-icon')} title={component.options!.title}></div>
+    <div className={clsx(component.options!.iconClass, 'activity-icon')} title={title}></div>
     {
       inProgress
         ? <Badge className={styles.tab_badge}>

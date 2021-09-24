@@ -138,6 +138,7 @@ export interface KeybindingRegistry {
   acceleratorForSequence(keySequence: KeySequence, separator: string): string[];
   acceleratorForKeyCode(keyCode: KeyCode, separator: string): string;
   acceleratorForKey(key: Key): string;
+  acceleratorForKeyString(keyString: string, separator?: string): string;
   getKeybindingsForKeySequence(keySequence: KeySequence, event?: KeyboardEvent): KeybindingsResultCollection.KeybindingsResult;
   getKeybindingsForCommand(commandId: string): ScopedKeybinding[];
   getScopedKeybindingsForCommand(scope: KeybindingScope, commandId: string): Keybinding[];
@@ -502,6 +503,11 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    */
   public acceleratorForSequence(keySequence: KeySequence, separator: string = ' '): string[] {
     return keySequence.map((keyCode) => this.acceleratorForKeyCode(keyCode, separator));
+  }
+
+  public acceleratorForKeyString(keyString: string, separator: string = ' '): string {
+    const keyCode = KeyCode.parse(keyString);
+    return this.acceleratorForKeyCode(keyCode, separator);
   }
 
   /**

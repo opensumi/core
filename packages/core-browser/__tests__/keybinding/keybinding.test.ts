@@ -115,6 +115,16 @@ describe('KeybindingRegistry', () => {
       expect(keybindingRegistry.getKeybindingsForCommand(keybinding.command).length).toBe(0);
     });
 
+    test('acceleratorForKeyString', () => {
+      const keybinding = {
+        command: 'test.acceleratorForKeyString',
+        keybinding: 'ctrl+o',
+      };
+      injector.mockCommand('test.command', () => {});
+      keybindingRegistry.registerKeybinding(keybinding, KeybindingScope.USER);
+      expect(keybindingRegistry.acceleratorForKeyString(keybinding.keybinding, '+')).toBe('Ctrl+O');
+    });
+
     test('containsKeybinding', () => {
       const keybinding1 = {
         command: 'test.command',
