@@ -789,6 +789,9 @@ export const localizationBundle = {
     'refactoring-changes.ask.N.move': '{0} extensions want to make refactoring changes with this file move',
     'refactoring-changes.ask.N.delete': '{0} extensions want to make refactoring changes with this file deletion',
 
+    'refactoring-changes.msg.showPreview': 'Show Preview',
+    'refactoring-changes.msg.skipChanges': 'Skil Changes',
+
     'keyboard.chooseKeyboardLayout': 'Choose keyboard layout',
     'keyboard.autoDetect.label': 'Auto Detect',
     'keyboard.autoDetect.description': '(Current: \'{0} \')',

@@ -917,15 +917,17 @@ export namespace WorkspaceEdit {
       if (entry._type === types.WorkspaceEditType.File) {
         // file operation
         result.edits.push({
+          _type: types.WorkspaceEditType.File,
           oldUri: entry.from,
           newUri: entry.to,
           options: entry.options,
           metadata: entry.metadata,
         } as model.ResourceFileEditDto);
-      } else {
+      } else if (entry._type === types.WorkspaceEditType.Text) {
         // text edits
         const doc = documents?.getDocument(entry.uri);
         result.edits.push({
+          _type: types.WorkspaceEditType.Text,
           resource: entry.uri,
           edit: TextEdit.from(entry.edit),
           modelVersionId: doc?.version,
