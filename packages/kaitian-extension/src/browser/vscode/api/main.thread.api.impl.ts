@@ -162,7 +162,7 @@ export async function createApiFactory(
   };
 }
 
-export async function initWorkerTheadAPIProxy(
+export async function initWorkerThreadAPIProxy(
   workerProtocol: IRPCProtocol,
   injector: Injector,
   extensionService,

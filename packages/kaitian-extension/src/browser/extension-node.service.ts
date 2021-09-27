@@ -38,13 +38,15 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
   private extensions: IExtension[] = [];
   public protocol: IRPCProtocol;
 
-  public async disposeProcess() {
-    // dispose api factory
+  public disposeApiFactory() {
     this._apiFactoryDisposables.forEach((disposable) => {
       disposable.dispose();
     });
     this._apiFactoryDisposables = [];
+  }
 
+  public async disposeProcess() {
+    this.disposeApiFactory();
     await this.extensionNodeClient.disposeClientExtProcess(this.clientId, false);
   }
 

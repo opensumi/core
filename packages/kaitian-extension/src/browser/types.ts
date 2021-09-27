@@ -21,7 +21,7 @@ export abstract class IActivationEventService {
 
   abstract addWildCardTopic(topic: string): IDisposable;
 
-  activatedEventSet: Set<{ topic: string, data: string }>;
+  activatedEventMap: Map<string, string>;
 
 }
 
@@ -35,9 +35,14 @@ export abstract class AbstractExtInstanceManagementService {
    */
   abstract getExtensionInstances(): Extension[];
   /**
-   * 重置所有插件实例 (dispose)
+   * 重置所有插件实例 (reset)
    */
   abstract resetExtensionInstances(): void;
+
+  /**
+   * 销毁所有插件实例 (dispose)
+   */
+  abstract disposeExtensionInstances(): void;
 
   /**
    * 通过 extension path 获取插件实例

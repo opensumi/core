@@ -15,6 +15,7 @@ export interface IExtensionChangeEvent {
 abstract class BaseExtProcessService {
   public ready: Deferred<void>;
   abstract protocol: IRPCProtocol;
+  abstract disposeApiFactory(): void;
   abstract disposeProcess(): void | Promise<void>;
   abstract activate(): Promise<IRPCProtocol>;
   abstract activeExtension(extension: IExtension): Promise<void>;

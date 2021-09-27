@@ -196,6 +196,7 @@ export interface IExtension extends IExtensionProps {
   readonly contributes: IExtensionContributions & IKaitianExtensionContributions;
   activate(visited?: Set<string>);
   enable(): void;
+  reset(): void;
   toJSON(): IExtensionProps;
 }
 
