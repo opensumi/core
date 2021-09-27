@@ -18,6 +18,7 @@ import {
 } from './models';
 import * as marked from 'marked';
 import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
+import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { EndOfLineSequence, CodeActionTriggerType } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import { IInlineValueContextDto } from './languages';
 
@@ -1696,6 +1697,39 @@ export namespace InlineValueContext {
 
   export function to(inlineValueContext: IInlineValueContextDto): types.InlineValueContext {
     return new types.InlineValueContext(inlineValueContext.frameId, Range.to(inlineValueContext.stoppedLocation));
+  }
+}
+
+export namespace InlayHint {
+
+  export function from(hint: vscode.InlayHint): modes.InlayHint {
+    return {
+      text: hint.text,
+      position: Position.from(hint.position),
+      kind: InlayHintKind.from(hint.kind ?? types.InlayHintKind.Other),
+      whitespaceBefore: hint.whitespaceBefore,
+      whitespaceAfter: hint.whitespaceAfter,
+    };
+  }
+
+  export function to(hint: modes.InlayHint): vscode.InlayHint {
+    const res = new types.InlayHint(
+      hint.text,
+      Position.to(hint.position),
+      InlayHintKind.to(hint.kind),
+    );
+    res.whitespaceAfter = hint.whitespaceAfter;
+    res.whitespaceBefore = hint.whitespaceBefore;
+    return res;
+  }
+}
+
+export namespace InlayHintKind {
+  export function from(kind: vscode.InlayHintKind): modes.InlayHintKind {
+    return kind;
+  }
+  export function to(kind: modes.InlayHintKind): vscode.InlayHintKind {
+    return kind;
   }
 }
 

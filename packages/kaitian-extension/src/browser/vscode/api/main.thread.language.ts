@@ -1230,4 +1230,28 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   //#endregion Linked Editing Range
 
+  //#region InlayHints
+  $registerInlayHintsProvider(handle: number, selector: SerializedDocumentFilter[], eventHandle: number | undefined): void {
+    const provider = <modes.InlayHintsProvider> {
+      provideInlayHints: async (model: ITextModel, range: monaco.Range, token: CancellationToken): Promise<modes.InlayHint[] | undefined> => {
+        const result = await this.proxy.$provideInlayHints(handle, model.uri, range, token);
+        return result?.hints;
+      },
+    };
+
+    if (typeof eventHandle === 'number') {
+      const emitter = new Emitter<void>();
+      this.disposables.set(eventHandle, emitter);
+      provider.onDidChangeInlayHints = emitter.event;
+    }
+
+    this.disposables.set(handle, modes.InlayHintsProviderRegistry.register(selector, provider));
+  }
+  $emitInlayHintsEvent(eventHandle: number, event?: any): void {
+    const obj = this.disposables.get(eventHandle);
+    if (obj instanceof Emitter) {
+      obj.fire(event);
+    }
+  }
+  //#endregion InlayHints
 }

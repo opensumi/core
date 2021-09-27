@@ -2942,3 +2942,28 @@ export class InlineValueContext implements vscode.InlineValueContext {
   }
 }
 //#endregion Inline Values
+
+//#region InlayHint
+
+export enum InlayHintKind {
+  Other = 0,
+  Type = 1,
+  Parameter = 2,
+}
+
+@es5ClassCompat
+export class InlayHint {
+  text: string;
+  position: Position;
+  kind?: vscode.InlayHintKind;
+  whitespaceBefore?: boolean;
+  whitespaceAfter?: boolean;
+
+  constructor(text: string, position: Position, kind?: vscode.InlayHintKind) {
+    this.text = text;
+    this.position = position;
+    this.kind = kind;
+  }
+}
+
+//#endregion InlayHint

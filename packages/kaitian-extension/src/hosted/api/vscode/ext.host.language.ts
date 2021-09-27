@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import { InlineValue } from '@ali/ide-debug/lib/common/inline-values';
 import type { CodeActionContext } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { ConstructorOf } from '@ali/common-di';
@@ -123,8 +124,9 @@ import { DocumentRangeSemanticTokensAdapter, DocumentSemanticTokensAdapter } fro
 import { EvaluatableExpressionAdapter } from './language/evaluatableExpression';
 import { InlineValuesAdapter } from './language/inline-values';
 import { LinkedEditingRangeAdapter } from './language/linked-editing-range';
+import { InlayHintsAdapter } from './language/inlay-hints';
 
-export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, extension: IExtensionDescription) {
+export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, extension: IExtensionDescription): typeof vscode.languages {
 
   return {
     getLanguages(): Promise<string[]> {
@@ -232,6 +234,9 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, ex
     registerLinkedEditingRangeProvider(selector: DocumentSelector, provider: LinkedEditingRangeProvider): Disposable {
       return extHostLanguages.registerLinkedEditingRangeProvider(extension, selector, provider);
     },
+    registerInlayHintsProvider(selector: vscode.DocumentSelector, provider: vscode.InlayHintsProvider): vscode.Disposable {
+      return extHostLanguages.registerInlayHintsProvider(extension, selector, provider);
+    },
   };
 }
 
@@ -262,7 +267,8 @@ export type Adapter =
   DocumentRangeSemanticTokensAdapter |
   EvaluatableExpressionAdapter |
   InlineValuesAdapter |
-  LinkedEditingRangeAdapter;
+  LinkedEditingRangeAdapter |
+  InlayHintsAdapter;
 
 export class ExtHostLanguages implements IExtHostLanguages {
   private readonly proxy: IMainThreadLanguages;
@@ -853,4 +859,25 @@ export class ExtHostLanguages implements IExtHostLanguages {
   }
 
   //#endregion Linked Editing
+
+  // --- inline hints
+
+  registerInlayHintsProvider(extension: IExtensionDescription, selector: vscode.DocumentSelector, provider: vscode.InlayHintsProvider): Disposable {
+
+    const eventHandle = typeof provider.onDidChangeInlayHints === 'function' ? this.nextCallId() : undefined;
+    const handle = this.addNewAdapter(new InlayHintsAdapter(this.documents, provider), extension);
+
+    this.proxy.$registerInlayHintsProvider(handle, this.transformDocumentSelector(selector), eventHandle);
+    let result = this.createDisposable(handle);
+
+    if (eventHandle !== undefined) {
+      const subscription = provider.onDidChangeInlayHints!(() => this.proxy.$emitInlayHintsEvent(eventHandle));
+      result = Disposable.from(result, subscription);
+    }
+    return result;
+  }
+
+  $provideInlayHints(handle: number, resource: UriComponents, range: Range, token: CancellationToken) {
+    return this.withAdapter(handle, InlayHintsAdapter, (adapter) => adapter.provideInlayHints(Uri.revive(resource), range, token), undefined);
+  }
 }
