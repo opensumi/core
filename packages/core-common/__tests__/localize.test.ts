@@ -119,4 +119,20 @@ describe('localize test', () => {
     })
     expect(replaceLocalizePlaceholder('%someMessage1% %someMessage2%')).toEqual('消息1 消息2');
   })
+
+  it('should support new nls data structures', () => {
+    registerLocalizationBundle({
+      languageId: 'ZH-CN',
+      languageName: '中文',
+      localizedLanguageName: '中文',
+      contents: {
+        "someMessage3": {
+          message: '消息3',
+          comment: '消息注释',
+        },
+      }
+    });
+
+    expect(localize('someMessage3')).toEqual('消息3');
+  })
 })
