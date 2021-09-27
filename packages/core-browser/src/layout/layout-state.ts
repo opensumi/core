@@ -35,7 +35,7 @@ export class LayoutState {
     let storedState: T;
     try {
       if (this.saveLayoutWithWorkspace) {
-        storedState = LAYOUT_STATE.isScoped(key) || LAYOUT_STATE.isLayout(key) ? this.layoutStorage.get<any>(key, defaultState) : this.globalLayoutStorage.get<any>(key, defaultState);
+        storedState = LAYOUT_STATE.isScoped(key) || LAYOUT_STATE.isLayout(key) || LAYOUT_STATE.isStatusBar(key) ? this.layoutStorage.get<any>(key, defaultState) : this.globalLayoutStorage.get<any>(key, defaultState);
       } else {
         storedState = LAYOUT_STATE.isScoped(key) ? this.layoutStorage.get<any>(key, defaultState) : this.globalLayoutStorage.get<any>(key, defaultState);
       }
@@ -51,7 +51,7 @@ export class LayoutState {
   }
 
   private debounceSave = debounce((key, state) => {
-    this.setStorageValue(key, state, LAYOUT_STATE.isScoped(key) || (this.saveLayoutWithWorkspace && LAYOUT_STATE.isLayout(key)));
+    this.setStorageValue(key, state, LAYOUT_STATE.isScoped(key) || (this.saveLayoutWithWorkspace && (LAYOUT_STATE.isLayout(key) || LAYOUT_STATE.isStatusBar(key))));
   }, 60);
 
   private setStorageValue(key: string, state: object, scope?: boolean) {
@@ -71,6 +71,8 @@ export namespace LAYOUT_STATE {
 
   export const MAIN = 'layout';
 
+  export const STATUSBAR = 'statusbar';
+
   export function getContainerSpace(containerId: string) {
     return `view/${containerId}`;
   }
@@ -81,6 +83,10 @@ export namespace LAYOUT_STATE {
 
   export function isLayout(key: string) {
     return key.startsWith(LAYOUT_STATE.MAIN);
+  }
+
+  export function isStatusBar(key: string) {
+    return key.startsWith(LAYOUT_STATE.STATUSBAR);
   }
 
   export function getTabbarSpace(location: string) {

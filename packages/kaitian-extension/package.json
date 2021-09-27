@@ -40,6 +40,7 @@
     "@ali/ide-extension-storage": "2.10.1",
     "@ali/ide-file-search": "2.10.1",
     "@ali/ide-file-service": "2.10.1",
+    "@ali/ide-i18n": "2.10.1",
     "@ali/ide-logs": "2.10.1",
     "@ali/ide-main-layout": "2.10.1",
     "@ali/ide-monaco": "2.10.1",

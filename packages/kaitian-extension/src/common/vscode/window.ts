@@ -5,6 +5,7 @@ import { QuickPickItem, QuickPickOptions, QuickInputOptions } from '@ali/ide-qui
 import { Event, IThemeColor } from '@ali/ide-core-common';
 import { QuickTitleButton } from '@ali/ide-core-browser/lib/quick-open';
 import { UriComponents, QuickInputButton } from './ext-types';
+import { IExtensionDescription } from './extension';
 
 export interface IMainThreadMessage {
   $showMessage(type: MessageType, message: string, options: vscode.MessageOptions, actions: string[], from?: string): Promise<number | undefined>;
@@ -99,11 +100,18 @@ export interface PickOpenItem {
 export interface IMainThreadStatusBar {
   $setStatusBarMessage(text: string): void;
 
-  $dispose(id?: string): void;
+  $dispose(entryId?: string): void;
 
-  $createStatusBarItem(id: string, alignment: number, priority: number): void;
+  $createStatusBarItem(
+    entryId: string,
+    id: string,
+    alignment: number,
+    priority: number,
+  ): void;
 
-  $setMessage(id: string,
+  $setMessage(entryId: string,
+              id: string,
+              name: string,
               text: string | undefined,
               priority: number,
               alignment: number,
@@ -120,7 +128,7 @@ export interface IExtHostStatusBar {
 
   setStatusBarMessage(text: string, arg?: number | Thenable<any>): vscode.Disposable;
 
-  createStatusBarItem(alignment?: types.StatusBarAlignment, priority?: number): vscode.StatusBarItem;
+  createStatusBarItem(extension: IExtensionDescription, id?: string, alignment?: types.StatusBarAlignment, priority?: number): vscode.StatusBarItem;
 
 }
 

@@ -1,6 +1,7 @@
 import { IRPCProtocol } from '@ali/ide-connection';
+import { formatLocalize } from '@ali/ide-core-common';
 import { Disposable, ThemeColor } from '../../../common/vscode/ext-types';
-import { MainThreadAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar, ArgumentProcessor } from '../../../common/vscode';
+import { MainThreadAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar, ArgumentProcessor, IExtensionDescription } from '../../../common/vscode';
 import { v4 } from 'uuid';
 import * as types from '../../../common/vscode/ext-types';
 import type * as vscode from 'vscode';
@@ -34,10 +35,9 @@ export class ExtHostStatusBar implements IExtHostStatusBar {
     });
   }
 
-  createStatusBarItem(alignment?: vscode.StatusBarAlignment, priority?: number): vscode.StatusBarItem {
-    const statusBarItem = new StatusBarItemImpl(this.rpcProtocol, alignment, priority);
-    this.proxy.$createStatusBarItem(statusBarItem.id, statusBarItem.alignment, statusBarItem.priority);
-
+  createStatusBarItem(extension: IExtensionDescription, id?: string, alignment?: types.StatusBarAlignment, priority?: number): vscode.StatusBarItem {
+    const statusBarItem = new StatusBarItemImpl(this.rpcProtocol, extension, id, alignment, priority);
+    this.proxy.$createStatusBarItem(statusBarItem.entryId, statusBarItem.id, statusBarItem.alignment, statusBarItem.priority);
     return statusBarItem;
   }
 
@@ -51,13 +51,11 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
     ],
   );
 
-  public readonly id = StatusBarItemImpl.nextId();
-
-  private _alignment: vscode.StatusBarAlignment;
-  private _priority: number;
+  private readonly _entryId = StatusBarItemImpl.nextId();
 
   private _text: string;
   private _tooltip: string;
+  private _name?: string;
   private _color: string | ThemeColor | undefined;
   private _backgroundColor: ThemeColor | undefined;
   private _command: string | vscode.Command | undefined;
@@ -66,15 +64,25 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
   private _timeoutHandle: NodeJS.Timer | undefined;
 
   private _proxy: IMainThreadStatusBar;
-  private _rpcProtocol: IRPCProtocol;
 
   private _accessibilityInformation?: vscode.AccessibilityInformation;
 
-  constructor(rpcProtocol: IRPCProtocol, alignment: vscode.StatusBarAlignment = types.StatusBarAlignment.Left, priority: number = 0) {
-    this._rpcProtocol = rpcProtocol;
+  constructor(
+    private _rpcProtocol: IRPCProtocol,
+    private _extension: IExtensionDescription,
+    private _id: string | undefined,
+    private _alignment: vscode.StatusBarAlignment = types.StatusBarAlignment.Left,
+    private _priority: number = 0,
+  ) {
     this._proxy = this._rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadStatusBar);
-    this._alignment = alignment;
-    this._priority = priority;
+  }
+
+  public get id(): string {
+    return this._id ?? this._extension.identifier.value;
+  }
+
+  public get entryId(): string {
+    return this._entryId;
   }
 
   public get alignment(): vscode.StatusBarAlignment {
@@ -90,6 +98,15 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
   }
   public set text(text: string) {
     this._text = text;
+    this.update();
+  }
+
+  public get name(): string | undefined {
+    return this._name;
+  }
+
+  public set name(name: string | undefined) {
+    this._name = name;
     this.update();
   }
 
@@ -149,7 +166,7 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
       if (this._timeoutHandle) {
           clearTimeout(this._timeoutHandle);
       }
-      this._proxy.$dispose(this.id);
+      this._proxy.$dispose(this.entryId);
       this._isVisible = false;
   }
 
@@ -166,6 +183,28 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
           const commandId = typeof this.command === 'string' ? this.command : this.command?.command;
           const commandArgs = typeof this.command === 'string' ? undefined : this.command?.arguments;
 
+          // If the id is not set, derive it from the extension identifier,
+          // otherwise make sure to prefix it with the extension identifier
+          // to get a more unique value across extensions.
+          let id: string;
+          if (this._extension) {
+            if (this._id) {
+              id = `${this._extension.identifier.value}.${this._id}`;
+            } else {
+              id = this._extension.identifier.value;
+            }
+          } else {
+            id = this._id!;
+          }
+
+          // If the name is not set, derive it from the extension descriptor
+          let name: string;
+          if (this._name) {
+            name = this._name;
+          } else {
+            name = formatLocalize('extension.label', this._extension.displayName || this._extension.name);
+          }
+
           // If a background color is set, the foreground is determined
           let color = this._color;
           if (this._backgroundColor) {
@@ -174,7 +213,9 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
 
           // Set to status bar
           this._proxy.$setMessage(
-            this.id,
+            this._entryId,
+            id,
+            name,
             this.text,
             this.priority,
             this.alignment,

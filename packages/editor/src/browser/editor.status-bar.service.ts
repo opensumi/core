@@ -42,6 +42,7 @@ export class EditorStatusBarService extends WithEventBus {
     const colLabel = '%status-bar.label.column%';
     const selectedLabel = '%status-bar.label.selected%';
     this.statusBar.addElement('editor-status-cursor', {
+      name: localize('status-bar.editor-selection'),
       text: `${lineLabel}${position.lineNumber}，${colLabel}${position.column}${selectionLength ? `（${selectedLabel}${selectionLength}）` : ''}`,
       priority: 4,
       alignment: StatusBarAlignment.RIGHT,
@@ -74,6 +75,7 @@ export class EditorStatusBarService extends WithEventBus {
     const language = this.languageService.getLanguage(languageId);
     const languageName = language ? language.name : '';
     this.statusBar.addElement('editor-status-language', {
+      name: localize('status-bar.editor-language'),
       text: languageName,
       alignment: StatusBarAlignment.RIGHT,
       priority: 1,
@@ -82,6 +84,7 @@ export class EditorStatusBarService extends WithEventBus {
     });
     // TODO 语言的配置能力
     this.statusBar.addElement('editor-status-encoding', {
+      name: localize('status-bar.editor-encoding'),
       text: encoding.toUpperCase(),
       alignment: StatusBarAlignment.RIGHT,
       priority: 2,
@@ -89,6 +92,7 @@ export class EditorStatusBarService extends WithEventBus {
       tooltip: localize('status.editor.chooseEncoding'),
     });
     this.statusBar.addElement('editor-status-eol', {
+      name: localize('status-bar.editor-eol'),
       text: eolText,
       alignment: StatusBarAlignment.RIGHT,
       priority: 3,
@@ -96,6 +100,7 @@ export class EditorStatusBarService extends WithEventBus {
       tooltip: localize('status.editor.changeEol'),
     });
     this.statusBar.addElement('editor-status-space', {
+      name: localize('status-bar.editor-space'),
       text: (insertSpaces ? localize('status-bar.label.tabType.space') : localize('status-bar.label.tabType.tab')) + ': ' + tabSize,
       alignment: StatusBarAlignment.RIGHT,
       priority: 4,

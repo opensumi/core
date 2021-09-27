@@ -23,6 +23,14 @@ declare module 'vscode' {
   export interface StatusBarItem {
 
     /**
+     * The identifier of this item.
+     *
+     * *Note*: if no identifier was provided by the {@link window.createStatusBarItem `window.createStatusBarItem`}
+     * method, the identifier will match the {@link Extension.id extension identifier}.
+     */
+    readonly id: string;
+
+    /**
      * The alignment of this item.
      */
     readonly alignment: StatusBarAlignment;
@@ -32,6 +40,13 @@ declare module 'vscode' {
      * be shown more to the left.
      */
     readonly priority?: number;
+
+    /**
+     * The name of the entry, like 'Python Language Indicator', 'Git Status' etc.
+     * Try to keep the length of the name short, yet descriptive enough that
+     * users can understand what the status bar item is about.
+     */
+    name: string | undefined;
 
     /**
      * The text to show for the entry. You can embed icons in the text by leveraging the syntax:
@@ -282,6 +297,16 @@ declare module 'vscode' {
      * @return A new status bar item.
      */
     export function createStatusBarItem(alignment?: StatusBarAlignment, priority?: number): StatusBarItem;
+
+    /**
+		 * Creates a status bar {@link StatusBarItem item}.
+		 *
+		 * @param id The unique identifier of the item.
+		 * @param alignment The alignment of the item.
+		 * @param priority The priority of the item. Higher values mean the item should be shown more to the left.
+		 * @return A new status bar item.
+		 */
+		export function createStatusBarItem(id: string, alignment?: StatusBarAlignment, priority?: number): StatusBarItem;
 
     /**
      * Creates a new [output channel](#OutputChannel) with the given name.

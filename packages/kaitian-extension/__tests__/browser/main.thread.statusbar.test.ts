@@ -9,6 +9,7 @@ import { StatusBarAlignment } from '@ali/ide-kaitian-extension/lib/common/vscode
 import { IStatusBarService } from '@ali/ide-status-bar';
 import { StatusBarService } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 import { MockLoggerManagerClient } from '../../__mocks__/loggermanager';
+import { mockExtension } from '../../__mocks__/extensions';
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
 
@@ -49,7 +50,7 @@ describe('MainThreadStatusBar API Test Suites', () => {
   });
 
   it('should can create statusbar item', async (done) => {
-    const statusbar = extHostStatusBar.createStatusBarItem(StatusBarAlignment.Left, 1);
+    const statusbar = extHostStatusBar.createStatusBarItem(mockExtension, 'test', StatusBarAlignment.Left, 1);
     statusbar.show();
     statusbar.text = 'test';
     expect(statusbar).toBeDefined();
@@ -58,7 +59,7 @@ describe('MainThreadStatusBar API Test Suites', () => {
   });
 
   it('should update statusbar', async (done) => {
-    const statusbar = extHostStatusBar.createStatusBarItem(StatusBarAlignment.Right, 1);
+    const statusbar = extHostStatusBar.createStatusBarItem(mockExtension, 'test', StatusBarAlignment.Right, 1);
     statusbar.show();
     statusbar.text = 'test1';
     statusbar.color = '#ff004f';
@@ -85,7 +86,7 @@ describe('MainThreadStatusBar API Test Suites', () => {
         done();
       },
     });
-    const statusbar = extHostStatusBar.createStatusBarItem(StatusBarAlignment.Left, 1);
+    const statusbar = extHostStatusBar.createStatusBarItem(mockExtension, 'test', StatusBarAlignment.Left, 1);
     statusbar.command = 'test:statusbar';
     statusbar.show();
     setTimeout(() => {

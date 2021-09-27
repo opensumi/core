@@ -661,7 +661,12 @@ export const localizationBundle = {
     'status-bar.label.selected': '已选择',
     'status-bar.label.tabType.space': '空格',
     'status-bar.label.tabType.tab': 'Tab 大小',
-
+    'status-bar.scm': '源码管理',
+    'status-bar.editor-selection': '当前选择',
+    'status-bar.editor-language': '选择语言',
+    'status-bar.editor-encoding': '选择编码',
+    'status-bar.editor-eol': '选择行位字符',
+    'status-bar.editor-indentation': '选择缩进',
     'saveChangesMessage': '是否要保存对 {0} 的更改?',
     'file.prompt.dontSave': '不保存',
     'file.prompt.save': '保存',
@@ -709,6 +714,7 @@ export const localizationBundle = {
     'extension.profilingExtensionHost': '分析扩展主机',
     'extension.profiling.clickStop': '点击停止分析扩展主机',
     'extension.profile.save': '保存扩展宿主分析文件',
+    'extension.label': '{0} (扩展)',
 
     'comments': '评论',
     'comments.reply.placeholder': '请输入',

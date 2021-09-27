@@ -1,6 +1,8 @@
 import { Injector } from '@ali/common-di';
+import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { MockLogger } from '@ali/ide-core-browser/__mocks__/logger';
 import { CommandService, CommandServiceImpl } from '@ali/ide-core-common/lib/command';
+import { mockService } from '@ali/ide-dev-tool/src/mock-injector';
 import { ILogger } from '@ali/ide-logs/lib/common';
 import { IDialogService } from '@ali/ide-overlay/lib/common';
 import { IStatusBarService } from '@ali/ide-status-bar';
@@ -52,6 +54,11 @@ describe('terminal.environment.service', () => {
           },
           setData: () => {},
         },
+      }, {
+        token: LayoutState,
+        useValue: mockService({
+          getState: () => ({}),
+        }),
       },
     );
 
