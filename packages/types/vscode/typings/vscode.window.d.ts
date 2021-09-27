@@ -129,16 +129,6 @@ declare module 'vscode' {
     show(preserveFocus?: boolean): void;
 
     /**
-     * ~~Reveal this channel in the UI.~~
-     *
-     * @deprecated Use the overload with just one parameter (`show(preserveFocus?: boolean): void`).
-     *
-     * @param column This argument is **deprecated** and will be ignored.
-     * @param preserveFocus When `true` the channel will not take focus.
-     */
-    show(column?: ViewColumn, preserveFocus?: boolean): void;
-
-    /**
      * Hide this channel from the UI.
      */
     hide(): void;
@@ -237,6 +227,18 @@ declare module 'vscode' {
     title?: string;
   }
   export namespace window {
+
+    /**
+		 * When true, the user has explicitly trusted the contents of the workspace.
+     * TODO: 内部无此类需求，先空实现，等有需求再做
+		 */
+		export const isTrusted: boolean;
+
+    /**
+		 * Event that fires when the current workspace has been trusted.
+     * TODO: 内部无此类需求，先空实现，等有需求再做
+		 */
+		export const onDidGrantWorkspaceTrust: Event<void>;
 
     /**
      * Set a message to the status bar. This is a short hand for the more powerful

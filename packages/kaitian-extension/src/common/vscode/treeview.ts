@@ -104,7 +104,7 @@ export interface TreeView<T> extends IDisposable {
   /**
    * 当前选中的节点
    */
-  readonly selection: ReadonlyArray<T>;
+  readonly selection: T[];
   /**
     * 节点上的
     * Setting the message to null, undefined, or empty string will remove the message from the view.

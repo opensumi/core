@@ -160,8 +160,9 @@ export interface IMainThreadWindow {
 
 export interface IExtDialogOptions {
   defaultUri?: UriComponents;
+  // TODO: 待实现
   filters?: {
-    [name: string]: string,
+    [name: string]: string[],
   };
 }
 
