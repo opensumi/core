@@ -1,8 +1,9 @@
 import { localize } from '@ali/ide-core-common';
-import { registerColor, transparent, lighten, darken, lessProminent, badgeForeground, badgeBackground } from '../color-registry';
+import { registerColor, transparent, lighten, darken, lessProminent } from '../color-registry';
 import { Color, RGBA } from '../../common/color';
 import { contrastBorder, activeContrastBorder, focusBorder, foreground } from './base';
 import { backgroundColor, foregroundColor } from './basic-color';
+import { badgeBackground, badgeForeground } from './badge';
 
 export const editorErrorForeground = registerColor('editorError.foreground', { dark: '#F48771', light: '#E51400', hc: null }, localize('editorError.foreground', 'Foreground color of error squigglies in the editor.'));
 export const editorErrorBorder = registerColor('editorError.border', { dark: null, light: null, hc: Color.fromHex('#E47777').transparent(0.8) }, localize('errorBorder', 'Border color of error boxes in the editor.'));
