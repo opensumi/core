@@ -1,4 +1,4 @@
-import { IExtensionNodeClientService, IExtraMetaData, IExtensionMetaData, IExtension } from '../lib/common';
+import { IExtensionNodeClientService, IExtraMetaData, IExtensionMetaData, IExtension } from '../src/common';
 import { mockExtensionProps } from './extensions';
 import { Injectable } from '@ali/common-di';
 
@@ -8,6 +8,7 @@ const mockExtensions: IExtension[] = [{
   activate: () => {
     return true;
   },
+  reset() {},
   enable() {},
   toJSON: () => mockExtensionProps,
 }];

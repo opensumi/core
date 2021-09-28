@@ -45,9 +45,11 @@ export class ExtHostDecorations implements IExtHostDecorationsShape {
     let listener: vscode.Disposable;
     if (isFileDecorationProvider(provider)) {
       this.logger.verbose('ExtHostDecoration#registerFileDecorationProvider', extensionId);
-      listener = provider.onDidChange((e) => {
-        this.proxy.$onDidChange(handle, !e ? null : asArray(e));
-      });
+      if (provider.onDidChange) {
+        listener = provider.onDidChange((e) => {
+          this.proxy.$onDidChange(handle, !e ? null : asArray(e));
+        });
+      }
       // TODO: 1.55 API，后续被废弃掉了，为了兼容先保留
       if (provider.onDidChangeFileDecorations) {
         listener = provider.onDidChangeFileDecorations((e) => {

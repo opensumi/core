@@ -213,6 +213,7 @@ const mockExtension = {
   activate: () => {
     return true;
   },
+  reset() { },
   enable() { },
   toJSON: () => mockExtensionProps,
   addDispose() { },

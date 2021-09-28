@@ -24,7 +24,7 @@ export class Extension extends WithEventBus implements IExtension {
   public readonly uri?: Uri;
 
   private _activated: boolean = false;
-  private _activating: Deferred<void>;
+  private _activating?: Deferred<void>;
 
   private _enabled: boolean;
 
@@ -175,10 +175,10 @@ export class Extension extends WithEventBus implements IExtension {
     this.extensionService.activeExtension(this).then(() => {
       this._activated = true;
       this.eventBus.fire(new ExtensionDidActivatedEvent(this.toJSON()));
-      this._activating.resolve();
+      this._activating?.resolve();
     }).catch((e) => {
       this.logger.error(e);
-      this._activating.reject(e);
+      this._activating?.reject(e);
     });
 
     return this._activating.promise;
@@ -186,6 +186,11 @@ export class Extension extends WithEventBus implements IExtension {
 
   get contributes() {
     return this.packageJSON.contributes;
+  }
+
+  public reset() {
+    this._activated = false;
+    this._activating = undefined;
   }
 
   toJSON(): IExtensionProps {

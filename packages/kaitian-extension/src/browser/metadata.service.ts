@@ -48,7 +48,6 @@ export class ExtensionMetadataService extends Disposable {
     const { activationEvents = [] } = extension.packageJSON;
     const activateDisposer = new Disposable();
 
-    // FIXME: 这块目前沿用 vscode 的激活启动方式，考虑是否扩展部分有独立设置
     activationEvents.forEach((event) => {
       // https://code.visualstudio.com/api/references/activation-events#onUri
       // 绑定含有当前插件 id 的 onUri activation event
@@ -58,7 +57,6 @@ export class ExtensionMetadataService extends Disposable {
       }
       activateDisposer.addDispose(this.activationService.onEvent(event, async () => {
         await extension.activate();
-        activateDisposer.dispose();
       }));
     });
 

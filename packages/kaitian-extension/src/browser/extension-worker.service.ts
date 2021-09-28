@@ -2,14 +2,14 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { warning } from '@ali/ide-components/lib/utils';
 import { IRPCProtocol, RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { AppConfig, Deferred, Emitter, IExtensionProps, ILogger, URI } from '@ali/ide-core-browser';
-import { Disposable } from '@ali/ide-core-common';
+import { Disposable, IDisposable, toDisposable } from '@ali/ide-core-common';
 import { posix } from '@ali/ide-core-common/lib/path';
 
 import { IExtension, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';
 import { AbstractWorkerExtProcessService } from '../common/extension.service';
 import { getWorkerBootstrapUrl } from './loader';
-import { initWorkerTheadAPIProxy } from './vscode/api/main.thread.api.impl';
+import { initWorkerThreadAPIProxy } from './vscode/api/main.thread.api.impl';
 import { startInsideIframe } from './workerHostIframe';
 
 @Injectable()
@@ -30,8 +30,14 @@ export class WorkerExtProcessService extends Disposable implements AbstractWorke
 
   public protocol: IRPCProtocol;
 
-  // noop
+  private apiFactoryDisposable?: IDisposable;
+
+  public disposeApiFactory() {
+    this.apiFactoryDisposable?.dispose();
+  }
+
   public disposeProcess() {
+    this.disposeApiFactory();
     return;
   }
 
@@ -42,8 +48,8 @@ export class WorkerExtProcessService extends Disposable implements AbstractWorke
       this.ready.resolve();
       this.logger.log('[Worker Host] init worker thread api proxy');
       this.logger.verbose(this.protocol);
-      const dispose = await initWorkerTheadAPIProxy(this.protocol, this.injector, this);
-      this.addDispose({ dispose });
+      this.apiFactoryDisposable = toDisposable(await initWorkerThreadAPIProxy(this.protocol, this.injector, this));
+      this.addDispose(this.apiFactoryDisposable);
 
       await this.getProxy().$updateExtHostData();
       this._extHostUpdated.resolve();
