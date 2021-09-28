@@ -350,4 +350,33 @@ describe('ExtHostFileSystem', () => {
     expect(result).toEqual({});
     expect(errorSpy.mock.calls[0][1]).toBe('provideDecoration throws');
   });
+
+  it('compatible onChange', async () => {
+    const extDecoProvider = new class implements vscode.FileDecorationProvider {
+      onDidChangeEmitter = new Emitter<Uri[]>();
+      onDidChange = this.onDidChangeEmitter.event;
+
+      provideFileDecoration(uri: Uri, token: CancellationToken) {
+        return {
+          letter: 'S',
+          title: 'Modified changes',
+          color: { id: 'green' },
+          priority: 1,
+          bubble: false,
+          source: 'sync',
+        };
+      }
+    };
+
+    service.registerFileDecorationProvider(
+      extDecoProvider,
+      'mock-ext-onChange-id',
+    );
+
+    const uri = Uri.file('file://workspace/test/a.ts');
+
+    extDecoProvider.onDidChangeEmitter.fire([ uri ]);
+    expect(mock$onDidChange).toBeCalledTimes(1);
+    expect(mock$onDidChange).toBeCalledWith(0, [uri]);
+  });
 });
