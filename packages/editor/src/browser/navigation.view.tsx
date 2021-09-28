@@ -43,7 +43,7 @@ export const NavigationBar = ({ editorGroup }: { editorGroup: EditorGroup }) => 
     {
       parts.map((p, i) => {
         return <React.Fragment key={i + '-crumb:' + p.name}>
-          {i > 0 && <Icon icon={'right'} size='small' /> }
+          {i > 0 && <Icon icon={'right'} size='small' className={styles.navigation_icon} /> }
           <NavigationItem part={p} />
         </React.Fragment>;
       })

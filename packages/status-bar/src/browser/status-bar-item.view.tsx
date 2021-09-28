@@ -12,6 +12,7 @@ import { parseLabel, LabelPart, LabelIcon, replaceLocalizePlaceholder } from '@a
 // todo: 移除 fa 的相关代码
 export function StatusBarItem(props: StatusBarEntry) {
   const {
+    entryId,
     text,
     onClick,
     tooltip,
@@ -44,6 +45,7 @@ export function StatusBarItem(props: StatusBarEntry) {
   let hasIcon = false;
   return (
     <div
+      id={entryId}
       className={cls(styles.element, className, {
         [styles.hasCommand]: command || onClick,
       })}

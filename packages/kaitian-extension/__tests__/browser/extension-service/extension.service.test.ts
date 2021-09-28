@@ -37,24 +37,23 @@ describe('Extension service', () => {
       done();
     });
 
-    it('emit event before activate', async () => {
-      const cb = jest.fn();
-
+    it('emit event before activate', async (done) => {
       // @ts-ignore
-      extensionService.eventBus.on(ExtensionBeforeActivateEvent, cb);
+      extensionService.eventBus.on(ExtensionBeforeActivateEvent, () => {
+        done();
+      });
 
       // @ts-ignore
       await extensionService.doActivate();
-      expect(cb).toBeCalled();
     });
 
-    it('emit onStartupFinished activationEvent after activate', async () => {
-      const cb = jest.fn();
+    it('emit onStartupFinished activationEvent after activate', async (done) => {
       const activationEventService = injector.get<IActivationEventService>(IActivationEventService);
-      activationEventService.onEvent('onStartupFinished', cb);
+      activationEventService.onEvent('onStartupFinished', () => {
+        done();
+      });
       // @ts-ignore
       await extensionService.doActivate();
-      expect(cb).toBeCalled();
     });
 
   });

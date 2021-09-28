@@ -13,6 +13,7 @@ export {
   IAutoClosingPairConditional,
   IAutoClosingPair,
 } from '@ali/monaco-editor-core/esm/vs/editor/common/modes/languageConfiguration';
+export { CodeActionTriggerType } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 
 export interface IDisposable {
   dispose(): void;

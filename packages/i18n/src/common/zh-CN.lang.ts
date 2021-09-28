@@ -482,6 +482,10 @@ export const localizationBundle = {
 
     'component.message.origin': '来源',
 
+    'component.modal.okText': '确定',
+    'component.modal.cancelText': '取消',
+    'component.modal.justOkText': '知道了',
+
     'preference.tab.user': '全局设置',
     'preference.tab.workspace': '工作区设置',
 
@@ -657,7 +661,12 @@ export const localizationBundle = {
     'status-bar.label.selected': '已选择',
     'status-bar.label.tabType.space': '空格',
     'status-bar.label.tabType.tab': 'Tab 大小',
-
+    'status-bar.scm': '源码管理',
+    'status-bar.editor-selection': '当前选择',
+    'status-bar.editor-language': '选择语言',
+    'status-bar.editor-encoding': '选择编码',
+    'status-bar.editor-eol': '选择行位字符',
+    'status-bar.editor-indentation': '选择缩进',
     'saveChangesMessage': '是否要保存对 {0} 的更改?',
     'file.prompt.dontSave': '不保存',
     'file.prompt.save': '保存',
@@ -705,6 +714,7 @@ export const localizationBundle = {
     'extension.profilingExtensionHost': '分析扩展主机',
     'extension.profiling.clickStop': '点击停止分析扩展主机',
     'extension.profile.save': '保存扩展宿主分析文件',
+    'extension.label': '{0} (扩展)',
 
     'comments': '评论',
     'comments.reply.placeholder': '请输入',
@@ -789,14 +799,17 @@ export const localizationBundle = {
     'authentication.noAccounts': '目前没有登录任何账户',
     'authentication.signedOut': '成功退出',
     // refactoring changes related
-    'refactoring-changes.ask.1.create': '扩展 \'{0} \' 希望根据当前文件新建行为关联一些重构变更',
-    'refactoring-changes.ask.1.copy': '扩展 \'{0} \' 希望根据当前文件复制行为关联一些重构变更',
-    'refactoring-changes.ask.1.move': '扩展 \'{0} \' 希望根据当前文件移动行为关联一些重构变更',
-    'refactoring-changes.ask.1.delete': '扩展 \'{0} \' 希望根据当前文件删除行为关联一些重构变更',
-    'refactoring-changes.ask.N.create': '{0} 个插件希望根据当前文件新建行为关联一些重构变更',
-    'refactoring-changes.ask.N.copy': '{0} 个插件希望根据当前文件复制行为关联一些重构变更',
-    'refactoring-changes.ask.N.move': '{0} 个插件希望根据当前文件移动行为关联一些重构变更',
-    'refactoring-changes.ask.N.delete': '{0} 个插件希望根据当前文件删除行为关联一些重构变更',
+    'refactoring-changes.ask.1.create': '扩展 \'{0} \' 希望通过新建此文件来进行重构更改',
+    'refactoring-changes.ask.1.copy': '扩展 \'{0} \' 希望通过复制此文件来进行重构更改',
+    'refactoring-changes.ask.1.move': '扩展 \'{0} \' 希望通过移动此文件来进行重构更改',
+    'refactoring-changes.ask.1.delete': '扩展 \'{0} \' 希望通过删除此文件来进行重构更改',
+    'refactoring-changes.ask.N.create': '{0} 个插件希望通过新建此文件来进行重构更改',
+    'refactoring-changes.ask.N.copy': '{0} 个插件希望通过复制此文件来进行重构更改',
+    'refactoring-changes.ask.N.move': '{0} 个插件希望通过移动此文件来进行重构更改',
+    'refactoring-changes.ask.N.delete': '{0} 个插件希望通过删除此文件来进行重构更改',
+
+    'refactoring-changes.msg.showPreview': '显示预览',
+    'refactoring-changes.msg.skipChanges': '跳过更改',
 
     'keyboard.chooseKeyboardLayout': '选择布局文件配置',
     'keyboard.autoDetect.label': '自动检测',

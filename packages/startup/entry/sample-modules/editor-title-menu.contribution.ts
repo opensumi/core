@@ -48,7 +48,7 @@ export class EditorTitleMenuContribution extends Disposable implements CommandCo
     );
   }
 
-  registerNextMenus(menus: IMenuRegistry): void {
+  registerMenus(menus: IMenuRegistry): void {
     menus.registerMenuItem(MenuId.EditorTitle, {
       command: {
         id: WebSCMCommands.Edit.id,
@@ -73,7 +73,7 @@ export class EditorTitleMenuContribution extends Disposable implements CommandCo
         id: 'command.test.toggle.explorer',
         label: '展开文件树',
       },
-      iconClass: getIcon('rundebug'),
+      iconClass: getIcon('start'),
       group: 'navigation',
     });
   }

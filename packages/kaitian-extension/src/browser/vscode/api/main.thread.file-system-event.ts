@@ -10,6 +10,7 @@ import { MessageType } from '@ali/ide-components';
 
 import { IExtHostFileSystemEvent, FileSystemEvents } from '../../../common/vscode/file-system';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
+import { ResourceEdit } from '@ali/ide-monaco/lib/browser/monaco-api';
 
 @Injectable({ multiple: true })
 export class MainThreadFileSystemEvent extends Disposable {
@@ -172,7 +173,7 @@ export class MainThreadFileSystemEvent extends Disposable {
       }
 
       if (needsConfirmation) {
-        const choices = [localize('preview', 'Show Preview'), localize('cancel', 'Skip Changes')];
+        const choices = [localize('refactoring-changes.msg.showPreview'), localize('refactoring-changes.msg.skipChanges')];
         // edit#metadata.needsConfirmation#true --> show dialog
         const answer = await this.dialogService.open(
           message,
@@ -185,17 +186,17 @@ export class MainThreadFileSystemEvent extends Disposable {
           return;
         }
       } else {
-        const choices = [localize('ok', 'OK'), localize('preview', 'Show Preview'), localize('cancel', 'Skip Changes')];
+        const choices = [localize('refactoring-changes.msg.showPreview'), localize('refactoring-changes.msg.skipChanges'), localize('component.modal.okText')];
         const answer = await this.dialogService.open(
           message,
           MessageType.Info,
           choices,
         );
-        if (answer === choices[2]) {
+        if (answer === choices[1]) {
           // Skip changes
           return;
         }
-        showPreview = answer === choices[1] ? 'show' : 'hide';
+        showPreview = answer === choices[0] ? 'show' : 'hide';
       }
     }
 
@@ -204,7 +205,7 @@ export class MainThreadFileSystemEvent extends Disposable {
     const workspaceEditDto = data?.edit;
     if (workspaceEditDto) {
       await this.bulkEditService.apply(
-        workspaceEditDto.edits,
+        ResourceEdit.convert(workspaceEditDto),
         { showPreview: showPreview === 'show' },
       );
     }

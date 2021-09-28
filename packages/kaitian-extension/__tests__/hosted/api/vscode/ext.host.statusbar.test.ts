@@ -6,9 +6,11 @@ import { MainThreadStatusBar } from '../../../../src/browser/vscode/api/main.thr
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
-import { IStatusBarService } from '@ali/ide-core-browser';
+import { IContextKeyService, IStatusBarService } from '@ali/ide-core-browser';
 import { StatusBarService } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 import { ThemeColor } from '../../../../src/common/vscode/ext-types';
+import { mockExtension } from '../../../../__mocks__/extensions';
+import { MockContextKeyService } from '@ali/ide-core-browser/__mocks__/context-key';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -44,6 +46,9 @@ describe('vscode MainThreadStatusBar Test', () => {
     }, {
       token: IStatusBarService,
       useClass: StatusBarService,
+    }, {
+      token: IContextKeyService,
+      useClass: MockContextKeyService,
     });
     extHost = new ExtHostStatusBar(rpcProtocolExt);
     rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostStatusBar, extHost);
@@ -56,18 +61,45 @@ describe('vscode MainThreadStatusBar Test', () => {
     jest.resetAllMocks();
   });
 
+  it('support id', (done) => {
+    // mock mainThread.$setMessage
+    const $setMessage = jest.spyOn(mainThread, '$setMessage');
+
+    const statusbar = extHost.createStatusBarItem(mockExtension, 'test');
+    statusbar.show();
+    // statusbar host 调用 main 有一个 定时器
+    setTimeout(() => {
+      expect($setMessage.mock.calls[0][1]).toBe('test.kaitian-extension.test');
+      done();
+    }, 100);
+  });
+
+  it('support name', (done) => {
+    // mock mainThread.$setMessage
+    const $setMessage = jest.spyOn(mainThread, '$setMessage');
+
+    const statusbar = extHost.createStatusBarItem(mockExtension, 'test');
+
+    statusbar.name = 'test name';
+    statusbar.show();
+    // statusbar host 调用 main 有一个 定时器
+    setTimeout(() => {
+      expect($setMessage.mock.calls[0][2]).toBe('test name');
+      done();
+    }, 100);
+  });
+
   it('support command', (done) => {
     // mock mainThread.$setMessage
     const $setMessage = jest.spyOn(mainThread, '$setMessage');
 
-    const statusbar = extHost.createStatusBarItem();
+    const statusbar = extHost.createStatusBarItem(mockExtension);
     statusbar.command = 'test';
     statusbar.show();
     // statusbar host 调用 main 有一个 定时器
-
     setTimeout(() => {
-      expect($setMessage.mock.calls[0][8]).toBe('test');
-      expect($setMessage.mock.calls[0][9]).toBe(undefined);
+      expect($setMessage.mock.calls[0][10]).toBe('test');
+      expect($setMessage.mock.calls[0][11]).toBe(undefined);
       done();
     }, 100);
   });
@@ -76,7 +108,7 @@ describe('vscode MainThreadStatusBar Test', () => {
     // mock mainThread.$setMessage
     const $setMessage = jest.spyOn(mainThread, '$setMessage');
 
-    const statusbar = extHost.createStatusBarItem();
+    const statusbar = extHost.createStatusBarItem(mockExtension);
     statusbar.command = {
       title: 'test',
       command: 'test',
@@ -85,8 +117,8 @@ describe('vscode MainThreadStatusBar Test', () => {
     statusbar.show();
     // statusbar host 调用 main 有一个 定时器
     setTimeout(() => {
-      expect($setMessage.mock.calls[0][8]).toBe('test');
-      expect($setMessage.mock.calls[0][9]).toStrictEqual(['test2']);
+      expect($setMessage.mock.calls[0][10]).toBe('test');
+      expect($setMessage.mock.calls[0][11]).toStrictEqual(['test2']);
       done();
     }, 100);
   });
@@ -95,7 +127,7 @@ describe('vscode MainThreadStatusBar Test', () => {
     // mock mainThread.$setMessage
     const $setMessage = jest.spyOn(mainThread, '$setMessage');
 
-    const statusbar = extHost.createStatusBarItem();
+    const statusbar = extHost.createStatusBarItem(mockExtension);
     statusbar.accessibilityInformation = {
       label: '蛋总',
       role: 'danzong',
@@ -103,7 +135,7 @@ describe('vscode MainThreadStatusBar Test', () => {
     statusbar.show();
     // statusbar host 调用 main 有一个 定时器
     setTimeout(() => {
-      expect($setMessage.mock.calls[0][7]).toStrictEqual({'label': '蛋总', 'role': 'danzong'});
+      expect($setMessage.mock.calls[0][9]).toStrictEqual({'label': '蛋总', 'role': 'danzong'});
       done();
     }, 100);
   });
@@ -112,14 +144,14 @@ describe('vscode MainThreadStatusBar Test', () => {
     // mock mainThread.$setMessage
     const $setMessage = jest.spyOn(mainThread, '$setMessage');
 
-    const statusbar = extHost.createStatusBarItem();
+    const statusbar = extHost.createStatusBarItem(mockExtension);
     statusbar.backgroundColor = new ThemeColor('statusBarItem.errorBackground');
     statusbar.color = 'red';
     statusbar.show();
     // statusbar host 调用 main 有一个 定时器
     setTimeout(() => {
-      expect(($setMessage.mock.calls[0][4] as ThemeColor).id).toStrictEqual('statusBarItem.errorForeground');
-      expect(($setMessage.mock.calls[0][5] as ThemeColor).id).toStrictEqual('statusBarItem.errorBackground');
+      expect(($setMessage.mock.calls[0][6] as ThemeColor).id).toStrictEqual('statusBarItem.errorForeground');
+      expect(($setMessage.mock.calls[0][7] as ThemeColor).id).toStrictEqual('statusBarItem.errorBackground');
       done();
     }, 100);
   });

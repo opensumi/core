@@ -40,12 +40,25 @@ export class QuickOpenWidget implements IQuickOpenWidget {
     return this._isPassword;
   }
 
+  @computed
+  get selectAll() {
+    return this.items.every((item) => item.checked);
+  }
+
   @observable
   private _valueSelection?: [number, number];
 
    @computed
   get valueSelection() {
     return this._valueSelection;
+  }
+
+  @observable
+  private _canSelectMany?: boolean;
+
+   @computed
+  get canSelectMany() {
+    return this._canSelectMany;
   }
 
   @observable
@@ -98,6 +111,7 @@ export class QuickOpenWidget implements IQuickOpenWidget {
     this._isPassword = options.password;
     this._inputEnable = options.inputEnable;
     this._valueSelection = options.valueSelection;
+    this._canSelectMany = options.canSelectMany;
     this.renderTab = options.renderTab;
     this.toggleTab = options.toggleTab;
     this.callbacks.onType(prefix);

@@ -224,7 +224,7 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
 
   public registerDecorationType(): void {
     const codeEditorService = this.overrideServicesRegistry.getRegisteredService(ServiceNames.CODE_EDITOR_SERVICE) as MonacoCodeService;
-    codeEditorService.registerDecorationType(INLINE_VALUE_DECORATION_KEY, {});
+    codeEditorService.registerDecorationType('inline-value-decoration', INLINE_VALUE_DECORATION_KEY, {});
   }
 
   public toggleHoverEnabled(editor: IEditor) {
@@ -387,6 +387,6 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
       allDecorations = decorationsPerScope.reduce((previous, current) => previous.concat(current), []);
     }
 
-    editor.monacoEditor.setDecorations(INLINE_VALUE_DECORATION_KEY, allDecorations as any[]);
+    editor.monacoEditor.setDecorations('inline-value-decoration', INLINE_VALUE_DECORATION_KEY, allDecorations as any[]);
   }
 }

@@ -60,6 +60,7 @@ import { IClipboardService, BrowserClipboardService } from '../services/clipboar
 import { IExternalUriService, ExternalUriService } from '../services/external-uri.service';
 import { ToolbarPopoverRegistry } from '../toolbar/toolbar.popover.registry';
 import { AuthenticationService } from '../authentication/authentication.service';
+import { CredentialsService, ICredentialsService, CryptrService, ICryptrService } from '../services';
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider
@@ -215,6 +216,14 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: IAuthenticationService,
       useClass: AuthenticationService,
+    },
+    {
+      token: ICryptrService,
+      useClass: CryptrService,
+    },
+    {
+      token: ICredentialsService,
+      useClass: CredentialsService,
     },
   ];
   injector.addProviders(...providers);

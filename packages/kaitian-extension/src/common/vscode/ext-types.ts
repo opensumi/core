@@ -1,7 +1,7 @@
 import type * as vscode from 'vscode';
 import { Uri, UriUtils } from '@ali/ide-core-common';
 import { illegalArgument } from './utils';
-import { FileOperationOptions, CompletionItemLabel } from './model.api';
+import { FileOperationOptions } from './model.api';
 import { startsWithIgnoreCase, uuid, es5ClassCompat, isStringArray } from '@ali/ide-core-common';
 import { escapeCodicons } from './models/html-content';
 
@@ -803,10 +803,16 @@ export class MarkdownString {
   }
 }
 
+export interface CompletionItemLabel {
+  label: string;
+  detail?: string;
+  description?: string;
+}
+
 @es5ClassCompat
 export class CompletionItem implements vscode.CompletionItem {
 
-  label: string;
+  label: string | CompletionItemLabel;
   label2?: CompletionItemLabel;
   kind?: vscode.CompletionItemKind;
   tags?: CompletionItemTag[];
@@ -823,7 +829,7 @@ export class CompletionItem implements vscode.CompletionItem {
   additionalTextEdits: TextEdit[];
   command?: vscode.Command;
 
-  constructor(label: string, kind?: vscode.CompletionItemKind) {
+  constructor(label: string | CompletionItemLabel, kind?: vscode.CompletionItemKind) {
     this.label = label;
     this.kind = kind;
   }
@@ -1053,6 +1059,11 @@ export class CodeActionKind {
   public intersects(other: CodeActionKind): boolean {
     return this.contains(other) || other.contains(this);
   }
+}
+
+export enum CodeActionTriggerKind {
+  Invoke = 1,
+  Automatic = 2,
 }
 
 @es5ClassCompat
@@ -2931,3 +2942,28 @@ export class InlineValueContext implements vscode.InlineValueContext {
   }
 }
 //#endregion Inline Values
+
+//#region InlayHint
+
+export enum InlayHintKind {
+  Other = 0,
+  Type = 1,
+  Parameter = 2,
+}
+
+@es5ClassCompat
+export class InlayHint {
+  text: string;
+  position: Position;
+  kind?: vscode.InlayHintKind;
+  whitespaceBefore?: boolean;
+  whitespaceAfter?: boolean;
+
+  constructor(text: string, position: Position, kind?: vscode.InlayHintKind) {
+    this.text = text;
+    this.position = position;
+    this.kind = kind;
+  }
+}
+
+//#endregion InlayHint

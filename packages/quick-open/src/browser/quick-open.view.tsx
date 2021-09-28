@@ -1,7 +1,7 @@
 import { KeyCode as KeyCodeEnum } from '@ali/monaco-editor-core/esm/vs/base/common/keyCodes';
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, IRecycleListHandler, RecycleList, ValidateInput, VALIDATE_TYPE } from '@ali/ide-components';
+import { Button, CheckBox, IRecycleListHandler, RecycleList, ValidateInput, VALIDATE_TYPE } from '@ali/ide-components';
 import { HideReason, QuickOpenAction, QuickOpenItem, QuickOpenMode, QuickTitleButton } from '@ali/ide-core-browser/lib/quick-open';
 import { KEY_CODE_MAP } from '@ali/ide-monaco/lib/browser/monaco.keycode-map';
 import clx from 'classnames';
@@ -10,7 +10,7 @@ import * as styles from './styles.module.less';
 import { HighlightLabel } from './components/highlight-label';
 import { KeybindingView } from './components/keybinding';
 import { QuickOpenContext } from './quick-open.type';
-import { Key, KeyCode, useInjectable } from '@ali/ide-core-browser';
+import { Key, KeyCode, useInjectable, localize } from '@ali/ide-core-browser';
 import { QuickTitleBar } from './quick-title-bar';
 
 interface IQuickOpenItemProps {
@@ -101,8 +101,23 @@ export const QuickOpenInput = observer(() => {
     }
   }, [widget.validateType]);
 
+  const handleSelectAll = React.useCallback((event) => {
+    const selected = event.target.checked;
+    for (const item of widget.items) {
+      item.checked = selected;
+    }
+  }, []);
+
+  const handleConfirm = React.useCallback(() => {
+    widget.callbacks.onConfirm(widget.items.filter((item) => item.checked));
+    widget.hide(HideReason.ELEMENT_SELECTED);
+  }, []);
+
   return (
     <div className={styles.input}>
+      {widget.canSelectMany && (
+        <CheckBox checked={widget.selectAll} onChange={handleSelectAll}/>
+      )}
       <ValidateInput
         validateMessage={validateMessage}
         ref={inputRef}
@@ -113,6 +128,9 @@ export const QuickOpenInput = observer(() => {
         readOnly={!widget.inputEnable}
         onChange={onChange}
       />
+      {widget.canSelectMany && (
+        <Button className={styles.input_button} onClick={handleConfirm}>{localize('ButtonOK')}</Button>
+      )}
     </div>
   );
 });
@@ -159,12 +177,17 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
     }
   }, [data]);
 
-  // 这里使用 onMouseDown 事件，避免比 onBlur 推后而改变关闭原因
   const runQuickOpenItem = React.useCallback((event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    // 如果为鼠标中键，则为 BACKGROUND 类型
-    const hide = event.button === 1 ? data.run(QuickOpenMode.OPEN_IN_BACKGROUND) : data.run(QuickOpenMode.OPEN);
-    if (hide) {
-      widget.hide(HideReason.ELEMENT_SELECTED);
+    // 如果为多选，则点击 item 为切换选中状态
+    if (widget.canSelectMany) {
+      data.checked = !data.checked;
+      event.stopPropagation();
+    } else {
+      // 如果为鼠标中键，则为 BACKGROUND 类型
+      const hide = event.button === 1 ? data.run(QuickOpenMode.OPEN_IN_BACKGROUND) : data.run(QuickOpenMode.OPEN);
+      if (hide) {
+        widget.hide(HideReason.ELEMENT_SELECTED);
+      }
     }
   }, [data]);
 
@@ -178,7 +201,10 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
       [styles.item_selected]: widget.selectIndex === index,
       [styles.item_border]: showBorder,
     })}>
-      <div className={styles.item_label_container} onMouseDown={runQuickOpenItem}>
+      { widget.canSelectMany && (
+        <CheckBox checked={data.checked} onChange={(event) => data.checked = (event.target as HTMLInputElement).checked} />
+      )}
+      <div className={styles.item_label_container} onClick={runQuickOpenItem}>
         <div className={styles.item_label}>
           { iconClass && (
             <span className={clx(styles.item_icon, iconClass)}></span>
@@ -239,7 +265,30 @@ export const QuickOpenView = observer(() => {
   const { widget } = React.useContext(QuickOpenContext);
   const listApi = React.useRef<IRecycleListHandler>();
 
-  const onBlur = React.useCallback(() => {
+  // https://stackoverflow.com/questions/38019140/react-and-blur-event/38019906#38019906
+  const focusInCurrentTarget = React.useCallback(({ relatedTarget, currentTarget }) => {
+    // 点击 checkbox 时 relatedTarget 为 null
+    if (relatedTarget === null) {
+      return true;
+    }
+
+    let node = relatedTarget.parentNode;
+
+    while (node !== null) {
+      if (node === currentTarget) {
+        return true;
+      }
+      node = node.parentNode;
+    }
+
+    return false;
+  }, []);
+
+  const onBlur = React.useCallback((event: React.FocusEvent) => {
+    // 判断其是否在父元素内，如果在父元素内就不做处理
+    if (focusInCurrentTarget(event)) {
+      return;
+    }
     // 判断移出焦点后是否需要关闭组件
     const keepShow = widget.callbacks.onFocusLost();
     if (!keepShow) {

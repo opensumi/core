@@ -47,7 +47,7 @@ const mockTreeDataProvider = {
   resolveTreeItem: jest.fn(),
 };
 
-describe('packages/kaitian-extension/__tests__/hosted/api/vscode/ext.host.treeview.test.ts', () => {
+describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.treeview.test.ts', () => {
   let extHostTreeViews: ExtHostTreeViews;
   let extHostCommands: ExtHostCommands;
 

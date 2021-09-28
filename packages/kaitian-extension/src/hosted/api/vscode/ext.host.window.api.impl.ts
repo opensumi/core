@@ -4,7 +4,7 @@ import {
   IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState, IExtHostStatusBar,
   IExtHostQuickOpen, IExtHostOutput, IExtHostTerminal, IExtHostWindow, IMainThreadWindow, MainThreadAPIIdentifier, IExtOpenDialogOptions, IExtSaveDialogOptions, IExtHostUrls, WebviewViewProvider,
 } from '../../../common/vscode';
-import { MessageType, IDisposable, CancellationToken, Emitter, IExtensionInfo } from '@ali/ide-core-common';
+import { MessageType, IDisposable, CancellationToken, Emitter, IExtensionInfo, Event } from '@ali/ide-core-common';
 
 import { ExtensionHostEditorService } from './editor/editor.host';
 import { ExtHostWebviewService, ExtHostWebviewViews } from './ext.host.api.webview';
@@ -36,7 +36,7 @@ export function createWindowApiFactory(
   extHostUrls: IExtHostUrls,
   extHostTheming: ExtHostTheming,
   extHostCustomEditor: ExtHostCustomEditorImpl,
-) {
+): typeof vscode.window {
   const extensionInfo: IExtensionInfo = {
     id: extension.id,
     extensionId: extension.extensionId,
@@ -53,8 +53,20 @@ export function createWindowApiFactory(
       }
       return extHostProgress.withProgress(extension, options, task);
     },
-    createStatusBarItem(alignment?: vscode.StatusBarAlignment, priority?: number): vscode.StatusBarItem {
-      return extHostStatusBar.createStatusBarItem(alignment, priority);
+    createStatusBarItem(alignmentOrId?: vscode.StatusBarAlignment | string, priorityOrAlignment?: number | vscode.StatusBarAlignment, priorityArg?: number): vscode.StatusBarItem {
+      let id: string | undefined;
+      let alignment: number | undefined;
+      let priority: number | undefined;
+
+      if (typeof alignmentOrId === 'string') {
+        id = alignmentOrId;
+        alignment = priorityOrAlignment;
+        priority = priorityArg;
+      } else {
+        alignment = alignmentOrId;
+        priority = priorityOrAlignment;
+      }
+      return extHostStatusBar.createStatusBarItem(extension, id, alignment, priority);
     },
     createOutputChannel(name) {
       return extHostOutput.createOutputChannel(name);
@@ -86,19 +98,24 @@ export function createWindowApiFactory(
     get visibleTextEditors() {
       return extHostEditors.visibleEditors;
     },
+    // TODO: 内部无此类需求，先空实现，等有需求再做
+    get isTrusted() {
+      return true;
+    },
+    onDidGrantWorkspaceTrust: Event.None,
     onDidChangeActiveTextEditor: extHostEditors.onDidChangeActiveTextEditor,
     onDidChangeVisibleTextEditors: extHostEditors.onDidChangeVisibleTextEditors,
     onDidChangeTextEditorSelection: extHostEditors.onDidChangeTextEditorSelection,
     onDidChangeTextEditorVisibleRanges: extHostEditors.onDidChangeTextEditorVisibleRanges,
     onDidChangeTextEditorOptions: extHostEditors.onDidChangeTextEditorOptions,
     onDidChangeTextEditorViewColumn: extHostEditors.onDidChangeTextEditorViewColumn,
-    showTextDocument(arg0, arg1, arg2) {
-      return extHostEditors.showTextDocument(arg0, arg1, arg2);
+    showTextDocument(documentOrUri: vscode.TextDocument | Uri, columnOrOptions?: vscode.ViewColumn | vscode.TextDocumentShowOptions, preserveFocus?: boolean) {
+      return extHostEditors.showTextDocument(documentOrUri, columnOrOptions, preserveFocus);
     },
     createTextEditorDecorationType(options: vscode.DecorationRenderOptions) {
       return extHostEditors.createTextEditorDecorationType(extension.id, options);
     },
-    showQuickPick(items: any, options: vscode.QuickPickOptions, token?: CancellationToken): Promise<vscode.QuickPickItem | undefined> {
+    showQuickPick(items: any, options: vscode.QuickPickOptions, token?: CancellationToken): any {
       return extHostQuickOpen.showQuickPick(items, options, token);
     },
     showWorkspaceFolderPick(options: vscode.WorkspaceFolderPickOptions): Promise<vscode.WorkspaceFolder | undefined> {
@@ -133,10 +150,9 @@ export function createWindowApiFactory(
     registerUriHandler(handler: vscode.UriHandler) {
       return extHostUrls.registerUriHandler(extension.id, handler);
     },
-    showOpenDialog: (options) => {
+    showOpenDialog: (options: vscode.OpenDialogOptions) => {
       return extHostWindow.openDialog(options);
     },
-
     showSaveDialog: (options) => {
       return extHostWindow.showSaveDialog(options);
     },

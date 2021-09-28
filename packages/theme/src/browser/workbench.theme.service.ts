@@ -36,7 +36,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
   // TODO 初始化时读取本地存储配置
   public currentThemeId: string;
-  private currentTheme: Theme;
+  private currentTheme?: Theme;
   private themeIdNotFound?: string;
 
   private themes: Map<string, ThemeData> = new Map();
@@ -169,7 +169,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     if (typeof colorId === 'string') {
       return colorId;
     }
-    const color = this.currentTheme.getColor(colorId.id);
+    const color = this.currentTheme?.getColor(colorId.id);
     return color ? Color.Format.CSS.formatHexA(color) : '';
   }
 
@@ -265,7 +265,9 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     }));
 
     this.addDispose(this.colorRegistry.onDidColorChangedEvent((e) => {
-      this.doApplyTheme.apply(this, [this.currentTheme]);
+      if (this.currentTheme) {
+        this.doApplyTheme.apply(this, [this.currentTheme]);
+      }
     }));
   }
 
@@ -349,9 +351,11 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       styleNode.innerHTML = cssVariables + '}';
       document.getElementsByTagName('head')[0].appendChild(styleNode);
     }
-    this.eventBus.fire(new ThemeChangedEvent({
-      theme: this.currentTheme,
-    }));
+    if (this.currentTheme) {
+      this.eventBus.fire(new ThemeChangedEvent({
+        theme: this.currentTheme,
+      }));
+    }
   }
 
   protected toggleBaseThemeClass(prevThemeType: ThemeType, themeType: ThemeType) {

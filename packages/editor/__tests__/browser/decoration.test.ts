@@ -35,6 +35,7 @@ describe('editor decoration service test', () => {
               endLineNumber: 1,
             },
             options: {
+              description: 'test',
               className,
               isWholeLine: true,
             },

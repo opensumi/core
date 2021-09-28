@@ -20,8 +20,17 @@ export function registerLocalizationBundle(bundle: ILocalizationBundle, scope: s
   return getLocalizationRegistry(scope).registerLocalizationBundle(bundle);
 }
 
-export interface ILocalizationBundle extends ILocalizationInfo{
-  contents: ILocalizationContents;
+interface IExtensionLocalizationValue {
+  message: string;
+  comment: string;
+}
+
+export interface IExtensionLocalizationContents {
+  [key: string]: string | IExtensionLocalizationValue;
+}
+
+export interface ILocalizationBundle extends ILocalizationInfo {
+  contents: IExtensionLocalizationContents;
 }
 
 export interface ILocalizationInfo {
@@ -43,6 +52,10 @@ interface ILocalizationRegistry {
   getAllLanguages(): ILocalizationInfo[];
 }
 
+function isExtensionLocalizationValue(thing: any): thing is IExtensionLocalizationValue {
+  return typeof thing === 'object' && thing.message;
+}
+
 class LocalizationRegistry implements ILocalizationRegistry {
 
   private localizationMap = new CaseInsensitiveMap<string, ILocalizationContents>() ;
@@ -56,7 +69,14 @@ class LocalizationRegistry implements ILocalizationRegistry {
     }
     const existingMessages = this.getContents(languageId);
     Object.keys(bundle.contents).forEach((key: ILocalizationKey)=> {
-      existingMessages[key] = mnemonicButtonLabel(bundle.contents[key], true); // 暂时去除所有注记符
+      const rawContent = bundle.contents[key];
+      let content: string;
+      if (isExtensionLocalizationValue(rawContent)) {
+        content = rawContent.message;
+      } else {
+        content = rawContent;
+      }
+      existingMessages[key] = mnemonicButtonLabel(content, true); // 暂时去除所有注记符
     });
     if (!this.localizationInfo.has(languageId)) {
       this.localizationInfo.set(languageId, Object.assign({}, bundle, {contents: undefined}));

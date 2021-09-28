@@ -58,7 +58,7 @@ export const mockExtensionProps2: IExtensionProps = {
   },
 };
 
-export const mockExtensions: IExtensionDescription[] = [{
+export const mockExtension: IExtensionDescription = {
   ...mockExtensionProps,
   identifier: new ExtensionIdentifier(mockExtensionProps.id),
   isUnderDevelopment: false,
@@ -66,4 +66,6 @@ export const mockExtensions: IExtensionDescription[] = [{
   version: mockExtensionProps.packageJSON.version,
   engines: mockExtensionProps.packageJSON.engines,
   contributes: mockExtensionProps.packageJSON.contributes,
-}];
+};
+
+export const mockExtensions: IExtensionDescription[] = [mockExtension];

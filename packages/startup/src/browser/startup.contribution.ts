@@ -35,7 +35,6 @@ export class StartupContribution implements CommandContribution, KeybindingContr
   private readonly commandService: CommandService;
 
   onStart() {
-
   }
 
   registerEditorComponent(registry: EditorComponentRegistry) {

@@ -1,4 +1,4 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import { URI } from '@ali/ide-monaco/lib/browser/monaco-api';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Command, Emitter, CommandRegistry, CommandHandler, HANDLER_NOT_FOUND, ILogger, EDITOR_COMMANDS, CommandService, IReporterService, REPORT_NAME, ServiceNames, memoize, Uri, MonacoOverrideServiceRegistry } from '@ali/ide-core-browser';
 
@@ -118,7 +118,7 @@ export class MonacoCommandRegistry implements IMonacoCommandsRegistry {
 
   /**
    * 注册 monaco 命令
-   * 命令 id 会统一加入 manaco 前缀
+   * 命令 id 会统一加入 monaco 前缀
    * monaco handler 会注入当前 editor 参数
    * @param command 注册的命令
    * @param handler 命令处理函数
@@ -192,9 +192,12 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
   ]);
 
   private static CONVERT_MONACO_COMMAND_ARGS = new Map<string, (...args: any[]) => any[]>([
-    [
-      'editor.action.showReferences', (uri, ...args) => [Uri.parse(uri), ...args],
-    ],
+    [ 'editor.action.showReferences', (uri, ...args) => [URI.parse(uri), ...args] ],
+    [ 'editor.action.goToLocations', (uri, ...args) => [URI.parse(uri), ...args] ],
+  ]);
+
+  private static CONVERT_MONACO_ACTIONS_TO_CONTRIBUTION_ID = new Map<string, string>([
+    [ 'editor.action.rename',  'editor.contrib.renameController'],
   ]);
 
   /**
@@ -246,7 +249,7 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
         continue;
       }
       const label = editorActions.has(id) ? editorActions.get(id) : '';
-      const handler = editorActions.has(id) ? this.newActionHandler(id) : this.newCommandHandler(id);
+      const handler = this.actAndComHandler(editorActions, id);
       this.monacoCommandRegistry.registerCommand({
         id,
         label,
@@ -257,6 +260,19 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
         this.monacoCommandRegistry.registerHandler(command, handler);
       }
     }
+  }
+
+  /**
+   * monaco 内部有些 contribution 既注册了 actions 又注册了 commands，在这里优先调取 commands
+   */
+  private actAndComHandler(actions: Map<string, string>, id: string): MonacoEditorCommandHandler {
+    if (MonacoActionRegistry.CONVERT_MONACO_ACTIONS_TO_CONTRIBUTION_ID.has(id)) {
+      const toConver = MonacoActionRegistry.CONVERT_MONACO_ACTIONS_TO_CONTRIBUTION_ID.get(id)!;
+      if (this.monacoEditorRegistry.getSomeEditorContributions([toConver]).length > 0) {
+        return this.newCommandHandler(id);
+      }
+    }
+    return actions.has(id) ? this.newActionHandler(id) : this.newCommandHandler(id);
   }
 
   /**
@@ -272,7 +288,7 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
    */
   private processInternalCommandArgument(commandId: string, args: any[] = []): any[] {
     if (this.isInternalExecuteCommand(commandId)) {
-      return args.map((arg) => arg instanceof Uri ? monaco.Uri.revive(arg) : arg);
+      return args.map((arg) => arg instanceof Uri ? URI.revive(arg) : arg);
     } else if (MonacoActionRegistry.CONVERT_MONACO_COMMAND_ARGS.has(commandId)) {
       return MonacoActionRegistry.CONVERT_MONACO_COMMAND_ARGS.get(commandId)!(...args);
     }

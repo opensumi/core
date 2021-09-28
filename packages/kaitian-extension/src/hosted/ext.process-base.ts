@@ -4,7 +4,7 @@ import { performance } from 'perf_hooks';
 import { ConstructorOf, Injector } from '@ali/common-di';
 import { AppConfig, ILogService } from '@ali/ide-core-node';
 import { isPromiseCanceledError } from '@ali/ide-core-common/lib/errors';
-import { Emitter, ReporterProcessMessage, LogLevel, IReporter } from '@ali/ide-core-common';
+import { Emitter, ReporterProcessMessage, LogLevel, IReporter, setLanguageId } from '@ali/ide-core-common';
 import {
   RPCProtocol,
   initRPCService,
@@ -17,6 +17,9 @@ import { ExtensionLogger2 } from './extension-log2';
 import { ExtensionReporter } from './extension-reporter';
 import { setPerformance } from './api/vscode/language/util';
 import { ProcessMessageType, IExtensionHostService, KT_PROCESS_SOCK_OPTION_KEY, KT_APP_CONFIG_KEY } from '../common';
+import { locale } from '@ali/ide-core-common/lib/platform';
+
+import '@ali/ide-i18n';
 
 setPerformance(performance);
 
@@ -111,6 +114,9 @@ export async function extProcessInit(config: ExtProcessConfig = {}) {
     token: IReporter,
     useValue: new ExtensionReporter(reporterEmitter),
   });
+  if (locale) {
+    setLanguageId(locale);
+  }
   patchProcess();
   const {extProtocol: protocol, logger} = await initRPCProtocol(extInjector);
   try {

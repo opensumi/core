@@ -8,6 +8,11 @@
   :global(.scrollbar-decoration) {
     display: none;
   }
+  :global(.kt-checkbox-icon) {
+    width: 14px;
+    height: 14px;
+    border-color: var(--input-placeholderForeground);
+  }
 }
 
 .container,
@@ -132,7 +137,8 @@
 }
 
 .input {
-  margin: 4px 8px;
+  display: flex;
+  margin: 4px 10px;
 }
 
 .title_bar {
@@ -147,4 +153,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.input_button {
+  flex-shrink: 0;
+  margin-left: 5px;
 }

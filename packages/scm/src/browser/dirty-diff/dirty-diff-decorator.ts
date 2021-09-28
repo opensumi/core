@@ -45,7 +45,8 @@ export class DirtyDiffDecorator extends Disposable {
     foregroundColor: string,
     options: { gutter: boolean, overview: boolean, isWholeLine: boolean },
   ): textModel.ModelDecorationOptions {
-    const decorationOptions: Partial<model.IModelDecorationOptions> = {
+    const decorationOptions: model.IModelDecorationOptions = {
+      description: 'dirty-diff',
       isWholeLine: options.isWholeLine,
     };
 

@@ -4,7 +4,7 @@ if (!(window as any).process) {
   (window as any).process = { browser: true, env: (window as any).env, listener: () => [] };
 }
 
-import '@ali/ide-i18n/lib/browser';
+import '@ali/ide-i18n';
 import { ElectronBasicModule } from '@ali/ide-electron-basic/lib/browser';
 import { renderApp } from './app';
 import { StartupModule } from '@ali/ide-startup/lib/browser';

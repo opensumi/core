@@ -11,11 +11,10 @@ import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import * as compareVersions from 'compare-versions';
 import { getIcon } from '@ali/ide-core-browser';
 import { Button } from '@ali/ide-components';
-import Menu from 'antd/lib/menu';
+import { Menu } from '@ali/ide-components/lib/menu';
 import { Tabs } from '@ali/ide-components';
 import { ExtensionList } from './components/extension-list';
 import { ExtensionPack } from './components/extension-pack';
-import 'antd/lib/menu/style/index.css';
 
 const tabMap = [
   {

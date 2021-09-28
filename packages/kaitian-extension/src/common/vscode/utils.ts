@@ -82,6 +82,7 @@ export function reviveOnEnterRule(onEnterRule: SerializedOnEnterRule): OnEnterRu
         beforeText: reviveRegExp(onEnterRule.beforeText)!,
         afterText: reviveRegExp(onEnterRule.afterText),
         action: onEnterRule.action,
+        previousLineText: reviveRegExp(onEnterRule.previousLineText),
     };
 }
 
@@ -102,6 +103,7 @@ export function serializeEnterRules(rules?: vscode.OnEnterRule[]): SerializedOnE
             action: r.action,
             beforeText: serializeRegExp(r.beforeText),
             afterText: serializeRegExp(r.afterText),
+            previousLineText: serializeRegExp(r.previousLineText),
         } as SerializedOnEnterRule));
 }
 

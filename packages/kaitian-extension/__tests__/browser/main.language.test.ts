@@ -891,4 +891,21 @@ An error case:
     expect(mockMainThreadFunc).toBeCalledWith(expect.anything(), [{'$serialized': true, 'language': 'plaintext'}]);
   });
   //#endregion registerLinkedEditingRangeProvider
+  //#region registerInlayHintsProvider
+  it('registerInlayHintsProvider', async () => {
+    class TestInlayHintsProvider implements vscode.InlayHintsProvider {
+      provideInlayHints(): vscode.ProviderResult<vscode.InlayHint[]> {
+        return [{
+          text: 'kaitian',
+          position: new types.Position(0, 0),
+        }];
+      }
+    }
+    const mockMainThreadFunc = jest.spyOn(mainThread, '$registerInlayHintsProvider');
+    extHost.registerInlayHintsProvider(mockService({}), 'plaintext', new TestInlayHintsProvider());
+    await 0;
+    expect(mockMainThreadFunc).toBeCalled();
+    expect(mockMainThreadFunc).toBeCalledWith(expect.anything(), [{'$serialized': true, 'language': 'plaintext'}], undefined);
+  });
+  //#endregion registerInlayHintsProvider
 });

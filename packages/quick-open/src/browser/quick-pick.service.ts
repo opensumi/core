@@ -15,8 +15,9 @@ export class QuickPickServiceImpl implements QuickPickService {
 
   show(elements: string[], options?: QuickPickOptions): Promise<string | undefined>;
   show<T>(elements: QuickPickItem<T>[], options?: QuickPickOptions): Promise<T | undefined>;
-  async show<T>(elements: (string | QuickPickItem<T>)[], options?: QuickPickOptions): Promise<T | undefined> {
-    return new Promise<T | undefined>((resolve) => {
+  show<T>(elements: QuickPickItem<T>[], options?: QuickPickOptions & { canPickMany: true }): Promise<T[] | undefined>;
+  async show<T>(elements: (string | QuickPickItem<T>)[], options?: QuickPickOptions & { canPickMany: true }): Promise<T | T[] | undefined> {
+    return new Promise<T | T[] | undefined>((resolve) => {
       const items = this.toItems(elements, resolve);
       if (options && this.quickTitleBar.shouldShowTitleBar(options.title, options.step, options.buttons)) {
         this.quickTitleBar.attachTitleBar(options.title, options.step, options.totalSteps, options.buttons);
@@ -29,8 +30,12 @@ export class QuickPickServiceImpl implements QuickPickService {
         },
       }, Object.assign({
         onClose: () => {
-          resolve(undefined);
           this.quickTitleBar.hide();
+          resolve(undefined);
+        },
+        onConfirm: (items: QuickOpenItem[]) => {
+          this.quickTitleBar.hide();
+          resolve(items.map((item) => item.getValue()));
         },
         fuzzyMatchLabel: true,
         fuzzyMatchDescription: true,
@@ -80,6 +85,7 @@ export class QuickPickServiceImpl implements QuickPickService {
         this.onDidAcceptEmitter.fire(undefined);
         return true;
       },
+      value,
     };
   }
 

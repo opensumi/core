@@ -122,6 +122,12 @@ export const localizationBundle = {
     'status-bar.label.selected': 'Selected',
     'status-bar.label.tabType.space': 'Spaces',
     'status-bar.label.tabType.tab': 'Tab Size',
+    'status-bar.scm': 'Source Control',
+    'status-bar.editor-selection': 'Editor Selection',
+    'status-bar.editor-language': 'Editor Language',
+    'status-bar.editor-encoding': 'Editor Encoding',
+    'status-bar.editor-eol': 'Editor End Of Line',
+    'status-bar.editor-indentation': 'Editor Indentation',
     'editor.closeOtherEditors': 'Close Others',
     'status.editor.chooseLanguage': 'Choose Language Mode',
     'status.editor.chooseEncoding': 'Choose Encoding',
@@ -383,6 +389,10 @@ export const localizationBundle = {
     'common.replace': 'Replace',
 
     'component.message.origin': 'Origin',
+
+    'component.modal.okText': 'OK',
+    'component.modal.cancelText': 'Cancel',
+    'component.modal.justOkText': 'OK',
 
     'preference.tab.user': 'Global Settings',
     'preference.tab.workspace': 'Workspace Settings',
@@ -697,6 +707,7 @@ export const localizationBundle = {
     'extension.profilingExtensionHost': 'Profiling Extension Host',
     'extension.profiling.clickStop': 'Click to stop profiling.',
     'extension.profile.save': 'Save Extension Host Profile',
+    'extension.label': '{0} (Extension)',
 
     'comments': 'Comments',
     'comments.reply.placeholder': 'Reply',
@@ -784,6 +795,9 @@ export const localizationBundle = {
     'refactoring-changes.ask.N.copy': '{0} extensions want to make refactoring changes with this file copy',
     'refactoring-changes.ask.N.move': '{0} extensions want to make refactoring changes with this file move',
     'refactoring-changes.ask.N.delete': '{0} extensions want to make refactoring changes with this file deletion',
+
+    'refactoring-changes.msg.showPreview': 'Show Preview',
+    'refactoring-changes.msg.skipChanges': 'Skil Changes',
 
     'keyboard.chooseKeyboardLayout': 'Choose keyboard layout',
     'keyboard.autoDetect.label': 'Auto Detect',

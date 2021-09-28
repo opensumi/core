@@ -1,0 +1,204 @@
+@kt-prefix: kt;
+
+// An override for the html selector for theme prefixes
+@html-selector: html;
+
+// -------- Colors -----------
+@primary-color: #1890ff;
+@info-color: #1890ff;
+@success-color: #52c41a;
+@processing-color: #1890ff;
+@error-color: #f5222d;
+@highlight-color: #f5222d;
+@warning-color: #faad14;
+@normal-color: #d9d9d9;
+@white: #fff;
+@black: #000;
+
+@primary-1 : #e6f7ff;
+@yellow-1: #f6ffed;
+
+@font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
+'Segoe UI Emoji', 'Segoe UI Symbol';
+@code-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+@text-color-inverse: @white;
+@text-selection-bg: @primary-color;
+// Background color for `<body>`
+@body-background: #fff;
+// Base background color for most components
+@component-background: #fff;
+@text-color: fade(@black, 65%);
+@text-color-secondary: fade(@black, 45%);
+@font-size-base: 14px;
+@font-size-lg: @font-size-base + 2px;
+@font-variant-base: tabular-nums;
+@line-height-base: 1.5;
+@font-feature-settings-base: 'tnum';
+@border-radius-base: 4px;
+@icon-color-hover: fade(@black, 75%);
+@heading-color: fade(#000, 85%);
+@icon-color: inherit;
+@font-size-sm: 12px;
+@text-color-dark: fade(@white, 85%);
+
+@background-color-light: hsv(0, 0, 98%); // background of header and selected item
+@background-color-base: hsv(0, 0, 96%); // Default grey background color
+
+// z-index list, order by `z-index`
+@zindex-badge: 1;
+@zindex-table-fixed: 1;
+@zindex-affix: 10;
+@zindex-back-top: 10;
+@zindex-picker-panel: 10;
+@zindex-popup-close: 10;
+@zindex-modal: 1000;
+@zindex-modal-mask: 1000;
+@zindex-message: 1010;
+@zindex-notification: 1010;
+@zindex-popover: 1030;
+@zindex-dropdown: 1050;
+@zindex-picker: 1050;
+@zindex-tooltip: 1060;
+
+// Shadow
+@shadow-color: rgba(0, 0, 0, 0.15);
+@shadow-color-inverse: @component-background;
+@box-shadow-base: @shadow-1-down;
+@shadow-1-up: 0 -2px 8px @shadow-color;
+@shadow-1-down: 0 2px 8px @shadow-color;
+@shadow-1-left: -2px 0 8px @shadow-color;
+@shadow-1-right: 2px 0 8px @shadow-color;
+@shadow-2: 0 4px 12px @shadow-color;
+
+// LINK
+@link-color: @primary-color;
+@link-hover-color: #40a9ff;
+@link-active-color: #096dd9;
+@link-decoration: none;
+@link-hover-decoration: none;
+
+// ICONFONT
+@iconfont-css-prefix: anticon;
+
+// Message
+// ---
+@message-notice-content-padding: 10px 16px;
+
+// Animation
+@ease-base-out: cubic-bezier(0.7, 0.3, 0.1, 1);
+@ease-base-in: cubic-bezier(0.9, 0, 0.3, 0.7);
+@ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+@ease-in: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+@ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
+@ease-out-back: cubic-bezier(0.12, 0.4, 0.29, 1.46);
+@ease-in-back: cubic-bezier(0.71, -0.46, 0.88, 0.6);
+@ease-in-out-back: cubic-bezier(0.71, -0.46, 0.29, 1.46);
+@ease-out-circ: cubic-bezier(0.08, 0.82, 0.17, 1);
+@ease-in-circ: cubic-bezier(0.6, 0.04, 0.98, 0.34);
+@ease-in-out-circ: cubic-bezier(0.78, 0.14, 0.15, 0.86);
+@ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
+@ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+@ease-in-out-quint: cubic-bezier(0.86, 0, 0.07, 1);
+
+//Dropdown
+@dropdown-vertical-padding: 5px;
+@dropdown-edge-child-vertical-padding: 4px;
+@dropdown-font-size: @font-size-base;
+@dropdown-line-height: 22px;
+@dropdown-selected-color: @primary-color;
+
+// vertical paddings
+@padding-lg: 24px; // containers
+@padding-md: 16px; // small containers and buttons
+@padding-sm: 12px; // Form controls and items
+@padding-xs: 8px; // small items
+
+// vertical padding for all form controls
+@control-padding-horizontal: @padding-sm;
+@control-padding-horizontal-sm: @padding-xs;
+
+// The background colors for active and hover states for things like
+// list items or table cells.
+@item-active-bg: @primary-1;
+@item-hover-bg: @primary-1;
+
+// Disabled states
+@disabled-color: fade(#000, 25%);
+@disabled-bg: @background-color-base;
+@disabled-color-dark: fade(#fff, 35%);
+
+// Border color
+@border-color-base: hsv(0, 0, 85%); // base border outline a component
+@border-color-split: hsv(0, 0, 91%); // split border inside a component
+@border-color-inverse: @white;
+@border-width-base: 1px; // width of the border for a component
+@border-style-base: solid; // style of a components border
+
+// Modal
+// --
+@modal-body-padding: 24px;
+@modal-header-bg: @component-background;
+@modal-heading-color: @heading-color;
+@modal-footer-bg: transparent;
+@modal-footer-border-color-split: @border-color-split;
+@modal-mask-bg: fade(@black, 45%);
+
+// Animation
+@animation-duration-slow: 0.3s; // Modal
+@animation-duration-base: 0.2s;
+@animation-duration-fast: 0.1s; // Tooltip
+
+// Media queries breakpoints
+// Extra small screen / phone
+@screen-xs: 480px;
+@screen-xs-min: @screen-xs;
+
+// Small screen / tablet
+@screen-sm: 576px;
+@screen-sm-min: @screen-sm;
+
+// Medium screen / desktop
+@screen-md: 768px;
+@screen-md-min: @screen-md;
+
+// Large screen / wide desktop
+@screen-lg: 992px;
+@screen-lg-min: @screen-lg;
+
+// Extra large screen / full hd
+@screen-xl: 1200px;
+@screen-xl-min: @screen-xl;
+
+// Extra extra large screen / large desktop
+@screen-xxl: 1600px;
+@screen-xxl-min: @screen-xxl;
+// provide a maximum
+@screen-xs-max: (@screen-sm-min - 1px);
+@screen-sm-max: (@screen-md-min - 1px);
+@screen-md-max: (@screen-lg-min - 1px);
+@screen-lg-max: (@screen-xl-min - 1px);
+@screen-xl-max: (@screen-xxl-min - 1px);
+
+// Menu
+// ---
+@menu-inline-toplevel-item-height: 40px;
+@menu-item-height: 40px;
+@menu-collapsed-width: 80px;
+@menu-bg: @component-background;
+@menu-popup-bg: @component-background;
+@menu-item-color: @text-color;
+@menu-highlight-color: @primary-color;
+@menu-item-active-bg: @item-active-bg;
+@menu-item-active-border-width: 3px;
+@menu-item-group-title-color: @text-color-secondary;
+@menu-icon-size: @font-size-base;
+@menu-icon-size-lg: @font-size-lg;
+
+@menu-item-vertical-margin: 4px;
+@menu-item-font-size: @font-size-base;
+@menu-item-boundary-margin: 8px;
+
+// Motion
+// ---
+@wave-animation-width: 6px;

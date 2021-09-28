@@ -252,6 +252,19 @@ describe(__filename, () => {
       expect($onSelect).toBeCalledWith(item, 1);
     });
 
+    it('onConfirm to be call', () => {
+      const $onConfirm = jest.fn();
+      const item = new QuickOpenItem({
+        label: 'hello',
+      });
+      quickOpenService.open(model, {
+        onConfirm: $onConfirm,
+      });
+      // trigger onSelect
+      widget.callbacks.onConfirm([item]);
+      expect($onConfirm).toBeCalledWith([item]);
+    });
+
     it('the inQuickOpen contextkey to be false when onHide be called', () => {
       const contextKeyService = injector.get<MockContextKeyService>(IContextKeyService);
       quickOpenService.open(model);
@@ -310,4 +323,5 @@ describe(__filename, () => {
     });
 
   });
+
 });

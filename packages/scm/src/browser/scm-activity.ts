@@ -8,6 +8,7 @@ import { StatusBarAlignment, IStatusBarService } from '@ali/ide-core-browser/lib
 import { WorkbenchEditorService } from '@ali/ide-editor';
 
 import { SCMService, ISCMRepository, scmContainerId } from '../common';
+import { localize } from '@ali/ide-core-common';
 
 // 更新 ActivityBar 中 SCM 模块边的数字, 标注当前的 changes 数量
 @Injectable()
@@ -189,7 +190,9 @@ export class SCMStatusBarController {
     commands.forEach((c, index) => {
       this.disposables.push(
         this.statusbarService.addElement(`status.scm.repo.${index}`, {
+          id: 'status.scm',
           text: c.title,
+          name: localize('status-bar.scm'),
           priority: 10000, // copied from vscode
           alignment: StatusBarAlignment.LEFT,
           command: c.id,

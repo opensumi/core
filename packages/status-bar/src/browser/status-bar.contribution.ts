@@ -5,21 +5,7 @@ import { CommandRegistry } from '@ali/ide-core-common';
 
 import { StatusBarView } from './status-bar.view';
 import { IStatusBarService } from '../common';
-import { StatusBarEntry } from '@ali/ide-core-browser/lib/services';
-
-class StatusBarCommand {
-  static changeColor = {
-    id: 'statusbar.changeColor',
-  };
-
-  static changeBackgroundColor = {
-    id: 'statusbar.changeBackgroundColor',
-  };
-
-  static addElement = {
-    id: 'statusbar.addElement',
-  };
-}
+import { StatusBarEntry, StatusBarCommand } from '@ali/ide-core-browser/lib/services';
 
 @Domain(ComponentContribution, CommandContribution)
 export class StatusBarContribution implements ComponentContribution, CommandContribution {
@@ -51,6 +37,12 @@ export class StatusBarContribution implements ComponentContribution, CommandCont
     commands.registerCommand(StatusBarCommand.addElement, {
       execute: (id: string, entry: StatusBarEntry) => {
         return this.statusBarService.addElement(id, entry);
+      },
+    });
+
+    commands.registerCommand(StatusBarCommand.toggleElement, {
+      execute: (entryId: string) => {
+        this.statusBarService.toggleElement(entryId);
       },
     });
   }

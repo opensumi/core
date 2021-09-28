@@ -1,8 +1,9 @@
 
 import { Injectable } from '@ali/common-di';
+import { Disposable } from '@ali/ide-core-common';
 
 @Injectable()
-export class MockContextKeyService {
+export class MockContextKeyService extends Disposable {
   store: Map<string, any> = new Map();
   createKey(key: string, value: any) {
     this.store.set(key, value);

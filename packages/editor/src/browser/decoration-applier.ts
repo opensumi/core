@@ -129,9 +129,11 @@ export class MonacoEditorDecorationApplier extends Disposable {
     });
   }
 
-resolveDecorationRenderer(key, options?: IDecorationRenderOptions): { options: monaco.editor.IModelDecorationOptions, dispose: () => void }  {
+resolveDecorationRenderer(key: string, options?: IDecorationRenderOptions): { options: monaco.editor.IModelDecorationOptions, dispose: () => void }  {
     const type = this.decorationService.getTextEditorDecorationType(key);
-    const result: monaco.editor.IModelDecorationOptions = {} ;
+    const result: monaco.editor.IModelDecorationOptions = {
+      description: key,
+    } ;
     const currentTheme = this.themeService.getCurrentThemeSync().type;
     const disposer = new Disposable();
     if (type) {

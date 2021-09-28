@@ -1,5 +1,5 @@
 import { localize } from '@ali/ide-core-common';
-import { registerColor, transparent, lighten, darken, lessProminent } from '../color-registry';
+import { registerColor, transparent, lighten, darken, lessProminent, badgeForeground, badgeBackground } from '../color-registry';
 import { Color, RGBA } from '../../common/color';
 import { contrastBorder, activeContrastBorder, focusBorder, foreground } from './base';
 import { backgroundColor, foregroundColor } from './basic-color';
@@ -170,3 +170,13 @@ export const EDITOR_DRAG_AND_DROP_BACKGROUND = registerColor('editorGroup.dropBa
   light: Color.fromHex('#2677CB').transparent(0.18),
   hc: null,
 }, localize('editorDragAndDropBackground', 'Background color when dragging editors around. The color should have transparency so that the editor contents can still shine through.'));
+
+/**
+ * Inline hints
+ */
+export const editorInlayHintForeground = registerColor('editorInlayHint.foreground', { dark: transparent(badgeForeground, .8), light: transparent(badgeForeground, .8), hc: badgeForeground }, localize('editorInlayHintForeground', 'Foreground color of inline hints'));
+export const editorInlayHintBackground = registerColor('editorInlayHint.background', { dark: transparent(badgeBackground, .6), light: transparent(badgeBackground, .3), hc: badgeBackground }, localize('editorInlayHintBackground', 'Background color of inline hints'));
+export const editorInlayHintTypeForeground = registerColor('editorInlayHintType.foreground', { dark: transparent(badgeForeground, .8), light: transparent(badgeForeground, .8), hc: badgeForeground }, localize('editorInlayHintForegroundTypes', 'Foreground color of inline hints for types'));
+export const editorInlayHintTypeBackground = registerColor('editorInlayHintType.background', { dark: transparent(badgeBackground, .6), light: transparent(badgeBackground, .3), hc: badgeBackground }, localize('editorInlayHintBackgroundTypes', 'Background color of inline hints for types'));
+export const editorInlayHintParameterForeground = registerColor('editorInlayHintParameter.foreground', { dark: transparent(badgeForeground, .8), light: transparent(badgeForeground, .8), hc: badgeForeground }, localize('editorInlayHintForegroundParameter', 'Foreground color of inline hints for parameters'));
+export const editorInlayHintParameterBackground = registerColor('editorInlayHintParameter.background', { dark: transparent(badgeBackground, .6), light: transparent(badgeBackground, .3), hc: badgeBackground }, localize('editorInlayHintBackgroundParameter', 'Background color of inline hints for parameters'));

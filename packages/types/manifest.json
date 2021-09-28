@@ -132,7 +132,7 @@
     "@ali/ide-i18n": {
       "version": "2.10.3",
       "entry": [
-        "browser"
+        "common"
       ]
     },
     "@ali/ide-kaitian-extension": {

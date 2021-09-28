@@ -18,9 +18,11 @@ export interface IKaitianQuickOpenControllerOpts extends QuickOpenTabOptions {
   readonly prefix?: string;
   readonly password?: boolean;
   ignoreFocusOut?: boolean;
+  canSelectMany?: boolean;
   onType?(lookFor: string, acceptor: (model: IQuickOpenModel) => void): void;
   onClose?(canceled: boolean): void;
   onSelect?(item: QuickOpenItem, index: number): void;
+  onConfirm?(items: QuickOpenItem[]): void;
   onChangeValue?(lookFor: string): void;
 }
 
@@ -90,6 +92,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
       password: opts.password,
       inputEnable: opts.enabled ?? true,
       valueSelection: opts.valueSelection,
+      canSelectMany: opts.canSelectMany,
       renderTab: opts.renderTab,
       toggleTab: opts.toggleTab,
     });
@@ -136,6 +139,11 @@ export class MonacoQuickOpenService implements QuickOpenService {
         onSelect: (item: QuickOpenItem, index: number) => {
           if (this.opts.onSelect) {
             this.opts.onSelect(item, index);
+          }
+        },
+        onConfirm: (items: QuickOpenItem[]) => {
+          if (this.opts.onConfirm) {
+            this.opts.onConfirm(items);
           }
         },
       },
@@ -237,12 +245,20 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
     return this.options.toggleTab;
   }
 
+  get canSelectMany() {
+    return this.options.canPickMany;
+  }
+
   onClose(cancelled: boolean): void {
     this.options.onClose(cancelled);
   }
 
   onSelect(item: QuickOpenItem, index: number) {
-     this.options.onSelect(item, index);
+    this.options.onSelect(item, index);
+  }
+
+  onConfirm(items: QuickOpenItem[]) {
+    this.options.onConfirm(items);
   }
 
   onType(lookFor: string, acceptor: (model: IQuickOpenModel) => void): void {

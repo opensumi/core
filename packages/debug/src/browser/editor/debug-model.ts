@@ -317,6 +317,7 @@ export class DebugModel implements IDebugModel {
     return {
       range,
       options: {
+        description: 'breakpoint-decoration',
         stickiness: options.STICKINESS,
       },
     };
@@ -393,6 +394,7 @@ export class DebugModel implements IDebugModel {
         result.push({
           range,
           options: {
+            description: 'debug-breakpoint-placeholder',
             stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
             beforeContentClassName: breakpointAtPosition ? undefined : 'debug-breakpoint-placeholder',
           },
@@ -436,6 +438,7 @@ export class DebugModel implements IDebugModel {
     return {
       range,
       options: {
+        description: 'debug-breakpoint-placeholder',
         glyphMarginClassName: className,
         glyphMarginHoverMessage: message.map((value) => ({ value })),
         stickiness: options.STICKINESS,

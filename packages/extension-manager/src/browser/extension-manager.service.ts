@@ -821,30 +821,21 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   }
 
   /**
-   * 获取所有是依赖项并且当前是激活状态的扩展
-   * A 是 B 的依赖，A 当前被激活
-   * C 是 D 的依赖，D 当前没被激活
-   * E 并非别人的依赖，E 当前被激活
-   *
-   * 则 return 的结果为 A - B
+   * 获取某个插件的依赖项
    *
    */
-  public async getEnabledDeps(): Promise<Map<string, string[]>> {
-    const activeExtsDeps = new Map();
-    for (const installId of this.installedIds) {
-      const detail = this.getRawExtensionById(installId);
-      if (detail && detail.enable) {
-        const extProp = await this.kaitianExtensionManagerService.getExtensionProps(detail.path);
-
-        for (const dep of extProp?.packageJSON?.extensionDependencies || []) {
-
-          const { id } = this.transformDepsDeclaration(dep);
-
-          activeExtsDeps.set(id, extProp?.extensionId);
+   getEnabledDepsByExtensionId(extensionId: string): string[] {
+    return this.extensions
+      .filter((extension) => {
+        // 对于已经禁用的插件忽略检查
+        if (!extension.isUseEnable || !Array.isArray(extension.packageJSON.extensionDependencies)) {
+          return false;
         }
-      }
-    }
-    return activeExtsDeps;
+        // 过滤出依赖指定 id 的插件
+        return extension.packageJSON.extensionDependencies.some((depExtensionId) => depExtensionId === extensionId);
+      }).map((extension) => {
+        return extension.id;
+      });
   }
 
   /**
@@ -873,14 +864,15 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
     }
   }
 
-  private async beforeUnactiveExt(extension: BaseExtension, scope: EnableScope) {
+  private async beforeUnactiveExt(extension: BaseExtension, scope: EnableScope): Promise<boolean> {
     // 禁用当前插件前，先检查当前要禁用的扩展如果是被其他已启用的组件所依赖，那么当前插件不应该被禁用
-    const allEnabledDeps = await this.getEnabledDeps();
-    if (Array.from(allEnabledDeps.keys()).includes(extension.extensionId)) {
+    const extensionId = `${extension.publisher}.${extension.name}`;
+    const enabledDeps = this.getEnabledDepsByExtensionId(extensionId);
+    if (enabledDeps.length) {
       this.messageService.error(
-        formatLocalize('marketplace.extension.disabled.failed.depended', extension.name, allEnabledDeps.get(extension.extensionId)),
+        formatLocalize('marketplace.extension.disabled.failed.depended', extension.name, enabledDeps.join(',')),
       );
-      return;
+      return false;
     }
 
     // 获取 pack 中的扩展
@@ -898,21 +890,12 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
         } as BaseExtension , false, scope);
       }
     }
+    return true;
   }
 
   @action
   async _toggleActiveExtension(extension: BaseExtension, enable: boolean, scope: EnableScope) {
-
     const extensionId = extension.extensionId;
-
-    if (enable) {
-      // 激活当前插件前，先激活当前插件的依赖插件
-      await this.beforeActiveExt(extension, scope);
-    } else {
-      // 禁用当前插件前，先检查当前要禁用的扩展如果是被其他已启用的组件所依赖，那么当前插件不应该被禁用
-      await this.beforeUnactiveExt(extension, scope);
-    }
-
     const reloadRequire = await this.computeReloadState(extension.path);
     // 如果需要重启，后续操作不进行启用、禁用
     if (!reloadRequire) {
@@ -944,6 +927,15 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   }
 
   async toggleActiveExtension(extension: BaseExtension, enable: boolean, scope: EnableScope) {
+    if (enable) {
+      // 激活当前插件前，先激活当前插件的依赖插件
+      await this.beforeActiveExt(extension, scope);
+    } else {
+      // 禁用当前插件前，先检查当前要禁用的扩展如果是被其他已启用的组件所依赖，那么当前插件不应该被禁用
+      if (!await this.beforeUnactiveExt(extension, scope)) {
+        return;
+      }
+    }
     await this.setExtensionEnable(extension.extensionId, enable, scope);
   }
 

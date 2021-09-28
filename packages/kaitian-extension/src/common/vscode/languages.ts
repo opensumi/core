@@ -10,6 +10,7 @@ import {
   DocumentRangeFormattingEditProvider,
   DocumentFormattingEditProvider,
   CallHierarchyProvider,
+  InlayHintsProvider,
 } from 'vscode';
 import {
   SerializedDocumentFilter,
@@ -41,7 +42,6 @@ import {
   SemanticTokensLegend,
   WithDuration,
   CompletionItemInsertTextRule,
-  CompletionItemLabel,
   IMarkdownString,
   CompletionItemKind,
   CompletionItemTag,
@@ -57,6 +57,7 @@ import type {
   CodeActionContext,
   SignatureHelpContext,
   Command,
+  CompletionItemLabel,
 } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { Disposable } from './ext-types';
 import { SymbolInformation } from 'vscode-languageserver-types';
@@ -68,6 +69,7 @@ import { InlineValueContext, InlineValue } from '@ali/ide-debug/lib/common/inlin
 import { ISingleEditOperation } from '@ali/ide-editor';
 import { IExtensionDescription } from './extension';
 import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 
 export interface IMainThreadLanguages {
   $unregister(handle: number): void;
@@ -207,6 +209,8 @@ export interface IMainThreadLanguages {
     event?: any,
   ): void;
   $registerLinkedEditingRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void;
+  $registerInlayHintsProvider(handle: number, selector: SerializedDocumentFilter[], eventHandle: number | undefined): void;
+  $emitInlayHintsEvent(eventHandle: number, event?: any): void;
 }
 
 export interface IExtHostLanguages {
@@ -514,11 +518,25 @@ export interface IExtHostLanguages {
   ): Promise<InlineValue[] | undefined>;
 
   $provideLinkedEditingRanges(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<ILinkedEditingRangesDto | undefined>;
+  registerInlayHintsProvider(extension: IExtensionDescription, selector: DocumentSelector, provider: InlayHintsProvider): Disposable;
+  $provideInlayHints(handle: number, resource: UriComponents, range: IRange, token: CancellationToken): Promise<IInlayHintsDto | undefined>;
 }
 
 export interface ILinkedEditingRangesDto {
   ranges: IRange[];
   wordPattern?: SerializedRegExp;
+}
+
+export interface IInlayHintDto {
+  text: string;
+  position: Position;
+  kind: modes.InlayHintKind;
+  whitespaceBefore?: boolean;
+  whitespaceAfter?: boolean;
+}
+
+export interface IInlayHintsDto {
+  hints: IInlayHintDto[];
 }
 
 export interface IInlineValueContextDto {
@@ -563,7 +581,7 @@ export interface ISuggestResultDto {
 }
 
 export interface ISuggestDataDto {
-  [ISuggestDataDtoField.label]: string;
+  [ISuggestDataDtoField.label]: string | CompletionItemLabel;
   [ISuggestDataDtoField.label2]?: string | CompletionItemLabel;
   [ISuggestDataDtoField.kind]?: CompletionItemKind;
   [ISuggestDataDtoField.detail]?: string;

@@ -41,6 +41,7 @@ export enum MenuId {
   SCMTitle = 'scm/title',
   SCMInput = 'scm/input',
   SearchContext = 'search/context',
+  StatusBarContext = 'statusbar/context',
   StatusBarWindowIndicatorMenu = 'statusbar/windowIndicator',
   TouchBarContext = 'touchBar/context', /* 并未实现 */
   ViewItemContext = 'view/item/context',

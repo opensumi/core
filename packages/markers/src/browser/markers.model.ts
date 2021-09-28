@@ -33,7 +33,7 @@ export class MarkerViewModel extends Disposable {
     if (resources) {
       resources.forEach((resource) => {
         // tslint:disable-next-line: no-bitwise
-        this.updateMarker(resource, this._service.getManager().getMarkers({ resource, severities: MarkerSeverity.Error | MarkerSeverity.Warning | MarkerSeverity.Info, opened: true }));
+        this.updateMarker(resource, this._service.getManager().getMarkers({ resource, severities: MarkerSeverity.Error | MarkerSeverity.Warning | MarkerSeverity.Info }));
       });
     }
   }

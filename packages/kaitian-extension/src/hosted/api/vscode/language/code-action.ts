@@ -57,6 +57,7 @@ export class CodeActionAdapter {
     const codeActionContext: vscode.CodeActionContext = {
       diagnostics: allDiagnostics,
       only: context.only ? new CodeActionKind(context.only) : undefined,
+      triggerKind: Converter.CodeActionTriggerKind.to(context.trigger),
     };
     let cacheId: number | undefined;
     const actions = await Promise.resolve(this.provider.provideCodeActions(doc, ran, codeActionContext, createToken())).then((commandsOrActions) => {

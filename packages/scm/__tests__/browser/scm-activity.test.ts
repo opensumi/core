@@ -244,6 +244,8 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
         alignment: StatusBarAlignment.LEFT,
         command: 'fake.command.id.0',
         tooltip: 'workspace (scm_label_0) - fake.command.tooltip.0',
+        id: 'status.scm',
+        name: 'status-bar.scm',
       });
 
       // fake command 1
@@ -255,6 +257,8 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
         command: 'fake.command.id.1',
         arguments: [1, 2, 3],
         tooltip: 'workspace (scm_label_0) - fake.command.title.1',
+        id: 'status.scm',
+        name: 'status-bar.scm',
       });
 
       // remove repo0
@@ -286,6 +290,8 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
         alignment: StatusBarAlignment.LEFT,
         command: 'fake.command.id.0',
         tooltip: 'workspace (scm_label_0) - fake.command.tooltip.0',
+        id: 'status.scm',
+        name: 'status-bar.scm',
       });
     });
 
@@ -312,6 +318,8 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
         alignment: StatusBarAlignment.LEFT,
         command: 'fake.command.id.0',
         tooltip: 'workspace (scm_label_0) - fake.command.tooltip.0',
+        id: 'status.scm',
+        name: 'status-bar.scm',
       });
 
       mockProvider0.statusBarCommands = [{
@@ -331,6 +339,8 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
         command: 'fake.command.id.1',
         arguments: [1, 2, 3],
         tooltip: 'workspace (scm_label_0) - fake.command.title.1',
+        id: 'status.scm',
+        name: 'status-bar.scm',
       });
 
       // statusBarCommands 为 []
@@ -376,6 +386,8 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
         alignment: StatusBarAlignment.LEFT,
         command: 'fake.command.id.0',
         tooltip: 'scm_label_0 - fake.command.tooltip.0',
+        id: 'status.scm',
+        name: 'status-bar.scm',
       });
 
       // scm provider1 with rootUri
@@ -404,6 +416,8 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
         command: 'fake.command.id.1',
         arguments: [1, 2, 3],
         tooltip: 'another-ws (scm_label_1) - fake.command.title.1',
+        id: 'status.scm',
+        name: 'status-bar.scm',
       });
 
       // change currentResource#uri and fire onActiveResourceChange
@@ -451,6 +465,8 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
         alignment: StatusBarAlignment.LEFT,
         command: 'fake.command.id.0',
         tooltip: 'scm_label_0 - fake.command.tooltip.0',
+        id: 'status.scm',
+        name: 'status-bar.scm',
       });
 
       // scm provider1 with rootUri
@@ -482,6 +498,8 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
         command: 'fake.command.id.1',
         arguments: [1, 2, 3],
         tooltip: 'another-ws (scm_label_1) - fake.command.title.1',
+        id: 'status.scm',
+        name: 'status-bar.scm',
       });
     });
 

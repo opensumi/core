@@ -80,9 +80,9 @@ export class WSChannel implements IWebSocket {
     );
   }
   handleMessage(msg: ChannelMessage) {
-    if (msg.kind === 'ready') {
+    if (msg.kind === 'ready' && this.fireOpen) {
       this.fireOpen(msg.id);
-    } else if (msg.kind === 'data') {
+    } else if (msg.kind === 'data' && this.fireMessage) {
       this.fireMessage(msg.content);
     }
   }

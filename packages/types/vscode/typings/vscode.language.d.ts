@@ -746,19 +746,41 @@ declare module 'vscode' {
     constructor(contents: MarkedString | MarkedString[], range?: Range);
   }
   /**
+   * The reason why code actions were requested.
+   */
+  export enum CodeActionTriggerKind {
+    /**
+     * Code actions were explicitly requested by the user or by an extension.
+     */
+    Invoke = 1,
+
+    /**
+     * Code actions were requested automatically.
+     *
+     * This typically happens when current selection in a file changes, but can
+     * also be triggered when file content changes.
+     */
+    Automatic = 2,
+  }
+  /**
    * Contains additional diagnostic information about the context in which
-   * a [code action](#CodeActionProvider.provideCodeActions) is run.
+   * a {@link CodeActionProvider.provideCodeActions code action} is run.
    */
   export interface CodeActionContext {
     /**
+     * The reason why code actions were requested.
+     */
+    readonly triggerKind: CodeActionTriggerKind;
+
+    /**
      * An array of diagnostics.
      */
-    readonly diagnostics: ReadonlyArray<Diagnostic>;
+    readonly diagnostics: readonly Diagnostic[];
 
     /**
      * Requested kind of actions to return.
      *
-     * Actions not of this kind are filtered out before being shown by the lightbulb.
+     * Actions not of this kind are filtered out before being shown by the [lightbulb](https://code.visualstudio.com/docs/editor/editingevolved#_code-action).
      */
     readonly only?: CodeActionKind;
   }
@@ -974,6 +996,32 @@ declare module 'vscode' {
      */
     provideDocumentHighlights(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<DocumentHighlight[]>;
   }
+
+  /**
+   * A structured label for a {@link CompletionItem completion item}.
+   */
+  export interface CompletionItemLabel {
+
+    /**
+     * The label of this completion item.
+     *
+     * By default this is also the text that is inserted when this completion is selected.
+     */
+    label: string;
+
+    /**
+     * An optional string which is rendered less prominently directly after {@link CompletionItemLabel.label label},
+     * without any spacing. Should be used for function signatures or type annotations.
+     */
+    detail?: string;
+
+    /**
+     * An optional string which is rendered less prominently after {@link CompletionItemLabel.detail}. Should be used
+     * for fully qualified names or file path.
+     */
+    description?: string;
+  }
+
   /**
    * A completion item represents a text snippet that is proposed to complete text that is being typed.
    *
@@ -997,7 +1045,7 @@ declare module 'vscode' {
      * this is also the text that is inserted when selecting
      * this completion.
      */
-    label: string;
+    label: string | CompletionItemLabel;
 
     /**
      * The kind of this completion item. Based on the kind
@@ -1104,13 +1152,13 @@ declare module 'vscode' {
     /**
      * Creates a new completion item.
      *
-     * Completion items must have at least a [label](#CompletionItem.label) which then
+     * Completion items must have at least a {@link CompletionItem.label label} which then
      * will be used as insert text as well as for sorting and filtering.
      *
      * @param label The label of the completion.
-     * @param kind The [kind](#CompletionItemKind) of the completion.
+     * @param kind The {@link CompletionItemKind kind} of the completion.
      */
-    constructor(label: string, kind?: CompletionItemKind);
+    constructor(label: string | CompletionItemLabel, kind?: CompletionItemKind);
   }
 
   /**

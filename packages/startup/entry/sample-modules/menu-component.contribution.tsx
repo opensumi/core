@@ -13,7 +13,7 @@ const CustomMenuItem: React.FC<IComponentMenuItemProps> = (props) => {
 
 @Domain(MenuContribution)
 export class CustomReactComponentMenuContribution implements MenuContribution {
-  registerNextMenus(menus: IMenuRegistry): void {
+  registerMenus(menus: IMenuRegistry): void {
     menus.registerMenuItem(MenuId.EditorTitle, {
       component: CustomMenuItem,
       order: 100,

@@ -74,7 +74,7 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   _getCursors() {
     throw new Error('Method not implemented.');
   }
-  setDecorations(decorationTypeKey: string, ranges: monaco.editor.IDecorationOptions[]): void {
+  setDecorations(description: string, decorationTypeKey: string, ranges: monaco.editor.IDecorationOptions[]): void {
     throw new Error('Method not implemented.');
   }
   setDecorationsFast(decorationTypeKey: string, ranges: monaco.IRange[]): void {
@@ -503,7 +503,7 @@ export class MockedStandaloneCodeEditor extends MockedCodeEditor {
   addAction(descriptor: monaco.editor.IActionDescriptor): monaco.IDisposable {
     throw new Error('Method not implemented.');
   }
-  setDecorations(decorationTypeKey: string, ranges: monaco.editor.IDecorationOptions[]): void {
+  setDecorations(description: string, decorationTypeKey: string, ranges: monaco.editor.IDecorationOptions[]): void {
     throw new Error('Method not implemented.');
   }
   setDecorationsFast(decorationTypeKey: string, ranges: monaco.IRange[]): void {

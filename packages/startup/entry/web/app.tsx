@@ -3,7 +3,7 @@ import { setLocale } from '@ali/ide-monaco/lib/browser/monaco-localize';
 // 如果不传则默认会根据 PreferenceScope 的优先级从 LocalStorage 取值
 setLocale('zh-CN');
 
-import '@ali/ide-i18n/lib/browser';
+import '@ali/ide-i18n';
 import { defaultConfig } from '@ali/ide-main-layout/lib/browser/default-config';
 import { renderApp } from './render-app';
 import { CommonBrowserModules } from '../../src/browser/common-modules';

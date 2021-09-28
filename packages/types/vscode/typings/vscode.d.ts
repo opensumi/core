@@ -640,6 +640,8 @@ declare module 'vscode' {
      * The action to execute.
      */
     action: EnterAction;
+
+    previousLineText?: RegExp;
   }
 
   /**
@@ -1524,34 +1526,34 @@ declare module 'vscode' {
     getParent?(element: T): ProviderResult<T>;
 
     /**
-		 * Called on hover to resolve the {@link TreeItem.tooltip TreeItem} property if it is undefined.
-		 * Called on tree item click/open to resolve the {@link TreeItem.command TreeItem} property if it is undefined.
-		 * Only properties that were undefined can be resolved in `resolveTreeItem`.
-		 * Functionality may be expanded later to include being called to resolve other missing
-		 * properties on selection and/or on open.
-		 *
-		 * Will only ever be called once per TreeItem.
-		 *
-		 * onDidChangeTreeData should not be triggered from within resolveTreeItem.
-		 *
-		 * *Note* that this function is called when tree items are already showing in the UI.
-		 * Because of that, no property that changes the presentation (label, description, etc.)
-		 * can be changed.
-		 *
-		 * @param item Undefined properties of `item` should be set then `item` should be returned.
-		 * @param element The object associated with the TreeItem.
-		 * @param token A cancellation token.
-		 * @return The resolved tree item or a thenable that resolves to such. It is OK to return the given
-		 * `item`. When no result is returned, the given `item` will be used.
-		 */
-		resolveTreeItem?(item: TreeItem, element: T, token: CancellationToken): ProviderResult<TreeItem>;
+     * Called on hover to resolve the {@link TreeItem.tooltip TreeItem} property if it is undefined.
+     * Called on tree item click/open to resolve the {@link TreeItem.command TreeItem} property if it is undefined.
+     * Only properties that were undefined can be resolved in `resolveTreeItem`.
+     * Functionality may be expanded later to include being called to resolve other missing
+     * properties on selection and/or on open.
+     *
+     * Will only ever be called once per TreeItem.
+     *
+     * onDidChangeTreeData should not be triggered from within resolveTreeItem.
+     *
+     * *Note* that this function is called when tree items are already showing in the UI.
+     * Because of that, no property that changes the presentation (label, description, etc.)
+     * can be changed.
+     *
+     * @param item Undefined properties of `item` should be set then `item` should be returned.
+     * @param element The object associated with the TreeItem.
+     * @param token A cancellation token.
+     * @return The resolved tree item or a thenable that resolves to such. It is OK to return the given
+     * `item`. When no result is returned, the given `item` will be used.
+     */
+    resolveTreeItem?(item: TreeItem, element: T, token: CancellationToken): ProviderResult<TreeItem>;
   }
 
   export class TreeItem {
     /**
-		 * A human-readable string describing this item. When `falsy`, it is derived from {@link TreeItem.resourceUri resourceUri}.
-		 */
-		label?: string | TreeItemLabel;
+     * A human-readable string describing this item. When `falsy`, it is derived from {@link TreeItem.resourceUri resourceUri}.
+     */
+    label?: string | TreeItemLabel;
 
     /**
      * Optional id for the tree item that has to be unique across tree. The id is used to preserve the selection and expansion state of the tree item.
@@ -1616,11 +1618,11 @@ declare module 'vscode' {
      */
     contextValue?: string;
 
-		/**
-		 * Accessibility information used when screen reader interacts with this tree item.
-		 * Generally, a TreeItem has no need to set the `role` of the accessibilityInformation;
-		 * however, there are cases where a TreeItem is not displayed in a tree-like way where setting the `role` may make sense.
-		 */
+    /**
+     * Accessibility information used when screen reader interacts with this tree item.
+     * Generally, a TreeItem has no need to set the `role` of the accessibilityInformation;
+     * however, there are cases where a TreeItem is not displayed in a tree-like way where setting the `role` may make sense.
+     */
      accessibilityInformation?: AccessibilityInformation;
 
      /**
@@ -2420,6 +2422,48 @@ declare module 'vscode' {
     update(key: string, value: any): Thenable<void>;
   }
 
+  	/**
+	 * The event data that is fired when a secret is added or removed.
+	 */
+	export interface SecretStorageChangeEvent {
+		/**
+		 * The key of the secret that has changed.
+		 */
+		readonly key: string;
+	}
+
+	/**
+	 * Represents a storage utility for secrets, information that is
+	 * sensitive.
+	 */
+	export interface SecretStorage {
+		/**
+		 * Retrieve a secret that was stored with key. Returns undefined if there
+		 * is no password matching that key.
+		 * @param key The key the secret was stored under.
+		 * @returns The stored value or `undefined`.
+		 */
+		get(key: string): Thenable<string | undefined>;
+
+		/**
+		 * Store a secret under a given key.
+		 * @param key The key to store the secret under.
+		 * @param value The secret.
+		 */
+		store(key: string, value: string): Thenable<void>;
+
+		/**
+		 * Remove a secret from storage.
+		 * @param key The key the secret was stored under.
+		 */
+		delete(key: string): Thenable<void>;
+
+		/**
+		 * Fires when a secret is stored or deleted.
+		 */
+		onDidChange: Event<SecretStorageChangeEvent>;
+	}
+
   /**
    * Represents how a terminal exited.
    */
@@ -2640,6 +2684,12 @@ declare module 'vscode' {
     readonly extensionPath: string;
 
     /**
+		 * A storage utility for secrets. Secrets are persisted across reloads and are independent of the
+		 * current opened {@link workspace.workspaceFolders workspace}.
+		 */
+		readonly secrets: SecretStorage;
+
+    /**
      * The uri of the directory containing the extension.
      */
      readonly extensionUri: Uri;
@@ -2733,8 +2783,8 @@ declare module 'vscode' {
      */
     readonly extensionMode: ExtensionMode;
     /**
-		 * The current `Extension` instance.
-		 */
+     * The current `Extension` instance.
+     */
     readonly extension: Extension<any>;
   }
 

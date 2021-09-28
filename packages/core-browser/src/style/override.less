@@ -1,9 +1,8 @@
 @import "~@ali/ide-components/lib/style/mixins.less";
 @import "./variable.less";
-// 覆盖 antd/react-component 组件的样式
 
-.overrideAntdMenu(@n, @i: 1) when (@i =< @n) {
-  @clsx: extract(@antdMenuClx, @i);
+.overrideMenu(@n, @i: 1) when (@i =< @n) {
+  @clsx: extract(@menuClx, @i);
 
   .kt-menu {
     &.@{clsx}, .@{clsx} {
@@ -67,12 +66,12 @@
     }
   }
 
-  .overrideAntdMenu(@n, (@i + 1));
+  .overrideMenu(@n, (@i + 1));
 }
 
-@antdMenuClx: ant-menu, ant-dropdown-menu;
+@menuClx: kt-inner-menu, kt-dropdown-menu;
 
-.overrideAntdMenu(length(@antdMenuClx));
+.overrideMenu(length(@menuClx));
 
 .monaco-editor {
   h1, h2, h3, h4, h5, h6, p {

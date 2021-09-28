@@ -2,8 +2,7 @@ import * as React from 'react';
 import * as clsx from 'classnames';
 import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 
-import Menu, { ClickParam } from 'antd/lib/menu';
-import 'antd/lib/menu/style/index.css';
+import { ClickParam, Menu } from '@ali/ide-components/lib/menu';
 
 import { Button, CheckBox, Icon } from '@ali/ide-components';
 import {
@@ -179,7 +178,13 @@ const InlineActionWidget: React.FC<{
     }
   }, [ data, context ]);
 
-  const title = data.tooltip || data.label;
+  const title = React.useMemo(() => {
+    const title = data.tooltip || data.label;
+    if (data.keybinding) {
+      return `${title} (${data.keybinding.split('').join('+')})`;
+    }
+    return title;
+  }, [ data ]);
 
   const isSubmenuNode = data.id === SubmenuItemNode.ID;
 

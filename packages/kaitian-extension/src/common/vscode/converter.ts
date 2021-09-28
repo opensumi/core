@@ -18,7 +18,8 @@ import {
 } from './models';
 import * as marked from 'marked';
 import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
-import { EndOfLineSequence } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+import { EndOfLineSequence, CodeActionTriggerType } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 import { IInlineValueContextDto } from './languages';
 
 export interface TextEditorOpenOptions extends vscode.TextDocumentShowOptions {
@@ -433,16 +434,6 @@ export function fromDefinitionLink(
       ? fromRange(definitionLink.targetSelectionRange)
       : undefined,
   } as model.DefinitionLink;
-}
-
-export function fromInsertText(item: vscode.CompletionItem): string {
-  if (typeof item.insertText === 'string') {
-    return item.insertText;
-  }
-  if (typeof item.insertText === 'object') {
-    return item.insertText.value;
-  }
-  return item.label;
 }
 
 export function fromFoldingRange(
@@ -917,15 +908,17 @@ export namespace WorkspaceEdit {
       if (entry._type === types.WorkspaceEditType.File) {
         // file operation
         result.edits.push({
+          _type: types.WorkspaceEditType.File,
           oldUri: entry.from,
           newUri: entry.to,
           options: entry.options,
           metadata: entry.metadata,
         } as model.ResourceFileEditDto);
-      } else {
+      } else if (entry._type === types.WorkspaceEditType.Text) {
         // text edits
         const doc = documents?.getDocument(entry.uri);
         result.edits.push({
+          _type: types.WorkspaceEditType.Text,
           resource: entry.uri,
           edit: TextEdit.from(entry.edit),
           modelVersionId: doc?.version,
@@ -1254,134 +1247,12 @@ export namespace CompletionItemKind {
   }
 }
 
-/**
- * @deprecated
- */
-export function fromCompletionItemKind(
-  kind: vscode.CompletionItemKind | undefined,
-): model.CompletionItemKind {
-  switch (kind) {
-    case types.CompletionItemKind.Method:
-      return model.CompletionItemKind.Method;
-    case types.CompletionItemKind.Function:
-      return model.CompletionItemKind.Function;
-    case types.CompletionItemKind.Constructor:
-      return model.CompletionItemKind.Constructor;
-    case types.CompletionItemKind.Field:
-      return model.CompletionItemKind.Field;
-    case types.CompletionItemKind.Variable:
-      return model.CompletionItemKind.Variable;
-    case types.CompletionItemKind.Class:
-      return model.CompletionItemKind.Class;
-    case types.CompletionItemKind.Interface:
-      return model.CompletionItemKind.Interface;
-    case types.CompletionItemKind.Struct:
-      return model.CompletionItemKind.Struct;
-    case types.CompletionItemKind.Module:
-      return model.CompletionItemKind.Module;
-    case types.CompletionItemKind.Property:
-      return model.CompletionItemKind.Property;
-    case types.CompletionItemKind.Unit:
-      return model.CompletionItemKind.Unit;
-    case types.CompletionItemKind.Value:
-      return model.CompletionItemKind.Value;
-    case types.CompletionItemKind.Constant:
-      return model.CompletionItemKind.Constant;
-    case types.CompletionItemKind.Enum:
-      return model.CompletionItemKind.Enum;
-    case types.CompletionItemKind.EnumMember:
-      return model.CompletionItemKind.EnumMember;
-    case types.CompletionItemKind.Keyword:
-      return model.CompletionItemKind.Keyword;
-    case types.CompletionItemKind.Snippet:
-      return model.CompletionItemKind.Snippet;
-    case types.CompletionItemKind.Text:
-      return model.CompletionItemKind.Text;
-    case types.CompletionItemKind.Color:
-      return model.CompletionItemKind.Color;
-    case types.CompletionItemKind.File:
-      return model.CompletionItemKind.File;
-    case types.CompletionItemKind.Reference:
-      return model.CompletionItemKind.Reference;
-    case types.CompletionItemKind.Folder:
-      return model.CompletionItemKind.Folder;
-    case types.CompletionItemKind.Event:
-      return model.CompletionItemKind.Event;
-    case types.CompletionItemKind.Operator:
-      return model.CompletionItemKind.Operator;
-    case types.CompletionItemKind.TypeParameter:
-      return model.CompletionItemKind.TypeParameter;
-  }
-  return model.CompletionItemKind.Property;
-}
-
-/**
- * @deprecated
- */
-export function toCompletionItemKind(
-  kind: model.CompletionItemKind,
-): types.CompletionItemKind {
-  switch (kind) {
-    case model.CompletionItemKind.Method:
-      return types.CompletionItemKind.Method;
-    case model.CompletionItemKind.Function:
-      return types.CompletionItemKind.Function;
-    case model.CompletionItemKind.Constructor:
-      return types.CompletionItemKind.Constructor;
-    case model.CompletionItemKind.Field:
-      return types.CompletionItemKind.Field;
-    case model.CompletionItemKind.Variable:
-      return types.CompletionItemKind.Variable;
-    case model.CompletionItemKind.Class:
-      return types.CompletionItemKind.Class;
-    case model.CompletionItemKind.Interface:
-      return types.CompletionItemKind.Interface;
-    case model.CompletionItemKind.Struct:
-      return types.CompletionItemKind.Struct;
-    case model.CompletionItemKind.Module:
-      return types.CompletionItemKind.Module;
-    case model.CompletionItemKind.Property:
-      return types.CompletionItemKind.Property;
-    case model.CompletionItemKind.Unit:
-      return types.CompletionItemKind.Unit;
-    case model.CompletionItemKind.Value:
-      return types.CompletionItemKind.Value;
-    case model.CompletionItemKind.Constant:
-      return types.CompletionItemKind.Constant;
-    case model.CompletionItemKind.Enum:
-      return types.CompletionItemKind.Enum;
-    case model.CompletionItemKind.EnumMember:
-      return types.CompletionItemKind.EnumMember;
-    case model.CompletionItemKind.Keyword:
-      return types.CompletionItemKind.Keyword;
-    case model.CompletionItemKind.Snippet:
-      return types.CompletionItemKind.Snippet;
-    case model.CompletionItemKind.Text:
-      return types.CompletionItemKind.Text;
-    case model.CompletionItemKind.Color:
-      return types.CompletionItemKind.Color;
-    case model.CompletionItemKind.File:
-      return types.CompletionItemKind.File;
-    case model.CompletionItemKind.Reference:
-      return types.CompletionItemKind.Reference;
-    case model.CompletionItemKind.Folder:
-      return types.CompletionItemKind.Folder;
-    case model.CompletionItemKind.Event:
-      return types.CompletionItemKind.Event;
-    case model.CompletionItemKind.Operator:
-      return types.CompletionItemKind.Operator;
-    case model.CompletionItemKind.TypeParameter:
-      return types.CompletionItemKind.TypeParameter;
-  }
-  return types.CompletionItemKind.Property;
-}
-
 export namespace CompletionItem {
   export function to(
     suggestion: model.CompletionItem,
     converter?: CommandsConverter,
   ): types.CompletionItem {
-    const result = new types.CompletionItem(typeof suggestion.label === 'string' ? suggestion.label : suggestion.label.name);
+    const result = new types.CompletionItem(suggestion.label);
     if (typeof suggestion.label !== 'string') {
       result.label2 = suggestion.label;
     }
@@ -1826,5 +1697,51 @@ export namespace InlineValueContext {
 
   export function to(inlineValueContext: IInlineValueContextDto): types.InlineValueContext {
     return new types.InlineValueContext(inlineValueContext.frameId, Range.to(inlineValueContext.stoppedLocation));
+  }
+}
+
+export namespace InlayHint {
+
+  export function from(hint: vscode.InlayHint): modes.InlayHint {
+    return {
+      text: hint.text,
+      position: Position.from(hint.position),
+      kind: InlayHintKind.from(hint.kind ?? types.InlayHintKind.Other),
+      whitespaceBefore: hint.whitespaceBefore,
+      whitespaceAfter: hint.whitespaceAfter,
+    };
+  }
+
+  export function to(hint: modes.InlayHint): vscode.InlayHint {
+    const res = new types.InlayHint(
+      hint.text,
+      Position.to(hint.position),
+      InlayHintKind.to(hint.kind),
+    );
+    res.whitespaceAfter = hint.whitespaceAfter;
+    res.whitespaceBefore = hint.whitespaceBefore;
+    return res;
+  }
+}
+
+export namespace InlayHintKind {
+  export function from(kind: vscode.InlayHintKind): modes.InlayHintKind {
+    return kind;
+  }
+  export function to(kind: modes.InlayHintKind): vscode.InlayHintKind {
+    return kind;
+  }
+}
+
+export namespace CodeActionTriggerKind {
+
+  export function to(value: CodeActionTriggerType): types.CodeActionTriggerKind {
+    switch (value) {
+      case CodeActionTriggerType.Invoke:
+        return types.CodeActionTriggerKind.Invoke;
+
+      case CodeActionTriggerType.Auto:
+        return types.CodeActionTriggerKind.Automatic;
+    }
   }
 }

@@ -2,9 +2,11 @@ import { IExtHostCustomEditor, IMainThreadCustomEditor, MainThreadAPIIdentifier,
 import { UriComponents } from '@ali/ide-editor';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostWebviewService } from './ext.host.api.webview';
-import { IDisposable, CancellationToken, IExtensionInfo, Emitter } from '@ali/ide-core-common';
+import { IDisposable, CancellationToken, IExtensionInfo, Emitter, Schemas } from '@ali/ide-core-common';
 import { Uri } from '../../../common/vscode/ext-types';
 import { CustomEditorProvider, CustomReadonlyEditorProvider, CustomTextEditorProvider, CustomDocument, CustomDocumentEditEvent, CustomDocumentContentChangeEvent } from '../../../common/vscode/custom-editor';
+import { CustomDocumentOpenContext } from 'vscode';
+import { iconvEncode } from '@ali/ide-core-common/lib/encoding';
 
 export class ExtHostCustomEditorImpl implements IExtHostCustomEditor {
 
@@ -81,7 +83,13 @@ export class ExtHostCustomEditorImpl implements IExtHostCustomEditor {
     } else {
       let document = this.getCustomDocument(viewType, uri)?.document;
       if (!document) {
-        document = await provider.provider.openCustomDocument(uri, {}, token);
+        const openContext: CustomDocumentOpenContext = {};
+        if (uri.scheme === Schemas.untitled) {
+          const untitledDoc = this.extDocuments.getDocument(uri);
+          // untitled 默认都是 utf8 编码
+          openContext.untitledDocumentData = untitledDoc && iconvEncode(untitledDoc.getText(), 'utf-8');
+        }
+        document = await provider.provider.openCustomDocument(uri, openContext, token);
         if (!document) {
           return;
         }

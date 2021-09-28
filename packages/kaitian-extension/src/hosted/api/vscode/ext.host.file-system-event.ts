@@ -207,7 +207,7 @@ export class ExtHostFileSystemEvent implements IExtHostFileSystemEvent {
       const result = await Promise.resolve(thenable);
       if (result instanceof WorkspaceEdit) {
         edits.push(result);
-        extensionNames.add((listener as IExtensionListener<E>).extension?.name || 'Unknown extension');
+        extensionNames.add((listener as IExtensionListener<E>).extension.displayName ?? (listener as IExtensionListener<E>).extension.identifier.value);
       }
 
       if (Date.now() - now > timeout) {

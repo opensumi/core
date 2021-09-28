@@ -33,6 +33,10 @@ export interface IQuickOpenCallbacks {
    * select 状态时触发
    */
   onSelect: (item: QuickOpenItem, index: number) => void;
+  /**
+   * 多选确定后的回调
+   */
+  onConfirm: (items: QuickOpenItem[]) => void;
 }
 
 export interface IQuickOpenModel {
@@ -71,6 +75,7 @@ export interface QuickOpenInputOptions extends QuickOpenTabOptions {
   password?: boolean;
   inputEnable?: boolean;
   valueSelection?: [number, number];
+  canSelectMany?: boolean;
 }
 
 export interface IQuickOpenWidget extends QuickOpenTabOptions {
@@ -81,12 +86,14 @@ export interface IQuickOpenWidget extends QuickOpenTabOptions {
   readonly isShow: boolean;
   readonly items: QuickOpenItem[];
   readonly callbacks: IQuickOpenCallbacks;
+  readonly selectAll: boolean;
   readonly isPassword?: boolean;
   readonly inputPlaceholder?: string;
   readonly inputEnable?: boolean;
   readonly actionProvider?: QuickOpenActionProvider;
   readonly autoFocus?: IAutoFocus;
   readonly valueSelection?: [number, number];
+  readonly canSelectMany?: boolean;
   setInput(model: IQuickOpenModel, autoFocus: IAutoFocus, ariaLabel?: string): void;
   show(prefix: string, options: QuickOpenInputOptions): void;
   hide(reason?: HideReason): void;

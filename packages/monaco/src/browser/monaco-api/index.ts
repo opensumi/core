@@ -7,3 +7,4 @@ export const monaco = Object.freeze({
 });
 
 export { URI } from '@ali/monaco-editor-core/esm/vs/base/common/uri';
+export { ResourceEdit } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';

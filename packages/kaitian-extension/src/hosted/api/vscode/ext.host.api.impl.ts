@@ -84,6 +84,7 @@ export function createApiFactory(
   const extHostTheming = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostTheming, new ExtHostTheming(rpcProtocol)) as ExtHostTheming;
   const extHostCustomEditor = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCustomEditor, new ExtHostCustomEditorImpl(rpcProtocol, extHostWebview, extHostDocs)) as ExtHostCustomEditorImpl;
   const extHostAuthentication = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostAuthentication, new ExtHostAuthentication(rpcProtocol)) as ExtHostAuthentication;
+
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
 
   return (extension: IExtensionDescription) => {
@@ -100,7 +101,7 @@ export function createApiFactory(
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem, extHostFileSystemEvent, extHostTasks, extension),
       env: createEnvApiFactory(rpcProtocol, extension, extHostEnv, extHostTerminal),
       debug: createDebugApiFactory(extHostDebug),
-      version: appConfig.customVSCodeEngineVersion || '1.50.1',
+      version: appConfig.customVSCodeEngineVersion || '1.55.2',
       comments: createCommentsApiFactory(extension, extHostComments),
       extensions: createExtensionsApiFactory(extensionService),
       tasks: createTaskApiFactory(extHostTasks, extension),

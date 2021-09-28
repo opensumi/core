@@ -148,7 +148,7 @@ export class CompletionAdapter {
     const result: ISuggestDataDto = {
       x: id,
       [ISuggestDataDtoField.range]: range,
-      [ISuggestDataDtoField.kind]: item.kind ? Converter.fromCompletionItemKind(item.kind) : undefined,
+      [ISuggestDataDtoField.kind]: item.kind ? Converter.CompletionItemKind.from(item.kind) : undefined,
       [ISuggestDataDtoField.kindModifier]: item.tags && item.tags.map(Converter.CompletionItemTag.from),
       [ISuggestDataDtoField.label]: item.label,
       [ISuggestDataDtoField.detail]: item.detail,
@@ -157,14 +157,10 @@ export class CompletionAdapter {
       [ISuggestDataDtoField.sortText]: item.sortText,
       [ISuggestDataDtoField.preselect]: item.preselect ? item.preselect : undefined,
       [ISuggestDataDtoField.insertText]: '',
-      [ISuggestDataDtoField.additionalTextEdits]:
-        item.additionalTextEdits &&
-        item.additionalTextEdits.map(Converter.fromTextEdit),
-      [ISuggestDataDtoField.command]: item.command
-        ? this.commandConverter.toInternal(item.command, disposables)
-        : undefined,
+      [ISuggestDataDtoField.additionalTextEdits]: item.additionalTextEdits && item.additionalTextEdits.map(Converter.fromTextEdit),
+      [ISuggestDataDtoField.command]: this.commandConverter.toInternal(item.command, disposables),
       [ISuggestDataDtoField.commitCharacters]: item.commitCharacters,
-      [ISuggestDataDtoField.insertTextRules]: undefined,
+      [ISuggestDataDtoField.insertTextRules]: item.keepWhitespace ? CompletionItemInsertTextRule.KeepWhitespace : 0,
     };
 
     if (item.textEdit) {
@@ -174,8 +170,6 @@ export class CompletionAdapter {
     } else if (item.insertText instanceof SnippetString) {
       result[ISuggestDataDtoField.insertText] = item.insertText.value;
       result[ISuggestDataDtoField.insertTextRules] = CompletionItemInsertTextRule.InsertAsSnippet;
-    } else {
-      result[ISuggestDataDtoField.insertText] = item.label;
     }
     return result;
   }

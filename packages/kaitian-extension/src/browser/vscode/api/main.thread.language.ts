@@ -171,9 +171,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     if (!this.isDeflatedSuggestDto(data)) {
       return data as unknown as modes.CompletionItem;
     }
-
+    const label = data[ISuggestDataDtoField.label2] ?? data[ISuggestDataDtoField.label];
     return {
-      label: data[ISuggestDataDtoField.label2] ?? data[ISuggestDataDtoField.label],
+      label: typeof label === 'string' ? label : label.label,
       // @ts-ignore
       kind: data[ISuggestDataDtoField.kind] ?? modes.CompletionItemKind.Property,
       // @ts-ignore
@@ -183,7 +183,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       sortText: data[ISuggestDataDtoField.sortText],
       filterText: data[ISuggestDataDtoField.filterText],
       preselect: data[ISuggestDataDtoField.preselect],
-      insertText: typeof data.h === 'undefined' ? data[ISuggestDataDtoField.label] : data.h,
+      insertText: data[ISuggestDataDtoField.insertText] ?? (typeof label === 'string' ? label : label.label),
       // @ts-ignore
       range: data[ISuggestDataDtoField.range] ?? defaultRange,
       // @ts-ignore
@@ -1230,4 +1230,28 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   //#endregion Linked Editing Range
 
+  //#region InlayHints
+  $registerInlayHintsProvider(handle: number, selector: SerializedDocumentFilter[], eventHandle: number | undefined): void {
+    const provider = <modes.InlayHintsProvider> {
+      provideInlayHints: async (model: ITextModel, range: monaco.Range, token: CancellationToken): Promise<modes.InlayHint[] | undefined> => {
+        const result = await this.proxy.$provideInlayHints(handle, model.uri, range, token);
+        return result?.hints;
+      },
+    };
+
+    if (typeof eventHandle === 'number') {
+      const emitter = new Emitter<void>();
+      this.disposables.set(eventHandle, emitter);
+      provider.onDidChangeInlayHints = emitter.event;
+    }
+
+    this.disposables.set(handle, modes.InlayHintsProviderRegistry.register(selector, provider));
+  }
+  $emitInlayHintsEvent(eventHandle: number, event?: any): void {
+    const obj = this.disposables.get(eventHandle);
+    if (obj instanceof Emitter) {
+      obj.fire(event);
+    }
+  }
+  //#endregion InlayHints
 }

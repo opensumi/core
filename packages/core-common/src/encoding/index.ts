@@ -98,6 +98,11 @@ export function iconvDecode(buffer: Uint8Array | Buffer, encoding: string) {
   return iconv.decode(buffer as Buffer, encoding);
 }
 
+export function iconvEncode(content: string, encoding: string): Uint8Array | Buffer {
+  encoding = toIconvLiteEncoding(encoding);
+  return iconv.encode(content, encoding);
+}
+
 function encodeLatin1(buffer: Uint8Array): string {
 	let result = '';
 	for (let i = 0; i < buffer.length; i++) {
