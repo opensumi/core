@@ -170,6 +170,8 @@ export class CompletionAdapter {
     } else if (item.insertText instanceof SnippetString) {
       result[ISuggestDataDtoField.insertText] = item.insertText.value;
       result[ISuggestDataDtoField.insertTextRules] = CompletionItemInsertTextRule.InsertAsSnippet;
+    } else {
+      result[ISuggestDataDtoField.insertText] = typeof item.label === 'string' ? item.label : item.label.label;
     }
     return result;
   }
