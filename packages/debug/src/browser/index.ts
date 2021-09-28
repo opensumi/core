@@ -2,7 +2,7 @@ import { Injectable, Injector, Provider } from '@ali/common-di';
 import { BrowserModule, IContextKeyService } from '@ali/ide-core-browser';
 import { FolderPreferenceProvider } from '@ali/ide-preferences/lib/browser/folder-preference-provider';
 
-import { DebugEditor, DebugModelFactory, IDebugServer, IDebugService, IDebugSessionManager } from '../common';
+import { DebugEditor, DebugModelFactory, IDebugProgress, IDebugServer, IDebugService, IDebugSessionManager } from '../common';
 import { BreakpointManager } from './breakpoint';
 import { DebugCallStackItemTypeKey } from './contextkeys';
 import { DebugConfigurationManager } from './debug-configuration-manager';
@@ -23,6 +23,7 @@ import { WatchPanelContribution } from './view/watch/debug-watch.contribution';
 import './debug-style.less';
 import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from './editor/evaluatable-expression';
 import { DebugCallStackContribution } from './view/frames/debug-call-stack.contribution';
+import { DebugProgressService } from './debug-progress.service';
 
 @Injectable()
 export class DebugModule extends BrowserModule {
@@ -85,6 +86,10 @@ export class DebugModule extends BrowserModule {
     {
       token: IDebugServer,
       useValue: {},
+    },
+    {
+      token: IDebugProgress,
+      useClass: DebugProgressService,
     },
     // contributions
     LaunchPreferencesContribution,
