@@ -174,8 +174,8 @@ const FileEditNode = observer<IFileEditNodeProps>(({ data: item }) => {
     <div className={styles.resource_node} data-workspace-edit-type='file'>
       <CheckBox
         checked={refactorPreviewService.selectedFileOrTextEdits.has(item)}
-        onChange={(checked: React.ChangeEvent<HTMLInputElement>) => {
-          refactorPreviewService.filterEdit(item, !!checked);
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          refactorPreviewService.filterEdit(item, event.target.checked);
         }}
       />
       <ResourceIcon uri={editDesc.uri as unknown as Uri /* monaco#Uri */} />
