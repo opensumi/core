@@ -220,6 +220,7 @@ export const corePreferenceSchema: PreferenceSchema = {
       enum: (isElectronRenderer() && isWindows) ? [
         'powershell',
         'cmd',
+        'git-bash',
         'default',
       ] : [
         'bash',
@@ -227,7 +228,7 @@ export const corePreferenceSchema: PreferenceSchema = {
         'sh',
         'default',
       ],
-      default: '',
+      default: (isElectronRenderer() && isWindows) ? 'git-bash' : '',
       description: '%preference.terminal.typeDesc%',
     },
     'terminal.fontFamily': {

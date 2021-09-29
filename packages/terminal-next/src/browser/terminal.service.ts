@@ -7,6 +7,7 @@ import { electronEnv } from '@ali/ide-core-browser';
 import { WSChannelHandler as IWSChanneHandler, RPCService } from '@ali/ide-connection';
 import { generate, ITerminalService, ITerminalInternalService, ITerminalError, ITerminalServiceClient, ITerminalServicePath, ITerminalConnection, IPtyExitEvent, TerminalOptions, ITerminalController } from '../common';
 import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
+import { WindowsShellType } from '../common/shell';
 
 export interface EventMessage {
   data: string;
@@ -160,10 +161,7 @@ export class NodePtyTerminalService extends RPCService implements ITerminalServi
     }
     if (type) {
       if (isWindows) {
-        shellPath = {
-          ['cmd']: 'cmd.exe',
-          ['powershell']: 'powershell.exe',
-        }[type];
+        shellPath = await this.service.$resolveWindowsShellPath(<WindowsShellType> type);
       } else {
         shellPath = `/bin/${type}`;
       }

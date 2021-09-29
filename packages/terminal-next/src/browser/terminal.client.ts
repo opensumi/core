@@ -302,12 +302,18 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
     const linuxShellArgs = this.corePreferences.get('terminal.integrated.shellArgs.linux');
 
+    const extraShellArgs: string[] = [];
+    if (this._os === OperatingSystem.Windows && type === 'git-bash') {
+      extraShellArgs.push('--login');
+    }
+
     const ptyOptions = {
       cwd: this._workspacePath,
       ...this._options,
       shellArgs: [
         ...(this._options.shellArgs || []),
         ...(linuxShellArgs || []),
+        ...extraShellArgs,
       ],
     };
 

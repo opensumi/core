@@ -3,6 +3,8 @@ import { RPCService } from '@ali/ide-connection';
 import { ITerminalNodeService, ITerminalServiceClient, TerminalOptions } from '../common';
 import { IPty } from './pty';
 import { INodeLogger } from '@ali/ide-core-node';
+import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
+import { findShellExecutable, WINDOWS_GIT_BASH_PATHS } from './shell';
 
 /**
  * 标准的后端服务，供前端调用
@@ -58,6 +60,21 @@ export class TerminalServiceClientImpl extends RPCService implements ITerminalSe
       pid: pty.pid,
       name: this.terminalService.getShellName(id) || '',
     };
+  }
+
+  async $resolveWindowsShellPath(type: WindowsShellType): Promise<string | undefined> {
+    switch (type) {
+      case WindowsShellType.powershell:
+        return WINDOWS_DEFAULT_SHELL_PATH_MAPS.powershell;
+      case WindowsShellType.cmd:
+        return WINDOWS_DEFAULT_SHELL_PATH_MAPS.cmd;
+      case WindowsShellType['git-bash']:
+        const shell = findShellExecutable(WINDOWS_GIT_BASH_PATHS);
+        return shell;
+      default:
+        // 未知的 shell，返回 undefined，后续会使用系统默认值处理
+        return undefined;
+    }
   }
 
   onMessage(id: string, msg: string): void {

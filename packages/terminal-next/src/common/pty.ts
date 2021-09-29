@@ -1,5 +1,6 @@
 import { Terminal as XTerm } from 'xterm';
 import { Uri } from '@ali/ide-core-common';
+import { WindowsShellType } from './shell';
 
 export const ITerminalServicePath = 'ITerminalServicePath';
 export const ITerminalNodeService = Symbol('ITerminalNodeService');
@@ -168,6 +169,8 @@ export interface ITerminalServiceClient {
   getShellName(id: string): string;
 
   ensureTerminal(terminalIdArr: string[]): boolean;
+
+  $resolveWindowsShellPath(type: WindowsShellType): Promise<string | undefined>;
 }
 
 export interface ITerminalInfo {

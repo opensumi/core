@@ -94,7 +94,7 @@ function updateShellPath(): Promise<void> {
 
 export async function getShellPath(): Promise<string | undefined> {
   if (isWindows) {
-    return;
+    return process.env['PATH'];
   }
   // 触发一次更新
   await Promise.race([
