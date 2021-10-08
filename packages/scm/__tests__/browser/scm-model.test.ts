@@ -1,4 +1,4 @@
-import { IContextKeyService } from '@ali/ide-core-browser';
+import { IContextKeyService, URI } from '@ali/ide-core-browser';
 import { IMenuRegistry, MenuId, MenuRegistryImpl } from '@ali/ide-core-browser/lib/menu/next';
 import { DisposableCollection, Event } from '@ali/ide-core-common';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
@@ -123,11 +123,11 @@ describe('test for scm.store.ts', () => {
         const mockResourceGroup = new MockSCMResourceGroup(provider1, 0);
         const mockResource = new MockSCMResource(mockResourceGroup, undefined, undefined, undefined);
 
-        store['spliceSCMList'](0, 0, mockResourceGroup, mockResource);
+        store['spliceSCMList'](new URI('').codeUri, 0, 0, mockResourceGroup, mockResource);
         expect(store.scmList).toEqual([mockResourceGroup, mockResource]);
 
         const mockResourceGroup1 = new MockSCMResourceGroup(provider1, 1);
-        store['spliceSCMList'](1, 1, mockResourceGroup1);
+        store['spliceSCMList'](new URI('').codeUri, 1, 1, mockResourceGroup1);
         expect(store.scmList).toEqual([mockResourceGroup, mockResourceGroup1]);
       });
 

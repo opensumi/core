@@ -30,6 +30,7 @@
     "@ali/ide-monaco-enhance": "2.10.3",
     "@ali/ide-status-bar": "2.10.3",
     "@ali/ide-components": "2.10.3",
+    "@ali/ide-workspace": "2.10.3",
     "@ali/ide-theme": "2.10.3"
   },
   "devDependencies": {

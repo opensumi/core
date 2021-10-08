@@ -10,7 +10,7 @@ import { IIconService, IIconTheme } from '@ali/ide-theme';
 import { observable } from 'mobx';
 import pSeries from 'p-series';
 
-import { ISCMResource, scmResourceViewId } from '../../../common';
+import { ISCMRepository, ISCMResource, scmResourceViewId } from '../../../common';
 import { ViewModelContext } from '../../scm-model';
 import { SCMTreeDecorationService } from './scm-tree-decoration.service';
 import { SCMTreeModel } from './scm-tree-model';
@@ -18,6 +18,7 @@ import { SCMResourceFolder, SCMResourceFile, SCMResourceGroup, SCMResourceRoot, 
 import { SCMTreeService } from './scm-tree.service';
 
 import * as styles from './scm-tree-node.module.less';
+import { IWorkspaceService } from '@ali/ide-workspace';
 
 export interface IEditorTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -73,6 +74,9 @@ export class SCMTreeModelService {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
+  @Autowired(IWorkspaceService)
+  private readonly workspaceService: IWorkspaceService;
+
   private _activeTreeModel: SCMTreeModel;
   private _whenReady: Promise<void>;
 
@@ -80,7 +84,6 @@ export class SCMTreeModelService {
   private _scmTreeHandle: IEditorTreeHandle;
 
   public flushEventQueueDeferred: Deferred<void> | null;
-  private _eventFlushTimeout: NodeJS.Timeout;
   private _changeEventDispatchQueue: string[] = [];
 
   // 装饰器
@@ -99,13 +102,17 @@ export class SCMTreeModelService {
   private onDidRefreshedEmitter: Emitter<void> = new Emitter();
   private onDidTreeModelChangeEmitter: Emitter<SCMTreeModel> = new Emitter();
 
-  private treeModelCache: Map<SCMTreeTypes, { treeModel: SCMTreeModel, decorations: DecorationsManager, selectedDecoration: Decoration, focusedDecoration: Decoration }> = new Map();
+  private treeModelCache: Map<string, { treeModel: SCMTreeModel, decorations: DecorationsManager, selectedDecoration: Decoration, focusedDecoration: Decoration }> = new Map();
 
   constructor() {
     this.showProgress(this._whenReady = this.initTreeModel(this.scmTreeService.isTreeMode));
     this.disposableCollection.push(this.scmTreeService.onDidTreeModeChange((isTreeMode) => {
       // 展示进度条
       this.showProgress(this._whenReady = this.initTreeModel(isTreeMode));
+    }));
+
+    this.disposableCollection.push(this.viewModel.onDidSelectedRepoChange((repo: ISCMRepository) => {
+      this.initTreeModel(this.scmTreeService.isTreeMode, repo.provider.rootUri?.toString());
     }));
 
     const onDidChange = Event.any(
@@ -207,17 +214,25 @@ export class SCMTreeModelService {
     await this.treeModel.root.collapsedAll();
   }
 
-  async initTreeModel(isTree?: boolean) {
+  private async getCacheKey(type: SCMTreeTypes = SCMTreeTypes.List, workspace?: string) {
+    if (!workspace) {
+      workspace = (await this.workspaceService.roots)[0]?.uri;
+    }
+    return `${workspace}_git_${type === SCMTreeTypes.List ? 'list' : 'tree'}`;
+  }
+
+  async initTreeModel(isTree?: boolean, workspace?: string) {
     const type = isTree ? SCMTreeTypes.Tree : SCMTreeTypes.List;
     const preType = !isTree ? SCMTreeTypes.Tree : SCMTreeTypes.List;
-    if (this.treeModelCache.has(type)) {
-      const { treeModel, decorations, selectedDecoration, focusedDecoration } = this.treeModelCache.get(type)!;
+    const cacheKey = await this.getCacheKey(type, workspace);
+    if (this.treeModelCache.has(cacheKey)) {
+      const { treeModel, decorations, selectedDecoration, focusedDecoration } = this.treeModelCache.get(cacheKey)!;
       this._activeTreeModel = treeModel;
       this._activeDecorations = decorations;
       this._selectedDecoration = selectedDecoration;
       this._focusedDecoration = focusedDecoration;
 
-      this.persistFileSelection(preType);
+      await this.persistFileSelection(preType);
     } else {
       // 根据是否为多工作区创建不同根节点
       const root = (await this.scmTreeService.resolveChildren())[0] as SCMResourceRoot;
@@ -230,7 +245,7 @@ export class SCMTreeModelService {
 
       this.disposableCollection.push(this._activeDecorations);
 
-      this.treeModelCache.set(type, {
+      this.treeModelCache.set(cacheKey, {
         treeModel: this._activeTreeModel,
         decorations: this._activeDecorations,
         selectedDecoration: this._selectedDecoration,
@@ -238,8 +253,8 @@ export class SCMTreeModelService {
       });
 
       // 切换时需要同步decoration状态，应该length始终为1？
-      this.treeModel.onWillUpdate(() => {
-        this.persistFileSelection(preType);
+      this.treeModel.onWillUpdate(async () => {
+        await this.persistFileSelection(preType);
       });
     }
 
@@ -399,8 +414,9 @@ export class SCMTreeModelService {
     this.treeModel.dispatchChange();
   }
 
-  private persistFileSelection(preType: SCMTreeTypes) {
-    const treeModelCache = this.treeModelCache.get(preType);
+  private async persistFileSelection(preType: SCMTreeTypes) {
+    const cacheKey = await this.getCacheKey(preType);
+    const treeModelCache = this.treeModelCache.get(cacheKey);
     if (!treeModelCache) {
       return;
     }

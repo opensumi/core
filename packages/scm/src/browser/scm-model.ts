@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { PreferenceService } from '@ali/ide-core-browser';
-import { Disposable, Emitter, Event, getDebugLogger } from '@ali/ide-core-common';
+import { Disposable, Emitter, Event, getDebugLogger, Uri } from '@ali/ide-core-common';
 import { combinedDisposable, dispose, DisposableStore, IDisposable, toDisposable } from '@ali/ide-core-common/lib/disposable';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import { action, observable } from 'mobx';
@@ -197,6 +197,12 @@ export class ViewModelContext extends Disposable {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
+  private onDidSelectedRepoChangeEmitter: Emitter<ISCMRepository> = new Emitter();
+
+  get onDidSelectedRepoChange() {
+    return this.onDidSelectedRepoChangeEmitter.event;
+  }
+
   public get menus(): ISCMMenus {
     return this._menus;
   }
@@ -238,7 +244,10 @@ export class ViewModelContext extends Disposable {
     // 只处理当前 repository 的事件
     const repoOnDidSplice = Event.filter(resourceGroup.onDidSplice, (e) => e.target === repository);
     disposables.add(repoOnDidSplice(({ index, deleteCount, elements }) => {
-      this.spliceSCMList(index, deleteCount, ...elements);
+      if (repository.provider.rootUri) {
+        // 只处理存在工作区路径的 SCMList
+        this.spliceSCMList(repository.provider.rootUri, index, deleteCount, ...elements);
+      }
     }));
 
     resourceGroup.run();
@@ -291,8 +300,15 @@ export class ViewModelContext extends Disposable {
 
   public scmList = new Array<ISCMDataItem>();
 
-  private spliceSCMList = (start: number, deleteCount: number, ...toInsert: ISCMDataItem[]) => {
-    this.scmList.splice(start, deleteCount, ...toInsert);
+  private _currentWorkspace: Uri;
+
+  private spliceSCMList = (workspace: Uri, start: number, deleteCount: number, ...toInsert: ISCMDataItem[]) => {
+    if (!this._currentWorkspace || this._currentWorkspace.toString() === workspace.toString()) {
+      this.scmList.splice(start, deleteCount, ...toInsert);
+    } else {
+      this.scmList = [...toInsert];
+    }
+    this._currentWorkspace = workspace;
     this._onDidSCMListChangeEmitter.fire();
   }
 
@@ -325,5 +341,6 @@ export class ViewModelContext extends Disposable {
     this.selectedRepos.replace(repos);
     const selectedRepo = repos[0];
     this.selectedRepo = selectedRepo;
+    this.onDidSelectedRepoChangeEmitter.fire(selectedRepo);
   }
 }
