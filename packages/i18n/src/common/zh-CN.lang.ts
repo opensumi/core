@@ -322,6 +322,7 @@ export const localizationBundle = {
 
     'workspace.openDirectory': '打开文件夹',
     'workspace.addFolderToWorkspace': '将文件夹添加到工作区...',
+    'workspace.removeFolderFromWorkspace': '从工作区移除文件夹',
     'workspace.saveWorkspaceAsFile': '将工作区另存为...',
     'workspace.openWorkspaceTitle': '工作区',
     'workspace.openWorkspace': '打开工作区',

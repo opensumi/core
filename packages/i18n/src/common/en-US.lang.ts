@@ -663,6 +663,7 @@ export const localizationBundle = {
 
     'workspace.openDirectory': 'Open Directory',
     'workspace.addFolderToWorkspace': 'Add Folder Into Workspace ...',
+    'workspace.removeFolderFromWorkspace': 'Remove Folder From Workspace',
     'workspace.saveWorkspaceAsFile': 'Save Workspace As ...',
     'workspace.openWorkspace': 'Open Workspace',
     'workspace.openWorkspaceTitle': 'Workspace',

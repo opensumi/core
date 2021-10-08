@@ -699,8 +699,13 @@ export namespace WORKSPACE_COMMANDS {
   const CATEGORY = 'workspace';
 
   export const ADD_WORKSPACE_FOLDER: Command = {
-    id: 'workspace.addWorkspaceFolder',
+    id: 'workspace.addFolderToWorkspace',
     label: '%workspace.addFolderToWorkspace%',
+    category: CATEGORY,
+  };
+
+  export const REMOVE_WORKSPACE_FOLDER: Command = {
+    id: 'workspace.removeFolderFromWorkspace',
     category: CATEGORY,
   };
 

@@ -198,6 +198,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       group: '2_operator',
       when: `!${FilesExplorerFilteredContext.raw}`,
     });
+
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: {
         id: FILE_COMMANDS.RENAME_FILE.id,
@@ -207,6 +208,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       group: '2_operator',
       when: `!${FilesExplorerFilteredContext.raw}`,
     });
+
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: {
         id: FILE_COMMANDS.COMPARE_SELECTED.id,
@@ -215,6 +217,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       order: 2,
       group: '2_operator',
     });
+
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: {
         id: FILE_COMMANDS.COPY_FILE.id,
@@ -223,6 +226,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       order: 1,
       group: '3_copy',
     });
+
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: {
         id: FILE_COMMANDS.CUT_FILE.id,
@@ -231,6 +235,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       order: 2,
       group: '3_copy',
     });
+
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: {
         id: FILE_COMMANDS.PASTE_FILE.id,
@@ -240,6 +245,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       group: '3_copy',
       when: `!${FilesExplorerFilteredContext.raw}`,
     });
+
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: {
         id: FILE_COMMANDS.COPY_PATH.id,
@@ -247,6 +253,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       },
       group: '4_path',
     });
+
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: {
         id: FILE_COMMANDS.COPY_RELATIVE_PATH.id,

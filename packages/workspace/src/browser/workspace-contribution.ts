@@ -10,6 +10,7 @@ import {
   CommandContribution,
   WORKSPACE_COMMANDS,
   localize,
+  URI,
 } from '@ali/ide-core-browser';
 
 import { IWorkspaceService, KAITIAN_MULTI_WORKSPACE_EXT } from '../common';
@@ -80,10 +81,24 @@ export class WorkspaceContribution implements ClientAppContribution, PreferenceC
         }
       },
     });
+
+    registry.registerCommand(WORKSPACE_COMMANDS.REMOVE_WORKSPACE_FOLDER, {
+      execute: async (_: URI, uris: URI[]) => {
+        if (!uris.length || !this.workspaceService.isMultiRootWorkspaceOpened) {
+          return ;
+        }
+        const roots = await this.workspaceService.roots;
+        const workspaceUris = uris.filter((uri) => {
+          return roots.find((file) => file.uri === uri.toString());
+        });
+        if (workspaceUris.length > 0) {
+          await this.workspaceService.removeRoots(workspaceUris);
+        }
+      },
+    });
   }
 
   onFileServiceReady() {
     this.workspaceService.init();
   }
-
 }
