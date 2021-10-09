@@ -73,6 +73,8 @@ export class StatusBarService extends Disposable implements IStatusBarService {
     if (entry.command) {
       entry.onClick = this.onclick(entry);
     }
+    entry.entryId = entryId;
+
     if (isUndefined(entry.id)) {
       entry.id = entryId;
     }
