@@ -43,6 +43,8 @@ import { IWebviewService } from '@ali/ide-webview';
 import { ICommentsService } from '@ali/ide-comments';
 import { CommentsService } from '@ali/ide-comments/lib/browser/comments.service';
 import { BrowserRequireInterceptorContribution } from '@ali/ide-kaitian-extension/lib/browser/require-interceptor.contribution';
+import { ISemanticTokenRegistry } from '@ali/ide-theme/lib/common/semantic-tokens-registry';
+import { SemanticTokenRegistryImpl } from '@ali/ide-theme/lib/browser/semantic-tokens-registry';
 
 @Injectable()
 class MockLoggerManagerClient {
@@ -310,6 +312,10 @@ export function setupExtensionServiceInjector() {
   }]));
   injector.addProviders(
     ...mockKaitianExtensionProviders,
+    {
+      token: ISemanticTokenRegistry,
+      useClass: SemanticTokenRegistryImpl,
+    },
     {
       token: StaticResourceService,
       useValue: {

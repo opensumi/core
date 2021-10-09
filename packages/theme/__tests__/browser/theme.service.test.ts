@@ -7,6 +7,9 @@ import { PreferenceSchemaProvider, IPreferenceSettingsService, ILoggerManagerCli
 import { MockPreferenceSchemaProvider, MockPreferenceSettingsService } from '@ali/ide-core-browser/__mocks__/preference';
 import { MockLoggerManageClient } from '@ali/ide-core-browser/__mocks__/logger';
 import { Injectable } from '@ali/common-di';
+import { SemanticTokenRegistryImpl } from '@ali/ide-theme/lib/browser/semantic-tokens-registry';
+import { ISemanticTokenRegistry } from '@ali/ide-theme/lib/common/semantic-tokens-registry';
+import { Color } from '@ali/ide-theme/lib/common';
 
 @Injectable()
 class MockFileServiceClient {
@@ -33,7 +36,11 @@ class MockFileServiceClient {
             "menu.foreground": "#CCCCCC",
             "statusBarItem.remoteForeground": "#FFF",
             "statusBarItem.remoteBackground": "#16825D"
-          }
+          },
+          "semanticTokenColors": {
+            "comment:java": "#ff004f"
+          },
+          "semanticHighlighting": true
         }`,
       };
     }
@@ -97,6 +104,10 @@ describe('color theme service test', () => {
       {
         token: IThemeService,
         useClass: WorkbenchThemeService,
+      },
+      {
+        token: ISemanticTokenRegistry,
+        useClass: SemanticTokenRegistryImpl,
       },
       {
         token: PreferenceSchemaProvider,
@@ -205,5 +216,59 @@ describe('color theme service test', () => {
 
   it('css styler service test', () => {
     // @吭头
+  });
+
+  it('semanticTokenColors', async () => {
+    await service.applyTheme('test-theme');
+    const currentTheme = service.getCurrentThemeSync();
+    expect(currentTheme).toBeDefined();
+    expect(currentTheme.themeData['semanticHighlighting']).toBeTruthy();
+
+    const tokenStyle = currentTheme.themeData['getTokenStyle'](
+      'comment',
+      [],
+      'java',
+    );
+    expect(tokenStyle).toBeDefined();
+    expect(tokenStyle.foreground).toBeInstanceOf(Color);
+    expect(Color.Format.CSS.formatHex(tokenStyle.foreground)).toBe('#ff004f');
+    expect(tokenStyle.bold).toBeUndefined();
+    expect(tokenStyle.underline).toBeUndefined();
+    expect(tokenStyle.italic).toBeUndefined();
+
+    const semanticTokenRule = currentTheme.themeData['semanticTokenRules'];
+    expect(semanticTokenRule.length).toBe(1);
+    expect(semanticTokenRule[0].selector.id).toBe('comment:java');
+    expect(semanticTokenRule[0].style).toEqual(tokenStyle);
+  });
+
+  it('semanticTokenColorIndex', async (done) => {
+    await service.applyTheme('test-theme');
+    const currentTheme = service.getCurrentThemeSync();
+
+    const colorIndex = currentTheme.themeData['getTokenColorIndex']();
+    expect(colorIndex).toBeDefined();
+    const idx = colorIndex.get('#ff004f');
+    expect(idx).toBeDefined();
+    expect(idx).toBe(7);
+
+    const upperCaseColorIdx = colorIndex.get('#FF004F');
+    expect(upperCaseColorIdx).toBeDefined();
+    expect(upperCaseColorIdx).toBe(7);
+
+    const undefinedIdx = colorIndex.get('#FAFAFA');
+    expect(undefinedIdx).toBe(0);
+
+    const added = colorIndex.add('#CCCCCC');
+    expect(added).toBe(colorIndex.get('#CCCCCC'));
+
+    const colorIdxArray = colorIndex.asArray();
+    expect(colorIdxArray).toBeDefined();
+    expect(colorIdxArray[0]).toBeUndefined();
+    expect(Array.isArray(colorIdxArray)).toBeTruthy();
+    expect(colorIdxArray[idx]).toBe('#FF004F');
+    expect(colorIdxArray[added]).toBe('#CCCCCC');
+
+    done();
   });
 });

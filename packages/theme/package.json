@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@ali/ide-core-common": "2.10.3",
+    "@ali/ide-logs": "2.10.3",
     "@ali/ide-core-node": "2.10.3",
     "@ali/ide-file-service": "2.10.3",
     "@ali/ide-static-resource": "2.10.3",

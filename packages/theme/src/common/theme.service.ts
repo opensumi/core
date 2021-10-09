@@ -49,9 +49,17 @@ export interface IIconService {
    * @param type 选择采用Mask或者Background的方式渲染icon资源, 默认值为IconType.Mask
    * @returns icon的className
    */
-  fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string, type?: IconType, shape?: IconShape): string | undefined;
+  fromIcon(
+    basePath: string,
+    icon?: { [index in ThemeType]: string } | string,
+    type?: IconType,
+    shape?: IconShape,
+  ): string | undefined;
   getVscodeIconClass(iconKey: string): string;
-  registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: URI): void;
+  registerIconThemes(
+    iconThemesContribution: ThemeContribution[],
+    extPath: URI,
+  ): void;
   getAvailableThemeInfos(): IconThemeInfo[];
 }
 
@@ -68,7 +76,10 @@ export interface IThemeData extends IStandaloneThemeData {
 export interface IThemeService {
   currentThemeId: string;
   onThemeChange: Event<ITheme>;
-  registerThemes(themeContributions: ThemeContribution[], extPath: URI): IDisposable;
+  registerThemes(
+    themeContributions: ThemeContribution[],
+    extPath: URI,
+  ): IDisposable;
   /**
    * 应用主题（外部需要改主题请直接修改preference）
    * @param id 主题ID
@@ -83,7 +94,9 @@ export interface IThemeService {
   /**
    * 获取指定 color token 的 className
    */
-  getColorClassNameByColorToken(colorId: string | IThemeColor| undefined): string | undefined;
+  getColorClassNameByColorToken(
+    colorId: string | IThemeColor | undefined,
+  ): string | undefined;
   registerColor(contribution: ExtColorContribution): void;
 }
 
@@ -98,18 +111,35 @@ export interface ITokenColorizationRule {
 export interface ITokenColorizationSetting {
   foreground?: string;
   background?: string;
-  fontStyle?: string;  // italic, underline, bold
+  fontStyle?: string; // italic, underline, bold
+}
+
+export interface ISemanticTokenColorizationSetting {
+  foreground?: string;
+  fontStyle?: string /* [italic|underline|bold] */;
+  bold?: boolean;
+  underline?: boolean;
+  italic?: boolean;
 }
 
 export interface IColorMap {
   [id: string]: Color;
 }
 
+/**
+ * Color scheme used by the OS and by color themes.
+ */
+export enum ColorScheme {
+  DARK = 'dark',
+  LIGHT = 'light',
+  HIGH_CONTRAST = 'hc',
+}
+
 export type BuiltinTheme = 'vs' | 'vs-dark' | 'hc-black';
 
 export function getThemeTypeName(base: BuiltinTheme) {
   const map = {
-    'vs': 'theme.base.vs',
+    vs: 'theme.base.vs',
     'vs-dark': 'theme.base.vs-dark',
     'hc-black': 'theme.base.hc-black',
   };
@@ -142,7 +172,12 @@ export interface ITokenThemeRule {
 }
 
 export interface ITokenColorCustomizations {
-  [groupIdOrThemeSettingsId: string]: string | ITokenColorizationSetting | ITokenColorCustomizations | undefined | ITokenColorizationRule[];
+  [groupIdOrThemeSettingsId: string]:
+    | string
+    | ITokenColorizationSetting
+    | ITokenColorCustomizations
+    | undefined
+    | ITokenColorizationRule[];
   comments?: string | ITokenColorizationSetting;
   strings?: string | ITokenColorizationSetting;
   numbers?: string | ITokenColorizationSetting;
@@ -171,7 +206,9 @@ export const LIGHT: ThemeType = 'light';
 export const HIGH_CONTRAST: ThemeType = 'hc';
 export type ThemeType = 'light' | 'dark' | 'hc';
 
-export function getBuiltinRules(builtinTheme: BuiltinTheme): IStandaloneThemeData {
+export function getBuiltinRules(
+  builtinTheme: BuiltinTheme,
+): IStandaloneThemeData {
   switch (builtinTheme) {
     case VS_THEME_NAME:
       return vs;
@@ -184,17 +221,23 @@ export function getBuiltinRules(builtinTheme: BuiltinTheme): IStandaloneThemeDat
 
 export function getThemeTypeSelector(type: ThemeType): string {
   switch (type) {
-    case DARK: return 'vs-dark';
-    case HIGH_CONTRAST: return 'hc-black';
-    default: return 'vs';
+    case DARK:
+      return 'vs-dark';
+    case HIGH_CONTRAST:
+      return 'hc-black';
+    default:
+      return 'vs';
   }
 }
 
 export function getThemeType(base: BuiltinTheme) {
   switch (base) {
-    case VS_THEME_NAME: return 'light';
-    case VS_DARK_THEME_NAME: return 'dark';
-    case HC_BLACK_THEME_NAME: return 'hc';
+    case VS_THEME_NAME:
+      return 'light';
+    case VS_DARK_THEME_NAME:
+      return 'dark';
+    case HC_BLACK_THEME_NAME:
+      return 'hc';
   }
 }
 
@@ -234,7 +277,7 @@ export interface ColorContribution {
 export interface ExtColorContribution {
   id: string;
   description: string;
-  defaults: { light: string, dark: string, highContrast: string };
+  defaults: { light: string; dark: string; highContrast: string };
 }
 
 export type ColorFunction = (theme: ITheme) => Color | undefined;
@@ -270,7 +313,10 @@ export function getThemeId(contribution: ThemeContribution) {
   if (contribution.id) {
     return contribution.id;
   }
-  return `${contribution.uiTheme || 'vs-dark'} ${toCSSSelector('vscode-theme', contribution.path)}`;
+  return `${contribution.uiTheme || 'vs-dark'} ${toCSSSelector(
+    'vscode-theme',
+    contribution.path,
+  )}`;
 }
 
 function toCSSSelector(extensionId: string, path: string) {

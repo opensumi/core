@@ -1,7 +1,8 @@
-import { Domain, CommandContribution, CommandRegistry, Command, localize, PreferenceService, replaceLocalizePlaceholder, PreferenceScope, QuickOpenService, QuickOpenOptions, QuickOpenItem, Mode } from '@ali/ide-core-browser';
+import { Domain, CommandContribution, CommandRegistry, Command, localize, PreferenceService, replaceLocalizePlaceholder, PreferenceScope, QuickOpenService, QuickOpenOptions, QuickOpenItem, Mode, ClientAppContribution } from '@ali/ide-core-browser';
 import { IThemeService, IIconService, BuiltinThemeComparator, getThemeTypeName, BuiltinTheme } from '../common';
 import { Autowired } from '@ali/common-di';
 import { MenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { ISemanticTokenRegistry, ProbeScope } from '../common/semantic-tokens-registry';
 
 export const THEME_TOGGLE_COMMAND: Command = {
   id: 'theme.toggle',
@@ -15,8 +16,8 @@ export const ICON_THEME_TOGGLE_COMMAND: Command = {
   alias: 'File Icon Theme',
 };
 
-@Domain(MenuContribution, CommandContribution)
-export class ThemeContribution implements MenuContribution, CommandContribution {
+@Domain(MenuContribution, CommandContribution, ClientAppContribution)
+export class ThemeContribution implements MenuContribution, CommandContribution, ClientAppContribution {
 
   @Autowired(IThemeService)
   themeService: IThemeService;
@@ -29,6 +30,88 @@ export class ThemeContribution implements MenuContribution, CommandContribution 
 
   @Autowired(PreferenceService)
   private preferenceService: PreferenceService;
+
+  @Autowired(ISemanticTokenRegistry)
+  protected readonly semanticTokenRegistry: ISemanticTokenRegistry;
+
+  initialize() {
+    this.registerDefaultTokenStyles();
+    this.registerDefaultTokenType();
+    this.registerDefaultTokenModifier();
+  }
+
+  private registerDefaultTokenModifier() {
+    this.semanticTokenRegistry.registerTokenModifier('declaration', localize('declaration', 'Style for all symbol declarations.'), undefined);
+    this.semanticTokenRegistry.registerTokenModifier('documentation', localize('documentation', 'Style to use for references in documentation.'), undefined);
+    this.semanticTokenRegistry.registerTokenModifier('static', localize('static', 'Style to use for symbols that are static.'), undefined);
+    this.semanticTokenRegistry.registerTokenModifier('abstract', localize('abstract', 'Style to use for symbols that are abstract.'), undefined);
+    this.semanticTokenRegistry.registerTokenModifier('deprecated', localize('deprecated', 'Style to use for symbols that are deprecated.'), undefined);
+    this.semanticTokenRegistry.registerTokenModifier('modification', localize('modification', 'Style to use for write accesses.'), undefined);
+    this.semanticTokenRegistry.registerTokenModifier('async', localize('async', 'Style to use for symbols that are async.'), undefined);
+    this.semanticTokenRegistry.registerTokenModifier('readonly', localize('readonly', 'Style to use for symbols that are readonly.'), undefined);
+  }
+
+  private registerDefaultTokenType() {
+    this.doRegisterTokenType('comment', localize('comment', 'Style for comments.'), [['comment']]);
+    this.doRegisterTokenType('string', localize('string', 'Style for strings.'), [['string']]);
+    this.doRegisterTokenType('keyword', localize('keyword', 'Style for keywords.'), [['keyword.control']]);
+    this.doRegisterTokenType('number', localize('number', 'Style for numbers.'), [['constant.numeric']]);
+    this.doRegisterTokenType('regexp', localize('regexp', 'Style for expressions.'), [['constant.regexp']]);
+    this.doRegisterTokenType('operator', localize('operator', 'Style for operators.'), [['keyword.operator']]);
+
+    this.doRegisterTokenType('namespace', localize('namespace', 'Style for namespaces.'), [['entity.name.namespace']]);
+
+    this.doRegisterTokenType('type', localize('type', 'Style for types.'), [['entity.name.type'], ['support.type']]);
+    this.doRegisterTokenType('struct', localize('struct', 'Style for structs.'), [['entity.name.type.struct']]);
+    this.doRegisterTokenType('class', localize('class', 'Style for classes.'), [['entity.name.type.class'], ['support.class']]);
+    this.doRegisterTokenType('interface', localize('interface', 'Style for interfaces.'), [['entity.name.type.interface']]);
+    this.doRegisterTokenType('enum', localize('enum', 'Style for enums.'), [['entity.name.type.enum']]);
+    this.doRegisterTokenType('typeParameter', localize('typeParameter', 'Style for type parameters.'), [['entity.name.type.parameter']]);
+
+    this.doRegisterTokenType('function', localize('function', 'Style for functions'), [['entity.name.function'], ['support.function']]);
+    this.doRegisterTokenType('member', localize('member', 'Style for member functions'), [], 'method', 'Deprecated use `method` instead');
+    this.doRegisterTokenType('method', localize('method', 'Style for method (member functions)'), [['entity.name.function.member'], ['support.function']]);
+    this.doRegisterTokenType('macro', localize('macro', 'Style for macros.'), [['entity.name.function.preprocessor']]);
+
+    this.doRegisterTokenType('variable', localize('variable', 'Style for variables.'), [['variable.other.readwrite'], ['entity.name.variable']]);
+    this.doRegisterTokenType('parameter', localize('parameter', 'Style for parameters.'), [['variable.parameter']]);
+    this.doRegisterTokenType('property', localize('property', 'Style for properties.'), [['variable.other.property']]);
+    this.doRegisterTokenType('enumMember', localize('enumMember', 'Style for enum members.'), [['variable.other.enummember']]);
+    this.doRegisterTokenType('event', localize('event', 'Style for events.'), [['variable.other.event']]);
+
+    this.doRegisterTokenType('label', localize('labels', 'Style for labels. '), undefined);
+  }
+
+  private registerDefaultTokenStyles() {
+    this.doRegisterTokenStyleDefault('variable.readonly', [['variable.other.constant']]);
+    this.doRegisterTokenStyleDefault('property.readonly', [['variable.other.constant.property']]);
+    this.doRegisterTokenStyleDefault('type.defaultLibrary', [['support.type']]);
+    this.doRegisterTokenStyleDefault('class.defaultLibrary', [['support.class']]);
+    this.doRegisterTokenStyleDefault('interface.defaultLibrary', [['support.class']]);
+    this.doRegisterTokenStyleDefault('variable.defaultLibrary', [['support.variable'], ['support.other.variable']]);
+    this.doRegisterTokenStyleDefault('variable.defaultLibrary.readonly', [['support.constant']]);
+    this.doRegisterTokenStyleDefault('property.defaultLibrary', [['support.variable.property']]);
+    this.doRegisterTokenStyleDefault('property.defaultLibrary.readonly', [['support.constant.property']]);
+    this.doRegisterTokenStyleDefault('function.defaultLibrary', [['support.function']]);
+    this.doRegisterTokenStyleDefault('member.defaultLibrary', [['support.function']]);
+  }
+
+  private doRegisterTokenStyleDefault(selectorString: string, scopesToProbe: ProbeScope[]) {
+    try {
+      const selector = this.semanticTokenRegistry.parseTokenSelector(selectorString);
+      this.semanticTokenRegistry.registerTokenStyleDefault(selector, { scopesToProbe });
+    } catch (e) {
+      // ignore error
+    }
+  }
+
+  private doRegisterTokenType(id: string, description: string, scopesToProbe: ProbeScope[] = [], superType?: string, deprecationMessage?: string): string {
+    this.semanticTokenRegistry.registerTokenType(id, description, superType, deprecationMessage);
+    if (scopesToProbe) {
+      this.doRegisterTokenStyleDefault(id, scopesToProbe);
+    }
+    return id;
+  }
 
   registerMenus(menus: IMenuRegistry) {
     menus.registerMenuItem(MenuId.SettingsIconMenu, {
@@ -71,11 +154,11 @@ export class ThemeContribution implements MenuContribution, CommandContribution 
         }, (value) => {
           this.updateTopPreference('general.theme', value);
         });
-        if (themeId) {
-          await this.updateTopPreference('general.theme', themeId);
-        } else {
-          await this.updateTopPreference('general.theme', prevThemeId);
+
+        if (themeId && themeId === this.themeService.currentThemeId) {
+          return;
         }
+        await this.updateTopPreference('general.theme', themeId || prevThemeId);
       },
     });
     commands.registerCommand(ICON_THEME_TOGGLE_COMMAND, {

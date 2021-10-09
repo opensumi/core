@@ -54,6 +54,6 @@
     "vscode-codicons": "0.0.12",
     "@ali/vscode-debugprotocol": "1.46.0-beta.1",
     "vscode-languageserver-protocol": "^3.14.1",
-    "vscode-textmate": "5.1.1"
+    "vscode-textmate": "5.4.0"
   }
 }

@@ -662,6 +662,8 @@ export const editorOptionsConverters: Map<KaitianPreferenceKey , NoConverter | I
 
     ['editor.rename.enablePreview', { monaco: 'editor.rename.enablePreview' }],
 
+    ['editor.semanticHighlighting.enabled', { monaco: 'semanticHighlighting.enabled' }],
+
     /**
      * Controls the algorithm that computes wrapping points.
      * Default is "advanced" (Monaco Editor default is "simple")

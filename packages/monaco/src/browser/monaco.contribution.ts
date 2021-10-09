@@ -24,6 +24,7 @@ import { MonacoMenus } from './monaco-menu';
 import { MonacoSnippetSuggestProvider } from './monaco-snippet-suggest-provider';
 import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
+import { ISemanticTokenRegistry, parseClassifierString, TokenStyle } from '@ali/ide-theme/lib/common/semantic-tokens-registry';
 
 @Domain(ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution)
 export class MonacoClientContribution implements ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution {
@@ -68,6 +69,9 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
 
   @Autowired(IMimeService)
   mimeService: IMimeService;
+
+  @Autowired(ISemanticTokenRegistry)
+  protected readonly semanticTokenRegistry: ISemanticTokenRegistry;
 
   @Autowired(MonacoSnippetSuggestProvider)
   protected readonly snippetSuggestProvider: MonacoSnippetSuggestProvider;
@@ -256,27 +260,45 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
   }
 
   private patchMonacoThemeService() {
-    // 临时实现，覆盖 standaloneThemeService 中的 getTokenStyleMetadata，因为在 0.20.0 中一直永远 undefined
     const standaloneThemeService = StaticServices.standaloneThemeService.get();
     const originalGetTheme: typeof standaloneThemeService.getColorTheme = standaloneThemeService.getColorTheme.bind(standaloneThemeService);
-    const patchedGetTokenStyleMetadatadFlag = '__patched_getTokenStyleMetadata';
+    const patchedGetTokenStyleMetadataFlag = '__patched_getTokenStyleMetadata';
+
     standaloneThemeService.getColorTheme = () => {
       const theme = originalGetTheme();
-      if (!(patchedGetTokenStyleMetadatadFlag in theme)) {
-        Object.defineProperty(theme, patchedGetTokenStyleMetadatadFlag, { enumerable: false, configurable: false, writable: false, value: true });
-        theme.getTokenStyleMetadata = (type, modifiers) => {
-          // use theme rules match
-          const style = theme.tokenTheme._match([type].concat(modifiers).join('.'));
-          const metadata = style.metadata;
-          const foreground = modes.TokenMetadata.getForeground(metadata);
-          const fontStyle = modes.TokenMetadata.getFontStyle(metadata);
-          const res =  {
-            foreground,
-            italic: Boolean(fontStyle & 1),
-            bold: Boolean(fontStyle & 2),
-            underline: Boolean(fontStyle & 4),
+      if (!(patchedGetTokenStyleMetadataFlag in theme)) {
+
+        Object.defineProperty(
+          theme,
+          patchedGetTokenStyleMetadataFlag,
+          {
+            enumerable: false,
+            configurable: false,
+            writable: false,
+            value: true,
+          },
+        );
+
+        // 这里 patch 一个 getTokenStyleMetadata 原因是 monaco 内部获取 SemanticTokens 时只走内部的 StandaloneThemeService
+        // 注册在 themeService 的 SemanticTokens 没有被同步进去，所以在这里做一次处理，获取 TokenStyle 时基于外部的 themeService 来计算样式
+        theme.getTokenStyleMetadata = (
+          typeWithLanguage: string,
+          modifiers: string[],
+          defaultLanguage: string,
+          useDefault  = true,
+          definitions: any = {},
+        ) => {
+          const { type, language } = parseClassifierString(typeWithLanguage, defaultLanguage);
+          const style: TokenStyle | undefined = theme['themeData'].getTokenStyle(type, modifiers, language, useDefault, definitions);
+          if (!style) {
+            return undefined;
+          }
+          return {
+            foreground: theme['themeData'].getTokenColorIndex().get(style.foreground),
+            bold: style.bold,
+            underline: style.underline,
+            italic: style.italic,
           };
-          return res;
         };
       }
       return theme;

@@ -50,8 +50,6 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     overrides: {[key: string]: any} = {},
   ): ICodeEditor {
     const editor =  monaco.editor.create(monacoContainer, {
-      // @ts-ignore
-      'semanticHighlighting.enabled': true,
       glyphMargin: true,
       lightbulb: {
         enabled: true,

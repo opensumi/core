@@ -1,5 +1,5 @@
 import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, getThemeId, getThemeTypeSelector, IColorCustomizations, ITokenColorizationRule, ITokenColorCustomizations } from '../common/theme.service';
-import { URI, WithEventBus, localize, Emitter, Event, isObject, DisposableCollection, uuid, isLinux, isWindows, IThemeColor } from '@ali/ide-core-common';
+import { Event, URI, WithEventBus, localize, Emitter, isObject, DisposableCollection, uuid, isLinux, isWindows, IThemeColor } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
 import { Color } from '../common/color';
@@ -114,10 +114,10 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     } else {
       this.themeIdNotFound = '';
     }
-    // 这里暂时去除，否侧token颜色出不来
-    // if (this.currentThemeId === themeId) {
-    //   return;
-    // }
+
+    if (this.currentThemeId === themeId) {
+      return;
+    }
     const prevThemeType = this.currentTheme ? this.currentTheme.type : 'dark';
     this.currentThemeId = themeId;
     const theme = await this.getTheme(themeId);
@@ -247,22 +247,30 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       this.themeChangeEmitter.fire(e.payload.theme);
     }));
 
-    this.addDispose(this.preferenceService.onPreferenceChanged(async (e) => {
-      if (e.preferenceName === COLOR_THEME_SETTING && this.extensionReady) {
-        await this.applyTheme(e.newValue);
-      }
-      if (this.currentTheme) {
-        if (e.preferenceName === CUSTOM_WORKBENCH_COLORS_SETTING) {
-          this.currentTheme.setCustomColors(e.newValue);
-          this.doApplyTheme(this.currentTheme);
-        } else if (e.preferenceName === CUSTOM_EDITOR_COLORS_SETTING) {
-          this.currentTheme.setCustomTokenColors(e.newValue);
-          this.eventBus.fire(new ThemeChangedEvent({
-            theme: this.currentTheme,
-          }));
+    this.addDispose(
+      Event.debounce(
+        this.preferenceService.onPreferenceChanged,
+        (_, e) => e,
+        50,
+      )(async (e) => {
+        if (e.preferenceName === COLOR_THEME_SETTING && this.extensionReady) {
+          await this.applyTheme(e.newValue);
         }
-      }
-    }));
+        if (this.currentTheme) {
+          if (e.preferenceName === CUSTOM_WORKBENCH_COLORS_SETTING) {
+            this.currentTheme.setCustomColors(e.newValue);
+            this.doApplyTheme(this.currentTheme);
+          } else if (e.preferenceName === CUSTOM_EDITOR_COLORS_SETTING) {
+            this.currentTheme.setCustomTokenColors(e.newValue);
+            this.eventBus.fire(
+              new ThemeChangedEvent({
+                theme: this.currentTheme,
+              }),
+            );
+          }
+        }
+      }),
+    );
 
     this.addDispose(this.colorRegistry.onDidColorChangedEvent((e) => {
       if (this.currentTheme) {

@@ -2858,6 +2858,7 @@ export class SemanticTokensEdits {
     this.edits = edits;
   }
 }
+
 //#endregion Semantic Coloring
 
 //#region EvaluatableExpression

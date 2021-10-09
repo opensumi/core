@@ -1412,6 +1412,18 @@ const customEditorSchema: PreferenceSchemaProperties = {
     default: 10000,
     description: '%editor.configuration.maxTokenizationLineLength%',
   },
+  'editor.semanticHighlighting.enabled': {
+    // FIXME: enum 需要支持 boolean 类型
+    // @ts-ignore
+    enum: [true, false, 'configuredByTheme'],
+    enumDescriptions: [
+      localize('semanticHighlighting.true', 'Semantic highlighting enabled for all color themes.'),
+      localize('semanticHighlighting.false', 'Semantic highlighting disabled for all color themes.'),
+      localize('semanticHighlighting.configuredByTheme', 'Semantic highlighting is configured by the current color theme\'s `semanticHighlighting` setting.'),
+    ],
+    default: true,
+    description: localize('semanticHighlighting.enabled', 'Controls whether the semanticHighlighting is shown for the languages that support it.'),
+  },
   'editor.largeFile': {
     type: 'number',
     default: 2 * 1024 * 1024,

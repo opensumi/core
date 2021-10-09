@@ -1,4 +1,4 @@
-import { Disposable, IJSONSchema, IDisposable, Deferred, Uri, MaybePromise, IExtensionLogger, ExtensionConnectOption, replaceNlsField } from '@ali/ide-core-common';
+import { Disposable, IJSONSchema, IDisposable, Deferred, Uri, MaybePromise, IExtensionLogger, ExtensionConnectOption, replaceNlsField, ILogger } from '@ali/ide-core-common';
 import { createExtHostContextProxyIdentifier } from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { Extension } from '../hosted/vscode.extension';
@@ -6,6 +6,7 @@ import { Emitter, IExtensionProps } from '@ali/ide-core-common';
 import { IExtensionContributions, IMainThreadCommands } from './vscode';
 import { IKaitianExtensionContributions } from './kaitian/extension';
 import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from './activator';
+import { typeAndModifierIdPattern } from '@ali/ide-theme/lib/common/semantic-tokens-registry';
 
 export { IExtensionProps } from '@ali/ide-core-common';
 
@@ -338,3 +339,50 @@ export interface IExtensionHostManager {
 export const KT_PROCESS_SOCK_OPTION_KEY = 'kt-process-sock-option';
 export const KT_PROCESS_PRELOAD_KEY = 'kt-process-preload';
 export const KT_APP_CONFIG_KEY = 'kt-app-config';
+
+//#region Semantic Tokens Contribution Point
+
+export interface SemanticTokenScopes {
+  scopes?: { [selector: string]: string[] };
+  language?: string;
+}
+
+export type SemanticTokenScopesSchema = Array<SemanticTokenScopes>;
+
+export interface SemanticTokenType {
+  id: string;
+  description: string;
+  superType?: string;
+}
+
+export type SemanticTokenTypeSchema = Array<SemanticTokenType>;
+
+export interface SemanticTokenModifier {
+  id: string;
+  description: string;
+}
+
+export type SemanticTokenModifierSchema = Array<SemanticTokenModifier>;
+
+export function validateTypeOrModifier(contribution: SemanticTokenType | SemanticTokenModifier, extensionPoint: string, logger: ILogger): boolean {
+  if (typeof contribution.id !== 'string' || contribution.id.length === 0) {
+    logger.error("'configuration.{0}.id' must be defined and can not be empty", extensionPoint);
+    return false;
+  }
+  if (!contribution.id.match(typeAndModifierIdPattern)) {
+    logger.error("'configuration.{0}.id' must follow the pattern letterOrDigit[-_letterOrDigit]*");
+    return false;
+  }
+  const superType = (contribution as SemanticTokenType).superType;
+  if (superType && !superType.match(typeAndModifierIdPattern)) {
+    logger.error("'configuration.{0}.superType' must follow the pattern letterOrDigit[-_letterOrDigit]*", extensionPoint);
+    return false;
+  }
+  if (typeof contribution.description !== 'string' || contribution.id.length === 0) {
+    logger.error("'configuration.{0}.description' must be defined and can not be empty", extensionPoint);
+    return false;
+  }
+  return true;
+}
+
+//#endregion Semantic Tokens Contribution Point

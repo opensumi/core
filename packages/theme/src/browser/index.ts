@@ -6,6 +6,8 @@ import { ICSSStyleService } from '../common/style';
 import { CSSStyleService } from './style.service';
 import { IconService } from './icon.service';
 import { ThemeContribution } from './theme.contribution';
+import { ISemanticTokenRegistry } from '../common/semantic-tokens-registry';
+import { SemanticTokenRegistryImpl } from './semantic-tokens-registry';
 
 @Injectable()
 export class ThemeModule extends BrowserModule {
@@ -21,6 +23,10 @@ export class ThemeModule extends BrowserModule {
     {
       token: IIconService,
       useClass: IconService,
+    },
+    {
+      token: ISemanticTokenRegistry,
+      useClass: SemanticTokenRegistryImpl,
     },
     ThemeContribution,
   ];

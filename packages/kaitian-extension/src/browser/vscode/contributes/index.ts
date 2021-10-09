@@ -26,6 +26,9 @@ import { ProblemMatchersContributions, ProblemMatchersContributionPoint } from '
 import { CustomEditorContributionPoint } from './customEditors';
 import { CustomEditorScheme } from '../../../common/vscode/custom-editor';
 import { ViewsWelcomeContributionPoint } from './views-welcome';
+import { SemanticTokenModifiersContributionPoint } from './semanticTokenModifiers';
+import { SemanticTokenScopesContributionPoint } from './semanticTokenScopes';
+import { SemanticTokenTypesContributionPoint } from './semanticTokenTypes';
 
 export const EXTENSION_IDENTIFIER_PATTERN = '^([a-z0-9A-Z][a-z0-9\-A-Z]*)\\.([a-z0-9A-Z][a-z0-9\-A-Z]*)$';
 
@@ -307,6 +310,9 @@ export class VSCodeContributeRunner extends WithEventBus {
     ProblemPatternsContributionPoint,
     ProblemMatchersContributionPoint,
     CustomEditorContributionPoint,
+    SemanticTokenTypesContributionPoint,
+    SemanticTokenModifiersContributionPoint,
+    SemanticTokenScopesContributionPoint,
   ];
 
   @Autowired(INJECTOR_TOKEN)

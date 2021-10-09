@@ -610,7 +610,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     if (isElectronEnv() && electronEnv.onigWasmPath) {
       wasmUri = URI.file(electronEnv.onigWasmPath).codeUri.toString();
     } else {
-      wasmUri = this.appConfig.onigWasmPath || 'https://g.alicdn.com/kaitian/vscode-oniguruma-wasm/0.0.1/onig.wasm';
+      wasmUri = this.appConfig.onigWasmPath || 'https://g.alicdn.com/kaitian/vscode-oniguruma-wasm/1.5.1/onig.wasm';
     }
 
     const response = await fetch(wasmUri);

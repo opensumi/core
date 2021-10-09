@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { asPromise, CancellationToken, IRange } from '@ali/ide-core-common';
 
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
-import { SemanticTokensEdits, Uri } from '../../../../common/vscode/ext-types';
+import { SemanticTokens, SemanticTokensEdit, SemanticTokensEdits, Uri } from '../../../../common/vscode/ext-types';
 import * as TypeConverts from '../../../../common/vscode/converter';
 import { encodeSemanticTokensDto } from '../../../../common/vscode/semantic-tokens';
 
@@ -12,6 +12,14 @@ class SemanticTokensPreviousResult {
     public readonly tokens?: Uint32Array,
   ) { }
 }
+
+/* tslint:disable interface-over-type-literal */
+type RelaxedSemanticTokens = { readonly resultId?: string; readonly data: number[]; };
+type RelaxedSemanticTokensEdit = { readonly start: number; readonly deleteCount: number; readonly data?: number[]; };
+type RelaxedSemanticTokensEdits = { readonly resultId?: string; readonly edits: RelaxedSemanticTokensEdit[]; };
+
+type ProvidedSemanticTokens = vscode.SemanticTokens | RelaxedSemanticTokens;
+type ProvidedSemanticTokensEdits = vscode.SemanticTokensEdits | RelaxedSemanticTokensEdits;
 
 export class DocumentSemanticTokensAdapter {
 
@@ -28,18 +36,17 @@ export class DocumentSemanticTokensAdapter {
   async provideDocumentSemanticTokens(resource: Uri, previousResultId: number, token: CancellationToken): Promise<Uint8Array | null> {
     const doc = this._documents.getDocument(resource);
     const previousResult = (previousResultId !== 0 ? this._previousResults.get(previousResultId) : null);
-    const value = await asPromise(() => {
-      if (previousResult && typeof previousResult.resultId === 'string' && typeof this._provider.provideDocumentSemanticTokensEdits === 'function') {
-        return this._provider.provideDocumentSemanticTokensEdits((doc!), previousResult.resultId, token);
-      }
-      return this._provider.provideDocumentSemanticTokens((doc!), token);
-    });
+    let value = typeof previousResult?.resultId === 'string' && typeof this._provider.provideDocumentSemanticTokensEdits === 'function'
+      ? await this._provider.provideDocumentSemanticTokensEdits(doc!, previousResult.resultId, token)
+      : await this._provider.provideDocumentSemanticTokens(doc!, token);
+
     if (previousResult) {
       this._previousResults.delete(previousResultId);
     }
     if (!value) {
       return null;
     }
+    value = DocumentSemanticTokensAdapter._fixProvidedSemanticTokens(value);
     return this._send(DocumentSemanticTokensAdapter._convertToEdits(previousResult, value), value);
   }
 
@@ -47,12 +54,40 @@ export class DocumentSemanticTokensAdapter {
     this._previousResults.delete(semanticColoringResultId);
   }
 
-  private static _isSemanticTokens(v: vscode.SemanticTokens | vscode.SemanticTokensEdits): v is vscode.SemanticTokens {
+  private static _fixProvidedSemanticTokens(v: ProvidedSemanticTokens | ProvidedSemanticTokensEdits): vscode.SemanticTokens | vscode.SemanticTokensEdits {
+    if (DocumentSemanticTokensAdapter._isSemanticTokens(v)) {
+      if (DocumentSemanticTokensAdapter._isCorrectSemanticTokens(v)) {
+        return v;
+      }
+      return new SemanticTokens(new Uint32Array(v.data), v.resultId);
+    } else if (DocumentSemanticTokensAdapter._isSemanticTokensEdits(v)) {
+      if (DocumentSemanticTokensAdapter._isCorrectSemanticTokensEdits(v)) {
+        return v;
+      }
+      return new SemanticTokensEdits(v.edits.map((edit) => new SemanticTokensEdit(edit.start, edit.deleteCount, edit.data ? new Uint32Array(edit.data) : edit.data)), v.resultId);
+    }
+    return v;
+  }
+
+  private static _isSemanticTokens(v: ProvidedSemanticTokens | ProvidedSemanticTokensEdits): v is ProvidedSemanticTokens {
     return v && !!((v as vscode.SemanticTokens).data);
   }
 
-  private static _isSemanticTokensEdits(v: vscode.SemanticTokens | vscode.SemanticTokensEdits): v is vscode.SemanticTokensEdits {
+  private static _isSemanticTokensEdits(v: ProvidedSemanticTokens | ProvidedSemanticTokensEdits): v is ProvidedSemanticTokensEdits {
     return v && Array.isArray((v as vscode.SemanticTokensEdits).edits);
+  }
+
+  private static _isCorrectSemanticTokens(v: ProvidedSemanticTokens): v is vscode.SemanticTokens {
+    return (v.data instanceof Uint32Array);
+  }
+
+  private static _isCorrectSemanticTokensEdits(v: ProvidedSemanticTokensEdits): v is vscode.SemanticTokensEdits {
+    for (const edit of v.edits) {
+      if (!(edit.data instanceof Uint32Array)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private static _convertToEdits(previousResult: SemanticTokensPreviousResult | null | undefined, newResult: vscode.SemanticTokens | vscode.SemanticTokensEdits): vscode.SemanticTokens | vscode.SemanticTokensEdits {
@@ -132,14 +167,13 @@ export class DocumentRangeSemanticTokensAdapter {
   ) {
   }
 
-  provideDocumentRangeSemanticTokens(resource: Uri, range: IRange, token: CancellationToken): Promise<Uint8Array | null> {
+  async provideDocumentRangeSemanticTokens(resource: Uri, range: IRange, token: CancellationToken): Promise<Uint8Array | null> {
     const doc = this._documents.getDocument(resource);
-    return asPromise(() => this._provider.provideDocumentRangeSemanticTokens(doc!, TypeConverts.Range.to(range)!, token)).then((value) => {
-      if (!value) {
-        return null;
-      }
-      return this._send(value);
-    });
+    const value = await this._provider.provideDocumentRangeSemanticTokens(doc!, TypeConverts.Range.to(range), token);
+    if (!value) {
+      return null;
+    }
+    return this._send(value);
   }
 
   private _send(value: vscode.SemanticTokens): Uint8Array | null {
