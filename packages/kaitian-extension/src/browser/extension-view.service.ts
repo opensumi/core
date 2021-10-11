@@ -96,6 +96,52 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
     for (const contribution of contributions) {
       contribution.registerRequireInterceptor(this.requireInterceptorService);
     }
+
+    this.extendExtensionErrorStackTrace();
+  }
+
+  private extendExtensionErrorStackTrace() {
+    Error.stackTraceLimit = 100;
+    Error.prepareStackTrace = (error: Error, stackTrace: any[]) => {
+      let extension: IExtension | undefined;
+      let stackTraceMessage = `Error: ${error.message}`;
+      for (const call of stackTrace) {
+        stackTraceMessage += `\n\tat ${call.toString()}`;
+        if (!extension && call.isEval()) {
+          const extensionId = call.getEvalOrigin();
+          const maybeExtension = this.getExtension.apply(this, [extensionId]);
+          if (maybeExtension) {
+            extension = maybeExtension;
+            const columnNumber = call.getColumnNumber();
+            const lineNumber = call.getLineNumber();
+            stackTraceMessage = `\n\tat ${extension.name} (${extension.workerScriptPath}:${lineNumber}:${columnNumber})` + stackTraceMessage;
+          }
+        }
+      }
+
+      if (extension) {
+        const traceMessage = `${extension && extension.name} - ${error.name || 'Error'}: ${error.message || ''}${stackTraceMessage}`;
+        console.log('get error', traceMessage);
+        this.reportRuntimeError(
+          error,
+          extension,
+          traceMessage,
+        );
+        return traceMessage;
+      }
+      return error.stack;
+    };
+
+  }
+
+  private reportRuntimeError(err: Error, extension: IExtension, stackTraceMessage: string): void {
+    if (err && err.message) {
+      this.reporterService.point(REPORT_NAME.RUNTIME_ERROR_EXTENSION, extension.id, {
+        stackTraceMessage,
+        error: err.message,
+        version: extension.packageJSON?.version,
+      });
+    }
   }
 
   /**
@@ -368,9 +414,12 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
     const pendingFetch = await this.doFetch(decodeURIComponent(browserPath));
     loadTimer.timeEnd(extension.id);
     const { _module, _exports, _require } = this.getMockAmdLoader<T>(extension, this.nodeExtensionService.protocol);
-
-    const initFn = new Function('module', 'exports', 'require', await pendingFetch.text());
-
+    const initFn = new Function(
+      'module',
+      'exports',
+      'require',
+      await pendingFetch.text()  + `\n//# sourceURL=${extension.id}`,
+    );
     initFn(_module, _exports, _require);
     return {
       moduleExports: defaultExports ? _module.exports.default : _module.exports,
@@ -434,7 +483,15 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
     const proxiedDocument = createProxiedDocument(proxiedHead);
     const proxiedWindow = createProxiedWindow(proxiedDocument, proxiedHead);
 
-    const initFn = new Function('module', 'exports', 'require', 'styles', 'document', 'window', await pendingFetch.text());
+    const initFn = new Function(
+      'module',
+      'exports',
+      'require',
+      'styles',
+      'document',
+      'window',
+      await pendingFetch.text() + `\n//# sourceURL=${extension.id}`,
+    );
 
     initFn(_module, _exports, _require, stylesCollection, proxiedDocument, proxiedWindow);
     return {

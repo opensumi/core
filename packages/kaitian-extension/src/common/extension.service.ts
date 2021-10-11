@@ -45,5 +45,6 @@ export abstract class AbstractWorkerExtProcessService<T = any> extends AbstractN
 export abstract class AbstractViewExtProcessService {
   abstract getPortalShadowRoot(extensionId: string): ShadowRoot | undefined;
   abstract activate(): void;
+  abstract initExtension(extensions: IExtension[]): void;
   abstract activeExtension(extension: IExtension, protocol: IRPCProtocol): Promise<void>;
 }

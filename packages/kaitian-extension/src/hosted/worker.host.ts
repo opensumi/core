@@ -1,4 +1,5 @@
-import { Emitter, Deferred, IExtensionProps, Uri } from '@ali/ide-core-common';
+import { Injector } from '@ali/common-di';
+import { Emitter, Deferred, IExtensionProps, Uri, IReporterService, ReporterService, REPORT_HOST, IReporter, REPORT_NAME } from '@ali/ide-core-common';
 import {
   RPCProtocol, ProxyIdentifier,
 } from '@ali/ide-connection';
@@ -35,7 +36,6 @@ export function initRPCProtocol() {
 
 export class ExtensionWorkerHost implements IExtensionWorkerHost {
   private extensions: IExtensionProps[];
-  private rpcProtocol: RPCProtocol;
 
   private kaitianAPIFactory: any;
   private kaitianExtAPIImpl: Map<string, any> = new Map();
@@ -55,8 +55,13 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
 
   public secret: ExtHostSecret;
 
-  constructor(rpcProtocol: RPCProtocol) {
-    this.rpcProtocol = rpcProtocol;
+  private reporterService: IReporterService;
+
+  constructor(
+    private rpcProtocol: RPCProtocol,
+    private injector: Injector,
+  ) {
+    const reporter = this.injector.get(IReporter);
 
     this.kaitianAPIFactory = createKaitianAPIFactory(this.rpcProtocol, this, 'worker');
     this.mainThreadExtensionService = this.rpcProtocol.getProxy<KaitianWorkerExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService);
@@ -64,6 +69,11 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
     this.storage = new ExtHostStorage(rpcProtocol);
     this.secret = new ExtHostSecret(rpcProtocol);
     rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, this.storage);
+
+    this.reporterService = new ReporterService(reporter, {
+      host: REPORT_HOST.EXTENSION,
+    });
+
   }
 
   async $getActivatedExtensions(): Promise<ActivatedExtensionJSON[]> {
@@ -154,12 +164,25 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
 
       if (extension) {
         const traceMessage = `${extension && extension.name} - ${error.name || 'Error'}: ${error.message || ''}${stackTraceMessage}`;
-        // FIXME worker 线程需要接入 reporter
-        this.logger.error(traceMessage);
+        this.reportRuntimeError(
+          error,
+          extension,
+          traceMessage,
+        );
         return traceMessage;
       }
       return error.stack;
     };
+  }
+
+  private reportRuntimeError(err: Error, extension: IExtensionProps, stackTraceMessage: string): void {
+    if (err && err.message) {
+      this.reporterService.point(REPORT_NAME.RUNTIME_ERROR_EXTENSION, extension.id, {
+        stackTraceMessage,
+        error: err.message,
+        version: extension.packageJSON?.version,
+      });
+    }
   }
 
   private findExtensionFormScriptPath(scriptPath: string) {

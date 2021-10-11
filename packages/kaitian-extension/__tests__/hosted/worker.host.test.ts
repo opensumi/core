@@ -1,4 +1,5 @@
-import { Deferred } from '@ali/ide-core-common';
+import { Injector } from '@ali/common-di';
+import { Deferred, DefaultReporter, IReporter } from '@ali/ide-core-common';
 import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { ProxyIdentifier } from '@ali/ide-connection';
 import { ExtensionWorkerHost } from '../../src/hosted/worker.host';
@@ -53,8 +54,13 @@ describe('Extension Worker Thread Test Suites', () => {
   };
 
   beforeAll(async (done) => {
+    const injector = new Injector();
+    injector.addProviders({
+      token: IReporter,
+      useValue: new DefaultReporter(),
+    });
     rpcProtocol = await initMockRPCProtocol(mockClient);
-    extHostImpl = new ExtensionWorkerHost(rpcProtocol);
+    extHostImpl = new ExtensionWorkerHost(rpcProtocol, injector);
     done();
   });
 

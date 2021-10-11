@@ -201,6 +201,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     const extensionInstanceList = this.extensionInstanceManageService.getExtensionInstances();
     this.nodeExtensionService.updateExtensionData(extensionInstanceList);
     this.workerExtensionService.updateExtensionData(extensionInstanceList);
+    this.viewExtensionService.initExtension(extensionInstanceList);
   }
 
   /**

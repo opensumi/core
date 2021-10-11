@@ -80,6 +80,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadCustomEditor: createExtHostContextProxyIdentifier<IMainThreadCustomEditor>('MainThreadCustomEditor'),
   MainThreadAuthentication: createExtHostContextProxyIdentifier<IMainThreadAuthentication>('MainThreadAuthentication'),
   MainThreadSecret: createExtHostContextProxyIdentifier<IMainThreadSecret>('MainThreadSecret'),
+  MainThreadReporter: createExtHostContextProxyIdentifier<IMainThreadSecret>('MainThreadReporter'),
 };
 
 export const ExtHostAPIIdentifier = {

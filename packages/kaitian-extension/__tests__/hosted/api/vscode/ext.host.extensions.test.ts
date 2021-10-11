@@ -1,4 +1,5 @@
 import * as path from 'path';
+import { Injector } from '@ali/common-di';
 import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { IExtensionProps, URI } from '@ali/ide-core-common';
 import { initMockRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
@@ -31,6 +32,7 @@ const mockExtension = {
 describe(`test ${__filename}`, () => {
   let rpcProtocol: RPCProtocol;
   let context: ExtensionContext;
+  const injector = new Injector();
   const mockClient = {
     send: async (msg) => {},
     onMessage: (fn) => {},
@@ -43,7 +45,7 @@ describe(`test ${__filename}`, () => {
       extensionId: mockExtension.extensionId,
       extendProxy: {},
       createExtension: (extensionDescription: IExtensionProps) => {
-        return new ExtensionWorkerHost(rpcProtocol).createExtension(extensionDescription);
+        return new ExtensionWorkerHost(rpcProtocol, injector).createExtension(extensionDescription);
       },
       registerExtendModuleService: () => {},
       extensionPath: mockExtension.realPath,

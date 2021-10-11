@@ -1,6 +1,8 @@
 import * as path from 'path';
+import { Injector } from '@ali/common-di';
 import { ExtensionWorkerHost, initRPCProtocol } from './worker.host';
 import { setPerformance } from './api/vscode/language/util';
+import { DefaultReporter, IReporter } from '@ali/ide-core-common';
 
 setPerformance(self.performance);
 // make sure Worker cors
@@ -16,6 +18,12 @@ if (self.Worker) {
 
 (() => {
   const protocol = initRPCProtocol();
+  const extWorkerInjector = new Injector();
 
-  new ExtensionWorkerHost(protocol);
+  extWorkerInjector.addProviders({
+    token: IReporter,
+    useValue: new DefaultReporter(),
+  });
+
+  new ExtensionWorkerHost(protocol, extWorkerInjector);
 })();

@@ -95,9 +95,9 @@ describe('Extension service', () => {
       const containerInfo = tabbarService.getContainer('test.kaitian-extension:Leftview');
       expect(containerInfo?.options?.titleComponent).toBeDefined();
       expect(containerInfo?.options?.titleProps).toBeDefined();
-      setTimeout(() => {
-        done();
-      }, 1000);
+      done();
+      // setTimeout(() => {
+      // }, 1000);
     });
 
     it('extension should not repeated activation', async () => {
