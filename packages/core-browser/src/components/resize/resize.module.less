@@ -67,5 +67,14 @@
 :global {
   .no-resize {
     cursor: auto;
+
+    &::before {
+      transition: background-color 0.1s ease-out;
+      background-color: var(--sideBar-border);
+    }
+
+    &:hover::before {
+      background-color: var(--sash-hoverBorder);
+    }
   }
 }
