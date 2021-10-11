@@ -1,3 +1,4 @@
+import { DebugBreakpointsService } from './../view/breakpoints/debug-breakpoints.service';
 import { DebugBreakpoint } from './../breakpoint/breakpoint-marker';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { Position } from '@ali/monaco-editor-core/esm/vs/editor/common/core/position';
@@ -15,9 +16,17 @@ export class DebugRunToCursorService {
   @Autowired(WorkbenchEditorService)
   protected readonly workbenchEditorService: WorkbenchEditorService;
 
+  @Autowired(DebugBreakpointsService)
+  protected readonly debugBreakpointsService: DebugBreakpointsService;
+
   constructor() {}
 
-  public async run(uri: URI): Promise<void> {
+  /**
+   * @param uri
+   * @param isForce 为 true 表示强制运行到光标处，不管中间有没有启用的断点，它就是要畅通无阻
+   * @returns
+   */
+  public async run(uri: URI, isForce: boolean = false): Promise<void> {
     const currentSession = this.sessionManager.currentSession;
     if (!currentSession) {
       return;
@@ -51,9 +60,21 @@ export class DebugRunToCursorService {
 
     let breakpointToRemove: DebugBreakpoint | undefined;
     let threadToContinue = currentSession.currentThread;
+    let enabledBreakpoints: DebugBreakpoint[] = [];
+
     if (!bpExists) {
+
+      if (isForce) {
+        enabledBreakpoints = sessionModel.getBreakpoints().filter((bk) => bk.enabled).filter((bk) => bk.raw.column !== position.column && bk.raw.line !== position.lineNumber);
+        // 先将所有断点禁用，并收集起来，continue 之后再恢复状态
+        enabledBreakpoints.forEach((bk) => {
+          this.debugBreakpointsService.toggleBreakpointEnable(bk);
+        });
+      }
+
       const addResult = await this.addBreakpoints(uri, position);
       if (!addResult) {
+        this.recoverStatus(enabledBreakpoints);
         return;
       }
 
@@ -67,6 +88,7 @@ export class DebugRunToCursorService {
     }
 
     if (!threadToContinue) {
+      this.recoverStatus(enabledBreakpoints);
       return;
     }
 
@@ -81,6 +103,8 @@ export class DebugRunToCursorService {
     });
 
     await threadToContinue.continue();
+    this.recoverStatus(enabledBreakpoints);
+
   }
 
   private async addBreakpoints(uri: URI, position: Position) {
@@ -144,6 +168,12 @@ export class DebugRunToCursorService {
     }
 
     return { thread: bestThread, breakpoint: bp };
+  }
+
+  private recoverStatus(bks: DebugBreakpoint[]): void {
+    bks.forEach((bk) => {
+      this.debugBreakpointsService.toggleBreakpointEnable(bk);
+    });
   }
 
 }

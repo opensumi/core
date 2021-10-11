@@ -235,7 +235,7 @@ export class DebugSession implements IDebugSession {
         this.fireDidChange();
       }),
       this.on('capabilities', (event) => this.updateCapabilities(event.body.capabilities)),
-      this.breakpointManager.onDidChangeBreakpoints((event) => this.updateBreakpoint(event)),
+      this.breakpointManager.onDidChangeBreakpoints((event) => this.runtimeUpdateBreakpoint(event)),
       this.breakpointManager.onDidChangeExceptionsBreakpoints((args) => {
         if (this.breakpointManager.breakpointsEnabled) {
           this.setExceptionBreakpoints(args);
@@ -462,7 +462,7 @@ export class DebugSession implements IDebugSession {
   /**
    * 运行时修改断点信息
    */
-  async updateBreakpoint(event: BreakpointsChangeEvent) {
+  async runtimeUpdateBreakpoint(event: BreakpointsChangeEvent): Promise<void[] | undefined> {
     const { affected, statusUpdated } = event;
 
     if (statusUpdated) {

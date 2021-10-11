@@ -174,6 +174,10 @@ export namespace DEBUG_COMMANDS {
     id: 'debug.action.runToCursor',
     label: localize('debug.action.runToCursor'),
   };
+  export const FORCE_RUN_TO_CURSOR = {
+    id: 'debug.action.forceRunToCursor',
+    label: localize('debug.action.forceRunToCursor'),
+  };
 }
 
 export namespace DebugBreakpointWidgetCommands {
@@ -590,6 +594,11 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
         this.debugRunToCursorService.run(uri);
       },
     });
+    commands.registerCommand(DEBUG_COMMANDS.FORCE_RUN_TO_CURSOR, {
+      execute: (uri: URI) => {
+        this.debugRunToCursorService.run(uri, true);
+      },
+    });
   }
 
   registerToolbarItems(registry: ToolbarRegistry) {
@@ -711,6 +720,15 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
       command: {
         id: DEBUG_COMMANDS.RUN_TO_CURSOR.id,
         label: DEBUG_COMMANDS.RUN_TO_CURSOR.label,
+      },
+      when: `${CONTEXT_IN_DEBUG_MODE.raw}`,
+      group: 'debug',
+      order: 2,
+    });
+    menuRegistry.registerMenuItem(MenuId.EditorContext, {
+      command: {
+        id: DEBUG_COMMANDS.FORCE_RUN_TO_CURSOR.id,
+        label: DEBUG_COMMANDS.FORCE_RUN_TO_CURSOR.label,
       },
       when: `${CONTEXT_IN_DEBUG_MODE.raw}`,
       group: 'debug',

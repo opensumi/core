@@ -239,6 +239,7 @@ export const localizationBundle = {
     'debug.action.disattach': '断开',
     'debug.action.continue': '下一步',
     'debug.action.runToCursor': '运行到光标处',
+    'debug.action.forceRunToCursor': '强制运行到光标处',
     'debug.console.panel.title': '调试控制台',
     'debug.console.panel.default': '默认',
     'debug.console.filter.placeholder': '筛选器(例如 text、!exclude)',
