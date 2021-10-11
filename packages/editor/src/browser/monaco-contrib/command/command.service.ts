@@ -35,8 +35,9 @@ export type MonacoCommand = Command & { type: MonacoCommandType };
 export class MonacoCommandService implements IMonacoCommandService {
   _serviceBrand: undefined;
 
-  // TODO - Monaco 20 - ESM
-  onDidExecuteCommand: Event<ICommandEvent>;
+  private _onDidExecuteCommand: Emitter<ICommandEvent> = new Emitter<ICommandEvent>();
+
+  onDidExecuteCommand: Event<ICommandEvent> = this._onDidExecuteCommand.event;
 
   private delegate: ICommandService;
   /**
@@ -80,7 +81,9 @@ export class MonacoCommandService implements IMonacoCommandService {
     this.logger.debug('command: ' + commandId);
     this._onWillExecuteCommand.fire({ commandId, args });
     try {
-      return await this.commandService.executeCommand(commandId, ...args);
+      const res = await this.commandService.executeCommand<T>(commandId, ...args);
+      this._onDidExecuteCommand.fire({ commandId, args });
+      return res;
     } catch (err) {
       // 如果不是 handler 未找到直接抛错，否则执行 delegate 逻辑
       if (err?.name !== HANDLER_NOT_FOUND) {
@@ -88,7 +91,9 @@ export class MonacoCommandService implements IMonacoCommandService {
       }
     }
     if (this.delegate) {
-      return this.delegate.executeCommand(MonacoCommandAlias[commandId] ? MonacoCommandAlias[commandId] : commandId, ...args);
+      const res = this.delegate.executeCommand(MonacoCommandAlias[commandId] ? MonacoCommandAlias[commandId] : commandId, ...args);
+      this._onDidExecuteCommand.fire({ commandId, args });
+      return res;
     }
     this.reporterService.point(REPORT_NAME.NOT_FOUND_COMMAND, commandId);
     return Promise.reject(new Error(`command '${commandId}' not found`));

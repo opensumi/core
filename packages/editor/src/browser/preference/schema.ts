@@ -66,9 +66,14 @@ export const EDITOR_SUGGEST_DEFAULTS = {
   showSnippets: true,
   showUsers: true,
   showIssues: true,
+  preview: true,
   statusBar: {
     visible: false,
   },
+};
+
+export const EDITOR_INLINE_SUGGEST_DEFAULTS = {
+  enabled: true,
 };
 
 export const enum WrappingIndent {
@@ -320,7 +325,7 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   'editor.suggest.shareSuggestSelections': {
     type: 'boolean',
     default: EDITOR_SUGGEST_DEFAULTS.shareSuggestSelections,
-    markdownDescription: localize('suggest.shareSuggestSelections', 'Controls whether remembered suggestion selections are shared between multiple workspaces and windows (needs `#editor.suggestSelection#`).'),
+    description: localize('suggest.shareSuggestSelections', 'Controls whether remembered suggestion selections are shared between multiple workspaces and windows (needs `#editor.suggestSelection#`).'),
   },
   'editor.suggest.snippetsPreventQuickSuggestions': {
     type: 'boolean',
@@ -342,147 +347,157 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   'editor.suggest.showMethods': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showMethods', 'When enabled IntelliSense shows `method`-suggestions.'),
+    description: localize('editor.suggest.showMethods', 'When enabled IntelliSense shows `method`-suggestions.'),
   },
   'editor.suggest.showFunctions': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showFunctions', 'When enabled IntelliSense shows `function`-suggestions.'),
+    description: localize('editor.suggest.showFunctions', 'When enabled IntelliSense shows `function`-suggestions.'),
   },
   'editor.suggest.showConstructors': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showConstructors', 'When enabled IntelliSense shows `constructor`-suggestions.'),
+    description: localize('editor.suggest.showConstructors', 'When enabled IntelliSense shows `constructor`-suggestions.'),
   },
   'editor.suggest.showFields': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showFields', 'When enabled IntelliSense shows `field`-suggestions.'),
+    description: localize('editor.suggest.showFields', 'When enabled IntelliSense shows `field`-suggestions.'),
   },
   'editor.suggest.showVariables': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showVariables', 'When enabled IntelliSense shows `variable`-suggestions.'),
+    description: localize('editor.suggest.showVariables', 'When enabled IntelliSense shows `variable`-suggestions.'),
   },
   'editor.suggest.showClasses': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showClasss', 'When enabled IntelliSense shows `class`-suggestions.'),
+    description: localize('editor.suggest.showClasss', 'When enabled IntelliSense shows `class`-suggestions.'),
   },
   'editor.suggest.showStructs': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showStructs', 'When enabled IntelliSense shows `struct`-suggestions.'),
+    description: localize('editor.suggest.showStructs', 'When enabled IntelliSense shows `struct`-suggestions.'),
   },
   'editor.suggest.showInterfaces': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showInterfaces', 'When enabled IntelliSense shows `interface`-suggestions.'),
+    description: localize('editor.suggest.showInterfaces', 'When enabled IntelliSense shows `interface`-suggestions.'),
   },
   'editor.suggest.showModules': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showModules', 'When enabled IntelliSense shows `module`-suggestions.'),
+    description: localize('editor.suggest.showModules', 'When enabled IntelliSense shows `module`-suggestions.'),
   },
   'editor.suggest.showProperties': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showPropertys', 'When enabled IntelliSense shows `property`-suggestions.'),
+    description: localize('editor.suggest.showPropertys', 'When enabled IntelliSense shows `property`-suggestions.'),
   },
   'editor.suggest.showEvents': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showEvents', 'When enabled IntelliSense shows `event`-suggestions.'),
+    description: localize('editor.suggest.showEvents', 'When enabled IntelliSense shows `event`-suggestions.'),
   },
   'editor.suggest.showOperators': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showOperators', 'When enabled IntelliSense shows `operator`-suggestions.'),
+    description: localize('editor.suggest.showOperators', 'When enabled IntelliSense shows `operator`-suggestions.'),
   },
   'editor.suggest.showUnits': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showUnits', 'When enabled IntelliSense shows `unit`-suggestions.'),
+    description: localize('editor.suggest.showUnits', 'When enabled IntelliSense shows `unit`-suggestions.'),
   },
   'editor.suggest.showValues': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showValues', 'When enabled IntelliSense shows `value`-suggestions.'),
+    description: localize('editor.suggest.showValues', 'When enabled IntelliSense shows `value`-suggestions.'),
   },
   'editor.suggest.showConstants': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showConstants', 'When enabled IntelliSense shows `constant`-suggestions.'),
+    description: localize('editor.suggest.showConstants', 'When enabled IntelliSense shows `constant`-suggestions.'),
   },
   'editor.suggest.showEnums': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showEnums', 'When enabled IntelliSense shows `enum`-suggestions.'),
+    description: localize('editor.suggest.showEnums', 'When enabled IntelliSense shows `enum`-suggestions.'),
   },
   'editor.suggest.showEnumMembers': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showEnumMembers', 'When enabled IntelliSense shows `enumMember`-suggestions.'),
+    description: localize('editor.suggest.showEnumMembers', 'When enabled IntelliSense shows `enumMember`-suggestions.'),
   },
   'editor.suggest.showKeywords': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showKeywords', 'When enabled IntelliSense shows `keyword`-suggestions.'),
+    description: localize('editor.suggest.showKeywords', 'When enabled IntelliSense shows `keyword`-suggestions.'),
   },
   'editor.suggest.showWords': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showTexts', 'When enabled IntelliSense shows `text`-suggestions.'),
+    description: localize('editor.suggest.showTexts', 'When enabled IntelliSense shows `text`-suggestions.'),
   },
   'editor.suggest.showColors': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showColors', 'When enabled IntelliSense shows `color`-suggestions.'),
+    description: localize('editor.suggest.showColors', 'When enabled IntelliSense shows `color`-suggestions.'),
   },
   'editor.suggest.showFiles': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showFiles', 'When enabled IntelliSense shows `file`-suggestions.'),
+    description: localize('editor.suggest.showFiles', 'When enabled IntelliSense shows `file`-suggestions.'),
   },
   'editor.suggest.showReferences': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showReferences', 'When enabled IntelliSense shows `reference`-suggestions.'),
+    description: localize('editor.suggest.showReferences', 'When enabled IntelliSense shows `reference`-suggestions.'),
   },
   'editor.suggest.showCustomcolors': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showCustomcolors', 'When enabled IntelliSense shows `customcolor`-suggestions.'),
+    description: localize('editor.suggest.showCustomcolors', 'When enabled IntelliSense shows `customcolor`-suggestions.'),
   },
   'editor.suggest.showFolders': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showFolders', 'When enabled IntelliSense shows `folder`-suggestions.'),
+    description: localize('editor.suggest.showFolders', 'When enabled IntelliSense shows `folder`-suggestions.'),
   },
   'editor.suggest.showTypeParameters': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showTypeParameters', 'When enabled IntelliSense shows `typeParameter`-suggestions.'),
+    description: localize('editor.suggest.showTypeParameters', 'When enabled IntelliSense shows `typeParameter`-suggestions.'),
   },
   'editor.suggest.showSnippets': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showSnippets', 'When enabled IntelliSense shows `snippet`-suggestions.'),
+    description: localize('editor.suggest.showSnippets', 'When enabled IntelliSense shows `snippet`-suggestions.'),
   },
   'editor.suggest.showUsers': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showUsers', 'When enabled IntelliSense shows `user`-suggestions.'),
+    description: localize('editor.suggest.showUsers', 'When enabled IntelliSense shows `user`-suggestions.'),
   },
   'editor.suggest.showIssues': {
     type: 'boolean',
     default: true,
-    markdownDescription: localize('editor.suggest.showIssues', 'When enabled IntelliSense shows `issues`-suggestions.'),
+    description: localize('editor.suggest.showIssues', 'When enabled IntelliSense shows `issues`-suggestions.'),
   },
   'editor.suggest.statusBar.visible': {
     type: 'boolean',
     default: false,
-    markdownDescription: localize('editor.suggest.statusBar.visible', 'Controls the visibility of the status bar at the bottom of the suggest widget.'),
+    description: localize('editor.suggest.statusBar.visible', 'Controls the visibility of the status bar at the bottom of the suggest widget.'),
+  },
+  'editor.suggest.preview': {
+    type: 'boolean',
+    default: EDITOR_SUGGEST_DEFAULTS.preview,
+    description: localize('editor.suggest.preview', 'Enable or disable the rendering of the suggestion preview..'),
+  },
+  'editor.inlineSuggest.enabled': {
+    type: 'boolean',
+    default: EDITOR_INLINE_SUGGEST_DEFAULTS.enabled,
+    description: 'Enable or disable the rendering of automatic inline completions.',
   },
   'editor.letterSpacing': {
     'type': 'number',
