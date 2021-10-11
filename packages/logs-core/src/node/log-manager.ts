@@ -1,6 +1,7 @@
 import { Injectable, Autowired, ConstructorOf } from '@ali/common-di';
 import * as path from 'path';
-import { AppConfig, Emitter } from '@ali/ide-core-node';
+import { AppConfig } from '@ali/ide-core-node/lib/bootstrap/app';
+import { Emitter } from '@ali/ide-core-common';
 import {
   ILogService,
   LogLevel,

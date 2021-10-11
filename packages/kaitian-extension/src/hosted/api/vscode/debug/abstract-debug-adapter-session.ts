@@ -1,10 +1,9 @@
-import { Event } from '@ali/ide-core-common';
+import { Disposable, DisposableCollection, Event } from '@ali/ide-core-common';
 import {
   DebugStreamConnection,
 } from '@ali/ide-debug';
 import type * as vscode from 'vscode';
 import { DebugProtocol } from '@ali/vscode-debugprotocol';
-import { DisposableCollection, Disposable } from '@ali/ide-core-node';
 import { IWebSocket } from '@ali/ide-connection';
 import { getSequenceId } from '@ali/ide-debug';
 

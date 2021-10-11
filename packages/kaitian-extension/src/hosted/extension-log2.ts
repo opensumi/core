@@ -1,7 +1,7 @@
 import { LogServiceManager } from '@ali/ide-logs/lib/node/log-manager';
 import { Injector } from '@ali/common-di';
 import { getNodeRequire, SupportLogNamespace, ILogService, LogLevel, IExtensionLogger } from '@ali/ide-core-common';
-import { AppConfig } from '@ali/ide-core-node';
+import { AppConfig } from '@ali/ide-core-node/lib/bootstrap/app';
 
 export class ExtensionLogger2 implements IExtensionLogger {
 

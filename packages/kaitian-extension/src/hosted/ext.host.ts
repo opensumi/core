@@ -9,7 +9,7 @@ import { createAPIFactory as createKaitianAPIFactory } from './api/kaitian/ext.h
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier, VSCodeExtensionService, IExtensionDescription, ExtensionIdentifier } from '../common/vscode';
 import { ExtensionContext } from './api/vscode/ext.host.extensions';
 import { KTExtension } from './vscode.extension';
-import { AppConfig } from '@ali/ide-core-node';
+import { AppConfig } from '@ali/ide-core-node/lib/bootstrap/app';
 import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from '../common/activator';
 import { ExtHostSecret } from './api/vscode/ext.host.secrets';
 

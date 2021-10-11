@@ -2,9 +2,9 @@ import * as net from 'net';
 import * as Stream from 'stream';
 import { performance } from 'perf_hooks';
 import { ConstructorOf, Injector } from '@ali/common-di';
-import { AppConfig, ILogService } from '@ali/ide-core-node';
+import { AppConfig } from '@ali/ide-core-node/lib/bootstrap/app';
 import { isPromiseCanceledError } from '@ali/ide-core-common/lib/errors';
-import { Emitter, ReporterProcessMessage, LogLevel, IReporter, setLanguageId } from '@ali/ide-core-common';
+import { Emitter, ReporterProcessMessage, LogLevel, IReporter, setLanguageId, ILogService } from '@ali/ide-core-common';
 import {
   RPCProtocol,
   initRPCService,
