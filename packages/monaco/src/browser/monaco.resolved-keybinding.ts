@@ -7,13 +7,13 @@ import { KeyCode as MonacoKeyCode } from '@ali/monaco-editor-core';
 import * as platform from '@ali/monaco-editor-core/esm/vs/base/common/platform';
 export class MonacoResolvedKeybinding extends ResolvedKeybinding {
 
-  protected readonly parts: { key: string | null, modifiers: Modifiers }[];
+  protected readonly parts: { modifiers: Modifiers & { key: string | null } }[];
 
   constructor(protected readonly keySequence: KeySequence, keybindingService: KeybindingRegistry) {
     super();
     this.parts = keySequence.map((keyCode) => ({
-      key: keyCode.key ? keybindingService.acceleratorForKey(keyCode.key) : null,
       modifiers: {
+        key: keyCode.key ? keybindingService.acceleratorForKey(keyCode.key) : null,
         ctrlKey: keyCode.ctrl,
         shiftKey: keyCode.shift,
         altKey: keyCode.alt,
@@ -24,16 +24,12 @@ export class MonacoResolvedKeybinding extends ResolvedKeybinding {
 
   public getLabel(): string | null {
     return UILabelProvider
-      .toLabel(platform.OS,
-        this.parts.map((part) => part.modifiers),
-        this.keyLabelProvider);
+      .toLabel(platform.OS, this.parts.map((part) => part.modifiers), this.keyLabelProvider);
   }
 
   public getAriaLabel(): string | null {
     return AriaLabelProvider
-      .toLabel(platform.OS,
-        this.parts.map((part) => part.modifiers),
-        this.keyLabelProvider);
+      .toLabel(platform.OS, this.parts.map((part) => part.modifiers), this.keyLabelProvider);
   }
 
   public getElectronAccelerator(): string | null {
@@ -75,14 +71,13 @@ export class MonacoResolvedKeybinding extends ResolvedKeybinding {
       part.modifiers.shiftKey,
       part.modifiers.altKey,
       part.modifiers.metaKey,
-      part.key!,
-      part.key!,
+      part.modifiers.key!,
+      part.modifiers.key!,
     ));
   }
 
-  private keyLabelProvider<T extends Modifiers>(keybinding: T): string | null {
-    // TODO 实现不同环境的 keyLabelProvider
-    return '';
+  private keyLabelProvider<T extends Modifiers & { key: string | null }>(keybinding: T): string | null {
+    return keybinding.key;
   }
 
   static keyCode(keybinding: SimpleKeybinding): KeyCode {
