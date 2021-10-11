@@ -209,7 +209,6 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
     this._items = activeItems;
     // 说明是先 show，再设置 item
     if (this.didShow) {
-      this.quickOpen.hideQuickPick();
       this.show();
     }
   }
