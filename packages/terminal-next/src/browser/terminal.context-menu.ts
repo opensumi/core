@@ -3,9 +3,14 @@ import { Disposable } from '@ali/ide-core-common';
 import { AbstractMenuService, IMenu, ICtxMenuRenderer, generateMergedCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { memoize, IContextKeyService } from '@ali/ide-core-browser';
 import { MenuId } from '../common/menu';
+import { ITerminalController } from '../common';
 
 @Injectable()
 export class TerminalContextMenuService extends Disposable {
+
+  @Autowired(ITerminalController)
+  protected readonly controller: ITerminalController;
+
   @Autowired(AbstractMenuService)
   private readonly menuService: AbstractMenuService;
 
@@ -16,7 +21,7 @@ export class TerminalContextMenuService extends Disposable {
   private contextKeyService: IContextKeyService;
 
   @memoize get contextMenu(): IMenu {
-    const contributedContextMenu = this.menuService.createMenu(MenuId.TermPanel, this.contextKeyService);
+    const contributedContextMenu = this.menuService.createMenu(MenuId.TermPanel, this.controller.contextKeyService || this.contextKeyService);
     this.addDispose(contributedContextMenu);
     return contributedContextMenu;
   }

@@ -144,6 +144,10 @@ export class MockContextKeyService implements IScopedContextKeyService {
     return this;
   }
 
+  getValue<T>(key: string): T | undefined {
+    return this.getContextValue(key);
+  }
+
   match(expression: string | ContextKeyExpression | undefined, context?: HTMLElement | null | undefined): boolean {
     if (typeof expression === 'string') {
       return WhenExpressionParser.parse(expression, this.getData());

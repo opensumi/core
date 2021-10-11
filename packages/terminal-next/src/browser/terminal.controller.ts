@@ -84,6 +84,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
   }
 
+  get contextKeyService() {
+    if (this.terminalContextKey) {
+      return this.terminalContextKey.service;
+    }
+  }
+
   private _createClientOrIgnore(widget: IWidget, options = {}) {
     if (this._clients.has(widget.id)) {
       return;

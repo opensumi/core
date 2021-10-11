@@ -109,4 +109,8 @@ export class RawContextKey<T> implements IRawContextKey<T> {
       : '/invalid/';
     return this.raw + ' =~ ' + regexpStr;
   }
+
+  public evaluate(target: IContextKeyService): boolean {
+    return (!!target.getValue(this.key));
+  }
 }

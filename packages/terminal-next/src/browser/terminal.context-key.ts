@@ -11,9 +11,15 @@ export class TerminalContextKey {
   public readonly isTerminalFocused: IContextKey<boolean>;
   public readonly isTerminalViewInitialized: IContextKey<boolean>;
 
+  private readonly _contextKeyService: IContextKeyService;
+
   constructor(@Optional() dom: HTMLDivElement) {
-    const contextKeyService = this.globalContextkeyService.createScoped(dom);
-    this.isTerminalFocused = IsTerminalFocused.bind(contextKeyService);
-    this.isTerminalViewInitialized = IsTerminalViewInitialized.bind(contextKeyService);
+    this._contextKeyService = this.globalContextkeyService.createScoped(dom);
+    this.isTerminalFocused = IsTerminalFocused.bind(this._contextKeyService);
+    this.isTerminalViewInitialized = IsTerminalViewInitialized.bind(this._contextKeyService);
+  }
+
+  get service() {
+    return this._contextKeyService;
   }
 }

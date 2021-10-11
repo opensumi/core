@@ -3,6 +3,7 @@ import { ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerm
 import { IWidgetGroup, IWidget } from './resize';
 import { ITerminalClient, ITerminalExitEvent, ITerminalExternalLinkProvider } from './client';
 import { TerminalOptions, ITerminalInfo } from './pty';
+import { IContextKeyService } from '@ali/ide-core-browser';
 
 export interface ITerminalExternalClient {
   readonly id: string;
@@ -25,6 +26,7 @@ export interface ITerminalController extends Disposable {
   clients: Map<string, ITerminalClient>;
   activeClient?: ITerminalClient;
   themeBackground: string;
+  contextKeyService?: IContextKeyService;
   initContextKey(dom: HTMLDivElement): void;
   firstInitialize(): void;
   recovery(history: ITerminalBrowserHistory): Promise<void>;

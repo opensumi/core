@@ -18,18 +18,24 @@ export class FileContextKey {
   public readonly explorerCompressedFirstFocusContext: IContextKey<boolean>;
   public readonly explorerCompressedLastFocusContext: IContextKey<boolean>;
 
+  private readonly _contextKeyService: IContextKeyService;
+
   constructor(@Optional() dom: HTMLDivElement) {
-    const contextKeyService = this.globalContextKeyService.createScoped(dom);
-    this.explorerFolder = ExplorerFolderContext.bind(contextKeyService);
-    this.explorerFocused = ExplorerFocusedContext.bind(contextKeyService);
-    this.explorerResourceCut = ExplorerResourceCut.bind(contextKeyService);
+    this._contextKeyService = this.globalContextKeyService.createScoped(dom);
+    this.explorerFolder = ExplorerFolderContext.bind(this._contextKeyService);
+    this.explorerFocused = ExplorerFocusedContext.bind(this._contextKeyService);
+    this.explorerResourceCut = ExplorerResourceCut.bind(this._contextKeyService);
 
-    this.filesExplorerFocused = FilesExplorerFocusedContext.bind(contextKeyService);
-    this.filesExplorerInputFocused = FilesExplorerInputFocusedContext.bind(contextKeyService);
-    this.filesExplorerFilteredContext = FilesExplorerFilteredContext.bind(contextKeyService);
+    this.filesExplorerFocused = FilesExplorerFocusedContext.bind(this._contextKeyService);
+    this.filesExplorerInputFocused = FilesExplorerInputFocusedContext.bind(this._contextKeyService);
+    this.filesExplorerFilteredContext = FilesExplorerFilteredContext.bind(this._contextKeyService);
 
-    this.explorerCompressedFocusContext = ExplorerCompressedFocusContext.bind(contextKeyService);
-    this.explorerCompressedFirstFocusContext = ExplorerCompressedFirstFocusContext.bind(contextKeyService);
-    this.explorerCompressedLastFocusContext = ExplorerCompressedLastFocusContext.bind(contextKeyService);
+    this.explorerCompressedFocusContext = ExplorerCompressedFocusContext.bind(this._contextKeyService);
+    this.explorerCompressedFirstFocusContext = ExplorerCompressedFirstFocusContext.bind(this._contextKeyService);
+    this.explorerCompressedLastFocusContext = ExplorerCompressedLastFocusContext.bind(this._contextKeyService);
+  }
+
+  get service() {
+    return this._contextKeyService;
   }
 }

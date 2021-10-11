@@ -133,6 +133,21 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
     this.fileTreeService.reWatch();
   }
 
+  private revealFile(locationUri: URI) {
+    if (locationUri) {
+      if (this.isRendered) {
+        const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
+        if (!handler || !handler.isVisible || handler.isCollapsed(ExplorerResourceViewId)) {
+          this.fileTreeModelService.locationOnShow(locationUri);
+        } else {
+          this.fileTreeModelService.location(locationUri);
+        }
+      } else {
+        this.fileTreeModelService.locationOnShow(locationUri);
+      }
+    }
+  }
+
   registerMenus(menuRegistry: IMenuRegistry): void {
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: {
@@ -196,7 +211,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       },
       order: 1,
       group: '2_operator',
-      when: `!${FilesExplorerFilteredContext.raw}`,
+      when: FilesExplorerFilteredContext.not,
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
@@ -206,7 +221,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       },
       order: 3,
       group: '2_operator',
-      when: `!${FilesExplorerFilteredContext.raw}`,
+      when: FilesExplorerFilteredContext.not,
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
@@ -243,7 +258,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       },
       order: 3,
       group: '3_copy',
-      when: `!${FilesExplorerFilteredContext.raw}`,
+      when: FilesExplorerFilteredContext.not,
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
@@ -261,21 +276,6 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
       },
       group: '4_path',
     });
-  }
-
-  private revealFile(locationUri: URI) {
-    if (locationUri) {
-      if (this.isRendered) {
-        const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
-        if (!handler || !handler.isVisible || handler.isCollapsed(ExplorerResourceViewId)) {
-          this.fileTreeModelService.locationOnShow(locationUri);
-        } else {
-          this.fileTreeModelService.location(locationUri);
-        }
-      } else {
-        this.fileTreeModelService.locationOnShow(locationUri);
-      }
-    }
   }
 
   registerCommands(commands: CommandRegistry) {

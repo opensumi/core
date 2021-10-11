@@ -79,8 +79,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   private fileContextKey: FileContextKey;
 
-  private _contextMenuContextKeyService: IContextKeyService;
-
   private _cacheNodesMap: Map<string, File | Directory> = new Map();
 
   private _fileServiceWatchers: Map<string, IFileServiceWatcher> = new Map();
@@ -677,10 +675,11 @@ export class FileTreeService extends Tree implements IFileTreeService {
   }
 
   get contextMenuContextKeyService() {
-    if (!this._contextMenuContextKeyService) {
-      this._contextMenuContextKeyService = this.contextKeyService.createScoped();
+    if (this.fileContextKey) {
+      return this.fileContextKey.service;
+    } else {
+      return this.contextKeyService;
     }
-    return this._contextMenuContextKeyService;
   }
 
   public reWatch() {

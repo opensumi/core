@@ -6,7 +6,8 @@ import { ConfigurationTarget, IConfigurationChangeEvent, IConfigurationService, 
 
 import { Emitter as EventEmitter } from '@ali/monaco-editor-core/esm/vs/base/common/event';
 import {
-  IContextKey, IContextKeyService, Event,
+  IContextKey, Event,
+  IContextKeyService,
   ContextKeyChangeEvent, getDebugLogger, Emitter,
   IScopedContextKeyService, PreferenceService, PreferenceChanges, PreferenceScope, PreferenceSchemaProvider, createPreferenceProxy,
 } from '@ali/ide-core-browser';
@@ -279,6 +280,10 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
     return this.contextKeyService.getContextKeyValue(key);
   }
 
+  getValue<T>(key: string): T | undefined {
+    return this.contextKeyService.getContextKeyValue(key);
+  }
+
   createScoped(target: IContextKeyServiceTarget | ContextKeyService): IScopedContextKeyService {
     if (target && isContextKeyService(target)) {
       return this.injector.get(ScopedContextKeyService, [target]);
@@ -287,13 +292,13 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
       // https://github.com/microsoft/vscode/commit/c88888aa9bcc76b05779edb21c19eb8c7ebac787
       const domNode = target || document.createElement('div');
       const scopedContextKeyService = this.contextKeyService.createScoped(domNode as IContextKeyServiceTarget);
-      return this.injector.get(ScopedContextKeyService, [scopedContextKeyService as ContextKeyService]);
+      return this.injector.get(ScopedContextKeyService, [scopedContextKeyService  as ContextKeyService]);
     }
   }
 
   // cache expressions
   protected expressions = new Map<string, ContextKeyExpression | undefined>();
-  // internal used
+
   parse(when: string | undefined): ContextKeyExpression | undefined {
     if (!when) {
       return undefined;
