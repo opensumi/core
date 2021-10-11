@@ -108,5 +108,13 @@ export function createTextmateTokenizer(
         tokens: result.tokens,
       };
     },
+    tokenize(line: string, state: TokenizerState) {
+      const result = grammar.tokenizeLine(line, state.ruleStack);
+      return {
+        endState: new TokenizerState(result.ruleStack),
+        tokens: result.tokens
+          .map((t) => ({ ...t, scopes: t.scopes.join('\r\n') })),
+      };
+    },
   };
 }
