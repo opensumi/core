@@ -12,6 +12,10 @@ export class IconThemesContributionPoint extends VSCodeContributePoint<ThemesSch
   private readonly iconService: IIconService;
 
   contribute() {
-    this.iconService.registerIconThemes(this.json, URI.from(this.extension.uri!));
+    const themes = this.json.map((t) => ({
+      ...t,
+      label: this.getLocalizeFromNlsJSON(t.label),
+    }));
+    this.iconService.registerIconThemes(themes, URI.from(this.extension.uri!));
   }
 }

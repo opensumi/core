@@ -12,8 +12,12 @@ export class ThemesContributionPoint extends VSCodeContributePoint<ThemesSchema>
   themeService: IThemeService;
 
   contribute() {
-    const themes = this.json;
-    this.addDispose(this.themeService.registerThemes(themes, URI.from(this.extension.uri!)));
+    const themes = this.json.map((t) => ({
+      ...t,
+      label: this.getLocalizeFromNlsJSON(t.label),
+    }));
+    this.addDispose(
+      this.themeService.registerThemes(themes, URI.from(this.extension.uri!)),
+    );
   }
-
 }
