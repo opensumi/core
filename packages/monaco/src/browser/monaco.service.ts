@@ -58,7 +58,6 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       model: null,
       wordBasedSuggestions: false,
       renderLineHighlight: 'none',
-      'editor.rename.enablePreview': true,
       ...options,
     }, { ...this.overrideServiceRegistry.all(), ...overrides });
     this.overrideMonacoKeybindingService(editor);
