@@ -1,16 +1,14 @@
-
 const electronBuilder = require('electron-builder');
 const path = require('path');
-const fs = require('fs-extra');
+const rootPackage = require('../package.json');
 
 electronBuilder.build({
   config: {
     productName: "Kaitian IDE",
     npmArgs: ['--registry=https://registry.npm.alibaba-inc.com'],
-    electronVersion: "5.0.10",
+    electronVersion: rootPackage.devDependencies.electron,
     files:[
-      "node_modules",
-      "dist"
+      "app/dist"
     ],
     extraResources:[
       {
