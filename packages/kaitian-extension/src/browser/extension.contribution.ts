@@ -8,7 +8,7 @@ import { IResourceOpenOptions, WorkbenchEditorService } from '@ali/ide-editor';
 import type * as vscode from 'vscode';
 
 import { TextDocumentShowOptions, ViewColumn } from '../common/vscode';
-import { ExtensionNodeServiceServerPath, IExtensionNodeClientService, EMIT_EXT_HOST_EVENT, ExtensionHostProfilerServicePath, ExtensionHostType, ExtensionService, IExtensionHostProfilerService } from '../common';
+import { ExtensionNodeServiceServerPath, IExtensionNodeClientService, EMIT_EXT_HOST_EVENT, ExtensionHostProfilerServicePath, ExtensionHostType, ExtensionService, IExtensionHostProfilerService, ExtensionHostTypeUpperCase } from '../common';
 import { ActivatedExtension } from '../common/activator';
 import * as VSCodeBuiltinCommands from './vscode/builtin-commands';
 import { AbstractExtInstanceManagementService, ExtensionApiReadyEvent, ExtHostEvent, IActivationEventService, Serializable } from './types';
@@ -355,15 +355,15 @@ export class KaitianExtensionCommandContribution implements CommandContribution 
   }
 
   private asQuickOpenItems(activated: { node?: ActivatedExtension[] | undefined; worker?: ActivatedExtension[] | undefined; }): QuickOpenItem[] {
-    const nodes = activated.node ? activated.node.map((e, i) => this.toQuickOpenItem(e, 'node', i === 0)) : [];
-    const workers = activated.worker ? activated.worker.map((e, i) => this.toQuickOpenItem(e, 'worker', i === 0)) : [];
+    const nodes = activated.node ? activated.node.map((e, i) => this.toQuickOpenItem(e, 'Node.js', i === 0)) : [];
+    const workers = activated.worker ? activated.worker.map((e, i) => this.toQuickOpenItem(e, 'Web Worker', i === 0)) : [];
     return [
       ...nodes,
       ...workers,
     ];
   }
 
-  private toQuickOpenItem(e: ActivatedExtension, host: ExtensionHostType, firstItem: boolean): QuickOpenItem {
+  private toQuickOpenItem(e: ActivatedExtension, host: ExtensionHostTypeUpperCase, firstItem: boolean): QuickOpenItem {
     const extension = this.extensionInstanceManageService.getExtensionInstanceByExtId(e.id);
     return new QuickOpenItem({
       groupLabel: firstItem ? host : undefined,

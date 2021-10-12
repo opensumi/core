@@ -84,6 +84,8 @@ export interface IExtensionNodeClientService {
 
 export type ExtensionHostType = 'node' | 'worker';
 
+export type ExtensionHostTypeUpperCase = 'Node.js' | 'Web Worker';
+
 export interface ChangeExtensionOptions {
   upgrade: boolean;
   extensionPath: string;
