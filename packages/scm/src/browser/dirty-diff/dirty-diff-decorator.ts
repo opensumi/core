@@ -56,9 +56,6 @@ export class DirtyDiffDecorator extends Disposable {
 
     if (options.overview) {
       decorationOptions.overviewRuler = {
-        // FIXME - Monaco 20 - ESM
-        // 这里没有 range
-        // range: null as any,
         color: themeColorFromId(foregroundColor),
         position: OverviewRulerLane.Left,
       };

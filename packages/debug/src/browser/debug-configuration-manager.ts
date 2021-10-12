@@ -284,10 +284,7 @@ export class DebugConfigurationManager {
     if (!editor) {
       return;
     }
-    // FIEME - Monaco 20 - ESM
-    // 类型中没有这个属性
-    // @ts-ignore
-    const { _commandService: commandService } = editor;
+
     let position: monaco.Position | undefined;
     let depthInArray = 0;
     let lastProperty = '';
@@ -317,11 +314,11 @@ export class DebugConfigurationManager {
     if (editor.getModel()!.getLineLastNonWhitespaceColumn(position.lineNumber + 1) === 0) {
       // tslint:disable-next-line:no-bitwise
       editor.setPosition({ lineNumber: position.lineNumber + 1, column: 1 << 30 });
-      await commandService.executeCommand('editor.action.deleteLines');
+      editor.trigger(null, 'editor.action.deleteLines', []);
     }
     editor.setPosition(position);
-    await commandService.executeCommand('editor.action.insertLineAfter');
-    await commandService.executeCommand('editor.action.triggerSuggest');
+    editor.trigger(null, 'editor.action.insertLineAfter', []);
+    editor.trigger(null, 'editor.action.triggerSuggest', []);
   }
 
   protected get model(): DebugConfigurationModel | undefined {

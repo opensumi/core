@@ -50,6 +50,7 @@ describe('Debug Configuration Manager', () => {
         },
       });
     },
+    trigger: jest.fn(),
   };
 
   const mockWorkbenchEditorService = {
@@ -209,7 +210,7 @@ describe('Debug Configuration Manager', () => {
     await debugConfigurationManager.addConfiguration();
     expect(mockMonacoEditorModel.getLineLastNonWhitespaceColumn).toBeCalledTimes(2);
     expect(mockMonacoEditor.setPosition).toBeCalledTimes(1);
-    expect(mockMonacoEditor._commandService.executeCommand).toBeCalledTimes(2);
+    expect(mockMonacoEditor.trigger).toBeCalledTimes(2);
     done();
   });
 

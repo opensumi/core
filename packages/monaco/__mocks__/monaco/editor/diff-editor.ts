@@ -192,6 +192,11 @@ export class MockedDiffEditor extends Disposable implements monaco.editor.IStand
   }
 }
 
+interface IDiffRange {
+  rhs: boolean;
+  range: Range;
+}
+
 export class MockedDiffNavigator implements monaco.editor.IDiffNavigator {
 
   constructor(public diffEditor, public opts) {
@@ -214,9 +219,7 @@ export class MockedDiffNavigator implements monaco.editor.IDiffNavigator {
     throw new Error('Method not implemented.');
   }
 
-  // FIXME - Monaco 20 - ESM
-  // 之前是 IDiffRange，但新版本没有这个类型，暂时改成 IRange
-  ranges: monaco.IRange[];
+  ranges: IDiffRange[];
   nextIdx: number;
   revealFirst: boolean;
 

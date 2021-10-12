@@ -73,6 +73,53 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     this.language = language;
     this.value = value;
   }
+  mightContainUnusualLineTerminators(): boolean {
+    throw new Error('Method not implemented.');
+  }
+  removeUnusualLineTerminators(selections?: monaco.Selection[]): void {
+    throw new Error('Method not implemented.');
+  }
+  getTextBuffer(): monaco.editor.ITextBuffer {
+    throw new Error('Method not implemented.');
+  }
+  getEndOfLineSequence(): monaco.editor.EndOfLineSequence {
+    throw new Error('Method not implemented.');
+  }
+  setPartialSemanticTokens(range: monaco.Range, tokens: any[] | null): void {
+    throw new Error('Method not implemented.');
+  }
+  hasCompleteSemanticTokens(): boolean {
+    throw new Error('Method not implemented.');
+  }
+  hasSomeSemanticTokens(): boolean {
+    throw new Error('Method not implemented.');
+  }
+  getInjectedTextDecorations(ownerId?: number): monaco.editor.IModelDecoration[] {
+    throw new Error('Method not implemented.');
+  }
+  _setTrackedRange(id: string | null, newRange: null, newStickiness: monaco.editor.TrackedRangeStickiness): null;
+  _setTrackedRange(id: string | null, newRange: monaco.Range, newStickiness: monaco.editor.TrackedRangeStickiness): string;
+  _setTrackedRange(id: any, newRange: any, newStickiness: any): string | null {
+    throw new Error('Method not implemented.');
+  }
+  popStackElement(): void {
+    throw new Error('Method not implemented.');
+  }
+  _applyUndo(changes: any[], eol: monaco.editor.EndOfLineSequence, resultingAlternativeVersionId: number, resultingSelection: monaco.Selection[] | null): void {
+    throw new Error('Method not implemented.');
+  }
+  _applyRedo(changes: any[], eol: monaco.editor.EndOfLineSequence, resultingAlternativeVersionId: number, resultingSelection: monaco.Selection[] | null): void {
+    throw new Error('Method not implemented.');
+  }
+  onDidChangeContentOrInjectedText(listener: (e: any) => void): monaco.IDisposable {
+    throw new Error('Method not implemented.');
+  }
+  normalizePosition(position: monaco.Position, affinity: any): monaco.Position {
+    throw new Error('Method not implemented.');
+  }
+  getLineIndentColumn(lineNumber: number): number {
+    throw new Error('Method not implemented.');
+  }
   isForSimpleWidget: boolean;
   mightContainRTL(): boolean {
     throw new Error('Method not implemented.');
@@ -163,11 +210,6 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   }
   _getTrackedRange(id: string): monaco.Range | null {
     throw new Error('Method not implemented.');
-  }
-  // FIXME - Monaco 20 - ESM
-  // @ts-ignore
-  _setTrackedRange(id: any, newRange: any, newStickiness: any) {
-    return '';
   }
   undo() {
     return;

@@ -135,7 +135,6 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
       originalURI as monaco.Uri,
       this._editorModel.getMonacoModel().uri,
       false,
-      // FIXME - Monaco 20 - ESM
       // 新版本多了一个 maxComputationTime 参数，参考 VS Code 默认值设置为 1000
       1000,
     );

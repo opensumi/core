@@ -23,7 +23,6 @@ export class MonacoCodeService extends CodeEditorServiceImpl {
     super(null, StaticServices.standaloneThemeService.get());
   }
 
-  // FIXME - Monaco 20 - ESM
   getActiveCodeEditor(): IMonacoCodeEditor | null {
     if (this.workbenchEditorService.currentEditor) {
       return this.workbenchEditorService.currentEditor.monacoEditor;
