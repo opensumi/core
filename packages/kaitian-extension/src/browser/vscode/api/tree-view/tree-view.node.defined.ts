@@ -140,14 +140,16 @@ export class ExtensionTreeNode extends TreeNode {
   private _hightlights?: [number, number][];
   private _strikethrough?: boolean;
 
+  private _resolved?: TreeViewItem;
+
   constructor(
     tree: TreeViewDataProvider,
     parent: ExtensionCompositeTreeNode | undefined,
     label: string | ITreeItemLabel,
     public description: string = '',
     public icon: string = '',
-    public tooltip: string = '',
-    public command: ICommand | undefined,
+    private _tooltip: string | undefined,
+    private _command: ICommand | undefined,
     public contextValue: string = '',
     public treeItemId: string = '',
     public actions: MenuNode[],
@@ -169,6 +171,20 @@ export class ExtensionTreeNode extends TreeNode {
     TreeNode.setTreeNode(this._uid, this.path, this);
   }
 
+  get command() {
+    if (!this._resolved) {
+      this.resolveTreeItem();
+    }
+    return this._command;
+  }
+
+  get tooltip() {
+    if (!this._resolved) {
+      this.resolveTreeItem();
+    }
+    return this._tooltip;
+  }
+
   get displayName() {
     return this._displayName;
   }
@@ -187,4 +203,11 @@ export class ExtensionTreeNode extends TreeNode {
   get highlights() {
     return this._hightlights;
   }
+
+  async resolveTreeItem() {
+    this._resolved = await (this._tree as TreeViewDataProvider).resolveTreeItem((this._tree as TreeViewDataProvider).treeViewId, this.treeItemId);
+    this._tooltip = this._resolved?.tooltip;
+    this._command = this._resolved?.command;
+  }
+
 }

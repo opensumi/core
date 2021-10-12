@@ -2,7 +2,7 @@ import { ResourceService, IResource, IResourceProvider, ResourceNeedUpdateEvent,
 import { Injectable, Autowired } from '@ali/common-di';
 import { URI, IDisposable, WithEventBus, OnEvent } from '@ali/ide-core-browser';
 import { observable } from 'mobx';
-import { Disposable, addElement, LRUMap, ILogger } from '@ali/ide-core-common';
+import { Disposable, addElement, LRUMap, ILogger, Emitter } from '@ali/ide-core-common';
 
 @Injectable()
 export class ResourceServiceImpl extends WithEventBus implements ResourceService {
@@ -22,6 +22,12 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
   private resourceDecoration: Map<string, IResourceDecoration> = new Map();
 
   private cachedProvider = new LRUMap<string, IResourceProvider | undefined>(500, 200);
+
+  private onRegisterResourceProviderEmitter = new Emitter<IResourceProvider>();
+  public readonly onRegisterResourceProvider = this.onRegisterResourceProviderEmitter.event;
+
+  private onUnregisterResourceProviderEmitter = new Emitter<IResourceProvider>();
+  public readonly onUnregisterResourceProvider = this.onUnregisterResourceProviderEmitter.event;
 
   @Autowired(ILogger)
   logger: ILogger;
@@ -110,6 +116,7 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
   }
 
   registerResourceProvider(provider: IResourceProvider): IDisposable {
+    this.onRegisterResourceProviderEmitter.fire(provider);
     const disposer = new Disposable();
     disposer.addDispose(addElement(this.providers, provider));
     disposer.addDispose({
@@ -117,6 +124,7 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
         for (const r of this.resources.values()) {
           if (r.provider === provider) {
             r.provider = GhostResourceProvider;
+            this.onUnregisterResourceProviderEmitter.fire(provider);
           }
         }
         this.cachedProvider.clear();

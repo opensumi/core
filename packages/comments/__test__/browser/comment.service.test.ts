@@ -9,7 +9,9 @@ import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { IIconService } from '@ali/ide-theme';
 import { IconService } from '@ali/ide-theme/lib/browser';
-import { IEditor, EditorCollectionService } from '@ali/ide-editor';
+import { IEditor, EditorCollectionService, ResourceService } from '@ali/ide-editor';
+import { ResourceServiceImpl } from '@ali/ide-editor/lib/browser/resource.service';
+import { IEditorDecorationCollectionService } from '@ali/ide-editor/lib/browser';
 
 describe('comment service test', () => {
   let injector: MockInjector;
@@ -35,9 +37,17 @@ describe('comment service test', () => {
       token: IIconService,
       useClass: IconService,
     }, {
+      token: ResourceService,
+      useClass: ResourceServiceImpl,
+    }, {
       token: EditorCollectionService,
       useValue: mockService({
         listEditors: () => [currentEditor],
+      }),
+    }, {
+      token: IEditorDecorationCollectionService,
+      useValue: mockService({
+        registerDecorationProvider: () => Disposable.NULL,
       }),
     }]));
 
@@ -45,6 +55,7 @@ describe('comment service test', () => {
 
   beforeEach(() => {
     commentsService = injector.get<ICommentsService>(ICommentsService);
+    commentsService.init();
   });
 
   afterEach(() => {
@@ -197,6 +208,17 @@ describe('comment service test', () => {
     thread.hideWidgetsByDispose();
     // 虽然隐藏了，但是 show 变量还是不变
     expect(widget?.isShow).toBeTruthy();
+  });
+
+  it('registerDecorationProvider to be recalled when register resource provider', () => {
+    // @ts-ignore
+    const $registerDecorationProvider = jest.spyOn(commentsService, 'registerDecorationProvider');
+    const resourceProvider = injector.get<ResourceService>(ResourceService);
+    resourceProvider.registerResourceProvider({
+      scheme: 'pr',
+      provideResource: () => mockService({}),
+    });
+    expect($registerDecorationProvider).toBeCalled();
   });
 
   function createTestThreads(uri: URI) {

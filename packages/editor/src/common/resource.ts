@@ -1,4 +1,4 @@
-import { URI, BasicEvent, MaybePromise, IDisposable } from '@ali/ide-core-common';
+import { URI, BasicEvent, MaybePromise, IDisposable, Event } from '@ali/ide-core-common';
 
 export interface IResourceProvider {
 
@@ -22,6 +22,15 @@ export interface IResourceProvider {
 }
 
 export abstract class ResourceService {
+
+  /**
+   * 注册一个新的 ResourceProvider 会触发该事件
+   */
+  readonly onRegisterResourceProvider: Event<IResourceProvider>;
+  /**
+   * 写在一个 ResourceProvider 会触发该事件
+   */
+  readonly onUnregisterResourceProvider: Event<IResourceProvider>;
 
   /**
    * 根据uri获得一个资源信息

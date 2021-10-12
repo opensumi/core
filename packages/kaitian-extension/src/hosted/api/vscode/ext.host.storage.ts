@@ -86,3 +86,9 @@ export class ExtensionMemento implements Memento {
     this.storageListener.dispose();
   }
 }
+
+export class ExtensionGlobalMemento extends ExtensionMemento {
+  setKeysForSync() {
+    // TODO: 目前 IDE 都会同步配置，该方法先空实现
+  }
+}

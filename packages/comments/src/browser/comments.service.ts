@@ -22,7 +22,7 @@ import {
   Deferred,
 } from '@ali/ide-core-browser';
 import { IEditor } from '@ali/ide-editor';
-import { IEditorDecorationCollectionService, IEditorDocumentModelService, WorkbenchEditorService } from '@ali/ide-editor/lib/browser';
+import { IEditorDecorationCollectionService, IEditorDocumentModelService, ResourceService, WorkbenchEditorService } from '@ali/ide-editor/lib/browser';
 import {
   ICommentsService,
   ICommentsThread,
@@ -70,6 +70,9 @@ export class CommentsService extends Disposable implements ICommentsService {
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorService;
 
+  @Autowired(ResourceService)
+  private readonly resourceService: ResourceService;
+
   private decorationChangeEmitter = new Emitter<URI>();
 
   @observable
@@ -85,8 +88,10 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   private providerDecorationCache = new LRUCache<string, Deferred<IRange[]>>(10000);
 
-  // 只支持在 file 协议和 git 协议中显示评论数据
+  // 默认在 file 协议和 git 协议中显示评论数据
   private shouldShowCommentsSchemes = new Set(['file', 'git']);
+
+  private decorationProviderDisposer = Disposable.NULL;
 
   @observable
   private forceUpdateCount = 0;
@@ -153,6 +158,20 @@ export class CommentsService extends Disposable implements ICommentsService {
   }
 
   public init() {
+    // 插件注册 ResourceProvider 时重新注册 CommentDecorationProvider
+    // 例如 Github Pull Request 插件的 scheme 为 pr
+    this.addDispose(this.resourceService.onRegisterResourceProvider((provider) => {
+      if (provider.scheme) {
+        this.shouldShowCommentsSchemes.add(provider.scheme);
+        this.registerDecorationProvider();
+      }
+    }));
+    this.addDispose(this.resourceService.onUnregisterResourceProvider((provider) => {
+      if (provider.scheme) {
+        this.shouldShowCommentsSchemes.delete(provider.scheme);
+        this.registerDecorationProvider();
+      }
+    }));
     this.registerDecorationProvider();
   }
 
@@ -388,38 +407,39 @@ export class CommentsService extends Disposable implements ICommentsService {
   }
 
   private registerDecorationProvider() {
-    this.addDispose(
-      this.editorDecorationCollectionService.registerDecorationProvider({
-        schemes: [ ...this.shouldShowCommentsSchemes.values() ],
-        key: 'comments',
-        onDidDecorationChange: this.decorationChangeEmitter.event,
-        provideEditorDecoration: (uri: URI) => {
-          return this.commentsThreads.map((thread) => {
-            if (thread.uri.isEqual(uri)) {
-              // 恢复之前的现场
-              thread.showWidgetsIfShowed();
-            } else {
-              // 临时隐藏，当切回来时会恢复
-              thread.hideWidgetsByDispose();
-            }
-            return thread;
-          })
-          .filter((thread) => {
-            const isCurrentThread = thread.uri.isEqual(uri);
-            if (this.filterThreadDecoration) {
-              return isCurrentThread && this.filterThreadDecoration(thread);
-            }
-            return isCurrentThread;
-          })
-          .map((thread) => {
-            return {
-              range: thread.range,
-              options: this.createThreadDecoration(thread) as unknown as monaco.editor.IModelDecorationOptions,
-            };
-          });
-        },
-      }),
-    );
+    // dispose 掉上一个 decorationProvider
+    this.decorationProviderDisposer.dispose();
+    this.decorationProviderDisposer = this.editorDecorationCollectionService.registerDecorationProvider({
+      schemes: [ ...this.shouldShowCommentsSchemes.values() ],
+      key: 'comments',
+      onDidDecorationChange: this.decorationChangeEmitter.event,
+      provideEditorDecoration: (uri: URI) => {
+        return this.commentsThreads.map((thread) => {
+          if (thread.uri.isEqual(uri)) {
+            // 恢复之前的现场
+            thread.showWidgetsIfShowed();
+          } else {
+            // 临时隐藏，当切回来时会恢复
+            thread.hideWidgetsByDispose();
+          }
+          return thread;
+        })
+        .filter((thread) => {
+          const isCurrentThread = thread.uri.isEqual(uri);
+          if (this.filterThreadDecoration) {
+            return isCurrentThread && this.filterThreadDecoration(thread);
+          }
+          return isCurrentThread;
+        })
+        .map((thread) => {
+          return {
+            range: thread.range,
+            options: this.createThreadDecoration(thread) as unknown as monaco.editor.IModelDecorationOptions,
+          };
+        });
+      },
+    });
+    this.addDispose(this.decorationProviderDisposer);
   }
 
   public registerCommentPanel() {

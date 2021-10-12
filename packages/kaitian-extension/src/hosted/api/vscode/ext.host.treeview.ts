@@ -306,14 +306,13 @@ class ExtHostTreeView<T> implements IDisposable {
     }
     const cache = this.getTreeItem(treeItemId);
     if (cache) {
-      if (cache) {
-        const node = this.cacheTreeItems.get(cache);
-        if (node) {
-          const resolve = await this.treeDataProvider.resolveTreeItem(node!, cache, token) ?? node;
-          node.tooltip = resolve.tooltip;
-          node.command = resolve.command;
-          return node as TreeViewItem;
-        }
+      const node = this.cacheTreeItems.get(cache);
+
+      if (node) {
+        const resolve = await this.treeDataProvider.resolveTreeItem(node!, cache, token) ?? node;
+        node.tooltip = resolve.tooltip;
+        node.command = resolve.command;
+        return this.toTreeViewItem(node);
       }
     }
     return;
@@ -352,40 +351,9 @@ class ExtHostTreeView<T> implements IDisposable {
         const id = treeItem.id || `${treeItemId || 'root'}/${index}:${typeof label === 'string' ? label : label?.label}`;
         this.cache.set(id, value);
 
-        const { iconPath } = treeItem;
-        let icon;
-        let iconUrl;
-        let themeIcon;
-
-        if (typeof iconPath === 'string' && iconPath.indexOf('fa-') !== -1) {
-          icon = iconPath;
-        } else if (iconPath instanceof ThemeIcon) {
-          themeIcon = iconPath;
-        } else {
-          const light = this.getLightIconPath(treeItem);
-          const dark = this.getDarkIconPath(treeItem) || light;
-          if (light) {
-            iconUrl = {
-              dark,
-              light,
-            };
-          }
-        }
-
-        const treeViewItem = {
+        const treeViewItem = this.toTreeViewItem(treeItem, {
           id,
-          label,
-          icon,
-          iconUrl,
-          themeIcon,
-          description: treeItem.description,
-          resourceUri: treeItem.resourceUri,
-          tooltip: treeItem.tooltip,
-          collapsibleState: treeItem.collapsibleState,
-          contextValue: treeItem.contextValue,
-          accessibilityInformation: treeItem.accessibilityInformation,
-          command: treeItem.command ? this.commands.converter.toInternal(treeItem.command, this.disposable) : undefined,
-        } as TreeViewItem;
+        });
         treeItems.push(treeViewItem);
       });
 
@@ -394,6 +362,50 @@ class ExtHostTreeView<T> implements IDisposable {
     } else {
       return undefined;
     }
+  }
+
+  /**
+   * 将 treeItem 转换为 TreeViewItem 以便序列化处理
+   * @param treeItem
+   * @param props 额外追加的字段
+   * @returns
+   */
+  private toTreeViewItem(treeItem: vscode.TreeItem, props?: Partial<TreeViewItem>): TreeViewItem {
+    const { id, label, iconPath } = treeItem;
+    let icon;
+    let iconUrl;
+    let themeIcon;
+
+    if (typeof iconPath === 'string' && iconPath.indexOf('fa-') !== -1) {
+      icon = iconPath;
+    } else if (iconPath instanceof ThemeIcon) {
+      themeIcon = iconPath;
+    } else {
+      const light = this.getLightIconPath(treeItem);
+      const dark = this.getDarkIconPath(treeItem) || light;
+      if (light) {
+        iconUrl = {
+          dark,
+          light,
+        };
+      }
+    }
+    const treeViewItem = {
+      id,
+      label,
+      icon,
+      iconUrl,
+      themeIcon,
+      description: treeItem.description,
+      resourceUri: treeItem.resourceUri,
+      tooltip: treeItem.tooltip,
+      collapsibleState: treeItem.collapsibleState,
+      contextValue: treeItem.contextValue,
+      accessibilityInformation: treeItem.accessibilityInformation,
+      command: treeItem.command ? this.commands.converter.toInternal(treeItem.command, this.disposable) : undefined,
+      ...props,
+    } as TreeViewItem;
+    return treeViewItem;
   }
 
   async onExpanded(treeItemId: string): Promise<any> {
