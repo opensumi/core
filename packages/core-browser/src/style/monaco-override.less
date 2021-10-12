@@ -4,6 +4,22 @@
     .find-widget .button {
       outline: none;
     }
+    .rename-box {
+      .preview {
+        padding: 3px 3px 0 3px;
+      }
+
+      .rename-input {
+        padding: 3px;
+        outline: 1px solid;
+        width: calc(100% - 6px);
+        line-height: normal;
+        &:focus {
+          outline-color: var(--inputOption-activeBorder);
+        }
+      }
+    }
+
     .find-widget .monaco-inputbox .input {
       border-width: 1px;
       border-style: solid;
@@ -11,7 +27,7 @@
       color: var(--input-foreground);
       border-color: var(--input-background);
       &:focus {
-        border-color: var(--inputOption-activeBorder);
+        outline-color: var(--inputOption-activeBorder);
       }
       &::placeholder {
         color: var(--input-placeholderForeground);
