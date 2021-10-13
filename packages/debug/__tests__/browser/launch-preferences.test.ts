@@ -497,6 +497,10 @@ describe('Launch Preferences', () => {
             lastModification: new Date().getTime(),
           };
         });
+        injector.mock(IFileServiceClient, 'watchFileChanges', jest.fn(() => ({
+          dispose: () => {},
+          onFilesChanged: jest.fn(),
+        })));
 
         preferences = injector.get(PreferenceService);
 
@@ -518,8 +522,8 @@ describe('Launch Preferences', () => {
       });
 
       afterEach(async (done) => {
-        await fs.remove(rootPath);
         toTearDown.dispose();
+        await fs.remove(rootPath);
         done();
       });
 

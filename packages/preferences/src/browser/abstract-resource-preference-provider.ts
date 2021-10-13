@@ -1,6 +1,6 @@
 import * as jsoncparser from 'jsonc-parser';
 import { Injectable, Autowired } from '@ali/common-di';
-import { JSONUtils, URI, Disposable, isUndefined, PreferenceProviderDataChanges, ILogger, IResolvedPreferences, Throttler } from '@ali/ide-core-browser';
+import { JSONUtils, URI, Disposable, isUndefined, PreferenceProviderDataChanges, ILogger, IResolvedPreferences, Throttler, FileChange } from '@ali/ide-core-browser';
 import {
   PreferenceProvider,
   PreferenceSchemaProvider,
@@ -59,22 +59,21 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
   }
 
   protected async init(): Promise<void> {
-    const uri = this.getUri();
-    this.resource = this.fileSystem.getFileStat(uri.toString());
     // 尝试读取preferences初始内容
     this.readPreferences()
       .then(() => this._ready.resolve())
       .catch(() => this._ready.resolve());
 
-    const resource = await this.resource;
-    if (resource) {
-      const watcher = await this.fileSystem.watchFileChanges(uri);
-      // 配置文件改变时，重新读取配置
-      this.toDispose.push(watcher);
-      watcher.onFilesChanged((e) => {
+    const uri = this.getUri();
+    const watcher = await this.fileSystem.watchFileChanges(uri);
+    // 配置文件改变时，重新读取配置
+    this.toDispose.push(watcher);
+    watcher.onFilesChanged((e: FileChange[]) => {
+      const effected = e.find((file) => file.uri === uri.toString());
+      if (effected) {
         return this.readPreferences();
-      });
-    }
+      }
+    });
     this.toDispose.push(Disposable.create(() => this.reset()));
   }
 
@@ -169,7 +168,7 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
       return false;
     }
     // 这里将每次配置变更的参数构造为一个 IPreferenceTask
-    this.preferenceTasks.push({path, key, value});
+    this.preferenceTasks.push({ path, key, value });
     return await this.preferenceThrottler.queue<boolean>(this.doSetPreferenceTask.bind(this));
   }
 
@@ -184,7 +183,7 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
   protected async readPreferences(content?: string): Promise<void> {
     const newContent = content || await this.readContents();
     this.loaded = !isUndefined(newContent);
-    const newPrefs = newContent ? this.getParsedContent(newContent) : {default: {}, languageSpecific: {}};
+    const newPrefs = newContent ? this.getParsedContent(newContent) : { default: {}, languageSpecific: {} };
     this.handlePreferenceChanges(newPrefs);
   }
 
@@ -255,7 +254,7 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
 
   protected reset(): void {
     const preferences = this.preferences;
-    this.preferences = {default: {}, languageSpecific: {}};
+    this.preferences = { default: {}, languageSpecific: {} };
     const changes: PreferenceProviderDataChanges = this.collectChanges(this.preferences, preferences);
 
     if (Object.keys(changes.default).length > 0 || Object.keys(changes.languageSpecific).length > 0) {
@@ -278,9 +277,9 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     return changes;
   }
 
-  private collectOneChanges(newPref: {[name: string]: any}, oldPref: {[name: string]: any}): {[preferenceName: string]: PreferenceProviderDataChange}  {
+  private collectOneChanges(newPref: { [name: string]: any }, oldPref: { [name: string]: any }): { [preferenceName: string]: PreferenceProviderDataChange } {
     const keys = new Set([...Object.keys(oldPref || {}), ...Object.keys(newPref || {})]);
-    const changes: {[preferenceName: string]: PreferenceProviderDataChange} = {};
+    const changes: { [preferenceName: string]: PreferenceProviderDataChange } = {};
     const uri = this.getUri();
 
     for (const prefName of keys) {
