@@ -186,6 +186,8 @@ export interface IWorkspaceService {
   setMostRecentlyUsedWorkspace(uri: string): Promise<void>;
   // 操作工作区目录
   spliceRoots(start: number, deleteCount?: number,  workspaceToName?: {[key: string]: string}, ...rootsToAdd: URI[]): Promise<URI[]>;
+  // 从工作区中移除目录
+  removeRoots(roots: URI[]): Promise<void>;
   // 获取相对于工作区的路径
   asRelativePath(pathOrUri: string | URI, includeWorkspaceFolder?: boolean): Promise<string | undefined>;
   // 根据给定的uri获取其根节点

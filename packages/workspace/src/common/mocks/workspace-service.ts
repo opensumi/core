@@ -102,11 +102,14 @@ export class MockWorkspaceService implements IWorkspaceService {
   getMostRecentlySearchWord(): Promise<string[] | undefined> {
     throw new Error('Method not implemented.');
   }
-  spliceRoots(start: number, deleteCount?: number | undefined, workspaceName?: {[key: string]: string}, ...rootsToAdd: URI[]): Promise<URI[]> {
+  async removeRoots(uri: URI[]) {
+    return ;
+  }
+  async spliceRoots(start: number, deleteCount?: number | undefined, workspaceName?: {[key: string]: string}, ...rootsToAdd: URI[]): Promise<URI[]> {
     this._roots = rootsToAdd.map((root) => ({ isDirectory: true, uri: root.toString(), lastModification: 0 }));
     this.deferredRoots = new Deferred();
     this.deferredRoots.resolve(this._roots);
-    return Promise.resolve(rootsToAdd);
+    return rootsToAdd;
   }
   asRelativePath(pathOrUri: string | URI, includeWorkspaceFolder?: boolean | undefined): Promise<string | undefined> {
     throw new Error('Method not implemented.');

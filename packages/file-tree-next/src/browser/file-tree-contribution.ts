@@ -1,4 +1,4 @@
-import { IApplicationService, URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, IElectronNativeDialogService, ToolbarRegistry, KeybindingRegistry, IWindowService, IClipboardService, PreferenceService, formatLocalize, OS, isElectronRenderer } from '@ali/ide-core-browser';
+import { IApplicationService, URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, IElectronNativeDialogService, ToolbarRegistry, KeybindingRegistry, IWindowService, IClipboardService, PreferenceService, formatLocalize, OS, isElectronRenderer, WORKSPACE_COMMANDS } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileTreeService } from './file-tree.service';
@@ -736,6 +736,24 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
     commands.registerCommand(FILE_COMMANDS.EXPAND, {
       execute: () => {
         this.fileTreeModelService.expandCurrentFile();
+      },
+    });
+
+    commands.registerCommand(WORKSPACE_COMMANDS.REMOVE_WORKSPACE_FOLDER, {
+      execute: async (_: URI, uris: URI[]) => {
+        if (!uris.length || !this.workspaceService.isMultiRootWorkspaceOpened) {
+          return ;
+        }
+        const roots = await this.workspaceService.roots;
+        const workspaceUris = uris.filter((uri) => {
+          return roots.find((file) => file.uri === uri.toString());
+        });
+        if (workspaceUris.length > 0) {
+          await this.workspaceService.removeRoots(workspaceUris);
+        }
+      },
+      isVisible: () => {
+        return this.workspaceService.isMultiRootWorkspaceOpened && !!this.fileTreeModelService.contextMenuFile && !!this.workspaceService.tryGetRoots().find((wp) => wp.uri === this.fileTreeModelService.contextMenuFile?.uri.toString());
       },
     });
   }
