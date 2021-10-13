@@ -314,7 +314,7 @@ export class ViewModelContext extends Disposable {
 
   @action
   private addRepo(repo: ISCMRepository) {
-    if (this.repoList.indexOf(repo) > -1) {
+    if (this.repoList.find((exist: ISCMRepository) => exist.provider.rootUri === repo.provider.rootUri)) {
       this.logger.warn('duplicate scm repo', repo);
       return;
     }
