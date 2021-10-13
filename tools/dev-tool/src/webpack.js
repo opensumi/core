@@ -168,7 +168,6 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
       new webpack.DefinePlugin({
         'process.env.IS_DEV': JSON.stringify(process.env.NODE_ENV === 'development' ? 1 : 0),
         'process.env.WORKSPACE_DIR': JSON.stringify(process.env.MY_WORKSPACE || path.join(__dirname, '../../workspace')),
-        'process.env.CORE_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../core-extensions/')),
         'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../extensions')),
         'process.env.KTLOG_SHOW_DEBUG': JSON.stringify('1'),
         'process.env.OTHER_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../../other')),
