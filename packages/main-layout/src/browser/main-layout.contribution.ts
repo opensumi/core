@@ -7,7 +7,7 @@ import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, To
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { RightTabRenderer, LeftTabRenderer, NextBottomTabRenderer } from './tabbar/renderer.view';
 import { getIcon } from '@ali/ide-core-browser';
-import { IMenuRegistry, MenuContribution as MenuContribution, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, MenuCommandDesc, MenuContribution as MenuContribution, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 // NOTE 左右侧面板的展开、折叠命令请使用组合命令 activity-bar.left.toggle，layout命令仅做折叠展开，不处理tab激活逻辑
 export const HIDE_LEFT_PANEL_COMMAND: Command = {
@@ -18,7 +18,7 @@ export const SHOW_LEFT_PANEL_COMMAND: Command = {
   id: 'main-layout.left-panel.show',
   label: '%main-layout.left-panel.show%',
 };
-export const TOGGLE_LEFT_PANEL_COMMAND: Command = {
+export const TOGGLE_LEFT_PANEL_COMMAND: MenuCommandDesc = {
   id: 'main-layout.left-panel.toggle',
   label: '%main-layout.left-panel.toggle%',
 };
@@ -30,7 +30,7 @@ export const SHOW_RIGHT_PANEL_COMMAND: Command = {
   id: 'main-layout.right-panel.show',
   label: '%main-layout.right-panel.show%',
 };
-export const TOGGLE_RIGHT_PANEL_COMMAND: Command = {
+export const TOGGLE_RIGHT_PANEL_COMMAND: MenuCommandDesc = {
   id: 'main-layout.right-panel.toggle',
   label: '%main-layout.right-panel.toggle%',
 };
@@ -278,38 +278,12 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
     });
 
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
-      command: {
-        id: 'view.outward.right-panel.hide',
-        label: localize('menu-bar.view.outward.right-panel.hide'),
-      },
-      when: 'rightPanelVisible',
+      command: TOGGLE_LEFT_PANEL_COMMAND,
       group: '5_panel',
     });
 
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
-      command: {
-        id: 'view.outward.right-panel.show',
-        label: localize('menu-bar.view.outward.right-panel.show'),
-      },
-      when: '!rightPanelVisible',
-      group: '5_panel',
-    });
-
-    menus.registerMenuItem(MenuId.MenubarViewMenu, {
-      command: {
-        id: 'view.outward.left-panel.hide',
-        label: localize('menu-bar.view.outward.left-panel.hide'),
-      },
-      when: 'leftPanelVisible',
-      group: '5_panel',
-    });
-
-    menus.registerMenuItem(MenuId.MenubarViewMenu, {
-      command: {
-        id: 'view.outward.left-panel.show',
-        label: localize('menu-bar.view.outward.left-panel.show'),
-      },
-      when: '!leftPanelVisible',
+      command: TOGGLE_RIGHT_PANEL_COMMAND,
       group: '5_panel',
     });
   }

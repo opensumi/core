@@ -74,7 +74,7 @@ export const localizationBundle = {
     'menu-bar.file.save-as': 'Save As',
     'menu-bar.file.save-all': 'Save All',
     'menu-bar.file.open': 'Open File',
-    'menu-bar.view.quick.command': 'Command',
+    'menu-bar.view.quick.command': 'Command Palette...',
     'menu-bar.view.outward': 'Outward',
     'menu-bar.view.outward.right-panel.toggle': 'Toggle Right Panel',
     'menu-bar.view.outward.right-panel.hide': 'Hide Right Panel',
