@@ -1,10 +1,10 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
+import type { IPosition, IRange } from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 
 /**
  * position 转换 range
  * @param position
  */
-export function positionToRange(position: monaco.IPosition | number): monaco.IRange {
+export function positionToRange(position: IPosition | number): IRange {
   if (typeof position === 'number') {
     return {
       startLineNumber: position,
