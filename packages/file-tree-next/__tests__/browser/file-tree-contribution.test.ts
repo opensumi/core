@@ -28,6 +28,7 @@ describe('FileTreeContribution', () => {
       const handler = {
         updateViewTitle: jest.fn(),
         onActivate: jest.fn(),
+        onInActivate: jest.fn(),
       };
       tabbarHandlerMap.set(name, handler);
       return handler;
@@ -153,6 +154,7 @@ describe('FileTreeContribution', () => {
       contribution.onDidRender();
       const handler = tabbarHandlerMap.get(ExplorerContainerId);
       expect(handler.onActivate).toBeCalledTimes(1);
+      expect(handler.onInActivate).toBeCalledTimes(1);
     });
 
     it('should getWorkspaceTitle be work', async () => {

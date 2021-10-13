@@ -342,8 +342,6 @@ export class FileTreeModelService {
    * @param file 焦点节点
    */
   private setFileTreeContextKey(file: Directory | File) {
-    const isSingleFolder = !this.fileTreeService.isMultipleWorkspace;
-    this.contextKey?.explorerFolder.set((isSingleFolder && !file) || !!file && Directory.is(file));
     this.currentContextUriContextKey.set(file.uri.toString());
     this.currentRelativeUriContextKey.set(((this.treeModel.root as Directory).uri.relative(file.uri) || '').toString());
     this.contextMenuResourceContext.set(file.uri);
@@ -565,14 +563,21 @@ export class FileTreeModelService {
 
     if (this.fileTreeService.isCompactMode && activeUri) {
       this._activeUri = activeUri;
+      // 存在 activeUri 的情况默认 explorerResourceIsFolder 的值都为 true
+      this.contextKey?.explorerResourceIsFolder.set(true);
     } else if (!activeUri) {
       this._activeUri = null;
+      if (file) {
+        this.contextKey?.explorerResourceIsFolder.set(file.type === TreeNodeType.CompositeTreeNode);
+      }
     }
 
     if (file) {
       this.activeFileActivedDecoration(file);
     } else {
       this.enactiveFileDecoration();
+      // 失去焦点默认 explorerResourceIsFolder 的值都为 false
+      this.contextKey?.explorerResourceIsFolder.set(false);
     }
     let nodes: (File | Directory)[];
     let node: File | Directory;
@@ -663,6 +668,8 @@ export class FileTreeModelService {
     }
     // 清空焦点状态
     this.enactiveFileDecoration();
+    // 失去焦点默认 explorerResourceIsFolder 的值都为 false
+    this.contextKey?.explorerResourceIsFolder.set(false);
   }
 
   handleTreeFocus = () => {
@@ -702,19 +709,26 @@ export class FileTreeModelService {
     this._isMutiSelected = false;
     if (this.fileTreeService.isCompactMode && activeUri) {
       this._activeUri = activeUri;
+      // 存在 activeUri 的情况默认 explorerResourceIsFolder 的值都为 true
+      this.contextKey?.explorerResourceIsFolder.set(true);
     } else if (!activeUri) {
       this._activeUri = null;
+      // 单选操作默认先更新选中状态
+      if (type === TreeNodeType.CompositeTreeNode || type === TreeNodeType.TreeNode) {
+        this.activeFileDecoration(item);
+      }
+      // 更新 explorerResourceIsFolder 的值
+      this.contextKey?.explorerResourceIsFolder.set(type === TreeNodeType.CompositeTreeNode);
     }
-    // 单选操作默认先更新选中状态
-    if (type === TreeNodeType.CompositeTreeNode || type === TreeNodeType.TreeNode && !activeUri) {
-      this.activeFileDecoration(item);
-    }
+
     // 如果为文件夹需展开
     // 如果为文件，则需要打开文件
     if (this.corePreferences['workbench.list.openMode'] === 'singleClick') {
       if (type === TreeNodeType.CompositeTreeNode) {
+        this.contextKey?.explorerResourceIsFolder.set(true);
         this.toggleDirectory(item as Directory);
       } else if (type === TreeNodeType.TreeNode) {
+        this.contextKey?.explorerResourceIsFolder.set(false);
         // 对于文件的单击事件，走 openFile 去执行 editor.previewMode 配置项
         this.fileTreeService.openFile(item.uri);
       }

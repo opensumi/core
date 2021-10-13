@@ -1,6 +1,6 @@
 import { Optional, Injectable, Autowired } from '@ali/common-di';
 import { IContextKeyService, IContextKey } from '@ali/ide-core-browser';
-import { ExplorerFolderContext, ExplorerFocusedContext, ExplorerResourceCut, FilesExplorerFocusedContext, FilesExplorerInputFocusedContext, FilesExplorerFilteredContext, ExplorerCompressedLastFocusContext, ExplorerCompressedFocusContext, ExplorerCompressedFirstFocusContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
+import { ExplorerResourceIsFolderContext, ExplorerViewletVisibleContext, ExplorerFocusedContext, ExplorerResourceCut, FilesExplorerFocusedContext, FilesExplorerInputFocusedContext, FilesExplorerFilteredContext, ExplorerCompressedLastFocusContext, ExplorerCompressedFocusContext, ExplorerCompressedFirstFocusContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 
 @Injectable()
 export class FileContextKey {
@@ -8,7 +8,8 @@ export class FileContextKey {
   @Autowired(IContextKeyService)
   private readonly globalContextKeyService: IContextKeyService;
 
-  public readonly explorerFolder: IContextKey<boolean>;
+  public readonly explorerResourceIsFolder: IContextKey<boolean>;
+  public readonly explorerViewletVisibleContext: IContextKey<boolean>;
   public readonly explorerFocused: IContextKey<boolean>;
   public readonly explorerResourceCut: IContextKey<boolean>;
   public readonly filesExplorerFocused: IContextKey<boolean>;
@@ -22,7 +23,8 @@ export class FileContextKey {
 
   constructor(@Optional() dom: HTMLDivElement) {
     this._contextKeyService = this.globalContextKeyService.createScoped(dom);
-    this.explorerFolder = ExplorerFolderContext.bind(this._contextKeyService);
+    this.explorerResourceIsFolder = ExplorerResourceIsFolderContext.bind(this._contextKeyService);
+    this.explorerViewletVisibleContext = ExplorerViewletVisibleContext.bind(this._contextKeyService);
     this.explorerFocused = ExplorerFocusedContext.bind(this._contextKeyService);
     this.explorerResourceCut = ExplorerResourceCut.bind(this._contextKeyService);
 
