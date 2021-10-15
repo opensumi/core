@@ -22,8 +22,7 @@
   },
   "dependencies": {
     "@ali/ide-core-browser": "2.10.3",
-    "@ali/ide-core-common": "2.10.3",
-    "@ali/ide-file-service": "2.10.3"
+    "@ali/ide-core-common": "2.10.3"
   },
   "devDependencies": {
     "@ali/ide-dev-tool": "^1.1.0",

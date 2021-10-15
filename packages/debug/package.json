@@ -25,13 +25,11 @@
     "@ali/ide-connection": "2.10.3",
     "@ali/ide-core-common": "2.10.3",
     "@ali/ide-core-node": "2.10.3",
-    "@ali/ide-process": "2.10.3",
     "@ali/ide-task": "2.10.3",
     "@ali/ide-theme": "2.10.3",
     "btoa": "^1.2.1"
   },
   "devDependencies": {
-    "@ali/ide-kaitian-extension": "2.10.3",
     "@ali/ide-core-browser": "2.10.3",
     "@ali/ide-dev-tool": "^1.1.0",
     "@ali/ide-workspace-edit": "2.10.3",

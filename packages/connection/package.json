@@ -24,7 +24,6 @@
     "@ali/ide-components": "2.10.3",
     "@ali/ide-core-common": "2.10.3",
     "@ali/vscode-jsonrpc": "^6.1.1-beta.1",
-    "lzutf8": "^0.5.5",
     "path-match": "^1.2.4",
     "shortid": "^2.2.14",
     "ws": "^7.2.0"

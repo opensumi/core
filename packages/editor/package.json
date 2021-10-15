@@ -29,9 +29,7 @@
     "@ali/ide-overlay": "2.10.3",
     "@ali/ide-file-service": "2.10.3",
     "@ali/ide-components": "2.10.3",
-    "@ali/ide-main-layout": "2.10.3",
     "@ali/ide-quick-open": "2.10.3",
-    "lodash.flattendeep": "^4.4.0",
     "md5": "^2.2.1"
   },
   "devDependencies": {
