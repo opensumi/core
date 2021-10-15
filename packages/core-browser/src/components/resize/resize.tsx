@@ -12,6 +12,7 @@ export const RESIZE_LOCK = 'resize-lock';
 export enum ResizeFlexMode {
   Prev = 'prev',
   Next = 'next',
+  Percentage = 'Percentage',
 }
 
 export interface ResizeHandleProps {
@@ -601,8 +602,11 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
           return;
         }
       }
-      if (props.flexMode) {
+      if (props.flexMode === ResizeFlexMode.Prev || props.flexMode === ResizeFlexMode.Next) {
         flexModeSetSize(prevHeight, nextHeight);
+      } else if (props.flexMode === ResizeFlexMode.Percentage) {
+        const parentHeight = ref.current!.parentElement!.offsetHeight;
+        setSize( (prevHeight / parentHeight), (nextHeight / parentHeight));
       } else {
         setDomSize(prevHeight, nextHeight, cachedPrevElement.current!, cachedNextElement.current!);
       }

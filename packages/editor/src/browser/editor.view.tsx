@@ -1,5 +1,5 @@
 import { AppConfig, ComponentRegistry, ConfigContext, ConfigProvider, ErrorBoundary, IEventBus, MaybeNull, PreferenceService, URI, useDisposable, View } from '@ali/ide-core-browser';
-import { IResizeHandleDelegate, ResizeHandleHorizontal, ResizeHandleVertical } from '@ali/ide-core-browser/lib/components';
+import { IResizeHandleDelegate, ResizeFlexMode, ResizeHandleHorizontal, ResizeHandleVertical } from '@ali/ide-core-browser/lib/components';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import classnames from 'classnames';
 import * as React from 'react';
@@ -124,7 +124,7 @@ export const EditorGridView = ({ grid }: { grid: EditorGrid }) => {
           }
         } delegate={(delegate) => {
           resizeDelegates.push(delegate);
-        }} />);
+        }} flexMode={ResizeFlexMode.Percentage}/>);
       } else {
         children.push(<ResizeHandleHorizontal key={'resize-' + grid.children[index - 1].uid + '-' + g.uid} onResize={
           () => {
