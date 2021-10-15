@@ -185,7 +185,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
       if (res.status === 200) {
         return res.data;
       } else {
-        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
+        throw new Error(`请求错误, 状态码:  ${res.status}, 错误信息: ${res.data.message}`);
       }
     } catch (err) {
       this.logger.error(err);
@@ -204,7 +204,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
       if (res.status === 200) {
         return res.data;
       } else {
-        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
+        throw new Error(`请求插件 ${extensionId}${version ? `@${version}` : ''} 错误, 状态码  ${res.status}, 错误信息: ${res.data.message}`);
       }
     } catch (err) {
       this.logger.error(err);
@@ -218,7 +218,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
       if (res.status === 200) {
         return res.data;
       } else {
-        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
+        throw new Error(`请求插件 ${extensionId}${version ? `@${version}` : ''} 错误, 状态码:  ${res.status}, 错误信息: ${res.data.message}`);
       }
     } catch (err) {
       this.logger.error(err);
@@ -237,7 +237,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
       if (res.status === 200) {
         return res.data;
       } else {
-        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
+        throw new Error(`请求插件 ${extensionId}${version ? `@${version}` : ''} 错误, 状态码:  ${res.status}, 错误信息: ${res.data.message}`);
       }
     } catch (err) {
       this.logger.error(err);
@@ -255,7 +255,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
       if (res.status === 200) {
         return res.data;
       } else {
-        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
+        throw new Error(`请求错误, 状态码:  ${res.status}, 错误信息: ${res.data.message}`);
       }
     } catch (err) {
       this.logger.error(err);
@@ -319,7 +319,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
       if (res.status === 200) {
         return res.data.data;
       } else {
-        this.logger.error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
+        this.logger.error(`请求错误, 状态码:  ${res.status}, 错误信息: ${res.data.message}`);
         return [];
       }
     } catch (err) {
@@ -334,7 +334,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
       if (res.status === 200) {
         return res.data.data;
       } else {
-        this.logger.error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
+        this.logger.error(`请求插件 ${extensionId}错误, 状态码:  ${res.status}, 错误信息: ${res.data.message}`);
         return [];
       }
     } catch (err) {
