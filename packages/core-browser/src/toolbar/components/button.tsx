@@ -10,6 +10,11 @@ import { Button } from '@ali/ide-components';
 import { PreferenceService } from '../../preferences';
 import { DomListener } from '../../dom';
 
+enum BUTTON_TITLE_STYLE {
+  HORIZONTAL = 'horizontal',
+  VERTICAL = 'vertical',
+}
+
 export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionElementProps) => {
   const context = useInjectable<AppConfig>(AppConfig);
   const ref = React.useRef<HTMLDivElement>();
@@ -120,18 +125,22 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
       {titleContent}
     </div>;
   } else {
-    if (styles.btnStyle === 'button' && styles.btnTitleStyle !== 'vertical') {
+    const btnTitleStyle = styles.btnTitleStyle || preferenceService.get('toolbar.buttonTitleStyle');
+    if (styles.btnStyle === 'button' && btnTitleStyle !== BUTTON_TITLE_STYLE.VERTICAL) {
       buttonElement = <Button type='default' size='small'  {...bindings} {...backgroundBindings} >
           {iconContent}
           {titleContent}
         </Button>;
     } else {
       // BtnStyle == inline 或 btnTitleStyle === 'vertical' (类似小程序IDE工具栏） 的模式
+      if (btnTitleStyle === BUTTON_TITLE_STYLE.VERTICAL) {
+        backgroundBindings.style['min-width'] = '42px';
+      }
       buttonElement =  <div className={ classnames({'kt-toolbar-action-btn': true,
       'kt-toolbar-action-btn-button': styles.btnStyle === 'button',
       'kt-toolbar-action-btn-inline': styles.btnStyle !== 'button',
-      'kt-toolbar-action-btn-vertical': styles.btnTitleStyle === 'vertical',
-      'kt-toolbar-action-btn-horizontal': styles.btnTitleStyle !== 'vertical'})}
+      'kt-toolbar-action-btn-vertical': btnTitleStyle === BUTTON_TITLE_STYLE.VERTICAL,
+      'kt-toolbar-action-btn-horizontal': btnTitleStyle !== BUTTON_TITLE_STYLE.VERTICAL})}
        {...bindings}>
          <Button type='default' size='small' {...backgroundBindings}>
           {iconContent}

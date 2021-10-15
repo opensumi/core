@@ -307,6 +307,14 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: 'iconAndText',
       description: '%preference.toolbar.buttonDisplay%',
     },
+    'toolbar.buttonTitleStyle': {
+      type: 'string',
+      enum: [
+        'vertical',
+        'horizontal',
+      ],
+      default: 'horizontal',
+    },
     'view.saveLayoutWithWorkspace': {
       type: 'boolean',
       default: false,
