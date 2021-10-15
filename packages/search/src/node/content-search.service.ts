@@ -50,8 +50,12 @@ function byteRangeLengthToCharacterLength(text: string, charStart: number, byteL
   return char - charStart;
 }
 
+interface IRPCContentSearchService {
+  onSearchResult(sendClientResult: SendClientResult): void;
+}
+
 @Injectable()
-export class ContentSearchService extends RPCService implements IContentSearchServer {
+export class ContentSearchService extends RPCService<IRPCContentSearchService> implements IContentSearchServer {
 
   @Autowired(IProcessFactory)
   protected processFactory: IProcessFactory;
@@ -231,12 +235,10 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
     searchState?: SEARCH_STATE,
     error?: string,
   ) {
-    if (this.rpcClient) {
-      this.rpcClient.forEach((client) => {
-        client.onSearchResult({
-          data, id, searchState, error,
-        } as SendClientResult);
-      });
+    if (this.client) {
+      this.client.onSearchResult({
+        data, id, searchState, error,
+      } as SendClientResult);
     }
   }
 

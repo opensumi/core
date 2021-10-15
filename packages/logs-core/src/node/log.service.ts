@@ -275,8 +275,12 @@ export class LogService extends BaseLogService implements ILogService {
   }
 }
 
+interface IRPCLogService {
+  onDidLogLevelChanged(level: LogLevel): void;
+}
+
 @Injectable()
-export class LogServiceForClient extends RPCService implements ILogServiceForClient {
+export class LogServiceForClient extends RPCService<IRPCLogService> implements ILogServiceForClient {
 
   @Autowired(ILogServiceManager)
   loggerManager: ILogServiceManager;
@@ -284,10 +288,8 @@ export class LogServiceForClient extends RPCService implements ILogServiceForCli
   constructor() {
     super();
     this.loggerManager.onDidChangeLogLevel((level) => {
-      if (this.rpcClient) {
-        this.rpcClient.forEach((client) => {
-          client.onDidLogLevelChanged(level);
-        });
+      if (this.client) {
+        this.client.onDidLogLevelChanged(level);
       }
     });
   }

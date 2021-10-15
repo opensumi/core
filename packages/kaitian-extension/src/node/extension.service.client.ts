@@ -11,8 +11,14 @@ import { IFileService } from '@ali/ide-file-service';
 
 export const DEFAULT_NLS_CONFIG_DIR = path.join(os.homedir(), '.kaitian');
 
+interface IRPCExtensionService {
+  $processNotExist(id: string): void;
+  $processCrashRestart(id: string): void;
+  $restartExtProcess(): void;
+}
+
 @Injectable()
-export class ExtensionServiceClientImpl extends RPCService implements IExtensionNodeClientService {
+export class ExtensionServiceClientImpl extends RPCService<IRPCExtensionService> implements IExtensionNodeClientService {
 
   @Autowired(IExtensionNodeService)
   private extensionService: IExtensionNodeService;
@@ -31,20 +37,20 @@ export class ExtensionServiceClientImpl extends RPCService implements IExtension
   }
 
   public infoProcessNotExist() {
-    if (this.rpcClient) {
-      this.rpcClient[0].$processNotExist(this.clientId);
+    if (this.client) {
+      this.client.$processNotExist(this.clientId);
     }
   }
 
   public restartExtProcessByClient() {
-    if (this.rpcClient) {
-      this.rpcClient[0].$restartExtProcess();
+    if (this.client) {
+      this.client.$restartExtProcess();
     }
   }
 
   public infoProcessCrash() {
-    if (this.rpcClient) {
-      this.rpcClient[0].$processCrashRestart(this.clientId);
+    if (this.client) {
+      this.client.$processCrashRestart(this.clientId);
     }
   }
 

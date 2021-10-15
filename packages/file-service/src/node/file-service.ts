@@ -54,9 +54,8 @@ export abstract class FileSystemNodeOptions {
 
 }
 
-// TODO: browser和node层都有，考虑放到common里
 @Injectable()
-export class FileService extends RPCService implements IFileService {
+export class FileService implements IFileService {
   protected watcherId: number = 0;
   protected readonly watcherDisposerMap = new Map<number, IDisposable>();
   protected readonly watcherWithSchemaMap = new Map<string, number[]>();
@@ -77,7 +76,6 @@ export class FileService extends RPCService implements IFileService {
   constructor(
     @Inject('FileServiceOptions') protected readonly options: FileSystemNodeOptions,
   ) {
-    super();
     this.initProvider();
   }
 

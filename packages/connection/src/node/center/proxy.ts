@@ -1,9 +1,12 @@
 import { MessageConnection } from '@ali/vscode-jsonrpc/lib/common/connection';
 
-export abstract class RPCService {
-  rpcClient?: any[];
+export abstract class RPCService<T = any> {
+  rpcClient?: T[];
   rpcRegistered?: boolean;
-  register?(): () => Promise<any>;
+  register?(): () => Promise<T>;
+  get client() {
+    return this.rpcClient ? this.rpcClient[0] : undefined;
+  }
 }
 
 export const NOTREGISTERMETHOD = '$$NOTREGISTERMETHOD';

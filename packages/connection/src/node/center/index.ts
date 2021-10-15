@@ -62,7 +62,7 @@ export class RPCServiceCenter {
   public rpcProxy: RPCProxy[] = [];
   public serviceProxy: ServiceProxy[] = [];
   private connection: Array<MessageConnection> = [];
-  private serviceMethodMap = {};
+  private serviceMethodMap = { client: undefined };
 
   private createService: string[] = [];
   private getService: string[] = [];

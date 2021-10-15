@@ -1,7 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { ProfilingSession, Profile } from 'v8-inspect-profiler';
 
-import { RPCService } from '@ali/ide-connection/lib/common/proxy';
 import { IExtensionHostProfilerService, IExtensionNodeService } from '../common';
 import { writeFile } from 'fs-extra';
 import { INodeLogger } from '@ali/ide-core-node/lib/logger/node-logger';
@@ -14,7 +13,7 @@ export enum ProfileSessionState {
 }
 
 @Injectable()
-export class ExtensionProfilerService extends RPCService implements IExtensionHostProfilerService {
+export class ExtensionProfilerService implements IExtensionHostProfilerService {
 
   @Autowired(IExtensionNodeService)
   private extensionService: IExtensionNodeService;

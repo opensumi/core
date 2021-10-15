@@ -4,7 +4,7 @@ import { isElectronEnv, Emitter, ILogger, Event, isWindows } from '@ali/ide-core
 import { OS } from '@ali/ide-core-common/lib/platform';
 import { Emitter as Dispatcher } from 'event-kit';
 import { electronEnv } from '@ali/ide-core-browser';
-import { WSChannelHandler as IWSChanneHandler, RPCService } from '@ali/ide-connection';
+import { WSChannelHandler as IWSChanneHandler } from '@ali/ide-connection';
 import { generate, ITerminalService, ITerminalInternalService, ITerminalError, ITerminalServiceClient, ITerminalServicePath, ITerminalConnection, IPtyExitEvent, TerminalOptions, ITerminalController } from '../common';
 import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 import { WindowsShellType } from '../common/shell';
@@ -105,7 +105,7 @@ export class TerminalInternalService implements ITerminalInternalService {
 }
 
 @Injectable()
-export class NodePtyTerminalService extends RPCService implements ITerminalService {
+export class NodePtyTerminalService implements ITerminalService {
 
   static countId = 1;
 

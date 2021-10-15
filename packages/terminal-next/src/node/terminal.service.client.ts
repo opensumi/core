@@ -6,12 +6,17 @@ import { INodeLogger } from '@ali/ide-core-node';
 import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
 import { findShellExecutable, WINDOWS_GIT_BASH_PATHS } from './shell';
 
+interface IRPCTerminalService {
+  closeClient(id: string, code?: number, signal?: number): void;
+  onMessage(id: string, msg: string): void;
+}
+
 /**
  * 标准的后端服务，供前端调用
  * 目前每个窗口会对应一个 TerminalServiceClientImpl 实例
  */
 @Injectable()
-export class TerminalServiceClientImpl extends RPCService implements ITerminalServiceClient {
+export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> implements ITerminalServiceClient {
   private terminalMap: Map<string, IPty> = new Map();
 
   @Autowired(ITerminalNodeService)
@@ -29,16 +34,16 @@ export class TerminalServiceClientImpl extends RPCService implements ITerminalSe
   }
 
   clientMessage(id: string, data: string) {
-    if (this.rpcClient) {
-      this.rpcClient[0].onMessage(id, data);
+    if (this.client) {
+      this.client.onMessage(id, data);
     } else {
       this.logger.warn(`clientMessage ${id} rpcClient not found`);
     }
   }
 
   closeClient(id: string, code?: number, signal?: number) {
-    if (this.rpcClient) {
-      this.rpcClient[0].closeClient(id, code, signal);
+    if (this.client) {
+      this.client.closeClient(id, code, signal);
     } else {
       this.logger.warn(`clientMessage ${id} rpcClient not found`);
     }

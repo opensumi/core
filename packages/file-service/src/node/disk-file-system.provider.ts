@@ -41,8 +41,12 @@ import { isLinux } from '@ali/ide-core-common/lib/platform';
 const UNIX_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/**/*';
 const WINDOWS_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';
 
+export interface IRPCDiskFileSystemProvider {
+  onDidFilesChanged(event: DidFilesChangedParams): void;
+}
+
 @Injectable({ multiple: true })
-export class DiskFileSystemProvider extends RPCService implements IDiskFileProvider {
+export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvider> implements IDiskFileProvider {
   private fileChangeEmitter = new Emitter<FileChangeEvent>();
   private watcherServer: NsfwFileSystemWatcherServer;
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
@@ -267,15 +271,7 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
     targetUri: UriComponents,
     options: { overwrite: boolean },
   ): Promise<FileStat> {
-    // const _sourceUri = new URI(sourceUri);
-    // const _targetUri = new URI(targetUri);
-    // if (this.client) {
-    //   this.client.onWillMove(sourceUri, targetUri);
-    // }
     const result = await this.doMove(sourceUri, targetUri, options);
-    // if (this.client) {
-    //   this.client.onDidMove(sourceUri, targetUri);
-    // }
     return result;
   }
 
@@ -344,12 +340,9 @@ export class DiskFileSystemProvider extends RPCService implements IDiskFileProvi
           return !this.watchFileExcludesMatcherList.some((match) => match(pathStr));
         });
         this.fileChangeEmitter.fire(filteredChange);
-        if (this.rpcClient) {
-          // 一个后端实例不是应该只对应一个client吗
-          this.rpcClient.forEach((client) => {
-            client.onDidFilesChanged({
-              changes: filteredChange,
-            });
+        if (this.client) {
+          this.client.onDidFilesChanged({
+            changes: filteredChange,
           });
         }
       },
