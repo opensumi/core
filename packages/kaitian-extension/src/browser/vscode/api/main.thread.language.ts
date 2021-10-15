@@ -11,7 +11,7 @@ import { ICallHierarchyService } from '@ali/ide-monaco/lib/browser/contrib/callH
 import { IEvaluatableExpressionService } from '@ali/ide-debug/lib/browser/editor/evaluatable-expression';
 import { applyPatch } from 'diff';
 import { DocumentFilter } from 'vscode-languageserver-protocol';
-import { ExtHostAPIIdentifier, ICodeActionDto, ICodeActionProviderMetadataDto, IExtHostLanguages, IMainThreadLanguages, ISuggestDataDto, ISuggestDataDtoField, ISuggestResultDtoField, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
+import { ExtHostAPIIdentifier, ICodeActionDto, ICodeActionProviderMetadataDto, IExtHostLanguages, IMainThreadLanguages, ISuggestDataDto, ISuggestDataDtoField, ISuggestResultDtoField, MonacoModelIdentifier, RangeSuggestDataDto, testGlob } from '../../../common/vscode';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
 import { IExtensionDescription } from '../../../common/vscode/extension';
 import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SemanticTokensLegend, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ICallHierarchyItemDto, CallHierarchyItem, IWorkspaceEditDto, ResourceTextEditDto, ResourceFileEditDto, ILinkDto } from '../../../common/vscode/model.api';
@@ -185,7 +185,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       preselect: data[ISuggestDataDtoField.preselect],
       insertText: data[ISuggestDataDtoField.insertText] ?? (typeof label === 'string' ? label : label.label),
       // @ts-ignore
-      range: data[ISuggestDataDtoField.range] ?? defaultRange,
+      range: RangeSuggestDataDto.from(data[ISuggestDataDtoField.range]) ?? defaultRange,
       // @ts-ignore
       insertTextRules: data[ISuggestDataDtoField.insertTextRules],
       commitCharacters: data[ISuggestDataDtoField.commitCharacters],

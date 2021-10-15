@@ -69,6 +69,7 @@ import { InlineValueContext, InlineValue } from '@ali/ide-debug/lib/common/inlin
 import { ISingleEditOperation } from '@ali/ide-editor';
 import { IExtensionDescription } from './extension';
 import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+import { Range as MonacoRange } from '@ali/monaco-editor-core/esm/vs/editor/common/core/range';
 import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 
 export interface IMainThreadLanguages {
@@ -571,6 +572,21 @@ export enum ISuggestDataDtoField {
   label2 = 'o',
 }
 
+export namespace RangeSuggestDataDto {
+  export type ISuggestRangeDto = [number, number, number, number];
+  export function to(range: Range) {
+    return [range.startLineNumber, range.startColumn, range.endLineNumber, range.endColumn] as ISuggestRangeDto;
+  }
+  export function from(range: ISuggestRangeDto | { insert: IRange; replace: IRange }) {
+    return (Array.isArray(range) && range.length === 4) ? MonacoRange.lift({
+      startLineNumber: range[0],
+      startColumn: range[1],
+      endLineNumber: range[2],
+      endColumn: range[3],
+    }) : range;
+  }
+}
+
 export interface ISuggestResultDto {
   [ISuggestResultDtoField.defaultRanges]: { insert: IRange, replace: IRange; };
   [ISuggestResultDtoField.completions]: ISuggestDataDto[];
@@ -591,7 +607,7 @@ export interface ISuggestDataDto {
   [ISuggestDataDtoField.preselect]?: true;
   [ISuggestDataDtoField.insertText]?: string;
   [ISuggestDataDtoField.insertTextRules]?: CompletionItemInsertTextRule;
-  [ISuggestDataDtoField.range]?: IRange | { insert: IRange; replace: IRange };
+  [ISuggestDataDtoField.range]?: RangeSuggestDataDto.ISuggestRangeDto | { insert: IRange; replace: IRange };
   [ISuggestDataDtoField.commitCharacters]?: string[];
   [ISuggestDataDtoField.additionalTextEdits]?: ISingleEditOperation[];
   [ISuggestDataDtoField.command]?: Command;

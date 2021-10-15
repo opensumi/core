@@ -1,5 +1,5 @@
 import { Uri as URI, Cache } from '@ali/ide-core-common';
-import { ExtensionDocumentDataManager, ISuggestDataDto, ISuggestDataDtoField, ISuggestResultDto, ISuggestResultDtoField } from '../../../../common/vscode';
+import { ExtensionDocumentDataManager, ISuggestDataDto, ISuggestDataDtoField, ISuggestResultDto, ISuggestResultDtoField, RangeSuggestDataDto } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
 import type * as vscode from 'vscode';
 import {
@@ -130,24 +130,8 @@ export class CompletionAdapter {
       throw Error('DisposableStore is missing...');
     }
 
-    let range: CompletionItem['range'] | undefined;
-    const itemRange = item.textEdit?.range || item.range;
-    if (Range.isRange(itemRange)) {
-      range = Converter.fromRange(itemRange);
-    } else if (
-      itemRange &&
-      (!defaultInserting?.isEqual(itemRange.inserting) ||
-        !defaultReplacing?.isEqual(itemRange.replacing))
-    ) {
-      range = {
-        insert: Converter.fromRange(itemRange.inserting),
-        replace: Converter.fromRange(itemRange.replacing),
-      };
-    }
-
     const result: ISuggestDataDto = {
       x: id,
-      [ISuggestDataDtoField.range]: range,
       [ISuggestDataDtoField.kind]: item.kind ? Converter.CompletionItemKind.from(item.kind) : undefined,
       [ISuggestDataDtoField.kindModifier]: item.tags && item.tags.map(Converter.CompletionItemTag.from),
       [ISuggestDataDtoField.label]: item.label,
@@ -162,6 +146,26 @@ export class CompletionAdapter {
       [ISuggestDataDtoField.commitCharacters]: item.commitCharacters,
       [ISuggestDataDtoField.insertTextRules]: item.keepWhitespace ? CompletionItemInsertTextRule.KeepWhitespace : 0,
     };
+
+    let range: vscode.Range | { inserting: vscode.Range, replacing: vscode.Range; } | undefined;
+    if (item.textEdit) {
+      range = item.textEdit.range;
+    } else if (item.range) {
+      range = item.range;
+    }
+
+    if (Range.isRange(range)) {
+      result[ISuggestDataDtoField.range] = RangeSuggestDataDto.to(Converter.Range.from(range));
+    } else if (
+      range &&
+      (!defaultInserting?.isEqual(range.inserting) ||
+        !defaultReplacing?.isEqual(range.replacing))
+    ) {
+      result[ISuggestDataDtoField.range] = {
+        insert: Converter.Range.from(range.inserting),
+        replace: Converter.Range.from(range.replacing),
+      };
+    }
 
     if (item.textEdit) {
       result[ISuggestDataDtoField.insertText] = item.textEdit.newText;
