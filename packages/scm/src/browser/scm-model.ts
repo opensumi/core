@@ -314,7 +314,8 @@ export class ViewModelContext extends Disposable {
 
   @action
   private addRepo(repo: ISCMRepository) {
-    if (this.repoList.find((exist: ISCMRepository) => exist.provider.rootUri === repo.provider.rootUri)) {
+    // 因为这里每个传入的 repo 均为新实例，这里需要通过 Uri.toString() 去判断
+    if (this.repoList.find((exist: ISCMRepository) => exist.provider.rootUri?.toString() === repo.provider.rootUri?.toString())) {
       this.logger.warn('duplicate scm repo', repo);
       return;
     }

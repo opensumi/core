@@ -639,8 +639,8 @@ export class SCMTreeModelService {
    * 刷新指定下的所有子节点
    * 备注: 由于 SCM 默认都是 List，Tree 只是转出来的，每次都要重新触发计算
    */
-  async refresh(node: SCMResourceFolder = this.treeModel.root as SCMResourceFolder) {
-    node.refresh();
+  async refresh(node: SCMResourceFolder = this.treeModel?.root as SCMResourceFolder) {
+    node?.refresh();
   }
 
   public flushEventQueue = () => {

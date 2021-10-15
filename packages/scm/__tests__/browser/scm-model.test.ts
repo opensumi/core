@@ -48,25 +48,20 @@ describe('test for scm.store.ts', () => {
 
     it('ViewModelContext: already contains repos', () => {
       const repo1 = scmService.registerSCMProvider(provider1);
-      const repo2 = scmService.registerSCMProvider(provider2);
 
       repo1.setSelected(true);
 
       injector.addProviders(ViewModelContext);
       store = injector.get(ViewModelContext);
 
-      expect(store.repoList.length).toBe(2);
+      expect(store.repoList.length).toBe(1);
+      // 只会注册进去首个 SCMProvider
       expect(store.repoList[0].provider).toEqual(provider1);
-      expect(store.repoList[1].provider).toEqual(provider2);
 
       expect(store.selectedRepos.length).toBe(1);
       expect(store.selectedRepos[0]).toEqual(repo1);
 
       repo1.dispose();
-      expect(store.repoList.length).toBe(1);
-      expect(store.repoList[0].provider).toEqual(provider2);
-
-      repo2.dispose();
       expect(store.repoList.length).toBe(0);
     });
 
@@ -82,26 +77,8 @@ describe('test for scm.store.ts', () => {
         expect(store.repoList.length).toBe(1);
         expect(store.repoList[0].provider).toEqual(provider1);
 
-        repo2 = scmService.registerSCMProvider(provider2);
-        expect(store.repoList.length).toBe(2);
-        expect(store.repoList[0].provider).toEqual(provider1);
-
-        // 无效的重复添加
-        // (store as any).addRepo(repo1);
-        // expect(warnSpy).toBeCalledTimes(1);
-        // expect(warnSpy.mock.calls[0][0]).toBe('duplicate scm repo');
-
         repo1.dispose();
-        expect(store.repoList.length).toBe(1);
-        expect(store.repoList[0].provider).toEqual(provider2);
-
-        repo2.dispose();
         expect(store.repoList.length).toBe(0);
-
-        // 无效的重复删除
-        // (store as any).deleteRepo(repo2);
-        // expect(warnSpy).toBeCalledTimes(2);
-        // expect(warnSpy.mock.calls[1][0]).toBe('no such scm repo');
       });
 
       it('changeSelectedRepos', () => {
