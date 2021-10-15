@@ -728,5 +728,10 @@ export function getSimpleEditorOptions(): IEditorOptions {
     minimap: {
       enabled: false,
     },
+    guides: {
+      highlightActiveIndentation: false,
+      indentation: false,
+      bracketPairs: false,
+    },
   };
 }

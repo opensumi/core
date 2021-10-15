@@ -1,6 +1,6 @@
 import type { ICodeEditor, IDiffEditor, IEditorConstructionOptions } from '@ali/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
-import { IDiffEditorConstructionOptions } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
+import { IDiffEditorConstructionOptions } from '@ali/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import * as suggest from '@ali/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestWidget';
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Event, IJSONSchema, IContextKeyService, IDisposable, BasicEvent } from '..';

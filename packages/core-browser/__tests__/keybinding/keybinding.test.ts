@@ -1,3 +1,4 @@
+import { ContextKeyDefinedExpr, ContextKeyEqualsExpr, ContextKeyNotEqualsExpr, ContextKeyNotExpr, ContextKeyRegexExpr, ContextKeyExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IContextKeyService, KeybindingContribution, KeybindingRegistry, KeybindingRegistryImpl, Keybinding, KeybindingScope, ILogger, BrowserKeyboardLayoutImpl, KeybindingService, SpecialCases } from '@ali/ide-core-browser';
@@ -6,7 +7,6 @@ import { KeybindingsResultCollection } from '../../src';
 import { KeyboardLayoutChangeNotifierService, KeyboardNativeLayoutService } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
 import { KeyboardLayoutService } from '../../src/keyboard/keyboard-layout-service';
 import { MockLogger } from '../../__mocks__/logger';
-import { ContextKeyExprType } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 describe('KeybindingRegistry', () => {
   let keybindingRegistry: KeybindingRegistry;
@@ -341,122 +341,58 @@ describe('KeybindingService', () => {
   describe('02 #API should be work', () => {
 
     test('convertMonacoWhen', () => {
-      let keybinding = {
-        command: 'test.command',
-        keybinding: 'ctrl+c',
-        when: 'focus' as any,
+      const getKeybindingByWhen = (when: any) => {
+        return {
+          command: 'test.command',
+          keybinding: 'ctrl+c',
+          when,
+        };
       };
-      let result =  keybindingService.convertMonacoWhen(keybinding.when);
-      expect(result).toBe(keybinding.when);
+      const keybinding = getKeybindingByWhen('focus');
+      expect(keybindingService.convertMonacoWhen(keybinding.when)).toBe(keybinding.when);
 
-      keybinding = {
-        ...keybinding,
-        when: '',
-      };
-      result =  keybindingService.convertMonacoWhen(keybinding.when);
-      expect(result).toBe(keybinding.when);
+      const emptyKeybinding = getKeybindingByWhen('');
+      expect(keybindingService.convertMonacoWhen(emptyKeybinding.when)).toBe(emptyKeybinding.when);
 
       const defined = {
-        type: ContextKeyExprType.Defined,
         key: 'definedKey',
       };
-      keybinding = {
-        ...keybinding,
-        when: defined,
-      };
-      result =  keybindingService.convertMonacoWhen(keybinding.when);
-      expect(result).toBe(defined.key);
+      const contextKeyDefineExprKeybinding = getKeybindingByWhen(ContextKeyDefinedExpr.create(defined.key));
+      expect(keybindingService.convertMonacoWhen(contextKeyDefineExprKeybinding.when)).toBe(defined.key);
 
       const equals = {
-        type: ContextKeyExprType.Equals,
-        getValue: () => 'true',
-        key: 'notEqualsKey',
-      };
-      keybinding = {
-        ...keybinding,
-        when: equals,
-      };
-      result =  keybindingService.convertMonacoWhen(keybinding.when);
-      expect(result).toBe(`${equals.key} == 'true'`);
-
-      const notEquals = {
-        type: ContextKeyExprType.NotEquals,
-        getValue: () => 'true',
         key: 'equalsKey',
       };
-      keybinding = {
-        ...keybinding,
-        when: notEquals,
+
+      const contextKeyEqualsExprKeybinding = getKeybindingByWhen(ContextKeyEqualsExpr.create(equals.key, 'true'));
+      expect(keybindingService.convertMonacoWhen(contextKeyEqualsExprKeybinding.when)).toBe(`${equals.key} == 'true'`);
+
+      const notEquals = {
+        key: 'notEqualsKey',
       };
-      result =  keybindingService.convertMonacoWhen(keybinding.when);
-      expect(result).toBe(`${notEquals.key} != 'true'`);
+      const contextKeyNotEqualsExprKeybinding = getKeybindingByWhen(ContextKeyNotEqualsExpr.create(notEquals.key, 'true'));
+      expect(keybindingService.convertMonacoWhen(contextKeyNotEqualsExprKeybinding.when)).toBe(`${notEquals.key} != 'true'`);
 
       const not = {
-        type: ContextKeyExprType.Not,
         key: 'notKey',
       };
-      keybinding = {
-        ...keybinding,
-        when: not,
-      };
-      result =  keybindingService.convertMonacoWhen(keybinding.when);
-      expect(result).toBe(`!${not.key}`);
+      const notKeybinding = getKeybindingByWhen(ContextKeyNotExpr.create(not.key));
+      expect(keybindingService.convertMonacoWhen(notKeybinding.when)).toBe(`!${not.key}`);
 
       const regex = {
-        type: ContextKeyExprType.Regex,
         regexp: {
           source: 'regexKey',
-          ignoreCase: true,
         },
         key: 'regexKey',
       };
-      keybinding = {
-        ...keybinding,
-        when: regex,
-      };
-      result =  keybindingService.convertMonacoWhen(keybinding.when);
-      expect(result).toBe(`${regex.key} =~ /${regex.regexp.source}/${regex.regexp.ignoreCase ? 'i' : ''}`);
+      const contextKeyAndRegexExprKeybinding = getKeybindingByWhen(ContextKeyRegexExpr.create(regex.key, new RegExp(regex.regexp.source, 'i')));
+      expect(keybindingService.convertMonacoWhen(contextKeyAndRegexExprKeybinding.when)).toBe(`${regex.key} =~ /${regex.regexp.source}/i`);
 
-      const and = {
-        type: ContextKeyExprType.And,
-        expr: [{
-          serialize: () => 'a',
-        }, {
-          serialize: () => 'b',
-        }],
-      };
-      keybinding = {
-        ...keybinding,
-        when: and,
-      };
-      result =  keybindingService.convertMonacoWhen(keybinding.when);
-      expect(result).toBe(`a && b`);
+      const contextKeyAndExprKeybinding = getKeybindingByWhen(ContextKeyExpr.and(ContextKeyDefinedExpr.create('a'), ContextKeyDefinedExpr.create('b')));
+      expect(keybindingService.convertMonacoWhen(contextKeyAndExprKeybinding.when)).toBe(`a && b`);
 
-      const or = {
-        type: ContextKeyExprType.Or,
-        expr: [{
-          serialize: () => 'a',
-        }, {
-          serialize: () => 'b',
-        }],
-      };
-      keybinding = {
-        ...keybinding,
-        when: or,
-      };
-      result =  keybindingService.convertMonacoWhen(keybinding.when);
-      expect(result).toBe(`a || b`);
-
-      const expr = {
-        type: ContextKeyExprType.Or,
-        expr: [and],
-      };
-      keybinding = {
-        ...keybinding,
-        when: expr,
-      };
-      result =  keybindingService.convertMonacoWhen(keybinding.when);
-      expect(result).toBe(`a && b`);
+      const contextKeyOrExprKeybinding = getKeybindingByWhen(ContextKeyExpr.or(ContextKeyDefinedExpr.create('a'), ContextKeyDefinedExpr.create('b')));
+      expect(keybindingService.convertMonacoWhen(contextKeyOrExprKeybinding.when)).toBe(`a || b`);
     });
 
     test('convert', () => {

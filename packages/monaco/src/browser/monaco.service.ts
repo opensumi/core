@@ -2,7 +2,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { Disposable, KeybindingRegistry, MonacoOverrideServiceRegistry, ServiceNames, ILogger } from '@ali/ide-core-browser';
 import { Deferred, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 import { IEditorConstructionOptions, isDiffEditor, MouseTargetType } from '@ali/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { IDiffEditorConstructionOptions } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
+import { IDiffEditorConstructionOptions } from '@ali/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { SimpleKeybinding } from '@ali/monaco-editor-core/esm/vs/base/common/keyCodes';
 import { Range } from '@ali/monaco-editor-core/esm/vs/editor/editor.main';
 import { IDisposable } from '@ali/monaco-editor-core/esm/vs/base/common/lifecycle';

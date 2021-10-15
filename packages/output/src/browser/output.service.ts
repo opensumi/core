@@ -113,7 +113,6 @@ export class OutputService extends WithEventBus {
       scrollbar: {
         useShadows: false,
       },
-      renderIndentGuides: false,
     });
 
     this.addDispose(this.outputEditor.monacoEditor.onMouseUp((e) => {

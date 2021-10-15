@@ -30,7 +30,6 @@ const consoleInputMonacoOptions: monaco.editor.IEditorOptions = {
     handleMouseWheel: true,
   },
   acceptSuggestionOnEnter: 'on',
-  renderIndentGuides: false,
   readOnly: true,
 };
 

@@ -398,6 +398,11 @@ export const defaultSettingSections: {
         { id: 'editor.suggest.showIssues', localized: 'preference.editor.suggest.showIssues' },
         { id: 'editor.suggest.preview', localized: 'preference.editor.suggest.preview' },
 
+        // Guides
+        { id: 'editor.guides.bracketPairs', localized: 'preference.editor.guides.bracketPairs' },
+        { id: 'editor.guides.indentation', localized: 'preference.editor.guides.indentation' },
+        { id: 'editor.guides.highlightActiveIndentation', localized: 'preference.editor.guides.highlightActiveIndentation' },
+
         // 行内补全
         { id: 'editor.inlineSuggest.enabled', localized: 'preference.editor.inlineSuggest.enabled' },
 
@@ -430,6 +435,7 @@ export const defaultSettingSections: {
         { id: 'files.associations', localized: 'preference.files.associations.title' },
         { id: 'editor.maxTokenizationLineLength', localized: 'preference.editor.maxTokenizationLineLength' },
         { id: 'editor.largeFile', localized: 'preference.editor.largeFile' },
+        { id: 'editor.bracketPairColorization.enabled', localized: 'preference.editor.bracketPairColorization.enabled' },
         // Diff 编辑器
         { id: 'diffEditor.renderSideBySide', localized: 'preference.diffEditor.renderSideBySide' },
         { id: 'diffEditor.ignoreTrimWhitespace', localized: 'preference.diffEditor.ignoreTrimWhitespace' },

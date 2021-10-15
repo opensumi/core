@@ -1,4 +1,4 @@
-import { ContextKeyExprType, ContextKeyExpr, ContextKeyAndExpr, ContextKeyDefinedExpr, ContextKeyEqualsExpr, ContextKeyNotEqualsExpr, ContextKeyNotExpr, ContextKeyNotRegexExpr, ContextKeyOrExpr, ContextKeyRegexExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { ContextKeyExpression } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ILogger, isOSX, Emitter, Event, CommandRegistry, ContributionProvider, IDisposable, Disposable, formatLocalize, CommandService, isUndefined } from '@ali/ide-core-common';
 import { KeyCode, KeySequence, Key, SpecialCases } from '../keyboard/keys';
@@ -96,7 +96,7 @@ export interface Keybinding {
   /**
    * https://code.visualstudio.com/docs/getstarted/keybindings#_when-clause-contexts
    */
-  when?: string | ContextKeyExpr | undefined | null;
+  when?: string | ContextKeyExpression;
 
   // Command执行参数
   args?: any;
@@ -249,56 +249,14 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * 用于转换monaco内置的RawContextKey
    * @param when
    */
-  public convertMonacoWhen(when: any) {
-    let result: string[] = [];
+  public convertMonacoWhen(when: string | ContextKeyExpression | undefined) {
     if (!when) {
       return '';
-    } else if (typeof when === 'string') {
+    }
+    if (typeof when === 'string') {
       return when;
     }
-    if (when.expr) {
-      when = when as ContextKeyAndExpr | ContextKeyOrExpr;
-    } else {
-      when = when as ContextKeyDefinedExpr
-        | ContextKeyEqualsExpr
-        | ContextKeyNotEqualsExpr
-        | ContextKeyNotExpr
-        | ContextKeyNotRegexExpr
-        | ContextKeyOrExpr
-        | ContextKeyRegexExpr;
-    }
-    if (!when.expr || (when.expr && when.expr.length > 0 && when.expr[0].serialize)) {
-      if (isUndefined(when.type)) {
-        return when;
-      }
-      switch (when.type) {
-        case ContextKeyExprType.Defined:
-          return when.key;
-        case ContextKeyExprType.Equals:
-          return when.key + ' == \'' + (when.getValue ? when.getValue() : when.value) + '\'';
-        case ContextKeyExprType.NotEquals:
-          return when.key + ' != \'' + (when.getValue ? when.getValue() : when.value) + '\'';
-        case ContextKeyExprType.Not:
-          return '!' + when.key;
-        case ContextKeyExprType.Regex:
-          const value = when.regexp
-            ? `/${when.regexp.source}/${when.regexp.ignoreCase ? 'i' : ''}`
-            : '/invalid/';
-          return `${when.key} =~ ${value}`;
-        case ContextKeyExprType.NotRegex:
-          return '-not regex-';
-        case ContextKeyExprType.And:
-          return when.expr.map((e) => e.serialize()).join(' && ');
-        case ContextKeyExprType.Or:
-          return when.expr.map((e) => e.serialize()).join(' || ');
-        default:
-          return when.key;
-      }
-    }
-    result = when.expr.map((contextKey: any) => {
-      return this.convertMonacoWhen(contextKey);
-    });
-    return result.join(' && ');
+    return when.serialize();
   }
 
   /**
@@ -327,7 +285,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   }
 
   // 判断两个when是否相等
-  private isKeybindingWhenEqual(when1?: string | ContextKeyExpr | null, when2?: string | ContextKeyExpr | null) {
+  private isKeybindingWhenEqual(when1?: string | ContextKeyExpression, when2?: string | ContextKeyExpression) {
     return this.convertMonacoWhen(when1) === this.convertMonacoWhen(when2);
   }
 

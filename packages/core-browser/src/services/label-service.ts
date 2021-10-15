@@ -286,7 +286,7 @@ const getIconClass = (resource: URI, options?: ILabelOptions): {
       classes.push(`${cssEscape(detectedModeId)}-lang-file-icon`);
     } else {
       _onDidChange = new Emitter<void>();
-      StaticServices.modeService.get().onDidCreateMode(() => {
+      StaticServices.modeService.get().onDidEncounterLanguage(() => {
         if (!!detectModeId(modelService, modeService, monaco.Uri.file(resource.withoutQuery().toString()))) {
           _onDidChange?.fire();
           _onDidChange?.dispose();

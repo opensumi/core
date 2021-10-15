@@ -611,13 +611,18 @@ export const editorOptionsConverters: Map<KaitianPreferenceKey , NoConverter | I
      * Enable rendering of indent guides.
      * Defaults to true.
      */
-    ['editor.renderIndentGuides', { monaco: 'renderIndentGuides' }],
+    ['editor.renderIndentGuides', { monaco: 'guides.indentation' }],
 
     /**
      * Enable highlighting of the active indent guide.
      * Defaults to true.
      */
-    ['editor.highlightActiveIndentGuide', { monaco: 'highlightActiveIndentGuide' }],
+    ['editor.highlightActiveIndentGuide', { monaco: 'guides.highlightActiveIndentation' }],
+
+     /**
+     * editor.guides -> guides
+     */
+    ['editor.guides', { monaco: 'guides' }],
 
     /**
      * Enable rendering of current line highlight.
@@ -662,7 +667,9 @@ export const editorOptionsConverters: Map<KaitianPreferenceKey , NoConverter | I
 
     ['editor.rename.enablePreview', { monaco: 'editor.rename.enablePreview' }],
 
-    ['editor.semanticHighlighting.enabled', { monaco: 'semanticHighlighting.enabled' }],
+    ['editor.semanticHighlighting', { monaco: 'semanticHighlighting' }],
+
+    ['editor.bracketPairColorization', { monaco: 'bracketPairColorization' }],
 
     /**
      * Controls the algorithm that computes wrapping points.

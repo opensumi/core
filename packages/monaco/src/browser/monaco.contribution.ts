@@ -1,4 +1,3 @@
-import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { OpenerService } from '@ali/monaco-editor-core/esm/vs/editor/browser/services/openerService';
 import { CompletionProviderRegistry } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { StaticServices } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
@@ -7,7 +6,7 @@ import * as monacoActions from '@ali/monaco-editor-core/esm/vs/platform/actions/
 import * as monacoKeybindings from '@ali/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingsRegistry';
 import { EditorContextKeys } from '@ali/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import { StandaloneCommandService } from '@ali/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
-import { ContextKeyExpr, ContextKeyExprType, ContextKeyOrExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { ContextKeyExpr, ContextKeyExprType } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FormattingConflicts } from '@ali/monaco-editor-core/esm/vs/editor/contrib/format/format';
 import {
@@ -350,7 +349,7 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
             // serialize 之后的结果类似 a && b || a && c
             // monaco-editor contextkey 的计算规则中 && 优先级高于 ||
             if (when.type === ContextKeyExprType.Or) {
-              const exprs = (when as ContextKeyOrExpr).expr;
+              const exprs = when.expr;
               when = ContextKeyExpr.or(
                 ...exprs.map((expr) => ContextKeyExpr.and(expr, editorFocus)),
               );

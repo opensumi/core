@@ -435,6 +435,7 @@ export const localizationBundle = {
     'preference.files.eol': '文件行尾字符',
     'preference.editor.formatOnPaste': '粘贴时自动格式化',
     'preference.editor.preferredFormatter': '默认格式化器',
+    'preference.editor.bracketPairColorization.enabled': '括号着色',
     'preference.array.additem': '添加',
 
     'editor.configuration.wrapTab': '控制当编辑器 Tab 超过可用空间时，是否使用换行来代替滚动模式。',
@@ -444,6 +445,8 @@ export const localizationBundle = {
     'editor.configuration.autoSaveDelay': '控制自动保存的延迟时长（毫秒）。仅当 `#editor.autoSave#` 设置为“编辑后自动保存”时生效。',
     'editor.configuration.askIfDiff': '保存文件时如果磁盘上的文件较新，进行提示手动解决保存冲突。',
     'editor.configuration.forceReadOnly': '是否启用 只读模式',
+    'editor.configuration.bracketPairColorization.enabled': '控制是否启用括号对着色。使用 “workbench.colorCustomizations” 替代括号突出显示颜色。',
+    'editor.configuration.guides.bracketPairs': '控制是否启用括号对指南。',
     'editor.autoSave.enum.off': '不启用',
     'editor.files.eol': '文件行尾字符',
     'editor.files.eolDesc': '控制文件默认行尾字符。',

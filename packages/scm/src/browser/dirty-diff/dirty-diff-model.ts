@@ -13,6 +13,7 @@ import { IEditorDocumentModelService, IEditorDocumentModel } from '@ali/ide-edit
 import { SCMService, ISCMRepository, IDirtyDiffModel } from '../../common';
 import { compareChanges, getModifiedEndLineNumber } from './dirty-diff-util';
 import { DirtyDiffWidget } from './dirty-diff-widget';
+import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 
 @Injectable({ multiple: true })
 export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
@@ -48,6 +49,9 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
 
   // TODO: dynamic
   static heightInLines = 18;
+
+  // TODO: dynamic
+  static maxFileSize = 50;
 
   private get editorWorkerService(): IEditorWorkerService {
     return StaticServices.editorWorkerService.get();
@@ -117,6 +121,15 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
       });
   }
 
+  private canSyncModelForDiff(model: ITextModel | undefined): boolean {
+    if (!model) {
+      return false;
+    }
+    const diffLimit = DirtyDiffModel.maxFileSize * 1024 * 1024; // MB
+    const bufferTextLength = model.getValueLength();
+    return (diffLimit === 0 || bufferTextLength <= diffLimit);
+  }
+
   // 计算 diff
   private async diff(): Promise<IChange[] | null> {
     const originalURI = await this.getOriginalURIPromise();
@@ -124,8 +137,8 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
       return []; // disposed
     }
 
-    // 复用 monaco 内部的 canComputeDiff 本质跟 canComputeDirtyDiff 实现一致
-    if (!this.editorWorkerService.canComputeDiff(originalURI as monaco.Uri, this._editorModel.getMonacoModel().uri)) {
+    // 复用 monaco 内部的 canSyncModelForDiff
+    if (!this.canSyncModelForDiff(this._originalModel?.getMonacoModel()) || !this.canSyncModelForDiff(this._editorModel.getMonacoModel())) {
       return []; // Files too large
     }
 

@@ -152,8 +152,6 @@ export const EDITOR_DEFAULTS = {
     renderWhitespace: 'none',
     renderControlCharacters: false,
     fontLigatures: false,
-    renderIndentGuides: true,
-    highlightActiveIndentGuide: true,
     renderLineHighlight: 'none', // 开天修改
     scrollbar: {
       vertical: 1, // ScrollbarVisibility.Auto,
@@ -176,6 +174,11 @@ export const EDITOR_DEFAULTS = {
       showSlider: 'mouseover',
       renderCharacters: true,
       maxColumn: 120,
+    },
+    guides: {
+      indentation: true,
+      highlightActiveIndentGuide: true,
+      bracketPairs: false,
     },
     fixedOverflowWidgets: true,
   },
@@ -1108,15 +1111,20 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     default: EDITOR_DEFAULTS.viewInfo.renderControlCharacters,
     description: localize('renderControlCharacters', 'Controls whether the editor should render control characters.'),
   },
-  'editor.renderIndentGuides': {
+  'editor.guides.indentation': {
     'type': 'boolean',
-    default: EDITOR_DEFAULTS.viewInfo.renderIndentGuides,
+    default: EDITOR_DEFAULTS.viewInfo.guides.indentation,
     description: localize('renderIndentGuides', 'Controls whether the editor should render indent guides.'),
   },
-  'editor.highlightActiveIndentGuide': {
+  'editor.guides.highlightActiveIndentation': {
     'type': 'boolean',
-    default: EDITOR_DEFAULTS.viewInfo.highlightActiveIndentGuide,
+    default: EDITOR_DEFAULTS.viewInfo.guides.highlightActiveIndentGuide,
     description: localize('highlightActiveIndentGuide', 'Controls whether the editor should highlight the active indent guide.'),
+  },
+  'editor.guides.bracketPairs': {
+    type: 'boolean',
+    default: EDITOR_DEFAULTS.viewInfo.guides.bracketPairs,
+    description: localize('editor.configuration.guides.bracketPairs', 'Controls whether bracket pair guides are enabled or not.'),
   },
   'editor.renderLineHighlight': {
     'type': 'string',
@@ -1438,6 +1446,11 @@ const customEditorSchema: PreferenceSchemaProperties = {
     ],
     default: true,
     description: localize('semanticHighlighting.enabled', 'Controls whether the semanticHighlighting is shown for the languages that support it.'),
+  },
+  'editor.bracketPairColorization.enabled': {
+    type: 'boolean',
+    default: false,
+    description: '%editor.configuration.bracketPairColorization.enabled%',
   },
   'editor.largeFile': {
     type: 'number',

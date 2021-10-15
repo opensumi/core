@@ -63,6 +63,9 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
         trimAutoWhitespace: true,
       };
     },
+    bracketPairColorizationOptions: {
+      enabled: true,
+    },
   };
 
   constructor(value, language, uri?: monaco.Uri) {

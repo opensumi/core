@@ -27,7 +27,7 @@
     "@ali/ide-file-service": "2.10.3",
     "@ali/ide-workspace": "2.10.3",
     "@ali/ide-theme": "2.10.3",
-    "@ali/monaco-editor-core": "0.26.0-patch.3",
+    "@ali/monaco-editor-core": "0.29.1-patch.1",
     "vscode-oniguruma": "1.5.1"
   },
   "devDependencies": {

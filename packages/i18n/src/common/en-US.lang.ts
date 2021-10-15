@@ -115,6 +115,8 @@ export const localizationBundle = {
     'editor.changeLanguageId': 'Select Language Mode',
     'editor.configuration.maxTokenizationLineLength': 'Lines above this length will not be tokenized for performance reasons',
     'editor.configuration.quickSuggestionsDelay': 'Quick suggestions show delay (in ms) Defaults to 100 (ms)',
+    'editor.configuration.bracketPairColorization.enabled': 'Controls whether bracket pair colorization is enabled or not. Use \'workbench.colorCustomizations\' to override the bracket highlight colors.',
+    'editor.configuration.guides.bracketPairs': 'Controls whether bracket pair guides are enabled or not.',
     'editor.lineHeight': 'Line Height',
     'editor.lineHeight.description': 'Controls the line height.\r\nUse 0 to automatically compute the line height from the font size.\r\nValues between 0 and 8 will be used as a multiplier with the font size.\r\nValues greater than or equal to 8 will be used as effective values.',
     'status-bar.label.line': 'Ln',
@@ -462,6 +464,7 @@ export const localizationBundle = {
     'preference.editor.autoSave': 'Editor Auto Save',
     'preference.editor.autoSaveDelay': 'Auto Save Delay',
     'preference.editor.detectIndentation': 'Auto Detect Indentation',
+    'preference.editor.bracketPairColorization.enabled': 'Bracket Pair Colorization',
 
     'editor.configuration.wrapTab': 'Controls whether to wrap editor tabs instead of scroll mode when tabs are beyond the visible area.',
     'editor.configuration.askIfDiff': 'When saving files, throw error if the file on disk has a newer version.',

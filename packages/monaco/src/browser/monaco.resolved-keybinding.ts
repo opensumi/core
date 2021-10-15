@@ -1,4 +1,4 @@
-import { ChordKeybinding, ResolvedKeybinding, ResolvedKeybindingPart, SimpleKeybinding } from '@ali/monaco-editor-core/esm/vs/base/common/keyCodes';
+import { ChordKeybinding, KeybindingModifier, ResolvedKeybinding, ResolvedKeybindingPart, SimpleKeybinding } from '@ali/monaco-editor-core/esm/vs/base/common/keyCodes';
 import { AriaLabelProvider, Modifiers, UILabelProvider } from '@ali/monaco-editor-core/esm/vs/base/common/keybindingLabels';
 import { USLayoutResolvedKeybinding } from '@ali/monaco-editor-core/esm/vs/platform/keybinding/common/usLayoutResolvedKeybinding';
 import { KeySequence, KeybindingRegistry, Key, isOSX, KeyModifier, KeyCode, Keystroke } from '@ali/ide-core-browser';
@@ -61,7 +61,7 @@ export class MonacoResolvedKeybinding extends ResolvedKeybinding {
     });
   }
 
-  getSingleModifierDispatchParts(): (string | null)[] {
+  getSingleModifierDispatchParts(): (KeybindingModifier | null)[] {
     return []; /* NOOP */
   }
 
