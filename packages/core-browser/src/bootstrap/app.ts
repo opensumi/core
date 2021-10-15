@@ -486,6 +486,7 @@ export class ClientApp implements IClientApp, IDisposable {
     window.addEventListener('compositionstart', this._handleCompositionstart);
     window.addEventListener('compositionend', this._handleCompositionend);
     window.addEventListener('keydown', this._handleKeydown, true);
+    window.addEventListener('keyup', this._handleKeyup, true);
 
     if (isOSX) {
       document.body.addEventListener('wheel', this._handleWheel, { passive: false });
@@ -655,6 +656,10 @@ export class ClientApp implements IClientApp, IDisposable {
     if (event && event.target!.name !== NO_KEYBINDING_NAME && !this._inComposition) {
       this.keybindingService.run(event);
     }
+  }
+
+  private _handleKeyup = (event: any) => {
+    this.keybindingService.resolveModifierKey(event);
   }
 
   private _handleCompositionstart = () => {

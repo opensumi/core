@@ -153,10 +153,13 @@ export const KeybindingService = Symbol('KeybindingService');
 
 export interface KeybindingService {
   /**
-   * 根据传入的键盘事件执行对应的Command
+   * 根据传入的键盘事件执行对应的 Command
    */
   run(event: KeyboardEvent): void;
-
+  /**
+   * 根据传入的键盘事件处理对应的快捷键修饰符
+   */
+  resolveModifierKey(event: KeyboardEvent): void;
   /**
    * 根据传入的键盘事件返回对应的快捷键文本
    */
@@ -181,11 +184,15 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   protected readonly keymaps: Keybinding[][] = [...Array(KeybindingScope.length)].map(() => []);
 
   protected keySequence: KeySequence = [];
+  private keySequenceTimer;
+
   protected convertKeySequence: KeySequence = [];
 
-  private keySequenceTimer: any;
+  protected modifierKeySequence: KeySequence = [];
+  private modifierKeySequenceTimer;
 
   public static KEYSEQUENCE_TIMEOUT = 5000;
+  public static MODIFIER_KEYSEQUENCE_TIMEOUT = 300;
 
   @Autowired(KeyboardLayoutService)
   protected readonly keyboardLayoutService: KeyboardLayoutService;
@@ -734,6 +741,40 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   }
 
   /**
+   * 用于处理诸如 Shift + Shift, Ctrl + Ctrl, Alt + Alt 等快捷键
+   * 参考： https://github.com/microsoft/vscode/pull/115190
+   *
+   * @param event 键盘事件
+   */
+  public resolveModifierKey(event: KeyboardEvent): void {
+    if (event.defaultPrevented) {
+      return;
+    }
+    if (this.modifierKeySequenceTimer) {
+      clearTimeout(this.modifierKeySequenceTimer);
+    }
+    const keyCode = KeyCode.createKeyCode(event);
+    // 当传入的 KeyCode 不是修饰符时，不处理
+    if (!keyCode.isModifierOnly()) {
+      return;
+    }
+    this.modifierKeySequence.push(keyCode);
+    const bindings = this.getKeybindingsForKeySequence(this.modifierKeySequence, event);
+    if (this.tryKeybindingExecution(bindings.full, event)) {
+      this.modifierKeySequence = [];
+    } else if (bindings.partial.length > 0) {
+      // 堆积 modifierKeySequence, 用于实现组合键
+      event.preventDefault();
+      event.stopPropagation();
+      this.modifierKeySequenceTimer = setTimeout(() => {
+        this.modifierKeySequence = [];
+      }, KeybindingRegistryImpl.MODIFIER_KEYSEQUENCE_TIMEOUT);
+    } else {
+      this.modifierKeySequence = [];
+    }
+  }
+
+  /**
    * 执行匹配键盘事件的命令
    *
    * @param event 键盘事件
@@ -746,7 +787,10 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
       clearTimeout(this.keySequenceTimer);
     }
     const keyCode = KeyCode.createKeyCode(event);
-
+    // 当传入的 KeyCode 仅为修饰符，忽略，等待下次输入
+    if (keyCode.isModifierOnly()) {
+      return;
+    }
     this.keyboardLayoutService.validateKeyCode(keyCode);
     this.keySequence.push(keyCode);
     const bindings = this.getKeybindingsForKeySequence(this.keySequence, event);

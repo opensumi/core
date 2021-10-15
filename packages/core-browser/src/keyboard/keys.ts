@@ -195,10 +195,10 @@ export class KeyCode {
       const key = KeyCode.toKey(input);
       return new KeyCode({
         key: Key.isModifier(key.code) ? undefined : key,
-        meta: isOSX && input.metaKey,
-        shift: input.shiftKey,
-        alt: input.altKey,
-        ctrl: input.ctrlKey,
+        meta: isOSX && input.metaKey || (key === Key.OS_RIGHT || key === Key.OS_LEFT),
+        shift: input.shiftKey || (key === Key.SHIFT_RIGHT || key === Key.SHIFT_LEFT),
+        alt: input.altKey || (key === Key.ALT_RIGHT || key === Key.ALT_LEFT),
+        ctrl: input.ctrlKey || (key === Key.CONTROL_RIGHT || key === Key.CONTROL_LEFT),
         character: KeyCode.toCharacter(input),
       });
     } else if ((input as Keystroke).first || (input as Keystroke).modifiers) {
@@ -239,10 +239,6 @@ export class KeyCode {
 
     const schema: KeyCodeSchema = {};
     const keys = keybinding.trim().toLowerCase().split(separator);
-    // 快捷键去重，如 ctrl+a+ctrl 应变为 ctrl + a
-    if (keys.length !== new Set(keys).size) {
-      throw new Error(`Can't parse keybinding ${keybinding} Duplicate modifiers`);
-    }
 
     for (let keyString of keys) {
       if (SPECIAL_ALIASES[keyString] !== undefined) {
@@ -360,16 +356,36 @@ export namespace KeyCode {
     const code = event.code;
     if (code) {
       if (isOSX) {
-        // https://github.com/theia-ide/theia/issues/4986
+        // https://github.com/eclipse-theia/theia/issues/4986
+        // ref: https://github.com/eclipse-theia/theia/pull/5063
+        // Mac 环境下由于键盘布局的差异，需要根据环境选择不同的键值映射确保按键能够正确映射
         const char = event.key;
-        if (code === 'IntlBackslash' && (char === '`' || char === '~')) {
+        if (code === Key.INTL_BACKSLASH.code && (char === '`' || char === '~')) {
           return Key.BACKQUOTE;
-        } else if (code === 'Backquote' && (char === '§' || char === '±')) {
+        } else if (code === Key.BACKQUOTE.code && (char === '§' || char === '±')) {
           return Key.INTL_BACKSLASH;
         }
       }
+      // 不同浏览器的 Meta 键位映射存在差异，需要通过 CODE_TO_KEY 处理
+      if (code === Key.SHIFT_LEFT.code && !event.ctrlKey && !event.altKey && !event.metaKey) {
+        return Key.SHIFT_LEFT;
+      } else if (code === Key.SHIFT_RIGHT.code && !event.ctrlKey && !event.altKey && !event.metaKey) {
+        return Key.SHIFT_RIGHT;
+      } else if (code === Key.CONTROL_LEFT.code && !event.shiftKey && !event.altKey && !event.metaKey) {
+        return Key.CONTROL_LEFT;
+      } else if (code === Key.CONTROL_RIGHT.code && !event.shiftKey && !event.altKey && !event.metaKey) {
+        return Key.CONTROL_RIGHT;
+      } else if (code === Key.ALT_LEFT.code && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
+        return Key.ALT_LEFT;
+      } else if (code === Key.ALT_RIGHT.code && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
+        return Key.ALT_RIGHT;
+      } else if (CODE_TO_KEY[code] === Key.OS_LEFT && !event.shiftKey && !event.ctrlKey && !event.altKey) {
+        return Key.OS_LEFT;
+      } else if (CODE_TO_KEY[code] === Key.OS_RIGHT && !event.shiftKey && !event.ctrlKey && !event.altKey) {
+        return Key.OS_RIGHT;
+      }
       // https://code.alipay.com/kaitian/ide-framework/issues/3
-      if (code.startsWith('Numpad') && event.key) {
+      if (code.startsWith('Numpad') && event.key && event.key.length > 1) {
         const k = Key.getKey(event.key);
         if (k) {
           return k;
