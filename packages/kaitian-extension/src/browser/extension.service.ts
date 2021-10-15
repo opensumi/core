@@ -252,7 +252,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       try {
         await this.startExtProcess(false);
       } catch (err) {
-        this.logger.error(`[ext-restart]: ext-host restart failure, error: ${JSON.stringify(err)}`);
+        this.logger.error(`[ext-restart]: ext-host restart failure, error: ${err}`);
       }
 
       this.isExtensionRestarting = false;
