@@ -1,6 +1,6 @@
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { URI, Disposable, IContextKeyService, StorageProvider, ILogger, IApplicationService, isWindows, isLinux, OS } from '@ali/ide-core-browser';
+import { URI, Disposable, IContextKeyService, StorageProvider, ILogger, IApplicationService, isWindows, isLinux, OS, Emitter } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { Directory, File } from '../../src/common/file-tree-node.define';
 import { TreeNodeType } from '@ali/ide-components';
@@ -13,7 +13,6 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { MockContextKeyService } from '../../..//monaco/__mocks__/monaco.context-key.service';
 import { IThemeService } from '@ali/ide-theme';
 import { IDecorationsService } from '@ali/ide-decoration';
-import { Emitter } from '@reexport/vsc-modules/lib/base/common/event';
 import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { FileContextKey } from '@ali/ide-file-tree-next/lib/browser/file-contextkey';
