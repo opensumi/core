@@ -259,6 +259,9 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     if (!this.savable) {
       return false;
     }
+    if (this.monacoModel.isDisposed()) {
+      return false;
+    }
     return this._persistVersionId !== this.monacoModel.getAlternativeVersionId();
   }
 

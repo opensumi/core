@@ -346,6 +346,9 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   getFullModelRange(): monaco.Range {
     return { startLineNumber: 4, startColumn: 1, endLineNumber: 9, endColumn: 8 } as monaco.Range;
   }
+  getLinesBracketGuides(startLineNumber: number, endLineNumber: number, activePosition: monaco.Position | null, highlightActiveGuides: boolean, includeNonActiveGuides: boolean): any[][] {
+    throw new Error('Method not implemented.');
+  }
   isDisposed(): boolean {
     return this._isDisposed;
   }

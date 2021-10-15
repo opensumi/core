@@ -98,7 +98,8 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
 
   private _doDelete(uri: string) {
     const doc = this.editorDocModels.get(uri);
-    if (doc) {
+    // dirty 的 document 不 dispose
+    if (doc && !doc.dirty) {
       doc.dispose();
       this.editorDocModels.delete(uri);
       return doc;
