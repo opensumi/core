@@ -27,7 +27,8 @@
     "@ali/ide-core-node": "2.10.3",
     "@ali/ide-task": "2.10.3",
     "@ali/ide-theme": "2.10.3",
-    "btoa": "^1.2.1"
+    "btoa": "^1.2.1",
+    "anser": "^1.4.9"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "2.10.3",

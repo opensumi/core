@@ -104,12 +104,13 @@ export class OutputService extends WithEventBus {
     return Array.from(this.channels.values());
   }
 
-  public async initOuputMonacoInstance(container: HTMLDivElement) {
+  public async initOutputMonacoInstance(container: HTMLDivElement) {
     this.outputEditor = this.editorCollectionService.createCodeEditor(container, {
       ...getSimpleEditorOptions(),
       lineDecorationsWidth: 20,
       automaticLayout: true,
       readOnly: true,
+      extraEditorClassName: 'kt-output-monaco',
       scrollbar: {
         useShadows: false,
       },

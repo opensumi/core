@@ -1,4 +1,5 @@
-import { registerColor, contrastBorder, activeContrastBorder } from '../color-registry';
+import { registerColor } from '../color-registry';
+import { activeContrastBorder, contrastBorder } from './base';
 import { localize } from '@ali/ide-core-common';
 import { Color } from '../color';
 

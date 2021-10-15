@@ -1,5 +1,6 @@
 import { localize } from '@ali/ide-core-common';
-import { registerColor, editorWarningForeground, editorWarningBorder } from '../color-registry';
+import { registerColor } from '../color-registry';
+import { editorWarningForeground, editorWarningBorder } from './editor';
 import { RGBA, Color } from '../color';
 
 export const minimapFindMatch = registerColor('minimap.findMatchHighlight', { light: '#d18616', dark: '#d18616', hc: '#AB5A00' }, localize('minimapFindMatchHighlight', 'Minimap marker color for find matches.'), true);

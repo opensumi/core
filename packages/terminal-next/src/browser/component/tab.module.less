@@ -3,12 +3,10 @@
   flex: 1;
   min-width: 0;
   font-size: 12px;
-  height: 24px;
 }
 
 .tabs {
   display: flex;
-  overflow: scroll;
 }
 
 .tabs::-webkit-scrollbar {
@@ -23,14 +21,13 @@
   padding: 0px 12px 0px 12px;
   cursor: pointer;
   user-select: none;
-  height: 24px;
+  height: 28px;
   display: flex;
   color: var(--kt-panelTab-inactiveForeground);
   background-color: var(--kt-panelTab-inactiveBackground);
   border-right: 1px solid var(--kt-panelTab-border);
   max-width: 800px;
   min-width: 105px;
-  margin-top: 1px;
   align-items: center;
 
   :last-child {
@@ -76,8 +73,6 @@
 .item_selected {
   color: var(--kt-panelTab-activeForeground);
   background-color: var(--kt-panelTab-activeBackground);
-  border-top: 1px solid var(--kt-panelTab-activeBorder);
-  margin-top: 0px;
 }
 
 .item_add {

@@ -150,7 +150,6 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
 
   onDidStart() {
     // DefaultEndOfLine 类型冲突
-    // @ts-ignore
     CompletionProviderRegistry.register(this.snippetSuggestProvider.registeredLanguageIds, this.snippetSuggestProvider);
   }
 
@@ -161,12 +160,6 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
     const standaloneCommandService = new StandaloneCommandService(StaticServices.instantiationService.get());
     // 给 monacoCommandService 设置委托，执行 monaco 命令使用 standaloneCommandService 执行
     this.monacoCommandService.setDelegate(standaloneCommandService);
-    // 替换 monaco 内部的 commandService
-    this.overrideServicesRegistry.registerOverrideService(
-      ServiceNames.COMMAND_SERVICE,
-      this.monacoCommandService,
-    );
-
     // 替换 monaco 内部的 commandService
     this.overrideServicesRegistry.registerOverrideService(
       ServiceNames.COMMAND_SERVICE,
@@ -330,6 +323,7 @@ export class MonacoClientContribution implements ClientAppContribution, CommandC
     const editorFocus = EditorContextKeys.focus;
 
     const defaultItems = monacoKeybindingsRegistry.getDefaultKeybindings();
+
     // 将 Monaco 的 Keybinding 同步到 ide 中
     for (const item of defaultItems) {
       const command = this.monacoCommandRegistry.validate(item.command);

@@ -7,25 +7,6 @@ import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/sel
 import { OutputService } from './output.service';
 import * as styles from './output.module.less';
 
-import Ansi from '../common/ansi';
-
-const style: React.CSSProperties = {
-  whiteSpace: 'normal',
-  fontFamily: 'monospace',
-};
-
-interface IOutputItem {
-  line: string;
-  id: number;
-  onPath: (path: string) => void;
-}
-
-const OutputTemplate: React.FC<{ data: IOutputItem; index: number }> = ({ data: { line, onPath }, index }) => {
-  return (
-    <div style={style} key={`${line}-${index}`}><Ansi linkify={true} onPath={onPath}>{line}</Ansi></div>
-  );
-};
-
 export const Output = observer(({ viewState }: { viewState: ViewState }) => {
   const outputService = useInjectable<OutputService>(OutputService);
   const outputRef = createRef<HTMLDivElement>();
@@ -36,7 +17,7 @@ export const Output = observer(({ viewState }: { viewState: ViewState }) => {
 
   useEffect(() => {
     if (outputRef.current) {
-      outputService.initOuputMonacoInstance(outputRef.current);
+      outputService.initOutputMonacoInstance(outputRef.current);
     }
   }, []);
 

@@ -91,6 +91,12 @@
     border-right: 1px solid var(--sideBar-border);
   }
 }
+:global(.bottom-slot) {
+  .panel_wrap{
+    border-top: 1px solid var(--sideBar-border);
+  }
+}
+
 :global(.right-slot) {
   height: 100%;
   background-color: var(--activityBar-background);
@@ -149,6 +155,9 @@
   display: flex;
   background-color: var(--kt-panelTitle-background);
   user-select: none;
+  height: 28px;
+  align-items: center;
+
   h1 {
     margin: 0;
     font-size: 12px;

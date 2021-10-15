@@ -1,7 +1,11 @@
 import { localize } from '@ali/ide-core-common';
-import { registerColor, transparent, foreground, TAB_INACTIVE_BACKGROUND, PANEL_BACKGROUND, ACTIVITY_BAR_BACKGROUND, lighten, PANEL_INACTIVE_TITLE_FOREGROUND } from '../../color-registry';
+import { registerColor, transparent, lighten, darken } from '../../color-registry';
 import { EDITOR_GROUP_HEADER_TABS_BACKGROUND } from '../editor';
 import { textLinkActiveForeground } from '../text';
+import { TAB_INACTIVE_BACKGROUND } from '../tab';
+import { foreground } from '../base';
+import { PANEL_BACKGROUND, PANEL_INACTIVE_TITLE_FOREGROUND } from '../panel';
+import { ACTIVITY_BAR_BACKGROUND } from '../activity-bar';
 
 /* --- panel --- */
 export const ktPanelTitleBackground = registerColor('kt.panelTitle.background', {
@@ -41,15 +45,15 @@ export const ktPanelTabActionIconForeground = registerColor('kt.panelTabActionIc
 }, localize('panelTabActionIcon.foreground', 'Panel tab close icon color.'));
 
 export const ktPanelTabActiveBorder = registerColor('kt.panelTab.activeBorder', {
-  dark: ACTIVITY_BAR_BACKGROUND,
-  light: ACTIVITY_BAR_BACKGROUND,
-  hc: ACTIVITY_BAR_BACKGROUND,
+  dark: lighten(ACTIVITY_BAR_BACKGROUND, 0.2),
+  light: lighten(ACTIVITY_BAR_BACKGROUND, 0.2),
+  hc: lighten(ACTIVITY_BAR_BACKGROUND, 0.2),
 }, localize('panelTab.border', 'Panel tab border color.'));
 
 export const ktPanelTabBorder = registerColor('kt.panelTab.border', {
-  dark: ACTIVITY_BAR_BACKGROUND,
-  light: ACTIVITY_BAR_BACKGROUND,
-  hc: ACTIVITY_BAR_BACKGROUND,
+  dark: darken(ACTIVITY_BAR_BACKGROUND, 0.1),
+  light: darken(ACTIVITY_BAR_BACKGROUND, 0.1),
+  hc: darken(ACTIVITY_BAR_BACKGROUND, 0.1),
 }, localize('panelTab.border', 'Panel tab border color.'));
 
 export const ktPanelSecondaryForeground = registerColor('kt.panel.secondaryForeground', {

@@ -1,6 +1,7 @@
 import { localize } from '@ali/ide-core-common';
-import { registerColor, transparent, editorErrorForeground, editorInfoForeground, editorWarningForeground } from '../color-registry';
+import { registerColor, transparent } from '../color-registry';
 import { foreground } from './base';
+import { editorErrorForeground, editorInfoForeground, editorWarningForeground } from './editor';
 import { minimapFindMatch } from './minimap';
 
 export const chartsForeground = registerColor('charts.foreground', { dark: foreground, light: foreground, hc: foreground }, localize('chartsForeground', 'The foreground color used in charts.'));
