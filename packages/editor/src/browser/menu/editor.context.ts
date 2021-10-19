@@ -103,13 +103,6 @@ export class EditorContextMenuController extends Disposable {
       menuNodes,
       args: [this._editor.currentUri],
       onHide: (canceled) => {
-        // canceled 是指点击到非右键菜单区域，比如文件树等
-        if (canceled) {
-          // FIXME: @伊北 ContextMenu 不会真正的被卸载，而是不可见，所以关闭以后仍然会触发这个事件
-          // 会导致编辑器不停获取焦点，暂时先去掉这个功能
-          // this._editor.monacoEditor.focus();
-        }
-
         // 无论是否取消都应该恢复 hover 的设置
         this._editor.monacoEditor.updateOptions({
           hover: oldHoverSetting,
