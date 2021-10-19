@@ -345,7 +345,7 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     default: EDITOR_SUGGEST_DEFAULTS.maxVisibleSuggestions,
     minimum: 1,
     maximum: 15,
-    description: localize('suggest.maxVisibleSuggestions', 'Controls how many suggestions IntelliSense will show before showing a scrollbar (maximum 15).'),
+    description: localize('editor.suggest.maxVisibleSuggestions', 'Controls how many suggestions IntelliSense will show before showing a scrollbar (maximum 15).'),
   },
   'editor.suggest.showMethods': {
     type: 'boolean',
@@ -495,12 +495,12 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   'editor.suggest.preview': {
     type: 'boolean',
     default: EDITOR_SUGGEST_DEFAULTS.preview,
-    description: localize('editor.suggest.preview', 'Enable or disable the rendering of the suggestion preview..'),
+    description: localize('editor.suggest.preview', 'Enable or disable the rendering of the suggestion preview.'),
   },
   'editor.inlineSuggest.enabled': {
     type: 'boolean',
     default: EDITOR_INLINE_SUGGEST_DEFAULTS.enabled,
-    description: 'Enable or disable the rendering of automatic inline completions.',
+    description: localize('inlineSuggest.enabled', 'Enable or disable the rendering of automatic inline completions.'),
   },
   'editor.letterSpacing': {
     'type': 'number',
@@ -1114,12 +1114,12 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   'editor.guides.indentation': {
     'type': 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.guides.indentation,
-    description: localize('renderIndentGuides', 'Controls whether the editor should render indent guides.'),
+    description: localize('editor.guides.indentation', 'Controls whether the editor should render indent guides.'),
   },
   'editor.guides.highlightActiveIndentation': {
     'type': 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.guides.highlightActiveIndentGuide,
-    description: localize('highlightActiveIndentGuide', 'Controls whether the editor should highlight the active indent guide.'),
+    description: localize('editor.guides.highlightActiveIndentation', 'Controls whether the editor should highlight the active indent guide.'),
   },
   'editor.guides.bracketPairs': {
     type: 'boolean',
