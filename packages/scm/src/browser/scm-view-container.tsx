@@ -41,7 +41,7 @@ export const SCMResourcesView: React.FC<{
     }
   }, [repository]);
 
-  const extraPaddingTop = hasMultiRepos ? 10 : 0;
+  const extraPaddingTop = 10;
   return (
     <div className={styles.view} ref={$containerRef}>
       <div className={styles.scm} style={{paddingTop: extraPaddingTop}}>
@@ -119,7 +119,7 @@ export const SCMViewContainer: React.FC<{ viewState: ViewState }> = observer((pr
 
   // title for selected repo view
   const repoViewTitle = React.useMemo(() => {
-    let repoViewTitle = '';
+    let repoViewTitle = localize('scm.title');
     if (hasMultiRepos && selectedRepo) {
       const { title, type } = getSCMRepositoryDesc(selectedRepo);
       repoViewTitle = title + '-' + type;
