@@ -114,6 +114,10 @@ export class EditorContextMenuController extends Disposable {
         this._editor.monacoEditor.updateOptions({
           hover: oldHoverSetting,
         });
+
+        // 右键菜单关闭后应该使编辑器重新 focus
+        // 原因是一些内置的 command (copy/cut/paste) 在执行时会在对应的 focusedEditor 执行，如果找不到 focusedEditor 则不会执行命令
+        this._editor.monacoEditor.focus();
       },
     });
   }
