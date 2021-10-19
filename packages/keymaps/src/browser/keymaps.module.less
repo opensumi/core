@@ -144,6 +144,7 @@
   align-items: center;
   justify-content: flex-start;
   position: relative;
+  overflow: hidden;
 }
 
 .keybinding_key_block {
@@ -214,6 +215,7 @@
     text-align: left;
     text-align: center;
     cursor: pointer;
+    background-color: var(--list-hoverBackground);
     &:hover {
       transform: scale(1.2);
     }
@@ -245,6 +247,9 @@
   width: 25%;
   box-sizing: content-box;
   padding-left: 30px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .search_container {
