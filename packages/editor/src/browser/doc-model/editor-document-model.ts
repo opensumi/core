@@ -212,7 +212,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   cleanAndUpdateContent(content) {
     this.monacoModel.setValue(content);
     (this.monacoModel as any)._commandManager.clear();
-    this._persistVersionId = this.monacoModel.getVersionId();
+    this._persistVersionId = this.monacoModel.getAlternativeVersionId();
     this.savingTasks = [];
     this.notifyChangeEvent();
     this.baseContent = content;
@@ -363,7 +363,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     }
   }
 
-  setPersist(versionId) {
+  setPersist(versionId: number) {
     this._persistVersionId = versionId;
     this.notifyChangeEvent();
   }
