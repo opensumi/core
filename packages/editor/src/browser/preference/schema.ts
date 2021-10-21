@@ -1462,10 +1462,6 @@ const customEditorSchema: PreferenceSchemaProperties = {
     default: 100,
     description: '%editor.configuration.quickSuggestionsDelay%',
   },
-  'editor.quickSuggestionsMaxCount': {
-    type: 'integer',
-    default: 0,
-  },
   'editor.modelDisposeTime': {
     type: 'integer',
     default: 3000,

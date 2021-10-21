@@ -14,7 +14,7 @@ import { DocumentFilter } from 'vscode-languageserver-protocol';
 import { ExtHostAPIIdentifier, ICodeActionDto, ICodeActionProviderMetadataDto, IExtHostLanguages, IMainThreadLanguages, ISuggestDataDto, ISuggestDataDtoField, ISuggestResultDtoField, MonacoModelIdentifier, RangeSuggestDataDto, testGlob } from '../../../common/vscode';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
 import { IExtensionDescription } from '../../../common/vscode/extension';
-import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SemanticTokensLegend, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ICallHierarchyItemDto, CallHierarchyItem, IWorkspaceEditDto, ResourceTextEditDto, ResourceFileEditDto, ILinkDto } from '../../../common/vscode/model.api';
+import { ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SemanticTokensLegend, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ICallHierarchyItemDto, CallHierarchyItem, IWorkspaceEditDto, ResourceTextEditDto, ResourceFileEditDto, ILinkDto } from '../../../common/vscode/model.api';
 import { mixin, reviveIndentationRule, reviveOnEnterRules, reviveRegExp } from '../../../common/vscode/utils';
 import { UriComponents } from '../../../common/vscode/ext-types';
 import { FoldingRangeProvider } from './../../../common/vscode/model.api';
@@ -204,15 +204,12 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined!;
         }
-        const quickSuggestionsMaxCount = this.preference.get('editor.quickSuggestionsMaxCount') || 0;
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_COMPLETION_ITEMS);
-        const result = await this.proxy.$provideCompletionItems(handle, model.uri, position, {
-          ...context,
-          quickSuggestionsMaxCount,
-        } as CompletionContext, token);
+        const result = await this.proxy.$provideCompletionItems(handle, model.uri, position, context, token);
         if (!result) {
           return undefined!;
         }
+
         if (result[ISuggestResultDtoField.completions].length) {
           timer.timeEnd(extname(model.uri.fsPath), {
             extDuration: (result as any)._dur,
