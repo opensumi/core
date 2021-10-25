@@ -7,6 +7,7 @@ import { KtViewContributionPoint, KtViewsSchema } from './browser-views';
 import { KtMenubarsContributionPoint } from './menubar';
 import { KtSubmenusContributionPoint } from './submenu';
 import { KtToolbarContributionPoint } from './toolbar';
+import { KtMenuExtendContributionPoint } from './menu-extend';
 
 const CONTRIBUTES_SYMBOL = Symbol();
 
@@ -34,6 +35,7 @@ export class KaitianContributesRunner extends WithEventBus {
     KtMenubarsContributionPoint,
     KtSubmenusContributionPoint,
     KtToolbarContributionPoint,
+    KtMenuExtendContributionPoint,
   ];
 
   @Autowired(INJECTOR_TOKEN)

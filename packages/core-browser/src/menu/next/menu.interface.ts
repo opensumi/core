@@ -48,6 +48,7 @@ export class MenuItemNode extends MenuNode {
     @Optional() checked: boolean,
     @Optional() type?: IMenuActionDisplayType,
     @Optional() nativeRole?: string,
+    @Optional() extraDesc?: string,
     @Optional() private extraTailArgs?: any[],
     @Optional() private argsTransformer?: (...args: any[]) => any[],
   ) {
@@ -59,6 +60,7 @@ export class MenuItemNode extends MenuNode {
       checked,
       disabled,
       nativeRole,
+      extraDesc,
     });
 
     this.className = undefined;

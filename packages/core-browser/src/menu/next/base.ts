@@ -1,7 +1,7 @@
 import { ContextKeyExpr } from '@ali/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ButtonType } from '@ali/ide-components';
-import { replaceLocalizePlaceholder, ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
+import { replaceLocalizePlaceholder, ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider, IKaitianMenuExtendInfo } from '@ali/ide-core-common';
 import { warning } from '@ali/ide-components/lib/utils';
 import * as ReactIs from 'react-is';
 
@@ -108,6 +108,10 @@ export interface IMenuItem extends IBaseMenuItem {
    * 决定 disabled 状态，主要表现为 menu item 颜色变灰
    */
   enabledWhen?: string | ContextKeyExpr;
+  /**
+   * 菜单栏最右侧显示的额外信息
+   */
+  extraDesc?: string;
 }
 
 export interface ISubmenuItem extends IBaseMenuItem {
@@ -128,7 +132,9 @@ export abstract class IMenuRegistry {
   abstract getMenubarItems(): Array<IMenubarItem>;
 
   readonly onDidChangeMenu: Event<string>;
+
   abstract getMenuCommand(command: string | MenuCommandDesc): PartialBy<MenuCommandDesc, 'label'>;
+  abstract registerMenuExtendInfo(menuId: MenuId | string, items: Array<IKaitianMenuExtendInfo>);
   abstract registerMenuItem(menuId: MenuId | string, item: IMenuItem | ISubmenuItem | IInternalComponentMenuItem): IDisposable;
   abstract registerMenuItems(menuId: MenuId | string, items: Array<IMenuItem | ISubmenuItem | IInternalComponentMenuItem>): IDisposable;
   abstract unregisterMenuId(menuId: string): IDisposable;
@@ -155,6 +161,7 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
   readonly onDidChangeMenubar: Event<string> = this._onDidChangeMenubar.event;
 
   private readonly _menuItems = new Map<string, Array<IMenuItem | ISubmenuItem | IComponentMenuItem>>();
+  private readonly _menuExtendInfo = new Map<string, Array<IKaitianMenuExtendInfo>>();
 
   private readonly _onDidChangeMenu = new Emitter<string>();
   readonly onDidChangeMenu: Event<string> = this._onDidChangeMenu.event;
@@ -186,11 +193,8 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
 
     this._menubarItems.set(menuId, menubarItem);
     this._onDidChangeMenubar.fire(menuId);
-    return {
-      dispose: () => {
-        this.removeMenubarItem(menuId);
-      },
-    };
+
+    return Disposable.create(() => this.removeMenubarItem(menuId));
   }
 
   removeMenubarItem(menuId: string) {
@@ -216,6 +220,12 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
     }, [] as IMenubarItem[]);
   }
 
+  registerMenuExtendInfo(menuId: MenuId | string, item: Array<IKaitianMenuExtendInfo>): IDisposable {
+    this._menuExtendInfo.set(menuId, item);
+
+    return Disposable.create(() => this._menuExtendInfo.delete(menuId));
+  }
+
   registerMenuItem(menuId: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable {
     let array = this._menuItems.get(menuId);
     if (!array) {
@@ -226,15 +236,15 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
     }
 
     this._onDidChangeMenu.fire(menuId);
-    return {
-      dispose: () => {
-        const idx = array!.indexOf(item);
-        if (idx >= 0) {
-          array!.splice(idx, 1);
-          this._onDidChangeMenu.fire(menuId);
-        }
-      },
-    };
+
+    return Disposable.create(() => {
+      const idx = array!.indexOf(item);
+      if (idx >= 0) {
+        array!.splice(idx, 1);
+        this._onDidChangeMenu.fire(menuId);
+      }
+    });
+
   }
 
   registerMenuItems(menuId: string, items: (IMenuItem | ISubmenuItem)[]): IDisposable {
@@ -250,14 +260,12 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
     this._disabledMenuIds.add(menuId);
     this._onDidChangeMenu.fire(menuId);
 
-    return {
-      dispose: () => {
-        const deleted = this._disabledMenuIds.delete(menuId);
-        if (deleted) {
-          this._onDidChangeMenu.fire(menuId);
-        }
-      },
-    };
+    return Disposable.create(() => {
+      const deleted = this._disabledMenuIds.delete(menuId);
+      if (deleted) {
+        this._onDidChangeMenu.fire(menuId);
+      }
+    });
   }
 
   getMenuItems(id: MenuId | string): Array<IMenuItem | ISubmenuItem | IComponentMenuItem> {
@@ -290,6 +298,10 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
       this.appendImplicitMenuItems(result);
     }
 
+    if (this._menuExtendInfo.has(id)) {
+      return this.convertToMenuExtendInfo(this._menuExtendInfo.get(id)!, result);
+    }
+
     return result;
   }
 
@@ -312,6 +324,19 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
       if (!set.has(command.id)) {
         result.push({ command: command.id });
       }
+    });
+  }
+
+  private convertToMenuExtendInfo(extendInfoArr: IKaitianMenuExtendInfo[], result: Array<IMenuItem | ISubmenuItem | IComponentMenuItem>) {
+    return result.map((menuItem) => {
+      if (!isIMenuItem(menuItem)) {
+        return menuItem;
+      }
+
+      const { command } = menuItem;
+      const info = extendInfoArr.find((item) => item.command === command);
+
+      return info ? { ...menuItem, ...info } : menuItem;
     });
   }
 }
@@ -391,6 +416,10 @@ export interface IMenuAction {
    * 默认值为 'icon'
    */
   type?: IMenuActionDisplayType;
+  /**
+   * menu 子项最右侧的额外描述信息
+   */
+  extraDesc?: string;
 }
 
 /**
@@ -408,6 +437,7 @@ export class MenuNode implements IMenuAction {
   disabled: boolean;
   checked: boolean;
   nativeRole: string;
+  extraDesc: string;
   children: MenuNode[];
   type?: IMenuActionDisplayType;
   protected _actionCallback?: (...args: any[]) => any;
@@ -424,6 +454,7 @@ export class MenuNode implements IMenuAction {
     this.checked = Boolean(props.checked);
     this.nativeRole = props.nativeRole || '';
     this.type = props.type;
+    this.extraDesc = props.extraDesc || '';
     this._actionCallback = props.execute;
   }
 

@@ -48,6 +48,7 @@ const MenuAction: React.FC<{
             </div>
             : null
         }
+       {!data.keybinding && !hasSubmenu && data.extraDesc && <div className={styles.extraDesc}>{data.extraDesc}</div>}
       </div>
     </div>
   );
