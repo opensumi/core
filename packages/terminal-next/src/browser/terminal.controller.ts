@@ -259,7 +259,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
     this.addDispose(this.eventBus.on(ResizeEvent, (e: ResizeEvent) => {
       if (
-        (this._tabbarHandler && this._tabbarHandler?.isActivated) &&
+        (this._tabbarHandler && this._tabbarHandler.isActivated()) &&
         e.payload.slotLocation === getSlotLocation('@ali/ide-terminal-next', this.config.layoutConfig)
       ) {
         this.terminalView.resize();
