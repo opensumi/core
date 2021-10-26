@@ -866,7 +866,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
           const command = this.commandRegistry.getCommand(binding.command);
           if (command) {
             this.commandService.executeCommand(command.id, binding.args)
-              .then((err) => this.logger.error('Failed to execute command:', err));
+              .catch((err) => this.logger.error('Failed to execute command:', err, binding.command));
             /* 如果键绑定在上下文中但命令是可用状态下我们仍然在这里停止处理  */
             event.preventDefault();
             event.stopPropagation();

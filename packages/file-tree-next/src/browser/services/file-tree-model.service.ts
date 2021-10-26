@@ -1429,7 +1429,7 @@ export class FileTreeModelService {
           await (parent as Directory).setExpanded(true);
         }
       }
-      const errors = await this.fileTreeAPI.mvFiles(this.pasteStore.files.map((file) => file.uri), to);
+      const errors = await this.fileTreeAPI.mvFiles(this.pasteStore.files.map((file) => file.uri), parent.uri);
       if (errors && errors.length > 0) {
         errors.forEach((error) => {
           this.messageService.error(error);
@@ -1445,7 +1445,7 @@ export class FileTreeModelService {
       };
     } else if (this.pasteStore.type === PasteTypes.COPY) {
       for (const file of this.pasteStore.files) {
-        const newUri = to.resolve(file.uri.displayName);
+        const newUri = parent.uri.resolve(file.uri.displayName);
         if (!(parent as Directory).expanded) {
           await (parent as Directory).setExpanded(true);
         }

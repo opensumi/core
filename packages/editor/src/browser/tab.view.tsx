@@ -285,7 +285,7 @@ export const Tabs = ({ group }: ITabsProps) => {
             e.stopPropagation();
             group.close(resource.uri);
           }}>
-            <div className={getIcon('close')} />
+            <div className={classnames(getIcon('close'), styles.kt_editor_close_icon)} />
           </div>
         </div>
       </div>;

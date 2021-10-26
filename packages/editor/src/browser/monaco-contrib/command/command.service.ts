@@ -336,7 +336,7 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
       execute: (editor) => {
         const action = editor.getAction(id);
         if (action && action.isSupported()) {
-          this.runAction(id, editor);
+          return this.runAction(id, editor);
         }
       },
     };

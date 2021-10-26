@@ -139,15 +139,6 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
       }
     });
 
-    editorComponentRegistry.registerEditorComponentResolver('debug', (resource: IResource<any>, results: IEditorOpenType[]) => {
-      if (results.length === 0) {
-        results.push({
-          type: 'code',
-          title: localize('editorOpenType.code'),
-        });
-      }
-    });
-
     editorComponentRegistry.registerEditorComponentResolver(Schemas.untitled, (resource: IResource<any>, results: IEditorOpenType[]) => {
       if (results.length === 0) {
         results.push({

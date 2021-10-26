@@ -15,6 +15,12 @@ export const CtxMenu = observer(() => {
     ctxMenuService.hide(false);
   }, []);
 
+  const onClickOutSide = React.useCallback(() => {
+    if (ctxMenuService.visible) {
+      ctxMenuService.hide(true);
+    }
+  }, [ctxMenuService.visible]);
+
   // todo: 缓存上一次点击 visible 完成 toggle 效果
   return (
     <CtxMenuTrigger
@@ -34,7 +40,7 @@ export const CtxMenu = observer(() => {
       popup={(
         <ClickOutside
           mouseEvents={['click', 'contextmenu']}
-          onOutsideClick={() => ctxMenuService.hide(true)}>
+          onOutsideClick={onClickOutSide}>
           <MenuActionList
             data={ctxMenuService.menuNodes}
             afterClick={handleClick}
