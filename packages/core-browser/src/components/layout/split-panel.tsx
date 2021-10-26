@@ -164,23 +164,25 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
       } else if (getProp(childList[index - 1], 'flexGrow')) {
         flexMode = ResizeFlexMode.Next;
       }
-      elements.push(
-        <ResizeHandle
-          className={getProp(targetElement, 'noResize') || locks[index - 1] ? 'no-resize' : ''}
-          onResize={(prev, next) => {
-            const prevLocation = getProp(childList[index - 1], 'slot') || getProp(childList[index - 1], 'id');
-            const nextLocation = getProp(childList[index], 'slot') || getProp(childList[index], 'id');
-            fireResizeEvent(prevLocation!);
-            fireResizeEvent(nextLocation!);
-          }}
-          noColor={true}
-          findNextElement={dynamicTarget ? (direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction) : undefined}
-          findPrevElement={dynamicTarget ? (direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction, true) : undefined}
-          key={`split-handle-${index}`}
-          delegate={(delegate) => { resizeDelegates.current.push(delegate); }}
-          flexMode={ flexMode }
-          />,
-      );
+      const noResize = getProp(targetElement, 'noResize') || locks[index - 1];
+      if (!noResize) {
+        elements.push(
+          <ResizeHandle
+            onResize={(prev, next) => {
+              const prevLocation = getProp(childList[index - 1], 'slot') || getProp(childList[index - 1], 'id');
+              const nextLocation = getProp(childList[index], 'slot') || getProp(childList[index], 'id');
+              fireResizeEvent(prevLocation!);
+              fireResizeEvent(nextLocation!);
+            }}
+            noColor={true}
+            findNextElement={dynamicTarget ? (direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction) : undefined}
+            findPrevElement={dynamicTarget ? (direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction, true) : undefined}
+            key={`split-handle-${index}`}
+            delegate={(delegate) => { resizeDelegates.current.push(delegate); }}
+            flexMode={ flexMode }
+            />,
+        );
+      }
     }
     elements.push(
       <PanelContext.Provider
