@@ -132,7 +132,7 @@ export class AccordionService extends WithEventBus {
   // 调用时需要保证dom可见
   restoreSize() {
     // 计算存储总高度与当前窗口总高度差，加到最后一个展开的面板
-    let availableSize = this.splitPanelService.rootNode!.clientHeight;
+    let availableSize = this.splitPanelService.rootNode?.clientHeight || 0;
     let finalUncollapsedIndex: number | undefined;
     this.visibleViews.forEach((view, index) => {
       const savedState = this.state[view.id];
@@ -295,10 +295,10 @@ export class AccordionService extends WithEventBus {
     return `${forceRevealKey} == true`;
   }
 
-  protected storeState() {
+  protected storeState = debounce(() => {
     if (this.noRestore || !this.rendered) { return; }
     this.layoutState.setState(LAYOUT_STATE.getContainerSpace(this.containerId), this.state);
-  }
+  }, 200);
 
   private registerGlobalToggleCommand() {
     const commandId = `view-container.hide.${this.containerId}`;

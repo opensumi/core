@@ -631,8 +631,13 @@ export class TabbarService extends WithEventBus {
       return;
     }
     const containerInfo = this.containersMap.get(containerId);
-    // 使用自定义视图取代手风琴的面板不需要restore
-    if (!containerInfo || containerInfo.options!.component) {
+    // 使用自定义视图取代手风琴的面板不需要 restore
+    // scm 视图例外，因为在新版本 Gitlens 中可以将自己注册到 scm 中
+    // 暂时用这种方式使 scm 面板状态可以被持久化
+    if (
+      (!containerInfo || containerInfo.options!.component) &&
+      containerInfo?.options?.containerId !== 'scm'
+    ) {
       return;
     }
     const accordionService = this.layoutService.getAccordionService(containerId);
