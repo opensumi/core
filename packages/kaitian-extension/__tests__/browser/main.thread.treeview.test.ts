@@ -6,6 +6,8 @@ import { IMainLayoutService } from '@ali/ide-main-layout';
 import { IMenuRegistry } from '@ali/ide-core-browser/src/menu/next';
 import { IContextKeyService, PreferenceService } from '@ali/ide-core-browser/src';
 import { IIconService, IThemeService } from '@ali/ide-theme';
+import { IFileServiceClient } from '@ali/ide-file-service';
+import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
 
 const mockExtThreadTreeViewProxy = {
   $postMessage: jest.fn(),
@@ -68,6 +70,10 @@ describe('MainThreadTreeView API Test Suite', () => {
       {
         token: IThemeService,
         useValue: {},
+      },
+      {
+        token: IFileServiceClient,
+        useClass: MockFileServiceClient,
       },
     ]));
 

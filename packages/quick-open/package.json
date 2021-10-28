@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-quick-open",
-  "version": "2.11.1",
+  "version": "2.11.2",
   "files": [
     "lib"
   ],
@@ -21,13 +21,13 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-components": "2.11.1",
-    "@ali/ide-core-browser": "2.11.1",
-    "@ali/ide-core-common": "2.11.1",
-    "@ali/ide-monaco": "2.11.1",
-    "@ali/ide-workspace": "2.11.1",
-    "@ali/ide-theme": "2.11.1",
-    "@ali/ide-static-resource": "2.11.1"
+    "@ali/ide-components": "2.11.2",
+    "@ali/ide-core-browser": "2.11.2",
+    "@ali/ide-core-common": "2.11.2",
+    "@ali/ide-monaco": "2.11.2",
+    "@ali/ide-workspace": "2.11.2",
+    "@ali/ide-theme": "2.11.2",
+    "@ali/ide-static-resource": "2.11.2"
   },
   "devDependencies": {
     "@ali/ide-dev-tool": "^1.1.0",
