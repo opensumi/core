@@ -34,7 +34,6 @@ renderApp({
     'general.icon': 'vscode-icons',
     'application.confirmExit': 'never',
     'editor.quickSuggestionsDelay': 100,
-    'editor.quickSuggestionsMaxCount': 50,
   },
   defaultPanels: {
     'bottom': '@ali/ide-terminal-next',

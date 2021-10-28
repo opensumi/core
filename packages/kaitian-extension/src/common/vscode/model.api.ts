@@ -214,7 +214,6 @@ export enum CompletionTriggerKind {
 export interface CompletionContext {
   triggerKind: CompletionTriggerKind;
   triggerCharacter?: string;
-  quickSuggestionsMaxCount?: number;
 }
 
 export type CompletionType = 'method'

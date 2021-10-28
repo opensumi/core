@@ -69,6 +69,8 @@ export class KtViewContributionPoint extends VSCodeContributePoint<KtViewsContri
                 getDebugLogger().warn(`custom title component '${view.titleComponentId}' is not allowed for built-in container ${location}!`);
               }
               const { title, id, priority, component, when, weight } = view;
+              // 支持指定通过 location 获取 containerId 的方式
+              const containerId = this.mainlayoutService.getTabbarHandler(location)?.containerId || location;
               const handlerId = this.mainlayoutService.collectViewComponent({
                 id,
                 priority,
@@ -76,7 +78,7 @@ export class KtViewContributionPoint extends VSCodeContributePoint<KtViewsContri
                 name: title,
                 when,
                 weight,
-              }, location, {}, {
+              }, containerId, {}, {
                 fromExtension: true,
               });
               this.disposableCollection.push({

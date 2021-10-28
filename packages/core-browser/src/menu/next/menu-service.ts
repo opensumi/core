@@ -164,7 +164,7 @@ class Menu extends Disposable implements IMenu {
           MenuItemNode,
           [
             menuCommand, item.iconClass || command?.iconClass, options,
-            disabled, checked, item.type, item.nativeRole,
+            disabled, checked, item.type, item.nativeRole, item.extraDesc,
             item.extraTailArgs, item.argsTransformer,
           ]);
         return action;

@@ -16,6 +16,9 @@ export function useUpdateOnEvent<T = any>(event: Event<T>, dependencies: any[] =
   React.useEffect(() => {
     const disposer = new Disposable();
     disposer.addDispose(event((payload: T) => {
+      if (disposer.disposed) {
+        return;
+      }
       if (!condition) {
         forceUpdate();
       } else {
@@ -38,6 +41,9 @@ export function useUpdateOnEventBusEvent<T = any>(eventType: ConstructorOf<Basic
   React.useEffect(() => {
     const disposer = new Disposable();
     disposer.addDispose(eventBus.on(eventType, (event: BasicEvent<T>) => {
+      if (disposer.disposed) {
+        return;
+      }
       if (!condition) {
         forceUpdate();
       } else {

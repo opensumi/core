@@ -5,7 +5,7 @@ import { textLinkActiveForeground } from '../text';
 import { TAB_INACTIVE_BACKGROUND } from '../tab';
 import { foreground } from '../base';
 import { PANEL_BACKGROUND, PANEL_INACTIVE_TITLE_FOREGROUND } from '../panel';
-import { ACTIVITY_BAR_BACKGROUND } from '../activity-bar';
+import { ACTIVITY_BAR_BACKGROUND, ACTIVITY_BAR_BORDER } from '../activity-bar';
 
 /* --- panel --- */
 export const ktPanelTitleBackground = registerColor('kt.panelTitle.background', {
@@ -51,9 +51,9 @@ export const ktPanelTabActiveBorder = registerColor('kt.panelTab.activeBorder', 
 }, localize('panelTab.border', 'Panel tab border color.'));
 
 export const ktPanelTabBorder = registerColor('kt.panelTab.border', {
-  dark: darken(ACTIVITY_BAR_BACKGROUND, 0.1),
-  light: darken(ACTIVITY_BAR_BACKGROUND, 0.1),
-  hc: darken(ACTIVITY_BAR_BACKGROUND, 0.1),
+  dark: darken(ACTIVITY_BAR_BORDER, 0.1),
+  light: darken(ACTIVITY_BAR_BORDER, 0.1),
+  hc: darken(ACTIVITY_BAR_BORDER, 0.1),
 }, localize('panelTab.border', 'Panel tab border color.'));
 
 export const ktPanelSecondaryForeground = registerColor('kt.panel.secondaryForeground', {

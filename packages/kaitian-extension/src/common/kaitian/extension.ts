@@ -1,5 +1,6 @@
 import { IMenubarItem, ISubmenuItem } from '@ali/ide-core-browser/lib/menu/next';
 import { ThemeType } from '@ali/ide-theme';
+import { IKaitianMenuExtendInfo } from '@ali/ide-core-common';
 
 import { IExtensionContributions } from '../vscode/extension';
 import { ITabBarViewContribution } from '../../browser/kaitian-browser/types';
@@ -40,4 +41,8 @@ export interface IKaitianExtensionContributions extends IExtensionContributions 
   workerMain?: string;
   nodeMain?: string;
   browserMain?: string;
+  // 针对 vscode contributes 中的 menus 的一些扩展
+  menuExtend?: {
+    [menuId: string]: Array<IKaitianMenuExtendInfo>;
+  };
 }
