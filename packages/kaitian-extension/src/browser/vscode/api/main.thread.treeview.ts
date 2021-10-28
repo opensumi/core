@@ -11,6 +11,7 @@ import { ExtensionTreeViewModel } from './tree-view/tree-view.model.service';
 import { ExtensionCompositeTreeNode, ExtensionTreeRoot, ExtensionTreeNode } from './tree-view/tree-view.node.defined';
 import { Tree, ITreeNodeOrCompositeTreeNode } from '@ali/ide-components';
 import { AbstractMenuService, generateCtxMenu, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { IFileServiceClient } from '@ali/ide-file-service';
 
 @Injectable({multiple: true})
 export class MainThreadTreeView implements IMainThreadTreeView {
@@ -42,10 +43,14 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   @Autowired(AbstractMenuService)
   private readonly menuService: AbstractMenuService;
 
+  @Autowired(IFileServiceClient)
+  protected fileServiceClient: IFileServiceClient;
+
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  // readonly dataProviders: Map<string, TreeViewDataProvider> = new Map<string, TreeViewDataProvider>();
+  private userhome?: URI;
+
   readonly treeModels: Map<string, ExtensionTreeViewModel> = new Map<string, ExtensionTreeViewModel>();
 
   private disposableCollection: Map<string, DisposableStore> = new Map();
@@ -55,6 +60,11 @@ export class MainThreadTreeView implements IMainThreadTreeView {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTreeView);
     this.disposable.add(toDisposable(() => this.treeModels.clear()));
     this._registerInternalCommands();
+    this.fileServiceClient.getCurrentUserHome().then((home) => {
+      if (home) {
+        this.userhome = new URI(home.uri);
+      }
+    });
   }
 
   dispose() {
@@ -76,7 +86,7 @@ export class MainThreadTreeView implements IMainThreadTreeView {
       return;
     }
     const disposable = new DisposableStore();
-    const dataProvider = new TreeViewDataProvider(treeViewId, this.proxy, this.iconService, this.themeService, this.labelService, this.contextKeyService, this.menuService);
+    const dataProvider = new TreeViewDataProvider(treeViewId, this.proxy, this.iconService, this.themeService, this.labelService, this.contextKeyService, this.menuService, this.userhome);
     const model = this.createTreeModel(treeViewId, dataProvider, options);
     this.treeModels.set(treeViewId, model);
     disposable.add(toDisposable(() => this.treeModels.delete(treeViewId)));
@@ -197,6 +207,7 @@ export class TreeViewDataProvider extends Tree {
     private readonly labelService: LabelService,
     private readonly contextKeyService: IContextKeyService,
     private readonly menuService: AbstractMenuService,
+    private readonly userhome?: URI,
   ) {
     super();
   }
@@ -221,15 +232,55 @@ export class TreeViewDataProvider extends Tree {
     return this.treeItemId2TreeNode.get(treeItemId)?.id;
   }
 
+  private getReadableDescription(item: TreeViewItem) {
+    if (item.resourceUri) {
+      if (this.userhome) {
+        const path = URI.from(item.resourceUri);
+        if (this.userhome.isEqualOrParent(path)) {
+          return decodeURIComponent(
+            item.resourceUri.path.toString().replace(this.userhome.codeUri.fsPath, '~'),
+          );
+        }
+      }
+      return item.resourceUri.path.toString();
+    }
+    return item.description;
+  }
+
+  private getLabelAndDescription(item: TreeViewItem) {
+    if (item.label) {
+      return {
+        label: item.label,
+        description: item.description,
+      };
+    } else if (item.resourceUri) {
+      let label = item.resourceUri.path.toString();
+      label = decodeURIComponent(label);
+      if (label.indexOf('/') >= 0) {
+        label = label.substring(label.lastIndexOf('/') + 1);
+      }
+      const description = this.getReadableDescription(item);
+      return {
+        label,
+        description,
+      };
+    }
+    return {
+      label: item.label,
+      description: item.description,
+    };
+  }
+
   async createFoldNode(item: TreeViewItem, parent: ExtensionCompositeTreeNode): Promise<ExtensionCompositeTreeNode> {
     const expanded = TreeItemCollapsibleState.Expanded === item.collapsibleState;
     const icon = await this.toIconClass(item);
     const actions = this.getInlineMenuNodes(item.contextValue || '');
+    const { label, description } = this.getLabelAndDescription(item);
     const node = new ExtensionCompositeTreeNode(
       this,
       parent,
-      item.label,
-      item.description,
+      label,
+      description,
       icon,
       item.tooltip,
       item.command,
@@ -247,11 +298,12 @@ export class TreeViewDataProvider extends Tree {
   async createNormalNode(item: TreeViewItem, parent: ExtensionCompositeTreeNode): Promise<ExtensionTreeNode> {
     const icon = await this.toIconClass(item);
     const actions = this.getInlineMenuNodes(item.contextValue || '');
+    const { label, description } = this.getLabelAndDescription(item);
     const node = new ExtensionTreeNode(
       this,
       parent,
-      item.label,
-      item.description,
+      label,
+      description,
       icon,
       item.tooltip,
       item.command,
