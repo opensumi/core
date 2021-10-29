@@ -40,5 +40,10 @@ export class TerminalKeybindinngContribution implements KeybindingContribution {
       keybinding: 'ctrlcmd+a',
       when: IsTerminalFocused.raw,
     });
+    registry.registerKeybinding({
+      command: TERMINAL_COMMANDS.SPLIT.id,
+      keybinding: 'ctrlcmd+\\',
+      when: IsTerminalFocused.raw,
+    });
   }
 }

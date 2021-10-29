@@ -552,22 +552,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   }
 
   /**
-   * 在绑定列表中查找绑定冲突 （无错误，是否冲突都会返回结果）
-   * @param bindings
-   * @param binding
-   */
-  protected getKeybindingCollisions(bindings: Keybinding[], binding: Keybinding): KeybindingsResultCollection.KeybindingsResult {
-    const result = new KeybindingsResultCollection.KeybindingsResult();
-    try {
-      const bindingKeySequence = this.resolveKeybinding(binding);
-      result.merge(this.getKeySequenceCollisions(bindings, bindingKeySequence));
-    } catch (error) {
-      this.logger.warn(error);
-    }
-    return result;
-  }
-
-  /**
    * 查找绑定列表中的键序列的冲突（无错误，是否冲突都会返回结果）
    * @param bindings
    * @param candidate
@@ -611,24 +595,12 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
       const matches = this.getKeySequenceCollisions(this.keymaps[scope], keySequence);
 
       matches.full = matches.full
-        .filter((binding) => this.getKeybindingCollisions(result.full, binding).full.length === 0)
-        .sort((a, b) => {
-          const compA = isUndefined(a.priority) ? KeybindingWeight.Default : a.priority;
-          const compB = isUndefined(b.priority) ? KeybindingWeight.Default : b.priority;
-          return compB - compA;
-        });
+        .sort(this.sortKeybindingsByPriority);
       matches.partial = matches.partial
-        .filter((binding) => this.getKeybindingCollisions(result.partial, binding).partial.length === 0)
-        .sort((a, b) => {
-          const compA = isUndefined(a.priority) ? KeybindingWeight.Default : a.priority;
-          const compB = isUndefined(b.priority) ? KeybindingWeight.Default : b.priority;
-          return compB - compA;
-        });
+        .sort(this.sortKeybindingsByPriority);
 
       result.merge(matches);
     }
-    this.sortKeybindingsByPriority(result.full);
-    this.sortKeybindingsByPriority(result.partial);
 
     // 如果组合键不可用，去掉组合键的功能
     const partial = result.partial.filter((binding) => this.isEnabled(binding, event));
@@ -685,20 +657,19 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * 按优先级顺序对键值绑定进行排序
    *
    * 具有When判定的键绑定比没有的优先级更高
+   * 当均具备 when 时，采用 priority 进行优先级判断
    * @param keybindings
    */
-  private sortKeybindingsByPriority(keybindings: Keybinding[]) {
-    keybindings.sort((a: Keybinding, b: Keybinding): number => {
-      if (a.when && !b.when) {
-        return -1;
-      }
-
-      if (!a.when && b.when) {
-        return 1;
-      }
-
-      return 0;
-    });
+  private sortKeybindingsByPriority(a: Keybinding, b: Keybinding) {
+    if (a.when && !b.when) {
+      return -1;
+    }
+    if (!a.when && b.when) {
+      return 1;
+    }
+    const compA = isUndefined(a.priority) ? KeybindingWeight.Default : a.priority;
+    const compB = isUndefined(b.priority) ? KeybindingWeight.Default : b.priority;
+    return compB - compA;
   }
 
   protected isActive(binding: Keybinding): boolean {
