@@ -909,7 +909,7 @@ declare module 'vscode' {
      * @param token A cancellation token.
      * @return The given, resolved code lens or thenable that resolves to such.
      */
-    resolveCodeLens?(codeLens: T, token: CancellationToken): ProviderResult<T[]>;
+    resolveCodeLens?(codeLens: T, token: CancellationToken): ProviderResult<T>;
   }
 
   /**
@@ -1340,7 +1340,7 @@ declare module 'vscode' {
    * Folding context (for future use)
    */
   // tslint:disable-next-line: no-empty-interface
-  export interface FoldingContext {}
+  export interface FoldingContext { }
 
   /**
    * The folding range provider interface defines the contract between extensions and
