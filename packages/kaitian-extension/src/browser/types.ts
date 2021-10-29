@@ -21,7 +21,7 @@ export abstract class IActivationEventService {
 
   abstract addWildCardTopic(topic: string): IDisposable;
 
-  activatedEventMap: Map<string, string>;
+  activatedEventSet: Set<string>;
 
 }
 

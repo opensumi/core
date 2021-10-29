@@ -260,10 +260,17 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   private async startExtProcess(init: boolean) {
-    // 重启场景下，需要将插件 dispose 掉并重新激活一遍
+    /**
+     * 重启插件进程步骤：
+     * 1、重置所有插件实例的状态至未激活
+     * 2、将负责前后端通信的 main.thread 全部 dispose 掉
+     * 3、杀掉后端插件进程
+     * 4、走正常激活插件流程，重新激活对应插件进程
+     * 5、将之前已经激活的插件重新激活一遍
+     */
     if (!init) {
       this.resetExtensionInstances();
-      await this.initExtensionInstanceData();
+      await this.disposeExtProcess();
     }
 
     // set ready for node/worker
@@ -274,13 +281,13 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
     if (!init) {
       // 重启场景下把 ActivationEvent 再发一次
-      if (this.activationEventService.activatedEventMap.size) {
-        const activatedEventArr = Array.from(this.activationEventService.activatedEventMap);
+      if (this.activationEventService.activatedEventSet.size) {
+        const activatedEventArr = Array.from(this.activationEventService.activatedEventSet);
 
-        this.activationEventService.activatedEventMap.clear();
+        this.activationEventService.activatedEventSet.clear();
 
         await Promise.all(activatedEventArr.map((event) => {
-          const [topic, data] = event;
+          const { topic, data } = JSON.parse(event);
           this.logger.verbose('fireEvent', 'event.topic', topic, 'event.data', data);
           return this.activationEventService.fireEvent(topic, data);
         }));
@@ -339,8 +346,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     const startUpActivationEvents = ['*', 'onStartupFinished'];
 
     const _activationEvents = activationEvents.filter((event) => event !== '*');
-    const shouldFireEvents = Array.from(this.activationEventService.activatedEventMap)
-      .filter(([topic, data]) => _activationEvents.find((_event) => _event === `${topic}:${data}`));
+    const shouldFireEvents = Array.from(this.activationEventService.activatedEventSet)
+      .map((event) => JSON.parse(event))
+      .filter(({ topic, data }) => _activationEvents.find((_event) => _event === `${topic}:${data}`));
 
     for (const event of startUpActivationEvents) {
       if (activationEvents.includes(event)) {
@@ -350,7 +358,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
 
     for (const event of shouldFireEvents) {
-      const [topic, data] = event;
+      const { topic, data } = event;
       this.logger.verbose(`Fire activation event ${topic}:${data}`);
       this.activationEventService.fireEvent(topic, data);
     }
@@ -469,12 +477,14 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     this.workerExtensionService.disposeApiFactory();
   }
 
+  async disposeExtProcess() {
+    await this.nodeExtensionService.disposeProcess();
+    await this.workerExtensionService.disposeProcess();
+  }
+
   public async disposeExtensions() {
     // 重置掉插件实例
     this.extensionInstanceManageService.disposeExtensionInstances();
-
-    await this.nodeExtensionService.disposeProcess();
-    await this.workerExtensionService.disposeProcess();
   }
 
   // 给 contributes#command 注册 command executor 使用

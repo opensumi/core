@@ -20,15 +20,14 @@ export class ActivationEventServiceImpl implements IActivationEventService {
 
   private wildCardTopics: Set<string> = new Set();
 
-  public activatedEventMap: Map<string, string> = new Map();
+  public activatedEventSet: Set<string> = new Set();
 
   constructor() {
     this.wildCardTopics.add('workspaceContains');
   }
 
   async fireEvent(topic: string, data: string = ''): Promise<void> {
-
-    this.activatedEventMap.set(topic, data);
+    this.activatedEventSet.add(JSON.stringify({topic, data}));
 
     let listeners: IActivationEventListener[] | undefined;
     if (this.wildCardTopics.has(topic)) {

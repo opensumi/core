@@ -309,7 +309,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     this.logger.log('extProcess.pid', extProcessId);
     this.extensionHostManager.onExit(extProcessId, async (code: number, signal: string) => {
       this.logger.log('extProcess.pid exit', extProcessId, 'code', code, 'signal', signal);
-      if (this.clientExtProcessMap.has(clientId)) {
+      if (this.clientExtProcessMap.get(clientId) === extProcessId) {
         this.logger.error('extProcess crash', extProcessId, 'code', code, 'signal', signal);
         await this.disposeClientExtProcess(clientId, false, false);
         this.infoProcessCrash(clientId);
@@ -570,7 +570,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         await this.extensionHostManager.treeKill(extProcessId);
         await this.extensionHostManager.disposeProcess(extProcessId);
       }
-
       if (info) {
         this.infoProcessNotExist(clientId);
       }
