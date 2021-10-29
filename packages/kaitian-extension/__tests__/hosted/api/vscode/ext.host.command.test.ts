@@ -3,10 +3,11 @@ import { ExtHostCommands, createCommandsApiFactory } from '@ali/ide-kaitian-exte
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, IMainThreadCommands, CommandHandler } from '@ali/ide-kaitian-extension/lib/common/vscode';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { IExtensionInfo, Uri, SymbolKind } from '@ali/ide-core-common';
+import { IExtensionInfo, Uri } from '@ali/ide-core-common';
 import * as modes from '@ali/ide-kaitian-extension/lib/common/vscode/model.api';
 import * as types from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
 import type * as vscode from 'vscode';
+import { SymbolKind } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
 
 describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () => {
   let vscodeCommand: typeof vscode.commands;

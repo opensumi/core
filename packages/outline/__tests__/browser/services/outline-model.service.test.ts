@@ -1,5 +1,5 @@
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { Disposable, SymbolKind, URI, MarkerManager } from '@ali/ide-core-common';
+import { Disposable, URI, MarkerManager } from '@ali/ide-core-common';
 import { OutlineModelService } from '@ali/ide-outline/lib/browser/services/outline-model.service';
 import { OutlineTreeService } from '@ali/ide-outline/lib/browser/services/outline-tree.service';
 import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '@ali/ide-outline/lib/browser/outline-node.define';
@@ -10,6 +10,7 @@ import { IOutlineDecorationService } from '@ali/ide-outline';
 import * as styles from '../../../../src/browser/outline-node.module.less';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { IContextKeyService } from '@ali/ide-core-browser';
+import { SymbolKind } from '@ali/ide-kaitian-extension/lib/hosted/api/worker/worker.ext-types';
 
 describe('OutlineTreeModelService', () => {
   let outlineTreeModelService: OutlineModelService;

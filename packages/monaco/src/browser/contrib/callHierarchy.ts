@@ -1,5 +1,5 @@
-import type { Uri as URI, IRange, SymbolKind, SymbolTag, IPosition, CancellationToken } from '@ali/ide-core-common';
-import type { ProviderResult } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
+import type { Uri as URI, IRange, SymbolTag, IPosition, CancellationToken } from '@ali/ide-core-common';
+import type { ProviderResult, SymbolKind } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 import type { Position } from '@ali/monaco-editor-core/esm/vs/editor/common/core/position';
 import { LanguageFeatureRegistry } from '@ali/monaco-editor-core/esm/vs/editor/common/modes/languageFeatureRegistry';
