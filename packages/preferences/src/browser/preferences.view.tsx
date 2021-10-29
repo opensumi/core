@@ -42,6 +42,8 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
 
   const groups = preferenceService.getSettingGroups(currentScope, currentSearch);
 
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
+
   if (groups.length > 0 && groups.findIndex((g) => g.id === preferenceService.currentGroup) === -1) {
     preferenceService.setCurrentGroup(groups[0].id);
   }
@@ -57,6 +59,17 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   React.useEffect(() => {
     setCurrentSearch(doSearchValue);
   }, [doSearchValue]);
+
+  React.useEffect(() => {
+    const focusDispose = preferenceService.onFocus(() => {
+      if (inputRef && inputRef.current) {
+        inputRef.current.focus();
+      }
+    });
+    return () => {
+      focusDispose.dispose();
+    };
+  }, []);
 
   const headers = (
     <Tabs
@@ -100,6 +113,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
               value={currentSearch}
               placeholder={localize('preference.searchPlaceholder')}
               onValueChange={search}
+              ref={inputRef}
             />
           </div>
         </div>

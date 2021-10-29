@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { IPreferenceViewDesc, IPreferenceSettingsService, ISettingGroup, ISettingSection, PreferenceProviderProvider, Emitter, CommandService, getDebugLogger, isString, getIcon, PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages, PreferenceService, localize, replaceLocalizePlaceholder, ThrottledDelayer } from '@ali/ide-core-browser';
+import { IPreferenceViewDesc, IPreferenceSettingsService, ISettingGroup, ISettingSection, PreferenceProviderProvider, Emitter, Event, CommandService, getDebugLogger, isString, getIcon, PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages, PreferenceService, localize, replaceLocalizePlaceholder, ThrottledDelayer } from '@ali/ide-core-browser';
 import { toPreferenceReadableName, PreferenceSettingId } from '../common';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { IRecycleListHandler } from '@ali/ide-components';
@@ -300,6 +300,16 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
    */
   search = (value: string) => {
     this.doSearch(value);
+  }
+
+  private readonly _onFocus: Emitter<void> = new Emitter<void>();
+
+  get onFocus(): Event<void> {
+    return this._onFocus.event;
+  }
+
+  focusInput() {
+    this._onFocus.fire();
   }
 }
 

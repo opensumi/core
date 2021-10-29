@@ -95,6 +95,11 @@ export namespace PREFERENCE_COMMANDS {
 
     category: CATEGORY,
   };
+
+  export const PREFERENCE_INPUT_FOCUS: Command = {
+    id: 'preference.input.focus',
+    category: CATEGORY,
+  };
 }
 
 @Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution, JsonSchemaContribution)
@@ -188,6 +193,12 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
         }
       },
     });
+
+    commands.registerCommand(PREFERENCE_COMMANDS.PREFERENCE_INPUT_FOCUS, {
+      execute: () => {
+        this.preferenceService.focusInput();
+      },
+    });
   }
 
   registerMenus(menus: IMenuRegistry) {
@@ -217,6 +228,12 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
     keybindings.registerKeybinding({
       command: COMMON_COMMANDS.OPEN_PREFERENCES.id,
       keybinding: 'ctrlcmd+,',
+    });
+
+    keybindings.registerKeybinding({
+      command: PREFERENCE_COMMANDS.PREFERENCE_INPUT_FOCUS.id,
+      keybinding: 'ctrlcmd+f',
+      when: `resourceScheme == pref`,
     });
   }
 
