@@ -246,6 +246,7 @@ export class KeymapService implements IKeymapService {
     } else {
       this.keybindings = this.getKeybindingItems();
     }
+    this.keymapChangeEmitter.fire();
   }
 
   /**

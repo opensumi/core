@@ -10,6 +10,7 @@ import { defaultConfig } from '@ali/ide-main-layout/lib/browser/default-config';
 
 import { renderApp } from './render-app';
 import { CommonBrowserModules } from '../../src/browser/common-modules';
+import { SampleModule } from '../sample-modules';
 
 import '../styles.less';
 
@@ -17,6 +18,7 @@ renderApp({
   modules: [
     ...CommonBrowserModules,
     ExpressFileServerModule,
+    SampleModule,
   ],
   layoutConfig: {
     ...defaultConfig,

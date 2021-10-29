@@ -1,5 +1,5 @@
 // 快捷键相关功能为纯前端模块，这里直接从browser引入定义
-import { Keybinding } from '@ali/ide-core-browser';
+import { Keybinding, IDisposable } from '@ali/ide-core-browser';
 
 export const IKeymapService = Symbol('IKeymapService');
 
@@ -98,4 +98,11 @@ export interface IKeymapService {
    * @memberof IKeymapService
    */
   openResource(): Promise<void>;
+
+  /**
+   * 监听快捷键改变完成后事件
+   * @returns {void}
+   * @memberof IKeymapService
+   */
+  onDidKeymapChanges(listener: () => any): IDisposable;
 }

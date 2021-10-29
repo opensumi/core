@@ -1,0 +1,44 @@
+
+.empty_component {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  img {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 20px;
+    user-select: none;
+  }
+  >span {
+    font-size: 20px;
+    opacity: .7;
+  }
+}
+
+.shortcutPanel {
+  border-collapse: separate;
+  border-spacing: 13px 10px;
+  user-select: none;
+
+  .shortcutRow {
+    display: table-row;
+    opacity: .7;
+    padding-top: 8px;
+    padding-right: 16px;
+
+    .label {
+      // width: 92px;
+      display: table-cell;
+      text-align: right;
+    }
+
+    .keybinding {
+      display: table-cell;
+      margin-left: 16px;
+      text-align: left;
+    }
+  }
+
+}

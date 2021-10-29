@@ -1,35 +1,135 @@
-/**
- * 注册编辑器空白页背景图
- */
-import {
-  Domain,
-  ComponentContribution,
-  ComponentRegistry,
-} from '@ali/ide-core-browser';
 import * as React from 'react';
+import { useMemo, useState } from 'react';
+import { Domain, ComponentContribution, ComponentRegistry, EDITOR_COMMANDS, SEARCH_COMMANDS } from '@ali/ide-core-browser';
+import { KeybindingRegistry } from '@ali/ide-core-browser/lib/keybinding/keybinding';
+import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
+import { KeybindingView } from '@ali/ide-quick-open/lib/browser/components/keybinding';
+import { QUICK_OPEN_COMMANDS } from '@ali/ide-quick-open/lib/common';
+import { Disposable, localize, registerLocalizationBundle } from '@ali/ide-core-common';
+import { IKeymapService } from '@ali/ide-keymaps/lib/common/keymaps';
+import { ThrottledDelayer } from '@ali/ide-core-common/lib/async';
 
-const EditorEmptyComponent: React.FC<{
-  list: string[],
-}> = (props) => {
-  return (
-    <section style={{
-      color: 'var(--foreground)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      flexDirection: 'column',
-      height: '100%',
-      fontSize: 20,
-    }}>
-      <div style={{
-        background: `url('./resources/kaitian-black.png') center center no-repeat`,
-        height: 120,
-        width: 120,
-        backgroundSize: 120,
-        opacity: 0.3,
-      }}></div>
-    </section>
-  );
+import * as styles from './editor-empty-component.module.less';
+
+const DEFAULT_CHANGE_DELAY = 500; // ms
+
+// 集成侧自定义多语言
+export const localizationBundle = {
+  'zh-CN': {
+    languageId: 'zh-CN',
+    languageName: 'Chinese',
+    localizedLanguageName: '中文(中国)',
+    contents: {
+      'custom.quick_open': '转到文件',
+      'custom.command_palette': '显示所有命令',
+      'custom.terminal_panel': '切换终端',
+      'custom.search_panel': '切换搜索面板',
+    },
+  },
+  'en-US': {
+    languageId: 'en-US',
+    languageName: 'English',
+    localizedLanguageName: 'English',
+    contents: {
+      'custom.quick_open': 'Quick Open',
+      'custom.command_palette': 'Command Palette',
+      'custom.terminal_panel': 'Switch to Terminal Panel',
+      'custom.search_panel': 'Switch to Search Panel',
+    },
+  },
+};
+registerLocalizationBundle(localizationBundle['zh-CN']);
+registerLocalizationBundle(localizationBundle['en-US']);
+
+/**
+ * 单行快捷键信息
+ * @param param0
+ * @returns
+ */
+const ShortcutRow = ({ label, keybinding }) => <dl className={styles.shortcutRow}>
+  <span className={styles.label}>{label}</span>
+  <KeybindingView keybinding={keybinding} className={styles.keybinding} />
+</dl>;
+
+/**
+ * 编辑器空白页引导信息
+ */
+export const EditorEmptyComponent = () => {
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [keyMapLoaded, setKeyMapLoaded] = useState(false);
+
+  const keybindingRegistry = useInjectable<KeybindingRegistry>(KeybindingRegistry);
+  const keymapService = useInjectable<IKeymapService>(IKeymapService);
+
+  const keymapChangeDelayer = new ThrottledDelayer<void>(DEFAULT_CHANGE_DELAY);
+  const getKeybinding = (commandId: string) => {
+    const bindings = keybindingRegistry.getKeybindingsForCommand(commandId);
+    if (!bindings.length) {
+      return;
+    }
+
+    const keyBindings = bindings.sort((a, b) => ((b.priority || 0) - (a.priority || 0)));
+    // 如果快捷键条目没有 when 条件，优先使用
+    const primaryKeybinding = bindings.find((binding) => !binding.when);
+    return primaryKeybinding || keyBindings[0];
+  };
+
+  const init = () => {
+    // 监听快捷键是否有更新
+    return keymapService.onDidKeymapChanges(() => {
+      keymapChangeDelayer.trigger(async () => {
+        setKeyMapLoaded(true);
+      });
+    });
+  };
+
+  React.useEffect(() => {
+    const disposer = new Disposable();
+    disposer.addDispose(init());
+
+    return () => {
+      disposer.dispose();
+    };
+  }, []);
+
+  const ShortcutView = useMemo(() => {
+    if (!imgLoaded || !keyMapLoaded) {
+      return;
+    }
+
+    const keyInfos = [
+      {
+        label: localize('custom.quick_open'),
+        command: EDITOR_COMMANDS.QUICK_OPEN.id,
+        keybinding: getKeybinding(EDITOR_COMMANDS.QUICK_OPEN.id),
+      },
+      {
+        label: localize('custom.command_palette'),
+        command: QUICK_OPEN_COMMANDS.OPEN.id,
+        keybinding: getKeybinding(QUICK_OPEN_COMMANDS.OPEN.id),
+      },
+      {
+        label: localize('custom.terminal_panel'),
+        command: 'workbench.view.terminal',
+        keybinding: getKeybinding('workbench.view.terminal'),
+      },
+      {
+        label: localize('custom.search_panel'),
+        command: SEARCH_COMMANDS.OPEN_SEARCH.id,
+        keybinding: getKeybinding(SEARCH_COMMANDS.OPEN_SEARCH.id),
+      },
+    ].filter((e) => e.keybinding);
+
+    return <div className={styles.shortcutPanel}>
+      {keyInfos.map((keyInfo) => <ShortcutRow key={keyInfo.command} label={keyInfo.label} keybinding={keyInfo.keybinding}></ShortcutRow>)}
+    </div>;
+  }, [imgLoaded, keyMapLoaded]);
+
+  const logoUri = 'https://img.alicdn.com/imgextra/i2/O1CN01NR0L1l1M3AUVVdKhq_!!6000000001378-2-tps-152-150.png';
+  return <div className={styles.empty_component}>
+    <img src={logoUri} onLoad={() => setImgLoaded(true)} />
+    {ShortcutView}
+  </div>;
 };
 
 @Domain(ComponentContribution)
@@ -38,9 +138,7 @@ export class EditorEmptyComponentContribution implements ComponentContribution {
     registry.register('editor-empty', {
       id: 'editor-empty',
       component: EditorEmptyComponent,
-      initialProps: {
-        list: ['Alibaba', 'Alipay'],
-      },
+      initialProps: {},
     });
   }
 }
