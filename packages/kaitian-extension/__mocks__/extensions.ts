@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { Uri } from '@ali/ide-core-common';
-import { IExtensionProps } from '../src/common';
+import { IExtension, IExtensionProps } from '../src/common';
 import { IExtensionDescription, ExtensionIdentifier } from '../src/common/vscode';
 
 // 临时绕过
@@ -58,7 +58,7 @@ export const mockExtensionProps2: IExtensionProps = {
   },
 };
 
-export const mockExtension: IExtensionDescription = {
+export const mockExtensionDescription: IExtensionDescription = {
   ...mockExtensionProps,
   identifier: new ExtensionIdentifier(mockExtensionProps.id),
   isUnderDevelopment: false,
@@ -68,4 +68,13 @@ export const mockExtension: IExtensionDescription = {
   contributes: mockExtensionProps.packageJSON.contributes,
 };
 
-export const mockExtensions: IExtensionDescription[] = [mockExtension];
+export const mockExtension: IExtension = {
+  ...mockExtensionProps,
+  contributes: {},
+  activate: () => {},
+  enable: () => {},
+  reset: () => {},
+  toJSON: () => mockExtensionProps,
+};
+
+export const mockExtensions: IExtensionDescription[] = [mockExtensionDescription];

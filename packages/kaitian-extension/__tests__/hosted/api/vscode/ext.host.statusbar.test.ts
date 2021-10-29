@@ -9,7 +9,7 @@ import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
 import { IContextKeyService, IStatusBarService } from '@ali/ide-core-browser';
 import { StatusBarService } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 import { ThemeColor } from '../../../../src/common/vscode/ext-types';
-import { mockExtension } from '../../../../__mocks__/extensions';
+import { mockExtensionDescription } from '../../../../__mocks__/extensions';
 import { MockContextKeyService } from '@ali/ide-core-browser/__mocks__/context-key';
 
 const emitterA = new Emitter<any>();
@@ -65,7 +65,7 @@ describe('vscode MainThreadStatusBar Test', () => {
     // mock mainThread.$setMessage
     const $setMessage = jest.spyOn(mainThread, '$setMessage');
 
-    const statusbar = extHost.createStatusBarItem(mockExtension, 'test');
+    const statusbar = extHost.createStatusBarItem(mockExtensionDescription, 'test');
     statusbar.show();
     // statusbar host 调用 main 有一个 定时器
     setTimeout(() => {
@@ -78,7 +78,7 @@ describe('vscode MainThreadStatusBar Test', () => {
     // mock mainThread.$setMessage
     const $setMessage = jest.spyOn(mainThread, '$setMessage');
 
-    const statusbar = extHost.createStatusBarItem(mockExtension, 'test');
+    const statusbar = extHost.createStatusBarItem(mockExtensionDescription, 'test');
 
     statusbar.name = 'test name';
     statusbar.show();
@@ -93,7 +93,7 @@ describe('vscode MainThreadStatusBar Test', () => {
     // mock mainThread.$setMessage
     const $setMessage = jest.spyOn(mainThread, '$setMessage');
 
-    const statusbar = extHost.createStatusBarItem(mockExtension);
+    const statusbar = extHost.createStatusBarItem(mockExtensionDescription);
     statusbar.command = 'test';
     statusbar.show();
     // statusbar host 调用 main 有一个 定时器
@@ -108,7 +108,7 @@ describe('vscode MainThreadStatusBar Test', () => {
     // mock mainThread.$setMessage
     const $setMessage = jest.spyOn(mainThread, '$setMessage');
 
-    const statusbar = extHost.createStatusBarItem(mockExtension);
+    const statusbar = extHost.createStatusBarItem(mockExtensionDescription);
     statusbar.command = {
       title: 'test',
       command: 'test',
@@ -127,7 +127,7 @@ describe('vscode MainThreadStatusBar Test', () => {
     // mock mainThread.$setMessage
     const $setMessage = jest.spyOn(mainThread, '$setMessage');
 
-    const statusbar = extHost.createStatusBarItem(mockExtension);
+    const statusbar = extHost.createStatusBarItem(mockExtensionDescription);
     statusbar.accessibilityInformation = {
       label: '蛋总',
       role: 'danzong',
@@ -144,7 +144,7 @@ describe('vscode MainThreadStatusBar Test', () => {
     // mock mainThread.$setMessage
     const $setMessage = jest.spyOn(mainThread, '$setMessage');
 
-    const statusbar = extHost.createStatusBarItem(mockExtension);
+    const statusbar = extHost.createStatusBarItem(mockExtensionDescription);
     statusbar.backgroundColor = new ThemeColor('statusBarItem.errorBackground');
     statusbar.color = 'red';
     statusbar.show();

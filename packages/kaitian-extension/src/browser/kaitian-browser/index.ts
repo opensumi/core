@@ -1,5 +1,5 @@
 
-import { URI, localize, getIcon, IReporterService } from '@ali/ide-core-browser';
+import { URI, localize, getIcon, IReporterService, format } from '@ali/ide-core-browser';
 import { Scroll } from '@ali/ide-editor/lib/browser/component/scroll/scroll';
 import { ResizeHandleHorizontal, ResizeHandleVertical } from '@ali/ide-core-browser/lib/components';
 import { PlainWebview } from '@ali/ide-webview';
@@ -38,6 +38,9 @@ export function createBrowserApi(injector: Injector, extension: IExtension, rpcP
     URI,
     localize: (key: string, message?: string) => {
       return localize(key, message, extension.id);
+    },
+    formatLocalize: (key: string, ...args: string[]) => {
+      return format(localize(key, undefined, extension.id), ...args);
     },
     getIcon,
 

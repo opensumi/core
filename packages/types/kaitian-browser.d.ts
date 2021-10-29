@@ -20,6 +20,8 @@ declare module 'kaitian-browser' {
 
   import { ROTATE_TYPE, ANIM_TYPE } from '@ali/ide-components';
 
+  export type { URI } from '@ali/ide-core-browser';
+
   export interface ScrollAreaProps {
     className?: string;
     onScroll?: (position: ScrollPosition) => any;
@@ -56,6 +58,15 @@ declare module 'kaitian-browser' {
   // scope 目前不是必要的，可以直接从 extension 拿到 id
   // 为了兼容已经在使用的插件，暂时先保留声明
   export function localize(key: string, defaultMessage?: string, scope?: string): string;
+
+  /**
+   * 格式化国际化文案
+   * @example
+   * ```js
+   * kaitian.formatLocalize('task.label', '任务', '运行');
+   * ```
+   */
+  export function formatLocalize(key: string, ...args: string[]): string;
 
   export function getIcon(iconKey: string, options?: { rotate?: ROTATE_TYPE, anim?: ANIM_TYPE }): string;
 
