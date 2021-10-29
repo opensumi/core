@@ -120,9 +120,9 @@ describe('KeybindingRegistry', () => {
         command: 'test.acceleratorForKeyString',
         keybinding: 'ctrl+o',
       };
-      injector.mockCommand('test.command', () => {});
+      injector.mockCommand('test.command', () => { });
       keybindingRegistry.registerKeybinding(keybinding, KeybindingScope.USER);
-      expect(keybindingRegistry.acceleratorForKeyString(keybinding.keybinding, '+')).toBe('Ctrl+O');
+      expect(keybindingRegistry.acceleratorForKeyString(keybinding.keybinding, '+')).toBe(`${SpecialCases.CTRL.replace(/^\S/, (key) => key.toUpperCase())}+O`);
     });
 
     test('containsKeybinding', () => {
@@ -214,8 +214,8 @@ describe('KeybindingRegistry', () => {
           when: 'editorFocus',
         };
         expect(Keybinding.is(keybinding)).toBeTruthy();
-        expect(Keybinding.is({command: 'copy'})).toBeFalsy();
-        expect(Keybinding.is({keybinding: 'ctrl+c'})).toBeFalsy();
+        expect(Keybinding.is({ command: 'copy' })).toBeFalsy();
+        expect(Keybinding.is({ keybinding: 'ctrl+c' })).toBeFalsy();
       });
     });
 
@@ -396,7 +396,7 @@ describe('KeybindingService', () => {
     });
 
     test('convert', () => {
-      const event = new window.Event('keydown', {bubbles: true});
+      const event = new window.Event('keydown', { bubbles: true });
       event.initEvent('keydown', true, true);
       (event as any).keyCode = 27;
       (event as any).code = 'Escape';
@@ -406,7 +406,7 @@ describe('KeybindingService', () => {
       expect(text).toBe('Escape');
       keybindingService.clearConvert();
       // ctrl + s
-      const ctrlSEvent = new window.Event('keydown', {bubbles: true});
+      const ctrlSEvent = new window.Event('keydown', { bubbles: true });
       ctrlSEvent.initEvent('keydown', true, true);
       (ctrlSEvent as any).keyCode = 83;
       (ctrlSEvent as any).code = 'KeyS';
@@ -417,7 +417,7 @@ describe('KeybindingService', () => {
       expect(text).toBe(`${SpecialCases.CTRL.replace(/^\S/, function(s) {return s.toUpperCase(); })}+S`);
       keybindingService.clearConvert();
       // Numpad_add
-      const numpadAddEvent = new window.Event('keydown', {bubbles: true});
+      const numpadAddEvent = new window.Event('keydown', { bubbles: true });
       numpadAddEvent.initEvent('keydown', true, true);
       (numpadAddEvent as any).keyCode = 107;
       (numpadAddEvent as any).code = 'NumpadAdd';
@@ -438,7 +438,7 @@ describe('KeybindingService', () => {
       const testFn = jest.fn();
       injector.mockCommand('test.command', testFn);
       const handle = keybindingRegistry.registerKeybinding(keybinding, KeybindingScope.USER);
-      const ctrlSEvent = new window.Event('keydown', {bubbles: true});
+      const ctrlSEvent = new window.Event('keydown', { bubbles: true });
       ctrlSEvent.initEvent('keydown', true, true);
       (ctrlSEvent as any).keyCode = 83;
       (ctrlSEvent as any).easyString = 's';
