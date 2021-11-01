@@ -3,7 +3,7 @@ import { IEditorDocumentChange, IEditorDocumentModelSaveResult } from '@ali/ide-
 export const FILE_SCHEME = 'file';
 export const FILE_ON_DISK_SCHEME = 'fileOnDisk';
 
-export const FILE_SAVE_BY_CHANGE_THRESHOLD = 1000000; // 约1M大小的脚本
+export const FILE_SAVE_BY_CHANGE_THRESHOLD = 100000; // 约 100k 大小的脚本
 
 export const IFileSchemeDocClient = Symbol('IFileSchemeDocClient');
 export interface IFileSchemeDocClient {

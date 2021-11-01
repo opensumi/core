@@ -41,7 +41,7 @@ export class FileSchemeDocumentProvider extends BaseFileSystemEditorDocumentProv
     // TODO
     const baseMd5 = md5(baseContent);
     if (content.length > FILE_SAVE_BY_CHANGE_THRESHOLD) {
-      return this.fileSchemeDocClient.saveByChange(uri.toString(), {
+      return await this.fileSchemeDocClient.saveByChange(uri.toString(), {
         baseMd5,
         changes,
         eol,
