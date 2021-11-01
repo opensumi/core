@@ -99,7 +99,10 @@ export class EditorContextMenuController extends Disposable {
 
     // Show the context menu
     this.contextMenuRenderer.show({
-      anchor,
+      anchor: {
+        x: anchor.x - window.scrollX,
+        y: anchor.y - window.scrollY,
+      },
       menuNodes,
       args: [this._editor.currentUri],
       onHide: (canceled) => {
