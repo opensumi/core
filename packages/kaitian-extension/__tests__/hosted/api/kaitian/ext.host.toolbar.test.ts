@@ -3,7 +3,7 @@ import { Emitter } from '@ali/ide-core-common';
 import { ExtHostKaitianAPIIdentifier, MainThreadKaitianAPIIdentifier } from '../../../../src/common/kaitian';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
-import { createBrowserInjector } from '../../../../../debug/node_modules/@ali/ide-dev-tool/src/injector-helper';
+import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 
 import { createToolbarAPIFactory, ExtHostToolbarActionService } from '@ali/ide-kaitian-extension/lib/hosted/api/kaitian/ext.host.toolbar';
 import { ExtHostCommon } from '@ali/ide-kaitian-extension/lib/hosted/api/kaitian/ext.host.common';

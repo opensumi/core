@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
-import { createBrowserInjector } from '../../../../../debug/node_modules/@ali/ide-dev-tool/src/injector-helper';
+import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { ExtHostSecret } from '../../../../src/hosted/api/vscode/ext.host.secrets';
 
 const moackMainThreadSecret = {

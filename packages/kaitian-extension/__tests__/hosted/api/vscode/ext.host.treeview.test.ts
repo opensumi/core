@@ -1,7 +1,7 @@
 import { IRPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { MainThreadAPIIdentifier, TreeView } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
-import { createBrowserInjector } from '../../../../../debug/node_modules/@ali/ide-dev-tool/src/injector-helper';
+import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { ExtHostTreeViews } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.treeview';
 import { Emitter, Disposable, CancellationTokenSource } from '@ali/ide-core-common';
 

@@ -3,7 +3,7 @@ import { ExtHostConnection } from './../../../../src/hosted/api/vscode/ext.host.
 import { IRPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
-import { createBrowserInjector } from '../../../../../debug/node_modules/@ali/ide-dev-tool/src/injector-helper';
+import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { URI } from '@ali/ide-core-common';
 import * as path from 'path';
 import { DebugAdapterServer, DebugAdapterExecutable, DebugAdapterInlineImplementation } from '../../../../src/common/vscode/ext-types';
