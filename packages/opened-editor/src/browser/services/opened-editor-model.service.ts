@@ -8,7 +8,7 @@ import { OpenedEditorModel } from './opened-editor-model';
 import { EditorFile, EditorFileGroup } from '../opened-editor-node.define';
 import { OpenedEditorDecorationService } from './opened-editor-decoration.service';
 import pSeries = require('p-series');
-import * as styles from '../opened-editor-node.module.less';
+import styles from '../opened-editor-node.module.less';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { OpenedEditorEventService } from './opened-editor-event.service';
 import { WorkbenchEditorService, IEditorGroup, IResource } from '@ali/ide-editor/lib/browser';
@@ -189,7 +189,7 @@ export class OpenedEditorModelService {
       if (!payload) {
         return;
       }
-      for (let index = 0; index < this.treeModel.root.branchSize; index ++) {
+      for (let index = 0; index < this.treeModel.root.branchSize; index++) {
         const node = this.treeModel.root.getTreeNodeAtIndex(index);
         if (!!node && !EditorFileGroup.is(node as EditorFileGroup)) {
           if ((node as EditorFile).uri.isEqual(payload.uri)) {

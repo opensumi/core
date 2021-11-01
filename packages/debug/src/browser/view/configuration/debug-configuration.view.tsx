@@ -1,6 +1,6 @@
-import * as React from 'react';
-import * as styles from './debug-configuration.module.less';
-import * as cls from 'classnames';
+import React from 'react';
+import styles from './debug-configuration.module.less';
+import cls from 'classnames';
 import { useInjectable, localize, isElectronRenderer, URI } from '@ali/ide-core-browser';
 import { DebugAction } from '../../components';
 import { DebugConfigurationService } from './debug-configuration.service';

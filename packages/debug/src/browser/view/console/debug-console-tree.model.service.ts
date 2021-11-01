@@ -7,8 +7,8 @@ import { Path } from '@ali/ide-core-common/lib/path';
 import { ExpressionContainer, ExpressionNode, DebugConsoleNode, DebugConsoleRoot } from '../../tree/debug-tree-node.define';
 import { DebugViewModel } from '../debug-view-model';
 import { DebugConsoleSession } from './debug-console-session';
-import * as pSeries from 'p-series';
-import * as styles from './debug-console.module.less';
+import pSeries from 'p-series';
+import styles from './debug-console.module.less';
 import { DebugSession } from '../../debug-session';
 import { IDebugSessionManager } from '../../../common';
 import { AnsiConsoleNode } from '../../tree';
@@ -148,7 +148,7 @@ export class DebugConsoleModelService {
   copyAll = () => {
     let text = '';
     if (!this.treeModel?.root || !this.treeModel.root.children) {
-      return ;
+      return;
     }
     for (const child of this.treeModel.root.children) {
       text += this.getValidText(child as DebugConsoleNode) + '\n';
@@ -232,7 +232,7 @@ export class DebugConsoleModelService {
       const model = this.debugSessionModelMap.get(sessionId);
       this._activeDebugSessionModel = model;
     } else {
-       // 根据是否为多工作区创建不同根节点
+      // 根据是否为多工作区创建不同根节点
       const root = new DebugConsoleRoot({} as any);
       if (!root) {
         return;
@@ -245,7 +245,7 @@ export class DebugConsoleModelService {
       };
       debugConsoleSession.onDidChange(async () => {
         if (!treeModel) {
-          return ;
+          return;
         }
         const branchSize = (treeModel.root as DebugConsoleRoot).branchSize;
         const children = debugConsoleSession.resolveChildren();
@@ -354,7 +354,7 @@ export class DebugConsoleModelService {
     } else {
       node = expression;
     }
-    const menus = this.contextMenuService.createMenu({id: MenuId.DebugConsoleContext, contextKeyService: this.contextMenuContextKeyService});
+    const menus = this.contextMenuService.createMenu({ id: MenuId.DebugConsoleContext, contextKeyService: this.contextMenuContextKeyService });
     const menuNodes = menus.getMergedMenuNodes();
     menus.dispose();
     this.ctxMenuRenderer.show({
@@ -484,7 +484,7 @@ export class DebugConsoleModelService {
 
   async execute(value: string) {
     if (!this.treeModel) {
-      return ;
+      return;
     }
     const parent: DebugConsoleRoot = this.treeModel.root as DebugConsoleRoot;
     const textNode = new AnsiConsoleNode(value, parent, this.linkDetector);

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
 
 export const ExampleEditorBottomWidget: ReactEditorComponent<any> = ({resource}) => {

@@ -1,6 +1,6 @@
 import { IJSONSchema, IJSONSchemaSnippet, Event } from '@ali/ide-core-common';
 import { Breakpoint } from './models';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { DebugProtocol } from '@ali/vscode-debugprotocol';
 import { DebuggerDescription, DebugConfiguration, IDebuggerContribution } from '@ali/ide-debug';
 import { WorkspaceFolder } from './models';

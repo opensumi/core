@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as cls from 'classnames';
+import React from 'react';
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { ViewState, isUndefined, useInjectable, localize, DisposableCollection, getIcon } from '@ali/ide-core-browser';
 import { DebugThread } from '../../model/debug-thread';
@@ -7,7 +7,7 @@ import { RecycleList } from '@ali/ide-components';
 import { DebugStackFrame } from '../../model';
 import { IDebugSessionManager } from '../../../common';
 import { DebugSessionManager } from '../../debug-session-manager';
-import * as styles from './debug-call-stack.module.less';
+import styles from './debug-call-stack.module.less';
 import { DebugCallStackService } from './debug-call-stack.service';
 import { DebugSession } from '../../debug-session';
 

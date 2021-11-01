@@ -7,8 +7,8 @@ import { IMessageService } from '@ali/ide-overlay';
 import { Decoration, TargetMatchMode } from '@ali/ide-components';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { FileTreeService } from '../file-tree.service';
-import * as styles from '../file-tree.module.less';
-import * as treeNodeStyles from '../file-tree-node.module.less';
+import styles from '../file-tree.module.less';
+import treeNodeStyles from '../file-tree-node.module.less';
 import { FileTreeDropEvent } from '@ali/ide-core-common/lib/types/dnd';
 
 @Injectable()
@@ -42,7 +42,7 @@ export class DragAndDropService extends WithEventBus {
   // 拖拽进入的节点
   private draggedOverNode: Directory | File;
 
-  private dragOverTrigger =  new ThrottledDelayer<void>(DragAndDropService.MS_TILL_DRAGGED_OVER_EXPANDS);
+  private dragOverTrigger = new ThrottledDelayer<void>(DragAndDropService.MS_TILL_DRAGGED_OVER_EXPANDS);
 
   constructor(@Optional() private readonly model: FileTreeModelService) {
     super();
@@ -202,9 +202,9 @@ export class DragAndDropService extends WithEventBus {
           compactNode?.parent,
           this.beingDraggedActiveUri,
           this.beingDraggedActiveUri.displayName,
-          { uri:  this.beingDraggedActiveUri.toString(), isDirectory: true, lastModification: new Date().getTime()} as FileStat,
+          { uri: this.beingDraggedActiveUri.toString(), isDirectory: true, lastModification: new Date().getTime() } as FileStat,
           this.beingDraggedActiveUri.displayName,
-          )];
+        )];
       } else {
         resources = this.beingDraggedNodes;
       }
@@ -219,7 +219,7 @@ export class DragAndDropService extends WithEventBus {
               this.messageService.error(error);
             });
           } else if (!errors) {
-            return ;
+            return;
           } else {
             if (!!containing) {
               // 这里不能直接使用this.beingDraggedActiveUri做判断，因为需要等待上面移动文件成功后，此时dropEnd事件可能已经执行完了

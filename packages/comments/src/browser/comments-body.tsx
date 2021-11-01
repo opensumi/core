@@ -1,8 +1,8 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import * as marked from 'marked';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import marked from 'marked';
 import { markdownCss } from './markdown.style';
-import * as styles from './comments.module.less';
+import styles from './comments.module.less';
 
 const ShadowContent = ({ root, children }) => ReactDOM.createPortal(children, root);
 

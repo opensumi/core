@@ -1,5 +1,5 @@
-import * as http from 'http';
-import * as url from 'url';
+import http from 'http';
+import url from 'url';
 
 export abstract class WebSocketHandler {
   abstract handlerId: string;
@@ -86,7 +86,7 @@ export class WebSocketServerRoute {
       const wsPathname: string = url.parse(request.url).pathname as string;
 
       let wsHandlerIndex = 0;
-      const wsHandlerLength =  wsServerHandlerArr.length;
+      const wsHandlerLength = wsServerHandlerArr.length;
 
       for (; wsHandlerIndex < wsHandlerLength; wsHandlerIndex++) {
         const handler = wsServerHandlerArr[wsHandlerIndex];

@@ -1,7 +1,7 @@
 // tslint:disable no-console
-import * as path from 'path';
+import path from 'path';
 import * as fs from 'fs-extra';
-import * as os from 'os';
+import os from 'os';
 import { Injector } from '@ali/common-di';
 import { AppConfig, INodeLogger } from '@ali/ide-core-node';
 
@@ -41,24 +41,24 @@ describe('Extension Client Serivce', () => {
         warn: console.warn,
       },
     },
-    {
-      token: IFileService,
-      useClass: FileService,
-    },
-    {
-      token: IDiskFileProvider,
-      useClass: DiskFileSystemProvider,
-    },
-    {
-      token: 'FileServiceOptions',
-      useValue: FileSystemNodeOptions.DEFAULT,
-    },
-    {
-      token: IExtensionStoragePathServer,
-      useValue: {
-        getLastStoragePath: () => Promise.resolve(path.join(os.homedir(), '.kaitian', 'workspace-storage')),
+      {
+        token: IFileService,
+        useClass: FileService,
       },
-    },
+      {
+        token: IDiskFileProvider,
+        useClass: DiskFileSystemProvider,
+      },
+      {
+        token: 'FileServiceOptions',
+        useValue: FileSystemNodeOptions.DEFAULT,
+      },
+      {
+        token: IExtensionStoragePathServer,
+        useValue: {
+          getLastStoragePath: () => Promise.resolve(path.join(os.homedir(), '.kaitian', 'workspace-storage')),
+        },
+      },
       {
         token: IExtensionNodeService,
         useClass: ExtensionNodeServiceImpl,

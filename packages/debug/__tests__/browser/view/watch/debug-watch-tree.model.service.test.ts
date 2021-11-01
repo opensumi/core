@@ -7,7 +7,7 @@ import { ICtxMenuRenderer, AbstractContextMenuService } from '@ali/ide-core-brow
 import { DebugWatchModelService } from '@ali/ide-debug/lib/browser/view/watch/debug-watch-tree.model.service';
 import { IContextKeyService, StorageProvider } from '@ali/ide-core-browser';
 import { MockedStorageProvider } from '@ali/ide-core-browser/__mocks__/storage';
-import * as styles from '../../../../src/browser/view/watch/debug-watch.module.less';
+import styles from '../../../../src/browser/view/watch/debug-watch.module.less';
 
 describe('Debug Watch Tree Model', () => {
   const mockInjector = createBrowserInjector([]);
@@ -42,7 +42,7 @@ describe('Debug Watch Tree Model', () => {
   const mockMenuService = {
     createMenu: jest.fn(() => ({
       getMergedMenuNodes: () => [],
-      dispose: () => {},
+      dispose: () => { },
     })),
   };
 

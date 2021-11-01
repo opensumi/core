@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, IContextKeyService, CommandRegistry, ILoggerManagerClient, ViewContainerOptions, PreferenceService, Disposable, ClientApp } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';

@@ -1,6 +1,6 @@
 import * as fs from 'fs-extra';
-import * as path from 'path';
-import * as vm from 'vm';
+import path from 'path';
+import vm from 'vm';
 const { TextDecoder, TextEncoder } = require('util');
 
 const workerScript = `

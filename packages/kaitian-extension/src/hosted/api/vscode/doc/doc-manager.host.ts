@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { CancellationTokenSource, Emitter, IDisposable } from '@ali/ide-core-common';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 
 import { ExtensionDocumentDataManager, IExtensionDocumentModelChangedEvent, IExtensionDocumentModelOpenedEvent, IExtensionDocumentModelOptionsChangedEvent, IExtensionDocumentModelRemovedEvent, IExtensionDocumentModelSavedEvent, IExtensionDocumentModelWillSaveEvent, IMainThreadDocumentsShape, IMainThreadWorkspace, MainThreadAPIIdentifier } from '../../../../common/vscode';
 import { TextEdit as TextEditConverter, toRange } from '../../../../common/vscode/converter';
@@ -84,7 +84,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
       if (doc) {
         return doc.document;
       } else {
-        return new Promise<vscode.TextDocument> ((resolve, reject) => {
+        return new Promise<vscode.TextDocument>((resolve, reject) => {
           let resolved = false;
           setTimeout(() => {
             if (!resolved) {
@@ -257,10 +257,12 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
   }
 
   applyEdit(uri: Uri, edit: model.TextEdit): Promise<boolean> {
-    const dto: model.WorkspaceEditDto = { edits: [{
-      resource: uri,
-      edit,
-    }]};
+    const dto: model.WorkspaceEditDto = {
+      edits: [{
+        resource: uri,
+        edit,
+      }],
+    };
     return this._workspaceProxy.$tryApplyWorkspaceEdit(dto);
   }
 }

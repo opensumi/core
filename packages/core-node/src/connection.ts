@@ -1,9 +1,9 @@
-import * as http from 'http';
-import * as net from 'net';
+import http from 'http';
+import net from 'net';
 import { NodeModule } from './node-module';
 import { WebSocketServerRoute, WebSocketHandler, WSChannel } from '@ali/ide-connection';
 import { Injector, ClassCreator, FactoryCreator } from '@ali/common-di';
-import * as ws from 'ws';
+import ws from 'ws';
 
 import {
   CommonChannelHandler,
@@ -25,25 +25,25 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
 
   // 事件由 connection 的时机来触发
   commonChannelPathHandler.register('RPCService', {
-      handler: (connection: WSChannel, clientId: string) => {
-        logger.log(`set rpc connection ${clientId}`);
+    handler: (connection: WSChannel, clientId: string) => {
+      logger.log(`set rpc connection ${clientId}`);
 
-        const serviceCenter = new RPCServiceCenter(undefined, logger);
-        const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, clientId);
+      const serviceCenter = new RPCServiceCenter(undefined, logger);
+      const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, clientId);
 
-        const serverConnection = createWebSocketConnection(connection);
-        connection.messageConnection = serverConnection;
-        serviceCenter.setConnection(serverConnection);
+      const serverConnection = createWebSocketConnection(connection);
+      connection.messageConnection = serverConnection;
+      serviceCenter.setConnection(serverConnection);
 
-        connection.onClose(() => {
-          serviceCenter.removeConnection(serverConnection);
-          serviceChildInjector.disposeAll();
+      connection.onClose(() => {
+        serviceCenter.removeConnection(serverConnection);
+        serviceChildInjector.disposeAll();
 
-          logger.log(`remove rpc connection ${clientId} `);
-        });
-      },
-      dispose: (connection: ws, connectionClientId: string) => {
-      },
+        logger.log(`remove rpc connection ${clientId} `);
+      });
+    },
+    dispose: (connection: ws, connectionClientId: string) => {
+    },
   });
 
   socketRoute.registerHandler(channelHandler);

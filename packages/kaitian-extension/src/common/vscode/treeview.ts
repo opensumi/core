@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import {
   UriComponents,
   ICommand,

@@ -1,4 +1,4 @@
-import * as Ajv from 'ajv';
+import Ajv from 'ajv';
 import { Injectable, Autowired, Injector } from '@ali/common-di';
 import { Mutable, ContributionProvider, Emitter, Event, ILogger, Disposable, IDisposable } from '@ali/ide-core-common';
 import { PreferenceScope } from './preference-scope';
@@ -204,7 +204,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
 
   protected readonly unsupportedPreferences = new Set<string>();
 
-  public validate(name: string, value: any): { valid: boolean, reason?: string} {
+  public validate(name: string, value: any): { valid: boolean, reason?: string } {
     if (this.configurations.isSectionName(name)) {
       return { valid: true };
     }
@@ -338,12 +338,12 @@ export class DefaultPreferenceProvider extends PreferenceProvider {
 
   public handlePreferenceChanges(preferenceName: string, newValue: any, oldValue: any, language?: string) {
     const prefChange: PreferenceProviderDataChange = {
-        preferenceName,
-        newValue,
-        oldValue,
-        scope: PreferenceScope.Default,
-        domain: undefined,
-      };
+      preferenceName,
+      newValue,
+      oldValue,
+      scope: PreferenceScope.Default,
+      domain: undefined,
+    };
     if (language) {
       this.emitPreferencesChangedEvent({
         default: {},

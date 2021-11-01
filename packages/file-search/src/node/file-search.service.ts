@@ -1,6 +1,6 @@
-import * as fuzzy from 'fuzzy';
-import * as readline from 'readline';
-import * as path from 'path';
+import fuzzy from 'fuzzy';
+import readline from 'readline';
+import path from 'path';
 import { rgPath } from '@ali/vscode-ripgrep';
 import { Injectable, Autowired } from '@ali/common-di';
 import { CancellationToken, CancellationTokenSource, replaceAsarInPath } from '@ali/ide-core-common';
@@ -79,14 +79,14 @@ export class FileSearchService implements IFileSearchService {
           }
         }, token);
       } catch (e) {
+        // tslint:disable-next-line:no-console
         console.error('Failed to search:', root, e);
       }
     }));
     return [...exactMatches, ...fuzzyMatches];
   }
 
-  private doFind(rootUri: URI, options: IFileSearchService.BaseOptions,
-                 accept: (fileUri: string) => void, token: CancellationToken): Promise<void> {
+  private doFind(rootUri: URI, options: IFileSearchService.BaseOptions, accept: (fileUri: string) => void, token: CancellationToken): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
         const cwd = FileUri.fsPath(rootUri);

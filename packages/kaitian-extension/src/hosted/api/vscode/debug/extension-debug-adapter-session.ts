@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { DebugStreamConnection, DebugConfiguration } from '@ali/ide-debug';
 import { IWebSocket } from '@ali/ide-connection';
 import { StreamDebugAdapter } from './abstract-debug-adapter-session';

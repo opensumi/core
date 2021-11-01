@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as clx from 'classnames';
+import React from 'react';
+import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { useInjectable, SlotRenderer, ComponentRegistry } from '@ali/ide-core-browser';
 import { MenuActionList } from '@ali/ide-core-browser/lib/components/actions';
@@ -10,7 +10,7 @@ import { Deprecated } from '@ali/ide-components/lib/utils/deprecated';
 import { Dropdown } from '@ali/ide-components/lib/dropdown';
 
 import { MenubarStore } from './menu-bar.store';
-import * as styles from './menu-bar.module.less';
+import styles from './menu-bar.module.less';
 
 const MenubarItem = observer<IMenubarItem & {
   focusMode: boolean;

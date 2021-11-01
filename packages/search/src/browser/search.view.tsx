@@ -1,12 +1,12 @@
-import * as React from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
 import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
 import { Input, ValidateInput, CheckBox, Popover, PopoverTriggerType, PopoverPosition } from '@ali/ide-components';
 import { ViewState } from '@ali/ide-core-browser';
 import { getIcon, getExternalIcon } from '@ali/ide-core-browser';
-import * as cls from 'classnames';
-import * as styles from './search.module.less';
+import cls from 'classnames';
+import styles from './search.module.less';
 import {
   SEARCH_STATE,
 } from '../common/';

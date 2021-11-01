@@ -13,7 +13,7 @@ import { EditorFile } from '../../src/browser/opened-editor-node.define';
 import { OpenedEditorService } from '../../src/browser/services/opened-editor-tree.service';
 import { OpenedEditorDecorationService } from '../../src/browser/services/opened-editor-decoration.service';
 import { MockLogger } from '@ali/ide-core-browser/__mocks__/logger';
-import * as styles from '../../src/browser/file-tree-node.modules.less';
+import styles from '../../src/browser/file-tree-node.modules.less';
 
 describe('OpenedEditorModelService should be work', () => {
   (global as any).monaco = createMockedMonaco() as any;
@@ -39,10 +39,10 @@ describe('OpenedEditorModelService should be work', () => {
     show: jest.fn(),
   } as any;
   const mockDecorationsService = {
-    onDidChangeDecorations: jest.fn(() => Disposable.create(() => {})),
+    onDidChangeDecorations: jest.fn(() => Disposable.create(() => { })),
   };
   const mockThemeService = {
-    onThemeChange: jest.fn(() => Disposable.create(() => {})),
+    onThemeChange: jest.fn(() => Disposable.create(() => { })),
   };
   const mockWorkbenchEditorService = {
     onActiveResourceChange: jest.fn(() => Disposable.create(() => { })),
@@ -64,16 +64,16 @@ describe('OpenedEditorModelService should be work', () => {
     set: jest.fn(),
   };
   const mockLabelService = {
-    onDidChange: jest.fn(() => Disposable.create(() => {})),
+    onDidChange: jest.fn(() => Disposable.create(() => { })),
   };
   const mockOpenedEditorService = {
     on: jest.fn(),
-    onNodeRefreshed: jest.fn(() => Disposable.create(() => {})),
-    onDirtyNodesChange: jest.fn(() => Disposable.create(() => {})),
+    onNodeRefreshed: jest.fn(() => Disposable.create(() => { })),
+    onDirtyNodesChange: jest.fn(() => Disposable.create(() => { })),
     resolveChildren: jest.fn(() => {
       return [mockRoot];
     }),
-    requestFlushEventSignalEvent: jest.fn(() => Disposable.create(() => {})),
+    requestFlushEventSignalEvent: jest.fn(() => Disposable.create(() => { })),
     startWatchFileEvent: jest.fn(),
     refresh: jest.fn(),
     contextMenuContextKeyService: new MockContextKeyService().createScoped({} as any),

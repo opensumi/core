@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as ReactDom from 'react-dom';
+import React from 'react';
+import ReactDom from 'react-dom';
 import { getDebugLogger, IEventBus } from '@ali/ide-core-common';
 import { ComponentContextProvider } from '@ali/ide-components';
 

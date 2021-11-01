@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as styles from './index.module.less';
+import React from 'react';
+import styles from './index.module.less';
 import { AutoFocusedInput } from '@ali/ide-main-layout/lib/browser/input';
 import { enableExtensionsContainerId } from '../../../common';
 

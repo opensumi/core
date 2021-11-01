@@ -4,7 +4,7 @@
 
 ### Icon/createFromIconfontCN
 ```tsx
-import * as React from 'react';
+import React from 'react';
 
 import { createFromIconfontCN } from '@ali/ide-components/lib/icon/iconfont-cn';
 import { Icon } from '@ali/ide-components/lib/icon';

@@ -1,10 +1,10 @@
 /**
  * 参考使用 theia 的单测
  */
-import * as path from 'path';
-import * as temp from 'temp';
-import * as fs from 'fs';
-import { FileUri, AppConfig, INodeLogger, NodeLogger} from '@ali/ide-core-node';
+import path from 'path';
+import temp from 'temp';
+import fs from 'fs';
+import { FileUri, AppConfig, INodeLogger, NodeLogger } from '@ali/ide-core-node';
 import { isWindows } from '@ali/ide-core-common';
 import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { ProcessModule } from '@ali/ide-process';
@@ -173,6 +173,7 @@ afterAll(() => {
   try {
     track.cleanupSync();
   } catch (ex) {
+    // tslint:disable-next-line:no-console
     console.log("Couldn't cleanup search-in-workspace temp directory.", ex);
   }
 });

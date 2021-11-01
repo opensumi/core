@@ -1,4 +1,4 @@
-import * as path from 'path';
+import path from 'path';
 import { ITaskService, ITaskSystem, ITaskProvider } from '@ali/ide-task/lib/common';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IMainLayoutService } from '@ali/ide-main-layout';
@@ -29,7 +29,7 @@ const mockedPreferenceService: any = {
   },
   onPreferenceChanged: (listener) => {
     return {
-      dispose: () => {},
+      dispose: () => { },
     };
   },
 };
@@ -93,7 +93,7 @@ describe('TaskService Test Suite', () => {
     injector.overrideProviders({
       token: PreferenceService,
       useValue: {
-        onPreferenceChanged: jest.fn(() => ({dispose: () => {}})),
+        onPreferenceChanged: jest.fn(() => ({ dispose: () => { } })),
         get: () => {
           return {
             'version': '2.0.0',

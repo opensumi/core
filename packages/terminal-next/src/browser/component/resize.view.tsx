@@ -1,9 +1,9 @@
-import * as React from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import ResizeDelegate from './resize.delegate';
 import { IWidget, IWidgetGroup } from '../../common/resize';
 
-import * as styles from './resize.module.less';
+import styles from './resize.module.less';
 
 export enum ResizeDirection {
   vertical,

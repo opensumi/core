@@ -2,9 +2,9 @@ import { AppConfig, ComponentRegistry, ConfigContext, ConfigProvider, ErrorBound
 import { IResizeHandleDelegate, ResizeFlexMode, ResizeHandleHorizontal, ResizeHandleVertical } from '@ali/ide-core-browser/lib/components';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import classnames from 'classnames';
-import * as React from 'react';
-import * as ReactIs from 'react-is';
-import * as ReactDOM from 'react-dom';
+import React from 'react';
+import ReactIs from 'react-is';
+import ReactDOM from 'react-dom';
 
 import { IEditorOpenType, IResource, WorkbenchEditorService } from '../common';
 import { EditorComponentRegistryImpl } from './component';
@@ -14,7 +14,7 @@ import { NavigationBar } from './navigation.view';
 import { Tabs } from './tab.view';
 import { DragOverPosition, EditorComponentRegistry, EditorComponentRenderMode, EditorGroupFileDropEvent, EditorGroupsResetSizeEvent, EditorSide, IEditorComponent, CodeEditorDidVisibleEvent } from './types';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
-import * as styles from './editor.module.less';
+import styles from './editor.module.less';
 
 export const EditorView = () => {
   const ref = React.useRef<HTMLElement | null>();

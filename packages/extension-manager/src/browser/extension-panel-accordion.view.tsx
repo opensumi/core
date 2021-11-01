@@ -1,10 +1,10 @@
-import * as React from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable, localize, CommandService, ViewState } from '@ali/ide-core-browser';
 import { IExtensionManagerService, SearchState, SearchFromMarketplaceCommandId } from '../common';
 import { ExtensionList } from './components/extension-list';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
-import * as styles from './extension-panel.module.less';
+import styles from './extension-panel.module.less';
 
 export const ExtensionDisableAccordion: React.FC<{
   viewState: ViewState,

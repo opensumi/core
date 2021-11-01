@@ -1,6 +1,6 @@
-import * as React from 'react';
-import * as styles from './tree.module.less';
-import * as cls from 'classnames';
+import React from 'react';
+import styles from './tree.module.less';
+import cls from 'classnames';
 import { isUndefined, isString } from '@ali/ide-core-common';
 import { Badge } from '@ali/ide-components';
 

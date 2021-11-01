@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { IDisposable } from '@ali/ide-core-common';
 import { ExtensionHostType } from '.';
 
@@ -10,7 +10,7 @@ export class ExtensionActivationTimes {
     public readonly startup: boolean,
     public readonly codeLoadingTime: number,
     public readonly activateCallTime: number,
-    public readonly activateResolvedTime: number) {}
+    public readonly activateResolvedTime: number) { }
 }
 
 export interface IExtensionModule {

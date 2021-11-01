@@ -1,10 +1,10 @@
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { ILogServiceManager, INodeLogger, ServerApp, ServerCommonModule } from '@ali/ide-core-node';
-import * as Koa from 'koa';
-import * as http from 'http';
-import * as net from 'net';
-import * as path from 'path';
+import Koa from 'koa';
+import http from 'http';
+import net from 'net';
+import path from 'path';
 import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
 
 describe('ServerApp', () => {

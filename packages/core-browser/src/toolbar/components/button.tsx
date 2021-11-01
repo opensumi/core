@@ -1,10 +1,10 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IToolbarActionReactElement, IToolbarActionElementProps, IToolbarActionBtnProps, IToolbarActionBtnDelegate, IToolbarActionBtnState, IToolbarPopoverStyle, IToolbarPopoverRegistry } from '../types';
 import { useInjectable } from '../../react-hooks';
 import { BasicEvent, Disposable, Emitter, IDisposable } from '@ali/ide-core-common';
-import * as classnames from 'classnames';
+import classnames from 'classnames';
 import { AppConfig, ConfigProvider } from '../../react-providers';
 import { Button } from '@ali/ide-components';
 import { PreferenceService } from '../../preferences';

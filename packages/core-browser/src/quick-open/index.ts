@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { VALIDATE_TYPE } from '@ali/ide-components';
 import { URI, MaybePromise, IDisposable, Event } from '@ali/ide-core-common';
 import { observable } from 'mobx';

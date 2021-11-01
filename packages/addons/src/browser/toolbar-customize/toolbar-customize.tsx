@@ -1,7 +1,7 @@
-import * as React from 'react';
+import React from 'react';
 import { Injectable, Autowired } from '@ali/common-di';
 import { useInjectable, PreferenceService, PreferenceScope, IToolbarRegistry, localize } from '@ali/ide-core-browser';
-import * as styles from './style.module.less';
+import styles from './style.module.less';
 import { CheckBox, Select, Button } from '@ali/ide-components';
 
 @Injectable()

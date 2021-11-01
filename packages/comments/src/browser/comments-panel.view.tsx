@@ -1,11 +1,11 @@
-import * as React from 'react';
+import React from 'react';
 import { DeprecatedRecycleTree } from '@ali/ide-core-browser/lib/components';
 import { observer } from 'mobx-react-lite';
 import { useInjectable, isUndefined, ViewState, IEventBus, localize } from '@ali/ide-core-browser';
 import { ICommentsService, ICommentsTreeNode, CommentPanelCollapse, ICommentsFeatureRegistry } from '../common';
-import * as styles from './comments.module.less';
+import styles from './comments.module.less';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import * as clx from 'classnames';
+import clx from 'classnames';
 
 export const CommentsPanel = observer<{ viewState: ViewState; className?: string}>((props) => {
   const commentsService = useInjectable<ICommentsService>(ICommentsService);

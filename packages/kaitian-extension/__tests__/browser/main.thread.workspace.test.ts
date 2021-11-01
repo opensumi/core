@@ -1,10 +1,10 @@
 import { ExtHostFileSystemInfo } from './../../src/hosted/api/vscode/ext.host.file-system-info';
 import { Uri as vscodeUri, Emitter, IFileServiceClient, URI, Uri, IEventBus, PreferenceScope, ILoggerManagerClient, FileUri, CommonServerPath, OS, IApplicationService, DisposableCollection } from '@ali/ide-core-common';
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
-import * as path from 'path';
-import * as fs from 'fs';
-import * as os from 'os';
-import * as util from 'util';
+import path from 'path';
+import fs from 'fs';
+import os from 'os';
+import util from 'util';
 import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MainThreadWorkspace } from '../../src/browser/vscode/api/main.thread.workspace';
@@ -51,7 +51,7 @@ import { ExtHostFileSystemEvent } from '@ali/ide-kaitian-extension/lib/hosted/ap
 import { MockLoggerManagerClient } from '../../__mocks__/loggermanager';
 import temp = require('temp');
 import { IWebviewService } from '@ali/ide-webview';
-import * as vscode from 'vscode';
+import vscode from 'vscode';
 import { Position, WorkspaceEdit } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
 import { IWorkspaceEditService, IWorkspaceFileService } from '@ali/ide-workspace-edit';
 import { WorkspaceEditServiceImpl } from '@ali/ide-workspace-edit/lib/browser/workspace-edit.service';
@@ -327,7 +327,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
   it('should be able to registerTextDocumentContentProvider', async (done) => {
     const emitter = new Emitter<any>();
     const testcase = 'testcontent';
-    const testuri = vscodeUri.file('/path/to/content').with({scheme: 'test1'});
+    const testuri = vscodeUri.file('/path/to/content').with({ scheme: 'test1' });
     const disposeable = extHostWorkspaceAPI.registerTextDocumentContentProvider('test1', {
       onDidChange: emitter.event,
       provideTextDocumentContent: (uri, token) => {

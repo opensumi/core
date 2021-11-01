@@ -10,8 +10,8 @@ import { Path } from '@ali/ide-core-common/lib/path';
 import { ExpressionContainer, ExpressionNode, DebugWatchNode, DebugWatchRoot } from '../../tree/debug-tree-node.define';
 import { DebugViewModel } from '../debug-view-model';
 import { DebugWatch } from '../../model';
-import * as pSeries from 'p-series';
-import * as styles from './debug-watch.module.less';
+import pSeries from 'p-series';
+import styles from './debug-watch.module.less';
 import { DebugSessionManager } from '../../debug-session-manager';
 
 export interface IDebugWatchHandle extends IRecycleTreeHandle {
@@ -82,7 +82,7 @@ export class DebugWatchModelService {
   // 右键菜单局部ContextKeyService
   private _contextMenuContextKeyService: IContextKeyService;
 
-  private flushDispatchChangeDelayer =  new ThrottledDelayer<void>(DebugWatchModelService.DEFAULT_TRIGGER_DELAY);
+  private flushDispatchChangeDelayer = new ThrottledDelayer<void>(DebugWatchModelService.DEFAULT_TRIGGER_DELAY);
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
   private loadedDeferred: Deferred<void> = new Deferred();
@@ -311,7 +311,7 @@ export class DebugWatchModelService {
 
     this.watchItemType.set(node instanceof DebugWatchNode ? 'expression' : (node instanceof DebugVariable || node instanceof DebugVariableContainer) ? 'variable' : undefined);
 
-    const menus = this.contextMenuService.createMenu({id: MenuId.DebugWatchContext, contextKeyService: this.contextMenuContextKeyService});
+    const menus = this.contextMenuService.createMenu({ id: MenuId.DebugWatchContext, contextKeyService: this.contextMenuContextKeyService });
     const menuNodes = menus.getMergedMenuNodes();
     menus.dispose();
     this.ctxMenuRenderer.show({
@@ -377,7 +377,7 @@ export class DebugWatchModelService {
     if (node.session) {
       this.initTreeModel();
     } else {
-      this.dispatchWatchEvent(node.parent!.path, { type: WatchEvent.Removed, path: node.path});
+      this.dispatchWatchEvent(node.parent!.path, { type: WatchEvent.Removed, path: node.path });
     }
   }
 
@@ -410,7 +410,7 @@ export class DebugWatchModelService {
     let isCommitting = false;
     const commit = async (expression: string) => {
       if (isCommitting) {
-        return ;
+        return;
       }
       isCommitting = true;
       if (!!expression) {
@@ -425,17 +425,17 @@ export class DebugWatchModelService {
             this.debugWatch.addWatchExpression(expression);
           }
         } else if (promptHandle instanceof RenamePromptHandle) {
-            const target = promptHandle.target;
-            const parent = target.parent as DebugWatchRoot;
-            promptHandle.addAddonAfter('loading_indicator');
-            if (parent.session) {
-              this.debugWatch.renameWatchExpression(target.name, expression);
-              this.initTreeModel();
-            } else {
-              const newPath = new Path(target.path).dir.join(expression).toString();
-              this.dispatchWatchEvent(parent.path, { type: WatchEvent.Moved, oldPath: target.path, newPath });
-              this.debugWatch.renameWatchExpression(target.name, expression);
-            }
+          const target = promptHandle.target;
+          const parent = target.parent as DebugWatchRoot;
+          promptHandle.addAddonAfter('loading_indicator');
+          if (parent.session) {
+            this.debugWatch.renameWatchExpression(target.name, expression);
+            this.initTreeModel();
+          } else {
+            const newPath = new Path(target.path).dir.join(expression).toString();
+            this.dispatchWatchEvent(parent.path, { type: WatchEvent.Moved, oldPath: target.path, newPath });
+            this.debugWatch.renameWatchExpression(target.name, expression);
+          }
         }
       }
       return true;

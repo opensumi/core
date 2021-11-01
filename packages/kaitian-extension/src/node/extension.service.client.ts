@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import * as path from 'path';
+import path from 'path';
 import { uuid, INodeLogger, Uri } from '@ali/ide-core-node';
-import * as os from 'os';
+import os from 'os';
 import { createHash } from 'crypto';
 
 import { IExtraMetaData, IExtensionMetaData, IExtensionNodeService, IExtensionNodeClientService, ICreateProcessOptions } from '../common';

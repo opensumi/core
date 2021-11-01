@@ -2,14 +2,14 @@ import { Disposable, DisposableCollection, Event } from '@ali/ide-core-common';
 import {
   DebugStreamConnection,
 } from '@ali/ide-debug';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { DebugProtocol } from '@ali/vscode-debugprotocol';
 import { IWebSocket } from '@ali/ide-connection';
 import { getSequenceId } from '@ali/ide-debug';
 
 export abstract class AbstractDebugAdapter implements vscode.DebugAdapter {
 
-  constructor( readonly id: string ) {}
+  constructor(readonly id: string) { }
 
   onDidSendMessage: Event<vscode.DebugProtocolMessage>;
   handleMessage: (message: vscode.DebugProtocolMessage) => void;

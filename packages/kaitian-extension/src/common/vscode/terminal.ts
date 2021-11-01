@@ -1,7 +1,7 @@
 import { Event, IDisposable, IExtensionProps } from '@ali/ide-core-common';
 import { ITerminalInfo, ITerminalDimensionsDto, ITerminalLaunchError, ITerminalDimensions, ITerminalExitEvent, ITerminalLinkDto } from '@ali/ide-terminal-next';
 import { SerializableEnvironmentVariableCollection } from '@ali/ide-terminal-next/lib/common/environmentVariable';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 
 export interface IMainThreadTerminal {
   $sendText(id: string, text: string, addNewLine?: boolean);

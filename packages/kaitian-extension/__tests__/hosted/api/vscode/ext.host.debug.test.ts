@@ -5,7 +5,7 @@ import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { URI } from '@ali/ide-core-common';
-import * as path from 'path';
+import path from 'path';
 import { DebugAdapterServer, DebugAdapterExecutable, DebugAdapterInlineImplementation } from '../../../../src/common/vscode/ext-types';
 
 const mockMainThreadCommandProxy = {
@@ -147,13 +147,13 @@ describe('packages/kaitian-extension/__tests__/hosted/api/vscode/ext.host.debug.
 
   it('registerDebugAdapterDescriptorFactory method should be work', () => {
     expect(typeof extHostDebug.registerDebugAdapterDescriptorFactory('debug', {
-      createDebugAdapterDescriptor: (() => {}) as any,
+      createDebugAdapterDescriptor: (() => { }) as any,
     }).dispose).toBe('function');
   });
 
   it('registerDebugAdapterTrackerFactory method should be work', () => {
     expect(typeof extHostDebug.registerDebugAdapterTrackerFactory('debug', {
-      createDebugAdapterTracker: (() => {}) as any,
+      createDebugAdapterTracker: (() => { }) as any,
     }).dispose).toBe('function');
   });
 
@@ -211,7 +211,7 @@ describe('packages/kaitian-extension/__tests__/hosted/api/vscode/ext.host.debug.
     expect(adapterDescriptor.type).toBe('executable');
 
     const descriptorI = await execDADescriptor('mockI', new DebugAdapterInlineImplementation({
-      start: (input, output) => {},
+      start: (input, output) => { },
     } as any));
     adapterDescriptor = (extHostDebug as any).convertToDto(descriptorI);
     expect(adapterDescriptor.type).toBe('implementation');

@@ -1,8 +1,8 @@
-import * as React from 'react';
+import React from 'react';
 import { useInjectable, localize } from '@ali/ide-core-browser';
 import { ITerminalGroupViewService, IWidget, ITerminalError, ITerminalErrorService } from '../../common';
 
-import * as styles from './terminal.module.less';
+import styles from './terminal.module.less';
 
 export interface IProps {
   widget: IWidget;

@@ -1,6 +1,6 @@
-import * as React from 'react';
-import * as styles from './recycle-list.module.less';
-import * as cls from 'classnames';
+import React from 'react';
+import styles from './recycle-list.module.less';
+import cls from 'classnames';
 import { InfinityList } from '../list';
 
 export interface RecycleListProp extends React.PropsWithChildren<any> {

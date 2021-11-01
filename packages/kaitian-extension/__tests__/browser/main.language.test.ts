@@ -6,7 +6,7 @@ import * as monacoModes from '@ali/monaco-editor-core/esm/vs/editor/common/modes
 import { ExtHostLanguages } from '../../src/hosted/api/vscode/ext.host.language';
 import { MainThreadLanguages } from '../../src/browser/vscode/api/main.thread.language';
 import { URI, Uri, Position } from '@ali/ide-core-common';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import * as types from '../../src/common/vscode/ext-types';
 import * as modes from '../../src/common/vscode/model.api';
 
@@ -323,9 +323,9 @@ describe('ExtHostLanguageFeatures', () => {
     name: 'codeactiontest',
     displayName: 'CodeAction Test',
     id: 'codeactiontest.test',
-    activate: () => {},
-    deactivate: () => {},
-    toJSON: () => {},
+    activate: () => { },
+    deactivate: () => { },
+    toJSON: () => { },
   } as unknown as IExtensionDescription;
   test('Quick Fix, command data conversion', async (done) => {
     disposables.push(extHost.registerCodeActionsProvider(extension, defaultSelector, {
@@ -738,10 +738,10 @@ An error case:
   describe('CallHierarchy', () => {
 
     beforeAll(() => {
-      injector.addProviders(    {
+      injector.addProviders({
         token: IEditorDocumentModelService,
         useValue: {
-          getModelReference: () => {},
+          getModelReference: () => { },
           createModelReference: (uri) => {
             return Promise.resolve({
               instance: {
@@ -750,7 +750,7 @@ An error case:
                   return {
                     uri: model.uri,
                     isTooLargeForSyncing: () => false,
-                    getLanguageIdentifier: () => ({ language: 'plaintext'}),
+                    getLanguageIdentifier: () => ({ language: 'plaintext' }),
                   };
                 },
               },
@@ -794,15 +794,15 @@ An error case:
       await 0;
 
       expect(mockMainThreadFunc).toBeCalled();
-      const prepareCallHierarchyItems =  await callHierarchyService.prepareCallHierarchyProvider(model.uri, new Position(1, 1));
+      const prepareCallHierarchyItems = await callHierarchyService.prepareCallHierarchyProvider(model.uri, new Position(1, 1));
       expect(prepareCallHierarchyItems.length).toBe(1);
       expect(prepareCallHierarchyItems[0].kind).toBe(types.SymbolKind.Object);
-      const provideIncomingCalls =  await callHierarchyService.provideIncomingCalls(prepareCallHierarchyItems[0]);
+      const provideIncomingCalls = await callHierarchyService.provideIncomingCalls(prepareCallHierarchyItems[0]);
       expect(provideIncomingCalls).toBeDefined();
       expect(provideIncomingCalls!.length).toBe(1);
       expect(provideIncomingCalls![0].fromRanges.length).toBe(1);
       expect(provideIncomingCalls![0].from.kind).toBe(types.SymbolKind.Object);
-      const provideOutgoingCalls =  await callHierarchyService.provideOutgoingCalls(prepareCallHierarchyItems[0]);
+      const provideOutgoingCalls = await callHierarchyService.provideOutgoingCalls(prepareCallHierarchyItems[0]);
       expect(provideOutgoingCalls).toBeDefined();
       expect(provideOutgoingCalls!.length).toBe(2);
       expect(provideOutgoingCalls![0].fromRanges.length).toBe(2);
@@ -829,9 +829,9 @@ An error case:
     const extension = {
       name: 'test',
       id: 'evaluatableExpression.test',
-      activate: () => {},
-      deactivate: () => {},
-      toJSON: () => {},
+      activate: () => { },
+      deactivate: () => { },
+      toJSON: () => { },
     };
 
     const mockedMainthreadFunc = jest.spyOn(mainThread, '$registerEvaluatableExpressionProvider');
@@ -888,7 +888,7 @@ An error case:
     await 0;
 
     expect(mockMainThreadFunc).toBeCalled();
-    expect(mockMainThreadFunc).toBeCalledWith(expect.anything(), [{'$serialized': true, 'language': 'plaintext'}]);
+    expect(mockMainThreadFunc).toBeCalledWith(expect.anything(), [{ '$serialized': true, 'language': 'plaintext' }]);
   });
   //#endregion registerLinkedEditingRangeProvider
   //#region registerInlayHintsProvider
@@ -905,7 +905,7 @@ An error case:
     extHost.registerInlayHintsProvider(mockService({}), 'plaintext', new TestInlayHintsProvider());
     await 0;
     expect(mockMainThreadFunc).toBeCalled();
-    expect(mockMainThreadFunc).toBeCalledWith(expect.anything(), [{'$serialized': true, 'language': 'plaintext'}], undefined);
+    expect(mockMainThreadFunc).toBeCalledWith(expect.anything(), [{ '$serialized': true, 'language': 'plaintext' }], undefined);
   });
   //#endregion registerInlayHintsProvider
 });

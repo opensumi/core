@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { Uri, Cache } from '@ali/ide-core-common';
 import * as Converter from '../../../../common/vscode/converter';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
@@ -15,7 +15,7 @@ export class LinkProviderAdapter {
   constructor(
     private readonly provider: vscode.DocumentLinkProvider,
     private readonly documents: ExtensionDocumentDataManager,
-  ) {}
+  ) { }
 
   provideLinks(
     resource: Uri,

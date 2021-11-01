@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { Uri as URI, MutableDisposable, DisposableStore, IRange, Emitter, debounce, asPromise, CancellationToken } from '@ali/ide-core-common';
 import { IExtHostComments, IMainThreadComments } from '../../../common/vscode/comments';
 import { IRPCProtocol } from '@ali/ide-connection';

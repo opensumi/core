@@ -1,5 +1,5 @@
-import * as path from 'path';
-import type * as vscode from 'vscode';
+import path from 'path';
+import type vscode from 'vscode';
 import { Uri } from '@ali/ide-core-common/lib/uri';
 
 import { IExtHostTerminal } from '../../../common/vscode';

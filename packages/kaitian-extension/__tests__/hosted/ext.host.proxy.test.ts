@@ -4,7 +4,7 @@ import { ExtensionHostProxyManager } from '../../src/node/extension.host.proxy.m
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { INodeLogger, Event } from '@ali/ide-core-node';
-import * as path from 'path';
+import path from 'path';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as styles from './file-tree.module.less';
+import React from 'react';
+import styles from './file-tree.module.less';
 import { localize, CommandService } from '@ali/ide-core-common';
 import { useInjectable, FILE_COMMANDS } from '@ali/ide-core-browser';
 

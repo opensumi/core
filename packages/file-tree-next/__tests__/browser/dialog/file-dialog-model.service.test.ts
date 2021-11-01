@@ -6,9 +6,9 @@ import { Directory, File } from '../../../src/common/file-tree-node.define';
 import { TreeNodeType } from '@ali/ide-components';
 import { FileTreeDialogModel } from '../../../src/browser/dialog/file-dialog-model.service';
 import { FileTreeDecorationService } from '../../../src/browser/services/file-tree-decoration.service';
-import * as styles from '../../../src/browser/file-tree-node.modules.less';
+import styles from '../../../src/browser/file-tree-node.modules.less';
 
-class TempDirectory {}
+class TempDirectory { }
 
 describe('FileDialogModel should be work', () => {
   let injector: MockInjector;
@@ -54,7 +54,7 @@ describe('FileDialogModel should be work', () => {
       {
         token: LabelService,
         useValue: {
-          onDidChange: () => Disposable.create(() => {}),
+          onDidChange: () => Disposable.create(() => { }),
         },
       },
       {
@@ -64,7 +64,7 @@ describe('FileDialogModel should be work', () => {
       {
         token: FileTreeDecorationService,
         useValue: {
-          onDidChange: () => {},
+          onDidChange: () => { },
         },
       },
     );
@@ -72,7 +72,7 @@ describe('FileDialogModel should be work', () => {
       ...newDirectoryByName('child'),
       ensureLoaded: jest.fn(),
       watcher: {
-        on: () => Disposable.create(() => {}),
+        on: () => Disposable.create(() => { }),
       },
       getTreeNodeAtIndex: () => {
         return root;

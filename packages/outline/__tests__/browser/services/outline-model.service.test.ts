@@ -7,7 +7,7 @@ import { INormalizedDocumentSymbol, DocumentSymbolStore } from '@ali/ide-editor/
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { OutlineEventService } from '@ali/ide-outline/lib/browser/services/outline-event.service';
 import { IOutlineDecorationService } from '@ali/ide-outline';
-import * as styles from '../../../../src/browser/outline-node.module.less';
+import styles from '../../../../src/browser/outline-node.module.less';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { SymbolKind } from '@ali/ide-kaitian-extension/lib/hosted/api/worker/worker.ext-types';
@@ -48,7 +48,7 @@ describe('OutlineTreeModelService', () => {
   };
 
   const mockDocumentSymbolStore = {
-    getDocumentSymbol: jest.fn(() => ({children: []})),
+    getDocumentSymbol: jest.fn(() => ({ children: [] })),
   };
 
   const mockOutlineDecorationService = {

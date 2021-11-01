@@ -3,7 +3,7 @@ import { IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser
 import { FILE_SCHEME, FILE_SAVE_BY_CHANGE_THRESHOLD, IFileSchemeDocClient } from '../common';
 import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, ISchemaStore, IDisposable, Disposable, ISchemaRegistry, replaceLocalizePlaceholder, PreferenceService } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service';
-import * as md5 from 'md5';
+import md5 from 'md5';
 import { BaseFileSystemEditorDocumentProvider } from '@ali/ide-editor/lib/browser/fs-resource/fs-editor-doc';
 import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
@@ -79,7 +79,7 @@ export class VscodeSchemeDocumentProvider implements IEditorDocumentModelContent
 
   public onDidChangeContent: Event<URI> = this._onDidChangeContent.event;
 
-  private listeners: {[uri: string]: IDisposable} = {};
+  private listeners: { [uri: string]: IDisposable } = {};
 
   // 在main进程将vscode scheme获取model的方法给定义好，在json schema store，把 fileMatch 与 vscode scheme 的 url 关联起来
   handlesScheme(scheme: string) {

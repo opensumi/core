@@ -1,5 +1,5 @@
 import { LogLevel as KTLogLevel, Emitter } from '@ali/ide-core-common';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { LogLevel, UIKind, UriComponents } from './ext-types';
 
 export interface IMainThreadEnv {

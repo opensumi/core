@@ -34,8 +34,8 @@ import {
 } from '../common';
 import { CommentsThread } from './comments-thread';
 import { observable, computed, action } from 'mobx';
-import * as flattenDeep from 'lodash.flattendeep';
-import * as groupBy from 'lodash.groupby';
+import flattenDeep from 'lodash.flattendeep';
+import groupBy from 'lodash.groupby';
 import { dirname } from '@ali/ide-core-common/lib/path';
 import { IIconService, IconType } from '@ali/ide-theme';
 import { CommentsPanel } from './comments-panel.view';
@@ -248,7 +248,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     }
     const contributionRanges = await this.getContributionRanges(uri);
     const isProviderRanges = contributionRanges.some((contributionRange) => range.startLineNumber >= contributionRange.startLineNumber && range.startLineNumber <= contributionRange.endLineNumber);
-     // 如果不支持对同一行进行多个评论，那么过滤掉当前有 thread 行号的 decoration
+    // 如果不支持对同一行进行多个评论，那么过滤掉当前有 thread 行号的 decoration
     const isShowHoverToSingleLine = this.isMultiCommentsForSingleLine || !this.commentsThreads.some((thread) =>
       thread.uri.isEqual(uri)
       && thread.range.startLineNumber === range.startLineNumber,
@@ -410,7 +410,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     // dispose 掉上一个 decorationProvider
     this.decorationProviderDisposer.dispose();
     this.decorationProviderDisposer = this.editorDecorationCollectionService.registerDecorationProvider({
-      schemes: [ ...this.shouldShowCommentsSchemes.values() ],
+      schemes: [...this.shouldShowCommentsSchemes.values()],
       key: 'comments',
       onDidDecorationChange: this.decorationChangeEmitter.event,
       provideEditorDecoration: (uri: URI) => {
@@ -424,19 +424,19 @@ export class CommentsService extends Disposable implements ICommentsService {
           }
           return thread;
         })
-        .filter((thread) => {
-          const isCurrentThread = thread.uri.isEqual(uri);
-          if (this.filterThreadDecoration) {
-            return isCurrentThread && this.filterThreadDecoration(thread);
-          }
-          return isCurrentThread;
-        })
-        .map((thread) => {
-          return {
-            range: thread.range,
-            options: this.createThreadDecoration(thread) as unknown as monaco.editor.IModelDecorationOptions,
-          };
-        });
+          .filter((thread) => {
+            const isCurrentThread = thread.uri.isEqual(uri);
+            if (this.filterThreadDecoration) {
+              return isCurrentThread && this.filterThreadDecoration(thread);
+            }
+            return isCurrentThread;
+          })
+          .map((thread) => {
+            return {
+              range: thread.range,
+              options: this.createThreadDecoration(thread) as unknown as monaco.editor.IModelDecorationOptions,
+            };
+          });
       },
     });
     this.addDispose(this.decorationProviderDisposer);

@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import { Domain } from '@ali/ide-core-browser';
 import { IBrowserRequireInterceptorArgs, IRequireInterceptorService, RequireInterceptorContribution } from '../common/require-interceptor';
 import { createBrowserApi } from './kaitian-browser';

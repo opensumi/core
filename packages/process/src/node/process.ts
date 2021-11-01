@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { ChildProcess, spawn, fork } from 'child_process';
-import * as stream from 'stream';
+import stream from 'stream';
 import { Disposable, Emitter } from '@ali/ide-core-common';
 import { DevNullStream } from './dev-null-stream';
 import { ProcessManage } from './process-manager';
@@ -17,7 +17,7 @@ import {
 @Injectable()
 export class ProcessFactory {
   constructor(
-  ) {}
+  ) { }
 
   @Autowired(IProcessManage)
   private readonly processManage: ProcessManage;
@@ -113,7 +113,7 @@ export class Process extends Disposable implements IProcess {
     this.exitEmitter.fire(event);
   }
 
-  get pid(): number| null {
+  get pid(): number | null {
     return this.process ? this.process.pid : null;
   }
 

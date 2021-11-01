@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { IThreadComment, ICommentsThread, CommentReaction, CommentReactionClick, SwitchCommandReaction } from '../common';
 import { Button } from '@ali/ide-core-browser/lib/components';
@@ -6,7 +6,7 @@ import { useInjectable, IEventBus, getExternalIcon, Disposable } from '@ali/ide-
 import { IIconService, IconType } from '@ali/ide-theme';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { AbstractMenuService, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
-import * as styles from './comments.module.less';
+import styles from './comments.module.less';
 
 export const CommentReactionSwitcher: React.FC<{
   thread: ICommentsThread;

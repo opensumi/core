@@ -1,11 +1,11 @@
 import { KeyCode as KeyCodeEnum } from '@ali/monaco-editor-core/esm/vs/base/common/keyCodes';
-import * as React from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button, CheckBox, IRecycleListHandler, RecycleList, ValidateInput, VALIDATE_TYPE } from '@ali/ide-components';
 import { HideReason, QuickOpenAction, QuickOpenItem, QuickOpenMode, QuickTitleButton } from '@ali/ide-core-browser/lib/quick-open';
 import { KEY_CODE_MAP } from '@ali/ide-monaco/lib/browser/monaco.keycode-map';
 import clx from 'classnames';
-import * as styles from './styles.module.less';
+import styles from './styles.module.less';
 
 import { HighlightLabel } from './components/highlight-label';
 import { KeybindingView } from './components/keybinding';

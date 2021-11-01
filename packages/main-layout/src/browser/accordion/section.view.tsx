@@ -1,6 +1,6 @@
-import * as React from 'react';
-import * as cls from 'classnames';
-import * as styles from './styles.module.less';
+import React from 'react';
+import cls from 'classnames';
+import styles from './styles.module.less';
 import { getIcon, ErrorBoundary, useViewState } from '@ali/ide-core-browser';
 import { Layout, PanelContext } from '@ali/ide-core-browser/lib/components';
 import { useInjectable } from '@ali/ide-core-browser';

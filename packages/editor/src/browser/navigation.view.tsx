@@ -1,15 +1,15 @@
-import * as React from 'react';
+import React from 'react';
 import { useInjectable, DomListener, Disposable, useUpdateOnEvent } from '@ali/ide-core-browser';
 import { Icon } from '@ali/ide-components';
 import { getIcon } from '@ali/ide-core-browser';
 
-import * as styles from './navigation.module.less';
+import styles from './navigation.module.less';
 import { IBreadCrumbService, IBreadCrumbPart } from './types';
 import { Injectable } from '@ali/common-di';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Scroll, IScrollDelegate } from './component/scroll/scroll';
-import * as classnames from 'classnames';
+import classnames from 'classnames';
 import { EditorGroup } from './workbench-editor.service';
 import { useUpdateOnGroupTabChange } from './view/react-hook';
 

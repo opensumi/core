@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 
 export interface TreeNodeHighlightRange {
   start: number;
@@ -19,7 +19,7 @@ export interface FileDecorationsProvider {
 }
 
 export interface ThemeProvider {
-  getColor: ({id: themeColorId }) => string;
+  getColor: ({ id: themeColorId }) => string;
 }
 
 export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {

@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { Position, IIncomingCallDto, IOutgoingCallDto, ICallHierarchyItemDto } from '../../../../common/vscode/model.api';
 import * as Converter from '../../../../common/vscode/converter';
@@ -11,8 +11,8 @@ export class CallHierarchyAdapter {
   private readonly _cache = new Map<string, Map<string, vscode.CallHierarchyItem>>();
 
   constructor(
-  private readonly documents: ExtensionDocumentDataManager,
-  private readonly provider: vscode.CallHierarchyProvider,
+    private readonly documents: ExtensionDocumentDataManager,
+    private readonly provider: vscode.CallHierarchyProvider,
   ) { }
 
   async prepareSession(uri: Uri, position: Position, token: CancellationToken): Promise<ICallHierarchyItemDto[] | undefined> {

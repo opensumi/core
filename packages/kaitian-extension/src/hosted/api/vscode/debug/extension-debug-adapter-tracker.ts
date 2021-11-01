@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 
 export class ExtensionDebugAdapterTracker implements vscode.DebugAdapterTracker {
   constructor(protected readonly trackers: vscode.DebugAdapterTracker[]) { }

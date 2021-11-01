@@ -1,10 +1,10 @@
 import * as fse from 'fs-extra';
-import * as trash from 'trash';
-import * as paths from 'path';
-import * as os from 'os';
-import * as mv from 'mv';
+import trash from 'trash';
+import paths from 'path';
+import os from 'os';
+import mv from 'mv';
 import { v4 } from 'uuid';
-import * as writeFileAtomic from 'write-file-atomic';
+import writeFileAtomic from 'write-file-atomic';
 import {
   UriComponents,
   Uri,
@@ -34,7 +34,7 @@ import {
 } from '../common/';
 import { Injectable } from '@ali/common-di';
 import { RPCService } from '@ali/ide-connection';
-import * as fileType from 'file-type';
+import fileType from 'file-type';
 import { ParsedPattern, parse } from '@ali/ide-core-common/lib/utils/glob';
 import { isLinux } from '@ali/ide-core-common/lib/platform';
 

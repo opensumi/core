@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as clsx from 'classnames';
+import React from 'react';
+import clsx from 'classnames';
 import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 
 import { ClickParam, Menu } from '@ali/ide-components/lib/menu';
@@ -15,7 +15,7 @@ import { useMenus, useContextMenus } from '../../utils';
 
 import placements from './placements';
 
-import * as styles from './styles.module.less';
+import styles from './styles.module.less';
 
 const MenuAction: React.FC<{
   data: MenuNode;

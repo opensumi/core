@@ -2,7 +2,7 @@
  * 前端提供一套 Slot 的注册和渲染的机制
  */
 
-import * as React from 'react';
+import React from 'react';
 import { getDebugLogger } from '@ali/ide-core-common';
 import { LayoutConfig } from '../bootstrap';
 import { useInjectable } from '../react-hooks';

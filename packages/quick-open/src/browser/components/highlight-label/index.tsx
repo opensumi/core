@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { escape } from '@ali/ide-core-common';
 import { Highlight } from '@ali/ide-core-browser/lib/quick-open';
 

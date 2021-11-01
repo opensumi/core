@@ -15,7 +15,7 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/scm.ts
 
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import {
   asPromise, comparePaths, sortedDiff, debounce,
   Event, Emitter, getDebugLogger, DisposableStore,

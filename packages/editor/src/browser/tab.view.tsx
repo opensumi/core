@@ -1,8 +1,8 @@
 
-import * as React from 'react';
+import React from 'react';
 import { useInjectable, useUpdateOnEvent, useUpdateOnEventBusEvent } from '@ali/ide-core-browser/lib/react-hooks';
 import { IResource, ResourceService, IEditorGroup, WorkbenchEditorService, ResourceDidUpdateEvent } from '../common';
-import * as styles from './editor.module.less';
+import styles from './editor.module.less';
 import classnames from 'classnames';
 import { getIcon, MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent, URI, Disposable, DomListener, PreferenceService, DisposableCollection, Event } from '@ali/ide-core-browser';
 import { Scroll } from './component/scroll/scroll';

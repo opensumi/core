@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { MirrorTextModel } from './mirror';
 import { ensureValidWordDefinition, getWordAtText } from './wordHelper';
 import { Range, Position, EndOfLine, Schemas, Uri } from '../../../../common/vscode/ext-types';

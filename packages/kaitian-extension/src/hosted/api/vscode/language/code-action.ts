@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import type { CodeActionContext, WorkspaceEdit } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { Uri as URI, Cache } from '@ali/ide-core-common';
 import { CodeActionKind } from '../../../../common/vscode/ext-types';
 import { Selection, Range, ChainedCacheId, IWorkspaceEditDto } from '../../../../common/vscode/model.api';

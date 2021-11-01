@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { View, useInjectable } from '@ali/ide-core-browser';
 import { replaceLocalizePlaceholder } from '@ali/ide-core-common';

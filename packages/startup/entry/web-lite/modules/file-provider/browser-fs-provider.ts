@@ -4,8 +4,8 @@ import { Path } from '@ali/ide-core-common/lib/path';
 import { promisify } from '@ali/ide-core-common/lib/browser-fs/util';
 import { ensureDir } from '@ali/ide-core-common/lib/browser-fs/ensure-dir';
 
-import * as fs from 'fs';
-import * as paths from 'path';
+import fs from 'fs';
+import paths from 'path';
 import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
 
 interface BrowserFsProviderOptions { isReadonly?: boolean; rootFolder: string; }
@@ -72,8 +72,8 @@ export class BrowserFsProvider implements IDiskFileProvider {
     // TODO: shall we implement this method?
     return 0;
   }
-  unwatch(watcherId: number): void {}
-  setWatchFileExcludes(excludes: string[]) {}
+  unwatch(watcherId: number): void { }
+  setWatchFileExcludes(excludes: string[]) { }
   getWatchFileExcludes(): string[] {
     return [];
   }
@@ -94,7 +94,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
     try {
       const dirList = await promisify(fs.readdir)(uri.fsPath);
 
-      for (const name of dirList as  string[]) {
+      for (const name of dirList as string[]) {
         const filePath = paths.join(uri.fsPath, name);
         result.push([name, this.getFileStatType(await promisify(fs.stat)(filePath))]);
       }
@@ -134,7 +134,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
       // TODO: dispose
       window.localStorage.setItem(_uri.toString(), '1');
       // workspaceDir 要带版本号信息(ref)，保证本地存储和版本号是对应的
-      content && fs.writeFile(FileUri.fsPath(_uri), content, () => {});
+      content && fs.writeFile(FileUri.fsPath(_uri), content, () => { });
     }
     return BinaryBuffer.fromString(content!).buffer;
   }
@@ -167,7 +167,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
   async delete(uri: Uri, options: { recursive: boolean; moveToTrash?: boolean | undefined; }): Promise<void> {
     this.checkCapability();
     if (uri.fsPath.startsWith(this.options.rootFolder)) {
-      await this.httpFileService.deleteFile(uri, {recursive: options.recursive});
+      await this.httpFileService.deleteFile(uri, { recursive: options.recursive });
     }
     return await promisify(fs.unlink)((uri.fsPath));
   }
@@ -308,7 +308,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
       if (node.type === 'tree') {
         ensureNodes.push(this.createDirectory(URI.file(new Path(this.options.rootFolder).join(`${node.path}`).toString()).codeUri));
       } else {
-        ensureNodes.push(this.writeFile(URI.file(new Path(this.options.rootFolder).join(`${node.path}`).toString()).codeUri, BinaryBuffer.fromString('').buffer, {create: true, isInit: true, overwrite: false}) as Promise<FileStat>);
+        ensureNodes.push(this.writeFile(URI.file(new Path(this.options.rootFolder).join(`${node.path}`).toString()).codeUri, BinaryBuffer.fromString('').buffer, { create: true, isInit: true, overwrite: false }) as Promise<FileStat>);
       }
     }
     try {
@@ -380,7 +380,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
 
 export abstract class AbstractHttpFileService {
   abstract readFile(uri: Uri, encoding?: string): Promise<string>;
-  abstract readDir(uri: Uri): Promise<Array<{type: 'tree' | 'leaf', path: string}>>;
+  abstract readDir(uri: Uri): Promise<Array<{ type: 'tree' | 'leaf', path: string }>>;
   updateFile(uri: Uri, content: string, options: { encoding?: string; newUri?: Uri; }): Promise<void> {
     throw new Error('updateFile method not implemented');
   }

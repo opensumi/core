@@ -1,6 +1,6 @@
-import * as React from 'react';
-import * as styles from './index.module.less';
-import * as cls from 'classnames';
+import React from 'react';
+import styles from './index.module.less';
+import cls from 'classnames';
 import { getIcon } from '@ali/ide-core-browser';
 
 export interface DebugActionProps {

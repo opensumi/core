@@ -1,6 +1,6 @@
-import * as React from 'react';
+import React from 'react';
 import { useState, useRef } from 'react';
-import * as cxs from 'classnames';
+import cxs from 'classnames';
 
 import './style.less';
 

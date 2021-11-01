@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 
 import { Emitter, Event, IExtensionProps } from '@ali/ide-core-common';
 import { ExtensionIdentifier, IExtHostSecret, IMainThreadSecret, MainThreadAPIIdentifier } from '../../../common/vscode';

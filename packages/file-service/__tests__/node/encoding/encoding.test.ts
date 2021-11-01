@@ -1,7 +1,7 @@
 
-import * as path from 'path';
+import path from 'path';
 import * as fs from 'fs-extra';
-import * as temp from 'temp';
+import temp from 'temp';
 import { Injector } from '@ali/common-di';
 import { URI, AppConfig, FileUri } from '@ali/ide-core-node';
 import { IFileService } from '../../../src/common';

@@ -1,9 +1,9 @@
-import * as React from 'react';
+import React from 'react';
 import { KeybindingRegistry, useInjectable, localize, QuickOpenTab } from '@ali/ide-core-browser';
 import clx from 'classnames';
 import { KeybindingView } from '../keybinding';
 
-import * as styles from './style.module.less';
+import styles from './style.module.less';
 
 interface Props {
   tabs: QuickOpenTab[];

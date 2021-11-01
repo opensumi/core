@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { useInjectable, Disposable, CancellationTokenSource } from '@ali/ide-core-browser';
 import { IMarkdownService } from '../common';
 

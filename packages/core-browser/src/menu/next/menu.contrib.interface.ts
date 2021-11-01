@@ -1,5 +1,5 @@
 import { URI, IChange } from '@ali/ide-core-common';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 
 // explorer/context
 // 资源管理器 ctxmenu

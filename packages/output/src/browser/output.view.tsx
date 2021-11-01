@@ -1,11 +1,11 @@
-import * as React from 'react';
+import React from 'react';
 import { useEffect, createRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable, isElectronRenderer, ViewState } from '@ali/ide-core-browser';
 import { Select, Option } from '@ali/ide-components';
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
 import { OutputService } from './output.service';
-import * as styles from './output.module.less';
+import styles from './output.module.less';
 
 export const Output = observer(({ viewState }: { viewState: ViewState }) => {
   const outputService = useInjectable<OutputService>(OutputService);

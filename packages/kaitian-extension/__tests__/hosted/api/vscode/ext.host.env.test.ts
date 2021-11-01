@@ -8,7 +8,7 @@ import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector'
 import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
 import { UIKind } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
 
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

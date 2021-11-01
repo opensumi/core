@@ -1,8 +1,8 @@
-import * as React from 'react';
+import React from 'react';
 import { useInjectable } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
-import * as styles from './debug-hover.module.less';
-import * as cls from 'classnames';
+import styles from './debug-hover.module.less';
+import cls from 'classnames';
 import { DebugHoverTreeModelService, IDebugHoverUpdateData } from './debug-hover-tree.model.service';
 import { IRecycleTreeHandle, RecycleTree, INodeRendererWrapProps, TreeNodeEvent } from '@ali/ide-components';
 import { DebugHoverModel } from './debug-hover-model';

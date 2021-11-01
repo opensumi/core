@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as clsx from 'classnames';
+import React from 'react';
+import clsx from 'classnames';
 import { Modal, ModalProps } from '../modal';
 
 import './styles.less';

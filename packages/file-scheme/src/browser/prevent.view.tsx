@@ -1,9 +1,9 @@
-import * as React from 'react';
+import React from 'react';
 import { IEventBus, localize, useInjectable } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { ResourceOpenTypeChangedEvent } from '@ali/ide-editor/lib/browser/types';
 
-import * as styles from './style.module.less';
+import styles from './style.module.less';
 
 export const LargeFilePrevent = () => {
   const editorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);

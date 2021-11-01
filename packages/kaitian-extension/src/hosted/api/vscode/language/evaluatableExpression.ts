@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import vscode from 'vscode';
 
 import { asPromise, CancellationToken } from '@ali/ide-core-common';
 import { Position } from '../../../../common/vscode/model.api';

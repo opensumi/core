@@ -1,8 +1,8 @@
 
-import * as path from 'path';
-import * as spdlog from 'spdlog';
-import * as process from 'process';
-import * as os from 'os';
+import path from 'path';
+import spdlog from 'spdlog';
+import process from 'process';
+import os from 'os';
 import { RPCService } from '@ali/ide-connection';
 import { Injectable, Autowired } from '@ali/common-di';
 import {
@@ -197,7 +197,7 @@ export class BaseLogService implements IBaseLogService {
     return preString + message;
   }
 
-  protected doLog(logger: SpdLogger, level: LogLevel, message: string ): void {
+  protected doLog(logger: SpdLogger, level: LogLevel, message: string): void {
     if (!logger) {
       return;
     }
@@ -218,7 +218,7 @@ export class BaseLogService implements IBaseLogService {
     }
   }
 
-  protected showDebugLog(level: LogLevel, message: string ): void {
+  protected showDebugLog(level: LogLevel, message: string): void {
     switch (level) {
       case LogLevel.Verbose:
         return this.debugLog.log(message);
@@ -302,33 +302,33 @@ export class LogServiceForClient extends RPCService<IRPCLogService> implements I
     this.getLogger(namespace).setLevel(level);
   }
 
-  verbose(namespace: SupportLogNamespace,  message: string, pid?: number) {
-    const logger = this.getLogger(namespace, {pid});
+  verbose(namespace: SupportLogNamespace, message: string, pid?: number) {
+    const logger = this.getLogger(namespace, { pid });
     logger.sendLog(LogLevel.Verbose, message);
   }
 
-  debug(namespace: SupportLogNamespace,  message: string, pid?: number) {
-    const logger = this.getLogger(namespace, {pid});
+  debug(namespace: SupportLogNamespace, message: string, pid?: number) {
+    const logger = this.getLogger(namespace, { pid });
     logger.sendLog(LogLevel.Debug, message);
   }
 
-  log(namespace: SupportLogNamespace,  message: string, pid?: number) {
-    const logger = this.getLogger(namespace, {pid});
+  log(namespace: SupportLogNamespace, message: string, pid?: number) {
+    const logger = this.getLogger(namespace, { pid });
     logger.sendLog(LogLevel.Info, message);
   }
 
-  warn(namespace: SupportLogNamespace,  message: string, pid?: number) {
-    const logger = this.getLogger(namespace, {pid});
+  warn(namespace: SupportLogNamespace, message: string, pid?: number) {
+    const logger = this.getLogger(namespace, { pid });
     logger.sendLog(LogLevel.Warning, message);
   }
 
-  error(namespace: SupportLogNamespace,  message: string, pid?: number) {
-    const logger = this.getLogger(namespace, {pid});
+  error(namespace: SupportLogNamespace, message: string, pid?: number) {
+    const logger = this.getLogger(namespace, { pid });
     logger.sendLog(LogLevel.Error, message);
   }
 
-  critical(namespace: SupportLogNamespace,  message: string, pid?: number) {
-    const logger = this.getLogger(namespace, {pid});
+  critical(namespace: SupportLogNamespace, message: string, pid?: number) {
+    const logger = this.getLogger(namespace, { pid });
     logger.sendLog(LogLevel.Critical, message);
   }
 

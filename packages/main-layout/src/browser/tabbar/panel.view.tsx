@@ -1,6 +1,6 @@
-import * as React from 'react';
-import * as clsx from 'classnames';
-import * as styles from './styles.module.less';
+import React from 'react';
+import clsx from 'classnames';
+import styles from './styles.module.less';
 import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, ErrorBoundary, useViewState } from '@ali/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';

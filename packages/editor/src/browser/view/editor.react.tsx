@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { URI, useInjectable } from '@ali/ide-core-browser';
 import { EditorCollectionService, ICodeEditor } from '../../common';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from '../doc-model/types';

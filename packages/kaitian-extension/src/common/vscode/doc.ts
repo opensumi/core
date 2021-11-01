@@ -1,20 +1,20 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { IDisposable, Event } from '@ali/ide-core-common';
 import { Uri } from './ext-types';
 import { SaveReason, IEditorDocumentModelContentChange } from '@ali/ide-editor';
 
 export interface IModelChangedEvent {
   /**
-	 * The actual changes.
-	 */
+   * The actual changes.
+   */
   readonly changes: IEditorDocumentModelContentChange[];
   /**
-	 * The (new) end-of-line character.
-	 */
+   * The (new) end-of-line character.
+   */
   readonly eol: string;
   /**
-	 * The new version id the model has transitioned to.
-	 */
+   * The new version id the model has transitioned to.
+   */
   readonly versionId: number;
 }
 

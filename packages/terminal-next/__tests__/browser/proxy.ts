@@ -1,10 +1,10 @@
 /**
  * 为了模拟断连而设计的 pty 和 proxy 服务
  */
-import * as os from 'os';
+import os from 'os';
 import * as pty from 'node-pty';
-import * as WebSocket from 'ws';
-import * as httpProxy from 'http-proxy';
+import WebSocket from 'ws';
+import httpProxy from 'http-proxy';
 import { uuid } from '@ali/ide-core-browser';
 
 function getRandomInt(min: number, max: number) {
@@ -149,7 +149,7 @@ export function createWsServer() {
         handleStdinMessage(json);
       }
     });
-    socket.on('error', () => {});
+    socket.on('error', () => { });
   });
 
   return server;

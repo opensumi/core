@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react-lite';
-import * as React from 'react';
+import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import cls from 'classnames';
-import * as styles from './header.module.less';
+import styles from './header.module.less';
 import { useInjectable, MaybeNull, ComponentRenderer, ComponentRegistry, Disposable, DomListener, AppConfig, replaceLocalizePlaceholder, electronEnv, isOSX, IWindowService } from '@ali/ide-core-browser';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { WorkbenchEditorService, IResource } from '@ali/ide-editor';

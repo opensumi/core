@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copued and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/node/ports.ts
 
-import * as net from 'net';
+import net from 'net';
 
 /**
  * @returns Returns a random port between 1025 and 65535.

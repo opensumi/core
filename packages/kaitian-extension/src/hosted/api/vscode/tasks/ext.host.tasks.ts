@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { TaskProvider, Task, TaskExecution, TaskFilter } from 'vscode';
 import { getDebugLogger, Event, CancellationToken, asPromise, CancellationTokenSource, Emitter, DisposableStore, Uri, IDisposable } from '@ali/ide-core-common';

@@ -1,6 +1,6 @@
 import { Injectable } from '@ali/common-di';
 import { INativeCryptrService } from '@ali/ide-core-common';
-import * as crypto from 'crypto';
+import crypto from 'crypto';
 
 @Injectable()
 export class CryptrService implements INativeCryptrService {

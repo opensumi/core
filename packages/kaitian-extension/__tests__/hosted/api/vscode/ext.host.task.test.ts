@@ -1,4 +1,4 @@
-import * as path from 'path';
+import path from 'path';
 import { Emitter as EventEmitter, Disposable, ILoggerManagerClient, StorageProvider, Uri, IFileServiceClient } from '@ali/ide-core-common';
 import { RPCProtocol } from '@ali/ide-connection';
 import { ITerminalApiService, ITerminalClientFactory, ITerminalController, ITerminalGroupViewService, ITerminalInternalService, ITerminalService, ITerminalTheme } from '@ali/ide-terminal-next';
@@ -74,14 +74,14 @@ describe('ExtHostTask API', () => {
       },
     }),
   },
-  {
-    token: ITerminalService,
-    useValue: new MockSocketService(),
-  },
-  {
-    token: ITerminalInternalService,
-    useClass: TerminalInternalService,
-  }, {
+    {
+      token: ITerminalService,
+      useValue: new MockSocketService(),
+    },
+    {
+      token: ITerminalInternalService,
+      useClass: TerminalInternalService,
+    }, {
     token: StorageProvider,
     useValue: MockedStorageProvider,
   }, {
@@ -94,26 +94,26 @@ describe('ExtHostTask API', () => {
     token: ILoggerManagerClient,
     useClass: MockLoggerManageClient,
   },
-  {
-    token: ITerminalClientFactory,
-    useFactory: (injector) => (widget, options = {}) => {
-      return TerminalClientFactory.createClient(injector, widget, options);
+    {
+      token: ITerminalClientFactory,
+      useFactory: (injector) => (widget, options = {}) => {
+        return TerminalClientFactory.createClient(injector, widget, options);
+      },
     },
-  },
-  {
-    token: IVariableResolverService,
-    useClass: VariableResolverService,
-  },
-  {
-    token: ITerminalGroupViewService,
-    useClass: TerminalGroupViewService,
-  },
-  {
-    token: OutputPreferences,
-    useValue: {
-      'output.logWhenNoPanel': true,
+    {
+      token: IVariableResolverService,
+      useClass: VariableResolverService,
     },
-  }, {
+    {
+      token: ITerminalGroupViewService,
+      useClass: TerminalGroupViewService,
+    },
+    {
+      token: OutputPreferences,
+      useValue: {
+        'output.logWhenNoPanel': true,
+      },
+    }, {
     token: IWorkspaceService,
     useValue: {
       tryGetRoots: () => ([{ uri: __dirname }]),
@@ -123,56 +123,56 @@ describe('ExtHostTask API', () => {
       },
     },
   },
-  {
-    token: ITaskDefinitionRegistry,
-    useClass: TaskDefinitionRegistryImpl,
-  },
-  {
-    token: WorkbenchEditorService,
-    useValue: {},
-  },
-  {
-    token: IFileServiceClient,
-    useClass: MockFileServiceClient,
-  },
-  {
-    token: ITerminalTheme,
-    useValue:  new MockTerminalThemeService(),
-  },
-  {
-    token: ITerminalPreference,
-    useClass: TerminalPreference,
-  },
-  {
-    token: ITerminalController,
-    useClass: TerminalController,
-  },
-  {
-    token: IEditorDocumentModelService,
-    useValue: {
-      getModelReference: jest.fn(() => ({
-        instance: {
-          dirty: false,
-        },
-        dispose: () => {},
-      })),
-      createModelReference: (uri) => {
-        return Promise.resolve({
-          instance: {
-            uri,
-            getMonacoModel: () => {
-              return {
-                onDidChangeContent: new EventEmitter().event,
-                uri,
-                setValue: () => {},
-              };
-            },
-          },
-          dispose: jest.fn(),
-        });
-      },
+    {
+      token: ITaskDefinitionRegistry,
+      useClass: TaskDefinitionRegistryImpl,
     },
-  }, {
+    {
+      token: WorkbenchEditorService,
+      useValue: {},
+    },
+    {
+      token: IFileServiceClient,
+      useClass: MockFileServiceClient,
+    },
+    {
+      token: ITerminalTheme,
+      useValue: new MockTerminalThemeService(),
+    },
+    {
+      token: ITerminalPreference,
+      useClass: TerminalPreference,
+    },
+    {
+      token: ITerminalController,
+      useClass: TerminalController,
+    },
+    {
+      token: IEditorDocumentModelService,
+      useValue: {
+        getModelReference: jest.fn(() => ({
+          instance: {
+            dirty: false,
+          },
+          dispose: () => { },
+        })),
+        createModelReference: (uri) => {
+          return Promise.resolve({
+            instance: {
+              uri,
+              getMonacoModel: () => {
+                return {
+                  onDidChangeContent: new EventEmitter().event,
+                  uri,
+                  setValue: () => { },
+                };
+              },
+            },
+            dispose: jest.fn(),
+          });
+        },
+      },
+    }, {
     token: IMainLayoutService,
     useValue: new MockMainLayoutService(),
   });

@@ -1,4 +1,4 @@
-import * as crypto from 'crypto';
+import crypto from 'crypto';
 import { Injectable, Autowired } from '@ali/common-di';
 import { isWindows, URI, Deferred, StoragePaths } from '@ali/ide-core-common';
 import { IExtensionStoragePathServer } from '../common';
@@ -124,7 +124,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
       const uri = new URI(workspace.uri);
       let displayName = uri.displayName;
 
-      if ((!workspace || !workspace.isDirectory) && (displayName.endsWith(`.${KAITIAN_MULTI_WORKSPACE_EXT}`) )) {
+      if ((!workspace || !workspace.isDirectory) && (displayName.endsWith(`.${KAITIAN_MULTI_WORKSPACE_EXT}`))) {
         displayName = displayName.slice(0, displayName.lastIndexOf('.'));
       }
 

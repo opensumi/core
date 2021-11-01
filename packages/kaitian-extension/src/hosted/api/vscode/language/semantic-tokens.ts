@@ -1,5 +1,5 @@
-import * as vscode from 'vscode';
-import { asPromise, CancellationToken, IRange } from '@ali/ide-core-common';
+import vscode from 'vscode';
+import { CancellationToken, IRange } from '@ali/ide-core-common';
 
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { SemanticTokens, SemanticTokensEdit, SemanticTokensEdits, Uri } from '../../../../common/vscode/ext-types';

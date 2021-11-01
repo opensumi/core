@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { IExtHostCommands, IExtHostDebugService, IMainThreadDebug, ExtensionWSChannel, IExtHostConnectionService } from '../../../../common/vscode';
 import { Emitter, Event, uuid, IJSONSchema, IJSONSchemaSnippet } from '@ali/ide-core-common';
 import { Disposable, Uri, DebugConsoleMode, DebugAdapterExecutable, DebugAdapterServer, DebugAdapterInlineImplementation, DebugAdapterNamedPipeServer, DebugConfigurationProviderTriggerKind } from '../../../../common/vscode/ext-types';
@@ -247,7 +247,7 @@ export class ExtHostDebug implements IExtHostDebugService {
 
     this.trackerFactories.push([type, factory]);
     return Disposable.create(() => {
-        this.trackerFactories = this.trackerFactories.filter((tuple) => tuple[1] !== factory);
+      this.trackerFactories = this.trackerFactories.filter((tuple) => tuple[1] !== factory);
     });
   }
 

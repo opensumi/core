@@ -1,7 +1,7 @@
-import * as React from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { localize } from '@ali/ide-core-browser';
-import * as styles from './debug-console.module.less';
+import styles from './debug-console.module.less';
 import debounce = require('lodash.debounce');
 import { useInjectable } from '@ali/ide-core-browser';
 import { DebugConsoleFilterService } from './debug-console-filter.service';

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { ViewState } from '@ali/ide-core-browser';
 import { localize } from '@ali/ide-core-browser';
@@ -7,7 +7,7 @@ import { OpenedEditorModelService } from './services/opened-editor-model.service
 import { EditorTreeNode } from './opened-editor-node';
 import { EditorFile, EditorFileGroup } from './opened-editor-node.define';
 
-import * as styles from './index.module.less';
+import styles from './index.module.less';
 
 export const ExplorerOpenEditorPanel = ({
   viewState,

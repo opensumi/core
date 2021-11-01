@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { Item } from 'rc-menu';
 import { ClickParam } from '.';
 import MenuContext, { MenuContextProps } from './MenuContext';

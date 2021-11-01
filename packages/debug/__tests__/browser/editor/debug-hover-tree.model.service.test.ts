@@ -5,7 +5,7 @@ import { DebugHoverSource } from '@ali/ide-debug/lib/browser/editor/debug-hover-
 import { IDebugSessionManager } from '@ali/ide-debug';
 import { ExpressionContainer } from '@ali/ide-debug/lib/browser/tree';
 import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
-import * as styles from '../../../src/browser/editor/debug-hover.module.less';
+import styles from '../../../src/browser/editor/debug-hover.module.less';
 
 describe('Debug Hover Model', () => {
   const mockInjector = createBrowserInjector([]);
@@ -116,7 +116,7 @@ describe('Debug Hover Model', () => {
   });
 
   it('handleTreeHandler method should be work', () => {
-    const treeHandle = { ensureVisible: () => {}} as any;
+    const treeHandle = { ensureVisible: () => { } } as any;
     debugHoverTreeModelService.handleTreeHandler(treeHandle);
     expect(debugHoverTreeModelService.treeHandle).toEqual(treeHandle);
   });
@@ -136,7 +136,7 @@ describe('Debug Hover Model', () => {
   });
 
   it('handleTwistierClick method should be work', () => {
-    const treeHandle = { collapseNode: jest.fn(), expandNode: jest.fn()} as any;
+    const treeHandle = { collapseNode: jest.fn(), expandNode: jest.fn() } as any;
     let mockNode = { expanded: false };
     debugHoverTreeModelService.handleTreeHandler(treeHandle);
     debugHoverTreeModelService.toggleDirectory(mockNode as any);

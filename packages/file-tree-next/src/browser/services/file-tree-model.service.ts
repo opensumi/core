@@ -11,7 +11,7 @@ import { IFileTreeAPI, IFileTreeService, PasteTypes } from '../../common';
 import { DragAndDropService } from './file-tree-dnd.service';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import * as styles from '../file-tree-node.module.less';
+import styles from '../file-tree-node.module.less';
 import { FileStat, FileChangeType } from '@ali/ide-file-service';
 import { ISerializableState, TreeStateWatcher } from '@ali/ide-components/lib/recycle-tree/tree/model/treeState';
 import { WorkbenchEditorService } from '@ali/ide-editor';

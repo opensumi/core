@@ -1,8 +1,8 @@
-import * as React from 'react';
+import React from 'react';
 import { localize, useInjectable } from '@ali/ide-core-browser';
 import { DebugAction } from '../../components';
 import { DebugToolbarService } from '../configuration/debug-toolbar.service';
-import * as styles from './debug-call-stack.module.less';
+import styles from './debug-call-stack.module.less';
 import { DebugSession } from '../../debug-session';
 import { DebugThread } from '../../model/debug-thread';
 

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { Autowired } from '@ali/common-di';
 import { COMMON_COMMANDS, FILE_COMMANDS, getIcon } from '@ali/ide-core-browser';
 import { IMenuRegistry, ISubmenuItem, MenuId, MenuContribution } from '@ali/ide-core-browser/lib/menu/next';

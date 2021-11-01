@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { Injectable } from '@ali/common-di';
 import { Disposable } from '@ali/ide-components/lib/utils';
 import { Emitter, Event } from '@ali/ide-core-common';
@@ -14,6 +14,7 @@ export class ToolbarPopoverRegistry implements IToolbarPopoverRegistry {
 
   registerComponent(id: string, component: React.FC) {
     if (this.popOverComponents.has(id)) {
+      // tslint:disable-next-line: no-console
       console.error(`Component ${id} is already registered!`);
       return Disposable.NULL;
     }

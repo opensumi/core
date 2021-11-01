@@ -1,5 +1,5 @@
 import { WSChannel, MessageString } from '../common/ws-channel';
-import * as shortid from 'shortid';
+import shortid from 'shortid';
 import { stringify, parse } from '../common/utils';
 import { warning } from '@ali/ide-components/lib/utils/warning';
 import { IReporterService, REPORT_NAME } from '@ali/ide-core-common';

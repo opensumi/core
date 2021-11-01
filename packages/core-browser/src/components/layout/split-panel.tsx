@@ -1,6 +1,6 @@
-import * as React from 'react';
-import * as clsx from 'classnames';
-import * as styles from './styles.module.less';
+import React from 'react';
+import clsx from 'classnames';
+import styles from './styles.module.less';
 import { Layout } from './layout';
 import { useInjectable } from '../../react-hooks';
 import { IResizeHandleDelegate, ResizeFlexMode } from '../resize/resize';

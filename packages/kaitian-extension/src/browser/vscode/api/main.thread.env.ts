@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { Injectable, Optinal, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { IRPCProtocol, WSChannelHandler } from '@ali/ide-connection';
 import { ILoggerManagerClient } from '@ali/ide-logs/lib/browser';
@@ -9,7 +9,7 @@ import { getLanguageId, URI, isElectronEnv, firstSessionDateStorageKey } from '@
 import { HttpOpener } from '@ali/ide-core-browser/lib/opener/http-opener';
 import { MainThreadStorage } from './main.thread.storage';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class MainThreadEnv implements IMainThreadEnv {
   @Autowired(ILoggerManagerClient)
   loggerManger: ILoggerManagerClient;
@@ -84,7 +84,7 @@ export class MainThreadEnv implements IMainThreadEnv {
     return new Promise<void>(async (resolve) => {
       try {
         await this.clipboardService.writeText(text);
-      } catch (e) {}
+      } catch (e) { }
       resolve();
     });
   }

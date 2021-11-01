@@ -1,6 +1,6 @@
 import { ReactEditorComponent, IResource } from '@ali/ide-editor/lib/browser';
-import * as React from 'react';
-import * as styles from './style.module.less';
+import React from 'react';
+import styles from './style.module.less';
 import { useInjectable, Disposable, DomListener } from '@ali/ide-core-browser';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 

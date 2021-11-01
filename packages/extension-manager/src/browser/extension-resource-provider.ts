@@ -8,7 +8,7 @@ import {
 import { IResourceProvider, IResource } from '@ali/ide-editor';
 import { EXTENSION_SCHEME } from '../common';
 import { IIconService, IconType } from '@ali/ide-theme';
-import * as styles from './extension-manager.common.module.less';
+import styles from './extension-manager.common.module.less';
 
 @Injectable()
 export class ExtensionResourceProvider extends WithEventBus implements IResourceProvider {

@@ -4,7 +4,7 @@ import { DebugHoverSource } from '@ali/ide-debug/lib/browser/editor/debug-hover-
 import { IDebugSessionManager, IDebugSession, DebugSessionOptions, DebugModelFactory, IDebugServer } from '@ali/ide-debug';
 import { DebugConsoleNode } from '@ali/ide-debug/lib/browser/tree';
 import { ICtxMenuRenderer, AbstractContextMenuService } from '@ali/ide-core-browser/lib/menu/next';
-import * as styles from '../../../../src/browser/view/console/debug-console.module.less';
+import styles from '../../../../src/browser/view/console/debug-console.module.less';
 import { DebugConsoleModelService, IDebugConsoleModel } from '@ali/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { DebugSessionFactory, DefaultDebugSessionFactory, DebugPreferences, DebugSessionContributionRegistry } from '@ali/ide-debug/lib/browser';
@@ -57,7 +57,7 @@ describe('Debug Console Tree Model', () => {
   const mockMenuService = {
     createMenu: jest.fn(() => ({
       getMergedMenuNodes: () => [],
-      dispose: () => {},
+      dispose: () => { },
     })),
   };
 

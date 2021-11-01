@@ -1,5 +1,5 @@
 import { InlineValue } from '@ali/ide-debug/lib/common/inline-values';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { Uri, CancellationToken, IRange } from '@ali/ide-core-common';
 import * as Converter from '../../../../common/vscode/converter';
 import { ExtensionDocumentDataManager, IInlineValueContextDto } from '../../../../common/vscode';

@@ -17,8 +17,8 @@ import { OpenedEditorModelService } from '@ali/ide-opened-editor/lib/browser/ser
 import { OpenedEditorService } from '@ali/ide-opened-editor/lib/browser/services/opened-editor-tree.service';
 import { TreeNodeType } from '@ali/ide-components';
 import { EditorFile, OpenedEditorData } from '@ali/ide-opened-editor/lib/browser/opened-editor-node.define';
-import * as cls from 'classnames';
-import * as styles from '../src/browser/opened-editor-node.module.less';
+import cls from 'classnames';
+import styles from '../src/browser/opened-editor-node.module.less';
 
 describe('OpenedEditorModelService should be work', () => {
   let openedEditorModelService: OpenedEditorModelService;
@@ -33,7 +33,7 @@ describe('OpenedEditorModelService should be work', () => {
   });
 
   const MockResourceService = {
-    getResourceDecoration: () => ({dirty: true}),
+    getResourceDecoration: () => ({ dirty: true }),
   };
 
   beforeEach(async (done) => {
@@ -75,7 +75,7 @@ describe('OpenedEditorModelService should be work', () => {
             instance: {
               dirty: false,
             },
-            dispose: () => {},
+            dispose: () => { },
           })),
         },
       },
@@ -88,9 +88,9 @@ describe('OpenedEditorModelService should be work', () => {
 
       currentEditor: null,
 
-      codeEditor: (() => {}) as any,
+      codeEditor: (() => { }) as any,
 
-      diffEditor: (() => {}) as any,
+      diffEditor: (() => { }) as any,
 
       currentFocusedEditor: undefined,
 
@@ -100,23 +100,23 @@ describe('OpenedEditorModelService should be work', () => {
 
       currentOpenType: null,
 
-      open: (() => {}) as any,
+      open: (() => { }) as any,
 
-      pin: (() => {}) as any,
+      pin: (() => { }) as any,
 
-      close: (() => {}) as any,
+      close: (() => { }) as any,
 
-      getState: (() => {}) as any,
+      getState: (() => { }) as any,
 
-      restoreState: (() => {}) as any,
+      restoreState: (() => { }) as any,
 
-      saveAll: (() => {}) as any,
+      saveAll: (() => { }) as any,
 
-      closeAll: (() => {}) as any,
+      closeAll: (() => { }) as any,
 
-      saveCurrent: (() => {}) as any,
+      saveCurrent: (() => { }) as any,
 
-      saveResource: (() => {}) as any,
+      saveResource: (() => { }) as any,
     };
     // 当editorGroup长度为1时
     // 取groups中的resource，
@@ -132,8 +132,8 @@ describe('OpenedEditorModelService should be work', () => {
           icon: '',
           metadata: {},
         }],
-        saveCurrent: async () => {},
-        saveResource: async () => {},
+        saveCurrent: async () => { },
+        saveResource: async () => { },
       },
     ];
     injector.get(WorkbenchEditorService);

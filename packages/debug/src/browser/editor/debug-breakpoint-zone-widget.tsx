@@ -1,10 +1,10 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import * as monacoModes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import { ZoneWidget } from '@ali/ide-monaco-enhance';
 import { DebugEditor } from '../../common';
-import * as styles from './debug-breakpoint.module.less';
+import styles from './debug-breakpoint.module.less';
 import { DebugProtocol } from '@ali/vscode-debugprotocol';
 import { Select, Option } from '@ali/ide-components';
 import { localize, Emitter, Event } from '@ali/ide-core-common';

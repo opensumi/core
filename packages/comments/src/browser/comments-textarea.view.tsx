@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as styles from './comments.module.less';
+import React from 'react';
+import styles from './comments.module.less';
 import { Tabs } from '@ali/ide-components';
 import { CommentsBody } from './comments-body';
 import { localize, useInjectable } from '@ali/ide-core-browser';

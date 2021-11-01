@@ -20,6 +20,8 @@
     "skipLibCheck": true,
     "strictFunctionTypes": false,
     "useUnknownInCatchVariables": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "jsx": "react",
     "lib": [
       "dom",

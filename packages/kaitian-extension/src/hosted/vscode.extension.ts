@@ -1,5 +1,5 @@
-import type * as vscode from 'vscode';
-import { IExtensionHostService, IExtensionHost, IExtensionWorkerHost, JSONType, IExtensionProps} from '../common';
+import type vscode from 'vscode';
+import { IExtensionHostService, IExtensionHost, IExtensionWorkerHost, JSONType, IExtensionProps } from '../common';
 import { VSCodeExtensionService } from '../common/vscode';
 
 export abstract class Extension<T = any, S extends IExtensionHost = any> implements vscode.Extension<T> {
@@ -58,7 +58,7 @@ export abstract class Extension<T = any, S extends IExtensionHost = any> impleme
         await this.mainThreadExtensionService.$activateExtension(this.extensionPath);
       }
       return this.exports;
-    } catch (e) {}
+    } catch (e) { }
   }
 }
 

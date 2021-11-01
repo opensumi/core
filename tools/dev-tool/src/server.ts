@@ -1,7 +1,7 @@
 import 'tsconfig-paths/register';
-import * as path from 'path';
-import * as http from 'http';
-import * as Koa from 'koa';
+import path from 'path';
+import http from 'http';
+import Koa from 'koa';
 import { Deferred } from '@ali/ide-core-common';
 import { IServerAppOpts, ServerApp, NodeModule } from '@ali/ide-core-node';
 
@@ -39,8 +39,8 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
   if (Array.isArray(arg1)) {
     opts = {
       ...opts,
-       modulesInstances: arg1,
-      };
+      modulesInstances: arg1,
+    };
   } else {
     opts = {
       ...opts,

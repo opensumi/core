@@ -1,12 +1,12 @@
-import * as React from 'react';
+import React from 'react';
 import { useInjectable, getIcon, DisposableCollection, Disposable } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { ViewState } from '@ali/ide-core-browser';
 import { INodeRendererProps, ClasslistComposite, IRecycleTreeHandle, TreeNodeType, RecycleTree, INodeRendererWrapProps, TreeModel, PromptHandle } from '@ali/ide-components';
 import { ExpressionContainer, ExpressionNode, DebugVariableContainer, DebugVariable, DebugWatchNode } from '../../tree/debug-tree-node.define';
 import { DebugWatchModelService, IWatchNode } from './debug-watch-tree.model.service';
-import * as styles from './debug-watch.module.less';
-import * as cls from 'classnames';
+import styles from './debug-watch.module.less';
+import cls from 'classnames';
 import { Loading } from '@ali/ide-core-browser/lib/components/loading';
 
 export const DEBUG_WATCH_TREE_FIELD_NAME = 'DEBUG_WATCH_TREE_FIELD';

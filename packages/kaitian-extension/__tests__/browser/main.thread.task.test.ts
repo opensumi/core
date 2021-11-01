@@ -1,4 +1,4 @@
-import * as path from 'path';
+import path from 'path';
 import { Emitter, FileUri, ILoggerManagerClient, LogServiceForClientPath, LogLevel, ITaskDefinitionRegistry, TaskDefinitionRegistryImpl } from '@ali/ide-core-common';
 import { Injectable } from '@ali/common-di';
 import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';

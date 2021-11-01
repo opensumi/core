@@ -1,6 +1,6 @@
 import type { OnEnterRule, IndentationRule } from '@ali/monaco-editor-core/esm/vs/editor/common/modes/languageConfiguration';
 
-import * as vscode from 'vscode';
+import vscode from 'vscode';
 import * as types from './ext-types';
 import { SerializedIndentationRule, SerializedRegExp, SerializedOnEnterRule } from './model.api';
 
@@ -9,35 +9,35 @@ import { SerializedIndentationRule, SerializedRegExp, SerializedOnEnterRule } fr
  */
 // tslint:disable-next-line:no-any
 export function isObject(obj: any): boolean {
-  return typeof obj === 'object'
-      && obj !== null
-      && !Array.isArray(obj)
-      && !(obj instanceof RegExp)
-      && !(obj instanceof Date);
+    return typeof obj === 'object'
+        && obj !== null
+        && !Array.isArray(obj)
+        && !(obj instanceof RegExp)
+        && !(obj instanceof Date);
 }
 
 // tslint:disable-next-line:no-any
 export function mixin(destination: any, source: any, overwrite: boolean = true): any {
-  if (!isObject(destination)) {
-      return source;
-  }
+    if (!isObject(destination)) {
+        return source;
+    }
 
-  if (isObject(source)) {
-      Object.keys(source).forEach((key) => {
-          if (key in destination) {
-              if (overwrite) {
-                  if (isObject(destination[key]) && isObject(source[key])) {
-                      mixin(destination[key], source[key], overwrite);
-                  } else {
-                      destination[key] = source[key];
-                  }
-              }
-          } else {
-              destination[key] = source[key];
-          }
-      });
-  }
-  return destination;
+    if (isObject(source)) {
+        Object.keys(source).forEach((key) => {
+            if (key in destination) {
+                if (overwrite) {
+                    if (isObject(destination[key]) && isObject(source[key])) {
+                        mixin(destination[key], source[key], overwrite);
+                    } else {
+                        destination[key] = source[key];
+                    }
+                }
+            } else {
+                destination[key] = source[key];
+            }
+        });
+    }
+    return destination;
 }
 
 export function illegalArgument(message?: string): Error {
@@ -99,12 +99,12 @@ export function serializeEnterRules(rules?: vscode.OnEnterRule[]): SerializedOnE
     }
 
     return rules.map((r) =>
-        ({
-            action: r.action,
-            beforeText: serializeRegExp(r.beforeText),
-            afterText: serializeRegExp(r.afterText),
-            previousLineText: serializeRegExp(r.previousLineText),
-        } as SerializedOnEnterRule));
+    ({
+        action: r.action,
+        beforeText: serializeRegExp(r.beforeText),
+        afterText: serializeRegExp(r.afterText),
+        previousLineText: serializeRegExp(r.previousLineText),
+    } as SerializedOnEnterRule));
 }
 
 export function serializeRegExp(regexp?: RegExp): SerializedRegExp | undefined {

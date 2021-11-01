@@ -1,6 +1,6 @@
-import * as React from 'react';
+import React from 'react';
 
-import * as styles from './styles.module.less';
+import styles from './styles.module.less';
 
 export const ProgressBar: React.FC<{
   loading: boolean;

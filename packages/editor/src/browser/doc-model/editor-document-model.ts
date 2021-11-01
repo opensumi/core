@@ -2,7 +2,7 @@ import { monaco, URI as MonacoURI } from '@ali/ide-monaco/lib/browser/monaco-api
 import { Autowired, Injectable } from '@ali/common-di';
 import { CommandService, Disposable, Emitter, formatLocalize, IEventBus, ILogger, IRange, IReporterService, isThenable, isUndefinedOrNull, localize, PreferenceService, REPORT_NAME, URI } from '@ali/ide-core-browser';
 import { IMessageService } from '@ali/ide-overlay';
-import * as md5 from 'md5';
+import md5 from 'md5';
 import { IDocCache, IDocPersistentCacheProvider, isDocContentCache, parseRangeFrom, SaveReason, IEditorDocumentModelContentChange } from '../../common';
 import { CompareResult, ICompareService } from '../types';
 import { EditorDocumentError } from './editor-document-error';

@@ -1,7 +1,7 @@
 
 // tslint:disable no-console
-import * as net from 'net';
-import * as yargs from 'yargs';
+import net from 'net';
+import yargs from 'yargs';
 import { Deferred } from '@ali/ide-core-common';
 import { IServerAppOpts, ServerApp, NodeModule } from '@ali/ide-core-node';
 
@@ -19,8 +19,8 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
   if (Array.isArray(arg1)) {
     opts = {
       ...opts,
-       modulesInstances: arg1,
-      };
+      modulesInstances: arg1,
+    };
   } else {
     opts = {
       ...opts,

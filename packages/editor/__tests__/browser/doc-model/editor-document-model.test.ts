@@ -1,5 +1,5 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import * as md5 from 'md5';
+import md5 from 'md5';
 import { isMacintosh, isLinux } from '@ali/monaco-editor-core/esm/vs/base/common/platform';
 import { uniqueId } from 'lodash';
 import { URI, IEventBus } from '@ali/ide-core-browser';
@@ -51,7 +51,7 @@ describe('EditorDocumentModel', () => {
     });
 
     it('create EditorDocumentModel normally', () => {
-      const docModel = injector.get(EditorDocumentModel, [ uri, content ]);
+      const docModel = injector.get(EditorDocumentModel, [uri, content]);
       expect(docModel.baseContent).toBe(content);
       expect(docModel.dirty).toBeFalsy();
       expect(docModel.encoding).toBe('utf8');
@@ -87,7 +87,7 @@ describe('EditorDocumentModel', () => {
         readonly: true,
         savable: true,
       };
-      const docModel = injector.get(EditorDocumentModel, [ uri, content, opts]);
+      const docModel = injector.get(EditorDocumentModel, [uri, content, opts]);
       expect(docModel.baseContent).toBe(content);
       expect(docModel.dirty).toBeFalsy();
       expect(docModel.encoding).toBe(opts.encoding);
@@ -105,7 +105,7 @@ describe('EditorDocumentModel', () => {
       jest.spyOn(cacheProvider, 'hasCache').mockReturnValue(true);
       jest.spyOn(cacheProvider, 'getCache').mockReturnValue(null);
 
-      const docModel = injector.get(EditorDocumentModel, [ uri, content, { savable: true }]);
+      const docModel = injector.get(EditorDocumentModel, [uri, content, { savable: true }]);
       expect(docModel.baseContent).toBe(content);
       expect(docModel.dirty).toBeFalsy();
 
@@ -123,7 +123,7 @@ describe('EditorDocumentModel', () => {
         content: newContent,
       });
 
-      const docModel = injector.get(EditorDocumentModel, [ uri, content, { savable: true }]);
+      const docModel = injector.get(EditorDocumentModel, [uri, content, { savable: true }]);
       expect(docModel.baseContent).toBe(content);
       expect(docModel.getMonacoModel().getValue()).toBe(newContent);
       expect(docModel.dirty).toBeTruthy();
@@ -145,7 +145,7 @@ describe('EditorDocumentModel', () => {
         ],
       });
 
-      const docModel = injector.get(EditorDocumentModel, [ uri, content, { savable: true }]);
+      const docModel = injector.get(EditorDocumentModel, [uri, content, { savable: true }]);
       expect(docModel.baseContent).toBe(content);
       expect(docModel.getMonacoModel().getValue()).toBe('a' + content);
       expect(docModel.dirty).toBeTruthy();
@@ -167,7 +167,7 @@ describe('EditorDocumentModel', () => {
         ],
       });
 
-      const docModel = injector.get(EditorDocumentModel, [ uri, content, { savable: true }]);
+      const docModel = injector.get(EditorDocumentModel, [uri, content, { savable: true }]);
       expect(docModel.getMonacoModel().getValue()).toBe(content);
       expect(docModel.dirty).toBeFalsy();
       expect(chagneFn).toBeCalledTimes(0);

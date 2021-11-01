@@ -1,6 +1,6 @@
-import * as React from 'react';
-import * as clsx from 'classnames';
-import * as styles from './styles.module.less';
+import React from 'react';
+import clsx from 'classnames';
+import styles from './styles.module.less';
 import { Layout } from '@ali/ide-core-browser/lib/components/layout/layout';
 import { ComponentRegistryInfo, useInjectable, IEventBus, ResizeEvent } from '@ali/ide-core-browser';
 import { RightTabbarRenderer, LeftTabbarRenderer, BottomTabbarRenderer, NextBottomTabbarRenderer } from './bar.view';

@@ -1,6 +1,6 @@
-import * as temp from 'temp';
+import temp from 'temp';
 import * as fs from 'fs-extra';
-import * as mv from 'mv';
+import mv from 'mv';
 import { execSync } from 'child_process';
 import { URI } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';

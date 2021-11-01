@@ -1,6 +1,6 @@
 import '@ali/ide-i18n';
 import { SlotLocation } from '@ali/ide-core-browser';
-import * as React from 'react';
+import React from 'react';
 
 import { CommonBrowserModules } from './common-modules';
 import { renderApp } from './render-app';

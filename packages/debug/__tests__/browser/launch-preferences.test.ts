@@ -1,7 +1,7 @@
 import { Injectable } from '@ali/common-di';
-import * as path from 'path';
+import path from 'path';
 import * as fs from 'fs-extra';
-import * as os from 'os';
+import os from 'os';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { PreferenceService, FileUri, Disposable, DisposableCollection, ILogger, PreferenceScope, ILoggerManagerClient, URI, IContextKeyService } from '@ali/ide-core-browser';
 import { AppConfig } from '@ali/ide-core-node';
@@ -362,7 +362,7 @@ describe('Launch Preferences', () => {
 
   }
   const mockEditorCollectionService = {
-    onCodeEditorCreate: jest.fn(() => Disposable.create(() => {})),
+    onCodeEditorCreate: jest.fn(() => Disposable.create(() => { })),
   };
 
   function testConfigSuite({
@@ -477,8 +477,8 @@ describe('Launch Preferences', () => {
                 lastModification: (new Date()).getTime(),
               },
             ]),
-            onWorkspaceChanged: () => {},
-            onWorkspaceLocationChanged: () => {},
+            onWorkspaceChanged: () => { },
+            onWorkspaceLocationChanged: () => { },
             tryGetRoots: () => [
               {
                 uri: rootUri,
@@ -498,7 +498,7 @@ describe('Launch Preferences', () => {
           };
         });
         injector.mock(IFileServiceClient, 'watchFileChanges', jest.fn(() => ({
-          dispose: () => {},
+          dispose: () => { },
           onFilesChanged: jest.fn(),
         })));
 

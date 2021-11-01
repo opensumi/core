@@ -5,7 +5,7 @@ import { URI as Uri } from '@ali/monaco-editor-core/esm/vs/base/common/uri';
 /* istanbul ignore file */
 // TODO: 这部分引用了vscode language server types，这个和我们的要求不同，版权改造之后再写单测
 import { IDisposable, MarkerSeverity } from '@ali/ide-core-common';
-import * as LSTypes from 'vscode-languageserver-types';
+import LSTypes from 'vscode-languageserver-types';
 
 export const ILanguageService = Symbol('ILanguageService');
 
@@ -100,31 +100,31 @@ export enum DiagnosticTag {
 
 export function asSeverity(severity?: number): MarkerSeverity {
   if (severity === 1) {
-      return MarkerSeverity.Error;
+    return MarkerSeverity.Error;
   }
   if (severity === 2) {
-      return MarkerSeverity.Warning;
+    return MarkerSeverity.Warning;
   }
   if (severity === 3) {
-      return MarkerSeverity.Info;
+    return MarkerSeverity.Info;
   }
   return MarkerSeverity.Hint;
 }
 export function asRelatedInformations(relatedInformation?: DiagnosticRelatedInformation[]): IRelatedInformation[] | undefined {
   if (!relatedInformation) {
-      return undefined;
+    return undefined;
   }
   return relatedInformation.map((item) => asRelatedInformation(item));
 }
 
 export function asRelatedInformation(relatedInformation: DiagnosticRelatedInformation): IRelatedInformation {
   return {
-      resource: Uri.parse(relatedInformation.location.uri),
-      startLineNumber: relatedInformation.location.range.start.line + 1,
-      startColumn: relatedInformation.location.range.start.character + 1,
-      endLineNumber: relatedInformation.location.range.end.line + 1,
-      endColumn: relatedInformation.location.range.end.character + 1,
-      message: relatedInformation.message,
+    resource: Uri.parse(relatedInformation.location.uri),
+    startLineNumber: relatedInformation.location.range.start.line + 1,
+    startColumn: relatedInformation.location.range.start.character + 1,
+    endLineNumber: relatedInformation.location.range.end.line + 1,
+    endColumn: relatedInformation.location.range.end.character + 1,
+    message: relatedInformation.message,
   };
 }
 export function asDiagnostics(diagnostics: Diagnostic[] | undefined): editor.IMarkerData[] | undefined {

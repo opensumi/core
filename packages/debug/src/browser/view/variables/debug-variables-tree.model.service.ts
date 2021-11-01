@@ -10,7 +10,7 @@ import { ExpressionContainer, ExpressionNode, DebugVariableRoot, DebugVariableCo
 import { DebugViewModel } from '../debug-view-model';
 import { DebugSession } from '../../debug-session';
 
-import * as styles from './debug-variables.module.less';
+import styles from './debug-variables.module.less';
 
 export interface IDebugVariablesHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -105,7 +105,7 @@ export class DebugVariablesModelService {
   private onDidRefreshedEmitter: Emitter<void> = new Emitter();
   private onDidUpdateTreeModelEmitter: Emitter<TreeModel | void> = new Emitter();
 
-  private flushDispatchChangeDelayer =  new ThrottledDelayer<void>(DebugVariablesModelService.DEFAULT_TRIGGER_DELAY);
+  private flushDispatchChangeDelayer = new ThrottledDelayer<void>(DebugVariablesModelService.DEFAULT_TRIGGER_DELAY);
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
@@ -178,7 +178,7 @@ export class DebugVariablesModelService {
            * PS: 一般的情况下有 Local
            * */
           const scopes = this._activeTreeModel?.root.children as Array<DebugVariableWithRawScope> || [];
-          if (scopes.length > 0 && scopes.every((s: DebugScope) =>  !s.expanded)) {
+          if (scopes.length > 0 && scopes.every((s: DebugScope) => !s.expanded)) {
             for (const s of scopes) {
               if ((s as DebugScope).getRawScope().expensive === false && !s.expanded) {
                 await this.toggleDirectory(s);
@@ -282,7 +282,7 @@ export class DebugVariablesModelService {
     }
   }
 
-    // 右键菜单焦点态切换
+  // 右键菜单焦点态切换
   activeNodeActivedDecoration = (target: ExpressionContainer | ExpressionNode) => {
     if (this.contextMenuNode) {
       this.contextMenuDecoration.removeTarget(this.contextMenuNode);
@@ -337,7 +337,7 @@ export class DebugVariablesModelService {
       this.debugContextKey.contextVariableEvaluateNamePresent.set(!!(expression as DebugVariableContainer | DebugVariable).evaluateName);
     }
 
-    const menus = this.contextMenuService.createMenu({id: MenuId.DebugVariablesContext, contextKeyService: this.debugContextKey.contextKeyScoped});
+    const menus = this.contextMenuService.createMenu({ id: MenuId.DebugVariablesContext, contextKeyService: this.debugContextKey.contextKeyScoped });
     const menuNodes = menus.getMergedMenuNodes();
     menus.dispose();
     this.ctxMenuRenderer.show({

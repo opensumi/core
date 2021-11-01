@@ -1,4 +1,4 @@
-import * as path from 'path';
+import path from 'path';
 import { Injector, Injectable } from '@ali/common-di';
 import { ILoggerManagerClient, Uri } from '@ali/ide-core-common';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';

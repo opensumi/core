@@ -15,7 +15,7 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/languages/diagnostics.ts
 
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { Emitter, Event, IMarkerData, MarkerSeverity } from '@ali/ide-core-common';
 import { IMainThreadLanguages } from '../../../../common/vscode';
 import {

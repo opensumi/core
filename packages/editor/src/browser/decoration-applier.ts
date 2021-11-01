@@ -5,9 +5,9 @@ import { IEditorDecorationCollectionService, IDynamicModelDecorationProperty, IT
 import { IDecorationRenderOptions, IDecorationApplyOptions, IMarkdownString } from '../common';
 import { Disposable, URI, IEventBus } from '@ali/ide-core-common';
 import { IThemeService } from '@ali/ide-theme';
-import * as clsx from 'classnames';
+import clsx from 'classnames';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class MonacoEditorDecorationApplier extends Disposable {
 
   @Autowired(IEditorDecorationCollectionService)
@@ -19,7 +19,7 @@ export class MonacoEditorDecorationApplier extends Disposable {
   @Autowired(IEventBus)
   eventBus: IEventBus;
 
-  private decorations: Map<string, { decorations: string[], dispose: () => void } > = new Map();
+  private decorations: Map<string, { decorations: string[], dispose: () => void }> = new Map();
 
   constructor(private editor: IMonacoCodeEditor) {
     super();
@@ -33,7 +33,7 @@ export class MonacoEditorDecorationApplier extends Disposable {
     });
     this.addDispose(this.eventBus.on(EditorDecorationChangeEvent, (e) => {
       const currentUri = this.getEditorUri();
-      if (currentUri && e.payload.uri.isEqual(currentUri) ) {
+      if (currentUri && e.payload.uri.isEqual(currentUri)) {
         this.applyDecorationFromProvider(e.payload.key);
       }
     }));
@@ -83,7 +83,7 @@ export class MonacoEditorDecorationApplier extends Disposable {
     this.decorations.clear();
   }
 
-  deltaDecoration(key: string , decorations: monaco.editor.IModelDeltaDecoration[] ) {
+  deltaDecoration(key: string, decorations: monaco.editor.IModelDeltaDecoration[]) {
     let oldDecorations: string[] = [];
     if (this.decorations.has(key)) {
       oldDecorations = this.decorations.get(key)!.decorations;
@@ -129,11 +129,11 @@ export class MonacoEditorDecorationApplier extends Disposable {
     });
   }
 
-resolveDecorationRenderer(key: string, options?: IDecorationRenderOptions): { options: monaco.editor.IModelDecorationOptions, dispose: () => void }  {
+  resolveDecorationRenderer(key: string, options?: IDecorationRenderOptions): { options: monaco.editor.IModelDecorationOptions, dispose: () => void } {
     const type = this.decorationService.getTextEditorDecorationType(key);
     const result: monaco.editor.IModelDecorationOptions = {
       description: key,
-    } ;
+    };
     const currentTheme = this.themeService.getCurrentThemeSync().type;
     const disposer = new Disposable();
     if (type) {
@@ -153,7 +153,7 @@ resolveDecorationRenderer(key: string, options?: IDecorationRenderOptions): { op
 
 }
 
-function assignModelDecorationOptions(target: monaco.editor.IModelDecorationOptions, property: IDynamicModelDecorationProperty, currentTheme: undefined | 'dark' | 'light' | 'hc' ) {
+function assignModelDecorationOptions(target: monaco.editor.IModelDecorationOptions, property: IDynamicModelDecorationProperty, currentTheme: undefined | 'dark' | 'light' | 'hc') {
   if (property.overviewRulerLane) {
     if (!target.overviewRuler) {
       target.overviewRuler = {
@@ -211,7 +211,7 @@ function assignModelDecorationStyle(target: monaco.editor.IModelDecorationOption
   }
 }
 
-function resolveHoverMessage(str: IMarkdownString | IMarkdownString [] | string | undefined ): IMarkdownString | IMarkdownString[] | undefined {
+function resolveHoverMessage(str: IMarkdownString | IMarkdownString[] | string | undefined): IMarkdownString | IMarkdownString[] | undefined {
   if (!str) {
     return undefined;
   }

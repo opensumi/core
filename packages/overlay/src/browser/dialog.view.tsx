@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable, localize } from '@ali/ide-core-browser';
 import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';

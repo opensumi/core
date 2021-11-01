@@ -7,8 +7,8 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { Injectable, Provider } from '@ali/common-di';
 import { FileServiceContribution } from '@ali/ide-file-service/lib/browser/file-service-contribution';
 import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
-import * as os from 'os';
-import * as path from 'path';
+import os from 'os';
+import path from 'path';
 import * as fs from 'fs-extra';
 import { UserStorageContribution } from '@ali/ide-preferences/lib/browser/userstorage';
 import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
@@ -87,8 +87,8 @@ describe('PreferenceService should be work', () => {
             lastModification: (new Date()).getTime(),
           },
         ]),
-        onWorkspaceChanged: () => {},
-        onWorkspaceLocationChanged: () => {},
+        onWorkspaceChanged: () => { },
+        onWorkspaceLocationChanged: () => { },
         tryGetRoots: () => [
           {
             uri: root!.toString(),
@@ -113,7 +113,7 @@ describe('PreferenceService should be work', () => {
       };
     });
 
-    injector.mock(IEventBus, 'fireAndAwait', () => {});
+    injector.mock(IEventBus, 'fireAndAwait', () => { });
 
     mockWorkspaceService = {
       roots: [root.toString()],

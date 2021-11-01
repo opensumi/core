@@ -1,5 +1,5 @@
 import { IDisposable } from '@ali/ide-core-node';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { IExtensionProps } from '../index';
 import { UriComponents } from '@ali/ide-editor/lib/common';
 

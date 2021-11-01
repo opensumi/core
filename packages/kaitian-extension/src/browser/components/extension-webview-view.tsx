@@ -1,5 +1,5 @@
 import { BasicEvent, CancellationToken, IEventBus, useInjectable, CancellationTokenSource, Disposable} from '@ali/ide-core-browser';
-import * as React from 'react';
+import React from 'react';
 import { ExtensionService } from '../../common';
 
 export class WebviewViewShouldShowEvent extends BasicEvent<{

@@ -1,4 +1,4 @@
-import * as md5 from 'md5';
+import md5 from 'md5';
 import { URI, IRef, ReferenceManager, IEditorDocumentChange, IEditorDocumentModelSaveResult, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_SCHEMA, ILogger, PreferenceService, ReadyEvent, memoize } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 
@@ -7,7 +7,7 @@ import { EditorDocumentModel } from './editor-document-model';
 import { mapToSerializable, serializableToMap } from '@ali/ide-core-common/lib/map';
 import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
-export const EDITOR_DOCUMENT_MODEL_STORAGE: URI = URI.from({scheme: STORAGE_SCHEMA.SCOPE, path: 'editor-doc'});
+export const EDITOR_DOCUMENT_MODEL_STORAGE: URI = URI.from({ scheme: STORAGE_SCHEMA.SCOPE, path: 'editor-doc' });
 export const EDITOR_DOC_OPTIONS_PREF_KEY = 'editor_doc_pref';
 
 @Injectable()
@@ -38,7 +38,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
 
   private _modelsToDispose = new Set<string>();
 
-  private  preferredModelOptions = new Map<string, IPreferredModelOptions>();
+  private preferredModelOptions = new Map<string, IPreferredModelOptions>();
 
   private _ready = new ReadyEvent<void>();
 
@@ -204,7 +204,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
   }
 
   private createModel(uri: string, encoding?: string): Promise<EditorDocumentModel> {
-  // 防止异步重复调用
+    // 防止异步重复调用
     if (!this.creatingEditorModels.has(uri)) {
       const promise = this.onceReady(() => this.doCreateModel(uri, encoding)).then((model) => {
         this.creatingEditorModels.delete(uri);

@@ -8,7 +8,7 @@ import { ICtxMenuRenderer, AbstractContextMenuService } from '@ali/ide-core-brow
 import { DebugVariablesModelService } from '@ali/ide-debug/lib/browser/view/variables/debug-variables-tree.model.service';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { DebugViewModel } from '@ali/ide-debug/lib/browser/view/debug-view-model';
-import * as styles from '../../../../src/browser/view/variables/debug-variables.module.less';
+import styles from '../../../../src/browser/view/variables/debug-variables.module.less';
 
 describe('Debug Variables Tree Model', () => {
   const mockInjector = createBrowserInjector([]);
@@ -38,7 +38,7 @@ describe('Debug Variables Tree Model', () => {
   const mockMenuService = {
     createMenu: jest.fn(() => ({
       getMergedMenuNodes: () => [],
-      dispose: () => {},
+      dispose: () => { },
     })),
   };
 
@@ -203,11 +203,11 @@ describe('Debug Variables Tree Model', () => {
 
   it('handleTwistierClick method should be work', () => {
     const treeHandle = { collapseNode: jest.fn(), expandNode: jest.fn() } as any;
-    let mockNode = { expanded: false, setExpanded: () => {}, setCollapsed: () => {}, getRawScope: () => {} };
+    let mockNode = { expanded: false, setExpanded: () => { }, setCollapsed: () => { }, getRawScope: () => { } };
     debugVariablesModelService.handleTreeHandler(treeHandle);
     debugVariablesModelService.toggleDirectory(mockNode as any);
     expect(treeHandle.expandNode).toBeCalledTimes(0);
-    mockNode = { expanded: true, setExpanded: () => {}, setCollapsed: () => {}, getRawScope: () => {} };
+    mockNode = { expanded: true, setExpanded: () => { }, setCollapsed: () => { }, getRawScope: () => { } };
     debugVariablesModelService.toggleDirectory(mockNode as any);
     expect(treeHandle.collapseNode).toBeCalledTimes(0);
   });

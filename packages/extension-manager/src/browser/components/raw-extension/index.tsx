@@ -1,16 +1,16 @@
-import * as React from 'react';
+import React from 'react';
 import { localize, IClientApp } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser';
 import { Button } from '@ali/ide-components';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
-import * as clx from 'classnames';
+import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser';
 import { generateCtxMenu, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
-import * as compareVersions from 'compare-versions';
+import compareVersions from 'compare-versions';
 import { RawExtension, IExtensionManagerService } from '../../../common';
-import * as commonStyles from '../../extension-manager.common.module.less';
-import * as styles from './index.module.less';
+import commonStyles from '../../extension-manager.common.module.less';
+import styles from './index.module.less';
 
 interface RawExtensionProps extends React.HTMLAttributes<HTMLDivElement> {
   extension: RawExtension;

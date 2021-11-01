@@ -1,7 +1,7 @@
-import * as React from 'react';
+import React from 'react';
 import { PreferenceScope, PreferenceService, useInjectable, PreferenceSchemaProvider, PreferenceItem, replaceLocalizePlaceholder, localize, getIcon, PreferenceDataProperty, isElectronRenderer, IPreferenceSettingsService, PreferenceProvider, DisposableCollection } from '@ali/ide-core-browser';
-import * as styles from './preferences.module.less';
-import * as classnames from 'classnames';
+import styles from './preferences.module.less';
+import classnames from 'classnames';
 import { Input, Select, Option, CheckBox, Button, ValidateInput, ValidateMessage } from '@ali/ide-components';
 import { PreferenceSettingsService } from './preference-settings.service';
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';

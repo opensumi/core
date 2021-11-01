@@ -1,6 +1,6 @@
-import * as React from 'react';
+import React from 'react';
 import { Scrollbars as CustomScrollbars } from 'react-custom-scrollbars';
-import * as cls from 'classnames';
+import cls from 'classnames';
 import './styles.less';
 import throttle = require('lodash.throttle');
 

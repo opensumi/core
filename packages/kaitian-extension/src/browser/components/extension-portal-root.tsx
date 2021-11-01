@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as clx from 'classnames';
+import React from 'react';
+import clx from 'classnames';
 import { useInjectable } from '@ali/ide-core-browser';
 import { getThemeTypeSelector, IThemeService, ThemeType } from '@ali/ide-theme/lib/common';
 import { DisposableCollection } from '@ali/ide-components/lib/utils/disposable';

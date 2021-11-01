@@ -1,10 +1,10 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import * as fs from 'fs-extra';
 import { IExtensionManagerServer, PREFIX, RequestHeaders, BaseExtension, IExtensionManager, IExtensionManagerRequester, IMarketplaceExtensionInfo, IExtensionVersion } from '../common';
-import * as urllib from 'urllib';
-import { AppConfig, URI, INodeLogger, isElectronEnv, memoize} from '@ali/ide-core-node';
-import * as pkg from '@ali/ide-core-node/package.json';
-import * as qs from 'querystring';
+import urllib from 'urllib';
+import { AppConfig, URI, INodeLogger, isElectronEnv, memoize } from '@ali/ide-core-node';
+import pkg from '@ali/ide-core-node/package.json';
+import qs from 'querystring';
 import { ExtensionInstaller, IExtensionInstaller, Extension as InstallerExtension, ExtensionRelease as InstallerExtensionRelease } from '@ali/ide-extension-installer';
 import { join } from 'path';
 
@@ -38,7 +38,7 @@ export class ExtensionManagerRequester implements IExtensionManagerRequester {
       },
       beforeRequest: (options) => {
         if (this.appConfig.marketplace.transformRequest) {
-          const { headers, path} = this.appConfig.marketplace.transformRequest({
+          const { headers, path } = this.appConfig.marketplace.transformRequest({
             path: options.path,
             headers: options.headers,
           });
@@ -80,7 +80,7 @@ export class IDEExtensionInstaller implements IExtensionInstaller {
 
   @memoize
   get installer(): ExtensionInstaller {
-    return  new ExtensionInstaller({
+    return new ExtensionInstaller({
       accountId: this.appConfig.marketplace.accountId,
       masterKey: this.appConfig.marketplace.masterKey,
       api: this.appConfig.marketplace.endpoint,
@@ -90,7 +90,7 @@ export class IDEExtensionInstaller implements IExtensionInstaller {
         headers: this.extensionManagerRequester.getHeaders(),
         beforeRequest: (options) => {
           if (this.appConfig.marketplace.transformRequest) {
-            const { headers, path} = this.appConfig.marketplace.transformRequest({
+            const { headers, path } = this.appConfig.marketplace.transformRequest({
               path: options.path,
               headers: options.headers,
             });
@@ -214,7 +214,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
 
   async getExtensionDeps(extensionId: string, version?: string) {
     try {
-      const res = await this.extensionManagerRequester.request(`dependencies/${extensionId}${version ? `?version=${version}` : '' }`);
+      const res = await this.extensionManagerRequester.request(`dependencies/${extensionId}${version ? `?version=${version}` : ''}`);
       if (res.status === 200) {
         return res.data;
       } else {
@@ -233,7 +233,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    */
   async getExtensionsInPack(extensionId: string, version?: string) {
     try {
-      const res = await this.extensionManagerRequester.request(`pack/${extensionId}${version ? `?version=${version}` : '' }`);
+      const res = await this.extensionManagerRequester.request(`pack/${extensionId}${version ? `?version=${version}` : ''}`);
       if (res.status === 200) {
         return res.data;
       } else {

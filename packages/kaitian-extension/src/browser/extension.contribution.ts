@@ -5,10 +5,10 @@ import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@
 import { IWindowDialogService } from '@ali/ide-overlay';
 import { IWebviewService } from '@ali/ide-webview';
 import { IResourceOpenOptions, WorkbenchEditorService } from '@ali/ide-editor';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 
 import { TextDocumentShowOptions, ViewColumn } from '../common/vscode';
-import { ExtensionNodeServiceServerPath, IExtensionNodeClientService, EMIT_EXT_HOST_EVENT, ExtensionHostProfilerServicePath, ExtensionHostType, ExtensionService, IExtensionHostProfilerService, ExtensionHostTypeUpperCase } from '../common';
+import { ExtensionNodeServiceServerPath, IExtensionNodeClientService, EMIT_EXT_HOST_EVENT, ExtensionHostProfilerServicePath, IExtensionHostProfilerService, ExtensionHostTypeUpperCase, ExtensionService } from '../common';
 import { ActivatedExtension } from '../common/activator';
 import * as VSCodeBuiltinCommands from './vscode/builtin-commands';
 import { AbstractExtInstanceManagementService, ExtensionApiReadyEvent, ExtHostEvent, IActivationEventService, Serializable } from './types';

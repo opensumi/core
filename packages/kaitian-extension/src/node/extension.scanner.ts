@@ -1,8 +1,8 @@
-import * as path from 'path';
+import path from 'path';
 import * as fs from 'fs-extra';
-import * as os from 'os';
+import os from 'os';
 import { getDebugLogger, getNodeRequire, Uri } from '@ali/ide-core-node';
-import * as semver from 'semver';
+import semver from 'semver';
 
 import { IExtensionMetaData, IExtraMetaData } from '../common';
 import { mergeContributes } from './merge-contributes';

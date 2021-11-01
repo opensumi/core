@@ -16,7 +16,7 @@
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/file-system-event-service-ext-impl.ts
 
 import { Event, Emitter, Disposable, URI, AsyncEmitter, WaitUntilEvent, CancellationToken, getDebugLogger } from '@ali/ide-core-common';
-import * as vscode from 'vscode';
+import vscode from 'vscode';
 import { ExtensionDocumentDataManager, IMainThreadWorkspace, MainThreadAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
 import { WorkspaceEdit } from '../../../common/vscode/ext-types';
 import { FileSystemEvents, IExtHostFileSystemEvent, IWillRunFileOperationParticipation, SourceTargetPair } from '../../../common/vscode/file-system';

@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import {
   IExtHostMessage, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions,
   IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState, IExtHostStatusBar,
@@ -130,7 +130,7 @@ export function createWindowApiFactory(
     createInputBox(): vscode.InputBox {
       return extHostQuickOpen.createInputBox();
     },
-    createWebviewPanel(viewType: string, title: string, showOptions: ViewColumn | {preserveFocus: boolean, viewColumn: ViewColumn}, options?: IWebviewPanelOptions & IWebviewOptions): WebviewPanel {
+    createWebviewPanel(viewType: string, title: string, showOptions: ViewColumn | { preserveFocus: boolean, viewColumn: ViewColumn }, options?: IWebviewPanelOptions & IWebviewOptions): WebviewPanel {
       return extHostWebviews.createWebview(Uri.parse('not-implemented://'), viewType, title, showOptions, options, extensionInfo);
     },
     registerWebviewPanelSerializer(viewType: string, serializer: WebviewPanelSerializer): IDisposable {
@@ -199,13 +199,13 @@ export function createWindowApiFactory(
     onDidChangeActiveColorTheme(listener, thisArg?, disposables?) {
       return extHostTheming.onDidChangeActiveColorTheme(listener, thisArg, disposables);
     },
-    registerCustomEditorProvider(viewType: string, provider: vscode.CustomTextEditorProvider | vscode.CustomEditorProvider | vscode.CustomReadonlyEditorProvider, options: {supportsMultipleEditorsPerDocument?: boolean, webviewOptions?: vscode.WebviewPanelOptions} = {}): IDisposable {
+    registerCustomEditorProvider(viewType: string, provider: vscode.CustomTextEditorProvider | vscode.CustomEditorProvider | vscode.CustomReadonlyEditorProvider, options: { supportsMultipleEditorsPerDocument?: boolean, webviewOptions?: vscode.WebviewPanelOptions } = {}): IDisposable {
       return extHostCustomEditor.registerCustomEditorProvider(viewType, provider, options, extensionInfo);
     },
     registerTerminalLinkProvider(handler: vscode.TerminalLinkProvider): vscode.Disposable {
       return extHostTerminal.registerLinkProvider(handler);
     },
-    registerWebviewViewProvider(viewId: string, provider: WebviewViewProvider, options?: {webviewOptions: {retainContextWhenHidden: boolean}}) {
+    registerWebviewViewProvider(viewId: string, provider: WebviewViewProvider, options?: { webviewOptions: { retainContextWhenHidden: boolean } }) {
       return extHostWebviewView.registerWebviewViewProvider(extension, viewId, provider, options?.webviewOptions);
     },
   };
@@ -224,15 +224,15 @@ export class ExtHostWindow implements IExtHostWindow {
   protected readonly proxy: IMainThreadWindow;
 
   private id = 0;
-  private _onOpenedResult = new Emitter<{id: string, result: types.UriComponents[] | undefined}>();
-  private _onSavedResult = new Emitter<{id: string, result: types.UriComponents | undefined}>();
+  private _onOpenedResult = new Emitter<{ id: string, result: types.UriComponents[] | undefined }>();
+  private _onSavedResult = new Emitter<{ id: string, result: types.UriComponents | undefined }>();
   constructor(rpcProtocol: IRPCProtocol) {
     this.proxy = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadWindow);
   }
 
   openDialog(options: IExtOpenDialogOptions): Promise<types.Uri[] | undefined> {
-    return new Promise<types.Uri[] | undefined> ((resolve, reject) => {
-      const id = (this.id ++).toString();
+    return new Promise<types.Uri[] | undefined>((resolve, reject) => {
+      const id = (this.id++).toString();
       this.proxy.$showOpenDialog(id, options);
       const disposer = this._onOpenedResult.event((res) => {
         if (res.id === id) {
@@ -244,8 +244,8 @@ export class ExtHostWindow implements IExtHostWindow {
   }
 
   showSaveDialog(options: IExtSaveDialogOptions): Promise<types.Uri | undefined> {
-    return new Promise<types.Uri | undefined> ((resolve, reject) => {
-      const id = (this.id ++).toString();
+    return new Promise<types.Uri | undefined>((resolve, reject) => {
+      const id = (this.id++).toString();
       this.proxy.$showSaveDialog(id, options);
       const disposer = this._onSavedResult.event((res) => {
         if (res.id === id) {
@@ -257,11 +257,11 @@ export class ExtHostWindow implements IExtHostWindow {
   }
 
   $onOpenDialogResult(id: string, result: types.UriComponents[] | undefined): void {
-    this._onOpenedResult.fire({id, result});
+    this._onOpenedResult.fire({ id, result });
   }
 
   $onSaveDialogResult(id: string, result: types.UriComponents | undefined): void {
-    this._onSavedResult.fire({id, result});
+    this._onSavedResult.fire({ id, result });
   }
 
 }

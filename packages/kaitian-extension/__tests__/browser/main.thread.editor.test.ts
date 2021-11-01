@@ -2,7 +2,7 @@ import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Emitter, IFileServiceClient, IEventBus, CommonServerPath, OS, IApplicationService } from '@ali/ide-core-common';
 import { URI, IContextKeyService } from '@ali/ide-core-browser';
 import { injectMockPreferences } from '@ali/ide-core-browser/__mocks__/preference';
-import * as path from 'path';
+import path from 'path';
 import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@ali/ide-kaitian-extension/lib/common/vscode';
 import * as types from '../../src/common/vscode/ext-types';
@@ -75,7 +75,7 @@ const mockConfigurationService: any = {
         keys: [k],
         overrides: [],
       },
-      affectsConfiguration: (() => {}) as any,
+      affectsConfiguration: (() => { }) as any,
       sourceConfig: {},
     });
     preferences.set(k, v);
@@ -334,7 +334,7 @@ describe('MainThreadEditor Test Suites', () => {
 
   it('should be able to insert snippet', async (done) => {
     const snippetString = new types.SnippetString(`
-      import * as React from 'react';
+      import React from 'react';
     `);
     await extEditor.activeEditor?.textEditor.insertSnippet(snippetString);
     done();

@@ -1,6 +1,6 @@
 import { URI, Event } from '@ali/ide-core-common';
 import { FileStat } from '@ali/ide-file-service';
-import * as Ajv from 'ajv';
+import Ajv from 'ajv';
 import { StorageService } from '@ali/ide-core-browser/lib/services';
 
 export const KAITIAN_MULTI_WORKSPACE_EXT = 'kaitian-workspace';
@@ -185,7 +185,7 @@ export interface IWorkspaceService {
   // 设置最近使用的工作区
   setMostRecentlyUsedWorkspace(uri: string): Promise<void>;
   // 操作工作区目录
-  spliceRoots(start: number, deleteCount?: number,  workspaceToName?: {[key: string]: string}, ...rootsToAdd: URI[]): Promise<URI[]>;
+  spliceRoots(start: number, deleteCount?: number, workspaceToName?: { [key: string]: string }, ...rootsToAdd: URI[]): Promise<URI[]>;
   // 从工作区中移除目录
   removeRoots(roots: URI[]): Promise<void>;
   // 获取相对于工作区的路径

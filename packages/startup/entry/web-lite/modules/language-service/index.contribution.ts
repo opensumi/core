@@ -2,7 +2,7 @@ import { Autowired } from '@ali/common-di';
 import { Disposable, Domain, URI } from '@ali/ide-core-common';
 import { ClientAppContribution } from '@ali/ide-core-browser';
 import { Position } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { IWorkspaceService } from '@ali/ide-workspace';
 
 import { IMetaService } from '../../services/meta-service/base';

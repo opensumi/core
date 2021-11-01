@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { IDisposable } from '@ali/ide-core-common';
 import { UriComponents } from './ext-types';
 

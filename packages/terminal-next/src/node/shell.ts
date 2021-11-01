@@ -1,5 +1,5 @@
 import { normalize } from '@ali/ide-core-common';
-import * as fs from 'fs';
+import fs from 'fs';
 
 export const WINDOWS_GIT_BASH_PATHS = [
   `${process.env['ProgramW6432']}\\Git\\bin\\bash.exe`,

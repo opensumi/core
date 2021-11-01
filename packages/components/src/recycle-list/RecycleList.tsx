@@ -1,8 +1,8 @@
-import * as React from 'react';
+import React from 'react';
 import { FixedSizeList, VariableSizeList, Align } from 'react-window';
 import { ScrollbarsVirtualList } from '../scrollbars';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import * as cls from 'classnames';
+import cls from 'classnames';
 
 export interface IRecycleListProps {
   /**

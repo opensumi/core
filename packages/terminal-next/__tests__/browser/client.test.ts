@@ -1,8 +1,8 @@
 /**
  * Terminal Client Test
  */
-import * as WebSocket from 'ws';
-import * as httpProxy from 'http-proxy';
+import WebSocket from 'ws';
+import httpProxy from 'http-proxy';
 import { Disposable, FileUri, URI } from '@ali/ide-core-common';
 import { createProxyServer, createWsServer, resetPort } from './proxy';
 import {
@@ -12,8 +12,8 @@ import { ITerminalClientFactory, ITerminalGroupViewService, ITerminalClient, IWi
 import { delay } from './utils';
 import { injector } from './inject';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import * as os from 'os';
-import * as path from 'path';
+import os from 'os';
+import path from 'path';
 import * as fs from 'fs-extra';
 import { EnvironmentVariableServiceToken } from '@ali/ide-terminal-next/lib/common/environmentVariable';
 

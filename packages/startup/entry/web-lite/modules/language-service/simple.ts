@@ -1,6 +1,6 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import { Autowired, Injectable, ConstructorOf } from '@ali/common-di';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { DocumentSelector, HoverProvider, CancellationToken, DefinitionProvider, ReferenceProvider } from 'vscode';
 import {
   SerializedDocumentFilter,

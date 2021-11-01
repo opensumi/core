@@ -2,10 +2,10 @@ import { ComponentContextProvider, IconContext } from '@ali/ide-components';
 import { DisposableCollection, useInjectable } from '@ali/ide-core-browser';
 import { localize } from '@ali/ide-core-common';
 import { getThemeTypeSelector, IThemeService, ThemeType } from '@ali/ide-theme';
-import * as clx from 'classnames';
-import * as React from 'react';
+import clx from 'classnames';
+import React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import * as ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom';
 
 import { IExtension } from '../common';
 import { AbstractViewExtProcessService } from '../common/extension.service';

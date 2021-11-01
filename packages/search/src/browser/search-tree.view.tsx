@@ -1,13 +1,13 @@
-import * as React from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
 import { DeprecatedRecycleTree, TreeNode, TreeViewActionTypes } from '@ali/ide-core-browser/lib/components';
 import { ViewState } from '@ali/ide-core-browser';
 import { getIcon, getExternalIcon } from '@ali/ide-core-browser';
-import * as cls from 'classnames';
+import cls from 'classnames';
 import { SearchTreeService } from './search-tree.service';
 import { ContentSearchClientService } from './search.service';
-import * as styles from './search.module.less';
+import styles from './search.module.less';
 import { ResultTotal } from '../common';
 
 export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {

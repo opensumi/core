@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { SlotRenderer } from '@ali/ide-core-browser';
 import { BoxPanel, SplitPanel } from '@ali/ide-core-browser/lib/components';
 

@@ -1,9 +1,9 @@
-import * as React from 'react';
+import React from 'react';
 import { DebugProtocol } from '@ali/vscode-debugprotocol/lib/debugProtocol';
 import { DebugBreakpointsService } from './debug-breakpoints.service';
 import { useInjectable, ViewState, CommandService, EDITOR_COMMANDS, URI, getIcon } from '@ali/ide-core-browser';
-import * as styles from './debug-breakpoints.module.less';
-import * as cls from 'classnames';
+import styles from './debug-breakpoints.module.less';
+import cls from 'classnames';
 import { CheckBox } from '@ali/ide-components';
 import { observer } from 'mobx-react-lite';
 import { DebugBreakpoint, DebugExceptionBreakpoint, isDebugBreakpoint, isRuntimeBreakpoint, getStatus, ISourceBreakpoint } from '../../breakpoint';

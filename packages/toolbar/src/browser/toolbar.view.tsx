@@ -1,9 +1,9 @@
-import * as React from 'react';
+import React from 'react';
 import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { ToolbarLocation, Disposable } from '@ali/ide-core-browser';
 
-import * as styles from './toolbar.module.less';
+import styles from './toolbar.module.less';
 import debounce = require('lodash.debounce');
 
 declare var ResizeObserver: any;

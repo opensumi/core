@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as styles from './scroll.module.less';
+import React from 'react';
+import styles from './scroll.module.less';
 import classnames from 'classnames';
 import {MouseEvent, UIEvent } from 'react';
 

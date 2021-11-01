@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ILogger, Disposable, PreferenceService, IDisposable } from '@ali/ide-core-browser';

@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import vscode from 'vscode';
 import { InlineValue } from '@ali/ide-debug/lib/common/inline-values';
 import type { CodeActionContext } from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { ConstructorOf } from '@ali/common-di';

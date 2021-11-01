@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import fs from 'fs';
+import path from 'path';
 import { Uri } from '@ali/ide-core-common';
 import { Injectable } from '@ali/common-di';
 

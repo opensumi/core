@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 
 export const ILsifService = Symbol('ILsifService');
 

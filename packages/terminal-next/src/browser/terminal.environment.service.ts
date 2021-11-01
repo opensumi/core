@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandService, Emitter, Event, ILogger, localize } from '@ali/ide-core-common';
 import {

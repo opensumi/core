@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { Autowired, Injectable } from '@ali/common-di';
 import { URI, Uri } from '@ali/ide-core-common';
 import { Position, Range, Location } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';

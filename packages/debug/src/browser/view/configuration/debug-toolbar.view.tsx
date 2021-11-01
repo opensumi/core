@@ -2,17 +2,17 @@ import { Injectable } from '@ali/common-di';
 import { Option, Select } from '@ali/ide-components';
 import { getIcon, isElectronRenderer, localize, PreferenceService, useInjectable } from '@ali/ide-core-browser';
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
-import * as cls from 'classnames';
+import cls from 'classnames';
 import { action, observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import * as React from 'react';
+import React from 'react';
 
 import { DebugAction } from '../../components';
 import { DebugSession } from '../../debug-session';
 import { isExtensionHostDebugging } from '../../debugUtils';
 import { DebugConfigurationService } from './debug-configuration.service';
 import { DebugToolbarService } from './debug-toolbar.service';
-import * as styles from './debug-configuration.module.less';
+import styles from './debug-configuration.module.less';
 import { InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
 import { DebugState } from '../../../common';
 

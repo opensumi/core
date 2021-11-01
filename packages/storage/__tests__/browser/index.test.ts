@@ -1,8 +1,8 @@
 import { Injectable, Injector } from '@ali/common-di';
 import { IStorageServer, IStoragePathServer, IUpdateRequest, IWorkspaceStorageServer, IGlobalStorageServer } from '../../src/common';
 import { URI, FileUri, AppConfig, Disposable, STORAGE_SCHEMA, ILoggerManagerClient } from '@ali/ide-core-node';
-import * as temp from 'temp';
-import * as path from 'path';
+import temp from 'temp';
+import path from 'path';
 import * as fs from 'fs-extra';
 import { IFileServiceClient, IDiskFileProvider } from '@ali/ide-file-service';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
@@ -44,7 +44,7 @@ describe('WorkspaceStorage should be work', () => {
   let databaseStorageContribution: DatabaseStorageContribution;
   const storageName = 'testStorage';
   const MockWorkspaceService = {
-    onWorkspaceChanged: jest.fn(() => Disposable.create(() => {})),
+    onWorkspaceChanged: jest.fn(() => Disposable.create(() => { })),
     workspace: {
       uri: 'file://home',
     },

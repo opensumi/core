@@ -1,9 +1,9 @@
-import * as React from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ToolbarLocation } from '@ali/ide-core-browser';
 
-import * as styles from './toolbar-action.module.less';
-import * as classnames from 'classnames';
+import styles from './toolbar-action.module.less';
+import classnames from 'classnames';
 
 // const ActionGroup = observer(({ group, id }: { group: IToolbarActionGroup; id: string }) => {
 //   return (<div className={styles.actionGroup} key={id}>

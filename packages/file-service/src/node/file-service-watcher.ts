@@ -1,6 +1,6 @@
 import * as fs from 'fs-extra';
-import * as nsfw from 'nsfw';
-import * as paths from 'path';
+import nsfw from 'nsfw';
+import paths from 'path';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import { IDisposable, Disposable, DisposableCollection, isWindows, URI } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';

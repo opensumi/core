@@ -1,4 +1,4 @@
-import * as stream from 'stream';
+import stream from 'stream';
 import type { editor } from '@ali/monaco-editor-core';
 import { DebugConfiguration } from './debug-configuration';
 import { IDisposable, MaybePromise, IJSONSchema, IJSONSchemaSnippet, URI } from '@ali/ide-core-common';

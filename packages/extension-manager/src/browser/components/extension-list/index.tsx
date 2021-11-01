@@ -1,9 +1,9 @@
-import * as React from 'react';
-import * as clx from 'classnames';
+import React from 'react';
+import clx from 'classnames';
 import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
 import { RawExtensionView } from '../raw-extension';
 import { RawExtension, IExtensionManagerService } from '../../../common';
-import * as styles from './index.module.less';
+import styles from './index.module.less';
 import { useInjectable } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { Scrollbars } from '@ali/ide-components';

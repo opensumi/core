@@ -1,5 +1,5 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import * as React from 'react';
+import React from 'react';
 import { action } from 'mobx';
 import { LabelService } from '@ali/ide-core-browser';
 import { URI, Schemas, Emitter, formatLocalize, dispose, IDisposable, DisposableStore, IRange, localize, MessageType, memoize } from '@ali/ide-core-common';
@@ -19,7 +19,7 @@ import {
   ISearchTreeItem,
 } from '../common';
 import { SearchPreferences } from './search-preferences';
-import * as styles from './search.module.less';
+import styles from './search.module.less';
 import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
 
 const REPLACE_PREVIEW = 'replacePreview';
@@ -175,7 +175,7 @@ export class ReplaceDocumentModelContentProvider implements IEditorDocumentModel
 
 @Injectable()
 export class SearchTreeService {
-  _setNodes: any = () => {};
+  _setNodes: any = () => { };
   _nodes: ISearchTreeItem[] = [];
   isContextmenuOnFile: boolean = false;
 
@@ -267,7 +267,7 @@ export class SearchTreeService {
     if (!file) {
       return;
     }
-    const data: any = { id : file.id};
+    const data: any = { id: file.id };
     data.file = file;
 
     if (!file.parent) {
@@ -283,7 +283,7 @@ export class SearchTreeService {
     const menus = this.ctxmenuService.createMenu({
       id: MenuId.SearchContext,
       config: {
-        args: [ data ],
+        args: [data],
       },
     });
 
@@ -433,7 +433,7 @@ export class SearchTreeService {
         resultTotal.resultNum = resultTotal.resultNum - 1;
       },
       replaceResult() {
-        const select: ISearchTreeItem  | undefined = items.find((v) => v.id === id);
+        const select: ISearchTreeItem | undefined = items.find((v) => v.id === id);
         if (!select) {
           return;
         }
@@ -484,7 +484,7 @@ export class SearchTreeService {
           resultMap,
           replaceValue,
         ).then(() => {
-           // 结果树更新由 search.service.watchDocModelContentChange 负责
+          // 结果树更新由 search.service.watchDocModelContentChange 负责
         });
       },
     };
@@ -540,7 +540,7 @@ export class SearchTreeService {
     return result;
   }
 
-  private async getParentNodes(): Promise< ISearchTreeItem[] > {
+  private async getParentNodes(): Promise<ISearchTreeItem[]> {
     const searchResults = this.searchBrowserService.searchResults;
     const workspaceService = this.workspaceService;
     const result: ISearchTreeItem[] = [];
@@ -560,7 +560,7 @@ export class SearchTreeService {
         continue;
       }
 
-      const node: ISearchTreeItem  = {
+      const node: ISearchTreeItem = {
         description,
         expanded: true,
         id: uri,
@@ -592,7 +592,7 @@ export class SearchTreeService {
         if (userhome) {
           this.userhomePath = new URI(userhome.uri);
         }
-      } catch (err) {}
+      } catch (err) { }
     }
     return this.userhomePath;
   }

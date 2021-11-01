@@ -1,5 +1,5 @@
 import React = require('react');
-import * as styles from './progress.module.less';
+import styles from './progress.module.less';
 import clsx from 'classnames';
 import { IProgressModel } from '.';
 import { observer } from 'mobx-react-lite';

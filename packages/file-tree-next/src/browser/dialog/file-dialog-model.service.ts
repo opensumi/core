@@ -6,7 +6,7 @@ import { URI, DisposableCollection, Emitter, CorePreferences, Event } from '@ali
 import { PasteTypes, IFileDialogTreeService, IFileDialogModel } from '../../common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { FileTreeDialogService } from './file-dialog.service';
-import * as styles from '../file-tree-node.module.less';
+import styles from '../file-tree-node.module.less';
 
 export interface IParseStore {
   files: (File | Directory)[];

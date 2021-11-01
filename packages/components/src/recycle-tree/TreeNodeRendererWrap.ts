@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { TreeNode, CompositeTreeNode } from './tree/TreeNode';
 import { RenamePromptHandle, NewPromptHandle } from './prompt';
 import { TreeNodeType } from './types';
@@ -41,7 +41,7 @@ export class NodeRendererWrap extends React.Component<INodeRendererWrapProps> {
 
   public render() {
     const { item, itemType, children, template, hasPrompt } = this.props;
-    return React.createElement(children, {item, itemType, template, hasPrompt});
+    return React.createElement(children, { item, itemType, template, hasPrompt });
   }
 
   public shouldComponentUpdate(nextProps: INodeRendererWrapProps) {

@@ -4,7 +4,7 @@ import * as types from '../../../common/vscode/ext-types';
 import * as modes from '../../../common/vscode/model.api';
 import { Uri as URI } from '@ali/ide-core-common';
 import { isFalsyOrEmpty } from '@ali/ide-core-common/lib/arrays';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 
 type IPosition = modes.Position;
 type IRange = modes.Range;

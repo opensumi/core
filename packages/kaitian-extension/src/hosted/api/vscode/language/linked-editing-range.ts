@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import type * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { Uri, CancellationToken, IPosition, asPromise, coalesce } from '@ali/ide-core-common';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { useInjectable } from '@ali/ide-core-browser';
 import { isOSX, CommandService, DisposableStore } from '@ali/ide-core-common';
 import { format } from '@ali/ide-core-common/lib/utils/strings';
@@ -14,7 +14,7 @@ import {
 } from '../../common';
 import { ViewModelContext } from '../scm-model';
 
-import * as styles from './scm-resource-input.module.less';
+import styles from './scm-resource-input.module.less';
 
 export function convertValidationType(type: InputValidationType) {
   return ['info', 'warning', 'error'][type];

@@ -8,8 +8,8 @@ import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-help
 // import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 // import { SUPPORTED_ENCODINGS } from '../../src/node/encoding';
 import * as fse from 'fs-extra';
-import * as os from 'os';
-import * as path from 'path';
+import os from 'os';
+import path from 'path';
 
 // tslint:disable:variable-name
 describe('FileService', () => {
@@ -189,11 +189,11 @@ describe('FileService', () => {
 
       const stat = await fileService.getFileStat(uri.toString());
       expect(stat).toBeDefined();
-      await fileService.setContent(stat!, 'bar', {encoding: 'ascii'});
+      await fileService.setContent(stat!, 'bar', { encoding: 'ascii' });
       expect(fs.readFileSync(FileUri.fsPath(uri), 'ascii')).toEqual('bar');
       const newStat = await fileService.getFileStat(uri.toString());
       expect(newStat).toBeDefined();
-      await fileService.updateContent(newStat!, [{text: 'foo'}], {encoding: 'ascii'});
+      await fileService.updateContent(newStat!, [{ text: 'foo' }], { encoding: 'ascii' });
       expect(fs.readFileSync(FileUri.fsPath(uri), 'ascii')).toEqual('foo');
       await expectThrowsAsync(fileService.setContent(stat!, 'baz', { encoding: 'unknownEncoding' }), Error);
     });
@@ -707,9 +707,9 @@ describe('FileService', () => {
         changes = e.changes;
       });
       const uri = root.resolve('foo.txt');
-      fileService.fireFilesChange([{ uri: uri.toString(), type: FileChangeType.UPDATED}]);
+      fileService.fireFilesChange([{ uri: uri.toString(), type: FileChangeType.UPDATED }]);
 
-      expect(changes).toEqual([{ uri: uri.toString(), type: FileChangeType.UPDATED}]);
+      expect(changes).toEqual([{ uri: uri.toString(), type: FileChangeType.UPDATED }]);
     });
   });
 

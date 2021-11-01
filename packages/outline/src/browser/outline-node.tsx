@@ -1,6 +1,6 @@
-import * as React from 'react';
-import * as cls from 'classnames';
-import * as styles from './outline-node.module.less';
+import React from 'react';
+import cls from 'classnames';
+import styles from './outline-node.module.less';
 import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, TreeNodeType } from '@ali/ide-components';
 import { URI, getIcon, CommandService } from '@ali/ide-core-browser';
 import { OutlineCompositeTreeNode, OutlineTreeNode } from './outline-node.define';

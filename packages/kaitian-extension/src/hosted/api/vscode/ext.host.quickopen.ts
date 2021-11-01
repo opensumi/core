@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, IExtHostQuickOpen, IMainThreadQuickOpen, IExtHostWorkspace } from '../../../common/vscode';
 import { CancellationToken, hookCancellationToken, Event, Emitter, DisposableCollection, MaybePromise, isUndefined } from '@ali/ide-core-common';
@@ -132,7 +132,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
   }
 
   $onDidTriggerButton(btnHandler: number): void {
-    return (this.createdQuicks.get(this.currentQuick) as QuickPickExt<vscode.QuickPickItem> )?.attachBtn(btnHandler);
+    return (this.createdQuicks.get(this.currentQuick) as QuickPickExt<vscode.QuickPickItem>)?.attachBtn(btnHandler);
   }
 
   showInputBox(options: vscode.InputBoxOptions = {}, token: CancellationToken = CancellationToken.None): PromiseLike<string | undefined> {
@@ -140,7 +140,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
     this.validateInputHandler = options && options.validateInput;
     this.hideInputBox();
 
-    const promise = this.proxy.$showQuickInput(options as vscode.QuickPickOptions , typeof this.validateInputHandler === 'function');
+    const promise = this.proxy.$showQuickInput(options as vscode.QuickPickOptions, typeof this.validateInputHandler === 'function');
     return hookCancellationToken(token, promise);
   }
 
@@ -300,7 +300,7 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
       placeHolder: this.placeholder,
       ignoreFocusOut: this.ignoreFocusOut,
       _sessionId: this.quickPickIndex,
-    } as QuickPickOptions ).then((item) => {
+    } as QuickPickOptions).then((item) => {
       if (!isUndefined(item)) {
         selectItem(item as (T | T[]));
       }

@@ -1,5 +1,5 @@
 import { Uri, CancellationToken, IRange } from '@ali/ide-core-common';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as typeConvert from '../../../../common/vscode/converter';
 

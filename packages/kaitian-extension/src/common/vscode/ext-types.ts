@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { Uri, UriUtils } from '@ali/ide-core-common';
 import { illegalArgument } from './utils';
 import { FileOperationOptions } from './model.api';
@@ -2896,7 +2896,7 @@ export class CancellationError extends Error {
 
 //#region Inline Values
 
-@es5ClassCompat@es5ClassCompat
+@es5ClassCompat @es5ClassCompat
 export class InlineValueText implements vscode.InlineValueText {
   readonly range: Range;
   readonly text: string;

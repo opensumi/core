@@ -16,7 +16,7 @@
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/languages/outline.ts
 
 import { Uri as URI } from '@ali/ide-core-common';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { DocumentSymbol, Range } from '../../../../common/vscode/model.api';
 import * as types from '../../../../common/vscode/ext-types';
@@ -43,9 +43,9 @@ export class OutlineAdapter {
                 return undefined;
             }
             if (value[0] instanceof types.DocumentSymbol) {
-                return ( value as types.DocumentSymbol[]).map(Converter.fromDocumentSymbol);
+                return (value as types.DocumentSymbol[]).map(Converter.fromDocumentSymbol);
             } else {
-                return OutlineAdapter.asDocumentSymbolTree(resource,  value as types.SymbolInformation[]);
+                return OutlineAdapter.asDocumentSymbolTree(resource, value as types.SymbolInformation[]);
             }
         });
     }
@@ -64,7 +64,7 @@ export class OutlineAdapter {
         const parentStack: DocumentSymbol[] = [];
         // tslint:disable
         for (let i = 0; i < info.length; i++) {
-            const element =  {
+            const element = {
                 name: info[i].name,
                 detail: '',
                 kind: Converter.SymbolKind.fromSymbolKind(info[i].kind),

@@ -1,8 +1,8 @@
-import * as path from 'path';
+import path from 'path';
 import { Injector, Injectable } from '@ali/common-di';
 import { ILoggerManagerClient, Uri, URI } from '@ali/ide-core-common';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { LoggerManagerClient  } from '@ali/ide-logs/src/browser/log-manage';
+import { LoggerManagerClient } from '@ali/ide-logs/src/browser/log-manage';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { EditorDocumentModelServiceImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
 import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry } from '@ali/ide-editor/lib/browser';
@@ -40,7 +40,7 @@ class MockWorkspaceService {
 
 @Injectable()
 class MockMainLayoutService {
-  getTabbarHandler() {}
+  getTabbarHandler() { }
 }
 
 @Injectable()
@@ -49,7 +49,7 @@ class MockSearchContentService {
   catchSearchRootDirs: string[];
   catchSearchOptions: ContentSearchOptions;
 
-  async search(value, rootDirs , searchOptions) {
+  async search(value, rootDirs, searchOptions) {
     this.catchSearchValue = value;
     this.catchSearchRootDirs = rootDirs;
     this.catchSearchOptions = searchOptions;
@@ -57,28 +57,28 @@ class MockSearchContentService {
     return 1;
   }
 
-  cancel() {}
+  cancel() { }
 }
 
 @Injectable()
 class MockWorkbenchEditorService {
-  open() {}
-  apply() {}
+  open() { }
+  apply() { }
 }
 
 @Injectable()
 class MockWorkspaceEditorService {
-  apply() {}
+  apply() { }
 }
 
 @Injectable()
 class MockEditorDocumentModelContentRegistry {
-  registerEditorDocumentModelContentProvider() {}
+  registerEditorDocumentModelContentProvider() { }
 }
 
 @Injectable()
 class MockFileServiceClient {
-  getCurrentUserHome() {}
+  getCurrentUserHome() { }
 }
 
 @Injectable()
@@ -113,7 +113,7 @@ describe('search.service.ts', () => {
   };
 
   const searchResult1 = { fileUri: 'file://root', line: 1, matchStart: 11, matchLength: 12, renderLineText: '', renderStart: 2 };
-  const searchResult2 = Object.assign({}, searchResult1, { line: 2});
+  const searchResult2 = Object.assign({}, searchResult1, { line: 2 });
   const searchResults: Map<string, ContentSearchResult[]> = new Map();
 
   searchResults.set('file://root', [searchResult1, searchResult2]);
@@ -138,10 +138,10 @@ describe('search.service.ts', () => {
       useClass: MockSearchContentService,
     }, {
       token: IEditorDocumentModelService,
-      useClass : EditorDocumentModelServiceImpl,
+      useClass: EditorDocumentModelServiceImpl,
     }, {
       token: IMainLayoutService,
-      useClass : MockMainLayoutService,
+      useClass: MockMainLayoutService,
     }, {
       token: WorkbenchEditorService,
       useClass: MockWorkbenchEditorService,

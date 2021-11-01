@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import * as omit from 'lodash.omit';
+import omit from 'lodash.omit';
 
 import { MenuNode } from '../../base';
 import { ICtxMenuRenderer, CtxMenuRenderParams } from './base';

@@ -1,6 +1,6 @@
 import { Injectable, Provider } from '@ali/common-di';
-import * as path from 'path';
-import * as fs from 'fs';
+import path from 'path';
+import fs from 'fs';
 import { ExtensionService, IExtensionNodeClientService, IExtraMetaData, IExtensionMetaData, IExtension, IExtensionProps, ExtensionNodeServiceServerPath, IExtCommandManagement, AbstractExtensionManagementService, IRequireInterceptorService, RequireInterceptorService, RequireInterceptorContribution } from '../../../src/common';
 import { MockInjector, mockService } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
@@ -498,12 +498,12 @@ export function setupExtensionServiceInjector() {
     token: ICryptrService,
     useValue: mockService({}),
   },
-  {
-    token: ICredentialsService,
-    useValue: mockService({
-      onDidChangePassword: new Emitter().event,
-    }),
-  });
+    {
+      token: ICredentialsService,
+      useValue: mockService({
+        onDidChangePassword: new Emitter().event,
+      }),
+    });
 
   createContributionProvider(injector, StorageResolverContribution);
   createContributionProvider(injector, MainLayoutContribution);

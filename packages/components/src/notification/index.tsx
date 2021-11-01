@@ -1,5 +1,5 @@
 import clx from 'classnames';
-import * as React from 'react';
+import React from 'react';
 
 import antdNotification, { ArgsProps } from './notification';
 

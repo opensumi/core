@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { Injector } from '@ali/common-di';
 import { ExtensionCandidate, ExtensionConnectOption } from '@ali/ide-core-common';
 import { IPreferences, LayoutConfig } from '../bootstrap';

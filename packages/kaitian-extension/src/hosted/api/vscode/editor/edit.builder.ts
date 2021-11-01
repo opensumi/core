@@ -1,5 +1,5 @@
 import { EndOfLine, Position, Range, Selection } from '../../../../common/vscode/ext-types';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 
 export interface ITextEditOperation {
   range: Range;

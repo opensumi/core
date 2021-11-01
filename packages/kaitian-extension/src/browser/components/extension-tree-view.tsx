@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as styles from './extension-tree-view.module.less';
+import React from 'react';
+import styles from './extension-tree-view.module.less';
 import { isOSX } from '@ali/ide-core-browser';
 import { Injector } from '@ali/common-di';
 import { observer } from 'mobx-react-lite';

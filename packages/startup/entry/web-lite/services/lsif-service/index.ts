@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 
 import { ILsifService, ILsifPayload } from './base';
 import { LsifClient } from './lsif-client';

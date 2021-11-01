@@ -15,8 +15,8 @@ interface IComponentProps<N, W = any> {
 declare module 'kaitian-browser' {
   export * from '@ali/ide-components';
 
-  import type * as vscode from 'vscode';
-  import * as React from 'react';
+  import type vscode from 'vscode';
+  import React from 'react';
 
   import { ROTATE_TYPE, ANIM_TYPE } from '@ali/ide-components';
 
@@ -53,7 +53,7 @@ declare module 'kaitian-browser' {
   export const ResizeHandleHorizontal: React.ComponentType<ResizeHandleProps>;
   export const ResizeHandleVertical: React.ComponentType<ResizeHandleProps>;
 
-  export const PlainWebview: React.ComponentType<{ id: string, appendToChild?: boolean, renderRoot?: HTMLElement}>;
+  export const PlainWebview: React.ComponentType<{ id: string, appendToChild?: boolean, renderRoot?: HTMLElement }>;
 
   // scope 目前不是必要的，可以直接从 extension 拿到 id
   // 为了兼容已经在使用的插件，暂时先保留声明

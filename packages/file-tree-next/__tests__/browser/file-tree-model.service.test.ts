@@ -5,7 +5,7 @@ import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { Directory, File } from '../../src/common/file-tree-node.define';
 import { TreeNodeType } from '@ali/ide-components';
 import { FileTreeModelService } from '@ali/ide-file-tree-next/lib/browser/services/file-tree-model.service';
-import * as styles from '../../src/browser/file-tree-node.modules.less';
+import styles from '../../src/browser/file-tree-node.modules.less';
 import { IFileTreeService } from '@ali/ide-file-tree-next';
 import { IFileTreeAPI } from '@ali/ide-file-tree-next';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
@@ -18,7 +18,7 @@ import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { FileContextKey } from '@ali/ide-file-tree-next/lib/browser/file-contextkey';
 import { MockLogger } from '@ali/ide-core-browser/__mocks__/logger';
 
-class TempDirectory {}
+class TempDirectory { }
 
 describe('FileTreeModelService should be work', () => {
   (global as any).monaco = createMockedMonaco() as any;
@@ -57,10 +57,10 @@ describe('FileTreeModelService should be work', () => {
     return directory;
   };
   const mockDecorationsService = {
-    onDidChangeDecorations: jest.fn(() => Disposable.create(() => {})),
+    onDidChangeDecorations: jest.fn(() => Disposable.create(() => { })),
   };
   const mockThemeService = {
-    onThemeChange: jest.fn(() => Disposable.create(() => {})),
+    onThemeChange: jest.fn(() => Disposable.create(() => { })),
   };
   const mockExploreStorage = {
     get: jest.fn(() => {
@@ -76,12 +76,12 @@ describe('FileTreeModelService should be work', () => {
     set: jest.fn(),
   };
   const mockLabelService = {
-    onDidChange: jest.fn(() => Disposable.create(() => {})),
+    onDidChange: jest.fn(() => Disposable.create(() => { })),
   };
   const mockFileTreeService = {
-    onNodeRefreshed: jest.fn(() => Disposable.create(() => {})),
-    onWorkspaceChange: jest.fn(() => Disposable.create(() => {})),
-    requestFlushEventSignalEvent: jest.fn(() => Disposable.create(() => {})),
+    onNodeRefreshed: jest.fn(() => Disposable.create(() => { })),
+    onWorkspaceChange: jest.fn(() => Disposable.create(() => { })),
+    requestFlushEventSignalEvent: jest.fn(() => Disposable.create(() => { })),
     resolveChildren: jest.fn(() => {
       return [mockRoot];
     }),
@@ -156,7 +156,7 @@ describe('FileTreeModelService should be work', () => {
       ...newDirectoryByName('child'),
       ensureLoaded: jest.fn(),
       watcher: {
-        on: () => Disposable.create(() => {}),
+        on: () => Disposable.create(() => { }),
       },
       getTreeNodeAtIndex: () => {
         return root;

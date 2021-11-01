@@ -1,6 +1,6 @@
-import * as path from 'path';
+import path from 'path';
 import * as fs from 'fs-extra';
-import * as archiver from 'archiver';
+import archiver from 'archiver';
 import { toLocalISOString, getDebugLogger, Archive } from '@ali/ide-core-common';
 
 const debugLog = getDebugLogger('LogUtils');
@@ -25,7 +25,7 @@ export function getLogFolder(logRootPath: string): string {
 /**
  * 清理日志文件夹，保留最近5天的目录
  */
-export async function cleanOldLogs(logsRoot: string)  {
+export async function cleanOldLogs(logsRoot: string) {
   try {
     const currentLog = getLogFolderName();
     const children = fs.readdirSync(logsRoot);
@@ -36,7 +36,7 @@ export async function cleanOldLogs(logsRoot: string)  {
     for (const name of toDelete) {
       fs.removeSync(path.join(logsRoot, name));
     }
-  } catch (e) {}
+  } catch (e) { }
 }
 
 /**
@@ -51,7 +51,7 @@ export async function cleanAllLogs(logsRoot: string) {
       }
       fs.removeSync(path.join(logsRoot, name));
     }
-  } catch (e) {}
+  } catch (e) { }
 }
 
 /**
@@ -69,7 +69,7 @@ export function cleanExpiredLogs(day: number, logsRoot: string) {
     for (const name of toDelete) {
       fs.removeSync(path.join(logsRoot, name));
     }
-  } catch (e) {}
+  } catch (e) { }
 }
 
 /**
@@ -90,7 +90,7 @@ export async function getLogZipArchiveByFolder(foldPath: string, waitPromise?: P
     throw err;
   });
 
-  archive.on('entry', (entry) => {});
+  archive.on('entry', (entry) => { });
 
   archive.on('warning', (warning) => {
     debugLog.debug('archive warning', warning);

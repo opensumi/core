@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { Event, Disposable, ConstructorOf, BasicEvent, IEventBus } from '@ali/ide-core-common';
 import { useInjectable } from './injectable-hooks';
 

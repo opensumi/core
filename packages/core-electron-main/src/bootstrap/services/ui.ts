@@ -5,8 +5,8 @@ import { Domain, isWindows, IEventBus, URI } from '@ali/ide-core-common';
 import { stat } from 'fs-extra';
 import { dirname } from 'path';
 import { spawn } from 'child_process';
-import * as semver from 'semver';
-import * as qs from 'querystring';
+import semver from 'semver';
+import qs from 'querystring';
 import { WindowCreatedEvent } from './events';
 import { IElectronMainUIService, IElectronMainUIServiceShape, IElectronPlainWebviewWindowOptions } from '@ali/ide-core-common/lib/electron';
 

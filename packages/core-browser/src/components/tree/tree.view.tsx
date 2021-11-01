@@ -1,10 +1,10 @@
-import * as React from 'react';
+import React from 'react';
 import { TreeNode, SelectableTreeNode } from './';
 import { TreeContainerNode, CommandActuator } from './tree-node.view';
 import { isOSX, Event } from '@ali/ide-core-common';
 import { FileDecorationsProvider, ThemeProvider, IFileDecoration, ExpandableTreeNode, TreeViewAction } from '../../tree';
-import * as cls from 'classnames';
-import * as styles from './tree.module.less';
+import cls from 'classnames';
+import styles from './tree.module.less';
 import { ValidateMessage } from '@ali/ide-components';
 
 export const TEMP_FILE_NAME = 'kt_template_file';

@@ -17,7 +17,7 @@ import { CorePreferences, QuickPickService } from '@ali/ide-core-browser';
 import { TerminalLinkManager } from './links/link-manager';
 import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
 
-import * as styles from './component/terminal.module.less';
+import styles from './component/terminal.module.less';
 
 @Injectable()
 export class TerminalClient extends Disposable implements ITerminalClient {

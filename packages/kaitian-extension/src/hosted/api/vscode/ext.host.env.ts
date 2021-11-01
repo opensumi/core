@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { createHash } from 'crypto';
 import { v4 } from 'uuid';

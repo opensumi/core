@@ -1,5 +1,5 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import * as os from 'os';
+import os from 'os';
 import { Injector } from '@ali/common-di';
 import { VSCodeContributeRunner } from '../../src/browser/vscode/contributes';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';

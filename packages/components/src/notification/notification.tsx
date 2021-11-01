@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import Notification from 'rc-notification';
 import CloseOutlined from '@ant-design/icons/CloseOutlined';
 import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined';

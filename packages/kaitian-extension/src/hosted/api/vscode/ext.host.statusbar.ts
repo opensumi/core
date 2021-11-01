@@ -4,7 +4,7 @@ import { Disposable, ThemeColor } from '../../../common/vscode/ext-types';
 import { MainThreadAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar, ArgumentProcessor, IExtensionDescription } from '../../../common/vscode';
 import { v4 } from 'uuid';
 import * as types from '../../../common/vscode/ext-types';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 
 export class ExtHostStatusBar implements IExtHostStatusBar {
   protected readonly proxy: IMainThreadStatusBar;
@@ -22,16 +22,16 @@ export class ExtHostStatusBar implements IExtHostStatusBar {
     let handle: NodeJS.Timer | undefined;
 
     if (typeof arg === 'number') {
-        handle = global.setTimeout(() => this.proxy.$dispose(), arg);
+      handle = global.setTimeout(() => this.proxy.$dispose(), arg);
     } else if (typeof arg !== 'undefined') {
-        arg.then(() => this.proxy.$dispose(), () => this.proxy.$dispose());
+      arg.then(() => this.proxy.$dispose(), () => this.proxy.$dispose());
     }
 
     return Disposable.create(() => {
-        this.proxy.$dispose();
-        if (handle) {
-            clearTimeout(handle);
-        }
+      this.proxy.$dispose();
+      if (handle) {
+        clearTimeout(handle);
+      }
     });
   }
 
@@ -86,15 +86,15 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
   }
 
   public get alignment(): vscode.StatusBarAlignment {
-      return this._alignment;
+    return this._alignment;
   }
 
   public get priority(): number {
-      return this._priority;
+    return this._priority;
   }
 
   public get text(): string {
-      return this._text;
+    return this._text;
   }
   public set text(text: string) {
     this._text = text;
@@ -111,19 +111,19 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
   }
 
   public get tooltip(): string {
-      return this._tooltip;
+    return this._tooltip;
   }
   public set tooltip(tooltip: string) {
-      this._tooltip = tooltip;
-      this.update();
+    this._tooltip = tooltip;
+    this.update();
   }
 
   public get color(): string | ThemeColor | undefined {
-      return this._color;
+    return this._color;
   }
   public set color(color: string | ThemeColor | undefined) {
-      this._color = color;
-      this.update();
+    this._color = color;
+    this.update();
   }
 
   public get backgroundColor(): ThemeColor | undefined {
@@ -150,91 +150,91 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
   }
 
   public get command(): string | vscode.Command | undefined {
-      return this._command;
+    return this._command;
   }
   public set command(command: string | vscode.Command | undefined) {
-      this._command = command;
-      this.update();
+    this._command = command;
+    this.update();
   }
 
   public show(): void {
-      this._isVisible = true;
-      this.update();
+    this._isVisible = true;
+    this.update();
   }
 
   public hide(): void {
-      if (this._timeoutHandle) {
-          clearTimeout(this._timeoutHandle);
-      }
-      this._proxy.$dispose(this.entryId);
-      this._isVisible = false;
+    if (this._timeoutHandle) {
+      clearTimeout(this._timeoutHandle);
+    }
+    this._proxy.$dispose(this.entryId);
+    this._isVisible = false;
   }
 
   private update(): void {
-      if (!this._isVisible) {
-          return;
+    if (!this._isVisible) {
+      return;
+    }
+    if (this._timeoutHandle) {
+      clearTimeout(this._timeoutHandle);
+    }
+    // Defer the update so that multiple changes to setters don't cause a redraw each
+    this._timeoutHandle = global.setTimeout(() => {
+      this._timeoutHandle = undefined;
+      const commandId = typeof this.command === 'string' ? this.command : this.command?.command;
+      const commandArgs = typeof this.command === 'string' ? undefined : this.command?.arguments;
+
+      // If the id is not set, derive it from the extension identifier,
+      // otherwise make sure to prefix it with the extension identifier
+      // to get a more unique value across extensions.
+      let id: string;
+      if (this._extension) {
+        if (this._id) {
+          id = `${this._extension.identifier.value}.${this._id}`;
+        } else {
+          id = this._extension.identifier.value;
+        }
+      } else {
+        id = this._id!;
       }
-      if (this._timeoutHandle) {
-          clearTimeout(this._timeoutHandle);
+
+      // If the name is not set, derive it from the extension descriptor
+      let name: string;
+      if (this._name) {
+        name = this._name;
+      } else {
+        name = formatLocalize('extension.label', this._extension.displayName || this._extension.name);
       }
-      // Defer the update so that multiple changes to setters don't cause a redraw each
-      this._timeoutHandle = global.setTimeout(() => {
-          this._timeoutHandle = undefined;
-          const commandId = typeof this.command === 'string' ? this.command : this.command?.command;
-          const commandArgs = typeof this.command === 'string' ? undefined : this.command?.arguments;
 
-          // If the id is not set, derive it from the extension identifier,
-          // otherwise make sure to prefix it with the extension identifier
-          // to get a more unique value across extensions.
-          let id: string;
-          if (this._extension) {
-            if (this._id) {
-              id = `${this._extension.identifier.value}.${this._id}`;
-            } else {
-              id = this._extension.identifier.value;
-            }
-          } else {
-            id = this._id!;
-          }
+      // If a background color is set, the foreground is determined
+      let color = this._color;
+      if (this._backgroundColor) {
+        color = StatusBarItemImpl.ALLOWED_BACKGROUND_COLORS.get(this._backgroundColor.id)!;
+      }
 
-          // If the name is not set, derive it from the extension descriptor
-          let name: string;
-          if (this._name) {
-            name = this._name;
-          } else {
-            name = formatLocalize('extension.label', this._extension.displayName || this._extension.name);
-          }
-
-          // If a background color is set, the foreground is determined
-          let color = this._color;
-          if (this._backgroundColor) {
-            color = StatusBarItemImpl.ALLOWED_BACKGROUND_COLORS.get(this._backgroundColor.id)!;
-          }
-
-          // Set to status bar
-          this._proxy.$setMessage(
-            this._entryId,
-            id,
-            name,
-            this.text,
-            this.priority,
-            this.alignment,
-            color,
-            this._backgroundColor,
-            this.tooltip,
-            this.accessibilityInformation,
-            commandId,
-            commandArgs,
-          );
-      }, 0);
+      // Set to status bar
+      this._proxy.$setMessage(
+        this._entryId,
+        id,
+        name,
+        this.text,
+        this.priority,
+        this.alignment,
+        color,
+        this._backgroundColor,
+        this.tooltip,
+        this.accessibilityInformation,
+        commandId,
+        commandArgs,
+      );
+    }, 0);
   }
 
   public dispose(): void {
-      this.hide();
+    this.hide();
   }
 
   static nextId(): string {
-      return StatusBarItemImpl.ID_PREFIX + ':' + v4();
+    return StatusBarItemImpl.ID_PREFIX + ':' + v4();
   }
   static ID_PREFIX = 'plugin-status-bar-item';
 }

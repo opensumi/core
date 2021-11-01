@@ -17,7 +17,7 @@ import { SCMTreeModel } from './scm-tree-model';
 import { SCMResourceFolder, SCMResourceFile, SCMResourceGroup, SCMResourceRoot, SCMResourceNotRoot } from './scm-tree-node';
 import { SCMTreeService } from './scm-tree.service';
 
-import * as styles from './scm-tree-node.module.less';
+import styles from './scm-tree-node.module.less';
 import { IWorkspaceService } from '@ali/ide-workspace';
 
 export interface IEditorTreeHandle extends IRecycleTreeHandle {

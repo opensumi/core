@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as cls from 'classnames';
+import React from 'react';
+import cls from 'classnames';
 import { ViewState, getIcon, useInjectable, DisposableCollection } from '@ali/ide-core-browser';
 import { DebugSession } from '../../debug-session';
 import { DebugThread } from '../../model/debug-thread';
@@ -7,7 +7,7 @@ import { DebugStackThreadView } from './debug-call-stack-thread.view';
 import { DebugStackOperationView } from './debug-call-stack.operation';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugState, IDebugSessionManager } from '../../../common';
-import * as styles from './debug-call-stack.module.less';
+import styles from './debug-call-stack.module.less';
 import { DebugCallStackService } from './debug-call-stack.service';
 
 export interface DebugStackSessionViewProps {

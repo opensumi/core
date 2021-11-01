@@ -1,5 +1,5 @@
-import * as net from 'net';
-import type * as vscode from 'vscode';
+import net from 'net';
+import type vscode from 'vscode';
 import { DebugStreamConnection, DebugAdapterForkExecutable } from '@ali/ide-debug';
 import { ChildProcess, fork, SpawnOptions, spawn } from 'child_process';
 import { CustomeChildProcessModule, CustomeChildProcess } from '../../../ext.process-base';

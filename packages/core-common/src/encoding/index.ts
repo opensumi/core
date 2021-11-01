@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import * as iconv from 'iconv-lite';
+import iconv from 'iconv-lite';
 
 import { BinaryBuffer } from '../utils/buffer';
 
@@ -21,16 +21,16 @@ const AUTO_ENCODING_GUESS_MIN_BYTES = 512 * 8; 		// with auto guessing we want a
 const AUTO_ENCODING_GUESS_MAX_BYTES = 512 * 128; 	// set an upper limit for the number of bytes we pass on to jschardet
 
 export function isUTF8(encoding: string | null) {
-  if (encoding) {
-    return toIconvLiteEncoding(encoding) === UTF8;
-  }
-  return false;
+	if (encoding) {
+		return toIconvLiteEncoding(encoding) === UTF8;
+	}
+	return false;
 }
 
 const SUPPORT_ENCODINGS_TO_ICONV_ENCODINGS: { [name: string]: string } = {
 	'ibm866': 'cp866',
 	'big5': 'cp950',
-  'utf8bom': 'utf8'
+	'utf8bom': 'utf8'
 };
 
 export function toIconvLiteEncoding(encodingName: string): string {
@@ -94,13 +94,13 @@ export function toNodeEncoding(enc: string | null): string {
  * @param encoding 传入的是 SUPPORTED_ENCODINGS 已有的键值（已通过 tests case 的）
  */
 export function iconvDecode(buffer: Uint8Array | Buffer, encoding: string) {
-  encoding = toIconvLiteEncoding(encoding);
-  return iconv.decode(buffer as Buffer, encoding);
+	encoding = toIconvLiteEncoding(encoding);
+	return iconv.decode(buffer as Buffer, encoding);
 }
 
 export function iconvEncode(content: string, encoding: string): Uint8Array | Buffer {
-  encoding = toIconvLiteEncoding(encoding);
-  return iconv.encode(content, encoding);
+	encoding = toIconvLiteEncoding(encoding);
+	return iconv.encode(content, encoding);
 }
 
 function encodeLatin1(buffer: Uint8Array): string {
@@ -152,7 +152,7 @@ export function detectEncodingByBOMFromBuffer(buffer: BinaryBuffer | null, bytes
 const IGNORE_ENCODINGS = ['ascii', 'utf-16', 'utf-32'];
 
 async function guessEncodingByBuffer(buffer: BinaryBuffer): Promise<string | null> {
-  // lazy load
+	// lazy load
 	const jschardet = require('jschardet');
 
 	// ensure to limit buffer for guessing due to https://github.com/aadsm/jschardet/issues/53
@@ -184,7 +184,7 @@ export interface IDetectedEncodingResult {
 export function detectEncodingFromBuffer(buffer: BinaryBuffer, autoGuessEncoding?: false): IDetectedEncodingResult;
 export function detectEncodingFromBuffer(buffer: BinaryBuffer, autoGuessEncoding?: boolean): Promise<IDetectedEncodingResult>;
 export function detectEncodingFromBuffer(buffer: BinaryBuffer, autoGuessEncoding?: boolean): Promise<IDetectedEncodingResult> | IDetectedEncodingResult {
-  const bytesRead = buffer.byteLength;
+	const bytesRead = buffer.byteLength;
 	// Always first check for BOM to find out about encoding
 	let encoding = detectEncodingByBOMFromBuffer(buffer, bytesRead);
 

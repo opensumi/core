@@ -1,6 +1,6 @@
-import * as React from 'react';
-import * as cls from 'classnames';
-import * as styles from '../vscode/api/tree-view/tree-view-node.module.less';
+import React from 'react';
+import cls from 'classnames';
+import styles from '../vscode/api/tree-view/tree-view-node.module.less';
 import { INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType } from '@ali/ide-components';
 import { getIcon } from '@ali/ide-core-browser';
 import { Loading } from '@ali/ide-core-browser/lib/components/loading';

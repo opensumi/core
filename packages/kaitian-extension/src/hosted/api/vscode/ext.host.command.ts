@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Disposable, Position, Range, Location } from '../../../common/vscode/ext-types';
 import * as extHostTypeConverter from '../../../common/vscode/converter';
@@ -20,7 +20,7 @@ export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extH
       try {
         return extHostCommands.registerCommand(true, id, command, thisArgs);
       } catch {
-        return new Disposable(() => {});
+        return new Disposable(() => { });
       }
     },
     executeCommand<T>(id: string, ...args: any[]): Thenable<T | undefined> {
@@ -215,7 +215,7 @@ export class ExtHostCommands implements IExtHostCommands {
     });
   }
 
-  async $executeCommandWithExtensionInfo<T>(id: string, extensionInfo: IExtensionInfo, ...args: any[] ): Promise<T | undefined> {
+  async $executeCommandWithExtensionInfo<T>(id: string, extensionInfo: IExtensionInfo, ...args: any[]): Promise<T | undefined> {
     if (this.commands.has(id)) {
       const isPermitted = this.isPermittedCommand(id, extensionInfo, ...args);
       if (!isPermitted) {

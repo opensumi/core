@@ -4,7 +4,7 @@ import { MainThreadAPIIdentifier, IMainThreadAuthentication, ExtHostAPIIdentifie
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { Emitter, ILoggerManagerClient, StorageProvider, IAuthenticationService, CommandRegistry } from '@ali/ide-core-common';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { MainThreadAuthentication } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.authentication';
 import { Injector } from '@ali/common-di';
 import { ActivationEventServiceImpl } from '@ali/ide-kaitian-extension/lib/browser/activation.service';
@@ -69,7 +69,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.authentication.
       displayName: 'Vim',
       isBuiltin: false,
     });
-    extHostAuthentication = rpcProtocolMain.set(ExtHostAPIIdentifier.ExtHostAuthentication,  new ExtHostAuthentication(rpcProtocolMain)) as ExtHostAuthentication;
+    extHostAuthentication = rpcProtocolMain.set(ExtHostAPIIdentifier.ExtHostAuthentication, new ExtHostAuthentication(rpcProtocolMain)) as ExtHostAuthentication;
     mainThreadAuthentication = rpcProtocolExt.set(MainThreadAPIIdentifier.MainThreadAuthentication, injector.get(MainThreadAuthentication, [rpcProtocolExt]));
     authenticationAPI = createAuthenticationApiFactory(extension, extHostAuthentication);
     const sessions: vscode.AuthenticationSession[] = [];
@@ -79,27 +79,27 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.authentication.
       onDidChangeSessions: onDidChangeSessions.event,
       getSessions: async () => sessions,
       createSession: async (scopeList) => {
-          const session = {
-              id: id++ + '',
-              accessToken: 'this_is_github_token',
-              account: { label: '蛋总', id: 'xinglong.wangwxl' },
-              scopes: scopeList,
-          };
-          const sessionIndex = sessions.findIndex((s) => s.id === session.id);
-          if (sessionIndex > -1) {
-              sessions.splice(sessionIndex, 1, session);
-          } else {
-              sessions.push(session);
-          }
-          onDidChangeSessions.fire({ added: [session], removed: [], changed: [] });
-          return session;
+        const session = {
+          id: id++ + '',
+          accessToken: 'this_is_github_token',
+          account: { label: '蛋总', id: 'xinglong.wangwxl' },
+          scopes: scopeList,
+        };
+        const sessionIndex = sessions.findIndex((s) => s.id === session.id);
+        if (sessionIndex > -1) {
+          sessions.splice(sessionIndex, 1, session);
+        } else {
+          sessions.push(session);
+        }
+        onDidChangeSessions.fire({ added: [session], removed: [], changed: [] });
+        return session;
       },
       removeSession: async (id) => {
         const sessionIndex = sessions.findIndex((session) => session.id === id);
         if (sessionIndex > -1) {
-            const session = sessions[sessionIndex];
-            sessions.splice(sessionIndex, 1);
-            onDidChangeSessions.fire({ added: [], removed: [session], changed: [] });
+          const session = sessions[sessionIndex];
+          sessions.splice(sessionIndex, 1);
+          onDidChangeSessions.fire({ added: [], removed: [session], changed: [] });
         }
       },
     };
@@ -119,7 +119,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.authentication.
     const $requestNewSession = jest.spyOn(mainThreadAuthentication, '$requestNewSession');
     const session = await authenticationAPI.getSession('github', ['getRepo']);
     expect($ensureProvider).toBeCalledWith('github');
-    expect($getSession).toBeCalledWith('github', ['getRepo'], 'vscode.vim', 'Vim', { });
+    expect($getSession).toBeCalledWith('github', ['getRepo'], 'vscode.vim', 'Vim', {});
     expect($requestNewSession).toBeCalled();
     const commandRegistry: CommandRegistry = injector.get(CommandRegistry);
     const menuRegistry: IMenuRegistry = injector.get(IMenuRegistry);
@@ -214,15 +214,15 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.authentication.
       onDidChangeSessions: onDidChangeSessions.event,
       getSessions: async () => [],
       createSession: async (scopeList) => {
-          const session = {
-              id: 'test',
-              accessToken: 'this_is_gitlab_token',
-              account: { label: '蛋总', id: 'xinglong.wangwxl' },
-              scopes: scopeList,
-          };
-          return session;
+        const session = {
+          id: 'test',
+          accessToken: 'this_is_gitlab_token',
+          account: { label: '蛋总', id: 'xinglong.wangwxl' },
+          scopes: scopeList,
+        };
+        return session;
       },
-      removeSession: async () => {},
+      removeSession: async () => { },
     });
   });
 

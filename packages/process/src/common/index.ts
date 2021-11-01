@@ -1,5 +1,5 @@
 import { ChildProcess } from 'child_process';
-import * as stream from 'stream';
+import stream from 'stream';
 import { Event } from '@ali/ide-core-common';
 
 export const IProcessFactory = Symbol('IProcessFactory');
@@ -12,7 +12,7 @@ export interface IProcess {
   readonly errorStream: stream.Readable;
   readonly inputStream: stream.Writable;
   readonly processManage: IProcessManage;
-  pid: number| null;
+  pid: number | null;
   onStart: Event<{}>;
   onExit: Event<IProcessExitEvent>;
   onError: Event<ProcessErrorEvent>;
@@ -56,7 +56,7 @@ export interface IProcessExitEvent {
  * Data emitted when a process has been successfully started.
  */
 // tslint:disable-next-line: no-empty-interface
-export interface IProcessStartEvent {}
+export interface IProcessStartEvent { }
 
 /**
  * Data emitted when a process has failed to start.

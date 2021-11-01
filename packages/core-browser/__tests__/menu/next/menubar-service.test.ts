@@ -44,7 +44,7 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
     menuRegistry = injector.get(IMenuRegistry);
     menubarService = injector.get(AbstractMenubarService);
 
-    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => { });
 
     disposables.clear();
   });

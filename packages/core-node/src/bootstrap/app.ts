@@ -1,16 +1,16 @@
 import { Injector, ConstructorOf } from '@ali/common-di';
-import * as Koa from 'koa';
-import * as http from 'http';
-import * as https from 'https';
-import * as net from 'net';
-import * as cp from 'child_process';
+import Koa from 'koa';
+import http from 'http';
+import https from 'https';
+import net from 'net';
+import cp from 'child_process';
 import { MaybePromise, ContributionProvider, createContributionProvider, isWindows } from '@ali/ide-core-common';
 import { createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
 import { NodeModule } from '../node-module';
 import { WebSocketHandler } from '@ali/ide-connection/lib/node';
 import { LogLevel, ILogServiceManager, ILogService, SupportLogNamespace, StoragePaths } from '@ali/ide-core-common';
-import * as os from 'os';
-import * as path from 'path';
+import os from 'os';
+import path from 'path';
 import { injectInnerProviders } from './inner-providers';
 
 export type ModuleConstructor = ConstructorOf<NodeModule>;
@@ -269,7 +269,7 @@ export class ServerApp implements IServerApp {
       serviceHandler(serviceCenter);
     } else {
       if (server instanceof http.Server || server instanceof https.Server) {
-      // 创建 websocket 通道
+        // 创建 websocket 通道
         serviceCenter = createServerConnection2(server, this.injector, this.modulesInstances, this.webSocketHandler);
       } else if (server instanceof net.Server) {
         serviceCenter = createNetServerConnection(server, this.injector, this.modulesInstances);

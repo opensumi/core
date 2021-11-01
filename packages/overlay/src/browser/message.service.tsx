@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { Injectable } from '@ali/common-di';
 import { IMessageService, AbstractMessageService, MAX_MESSAGE_LENGTH } from '../common';
 import { notification, open } from '@ali/ide-components';

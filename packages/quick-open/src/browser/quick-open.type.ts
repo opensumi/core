@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { QuickOpenItem, HideReason, QuickOpenActionProvider, QuickOpenTabOptions } from '@ali/ide-core-browser';
 import { VALIDATE_TYPE } from '@ali/ide-core-browser/lib/components';
 

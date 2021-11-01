@@ -2,13 +2,13 @@ import { ILogger, useInjectable, IClientApp, localize, formatLocalize } from '@a
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
 import { Markdown } from '@ali/ide-markdown';
 import { observer } from 'mobx-react-lite';
-import * as React from 'react';
+import React from 'react';
 import { ExtensionDetail, IExtensionManagerService, EnableScope } from '../common';
-import * as clx from 'classnames';
-import * as styles from './extension-detail.module.less';
-import * as commonStyles from './extension-manager.common.module.less';
+import clx from 'classnames';
+import styles from './extension-detail.module.less';
+import commonStyles from './extension-manager.common.module.less';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
-import * as compareVersions from 'compare-versions';
+import compareVersions from 'compare-versions';
 import { getIcon } from '@ali/ide-core-browser';
 import { Button } from '@ali/ide-components';
 import { Menu } from '@ali/ide-components/lib/menu';

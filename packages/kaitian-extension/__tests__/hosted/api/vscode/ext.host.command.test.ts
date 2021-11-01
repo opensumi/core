@@ -6,8 +6,8 @@ import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector'
 import { IExtensionInfo, Uri } from '@ali/ide-core-common';
 import * as modes from '@ali/ide-kaitian-extension/lib/common/vscode/model.api';
 import * as types from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
-import type * as vscode from 'vscode';
 import { SymbolKind } from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
+import type vscode from 'vscode';
 
 describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () => {
   let vscodeCommand: typeof vscode.commands;
@@ -324,7 +324,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts
     it('vscode.executeReferenceProvider', async () => {
       const file = Uri.file('/a.txt');
       await extCommand.executeCommand('vscode.executeReferenceProvider', file, new types.Position(1, 1), []);
-      expect(mainService.$executeCommand).toBeCalledWith('_executeReferenceProvider', expect.anything(), {'column': 2, 'lineNumber': 2});
+      expect(mainService.$executeCommand).toBeCalledWith('_executeReferenceProvider', expect.anything(), { 'column': 2, 'lineNumber': 2 });
     });
     it('vscode.executeHoverProvider', async () => {
       const file = Uri.file('/a.txt');
@@ -334,7 +334,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts
     it('vscode.executeSelectionRangeProvider', async () => {
       const file = Uri.file('/a.txt');
       mockMainThreadFunc.mockReturnValueOnce(Promise.resolve([
-        [ new Range(1, 1, 1, 1) ],
+        [new Range(1, 1, 1, 1)],
       ]));
       await extCommand.executeCommand('vscode.executeSelectionRangeProvider', file, [new types.Position(1, 1)]);
       expect(mockMainThreadFunc.mock.calls[0][0]).toBe('_executeSelectionRangeProvider');

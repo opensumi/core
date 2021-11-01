@@ -13,7 +13,7 @@ import {
   RPCProxy,
   NOTREGISTERMETHOD,
 } from './proxy';
-import * as net from 'net';
+import net from 'net';
 
 export type RPCServiceMethod = (...args: any[]) => any;
 export type ServiceProxy = any;
@@ -34,7 +34,7 @@ export function initRPCService(center: RPCServiceCenter) {
       return proxy;
     },
     getRPCService: (name: string): any => {
-      return new RPCServiceStub(name, center,  ServiceType.Stub).getProxy();
+      return new RPCServiceStub(name, center, ServiceType.Stub).getProxy();
     },
   };
 }
@@ -44,7 +44,7 @@ export function createRPCService(name: string, center: RPCServiceCenter): any {
 }
 
 export function getRPCService(name: string, center: RPCServiceCenter): any {
-  return new RPCServiceStub(name, center,  ServiceType.Stub).getProxy();
+  return new RPCServiceStub(name, center, ServiceType.Stub).getProxy();
 }
 
 interface Ibench {
@@ -111,7 +111,7 @@ export class RPCServiceCenter {
 
   removeConnection(connection: MessageConnection) {
     const removeIndex = this.connection.indexOf(connection);
-    if ( removeIndex !== -1) {
+    if (removeIndex !== -1) {
       this.connection.splice(removeIndex, 1);
       this.rpcProxy.splice(removeIndex, 1);
       this.serviceProxy.splice(removeIndex, 1);
@@ -125,7 +125,7 @@ export class RPCServiceCenter {
       this.serviceMethodMap[name] = method;
     } else {
       this.rpcProxy.forEach((proxy) => {
-        proxy.listenService({[name]: method});
+        proxy.listenService({ [name]: method });
       });
     }
   }
@@ -167,7 +167,7 @@ export class RPCServiceStub {
     if (/^\s*class/.test(service.constructor.toString())) {
       let obj = service;
       do {
-          props = props.concat(Object.getOwnPropertyNames(obj));
+        props = props.concat(Object.getOwnPropertyNames(obj));
       } while (obj = Object.getPrototypeOf(obj));
       props = props.sort().filter((e, i, arr) => {
         return e !== arr[i + 1] && typeof service[e] === 'function';

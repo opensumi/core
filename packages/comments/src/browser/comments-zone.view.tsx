@@ -1,13 +1,13 @@
-import * as React from 'react';
+import React from 'react';
 import { INJECTOR_TOKEN, Injectable, Autowired } from '@ali/common-di';
-import * as ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom';
 import { observer } from 'mobx-react-lite';
-import * as styles from './comments.module.less';
+import styles from './comments.module.less';
 import { ConfigProvider, localize, AppConfig, useInjectable, Event, Emitter } from '@ali/ide-core-browser';
 import { CommentItem } from './comments-item.view';
 import { CommentsTextArea } from './comments-textarea.view';
 import { ICommentReply, ICommentsZoneWidget, ICommentThreadTitle, ICommentsFeatureRegistry, ICommentsThread } from '../common';
-import * as clx from 'classnames';
+import clx from 'classnames';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { ResizeZoneWidget } from '@ali/ide-monaco-enhance';
 import { IEditor } from '@ali/ide-editor';

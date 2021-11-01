@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { Injector } from '@ali/common-di';
 import * as Components from '@ali/ide-core-browser/lib/components';
 import { IExtension } from '../../common';
@@ -12,7 +12,7 @@ export function createBrowserComponents(injector: Injector, extension: IExtensio
     return Components;
   }
 
-  return  new Proxy(Components, {
+  return new Proxy(Components, {
     get(target, prop) {
       if (prop === 'Dialog' || prop === 'Overlay') {
         const OriginalComponent = Components[prop];

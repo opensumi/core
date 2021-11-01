@@ -1,5 +1,5 @@
-import * as stream from 'stream';
-import * as path from 'path';
+import stream from 'stream';
+import path from 'path';
 import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { ProcessErrorEvent, IProcessStartEvent } from '../../src/common';
 import { ProcessModule, IProcessManage, IProcessFactory } from '../../src/';

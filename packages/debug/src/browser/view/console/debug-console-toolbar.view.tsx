@@ -1,9 +1,9 @@
-import * as React from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { localize, isElectronRenderer } from '@ali/ide-core-browser';
 import { Select, Option } from '@ali/ide-components';
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
-import * as styles from './debug-console.module.less';
+import styles from './debug-console.module.less';
 
 export const DebugConsoleToolbarView = observer(() => {
   // FIXME: 当前逻辑仅占位用，并无实际分channel输出功能

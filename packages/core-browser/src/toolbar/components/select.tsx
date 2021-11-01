@@ -1,8 +1,8 @@
-import * as React from 'react';
+import React from 'react';
 import { IToolbarActionElementProps, IToolbarActionReactElement, IToolbarActionSelectProps } from '../types';
 import { Select, SelectOptionsList, ISelectOptionsListProps, IDataOption, IDataOptionGroup, isDataOptionGroups } from '@ali/ide-components';
 import { Emitter } from '@ali/ide-core-common';
-import * as classnames from 'classnames';
+import classnames from 'classnames';
 import { getIcon } from '../../style/icon/icon';
 
 export function ToolbarActionSelect<T>(props: IToolbarActionSelectProps<T> & IToolbarActionElementProps) {

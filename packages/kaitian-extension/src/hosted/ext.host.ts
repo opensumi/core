@@ -1,4 +1,4 @@
-import * as path from 'path';
+import path from 'path';
 import { Injector } from '@ali/common-di';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
 import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, REPORT_NAME, IExtensionProps, Uri, timeout, ReporterService, IReporter, IExtensionLogger } from '@ali/ide-core-common';
@@ -263,7 +263,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
           }
         }
 
-        return  { ...vscodeAPIImpl, ...kaitianAPIImpl };
+        return { ...vscodeAPIImpl, ...kaitianAPIImpl };
       }
 
     };
@@ -482,7 +482,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     }
 
     this.logger.debug('extension extend service', extension.id, 'service', service);
-    this.rpcProtocol.set({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}`} as ProxyIdentifier<any>, service);
+    this.rpcProtocol.set({ serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}` } as ProxyIdentifier<any>, service);
   }
 
   public async $activateExtension(id: string) {

@@ -1,8 +1,8 @@
-import * as React from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
-import * as cls from 'classnames';
+import cls from 'classnames';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import * as styles from './keymaps.module.less';
+import styles from './keymaps.module.less';
 import { Input, ValidateInput, VALIDATE_TYPE, ValidateMessage } from '@ali/ide-components';
 import { localize, useInjectable, KeybindingScope, NO_KEYBINDING_NAME, KeyCode, Key, formatLocalize } from '@ali/ide-core-browser';
 import { KeymapService } from './keymaps.service';

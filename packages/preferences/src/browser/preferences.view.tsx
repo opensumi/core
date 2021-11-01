@@ -1,10 +1,10 @@
-import * as React from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
 import { replaceLocalizePlaceholder, useInjectable, localize, PreferenceScope, formatLocalize, PreferenceService, ISettingGroup, IPreferenceSettingsService, ISettingSection, getIcon } from '@ali/ide-core-browser';
 import { PreferenceSettingsService } from './preference-settings.service';
-import * as styles from './preferences.module.less';
-import * as classnames from 'classnames';
+import styles from './preferences.module.less';
+import classnames from 'classnames';
 import { Scroll } from '@ali/ide-editor/lib/browser/component/scroll/scroll';
 import { Input, ComponentContextProvider, Tabs, RecycleList } from '@ali/ide-components';
 import { ISectionItemData, toNormalCase } from '../common';

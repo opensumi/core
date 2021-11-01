@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as clx from 'classnames';
+import React from 'react';
+import clx from 'classnames';
 import { Badge, TreeNode, CompositeTreeNode, ITreeNodeRendererProps, ClasslistComposite, TreeNodeType } from '@ali/ide-components';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { useInjectable, URI, getIcon, CommandService } from '@ali/ide-core-browser';
@@ -12,7 +12,7 @@ import { SCMResourceNotRoot, SCMResourceFolder, SCMResourceGroup, SCMResourceFil
 import { SCMTreeDecorationService } from './scm-tree-decoration.service';
 import { ISCMResource, ISCMResourceGroup } from '../../../common';
 
-import * as styles from './scm-tree-node.module.less';
+import styles from './scm-tree-node.module.less';
 import { ViewModelContext } from '../../scm-model';
 
 export const SCM_TREE_NODE_HEIGHT = 22;

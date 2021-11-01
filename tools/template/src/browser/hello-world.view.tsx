@@ -1,6 +1,6 @@
-import * as React from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
-import * as styles from './hello-world.module.less';
+import styles from './hello-world.module.less';
 
 export const HelloWorld = observer(() => {
   return (

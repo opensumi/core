@@ -1,11 +1,11 @@
-import * as React from 'react';
-import * as clx from 'classnames';
+import React from 'react';
+import clx from 'classnames';
 import { useInjectable } from '@ali/ide-core-browser';
 import { ExtensionListProps as ExtensionPackProps } from './../extension-list';
 import { RawExtensionView } from './../raw-extension';
 import { RawExtension, IExtensionManagerService } from '../../../common';
 
-import * as styles from './index.module.less';
+import styles from './index.module.less';
 
 export const ExtensionPack: React.FC<ExtensionPackProps> = (props) => {
   const {

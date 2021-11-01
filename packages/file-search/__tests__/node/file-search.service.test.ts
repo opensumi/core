@@ -1,5 +1,5 @@
-import * as path from 'path';
-import { FileUri, URI, AppConfig, INodeLogger, NodeLogger} from '@ali/ide-core-node';
+import path from 'path';
+import { FileUri, URI, AppConfig, INodeLogger, NodeLogger } from '@ali/ide-core-node';
 import { CancellationTokenSource } from '@ali/ide-core-common';
 import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { ProcessModule } from '@ali/ide-process';
@@ -124,7 +124,7 @@ describe('search-service', () => {
       includePatterns: ['**/*oo.*'],
     }));
 
-    async function assertIgnoreGlobs(options: any ): Promise<void> {
+    async function assertIgnoreGlobs(options: any): Promise<void> {
       const matches = await service.find('', options);
       expect(matches).toBeDefined();
       expect(matches.length).toEqual(0);

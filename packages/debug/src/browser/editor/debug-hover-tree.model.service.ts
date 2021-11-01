@@ -6,7 +6,7 @@ import { Path } from '@ali/ide-core-common/lib/path';
 import pSeries = require('p-series');
 import { DebugVariable, ExpressionContainer, ExpressionNode } from '../tree/debug-tree-node.define';
 import { ExpressionVariable, DebugHoverSource } from './debug-hover-source';
-import * as styles from '../view/variables/debug-variables.module.less';
+import styles from '../view/variables/debug-variables.module.less';
 
 export interface IDebugVariablesHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;

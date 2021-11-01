@@ -1,11 +1,11 @@
 import { DeprecatedRecycleTree, TreeNode } from '@ali/ide-core-browser/lib/components';
 import { observer, useComputed } from 'mobx-react-lite';
 import { IMatch } from '@ali/ide-core-common/lib/filters';
-import * as React from 'react';
+import React from 'react';
 import { SeverityIconStyle } from './markers-seriverty-icon';
 import { MarkerService } from './markers-service';
 import { MarkerViewModel } from './markers.model';
-import * as styles from './markers.module.less';
+import styles from './markers.module.less';
 import Messages from './messages';
 import { IMarkerService, IRenderableMarker, IRenderableMarkerModel } from '../common';
 import { ViewState, useInjectable } from '@ali/ide-core-browser';

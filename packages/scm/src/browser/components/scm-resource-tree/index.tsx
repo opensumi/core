@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as clx from 'classnames';
+import React from 'react';
+import clx from 'classnames';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { observer } from 'mobx-react-lite';
 import { RecycleTree, IRecycleTreeHandle, TreeNodeType, TreeModel } from '@ali/ide-components';
@@ -12,7 +12,7 @@ import { SCMTreeService } from './scm-tree.service';
 
 import { ViewModelContext } from '../../scm-model';
 
-import * as styles from './index.module.less';
+import styles from './index.module.less';
 
 export const TREE_FIELD_NAME = 'SCM_TREE_TREE_FIELD';
 

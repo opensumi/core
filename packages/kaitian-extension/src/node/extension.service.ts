@@ -1,8 +1,8 @@
-import * as net from 'net';
-import * as path from 'path';
-import * as util from 'util';
+import net from 'net';
+import path from 'path';
+import util from 'util';
 import * as fs from 'fs-extra';
-import type * as cp from 'child_process';
+import type cp from 'child_process';
 import { Injectable, Autowired } from '@ali/common-di';
 import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
 import { WebSocketMessageReader, WebSocketMessageWriter } from '@ali/ide-connection/lib/common/message';
@@ -234,7 +234,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         }
         this.logger.verbose('shell path result: ' + shellPath);
       } catch (e) {
-        this.logger.error('shell path error: ',  e);
+        this.logger.error('shell path error: ', e);
       }
       forkOptions = {
         ...forkOptions,
@@ -527,7 +527,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
    */
   private restartExtProcessByClient(clientId: string) {
     if (this.clientServiceMap.has(clientId)) {
-     (this.clientServiceMap.get(clientId) as IExtensionNodeClientService).restartExtProcessByClient();
+      (this.clientServiceMap.get(clientId) as IExtensionNodeClientService).restartExtProcessByClient();
     }
   }
 

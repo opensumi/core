@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { IWindowDialogService, IOpenDialogOptions, IDialogService, ISaveDialogOptions } from '@ali/ide-overlay';
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
 import { isElectronRenderer, electronEnv, URI, MessageType, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-browser';

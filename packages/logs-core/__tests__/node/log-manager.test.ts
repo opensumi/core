@@ -1,5 +1,5 @@
-import * as os from 'os';
-import * as path from 'path';
+import os from 'os';
+import path from 'path';
 import * as fs from 'fs-extra';
 import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { AppConfig } from '@ali/ide-core-node';
@@ -40,6 +40,7 @@ describe('LogServiceManager', () => {
     try {
       fs.mkdirpSync(path.join(logDir, day));
     } catch (e) {
+      // tslint:disable-next-line:no-console
       console.error(e);
     }
   });

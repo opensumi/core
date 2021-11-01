@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import * as Ajv from 'ajv';
+import Ajv from 'ajv';
 import * as parser from 'jsonc-parser';
 import { KeymapItem } from '../common';
 
@@ -28,7 +28,7 @@ export const keymapsSchema = {
       args: {},
     },
     required: ['command'],
-    optional: [ 'key', 'keybinding', 'when', 'args'],
+    optional: ['key', 'keybinding', 'when', 'args'],
     additionalProperties: false,
   },
 };

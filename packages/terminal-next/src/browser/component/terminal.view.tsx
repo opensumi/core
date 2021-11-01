@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable, getIcon } from '@ali/ide-core-browser';
 import ResizeView, { ResizeDirection } from './resize.view';
@@ -6,7 +6,7 @@ import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService,
 import TerminalWidget from './terminal.widget';
 
 import 'xterm/css/xterm.css';
-import * as styles from './terminal.module.less';
+import styles from './terminal.module.less';
 
 export default observer(() => {
   const controller = useInjectable<ITerminalController>(ITerminalController);

@@ -1,7 +1,7 @@
-import * as React from 'react';
-import * as cls from 'classnames';
+import React from 'react';
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import * as styles from './debug-console.module.less';
+import styles from './debug-console.module.less';
 import { useInjectable, ViewState, getIcon } from '@ali/ide-core-browser';
 import { DebugConsoleService } from './debug-console.service';
 import { RecycleTree, IRecycleTreeHandle, TreeNodeType, INodeRendererWrapProps, ClasslistComposite, INodeRendererProps, CompositeTreeNode, TreeNode, TreeNodeEvent } from '@ali/ide-components';

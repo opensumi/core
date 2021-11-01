@@ -1,6 +1,6 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import type { ITextModel } from '@ali/monaco-editor-core/esm/vs/editor/common/model';
 import { Injectable, Autowired } from '@ali/common-di';
 import { DisposableCollection, Disposable, AppConfig, ConfigProvider, IReporterService } from '@ali/ide-core-browser';

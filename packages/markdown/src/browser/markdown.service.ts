@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IMarkdownService } from '../common';
-import * as marked from 'marked';
+import marked from 'marked';
 import { markdownCss } from './mardown.style';
 import { IWebviewService } from '@ali/ide-webview';
 import { IDisposable, Disposable, CancellationToken, Event, URI, IOpenerService } from '@ali/ide-core-browser';

@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import { matchesFuzzy } from '@ali/monaco-editor-core/esm/vs/base/common/filters';
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { AppConfig, compareAnything, ConfigProvider, IContextKey, IContextKeyService, KeybindingRegistry, QuickOpenActionProvider, QuickOpenTabOptions } from '@ali/ide-core-browser';

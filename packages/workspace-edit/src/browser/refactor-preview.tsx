@@ -1,6 +1,6 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import type { IRange } from '@ali/monaco-editor-core/esm/vs/editor/common/core/range';
-import * as React from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 
 import * as paths from '@ali/ide-core-common/lib/path';
@@ -15,7 +15,7 @@ import { ViewState } from '@ali/ide-core-browser/lib/layout';
 import {
   IRefactorPreviewService,
 } from './refactor-preview.service';
-import * as styles from './refactor_preview.module.less';
+import styles from './refactor_preview.module.less';
 import { localize } from '@ali/ide-core-common/lib/localize';
 import { isResourceFileEdit } from './utils';
 import { ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
@@ -41,7 +41,7 @@ interface IFileEditNodeProps {
  * @param textModel
  * @example
  * ```ts
- * const str = `import * as path from 'path'`;
+ * const str = `import path from 'path'`;
  *
  * const {
  *  leftPad,  // import * as

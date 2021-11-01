@@ -1,8 +1,8 @@
 // TODO: merge into core-common/encoding.ts
 
 import * as fs from 'fs-extra';
-import * as jschardet from 'jschardet';
-import * as iconv from 'iconv-lite';
+import jschardet from 'jschardet';
+import iconv from 'iconv-lite';
 import { URI } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import { SUPPORTED_ENCODINGS } from '@ali/ide-core-common/lib/const';

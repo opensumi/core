@@ -1,5 +1,5 @@
 import { IDisposable } from './disposable';
-import * as Electron from 'electron';
+import Electron from 'electron';
 import { ExtensionCandidate } from './types';
 
 export interface IElectronMainApi<Events> {
@@ -103,7 +103,7 @@ export interface IElectronMainUIServiceShape {
 }
 
 // tslint:disable-next-line: no-empty-interface
-export interface IElectronMainUIService extends IElectronMainUIServiceShape, IElectronMainApi<'fullScreenStatusChange' | 'windowClosed' | 'maximizeStatusChange'> {}
+export interface IElectronMainUIService extends IElectronMainUIServiceShape, IElectronMainApi<'fullScreenStatusChange' | 'windowClosed' | 'maximizeStatusChange'> { }
 
 export const IElectronMainUIService = 'IElectronMainUIService';
 

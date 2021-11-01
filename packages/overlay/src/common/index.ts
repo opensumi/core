@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { MessageType, URI } from '@ali/ide-core-common';
 
 export const IMessageService = Symbol('IMessageService');
@@ -82,8 +82,8 @@ export namespace ISaveDialogOptions {
 export namespace IOpenDialogOptions {
   export function is(option) {
     return 'canSelectFiles' in option
-    || 'canSelectFolders' in option
-    || 'canSelectMany' in option
-    || 'openLabel' in option;
+      || 'canSelectFolders' in option
+      || 'canSelectMany' in option
+      || 'openLabel' in option;
   }
 }

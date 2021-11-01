@@ -1,6 +1,6 @@
-import * as React from 'react';
-import * as clsx from 'classnames';
-import * as styles from './styles.module.less';
+import React from 'react';
+import clsx from 'classnames';
+import styles from './styles.module.less';
 import { Layout } from './layout';
 // TODO: 类型标准化
 type ChildComponent = React.ReactElement<{ flex?: number; defaultSize?: number; id: string; overflow: string; }>;

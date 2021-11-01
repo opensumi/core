@@ -6,7 +6,7 @@ import { MainThreadDecorations } from '@ali/ide-kaitian-extension/lib/browser/vs
 import { IMainThreadEnv, MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@ali/ide-kaitian-extension/lib/common/vscode';
 import { FileDecorationsService } from '@ali/ide-decoration/lib/browser/decorationsService';
 import { IDecorationsService } from '@ali/ide-decoration';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { Event, Uri, Emitter, DisposableCollection, CancellationToken } from '@ali/ide-core-common';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // Some code copued and modified from https://github.com/microsoft/vscode/blob/94c9ea46838a9a619aeafb7e8afd1170c967bb55/src/vs/workbench/contrib/debug/browser/linkDetector.ts
 
-import * as assert from 'assert';
+import assert from 'assert';
 import { LinkDetector } from '@ali/ide-debug/lib/browser/debug-link-detector';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@ali/ide-dev-tool/src/mock-injector';
@@ -19,23 +19,23 @@ describe('Debug - Link Detector', () => {
   let linkDetector: LinkDetector;
 
   const injector = createBrowserInjector([], new MockInjector([
-      {
-        token: WorkbenchEditorService,
-        useValue: WorkbenchEditorService,
+    {
+      token: WorkbenchEditorService,
+      useValue: WorkbenchEditorService,
+    },
+    {
+      token: IFileServiceClient,
+      useValue: {
+        getFileStat: jest.fn((uri: string) => {
+          return Promise.resolve(undefined);
+        }),
       },
-      {
-        token: IFileServiceClient,
-        useValue: {
-          getFileStat: jest.fn((uri: string) => {
-            return Promise.resolve(undefined);
-          }),
-        },
-      },
-      {
-        token: IOpenerService,
-        useValue: OpenerService,
-      },
-    ]));
+    },
+    {
+      token: IOpenerService,
+      useValue: OpenerService,
+    },
+  ]));
 
   /**
    * Instantiate a {@link LinkDetector} for use by the functions being tested.
@@ -113,7 +113,7 @@ describe('Debug - Link Detector', () => {
     assert.ok(output.outerHTML.indexOf('link') < 0);
   });
 
-  test('singleLineLinkAndText', function() {
+  test('singleLineLinkAndText', () => {
     const input = isWindows ? 'The link: C:/foo/bar.js:12:34' : 'The link: /Users/foo/bar.js:12:34';
     const expectedOutput = /^<span>The link: <a tabindex="0">.*\/foo\/bar.js:12:34<\/a><\/span>$/;
     const output = linkDetector.linkify(input);

@@ -1,5 +1,5 @@
 import { Uri as URI } from '@ali/ide-core-common';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as model from '../../../../common/vscode/model.api';
 import * as types from '../../../../common/vscode/ext-types';
@@ -14,7 +14,7 @@ export class RenameAdapter {
   constructor(
     private readonly provider: vscode.RenameProvider,
     private readonly documents: ExtensionDocumentDataManager,
-  ) {}
+  ) { }
 
   provideRenameEdits(
     resource: URI,

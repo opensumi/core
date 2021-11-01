@@ -1,9 +1,9 @@
 import { Injectable, Inject, Autowired, Optional, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import * as drivelist from 'drivelist';
-import * as paths from 'path';
+import drivelist from 'drivelist';
+import paths from 'path';
 import * as fs from 'fs-extra';
-import * as os from 'os';
-import * as fileType from 'file-type';
+import os from 'os';
+import fileType from 'file-type';
 import { Uri } from '@ali/ide-core-common';
 import { TextDocument } from 'vscode-languageserver-types';
 import {
@@ -90,7 +90,7 @@ export class FileService implements IFileService {
     return this.toDisposable;
   }
 
-  async watchFileChanges(uri: string, options?: { excludes: string []}): Promise<number> {
+  async watchFileChanges(uri: string, options?: { excludes: string[] }): Promise<number> {
     const id = this.watcherId++;
     const _uri = this.getUri(uri);
     const provider = await this.getProvider(_uri.scheme);
@@ -242,7 +242,7 @@ export class FileService implements IFileService {
     const _targetUri = this.getUri(targetUri);
 
     const provider = await this.getProvider(_sourceUri.scheme);
-    const result:any = await provider.rename(_sourceUri.codeUri, _targetUri.codeUri, { overwrite: !!(options && options.overwrite)});
+    const result: any = await provider.rename(_sourceUri.codeUri, _targetUri.codeUri, { overwrite: !!(options && options.overwrite) });
 
     if (result) {
       return result;
@@ -272,7 +272,7 @@ export class FileService implements IFileService {
         overwrite: !!overwrite,
       })
 
-    if(result) {
+    if (result) {
       return result;
     }
     const stat = await provider.stat(_targetUri.codeUri);
@@ -403,7 +403,7 @@ export class FileService implements IFileService {
     }
   }
 
-  async getFileType(uri: string): Promise<string|undefined>{
+  async getFileType(uri: string): Promise<string | undefined> {
     try {
       if (!uri.startsWith('file:/')) {
         return this._getFileType('');
@@ -412,24 +412,24 @@ export class FileService implements IFileService {
       const stat = await fs.stat(FileUri.fsPath(uri));
 
       let ext: string = '';
-      if(!stat.isDirectory()){
+      if (!stat.isDirectory()) {
 
         // if(lstat.isSymbolicLink){
 
         // }else {
-          if(stat.size) {
-            const type = await fileType.stream(fs.createReadStream(FileUri.fsPath(uri)));
-            // 可以拿到 type.fileType 说明为二进制文件
-            if(type.fileType){
-              ext = type.fileType.ext;
-            }
+        if (stat.size) {
+          const type = await fileType.stream(fs.createReadStream(FileUri.fsPath(uri)));
+          // 可以拿到 type.fileType 说明为二进制文件
+          if (type.fileType) {
+            ext = type.fileType.ext;
           }
-          return this._getFileType(ext);
+        }
+        return this._getFileType(ext);
         // }
-      }else {
+      } else {
         return 'directory';
       }
-    }catch (error) {
+    } catch (error) {
       if (isErrnoException(error)) {
         if (error.code === 'ENOENT' || error.code === 'EACCES' || error.code === 'EBUSY' || error.code === 'EPERM') {
           return undefined;
@@ -522,7 +522,7 @@ export class FileService implements IFileService {
   }
 
   private getNodeBuffer(asBuffer: any): Buffer {
-    if(Buffer.isBuffer(asBuffer)) {
+    if (Buffer.isBuffer(asBuffer)) {
       return asBuffer;
     }
     if (isArray(asBuffer)) {
@@ -531,7 +531,7 @@ export class FileService implements IFileService {
     if (asBuffer && isArray(asBuffer.data)) {
       return Buffer.from(asBuffer.data);
     }
-    if (!asBuffer ||  isEmptyObject(asBuffer)) {
+    if (!asBuffer || isEmptyObject(asBuffer)) {
       return Buffer.from([]);
     }
     return asBuffer;
@@ -550,7 +550,7 @@ export class FileService implements IFileService {
     let provider = this.fileSystemManage.get(scheme);
 
     if (!provider) {
-      throw new Error( `Not find ${scheme} provider.`);
+      throw new Error(`Not find ${scheme} provider.`);
     }
     return provider;
   }
@@ -599,12 +599,12 @@ export class FileService implements IFileService {
     return true;
   }
 
-  private _getFileType(ext){
+  private _getFileType(ext) {
     let type = 'text'
 
-    if(['png', 'gif', 'jpg', 'jpeg', 'svg'].indexOf(ext) !== -1){
+    if (['png', 'gif', 'jpg', 'jpeg', 'svg'].indexOf(ext) !== -1) {
       type = 'image'
-    } else if(ext && ['xml'].indexOf(ext) === -1){
+    } else if (ext && ['xml'].indexOf(ext) === -1) {
       type = 'binary'
     }
 
@@ -684,7 +684,7 @@ function fileServiceInterceptor(fileService: IFileService, blackList: string[], 
           const uri = typeof args[0] === 'string' ? args[0] : args[0].uri;
           if (typeof uri === 'string') {
             let resolvedURI = uri;
-            if(uri.startsWith('file://')){
+            if (uri.startsWith('file://')) {
               /**
                * match('file:///test/folder/**', 'file:///test/foo/../test/token')
                *

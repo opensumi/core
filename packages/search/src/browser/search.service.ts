@@ -2,7 +2,7 @@ import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 /**
  * 用于文件内容搜索
  */
-import * as React from 'react';
+import React from 'react';
 import { createRef } from 'react';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { Emitter, IEventBus, trim, isUndefined, localize, IReporterService, IReporterTimer, REPORT_NAME } from '@ali/ide-core-common';

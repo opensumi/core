@@ -1,7 +1,7 @@
 import { IExtensionHostEditorService, ExtensionDocumentDataManager, MainThreadAPIIdentifier } from '../../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import type * as vscode from 'vscode';
-import { Uri, Position, Range, Selection, TextEditorLineNumbersStyle} from '../../../../common/vscode/ext-types';
+import type vscode from 'vscode';
+import { Uri, Position, Range, Selection, TextEditorLineNumbersStyle } from '../../../../common/vscode/ext-types';
 import { ISelection, Emitter, Event, IRange, getDebugLogger, Disposable } from '@ali/ide-core-common';
 import * as TypeConverts from '../../../../common/vscode/converter';
 import { IEditorStatusChangeDTO, IEditorChangeDTO, TextEditorSelectionChangeKind, IEditorCreatedDTO, IResolvedTextEditorConfiguration, IMainThreadEditorsService, ITextEditorUpdateConfiguration, TextEditorCursorStyle } from '../../../../common/vscode/editor';
@@ -48,7 +48,7 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
       change.created.forEach((created) => {
         this._editors.set(created.id, new TextEditorData(created, this, this.documents));
         this._onEditorCreated.fire(created.id);
-        if (!change.actived && created.id === this._activeEditorId ) {
+        if (!change.actived && created.id === this._activeEditorId) {
           if (this.activeEditor) {
             this._onDidChangeActiveTextEditor.fire(this.activeEditor ? this.activeEditor!.textEditor : undefined);
           }
@@ -66,7 +66,7 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
       if (change.actived === '-1') {
         this._activeEditorId = undefined;
         this._onDidChangeActiveTextEditor.fire(undefined);
-      } else  {
+      } else {
         this._activeEditorId = change.actived;
         if (this.activeEditor) {
           this._onDidChangeActiveTextEditor.fire(this.activeEditor ? this.activeEditor!.textEditor : undefined);
@@ -155,7 +155,7 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
 
   closeEditor(editor: TextEditorData): void {
     if (editor.id !== this._activeEditorId) {
-      return ; // TODO depecrated warning
+      return; // TODO depecrated warning
     }
     this._proxy.$closeEditor(editor.id);
   }
@@ -197,7 +197,7 @@ export class TextEditorData {
 
   public readonly group: string;
 
-  constructor(created: IEditorCreatedDTO , public readonly editorService: ExtensionHostEditorService , public readonly documents: ExtensionDocumentDataManager) {
+  constructor(created: IEditorCreatedDTO, public readonly editorService: ExtensionHostEditorService, public readonly documents: ExtensionDocumentDataManager) {
     this.uri = Uri.parse(created.uri);
     this.id = created.id;
     this._acceptSelections(created.selections);
@@ -397,7 +397,7 @@ export class TextEditorData {
 
   public doSetSelection: () => void = debounce(() => {
     this.editorService._proxy.$setSelections(this.id, this.selections.map((selection) => TypeConverts.Selection.from(selection)));
-  }, 50, {maxWait: 200, leading: true, trailing: true});
+  }, 50, { maxWait: 200, leading: true, trailing: true });
 
   get textEditor(): vscode.TextEditor {
     if (!this._textEditor) {

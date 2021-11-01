@@ -2,9 +2,9 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, SearchExtension, RequestHeaders, BaseExtension, ExtensionMomentState, OpenExtensionOptions, ExtensionChangeEvent, ExtensionChangeType, IMarketplaceExtensionInfo, IExtensionVersion, IExtension, enableExtensionsContainerId } from '../common';
 import { IExtensionProps, EXTENSION_ENABLE, ExtensionDependencies, AbstractExtensionManagementService } from '@ali/ide-kaitian-extension/lib/common';
 import { action, observable, computed, runInAction, reaction } from 'mobx';
-import * as flatten from 'lodash.flatten';
+import flatten from 'lodash.flatten';
 import { Path } from '@ali/ide-core-common/lib/path';
-import * as compareVersions from 'compare-versions';
+import compareVersions from 'compare-versions';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { URI, ILogger, debounce, StorageProvider, STORAGE_NAMESPACE, localize, IClientApp, AppConfig } from '@ali/ide-core-browser';
 import { getLanguageId, IReporterService, REPORT_NAME, formatLocalize, IEventBus, memoize, Disposable, replaceNlsField } from '@ali/ide-core-common';
@@ -64,7 +64,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   extensions: IExtension[] = [];
 
   @observable
-  loading: SearchState =  SearchState.LOADED;
+  loading: SearchState = SearchState.LOADED;
 
   @observable
   searchMarketplaceState: SearchState = SearchState.LOADED;
@@ -165,7 +165,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
 
   async bindEvents() {
     const extensionSettingFileName = 'extensions.json';
-    const [ globalStoragePath, workspaceStoragePath ] = await Promise.all([
+    const [globalStoragePath, workspaceStoragePath] = await Promise.all([
       this.dataStoragePathServer.getLastGlobalStoragePath(),
       this.dataStoragePathServer.getLastWorkspaceStoragePath(),
     ]);
@@ -359,7 +359,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   /**
    * 将 (string | { [key: string]: string })[] 的格式转化为 { id: string, version: string }
    */
-  public transformDepsDeclaration(raw: string | { [key: string]: string}): { id: string, version: string } {
+  public transformDepsDeclaration(raw: string | { [key: string]: string }): { id: string, version: string } {
     let version = '*';
     let id = raw;
     if (!(typeof raw === 'string')) {
@@ -472,7 +472,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
    * @param extension 插件基础信息
    * @param version 指定版本
    */
-  async installExtension(extension: BaseExtension, version?: string): Promise<string | void | string []> {
+  async installExtension(extension: BaseExtension, version?: string): Promise<string | void | string[]> {
     const extensionId = extension.extensionId || `${extension.publisher}.${extension.name}`;
 
     // 先安装依赖插件，最后装自己，loading 效果先放出来，避免被误解为卡死
@@ -640,7 +640,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
       this.logger.error(e);
     }
 
-    const rawExtensionPathArrayLike =  await this.extensionManagerServer.updateExtension(extension, version);
+    const rawExtensionPathArrayLike = await this.extensionManagerServer.updateExtension(extension, version);
 
     for (const extensionPath of flatten([rawExtensionPathArrayLike], Infinity)) {
       // 可能更新过程中加载了之前的插件，所以等待更新完毕后再去检测
@@ -824,7 +824,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
    * 获取某个插件的依赖项
    *
    */
-   getEnabledDepsByExtensionId(extensionId: string): string[] {
+  getEnabledDepsByExtensionId(extensionId: string): string[] {
     return this.extensions
       .filter((extension) => {
         // 对于已经禁用的插件忽略检查
@@ -841,7 +841,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
   /**
    * 如果 A 是 B 的依赖扩展，激活 B 的时候，应该先激活 A
    */
-  private async beforeActiveExt(extension: BaseExtension, scope: EnableScope ) {
+  private async beforeActiveExt(extension: BaseExtension, scope: EnableScope) {
     // TODO fix cycle loop
     const extensionId = extension.extensionId;
 
@@ -851,7 +851,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
     // 获取 pack 中的扩展
     const extsInPack: string[] | undefined = (await this.getDetailById(extension.extensionId))?.packageJSON?.extensionPack;
 
-    for (const dependedExtId of [...allExtsDependedList, ...Array.isArray(extsInPack) ? extsInPack : [] ]) {
+    for (const dependedExtId of [...allExtsDependedList, ...Array.isArray(extsInPack) ? extsInPack : []]) {
       const detail = this.getRawExtensionById(dependedExtId);
       await this.toggleActiveExtension({
         extensionId: detail?.extensionId,
@@ -860,7 +860,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
         path: detail?.path,
         publisher: detail?.publisher,
         isBuiltin: !!detail?.isBuiltin,
-      } as BaseExtension , true, scope);
+      } as BaseExtension, true, scope);
     }
   }
 
@@ -887,7 +887,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
           path: detail?.path,
           publisher: detail?.publisher,
           isBuiltin: !!detail?.isBuiltin,
-        } as BaseExtension , false, scope);
+        } as BaseExtension, false, scope);
       }
     }
     return true;
@@ -1013,7 +1013,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
    * 插件部分信息是 i18n 的，需要做层转换
    * @param extension
    */
-  private getI18nInfo(extension: IExtension): { description: string, displayName: string} {
+  private getI18nInfo(extension: IExtension): { description: string, displayName: string } {
     return {
       displayName: replaceNlsField(extension.packageJSON.displayName, extension.id)!,
       description: replaceNlsField(extension.packageJSON.description, extension.id)!,
@@ -1022,8 +1022,8 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
 
   private getIconFromExtension(extension: IExtension): string {
     const icon = extension.packageJSON.icon
-              ? this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.realPath).join(extension.packageJSON.icon).toString())).toString()
-              : DEFAULT_ICON_URL;
+      ? this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.realPath).join(extension.packageJSON.icon).toString())).toString()
+      : DEFAULT_ICON_URL;
     return icon;
   }
 
@@ -1040,8 +1040,8 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
 
     // 如果此插件是其他插件的依赖项，则不给卸载
     if (depended) {
-        this.messageService.error(formatLocalize('marketplace.extension.uninstall.failed.depended', extension.name, dependedExtsMap.get(extension.extensionId)?.join(',')));
-        return false;
+      this.messageService.error(formatLocalize('marketplace.extension.uninstall.failed.depended', extension.name, dependedExtsMap.get(extension.extensionId)?.join(',')));
+      return false;
     }
 
     const extensionPath = extension.path;
@@ -1061,7 +1061,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
     // 如果删除成功，且不需要重启，在列表页删除
     const reloadRequire = await this.computeReloadState(extension.path);
     // 调用后台删除插件
-    const res =  await this.extensionManagerServer.uninstallExtension(extension);
+    const res = await this.extensionManagerServer.uninstallExtension(extension);
     if (res) {
       await this.onUninstallExtension(extensionPath);
       await this.removeExtensionConfig(extension.extensionId);
@@ -1146,7 +1146,7 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
    * @param extensionId
    */
   private async removeExtensionConfig(extensionId: string) {
-    const [ globalStorage, workspaceStorage ] = await Promise.all([
+    const [globalStorage, workspaceStorage] = await Promise.all([
       this.storageProvider(STORAGE_NAMESPACE.GLOBAL_EXTENSIONS),
       this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS),
     ]);
@@ -1160,12 +1160,12 @@ export class ExtensionManagerService extends Disposable implements IExtensionMan
    * @param extensionId 插件 id
    */
   private async getEnableScope(extensionId: string): Promise<EnableScope> {
-    const [ globalStorage, workspaceStorage ] = await Promise.all([
+    const [globalStorage, workspaceStorage] = await Promise.all([
       this.storageProvider(STORAGE_NAMESPACE.GLOBAL_EXTENSIONS),
       this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS),
     ]);
     if (workspaceStorage.get(extensionId) === undefined ||
-        globalStorage.get(extensionId) === workspaceStorage.get(extensionId)) {
+      globalStorage.get(extensionId) === workspaceStorage.get(extensionId)) {
       return EnableScope.GLOBAL;
     } else {
       return EnableScope.WORKSPACE;

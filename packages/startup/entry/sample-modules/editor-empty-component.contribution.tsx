@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { useMemo, useState } from 'react';
 import { Domain, ComponentContribution, ComponentRegistry, EDITOR_COMMANDS, SEARCH_COMMANDS } from '@ali/ide-core-browser';
 import { KeybindingRegistry } from '@ali/ide-core-browser/lib/keybinding/keybinding';
@@ -9,7 +9,7 @@ import { Disposable, localize, registerLocalizationBundle } from '@ali/ide-core-
 import { IKeymapService } from '@ali/ide-keymaps/lib/common/keymaps';
 import { ThrottledDelayer } from '@ali/ide-core-common/lib/async';
 
-import * as styles from './editor-empty-component.module.less';
+import styles from './editor-empty-component.module.less';
 
 const DEFAULT_CHANGE_DELAY = 500; // ms
 

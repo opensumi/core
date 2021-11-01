@@ -23,10 +23,10 @@ import { FileDecorationsService } from '@ali/ide-decoration/lib/browser/decorati
 import { FileTreeContribution } from '../../src/browser/file-tree-contribution';
 import { PasteTypes } from '../../src';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import * as temp from 'temp';
+import temp from 'temp';
 import * as fs from 'fs-extra';
-import * as path from 'path';
-import * as styles from '../../src/browser/file-tree-node.module.less';
+import path from 'path';
+import styles from '../../src/browser/file-tree-node.module.less';
 import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
 
 function sleep(time: number) {

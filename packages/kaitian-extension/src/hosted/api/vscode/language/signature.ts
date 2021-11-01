@@ -1,5 +1,5 @@
 import { Uri as URI } from '@ali/ide-core-common';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { Position, ISignatureHelpDto, SignatureHelpContextDto } from '../../../../common/vscode/model.api';
 import * as typeConvert from '../../../../common/vscode/converter';
@@ -19,7 +19,7 @@ export class SignatureHelpAdapter {
     if (!documentData) {
       return Promise.reject(new Error(`There are no document for  ${resource}`));
     }
-    const cacheId = this.cacheId ++;
+    const cacheId = this.cacheId++;
     const document = documentData.document;
     const zeroBasedPosition = typeConvert.toPosition(position);
     const vscodeContext = this.reviveContext(context);

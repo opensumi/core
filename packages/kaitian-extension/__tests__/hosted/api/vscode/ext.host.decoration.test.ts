@@ -1,6 +1,6 @@
 // tslint:disable:new-parens
 import { Event, Uri, UriComponents, URI, Emitter, CancellationTokenSource, CancellationToken } from '@ali/ide-core-common';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { ExtHostDecorations } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.decoration';
 
 function URI2UriComponents(uri: URI): UriComponents {
@@ -37,8 +37,8 @@ describe('ExtHostFileSystem', () => {
   let errorSpy: jest.SpyInstance;
   let warnSpy: jest.SpyInstance;
   beforeEach(() => {
-    errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    errorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => { });
     service = new ExtHostDecorations(mockRpcProtocol as any);
 
     process.env.KTLOG_SHOW_DEBUG = '1';
@@ -158,7 +158,7 @@ describe('ExtHostFileSystem', () => {
 
     const uri = Uri.file('file://workspace/test/a.ts');
 
-    extDecoProvider.onDidChangeDecorationsEmitter.fire([ uri ]);
+    extDecoProvider.onDidChangeDecorationsEmitter.fire([uri]);
     expect(mock$onDidChange).toBeCalledTimes(1);
     expect(mock$onDidChange).toBeCalledWith(0, [uri]);
 
@@ -375,7 +375,7 @@ describe('ExtHostFileSystem', () => {
 
     const uri = Uri.file('file://workspace/test/a.ts');
 
-    extDecoProvider.onDidChangeEmitter.fire([ uri ]);
+    extDecoProvider.onDidChangeEmitter.fire([uri]);
     expect(mock$onDidChange).toBeCalledTimes(1);
     expect(mock$onDidChange).toBeCalledWith(0, [uri]);
   });

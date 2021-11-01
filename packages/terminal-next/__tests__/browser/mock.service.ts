@@ -1,4 +1,4 @@
-import * as WebSocket from 'ws';
+import WebSocket from 'ws';
 import { Terminal } from 'xterm';
 import { uuid, URI, Emitter } from '@ali/ide-core-common';
 import { OS } from '@ali/ide-core-common/lib/platform';
@@ -73,7 +73,7 @@ export class MockSocketService implements ITerminalService {
       onData: (handler: (json: any) => void) => {
         this._handleStdoutMessage(sessionId, handler);
         return {
-          dispose: () => {},
+          dispose: () => { },
         };
       },
       sendData: (message: string) => {
@@ -238,6 +238,6 @@ export class MockTerminalWidget {
 export class MockErrorService {
   errors = new Map<string, ITerminalError>();
 
-  async fix(_sessionId: string) {}
+  async fix(_sessionId: string) { }
 }
 /** End */

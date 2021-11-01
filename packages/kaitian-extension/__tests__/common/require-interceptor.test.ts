@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IRequireInterceptorService, RequireInterceptorService } from '../../src/common/require-interceptor';
 

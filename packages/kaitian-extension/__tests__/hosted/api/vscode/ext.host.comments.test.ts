@@ -5,7 +5,7 @@ import { MainThreadAPIIdentifier, IMainThreadComments, ExtHostAPIIdentifier } fr
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { Uri, Emitter, Disposable, IEventBus, URI } from '@ali/ide-core-common';
 import * as types from '@ali/ide-kaitian-extension/lib/common/vscode/ext-types';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { MainthreadComments } from '@ali/ide-kaitian-extension/lib/browser/vscode/api/main.thread.comments';
 import { ICommentsService, ICommentsFeatureRegistry, CommentReactionClick } from '@ali/ide-comments';
@@ -44,14 +44,14 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.comments.test.t
       token: ICommentsService,
       useClass: CommentsService,
     },
-    {
-      token: ICommentsFeatureRegistry,
-      useClass: CommentsFeatureRegistry,
-    },
-    {
-      token: IMainLayoutService,
-      useClass: LayoutService,
-    }, {
+      {
+        token: ICommentsFeatureRegistry,
+        useClass: CommentsFeatureRegistry,
+      },
+      {
+        token: IMainLayoutService,
+        useClass: LayoutService,
+      }, {
       token: IContextKeyService,
       useClass: MockContextKeyService,
     }, {
@@ -105,7 +105,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.comments.test.t
     const $createCommentThread = jest.spyOn(mainThreadComments, '$createCommentThread');
     const controller = vscodeComments.createCommentController(id, label);
 
-    const thread = controller.createCommentThread(Uri.file('test'),  new types.Range(1, 1, 1, 1), [{
+    const thread = controller.createCommentThread(Uri.file('test'), new types.Range(1, 1, 1, 1), [{
       body,
       author: {
         name: author,
@@ -129,7 +129,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.comments.test.t
     const $updateCommentThread = jest.spyOn(mainThreadComments, '$updateCommentThread');
     const controller = vscodeComments.createCommentController(id, label);
 
-    const thread = controller.createCommentThread(Uri.file('test'),  new types.Range(1, 1, 1, 1), [{
+    const thread = controller.createCommentThread(Uri.file('test'), new types.Range(1, 1, 1, 1), [{
       body,
       author: {
         name: author,
@@ -195,7 +195,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.comments.test.t
       done();
     };
 
-    const thread = controller.createCommentThread(Uri.file('test'),  new types.Range(1, 1, 1, 1), [{
+    const thread = controller.createCommentThread(Uri.file('test'), new types.Range(1, 1, 1, 1), [{
       body,
       author: {
         name: author,
@@ -242,12 +242,12 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.comments.test.t
     const label = 'test_label';
     const $updateCommentThread = jest.spyOn(mainThreadComments, '$updateCommentThread');
     const controller = vscodeComments.createCommentController(id, label);
-    const thread = controller.createCommentThread(Uri.file('test'),  new types.Range(1, 1, 1, 1), []);
+    const thread = controller.createCommentThread(Uri.file('test'), new types.Range(1, 1, 1, 1), []);
     thread.canReply = false;
     // 修改属性会加 100ms 的 debounce
     await sleep(100);
     expect($updateCommentThread).toBeCalled();
-    expect($updateCommentThread).toBeCalledWith(expect.anything(), expect.anything(), expect.anything(), expect.anything(), {'canReply': false, 'comments': []});
+    expect($updateCommentThread).toBeCalledWith(expect.anything(), expect.anything(), expect.anything(), expect.anything(), { 'canReply': false, 'comments': [] });
   });
 
   it('dispose', async () => {
@@ -262,7 +262,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.comments.test.t
       },
     };
 
-    controller.createCommentThread(Uri.file('test'),  new types.Range(1, 1, 1, 1), [{
+    controller.createCommentThread(Uri.file('test'), new types.Range(1, 1, 1, 1), [{
       body: 'body',
       author: {
         name: '蛋总',

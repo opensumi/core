@@ -1,4 +1,4 @@
-import * as path from 'path';
+import path from 'path';
 import { Injector } from '@ali/common-di';
 import { ExtensionWorkerHost, initRPCProtocol } from './worker.host';
 import { setPerformance } from './api/vscode/language/util';

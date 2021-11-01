@@ -1,5 +1,5 @@
-import type * as vscode from 'vscode';
-import * as paths from 'path';
+import type vscode from 'vscode';
+import paths from 'path';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, ExtensionDocumentDataManager } from '../../../common/vscode';
 import { Uri, WorkspaceEdit } from '../../../common/vscode/ext-types';
@@ -130,8 +130,8 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
 
   private messageService: IExtHostMessage;
 
-  private _onDidRenameFile = new Emitter<{oldUri: Uri; readonly newUri: Uri}>();
-  public onDidRenameFile: Event<{oldUri: Uri; readonly newUri: Uri}> = this._onDidRenameFile.event;
+  private _onDidRenameFile = new Emitter<{ oldUri: Uri; readonly newUri: Uri }>();
+  public onDidRenameFile: Event<{ oldUri: Uri; readonly newUri: Uri }> = this._onDidRenameFile.event;
 
   private workspaceToName: {
     [key: string]: string;
@@ -310,7 +310,7 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
       const folderPath = folder.uri.toString();
 
       if (resourcePath === folderPath) {
-        return toWorkspaceFolder(folder,  this.workspaceToName);
+        return toWorkspaceFolder(folder, this.workspaceToName);
       }
 
       if (resourcePath.startsWith(folderPath)

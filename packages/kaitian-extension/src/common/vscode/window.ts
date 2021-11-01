@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import * as types from './ext-types';
 import { CancellationToken, MessageType, MaybePromise } from '@ali/ide-core-common';
 import { QuickPickItem, QuickPickOptions, QuickInputOptions } from '@ali/ide-quick-open';
@@ -12,10 +12,7 @@ export interface IMainThreadMessage {
 }
 
 export interface IExtHostMessage {
-  showMessage(type: MessageType, message: string,
-              optionsOrFirstItem?: vscode.MessageOptions | string | vscode.MessageItem,
-              from?: string,
-              ...rest: (string | vscode.MessageItem)[]): Promise<string | vscode.MessageItem | undefined>;
+  showMessage(type: MessageType, message: string, optionsOrFirstItem?: vscode.MessageOptions | string | vscode.MessageItem, from?: string, ...rest: (string | vscode.MessageItem)[]): Promise<string | vscode.MessageItem | undefined>;
 }
 
 export interface IMainThreadQuickOpen {
@@ -109,18 +106,20 @@ export interface IMainThreadStatusBar {
     priority: number,
   ): void;
 
-  $setMessage(entryId: string,
-              id: string,
-              name: string,
-              text: string | undefined,
-              priority: number,
-              alignment: number,
-              color: IThemeColor | string | undefined,
-              backgroundColor: IThemeColor | undefined,
-              tooltip: string | undefined,
-              accessibilityInformation: vscode.AccessibilityInformation | undefined,
-              command: string | undefined,
-              commandArgs: any[] | undefined): Promise<void>;
+  $setMessage(
+    entryId: string,
+    id: string,
+    name: string,
+    text: string | undefined,
+    priority: number,
+    alignment: number,
+    color: IThemeColor | string | undefined,
+    backgroundColor: IThemeColor | undefined,
+    tooltip: string | undefined,
+    accessibilityInformation: vscode.AccessibilityInformation | undefined,
+    command: string | undefined,
+    commandArgs: any[] | undefined,
+  ): Promise<void>;
 
 }
 

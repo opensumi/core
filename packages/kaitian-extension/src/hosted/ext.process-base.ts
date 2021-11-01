@@ -1,5 +1,5 @@
-import * as net from 'net';
-import * as Stream from 'stream';
+import net from 'net';
+import Stream from 'stream';
 import { performance } from 'perf_hooks';
 import { ConstructorOf, Injector } from '@ali/common-di';
 import { AppConfig } from '@ali/ide-core-node/lib/bootstrap/app';
@@ -86,7 +86,7 @@ async function initRPCProtocol(extInjector): Promise<any> {
 
   logger = new ExtensionLogger2(extInjector); // new ExtensionLogger(extProtocol);
   logger.log('process extConnection path', argv[KT_PROCESS_SOCK_OPTION_KEY]);
-  return {extProtocol, logger};
+  return { extProtocol, logger };
 }
 
 function patchProcess() {
@@ -109,7 +109,7 @@ export async function extProcessInit(config: ExtProcessConfig = {}) {
   const reporterEmitter = new Emitter<ReporterProcessMessage>();
   extInjector.addProviders({
     token: AppConfig,
-    useValue: { ...extAppConfig, ...extConfig},
+    useValue: { ...extAppConfig, ...extConfig },
   }, {
     token: IReporter,
     useValue: new ExtensionReporter(reporterEmitter),
@@ -118,7 +118,7 @@ export async function extProcessInit(config: ExtProcessConfig = {}) {
     setLanguageId(locale);
   }
   patchProcess();
-  const {extProtocol: protocol, logger} = await initRPCProtocol(extInjector);
+  const { extProtocol: protocol, logger } = await initRPCProtocol(extInjector);
   try {
     let Preload = require('./ext.host');
     if (Preload.default) {

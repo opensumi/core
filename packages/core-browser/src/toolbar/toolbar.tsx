@@ -1,12 +1,12 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import { useInjectable } from '../react-hooks';
 import { IToolbarRegistry, ToolbarActionGroupsChangedEvent, IToolbarAction, ISize, ToolbarActionsChangedEvent, IToolbarLocationProps, IToolbarLocationPreference, IToolbarActionElementProps, ToolbarRegistryReadyEvent } from './types';
 import { IEventBus, Disposable, Emitter } from '@ali/ide-core-common';
 import { ConfigContext, ConfigProvider, AppConfig } from '../react-providers';
 import { getIcon } from '../style/icon/icon';
 import { DomListener } from '../dom';
-import * as classnames from 'classnames';
+import classnames from 'classnames';
 import { PreferenceService } from '../preferences';
 import { AbstractMenuService, MenuId, generateCtxMenu, ICtxMenuRenderer } from '../menu/next';
 import throttle = require('lodash.throttle');

@@ -1,5 +1,5 @@
 import { Uri as URI } from '@ali/ide-core-common';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { Position, SelectionRange } from '../../../../common/vscode/model.api';
 import * as Converter from '../../../../common/vscode/converter';

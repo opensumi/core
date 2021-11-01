@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ViewState } from '@ali/ide-core-browser';
 import { localize } from '@ali/ide-core-common';
@@ -14,7 +14,7 @@ import { SCMResourceInput } from './components/scm-resource-input';
 import { SCMResourceTree } from './components/scm-resource-tree';
 import { SCMProviderList } from './components/scm-provider-list';
 
-import * as styles from './scm.module.less';
+import styles from './scm.module.less';
 import { getSCMRepositoryDesc } from './scm-util';
 import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
 

@@ -1,6 +1,6 @@
-import * as path from 'path';
+import path from 'path';
 import * as fs from 'fs-extra';
-import * as os from 'os';
+import os from 'os';
 import { Injector } from '@ali/common-di';
 import { AppConfig, INodeLogger, IReporterService } from '@ali/ide-core-node';
 
@@ -56,10 +56,10 @@ describe('Extension Serivce', () => {
         /* tslint:enable */
       },
     },
-    {
-      token: IActivationEventService,
-      useClass: ActivationEventServiceImpl,
-    },
+      {
+        token: IActivationEventService,
+        useClass: ActivationEventServiceImpl,
+      },
       {
         token: IExtensionNodeService,
         useClass: ExtensionNodeServiceImpl,

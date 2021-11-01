@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MAX_MESSAGE_LENGTH } from '@ali/ide-overlay/lib/common';
 import { IMainThreadMessage, MainThreadAPIIdentifier, IExtHostMessage } from '../../../common/vscode';

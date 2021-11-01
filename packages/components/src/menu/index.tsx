@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import RcMenu, { Divider, ItemGroup } from 'rc-menu';
 import classNames from 'classnames';
 import { polyfill } from 'react-lifecycles-compat';

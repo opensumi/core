@@ -3,7 +3,7 @@ import { matchesFuzzy } from '@ali/monaco-editor-core/esm/vs/base/common/filters
 /**
  * 用于快速打开，检索文件
  */
-import * as fuzzy from 'fuzzy';
+import fuzzy from 'fuzzy';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import {
   CommandContribution,

@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { Event, Emitter, getDebugLogger, isUndefined, DisposableStore, IDisposable, Deferred, Disposable, CancellationTokenSource } from '@ali/ide-core-common';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ITerminalInfo, TerminalDataBufferer, ITerminalChildProcess, ITerminalDimensionsOverride, ITerminalDimensionsDto, ITerminalLaunchError, ITerminalExitEvent, ITerminalLinkDto } from '@ali/ide-terminal-next';
@@ -54,7 +54,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
     this.changeActiveTerminalEvent.fire(terminal);
   }
 
-  get onDidChangeActiveTerminal(): Event<Terminal | undefined>  {
+  get onDidChangeActiveTerminal(): Event<Terminal | undefined> {
     return this.changeActiveTerminalEvent.event;
   }
 
@@ -152,7 +152,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
       if (this.terminalsMap.get(info.id)) {
         return;
       }
-      const terminal =  new Terminal(info.name, info, this.proxy, info.id);
+      const terminal = new Terminal(info.name, info, this.proxy, info.id);
       if (info.isActive) {
         this.activeTerminal = terminal;
       }

@@ -3,8 +3,8 @@ import { IExtensionManagerServer, BaseExtension, IExtensionManagerRequester, IEx
 import { ExtensionManagerModule } from '../../src/node';
 import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { AppConfig, INodeLogger } from '@ali/ide-core-node';
-import * as os from 'os';
-import * as path from 'path';
+import os from 'os';
+import path from 'path';
 import * as fs from 'fs-extra';
 import { MockInjector } from '@ali/ide-dev-tool/src/mock-injector';
 
@@ -216,7 +216,7 @@ describe('template test', () => {
         return {
           status: 200,
           data: {
-            data: [{version: '1.0.0'}, {version: '1.0.1'}],
+            data: [{ version: '1.0.0' }, { version: '1.0.1' }],
           },
         };
       });
@@ -236,7 +236,7 @@ describe('template test', () => {
       await fs.mkdirp(extensionDir);
       const extensionId = `${publisher}.${name}`;
       const extensionDirName = `${extensionId}-${version}`;
-      const extensionPaths = [path.join(extensionDir, extensionDirName), ...pack.map((identifer) =>  path.join(extensionDir, `${identifer}-${version}`))];
+      const extensionPaths = [path.join(extensionDir, extensionDirName), ...pack.map((identifer) => path.join(extensionDir, `${identifer}-${version}`))];
       injector.mock(IExtensionManager, 'installer', {
         install: () => {
           return extensionPaths;

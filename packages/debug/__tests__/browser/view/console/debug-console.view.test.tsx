@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import { observer } from 'mobx-react-lite';
 import { act } from 'react-dom/test-utils';
 import {

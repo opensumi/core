@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { useInjectable } from '@ali/ide-core-browser';
 import { ViewState } from '@ali/ide-core-browser';
 import { IStatusBarService } from '@ali/ide-status-bar';
@@ -10,7 +10,7 @@ import { ICtxMenuRenderer, MenuId, AbstractContextMenuService } from '@ali/ide-c
 import { ISCMRepository } from '../../common';
 import { getSCMRepositoryDesc } from '../scm-util';
 
-import * as styles from './scm-provider-list.module.less';
+import styles from './scm-provider-list.module.less';
 
 const SCMProvider: React.FC<{
   repository: ISCMRepository;

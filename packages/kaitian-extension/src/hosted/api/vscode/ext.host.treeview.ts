@@ -5,7 +5,7 @@ import { IDisposable, Emitter, Disposable, Uri, DisposableStore, toDisposable } 
 import { ThemeIcon } from '../../../common/vscode/ext-types';
 import { ExtHostCommands } from './ext.host.command';
 import type { CancellationToken } from '@ali/ide-core-common/lib/cancellation';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 
 export class ExtHostTreeViews implements IExtHostTreeView {
   private proxy: IMainThreadTreeView;

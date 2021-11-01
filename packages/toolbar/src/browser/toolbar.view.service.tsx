@@ -2,7 +2,7 @@ import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Disposable, IToolbarRegistry, createToolbarActionBtn, ToolbarActionBtnClickEvent } from '@ali/ide-core-browser';
 import { IEventBus } from '@ali/ide-core-common';
-import * as React from 'react';
+import React from 'react';
 
 import { IToolBarViewService, ToolBarPosition, IToolBarElementHandle, IToolBarAction, IToolBarComponent } from './types';
 

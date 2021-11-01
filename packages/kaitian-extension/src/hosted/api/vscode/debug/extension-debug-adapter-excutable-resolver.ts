@@ -1,5 +1,5 @@
-import * as path from 'path';
-import type * as vscode from 'vscode';
+import path from 'path';
+import type vscode from 'vscode';
 import { isWindows, isOSX } from '@ali/ide-core-common';
 import { IDebuggerContribution, IPlatformSpecificAdapterContribution } from '@ali/ide-debug';
 import { DebugAdapterExecutable } from '../../../../common/vscode/ext-types';

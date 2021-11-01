@@ -1,4 +1,4 @@
-import * as md5 from 'md5';
+import md5 from 'md5';
 import { uniqueId } from 'lodash';
 import { URI } from '@ali/ide-core-browser';
 
@@ -32,7 +32,7 @@ describe('EmptyDocCacheImpl', () => {
     const hasCacheSpy = jest.spyOn(cacheProvider, 'hasCache');
     const getCacheSpy = jest.spyOn(cacheProvider, 'getCache');
 
-    injector.get(EditorDocumentModel, [ uri, content ]);
+    injector.get(EditorDocumentModel, [uri, content]);
     expect(hasCacheSpy).toBeCalledTimes(1);
     expect(getCacheSpy).toBeCalledTimes(0);
   });
@@ -43,7 +43,7 @@ describe('EmptyDocCacheImpl', () => {
     const hasCacheSpy = jest.spyOn(cacheProvider, 'hasCache').mockReturnValue(true);
     const getCacheSpy = jest.spyOn(cacheProvider, 'getCache');
 
-    injector.get(EditorDocumentModel, [ uri, content ]);
+    injector.get(EditorDocumentModel, [uri, content]);
     expect(hasCacheSpy).toBeCalledTimes(1);
     expect(getCacheSpy).toBeCalledTimes(1);
     expect(getCacheSpy).toBeCalledWith(uri, 'utf8');
@@ -53,7 +53,7 @@ describe('EmptyDocCacheImpl', () => {
     const cacheProvider: IDocPersistentCacheProvider = injector.get(IDocPersistentCacheProvider);
     const persistCacheSpy = jest.spyOn(cacheProvider, 'persistCache');
 
-    const docModel = injector.get(EditorDocumentModel, [ uri, content, { savable: true } ]);
+    const docModel = injector.get(EditorDocumentModel, [uri, content, { savable: true }]);
     const newContent = uniqueId('content');
     docModel.getMonacoModel().setValue(newContent);
 

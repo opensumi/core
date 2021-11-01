@@ -332,7 +332,7 @@ export class KeymapService implements IKeymapService {
           }, 3000);
         });
       });
-    }, () => {});
+    }, () => { });
   }
 
   private async saveKeybinding(keymaps: KeymapItem[]) {

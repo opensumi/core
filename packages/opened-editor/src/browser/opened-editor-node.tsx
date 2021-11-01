@@ -1,6 +1,6 @@
-import * as React from 'react';
-import * as cls from 'classnames';
-import * as styles from './opened-editor-node.module.less';
+import React from 'react';
+import cls from 'classnames';
+import styles from './opened-editor-node.module.less';
 import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, TreeNodeType, Button } from '@ali/ide-components';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { URI, OPEN_EDITORS_COMMANDS, localize, getIcon, CommandService } from '@ali/ide-core-browser';

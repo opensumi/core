@@ -2,7 +2,7 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { URI, Uri, setLanguageId } from '@ali/ide-core-browser';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IExtensionMetaData } from '../../src/common';
-import * as paths from 'path';
+import paths from 'path';
 import { ExtensionServiceImpl } from '../../src/browser/extension.service';
 import { ExtensionService } from '../../src/common';
 import { Extension } from '../../src/browser/extension';

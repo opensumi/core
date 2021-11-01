@@ -1,5 +1,5 @@
 // tslint:disable:no-console
-import * as net from 'net';
+import net from 'net';
 import { RPCService, RPCServiceCenter, createSocketConnection, getRPCService, IRPCProtocol, RPCProtocol } from '@ali/ide-connection';
 import { IExtHostProxyRPCService, IExtHostProxy, IExtHostProxyOptions, EXT_HOST_PROXY_PROTOCOL, EXT_HOST_PROXY_IDENTIFIER, IExtServerProxyRPCService, EXT_SERVER_IDENTIFIER, EXT_HOST_PROXY_SERVER_PROT } from '../common/ext.host.proxy';
 import { Emitter, Disposable, IDisposable } from '@ali/ide-core-node';
@@ -100,7 +100,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
       },
       ...options,
     },
-    this.clientCenter = new RPCServiceCenter();
+      this.clientCenter = new RPCServiceCenter();
   }
 
   init() {

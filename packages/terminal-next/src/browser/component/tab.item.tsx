@@ -1,10 +1,10 @@
-import * as React from 'react';
-import * as clx from 'classnames';
+import React from 'react';
+import clx from 'classnames';
 import { getIcon } from '@ali/ide-core-browser';
 import { ItemProps, ItemType } from '../../common';
 import debouce = require('lodash.debounce');
 
-import * as styles from './tab.module.less';
+import styles from './tab.module.less';
 
 export function renderInfoItem(props: ItemProps) {
   const handleSelect = debouce(() => props.onClick && props.onClick(), 20);

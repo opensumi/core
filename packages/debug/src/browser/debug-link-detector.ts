@@ -12,7 +12,7 @@ import * as osPath from '@ali/ide-core-common/lib/path';
 import * as platform from '@ali/ide-core-common/lib/platform';
 import { IWorkspaceFolder } from '@ali/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
 import { IFileServiceClient, FileStat } from '@ali/ide-file-service/lib/common';
-import * as styles from './view/console/debug-console.module.less';
+import styles from './view/console/debug-console.module.less';
 
 const CONTROL_CODES = '\\u0000-\\u0020\\u007f-\\u009f';
 const WEB_LINK_REGEX = new RegExp('(?:[a-zA-Z][a-zA-Z0-9+.-]{2,}:\\/\\/|data:|www\\.)[^\\s' + CONTROL_CODES + '"]{2,}[^\\s' + CONTROL_CODES + '"\')}\\],:;.!?]', 'ug');
@@ -33,7 +33,7 @@ interface LinkPart {
   captures: string[];
 }
 
-@Injectable({ multiple: true})
+@Injectable({ multiple: true })
 export class LinkDetector {
 
   @Autowired(WorkbenchEditorService)
@@ -128,7 +128,7 @@ export class LinkDetector {
     const link = this.createLink(text);
     link.tabIndex = 0;
     const uri = URI.file(osPath.normalize(path));
-    this.fileServiceClient.getFileStat(uri.toString()).then((stat: FileStat | undefined ) => {
+    this.fileServiceClient.getFileStat(uri.toString()).then((stat: FileStat | undefined) => {
       if (!stat || (stat && stat.isDirectory)) {
         return;
       }

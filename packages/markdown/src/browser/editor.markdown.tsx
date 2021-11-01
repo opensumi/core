@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { ReactEditorComponent, IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { useInjectable, Disposable, CancellationTokenSource, Emitter } from '@ali/ide-core-browser';
 import { IMarkdownService } from '../common';

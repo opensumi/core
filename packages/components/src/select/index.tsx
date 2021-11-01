@@ -1,6 +1,6 @@
-import * as React from 'react';
+import React from 'react';
 import { useState, useEffect } from 'react';
-import * as classNames from 'classnames';
+import classNames from 'classnames';
 
 import './style.less';
 import { Icon, getKaitianIcon } from '../icon';

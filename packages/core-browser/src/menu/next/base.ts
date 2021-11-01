@@ -3,7 +3,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { ButtonType } from '@ali/ide-components';
 import { replaceLocalizePlaceholder, ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider, IKaitianMenuExtendInfo } from '@ali/ide-core-common';
 import { warning } from '@ali/ide-components/lib/utils';
-import * as ReactIs from 'react-is';
+import ReactIs from 'react-is';
 
 import { MenuId } from './menu-id';
 
@@ -74,9 +74,9 @@ export interface IComponentMenuItemProps {
  * 有限开放，目前仅支持 navigation 的 group，也不支持 context 系列的位置
  */
 interface IInternalComponentMenuItem extends ICoreMenuItem {
-   /**
-   * 单个 menu 支持传入额外参数
-   */
+  /**
+  * 单个 menu 支持传入额外参数
+  */
   extraTailArgs?: any[];
   /**
    * 组件形式的 menu item

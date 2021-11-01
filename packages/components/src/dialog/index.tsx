@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as clx from 'classnames';
+import React from 'react';
+import clx from 'classnames';
 
 import { Overlay, IOverlayProps } from '../overlay';
 import { IconContext, getKaitianIcon } from '../icon';

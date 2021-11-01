@@ -13,10 +13,10 @@ registry.register('@ali/ide-menu-bar-logo', {
 
 下面是 logoIcon 的实现， 一般 icon 的宽度是 35px
 ```typescript
-import * as React from 'react';
-import * as cls from 'classnames';
+import React from 'react';
+import cls from 'classnames';
 import { getIcon } from '@ali/ide-core-browser';
-import * as styles from './logo.module.less';
+import styles from './logo.module.less';
 
 export const LogoIcon = () => <div className={cls(styles.logoIcon, getIcon('logo'))}></div>;
 ```

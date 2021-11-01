@@ -1,4 +1,4 @@
-import * as md5 from 'md5';
+import md5 from 'md5';
 import { uniqueId } from 'lodash';
 import { promisify } from 'util';
 import { URI } from '@ali/ide-core-browser';
@@ -24,8 +24,8 @@ describe('LocalStorageDocCacheImpl', () => {
       {
         token: IWorkspaceStorageService,
         useValue: {
-          getData() {},
-          setData() {},
+          getData() { },
+          setData() { },
         },
       },
     );
@@ -38,7 +38,7 @@ describe('LocalStorageDocCacheImpl', () => {
     const storageService: IWorkspaceStorageService = injector.get(IWorkspaceStorageService);
     jest.spyOn(storageService, 'getData').mockResolvedValue(undefined as never);
 
-    const docModel = injector.get(EditorDocumentModel, [ uri, content, { savable: true }]);
+    const docModel = injector.get(EditorDocumentModel, [uri, content, { savable: true }]);
     expect(docModel.dirty).toBeFalsy();
 
     await promisify(setTimeout)(100);
@@ -58,7 +58,7 @@ describe('LocalStorageDocCacheImpl', () => {
       ],
     } as never);
 
-    const docModel = injector.get(EditorDocumentModel, [ uri, content, { savable: true }]);
+    const docModel = injector.get(EditorDocumentModel, [uri, content, { savable: true }]);
     expect(docModel.getMonacoModel().getValue()).toBe(content);
     expect(docModel.dirty).toBeFalsy();
 
@@ -71,7 +71,7 @@ describe('LocalStorageDocCacheImpl', () => {
     const storageService: IWorkspaceStorageService = injector.get(IWorkspaceStorageService);
     const setDataSpy = jest.spyOn(storageService, 'setData');
     const uri = new URI('test://testUri30');
-    const docModel = injector.get(EditorDocumentModel, [ uri, content, { savable: true } ]);
+    const docModel = injector.get(EditorDocumentModel, [uri, content, { savable: true }]);
     const newContent = uniqueId('content');
     docModel.getMonacoModel().setValue(newContent);
 
@@ -81,7 +81,7 @@ describe('LocalStorageDocCacheImpl', () => {
       startMD5: md5(content),
       changeMatrix: [
         [
-          [ newContent, 1, 1, 1 , 9],
+          [newContent, 1, 1, 1, 9],
         ],
       ],
     });
@@ -91,7 +91,7 @@ describe('LocalStorageDocCacheImpl', () => {
     const storageService: IWorkspaceStorageService = injector.get(IWorkspaceStorageService);
     const setDataSpy = jest.spyOn(storageService, 'setData');
     const uri = new URI('test://testUri4');
-    const docModel = injector.get(EditorDocumentModel, [ uri, content ]);
+    const docModel = injector.get(EditorDocumentModel, [uri, content]);
     const newContent = uniqueId('content');
     docModel.getMonacoModel().setValue(newContent);
 

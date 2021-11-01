@@ -1,8 +1,8 @@
-import * as React from 'react';
+import React from 'react';
 import { localize } from '@ali/ide-core-common';
 import { IExtensionOwnedEnvironmentVariableMutator, IMergedEnvironmentVariableCollectionDiff, mutatorTypeLabel } from '../../common/environmentVariable';
 
-import * as styles from './variable.module.less';
+import styles from './variable.module.less';
 
 interface ITerminalVariableProps {
   diff: IMergedEnvironmentVariableCollectionDiff;

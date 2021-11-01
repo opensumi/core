@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { createPatch } from 'diff';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { Uri as URI } from '@ali/ide-core-common';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';

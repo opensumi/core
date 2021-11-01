@@ -1,7 +1,7 @@
-import * as React from 'react';
+import React from 'react';
 import { Keybinding, KeybindingRegistry, useInjectable } from '@ali/ide-core-browser';
 import clx from 'classnames';
-import * as styles from './styles.module.less';
+import styles from './styles.module.less';
 
 export const KeybindingView: React.FC<{
   keybinding: Keybinding;

@@ -1,8 +1,8 @@
-import * as React from 'react';
+import React from 'react';
 import { TreeProps, TreeContainer, TreeNode, ExpandableTreeNode, TEMP_FILE_NAME } from '../tree';
 import { PerfectScrollbar } from '../scrollbar';
 import { Deprecated } from '@ali/ide-components/lib/utils';
-import * as fuzzy from 'fuzzy';
+import fuzzy from 'fuzzy';
 
 export interface RecycleTreeProps extends TreeProps {
   /**

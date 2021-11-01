@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { Emitter, Disposable, Event, AuthenticationProviderInformation, AuthenticationSessionsChangeEvent, AuthenticationSession, getDebugLogger } from '@ali/ide-core-common';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, IExtHostAuthentication, IMainThreadAuthentication } from '../../../common/vscode';

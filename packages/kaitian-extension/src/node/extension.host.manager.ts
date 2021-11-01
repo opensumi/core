@@ -1,10 +1,10 @@
 import { Injectable } from '@ali/common-di';
 import { MaybePromise, Event, findFreePort } from '@ali/ide-core-common';
 import { IExtensionHostManager, Output, OutputType } from '../common';
-import * as assert from 'assert';
-import * as cp from 'child_process';
-import * as isRunning from 'is-running';
-import * as treeKill from 'tree-kill';
+import assert from 'assert';
+import cp from 'child_process';
+import isRunning from 'is-running';
+import treeKill from 'tree-kill';
 
 @Injectable()
 export class ExtensionHostManager implements IExtensionHostManager {
@@ -84,7 +84,7 @@ export class ExtensionHostManager implements IExtensionHostManager {
     // Debounce all output, so we can render it in the Chrome console as a group
     const onDebouncedOutput = Event.debounce<Output>(onOutput, (r, o) => {
       return r
-        ? { data: r.data + o.data, format: [...r.format, ...o.format], type: [ r.type, o.type ].includes(OutputType.STDERR) ? OutputType.STDERR : OutputType.STDOUT }
+        ? { data: r.data + o.data, format: [...r.format, ...o.format], type: [r.type, o.type].includes(OutputType.STDERR) ? OutputType.STDERR : OutputType.STDOUT }
         : { data: o.data, format: o.format, type: o.type };
     }, 100);
 

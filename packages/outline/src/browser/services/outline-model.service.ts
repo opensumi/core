@@ -10,8 +10,8 @@ import { OutlineTreeNode, OutlineCompositeTreeNode, OutlineRoot } from '../outli
 import { OutlineTreeModel } from './outline-model';
 import { DocumentSymbolStore, INormalizedDocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { IOutlineDecorationService } from '../../common';
-import * as pSeries from 'p-series';
-import * as styles from '../outline-node.module.less';
+import pSeries from 'p-series';
+import styles from '../outline-node.module.less';
 
 export interface IEditorTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -47,7 +47,7 @@ export class OutlineModelService {
   private documentSymbolStore: DocumentSymbolStore;
 
   private _activeTreeModel: OutlineTreeModel;
-  private _allTreeModels: Map<string, { treeModel: OutlineTreeModel, decoration: DecorationsManager}> = new Map();
+  private _allTreeModels: Map<string, { treeModel: OutlineTreeModel, decoration: DecorationsManager }> = new Map();
   private _whenInitTreeModelReady: Promise<void>;
   private _whenActiveChangeDeferred: Deferred<void> | null;
 
@@ -433,7 +433,7 @@ export class OutlineModelService {
 
     this.revealRange(item.raw);
 
-    this._ignoreFollowCursorUpdateEventTimer ++;
+    this._ignoreFollowCursorUpdateEventTimer++;
   }
 
   toggleDirectory = async (item: OutlineCompositeTreeNode) => {

@@ -2,11 +2,11 @@ import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver, Ed
 import { ExtensionActivateEvent, IDisposable, IEventBus } from '@ali/ide-core-common';
 import { IResource, IEditorOpenType } from '../common';
 import { Injectable, Autowired } from '@ali/common-di';
-import * as ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom';
 
 type SchemeKey = string;
 
-interface INormalizedEditorComponentResolver  {
+interface INormalizedEditorComponentResolver {
   handleScheme: (scheme: string) => number;
   resolver: IEditorComponentResolver;
 }
@@ -38,7 +38,7 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
     }
     this.components.set(uid, component);
     this.initialPropsMap.set(uid, initialProps);
-     // 使用 activationEvent 通知插件
+    // 使用 activationEvent 通知插件
     this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onRegisterEditorComponent', data: uid }));
     this.eventBus.fire(new RegisterEditorComponentEvent(uid));
     return {
@@ -100,7 +100,7 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
         break;
       }
     }
-    results.sort( (a, b) => {
+    results.sort((a, b) => {
       const wa = a.weight || 0;
       const wb = b.weight || 0;
       return wb - wa;
@@ -130,7 +130,7 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
     return calculated.sort((a, b) => {
       if (a.weight > b.weight) {
         return -1;
-      } else if (a.weight < b. weight) {
+      } else if (a.weight < b.weight) {
         return 1;
       } else {
         return b.index - a.index;

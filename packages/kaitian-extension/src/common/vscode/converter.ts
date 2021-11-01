@@ -1,6 +1,6 @@
 import { RenderLineNumbersType } from '@ali/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import * as types from './ext-types';
 import * as model from './model.api';
 import * as debugModel from '@ali/ide-debug';
@@ -16,7 +16,7 @@ import {
   IMarkdownString,
   parseHrefAndDimensions,
 } from './models';
-import * as marked from 'marked';
+import marked from 'marked';
 import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
 import * as modes from '@ali/monaco-editor-core/esm/vs/editor/common/modes';
 import { EndOfLineSequence, CodeActionTriggerType } from '@ali/ide-monaco/lib/browser/monaco-api/types';
@@ -497,8 +497,8 @@ export namespace ColorPresentation {
         : undefined,
       additionalTextEdits: colorPresentation.additionalTextEdits
         ? colorPresentation.additionalTextEdits.map((value) =>
-            TextEdit.from(value),
-          )
+          TextEdit.from(value),
+        )
         : undefined,
     };
   }
@@ -540,8 +540,8 @@ export function fromColorPresentation(
       : undefined,
     additionalTextEdits: colorPresentation.additionalTextEdits
       ? colorPresentation.additionalTextEdits.map((value) =>
-          fromTextEdit(value),
-        )
+        fromTextEdit(value),
+      )
       : undefined,
   };
 }
@@ -601,8 +601,8 @@ export function convertDiagnosticToMarkerData(
 function convertCode(code: string | number | undefined | { target: URI; value: string; }): string | undefined {
   if (typeof code === 'number') {
     return String(code);
-   } else if (typeof code === 'object') {
-     return code.value;
+  } else if (typeof code === 'object') {
+    return code.value;
   } else {
     return code;
   }
@@ -1283,14 +1283,14 @@ export namespace CompletionItem {
       typeof suggestion.insertTextRules === 'undefined'
         ? false
         : Boolean(
-            suggestion.insertTextRules &
-              model.CompletionItemInsertTextRule.KeepWhitespace,
-          );
+          suggestion.insertTextRules &
+          model.CompletionItemInsertTextRule.KeepWhitespace,
+        );
     // 'insertText'-logic
     if (
       typeof suggestion.insertTextRules !== 'undefined' &&
       suggestion.insertTextRules &
-        model.CompletionItemInsertTextRule.InsertAsSnippet
+      model.CompletionItemInsertTextRule.InsertAsSnippet
     ) {
       result.insertText = new types.SnippetString(suggestion.insertText);
     } else {

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { Disposable } from '@ali/ide-core-common';
 import { ConfigContext } from '../react-providers';
 import { Token, Injector } from '@ali/common-di';

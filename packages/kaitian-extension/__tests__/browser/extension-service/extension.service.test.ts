@@ -1,4 +1,4 @@
-import * as ReactDom from 'react-dom';
+import ReactDom from 'react-dom';
 import { ExtensionService, IExtCommandManagement, AbstractExtensionManagementService, IRequireInterceptorService } from '../../../src/common';
 import { AbstractExtInstanceManagementService } from '../../../src/browser/types';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';

@@ -1,6 +1,6 @@
 import { WebSocketHandler } from './ws';
-import * as pathMatch from 'path-match';
-import * as ws from 'ws';
+import pathMatch from 'path-match';
+import ws from 'ws';
 import { stringify, parse } from '../common/utils';
 import { WSChannel, ChannelMessage } from '../common/ws-channel';
 const route = pathMatch();
@@ -74,7 +74,7 @@ export class CommonChannelPathHandler {
     });
   }
 
-  reconnectConnectionClientId(connection: ws, clientId: string) {}
+  reconnectConnectionClientId(connection: ws, clientId: string) { }
 
   // 待废弃
   disposeAll() {
@@ -119,7 +119,7 @@ export class CommonChannelHandler extends WebSocketHandler {
 
   private initWSServer() {
     this.logger.log('init Common Channel Handler');
-    this.wsServer = new ws.Server({ noServer: true }) ;
+    this.wsServer = new ws.Server({ noServer: true });
     this.wsServer.on('connection', (connection: ws) => {
       let connectionId;
       connection.on('message', (msg: string) => {

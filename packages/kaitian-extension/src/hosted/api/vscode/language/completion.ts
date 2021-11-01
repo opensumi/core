@@ -1,7 +1,7 @@
 import { Uri as URI, Cache } from '@ali/ide-core-common';
 import { ExtensionDocumentDataManager, ISuggestDataDto, ISuggestDataDtoField, ISuggestResultDto, ISuggestResultDtoField, RangeSuggestDataDto } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import {
   CompletionContext,
   Position,

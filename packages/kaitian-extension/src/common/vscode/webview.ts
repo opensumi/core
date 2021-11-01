@@ -1,6 +1,6 @@
 import { Event, IExtensionInfo, Uri, CancellationToken, BasicEvent } from '@ali/ide-core-common';
 import { ViewColumn } from './editor';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 
 export interface WebviewPanelShowOptions {
   readonly viewColumn?: number;
@@ -21,7 +21,7 @@ export interface IWebviewOptions {
 
 export interface IWebviewPanelViewState {
   active: boolean;
-   visible: boolean;
+  visible: boolean;
   position: number; // view column
 }
 
@@ -33,7 +33,7 @@ export interface IMainThreadWebview {
   $disposeWebview(id: string): void;
   $reveal(id: string, showOptions: WebviewPanelShowOptions): void;
   $setTitle(id: string, value: string): void;
-  $setIconPath(id: string, value?: { light: string, dark: string,  hc: string; } | string): void;
+  $setIconPath(id: string, value?: { light: string, dark: string, hc: string; } | string): void;
 
   $setHtml(id: string, value: string): void;
   $setOptions(id: string, options: IWebviewOptions): void;
@@ -226,11 +226,11 @@ export interface WebviewPanel {
    * Event fired when a webview panel's view state changes.
    */
 export interface WebviewPanelOnDidChangeViewStateEvent {
-    /**
-     * Webview panel whose view state changed.
-     */
-    readonly webviewPanel: WebviewPanel;
-  }
+  /**
+   * Webview panel whose view state changed.
+   */
+  readonly webviewPanel: WebviewPanel;
+}
 
 export interface WebviewPanelSerializer {
   /**
@@ -375,8 +375,8 @@ export interface WebviewViewOptions { retainContextWhenHidden?: boolean | undefi
 export class WebviewViewResolverRegistrationEvent extends BasicEvent<{
   viewType: string,
   options: WebviewViewOptions,
-}> {}
+}> { }
 
 export class WebviewViewResolverRegistrationRemovalEvent extends BasicEvent<{
   viewType: string,
-}> {}
+}> { }

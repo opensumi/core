@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { IInputBaseProps, Input } from './Input';
 import { HistoryNavigator } from '@ali/monaco-editor-core/esm/vs/base/common/history';
 

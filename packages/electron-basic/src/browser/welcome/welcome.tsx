@@ -1,8 +1,8 @@
-import * as React from 'react';
+import React from 'react';
 import { IWelcomeMetaData } from './common';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
 import { useInjectable, localize, FileUri, URI, CommandService, FILE_COMMANDS, IWindowService } from '@ali/ide-core-browser';
-import * as styles from './welcome.module.less';
+import styles from './welcome.module.less';
 
 export const EditorWelcomeComponent: ReactEditorComponent<IWelcomeMetaData> = ({resource}) => {
 

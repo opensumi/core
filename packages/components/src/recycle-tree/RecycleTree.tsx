@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { FixedSizeList, VariableSizeList, shouldComponentUpdate, ListProps } from 'react-window';
 import { TreeModel } from './tree/model/TreeModel';
 import { TreeNode, CompositeTreeNode, spliceArray } from './tree';
@@ -8,7 +8,7 @@ import { DisposableCollection, Emitter, Event, Disposable } from '../utils';
 import { INodeRendererProps, NodeRendererWrap, INodeRenderer } from './TreeNodeRendererWrap';
 import { TreeNodeType, TreeNodeEvent } from './types';
 import { ScrollbarsVirtualList } from '../scrollbars';
-import * as fuzzy from 'fuzzy';
+import fuzzy from 'fuzzy';
 
 export type IRecycleTreeAlign = 'smart' | 'start' | 'center' | 'end' | 'auto';
 

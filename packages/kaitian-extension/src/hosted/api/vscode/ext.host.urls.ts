@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Uri, toDisposable, onUnexpectedError } from '@ali/ide-core-common';
 import { IExtHostUrls, IMainThreadUrls, MainThreadAPIIdentifier } from '../../../common/vscode';

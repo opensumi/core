@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { useRef, useEffect } from 'react';
 import { Input } from '@ali/ide-components';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';

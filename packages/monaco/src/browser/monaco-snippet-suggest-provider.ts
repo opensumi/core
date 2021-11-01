@@ -133,7 +133,7 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
       toDispose.push(Disposable.create(() => {
         const index = pendingSnippets.indexOf(pending);
         if (index !== -1) {
-            pendingSnippets.splice(index, 1);
+          pendingSnippets.splice(index, 1);
         }
 
         this.pendingSnippets.delete(scope);

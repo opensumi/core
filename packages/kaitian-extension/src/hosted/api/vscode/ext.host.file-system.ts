@@ -15,7 +15,7 @@
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/file-system-ext-impl.ts
 
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import {
   FileChangeType,

@@ -1,5 +1,5 @@
-import * as cls from 'classnames';
-import * as React from 'react';
+import cls from 'classnames';
+import React from 'react';
 export * from './styles.less';
 
 // Nativa Select

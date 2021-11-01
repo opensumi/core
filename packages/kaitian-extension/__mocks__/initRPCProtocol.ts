@@ -1,4 +1,4 @@
-import * as net from 'net';
+import net from 'net';
 import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { createSocketConnection, RPCServiceCenter, initRPCService } from '@ali/ide-connection';
 

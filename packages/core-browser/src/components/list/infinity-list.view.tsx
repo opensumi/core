@@ -1,6 +1,6 @@
-import * as React from 'react';
-import * as cls from 'classnames';
-import * as styles from './infinity-list.module.less';
+import React from 'react';
+import cls from 'classnames';
+import styles from './infinity-list.module.less';
 import { PerfectScrollbar } from '../scrollbar';
 import throttle = require('lodash.throttle');
 

@@ -1,5 +1,5 @@
 import { Event, IDisposable } from '@ali/ide-core-common';
-import type * as vscode from 'vscode';
+import type vscode from 'vscode';
 
 export interface IProcessDataEvent {
   data: string;

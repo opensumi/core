@@ -20,8 +20,8 @@ import { parse } from '../../src/common/utils';
 
 import { Emitter, Uri } from '@ali/ide-core-common';
 
-import * as ws from 'ws';
-import * as http from 'http';
+import ws from 'ws';
+import http from 'http';
 const WebSocket = ws;
 
 class MockFileService extends RPCService {
@@ -54,7 +54,7 @@ describe('connection', () => {
     const mockHandler = jest.fn();
     commonChannelPathHandler.register('TEST_CHANNEL', {
       handler: mockHandler,
-      dispose: () => {},
+      dispose: () => { },
     });
 
     const connection = new WebSocket('ws://127.0.0.1:7788/service');

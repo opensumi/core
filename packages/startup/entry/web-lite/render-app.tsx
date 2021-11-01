@@ -1,15 +1,15 @@
 import { Injector } from '@ali/common-di';
 import { ClientApp, IClientAppOpts, LogServiceForClientPath, DEFAULT_WORKSPACE_STORAGE_DIR_NAME } from '@ali/ide-core-browser';
 import { ensureDir } from '@ali/ide-core-common/lib/browser-fs/ensure-dir';
-import * as BrowserFS from 'browserfs';
-import * as path from 'path';
+import BrowserFS from 'browserfs';
+import path from 'path';
 
 import { MetaService } from './services/meta-service';
 import { IMetaService } from './services/meta-service/base';
 import { MockLogServiceForClient } from './overrides/mock-logger';
 
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 BrowserFS.configure({
   fs: 'IndexedDB',

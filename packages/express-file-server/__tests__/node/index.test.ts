@@ -2,10 +2,10 @@ import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { ExpressFileServerModule } from '../../src/node';
 import { ExpressFileServerContribution } from '../../src/node/express-file-server.contribution';
 import { IServerApp, AppConfig } from '@ali/ide-core-node';
-import * as Koa from 'koa';
-import * as superagent from 'superagent';
-import * as http from 'http';
-import * as path from 'path';
+import Koa from 'koa';
+import superagent from 'superagent';
+import http from 'http';
+import path from 'path';
 
 describe('template test', () => {
   let server: http.Server;
@@ -40,7 +40,7 @@ describe('template test', () => {
 
   it('can get png if path in whitelist', async (done) => {
     const res = await superagent
-        .get(`http://127.0.0.1:50118/assets${path.join(resPath, 'icon.png')}`);
+      .get(`http://127.0.0.1:50118/assets${path.join(resPath, 'icon.png')}`);
     expect(res.status === 200);
     done();
   });
@@ -48,7 +48,7 @@ describe('template test', () => {
   it('response 403 if not in whitelist', async (done) => {
     try {
       await superagent
-      .get('http://127.0.0.1:50118/assets/test');
+        .get('http://127.0.0.1:50118/assets/test');
     } catch (err) {
       expect(err.status === 403);
     }
@@ -59,7 +59,7 @@ describe('template test', () => {
   it('response 403 if not allowed mime', async (done) => {
     try {
       await superagent
-      .get(`http://127.0.0.1:50118/assets${path.join(resPath, 'icon.exe')}`);
+        .get(`http://127.0.0.1:50118/assets${path.join(resPath, 'icon.exe')}`);
     } catch (err) {
       expect(err.status === 403);
     }

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { ViewState, useInjectable, isOSX, URI, DisposableCollection } from '@ali/ide-core-browser';
 import { RecycleTreeFilterDecorator, RecycleTree, TreeNodeType, INodeRendererWrapProps, IRecycleTreeFilterHandle, TreeModel } from '@ali/ide-components';
 import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
@@ -6,8 +6,8 @@ import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
 import { FileTreeService, ITreeIndent } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
 import { Directory, File } from '../common/file-tree-node.define';
-import * as cls from 'classnames';
-import * as styles from './file-tree.module.less';
+import cls from 'classnames';
+import styles from './file-tree.module.less';
 import { IFileTreeService } from '../common';
 import { WelcomeView } from '@ali/ide-main-layout/lib/browser/welcome.view';
 

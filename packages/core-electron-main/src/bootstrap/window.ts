@@ -7,7 +7,7 @@ import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
 import { ExtensionCandidate } from '@ali/ide-core-common';
 import treeKill = require('tree-kill');
 import { app } from 'electron';
-import * as qs from 'querystring';
+import qs from 'querystring';
 
 const DEFAULT_WINDOW_HEIGHT = 700;
 const DEFAULT_WINDOW_WIDTH = 1000;

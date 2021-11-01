@@ -1,7 +1,7 @@
-import * as os from 'os';
+import os from 'os';
 import * as pty from 'node-pty';
 import * as osLocale from 'os-locale';
-import * as omit from 'lodash.omit';
+import omit from 'lodash.omit';
 import { TerminalOptions } from '../common';
 import { getShellPath } from '@ali/ide-core-node/lib/bootstrap/shell-path';
 
@@ -22,7 +22,7 @@ export class PtyService {
     if (options.strictEnv) {
       ptyEnv = options.env as { [key: string]: string };
     } else {
-      ptyEnv =  (
+      ptyEnv = (
         Object.assign({},
           omit(process.env, ['KTELECTRON', 'EXTENSION_HOST_ENTRY', 'EXTENSION_DIR', 'WORKSPACE_DIR', 'CODE_WINDOW_CLIENT_ID', 'VSCODE_NLS_CONFIG', 'ELECTRON_RUN_AS_NODE']),
           {

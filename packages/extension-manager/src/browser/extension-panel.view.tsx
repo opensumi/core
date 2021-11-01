@@ -1,10 +1,10 @@
-import * as React from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable, localize, CommandRegistry } from '@ali/ide-core-browser';
 import { enableExtensionsContainerId, hotExtensionsContainerId, enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId, searchExtensionsFromMarketplaceTarbarHandlerId, searchExtensionsFromInstalledTarbarHandlerId, IExtensionManagerService, hotExtensionsFromMarketplaceTarbarHandlerId, TabActiveKey, SearchFromMarketplaceCommandId } from '../common';
 import { ExtensionHotAccordion, ExtensionEnableAccordion, ExtensionDisableAccordion, ExtensionSearchInstalledAccordion, ExtensionSearchMarketplaceAccordion } from './extension-panel-accordion.view';
 import { ExtensionSearch } from './components/extension-search';
-import * as styles from './extension-panel.module.less';
+import styles from './extension-panel.module.less';
 import { AccordionContainer } from '@ali/ide-main-layout/lib/browser/accordion/accordion.view';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { Tabs } from '@ali/ide-components';

@@ -1,7 +1,7 @@
 import { Injectable } from '@ali/common-di';
 import { IDisposable } from '@ali/ide-core-common/lib/disposable';
 import { MaybePromise } from '@ali/ide-core-common';
-import * as pm from 'picomatch';
+import pm from 'picomatch';
 
 import { IActivationEventService } from './types';
 

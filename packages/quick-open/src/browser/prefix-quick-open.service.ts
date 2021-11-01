@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 // Some code copued and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/core/src/browser/quick-open/prefix-quick-open-service.ts
-import * as React from 'react';
+import React from 'react';
 import { localize, QuickOpenActionProvider } from '@ali/ide-core-browser';
 import { DisposableCollection, IDisposable, Disposable, ILogger } from '@ali/ide-core-common';
 import { IQuickOpenHandlerRegistry, QuickOpenHandler, QuickOpenTabConfig, QuickOpenTab, QuickOpenOptions, QuickOpenService, QuickOpenItem, PrefixQuickOpenService } from '@ali/ide-core-browser/lib/quick-open';
@@ -32,7 +32,7 @@ export class QuickOpenHandlerRegistry extends Disposable implements IQuickOpenHa
   protected readonly handlers: Map<string, QuickOpenHandler> = new Map();
   protected tabs: QuickOpenTab[] = [];
   protected sortedTabs: QuickOpenTab[] | null = null;
-  protected readonly handlerTabMap: Map<QuickOpenHandler, QuickOpenTab[]>  = new Map();
+  protected readonly handlerTabMap: Map<QuickOpenHandler, QuickOpenTab[]> = new Map();
   protected defaultHandler: QuickOpenHandler | undefined;
 
   @Autowired(ILogger)
@@ -247,7 +247,7 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
     if (handler === undefined) {
       const items: QuickOpenItem[] = [];
       items.push(new QuickOpenItem({
-          label: localize('quickopen.command.nohandler'),
+        label: localize('quickopen.command.nohandler'),
       }));
       acceptor(items);
     } else if (handler !== this.currentHandler) {
