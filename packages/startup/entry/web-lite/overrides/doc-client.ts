@@ -1,9 +1,9 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IFileSchemeDocClient, IContentChange, ISavingContent } from '@ali/ide-file-scheme';
 import { IEditorDocumentModelSaveResult, IEditorDocumentEditChange, TextDocumentContentChangeEvent } from '@ali/ide-core-browser';
+import { IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { Range } from 'vscode-languageserver-types';
-import md5 from 'md5';
 
 /**
  * todo: 重写文档保存逻辑
@@ -13,13 +13,16 @@ export class FileSchemeDocClientService implements IFileSchemeDocClient {
   @Autowired(IFileServiceClient)
   private fileService: IFileServiceClient;
 
+  @Autowired(IHashCalculateService)
+  private readonly hashCalculateService: IHashCalculateService;
+
   async saveByChange(uri: string, change: IContentChange, encoding?: string | undefined, force?: boolean | undefined): Promise<IEditorDocumentModelSaveResult> {
     try {
       const stat = await this.fileService.getFileStat(uri);
       if (stat) {
         if (!force) {
-          const res = await this.fileService.resolveContent(uri, { encoding });
-          if (change.baseMd5 !== md5(res.content)) {
+          const res = await this.fileService.resolveContent(uri, {encoding});
+          if (change.baseMd5 !== this.hashCalculateService.calculate(res.content)) {
             return {
               state: 'diff',
             };
@@ -61,7 +64,7 @@ export class FileSchemeDocClientService implements IFileSchemeDocClient {
       if (stat) {
         if (!force) {
           const res = await this.fileService.resolveContent(uri, { encoding });
-          if (content.baseMd5 !== md5(res.content)) {
+          if (content.baseMd5 !== this.hashCalculateService.calculate(res.content)) {
             return {
               state: 'diff',
             };
@@ -89,7 +92,7 @@ export class FileSchemeDocClientService implements IFileSchemeDocClient {
     try {
       if (await this.fileService.access(uri)) {
         const res = await this.fileService.resolveContent(uri, { encoding });
-        return md5(res.content);
+        return this.hashCalculateService.calculate(res.content);
       } else {
         return undefined;
       }

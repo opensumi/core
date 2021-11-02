@@ -1,4 +1,4 @@
-import { Injectable, Inject, Autowired, Optional, Injector, INJECTOR_TOKEN } from '@ali/common-di';
+import { Injectable, Inject, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import drivelist from 'drivelist';
 import paths from 'path';
 import * as fs from 'fs-extra';
@@ -17,7 +17,6 @@ import {
   isEmptyObject,
 } from '@ali/ide-core-common';
 import { FileUri, INodeLogger, AppConfig } from '@ali/ide-core-node';
-import { RPCService } from '@ali/ide-connection'
 import { parse, ParsedPattern, match } from '@ali/ide-core-common/lib/utils/glob';
 import { FileChangeEvent, TextDocumentContentChangeEvent } from '../common';
 import { FileSystemManage } from './file-system-manage';

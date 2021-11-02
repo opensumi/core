@@ -1,4 +1,3 @@
-import md5 from 'md5';
 import { uniqueId } from 'lodash';
 import { URI } from '@ali/ide-core-browser';
 
@@ -7,13 +6,15 @@ import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injecto
 import { IDocPersistentCacheProvider } from '../../../src/common';
 import { EditorDocumentModel } from '../../../src/browser/doc-model/main';
 import { EmptyDocCacheImpl } from '@ali/ide-editor/lib/browser/doc-cache';
+import { IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
 
 describe('EmptyDocCacheImpl', () => {
   let injector: MockInjector;
   let uri: URI;
   let content: string;
+  let hashCalculateService: IHashCalculateService;
 
-  beforeEach(() => {
+  beforeEach(async (done) => {
     injector = createBrowserInjector([]);
     injector.addProviders(
       {
@@ -24,6 +25,9 @@ describe('EmptyDocCacheImpl', () => {
 
     uri = new URI(`test://testUri${Math.random()}`);
     content = uniqueId('content');
+    hashCalculateService = injector.get(IHashCalculateService);
+    await hashCalculateService.initialize();
+    done();
   });
 
   it('call hasCache during DocumentModel constructing', () => {
@@ -75,7 +79,7 @@ describe('EmptyDocCacheImpl', () => {
       content: newContent,
       dirty: true,
       encoding: 'utf8',
-      startMD5: md5(content),
+      startMD5: hashCalculateService.calculate(content),
     });
   });
 });

@@ -61,6 +61,7 @@ import { IExternalUriService, ExternalUriService } from '../services/external-ur
 import { ToolbarPopoverRegistry } from '../toolbar/toolbar.popover.registry';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { CredentialsService, ICredentialsService, CryptrService, ICryptrService } from '../services';
+import { HashCalculateServiceImpl, IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider
@@ -224,6 +225,10 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: ICredentialsService,
       useClass: CredentialsService,
+    },
+    {
+      token: IHashCalculateService,
+      useClass: HashCalculateServiceImpl,
     },
   ];
   injector.addProviders(...providers);

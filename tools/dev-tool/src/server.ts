@@ -25,6 +25,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     staticAllowOrigin: '*',
     staticAllowPath: [
       path.join(__dirname, '../../../packages/kaitian-extension'),
+      '/',
     ],
     extLogServiceClassPath: path.join(__dirname, './mock-log-service.js'),
     /**

@@ -1,8 +1,8 @@
-import md5 from 'md5';
 import { uniqueId } from 'lodash';
 import { promisify } from 'util';
-import { URI } from '@ali/ide-core-browser';
+import { ILoggerManagerClient, URI } from '@ali/ide-core-browser';
 import { LocalStorageDocCacheImpl } from '@ali/ide-editor/lib/browser/doc-cache';
+import { IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
 import { IWorkspaceStorageService } from '@ali/ide-workspace';
 
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
@@ -11,15 +11,30 @@ import { IDocPersistentCacheProvider } from '../../../src/common';
 import { EditorDocumentModel } from '../../../src/browser/doc-model/main';
 
 describe('LocalStorageDocCacheImpl', () => {
-  let injector: MockInjector;
   let content: string;
+  let injector: MockInjector;
+  let hashCalculateService: IHashCalculateService;
 
-  beforeEach(() => {
+  beforeEach(async (done) => {
     injector = createBrowserInjector([]);
     injector.addProviders(
       {
         token: IDocPersistentCacheProvider,
         useClass: LocalStorageDocCacheImpl,
+      },
+      {
+        token: ILoggerManagerClient,
+        useValue: {
+          getLogger: () => {
+            return {
+              log: () => {},
+              debug: () => {},
+              error: () => {},
+              verbose: () => {},
+              warn: () => {},
+            };
+          },
+        },
       },
       {
         token: IWorkspaceStorageService,
@@ -29,8 +44,10 @@ describe('LocalStorageDocCacheImpl', () => {
         },
       },
     );
-
+    hashCalculateService = injector.get(IHashCalculateService);
+    await hashCalculateService.initialize();
     content = uniqueId('content');
+    done();
   });
 
   it('get undefined from storageService', async () => {
@@ -50,7 +67,7 @@ describe('LocalStorageDocCacheImpl', () => {
     const uri = new URI('test://testUri2');
     jest.spyOn(storageService, 'getData').mockResolvedValue({
       path: uri.path.toString(),
-      startMD5: md5(content),
+      startMD5: hashCalculateService.calculate(content),
       changeMatrix: [
         [
           ['a', 0, 0, 1, 0],
@@ -78,7 +95,7 @@ describe('LocalStorageDocCacheImpl', () => {
     expect(setDataSpy).toBeCalledTimes(1);
     expect(setDataSpy).toBeCalledWith(`LocalStorageDocCacheImpl_${uri.toString()}`, {
       path: '',
-      startMD5: md5(content),
+      startMD5: hashCalculateService.calculate(content),
       changeMatrix: [
         [
           [newContent, 1, 1, 1, 9],

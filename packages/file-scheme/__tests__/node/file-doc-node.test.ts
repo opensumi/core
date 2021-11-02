@@ -1,5 +1,4 @@
 import { IFileService, FileStat } from '@ali/ide-file-service';
-import md5 = require('md5');
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { FileSchemeNodeModule } from '../../src/node';
@@ -10,17 +9,31 @@ import { join, dirname } from 'path';
 import { ensureDir, writeFile, readFile } from 'fs-extra';
 import { URI } from '@ali/ide-core-common';
 import { encode, decode } from '@ali/ide-file-service/lib/node/encoding';
+import { HashCalculateServiceImpl, IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
 
 describe('node file doc service test', () => {
 
+  const injector = createNodeInjector([FileSchemeNodeModule]);
+  injector.addProviders(
+    ...[
+      {
+        token: IFileService,
+        useValue: {},
+      },
+      {
+        token: IHashCalculateService,
+        useClass: HashCalculateServiceImpl,
+      },
+    ],
+  );
+  const hashCalculateService: IHashCalculateService = injector.get(IHashCalculateService);
+
+  beforeAll(async (done) => {
+    await hashCalculateService.initialize();
+    done();
+  });
+
   it('file doc node service', async (done) => {
-
-    const injector = createNodeInjector([FileSchemeNodeModule]);
-
-    injector.addProviders({
-      token: IFileService,
-      useValue: {},
-    });
 
     injector.addProviders({
       token: IFileSchemeDocNodeService,
@@ -58,7 +71,7 @@ describe('node file doc service test', () => {
 
     expect(fileDocNodeService).toBeDefined();
 
-    const currentMd5 = md5('current content');
+    const currentMd5 = hashCalculateService.calculate('current content');
 
     expect(await fileDocNodeService.$getMd5('file:///anyFile')).toBe(currentMd5);
     expect(await fileDocNodeService.$getMd5('file:///anyFilenotexist')).toBe(undefined);
@@ -74,7 +87,7 @@ describe('node file doc service test', () => {
 
     // diff 情况
     const res2 = await fileDocNodeService.$saveByContent('file:///anyFile', {
-      baseMd5: md5('old content'),
+      baseMd5: hashCalculateService.calculate('old content'),
       content: 'next content',
     });
 
@@ -83,7 +96,7 @@ describe('node file doc service test', () => {
     expect(fileService.setContent).toBeCalledTimes(1);
 
     const res3 = await fileDocNodeService.$saveByContent('file:///anyFile', {
-      baseMd5: md5('old content'),
+      baseMd5: hashCalculateService.calculate('old content'),
       content: 'next content',
     }, 'utf-8', true);
 
@@ -92,7 +105,7 @@ describe('node file doc service test', () => {
     expect(fileService.setContent).toBeCalledTimes(2);
 
     const res4 = await fileDocNodeService.$saveByContent('file:///anyFilenotexist', {
-      baseMd5: md5(''),
+      baseMd5: hashCalculateService.calculate(''),
       content: 'next content for new File',
     });
 
@@ -104,7 +117,7 @@ describe('node file doc service test', () => {
     await writeFile(file1, '\n\n2', 'utf8');
 
     const res5 = await fileDocNodeService.$saveByChange(URI.file(file1).toString(), {
-      baseMd5: md5('\n\n2'),
+      baseMd5: hashCalculateService.calculate('\n\n2'),
       changes: [
         {
           changes: [
@@ -128,7 +141,7 @@ describe('node file doc service test', () => {
     expect(await readFile(file1, 'utf8')).toBe('test\n\n2');
 
     const res6 = await fileDocNodeService.$saveByChange(URI.file(file1).toString(), {
-      baseMd5: md5('old md5'),
+      baseMd5: hashCalculateService.calculate('old md5'),
       changes: [
         {
           changes: [
@@ -153,7 +166,7 @@ describe('node file doc service test', () => {
     await writeFile(file2, encode('\n\n测试', 'gbk'));
 
     const res7 = await fileDocNodeService.$saveByChange(URI.file(file2).toString(), {
-      baseMd5: md5('\n\n测试'),
+      baseMd5: hashCalculateService.calculate('\n\n测试'),
       changes: [
         {
           changes: [

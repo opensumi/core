@@ -4,13 +4,13 @@ import http from 'http';
 import https from 'https';
 import net from 'net';
 import cp from 'child_process';
+import os from 'os';
+import path from 'path';
 import { MaybePromise, ContributionProvider, createContributionProvider, isWindows } from '@ali/ide-core-common';
 import { createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
 import { NodeModule } from '../node-module';
 import { WebSocketHandler } from '@ali/ide-connection/lib/node';
 import { LogLevel, ILogServiceManager, ILogService, SupportLogNamespace, StoragePaths } from '@ali/ide-core-common';
-import os from 'os';
-import path from 'path';
 import { injectInnerProviders } from './inner-providers';
 
 export type ModuleConstructor = ConstructorOf<NodeModule>;

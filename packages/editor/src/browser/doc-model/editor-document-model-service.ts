@@ -1,4 +1,3 @@
-import md5 from 'md5';
 import { URI, IRef, ReferenceManager, IEditorDocumentChange, IEditorDocumentModelSaveResult, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_SCHEMA, ILogger, PreferenceService, ReadyEvent, memoize } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 
@@ -6,6 +5,7 @@ import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocum
 import { EditorDocumentModel } from './editor-document-model';
 import { mapToSerializable, serializableToMap } from '@ali/ide-core-common/lib/map';
 import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+import { IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
 
 export const EDITOR_DOCUMENT_MODEL_STORAGE: URI = URI.from({ scheme: STORAGE_SCHEMA.SCOPE, path: 'editor-doc' });
 export const EDITOR_DOC_OPTIONS_PREF_KEY = 'editor_doc_pref';
@@ -27,6 +27,9 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
 
   @Autowired(PreferenceService)
   preferenceService: PreferenceService;
+
+  @Autowired(IHashCalculateService)
+  private readonly hashCalculateService: IHashCalculateService;
 
   private storage: IStorage;
 
@@ -161,12 +164,12 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
         if (provider) {
           if (provider.provideEditorDocumentModelContentMd5) {
             const nextMd5 = await provider.provideEditorDocumentModelContentMd5(doc.uri, doc.encoding);
-            if (nextMd5 !== doc.baseContentMd5) {
+            if (nextMd5 !== doc.getBaseContentMd5()) {
               doc.updateContent(await this.contentRegistry.getContentForUri(doc.uri, doc.encoding), undefined, true);
             }
           } else {
             const content = await this.contentRegistry.getContentForUri(doc.uri, doc.encoding);
-            if (md5(content) !== doc.baseContentMd5) {
+            if (this.hashCalculateService.calculate(content) !== doc.getBaseContentMd5()) {
               doc.updateContent(content, undefined, true);
             }
           }

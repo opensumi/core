@@ -5,30 +5,26 @@ import { DefaultUriLabelProvider } from '@ali/ide-core-browser/lib/services';
 import { Disposable, URI, localize, ISchemaRegistry, ISchemaStore} from '@ali/ide-core-browser';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks/file-service-client';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
-import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { FileSchemeDocNodeServicePath } from '@ali/ide-file-scheme';
-import md5 = require('md5');
 import { FileSchemeDocumentProvider, VscodeSchemeDocumentProvider } from '@ali/ide-file-scheme/lib/browser/file-doc';
 import { FileSchemeModule } from '../../src/browser';
 import { EditorPreferences } from '@ali/ide-editor/lib/browser';
 import { FileSystemResourceProvider } from '@ali/ide-editor/lib/browser/fs-resource/fs-resource';
 import { BinaryBuffer } from '@ali/ide-core-common/lib/utils/buffer';
+import { HashCalculateServiceImpl, IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
 
 describe('file scheme tests', () => {
-
-  beforeAll(() => {
-    (global as any).monaco = createMockedMonaco() as any;
-  });
-
-  afterAll(() => {
-    (global as any).monaco = undefined;
-  });
 
   const injector = createBrowserInjector([FileSchemeModule]);
   injector.addProviders({
     token: IFileServiceClient,
     useClass: MockFileServiceClient,
-  }, {
+  },
+  {
+    token: IHashCalculateService,
+    useClass: HashCalculateServiceImpl,
+  },
+  {
     token: IDialogService,
     useValue: {},
   }, {
@@ -47,6 +43,13 @@ describe('file scheme tests', () => {
     token: ISchemaStore,
     useValue: {},
   });
+
+  const hashCalculateService: IHashCalculateService = injector.get(IHashCalculateService);
+
+  beforeAll(async () => {
+    await hashCalculateService.initialize();
+  });
+
   let dialogResult: string | undefined;
   injector.mock(IDialogService, 'open', async () => {
     return dialogResult;
@@ -114,7 +117,7 @@ describe('file scheme tests', () => {
     const documentProvider = injector.get(FileSchemeDocumentProvider);
 
     injector.mock(FileSchemeDocNodeServicePath, '$getMd5', (uriString) => {
-      return md5(docContentPrefix + uriString);
+      return hashCalculateService.calculate(docContentPrefix + uriString);
     });
 
     const saveByContent = jest.fn();
@@ -140,7 +143,7 @@ describe('file scheme tests', () => {
     expect(saveByChanges).toBeCalledTimes(0);
 
     expect(await documentProvider.provideEditorDocumentModelContent(new URI('file:///test.ts'), 'utf8')).toBe(docContentPrefix + 'file:///test.ts');
-    expect(await documentProvider.provideEditorDocumentModelContentMd5(new URI('file:///test.ts'), 'utf8')).toBe(md5(docContentPrefix + 'file:///test.ts'));
+    expect(await documentProvider.provideEditorDocumentModelContentMd5(new URI('file:///test.ts'), 'utf8')).toBe(hashCalculateService.calculate(docContentPrefix + 'file:///test.ts'));
 
     expect(await documentProvider.isReadonly(new URI('file:///a/b/c.readonly.js'))).toBeTruthy();
     expect(await documentProvider.isReadonly(new URI('file:///a/b/c.n.js'))).toBeFalsy();

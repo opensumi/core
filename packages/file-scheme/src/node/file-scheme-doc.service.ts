@@ -1,16 +1,19 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IEditorDocumentModelSaveResult, URI, IEditorDocumentChange, BasicTextLines, isEditChange } from '@ali/ide-core-node';
 import { IFileService } from '@ali/ide-file-service';
-import md5 = require('md5');
 
 import { IFileSchemeDocNodeService, ISavingContent, IContentChange } from '../common';
 import { existsSync, readFile, statSync, writeFile } from 'fs-extra';
 import { encode, decode } from '@ali/ide-file-service/lib/node/encoding';
+import { IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
 
 @Injectable()
 export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
   @Autowired(IFileService)
   private fileService: IFileService;
+
+  @Autowired(IHashCalculateService)
+  private readonly hashCalculateService: IHashCalculateService;
 
   // 由于此处只处理file协议，为了简洁，不再使用 fileService,
 
@@ -22,7 +25,7 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
         const contentBuffer = await readFile(fsPath);
         const content = decode(contentBuffer, encoding ? encoding : 'utf8');
         if (!force) {
-          const currentMd5 = md5(content);
+          const currentMd5 = this.hashCalculateService.calculate(content);
           if (change.baseMd5 !== currentMd5) {
             return {
               state: 'diff',
@@ -57,7 +60,7 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
       if (stat) {
         if (!force) {
           const res = await this.fileService.resolveContent(uri, {encoding});
-          if (content.baseMd5 !== md5(res.content)) {
+          if (content.baseMd5 !== this.hashCalculateService.calculate(res.content)) {
             return {
               state: 'diff',
             };
@@ -85,7 +88,7 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
     try {
       if (await this.fileService.access(uri)) {
         const res = await this.fileService.resolveContent(uri, {encoding});
-        return md5(res.content);
+        return this.hashCalculateService.calculate(res.content);
       } else {
         return undefined;
       }

@@ -21,16 +21,15 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
+    "@ali/ide-components": "2.11.2",
     "@ali/ide-core-common": "2.11.2",
     "@ali/ide-core-node": "2.11.2",
-    "@ali/ide-monaco": "2.11.2",
-    "@ali/ide-theme": "2.11.2",
-    "@ali/ide-workspace": "2.11.2",
-    "@ali/ide-overlay": "2.11.2",
     "@ali/ide-file-service": "2.11.2",
-    "@ali/ide-components": "2.11.2",
+    "@ali/ide-monaco": "2.11.2",
+    "@ali/ide-overlay": "2.11.2",
     "@ali/ide-quick-open": "2.11.2",
-    "md5": "^2.2.1"
+    "@ali/ide-theme": "2.11.2",
+    "@ali/ide-workspace": "2.11.2"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "2.11.2",

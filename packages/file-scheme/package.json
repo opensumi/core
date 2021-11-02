@@ -26,8 +26,8 @@
     "@ali/ide-core-node": "2.11.2",
     "@ali/ide-editor": "2.11.2",
     "@ali/ide-file-service": "2.11.2",
-    "@ali/ide-overlay": "2.11.2",
     "@ali/ide-monaco": "2.11.2",
+    "@ali/ide-overlay": "2.11.2",
     "@ali/ide-static-resource": "2.11.2"
   },
   "devDependencies": {

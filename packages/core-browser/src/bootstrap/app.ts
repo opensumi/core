@@ -222,6 +222,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.registerEventListeners();
     // 在 connect 之后立即初始化数据，保证其它 module 能同步获取数据
     await this.injector.get(IApplicationService).initializeData();
+
     // 在 contributions 执行完 onStart 上报一次耗时
     await this.measure('Contributions.start', () => this.startContributions(container));
     this.stateService.state = 'started_contributions';

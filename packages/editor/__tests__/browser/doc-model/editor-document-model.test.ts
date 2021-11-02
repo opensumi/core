@@ -1,5 +1,4 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import md5 from 'md5';
 import { isMacintosh, isLinux } from '@ali/monaco-editor-core/esm/vs/base/common/platform';
 import { uniqueId } from 'lodash';
 import { URI, IEventBus } from '@ali/ide-core-browser';
@@ -12,11 +11,13 @@ import { EditorDocumentModelOptionChangedEvent, EditorDocumentModelContentChange
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
 import { EmptyDocCacheImpl } from '@ali/ide-editor/lib/browser/doc-cache';
 import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+import { IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
 
 describe('EditorDocumentModel', () => {
   let injector: MockInjector;
+  let hashCalculateService: IHashCalculateService;
 
-  beforeEach(() => {
+  beforeEach(async (done) => {
     injector = createBrowserInjector([]);
     injector.addProviders(
       {
@@ -24,7 +25,10 @@ describe('EditorDocumentModel', () => {
         useClass: EmptyDocCacheImpl,
       },
     );
+    hashCalculateService = injector.get(IHashCalculateService);
+    await hashCalculateService.initialize();
     (global as any).monaco = createMockedMonaco() as any;
+    done();
   });
 
   afterEach(() => {
@@ -119,7 +123,7 @@ describe('EditorDocumentModel', () => {
       jest.spyOn(cacheProvider, 'hasCache').mockReturnValue(true);
       jest.spyOn(cacheProvider, 'getCache').mockReturnValue({
         path: uri.path.toString(),
-        startMD5: md5(content),
+        startMD5: hashCalculateService.calculate(content),
         content: newContent,
       });
 
@@ -137,7 +141,7 @@ describe('EditorDocumentModel', () => {
       jest.spyOn(cacheProvider, 'hasCache').mockReturnValue(true);
       jest.spyOn(cacheProvider, 'getCache').mockReturnValue({
         path: uri.path.toString(),
-        startMD5: md5(content),
+        startMD5: hashCalculateService.calculate(content),
         changeMatrix: [
           [
             ['a', 0, 0, 1, 0],
@@ -159,7 +163,7 @@ describe('EditorDocumentModel', () => {
       jest.spyOn(cacheProvider, 'hasCache').mockReturnValue(true);
       jest.spyOn(cacheProvider, 'getCache').mockResolvedValue({
         path: uri.path.toString(),
-        startMD5: md5(content),
+        startMD5: hashCalculateService.calculate(content),
         changeMatrix: [
           [
             ['a', 0, 0, 1, 0],

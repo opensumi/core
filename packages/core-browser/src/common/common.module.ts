@@ -5,6 +5,7 @@ import { OpenerContribution } from '../opener';
 import { DefaultOpenerContribution, OpenerContributionClient } from '../opener/opener.contribution';
 import { CommonServerPath, CryptrServicePath, KeytarServicePath } from '@ali/ide-core-common';
 import { AuthenticationContribution } from '../authentication/authentication.contribution';
+import { HashCalculateContribution } from '../hash-calculate/hash-calculate.contribution';
 
 @Injectable()
 export class ClientCommonModule extends BrowserModule {
@@ -14,6 +15,7 @@ export class ClientCommonModule extends BrowserModule {
     DefaultOpenerContribution,
     OpenerContributionClient,
     AuthenticationContribution,
+    HashCalculateContribution,
   ];
   backServices = [
     {

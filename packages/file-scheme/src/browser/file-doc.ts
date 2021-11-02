@@ -3,9 +3,9 @@ import { IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser
 import { FILE_SCHEME, FILE_SAVE_BY_CHANGE_THRESHOLD, IFileSchemeDocClient } from '../common';
 import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, ISchemaStore, IDisposable, Disposable, ISchemaRegistry, replaceLocalizePlaceholder, PreferenceService } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service';
-import md5 from 'md5';
 import { BaseFileSystemEditorDocumentProvider } from '@ali/ide-editor/lib/browser/fs-resource/fs-editor-doc';
 import { EOL } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+import { IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
 
 // TODO 这块其实应该放到file service当中
 @Injectable()
@@ -20,9 +20,8 @@ export class FileSchemeDocumentProvider extends BaseFileSystemEditorDocumentProv
   @Autowired(PreferenceService)
   protected readonly preferenceService: PreferenceService;
 
-  constructor() {
-    super();
-  }
+  @Autowired(IHashCalculateService)
+  private readonly hashCalculateService: IHashCalculateService;
 
   handlesUri(uri: URI): number {
     return uri.scheme === FILE_SCHEME ? 20 : -1;
@@ -38,8 +37,7 @@ export class FileSchemeDocumentProvider extends BaseFileSystemEditorDocumentProv
   }
 
   async saveDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding: string, ignoreDiff: boolean = false, eol: EOL = EOL.LF): Promise<IEditorDocumentModelSaveResult> {
-    // TODO
-    const baseMd5 = md5(baseContent);
+    const baseMd5 = this.hashCalculateService.calculate(baseContent);
     if (content.length > FILE_SAVE_BY_CHANGE_THRESHOLD) {
       return await this.fileSchemeDocClient.saveByChange(uri.toString(), {
         baseMd5,

@@ -2,7 +2,6 @@ import { monaco, URI as MonacoURI } from '@ali/ide-monaco/lib/browser/monaco-api
 import { Autowired, Injectable } from '@ali/common-di';
 import { CommandService, Disposable, Emitter, formatLocalize, IEventBus, ILogger, IRange, IReporterService, isThenable, isUndefinedOrNull, localize, PreferenceService, REPORT_NAME, URI } from '@ali/ide-core-browser';
 import { IMessageService } from '@ali/ide-overlay';
-import md5 from 'md5';
 import { IDocCache, IDocPersistentCacheProvider, isDocContentCache, parseRangeFrom, SaveReason, IEditorDocumentModelContentChange } from '../../common';
 import { CompareResult, ICompareService } from '../types';
 import { EditorDocumentError } from './editor-document-error';
@@ -13,6 +12,7 @@ import debounce = require('lodash.debounce');
 import { EditorPreferences } from '../preference/schema';
 import { createEditorPreferenceProxy } from '../preference/util';
 import { EOL, EndOfLineSequence, ITextModel } from '@ali/ide-monaco/lib/browser/monaco-api/types';
+import { IHashCalculateService } from '@ali/ide-core-common/lib/hash-calculate/hash-calculate';
 
 export interface EditorDocumentModelConstructionOptions {
   eol?: EOL;
@@ -64,6 +64,9 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   @Autowired(PreferenceService)
   preferences: PreferenceService;
+
+  @Autowired(IHashCalculateService)
+  private readonly hashCalculateService: IHashCalculateService;
 
   private monacoModel: ITextModel;
 
@@ -423,7 +426,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   get baseContentMd5() {
     if (!this._baseContentMd5) {
-      this._baseContentMd5 = md5(this._baseContent);
+      this._baseContentMd5 = this.hashCalculateService.calculate(this._baseContent);
     }
     return this._baseContentMd5;
   }
@@ -442,6 +445,13 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       }));
     }
     return this._tryAutoSaveAfterDelay;
+  }
+
+  getBaseContentMd5(): string {
+    if (!this._baseContentMd5) {
+      this._baseContentMd5 = this.hashCalculateService.calculate(this._baseContent);
+    }
+    return this._baseContentMd5!;
   }
 
   private notifyChangeEvent(changes: IEditorDocumentModelContentChange[] = []) {
@@ -464,7 +474,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
         return self.dirty;
       },
       get startMD5() {
-        return self.baseContentMd5;
+        return self.getBaseContentMd5();
       },
       get content() {
         return self.getText();

@@ -4,10 +4,12 @@ import { NodeModule } from '../node-module';
 import { CryptrService } from './cryptr.server';
 import { CommonServer } from './common.server';
 import { CredentialService } from './credential.server';
+import { HashCalculateContribution } from '../hash-calculate/hash-calculate.contribution';
 
 @Injectable()
 export class ServerCommonModule extends NodeModule {
   providers = [
+    HashCalculateContribution,
     {
       token: ICommonServer,
       useClass: CommonServer,
