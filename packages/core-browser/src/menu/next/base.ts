@@ -136,6 +136,7 @@ export abstract class IMenuRegistry {
   abstract getMenuCommand(command: string | MenuCommandDesc): PartialBy<MenuCommandDesc, 'label'>;
   abstract registerMenuExtendInfo(menuId: MenuId | string, items: Array<IKaitianMenuExtendInfo>);
   abstract registerMenuItem(menuId: MenuId | string, item: IMenuItem | ISubmenuItem | IInternalComponentMenuItem): IDisposable;
+  abstract unregisterMenuItem(menuId: MenuId | string, menuItemId: string): void;
   abstract registerMenuItems(menuId: MenuId | string, items: Array<IMenuItem | ISubmenuItem | IInternalComponentMenuItem>): IDisposable;
   abstract unregisterMenuId(menuId: string): IDisposable;
   abstract getMenuItems(menuId: MenuId | string): Array<IMenuItem | ISubmenuItem | IComponentMenuItem>;
@@ -245,6 +246,27 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
       }
     });
 
+  }
+
+  unregisterMenuItem(menuId: MenuId | string, menuItemId: string): void {
+    const array = this._menuItems.get(menuId);
+    if (array) {
+      const idx = array.findIndex((item) => {
+        const command: string | MenuCommandDesc = (item as IMenuItem).command;
+        if (command) {
+          if (typeof command === 'string') {
+            return command === menuItemId;
+          }
+          return command.id === menuItemId;
+        } else {
+          return (item as ISubmenuItem).submenu === menuItemId;
+        }
+      });
+      if (idx >= 0) {
+        array.splice(idx, 1);
+        this._onDidChangeMenu.fire(menuId);
+      }
+    }
   }
 
   registerMenuItems(menuId: string, items: (IMenuItem | ISubmenuItem)[]): IDisposable {

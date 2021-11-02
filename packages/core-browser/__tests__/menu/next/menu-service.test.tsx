@@ -507,6 +507,25 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
     expect(menuNodes.length).toBe(0);
   });
 
+  it('unregister menu item', () => {
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: {
+        id: 'a',
+        label: 'a1',
+      },
+    });
+    const menus = menuService.createMenu(MenuId.ExplorerContext, contextKeyService);
+
+    let menuNodes = generateMergedCtxMenu({ menus });
+    expect(menuNodes.length).toBe(1);
+    expect(menuNodes[0].label).toBe('a1');
+
+    menuRegistry.unregisterMenuItem(MenuId.ExplorerContext, 'a');
+    jest.runAllTimers();
+    menuNodes = generateMergedCtxMenu({ menus });
+    expect(menuNodes.length).toBe(0);
+  });
+
   describe('component menu item', () => {
     it('works', () => {
       disposables.add(menuRegistry.registerMenuItem(MenuId.EditorTitle, {
