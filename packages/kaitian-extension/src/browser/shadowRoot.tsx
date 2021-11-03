@@ -1,9 +1,9 @@
-import { ComponentContextProvider, IconContext } from '@ali/ide-components';
-import { DisposableCollection, useInjectable } from '@ali/ide-core-browser';
-import { localize } from '@ali/ide-core-common';
-import { getThemeTypeSelector, IThemeService, ThemeType } from '@ali/ide-theme';
+import { ComponentContextProvider, IconContext, IIconResourceOptions } from '@ali/ide-components';
+import { DisposableCollection, LabelService, useInjectable } from '@ali/ide-core-browser';
+import { localize, URI } from '@ali/ide-core-common';
+import { getThemeTypeSelector, IIconService, IThemeService, ThemeType } from '@ali/ide-theme';
 import clx from 'classnames';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 
@@ -73,6 +73,7 @@ const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, ex
   const [shadowRoot, setShadowRoot] = React.useState<ShadowRoot | null>(null);
   const viewExtensionService = useInjectable<AbstractViewExtProcessService>(AbstractViewExtProcessService);
   const themeService = useInjectable<IThemeService>(IThemeService);
+  const iconService = useInjectable<IIconService>(IIconService);
   const [themeType, setThemeType] = useState<null | ThemeType>(null);
 
   useEffect(() => {
@@ -86,6 +87,14 @@ const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, ex
         // 如果是一个插件注册了多个视图，节点需要被 clone 才能生效，否则第一个视图 appendChild 之后节点就没了
         const newHead = cloneNode<HTMLHeadElement>(proxiedHead);
         disposables.push(useMutationObserver(proxiedHead, newHead));
+        // 注册 icon 相关的样式
+        const iconStyle = document.createElement('style');
+        iconStyle.id = 'icon-style';
+        iconStyle.innerHTML = iconService.currentTheme.styleSheetContent;
+        newHead.appendChild(iconStyle);
+        disposables.push(iconService.onThemeChange((e) => {
+            iconStyle.innerHTML = e.styleSheetContent;
+        }));
         shadowRootElement.appendChild(newHead);
         const portalRoot = viewExtensionService.getPortalShadowRoot(extensionId);
         if (portalRoot) {
@@ -109,7 +118,7 @@ const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, ex
   return (
     <div id={id} style={{ width: '100%', height: '100%' }} ref={shadowRootRef}>
       {shadowRoot && <ShadowContent root={shadowRoot}>
-        <div className={clx(getThemeTypeSelector(themeType!), 'shadow-context-wrapper')} style={{ width: '100%', height: '100%' }}>{children}</div>
+        <div className={clx(getThemeTypeSelector(themeType!), 'shadow-context-wrapper', 'show-file-icons')} style={{ width: '100%', height: '100%' }}>{children}</div>
       </ShadowContent>}
     </div>
   );
@@ -118,8 +127,13 @@ const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, ex
 export function getShadowRoot(panel, extension: IExtension, props, id, proxiedHead) {
   const Component = panel;
   const { getIcon } = React.useContext(IconContext);
+  const labelService = useInjectable<LabelService>(LabelService);
+  const getResourceIcon = useCallback((uri: string, options: IIconResourceOptions) => {
+    return labelService.getIcon(URI.parse(uri), options);
+  }, []);
+
   return (
-    <ComponentContextProvider value={{ getIcon, localize }}>
+    <ComponentContextProvider value={{ getIcon, localize, getResourceIcon }}>
       <ShadowRoot id={`${extension.id}-${id}`} extensionId={extension.id} proxiedHead={proxiedHead}><Component {...props} /></ShadowRoot>
     </ComponentContextProvider>
   );

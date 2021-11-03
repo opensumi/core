@@ -1,12 +1,12 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { replaceLocalizePlaceholder, useInjectable, localize, PreferenceScope, formatLocalize, PreferenceService, ISettingGroup, IPreferenceSettingsService, ISettingSection, getIcon } from '@ali/ide-core-browser';
+import { replaceLocalizePlaceholder, useInjectable, localize, PreferenceScope, formatLocalize, PreferenceService, ISettingGroup, IPreferenceSettingsService, ISettingSection, getIcon, URI, LabelService } from '@ali/ide-core-browser';
 import { PreferenceSettingsService } from './preference-settings.service';
 import styles from './preferences.module.less';
 import classnames from 'classnames';
 import { Scroll } from '@ali/ide-editor/lib/browser/component/scroll/scroll';
-import { Input, ComponentContextProvider, Tabs, RecycleList } from '@ali/ide-components';
+import { Input, ComponentContextProvider, Tabs, RecycleList, IIconResourceOptions } from '@ali/ide-components';
 import { ISectionItemData, toNormalCase } from '../common';
 import { NextPreferenceItem } from './preferenceItem.view';
 import './index.less';
@@ -26,6 +26,10 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
 
   const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
   const preferences: PreferenceService = useInjectable(PreferenceService);
+  const labelService = useInjectable<LabelService>(LabelService);
+  const getResourceIcon = React.useCallback((uri: string, options: IIconResourceOptions) => {
+    return labelService.getIcon(URI.parse(uri), options);
+  }, []);
   const userBeforeWorkspace = preferences.get<boolean>('settings.userBeforeWorkspace');
   const tabList = userBeforeWorkspace
     ? [UserScope, WorkspaceScope]
@@ -103,7 +107,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   }, [items]);
 
   return (
-    <ComponentContextProvider value={{ getIcon, localize }}>
+    <ComponentContextProvider value={{ getIcon, localize, getResourceIcon }}>
       <div className={styles.preferences}>
         <div className={styles.preferences_header}>
           { headers }

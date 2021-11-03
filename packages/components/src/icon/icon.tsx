@@ -8,8 +8,15 @@ import './styles.less';
 
 export type DefaultIconKeys = keyof typeof defaultIconfont;
 
+export interface IIconResourceOptions {
+  isDirectory?: boolean;
+  isOpenedDirectory?: boolean;
+  isSymbolicLink?: boolean;
+}
+
 export interface IiconContext<T extends string> {
   getIcon: (iconKey: DefaultIconKeys | T, options?: IIconShapeOptions) => string;
+  getResourceIcon?: (url: string, options?: IIconResourceOptions) => string;
 }
 
 export const IconContext = React.createContext<IiconContext<any>>({
@@ -36,6 +43,8 @@ export interface IconBaseProps<T> extends IIconShapeOptions {
   loading?: boolean;
   disabled?: boolean;
   onClick?: React.MouseEventHandler<HTMLSpanElement>;
+  // 是否是文件资源类型的 icon
+  resourceOptions?: IIconResourceOptions;
 }
 
 export type IconProps<T = any> = IconBaseProps<T> & React.HTMLAttributes<HTMLSpanElement>;
@@ -63,7 +72,7 @@ const IconBase = function<T>(
     size = 'small', loading, icon,
     iconClass, className, tooltip,
     rotate, anim, fill, disabled,
-    onClick, children, ...restProps
+    onClick, children, resourceOptions, ...restProps
   } = props;
   const iconShapeOptions = { rotate, anim, fill };
 
@@ -79,8 +88,12 @@ const IconBase = function<T>(
     if (defaultIconMap[icon as DefaultIconKeys]) {
       iconClx = getKaitianIcon(icon as string, iconShapeOptions);
     } else {
-      const { getIcon } = React.useContext(IconContext);
-      iconClx = getIcon(icon, iconShapeOptions);
+      const { getIcon, getResourceIcon } = React.useContext(IconContext);
+      if (resourceOptions && getResourceIcon) {
+        iconClx = getResourceIcon(icon as string, resourceOptions);
+      } else {
+        iconClx = getIcon(icon, iconShapeOptions);
+      }
     }
   } else {
     iconClx = iconClass;
@@ -101,6 +114,8 @@ const IconBase = function<T>(
           'kt-icon-disabled': !!disabled,
           [`kt-icon-${size}`]: !!size,
           'kt-icon-clickable': !!onClick,
+          'kt-icon-resource': !!resourceOptions,
+          'expanded': !!resourceOptions && resourceOptions.isOpenedDirectory,
         },
       )}
     >
