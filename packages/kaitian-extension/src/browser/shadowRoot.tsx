@@ -90,7 +90,7 @@ const ShadowRoot = ({ id, extensionId, children, proxiedHead }: { id: string, ex
         // 注册 icon 相关的样式
         const iconStyle = document.createElement('style');
         iconStyle.id = 'icon-style';
-        iconStyle.innerHTML = iconService.currentTheme.styleSheetContent;
+        iconStyle.innerHTML = iconService.currentTheme?.styleSheetContent;
         newHead.appendChild(iconStyle);
         disposables.push(iconService.onThemeChange((e) => {
             iconStyle.innerHTML = e.styleSheetContent;
