@@ -148,7 +148,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   private isDeflatedSuggestDto(data: ISuggestDataDto | modes.CompletionItem) {
     return (
       data[ISuggestDataDtoField.label] ||
-      data[ISuggestDataDtoField.label2] ||
       data[ISuggestDataDtoField.kind] ||
       data[ISuggestDataDtoField.kindModifier] ||
       data[ISuggestDataDtoField.detail] ||
@@ -164,16 +163,30 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     );
   }
 
+  private inflateLabel(label: string | modes.CompletionItemLabel): string | modes.CompletionItemLabel {
+    if (typeof label === 'object') {
+      return label;
+    }
+    const splitted = label.split('~|');
+    if (Array.isArray(splitted) && splitted.length > 1) {
+      return {
+        label: splitted[0],
+        description: splitted[1],
+        detail: splitted[2],
+      };
+    }
+    return label;
+  }
+
   private inflateSuggestDto(defaultRange: IRange | { insert: IRange, replace: IRange }, data: ISuggestDataDto): modes.CompletionItem {
     if (!this.isDeflatedSuggestDto(data)) {
       return data as unknown as modes.CompletionItem;
     }
-    const label = data[ISuggestDataDtoField.label2] ?? data[ISuggestDataDtoField.label];
+    const label = this.inflateLabel(data[ISuggestDataDtoField.label] as unknown as string);
+
     return {
-      label: typeof label === 'string' ? label : label.label,
-      // @ts-ignore
+      label,
       kind: data[ISuggestDataDtoField.kind] ?? modes.CompletionItemKind.Property,
-      // @ts-ignore
       tags: data[ISuggestDataDtoField.kindModifier],
       detail: data[ISuggestDataDtoField.detail],
       documentation: data[ISuggestDataDtoField.documentation],
@@ -183,12 +196,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       insertText: data[ISuggestDataDtoField.insertText] ?? (typeof label === 'string' ? label : label.label),
       // @ts-ignore
       range: RangeSuggestDataDto.from(data[ISuggestDataDtoField.range]) ?? defaultRange,
-      // @ts-ignore
       insertTextRules: data[ISuggestDataDtoField.insertTextRules],
       commitCharacters: data[ISuggestDataDtoField.commitCharacters],
       additionalTextEdits: data[ISuggestDataDtoField.additionalTextEdits],
       command: data[ISuggestDataDtoField.command],
-      // not-standard
       _id: data.x,
     };
   }
@@ -227,7 +238,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         };
       },
       resolveCompletionItem: supportsResolveDetails
-        ? (suggestion, token) => {
+        ? async (suggestion, token) => {
           this.reporter.point(REPORT_NAME.RESOLVE_COMPLETION_ITEM);
           return this.proxy.$resolveCompletionItem(handle, suggestion._id!, token)
             .then((result) => {

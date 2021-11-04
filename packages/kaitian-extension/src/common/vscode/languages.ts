@@ -567,9 +567,6 @@ export enum ISuggestDataDtoField {
   additionalTextEdits = 'l',
   command = 'm',
   kindModifier = 'n',
-
-  // to merge into label
-  label2 = 'o',
 }
 
 export namespace RangeSuggestDataDto {
@@ -593,12 +590,12 @@ export interface ISuggestResultDto {
   [ISuggestResultDtoField.isIncomplete]: undefined | true;
   [ISuggestResultDtoField.duration]: number;
   /** 缓存在插件进程的评论列表 id */
+  // not-standard
   x?: number;
 }
 
 export interface ISuggestDataDto {
   [ISuggestDataDtoField.label]: string | CompletionItemLabel;
-  [ISuggestDataDtoField.label2]?: string | CompletionItemLabel;
   [ISuggestDataDtoField.kind]?: CompletionItemKind;
   [ISuggestDataDtoField.detail]?: string;
   [ISuggestDataDtoField.documentation]?: string | IMarkdownString;

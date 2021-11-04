@@ -6,16 +6,20 @@ import {
   CompletionContext,
   Position,
   CompletionItemInsertTextRule,
-  CompletionItem,
+  Range as ModelRange,
   ChainedCacheId,
 } from '../../../../common/vscode/model.api';
-import { SnippetString, Range, CompletionList } from '../../../../common/vscode/ext-types';
+import { SnippetString, Range, CompletionList, CompletionItemLabel } from '../../../../common/vscode/ext-types';
 import { CommandsConverter } from '../ext.host.command';
 import { DisposableStore } from '@ali/ide-core-common';
 import { getPerformance } from './util';
 
 export class CompletionAdapter {
-  private cache = new Cache<vscode.CompletionItem>('CompletionItem');
+  private cache = new Cache<{
+    item: vscode.CompletionItem,
+    resource: URI,
+    position: Position,
+  }>('CompletionItem');
   private toDispose = new Map<number, DisposableStore>();
 
   static supportsResolving(provider: vscode.CompletionItemProvider): boolean {
@@ -34,17 +38,8 @@ export class CompletionAdapter {
     context: CompletionContext,
     token: vscode.CancellationToken,
   ) {
-    const document = this.documents.getDocumentData(resource);
-    if (!document) {
-      return Promise.reject(
-        new Error(`There are no document for  ${resource}`),
-      );
-    }
+    const { doc, pos, replacing, inserting } = await this.getInsertOrReplace(resource, position);
 
-    const doc = document.document;
-    const pos = Converter.toPosition(position);
-    const replacing = doc.getWordRangeAtPosition(pos) || new Range(pos, pos);
-    const inserting = replacing.with({ end: pos });
     const perf = getPerformance();
     const startTime = perf ? perf.now() : 0;
     const itemOrList = await this.delegate.provideCompletionItems(
@@ -60,7 +55,8 @@ export class CompletionAdapter {
 
     const isIncomplete = Array.isArray(itemOrList) ? false : itemOrList.isIncomplete;
     const list = Array.isArray(itemOrList) ? new CompletionList(itemOrList) : itemOrList;
-    const pid = CompletionAdapter.supportsResolving(this.delegate) ? this.cache.add(list.items) : this.cache.add([]);
+    const pid = CompletionAdapter.supportsResolving(this.delegate) ? this.cache.add(list.items.map((e: vscode.CompletionItem) => ({ item: e, resource, position }))) : this.cache.add([]);
+
     const disposables = new DisposableStore();
     this.toDispose.set(pid, disposables);
 
@@ -68,7 +64,7 @@ export class CompletionAdapter {
     const result: ISuggestResultDto = {
       x: pid,
       [ISuggestResultDtoField.completions]: completions,
-      [ISuggestResultDtoField.defaultRanges]: { replace: Converter.fromRange(replacing)!, insert: Converter.fromRange(inserting)! },
+      [ISuggestResultDtoField.defaultRanges]: { replace: Converter.Range.from(replacing)!, insert: Converter.Range.from(inserting)! },
       [ISuggestResultDtoField.isIncomplete]: isIncomplete || undefined,
       [ISuggestResultDtoField.duration]: duration,
     };
@@ -76,40 +72,67 @@ export class CompletionAdapter {
     for (let i = 0; i < list.items.length; i++) {
       const item = list.items[i];
       // check for bad completion item first
-      const dto = this.convertCompletionItem(item, [pid, i], inserting, replacing);
+      const dto = {
+        [ISuggestDataDtoField.label]: typeof item.label === 'string' ? item.label : this.convertCompletionLabel(item.label),
+        [ISuggestDataDtoField.kind]: item.kind ? Converter.CompletionItemKind.from(item.kind) : undefined,
+        [ISuggestDataDtoField.sortText]: item.sortText,
+        [ISuggestDataDtoField.filterText]: item.filterText,
+        x: [pid, i] as [number, number],
+      };
+
+      const range = this.convertRange(item, inserting, replacing);
+      if (range) {
+        dto[ISuggestDataDtoField.range] = range;
+      }
+
       completions.push(dto);
     }
     return result;
   }
 
-  resolveCompletionItem(
+  async resolveCompletionItem(
     id: ChainedCacheId,
     token: vscode.CancellationToken,
   ): Promise<ISuggestDataDto | undefined> {
+
+    const _cache = this.cache.get(...id);
+    if (!_cache) {
+      return undefined;
+    }
+
+    const { item, resource, position } = _cache;
+
+    let inserting;
+    let replacing;
+
+    if (resource && position) {
+       const _ = await this.getInsertOrReplace(resource, position);
+       inserting = _.inserting;
+       replacing = _.replacing;
+    }
+
+    const convertItem = this.convertCompletionItem(item, id, inserting, replacing);
+
     if (typeof this.delegate.resolveCompletionItem !== 'function') {
-      return Promise.resolve(undefined);
+      return convertItem;
     }
 
-    const item = this.cache.get(...id);
-    if (!item) {
-      return Promise.resolve(undefined);
-    }
+    try {
+      const resolvedItem = await this.delegate.resolveCompletionItem(item, token);
 
-    return Promise.resolve(
-      this.delegate.resolveCompletionItem(item, token),
-    ).then((resolvedItem) => {
       if (!resolvedItem) {
-        return undefined;
+        return convertItem;
       }
 
-      return this.convertCompletionItem(
-        resolvedItem,
-        id,
-      );
-    });
+      return this.convertCompletionItem(resolvedItem, id);
+    } catch (error) {
+      new Error(`Delegate.resolveCompletionItem error: ${error}`);
+    }
+
+    return convertItem;
   }
 
-  releaseCompletionItems(id: number) {
+  async releaseCompletionItems(id: number) {
     this.cache.delete(id);
     const toDispose = this.toDispose.get(id);
     if (toDispose) {
@@ -117,6 +140,62 @@ export class CompletionAdapter {
       this.toDispose.delete(id);
     }
     return Promise.resolve();
+  }
+
+  private async getInsertOrReplace(resource: URI, position: Position) {
+    const document = this.documents.getDocumentData(resource);
+    if (!document) {
+      return Promise.reject(
+        new Error(`There are no document for  ${resource}`),
+      );
+    }
+
+    const doc = document.document;
+    const pos = Converter.toPosition(position);
+    const replacing = doc.getWordRangeAtPosition(pos) || new Range(pos, pos);
+    const inserting = replacing.with({ end: pos });
+    return { inserting, replacing, doc, pos };
+  }
+
+  private convertRange(
+    item: vscode.CompletionItem,
+    defaultInserting?: vscode.Range,
+    defaultReplacing?: vscode.Range,
+  ): RangeSuggestDataDto.ISuggestRangeDto | { insert: ModelRange; replace: ModelRange } | undefined  {
+    let range: vscode.Range | { inserting: vscode.Range, replacing: vscode.Range; } | undefined;
+    if (item.textEdit) {
+      range = item.textEdit.range;
+    } else if (item.range) {
+      range = item.range;
+    }
+
+    let toRange;
+
+    if (Range.isRange(range)) {
+      toRange = RangeSuggestDataDto.to(Converter.Range.from(range));
+    } else if (
+      range &&
+      (!defaultInserting?.isEqual(range.inserting) ||
+        !defaultReplacing?.isEqual(range.replacing))
+    ) {
+      toRange = {
+        insert: Converter.Range.from(range.inserting),
+        replace: Converter.Range.from(range.replacing),
+      };
+    }
+
+    return toRange;
+  }
+
+  private convertCompletionLabel(label: CompletionItemLabel): string {
+    let labelStr = label.label;
+    if (label.description) {
+      labelStr += `~|${label.description}`;
+    }
+    if (label.detail) {
+      labelStr += `~|${label.detail}`;
+    }
+    return labelStr;
   }
 
   private convertCompletionItem(
@@ -134,7 +213,7 @@ export class CompletionAdapter {
       x: id,
       [ISuggestDataDtoField.kind]: item.kind ? Converter.CompletionItemKind.from(item.kind) : undefined,
       [ISuggestDataDtoField.kindModifier]: item.tags && item.tags.map(Converter.CompletionItemTag.from),
-      [ISuggestDataDtoField.label]: item.label,
+      [ISuggestDataDtoField.label]: typeof item.label === 'string' ? item.label : this.convertCompletionLabel(item.label),
       [ISuggestDataDtoField.detail]: item.detail,
       [ISuggestDataDtoField.documentation]: item.documentation,
       [ISuggestDataDtoField.filterText]: item.filterText,
@@ -147,24 +226,10 @@ export class CompletionAdapter {
       [ISuggestDataDtoField.insertTextRules]: item.keepWhitespace ? CompletionItemInsertTextRule.KeepWhitespace : 0,
     };
 
-    let range: vscode.Range | { inserting: vscode.Range, replacing: vscode.Range; } | undefined;
-    if (item.textEdit) {
-      range = item.textEdit.range;
-    } else if (item.range) {
-      range = item.range;
-    }
+    const convertRange = this.convertRange(item, defaultInserting, defaultReplacing);
 
-    if (Range.isRange(range)) {
-      result[ISuggestDataDtoField.range] = RangeSuggestDataDto.to(Converter.Range.from(range));
-    } else if (
-      range &&
-      (!defaultInserting?.isEqual(range.inserting) ||
-        !defaultReplacing?.isEqual(range.replacing))
-    ) {
-      result[ISuggestDataDtoField.range] = {
-        insert: Converter.Range.from(range.inserting),
-        replace: Converter.Range.from(range.replacing),
-      };
+    if (convertRange) {
+      result[ISuggestDataDtoField.range] = convertRange;
     }
 
     if (item.textEdit) {
