@@ -9,7 +9,6 @@ import { DisposableCollection, Emitter, IMarkerData, IRange, LRUMap, MarkerManag
 import { extname } from '@ali/ide-core-common/lib/path';
 import { ICallHierarchyService } from '@ali/ide-monaco/lib/browser/contrib/callHierarchy';
 import { IEvaluatableExpressionService } from '@ali/ide-debug/lib/browser/editor/evaluatable-expression';
-import { applyPatch } from 'diff';
 import { DocumentFilter } from 'vscode-languageserver-protocol';
 import { ExtHostAPIIdentifier, ICodeActionDto, ICodeActionProviderMetadataDto, IExtHostLanguages, IMainThreadLanguages, ISuggestDataDto, ISuggestDataDtoField, ISuggestResultDtoField, MonacoModelIdentifier, RangeSuggestDataDto, testGlob } from '../../../common/vscode';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
@@ -24,8 +23,6 @@ import { DocumentRangeSemanticTokensProviderImpl, DocumentSemanticTokensProvider
 import { CancellationToken } from 'vscode';
 import { InlineValueContext, InlineValuesProvider, InlineValue } from '@ali/ide-debug/lib/common/inline-values';
 import { InlineValuesProviderRegistry } from '@ali/ide-debug/lib/browser/editor/inline-values';
-
-const PATCH_PREFIX = 'Index: a\n===================================================================\n--- a\n+++ a\n';
 
 @Injectable({ multiple: true })
 export class MainThreadLanguages implements IMainThreadLanguages {
@@ -597,11 +594,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           timer.timeEnd(extname(model.uri.fsPath));
           if (!result) {
             return undefined;
-          }
-          // 从 diff patch 来恢复文档
-          if (result.length === 1 && result[0].onlyPatch) {
-            result[0].text = applyPatch(model.getValue(), PATCH_PREFIX + result[0].text);
-            result[0].onlyPatch = false;
           }
           return result;
         });

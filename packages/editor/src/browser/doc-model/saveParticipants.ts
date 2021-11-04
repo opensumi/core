@@ -46,6 +46,9 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
     }
 
     const preferenceActions = this.preferenceService.get<any>('editor.codeActionsOnSave', undefined, e.payload.uri.toString(), e.payload.language);
+    if (!preferenceActions) {
+      return undefined;
+    }
 
     const codeActionsOnSave: CodeActionKind[] = [];
 

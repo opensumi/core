@@ -26,7 +26,6 @@
     "ajv": "^6.10.0",
     "classnames": "2.2.6",
     "clsx": "^1.0.4",
-    "diff": "^4.0.1",
     "file-icons-js": "^1.0.3",
     "font-awesome": "^4.7.0",
     "fuzzy": "^0.1.3",

@@ -14,7 +14,6 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { createPatch } from 'diff';
 import type vscode from 'vscode';
 import { Uri as URI } from '@ali/ide-core-common';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
@@ -37,24 +36,10 @@ export class RangeFormattingAdapter {
 
     const doc = document.document;
     const ran = Converter.toRange(range);
-    const oldText = (doc as vscode.TextDocument).getText();
 
     // tslint:disable-next-line:no-any
     return Promise.resolve(this.provider.provideDocumentRangeFormattingEdits(doc, ran as any, options as any, createToken())).then((value) => {
       if (Array.isArray(value)) {
-        if (value.length === 1) {
-          const newText = value[0].newText;
-          const diff = createPatch('a', oldText, newText, undefined, undefined, { context: 0 }).slice(89);
-          const delta = diff.length / newText.length;
-          // diff 小于原始文字的 1/10 的时候，只传输 diff
-          if (delta < 0.1) {
-            return [{
-              text: diff,
-              range: Converter.fromRange(value[0].range),
-              onlyPatch: true,
-            } as SingleEditOperation];
-          }
-        }
         return value.map(Converter.fromTextEdit);
       }
       return undefined;
