@@ -1,75 +1,186 @@
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { URI } from '@ali/ide-core-common';
+import { FileUri } from '@ali/ide-core-common';
+import { UTF8 } from '@ali/ide-core-common/lib/encoding';
 import { FileServiceClientModule } from '../../src/browser';
-import { IFileServiceClient, FileServicePath } from '../../src';
+import { IFileServiceClient, FileServicePath, IDiskFileProvider } from '../../src';
+import { DiskFileSystemProvider } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
+import { FileService } from '@ali/ide-file-service/lib/node';
+import temp from 'temp';
+import fs from 'fs-extra';
 
-describe('file service client', () => {
-  const mockInjector = createBrowserInjector([FileServiceClientModule]);
-  const fileServiceClient: IFileServiceClient = mockInjector.get(IFileServiceClient);
-  const calledMap: Map<string, any[]> = new Map();
-  const uri = URI.file('/root/test.txt');
-  const uri1 = URI.file('/root/test1.txt');
+describe('FileServiceClient should be work', () => {
+  const injector = createBrowserInjector([FileServiceClientModule]);
+  let fileServiceClient: IFileServiceClient;
+  const track = temp.track();
+  const tempDir = FileUri.create(fs.realpathSync(temp.mkdirSync('file-service-client-test')));
 
-  const MockFileService = new Proxy({}, {
-    get: (target, propKey, receiver) => {
-      return (...args) => {
-        calledMap.set(String(propKey), args);
-      };
+  injector.overrideProviders(
+    {
+      token: FileServicePath,
+      useClass: FileService,
+    }, {
+    token: IDiskFileProvider,
+    useClass: DiskFileSystemProvider,
     },
+  );
+
+  beforeAll(() => {
+    jest.setTimeout(10000);
+    fileServiceClient = injector.get(IFileServiceClient);
+    fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
   });
 
-  mockInjector.addProviders({
-    token: FileServicePath,
-    useValue: MockFileService,
+  afterAll(() => {
+    injector.disposeAll();
+    track.cleanupSync();
   });
 
-  // FIXME: 这测试写等于没写……
-  it.skip('Should Run method with args', () => {
+  it('get directory file', async () => {
+    const stat = await fileServiceClient.getFileStat(tempDir.toString());
+    expect(stat?.isDirectory).toBeTruthy();
+    expect(stat?.isSymbolicLink).toBeFalsy();
+    expect(stat?.uri).toBe(tempDir.toString());
+  });
 
-    fileServiceClient.getFileStat(uri.toString());
-    expect(calledMap.get('getFileStat')).toEqual([uri.toString()]);
+  it('get normal file', async () => {
+    const sourceFile = tempDir.resolve('index.html');
+    await fs.createFile(sourceFile.codeUri.fsPath);
+    const stat = await fileServiceClient.getFileStat(sourceFile.toString());
+    expect(stat?.isDirectory).toBeFalsy();
+    expect(stat?.isSymbolicLink).toBeFalsy();
+    expect(stat?.uri).toBe(sourceFile.toString());
+  });
 
-    fileServiceClient.getFileType(uri.toString());
-    expect(calledMap.get('getFileType')).toEqual([uri.toString()]);
+  it('get symbolic link file', async () => {
+    const sourceDir = tempDir.resolve('source-dir');
+    const linkUri = tempDir.resolve('symbol-file');
+    await fs.ensureDir(sourceDir.codeUri.fsPath);
+    await fs.symlink(sourceDir.codeUri.fsPath, linkUri.codeUri.fsPath);
+    const stat = await fileServiceClient.getFileStat(linkUri.toString());
+    expect(stat?.isSymbolicLink).toBeTruthy();
+    expect(stat?.isDirectory).toBeTruthy();
+    expect(stat?.uri).toBe(linkUri.toString());
+  });
 
-    fileServiceClient.setContent({ uri: uri.toString(), lastModification: 0, isDirectory: false}, 'test', { encoding: 'utf8' });
-    expect(calledMap.get('setContent')).toEqual([{ uri: uri.toString(), lastModification: 0, isDirectory: false}, 'test', { encoding: 'utf8' }]);
+  it('setContent / getContent', async () => {
+    const sourceFile = tempDir.resolve('index.js');
+    await fileServiceClient.createFile(sourceFile.toString());
+    const stat = await fileServiceClient.getFileStat(sourceFile.toString());
+    expect(stat?.isDirectory).toBeFalsy();
+    expect(stat?.isSymbolicLink).toBeFalsy();
+    if (stat) {
+      const content = `console.log('hello world')`;
+      await fileServiceClient.setContent(stat, content);
+      const result = await fileServiceClient.readFile(stat.uri);
+      expect(result.content.toString()).toBe(content);
+    }
+  });
 
-    fileServiceClient.createFile(uri.toString(), { encoding: 'utf8' });
-    expect(calledMap.get('createFile')).toEqual([uri.toString(), { encoding: 'utf8' }]);
+  it('isReadonly', async () => {
+    const readonly = await fileServiceClient.isReadonly(tempDir.codeUri.fsPath);
+    expect(readonly).toBeFalsy();
+  });
 
-    fileServiceClient.access(uri.toString(), 1);
-    expect(calledMap.get('access')).toEqual([uri.toString(), 1]);
+  it('access', async () => {
+    const access = await fileServiceClient.access(tempDir.codeUri.fsPath);
+    expect(access).toBeTruthy();
+  });
 
-    fileServiceClient.move(uri.toString(), uri1.toString(), { overwrite: true});
-    expect(calledMap.get('move')).toEqual([uri.toString(), uri1.toString(), { overwrite: true}]);
+  it('move', async () => {
+    const sourceDir = tempDir.resolve('temp-dir1');
+    const targetDir = tempDir.resolve('temp-dir2');
+    await fs.ensureDir(sourceDir.codeUri.fsPath);
+    await fileServiceClient.move(sourceDir.toString(), targetDir.toString());
+    const stat = await fileServiceClient.getFileStat(targetDir.toString());
+    expect(stat?.isSymbolicLink).toBeFalsy();
+    expect(stat?.isDirectory).toBeTruthy();
+    expect(stat?.uri).toBe(targetDir.toString());
+  });
 
-    fileServiceClient.copy(uri.toString(), uri1.toString(), { overwrite: true});
-    expect(calledMap.get('copy')).toEqual([uri.toString(), uri1.toString(), { overwrite: true}]);
+  it('copy', async () => {
+    const sourceDir = tempDir.resolve('temp-dir3');
+    const targetDir = tempDir.resolve('temp-dir4');
+    await fs.ensureDir(sourceDir.codeUri.fsPath);
+    await fileServiceClient.copy(sourceDir.toString(), targetDir.toString());
+    let stat = await fileServiceClient.getFileStat(targetDir.toString());
+    expect(stat?.isSymbolicLink).toBeFalsy();
+    expect(stat?.isDirectory).toBeTruthy();
+    expect(stat?.uri).toBe(targetDir.toString());
+    stat = await fileServiceClient.getFileStat(sourceDir.toString());
+    expect(stat?.isSymbolicLink).toBeFalsy();
+    expect(stat?.isDirectory).toBeTruthy();
+    expect(stat?.uri).toBe(sourceDir.toString());
+  });
 
-    fileServiceClient.getCurrentUserHome();
-    expect(calledMap.get('getCurrentUserHome')).toEqual([]);
+  it('getCurrentUserHome', async () => {
+    const userhome = await fileServiceClient.getCurrentUserHome();
+    expect(typeof userhome?.uri).toBe('string');
+  });
 
-    fileServiceClient.getFsPath(uri.toString());
-    expect(calledMap.get('getFsPath')).toEqual([uri.toString()]);
+  it('getFsPath', async () => {
+    const fsPath = await fileServiceClient.getFsPath(tempDir.toString());
+    expect(fsPath).toBe(tempDir.codeUri.fsPath);
+  });
 
-    fileServiceClient.watchFileChanges(uri, ['test']);
-    expect(calledMap.get('watchFileChanges')).toEqual([uri.toString(), { excludes: ['test']}]);
+  it('watch file change', async (done) => {
+    const watcher = await fileServiceClient.watchFileChanges(tempDir);
+    const targetDir = tempDir.resolve('temp-dir5');
+    watcher.onFilesChanged(async (event) => {
+      expect(event[0].uri).toBe(targetDir.toString());
+      await fileServiceClient.unwatchFileChanges(watcher.watchId);
+      watcher.dispose();
+      done();
+    });
+    setTimeout(async () => {
+      await fileServiceClient.createFolder(targetDir.toString());
+    }, 200);
+  });
 
-    fileServiceClient.setWatchFileExcludes(['test']);
-    expect(calledMap.get('setWatchFileExcludes')).toEqual([['test']]);
+  it('set fileExcludes', async () => {
+    const targetDir = tempDir.resolve('watch-file-exclude-temp-dir');
+    await fs.ensureDir(targetDir.codeUri.fsPath);
+    await fileServiceClient.setFilesExcludes([
+      '**/test/**',
+    ], [targetDir.toString()]);
+    await fs.ensureDir(targetDir.resolve('test').codeUri.fsPath);
+    const stat = await fileServiceClient.getFileStat(targetDir.toString());
+    expect(stat?.children?.length === 0).toBeTruthy();
+  });
 
-    fileServiceClient.setWorkspaceRoots(['test']);
-    expect(calledMap.get('setWorkspaceRoots')).toEqual([['test']]);
+  it('set watchExcludes', async (done) => {
+    const targetDir = tempDir.resolve('watch-exclude-temp-dir');
+    await fs.ensureDir(targetDir.codeUri.fsPath);
+    await fileServiceClient.setWatchFileExcludes([
+      '**/test/**',
+    ]);
+    const watcher = await fileServiceClient.watchFileChanges(targetDir);
+    watcher.onFilesChanged(async (event) => {
+      expect(!!event.find((e) => e.uri === targetDir.resolve('abc.js').toString())).toBeTruthy();
+      expect(!!event.find((e) => e.uri === targetDir.resolve('test').toString())).toBeFalsy();
+      await fileServiceClient.unwatchFileChanges(watcher.watchId);
+      watcher.dispose();
+      done();
+    });
+    setTimeout(async () => {
+      await fs.ensureDir(targetDir.resolve('test').codeUri.fsPath);
+      await fs.ensureDir(targetDir.resolve('abc.js').codeUri.fsPath);
+    }, 200);
+  });
 
-    fileServiceClient.unwatchFileChanges(1);
-    expect(calledMap.get('unwatchFileChanges')).toEqual([1]);
+  it('delete file', async () => {
+    const targetDir = tempDir.resolve('delete-temp-dir');
+    await fs.ensureDir(targetDir.codeUri.fsPath);
+    await fs.ensureDir(targetDir.resolve('test').codeUri.fsPath);
+    let stat = await fileServiceClient.getFileStat(targetDir.toString());
+    expect(stat?.children?.length).toBe(1);
+    await fileServiceClient.delete(targetDir.resolve('test').toString());
+    stat = await fileServiceClient.getFileStat(targetDir.toString());
+    expect(stat?.children?.length).toBe(0);
+  });
 
-    fileServiceClient.delete(uri.toString(), { moveToTrash: true });
-    expect(calledMap.get('delete')).toEqual([uri.toString(), { moveToTrash: true }]);
-
-    fileServiceClient.getEncoding(uri.toString());
-    expect(calledMap.get('getEncoding')).toEqual([uri.toString()]);
-
+  it('getEncoding', async () => {
+    // always utf8;
+    const encoding = await fileServiceClient.getEncoding(tempDir.toString());
+    expect(encoding).toBe(UTF8);
   });
 });

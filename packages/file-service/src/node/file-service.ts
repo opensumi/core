@@ -465,8 +465,6 @@ export class FileService implements IFileService {
     this.toDisposable.dispose();
   }
 
-  // Protected or private
-
   private updateExcludeMatcher() {
     this.filesExcludes.forEach((str) => {
       if (this.workspaceRoots.length > 0) {
