@@ -340,9 +340,11 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
           return !this.watchFileExcludesMatcherList.some((match) => match(pathStr));
         });
         this.fileChangeEmitter.fire(filteredChange);
-        if (this.client) {
-          this.client.onDidFilesChanged({
-            changes: filteredChange,
+        if (Array.isArray(this.rpcClient)) {
+          this.rpcClient.forEach((client) => {
+            client.onDidFilesChanged({
+              changes: filteredChange,
+            });
           });
         }
       },

@@ -2,7 +2,7 @@ import * as fs from 'fs-extra';
 import nsfw from 'nsfw';
 import paths from 'path';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
-import { IDisposable, Disposable, DisposableCollection, isWindows, URI } from '@ali/ide-core-common';
+import { IDisposable, Disposable, DisposableCollection, isWindows, URI, isLinux } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import {
   FileChangeType,
@@ -303,6 +303,21 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
 
   protected resolvePath(directory: string, file: string): string {
     const path = paths.join(directory, file);
+    // https://github.com/Axosoft/nsfw/issues/67
+    // 如果是 linux 则获取一下真实 path，以防因为 nsfw 返回的是软连路径被过滤
+    if (isLinux) {
+      try {
+        return fs.realpathSync.native(path);
+      } catch {
+        try {
+          // file does not exist try to resolve directory
+          return paths.join(fs.realpathSync.native(directory), file);
+        } catch {
+          // directory does not exist fall back to symlink
+          return path;
+        }
+      }
+    }
     return path;
   }
 
