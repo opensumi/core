@@ -456,15 +456,61 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   /**
+   * 判断是否是 web 插件
+   * 这里会多增加一个判断：是否启动了 node-ext-host
+   * https://code.visualstudio.com/api/extension-guides/web-extensions#web-extension-enablement
+   */
+  private whetherWebExtension({ packageJSON }: Extension): boolean {
+    const { browser, main } = packageJSON || {};
+    const noExtHost = Boolean(this.appConfig.noExtHost);
+
+    // 如果只包含 browser 入口
+    if (browser && !main) {
+      return true;
+    }
+
+    // 如果同时包含两个入口，那么判断是否启动了node插件进程
+    if (browser && main) {
+      return noExtHost;
+    }
+
+    // 只包含 main 入
+    if (!browser && main) {
+      return false;
+    }
+
+    /**
+     * 都不包含的情况下：
+     * 如果contributes中含有'debuggers', 'terminal', 'typescriptServerPlugins'三个之一，那么不作为web插件启动
+     * 如果不包含，那么判断是否启动了node插件进程
+     */
+    if (typeof packageJSON.contributes !== 'undefined') {
+      for (const id of ['debuggers', 'terminal', 'typescriptServerPlugins']) {
+        if (packageJSON.contributes.hasOwnProperty(id)) {
+          return false;
+        }
+      }
+    }
+
+    return noExtHost;
+  }
+
+  /**
    * 给 Extension 使用 | 激活插件
    */
   public async activeExtension(extension: Extension) {
+    const isWebExtension = this.whetherWebExtension(extension);
+
+    if (isWebExtension && !this.appConfig.extWorkerHost) {
+      this.logger.error('[extension.service]: has no ext worker host');
+    }
+
     // 优先激活 Node 和 Worker 进程中的插件
     // 这个时序下，不允许存在 Node/Worker 互相依赖的情况
     // 插件 Browser 中可以依赖 Node/Worker
     await Promise.all([
-      this.nodeExtensionService.activeExtension(extension),
-      this.workerExtensionService.activeExtension(extension),
+      this.nodeExtensionService.activeExtension(extension, isWebExtension),
+      this.workerExtensionService.activeExtension(extension, isWebExtension),
     ]);
 
     await this.viewExtensionService.activeExtension(extension, this.nodeExtensionService.protocol);

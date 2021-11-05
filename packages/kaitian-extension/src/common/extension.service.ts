@@ -18,7 +18,7 @@ abstract class BaseExtProcessService {
   abstract disposeApiFactory(): void;
   abstract disposeProcess(): void | Promise<void>;
   abstract activate(): Promise<IRPCProtocol>;
-  abstract activeExtension(extension: IExtension): Promise<void>;
+  abstract activeExtension(extension: IExtension, isWebExtension: boolean): Promise<void>;
 }
 
 export abstract class AbstractNodeExtProcessService<T = any> extends BaseExtProcessService implements VSCodeExtensionService {

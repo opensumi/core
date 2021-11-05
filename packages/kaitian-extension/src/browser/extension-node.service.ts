@@ -65,8 +65,8 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
     return this.protocol;
   }
 
-  public async activeExtension(extension: IExtension): Promise<void> {
-    if (!this.appConfig.noExtHost) {
+  public async activeExtension(extension: IExtension, isWebExtension: boolean): Promise<void> {
+    if (!this.appConfig.noExtHost && !isWebExtension) {
       // 只有当 proxy.$updateExtHostData 调用之后才可以开始激活插件
       await this._extHostUpdated.promise;
       const proxy = await this.getProxy();

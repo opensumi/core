@@ -29,7 +29,7 @@ describe('Extension service', () => {
   });
 
   it('activate extension should be work', async () => {
-    await workerService.activeExtension(MOCK_EXTENSIONS[0]);
+    await workerService.activeExtension(MOCK_EXTENSIONS[0], true);
     const activated = await workerService.getActivatedExtensions.bind(workerService)();
     expect(activated.find((e) => e.id === MOCK_EXTENSIONS[0].id)).toBeTruthy();
   });

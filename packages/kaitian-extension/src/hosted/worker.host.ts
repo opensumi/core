@@ -5,7 +5,7 @@ import {
 } from '@ali/ide-connection';
 import { IExtensionWorkerHost, EXTENSION_EXTEND_SERVICE_PREFIX } from '../common';
 import { createAPIFactory as createKaitianAPIFactory } from './api/worker/worker.host.api.impl';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier, KaitianWorkerExtensionService } from '../common/vscode';
+import { MainThreadAPIIdentifier, ExtHostAPIIdentifier, ExtensionIdentifier, KaitianWorkerExtensionService } from '../common/vscode';
 import { ExtensionLogger } from './extension-log';
 import { KTWorkerExtension } from './vscode.extension';
 import { ExtensionContext } from './api/vscode/ext.host.extensions';
@@ -125,6 +125,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
     const extensions = await this.mainThreadExtensionService.$getExtensions();
     this.extensions = extensions.map((ext) => ({
       ...ext,
+      identifier: new ExtensionIdentifier(ext.id),
       extensionLocation: Uri.from(ext.extensionLocation),
     }));
     this.logger.verbose('worker $handleExtHostCreated', this.extensions.map((extension) => {

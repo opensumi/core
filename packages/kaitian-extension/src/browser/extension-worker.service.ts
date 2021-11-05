@@ -57,7 +57,7 @@ export class WorkerExtProcessService extends Disposable implements AbstractWorke
     return this.protocol;
   }
 
-  public async activeExtension(extension: IExtension): Promise<void> {
+  public async activeExtension(extension: IExtension, isWebExtension: boolean): Promise<void> {
     const { extendConfig, packageJSON } = extension;
     // 对使用 kaitian.js 的老插件兼容
     // 因为可能存在即用了 kaitian.js 作为入口，又注册了 kaitianContributes 贡献点的插件
@@ -67,8 +67,12 @@ export class WorkerExtProcessService extends Disposable implements AbstractWorke
       return;
     }
 
-    // 激活 workerMain 相关部分
-    if (packageJSON.kaitianContributes && extension.contributes?.workerMain) {
+    if (
+      // 激活 workerMain 相关部分
+      (packageJSON.kaitianContributes && extension.contributes?.workerMain) ||
+      // 激活 packageJSON.browser 相关部分
+      isWebExtension
+    ) {
       await this.doActivateExtension(extension);
     }
   }
@@ -107,6 +111,8 @@ export class WorkerExtProcessService extends Disposable implements AbstractWorke
     return this.extensions.map((extension) => {
       if (extension.contributes && extension.contributes.workerMain) {
         return this.getWorkerExtensionProps(extension, extension.contributes.workerMain);
+      } else if (extension.packageJSON.browser) {
+        return this.getWorkerExtensionProps(extension, extension.packageJSON.browser);
       } else if (
         extension.extendConfig &&
         extension.extendConfig.worker &&
@@ -205,9 +211,15 @@ export class WorkerExtProcessService extends Disposable implements AbstractWorke
 
   private getWorkerExtensionProps(extension: IExtension, workerMain: string) {
     // 这里路径遵循 posix 方式，fsPath 会自动根据平台转换
-    const workerScriptURI = new URI(extension.extensionLocation.with({
+    let workerScriptPath = new URI(extension.extensionLocation.with({
       path: posix.join(extension.extensionLocation.path, workerMain),
-    }));
-    return Object.assign({}, extension.toJSON(), { workerScriptPath: workerScriptURI.toString() });
+    })).toString();
+
+    // 有部分 web extension 在申明 browser 入口字段的时候，不会带上文件后缀，导致 fetch 获取文件 404
+    if (!workerScriptPath.endsWith('.js')) {
+      workerScriptPath += '.js';
+    }
+
+    return Object.assign({}, extension.toJSON(), { workerScriptPath });
   }
 }
