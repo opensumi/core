@@ -275,7 +275,7 @@ export class RPCProtocol implements IRPCProtocol {
     }
   }
   private _receiveCancel(msg: CancelMessage) {
-    const cancellationTokenSource = this._cancellationTokenSources.get[msg.id];
+    const cancellationTokenSource = this._cancellationTokenSources.get(msg.id);
     if (cancellationTokenSource) {
       cancellationTokenSource.cancel();
     }
