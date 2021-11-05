@@ -30,7 +30,7 @@
     "jschardet": "3.0.0",
     "lodash.debounce": "^4.0.8",
     "mv": "^2.1.1",
-    "nsfw": "2.1.1",
+    "nsfw": "^2.1.2",
     "trash": "^5.2.0",
     "uuid": "^3.3.2",
     "vscode-languageserver-types": "^3.16.0",
