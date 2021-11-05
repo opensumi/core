@@ -1,18 +1,3 @@
-import { isElectronEnv } from '@ali/ide-core-common';
-
-export function getAMDRequire() {
-  if (isElectronEnv()) {
-    return (global as any).amdLoader.require;
-  } else {
-    (global as any).amdLoader.require.config({
-      onError: (err) => {
-        throw err;
-      },
-    });
-    return (global as any).amdLoader.require;
-  }
-}
-
 export function getWorkerBootstrapUrl(scriptPath: string, label: string, ignoreCors?: boolean): string {
   if (ignoreCors) {
     return scriptPath;
@@ -28,12 +13,4 @@ export function getWorkerBootstrapUrl(scriptPath: string, label: string, ignoreC
     }
   }
   return scriptPath;
-}
-
-export function getAMDDefine(): any {
-  if (isElectronEnv()) {
-    return (global as any).amdLoader.require.define;
-  } else {
-    return (global as any).amdLoader.define;
-  }
 }
