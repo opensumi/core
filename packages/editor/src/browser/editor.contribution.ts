@@ -237,6 +237,10 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       keybinding: 'ctrlcmd+k w',
     });
     keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.CLOSE_ALL.id,
+      keybinding: 'ctrlcmd+k ctrlcmd+w',
+    });
+    keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.PIN_CURRENT.id,
       keybinding: 'ctrlcmd+k enter',
     });
@@ -320,7 +324,6 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
   }
 
   registerCommands(commands: CommandRegistry): void {
-
     commands.registerCommand(EDITOR_COMMANDS.GO_FORWARD, {
       execute: () => {
         this.historyService.forward();
