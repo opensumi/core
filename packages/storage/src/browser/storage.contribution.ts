@@ -21,8 +21,14 @@ export class DatabaseStorageContribution implements StorageResolverContribution,
 
   storage: IStorage;
 
+  private resolvedStorages: Map<string, IStorage> = new Map();
+
   async resolve(storageId: URI) {
     const storageName = storageId.path.toString();
+    if (this.resolvedStorages.has(storageName)) {
+      return this.resolvedStorages.get(storageName);
+    }
+
     let storage: IStorage;
     if (storageId.scheme === STORAGE_SCHEMA.SCOPE) {
       storage = new Storage(this.workspaceStorage, this.workspaceService, this.appConfig, storageName);
@@ -31,10 +37,10 @@ export class DatabaseStorageContribution implements StorageResolverContribution,
     } else {
       return;
     }
+
+    this.resolvedStorages.set(storageName, storage);
     // 等待后台存储模块初始化数据
     await storage.whenReady;
-
-    this.storage = storage;
 
     return storage;
   }
