@@ -108,6 +108,8 @@ export class ExtHostTerminal implements IExtHostTerminal {
       name,
       shellPath,
       shellArgs,
+    }).then((id) => {
+      this.terminalsMap.set(id, terminal);
     });
     return terminal;
   }
@@ -115,7 +117,9 @@ export class ExtHostTerminal implements IExtHostTerminal {
   createTerminalFromOptions(options: vscode.TerminalOptions) {
     // 插件API 同步提供 terminal 实例
     const terminal = new Terminal(options.name, options, this.proxy);
-    terminal.create(options);
+    terminal.create(options).then((id) => {
+      this.terminalsMap.set(id, terminal);
+    });
     return terminal;
   }
 
@@ -124,6 +128,9 @@ export class ExtHostTerminal implements IExtHostTerminal {
     const p = new ExtHostPseudoterminal(options.pty);
     terminal.createExtensionTerminal().then((id) => {
       const disposable = this._setupExtHostProcessListeners(id, p);
+
+      this.terminalsMap.set(id, terminal);
+
       this._terminalProcessDisposables[id] = disposable;
     });
 
@@ -342,6 +349,14 @@ export class ExtHostTerminal implements IExtHostTerminal {
     this._terminalProcesses.get(id)?.getCwd().then((cwd) => this.proxy.$sendProcessCwd(id, cwd));
   }
 
+  public $acceptTerminalTitleChange(terminalId: string, name: string) {
+    const terminal = this.terminalsMap.get(terminalId);
+
+    if (terminal) {
+      terminal.name = name;
+    }
+  }
+
   getEnviromentVariableCollection(extension: IExtension) {
     let collection = this.environmentVariableCollections.get(extension.id);
     if (!collection) {
@@ -449,7 +464,7 @@ export class Terminal implements vscode.Terminal {
   });
 
   constructor(
-    public readonly name: string = '',
+    public name: string = '',
     private readonly _creationOptions: vscode.TerminalOptions | vscode.ExtensionTerminalOptions,
     protected proxy: IMainThreadTerminal,
     id?: string,
@@ -491,10 +506,16 @@ export class Terminal implements vscode.Terminal {
     });
   }
 
-  create(options: vscode.TerminalOptions) {
-    this.proxy.$createTerminal(options).then((id) => {
-      this.created(id);
-    });
+  async create(options: vscode.TerminalOptions): Promise<string> {
+    const id = await this.proxy.$createTerminal(options);
+
+    if (!id) {
+      throw new Error('createExtensionTerminal error');
+    }
+
+    this.created(id);
+
+    return id;
   }
 
   created(id) {
