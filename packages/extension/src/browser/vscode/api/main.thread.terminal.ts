@@ -146,6 +146,8 @@ export class MainThreadTerminal implements IMainThreadTerminal {
 
     if (terminalWidgetInstance) {
       terminalWidgetInstance.rename(title);
+
+      this.proxy.$acceptTerminalTitleChange(terminalId, title);
     }
   }
 

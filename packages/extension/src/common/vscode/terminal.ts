@@ -65,6 +65,7 @@ export interface IExtHostTerminal {
   $acceptProcessShutdown(id: string, immediate: boolean): void;
   $acceptProcessRequestInitialCwd(id: string): void;
   $acceptProcessRequestCwd(id: string): void;
+  $acceptTerminalTitleChange(id: string, name: string): void;
 
   registerLinkProvider(provider: vscode.TerminalLinkProvider): IDisposable;
   $provideLinks(terminalId: string, line: string): Promise<ITerminalLinkDto[]>;
