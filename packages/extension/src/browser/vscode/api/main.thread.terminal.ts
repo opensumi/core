@@ -2,7 +2,7 @@ import type vscode from 'vscode';
 import { Injectable, Optinal, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ILogger, Disposable, PreferenceService, IDisposable } from '@opensumi/ide-core-browser';
-import { ITerminalApiService, ITerminalController, ITerminalInfo, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest, ITerminalDimensions, ITerminalDimensionsDto, ITerminalExternalLinkProvider, ITerminalClient, ITerminalLink } from '@opensumi/ide-terminal-next';
+import { ITerminalApiService, ITerminalGroupViewService, ITerminalController, ITerminalInfo, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest, ITerminalDimensions, ITerminalDimensionsDto, ITerminalExternalLinkProvider, ITerminalClient, ITerminalLink } from '@opensumi/ide-terminal-next';
 import { IEnvironmentVariableService, SerializableEnvironmentVariableCollection, EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { deserializeEnvironmentVariableCollection } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { IMainThreadTerminal, IExtHostTerminal, ExtHostAPIIdentifier } from '../../../common/vscode';
@@ -28,6 +28,9 @@ export class MainThreadTerminal implements IMainThreadTerminal {
 
   @Autowired(ITerminalController)
   private controller: ITerminalController;
+
+  @Autowired(ITerminalGroupViewService)
+  private terminalGroupViewService: ITerminalGroupViewService;
 
   @Autowired(PreferenceService)
   protected readonly preference: PreferenceService;
@@ -139,7 +142,11 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   }
 
   public $sendProcessTitle(terminalId: string, title: string): void {
-    this._getTerminalProcess(terminalId).emitTitle(title);
+    const terminalWidgetInstance = this.terminalGroupViewService.getWidget(terminalId);
+
+    if (terminalWidgetInstance) {
+      terminalWidgetInstance.rename(title);
+    }
   }
 
   public $sendProcessData(terminalId: string, data: string): void {
