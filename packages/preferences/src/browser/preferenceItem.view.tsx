@@ -275,21 +275,27 @@ function SelectPreferenceItem({ preferenceName, localizedName, currentValue, sch
   });
   // enum 本身为 string[] | number[]
   const labels = settingsService.getEnumLabels(preferenceName);
-  const options = optionEnum && optionEnum.length > 0 ? optionEnum.map((item, idx) => {
-    if (typeof item === 'boolean') {
-      item = String(item);
-    }
-    isElectronRenderer() ?
-      <option value={item} key={`${idx} - ${item}`}>{
-        replaceLocalizePlaceholder((labels[item] || item).toString())
-      }</option> :
-      <Option value={item} label={replaceLocalizePlaceholder((labels[item] || item).toString())} key={`${idx} - ${item}`}>{
-        replaceLocalizePlaceholder((labels[item] || item).toString())
-      }</Option>;
-    }) :
-    isElectronRenderer() ?
-      <option value={localize('preference.stringArray.none')} key={NONE_SELECT_OPTION} disabled>{localize('preference.stringArray.none')}</option> :
-      <Option value={localize('preference.stringArray.none')} key={NONE_SELECT_OPTION} label={localize('preference.stringArray.none')} disabled>{localize('preference.stringArray.none')}</Option>;
+
+  const renderEnumOptions = () => {
+    return optionEnum?.map((item, idx) => {
+      if (typeof item === 'boolean') {
+        item = String(item);
+      }
+      return isElectronRenderer() ?
+        <option value={item} key={`${idx} - ${item}`}>{
+          replaceLocalizePlaceholder((labels[item] || item).toString())
+        }</option> :
+        <Option value={item} label={replaceLocalizePlaceholder((labels[item] || item).toString())} key={`${idx} - ${item}`}>{
+          replaceLocalizePlaceholder((labels[item] || item).toString())
+        }</Option>;
+    });
+  };
+  const renderNoneOptions = () => {
+    return isElectronRenderer() ?
+    <option value={localize('preference.stringArray.none')} key={NONE_SELECT_OPTION} disabled>{localize('preference.stringArray.none')}</option> :
+    <Option value={localize('preference.stringArray.none')} key={NONE_SELECT_OPTION} label={localize('preference.stringArray.none')} disabled>{localize('preference.stringArray.none')}</Option>;
+  };
+  const options = optionEnum && optionEnum.length > 0 ? renderEnumOptions() : renderNoneOptions();
 
   return (
     <div className={styles.preference_line} >
