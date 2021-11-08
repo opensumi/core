@@ -41,7 +41,7 @@ export class NodeRendererWrap extends React.Component<INodeRendererWrapProps> {
 
   public render() {
     const { item, itemType, children, template, hasPrompt } = this.props;
-    return React.createElement(children, { item, itemType, template, hasPrompt });
+    return React.createElement(children, {item, itemType, template, hasPrompt, key: item.id});
   }
 
   public shouldComponentUpdate(nextProps: INodeRendererWrapProps) {

@@ -8,7 +8,7 @@ import { IResourceOpenOptions, WorkbenchEditorService } from '@ali/ide-editor';
 import type vscode from 'vscode';
 
 import { TextDocumentShowOptions, ViewColumn } from '../common/vscode';
-import { ExtensionNodeServiceServerPath, IExtensionNodeClientService, EMIT_EXT_HOST_EVENT, ExtensionHostProfilerServicePath, IExtensionHostProfilerService, ExtensionHostTypeUpperCase, ExtensionService } from '../common';
+import { ExtensionNodeServiceServerPath, IExtensionNodeClientService, EMIT_EXT_HOST_EVENT, ExtensionHostProfilerServicePath, ExtensionService, IExtensionHostProfilerService, ExtensionHostTypeUpperCase } from '../common';
 import { ActivatedExtension } from '../common/activator';
 import * as VSCodeBuiltinCommands from './vscode/builtin-commands';
 import { AbstractExtInstanceManagementService, ExtensionApiReadyEvent, ExtHostEvent, IActivationEventService, Serializable } from './types';
@@ -54,7 +54,7 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
   async initialize() {
     await this.extensionService.activate();
     const disposer = this.webviewService.registerWebviewReviver({
-      handles: (id: string) => 0,
+      handles: (_: string) => 0,
       revive: async (id: string) => {
         return new Promise<void>((resolve) => {
           this.eventBus.on(ExtensionApiReadyEvent, () => {
@@ -198,7 +198,7 @@ export class KaitianExtensionCommandContribution implements CommandContribution 
       execute: async () => {
         const activated = await this.extensionService.getActivatedExtensions();
         this.quickOpenService.open({
-          onType: (lookFor: string, acceptor) => acceptor(this.asQuickOpenItems(activated)),
+          onType: (_: string, acceptor) => acceptor(this.asQuickOpenItems(activated)),
         }, {
           placeholder: '运行中的插件',
           fuzzyMatchLabel: {
@@ -272,7 +272,17 @@ export class KaitianExtensionCommandContribution implements CommandContribution 
             if (columnOrOptions.selection && isLikelyVscodeRange(columnOrOptions.selection)) {
               columnOrOptions.selection = fromRange(columnOrOptions.selection);
             }
-            options.range = columnOrOptions.selection;
+            if (Array.isArray(columnOrOptions.selection) && columnOrOptions.selection.length === 2) {
+              const [start, end] = columnOrOptions.selection;
+              options.range = {
+                startLineNumber: start.line + 1,
+                startColumn: start.character + 1,
+                endLineNumber: end.line + 1,
+                endColumn: end.character + 1,
+              };
+            } else {
+              options.range = columnOrOptions.selection;
+            }
             options.preview = columnOrOptions.preview;
           }
         }

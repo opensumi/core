@@ -451,11 +451,14 @@ export class ExtensionTreeViewModel {
     }
   }
 
-  handleItemClick = (item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => {
+  handleItemClick = async (item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => {
     this._isMultiSelected = false;
     // 单选操作默认先更新选中状态
     if (type === TreeNodeType.CompositeTreeNode || type === TreeNodeType.TreeNode) {
       this.activeNodeDecoration(item);
+    }
+    if (!item.resolved) {
+      await item.resolveTreeItem();
     }
     if (item.command) {
       this.commandService.executeCommand(item.command.id, ...(item.command.arguments || []));

@@ -97,12 +97,14 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
           const [start, end] = highlight;
           const addonStr = node.displayName.slice(endIndex, start);
           endIndex = end;
+          const highlightStr = node.displayName.slice(start, end);
           const hls = [
-            addonStr,
-            <span className={styles.highlight}>{node.displayName.slice(start, end)}</span>,
+            <span key={`line_begin_${index}_${addonStr}`}>{addonStr}</span>,
+            <span className={styles.highlight} key={`line_hightlight_${index}_${highlightStr}`}>{highlightStr}</span>,
           ];
           if (index === hightlights.length - 1) {
-            hls.push(node.displayName.slice(end));
+            const leftStr = node.displayName.slice(end);
+            hls.push(<span key={`line_end_${index}_${leftStr}`}>{leftStr}</span>);
           }
           return hls;
         });
