@@ -13,6 +13,7 @@ export interface IWidget extends Disposable {
   error: boolean;
   resize: (dynamic?: number) => void;
   increase: (increment: number) => void;
+  rename(name: string): void;
   dispose: () => void;
   onRender: Event<void>;
   onResize: Event<void>;

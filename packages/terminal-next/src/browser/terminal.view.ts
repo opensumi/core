@@ -85,6 +85,10 @@ export class Widget extends Disposable implements IWidget {
     this.shadowDynamic += increment;
     this._onResize.fire();
   }
+
+  rename(name: string) {
+    this.name = name;
+  }
 }
 
 export class WidgetGroup extends Disposable implements IWidgetGroup {
